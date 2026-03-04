@@ -682,8 +682,7 @@ initiate_upgrade_base_deployments() {
 
   log::info "Initiating base RHDH deployment before upgrade"
 
-  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+  deployment::register "$namespace"
 
   namespace::configure "${namespace}"
 

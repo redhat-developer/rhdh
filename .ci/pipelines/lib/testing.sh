@@ -33,7 +33,7 @@ readonly _TESTING_ERR_MISSING_PARAMS="Missing required parameters"
 # Returns:
 #   0 - Tests passed
 #   Non-zero - Tests failed
-# Uses globals: CURRENT_DEPLOYMENT, DIR, TAG_NAME, ARTIFACT_DIR, LOGFILE, JUNIT_RESULTS, CI, SHARED_DIR
+# Uses globals: DIR, TAG_NAME, ARTIFACT_DIR, LOGFILE, JUNIT_RESULTS, CI, SHARED_DIR
 testing::run_tests() {
   local release_name=$1
   local namespace=$2
@@ -47,9 +47,8 @@ testing::run_tests() {
     return 1
   fi
 
-  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$artifacts_subdir"
-  save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
+  deployment::register "$namespace"
+  deployment::mark_deploy_success
 
   BASE_URL="${url}"
   export BASE_URL
@@ -102,23 +101,25 @@ testing::run_tests() {
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   if [[ "${test_result}" -ne 0 ]]; then
     save_overall_result 1
-    save_status_test_failed $CURRENT_DEPLOYMENT true
+    deployment::mark_test_result false
   else
-    save_status_test_failed $CURRENT_DEPLOYMENT false
+    deployment::mark_test_result true
   fi
   # Use Playwright exit code as source of truth: flaky tests (failed initially
   # but passed on retry) report failures in JUnit XML even though they passed.
   # When test_result is 0, all tests ultimately passed — report 0 failures.
   if [[ "${test_result}" -eq 0 ]]; then
-    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "0"
+    save_status_number_of_test_failed "$(deployment::current_id)" "0"
   elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
     local failed_tests
     failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
     echo "Number of failed tests: ${failed_tests}"
-    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests:-some}"
+    save_status_number_of_test_failed "$(deployment::current_id)" "${failed_tests}"
   else
     echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
-    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "some"
+    local failed_tests="some"
+    echo "Number of failed tests unknown, saving as $failed_tests."
+    save_status_number_of_test_failed "$(deployment::current_id)" "${failed_tests}"
   fi
   return 0
 }
@@ -217,7 +218,7 @@ testing::check_backstage_running() {
 #   $5 - max_attempts: (optional) Maximum number of attempts (default: 30)
 #   $6 - wait_seconds: (optional) Seconds to wait between attempts (default: 30)
 #   $7 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to namespace)
-# Uses globals: CURRENT_DEPLOYMENT, SKIP_TESTS
+# Uses globals: SKIP_TESTS
 testing::check_and_test() {
   local release_name=$1
   local namespace=$2
@@ -243,16 +244,13 @@ testing::check_and_test() {
     fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
-    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$artifacts_subdir"
-    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
-    save_status_test_failed $CURRENT_DEPLOYMENT true
-    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "0"
-    save_overall_result 1
+    deployment::mark_deploy_failed "$namespace"
   fi
 
   # Collect pod logs only on failure to speed up successful PR runs.
-  if [[ "${STATUS_TEST_FAILED[$CURRENT_DEPLOYMENT]:-}" == "true" || "${STATUS_FAILED_TO_DEPLOY[$CURRENT_DEPLOYMENT]:-}" == "true" ]]; then
+  local _current_id
+  _current_id="$(deployment::current_id)"
+  if [[ "${STATUS_TEST_FAILED[$_current_id]:-}" == "true" || "${STATUS_FAILED_TO_DEPLOY[$_current_id]:-}" == "true" ]]; then
     save_all_pod_logs "$namespace"
   else
     log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
@@ -302,7 +300,7 @@ testing::check_helm_upgrade() {
 #   $4 - playwright_project: The Playwright project to run
 #   $5 - url: The URL to test against
 #   $6 - timeout: (optional) Timeout in seconds (default: 600)
-# Uses globals: CURRENT_DEPLOYMENT
+# Uses globals: none (deployment state managed by lib/deployment.sh)
 testing::check_upgrade_and_test() {
   local deployment_name="$1"
   local release_name="$2"
@@ -321,12 +319,7 @@ testing::check_upgrade_and_test() {
     testing::check_and_test "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
     log::error "Helm upgrade encountered an issue or timed out. Exiting..."
-    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
-    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
-    save_status_test_failed $CURRENT_DEPLOYMENT true
-    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "0"
-    save_overall_result 1
+    deployment::mark_deploy_failed "$namespace"
   fi
   return 0
 }
