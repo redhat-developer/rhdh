@@ -77,8 +77,8 @@ Additionally, include the workflow: `generic-claim` for setup and cleanup.
 ## Debugging
 
 If you are a member of the `rhdh-pool-admins` group, you can use the
-[.ci/pipelines/ocp-cluster-claim-login.sh](ocp-cluster-claim-login.sh) script to log in and
-retrieve ephemeral environment credentials.
+[.ci/pipelines/ocp-cluster-claim-login.sh](ocp-cluster-claim-login.sh) script to log in and retrieve
+ephemeral environment credentials.
 
 ### Steps:
 
