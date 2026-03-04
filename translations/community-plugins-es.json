@@ -1,6 +1,6 @@
 {
   "plugin.acr": {
-    "en": {
+    "es": {
       "page.title": "Repositorio de Azure Container Registry: {{image}}",
       "table.searchPlaceholder": "Filtrar",
       "table.labelRowsSelect": "Filas",
@@ -11,14 +11,14 @@
     }
   },
   "adr": {
-    "en": {
+    "es": {
       "contentHeaderTitle": "Registros de decisiones de arquitectura",
       "failedToFetch": "No se pudieron extraer ADR",
       "notFound": "No se encontraron ADR"
     }
   },
   "announcements": {
-    "en": {
+    "es": {
       "announcementForm.title": "Título",
       "announcementForm.excerpt": "Fragmento",
       "announcementForm.active": "Activo",
@@ -172,7 +172,7 @@
     }
   },
   "plugin.argocd": {
-    "en": {
+    "es": {
       "appStatus.appHealthStatus.Healthy": "En buen estado",
       "appStatus.appHealthStatus.Suspended": "Suspendida",
       "appStatus.appHealthStatus.Degraded": "Degradada",
@@ -270,7 +270,7 @@
     }
   },
   "bookmarks": {
-    "en": {
+    "es": {
       "bookmarkViewer.newTab": "Abrir en nueva pestaña",
       "bookmarkViewer.navButton.next": "Siguiente",
       "bookmarkViewer.navButton.previous": "Anterior",
@@ -283,13 +283,13 @@
     }
   },
   "flux": {
-    "en": {
+    "es": {
       "fluxContentCard.permissionAlert.title": "Permiso requerido",
       "fluxContentCard.permissionAlert.message": "El contenido de Flux requiere autorización en los objetos de Kubernetes; comuníquese con el administrador de su portal para que le otorgue los permisos 'kubernetes.clusters.read' y 'kubernetes.resources.read'."
     }
   },
   "plugin.jfrog-artifactory": {
-    "en": {
+    "es": {
       "page.title": "Repositorio de JFrog Artifactory: {{image}}",
       "table.searchPlaceholder": "Filtrar",
       "table.labelRowsSelect": "Filas",
@@ -304,13 +304,13 @@
     }
   },
   "linguist": {
-    "en": {
+    "es": {
       "entityCard.title": "Idiomas",
       "entityCard.noData": "En la actualidad, no hay datos de idioma para esta entidad."
     }
   },
   "plugin.nexus-repository-manager": {
-    "en": {
+    "es": {
       "table.title": "Administrador del repositorio de Nexus: {{title}}",
       "table.searchPlaceholder": "Filtrar",
       "table.labelRowsSelect": "Filas",
@@ -327,7 +327,7 @@
     }
   },
   "plugin.npm.translation-ref": {
-    "en": {
+    "es": {
       "infoCard.title": "Paquete NPM {{packageName}}",
       "infoCard.latestVersion": "Última versión",
       "infoCard.publishedAt": "Publicado en",
@@ -356,7 +356,7 @@
     }
   },
   "plugin.rbac": {
-    "en": {
+    "es": {
       "page.title": "RBAC",
       "page.createRole": "Crear rol",
       "page.editRole": "Modificar rol",
@@ -526,7 +526,7 @@
     }
   },
   "plugin.servicenow": {
-    "en": {
+    "es": {
       "page.title": "Tickets de ServiceNow",
       "page.titleWithCount": "Tickets de ServiceNow ({{count}})",
       "table.searchPlaceholder": "Buscar",
@@ -556,7 +556,7 @@
     }
   },
   "sonarqube": {
-    "en": {
+    "es": {
       "title": "Panel de SonarQube",
       "sonarQubeCard.title": "Calidad del código",
       "sonarQubeCard.deepLinkTitle": "Ver más",
@@ -586,7 +586,7 @@
     }
   },
   "tekton": {
-    "en": {
+    "es": {
       "errorPanel.title": "Ocurrió un problema al recuperar objetos de Kubernetes",
       "errorPanel.description": "Ocurrió un problema al recuperar algunos recursos de Kubernetes para la entidad: {{entityName}}. Esto podría significar que la tarjeta de informe de errores no es completamente precisa.",
       "permissionAlert.title": "Permiso requerido",
@@ -658,7 +658,7 @@
     }
   },
   "plugin.topology": {
-    "en": {
+    "es": {
       "page.title": "Topología",
       "page.subtitle": "Visualización de la topología de la carga de trabajo de Kubernetes",
       "toolbar.cluster": "Clúster",

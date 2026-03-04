@@ -1,17 +1,17 @@
 {
   "catalog": {
-    "en": {
+    "es": {
       "indexPage.createButtonTitle": "Autoservicio"
     }
   },
   "catalog-import": {
-    "en": {
+    "es": {
       "defaultImportPage.headerTitle": "Importar un repositorio Git existente",
       "importInfoCard.title": "Importar un repositorio Git existente"
     }
   },
   "core-components": {
-    "en": {
+    "es": {
       "table.filter.placeholder": "Todos los resultados",
       "table.body.emptyDataSourceMessage": "No hay registros para mostrar",
       "table.pagination.firstTooltip": "Primera página",
@@ -28,7 +28,7 @@
     }
   },
   "rhdh": {
-    "en": {
+    "es": {
       "menuItem.home": "Inicio",
       "menuItem.myGroup_one": "Mi grupo",
       "menuItem.myGroup_other": "Mis grupos",
@@ -117,17 +117,17 @@
     }
   },
   "scaffolder": {
-    "en": {
+    "es": {
       "templateListPage.contentHeader.registerExistingButtonTitle": "Importar un repositorio Git existente"
     }
   },
   "search": {
-    "en": {
+    "es": {
       "sidebarSearchModal.title": "Buscar"
     }
   },
   "user-settings": {
-    "en": {
+    "es": {
       "sidebarTitle": "Configuración"
     }
   }
