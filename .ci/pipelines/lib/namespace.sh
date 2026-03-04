@@ -133,32 +133,6 @@ namespace::delete() {
   return 0
 }
 
-# Function: namespace::remove_finalizers
-# Description: Removes finalizers from resources blocking namespace deletion
-# Arguments:
-#   $1 - project: The namespace/project name
-# Returns:
-#   0 - Success
-namespace::remove_finalizers() {
-  local project=$1
-  echo "Removing finalizers from resources in namespace ${project} that are blocking deletion."
-
-  # Remove finalizers from stuck PipelineRuns and TaskRuns
-  for resource_type in "pipelineruns.tekton.dev" "taskruns.tekton.dev"; do
-    for resource in $(oc get "$resource_type" -n "$project" -o name); do
-      oc patch "$resource" -n "$project" --type='merge' -p '{"metadata":{"finalizers":[]}}' || true
-      echo "Removed finalizers from $resource in $project."
-    done
-  done
-
-  # Check and remove specific finalizers stuck on 'chains.tekton.dev' resources
-  for chain_resource in $(oc get pipelineruns.tekton.dev,taskruns.tekton.dev -n "$project" -o name); do
-    oc patch "$chain_resource" -n "$project" --type='json' -p='[{"op": "remove", "path": "/metadata/finalizers"}]' || true
-    echo "Removed Tekton finalizers from $chain_resource in $project."
-  done
-  return 0
-}
-
 # Function: namespace::force_delete
 # Description: Forcibly deletes a namespace stuck in Terminating status
 # Arguments:
@@ -181,7 +155,7 @@ namespace::force_delete() {
       log::warn "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
       return 1
     fi
-    sleep $sleep_interval
+    sleep "$sleep_interval"
     elapsed=$((elapsed + sleep_interval))
   done
 

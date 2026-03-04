@@ -161,7 +161,7 @@ testing::check_backstage_running() {
   for ((i = 1; i <= max_attempts; i++)); do
     # Check HTTP status
     local http_status
-    http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
+    http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}" || echo "000")
 
     if [[ "${http_status}" -eq 200 ]]; then
       log::success "Backstage is up and running!"
