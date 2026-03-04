@@ -55,7 +55,6 @@
     "@microsoft/microsoft-graph-client": "3.0.7",
     "isomorphic-fetch": "3.0.0",
     "js-yaml": "4.1.1",
-    "node-fetch": "2.7.0",
     "octokit": "4.1.4",
     "pg": "8.18.0",
     "prettier-plugin-sh": "0.18.0",
