@@ -4,8 +4,8 @@ import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
 export const catalogTranslations = createTranslationResource({
   ref: catalogTranslationRef,
   translations: {
-    en: () => import('./catalog-en'),
     de: () => import('./de'),
+    en: () => import('./catalog-en'),
     es: () => import('./es'),
     fr: () => import('./fr'),
     it: () => import('./it'),

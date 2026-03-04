@@ -4,8 +4,8 @@ import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 export const coreComponentsTranslations = createTranslationResource({
   ref: coreComponentsTranslationRef,
   translations: {
-    en: () => import('./core-components-en'),
     de: () => import('./de'),
+    en: () => import('./core-components-en'),
     es: () => import('./es'),
     fr: () => import('./fr'),
     it: () => import('./it'),

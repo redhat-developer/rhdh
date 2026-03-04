@@ -17,10 +17,6 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { searchTranslationRef } from '@backstage/plugin-search/alpha';
 
-/**
- * de translation for search.
- * @public
- */
 const de = createTranslationMessages({
   ref: searchTranslationRef,
   full: false,

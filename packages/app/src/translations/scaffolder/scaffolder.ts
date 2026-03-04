@@ -4,8 +4,8 @@ import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
 export const scaffolderTranslations = createTranslationResource({
   ref: scaffolderTranslationRef,
   translations: {
-    en: () => import('./scaffolder-en'),
     de: () => import('./de'),
+    en: () => import('./scaffolder-en'),
     es: () => import('./es'),
     fr: () => import('./fr'),
     it: () => import('./it'),

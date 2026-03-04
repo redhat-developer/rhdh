@@ -10,14 +10,14 @@
       "table.columns.manifest": "Manifest"
     }
   },
-  "adr": {
+  "plugin.adr": {
     "de": {
       "contentHeaderTitle": "Architecture Decision Records",
       "failedToFetch": "ADRs konnten nicht abgerufen werden",
       "notFound": "Keine ADRs gefunden"
     }
   },
-  "announcements": {
+  "plugin.announcements-react": {
     "de": {
       "announcementForm.title": "Titel",
       "announcementForm.excerpt": "Auszug",
@@ -269,7 +269,7 @@
       "deploymentSummary.deploymentSummary.columns.healthStatus": "Integritätsstatus"
     }
   },
-  "bookmarks": {
+  "plugin.bookmarks": {
     "de": {
       "bookmarkViewer.newTab": "In neuer Registerkarte öffnen",
       "bookmarkViewer.navButton.next": "Weiter",
@@ -282,7 +282,7 @@
       "entityBookmarksContent.notFound.description": "Fügen Sie den Metadaten Ihres Elements Lesezeichen hinzu, um sie hier anzuzeigen."
     }
   },
-  "flux": {
+  "plugin.flux": {
     "de": {
       "fluxContentCard.permissionAlert.title": "Berechtigung erforderlich",
       "fluxContentCard.permissionAlert.message": "Für Flux-Inhalte ist eine Autorisierung für Kubernetes-Objekte erforderlich. Wenden Sie sich an den Portaladministrator, um die Berechtigungen 'kubernetes.clusters.read' und 'kubernetes.resources.read' zu erhalten."
@@ -303,7 +303,7 @@
       "manifest.sha256": "SHA256"
     }
   },
-  "linguist": {
+  "plugin.linguist": {
     "de": {
       "entityCard.title": "Sprachen",
       "entityCard.noData": "Für dieses Element liegen derzeit keine Sprachdaten vor."
@@ -555,7 +555,7 @@
       "actions.openInServicenow": "In ServiceNow öffnen"
     }
   },
-  "sonarqube": {
+  "plugin.sonarqube": {
     "de": {
       "title": "SonarQube-Dashboard",
       "sonarQubeCard.title": "Codequalität",
