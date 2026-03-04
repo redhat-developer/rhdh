@@ -659,10 +659,35 @@ export class KubeClient {
     expectedReplicas: number,
     timeout: number = 300000, // 5 minutes
     checkInterval: number = 10000, // 10 seconds
+    labelSelector?: string, // Optional label selector for pods
   ) {
     const endTime = Date.now() + timeout;
-    const labelSelector =
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+    let finalLabelSelector = labelSelector;
+    
+    // If label selector not provided, try to determine from deployment
+    if (!finalLabelSelector) {
+      try {
+        const deployment = await this.appsApi.readNamespacedDeployment(
+          deploymentName,
+          namespace,
+        );
+        const labels = deployment.body.metadata?.labels || {};
+        const instance = labels["app.kubernetes.io/instance"];
+        const name = labels["app.kubernetes.io/name"];
+        const component = labels["app.kubernetes.io/component"];
+        
+        if (instance && name && component) {
+          finalLabelSelector = `app.kubernetes.io/component=${component},app.kubernetes.io/instance=${instance},app.kubernetes.io/name=${name}`;
+        } else {
+          // Fallback to Operator default
+          finalLabelSelector = "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+        }
+      } catch {
+        // Fallback to Operator default if we can't read deployment
+        finalLabelSelector = "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+      }
+    }
+    
     let lastReplicaSetCheck = 0;
     const replicaSetCheckInterval = 60000; // Check ReplicaSet every 60 seconds
 
@@ -691,7 +716,7 @@ export class KubeClient {
         if (expectedReplicas > 0) {
           const podFailureReason = await this.checkPodFailureStates(
             namespace,
-            labelSelector,
+            finalLabelSelector,
           );
           if (podFailureReason) {
             console.error(
@@ -699,76 +724,29 @@ export class KubeClient {
             );
             await this.logDeploymentEvents(deploymentName, namespace);
             await this.logReplicaSetStatus(deploymentName, namespace);
-            await this.logPodEvents(namespace, labelSelector);
-            await this.logPodConditions(namespace, labelSelector);
+            await this.logPodEvents(namespace, finalLabelSelector);
+            await this.logPodConditions(namespace, finalLabelSelector);
+            await this.logPodContainerLogs(namespace, finalLabelSelector, "backstage-backend");
             throw new Error(
               `Deployment ${deploymentName} failed to start: ${podFailureReason}`,
             );
           }
 
-          // Periodically check ReplicaSet status if pods aren't being created
+          // Only log diagnostics if there's an actual problem detected
           const now = Date.now();
           if (now - lastReplicaSetCheck > replicaSetCheckInterval && availableReplicas === 0) {
-            console.log("Checking ReplicaSet status for diagnostic information...");
-            await this.logReplicaSetStatus(deploymentName, namespace);
-            await this.logPodEvents(namespace, labelSelector);
-            await this.logPodConditions(namespace, labelSelector);
-            lastReplicaSetCheck = now;
-          }
-          
-          // If pods exist but aren't ready, try to get logs immediately
-          if (readyReplicas === 0 && updatedReplicas > 0) {
-            // Check for any pods and try to get their logs
-            try {
-              const podsResponse = await this.coreV1Api.listNamespacedPod(
-                namespace,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                labelSelector,
-              );
-              for (const pod of podsResponse.body.items.slice(0, 2)) {
-                const podName = pod.metadata?.name;
-                if (!podName) continue;
-                const phase = pod.status?.phase;
-                // If pod is running but not ready, or if it's failed, get logs
-                if (phase === "Running" || phase === "Failed" || phase === "Pending") {
-                  try {
-                    const logs = await this.coreV1Api.readNamespacedPodLog(
-                      podName,
-                      namespace,
-                      undefined, // container
-                      false, // follow
-                      undefined, // limitBytes
-                      undefined, // pretty
-                      undefined, // previous
-                      undefined, // sinceSeconds
-                      50, // tailLines
-                    );
-                    if (logs.body) {
-                      const logLines = logs.body.split("\n").filter(l => l.trim());
-                      if (logLines.length > 0) {
-                        console.log(`\n=== Pod ${podName} logs (last ${logLines.length} lines) ===`);
-                        logLines.slice(-30).forEach((line) => {
-                          console.log(`  ${line}`);
-                        });
-                        console.log(`=== End of pod ${podName} logs ===\n`);
-                      }
-                    }
-                  } catch (logError) {
-                    // Pod might not be ready for logs yet, that's OK
-                  }
-                }
-              }
-            } catch (error) {
-              // Ignore errors getting pod logs
+            // Only log if we've been waiting a while and there's a real issue
+            const podFailureReason = await this.checkPodFailureStates(
+              namespace,
+              finalLabelSelector,
+            );
+            if (podFailureReason) {
+              await this.logReplicaSetStatus(deploymentName, namespace);
+              await this.logPodEvents(namespace, finalLabelSelector);
+              lastReplicaSetCheck = now;
             }
           }
         }
-
-        // Log pod conditions using label selector
-        await this.logPodConditions(namespace, labelSelector);
 
         // Check if the expected replicas match
         if (availableReplicas === expectedReplicas) {
@@ -778,9 +756,12 @@ export class KubeClient {
           return;
         }
 
-        console.log(
-          `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas} available, ${readyReplicas} ready.`,
-        );
+        // Only log progress if it's taking a while (after first check)
+        if (Date.now() > endTime - timeout + checkInterval * 2) {
+          console.log(
+            `Waiting for ${deploymentName} to become ready (${readyReplicas}/${expectedReplicas} ready)...`,
+          );
+        }
       } catch (error) {
         console.error(
           `Error checking deployment status: ${getKubeApiErrorMessage(error)}`,
@@ -801,7 +782,7 @@ export class KubeClient {
     await this.logPodEvents(namespace, labelSelector);
     await this.logPodConditions(namespace, labelSelector);
     throw new Error(
-      `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s). Check the logs above for pod events and ReplicaSet status.`,
+      `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
     );
   }
 
@@ -902,6 +883,100 @@ export class KubeClient {
     } catch (error) {
       console.error(
         `Error while retrieving pod conditions for selector '${selector}': ${getKubeApiErrorMessage(error)}`,
+      );
+    }
+  }
+
+  async logPodContainerLogs(namespace: string, labelSelector?: string, containerName?: string) {
+    const selector =
+      labelSelector ||
+      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+
+    try {
+      const podsResponse = await this.coreV1Api.listNamespacedPod(
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        selector,
+      );
+
+      if (podsResponse.body.items.length === 0) {
+        console.log("No pods found to retrieve logs from.");
+        return;
+      }
+
+      for (const pod of podsResponse.body.items.slice(0, 2)) {
+        const podName = pod.metadata?.name;
+        if (!podName) continue;
+
+        // If container name specified, only get logs from that container
+        // Otherwise, get logs from all containers
+        const containers = containerName 
+          ? [{ name: containerName }]
+          : (pod.spec?.containers || []);
+
+        for (const container of containers) {
+          const cn = container.name;
+          try {
+            console.log(`\n=== Pod ${podName} - Container ${cn} Logs (last 100 lines) ===`);
+            const logs = await this.coreV1Api.readNamespacedPodLog(
+              podName,
+              namespace,
+              cn,
+              false, // follow
+              undefined, // limitBytes
+              undefined, // pretty
+              undefined, // previous
+              undefined, // sinceSeconds
+              100, // tailLines
+            );
+            if (logs.body) {
+              const logLines = logs.body.split("\n");
+              logLines.forEach((line) => {
+                if (line.trim()) console.log(line);
+              });
+            } else {
+              console.log("(No logs available)");
+            }
+          } catch (logError) {
+            const errorMsg = getKubeApiErrorMessage(logError);
+            // Try to get previous container logs if current container failed
+            if (errorMsg.includes("not found") || errorMsg.includes("not running")) {
+              try {
+                console.log(`\n=== Pod ${podName} - Container ${cn} Previous Logs (from crashed container, last 100 lines) ===`);
+                const prevLogs = await this.coreV1Api.readNamespacedPodLog(
+                  podName,
+                  namespace,
+                  cn,
+                  false,
+                  undefined,
+                  undefined,
+                  true, // previous - get logs from previous crashed container
+                  undefined,
+                  100,
+                );
+                if (prevLogs.body) {
+                  const logLines = prevLogs.body.split("\n");
+                  logLines.forEach((line) => {
+                    if (line.trim()) console.log(line);
+                  });
+                } else {
+                  console.log("(No previous logs available)");
+                }
+              } catch (prevLogError) {
+                console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
+              }
+            } else {
+              console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error(
+        `Error retrieving pod logs: ${getKubeApiErrorMessage(error)}`,
       );
     }
   }

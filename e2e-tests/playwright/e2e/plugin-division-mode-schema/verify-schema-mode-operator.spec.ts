@@ -6,9 +6,10 @@ import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import { configurePostgresCredentials } from "../../utils/postgres-config";
 
-test.describe("Verify pluginDivisionMode: schema", () => {
+test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME || "";
+  // Operator deployment naming: backstage-${RELEASE_NAME}
   let deploymentName = process.env.RELEASE_NAME + "-developer-hub";
   if (job.includes("operator")) {
     deploymentName = "backstage-" + process.env.RELEASE_NAME;
@@ -169,7 +170,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       );
     }
 
-    console.log("Configuring RHDH for schema mode...");
+    console.log("Configuring RHDH (Operator deployment) for schema mode...");
     
     let podDbHost = dbHost;
     let sslMode = "require";
@@ -204,6 +205,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       console.log(`Note: Pods will connect to PostgreSQL service, not localhost`);
     }
     
+    // Operator uses postgres-cred secret (not Helm-managed secret)
     // Check if secret already exists and has correct values
     let secretNeedsUpdate = true;
     try {
@@ -247,7 +249,8 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     const releaseName = process.env.RELEASE_NAME || "developer-hub";
     let needsRestart = false; // Declare early since we may set it when patching CR
     
-    // CRITICAL: Patch Backstage CR to inject postgres-cred secret as environment variables
+    // CRITICAL: Patch Backstage CR (Operator only - Helm chart doesn't use CRs)
+    // This injects postgres-cred secret as environment variables
     // Without this, RHDH won't read POSTGRES_DB from the secret
     const backstageCrName = releaseName;
     const backstageCrGroup = "rhdh.redhat.com";
@@ -474,6 +477,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     }
     
     // Also update the main ConfigMap (as fallback, but operator may overwrite it)
+    // Operator ConfigMap naming: backstage-appconfig-${RELEASE_NAME}
     const configMapName = process.env.RELEASE_NAME
       ? `backstage-appconfig-${process.env.RELEASE_NAME}`
       : "backstage-appconfig-developer-hub";
@@ -851,6 +855,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       let podLogsHint = "";
       let podLogs = "";
       try {
+        // Operator pod label selector
         const labelSelector = "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
         const podsResponse = await kubeClient.coreV1Api.listNamespacedPod(
           namespace,
@@ -903,6 +908,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       let configCheck = "";
       let secretCheck = "";
       try {
+        // Operator ConfigMap naming
         const configMapName = process.env.RELEASE_NAME
           ? `backstage-appconfig-${process.env.RELEASE_NAME}`
           : "backstage-appconfig-developer-hub";
