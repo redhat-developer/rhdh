@@ -147,7 +147,9 @@ test.describe.serial("Test Adoption Insights", () => {
         await expect(page.getByText("No results found")).toBeVisible();
 
         await uiHelper.clickLink("Catalog");
+        await page.reload();
         await testHelper.waitUntilApiCallSucceeds(page);
+        await uiHelper.openSidebarButton("Administration");
 
         await uiHelper.clickLink("Adoption Insights");
         await testHelper.clickByText("Last 28 days");
