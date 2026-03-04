@@ -73,7 +73,7 @@ Optional overrides (passed as env var overrides to the job):
   -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-123). Requires -q.
   -o, --org GITHUB_ORG_NAME    Override the GitHub org (default in job: redhat-developer).
   -r, --repo GITHUB_REPO_NAME  Override the GitHub repo name (default in job: rhdh).
-  -b, --branch BRANCH          Override the release branch name.
+  -b, --branch BRANCH          Override the branch name.
   -S, --send-alerts            Send Slack alerts (default: alerts are skipped).
 
 Other:
