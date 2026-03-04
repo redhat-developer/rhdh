@@ -11,12 +11,10 @@ E2E test for `pluginDivisionMode: schema` on **OpenShift (OCP)**.
 ## Prerequisites
 
 - RHDH deployed on OpenShift
-- Access to PostgreSQL (via service name or port-forward)
+- Access to PostgreSQL via port-forward
 - `oc` CLI configured
 
 ## Setup
-
-### Port-Forward (Works from Local Machine)
 
 ```bash
 # Terminal 1: Start port-forward (keep this running)
@@ -40,4 +38,14 @@ cd e2e-tests
 yarn install
 
 yarn playwright test playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts --project=showcase-runtime-db --headed
+```
+
+## View Test Report
+
+After tests complete, Playwright automatically serves the HTML report at **http://localhost:9323/**.
+
+To view the report manually later:
+
+```bash
+yarn playwright show-report
 ```
