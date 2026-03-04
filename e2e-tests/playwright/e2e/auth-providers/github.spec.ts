@@ -8,7 +8,8 @@ let context: BrowserContext;
 
 /* SUPORTED RESOLVERS
 GITHUB:
-    [x] usernameMatchingUserEntityName -> (Default)
+    [x] userIdMatchingUserEntityAnnotation -> (Default >=1.10.x)
+    [x] usernameMatchingUserEntityName -> (Default <=1.9.x)
     [x] emailMatchingUserEntityProfileEmail
     [x] emailLocalPartMatchingUserEntityName
 */
@@ -143,6 +144,30 @@ test.describe("Configure Github Provider", async () => {
     await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("RHDH QE Admin");
     await common.signOut();
+    await context.clearCookies();
+  });
+
+  test("Login with Github usernameMatchingUserEntityName resolver", async () => {
+    //A github sign-in resolver that looks up the user using their github username as the entity name.
+    await deployment.setGithubResolver("usernameMatchingUserEntityName", false);
+    await deployment.updateAllConfigs();
+    await deployment.restartLocalDeployment();
+    await page.waitForTimeout(3000);
+    await deployment.waitForDeploymentReady();
+
+    // wait for rhdh first sync and portal to be reachable
+    await deployment.waitForSynced();
+
+    const login = await common.githubLogin(
+      "rhdhqeauth1",
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+    );
+    expect(login).toBe("Login successful");
+
+    await uiHelper.verifyAlertErrorMessage(
+      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
+    );
     await context.clearCookies();
   });
 
