@@ -24,13 +24,17 @@ initiate_aks_helm_deployment() {
 
   namespace::setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
+  common::require_vars "RELEASE_NAME" "TAG_NAME" "QUAY_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  if ! helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}"; then
+    log::error "Helm upgrade failed for ${RELEASE_NAME} in ${NAME_SPACE}"
+    return 1
+  fi
 }
 
 initiate_rbac_aks_helm_deployment() {
@@ -47,11 +51,15 @@ initiate_rbac_aks_helm_deployment() {
 
   namespace::setup_image_pull_secret "${NAME_SPACE_RBAC}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
+  common::require_vars "RELEASE_NAME_RBAC" "TAG_NAME" "QUAY_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_RBAC}"
-  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
+  if ! helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}"; then
+    log::error "Helm upgrade failed for ${RELEASE_NAME_RBAC} in ${NAME_SPACE_RBAC}"
+    return 1
+  fi
 }
