@@ -1208,7 +1208,7 @@ get_previous_release_value_file() {
   echo "Using previous release version: ${previous_release_version}" >&2
 
   # Construct the GitHub URL for the value file
-  local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ibm/pipelines/value_files/values_${value_file_type}.yaml"
+  local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ci/pipelines/value_files/values_${value_file_type}.yaml"
 
   # Create a temporary file path for the downloaded value file
   local temp_value_file="/tmp/values_${value_file_type}_${previous_release_version}.yaml"
