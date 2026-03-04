@@ -52,11 +52,13 @@ deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
 
-  # Check if PostgresCluster CRD is available (optional - operator can use built-in StatefulSet database)
+  # Ensure PostgresCluster CRD is available before deploying Backstage CR
+  # This is required because the operator relies on CrunchyDB for its internal database
   log::info "Verifying PostgresCluster CRD is available before deploying Backstage CR..."
-  if ! k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 15 3; then
-    log::info "PostgresCluster CRD not available - operator will use built-in StatefulSet database instead"
-  fi
+  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 60 5 || {
+    log::error "PostgresCluster CRD not available - operator won't be able to create internal database"
+    return 1
+  }
 
   # Verify Backstage CRD is also available
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
