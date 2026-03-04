@@ -2,9 +2,10 @@
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$(dirname "${BASH_SOURCE[0]}")"/lib/log.sh
+# shellcheck source=.ci/pipelines/lib/deployment.sh
+source "$(dirname "${BASH_SOURCE[0]}")"/lib/deployment.sh
 
 # Variables for reporting
-export CURRENT_DEPLOYMENT=0        # Counter for current deployment.
 export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployments.
 export STATUS_FAILED_TO_DEPLOY     # Array that indicates if deployment failed. false = success, true = failure
 export STATUS_TEST_FAILED          # Array that indicates if test run failed. false = success, true = failure
