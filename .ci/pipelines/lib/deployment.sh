@@ -49,8 +49,9 @@ deployment::mark_test_result() {
   fi
 }
 
-# Export all functions and state for subshell compatibility
-export _DEPLOYMENT_COUNTER
+# Export all functions for subshell compatibility.
+# Note: _DEPLOYMENT_COUNTER is NOT exported because subshells inherit only
+# the snapshot at fork time — counter updates in the parent would not propagate.
 export -f deployment::next_id
 export -f deployment::current_id
 export -f deployment::register
