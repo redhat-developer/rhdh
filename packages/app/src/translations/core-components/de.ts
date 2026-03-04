@@ -17,10 +17,6 @@
 import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
-/**
- * de translation for core-components.
- * @public
- */
 const de = createTranslationMessages({
   ref: coreComponentsTranslationRef,
   full: false,

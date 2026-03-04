@@ -1,32 +1,4 @@
 {
-  "catalog": {
-    "es": {
-      "indexPage.createButtonTitle": "Autoservicio"
-    }
-  },
-  "catalog-import": {
-    "es": {
-      "defaultImportPage.headerTitle": "Importar un repositorio Git existente",
-      "importInfoCard.title": "Importar un repositorio Git existente"
-    }
-  },
-  "core-components": {
-    "es": {
-      "table.filter.placeholder": "Todos los resultados",
-      "table.body.emptyDataSourceMessage": "No hay registros para mostrar",
-      "table.pagination.firstTooltip": "Primera página",
-      "table.pagination.labelDisplayedRows": "{from}-{to} de {count}",
-      "table.pagination.labelRowsSelect": "filas",
-      "table.pagination.lastTooltip": "Última página",
-      "table.pagination.nextTooltip": "Página siguiente",
-      "table.pagination.previousTooltip": "Página anterior",
-      "table.toolbar.search": "Filtrar",
-      "alertDisplay.message_one": "({{ count }} mensaje nuevo)",
-      "alertDisplay.message_other": "({{ count }} mensajes nuevos)",
-      "table.header.actions": "Acciones",
-      "oauthRequestDialog.message": "Inicie sesión para permitir que {{appTitle}} acceda a las API e identidades de {{provider}}."
-    }
-  },
   "rhdh": {
     "es": {
       "menuItem.home": "Inicio",
@@ -114,21 +86,6 @@
       "app.errors.notFound.message": "No pudimos encontrar esa página",
       "app.errors.notFound.additionalInfo": "Es posible que la página que busca se haya eliminado, haya cambiado de nombre o no esté disponible temporalmente.",
       "app.table.createdAt": "Creado a"
-    }
-  },
-  "scaffolder": {
-    "es": {
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Importar un repositorio Git existente"
-    }
-  },
-  "search": {
-    "es": {
-      "sidebarSearchModal.title": "Buscar"
-    }
-  },
-  "user-settings": {
-    "es": {
-      "sidebarTitle": "Configuración"
     }
   }
 }

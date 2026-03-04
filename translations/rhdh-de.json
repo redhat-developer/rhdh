@@ -1,32 +1,4 @@
 {
-  "catalog": {
-    "de": {
-      "indexPage.createButtonTitle": "Self-Service"
-    }
-  },
-  "catalog-import": {
-    "de": {
-      "defaultImportPage.headerTitle": "Vorhandenes Git-Repository importieren",
-      "importInfoCard.title": "Vorhandenes Git-Repository importieren"
-    }
-  },
-  "core-components": {
-    "de": {
-      "table.filter.placeholder": "Alle Ergebnisse",
-      "table.body.emptyDataSourceMessage": "Keine Datensätze zum Anzeigen vorhanden",
-      "table.pagination.firstTooltip": "Erste Seite",
-      "table.pagination.labelDisplayedRows": "{von}-{bis} von {Anzahl}",
-      "table.pagination.labelRowsSelect": "Zeilen",
-      "table.pagination.lastTooltip": "Letzte Seite",
-      "table.pagination.nextTooltip": "Nächste Seite",
-      "table.pagination.previousTooltip": "Vorherige Seite",
-      "table.toolbar.search": "Filter",
-      "alertDisplay.message_one": "({{ count }} neuere Nachricht)",
-      "alertDisplay.message_other": "({{ count }} neuere Nachrichten)",
-      "table.header.actions": "Aktionen",
-      "oauthRequestDialog.message": "Melden Sie sich an, um {{appTitle}} Zugriff auf die APIs und Identitäten von {{provider}} zu erlauben."
-    }
-  },
   "rhdh": {
     "de": {
       "menuItem.home": "Startseite",
@@ -114,21 +86,6 @@
       "app.errors.notFound.message": "Wir konnten diese Seite nicht finden.",
       "app.errors.notFound.additionalInfo": "Die gesuchte Seite wurde möglicherweise entfernt, umbenannt oder ist vorübergehend nicht verfügbar.",
       "app.table.createdAt": "Erstellt um"
-    }
-  },
-  "scaffolder": {
-    "de": {
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Vorhandenes Git-Repository importieren"
-    }
-  },
-  "search": {
-    "de": {
-      "sidebarSearchModal.title": "Suchen"
-    }
-  },
-  "user-settings": {
-    "de": {
-      "sidebarTitle": "Einstellungen"
     }
   }
 }

@@ -18,10 +18,6 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 import { rhdhTranslationRef } from './ref';
 
-/**
- * de translation for rhdh.
- * @public
- */
 const rhdhTranslationDe = createTranslationMessages({
   ref: rhdhTranslationRef,
   messages: {

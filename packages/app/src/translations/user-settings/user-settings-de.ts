@@ -17,10 +17,6 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
 
-/**
- * de translation for user-settings.
- * @public
- */
 const de = createTranslationMessages({
   ref: userSettingsTranslationRef,
   full: false,

@@ -17,10 +17,6 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
 
-/**
- * es translation for catalog-import.
- * @public
- */
 const es = createTranslationMessages({
   ref: catalogImportTranslationRef,
   full: false,
