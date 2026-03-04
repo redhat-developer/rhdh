@@ -124,14 +124,14 @@ log::info "Exporting secrets as environment variables..."
 # Uses base64 encoding to safely handle special characters in values
 # Replaces -, . and / with _ in key names (env vars can only have alphanumeric and _)
 SECRETS_JSON=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r '.data.data')
-for key in $(echo "$SECRETS_JSON" | jq -r 'keys[]'); do
-    # Skip metadata keys
+# Use while read (not for..in) so it works in both bash and zsh; avoids word-splitting/globbing on keys
+while IFS= read -r key; do
+    [[ -z "$key" ]] && continue
     [[ "$key" == "secretsync/"* ]] && continue
-    # Get value and sanitize key name (put - at end for macOS tr compatibility)
-    value=$(echo "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
+    value=$(printf '%s' "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
     safe_key=$(echo "$key" | tr './-' '___')
     export "$safe_key"="$value"
-done
+done < <(printf '%s' "$SECRETS_JSON" | jq -r 'keys[]')
 
 log::section "Environment Ready"
 log::info "Available URLs:"

@@ -357,7 +357,7 @@ test.describe("Admin > Extensions", () => {
     });
 
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
-    test.fixme("Verify plugin configuration can be viewed in the production environment", async ({
+    test("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
       const productionEnvAlert = page.getByRole("alert").first();
@@ -396,7 +396,7 @@ test.describe("Admin > Extensions", () => {
       await page.keyboard.press(`${modifier}+KeyA`);
       await page.keyboard.press(`${modifier}+KeyV`);
       await uiHelper.verifyText("pluginConfig:");
-      await page.getByRole("button", { name: /copy/i }).first().click();
+      await page.locator(".copy-button").first().click();
       await expect(
         page.getByRole("button", { name: "✔" }).nth(0),
       ).toBeVisible();
@@ -420,30 +420,22 @@ test.describe("Admin > Extensions", () => {
     test("Enable plugin from catalog extension page", async ({ page }) => {
       // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
       test.fixme();
-      await uiHelper.clickTab(t["plugin.extensions"][lang]["menuItem.catalog"]);
+      await uiHelper.clickByDataTestId("header-tab-0");
       await extensions.clickReadMoreByPluginTitle(
         "Adoption Insights for Red Hat Developer Hub",
-        t["plugin.extensions"][lang]["badges.communityPlugin"],
+        t["plugin.extensions"][lang]["badges.generallyAvailable"],
       );
       await uiHelper.verifyHeading("Adoption Insights for Red Hat");
       await page.getByTestId("plugin-actions").click();
       await expect(page.getByLabel("EditPlugin")).toBeVisible();
       await page.getByTestId("disable-plugin").click();
-      const alertText = await page.getByRole("alert").first().textContent();
-      expect(alertText).toContain(
-        t["plugin.extensions"][lang]["alert.backendRestartRequired"],
-      );
-      expect(alertText).toContain(
-        "The Adoption Insights for Red Hat Developer Hub plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.",
-      );
+      await expect(page.getByTestId("enable-plugin")).toBeVisible();
     });
   });
 
   test.describe("Extensions > Installed Plugin", () => {
     test.beforeEach(async () => {
-      await uiHelper.clickTab(
-        t["plugin.extensions"][lang]["header.installedPackages"],
-      );
+      await uiHelper.clickByDataTestId("header-tab-1");
       await uiHelper.verifyHeading(
         new RegExp(
           `^${t["plugin.extensions"][lang]["header.installedPackages"]} \\(\\d+\\)$`,
@@ -451,8 +443,7 @@ test.describe("Admin > Extensions", () => {
       );
     });
 
-    //TODO: https://issues.redhat.com/browse/RHDHBUGS-2576
-    test.fixme("Installed packages page", async ({ page }, testInfo) => {
+    test("Installed packages page", async ({ page }, testInfo) => {
       await runAccessibilityTests(page, testInfo);
       await uiHelper.verifyTableHeadingAndRows([
         t["plugin.extensions"][lang]["installedPackages.table.columns.name"],
@@ -472,37 +463,25 @@ test.describe("Admin > Extensions", () => {
           exact: true,
         })
         .click();
-      await expect(
-        page.getByRole("cell", { name: "Techdocs" }).first(),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", {
-          name: "backstage-plugin-techdocs-module-addons-contrib",
-        }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", { name: "Frontend plugin module" }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", { name: /(\d+)\.(\d+)\.(\d+)/ }),
-      ).toBeVisible();
-
-      // Verify actions column - in production, buttons are disabled with tooltip
-      const techdocsRow = page
-        .getByRole("row")
-        .filter({ hasText: "Techdocs Module Addons Contrib" });
+      await uiHelper.verifyRowInTableByUniqueText("TechDocs Add-ons Contrib", [
+        /backstage-plugin-techdocs-module-addons-contrib/,
+        /Frontend plugin module/,
+        /(\d+)\.(\d+)\.(\d+)/,
+      ]);
+      const techdocsRow = page.getByRole("row", {
+        name: "backstage-plugin-techdocs-module-addons-contrib",
+      });
 
       await expect(techdocsRow).toBeVisible();
 
       // Wait specifically for the Actions cell (5th cell / last cell) to be rendered
-      const actionsCell = techdocsRow.getByRole("cell").last();
-      await expect(actionsCell).toBeVisible({ timeout: 15000 });
-
-      // Now wait for the tooltip text to appear in the actions cell
-      await expect(actionsCell).toContainText(
-        /Package cannot be managed in the production environment/i,
-        { timeout: 15000 },
+      const actionsCell = techdocsRow.getByLabel(
+        "Package cannot be managed in the production environment",
       );
+      await expect(actionsCell).toHaveCount(3);
+      for (const button of await actionsCell.all()) {
+        await expect(button).toBeVisible();
+      }
       await page
         .getByRole("button", {
           name: new RegExp(
@@ -534,8 +513,6 @@ test.describe("Admin > Extensions", () => {
     });
 
     test("Topology package sidebar for CI", async ({ page }) => {
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2144
-      test.fixme();
       await page
         .getByRole("textbox", {
           name: t["plugin.extensions"][lang][
@@ -556,7 +533,8 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page
           .getByRole("row", { name: "Topology backstage-community" })
-          .getByTestId("EditIcon"),
+          .getByRole("button")
+          .first(),
       ).toBeVisible();
       await expect(
         page
