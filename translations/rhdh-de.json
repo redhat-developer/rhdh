@@ -1,17 +1,17 @@
 {
   "catalog": {
-    "en": {
+    "de": {
       "indexPage.createButtonTitle": "Self-Service"
     }
   },
   "catalog-import": {
-    "en": {
+    "de": {
       "defaultImportPage.headerTitle": "Vorhandenes Git-Repository importieren",
       "importInfoCard.title": "Vorhandenes Git-Repository importieren"
     }
   },
   "core-components": {
-    "en": {
+    "de": {
       "table.filter.placeholder": "Alle Ergebnisse",
       "table.body.emptyDataSourceMessage": "Keine Datensätze zum Anzeigen vorhanden",
       "table.pagination.firstTooltip": "Erste Seite",
@@ -28,7 +28,7 @@
     }
   },
   "rhdh": {
-    "en": {
+    "de": {
       "menuItem.home": "Startseite",
       "menuItem.myGroup_one": "Meine Gruppe",
       "menuItem.myGroup_other": "Meine Gruppen",
@@ -117,17 +117,17 @@
     }
   },
   "scaffolder": {
-    "en": {
+    "de": {
       "templateListPage.contentHeader.registerExistingButtonTitle": "Vorhandenes Git-Repository importieren"
     }
   },
   "search": {
-    "en": {
+    "de": {
       "sidebarSearchModal.title": "Suchen"
     }
   },
   "user-settings": {
-    "en": {
+    "de": {
       "sidebarTitle": "Einstellungen"
     }
   }

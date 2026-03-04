@@ -1,6 +1,6 @@
 {
   "plugin.acr": {
-    "en": {
+    "de": {
       "page.title": "Azure Container Registry-Repository: {{image}}",
       "table.searchPlaceholder": "Filter",
       "table.labelRowsSelect": "Zeilen",
@@ -11,14 +11,14 @@
     }
   },
   "adr": {
-    "en": {
+    "de": {
       "contentHeaderTitle": "Architecture Decision Records",
       "failedToFetch": "ADRs konnten nicht abgerufen werden",
       "notFound": "Keine ADRs gefunden"
     }
   },
   "announcements": {
-    "en": {
+    "de": {
       "announcementForm.title": "Titel",
       "announcementForm.excerpt": "Auszug",
       "announcementForm.active": "Aktiv",
@@ -172,7 +172,7 @@
     }
   },
   "plugin.argocd": {
-    "en": {
+    "de": {
       "appStatus.appHealthStatus.Healthy": "Fehlerfrei",
       "appStatus.appHealthStatus.Suspended": "Ausgesetzt",
       "appStatus.appHealthStatus.Degraded": "Herabgesetzt",
@@ -270,7 +270,7 @@
     }
   },
   "bookmarks": {
-    "en": {
+    "de": {
       "bookmarkViewer.newTab": "In neuer Registerkarte öffnen",
       "bookmarkViewer.navButton.next": "Weiter",
       "bookmarkViewer.navButton.previous": "Zurück",
@@ -283,13 +283,13 @@
     }
   },
   "flux": {
-    "en": {
+    "de": {
       "fluxContentCard.permissionAlert.title": "Berechtigung erforderlich",
       "fluxContentCard.permissionAlert.message": "Für Flux-Inhalte ist eine Autorisierung für Kubernetes-Objekte erforderlich. Wenden Sie sich an den Portaladministrator, um die Berechtigungen 'kubernetes.clusters.read' und 'kubernetes.resources.read' zu erhalten."
     }
   },
   "plugin.jfrog-artifactory": {
-    "en": {
+    "de": {
       "page.title": "JFrog Artifactory-Repository: {{image}}",
       "table.searchPlaceholder": "Filter",
       "table.labelRowsSelect": "Zeilen",
@@ -304,13 +304,13 @@
     }
   },
   "linguist": {
-    "en": {
+    "de": {
       "entityCard.title": "Sprachen",
       "entityCard.noData": "Für dieses Element liegen derzeit keine Sprachdaten vor."
     }
   },
   "plugin.nexus-repository-manager": {
-    "en": {
+    "de": {
       "table.title": "Nexus Repository Manager: {{title}}",
       "table.searchPlaceholder": "Filter",
       "table.labelRowsSelect": "Zeilen",
@@ -327,7 +327,7 @@
     }
   },
   "plugin.npm.translation-ref": {
-    "en": {
+    "de": {
       "infoCard.title": "NPM-Paket {{packageName}}",
       "infoCard.latestVersion": "Neueste Version",
       "infoCard.publishedAt": "Veröffentlicht am",
@@ -356,7 +356,7 @@
     }
   },
   "plugin.rbac": {
-    "en": {
+    "de": {
       "page.title": "RBAC",
       "page.createRole": "Rolle erstellen",
       "page.editRole": "Rolle bearbeiten",
@@ -526,7 +526,7 @@
     }
   },
   "plugin.servicenow": {
-    "en": {
+    "de": {
       "page.title": "ServiceNow-Tickets",
       "page.titleWithCount": "ServiceNow-Tickets ({{count}})",
       "table.searchPlaceholder": "Suchen",
@@ -556,7 +556,7 @@
     }
   },
   "sonarqube": {
-    "en": {
+    "de": {
       "title": "SonarQube-Dashboard",
       "sonarQubeCard.title": "Codequalität",
       "sonarQubeCard.deepLinkTitle": "Mehr anzeigen",
@@ -586,7 +586,7 @@
     }
   },
   "tekton": {
-    "en": {
+    "de": {
       "errorPanel.title": "Problem beim Abrufen von Kubernetes-Objekten",
       "errorPanel.description": "Es gab ein Problem beim Abrufen einiger Kubernetes-Ressourcen für das Element: {{entityName}}. Dies könnte bedeuten, dass die Karte mit den Fehlerberichten nicht ganz korrekt ist.",
       "permissionAlert.title": "Berechtigung erforderlich",
@@ -658,7 +658,7 @@
     }
   },
   "plugin.topology": {
-    "en": {
+    "de": {
       "page.title": "Topologie",
       "page.subtitle": "Visualisierung der Kubernetes-Workload-Topologie",
       "toolbar.cluster": "Cluster",

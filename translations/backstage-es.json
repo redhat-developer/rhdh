@@ -1,6 +1,6 @@
 {
   "api-docs": {
-    "en": {
+    "es": {
       "apiDefinitionCard.error.title": "No se pudo extraer la API",
       "apiDefinitionCard.rawButtonTitle": "Sin procesar",
       "apiDefinitionDialog.closeButtonTitle": "Cerrar",
@@ -33,7 +33,7 @@
     }
   },
   "catalog": {
-    "en": {
+    "es": {
       "aboutCard.createSimilarButtonTitle": "Crear algo similar",
       "aboutCard.descriptionField.label": "Descripción",
       "aboutCard.descriptionField.value": "Sin descripción",
@@ -115,7 +115,7 @@
     }
   },
   "catalog-graph": {
-    "en": {
+    "es": {
       "catalogGraphCard.deepLinkTitle": "Ver gráfico",
       "catalogGraphCard.title": "Relaciones",
       "catalogGraphPage.curveFilter.curveMonotoneX": "Monótona en X",
@@ -140,7 +140,7 @@
     }
   },
   "catalog-import": {
-    "en": {
+    "es": {
       "buttons.back": "Atrás",
       "defaultImportPage.contentHeaderTitle": "Comience a hacer un seguimiento de su componente en {{appTitle}}",
       "defaultImportPage.headerTitle": "Importar un repositorio Git existente",
@@ -210,7 +210,7 @@
     }
   },
   "catalog-react": {
-    "en": {
+    "es": {
       "catalogFilter.buttonTitle": "Filtros",
       "catalogFilter.title": "Filtros",
       "entityKindPicker.errorMessage": "No se pudieron cargar los tipos de entidad",
@@ -301,7 +301,7 @@
     }
   },
   "core-components": {
-    "en": {
+    "es": {
       "alertDisplay.message_one": "({{ count }} mensaje nuevo)",
       "alertDisplay.message_other": "({{ count }} mensajes nuevos)",
       "autoLogout.stillTherePrompt.buttonText": "¡Sí! No cerrar mi sesión",
@@ -360,7 +360,7 @@
     }
   },
   "home": {
-    "en": {
+    "es": {
       "addWidgetDialog.title": "Agregar nuevo asistente al panel",
       "customHomepage.noWidgets": "No se agregaron asistentes. Haga clic en el botón \"Agregar asistente\" para comenzar.",
       "customHomepageButtons.addWidget": "Agregar asistente",
@@ -390,14 +390,14 @@
     }
   },
   "home-react": {
-    "en": {
+    "es": {
       "cardExtension.settingsButtonTitle": "Configuración",
       "settingsModal.closeButtonTitle": "Cerrar",
       "settingsModal.title": "Configuración"
     }
   },
   "kubernetes": {
-    "en": {
+    "es": {
       "entityContent.title": "Kubernetes",
       "kubernetesContentPage.emptyState.description": "No hay recursos en ningún clúster conocido para {{entityName}}",
       "kubernetesContentPage.emptyState.title": "No hay recursos de Kubernetes",
@@ -407,13 +407,13 @@
     }
   },
   "kubernetes-cluster": {
-    "en": {
+    "es": {
       "kubernetesClusterContentPage.permissionAlert.message": "Para ver los objetos de Kubernetes, comuníquese con el administrador de su portal para que le otorgue el permiso 'kubernetes.clusters.read'.",
       "kubernetesClusterContentPage.permissionAlert.title": "Permiso requerido"
     }
   },
   "kubernetes-react": {
-    "en": {
+    "es": {
       "cluster.label": "Clúster",
       "cluster.noPodsWithErrors": "No hay pods con errores",
       "cluster.pods": "pods",
@@ -495,7 +495,7 @@
     }
   },
   "org": {
-    "en": {
+    "es": {
       "groupProfileCard.editIconButtonTitle": "Modificar metadatos",
       "groupProfileCard.groupNotFound": "No se encontró el grupo",
       "groupProfileCard.listItemTitle.childGroups": "Grupos secundarios",
@@ -525,7 +525,7 @@
     }
   },
   "plugin.notifications": {
-    "en": {
+    "es": {
       "filters.createdAfter.anyTime": "Cualquier momento",
       "filters.createdAfter.label": "Enviadas",
       "filters.createdAfter.last24h": "Últimas 24 horas",
@@ -587,7 +587,7 @@
     }
   },
   "scaffolder": {
-    "en": {
+    "es": {
       "aboutCard.launchTemplate": "Plantilla de lanzamiento",
       "actionsPage.action.examples": "Ejemplos",
       "actionsPage.action.input": "Entrada",
@@ -769,7 +769,7 @@
     }
   },
   "scaffolder-react": {
-    "en": {
+    "es": {
       "cardHeader.detailBtnTitle": "Mostrar detalles de la entidad de plantilla",
       "passwordWidget.content": "Este asistente no es seguro. Utilice [`ui:field: Secret`](https://backstage.io/docs/features/software-templates/writing-templates/#using-secrets) en lugar de `ui:widget: password`",
       "scaffolderPageContextMenu.actionsLabel": "Acciones instaladas",
@@ -791,7 +791,7 @@
     }
   },
   "search": {
-    "en": {
+    "es": {
       "searchModal.viewFullResults": "Ver resultados completos",
       "searchType.accordion.allTitle": "Todos",
       "searchType.accordion.collapse": "Contraer",
@@ -802,7 +802,7 @@
     }
   },
   "search-react": {
-    "en": {
+    "es": {
       "noResultsDescription": "Lo sentimos, no se encontraron resultados",
       "searchBar.clearButtonTitle": "Borrar",
       "searchBar.placeholder": "Buscar en {{org}}",
@@ -817,12 +817,12 @@
     }
   },
   "techdocs": {
-    "en": {
+    "es": {
       "aboutCard.viewTechdocs": "Ver TechDocs"
     }
   },
   "user-settings": {
-    "en": {
+    "es": {
       "appearanceCard.title": "Apariencia",
       "authProviders.title": "Proveedores disponibles",
       "defaultProviderSettings.description": "Proporciona autenticación a las API e identidades de {{provider}}",
