@@ -89,7 +89,7 @@ retrieve_pod_logs() {
 
   log::debug "Retrieving logs for container: $container"
 
-  # Retry with exponential backoff for transient kubectl failures
+  # Retry with backoff for transient kubectl failures
   local attempt
   for ((attempt = 1; attempt <= max_retries; attempt++)); do
     if timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "pod_logs/${pod_name}_${container}.log" 2> /dev/null; then
@@ -98,7 +98,7 @@ retrieve_pod_logs() {
     if ((attempt == max_retries)); then
       log::warn "logs for container $container not found or timed out after ${max_retries} attempts"
     else
-      sleep $((backoff ** (attempt - 1)))
+      sleep $((backoff * attempt))
     fi
   done
 
@@ -134,7 +134,11 @@ save_all_pod_logs() {
   rm -rf pod_logs && mkdir -p pod_logs
 
   local pod_names
-  pod_names=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}')
+  if ! pod_names=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}' 2> /dev/null); then
+    log::warn "Failed to list pods in namespace $namespace — skipping pod log collection"
+    set -e
+    return 0
+  fi
 
   # Gather logs from all pods in parallel
   local pids=()

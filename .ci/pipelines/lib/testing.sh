@@ -96,7 +96,7 @@ testing::run_tests() {
 
   rsync -a "${e2e_tests_dir}/screenshots/" "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots/" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  rsync -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  rsync -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}/" || true
   rsync -a "${e2e_tests_dir}/playwright-report/" "${ARTIFACT_DIR}/${artifacts_subdir}/" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
