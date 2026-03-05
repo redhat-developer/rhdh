@@ -873,21 +873,21 @@ spec:
 EOF
 
   echo "Waiting for database creation job to complete..."
-  if ! oc wait --for=condition=complete job/"${job_name}" -n "${namespace}" --timeout=5m 2>/dev/null; then
+  if ! oc wait --for=condition=complete job/"${job_name}" -n "${namespace}" --timeout=5m 2> /dev/null; then
     local failed
-    failed=$(oc get job/"${job_name}" -n "${namespace}" -o jsonpath='{.status.failed}' 2>/dev/null)
+    failed=$(oc get job/"${job_name}" -n "${namespace}" -o jsonpath='{.status.failed}' 2> /dev/null)
     if [[ "${failed}" -gt 0 ]]; then
       echo "ERROR: Database creation job failed after ${failed} attempt(s)"
     else
       echo "ERROR: Database creation job timed out"
     fi
-    oc logs job/"${job_name}" -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+    oc logs job/"${job_name}" -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
     oc delete job "${job_name}" -n "${namespace}" --ignore-not-found=true
     return 1
   fi
 
   echo "Database creation output:"
-  oc logs job/"${job_name}" -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+  oc logs job/"${job_name}" -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
   echo "Manual database creation completed successfully"
 }
 
