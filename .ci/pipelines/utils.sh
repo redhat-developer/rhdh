@@ -913,87 +913,6 @@ EOF
   echo "Manual database creation completed successfully"
 }
 
-# Verify that the sonataflow database exists
-verify_sonataflow_database() {
-  local namespace=$1
-
-  echo "Verifying sonataflow database exists..."
-
-  # Create a verification pod
-  cat << EOF | oc apply -f -
-apiVersion: v1
-kind: Pod
-metadata:
-  name: verify-sonataflow-db
-  namespace: ${namespace}
-spec:
-  restartPolicy: Never
-  containers:
-  - name: psql
-    image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
-    command: ["sh", "-c"]
-    args:
-      - |
-        psql -h \${POSTGRES_HOST} -p \${POSTGRES_PORT} -U \${POSTGRES_USER} -d postgres -c '\l' | grep sonataflow && echo "DATABASE EXISTS" || echo "DATABASE DOES NOT EXIST"
-    env:
-    - name: POSTGRES_HOST
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_HOST
-    - name: POSTGRES_USER
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_USER
-    - name: POSTGRES_PORT
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_PORT
-    - name: PGPASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_PASSWORD
-    - name: PGSSLMODE
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: PGSSLMODE
-EOF
-
-  # Wait for completion (shorter timeout since image should be cached)
-  local timeout=60
-  local elapsed=0
-  local status
-  while [ $elapsed -lt $timeout ]; do
-    status=$(oc get pod verify-sonataflow-db -n "${namespace}" -o jsonpath='{.status.phase}' 2> /dev/null || echo "NotFound")
-    if [[ "$status" == "Succeeded" ]] || [[ "$status" == "Failed" ]]; then
-      break
-    fi
-    sleep 3
-    elapsed=$((elapsed + 3))
-  done
-
-  # Check the result
-  local verification_output
-  verification_output=$(oc logs verify-sonataflow-db -n "${namespace}" 2> /dev/null)
-  echo "$verification_output"
-
-  # Clean up
-  oc delete pod verify-sonataflow-db -n "${namespace}" --ignore-not-found=true
-
-  # Return success if database exists
-  if echo "$verification_output" | grep -q "DATABASE EXISTS"; then
-    echo "✓ Database verification successful"
-    return 0
-  else
-    echo "✗ Database verification failed"
-    return 1
-  fi
-}
-
 base_deployment() {
   configure_namespace ${NAME_SPACE}
 
@@ -1029,12 +948,6 @@ rbac_deployment() {
   # Don't wait for the helm job to complete - it will fail due to missing SSL configuration
   # Instead, manually create the database with proper SSL support
   create_sonataflow_database_with_ssl "${NAME_SPACE_RBAC}"
-
-  # Verify the database was created successfully
-  if ! verify_sonataflow_database "${NAME_SPACE_RBAC}"; then
-    echo "ERROR: Failed to verify sonataflow database creation. Workflows may fail to start."
-    echo "Attempting to continue anyway..."
-  fi
 
   # Patch the sonataflow platform to configure SSL for the jobs service
   echo "Patching SonataFlowPlatform with SSL configuration..."
