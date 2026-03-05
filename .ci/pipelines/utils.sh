@@ -822,12 +822,13 @@ create_sonataflow_database_with_ssl() {
   echo "Manually creating sonataflow database with SSL support..."
 
   # Create a temporary pod to run psql with SSL
-  cat << EOF | oc apply -f -
+  # Use quoted heredoc to avoid accidental shell expansion of k8s env var references
+  NAMESPACE="${namespace}" envsubst '$NAMESPACE' << 'EOF' | oc apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
   name: create-sonataflow-db-manual
-  namespace: ${namespace}
+  namespace: ${NAMESPACE}
 spec:
   restartPolicy: Never
   containers:
@@ -838,7 +839,7 @@ spec:
     command: ["sh", "-c"]
     args:
       - |
-        psql -h \${POSTGRES_HOST} -p \${POSTGRES_PORT} -U \${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
+        psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
     env:
     - name: POSTGRES_HOST
       valueFrom:
