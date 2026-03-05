@@ -37,9 +37,13 @@ _aws::mask_value() {
 # Args: param_name, param_value [, usage_hint]
 # Returns 1 with log::error if empty.
 _aws::require_param() {
-  if [[ -z "$2" ]]; then
-    log::error "Missing required parameter: $1"
-    [[ -n "${3:-}" ]] && log::info "Usage: $3"
+  local param_name="$1"
+  local param_value="$2"
+  local usage_hint="${3:-}"
+
+  if [[ -z "${param_value}" ]]; then
+    log::error "Missing required parameter: ${param_name}"
+    [[ -n "${usage_hint}" ]] && log::info "Usage: ${usage_hint}"
     return 1
   fi
 }
