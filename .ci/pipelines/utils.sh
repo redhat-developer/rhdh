@@ -83,14 +83,49 @@ retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
   local namespace=$3
-  local log_timeout=${4:-5} # Default timeout: 5 seconds (reduced from 30s to speed up failure cases)
+  local log_timeout=${4:-5}
+  local max_retries=${5:-3}
+  local backoff=${6:-2}
+
   log::debug "Retrieving logs for container: $container"
-  # Save logs for the current and previous container with timeout to prevent hanging
-  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "pod_logs/${pod_name}_${container}.log" 2> /dev/null || { log::warn "logs for container $container not found or timed out"; }
+
+  # Retry with exponential backoff for transient kubectl failures
+  local attempt
+  for ((attempt = 1; attempt <= max_retries; attempt++)); do
+    if timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "pod_logs/${pod_name}_${container}.log" 2> /dev/null; then
+      break
+    fi
+    if ((attempt == max_retries)); then
+      log::warn "logs for container $container not found or timed out after ${max_retries} attempts"
+    else
+      sleep $((backoff ** (attempt - 1)))
+    fi
+  done
+
   timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
     log::debug "Previous logs for container $container not found or timed out"
     rm -f "pod_logs/${pod_name}_${container}-previous.log"
   }
+}
+
+# Gather logs for a single pod (all init + regular containers).
+# Designed to run as a background job for parallel collection.
+_retrieve_all_logs_for_pod() {
+  local pod_name=$1
+  local namespace=$2
+  log::debug "Retrieving logs for pod: $pod_name in namespace $namespace"
+
+  local init_containers
+  init_containers=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.spec.initContainers[*].name}' 2> /dev/null)
+  for init_container in $init_containers; do
+    retrieve_pod_logs "$pod_name" "$init_container" "$namespace"
+  done
+
+  local containers
+  containers=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.spec.containers[*].name}' 2> /dev/null)
+  for container in $containers; do
+    retrieve_pod_logs "$pod_name" "$container" "$namespace"
+  done
 }
 
 save_all_pod_logs() {
@@ -98,25 +133,23 @@ save_all_pod_logs() {
   local namespace=$1
   rm -rf pod_logs && mkdir -p pod_logs
 
-  # Get all pod names in the namespace
-  pod_names=$(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}')
+  local pod_names
+  pod_names=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}')
+
+  # Gather logs from all pods in parallel
+  local pids=()
   for pod_name in $pod_names; do
-    log::debug "Retrieving logs for pod: $pod_name in namespace $namespace"
+    _retrieve_all_logs_for_pod "$pod_name" "$namespace" &
+    pids+=($!)
+  done
 
-    init_containers=$(kubectl get pod $pod_name -n $namespace -o jsonpath='{.spec.initContainers[*].name}')
-    # Loop through each init container and retrieve logs
-    for init_container in $init_containers; do
-      retrieve_pod_logs $pod_name $init_container $namespace
-    done
-
-    containers=$(kubectl get pod $pod_name -n $namespace -o jsonpath='{.spec.containers[*].name}')
-    for container in $containers; do
-      retrieve_pod_logs $pod_name $container $namespace
-    done
+  # Wait for all background log-gathering jobs
+  for pid in "${pids[@]}"; do
+    wait "$pid" 2> /dev/null || true
   done
 
   mkdir -p "${ARTIFACT_DIR}/${namespace}/pod_logs"
-  cp -a pod_logs/* "${ARTIFACT_DIR}/${namespace}/pod_logs" || true
+  rsync -a pod_logs/ "${ARTIFACT_DIR}/${namespace}/pod_logs/" || true
   set -e
 }
 
@@ -495,7 +528,7 @@ base_deployment() {
     disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
 
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
-    cp -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
+    rsync -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
     # shellcheck disable=SC2046
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -536,7 +569,7 @@ rbac_deployment() {
     disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
 
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
-    cp -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
+    rsync -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
     # shellcheck disable=SC2046
     helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -588,7 +621,7 @@ base_deployment_osd_gcp() {
   # Merge base values with OSD-GCP diff file
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
-  cp -a "/tmp/merged-values_showcase_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
+  rsync -a "/tmp/merged-values_showcase_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
 
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
@@ -615,7 +648,7 @@ rbac_deployment_osd_gcp() {
   # Merge RBAC values with OSD-GCP diff file
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
-  cp -a "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" # Save the final value-file into the artifacts directory.
+  rsync -a "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" # Save the final value-file into the artifacts directory.
 
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
 
@@ -720,7 +753,7 @@ initiate_sanity_plugin_checks_deployment() {
   apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
   helm::merge_values "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
-  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  rsync -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
   # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \

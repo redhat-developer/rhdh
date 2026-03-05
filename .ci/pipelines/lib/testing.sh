@@ -88,16 +88,16 @@ testing::run_tests() {
   # Use artifacts_subdir for artifact directory to keep artifacts organized
   mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/test-results"
   mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${artifacts_subdir}/test-results" || true
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" || true
+  rsync -a "${e2e_tests_dir}/test-results/" "${ARTIFACT_DIR}/${artifacts_subdir}/test-results/" || true
+  rsync -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" || true
   if [[ "${CI}" == "true" ]]; then
-    cp "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
+    rsync "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
   fi
 
-  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots/" || true
+  rsync -a "${e2e_tests_dir}/screenshots/" "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots/" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  rsync -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  rsync -a "${e2e_tests_dir}/playwright-report/" "${ARTIFACT_DIR}/${artifacts_subdir}/" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   if [[ "${test_result}" -ne 0 ]]; then
@@ -186,7 +186,7 @@ testing::check_backstage_running() {
         log::error "Recent events:"
         oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
         mkdir -p "${ARTIFACT_DIR}/${namespace}"
-        cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+        rsync -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
         return 1
       fi
 
@@ -197,7 +197,7 @@ testing::check_backstage_running() {
   log::error "Failed to reach Backstage at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+  rsync -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
   return 1
 }
 

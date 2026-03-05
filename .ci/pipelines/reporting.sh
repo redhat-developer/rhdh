@@ -18,7 +18,7 @@ save_status_deployment_namespace() {
   log::debug "Saving STATUS_DEPLOYMENT_NAMESPACE[\"${current_deployment}\"]=${current_namespace}"
   STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]="${current_namespace}"
   printf "%s\n" "${STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt"
-  cp "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt" "$ARTIFACT_DIR/reporting/STATUS_DEPLOYMENT_NAMESPACE.txt"
+  rsync "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt" "$ARTIFACT_DIR/reporting/STATUS_DEPLOYMENT_NAMESPACE.txt"
 }
 
 save_status_failed_to_deploy() {
@@ -27,7 +27,7 @@ save_status_failed_to_deploy() {
   log::debug "Saving STATUS_FAILED_TO_DEPLOY[\"${current_deployment}\"]=${status}"
   STATUS_FAILED_TO_DEPLOY["${current_deployment}"]="${status}"
   printf "%s\n" "${STATUS_FAILED_TO_DEPLOY["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt"
-  cp "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt" "$ARTIFACT_DIR/reporting/STATUS_FAILED_TO_DEPLOY.txt"
+  rsync "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt" "$ARTIFACT_DIR/reporting/STATUS_FAILED_TO_DEPLOY.txt"
 }
 
 save_status_test_failed() {
@@ -36,7 +36,7 @@ save_status_test_failed() {
   log::debug "Saving STATUS_TEST_FAILED[\"${current_deployment}\"]=${status}"
   STATUS_TEST_FAILED["${current_deployment}"]="${status}"
   printf "%s\n" "${STATUS_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_TEST_FAILED.txt"
-  cp "$SHARED_DIR/STATUS_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_TEST_FAILED.txt"
+  rsync "$SHARED_DIR/STATUS_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_TEST_FAILED.txt"
 }
 
 save_status_number_of_test_failed() {
@@ -45,7 +45,7 @@ save_status_number_of_test_failed() {
   log::debug "Saving STATUS_NUMBER_OF_TEST_FAILED[\"${current_deployment}\"]=${number}"
   STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]="${number}"
   printf "%s\n" "${STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt"
-  cp "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
+  rsync "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
 }
 
 save_overall_result() {
@@ -53,14 +53,14 @@ save_overall_result() {
   OVERALL_RESULT=${result}
   log::info "Saving OVERALL_RESULT=${OVERALL_RESULT}"
   printf "%s" "${OVERALL_RESULT}" > "$SHARED_DIR/OVERALL_RESULT.txt"
-  cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
+  rsync "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
 }
 
 save_is_openshift() {
   local is_openshift=$1
   log::debug "Saving IS_OPENSHIFT=${is_openshift}"
   printf "%s" "${is_openshift}" > "$SHARED_DIR/IS_OPENSHIFT.txt"
-  cp "$SHARED_DIR/IS_OPENSHIFT.txt" "$ARTIFACT_DIR/reporting/IS_OPENSHIFT.txt"
+  rsync "$SHARED_DIR/IS_OPENSHIFT.txt" "$ARTIFACT_DIR/reporting/IS_OPENSHIFT.txt"
 }
 
 save_container_platform() {
@@ -70,6 +70,6 @@ save_container_platform() {
   log::debug "Saving CONTAINER_PLATFORM_VERSION=${container_platform_version}"
   printf "%s" "${container_platform}" > "$SHARED_DIR/CONTAINER_PLATFORM.txt"
   printf "%s" "${container_platform_version}" > "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt"
-  cp "$SHARED_DIR/CONTAINER_PLATFORM.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM.txt"
-  cp "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM_VERSION.txt"
+  rsync "$SHARED_DIR/CONTAINER_PLATFORM.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM.txt"
+  rsync "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM_VERSION.txt"
 }

@@ -170,5 +170,5 @@ common::save_artifact() {
   fi
 
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  cp -a "$file" "${ARTIFACT_DIR}/${namespace}/"
+  rsync -a "$file" "${ARTIFACT_DIR}/${namespace}/"
 }
