@@ -814,109 +814,80 @@ perform_helm_install() {
     "$@"
 }
 
-# Helper function to manually create sonataflow database with SSL support
-# This is a workaround for the helm chart's create-db job not including PGSSLMODE env var
+# Manually create sonataflow database with SSL support via a k8s Job.
+# Workaround: the helm chart's create-db job doesn't include PGSSLMODE env var.
 create_sonataflow_database_with_ssl() {
   local namespace=$1
+  local job_name="create-sonataflow-db-manual"
 
   echo "Manually creating sonataflow database with SSL support..."
 
-  # Clean up any leftover pod from a previous interrupted run
-  oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
+  oc delete job "${job_name}" -n "${namespace}" --ignore-not-found=true
 
-  # Create a temporary pod to run psql with SSL
-  # Use quoted heredoc to avoid accidental shell expansion of k8s env var references
+  # Quoted heredoc prevents shell expansion; envsubst selectively expands NAMESPACE only
   NAMESPACE="${namespace}" envsubst '$NAMESPACE' << 'EOF' | oc apply -f -
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: create-sonataflow-db-manual
   namespace: ${NAMESPACE}
 spec:
-  restartPolicy: Never
-  containers:
-  - name: psql
-    image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
-    # Note: We intentionally do not set readOnlyRootFilesystem here because
-    # psql requires write access to /tmp for temporary files during SSL connections
-    command: ["sh", "-c"]
-    args:
-      - |
-        psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
-    env:
-    - name: POSTGRES_HOST
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_HOST
-    - name: POSTGRES_USER
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_USER
-    - name: POSTGRES_PORT
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_PORT
-    - name: PGPASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: POSTGRES_PASSWORD
-    - name: PGSSLMODE
-      valueFrom:
-        secretKeyRef:
-          name: postgres-cred
-          key: PGSSLMODE
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: psql
+        image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
+        command: ["sh", "-c"]
+        args:
+          - |
+            psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
+        env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_HOST
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_USER
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_PORT
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_PASSWORD
+        - name: PGSSLMODE
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: PGSSLMODE
 EOF
 
-  # Wait for the pod to start and complete
-  echo "Waiting for manual database creation pod to complete..."
-
-  # Wait up to 5 minutes for completion (accounts for image pull delays, rate limiting, etc.)
-  local timeout=300
-  local elapsed=0
-  local last_status=""
-  local status
-
-  while [ $elapsed -lt $timeout ]; do
-    status=$(oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.phase}' 2> /dev/null || echo "NotFound")
-
-    # Print status changes
-    if [[ "$status" != "$last_status" ]]; then
-      echo "Pod status: $status (elapsed: ${elapsed}s)"
-      last_status="$status"
+  echo "Waiting for database creation job to complete..."
+  if ! oc wait --for=condition=complete job/"${job_name}" -n "${namespace}" --timeout=5m 2>/dev/null; then
+    local failed
+    failed=$(oc get job/"${job_name}" -n "${namespace}" -o jsonpath='{.status.failed}' 2>/dev/null)
+    if [[ "${failed}" -gt 0 ]]; then
+      echo "ERROR: Database creation job failed after ${failed} attempt(s)"
+    else
+      echo "ERROR: Database creation job timed out"
     fi
-
-    if [[ "$status" == "Succeeded" ]]; then
-      echo "Database creation pod completed successfully"
-      break
-    elif [[ "$status" == "Failed" ]]; then
-      echo "ERROR: Database creation pod failed"
-      oc logs create-sonataflow-db-manual -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
-      oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
-      return 1
-    fi
-
-    sleep 5
-    elapsed=$((elapsed + 5))
-  done
-
-  if [ $elapsed -ge $timeout ]; then
-    echo "ERROR: Timeout waiting for database creation pod (${timeout}s elapsed)"
-    oc logs create-sonataflow-db-manual -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
-    oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
+    oc logs job/"${job_name}" -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+    oc delete job "${job_name}" -n "${namespace}" --ignore-not-found=true
     return 1
   fi
 
-  # Check logs for successful completion
   echo "Database creation output:"
-  oc logs create-sonataflow-db-manual -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
-
-  # Clean up the pod
-  oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
-
+  oc logs job/"${job_name}" -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
   echo "Manual database creation completed successfully"
 }
 
