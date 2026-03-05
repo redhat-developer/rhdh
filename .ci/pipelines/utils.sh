@@ -946,7 +946,7 @@ rbac_deployment() {
   # We wait for the job to be created (indicating helm install is progressing), then manually create the database with SSL.
   local max_attempts=60
   local attempt=0
-  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
+  until oc get job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" &> /dev/null; do
     attempt=$((attempt + 1))
     if [[ $attempt -ge $max_attempts ]]; then
       echo "ERROR: Timed out after $((max_attempts * 5))s waiting for ${RELEASE_NAME_RBAC}-create-sonataflow-database job to be created."
