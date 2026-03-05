@@ -69,7 +69,7 @@ For each enabled plugin, the script creates a SHA-256 hash of the plugin configu
 
 | Type | Prefix/Format | Installer Class | Tool Used |
 |------|---------------|-----------------|-----------|
-| OCI images | `oci://registry/image:tag!path` | `OciPluginInstaller` | `skopeo copy` then extract layer tarball |
+| OCI images | `oci://registry/image:tag!path` | `OciPluginInstaller` | `skopeo copy` then extract layer tarball. Images built by `rhdh-cli plugin package` as `FROM scratch` containers containing `dist-dynamic/` (backend) or `dist-scalprum/` (frontend) |
 | NPM packages | `@scope/pkg@version` | `NpmPluginInstaller` | `npm pack` then extract `.tgz` |
 | Local packages | `./path/to/plugin` | `NpmPluginInstaller` | `npm pack` from local path |
 
@@ -90,7 +90,7 @@ The `OciDownloader` class handles OCI image downloads:
 
 #### Registry Fallback
 
-For images from `registry.access.redhat.com/rhdh/`, if the image doesn't exist there, the script falls back to `quay.io/rhdh/`. This is checked via `skopeo inspect`.
+Plugin OCI images are published to multiple registries by `rhdh-plugin-catalog`: `quay.io/rhdh/` (community/upstream) and `registry.redhat.io/rhdh/` (Red Hat product). For images from `registry.access.redhat.com/rhdh/`, if the image doesn't exist there, the script falls back to `quay.io/rhdh/`. This is checked via `skopeo inspect`.
 
 ### Step 5: Config Output
 
@@ -154,7 +154,7 @@ In the operator (`rhdh-operator/pkg/model/deployment.go:115-120`), the `RELATED_
 ```mermaid
 flowchart LR
     subgraph rhdh["rhdh — main repo"]
-        r1["install-dynamic-plugins.py — core script<br>install-dynamic-plugins.sh — shell wrapper"]
+        r1["install-dynamic-plugins.py — core script<br>install-dynamic-plugins.sh — shell wrapper<br>default.packages.yaml — master plugin manifest"]
     end
     subgraph operator["rhdh-operator"]
         o1["deployment.go — Sets CATALOG_INDEX_IMAGE<br>dynamic-plugins.go — Mounts ConfigMap<br>deployment.yaml — Default init container spec"]
@@ -163,19 +163,32 @@ flowchart LR
         c1["values.yaml — global.catalogIndex.image"]
     end
     subgraph local["rhdh-local"]
-        l1["compose.yaml — Two-container arch<br>prepare-and-install-dynamic-plugins.sh"]
+        l1["compose.yaml — Two-container arch<br>4 plugin sources: local, OCI, tarball, pre-bundled"]
     end
     subgraph cli["rhdh-cli"]
-        cl1["export-dynamic-plugin/ — OCI annotations<br>package-dynamic-plugins/ — FROM scratch images"]
+        cl1["export-dynamic-plugin/ — dist-dynamic + dist-scalprum<br>package-dynamic-plugins/ — FROM scratch OCI images"]
     end
     subgraph overlays["rhdh-plugin-export-overlays"]
-        ov1["plugins-list.yaml → ghcr.io via oci://"]
+        ov1["plugins-list.yaml, metadata/, patches/<br>→ ghcr.io via oci://"]
+    end
+    subgraph catalog["rhdh-plugin-catalog"]
+        cat1["Midstream: sync-midstream.sh, .tekton/<br>generateCatalogIndex.py → quay.io/rhdh/"]
+    end
+    subgraph plugins["rhdh-plugins"]
+        pl1["extensions-cli — generate Package entities<br>extensions frontend/backend — Extensions UI"]
+    end
+    subgraph utils["rhdh-plugin-export-utils"]
+        ut1["Reusable Actions: override-sources,<br>export-dynamic, validate-metadata"]
     end
     operator -->|configures| rhdh
     chart -->|configures| rhdh
     local -->|runs| rhdh
-    cli -->|packages| overlays
-    overlays -->|consumed by| rhdh
+    cli -->|exports plugins| overlays
+    utils -->|CI actions| overlays
+    overlays -->|synced to| catalog
+    catalog -->|publishes catalog index| rhdh
+    plugins -->|generates entities| overlays
+    overlays -->|OCI plugins consumed by| rhdh
 ```
 
 ## Key Files Reference
@@ -192,3 +205,12 @@ flowchart LR
 | `charts/backstage/values.yaml` | rhdh-chart | Helm values including `global.catalogIndex.image` |
 | `compose.yaml` | rhdh-local | Docker Compose two-container setup |
 | `prepare-and-install-dynamic-plugins.sh` | rhdh-local | Entrypoint wrapper for the init container in Compose |
+| `src/commands/export-dynamic-plugin/` | rhdh-cli | Exports plugins to `dist-dynamic/` (backend) or `dist-scalprum/` (frontend) |
+| `src/commands/package-dynamic-plugins/` | rhdh-cli | Packages exported plugins as `FROM scratch` OCI images |
+| `build/scripts/generateCatalogIndex.py` | rhdh-plugin-catalog | Generates catalog index from synced overlay content |
+| `build/ci/sync-midstream.sh` | rhdh-plugin-catalog | Syncs overlay content for midstream builds |
+| `.tekton/*.yaml` | rhdh-plugin-catalog | 114+ Konflux PipelineRun definitions for plugin builds |
+| `workspaces/extensions/packages/cli/` | rhdh-plugins | Extensions CLI (`generate` command for Package entities) |
+| `.github/workflows/export-dynamic.yaml` | rhdh-plugin-export-utils | Reusable per-workspace export workflow |
+| `workspaces/*/source.json` | rhdh-plugin-export-overlays | Upstream repo + commit pin per workspace |
+| `workspaces/*/plugins-list.yaml` | rhdh-plugin-export-overlays | Plugins to export per workspace |
