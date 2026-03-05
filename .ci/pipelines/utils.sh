@@ -940,8 +940,17 @@ rbac_deployment() {
 
   # NOTE: The helm chart's create-sonataflow-database job will fail because it doesn't include PGSSLMODE env var.
   # We wait for the job to be created (indicating helm install is progressing), then manually create the database with SSL.
+  local max_attempts=60
+  local attempt=0
   until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
-    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
+    attempt=$((attempt + 1))
+    if [[ $attempt -ge $max_attempts ]]; then
+      echo "ERROR: Timed out after $((max_attempts * 5))s waiting for ${RELEASE_NAME_RBAC}-create-sonataflow-database job to be created."
+      echo "Helm install may have failed. Current jobs in namespace:"
+      oc get jobs -n "${NAME_SPACE_RBAC}" 2>/dev/null || echo "  (unable to list jobs)"
+      return 1
+    fi
+    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds... (attempt ${attempt}/${max_attempts})"
     sleep 5
   done
 
