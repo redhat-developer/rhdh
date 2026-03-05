@@ -802,13 +802,15 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
+  shift 3
 
   # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(get_image_helm_set_params) \
+    "$@"
 }
 
 # Helper function to manually create sonataflow database with SSL support
@@ -936,7 +938,8 @@ rbac_deployment() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+  perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
+    --set "orchestrator.sonataflowPlatform.externalDBHost=postgress-external-db-primary.${NAME_SPACE_POSTGRES_DB}.svc.cluster.local"
 
   # NOTE: The helm chart's create-sonataflow-database job will fail because it doesn't include PGSSLMODE env var.
   # We wait for the job to be created (indicating helm install is progressing), then manually create the database with SSL.
