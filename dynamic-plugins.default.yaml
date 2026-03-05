@@ -1353,6 +1353,13 @@ plugins:
                   if:
                     anyOf:
                       - isQuayAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-servicenow:bs_1.45.3__2.11.0
+    disabled: true
+    pluginConfig:
+      servicenow:
+        baseUrl: ${SERVICENOW_BASE_URL}
+        username: ${SERVICENOW_USERNAME}
+        password: ${SERVICENOW_PASSWORD}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-sonarqube:bs_1.45.3__2.11.0
     disabled: true
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:bs_1.45.3__0.15.0
@@ -1720,14 +1727,6 @@ plugins:
                 token: ${ARGOCD_AUTH_TOKEN2}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.45.3__4.1.1
     disabled: true
-  # Tag: 1.9.0--2.11.0, Build date: 2026-01-29T16:28:59Z
-  - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-servicenow@sha256:3ff2122f96463ec0a9c4cfee71e4be0333b8cd82e086c9433c8c9c3a45ac3eb5
-    disabled: true
-    pluginConfig:
-      servicenow:
-        baseUrl: ${SERVICENOW_BASE_URL}
-        username: ${SERVICENOW_USERNAME}
-        password: ${SERVICENOW_PASSWORD}
   # Tag: 1.9.0--1.0.1, Build date: 2026-02-17T19:47:10Z
   - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki@sha256:4690f183eff37c90ffc893d385cbd04757c922a533035a7ae99674b633b41274
     disabled: true
