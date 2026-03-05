@@ -821,6 +821,9 @@ create_sonataflow_database_with_ssl() {
 
   echo "Manually creating sonataflow database with SSL support..."
 
+  # Clean up any leftover pod from a previous interrupted run
+  oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
+
   # Create a temporary pod to run psql with SSL
   # Use quoted heredoc to avoid accidental shell expansion of k8s env var references
   NAMESPACE="${namespace}" envsubst '$NAMESPACE' << 'EOF' | oc apply -f -
