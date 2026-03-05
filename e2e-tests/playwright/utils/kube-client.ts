@@ -942,35 +942,8 @@ export class KubeClient {
             }
           } catch (logError) {
             const errorMsg = getKubeApiErrorMessage(logError);
-            // Try to get previous container logs if current container failed
-            if (errorMsg.includes("not found") || errorMsg.includes("not running")) {
-              try {
-                console.log(`\n=== Pod ${podName} - Container ${cn} Previous Logs (from crashed container, last 100 lines) ===`);
-                const prevLogs = await this.coreV1Api.readNamespacedPodLog(
-                  podName,
-                  namespace,
-                  cn,
-                  false,
-                  undefined,
-                  undefined,
-                  true, // previous - get logs from previous crashed container
-                  undefined,
-                  100,
-                );
-                if (prevLogs.body) {
-                  const logLines = prevLogs.body.split("\n");
-                  logLines.forEach((line) => {
-                    if (line.trim()) console.log(line);
-                  });
-                } else {
-                  console.log("(No previous logs available)");
-                }
-              } catch (prevLogError) {
-                console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
-              }
-            } else {
-              console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
-            }
+            // Log error but don't try to get previous container logs (API doesn't support it easily)
+            console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
           }
         }
       }
@@ -1087,13 +1060,12 @@ export class KubeClient {
               podName,
               namespace,
               undefined, // container name
-              undefined, // follow
+              false, // follow
               undefined, // limitBytes
               undefined, // pretty
               undefined, // previous
               undefined, // sinceSeconds
-              undefined, // tailLines
-              undefined, // timestamps
+              50, // tailLines
             );
             if (logs.body) {
               const logLines = logs.body.split("\n").slice(-20); // Last 20 lines

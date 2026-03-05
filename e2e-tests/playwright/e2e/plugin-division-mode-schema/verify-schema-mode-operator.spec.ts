@@ -10,10 +10,9 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME || "";
   // Operator deployment naming: backstage-${RELEASE_NAME}
-  let deploymentName = process.env.RELEASE_NAME + "-developer-hub";
-  if (job.includes("operator")) {
-    deploymentName = "backstage-" + process.env.RELEASE_NAME;
-  }
+  const releaseName = process.env.RELEASE_NAME || "developer-hub";
+  // Always use Operator naming convention for this test file
+  const deploymentName = `backstage-${releaseName}`;
 
   const dbHost = process.env.SCHEMA_MODE_DB_HOST;
   const dbAdminUser = process.env.SCHEMA_MODE_DB_ADMIN_USER || "postgres";
