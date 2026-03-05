@@ -962,6 +962,9 @@ rbac_deployment() {
   # Instead, manually create the database with proper SSL support
   create_sonataflow_database_with_ssl "${NAME_SPACE_RBAC}"
 
+  # Clean up the failed helm chart job so it doesn't pollute monitoring/alerts
+  oc delete job "${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --ignore-not-found=true
+
   # Patch the sonataflow platform to configure SSL for the jobs service
   echo "Patching SonataFlowPlatform with SSL configuration..."
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
