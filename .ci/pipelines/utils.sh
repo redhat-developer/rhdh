@@ -969,7 +969,10 @@ rbac_deployment() {
 
   # Wait for jobs-service to be ready before deploying workflows
   echo "Waiting for jobs-service to be ready..."
-  oc rollout status deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}" --timeout=3m || echo "WARNING: jobs-service rollout did not complete in time"
+  if ! oc rollout status deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}" --timeout=3m; then
+    echo "ERROR: jobs-service rollout did not complete in time. Cannot deploy workflows without it."
+    return 1
+  fi
 
   # initiate orchestrator workflows deployment
   deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
