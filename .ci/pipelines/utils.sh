@@ -798,6 +798,7 @@ get_image_helm_set_params() {
 }
 
 # Helper function to perform helm install/upgrade
+# Additional args ($4+) are passed through to helm upgrade
 perform_helm_install() {
   local release_name=$1
   local namespace=$2
