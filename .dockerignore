@@ -11,7 +11,7 @@ plugins
 coverage
 dist-types
 examples
-.ibm/images/*
-!.ibm/images/Dockerfile
+.ci/images/*
+!.ci/images/Dockerfile
 !.yarnrc.yml
 hermeto-cache
