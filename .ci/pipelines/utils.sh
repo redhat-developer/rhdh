@@ -126,6 +126,7 @@ _retrieve_all_logs_for_pod() {
   for container in $containers; do
     retrieve_pod_logs "$pod_name" "$container" "$namespace"
   done
+  return 0
 }
 
 save_all_pod_logs() {
