@@ -835,7 +835,6 @@ spec:
     command: ["sh", "-c"]
     args:
       - |
-        export PGSSLMODE=require
         psql -h \${POSTGRES_HOST} -p \${POSTGRES_PORT} -U \${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
     env:
     - name: POSTGRES_HOST
@@ -935,7 +934,6 @@ spec:
     command: ["sh", "-c"]
     args:
       - |
-        export PGSSLMODE=require
         psql -h \${POSTGRES_HOST} -p \${POSTGRES_PORT} -U \${POSTGRES_USER} -d postgres -c '\l' | grep sonataflow && echo "DATABASE EXISTS" || echo "DATABASE DOES NOT EXIST"
     env:
     - name: POSTGRES_HOST
@@ -1041,9 +1039,7 @@ rbac_deployment() {
   # Patch the sonataflow platform to configure SSL for the jobs service
   echo "Patching SonataFlowPlatform with SSL configuration..."
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
-
-  echo "Restarting jobs-service deployment..."
+    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_POSTGRESQL_SSL_MODE","value":"allow"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # Wait for jobs-service to be ready before deploying workflows
