@@ -70,17 +70,23 @@ export async function configurePostgresCredentials(
     port?: string;
     user: string;
     password: string;
+    database?: string;
     sslMode?: string;
   },
 ): Promise<void> {
+  const sslMode = credentials.sslMode || "require";
   const data: Record<string, string> = {
     POSTGRES_HOST: Buffer.from(credentials.host).toString("base64"),
     POSTGRES_PORT: Buffer.from(credentials.port || "5432").toString("base64"),
-    PGSSLMODE: Buffer.from(credentials.sslMode || "require").toString("base64"),
-    NODE_EXTRA_CA_CERTS: Buffer.from(
-      "/opt/app-root/src/postgres-crt.pem",
-    ).toString("base64"),
+    PGSSLMODE: Buffer.from(sslMode).toString("base64"),
   };
+
+  // Only set certificate path if SSL is enabled
+  if (sslMode !== "disable") {
+    data.NODE_EXTRA_CA_CERTS = Buffer.from(
+      "/opt/app-root/src/postgres-crt.pem",
+    ).toString("base64");
+  }
 
   if (credentials.user) {
     data.POSTGRES_USER = Buffer.from(credentials.user).toString("base64");
@@ -89,6 +95,9 @@ export async function configurePostgresCredentials(
     data.POSTGRES_PASSWORD = Buffer.from(credentials.password).toString(
       "base64",
     );
+  }
+  if (credentials.database) {
+    data.POSTGRES_DB = Buffer.from(credentials.database).toString("base64");
   }
 
   const secret = {
