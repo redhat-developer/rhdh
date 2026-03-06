@@ -42,8 +42,8 @@ plugins:
   # disabled: true
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
     disabled: false
-  # - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs@sha256:44060db142001d1a6cbfcb7eb90daa0a7c07c492cc2693c0c9a5d8645fbe64f4
-  # Tag: 1.10.0--1.16.0, Build date: 2026-01-29T15:44:15Z
+  # - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs@sha256:f568c8bd08fcc0826e983a162af8bc21b75dabdea93eee7a5ed00c7539528b63
+  # Tag: 1.10.0--1.16.0, Build date: 2026-02-26T01:44:01Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -174,8 +174,8 @@ plugins:
           red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
             analyticsApiExtensions:
               - importName: AdoptionInsightsAnalyticsApi
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions@sha256:66c212aa13ef5eaf47cadb1662a0917a8eb5633fca9923b69ed324767d4007f3
-  # Tag: 1.10.0--0.14.3, Build date: 2026-01-30T20:21:29Z
+  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions@sha256:18043363187a8d4787c88f01ec48d53a7e36d7ab2eb2be460e13bad3b286c3a9
+  # Tag: 1.10.0--0.14.3, Build date: 2026-02-24T15:58:27Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -344,8 +344,8 @@ plugins:
             translationResources:
               - importName: homepageTranslations
                 ref: homepageTranslationRef
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions@sha256:71d6cfd7f31ebf4ae9ce589df94f549b69dcfbf2a3ab65837558503e84575d61
-  # Tag: 1.10.0--0.14.3, Build date: 2026-01-30T20:21:56Z
+  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions@sha256:845c2e233e9c7957f55af7b38d6505fee5dc6019c70a8c71968a21f981b1014d
+  # Tag: 1.10.0--0.14.3, Build date: 2026-02-24T15:58:47Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -372,8 +372,8 @@ plugins:
             menuItems:
               extensions:
                 parent: default.admin
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions-backend@sha256:156e6b981d5c886146571c8bd55a05eabcd8819f1c40c1675dae65165f16d8fa
-  # Tag: 1.10.0--0.14.3, Build date: 2026-01-30T20:23:47Z
+  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions-backend@sha256:600f57997158c72491fb4428951a806a5489681a0b0c848d43ac26c35d9866cb
+  # Tag: 1.10.0--0.14.3, Build date: 2026-02-24T15:58:33Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -631,8 +631,8 @@ plugins:
                   priority: 100
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0
     disabled: false
-  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-acr@sha256:0e696523e14e975ba81765bba6b053b7baf8b840e1e302006071c866f9a1131b
-  # Tag: 1.10.0--1.20.2, Build date: 2026-02-02T22:19:00Z
+  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-acr@sha256:83550562456b487bf876b94e37ea39fc6bb7199cd0df27481de564ed86a2e36a
+  # Tag: 1.10.0--1.20.2, Build date: 2026-03-04T16:01:55Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -786,8 +786,8 @@ plugins:
               rbac:
                 parent: default.admin
                 icon: rbacIcon
-  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-kubernetes@sha256:8c8a6f1f110b39f6819217387aa21dc86a3e41878b91f8239814527553031da1
-  # Tag: 1.10.0--2.13.0, Build date: 2026-01-30T19:30:18Z
+  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-kubernetes@sha256:9aed0ce60bd34ac5742ec354ce48c11dce6b49f7d4760340fba50c7134778fb8
+  # Tag: 1.10.0--2.13.0, Build date: 2026-02-24T15:59:31Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -1353,6 +1353,13 @@ plugins:
                   if:
                     anyOf:
                       - isQuayAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-servicenow:bs_1.45.3__2.11.0
+    disabled: true
+    pluginConfig:
+      servicenow:
+        baseUrl: ${SERVICENOW_BASE_URL}
+        username: ${SERVICENOW_USERNAME}
+        password: ${SERVICENOW_PASSWORD}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-sonarqube:bs_1.45.3__2.11.0
     disabled: true
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:bs_1.45.3__0.15.0
@@ -1720,14 +1727,6 @@ plugins:
                 token: ${ARGOCD_AUTH_TOKEN2}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.45.3__4.1.1
     disabled: true
-  # Tag: 1.10.0--2.11.0, Build date: 2026-01-29T16:10:04Z
-  - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-servicenow@sha256:91dbbc82a634ef54a729aa084beb09098ad045ea2b6dfb3539fccb23a1eb48d0
-    disabled: true
-    pluginConfig:
-      servicenow:
-        baseUrl: ${SERVICENOW_BASE_URL}
-        username: ${SERVICENOW_USERNAME}
-        password: ${SERVICENOW_PASSWORD}
   # Tag: 1.10.0--1.0.0, Build date: 2026-01-29T15:52:02Z
   - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki@sha256:779f888d47a9b87ad81a13897e171fe4a6a67498a937d7560026dd081361a3b2
     disabled: true
