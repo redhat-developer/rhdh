@@ -229,6 +229,8 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 ## Optional Configuration and Plugins
 
+- [Database Configuration](./database-configuration.md) - Configure PostgreSQL and use `pluginDivisionMode: schema` for single-database deployments
+
 - Adding a Home Page
   - Run `yarn export-dynamic` from the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page`:
   ```bash
