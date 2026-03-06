@@ -458,6 +458,7 @@
       "installedPackages.table.tooltips.downloadPackage": "Download package configuration",
       "installedPackages.table.tooltips.enablePackage": "Enable package",
       "installedPackages.table.tooltips.disablePackage": "Disable package",
+      "installedPackages.table.tooltips.packageProductionDisabled": "Package cannot be managed in the production environment.",
       "installedPackages.table.emptyMessages.noResults": "No results found. Try a different search term.",
       "installedPackages.table.emptyMessages.noRecords": "No records to display",
       "actions.install": "Install",
