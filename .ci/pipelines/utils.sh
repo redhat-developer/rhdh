@@ -334,7 +334,7 @@ configure_external_postgres_db() {
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
 
   echo "Waiting for PostgreSQL master pod to be created..."
-  local max_wait=60
+  local max_wait=300
   local elapsed=0
   until oc get pod -l postgres-operator.crunchydata.com/role=master -n "${NAME_SPACE_POSTGRES_DB}" -o name 2> /dev/null | grep -q pod; do
     elapsed=$((elapsed + 5))
