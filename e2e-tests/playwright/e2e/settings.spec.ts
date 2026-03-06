@@ -55,12 +55,19 @@ test.describe(`Settings page`, () => {
     const fr = getLocale("fr");
     const langfr = "fr";
 
+    // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
     // await uiHelper.verifyText(fr["user-settings"][langfr]["profileCard.title"]);
     await uiHelper.verifyText("Profile");
     await uiHelper.verifyText(
-      fr["user-settings"][langfr]["appearanceCard.title"],
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["appearanceCard.title"],
+      "Appearance",
     );
-    await uiHelper.verifyText(fr["user-settings"][langfr]["themeToggle.title"]);
+    await uiHelper.verifyText(
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["themeToggle.title"],
+      "Theme",
+    );
     await page.getByTestId("user-settings-menu").click();
     await expect(page.getByTestId("sign-out")).toContainText(
       fr["user-settings"][langfr]["signOutMenu.title"],
@@ -68,28 +75,43 @@ test.describe(`Settings page`, () => {
     await page.keyboard.press(`Escape`);
 
     await uiHelper.verifyText(
-      fr["user-settings"][langfr]["identityCard.title"],
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["identityCard.title"],
+      "Backstage Identity",
     );
     await uiHelper.verifyText(
-      fr["user-settings"][langfr]["identityCard.userEntity"] + ": Guest User",
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["identityCard.userEntity"] + ": Guest User",
+      "User Entity" + ": Guest User",
     );
     await uiHelper.verifyText(
-      fr["user-settings"][langfr]["identityCard.ownershipEntities"] +
-        ": Guest User, team-a",
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["identityCard.ownershipEntities"] +
+      "Ownership Entities" + ": Guest User, team-a",
     );
 
-    await uiHelper.verifyText(fr["user-settings"][langfr]["pinToggle.title"]);
     await uiHelper.verifyText(
-      fr["user-settings"][langfr]["pinToggle.description"],
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["pinToggle.title"],
+      "Pin Sidebar",
+    );
+    await uiHelper.verifyText(
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["pinToggle.description"],
+      "Prevent the sidebar from collapsing",
     );
     await uiHelper.uncheckCheckbox(
-      fr["user-settings"][langfr]["pinToggle.ariaLabelTitle"],
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["pinToggle.ariaLabelTitle"],
+      "Pin Sidebar Switch",
     );
     await expect(
       page.getByText(fr["rhdh"][langfr]["menuItem.apis"]),
     ).toBeHidden();
     await uiHelper.checkCheckbox(
-      fr["user-settings"][langfr]["pinToggle.ariaLabelTitle"],
+      // FIX: https://issues.redhat.com/browse/RHDHBUGS-2674 - Strings not getting translated
+      // fr["user-settings"][langfr]["pinToggle.ariaLabelTitle"],
+      "Pin Sidebar Switch",
     );
     await uiHelper.verifyText(fr["rhdh"][langfr]["menuItem.home"]);
   });
