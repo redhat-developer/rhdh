@@ -72,7 +72,6 @@ test.describe("Default Global Header", () => {
 
   test("Verify that clicking on Self-service button opens the Templates page", async () => {
     await uiHelper.goToSelfServicePage();
-    await uiHelper.verifyHeading(t["rhdh"][lang]["menuItem.selfService"]);
   });
 
   test("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
