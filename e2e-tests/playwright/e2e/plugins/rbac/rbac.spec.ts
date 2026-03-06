@@ -679,11 +679,13 @@ test.describe("Test RBAC", () => {
 
     test("Test catalog-entity read is denied", async ({ page }) => {
       await page.reload();
+      await new Common(page).waitForLoad();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.verifyTableIsEmpty();
       await uiHelper.clickButton("Self-service");
       await page.reload();
+      await new Common(page).waitForLoad();
       await uiHelper.verifyText(
         "No templates found that match your filter. Learn more about",
         false,
@@ -692,6 +694,7 @@ test.describe("Test RBAC", () => {
 
     test("Test catalog-entity refresh is denied", async () => {
       await page.reload();
+      await new Common(page).waitForLoad();
       await uiHelper.openSidebar("Catalog");
       expect(
         await uiHelper.isBtnVisibleByTitle("Schedule entity refresh"),
@@ -700,6 +703,7 @@ test.describe("Test RBAC", () => {
 
     test("Test catalog-entity create is allowed", async () => {
       await page.reload();
+      await new Common(page).waitForLoad();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
       await uiHelper.verifyLinkVisible("Import an existing Git repository");
