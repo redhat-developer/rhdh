@@ -2,7 +2,7 @@
 
 ## Overview
 
-This package contains the Red Hat Developer Hub (RHDH) frontend application built using Backstage's new frontend system architecture.  The `app-next` package leverages Backstage's new frontend system, which introduces a more modular and extensible architecture compared to the legacy frontend system. This new system is built around the concepts of extensions, plugins, and utility APIs, providing better composability and customization options.
+This package contains the Red Hat Developer Hub (RHDH) frontend application built using Backstage's new frontend system architecture. The `app-next` package leverages Backstage's new frontend system, which introduces a more modular and extensible architecture compared to the legacy frontend system. This new system is built around the concepts of extensions, plugins, and utility APIs, providing better composability and customization options.
 
 ## Development
 
