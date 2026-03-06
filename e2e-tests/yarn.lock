@@ -1679,7 +1679,6 @@ __metadata:
     ioredis: "npm:5.9.3"
     isomorphic-fetch: "npm:3.0.0"
     js-yaml: "npm:4.1.1"
-    node-fetch: "npm:2.7.0"
     octokit: "npm:4.1.4"
     otplib: "npm:12.0.1"
     pg: "npm:8.18.0"
@@ -2970,7 +2969,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:2.7.0, node-fetch@npm:^2.6.1":
+"node-fetch@npm:^2.6.1":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
