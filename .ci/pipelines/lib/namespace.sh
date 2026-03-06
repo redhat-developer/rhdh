@@ -181,7 +181,7 @@ namespace::force_delete() {
       log::warn "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
       return 1
     fi
-    sleep $sleep_interval
+    sleep "$sleep_interval"
     elapsed=$((elapsed + sleep_interval))
   done
 
