@@ -174,8 +174,8 @@ plugins:
           red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
             analyticsApiExtensions:
               - importName: AdoptionInsightsAnalyticsApi
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions@sha256:c1d1d1c754e6c5a3644589db043d6ccfcd12e6c25c6fadc1c6921f2fdc9c56e5
-  # Tag: 1.9.0--0.14.4, Build date: 2026-02-17T19:45:27Z
+  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions@sha256:cb8ab8d74d0467e69fea2ac703bfa286aee1d1630062d0205a561495e05fbca9
+  # Tag: 1.9.0--0.14.4, Build date: 2026-03-05T21:36:44Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -344,8 +344,8 @@ plugins:
             translationResources:
               - importName: homepageTranslations
                 ref: homepageTranslationRef
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions@sha256:fa641877c566d35f08ff5df1a13dc76450c7505613f764687bd9495b150007d2
-  # Tag: 1.9.0--0.14.4, Build date: 2026-02-17T19:51:09Z
+  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions@sha256:ca11362e1bb0878f54998d60680d2b13dbe5f672d066126c565ed71cf3502e5c
+  # Tag: 1.9.0--0.14.4, Build date: 2026-03-05T21:36:17Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -372,8 +372,8 @@ plugins:
             menuItems:
               extensions:
                 parent: default.admin
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions-backend@sha256:e17234dacf3ea4d19bb6079380a3a6d4bebca97cabd25750eeb8a3326502ed68
-  # Tag: 1.9.0--0.14.4, Build date: 2026-02-17T19:49:13Z
+  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions-backend@sha256:f5debb8852721210ef14b915027db3337fee26d845ff125ac193384d6257c030
+  # Tag: 1.9.0--0.14.4, Build date: 2026-03-05T21:36:17Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -793,8 +793,8 @@ plugins:
   # disabled: true
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
     disabled: true
-  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar@sha256:f6b88929ed113299b126134d2cf9f76b38fb035f455c356a61b21826ea041fa9
-  # Tag: 1.9.0--1.13.0, Build date: 2026-02-17T18:42:04Z
+  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar@sha256:b141f54ef5066c3ffedc9bf949a9a9d30ddcbd73786e33c9396000bfb0f07546
+  # Tag: 1.9.0--1.13.0, Build date: 2026-03-05T21:33:54Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -820,8 +820,8 @@ plugins:
                   props:
                     width: 1500
                     height: 800
-  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar-backend@sha256:692a3282401128c5b124d3bd6b42d5296654dd9da70419f8e9bc6e77f0cedf92
-  # Tag: 1.9.0--1.12.0, Build date: 2026-01-29T15:49:29Z
+  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar-backend@sha256:e3136b68ba7a5d8bfacec015cb7e99c48bed97e5c74760007dcbbe5524f79236
+  # Tag: 1.9.0--1.12.0, Build date: 2026-03-05T21:34:01Z
   # new approach using oci images: to switch to the new approach, uncommment
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
@@ -1735,6 +1735,7 @@ plugins:
         workflowLogProvider:
           loki:
             baseUrl: ${LOKI_BASE_URL}
+            token: ${AUTH_TOKEN}
   # Tag: 1.9.0--8.6.1, Build date: 2026-02-17T19:45:11Z
   - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:3a3d10258d1da0529ba853f82742cb55740ce8799599a41f1c5fff6a76d8d84d
     disabled: true
