@@ -336,7 +336,7 @@ configure_external_postgres_db() {
   echo "Waiting for PostgreSQL master pod to be created..."
   local max_wait=60
   local elapsed=0
-  until oc get pod -l postgres-operator.crunchydata.com/role=master -n "${NAME_SPACE_POSTGRES_DB}" -o name 2>/dev/null | grep -q pod; do
+  until oc get pod -l postgres-operator.crunchydata.com/role=master -n "${NAME_SPACE_POSTGRES_DB}" -o name 2> /dev/null | grep -q pod; do
     elapsed=$((elapsed + 5))
     if [[ $elapsed -ge $max_wait ]]; then
       echo "ERROR: PostgreSQL master pod not created after ${max_wait}s"
