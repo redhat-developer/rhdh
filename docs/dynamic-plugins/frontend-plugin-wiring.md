@@ -885,3 +885,208 @@ The required options mirror the [AppTheme](https://backstage.io/docs/reference/c
 - `variant` Whether the theme is `light` or `dark`, can only be one of these values.
 - `icon` a string reference to a system or [app icon](#extend-internal-library-of-available-icons)
 - `importName` name of the exported theme provider function, the function signature should match `({ children }: { children: ReactNode }): React.JSX.Element`
+
+## Customizing Catalog Table Columns
+
+The catalog table displayed on the `CatalogIndexPage` can be customized to show, hide, or add columns. This allows platform engineers to remove unnecessary columns and surface custom entity metadata directly in the catalog list view.
+
+### Configuration
+
+Column customization is configured in the `app-config.yaml` under the `catalog.table.columns` section:
+
+```yaml
+# app-config.yaml
+catalog:
+  table:
+    columns:
+      # Option 1: Include only specific columns (replaces defaults)
+      include:
+        - name
+        - owner
+        - type
+        - lifecycle
+
+      # Option 2: Exclude specific columns from defaults
+      exclude:
+        - createdAt
+
+      # Add custom columns based on entity metadata
+      custom:
+        - title: "Security Tier"
+          field: "metadata.annotations['custom/security-tier']"
+          width: 150
+          sortable: true
+          defaultValue: "N/A"
+```
+
+### Available Built-in Column IDs
+
+The following column IDs can be used in `include` or `exclude` lists:
+
+| Column ID     | Description                              | Maps to                                              |
+| ------------- | ---------------------------------------- | ---------------------------------------------------- |
+| `name`        | Entity name with link                    | `CatalogTable.columns.createNameColumn()`            |
+| `owner`       | Entity owner                             | `CatalogTable.columns.createOwnerColumn()`           |
+| `type`        | Entity spec.type                         | `CatalogTable.columns.createSpecTypeColumn()`        |
+| `lifecycle`   | Entity spec.lifecycle                    | `CatalogTable.columns.createSpecLifecycleColumn()`   |
+| `description` | Entity metadata.description              | `CatalogTable.columns.createMetadataDescriptionColumn()` |
+| `tags`        | Entity metadata.tags                     | `CatalogTable.columns.createTagsColumn()`            |
+| `namespace`   | Entity metadata.namespace                | `CatalogTable.columns.createNamespaceColumn()`       |
+| `system`      | Entity spec.system                       | `CatalogTable.columns.createSystemColumn()`          |
+| `createdAt`   | Created timestamp from annotations       | Custom RHDH column                                   |
+
+### Configuration Options
+
+#### `include` (array of strings)
+
+When specified, only the listed columns will be displayed. This completely replaces the default column set.
+
+```yaml
+catalog:
+  table:
+    columns:
+      include:
+        - name
+        - owner
+        - type
+```
+
+#### `exclude` (array of strings)
+
+When specified, the listed columns will be removed from the default set. Cannot be used together with `include` (if both are specified, `include` takes precedence).
+
+```yaml
+catalog:
+  table:
+    columns:
+      exclude:
+        - createdAt
+        - description
+```
+
+#### `custom` (array of custom column definitions)
+
+Define additional columns based on entity metadata fields. Custom columns are appended after the built-in columns.
+
+Each custom column supports the following properties:
+
+| Property       | Required | Type              | Description                                                                 |
+| -------------- | -------- | ----------------- | --------------------------------------------------------------------------- |
+| `title`        | Yes      | string            | The column header text                                                      |
+| `field`        | Yes      | string            | The entity field path (e.g., `spec.team`, `metadata.annotations['key']`)    |
+| `width`        | No       | number            | Column width in pixels                                                      |
+| `sortable`     | No       | boolean           | Whether the column is sortable (default: `true`)                            |
+| `defaultValue` | No       | string            | Value to display when the field is empty or undefined                       |
+| `kind`         | No       | string or array   | Entity kind(s) to apply this column to (e.g., `API`, `['Component', 'API']`) |
+
+### Field Path Syntax
+
+The `field` property supports accessing nested entity properties using dot notation:
+
+- Simple paths: `spec.type`, `metadata.name`
+- Annotation paths: `metadata.annotations['backstage.io/techdocs-ref']`
+- Custom annotations: `metadata.annotations['company.com/cost-center']`
+
+### Examples
+
+#### Hide the "Created At" column
+
+```yaml
+catalog:
+  table:
+    columns:
+      exclude:
+        - createdAt
+```
+
+#### Minimal view with only essential columns
+
+```yaml
+catalog:
+  table:
+    columns:
+      include:
+        - name
+        - owner
+        - type
+```
+
+#### Add a custom metadata column
+
+```yaml
+catalog:
+  table:
+    columns:
+      custom:
+        - title: "Cost Center"
+          field: "metadata.annotations['company.com/cost-center']"
+          sortable: true
+          defaultValue: "Unknown"
+```
+
+#### Kind-specific columns
+
+Show a column only for specific entity kinds:
+
+```yaml
+catalog:
+  table:
+    columns:
+      custom:
+        - title: "API Version"
+          field: "spec.definition.version"
+          kind: API
+        - title: "Team"
+          field: "spec.team"
+          kind:
+            - Component
+            - Resource
+```
+
+#### Complete customization example
+
+```yaml
+catalog:
+  table:
+    columns:
+      exclude:
+        - createdAt
+        - description
+      custom:
+        - title: "Security Tier"
+          field: "metadata.annotations['custom/security-tier']"
+          width: 120
+          sortable: true
+          defaultValue: "Not Set"
+        - title: "Cost Center"
+          field: "metadata.labels['cost-center']"
+          sortable: true
+```
+
+### Re-ordering Columns
+
+Columns can be re-ordered using the `include` option. Columns appear in the exact order specified in the `include` array:
+
+```yaml
+catalog:
+  table:
+    columns:
+      include:
+        - owner      # 1st column
+        - name       # 2nd column
+        - type       # 3rd column
+        - lifecycle  # 4th column
+```
+
+**Result:** Columns display as Owner → Name → Type → Lifecycle (in that order).
+
+> **Note:** Custom columns are always appended at the end, in the order they are defined in the `custom` array.
+
+### Default Behavior
+
+When no `catalog.table.columns` configuration is provided:
+
+1. All default columns from Backstage's `CatalogTable.defaultColumnsFunc()` are displayed
+2. The "Created At" column is included (for backward compatibility with RHDH)
+
+This ensures existing RHDH deployments continue to work without any configuration changes.

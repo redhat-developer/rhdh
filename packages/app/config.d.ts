@@ -343,4 +343,71 @@ export interface Config {
      */
     persistence: 'browser' | 'database';
   };
+
+  /**
+   * Catalog configuration options
+   * @deepVisibility frontend
+   */
+  catalog?: {
+    /**
+     * Configuration for the catalog table display
+     * @deepVisibility frontend
+     */
+    table?: {
+      /**
+       * Column configuration for the catalog table
+       * @deepVisibility frontend
+       */
+      columns?: {
+        /**
+         * List of column IDs to include. When specified, only these columns will be shown.
+         * Available built-in columns: name, owner, type, lifecycle, description, tags, namespace, system, createdAt
+         * @visibility frontend
+         */
+        include?: string[];
+        /**
+         * List of column IDs to exclude from the default columns.
+         * Available built-in columns: name, owner, type, lifecycle, description, tags, namespace, system, createdAt
+         * @visibility frontend
+         */
+        exclude?: string[];
+        /**
+         * Custom columns to add to the catalog table
+         * @deepVisibility frontend
+         */
+        custom?: Array<{
+          /**
+           * The column header title
+           * @visibility frontend
+           */
+          title: string;
+          /**
+           * The entity field path to display (e.g., "metadata.annotations['custom/field']" or "spec.team")
+           * @visibility frontend
+           */
+          field: string;
+          /**
+           * Optional column width in pixels
+           * @visibility frontend
+           */
+          width?: number;
+          /**
+           * Whether the column should be sortable
+           * @visibility frontend
+           */
+          sortable?: boolean;
+          /**
+           * Default value to display when the field is empty or undefined
+           * @visibility frontend
+           */
+          defaultValue?: string;
+          /**
+           * Optional entity kind(s) to apply this column to. If not specified, applies to all kinds.
+           * @visibility frontend
+           */
+          kind?: string | string[];
+        }>;
+      };
+    };
+  };
 }
