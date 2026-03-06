@@ -15,14 +15,12 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
 
-const es = createTranslationMessages({
-  ref: userSettingsTranslationRef,
+export default createTranslationMessages({
+  ref: catalogTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Configuración',
+    'indexPage.createButtonTitle': 'Autoservicio',
   },
 });
-
-export default es;
