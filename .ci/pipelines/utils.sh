@@ -333,6 +333,17 @@ configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
 
+  echo "Waiting for PostgreSQL master pod to be created..."
+  local max_wait=60
+  local elapsed=0
+  until oc get pod -l postgres-operator.crunchydata.com/role=master -n "${NAME_SPACE_POSTGRES_DB}" -o name 2>/dev/null | grep -q pod; do
+    elapsed=$((elapsed + 5))
+    if [[ $elapsed -ge $max_wait ]]; then
+      echo "ERROR: PostgreSQL master pod not created after ${max_wait}s"
+      return 1
+    fi
+    sleep 5
+  done
   echo "Waiting for PostgreSQL cluster to be ready..."
   oc wait --for=condition=Ready pod -l postgres-operator.crunchydata.com/role=master -n "${NAME_SPACE_POSTGRES_DB}" --timeout=180s
 
