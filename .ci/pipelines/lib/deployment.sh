@@ -6,6 +6,9 @@ if [[ -n "${RHDH_DEPLOYMENT_LIB_SOURCED:-}" ]]; then
 fi
 readonly RHDH_DEPLOYMENT_LIB_SOURCED=1
 
+# shellcheck source=.ci/pipelines/reporting.sh
+source "$(dirname "${BASH_SOURCE[0]}")/../reporting.sh"
+
 # Internal state
 _DEPLOYMENT_COUNTER=0
 
@@ -19,9 +22,9 @@ deployment::current_id() {
 }
 
 deployment::register() {
-  local namespace="$1"
+  local label="$1"
   deployment::next_id > /dev/null
-  save_status_deployment_namespace "${_DEPLOYMENT_COUNTER}" "$namespace"
+  save_status_deployment_namespace "${_DEPLOYMENT_COUNTER}" "$label"
 }
 
 deployment::mark_deploy_success() {
@@ -29,8 +32,8 @@ deployment::mark_deploy_success() {
 }
 
 deployment::mark_deploy_failed() {
-  local namespace="$1"
-  deployment::register "$namespace"
+  local label="$1"
+  deployment::register "$label"
   save_status_failed_to_deploy "${_DEPLOYMENT_COUNTER}" true
   save_status_test_failed "${_DEPLOYMENT_COUNTER}" true
   save_overall_result 1

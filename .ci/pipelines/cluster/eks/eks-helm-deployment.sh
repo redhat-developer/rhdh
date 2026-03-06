@@ -2,10 +2,16 @@
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
+# shellcheck source=.ci/pipelines/lib/namespace.sh
+source "$DIR"/lib/namespace.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
 
 initiate_eks_helm_deployment() {
+  common::require_vars "RELEASE_NAME" "TAG_NAME" "QUAY_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
+
   log::info "Initiating EKS Helm deployment"
 
   namespace::delete "${NAME_SPACE_RBAC}"
@@ -20,7 +26,6 @@ initiate_eks_helm_deployment() {
 
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  common::require_vars "RELEASE_NAME" "TAG_NAME" "QUAY_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   envsubst < "${DIR}/value_files/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" > "/tmp/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   common::save_artifact "${NAME_SPACE}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
@@ -37,6 +42,8 @@ initiate_eks_helm_deployment() {
 }
 
 initiate_rbac_eks_helm_deployment() {
+  common::require_vars "RELEASE_NAME_RBAC" "TAG_NAME" "QUAY_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
+
   log::info "Initiating EKS RBAC Helm deployment"
 
   namespace::delete "${NAME_SPACE}"
@@ -50,7 +57,6 @@ initiate_rbac_eks_helm_deployment() {
 
   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-  common::require_vars "RELEASE_NAME_RBAC" "TAG_NAME" "QUAY_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   envsubst < "${DIR}/value_files/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" > "/tmp/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
   common::save_artifact "${NAME_SPACE_RBAC}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
