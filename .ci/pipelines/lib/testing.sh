@@ -49,7 +49,7 @@ testing::run_tests() {
     return 1
   fi
 
-  deployment::register "$namespace"
+  deployment::register "$artifacts_subdir"
   deployment::mark_deploy_success
 
   BASE_URL="${url}"
@@ -244,13 +244,15 @@ testing::check_and_test() {
     fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
-    deployment::mark_deploy_failed "$namespace"
+    deployment::mark_deploy_failed "$artifacts_subdir"
+    save_all_pod_logs "$namespace"
+    return 0
   fi
 
-  # Collect pod logs only on failure to speed up successful PR runs.
+  # Collect pod logs only on test failure to speed up successful PR runs.
   local _current_id
   _current_id="$(deployment::current_id)"
-  if [[ "${STATUS_TEST_FAILED[$_current_id]:-}" == "true" || "${STATUS_FAILED_TO_DEPLOY[$_current_id]:-}" == "true" ]]; then
+  if [[ "${STATUS_TEST_FAILED[$_current_id]:-}" == "true" ]]; then
     save_all_pod_logs "$namespace"
   else
     log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
@@ -300,7 +302,6 @@ testing::check_helm_upgrade() {
 #   $4 - playwright_project: The Playwright project to run
 #   $5 - url: The URL to test against
 #   $6 - timeout: (optional) Timeout in seconds (default: 600)
-# Uses globals: none (deployment state managed by lib/deployment.sh)
 testing::check_upgrade_and_test() {
   local deployment_name="$1"
   local release_name="$2"

@@ -8,89 +8,101 @@ The enhanced CI reporting system uses the [`.ci/pipelines/reporting.sh`](../../.
 
 **Note:** The `SHARED_DIR` can only contain files. No directories or nested structures are supported.
 
-## Using reporting.sh Functions
+## Architecture
 
-The [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script provides several functions to signal different types of results. It uses a Bash array to store statuses for multiple deployments, indexed by `CURRENT_DEPLOYMENT` (a deployment number).
+### Deployment Tracking Module
+
+The [`.ci/pipelines/lib/deployment.sh`](../../.ci/pipelines/lib/deployment.sh) module encapsulates all deployment state management into a clean API. It manages an internal counter and delegates status persistence to `reporting.sh`.
+
+#### `deployment::register(label)`
+Registers a new deployment with the given label (typically the Playwright project name or artifacts subdirectory). Increments the internal counter and records the deployment label.
+
+```bash
+deployment::register "$artifacts_subdir"
+```
+
+#### `deployment::mark_deploy_success()`
+Marks the current deployment as successfully deployed.
+
+```bash
+deployment::mark_deploy_success
+```
+
+#### `deployment::mark_deploy_failed(label)`
+Registers a new deployment and marks it as failed (deploy failed, tests failed, overall result = 1).
+
+```bash
+deployment::mark_deploy_failed "$artifacts_subdir"
+```
+
+#### `deployment::mark_test_result(passed, num_failures)`
+Records whether tests passed and the number of failures.
+
+```bash
+deployment::mark_test_result "$test_passed" "${failed_tests}"
+```
+
+#### `deployment::current_id()`
+Returns the current deployment counter value.
+
+```bash
+local id
+id="$(deployment::current_id)"
+```
 
 ### Core Reporting Functions
 
-#### `save_status_deployment_namespace(deployment, namespace)`
-Records the namespace where a deployment was created.
+The [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script provides low-level functions used internally by the deployment module. These persist status to `SHARED_DIR` files and `ARTIFACT_DIR/reporting/`.
 
-```bash
-save_status_deployment_namespace $CURRENT_DEPLOYMENT $namespace
-```
+#### `save_status_deployment_namespace(deployment, label)`
+Records the label for a deployment.
 
 #### `save_status_failed_to_deploy(deployment, status)`
 Records whether a deployment failed (true/false).
 
-```bash
-save_status_failed_to_deploy $CURRENT_DEPLOYMENT false  # Success
-save_status_failed_to_deploy $CURRENT_DEPLOYMENT true   # Failure
-```
-
 #### `save_status_test_failed(deployment, status)`
 Records whether tests failed for a deployment (true/false).
-
-```bash
-save_status_test_failed $CURRENT_DEPLOYMENT false  # Tests passed
-save_status_test_failed $CURRENT_DEPLOYMENT true   # Tests failed
-```
 
 #### `save_status_number_of_test_failed(deployment, number)`
 Records the number of failed tests.
 
-```bash
-save_status_number_of_test_failed $CURRENT_DEPLOYMENT "3"
-```
-
 #### `save_overall_result(result)`
 Records the overall test result (0 for success, 1 for failure).
-
-```bash
-save_overall_result 0  # Overall success
-save_overall_result 1  # Overall failure
-```
 
 ## SHARED_DIR Integration
 
 All status information is written to files in the `SHARED_DIR` directory, which is shared between OpenShift CI steps:
 
-- `SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt` - Bash array format
-- `SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt` - Bash array format
-- `SHARED_DIR/STATUS_TEST_FAILED.txt` - Bash array format
-- `SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt` - Bash array format
-- `SHARED_DIR/STATUS_URL_REPORTPORTAL.txt` - Bash array format
+- `SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt` - Deployment labels (one per line)
+- `SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt` - Deploy failure flags (one per line)
+- `SHARED_DIR/STATUS_TEST_FAILED.txt` - Test failure flags (one per line)
+- `SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt` - Failure counts (one per line)
+- `SHARED_DIR/STATUS_URL_REPORTPORTAL.txt` - ReportPortal URLs
 - `SHARED_DIR/OVERALL_RESULT.txt` - Single value
 
-The status files use bash arrays indexed by `CURRENT_DEPLOYMENT` (deployment number), except for `OVERALL_RESULT.txt` which contains a single value. These files are also copied to `ARTIFACT_DIR/reporting/` for artifact collection.
+These files are also copied to `ARTIFACT_DIR/reporting/` for artifact collection.
 
 ## Usage Examples
 
 ### In Test Scripts
 
 ```bash
-# Source the reporting functions
+# Source the required modules (typically done via utils.sh)
 source "${DIR}/reporting.sh"
+source "${DIR}/lib/deployment.sh"
 
 # Initialize overall result
 save_overall_result 0
 
-# Record deployment success
-save_status_deployment_namespace $CURRENT_DEPLOYMENT "showcase"
-save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
+# Register a deployment and mark it as successful
+deployment::register "showcase"
+deployment::mark_deploy_success
 
 # Record test results
-if [ "${RESULT}" -ne 0 ]; then
-    save_overall_result 1
-    save_status_test_failed $CURRENT_DEPLOYMENT true
-else
-    save_status_test_failed $CURRENT_DEPLOYMENT false
-fi
+deployment::mark_test_result "$test_passed" "${failed_tests}"
 
-# Record number of failed tests
-failed_tests=$(grep -oP 'failures="\K[0-9]+' "${JUNIT_RESULTS}" | head -n 1)
-save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
+# Or mark a deployment as failed in one call
+deployment::mark_deploy_failed "showcase-rbac"
 ```
 
 ### Error Handling
@@ -126,18 +138,19 @@ For nightly runs, the system automatically sends notifications to the `#rhdh-e2e
 - **Logs Link**: Direct link to job logs
 - **Triage Mention**: `@rhdh-ci-test-triage` for team notification
 - **Per-Deployment Status**: Each deployment shows:
-  - **Deployment Name**: e.g., `showcase-ci-nightly`, `showcase-rbac-nightly`
+  - **Deployment Label**: e.g., `showcase`, `showcase-rbac`, `showcase-runtime`
   - **Deployment Status**: "deployed" status
   - **Test Results**: "tests passed" or failure count (e.g., "2 tests failed")
   - **Tools**: Playwright, ReportPortal, and artifacts links
 
 ## File Locations
 
-- **Script**: [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh)
+- **Deployment Module**: [`.ci/pipelines/lib/deployment.sh`](../../.ci/pipelines/lib/deployment.sh)
+- **Reporting Script**: [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh)
 - **Integration**: [`.ci/pipelines/utils.sh`](../../.ci/pipelines/utils.sh) and [`.ci/pipelines/openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh)
 
 ## Related Documentation
 
 - [CI Testing Overview](CI.md)
 - [E2E Tests Examples](examples.md)
-- [Contributing to E2E Tests](CONTRIBUTING.MD) 
+- [Contributing to E2E Tests](CONTRIBUTING.MD)

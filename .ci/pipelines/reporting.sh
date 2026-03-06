@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# Prevent re-sourcing
+if [[ -n "${REPORTING_LIB_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly REPORTING_LIB_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$(dirname "${BASH_SOURCE[0]}")"/lib/log.sh
-# shellcheck source=.ci/pipelines/lib/deployment.sh
-source "$(dirname "${BASH_SOURCE[0]}")"/lib/deployment.sh
 
 # Variables for reporting
 export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployments.
