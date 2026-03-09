@@ -148,9 +148,10 @@ global:
                 githubUrl: ${GITHUB_URL}
                 orgs:
                   - ${GITHUB_ORG}
+                  - ${GITHUB_ORG_2}
                 schedule:
                   frequency:
-                    minutes: 60
+                    hours: 24
                   initialDelay:
                     seconds: 15
                   timeout:
