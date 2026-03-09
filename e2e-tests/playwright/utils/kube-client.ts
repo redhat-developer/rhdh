@@ -663,7 +663,7 @@ export class KubeClient {
   ) {
     const endTime = Date.now() + timeout;
     let finalLabelSelector = labelSelector;
-    
+
     // If label selector not provided, try to determine from deployment
     if (!finalLabelSelector) {
       try {
@@ -675,19 +675,21 @@ export class KubeClient {
         const instance = labels["app.kubernetes.io/instance"];
         const name = labels["app.kubernetes.io/name"];
         const component = labels["app.kubernetes.io/component"];
-        
+
         if (instance && name && component) {
           finalLabelSelector = `app.kubernetes.io/component=${component},app.kubernetes.io/instance=${instance},app.kubernetes.io/name=${name}`;
         } else {
           // Fallback to Operator default
-          finalLabelSelector = "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+          finalLabelSelector =
+            "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
         }
       } catch {
         // Fallback to Operator default if we can't read deployment
-        finalLabelSelector = "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+        finalLabelSelector =
+          "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
       }
     }
-    
+
     let lastReplicaSetCheck = 0;
     const replicaSetCheckInterval = 60000; // Check ReplicaSet every 60 seconds
 
@@ -726,7 +728,11 @@ export class KubeClient {
             await this.logReplicaSetStatus(deploymentName, namespace);
             await this.logPodEvents(namespace, finalLabelSelector);
             await this.logPodConditions(namespace, finalLabelSelector);
-            await this.logPodContainerLogs(namespace, finalLabelSelector, "backstage-backend");
+            await this.logPodContainerLogs(
+              namespace,
+              finalLabelSelector,
+              "backstage-backend",
+            );
             throw new Error(
               `Deployment ${deploymentName} failed to start: ${podFailureReason}`,
             );
@@ -734,7 +740,10 @@ export class KubeClient {
 
           // Only log diagnostics if there's an actual problem detected
           const now = Date.now();
-          if (now - lastReplicaSetCheck > replicaSetCheckInterval && availableReplicas === 0) {
+          if (
+            now - lastReplicaSetCheck > replicaSetCheckInterval &&
+            availableReplicas === 0
+          ) {
             // Only log if we've been waiting a while and there's a real issue
             const podFailureReason = await this.checkPodFailureStates(
               namespace,
@@ -776,7 +785,9 @@ export class KubeClient {
     }
 
     // On timeout, collect final diagnostics
-    console.error(`Timeout waiting for deployment ${deploymentName}. Collecting diagnostics...`);
+    console.error(
+      `Timeout waiting for deployment ${deploymentName}. Collecting diagnostics...`,
+    );
     await this.logDeploymentEvents(deploymentName, namespace);
     await this.logReplicaSetStatus(deploymentName, namespace);
     await this.logPodEvents(namespace, labelSelector);
@@ -852,13 +863,13 @@ export class KubeClient {
           "Conditions:",
           JSON.stringify(pod.status?.conditions, null, 2),
         );
-        
+
         // Log container statuses
         const containerStatuses = [
           ...(pod.status?.containerStatuses || []),
           ...(pod.status?.initContainerStatuses || []),
         ];
-        
+
         if (containerStatuses.length > 0) {
           console.log("Container Statuses:");
           for (const containerStatus of containerStatuses) {
@@ -866,13 +877,19 @@ export class KubeClient {
             const waiting = containerStatus.state?.waiting;
             const running = containerStatus.state?.running;
             const terminated = containerStatus.state?.terminated;
-            
+
             if (waiting) {
-              console.log(`  ${containerName}: Waiting - ${waiting.reason}: ${waiting.message}`);
+              console.log(
+                `  ${containerName}: Waiting - ${waiting.reason}: ${waiting.message}`,
+              );
             } else if (running) {
-              console.log(`  ${containerName}: Running (started: ${running.startedAt})`);
+              console.log(
+                `  ${containerName}: Running (started: ${running.startedAt})`,
+              );
             } else if (terminated) {
-              console.log(`  ${containerName}: Terminated - Exit Code: ${terminated.exitCode}, Reason: ${terminated.reason}`);
+              console.log(
+                `  ${containerName}: Terminated - Exit Code: ${terminated.exitCode}, Reason: ${terminated.reason}`,
+              );
               if (terminated.message) {
                 console.log(`    Message: ${terminated.message}`);
               }
@@ -887,7 +904,11 @@ export class KubeClient {
     }
   }
 
-  async logPodContainerLogs(namespace: string, labelSelector?: string, containerName?: string) {
+  async logPodContainerLogs(
+    namespace: string,
+    labelSelector?: string,
+    containerName?: string,
+  ) {
     const selector =
       labelSelector ||
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
@@ -913,14 +934,16 @@ export class KubeClient {
 
         // If container name specified, only get logs from that container
         // Otherwise, get logs from all containers
-        const containers = containerName 
+        const containers = containerName
           ? [{ name: containerName }]
-          : (pod.spec?.containers || []);
+          : pod.spec?.containers || [];
 
         for (const container of containers) {
           const cn = container.name;
           try {
-            console.log(`\n=== Pod ${podName} - Container ${cn} Logs (last 100 lines) ===`);
+            console.log(
+              `\n=== Pod ${podName} - Container ${cn} Logs (last 100 lines) ===`,
+            );
             const logs = await this.coreV1Api.readNamespacedPodLog(
               podName,
               namespace,
@@ -943,7 +966,9 @@ export class KubeClient {
           } catch (logError) {
             const errorMsg = getKubeApiErrorMessage(logError);
             // Log error but don't try to get previous container logs (API doesn't support it easily)
-            console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
+            console.warn(
+              `Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`,
+            );
           }
         }
       }
@@ -971,14 +996,11 @@ export class KubeClient {
       );
 
       // Also try to get pods without selector to catch any pods that might exist
-      const allPodsResponse = await this.coreV1Api.listNamespacedPod(
-        namespace,
-      );
+      const allPodsResponse = await this.coreV1Api.listNamespacedPod(namespace);
 
       // Get all events in the namespace
-      const eventsResponse = await this.coreV1Api.listNamespacedEvent(
-        namespace,
-      );
+      const eventsResponse =
+        await this.coreV1Api.listNamespacedEvent(namespace);
 
       // Get pod names from both responses
       const podNames = new Set<string>();
@@ -986,7 +1008,10 @@ export class KubeClient {
         if (pod.metadata?.name) podNames.add(pod.metadata.name);
       });
       allPodsResponse.body.items.forEach((pod) => {
-        if (pod.metadata?.name && pod.metadata.name.includes("backstage-developer-hub")) {
+        if (
+          pod.metadata?.name &&
+          pod.metadata.name.includes("backstage-developer-hub")
+        ) {
           podNames.add(pod.metadata.name);
         }
       });
@@ -1005,16 +1030,21 @@ export class KubeClient {
         })
         .sort((a, b) => {
           // Handle both Date objects and string timestamps
-          const getTimestamp = (event: { firstTimestamp?: string | Date; eventTime?: string | { getTime?: () => number } }): number => {
+          const getTimestamp = (event: {
+            firstTimestamp?: string | Date;
+            eventTime?: string | { getTime?: () => number };
+          }): number => {
             if (event.firstTimestamp) {
-              return typeof event.firstTimestamp === 'string' 
-                ? new Date(event.firstTimestamp).getTime() 
+              return typeof event.firstTimestamp === "string"
+                ? new Date(event.firstTimestamp).getTime()
                 : event.firstTimestamp.getTime();
             }
             if (event.eventTime) {
-              return typeof event.eventTime === 'string'
+              return typeof event.eventTime === "string"
                 ? new Date(event.eventTime).getTime()
-                : (event.eventTime?.getTime ? event.eventTime.getTime() : 0);
+                : event.eventTime?.getTime
+                  ? event.eventTime.getTime()
+                  : 0;
             }
             return 0;
           };
@@ -1031,13 +1061,17 @@ export class KubeClient {
           // Handle both Date objects and string timestamps
           let timestamp = "unknown";
           if (event.firstTimestamp) {
-            timestamp = typeof event.firstTimestamp === 'string'
-              ? new Date(event.firstTimestamp).toISOString()
-              : event.firstTimestamp.toISOString();
+            timestamp =
+              typeof event.firstTimestamp === "string"
+                ? new Date(event.firstTimestamp).toISOString()
+                : event.firstTimestamp.toISOString();
           } else if (event.eventTime) {
-            timestamp = typeof event.eventTime === 'string'
-              ? new Date(event.eventTime).toISOString()
-              : (event.eventTime?.toISOString ? event.eventTime.toISOString() : String(event.eventTime));
+            timestamp =
+              typeof event.eventTime === "string"
+                ? new Date(event.eventTime).toISOString()
+                : event.eventTime?.toISOString
+                  ? event.eventTime.toISOString()
+                  : String(event.eventTime);
           }
           console.log(
             `  [${timestamp}] Pod ${podName}: [${event.type}] ${event.reason}: ${event.message}`,
@@ -1053,7 +1087,7 @@ export class KubeClient {
         for (const pod of podsResponse.body.items.slice(0, 3)) {
           const podName = pod.metadata?.name;
           if (!podName) continue;
-          
+
           try {
             // Try to get logs (last 50 lines)
             const logs = await this.coreV1Api.readNamespacedPodLog(
@@ -1076,7 +1110,9 @@ export class KubeClient {
             }
           } catch (logError) {
             // Pod might be deleted or not ready for logs yet
-            console.log(`  Could not get logs from ${podName}: ${getKubeApiErrorMessage(logError)}`);
+            console.log(
+              `  Could not get logs from ${podName}: ${getKubeApiErrorMessage(logError)}`,
+            );
           }
         }
       }
@@ -1143,8 +1179,10 @@ export class KubeClient {
         selectorString,
       );
 
-      console.log(`Found ${rsResponse.body.items.length} ReplicaSet(s) for deployment ${deploymentName}:`);
-      
+      console.log(
+        `Found ${rsResponse.body.items.length} ReplicaSet(s) for deployment ${deploymentName}:`,
+      );
+
       // Sort by creation timestamp (newest first)
       const sortedReplicaSets = rsResponse.body.items.sort((a, b) => {
         const aTime = a.metadata?.creationTimestamp?.getTime() || 0;
@@ -1161,7 +1199,9 @@ export class KubeClient {
         const conditions = rs.status?.conditions || [];
 
         console.log(`  ReplicaSet: ${rsName}`);
-        console.log(`    Ready: ${readyReplicas}, Available: ${availableReplicas}, Desired: ${replicas}, Fully Labeled: ${fullyLabeledReplicas}`);
+        console.log(
+          `    Ready: ${readyReplicas}, Available: ${availableReplicas}, Desired: ${replicas}, Fully Labeled: ${fullyLabeledReplicas}`,
+        );
         if (conditions.length > 0) {
           console.log(`    Conditions: ${JSON.stringify(conditions, null, 2)}`);
         }
@@ -1175,17 +1215,22 @@ export class KubeClient {
             undefined,
             `involvedObject.name=${rsName}`,
           );
-          
+
           if (rsEvents.body.items.length > 0) {
             console.log(`    Events for ReplicaSet ${rsName}:`);
-            rsEvents.body.items.slice(0, 10).forEach((event) => { // Limit to last 10 events
-              console.log(`      [${event.type}] ${event.reason}: ${event.message}`);
+            rsEvents.body.items.slice(0, 10).forEach((event) => {
+              // Limit to last 10 events
+              console.log(
+                `      [${event.type}] ${event.reason}: ${event.message}`,
+              );
             });
           } else {
             console.log(`    No events found for ReplicaSet ${rsName}`);
           }
         } catch (error) {
-          console.warn(`    Could not retrieve events for ReplicaSet ${rsName}: ${getKubeApiErrorMessage(error)}`);
+          console.warn(
+            `    Could not retrieve events for ReplicaSet ${rsName}: ${getKubeApiErrorMessage(error)}`,
+          );
         }
       }
     } catch (error) {
@@ -1228,12 +1273,12 @@ export class KubeClient {
       const exec = new k8s.Exec(this.kc);
       let stdout = "";
       let stderr = "";
-      
+
       await new Promise<void>((resolve, reject) => {
         const timeoutId = setTimeout(() => {
           reject(new Error(`Command execution timed out after ${timeout}ms`));
         }, timeout);
-        
+
         // Create writable streams to capture output
         const stdoutStream = new stream.Writable({
           write(chunk: Buffer, encoding: string, callback: () => void) {
@@ -1247,7 +1292,7 @@ export class KubeClient {
             callback();
           },
         });
-        
+
         void exec.exec(
           namespace,
           podName,
@@ -1259,18 +1304,24 @@ export class KubeClient {
           false, // tty
           (status: k8s.V1Status) => {
             clearTimeout(timeoutId);
-            if (status.status === 'Success') {
+            if (status.status === "Success") {
               resolve();
             } else {
-              reject(new Error(`Command execution failed: ${status.message || stderr || 'unknown error'}`));
+              reject(
+                new Error(
+                  `Command execution failed: ${status.message || stderr || "unknown error"}`,
+                ),
+              );
             }
           },
         );
       });
-      
+
       return { stdout, stderr };
     } catch (error) {
-      throw new Error(`Failed to execute command in pod ${podName}: ${getKubeApiErrorMessage(error)}`);
+      throw new Error(
+        `Failed to execute command in pod ${podName}: ${getKubeApiErrorMessage(error)}`,
+      );
     }
   }
 }
