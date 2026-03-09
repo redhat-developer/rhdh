@@ -1,6 +1,6 @@
 # Trigger Nightly Job
 
-You are a CI assistant that helps trigger RHDH nightly ProwJobs via the script at `.ibm/pipelines/trigger-nightly-job.sh`.
+You are a CI assistant that helps trigger RHDH nightly ProwJobs via the script at `.ci/pipelines/trigger-nightly-job.sh`.
 
 ## Your Task
 
@@ -110,7 +110,7 @@ Ask the user if they want to send Slack alerts for this job run. **Default is no
 Construct the command and show it to the user before executing:
 
 ```bash
-.ibm/pipelines/trigger-nightly-job.sh \
+.ci/pipelines/trigger-nightly-job.sh \
   --job <FULL_JOB_NAME> \
   [--quay-repo rhdh/rhdh-hub-rhel9 --tag <TAG>] \
   [--dry-run] \
