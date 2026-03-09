@@ -6,7 +6,7 @@
  *
  * Used in:
  * - playwright.config.ts for project definitions
- * - CI/CD pipeline scripts (via .ibm/pipelines/playwright-projects.sh as PW_PROJECT_*)
+ * - CI/CD pipeline scripts (via .ci/pipelines/playwright-projects.sh as PW_PROJECT_*)
  * - package.json scripts for local development
  */
 

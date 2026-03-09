@@ -16,17 +16,17 @@ const APP_CONFIG_DYNAMIC_PLUGINS_CONFIG_FILE = path.join(
   ROOT_DIR,
   "app-config.dynamic-plugins.yaml",
 );
-const IBM_VALUES_SHOWCASE_CONFIG_FILE = path.join(
+const CI_VALUES_SHOWCASE_CONFIG_FILE = path.join(
   ROOT_DIR,
-  ".ibm/pipelines/value_files/values_showcase.yaml",
+  ".ci/pipelines/value_files/values_showcase.yaml",
 );
-const IBM_VALUES_SHOWCASE_RBAC_CONFIG_FILE = path.join(
+const CI_VALUES_SHOWCASE_RBAC_CONFIG_FILE = path.join(
   ROOT_DIR,
-  ".ibm/pipelines/value_files/values_showcase-rbac.yaml",
+  ".ci/pipelines/value_files/values_showcase-rbac.yaml",
 );
-const IBM_VALUES_SHOWCASE_AUTH_PROVIDERS_CONFIG_FILE = path.join(
+const CI_VALUES_SHOWCASE_AUTH_PROVIDERS_CONFIG_FILE = path.join(
   ROOT_DIR,
-  ".ibm/pipelines/value_files/values_showcase-auth-providers.yaml",
+  ".ci/pipelines/value_files/values_showcase-auth-providers.yaml",
 );
 const RHDH_OPENSHIFT_SETUP_CONFIG_FILE = path.join(
   ROOT_DIR,
@@ -239,9 +239,9 @@ describe("Dynamic Plugin Wrappers", () => {
     );
   });
 
-  describe("(ibm: values_showcase.yaml) should have a valid config", () => {
+  describe("(ci: values_showcase.yaml) should have a valid config", () => {
     const config = parseYamlFile<GlobalDynamicPluginsConfig>(
-      IBM_VALUES_SHOWCASE_CONFIG_FILE,
+      CI_VALUES_SHOWCASE_CONFIG_FILE,
     );
 
     const externalDynamicPluginsConfig: DynamicPluginConfig[] = [
@@ -287,9 +287,9 @@ describe("Dynamic Plugin Wrappers", () => {
     });
   });
 
-  describe("(ibm: values_showcase-rbac.yaml) should have a valid config", () => {
+  describe("(ci: values_showcase-rbac.yaml) should have a valid config", () => {
     const config = parseYamlFile<GlobalDynamicPluginsConfig>(
-      IBM_VALUES_SHOWCASE_RBAC_CONFIG_FILE,
+      CI_VALUES_SHOWCASE_RBAC_CONFIG_FILE,
     );
 
     it("should have a corresponding package", () => {
@@ -297,9 +297,9 @@ describe("Dynamic Plugin Wrappers", () => {
     });
   });
 
-  describe("(ibm: values_showcase_auth-providers.yaml) should have a valid config", () => {
+  describe("(ci: values_showcase_auth-providers.yaml) should have a valid config", () => {
     const config = parseYamlFile<GlobalDynamicPluginsConfig>(
-      IBM_VALUES_SHOWCASE_AUTH_PROVIDERS_CONFIG_FILE,
+      CI_VALUES_SHOWCASE_AUTH_PROVIDERS_CONFIG_FILE,
     );
 
     it("should have a corresponding package", () => {

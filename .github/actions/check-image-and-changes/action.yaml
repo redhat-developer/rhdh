@@ -55,7 +55,7 @@ runs:
         while IFS= read -r file; do
           if [[ -n "$file" ]]; then
             # If file is NOT in one of the non-essential directories, mark as relevant
-            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ibm)/ ]]; then
+            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ci)/ ]]; then
               echo "Relevant change detected: $file"
               RELEVANT_CHANGES=true
               break
@@ -67,7 +67,7 @@ runs:
           echo "Relevant changes detected outside of non-essential directories."
           echo "relevant=true" >> $GITHUB_OUTPUT
         else
-          echo "Changes detected only in non-essential directories (e2e, e2e-tests, doc, docs, .ibm)."
+          echo "Changes detected only in non-essential directories (e2e, e2e-tests, doc, docs, .ci)."
           echo "relevant=false" >> $GITHUB_OUTPUT
         fi
 

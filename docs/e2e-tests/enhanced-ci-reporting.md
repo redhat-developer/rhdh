@@ -4,13 +4,13 @@ This document describes the enhanced CI reporting system that provides detailed 
 
 ## Overview
 
-The enhanced CI reporting system uses the [`.ibm/pipelines/reporting.sh`](../../.ibm/pipelines/reporting.sh) script to track various aspects of test execution and deployment status. Results are stored in the `SHARED_DIR` for use by OpenShift CI steps and are formatted into Slack notifications sent to the `#rhdh-e2e-test-alerts` channel.
+The enhanced CI reporting system uses the [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script to track various aspects of test execution and deployment status. Results are stored in the `SHARED_DIR` for use by OpenShift CI steps and are formatted into Slack notifications sent to the `#rhdh-e2e-test-alerts` channel.
 
 **Note:** The `SHARED_DIR` can only contain files. No directories or nested structures are supported.
 
 ## Using reporting.sh Functions
 
-The [`.ibm/pipelines/reporting.sh`](../../.ibm/pipelines/reporting.sh) script provides several functions to signal different types of results. It uses a Bash array to store statuses for multiple deployments, indexed by `CURRENT_DEPLOYMENT` (a deployment number).
+The [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script provides several functions to signal different types of results. It uses a Bash array to store statuses for multiple deployments, indexed by `CURRENT_DEPLOYMENT` (a deployment number).
 
 ### Core Reporting Functions
 
@@ -95,7 +95,7 @@ save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
 
 ### Error Handling
 
-The system automatically handles script failures through the cleanup trap. See [`.ibm/pipelines/openshift-ci-tests.sh`](../../.ibm/pipelines/openshift-ci-tests.sh).
+The system automatically handles script failures through the cleanup trap. See [`.ci/pipelines/openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh).
 
 ## OpenShift CI Integration
 
@@ -133,8 +133,8 @@ For nightly runs, the system automatically sends notifications to the `#rhdh-e2e
 
 ## File Locations
 
-- **Script**: [`.ibm/pipelines/reporting.sh`](../../.ibm/pipelines/reporting.sh)
-- **Integration**: [`.ibm/pipelines/utils.sh`](../../.ibm/pipelines/utils.sh) and [`.ibm/pipelines/openshift-ci-tests.sh`](../../.ibm/pipelines/openshift-ci-tests.sh)
+- **Script**: [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh)
+- **Integration**: [`.ci/pipelines/utils.sh`](../../.ci/pipelines/utils.sh) and [`.ci/pipelines/openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh)
 
 ## Related Documentation
 
