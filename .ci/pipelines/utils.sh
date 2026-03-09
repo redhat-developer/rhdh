@@ -332,7 +332,21 @@ delete_namespace() {
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
-  sleep 5
+
+  echo "Waiting for PostgreSQL master pod to be created..."
+  local max_wait=300
+  local elapsed=0
+  until oc get pod -l postgres-operator.crunchydata.com/role=master -n "${NAME_SPACE_POSTGRES_DB}" -o name 2> /dev/null | grep -q pod; do
+    elapsed=$((elapsed + 5))
+    if [[ $elapsed -ge $max_wait ]]; then
+      echo "ERROR: PostgreSQL master pod not created after ${max_wait}s"
+      return 1
+    fi
+    sleep 5
+  done
+  echo "Waiting for PostgreSQL cluster to be ready..."
+  oc wait --for=condition=Ready pod -l postgres-operator.crunchydata.com/role=master -n "${NAME_SPACE_POSTGRES_DB}" --timeout=180s
+
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
@@ -798,17 +812,97 @@ get_image_helm_set_params() {
 }
 
 # Helper function to perform helm install/upgrade
+# Additional args ($4+) are passed through to helm upgrade
 perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
+  shift 3
 
   # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(get_image_helm_set_params) \
+    "$@"
+}
+
+# Manually create sonataflow database with SSL support via a k8s Job.
+# Workaround: the helm chart's create-db job doesn't include PGSSLMODE env var.
+create_sonataflow_database_with_ssl() {
+  local namespace=$1
+  local job_name="create-sonataflow-db-manual"
+
+  echo "Manually creating sonataflow database with SSL support..."
+
+  oc delete job "${job_name}" -n "${namespace}" --ignore-not-found=true
+
+  # Quoted heredoc prevents shell expansion; envsubst selectively expands NAMESPACE only
+  NAMESPACE="${namespace}" envsubst '$NAMESPACE' << 'EOF' | oc apply -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-sonataflow-db-manual
+  namespace: ${NAMESPACE}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: psql
+        image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
+        command: ["sh", "-c"]
+        args:
+          - |
+            psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
+        env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_HOST
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_USER
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_PORT
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: POSTGRES_PASSWORD
+        - name: PGSSLMODE
+          valueFrom:
+            secretKeyRef:
+              name: postgres-cred
+              key: PGSSLMODE
+EOF
+
+  echo "Waiting for database creation job to complete..."
+  if ! oc wait --for=condition=complete job/"${job_name}" -n "${namespace}" --timeout=5m 2> /dev/null; then
+    local failed
+    failed=$(oc get job/"${job_name}" -n "${namespace}" -o jsonpath='{.status.failed}' 2> /dev/null)
+    if [[ "${failed}" -gt 0 ]]; then
+      echo "ERROR: Database creation job failed after ${failed} attempt(s)"
+    else
+      echo "ERROR: Database creation job timed out"
+    fi
+    oc logs job/"${job_name}" -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
+    oc delete job "${job_name}" -n "${namespace}" --ignore-not-found=true
+    return 1
+  fi
+
+  echo "Database creation output:"
+  oc logs job/"${job_name}" -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
+  echo "Manual database creation completed successfully"
 }
 
 base_deployment() {
@@ -834,17 +928,44 @@ rbac_deployment() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+  perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
+    --set "orchestrator.sonataflowPlatform.externalDBHost=postgress-external-db-primary.${NAME_SPACE_POSTGRES_DB}.svc.cluster.local"
 
-  # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
-    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
+  # NOTE: The helm chart's create-sonataflow-database job will fail because it doesn't include PGSSLMODE env var.
+  # We wait for the job to be created (indicating helm install is progressing), then manually create the database with SSL.
+  local max_attempts=60
+  local attempt=0
+  until oc get job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" &> /dev/null; do
+    attempt=$((attempt + 1))
+    if [[ $attempt -ge $max_attempts ]]; then
+      echo "ERROR: Timed out after $((max_attempts * 5))s waiting for ${RELEASE_NAME_RBAC}-create-sonataflow-database job to be created."
+      echo "Helm install may have failed. Current jobs in namespace:"
+      oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null || echo "  (unable to list jobs)"
+      return 1
+    fi
+    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds... (attempt ${attempt}/${max_attempts})"
     sleep 5
   done
-  oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
+
+  # Don't wait for the helm job to complete - it will fail due to missing SSL configuration
+  # Instead, manually create the database with proper SSL support
+  create_sonataflow_database_with_ssl "${NAME_SPACE_RBAC}"
+
+  # Clean up the failed helm chart job so it doesn't pollute monitoring/alerts
+  oc delete job "${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --ignore-not-found=true
+
+  # Patch the sonataflow platform to configure SSL for the jobs service
+  echo "Patching SonataFlowPlatform with SSL configuration..."
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.'"${NAME_SPACE_POSTGRES_DB}"'.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
+
+  # Wait for jobs-service to be ready before deploying workflows
+  echo "Waiting for jobs-service to be ready..."
+  if ! oc rollout status deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}" --timeout=3m; then
+    echo "ERROR: jobs-service rollout did not complete in time. Cannot deploy workflows without it."
+    return 1
+  fi
 
   # initiate orchestrator workflows deployment
   deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
@@ -1254,7 +1375,7 @@ deploy_orchestrator_workflows() {
   oc apply -f "${WORKFLOW_MANIFESTS}"
 
   helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
-  helm install greeting orchestrator-workflows/greeting -n "$namespace"
+  helm install greeting orchestrator-workflows/greeting -n "$namespace" --wait --timeout=5m
 
   until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
     echo "No sf resources found. Retrying in 5 seconds..."
