@@ -1,10 +1,29 @@
 import { test } from "@playwright/test";
 import * as yaml from "js-yaml";
 import { Client } from "pg";
-import * as k8s from "@kubernetes/client-node";
 import { execSync } from "child_process";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
+
+interface AppConfigBackend {
+  database?: {
+    client?: string;
+    pluginDivisionMode?: string;
+    ensureSchemaExists?: boolean;
+    connection?: {
+      host?: string;
+      port?: string;
+      user?: string;
+      password?: string;
+      database?: string;
+    };
+  };
+}
+
+interface AppConfigYaml {
+  backend?: AppConfigBackend;
+  [key: string]: unknown;
+}
 
 test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
@@ -205,15 +224,11 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
 
     console.log("Configuring RHDH for schema mode...");
     
-    let podDbHost = dbHost;
-    let sslMode = "require";
     if (dbHost === "localhost" || dbHost === "127.0.0.1") {
-      podDbHost = postgresServiceName;
-      
       try {
         await kubeClient.coreV1Api.readNamespacedService(postgresServiceName, namespace);
         console.log(`✓ Verified PostgreSQL service exists: ${postgresServiceName}`);
-      } catch (error) {
+      } catch {
         console.warn(`[WARNING]  Warning: Could not verify PostgreSQL service '${postgresServiceName}' exists`);
         console.warn(`   Service might have a different name. Checking available services...`);
         try {
@@ -225,13 +240,10 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
             console.warn(`   Found PostgreSQL-related services: ${pgServices.map(s => s.metadata?.name).join(", ")}`);
             console.warn(`   Using: ${postgresServiceName} (if this fails, check the actual service name)`);
           }
-        } catch (listError) {
+        } catch {
           // Ignore list errors
         }
       }
-      
-      // For in-cluster connections, SSL is typically not required
-      sslMode = "disable";
     }
     
     // Update Helm chart secret with test user password
@@ -257,7 +269,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       } else {
         console.log(`Helm chart secret ${secretName} needs password update`);
       }
-    } catch (error) {
+    } catch {
       console.log(`Helm chart secret ${secretName} not found, will update it`);
     }
     
@@ -304,7 +316,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
         if (!hasPostgresDb) {
           console.log("Adding POSTGRES_DB environment variable to deployment...");
           // Need to ensure the env array exists
-          const patch: any[] = [];
+          const patch: { op: string; path: string; value?: unknown }[] = [];
           
           // If env array doesn't exist, create it first
           if (!backstageContainer.env || backstageContainer.env.length === 0) {
@@ -424,14 +436,14 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     let configMapResponse;
     try {
       configMapResponse = await kubeClient.getConfigMap(configMapName, namespace);
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
       if (errorMsg.includes("not found") || errorMsg.includes("404")) {
         console.warn(`[WARNING]  ConfigMap '${configMapName}' not found`);
         console.warn(`   This may be OK if Helm chart uses a different ConfigMap name.`);
         throw new Error(`ConfigMap ${configMapName} not found. Please verify the Helm chart release name.`);
       }
-      throw error;
+      throw err;
     }
     
     const configMap = configMapResponse.body;
@@ -443,7 +455,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       throw new Error(`Could not find app-config key in ConfigMap ${configMapName}`);
     }
 
-    const appConfig = yaml.load(configMap.data[configKey]) as any;
+    const appConfig = yaml.load(configMap.data[configKey]) as AppConfigYaml;
     if (!appConfig.backend) appConfig.backend = {};
     
     // Check if already configured for schema mode
@@ -493,6 +505,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     // After restart, validate what Backstage is actually reading
     // This helps diagnose if Helm chart is overwriting our changes
     if (needsRestart) {
+      // Optional: add validation after restart
     }
 
     // Check if deployment is already running and ready
@@ -506,7 +519,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       if (!deploymentReady) {
         console.warn(`[WARNING]  Deployment is not ready (${readyReplicas} ready, ${availableReplicas} available)`);
       }
-      } catch (error) {
+      } catch {
         // Silently continue - will restart if needed
       }
 
@@ -744,7 +757,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
               }
             }
           }
-        } catch (error) {
+        } catch {
           // Ignore log retrieval errors
         }
       }
@@ -784,7 +797,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
         );
         
         if (verifyConfigKey && verifyConfig.body.data) {
-          const verifyAppConfig = yaml.load(verifyConfig.body.data[verifyConfigKey]) as any;
+          const verifyAppConfig = yaml.load(verifyConfig.body.data[verifyConfigKey]) as AppConfigYaml;
           const verifyDbConfig = verifyAppConfig?.backend?.database;
           if (verifyDbConfig) {
             configCheck = `\n\nCurrent app-config database settings:\n` +
@@ -938,14 +951,14 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
               namespace,
               "routes",
               routeName
-            ) as any;
+            ) as { body?: { spec?: { host?: string } } };
             
             if (route?.body?.spec?.host) {
               routeHost = route.body.spec.host;
               console.log(`✓ Found OpenShift Route: ${routeName} with host: ${routeHost}`);
               break;
             }
-          } catch (error) {
+          } catch {
             continue;
           }
         }
@@ -961,10 +974,10 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
             `  export BASE_URL="https://your-rhdh-url.com"`
           );
         }
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
         if (errorMsg.includes("BASE_URL")) {
-          throw error; 
+          throw err;
         }
         throw new Error(
           "BASE_URL environment variable is required for this test.\n" +
@@ -976,8 +989,8 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     }
     
     const originalGoto = page.goto.bind(page);
-    let interceptedBaseUrl = baseUrl;
-    page.goto = async (url: string, options?: any) => {
+    const interceptedBaseUrl = baseUrl;
+    page.goto = async (url: string, options?: Parameters<typeof page.goto>[1]) => {
       if (url.startsWith("/") && !url.startsWith("//")) {
         url = `${interceptedBaseUrl}${url}`;
       } else if (!url.startsWith("http")) {

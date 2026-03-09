@@ -1005,7 +1005,7 @@ export class KubeClient {
         })
         .sort((a, b) => {
           // Handle both Date objects and string timestamps
-          const getTimestamp = (event: any): number => {
+          const getTimestamp = (event: { firstTimestamp?: string | Date; eventTime?: string | { getTime?: () => number } }): number => {
             if (event.firstTimestamp) {
               return typeof event.firstTimestamp === 'string' 
                 ? new Date(event.firstTimestamp).getTime() 
@@ -1248,7 +1248,7 @@ export class KubeClient {
           },
         });
         
-        exec.exec(
+        void exec.exec(
           namespace,
           podName,
           containerName,

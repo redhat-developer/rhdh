@@ -6,9 +6,13 @@ import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import { configurePostgresCredentials } from "../../utils/postgres-config";
 
+interface AppConfigYaml {
+  backend?: { database?: { pluginDivisionMode?: string; connection?: { database?: string }; ensureSchemaExists?: boolean } };
+  [key: string]: unknown;
+}
+
 test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const job: string = process.env.JOB_NAME || "";
   // Operator deployment naming: backstage-${RELEASE_NAME}
   const releaseName = process.env.RELEASE_NAME || "developer-hub";
   // Always use Operator naming convention for this test file
@@ -157,8 +161,8 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       await testConnectionClient.query("SELECT 1");
       await testConnectionClient.end();
       console.log("✓ Test database connection verified");
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
       throw new Error(
         `Test database connection failed. This means RHDH pods will also fail to connect.\n` +
         `Error: ${errorMsg}\n` +
@@ -180,7 +184,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       try {
         await kubeClient.coreV1Api.readNamespacedService(podDbHost, namespace);
         console.log(`✓ Verified PostgreSQL service exists: ${podDbHost}`);
-      } catch (error) {
+      } catch {
         console.warn(`[WARNING]  Warning: Could not verify PostgreSQL service '${podDbHost}' exists`);
         console.warn(`   Service might have a different name. Checking available services...`);
         try {
@@ -192,7 +196,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
             console.warn(`   Found PostgreSQL-related services: ${pgServices.map(s => s.metadata?.name).join(", ")}`);
             console.warn(`   Using: ${podDbHost} (if this fails, check the actual service name)`);
           }
-        } catch (listError) {
+        } catch {
           // Ignore list errors
         }
       }
@@ -226,7 +230,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       } else {
         console.log(`Secret needs update: host=${existingHost === podDbHost}, user=${existingUser === dbUser}, db=${existingDb === dbName}`);
       }
-    } catch (error) {
+    } catch {
       // Secret doesn't exist, we need to create it
       console.log("Postgres credentials secret not found, will create it");
     }
@@ -256,20 +260,21 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     const backstageCrVersion = "v1alpha4"; // Match your CR API version
     const backstageCrPlural = "backstages";
     try {
+      interface BackstageCrBody { spec?: { application?: { extraEnvs?: { secrets?: (string | { name?: string })[] } } } }
       const currentCr = await kubeClient.customObjectsApi.getNamespacedCustomObject(
         backstageCrGroup,
         backstageCrVersion,
         namespace,
         backstageCrPlural,
         backstageCrName
-      ) as any;
+      ) as { body: BackstageCrBody };
       
       const spec = currentCr.body.spec || {};
       const application = spec.application || {};
       const extraEnvs = application.extraEnvs || {};
       const secrets = extraEnvs.secrets || [];
       
-      const secretAlreadyReferenced = secrets.some((s: any) => 
+      const secretAlreadyReferenced = secrets.some((s: string | { name?: string }) => 
         (typeof s === 'string' && s === 'postgres-cred') || 
         (typeof s === 'object' && s.name === 'postgres-cred')
       );
@@ -312,8 +317,8 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       } else {
         console.log("✓ Backstage CR already references postgres-cred secret");
       }
-    } catch (crError) {
-      const errorMsg = crError instanceof Error ? crError.message : String(crError);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
       if (errorMsg.includes("not found") || errorMsg.includes("404")) {
         console.warn(`[WARNING]  Backstage CR '${backstageCrName}' not found - RHDH may not read POSTGRES_DB from secret`);
         console.warn(`   You may need to manually add postgres-cred to spec.application.extraEnvs.secrets`);
@@ -348,7 +353,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     try {
       await kubeClient.coreV1Api.readNamespacedConfigMap(dbConfigMapName, namespace);
       dbConfigMapExists = true;
-    } catch (error) {
+    } catch {
       // ConfigMap doesn't exist, will create it
     }
     
@@ -395,7 +400,8 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error("CR get operation timed out after 30 seconds")), 30000)
       );
-      const currentCr = await Promise.race([crPromise, timeoutPromise]) as any;
+      interface CrWithAppConfig { body: { spec?: { application?: { appConfig?: { configMaps?: { name?: string }[] } } } } }
+      const currentCr = await Promise.race([crPromise, timeoutPromise]) as CrWithAppConfig;
       
       // Check if appConfig.configMaps already includes our ConfigMap
       const spec = currentCr.body.spec || {};
@@ -403,7 +409,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       const appConfig = application.appConfig || {};
       const configMaps = appConfig.configMaps || [];
       
-      const alreadyReferenced = configMaps.some((cm: any) => cm.name === dbConfigMapName);
+      const alreadyReferenced = configMaps.some((cm: { name?: string }) => cm.name === dbConfigMapName);
       
       if (!alreadyReferenced) {
         // Patch the CR to add our ConfigMap reference
@@ -416,26 +422,27 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
         ];
         
         // Ensure the paths exist
+        type JsonPatchOp = { op: string; path: string; value?: unknown };
         if (!spec.application) {
           patch.unshift({
             op: "add",
             path: "/spec/application",
             value: {},
-          } as any);
+          } as JsonPatchOp);
         }
         if (!application.appConfig) {
           patch.unshift({
             op: "add",
             path: "/spec/application/appConfig",
             value: { configMaps: [] },
-          } as any);
+          } as JsonPatchOp);
         }
         if (!appConfig.configMaps) {
           patch.unshift({
             op: "add",
             path: "/spec/application/appConfig/configMaps",
             value: [],
-          } as any);
+          } as JsonPatchOp);
         }
         
         // Patch with timeout
@@ -490,7 +497,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       throw new Error(`Could not find app-config key in ConfigMap ${configMapName}`);
     }
 
-    const appConfig = yaml.load(configMap.data[configKey]) as any;
+    const appConfig = yaml.load(configMap.data[configKey]) as AppConfigYaml;
     if (!appConfig.backend) appConfig.backend = {};
     
     // Check if already configured for schema mode with the correct database
@@ -546,7 +553,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       }
       if (verifyConfig.body.data && verifyConfigKey) {
         try {
-          const verifyAppConfig = yaml.load(verifyConfig.body.data[verifyConfigKey]) as any;
+          const verifyAppConfig = yaml.load(verifyConfig.body.data[verifyConfigKey]) as AppConfigYaml;
           if (!verifyAppConfig) {
             throw new Error("Failed to parse app-config YAML after update");
           }
@@ -597,7 +604,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       } else {
         console.log(`[WARNING]  Deployment is not ready (${readyReplicas} ready, ${availableReplicas} available)`);
       }
-    } catch (error) {
+    } catch {
       console.log("Could not check deployment status, will proceed with restart if needed");
     }
 
@@ -781,7 +788,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
                     console.warn(`  [WARNING]  POSTGRES_DB environment variable not found in pod!`);
                   }
                 }
-              } catch (envError) {
+              } catch {
                 // Ignore
               }
               
@@ -823,7 +830,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
               }
             }
           }
-        } catch (error) {
+        } catch {
           // Ignore log retrieval errors
         }
       }
@@ -895,12 +902,12 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
                   podLogs = `\n\nRecent relevant pod logs:\n${logLines.slice(-20).join("\n")}`;
                 }
               }
-            } catch (logError) {
+            } catch {
               // Ignore log retrieval errors
             }
           }
         }
-      } catch (error) {
+      } catch {
         // Ignore errors getting pod info
       }
       
@@ -924,7 +931,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
             const configContent = verifyConfig.body.data[verifyConfigKey];
             // Log first 500 chars of config for debugging
             const configPreview = configContent.substring(0, Math.min(500, configContent.length));
-            const verifyAppConfig = yaml.load(configContent) as any;
+            const verifyAppConfig = yaml.load(configContent) as AppConfigYaml;
             if (!verifyAppConfig) {
               configCheck = `\n\n[WARNING]  Failed to parse app-config YAML`;
               configCheck += `\n  Config preview (first 500 chars):\n${configPreview}...`;
@@ -1120,14 +1127,14 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
               namespace,
               "routes",
               routeName
-            ) as any;
+            ) as { body?: { spec?: { host?: string } } };
             
             if (route?.body?.spec?.host) {
               routeHost = route.body.spec.host;
               console.log(`✓ Found OpenShift Route: ${routeName} with host: ${routeHost}`);
               break;
             }
-          } catch (error) {
+          } catch {
             continue;
           }
         }
@@ -1143,10 +1150,10 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
             `  export BASE_URL="https://your-rhdh-url.com"`
           );
         }
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
         if (errorMsg.includes("BASE_URL")) {
-          throw error; 
+          throw err; 
         }
         throw new Error(
           "BASE_URL environment variable is required for this test.\n" +
@@ -1158,8 +1165,8 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     }
     
     const originalGoto = page.goto.bind(page);
-    let interceptedBaseUrl = baseUrl;
-    page.goto = async (url: string, options?: any) => {
+    const interceptedBaseUrl = baseUrl;
+    page.goto = async (url: string, options?: Parameters<typeof page.goto>[1]) => {
       if (url.startsWith("/") && !url.startsWith("//")) {
         url = `${interceptedBaseUrl}${url}`;
       } else if (!url.startsWith("http")) {
