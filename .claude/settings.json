@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(curl -s 'https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh')",
-      "Bash(curl -s 'https://quay.io/api/v1/repository/rhdh/rhdh-hub-rhel9/tag/?limit=20&onlyActiveTags=true&filter_tag_name=like:1.')"
-    ]
-  }
-}
