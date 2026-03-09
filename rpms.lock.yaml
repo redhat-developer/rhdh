@@ -263,20 +263,20 @@ arches:
     name: glibc-locale-source
     evr: 2.34-231.el9_7.10
     sourcerpm: glibc-2.34-231.el9_7.10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/g/go-srpm-macros-3.6.0-12.el9_7.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/g/go-srpm-macros-3.6.0-13.el9_7.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 27275
-    checksum: sha256:02f6ac481c23d81a470fba4879841b382c8350be4132097f108d295ebc45b9aa
+    size: 33806
+    checksum: sha256:ea2a392fd650fc6c4928590af98a4b35f705537b0353417599ba97c21b271404
     name: go-srpm-macros
-    evr: 3.6.0-12.el9_7
-    sourcerpm: go-rpm-macros-3.6.0-12.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-611.35.1.el9_7.aarch64.rpm
+    evr: 3.6.0-13.el9_7
+    sourcerpm: go-rpm-macros-3.6.0-13.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-611.36.1.el9_7.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 2978789
-    checksum: sha256:32fa7425a81398e94d001ed6da353e643ce95574e2d031d60614c081f10bed4d
+    size: 2980805
+    checksum: sha256:cbe473056fc3545d70925d1c6ff9fbd3a6b4f5ef83b4071546ef74186ee93777
     name: kernel-headers
-    evr: 5.14.0-611.35.1.el9_7
-    sourcerpm: kernel-5.14.0-611.35.1.el9_7.src.rpm
+    evr: 5.14.0-611.36.1.el9_7
+    sourcerpm: kernel-5.14.0-611.36.1.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 14098
@@ -3217,20 +3217,20 @@ arches:
     name: rsync
     evr: 3.2.5-3.el9
     sourcerpm: rsync-3.2.5-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-38.1.65-1.el9.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-38.1.65-1.el9_7.1.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 43109
-    checksum: sha256:fb9d24fa5770a76e3c15677ec3c74f6910f89ded1d519dc94baedd8ee2db1938
+    size: 44151
+    checksum: sha256:2febb9f769974bd968cb9a5a023f4c596bd68777b782e1320c8472bfdf28d20b
     name: selinux-policy
-    evr: 38.1.65-1.el9
-    sourcerpm: selinux-policy-38.1.65-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-targeted-38.1.65-1.el9.noarch.rpm
+    evr: 38.1.65-1.el9_7.1
+    sourcerpm: selinux-policy-38.1.65-1.el9_7.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-targeted-38.1.65-1.el9_7.1.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 7266040
-    checksum: sha256:30e7116093e0a96b5a156c017fc4a975ca0892fbe70ddf4b33eac12dad5965f5
+    size: 7269373
+    checksum: sha256:d2374ed366fd3ef8618cc222ff141ecbf33033607c66ccccc593197a4e742a5c
     name: selinux-policy-targeted
-    evr: 38.1.65-1.el9
-    sourcerpm: selinux-policy-38.1.65-1.el9.src.rpm
+    evr: 38.1.65-1.el9_7.1
+    sourcerpm: selinux-policy-38.1.65-1.el9_7.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/shadow-utils-subid-4.9-15.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 85490
@@ -3472,12 +3472,12 @@ arches:
     checksum: sha256:815c2ae9574006ecb596000492929264de785444736ee3968d5ee34cb6e75159
     name: git
     evr: 2.47.3-1.el9_6
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/g/go-rpm-macros-3.6.0-12.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/g/go-rpm-macros-3.6.0-13.el9_7.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
-    size: 134296
-    checksum: sha256:3800c47f96f175d6a9a9da5edbd6945aa6ef8ef5b86a84cfcadc558e78762d77
+    size: 140859
+    checksum: sha256:e66bea34985b5768a909ace1874bffbc5d813020c0e128829d3b91f8f90a3727
     name: go-rpm-macros
-    evr: 3.6.0-12.el9_7
+    evr: 3.6.0-13.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/k/kernel-srpm-macros-1.0-14.el9.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
     size: 22473
@@ -5086,12 +5086,12 @@ arches:
     checksum: sha256:a1fd44e58d1fb5b52b72586c5ef2e12c040428f771cde1d1350b36d3b9155db0
     name: rsync
     evr: 3.2.5-3.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.65-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.65-1.el9_7.1.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 1167653
-    checksum: sha256:b9e7269bb64eb50dd44133b0f88dfe13728c03655dac8f57e759d11a2cd57264
+    size: 1169887
+    checksum: sha256:41919662af0c88ffe15109eaae3740ba4accf9de27fa0605bbb332f354fbd1ab
     name: selinux-policy
-    evr: 38.1.65-1.el9
+    evr: 38.1.65-1.el9_7.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/s/shadow-utils-4.9-15.el9.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 1712227
@@ -5445,13 +5445,13 @@ arches:
     name: glibc-locale-source
     evr: 2.34-231.el9_7.10
     sourcerpm: glibc-2.34-231.el9_7.10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/go-srpm-macros-3.6.0-12.el9_7.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/go-srpm-macros-3.6.0-13.el9_7.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 27275
-    checksum: sha256:02f6ac481c23d81a470fba4879841b382c8350be4132097f108d295ebc45b9aa
+    size: 33806
+    checksum: sha256:ea2a392fd650fc6c4928590af98a4b35f705537b0353417599ba97c21b271404
     name: go-srpm-macros
-    evr: 3.6.0-12.el9_7
-    sourcerpm: go-rpm-macros-3.6.0-12.el9_7.src.rpm
+    evr: 3.6.0-13.el9_7
+    sourcerpm: go-rpm-macros-3.6.0-13.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-611.36.1.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 3019841
@@ -8654,12 +8654,12 @@ arches:
     checksum: sha256:815c2ae9574006ecb596000492929264de785444736ee3968d5ee34cb6e75159
     name: git
     evr: 2.47.3-1.el9_6
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/go-rpm-macros-3.6.0-12.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/go-rpm-macros-3.6.0-13.el9_7.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 134296
-    checksum: sha256:3800c47f96f175d6a9a9da5edbd6945aa6ef8ef5b86a84cfcadc558e78762d77
+    size: 140859
+    checksum: sha256:e66bea34985b5768a909ace1874bffbc5d813020c0e128829d3b91f8f90a3727
     name: go-rpm-macros
-    evr: 3.6.0-12.el9_7
+    evr: 3.6.0-13.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/k/kernel-srpm-macros-1.0-14.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 22473
