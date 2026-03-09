@@ -97,7 +97,7 @@ Present the tags to the user so they can choose. Common tag formats:
 - `1.10` - latest 1.10 release
 - `latest` - latest build overall
 
-When the user picks a tag, use the quay repo `rhdh/rhdh-hub-rhel9` by default (unless they specify a different one).
+When the user picks a tag, use `--tag` alone to override just the tag (the job's default Quay repo will be used). Only add `--quay-repo` if the user explicitly specifies a different repo.
 
 ## Step 4: Fork Override
 

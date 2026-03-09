@@ -69,8 +69,8 @@ Required:
   -j, --job JOB_NAME           Full ProwJob name to trigger.
 
 Optional overrides (passed as env var overrides to the job):
-  -q, --quay-repo QUAY_REPO    Override the Quay repository (e.g. rhdh/rhdh-hub-rhel9).
-  -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-123). Requires -q.
+  -q, --quay-repo QUAY_REPO    Override the Quay repository (e.g. rhdh/rhdh-hub-rhel9). Requires --tag to be set.
+  -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-123).
   -o, --org GITHUB_ORG_NAME    Override the GitHub org (default in job: redhat-developer).
   -r, --repo GITHUB_REPO_NAME  Override the GitHub repo name (default in job: rhdh).
   -b, --branch BRANCH          Override the branch name.
