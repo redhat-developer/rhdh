@@ -6,8 +6,24 @@ import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import { configurePostgresCredentials } from "../../utils/postgres-config";
 
+interface AppConfigDatabaseConnection {
+  database?: string;
+  host?: string;
+  port?: string;
+  user?: string;
+  password?: string;
+}
+
+interface AppConfigDatabase {
+  client?: string;
+  pluginDivisionMode?: string;
+  ensureSchemaExists?: boolean;
+  ensureExists?: boolean;
+  connection?: AppConfigDatabaseConnection;
+}
+
 interface AppConfigYaml {
-  backend?: { database?: { pluginDivisionMode?: string; connection?: { database?: string }; ensureSchemaExists?: boolean } };
+  backend?: { database?: AppConfigDatabase };
   [key: string]: unknown;
 }
 
@@ -412,8 +428,9 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       const alreadyReferenced = configMaps.some((cm: { name?: string }) => cm.name === dbConfigMapName);
       
       if (!alreadyReferenced) {
-        // Patch the CR to add our ConfigMap reference
-        const patch = [
+        // Patch the CR to add our ConfigMap reference (JSON Patch ops with varying value shapes)
+        type JsonPatchOp = { op: string; path: string; value?: unknown };
+        const patch: JsonPatchOp[] = [
           {
             op: "add",
             path: "/spec/application/appConfig/configMaps/-",
@@ -422,27 +439,26 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
         ];
         
         // Ensure the paths exist
-        type JsonPatchOp = { op: string; path: string; value?: unknown };
         if (!spec.application) {
           patch.unshift({
             op: "add",
             path: "/spec/application",
             value: {},
-          } as JsonPatchOp);
+          });
         }
         if (!application.appConfig) {
           patch.unshift({
             op: "add",
             path: "/spec/application/appConfig",
             value: { configMaps: [] },
-          } as JsonPatchOp);
+          });
         }
         if (!appConfig.configMaps) {
           patch.unshift({
             op: "add",
             path: "/spec/application/appConfig/configMaps",
             value: [],
-          } as JsonPatchOp);
+          });
         }
         
         // Patch with timeout
