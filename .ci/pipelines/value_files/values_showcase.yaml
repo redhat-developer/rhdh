@@ -42,20 +42,6 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
         disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              github:
-                my-test-org:
-                  organization: janus-qe
-                  catalogPath: "/catalog-info.yaml"
-                  schedule:
-                    frequency:
-                      minutes: 1
-                    timeout:
-                      minutes: 1
-                    initialDelay:
-                      seconds: 15
       - package: "@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2"
         integrity: "sha512-N3HxvTNe/CxTDtXIsvfre3ZoFLWYfPxz/IJiKY3nzA5C0wcH4lZn+fI+mDFoTUXogt7fZWyl3mCrdwQWrOEM8A=="
         pluginConfig:
