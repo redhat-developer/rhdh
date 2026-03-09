@@ -77,15 +77,3 @@ To view the report manually later:
 ```bash
 yarn playwright show-report
 ```
-
-## Deployment Type Differences
-
-| Resource           | Operator                              | Helm Chart                        |
-| ------------------ | ------------------------------------- | --------------------------------- |
-| Deployment         | `backstage-${RELEASE_NAME}`           | `${RELEASE_NAME}`                 |
-| PostgreSQL Pod     | `backstage-psql-${RELEASE_NAME}-0`    | `${RELEASE_NAME}-postgresql-0`    |
-| PostgreSQL Service | `backstage-psql-${RELEASE_NAME}`      | `${RELEASE_NAME}-postgresql`      |
-| ConfigMap          | `backstage-appconfig-${RELEASE_NAME}` | `${RELEASE_NAME}-app-config`      |
-| Secret             | `postgres-cred`                       | `${RELEASE_NAME}-postgresql`      |
-| Default DB User    | `backstage_schema_user`               | `bn_backstage`                    |
-| Test File          | `verify-schema-mode-operator.spec.ts` | `verify-schema-mode-helm.spec.ts` |
