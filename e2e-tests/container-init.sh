@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Source logging library
-# shellcheck source=../.ibm/pipelines/lib/log.sh
-source "/tmp/rhdh/.ibm/pipelines/lib/log.sh"
+# shellcheck source=../.ci/pipelines/lib/log.sh
+source "/tmp/rhdh/.ci/pipelines/lib/log.sh"
 
 # Trap errors and exit with error code
 handle_error() {
@@ -154,7 +154,7 @@ log::info "  Showcase RBAC URL: ${SHOWCASE_RBAC_URL}"
 log::section "Test Execution"
 log::info "Executing openshift-ci-tests.sh"
 DEPLOYMENT_EXIT_CODE=0
-bash ./.ibm/pipelines/openshift-ci-tests.sh || DEPLOYMENT_EXIT_CODE=$?
+bash ./.ci/pipelines/openshift-ci-tests.sh || DEPLOYMENT_EXIT_CODE=$?
 
 log::section "Done"
 

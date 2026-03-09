@@ -6,8 +6,8 @@ RUNNER_IMAGE="quay.io/rhdh-community/rhdh-e2e-runner:main"
 RUN_CONFIG_FILE="$SCRIPT_DIR/.local-test/run-config.env"
 
 # Source logging library
-# shellcheck source=../.ibm/pipelines/lib/log.sh
-source "$SCRIPT_DIR/../.ibm/pipelines/lib/log.sh"
+# shellcheck source=../.ci/pipelines/lib/log.sh
+source "$SCRIPT_DIR/../.ci/pipelines/lib/log.sh"
 
 # ========== CLI Flags ==========
 show_help() {

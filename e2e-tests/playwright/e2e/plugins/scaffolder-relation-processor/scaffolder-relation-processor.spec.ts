@@ -54,6 +54,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await uiHelper.verifyText("Name");
 
     await uiHelper.clickButton("Self-service");
+    await uiHelper.verifyHeading("Templates");
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
   });

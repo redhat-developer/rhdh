@@ -22,8 +22,8 @@ WORK_DIR="$SCRIPT_DIR/.local-test/rhdh"
 CONFIG_FILE="$WORK_DIR/.local-test/config.env"
 
 # Source logging library
-# shellcheck source=../.ibm/pipelines/lib/log.sh
-source "$SCRIPT_DIR/../.ibm/pipelines/lib/log.sh"
+# shellcheck source=../.ci/pipelines/lib/log.sh
+source "$SCRIPT_DIR/../.ci/pipelines/lib/log.sh"
 
 # Check if config file exists
 if [[ ! -f "$CONFIG_FILE" ]]; then
