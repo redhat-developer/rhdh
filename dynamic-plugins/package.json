@@ -34,7 +34,13 @@
     "@backstage/plugin-auth-node": "0.6.6",
     "@backstage/plugin-scaffolder-node@^0.2.9": "^0.7.0",
     "@backstage/plugin-home@^0.8.11": "patch:@backstage/plugin-home@npm%3A0.8.12#./.yarn/patches/@backstage-plugin-home-npm-0.8.12-0d7fbcc764.patch",
-    "@backstage/plugin-techdocs-node@^1.13.6": "patch:@backstage/plugin-techdocs-node@npm%3A1.13.6#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.6-0ad8839a3e.patch"
+    "@backstage/plugin-techdocs-node@1.13.6": "patch:@backstage/plugin-techdocs-node@npm%3A1.13.6#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.6-0ad8839a3e.patch",
+    "@backstage/backend-plugin-api@1.4.2": "patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch",
+    "@backstage/backend-plugin-api@npm:^1.4.2": "patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch",
+    "@backstage/backend-plugin-api@1.4.3": "patch:@backstage/backend-plugin-api@npm%3A1.4.3#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.3-b7f08217ef.patch",
+    "@backstage/cli-common@0.1.15": "patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch",
+    "@backstage/plugin-permission-node@^0.10.3": "0.10.4",
+    "@backstage/plugin-permission-node@^0.10.4": "0.10.4"
   },
   "packageManager": "yarn@3.8.7"
 }
