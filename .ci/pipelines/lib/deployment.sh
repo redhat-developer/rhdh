@@ -36,20 +36,19 @@ deployment::mark_deploy_failed() {
   deployment::register "$label"
   save_status_failed_to_deploy "${_DEPLOYMENT_COUNTER}" true
   save_status_test_failed "${_DEPLOYMENT_COUNTER}" true
+  save_status_number_of_test_failed "${_DEPLOYMENT_COUNTER}" "N/A"
   save_overall_result 1
 }
 
 deployment::mark_test_result() {
   local passed="$1"
-  local num_failures="${2:-}"
+  local num_failures="${2:-0}"
   if [[ "$passed" == "true" ]]; then
     save_status_test_failed "${_DEPLOYMENT_COUNTER}" false
   else
     save_status_test_failed "${_DEPLOYMENT_COUNTER}" true
   fi
-  if [[ -n "$num_failures" ]]; then
-    save_status_number_of_test_failed "${_DEPLOYMENT_COUNTER}" "$num_failures"
-  fi
+  save_status_number_of_test_failed "${_DEPLOYMENT_COUNTER}" "$num_failures"
 }
 
 # Export all functions for subshell compatibility.

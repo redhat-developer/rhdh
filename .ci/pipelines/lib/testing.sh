@@ -31,7 +31,7 @@ readonly _TESTING_ERR_MISSING_PARAMS="Missing required parameters"
 #   $2 - namespace: The namespace where Backstage is deployed
 #   $3 - playwright_project: The Playwright project to run
 #   $4 - url: (optional) The URL to test against
-#   $5 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to namespace)
+#   $5 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to playwright_project)
 # Returns:
 #   0 - Tests passed
 #   Non-zero - Tests failed
@@ -41,7 +41,7 @@ testing::run_tests() {
   local namespace=$2
   local playwright_project=$3
   local url="${4:-}"
-  local artifacts_subdir="${5:-$namespace}"
+  local artifacts_subdir="${5:-$playwright_project}"
 
   if [[ -z "$release_name" || -z "$namespace" || -z "$playwright_project" ]]; then
     log::error "${_TESTING_ERR_MISSING_PARAMS}"
@@ -114,6 +114,7 @@ testing::run_tests() {
     failed_tests="0"
   elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
     failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    failed_tests="${failed_tests:-some}"
     echo "Number of failed tests: ${failed_tests}"
   else
     echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
@@ -121,7 +122,7 @@ testing::run_tests() {
     echo "Number of failed tests unknown, saving as $failed_tests."
   fi
   deployment::mark_test_result "$test_passed" "${failed_tests}"
-  return 0
+  return "$test_result"
 }
 
 # ==============================================================================
@@ -217,7 +218,7 @@ testing::check_backstage_running() {
 #   $4 - url: The URL to test against
 #   $5 - max_attempts: (optional) Maximum number of attempts (default: 30)
 #   $6 - wait_seconds: (optional) Seconds to wait between attempts (default: 30)
-#   $7 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to namespace)
+#   $7 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to playwright_project)
 # Uses globals: SKIP_TESTS
 testing::check_and_test() {
   local release_name=$1
@@ -226,7 +227,7 @@ testing::check_and_test() {
   local url=$4
   local max_attempts=${5:-30}
   local wait_seconds=${6:-30}
-  local artifacts_subdir="${7:-$namespace}"
+  local artifacts_subdir="${7:-$playwright_project}"
 
   if [[ -z "$release_name" || -z "$namespace" || -z "$playwright_project" || -z "$url" ]]; then
     log::error "${_TESTING_ERR_MISSING_PARAMS}"
@@ -240,22 +241,17 @@ testing::check_and_test() {
     if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
       log::info "SKIP_TESTS=true, skipping test execution for namespace: ${namespace}"
     else
-      testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_subdir}"
+      # Collect pod logs only on test failure to speed up successful PR runs.
+      if testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_subdir}"; then
+        log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
+      else
+        save_all_pod_logs "$namespace"
+      fi
     fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
     deployment::mark_deploy_failed "$artifacts_subdir"
     save_all_pod_logs "$namespace"
-    return 0
-  fi
-
-  # Collect pod logs only on test failure to speed up successful PR runs.
-  local _current_id
-  _current_id="$(deployment::current_id)"
-  if [[ "${STATUS_TEST_FAILED[$_current_id]:-}" == "true" ]]; then
-    save_all_pod_logs "$namespace"
-  else
-    log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
   fi
   return 0
 }
@@ -320,7 +316,7 @@ testing::check_upgrade_and_test() {
     testing::check_and_test "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
     log::error "Helm upgrade encountered an issue or timed out. Exiting..."
-    deployment::mark_deploy_failed "$namespace"
+    deployment::mark_deploy_failed "$playwright_project"
   fi
   return 0
 }
