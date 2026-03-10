@@ -44,11 +44,11 @@ test.describe("Admin > Extensions", () => {
     uiHelper = new UIhelper(page);
     await new Common(page).loginAsKeycloakUser();
     await uiHelper.openSidebarButton(
-      // TODO: RHDHBUGS-2584 - Administration sidebar menu not translating
-      // label: t["rhdh"][lang]["menuItem.administration"],
-      "Administration",
+      t["rhdh"][lang]["menuItem.administration"],
     );
-    await uiHelper.openSidebar(t["plugin.extensions"][lang]["header.title"]);
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2782
+    // await uiHelper.openSidebar(t["plugin.extensions"][lang]["header.title"]);
+    await uiHelper.openSidebar("Extensions");
     await uiHelper.verifyHeading(
       t["plugin.extensions"][lang]["header.extensions"],
     );
@@ -476,7 +476,9 @@ test.describe("Admin > Extensions", () => {
 
       // Wait specifically for the Actions cell (5th cell / last cell) to be rendered
       const actionsCell = techdocsRow.getByLabel(
-        "Package cannot be managed in the production environment",
+        t["plugin.extensions"][lang][
+          "installedPackages.table.tooltips.packageProductionDisabled"
+        ],
       );
       await expect(actionsCell).toHaveCount(3);
       for (const button of await actionsCell.all()) {
@@ -485,7 +487,7 @@ test.describe("Admin > Extensions", () => {
       await page
         .getByRole("button", {
           name: new RegExp(
-            `Rows per page: 5 ${t["plugin.extensions"][lang]["table.pagination.rows"]}`,
+            `Rows per page: ${t["plugin.extensions"][lang]["table.pagination.rows5"]}`,
           ),
         })
         .click();
@@ -493,14 +495,14 @@ test.describe("Admin > Extensions", () => {
       await page
         .getByRole("button", {
           name: new RegExp(
-            `Rows per page: 10 ${t["plugin.extensions"][lang]["table.pagination.rows"]}`,
+            `Rows per page: ${t["plugin.extensions"][lang]["table.pagination.rows10"]}`,
           ),
         })
         .scrollIntoViewIfNeeded();
       await expect(
         page.getByRole("button", {
           name: new RegExp(
-            `Rows per page: 10 ${t["plugin.extensions"][lang]["table.pagination.rows"]}`,
+            `Rows per page: ${t["plugin.extensions"][lang]["table.pagination.rows10"]}`,
           ),
         }),
       ).toBeVisible();
