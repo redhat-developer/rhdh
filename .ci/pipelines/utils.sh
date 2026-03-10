@@ -43,7 +43,7 @@ override_github_app_env_with_prefix() {
   if [[ -n "${!app_id_var:-}" ]] && [[ -n "${!client_id_var:-}" ]] \
     && [[ -n "${!private_key_var:-}" ]] && [[ -n "${!client_secret_var:-}" ]] \
     && [[ -n "${!webhook_url_var:-}" ]] && [[ -n "${!webhook_secret_var:-}" ]]; then
-    log::info "Overriding showcase env vars (GITHUB_APP_APP_ID, CLIENT_ID, PRIVATE_KEY, CLIENT_SECRET, WEBHOOK_URL, WEBHOOK_SECRET) with values from _${prefix}"
+    echo "Overriding showcase env vars (GITHUB_APP_APP_ID, CLIENT_ID, PRIVATE_KEY, CLIENT_SECRET, WEBHOOK_URL, WEBHOOK_SECRET) with values from _${prefix}"
     GITHUB_APP_APP_ID="${!app_id_var}"
     GITHUB_APP_CLIENT_ID="${!client_id_var}"
     GITHUB_APP_PRIVATE_KEY="${!private_key_var}"
@@ -52,13 +52,13 @@ override_github_app_env_with_prefix() {
     GITHUB_APP_WEBHOOK_SECRET="${!webhook_secret_var}"
     export GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET
   else
-    log::info "Not overriding showcase GitHub App env vars with prefix ${prefix}: one or more of ${app_id_var}, ${client_id_var}, ${private_key_var}, ${client_secret_var}, ${webhook_url_var}, ${webhook_secret_var} is empty"
+    echo "Not overriding showcase GitHub App env vars with prefix ${prefix}: one or more of ${app_id_var}, ${client_id_var}, ${private_key_var}, ${client_secret_var}, ${webhook_url_var}, ${webhook_secret_var} is empty"
   fi
 
   if [[ -n "${!app_id_rbac_var:-}" ]] && [[ -n "${!client_id_rbac_var:-}" ]] \
     && [[ -n "${!private_key_rbac_var:-}" ]] && [[ -n "${!client_secret_rbac_var:-}" ]] \
     && [[ -n "${!webhook_url_rbac_var:-}" ]] && [[ -n "${!webhook_secret_rbac_var:-}" ]]; then
-    log::info "Overriding RBAC env vars (GITHUB_APP_APP_ID_RBAC, CLIENT_ID_RBAC, PRIVATE_KEY_RBAC, CLIENT_SECRET_RBAC, WEBHOOK_URL_RBAC, WEBHOOK_SECRET_RBAC) with values from _RBAC_${prefix}"
+    echo "Overriding RBAC env vars (GITHUB_APP_APP_ID_RBAC, CLIENT_ID_RBAC, PRIVATE_KEY_RBAC, CLIENT_SECRET_RBAC, WEBHOOK_URL_RBAC, WEBHOOK_SECRET_RBAC) with values from _RBAC_${prefix}"
     GITHUB_APP_APP_ID_RBAC="${!app_id_rbac_var}"
     GITHUB_APP_CLIENT_ID_RBAC="${!client_id_rbac_var}"
     GITHUB_APP_PRIVATE_KEY_RBAC="${!private_key_rbac_var}"
@@ -67,7 +67,7 @@ override_github_app_env_with_prefix() {
     GITHUB_APP_WEBHOOK_SECRET_RBAC="${!webhook_secret_rbac_var}"
     export GITHUB_APP_APP_ID_RBAC GITHUB_APP_CLIENT_ID_RBAC GITHUB_APP_PRIVATE_KEY_RBAC GITHUB_APP_CLIENT_SECRET_RBAC GITHUB_APP_WEBHOOK_URL_RBAC GITHUB_APP_WEBHOOK_SECRET_RBAC
   else
-    log::info "Not overriding RBAC GitHub App env vars with prefix ${prefix}: one or more of ${app_id_rbac_var}, ${client_id_rbac_var}, ${private_key_rbac_var}, ${client_secret_rbac_var}, ${webhook_url_rbac_var}, ${webhook_secret_rbac_var} is empty"
+    echo "Not overriding RBAC GitHub App env vars with prefix ${prefix}: one or more of ${app_id_rbac_var}, ${client_id_rbac_var}, ${private_key_rbac_var}, ${client_secret_rbac_var}, ${webhook_url_rbac_var}, ${webhook_secret_rbac_var} is empty"
   fi
 }
 
