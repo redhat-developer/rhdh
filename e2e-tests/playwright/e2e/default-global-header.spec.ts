@@ -39,8 +39,6 @@ test.describe("Default Global Header", () => {
       ),
     ).toBeVisible();
     await uiHelper.verifyLink({
-      // TODO: RHDHBUGS-2564 - String not getting translated
-      // label: t["rhdh"][lang]["menuItem.selfService"],
       label: "Self-service",
     });
 

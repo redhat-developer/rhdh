@@ -262,10 +262,10 @@ export class UIhelper {
   }
 
   async goToSelfServicePage() {
-    // TODO: RHDHBUGS-2564 - String not getting translated
-    // t["rhdh"][lang]["menuItem.selfService"]
-    await this.clickLink({ ariaLabel: "Self-service" });
-    await this.verifyHeading("Self-service");
+    await this.clickLink({
+      ariaLabel: "Self-service",
+    });
+    await this.verifyHeading(t["rhdh"][lang]["menuItem.selfService"]);
   }
 
   async verifyLink(
