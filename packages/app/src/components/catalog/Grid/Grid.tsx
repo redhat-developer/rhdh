@@ -1,7 +1,8 @@
 import React from 'react';
+
 import Box, { BoxProps } from '@mui/material/Box';
-import { makeStyles } from 'tss-react/mui';
 import type { CSSObject } from 'tss-react';
+import { makeStyles } from 'tss-react/mui';
 
 /** Container breakpoints aligned with MUI breakpoints */
 const CONTAINER_BREAKPOINTS = {
