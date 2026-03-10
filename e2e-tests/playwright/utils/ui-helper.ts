@@ -262,10 +262,10 @@ export class UIhelper {
   }
 
   async goToSelfServicePage() {
-    // TODO: RHDHBUGS-2564 - String not getting translated
-    // t["rhdh"][lang]["menuItem.selfService"]
-    await this.clickLink({ ariaLabel: "Self-service" });
-    await this.verifyHeading("Self-service");
+    await this.clickLink({
+      ariaLabel: "Self-service",
+    });
+    await this.verifyHeading(t["rhdh"][lang]["menuItem.selfService"]);
   }
 
   async verifyLink(
@@ -520,7 +520,7 @@ export class UIhelper {
 
   async verifyHeading(heading: string | RegExp, timeout: number = 20000) {
     const headingLocator = this.page
-      .locator("h1, h2, h3, h4, h5, h6")
+      .getByRole("heading")
       .filter({ hasText: heading })
       .first();
 

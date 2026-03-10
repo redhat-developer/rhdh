@@ -50,7 +50,7 @@ export default createTranslationMessages({
     'aboutCard.tagsField.value': 'Aucune balise',
     'aboutCard.targetsField.label': 'Cibles',
     'searchResultItem.lifecycle': 'Cycle de vie',
-    'searchResultItem.Owner': 'Propriétaire',
+    'searchResultItem.owner': 'Propriétaire',
     'catalogTable.warningPanelTitle':
       'Impossible de récupérer les entités du catalogue.',
     'catalogTable.viewActionTitle': 'Voir',
