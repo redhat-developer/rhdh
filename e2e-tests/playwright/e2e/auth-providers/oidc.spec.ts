@@ -306,6 +306,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       "3days",
     );
     await deployment.updateAllConfigs();
+    await page.waitForTimeout(3000);
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
