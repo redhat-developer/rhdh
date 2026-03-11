@@ -10,49 +10,49 @@ The enhanced CI reporting system uses the [`.ci/pipelines/reporting.sh`](../../.
 
 ## Architecture
 
-### Deployment Tracking Module
+### Test Run Tracker Module
 
-The [`.ci/pipelines/lib/deployment.sh`](../../.ci/pipelines/lib/deployment.sh) module encapsulates all deployment state management into a clean API. It manages an internal counter and delegates status persistence to `reporting.sh`.
+The [`.ci/pipelines/lib/test-run-tracker.sh`](../../.ci/pipelines/lib/test-run-tracker.sh) module encapsulates all test run state management into a clean API. It manages an internal counter and delegates status persistence to `reporting.sh`.
 
-#### `deployment::register(label)`
-Registers a new deployment with the given label (typically the Playwright project name or artifacts subdirectory). Increments the internal counter and records the deployment label.
-
-```bash
-deployment::register "$artifacts_subdir"
-```
-
-#### `deployment::mark_deploy_success()`
-Marks the current deployment as successfully deployed.
+#### `test_run_tracker::register(label)`
+Registers a new test run with the given label (typically the Playwright project name or artifacts subdirectory). Increments the internal counter and records the label.
 
 ```bash
-deployment::mark_deploy_success
+test_run_tracker::register "$artifacts_subdir"
 ```
 
-#### `deployment::mark_deploy_failed(label)`
-Registers a new deployment and marks it as failed (deploy failed, tests failed, overall result = 1).
+#### `test_run_tracker::mark_deploy_success()`
+Marks the current test run's deployment phase as successful.
 
 ```bash
-deployment::mark_deploy_failed "$artifacts_subdir"
+test_run_tracker::mark_deploy_success
 ```
 
-#### `deployment::mark_test_result(passed, num_failures)`
+#### `test_run_tracker::mark_deploy_failed(label)`
+Registers a new test run and marks it as failed (deploy failed, tests failed, overall result = 1).
+
+```bash
+test_run_tracker::mark_deploy_failed "$artifacts_subdir"
+```
+
+#### `test_run_tracker::mark_test_result(passed, num_failures)`
 Records whether tests passed and the number of failures.
 
 ```bash
-deployment::mark_test_result "$test_passed" "${failed_tests}"
+test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
 ```
 
-#### `deployment::current_id()`
-Returns the current deployment counter value.
+#### `test_run_tracker::current_id()`
+Returns the current test run counter value.
 
 ```bash
 local id
-id="$(deployment::current_id)"
+id="$(test_run_tracker::current_id)"
 ```
 
 ### Core Reporting Functions
 
-The [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script provides low-level functions used internally by the deployment module. These persist status to `SHARED_DIR` files and `ARTIFACT_DIR/reporting/`.
+The [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script provides low-level functions used internally by the test run tracker module. These persist status to `SHARED_DIR` files and `ARTIFACT_DIR/reporting/`.
 
 #### `save_status_deployment_namespace(deployment, label)`
 Records the label for a deployment.
@@ -89,20 +89,20 @@ These files are also copied to `ARTIFACT_DIR/reporting/` for artifact collection
 ```bash
 # Source the required modules (typically done via utils.sh)
 source "${DIR}/reporting.sh"
-source "${DIR}/lib/deployment.sh"
+source "${DIR}/lib/test-run-tracker.sh"
 
 # Initialize overall result
 save_overall_result 0
 
-# Register a deployment and mark it as successful
-deployment::register "showcase"
-deployment::mark_deploy_success
+# Register a test run and mark its deployment as successful
+test_run_tracker::register "showcase"
+test_run_tracker::mark_deploy_success
 
 # Record test results
-deployment::mark_test_result "$test_passed" "${failed_tests}"
+test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
 
 # Or mark a deployment as failed in one call
-deployment::mark_deploy_failed "showcase-rbac"
+test_run_tracker::mark_deploy_failed "showcase-rbac"
 ```
 
 ### Error Handling
@@ -145,7 +145,7 @@ For nightly runs, the system automatically sends notifications to the `#rhdh-e2e
 
 ## File Locations
 
-- **Deployment Module**: [`.ci/pipelines/lib/deployment.sh`](../../.ci/pipelines/lib/deployment.sh)
+- **Test Run Tracker**: [`.ci/pipelines/lib/test-run-tracker.sh`](../../.ci/pipelines/lib/test-run-tracker.sh)
 - **Reporting Script**: [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh)
 - **Integration**: [`.ci/pipelines/utils.sh`](../../.ci/pipelines/utils.sh) and [`.ci/pipelines/openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh)
 

@@ -517,7 +517,7 @@ cluster_setup_k8s_helm() {
 }
 
 # ==============================================================================
-# FUTURE MODULE: lib/deployment.sh
+# FUTURE MODULE: lib/deploy.sh (not to be confused with lib/test-run-tracker.sh)
 # Functions: base_deployment, rbac_deployment, initiate_deployments,
 #            base_deployment_osd_gcp, rbac_deployment_osd_gcp, initiate_deployments_osd_gcp,
 #            initiate_upgrade_base_deployments, initiate_upgrade_deployments,
