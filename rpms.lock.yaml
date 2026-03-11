@@ -2258,13 +2258,13 @@ arches:
     name: python3-pip
     evr: 21.3.1-1.el9
     sourcerpm: python-pip-21.3.1-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-3.11.13-5.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-3.11.13-5.1.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 31725
-    checksum: sha256:74e19a0e3bd164337e6602c3bb95b5a7c803de9b8a4d5c3997096c1e7c2142a7
+    size: 31827
+    checksum: sha256:eb490f1bfc37ee9639e06641febd6d1a9035853a0e4037fe9272bd75f7675a2e
     name: python3.11
-    evr: 3.11.13-5.el9_7
-    sourcerpm: python3.11-3.11.13-5.el9_7.src.rpm
+    evr: 3.11.13-5.1.el9_7
+    sourcerpm: python3.11-3.11.13-5.1.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-charset-normalizer-2.1.0-1.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 108311
@@ -2272,13 +2272,13 @@ arches:
     name: python3.11-charset-normalizer
     evr: 2.1.0-1.el9
     sourcerpm: python3.11-charset-normalizer-2.1.0-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-devel-3.11.13-5.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-devel-3.11.13-5.1.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 290023
-    checksum: sha256:27e8eade4066fd353ddb41e266b7a3e032db906f31e1fb490bfe8dded78c1f5d
+    size: 290088
+    checksum: sha256:3380adcb021c7e872c05e4b4884baef4ced6d3cf03bbe50e0147de970aa3a4c3
     name: python3.11-devel
-    evr: 3.11.13-5.el9_7
-    sourcerpm: python3.11-3.11.13-5.el9_7.src.rpm
+    evr: 3.11.13-5.1.el9_7
+    sourcerpm: python3.11-3.11.13-5.1.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-idna-3.4-1.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 115495
@@ -2286,13 +2286,13 @@ arches:
     name: python3.11-idna
     evr: 3.4-1.el9
     sourcerpm: python3.11-idna-3.4-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-libs-3.11.13-5.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-libs-3.11.13-5.1.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 10716237
-    checksum: sha256:8a305ebd12caa0c61b7ec0d9896f5bb6b0878ab3d363ea214c94fee74abb214c
+    size: 10715230
+    checksum: sha256:f2d5ac78c2553c34367933700053a7234584685a14940d81e19a9f9a6d724a37
     name: python3.11-libs
-    evr: 3.11.13-5.el9_7
-    sourcerpm: python3.11-3.11.13-5.el9_7.src.rpm
+    evr: 3.11.13-5.1.el9_7
+    sourcerpm: python3.11-3.11.13-5.1.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.11-pip-22.3.1-6.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 3351885
@@ -4445,12 +4445,12 @@ arches:
     checksum: sha256:b48fc9a942da394ad4cefd19dd2ebf4c5839d0267a41c797fb04dc6173b5f296
     name: python-rpm-macros
     evr: 3.9-54.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/p/python3.11-3.11.13-5.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/p/python3.11-3.11.13-5.1.el9_7.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 20198525
-    checksum: sha256:cec616e52b60de5ba4fe720e436b5a1498413a2b2a06b730bbfe148c95084640
+    size: 20205067
+    checksum: sha256:fa7657de11b86a100905b58601ca5596ba34e5b5b64b69e271c366d9749923b5
     name: python3.11
-    evr: 3.11.13-5.el9_7
+    evr: 3.11.13-5.1.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/p/python3.11-charset-normalizer-2.1.0-1.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 95122
