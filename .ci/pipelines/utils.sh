@@ -1001,12 +1001,8 @@ cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_crunchy_postgres_ocp_operator
 
-  # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
-  if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
-    install_orchestrator_infra_chart
-  else
-    echo "Skipping orchestrator-infra installation on OSD-GCP environment"
-  fi
+  # Orchestrator infra disabled for this test PR
+  log::info "Skipping orchestrator-infra installation (disabled)"
 
   # then wait for the right status one by one
   waitfor_pipelines_operator
@@ -1113,8 +1109,6 @@ base_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
-
-  deploy_orchestrator_workflows "${NAME_SPACE}"
 }
 
 rbac_deployment() {
@@ -1127,19 +1121,6 @@ rbac_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
-
-  # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  # Wait for the sonataflow database creation job to complete with robust error handling
-  if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
-    echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
-    return 1
-  fi
-  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_POSTGRESQL_SSL_MODE","value":"allow"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
-  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
-
-  # initiate orchestrator workflows deployment
-  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
 }
 
 initiate_deployments() {
