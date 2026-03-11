@@ -147,13 +147,6 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       );
     }
 
-    // Also create bn_backstage database as fallback (Helm chart might default to this)
-    // But we'll configure POSTGRES_DB in the secret to use dbName instead
-    await adminClient.query(`CREATE DATABASE bn_backstage`).catch(() => {});
-    console.log(
-      `✓ Created/verified bn_backstage database (Helm chart default, but we'll use ${dbName} via POSTGRES_DB)`,
-    );
-
     // Create/update bn_backstage user (Helm chart default user)
     await adminClient
       .query(`CREATE USER ${dbUser} WITH PASSWORD '${dbPassword}'`)
@@ -168,10 +161,6 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       });
 
     await adminClient.query(`GRANT CONNECT ON DATABASE ${dbName} TO ${dbUser}`);
-    // Also grant access to bn_backstage database (in case Helm chart tries to use it)
-    await adminClient
-      .query(`GRANT CONNECT ON DATABASE bn_backstage TO ${dbUser}`)
-      .catch(() => {});
     await adminClient.end();
 
     const dbClient = new Client({
@@ -190,34 +179,6 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       `GRANT ALL PRIVILEGES ON DATABASE ${dbName} TO ${dbUser}`,
     );
     await dbClient.query(`ALTER SCHEMA public OWNER TO ${dbUser}`);
-
-    // Also grant permissions on bn_backstage database (in case Helm chart tries to use it)
-    try {
-      const bnDbClient = new Client({
-        host: dbHost,
-        port: 5432,
-        user: dbAdminUser,
-        password: dbAdminPassword,
-        database: "bn_backstage",
-        connectionTimeoutMillis: 30000,
-      });
-      await bnDbClient.connect();
-      await bnDbClient.query(
-        `GRANT CREATE ON DATABASE bn_backstage TO ${dbUser}`,
-      );
-      await bnDbClient.query(`GRANT USAGE ON SCHEMA public TO ${dbUser}`);
-      await bnDbClient.query(`GRANT CREATE ON SCHEMA public TO ${dbUser}`);
-      await bnDbClient.query(
-        `GRANT ALL PRIVILEGES ON DATABASE bn_backstage TO ${dbUser}`,
-      );
-      await bnDbClient.query(`ALTER SCHEMA public OWNER TO ${dbUser}`);
-      await bnDbClient.end();
-      console.log(`✓ Granted permissions on bn_backstage database`);
-    } catch (err) {
-      console.warn(
-        `[WARNING]  Could not grant permissions on bn_backstage database: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
 
     await dbClient.end();
     console.log("✓ Database setup complete");
