@@ -81,7 +81,9 @@ export async function configurePostgresCredentials(
     PGSSLMODE: Buffer.from(sslMode).toString("base64"),
   };
 
-  // Only set certificate path if SSL is enabled
+  // Only set certificate path when SSL is enabled. When disable, we omit
+  // NODE_EXTRA_CA_CERTS; createOrUpdateSecret replaces secret data entirely
+  // so a previously set value is removed.
   if (sslMode !== "disable") {
     data.NODE_EXTRA_CA_CERTS = Buffer.from(
       "/opt/app-root/src/postgres-crt.pem",

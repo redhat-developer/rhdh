@@ -511,26 +511,43 @@ export class KubeClient {
 
   /**
    * Create or update a Kubernetes secret (upsert pattern).
-   * Tries to update the secret first; if it doesn't exist, creates it.
+   * Replaces the secret's data entirely so that keys not in secret.data are removed
+   * (avoids stale keys when switching e.g. from SSL to non-SSL).
    */
   async createOrUpdateSecret(
     secret: k8s.V1Secret,
     namespace: string,
   ): Promise<void> {
     const secretName = secret.metadata?.name;
-    const patch = { data: secret.data };
+    if (!secretName) {
+      throw new Error("Secret metadata.name is required");
+    }
 
     try {
-      // Try to update existing secret
-      await this.updateSecret(secretName, namespace, patch);
-      console.log(`Secret ${secretName} updated in namespace ${namespace}`);
-    } catch {
-      // Secret doesn't exist, create it
-      console.log(
-        `Secret ${secretName} not found, creating in namespace ${namespace}`,
+      const existing = await this.coreV1Api.readNamespacedSecret(
+        secretName,
+        namespace,
       );
-      await this.createSecret(secret, namespace);
-      console.log(`Secret ${secretName} created in namespace ${namespace}`);
+      const body = existing.body;
+      body.data = secret.data ?? {};
+      await this.coreV1Api.replaceNamespacedSecret(
+        secretName,
+        namespace,
+        body,
+      );
+      console.log(`Secret ${secretName} updated in namespace ${namespace}`);
+    } catch (err: unknown) {
+      const statusCode = (err as { response?: { statusCode?: number } })
+        ?.response?.statusCode;
+      if (statusCode === 404) {
+        console.log(
+          `Secret ${secretName} not found, creating in namespace ${namespace}`,
+        );
+        await this.createSecret(secret, namespace);
+        console.log(`Secret ${secretName} created in namespace ${namespace}`);
+      } else {
+        throw err;
+      }
     }
   }
 
