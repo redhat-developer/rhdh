@@ -258,7 +258,7 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
 
 # RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
-COPY $EXTERNAL_SOURCE_NESTED/policy.json /etc/containers/policy.json
+COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
 
 # copy from build, not cleanup stage
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
