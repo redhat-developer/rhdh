@@ -108,7 +108,6 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     let podDbHost = dbHost;
     let sslMode = "require";
     if (dbHost === "localhost" || dbHost === "127.0.0.1") {
-      const releaseName = process.env.RELEASE_NAME || "developer-hub";
       podDbHost = `backstage-psql-${releaseName}`;
 
       try {
@@ -211,7 +210,6 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     // SOLUTION: Create a separate ConfigMap for database config that the operator won't manage
     // The operator manages the default app-config ConfigMap and can overwrite it.
     // By creating a separate ConfigMap, we avoid this issue.
-    const releaseName = process.env.RELEASE_NAME || "developer-hub";
     let needsRestart = false; // Declare early since we may set it when patching CR
 
     // CRITICAL: Patch Backstage CR (Operator only - Helm chart doesn't use CRs)
@@ -675,15 +673,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       console.log("   Note: RHDH requires a restart to switch to schema mode.");
       await kubeClient.restartDeployment(deploymentName, namespace);
       console.log("✓ RHDH restart completed successfully");
-
-      // Wait for RHDH to initialize
-      console.log("Waiting for RHDH to initialize and connect to database...");
-      await new Promise((resolve) => setTimeout(resolve, 30000)); // Wait 30 seconds for initial startup
-      console.log(
-        "Waiting additional time for RHDH to create schemas (this may take 1-2 minutes)...",
-      );
-      await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait 1 minute for schema creation
-      console.log("✓ Initialization wait complete");
+      // restartDeployment already waited for deployment ready; schemas are verified in "Verify schemas were created" test
     } else if (!deploymentReady) {
       console.log(
         "[WARNING]  No config changes needed, but deployment is not ready.",
@@ -712,13 +702,8 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       180000,
     );
 
-    // Wait a bit more for RHDH to fully initialize plugins
-    console.log(
-      "Waiting for RHDH to fully initialize plugins (schemas are created lazily)...",
-    );
-    await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait 1 minute for plugin initialization
-
     // Use admin user to check for schemas - more reliable and can see all schemas
+    // Polling loop below waits for schemas (up to 5 min); no fixed delay needed
     console.log(
       `Connecting to database ${dbName} as admin user to check for schemas...`,
     );
@@ -1186,9 +1171,9 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     await client.connect();
 
     console.log(
-      "Waiting for RHDH to fully restart and close old database connections...",
+      "Waiting for database connections to drain before checking for leftover plugin DBs...",
     );
-    await new Promise((resolve) => setTimeout(resolve, 30000));
+    await new Promise((resolve) => setTimeout(resolve, 10000)); // brief drain; test then checks pg_database
 
     console.log(
       "Checking for leftover plugin databases from before schema mode...",

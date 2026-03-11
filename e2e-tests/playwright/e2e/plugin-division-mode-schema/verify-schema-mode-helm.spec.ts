@@ -546,10 +546,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       try {
         await kubeClient.restartDeployment(deploymentName, namespace);
         console.log("✓ RHDH restart completed successfully");
-
-        // Wait for RHDH to initialize
-        console.log("Waiting for RHDH to initialize and create schemas...");
-        await new Promise((resolve) => setTimeout(resolve, 90000)); // Wait 90 seconds for initialization and schema creation
+        // restartDeployment already waited for deployment ready; schemas are verified in "Verify schemas were created" test
       } catch (restartError) {
         const errorMsg =
           restartError instanceof Error
@@ -573,11 +570,23 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
           console.warn(
             "   Continuing with test - if schemas aren't created, you may need to manually restart the deployment.",
           );
-          // Continue with test - wait a bit for any config changes to take effect
           console.log(
-            "Waiting for RHDH to apply configuration changes (if any)...",
+            "Waiting for deployment to be ready (if it recovers)...",
           );
-          await new Promise((resolve) => setTimeout(resolve, 30000));
+          try {
+            await kubeClient.waitForDeploymentReady(
+              deploymentName,
+              namespace,
+              1,
+              60000,
+              10000,
+              podLabelSelector,
+            );
+          } catch {
+            console.warn(
+              "[WARNING]  Deployment did not become ready within 60s; continuing anyway.",
+            );
+          }
         } else {
           throw restartError;
         }
@@ -596,8 +605,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       );
     } else {
       console.log("✓ Configuration already applied, deployment is ready");
-      // Still wait a bit for schemas to be created if they haven't been yet
-      await new Promise((resolve) => setTimeout(resolve, 30000)); // Wait 30 seconds
+      // Schemas are verified in the next test, which polls until they appear
     }
   });
 
@@ -656,13 +664,8 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       podLabelSelector,
     );
 
-    // Wait a bit more for RHDH to fully initialize plugins
-    console.log(
-      "Waiting for RHDH to fully initialize plugins (schemas are created lazily)...",
-    );
-    await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait 1 minute for plugin initialization
-
     // Use admin user to check for schemas - more reliable and can see all schemas
+    // Polling loop below waits for schemas (up to 5 min); no fixed delay needed
     console.log(
       `Connecting to database ${dbName} as admin user to check for schemas...`,
     );
@@ -973,9 +976,9 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     await client.connect();
 
     console.log(
-      "Waiting for RHDH to fully restart and close old database connections...",
+      "Waiting for database connections to drain before checking for leftover plugin DBs...",
     );
-    await new Promise((resolve) => setTimeout(resolve, 30000));
+    await new Promise((resolve) => setTimeout(resolve, 10000)); // brief drain; test then checks pg_database
 
     console.log(
       "Checking for leftover plugin databases from before schema mode...",
