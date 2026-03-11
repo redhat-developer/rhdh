@@ -47,6 +47,13 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
 
   test.beforeAll(async () => {
     test.setTimeout(300000);
+    if (!dbHost || !dbAdminPassword || !dbPassword) {
+      test.skip(
+        true,
+        "SCHEMA_MODE_* env vars not set; schema-mode tests are opt-in",
+      );
+      return;
+    }
     test.info().annotations.push(
       {
         type: "component",
@@ -57,12 +64,6 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
         description: namespace,
       },
     );
-
-    if (!dbHost || !dbAdminPassword || !dbPassword) {
-      throw new Error(
-        "Required env vars: SCHEMA_MODE_DB_HOST, SCHEMA_MODE_DB_ADMIN_PASSWORD, SCHEMA_MODE_DB_PASSWORD",
-      );
-    }
 
     const kubeClient = new KubeClient();
 
