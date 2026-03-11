@@ -41,6 +41,15 @@ log::debug "Sourcing utils.sh"
 # shellcheck source=.ci/pipelines/utils.sh
 source "${DIR}/utils.sh"
 
+export K8S_CLUSTER_URL='https://api.woh7d-oh8cr-k88.aemu.p3.openshiftapps.com:443'
+export OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+
+export CHART_VERSION="1.9-207-CI"
+export HELM_CHART_URL="oci://quay.io/rhdh/chart"
+export QUAY_REPO="rhdh/rhdh-hub-rhel9"
+export TAG_NAME="1.9-207"
+
 # Rotate among 5 pairs (showcase _1.._5 and RBAC_1..RBAC_5)
 result=$((10#$(date +%N) % 5))
 case $result in
