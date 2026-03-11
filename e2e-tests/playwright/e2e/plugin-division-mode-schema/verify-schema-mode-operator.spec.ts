@@ -5,6 +5,14 @@ import * as k8s from "@kubernetes/client-node";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import { configurePostgresCredentials } from "../../utils/postgres-config";
+import {
+  getSchemaModeEnv,
+  connectAdminClient,
+  throwConnectionError,
+  cleanupOldPluginDatabases,
+  setupSchemaModeDatabase,
+  quoteIdent,
+} from "./schema-mode-db";
 
 interface AppConfigDatabaseConnection {
   database?: string;
@@ -27,11 +35,6 @@ interface AppConfigYaml {
   [key: string]: unknown;
 }
 
-/** Quote a PostgreSQL identifier (safe against injection). */
-function quoteIdent(name: string): string {
-  return '"' + String(name).replace(/"/g, '""') + '"';
-}
-
 test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   // Operator deployment naming: backstage-${RELEASE_NAME}
@@ -39,23 +42,30 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   // Always use Operator naming convention for this test file
   const deploymentName = `backstage-${releaseName}`;
 
-  const dbHost = process.env.SCHEMA_MODE_DB_HOST;
-  const dbAdminUser = process.env.SCHEMA_MODE_DB_ADMIN_USER || "postgres";
-  const dbAdminPassword = process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD;
-
-  const dbName = process.env.SCHEMA_MODE_DB_NAME || "postgres";
-  const dbUser = process.env.SCHEMA_MODE_DB_USER || "backstage_schema_user";
-  const dbPassword = process.env.SCHEMA_MODE_DB_PASSWORD;
+  let dbHost: string;
+  let dbAdminUser: string;
+  let dbAdminPassword: string;
+  let dbName: string;
+  let dbUser: string;
+  let dbPassword: string;
 
   test.beforeAll(async () => {
     test.setTimeout(300000);
-    if (!dbHost || !dbAdminPassword || !dbPassword) {
+    const env = getSchemaModeEnv();
+    if (!env) {
       test.skip(
         true,
         "SCHEMA_MODE_* env vars not set; schema-mode tests are opt-in",
       );
       return;
     }
+    dbHost = env.dbHost;
+    dbAdminUser = env.dbAdminUser;
+    dbAdminPassword = env.dbAdminPassword;
+    dbName = env.dbName;
+    dbUser = env.dbUser; // backstage_schema_user default from getSchemaModeEnv
+    dbPassword = env.dbPassword;
+
     test.info().annotations.push(
       {
         type: "component",
@@ -70,172 +80,28 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     const kubeClient = new KubeClient();
 
     console.log(`Connecting to PostgreSQL at ${dbHost}:5432...`);
-    const adminClient = new Client({
-      host: dbHost,
-      port: 5432,
-      user: dbAdminUser,
-      password: dbAdminPassword,
-      database: "postgres",
-      connectionTimeoutMillis: 30000,
-    });
-
+    const postgresPodName = `backstage-psql-${releaseName}-0`;
+    let adminClient: Client;
     try {
-      await adminClient.connect();
+      adminClient = await connectAdminClient({
+        dbHost,
+        dbAdminUser,
+        dbAdminPassword,
+      });
       console.log("✓ Connected to PostgreSQL");
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      const podName = `backstage-psql-${process.env.RELEASE_NAME || "developer-hub"}-0`;
-      const portForwardCmd = `oc port-forward -n ${namespace} ${podName} 5432:5432`;
-
-      let troubleshooting = "";
-      if (dbHost.includes("svc.cluster.local")) {
-        troubleshooting =
-          `Service name detected but connection failed.\n` +
-          `If running from outside cluster, use port-forward instead:\n` +
-          `  1. Start port-forward: ${portForwardCmd}\n` +
-          `  2. Set: export SCHEMA_MODE_DB_HOST="localhost"`;
-      } else if (dbHost === "localhost") {
-        troubleshooting =
-          `Connection to localhost failed.\n` +
-          `Ensure port-forward is running: ${portForwardCmd}`;
-      } else {
-        troubleshooting =
-          `Connection failed. Try:\n` +
-          `  1. Port-forward: ${portForwardCmd}\n` +
-          `  2. Set: export SCHEMA_MODE_DB_HOST="localhost"`;
-      }
-
-      throw new Error(
-        `Failed to connect to PostgreSQL at ${dbHost}:5432\n` +
-          `Error: ${errorMsg}\n\n` +
-          troubleshooting,
-      );
+      throwConnectionError(dbHost, namespace, postgresPodName, error);
     }
 
-    console.log("Checking for old plugin databases from previous runs...");
-    const oldDbsResult = await adminClient.query<{ datname: string }>(`
-      SELECT datname FROM pg_database 
-      WHERE datistemplate = false 
-        AND datname LIKE 'backstage_plugin_%'
-    `);
-    if (oldDbsResult.rows.length > 0) {
-      console.log(
-        `Found ${oldDbsResult.rows.length} old plugin databases, cleaning up...`,
-      );
-      for (const db of oldDbsResult.rows) {
-        try {
-          await adminClient.query(
-            `
-            SELECT pg_terminate_backend(pid)
-            FROM pg_stat_activity
-            WHERE datname = $1 AND pid <> pg_backend_pid()
-          `,
-            [db.datname],
-          );
-          await adminClient.query(
-            `DROP DATABASE IF EXISTS ` + quoteIdent(db.datname),
-          );
-          console.log(`  Dropped old database: ${db.datname}`);
-        } catch (err) {
-          console.warn(
-            `  Could not drop database ${db.datname}: ${err instanceof Error ? err.message : String(err)}`,
-          );
-        }
-      }
-    }
-
-    if (dbName !== "postgres") {
-      await adminClient
-        .query(`CREATE DATABASE ` + quoteIdent(dbName))
-        .catch(() => {});
-      console.log(`✓ Created/verified test database: ${dbName}`);
-    } else {
-      console.log(
-        `✓ Using default postgres database (schemas will be created here)`,
-      );
-    }
-
-    await adminClient
-      .query(
-        `CREATE USER ` +
-          quoteIdent(dbUser) +
-          ` WITH PASSWORD $1`,
-        [dbPassword],
-      )
-      .catch(async (err) => {
-        if (err.message.includes("already exists")) {
-          await adminClient.query(
-            `ALTER USER ` + quoteIdent(dbUser) + ` WITH PASSWORD $1`,
-            [dbPassword],
-          );
-        } else {
-          throw err;
-        }
-      });
-
-    await adminClient.query(
-      `GRANT CONNECT ON DATABASE ` +
-        quoteIdent(dbName) +
-        ` TO ` +
-        quoteIdent(dbUser),
-    );
-    await adminClient.end();
-
-    const dbClient = new Client({
-      host: dbHost,
-      port: 5432,
-      user: dbAdminUser,
-      password: dbAdminPassword,
-      database: dbName,
-      connectionTimeoutMillis: 30000,
+    await cleanupOldPluginDatabases(adminClient!);
+    await setupSchemaModeDatabase(adminClient!, {
+      dbHost,
+      dbAdminUser,
+      dbAdminPassword,
+      dbName,
+      dbUser,
+      dbPassword,
     });
-    await dbClient.connect();
-    await dbClient.query(
-      `GRANT CREATE ON DATABASE ` + quoteIdent(dbName) + ` TO ` + quoteIdent(dbUser),
-    );
-    await dbClient.query(
-      `GRANT USAGE ON SCHEMA public TO ` + quoteIdent(dbUser),
-    );
-    await dbClient.query(
-      `GRANT CREATE ON SCHEMA public TO ` + quoteIdent(dbUser),
-    );
-    await dbClient.query(
-      `GRANT ALL PRIVILEGES ON DATABASE ` +
-        quoteIdent(dbName) +
-        ` TO ` +
-        quoteIdent(dbUser),
-    );
-    await dbClient.query(
-      `ALTER SCHEMA public OWNER TO ` + quoteIdent(dbUser),
-    );
-    await dbClient.end();
-    console.log("✓ Database setup complete");
-
-    console.log("Verifying test database connection...");
-    const testConnectionClient = new Client({
-      host: dbHost,
-      port: 5432,
-      user: dbUser,
-      password: dbPassword,
-      database: dbName,
-      connectionTimeoutMillis: 10000,
-    });
-    try {
-      await testConnectionClient.connect();
-      await testConnectionClient.query("SELECT 1");
-      await testConnectionClient.end();
-      console.log("✓ Test database connection verified");
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      throw new Error(
-        `Test database connection failed. This means RHDH pods will also fail to connect.\n` +
-          `Error: ${errorMsg}\n` +
-          `Please verify:\n` +
-          `  - Database ${dbName} exists\n` +
-          `  - User ${dbUser} has proper permissions\n` +
-          `  - Password is correct`,
-      );
-    }
 
     console.log("Configuring RHDH (Operator deployment) for schema mode...");
 

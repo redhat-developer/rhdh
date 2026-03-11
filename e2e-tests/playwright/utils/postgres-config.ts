@@ -23,6 +23,14 @@ function unescapeNewlines(value: string): string {
 }
 
 /**
+ * Quote a PostgreSQL identifier (safe against injection).
+ * Use for database, schema, and role names in dynamic SQL.
+ */
+export function quoteIdent(name: string): string {
+  return '"' + String(name).replace(/"/g, '""') + '"';
+}
+
+/**
  * Read certificate content from a file path.
  * @param filePath - Path to the certificate file
  * @returns Certificate content with escaped newlines converted, or null if file doesn't exist
@@ -193,7 +201,9 @@ export async function clearDatabase(credentials: {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           // WITH (FORCE) atomically terminates connections and drops the database
-          await client.query(`DROP DATABASE IF EXISTS "${db}" WITH (FORCE)`);
+          await client.query(
+            `DROP DATABASE IF EXISTS ${quoteIdent(db)} WITH (FORCE)`,
+          );
           success = true;
           break;
         } catch (error) {
