@@ -12,8 +12,8 @@ readonly TESTING_LIB_SOURCED=1
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
-# shellcheck source=.ci/pipelines/lib/deployment.sh
-source "${DIR}/lib/deployment.sh"
+# shellcheck source=.ci/pipelines/lib/test-run-tracker.sh
+source "${DIR}/lib/test-run-tracker.sh"
 
 # ==============================================================================
 # Constants
@@ -49,8 +49,8 @@ testing::run_tests() {
     return 1
   fi
 
-  deployment::register "$artifacts_subdir"
-  deployment::mark_deploy_success
+  test_run_tracker::register "$artifacts_subdir"
+  test_run_tracker::mark_deploy_success
 
   BASE_URL="${url}"
   export BASE_URL
@@ -121,7 +121,7 @@ testing::run_tests() {
     failed_tests="some"
     echo "Number of failed tests unknown, saving as $failed_tests."
   fi
-  deployment::mark_test_result "$test_passed" "${failed_tests}"
+  test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
   return "$test_result"
 }
 
@@ -250,7 +250,7 @@ testing::check_and_test() {
     fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
-    deployment::mark_deploy_failed "$artifacts_subdir"
+    test_run_tracker::mark_deploy_failed "$artifacts_subdir"
     save_all_pod_logs "$namespace"
   fi
   return 0
@@ -316,7 +316,7 @@ testing::check_upgrade_and_test() {
     testing::check_and_test "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
     log::error "Helm upgrade encountered an issue or timed out. Exiting..."
-    deployment::mark_deploy_failed "$playwright_project"
+    test_run_tracker::mark_deploy_failed "$playwright_project"
   fi
   return 0
 }

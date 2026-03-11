@@ -691,8 +691,8 @@ initiate_upgrade_base_deployments() {
 
   log::info "Initiating base RHDH deployment before upgrade"
 
-  deployment::register "$namespace"
-  deployment::mark_deploy_success
+  test_run_tracker::register "$namespace"
+  test_run_tracker::mark_deploy_success
 
   namespace::configure "${namespace}"
 
