@@ -3,6 +3,7 @@
  * Used by both Helm and Operator specs to avoid duplication.
  */
 
+import { expect } from "@playwright/test";
 import { Client } from "pg";
 import { quoteIdent } from "../../utils/postgres-config";
 
@@ -18,23 +19,32 @@ export interface SchemaModeEnv {
 }
 
 /**
- * Read schema-mode config from environment. Returns null if required vars are missing.
+ * Read schema-mode config from environment. Asserts required vars are set (use test.skip before calling if opt-in).
  */
-export function getSchemaModeEnv(): SchemaModeEnv | null {
+export function getSchemaModeEnv(): SchemaModeEnv {
   const dbHost = process.env.SCHEMA_MODE_DB_HOST;
   const dbAdminPassword = process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD;
   const dbPassword = process.env.SCHEMA_MODE_DB_PASSWORD;
-  if (!dbHost || !dbAdminPassword || !dbPassword) {
-    return null;
-  }
-  return {
+  expect(
     dbHost,
-    dbAdminUser: process.env.SCHEMA_MODE_DB_ADMIN_USER || "postgres",
+    "SCHEMA_MODE_DB_HOST must be set for schema-mode tests",
+  ).toBeTruthy();
+  expect(
     dbAdminPassword,
+    "SCHEMA_MODE_DB_ADMIN_PASSWORD must be set for schema-mode tests",
+  ).toBeTruthy();
+  expect(
+    dbPassword,
+    "SCHEMA_MODE_DB_PASSWORD must be set for schema-mode tests",
+  ).toBeTruthy();
+  return {
+    dbHost: dbHost!,
+    dbAdminUser: process.env.SCHEMA_MODE_DB_ADMIN_USER || "postgres",
+    dbAdminPassword: dbAdminPassword!,
     dbName: process.env.SCHEMA_MODE_DB_NAME || "postgres",
     dbUser:
       process.env.SCHEMA_MODE_DB_USER || "backstage_schema_user", // default; Helm spec overrides to bn_backstage
-    dbPassword,
+    dbPassword: dbPassword!,
   };
 }
 

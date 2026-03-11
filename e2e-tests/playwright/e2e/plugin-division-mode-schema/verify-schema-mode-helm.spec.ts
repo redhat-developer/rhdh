@@ -54,14 +54,18 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
 
   test.beforeAll(async () => {
     test.setTimeout(300000);
-    const env = getSchemaModeEnv();
-    if (!env) {
+    if (
+      !process.env.SCHEMA_MODE_DB_HOST ||
+      !process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD ||
+      !process.env.SCHEMA_MODE_DB_PASSWORD
+    ) {
       test.skip(
         true,
         "SCHEMA_MODE_* env vars not set; schema-mode tests are opt-in",
       );
       return;
     }
+    const env = getSchemaModeEnv();
     dbHost = env.dbHost;
     dbAdminUser = env.dbAdminUser;
     dbAdminPassword = env.dbAdminPassword;
