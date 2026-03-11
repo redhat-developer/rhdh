@@ -81,4 +81,4 @@ If you want an image that runs on Mac M1 (arm64/aarch64) or another architecture
 
 ### Building locally
 
-Refer to the [Containerfile documentation](docker/README.adoc) for details on building locally
+Refer to the [Containerfile documentation](build/containerfiles/README.adoc) for details on building locally
