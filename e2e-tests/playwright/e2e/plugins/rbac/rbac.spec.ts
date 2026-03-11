@@ -124,7 +124,7 @@ test.describe("Test RBAC", () => {
       await expect(unregisterUserOwned).toBeEnabled();
 
       await page.getByRole("menuitem", { name: "Unregister entity" }).click();
-      await expect(page.getByRole("heading")).toContainText(
+      await uiHelper.verifyHeading(
         "Are you sure you want to unregister this entity?",
       );
       await page.getByRole("button", { name: "Cancel" }).click();
