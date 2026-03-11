@@ -27,6 +27,11 @@ interface AppConfigYaml {
   [key: string]: unknown;
 }
 
+/** Quote a PostgreSQL identifier (safe against injection). */
+function quoteIdent(name: string): string {
+  return '"' + String(name).replace(/"/g, '""') + '"';
+}
+
 test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   // Operator deployment naming: backstage-${RELEASE_NAME}
@@ -127,7 +132,9 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
           `,
             [db.datname],
           );
-          await adminClient.query(`DROP DATABASE IF EXISTS "${db.datname}"`);
+          await adminClient.query(
+            `DROP DATABASE IF EXISTS ` + quoteIdent(db.datname),
+          );
           console.log(`  Dropped old database: ${db.datname}`);
         } catch (err) {
           console.warn(
@@ -138,7 +145,9 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     }
 
     if (dbName !== "postgres") {
-      await adminClient.query(`CREATE DATABASE ${dbName}`).catch(() => {});
+      await adminClient
+        .query(`CREATE DATABASE ` + quoteIdent(dbName))
+        .catch(() => {});
       console.log(`✓ Created/verified test database: ${dbName}`);
     } else {
       console.log(
@@ -147,18 +156,29 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     }
 
     await adminClient
-      .query(`CREATE USER ${dbUser} WITH PASSWORD '${dbPassword}'`)
+      .query(
+        `CREATE USER ` +
+          quoteIdent(dbUser) +
+          ` WITH PASSWORD $1`,
+        [dbPassword],
+      )
       .catch(async (err) => {
         if (err.message.includes("already exists")) {
           await adminClient.query(
-            `ALTER USER ${dbUser} WITH PASSWORD '${dbPassword}'`,
+            `ALTER USER ` + quoteIdent(dbUser) + ` WITH PASSWORD $1`,
+            [dbPassword],
           );
         } else {
           throw err;
         }
       });
 
-    await adminClient.query(`GRANT CONNECT ON DATABASE ${dbName} TO ${dbUser}`);
+    await adminClient.query(
+      `GRANT CONNECT ON DATABASE ` +
+        quoteIdent(dbName) +
+        ` TO ` +
+        quoteIdent(dbUser),
+    );
     await adminClient.end();
 
     const dbClient = new Client({
@@ -170,13 +190,24 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       connectionTimeoutMillis: 30000,
     });
     await dbClient.connect();
-    await dbClient.query(`GRANT CREATE ON DATABASE ${dbName} TO ${dbUser}`);
-    await dbClient.query(`GRANT USAGE ON SCHEMA public TO ${dbUser}`);
-    await dbClient.query(`GRANT CREATE ON SCHEMA public TO ${dbUser}`);
     await dbClient.query(
-      `GRANT ALL PRIVILEGES ON DATABASE ${dbName} TO ${dbUser}`,
+      `GRANT CREATE ON DATABASE ` + quoteIdent(dbName) + ` TO ` + quoteIdent(dbUser),
     );
-    await dbClient.query(`ALTER SCHEMA public OWNER TO ${dbUser}`);
+    await dbClient.query(
+      `GRANT USAGE ON SCHEMA public TO ` + quoteIdent(dbUser),
+    );
+    await dbClient.query(
+      `GRANT CREATE ON SCHEMA public TO ` + quoteIdent(dbUser),
+    );
+    await dbClient.query(
+      `GRANT ALL PRIVILEGES ON DATABASE ` +
+        quoteIdent(dbName) +
+        ` TO ` +
+        quoteIdent(dbUser),
+    );
+    await dbClient.query(
+      `ALTER SCHEMA public OWNER TO ` + quoteIdent(dbUser),
+    );
     await dbClient.end();
     console.log("✓ Database setup complete");
 
@@ -1317,7 +1348,9 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
             [db.datname],
           );
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          await client.query(`DROP DATABASE IF EXISTS "${db.datname}"`);
+          await client.query(
+            `DROP DATABASE IF EXISTS ` + quoteIdent(db.datname),
+          );
           console.log(`  Dropped leftover database: ${db.datname}`);
         } catch (err) {
           console.warn(
