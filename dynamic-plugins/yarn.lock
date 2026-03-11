@@ -934,17 +934,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/types@npm:^3.222.0, @aws-sdk/types@npm:^3.347.0":
-  version: 3.686.0
-  resolution: "@aws-sdk/types@npm:3.686.0"
-  dependencies:
-    "@smithy/types": ^3.6.0
-    tslib: ^2.6.2
-  checksum: 59eda13ad391eb719ebec1cac06755c21d043d71681f1e8ecb3ea39f333c3c7e635bc11967c57d82472c74683be519703219290684d57d594189ca35eb7935cc
-  languageName: node
-  linkType: hard
-
-"@aws-sdk/types@npm:^3.973.4":
+"@aws-sdk/types@npm:^3.222.0, @aws-sdk/types@npm:^3.347.0, @aws-sdk/types@npm:^3.973.4":
   version: 3.973.4
   resolution: "@aws-sdk/types@npm:3.973.4"
   dependencies:
@@ -954,16 +944,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/util-arn-parser@npm:^3.310.0":
-  version: 3.568.0
-  resolution: "@aws-sdk/util-arn-parser@npm:3.568.0"
-  dependencies:
-    tslib: ^2.6.2
-  checksum: e3c45e5d524a772954d0a33614d397414185b9eb635423d01253cad1c1b9add625798ed9cf23343d156fae89c701f484bc062ab673f67e2e2edfe362fde6d170
-  languageName: node
-  linkType: hard
-
-"@aws-sdk/util-arn-parser@npm:^3.972.2":
+"@aws-sdk/util-arn-parser@npm:^3.310.0, @aws-sdk/util-arn-parser@npm:^3.972.2":
   version: 3.972.2
   resolution: "@aws-sdk/util-arn-parser@npm:3.972.2"
   dependencies:
@@ -32667,17 +32648,14 @@ __metadata:
   linkType: hard
 
 "multer@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "multer@npm:2.0.2"
+  version: 2.1.1
+  resolution: "multer@npm:2.1.1"
   dependencies:
     append-field: ^1.0.0
     busboy: ^1.6.0
     concat-stream: ^2.0.0
-    mkdirp: ^0.5.6
-    object-assign: ^4.1.1
     type-is: ^1.6.18
-    xtend: ^4.0.2
-  checksum: 187f3539b3d5b7f80a289288fc21d3e4116ab9ed21ac9b9ceb25272c7344d215e9572f7e7ed01edb876afddf24661b06578f2c0fc67f36655ebb51a13ccf83dc
+  checksum: 1d2f4ad42a318b3881afe01d3ea2c16af5822c55a65151eaf94b7f807df0e72ac7bb11c174b65b1815bd814f5f60b06f8b95e2a074d77e0af5cb5b6f2a426aff
   languageName: node
   linkType: hard
 
