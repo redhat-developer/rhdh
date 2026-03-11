@@ -14,18 +14,18 @@ import {
 jest.mock('@backstage/plugin-catalog', () => ({
   CatalogTable: {
     defaultColumnsFunc: jest.fn(() => [
-      { title: 'Name', field: 'entity.metadata.name' },
-      { title: 'Owner', field: 'entity.spec.owner' },
+      { title: 'Name', field: 'resolved.entityRef' },
+      { title: 'Owner', field: 'resolved.ownedByRelationsTitle' },
       { title: 'Type', field: 'entity.spec.type' },
     ]),
     columns: {
       createNameColumn: jest.fn(() => ({
         title: 'Name',
-        field: 'entity.metadata.name',
+        field: 'resolved.entityRef',
       })),
       createOwnerColumn: jest.fn(() => ({
         title: 'Owner',
-        field: 'entity.spec.owner',
+        field: 'resolved.ownedByRelationsTitle',
       })),
       createSpecTypeColumn: jest.fn(() => ({
         title: 'Type',
@@ -49,7 +49,7 @@ jest.mock('@backstage/plugin-catalog', () => ({
       })),
       createSystemColumn: jest.fn(() => ({
         title: 'System',
-        field: 'entity.spec.system',
+        field: 'resolved.partOfSystemRelationTitle',
       })),
     },
   },
@@ -305,7 +305,13 @@ describe('createCatalogColumnsFunc', () => {
 
       // Should have 3 default columns, createdAt excluded
       expect(columns).toHaveLength(3);
-      expect(columns.find(c => c.title === 'Created At')).toBeUndefined();
+      expect(
+        columns.find(
+          c =>
+            c.field ===
+            'entity.metadata.annotations.backstage.io/createdAt',
+        ),
+      ).toBeUndefined();
     });
 
     it('excludes multiple columns', () => {
@@ -316,8 +322,18 @@ describe('createCatalogColumnsFunc', () => {
       const columns = columnsFunc(createMockEntityListContext());
 
       expect(columns).toHaveLength(2);
-      expect(columns.find(c => c.title === 'Created At')).toBeUndefined();
-      expect(columns.find(c => c.title === 'Owner')).toBeUndefined();
+      expect(
+        columns.find(
+          c =>
+            c.field ===
+            'entity.metadata.annotations.backstage.io/createdAt',
+        ),
+      ).toBeUndefined();
+      expect(
+        columns.find(
+          c => c.field === 'resolved.ownedByRelationsTitle',
+        ),
+      ).toBeUndefined();
     });
   });
 
@@ -415,8 +431,16 @@ describe('createCatalogColumnsFunc', () => {
 
       // 3 default - 1 type excluded + 1 custom (createdAt also excluded)
       expect(columns).toHaveLength(3);
-      expect(columns.find(c => c.title === 'Type')).toBeUndefined();
-      expect(columns.find(c => c.title === 'Created At')).toBeUndefined();
+      expect(
+        columns.find(c => c.field === 'entity.spec.type'),
+      ).toBeUndefined();
+      expect(
+        columns.find(
+          c =>
+            c.field ===
+            'entity.metadata.annotations.backstage.io/createdAt',
+        ),
+      ).toBeUndefined();
       expect(columns.find(c => c.title === 'Custom Field')).toBeDefined();
     });
 

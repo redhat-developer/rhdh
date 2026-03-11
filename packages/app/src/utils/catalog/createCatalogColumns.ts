@@ -150,23 +150,24 @@ function shouldApplyCustomColumn(
 }
 
 /**
- * Gets the column ID from a built-in column
+ * Gets the column ID from a built-in column by matching its `field` property,
+ * which is always a plain string (unlike `title` which may be a React element
+ * due to Backstage's i18n translation system).
  */
 function getColumnId(column: TableColumn<CatalogTableRow>): string | undefined {
-  // Map known column titles to their IDs
-  const titleToIdMap: Record<string, string> = {
-    Name: 'name',
-    Owner: 'owner',
-    Type: 'type',
-    Lifecycle: 'lifecycle',
-    Description: 'description',
-    Tags: 'tags',
-    Namespace: 'namespace',
-    System: 'system',
-    'Created At': 'createdAt',
+  const fieldToIdMap: Record<string, string> = {
+    'resolved.entityRef': 'name',
+    'resolved.ownedByRelationsTitle': 'owner',
+    'entity.spec.type': 'type',
+    'entity.spec.lifecycle': 'lifecycle',
+    'entity.metadata.description': 'description',
+    'entity.metadata.tags': 'tags',
+    'entity.metadata.namespace': 'namespace',
+    'resolved.partOfSystemRelationTitle': 'system',
+    'entity.metadata.annotations.backstage.io/createdAt': 'createdAt',
   };
 
-  return titleToIdMap[column.title as string];
+  return fieldToIdMap[column.field as string];
 }
 
 /**
@@ -204,7 +205,6 @@ export function createCatalogColumnsFunc(
         ...CatalogTable.defaultColumnsFunc(entityListContext),
         createCreatedAtColumn(),
       ];
-
       // Handle exclude mode - remove specified columns
       if (config.exclude && config.exclude.length > 0) {
         columns = columns.filter(column => {
