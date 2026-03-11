@@ -307,9 +307,7 @@ describe('createCatalogColumnsFunc', () => {
       expect(columns).toHaveLength(3);
       expect(
         columns.find(
-          c =>
-            c.field ===
-            'entity.metadata.annotations.backstage.io/createdAt',
+          c => c.field === 'entity.metadata.annotations.backstage.io/createdAt',
         ),
       ).toBeUndefined();
     });
@@ -324,15 +322,11 @@ describe('createCatalogColumnsFunc', () => {
       expect(columns).toHaveLength(2);
       expect(
         columns.find(
-          c =>
-            c.field ===
-            'entity.metadata.annotations.backstage.io/createdAt',
+          c => c.field === 'entity.metadata.annotations.backstage.io/createdAt',
         ),
       ).toBeUndefined();
       expect(
-        columns.find(
-          c => c.field === 'resolved.ownedByRelationsTitle',
-        ),
+        columns.find(c => c.field === 'resolved.ownedByRelationsTitle'),
       ).toBeUndefined();
     });
   });
@@ -431,14 +425,10 @@ describe('createCatalogColumnsFunc', () => {
 
       // 3 default - 1 type excluded + 1 custom (createdAt also excluded)
       expect(columns).toHaveLength(3);
-      expect(
-        columns.find(c => c.field === 'entity.spec.type'),
-      ).toBeUndefined();
+      expect(columns.find(c => c.field === 'entity.spec.type')).toBeUndefined();
       expect(
         columns.find(
-          c =>
-            c.field ===
-            'entity.metadata.annotations.backstage.io/createdAt',
+          c => c.field === 'entity.metadata.annotations.backstage.io/createdAt',
         ),
       ).toBeUndefined();
       expect(columns.find(c => c.title === 'Custom Field')).toBeDefined();
