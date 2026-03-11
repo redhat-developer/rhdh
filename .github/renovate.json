@@ -71,7 +71,7 @@
         "minor"
       ],      
       "matchFileNames": [
-        ".ibm/images/**"
+        ".ci/images/**"
       ],         
       "additionalBranchPrefix": "test-dockerfile ",        
       "groupName": "Test dockerfile images (non-major)",

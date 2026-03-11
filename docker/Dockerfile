@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1771865410@sha256:04e9f3020875f3f6e99b9a96fe55e35e1b5c38974a1765a19153102a90abf967 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1772440444@sha256:c22b81d0f1882facb78a992cf75ff673ac2ec273248b652bed2a812c3e5ecc6b AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -228,6 +228,10 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
   popd >/dev/null; \
   rm -fr python/; \
   microdnf clean all
+
+# RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
+# For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
+COPY docker/policy.json /etc/containers/policy.json
 
 # Upstream only - copy from cleanup stage
 COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
