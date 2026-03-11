@@ -530,11 +530,7 @@ export class KubeClient {
       );
       const body = existing.body;
       body.data = secret.data ?? {};
-      await this.coreV1Api.replaceNamespacedSecret(
-        secretName,
-        namespace,
-        body,
-      );
+      await this.coreV1Api.replaceNamespacedSecret(secretName, namespace, body);
       console.log(`Secret ${secretName} updated in namespace ${namespace}`);
     } catch (err: unknown) {
       const statusCode = (err as { response?: { statusCode?: number } })

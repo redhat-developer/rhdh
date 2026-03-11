@@ -574,9 +574,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
           console.warn(
             "   Continuing with test - if schemas aren't created, you may need to manually restart the deployment.",
           );
-          console.log(
-            "Waiting for deployment to be ready (if it recovers)...",
-          );
+          console.log("Waiting for deployment to be ready (if it recovers)...");
           try {
             await kubeClient.waitForDeploymentReady(
               deploymentName,
