@@ -56,7 +56,7 @@ export K8S_CLUSTER_TOKEN="$(oc whoami -t)"
 cd e2e-tests
 yarn install
 
-yarn playwright test playwright/e2e/plugin-division-mode-schema/verify-schema-mode-operator.spec.ts --project=showcase-runtime-db --headed
+yarn playwright test playwright/e2e/plugin-division-mode-schema/verify-schema-mode-operator.spec.ts --project=any-test --headed
 ```
 
 ### For Helm Chart Deployment
@@ -65,7 +65,7 @@ yarn playwright test playwright/e2e/plugin-division-mode-schema/verify-schema-mo
 cd e2e-tests
 yarn install
 
-yarn playwright test playwright/e2e/plugin-division-mode-schema/verify-schema-mode-helm.spec.ts --project=showcase-runtime-db --headed
+yarn playwright test playwright/e2e/plugin-division-mode-schema/verify-schema-mode-helm.spec.ts --project=any-test --headed
 ```
 
 ## View Test Report
