@@ -110,7 +110,7 @@ catalog:
       githubUrl: "${GITHUB_URL}"
       orgs:
         - ${GITHUB_ORG}
-        - { GITHUB_ORG_2 }
+        - ${GITHUB_ORG_2}
       schedule:
         frequency:
           hours: 24
