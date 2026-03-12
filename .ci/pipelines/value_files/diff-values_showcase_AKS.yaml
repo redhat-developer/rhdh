@@ -9,6 +9,12 @@ global:
     plugins:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
+
+      # Scorecard - test ignored
+      # Test file: e2e-tests/playwright/e2e/plugins/scorecard/scorecard.spec.ts
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.5
+        disabled: true
+
       # Disable orchestrator plugins for AKS
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
