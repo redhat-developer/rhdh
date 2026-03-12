@@ -133,6 +133,7 @@ proxy:
       headers:
         "x-proxy-test-header": "hello!"
 catalog:
+  processingInterval: { hours: 24 }
   import:
     entityFilename: catalog-info.yaml
     # pullRequestBranchName: rhdh-integration
@@ -189,8 +190,18 @@ catalog:
           timeout: { minutes: 30 }
     githubOrg:
       id: production
-      githubUrl: "${GITHUB_URL}"
-      orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
+      githubUrl: ${GITHUB_URL}
+      orgs:
+        - ${GITHUB_ORG}
+        - ${GITHUB_ORG_2}
+      schedule:
+        frequency:
+          minutes: 60
+          hours: 24
+        initialDelay:
+          seconds: 15
+        timeout:
+          minutes: 15
     gitlab:
       my-test-provider:
         group: rhdhqetest

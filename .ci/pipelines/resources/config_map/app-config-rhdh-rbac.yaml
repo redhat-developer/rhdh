@@ -13,13 +13,13 @@ integrations:
   github:
     - host: github.com
       apps:
-        - appId: ${GITHUB_APP_APP_ID}
-          clientId: ${GITHUB_APP_CLIENT_ID}
-          clientSecret: ${GITHUB_APP_CLIENT_SECRET}
-          webhookUrl: ${GITHUB_APP_WEBHOOK_URL}
-          webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
+        - appId: ${GITHUB_APP_APP_ID_RBAC}
+          clientId: ${GITHUB_APP_CLIENT_ID_RBAC}
+          clientSecret: ${GITHUB_APP_CLIENT_SECRET_RBAC}
+          webhookUrl: ${GITHUB_APP_WEBHOOK_URL_RBAC}
+          webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET_RBAC}
           privateKey: |
-            ${GITHUB_APP_PRIVATE_KEY}
+            ${GITHUB_APP_PRIVATE_KEY_RBAC}
   bitbucketServer:
     - host: bitbucket.com
       apiBaseUrl: temp
@@ -70,6 +70,7 @@ proxy:
       # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
       secure: false
 catalog:
+  processingInterval: { hours: 24 }
   import:
     entityFilename: catalog-info.yaml
     # pullRequestBranchName: rhdh-integration
@@ -107,7 +108,16 @@ catalog:
     githubOrg:
       id: production
       githubUrl: "${GITHUB_URL}"
-      orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
+      orgs:
+        - ${GITHUB_ORG}
+        - ${GITHUB_ORG_2}
+      schedule:
+        frequency:
+          hours: 24
+        initialDelay:
+          seconds: 15
+        timeout:
+          minutes: 15
 dynatrace:
   baseUrl: temp
 argocd:
