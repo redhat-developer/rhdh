@@ -36,6 +36,11 @@ interface AppConfigYaml {
 }
 
 test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
+  test.skip(
+    !!process.env.JOB_NAME?.includes("helm"),
+    "This test file is for Operator only",
+  );
+
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   // Operator deployment naming: backstage-${RELEASE_NAME}
   const releaseName = process.env.RELEASE_NAME || "developer-hub";
