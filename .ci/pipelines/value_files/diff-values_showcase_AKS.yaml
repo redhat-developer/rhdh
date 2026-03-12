@@ -10,12 +10,11 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
 
-      # Scorecard - test ignored
-      # Test file: e2e-tests/playwright/e2e/plugins/scorecard/scorecard.spec.ts
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.5
+      # Tekton not installed on K8s clusters
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: true
 
-      # Disable orchestrator plugins for AKS
+      # Orchestrator tests ignored on showcase-k8s
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
