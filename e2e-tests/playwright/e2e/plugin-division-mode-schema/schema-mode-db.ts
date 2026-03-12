@@ -144,8 +144,9 @@ export async function cleanupOldPluginDatabases(
 }
 
 /**
- * Create test database (if not postgres), create/update runtime user, grant single-DB access,
- * and verify the runtime user can connect. Leaves adminClient open; caller must end it.
+ * Create test database (if not postgres), create/update runtime user with restricted
+ * role (NOSUPERUSER, NOCREATEDB), grant access to exactly one database, revoke
+ * CONNECT on all others, and verify the runtime user can connect.
  */
 export async function setupSchemaModeDatabase(
   adminClient: Client,
@@ -165,19 +166,35 @@ export async function setupSchemaModeDatabase(
     );
   }
 
+  // Create or update user with restricted role: no superuser, no createdb.
   await adminClient
     .query(
-      `CREATE USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}'`,
+      `CREATE USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}' NOSUPERUSER NOCREATEDB`,
     )
     .catch(async (err: Error) => {
       if (err.message.includes("already exists")) {
         await adminClient.query(
-          `ALTER USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}'`,
+          `ALTER USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}' NOSUPERUSER NOCREATEDB`,
         );
       } else {
         throw err;
       }
     });
+
+  // Restrict to single database: revoke CONNECT on all databases except the target.
+  const otherDbs = await adminClient.query<{ datname: string }>(
+    `SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> $1`,
+    [dbName],
+  );
+  for (const row of otherDbs.rows) {
+    try {
+      await adminClient.query(
+        `REVOKE CONNECT ON DATABASE ${quoteIdent(row.datname)} FROM ${quoteIdent(dbUser)}`,
+      );
+    } catch {
+      // Ignore (user may not have had CONNECT on this db)
+    }
+  }
 
   await adminClient.query(
     `GRANT CONNECT ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
