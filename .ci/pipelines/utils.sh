@@ -222,9 +222,18 @@ configure_external_postgres_db() {
   fi
 
   # Extract cluster certificates
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tls-key
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca || {
+    log::error "Failed to extract ca.crt"
+    return 1
+  }
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt || {
+    log::error "Failed to extract tls.crt"
+    return 1
+  }
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tls-key || {
+    log::error "Failed to extract tls.key"
+    return 1
+  }
 
   # Validate secret creation
   if ! oc create secret generic postgress-external-db-cluster-cert \
@@ -508,7 +517,7 @@ cluster_setup_k8s_helm() {
 }
 
 # ==============================================================================
-# FUTURE MODULE: lib/deployment.sh
+# FUTURE MODULE: lib/deploy.sh (not to be confused with lib/test-run-tracker.sh)
 # Functions: base_deployment, rbac_deployment, initiate_deployments,
 #            base_deployment_osd_gcp, rbac_deployment_osd_gcp, initiate_deployments_osd_gcp,
 #            initiate_upgrade_base_deployments, initiate_upgrade_deployments,
@@ -682,8 +691,8 @@ initiate_upgrade_base_deployments() {
 
   log::info "Initiating base RHDH deployment before upgrade"
 
-  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+  test_run_tracker::register "$namespace"
+  test_run_tracker::mark_deploy_success
 
   namespace::configure "${namespace}"
 

@@ -18,54 +18,30 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 import { rhdhTranslationRef } from './ref';
 
-export default createTranslationMessages({
+const rhdhTranslationEs = createTranslationMessages({
   ref: rhdhTranslationRef,
-  full: true, // False means that this is a partial translation
   messages: {
-    // Default main menu items from consts.ts
     'menuItem.home': 'Inicio',
-    'menuItem.myGroup_one': 'Mi Grupo',
-    'menuItem.myGroup_other': 'Mis Grupos',
+    'menuItem.myGroup_one': 'Mi grupo',
+    'menuItem.myGroup_other': 'Mis grupos',
     'menuItem.catalog': 'Catálogo',
-    'menuItem.apis': 'APIs',
-    'menuItem.learningPaths': 'Rutas de Aprendizaje',
+    'menuItem.apis': 'API',
+    'menuItem.learningPaths': 'Rutas de aprendizaje',
     'menuItem.selfService': 'Autoservicio',
     'menuItem.userSettings': 'Configuración de usuario',
     'menuItem.administration': 'Administración',
     'menuItem.extensions': 'Extensiones',
-
-    // dynamic-plugins.default.main-menu-items
     'menuItem.clusters': 'Clústeres',
     'menuItem.rbac': 'RBAC',
     'menuItem.bulkImport': 'Importación masiva',
-    'menuItem.docs': 'Documentación',
+    'menuItem.docs': 'Documentos',
     'menuItem.lighthouse': 'Lighthouse',
-    'menuItem.techRadar': 'Radar tecnológico',
+    'menuItem.techRadar': 'Tech Radar',
     'menuItem.orchestrator': 'Orquestador',
-    'menuItem.adoptionInsights': 'Insights de adopción',
-
-    'catalog.entityPage.overview.title': 'Resumen',
-    'catalog.entityPage.topology.title': 'Topología',
-    'catalog.entityPage.issues.title': 'Problemas',
-    'catalog.entityPage.pullRequests.title': 'Pull/Merge Requests',
-    'catalog.entityPage.ci.title': 'CI',
-    'catalog.entityPage.cd.title': 'CD',
-    'catalog.entityPage.kubernetes.title': 'Kubernetes',
-    'catalog.entityPage.imageRegistry.title': 'Registro de Imágenes',
-    'catalog.entityPage.monitoring.title': 'Monitoreo',
-    'catalog.entityPage.lighthouse.title': 'Lighthouse',
-    'catalog.entityPage.api.title': 'API',
-    'catalog.entityPage.dependencies.title': 'Dependencias',
-    'catalog.entityPage.docs.title': 'Documentación',
-    'catalog.entityPage.definition.title': 'Definición',
-    'catalog.entityPage.diagram.title': 'Diagrama del Sistema',
-    'catalog.entityPage.workflows.title': 'Flujos de trabajo',
-
+    'menuItem.adoptionInsights': 'Adoption Insights',
     'sidebar.menu': 'Menú',
     'sidebar.home': 'Inicio',
-    'sidebar.homeLogo': 'Logo de inicio',
-
-    // SignIn page translations
+    'sidebar.homeLogo': 'Logotipo de inicio',
     'signIn.page.title': 'Seleccionar un método de inicio de sesión',
     'signIn.providers.auth0.title': 'Auth0',
     'signIn.providers.auth0.message': 'Iniciar sesión con Auth0',
@@ -75,9 +51,9 @@ export default createTranslationMessages({
     'signIn.providers.microsoft.message': 'Iniciar sesión con Microsoft',
     'signIn.providers.bitbucket.title': 'Bitbucket',
     'signIn.providers.bitbucket.message': 'Iniciar sesión con Bitbucket',
-    'signIn.providers.bitbucketServer.title': 'Bitbucket Server',
+    'signIn.providers.bitbucketServer.title': 'Servidor de Bitbucket',
     'signIn.providers.bitbucketServer.message':
-      'Iniciar sesión con Bitbucket Server',
+      'Iniciar sesión con el servidor de Bitbucket',
     'signIn.providers.github.title': 'GitHub',
     'signIn.providers.github.message': 'Iniciar sesión con GitHub',
     'signIn.providers.gitlab.title': 'GitLab',
@@ -92,8 +68,22 @@ export default createTranslationMessages({
     'signIn.providers.onelogin.message': 'Iniciar sesión con OneLogin',
     'signIn.providers.saml.title': 'SAML',
     'signIn.providers.saml.message': 'Iniciar sesión con SAML',
-
-    // App translations
+    'catalog.entityPage.overview.title': 'Visión general',
+    'catalog.entityPage.topology.title': 'Topología',
+    'catalog.entityPage.issues.title': 'Problemas',
+    'catalog.entityPage.pullRequests.title': 'Solicitudes de extracción/fusión',
+    'catalog.entityPage.ci.title': 'CI',
+    'catalog.entityPage.cd.title': 'CD',
+    'catalog.entityPage.kubernetes.title': 'Kubernetes',
+    'catalog.entityPage.imageRegistry.title': 'Registro de imágenes',
+    'catalog.entityPage.monitoring.title': 'Monitoreo',
+    'catalog.entityPage.lighthouse.title': 'Lighthouse',
+    'catalog.entityPage.api.title': 'API',
+    'catalog.entityPage.dependencies.title': 'Dependencias',
+    'catalog.entityPage.docs.title': 'Documentos',
+    'catalog.entityPage.definition.title': 'Definición',
+    'catalog.entityPage.diagram.title': 'Diagrama del sistema',
+    'catalog.entityPage.workflows.title': 'Flujos de trabajo',
     'app.search.title': 'Buscar',
     'app.search.resultType': 'Tipo de resultado',
     'app.search.softwareCatalog': 'Catálogo de software',
@@ -104,20 +94,21 @@ export default createTranslationMessages({
     'app.search.filters.experimental': 'experimental',
     'app.search.filters.production': 'producción',
     'app.learningPaths.title': 'Rutas de aprendizaje',
-    'app.learningPaths.error.title': 'No se pudieron obtener los datos.',
+    'app.learningPaths.error.title': 'No se pudieron extraer los datos.',
     'app.learningPaths.error.unknownError': 'Error desconocido',
-    'app.userSettings.infoCard.title': 'Metadatos RHDH',
+    'app.userSettings.infoCard.title': 'Metadatos de RHDH',
     'app.userSettings.infoCard.metadataCopied':
-      'Metadatos copiados al portapapeles',
+      'Metadatos copiados en el portapapeles',
     'app.userSettings.infoCard.copyMetadata':
       'Copiar metadatos al portapapeles',
     'app.userSettings.infoCard.showLess': 'Mostrar menos',
     'app.userSettings.infoCard.showMore': 'Mostrar más',
-    'app.errors.contactSupport': 'Contactar soporte',
+    'app.errors.contactSupport': 'Comuníquese con Soporte',
     'app.errors.goBack': 'Volver',
     'app.errors.notFound.message': 'No pudimos encontrar esa página',
     'app.errors.notFound.additionalInfo':
-      'La página que buscas pudo haber sido eliminada, renombrada o está temporalmente no disponible.',
-    'app.table.createdAt': 'Creado el',
+      'Es posible que la página que busca se haya eliminado, haya cambiado de nombre o no esté disponible temporalmente.',
   },
 });
+
+export default rhdhTranslationEs;

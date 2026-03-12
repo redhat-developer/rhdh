@@ -15,14 +15,15 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
 
-const es = createTranslationMessages({
-  ref: userSettingsTranslationRef,
+const de = createTranslationMessages({
+  ref: catalogImportTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Configuración',
+    'defaultImportPage.headerTitle': 'Vorhandenes Git-Repository importieren',
+    'importInfoCard.title': 'Vorhandenes Git-Repository importieren',
   },
 });
 
-export default es;
+export default de;

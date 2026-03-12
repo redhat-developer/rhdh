@@ -2,6 +2,10 @@
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
+# shellcheck source=.ci/pipelines/lib/namespace.sh
+source "$DIR"/lib/namespace.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/cluster/gke/gcloud.sh
@@ -15,6 +19,7 @@ initiate_gke_operator_deployment() {
   local namespace=$1
   local rhdh_base_url=$2
 
+  common::require_vars "RELEASE_NAME" "REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON" || return 1
   log::info "Initiating Operator-backed non-RBAC deployment on GKE"
 
   namespace::configure "${namespace}"
@@ -40,6 +45,7 @@ initiate_rbac_gke_operator_deployment() {
   local namespace=$1
   local rhdh_base_url=$2
 
+  common::require_vars "RELEASE_NAME_RBAC" "REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON" || return 1
   log::info "Initiating Operator-backed RBAC deployment on GKE"
 
   namespace::configure "${namespace}"
