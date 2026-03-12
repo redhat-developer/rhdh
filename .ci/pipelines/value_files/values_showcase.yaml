@@ -1,3 +1,4 @@
+#TEST TEST
 global:
   # use the latest catalog index
   catalogIndex:
