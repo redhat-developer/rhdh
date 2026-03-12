@@ -25,6 +25,7 @@ initiate_gke_helm_deployment() {
 
   cd "${DIR}" || exit
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
+  config::merge_plugin_configs "merge" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_GKE_DIFF_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   apply_gke_frontend_config "${NAME_SPACE}"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_GKE_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"

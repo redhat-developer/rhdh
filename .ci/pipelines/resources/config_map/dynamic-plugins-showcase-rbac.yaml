@@ -1,0 +1,344 @@
+includes:
+  - dynamic-plugins.default.yaml
+plugins:
+  # Enforce new quick start configuration for now but normally this should not be required.
+  # FIXME: remove this again.
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
+    disabled: false
+    pluginConfig:
+      app:
+        quickstart:
+          - title: Set up authentication
+            titleKey: steps.setupAuthentication.title
+            icon: Admin
+            description: Set up secure login credentials to protect your account from unauthorized access.
+            descriptionKey: steps.setupAuthentication.description
+            cta:
+              text: Learn more
+              textKey: steps.setupAuthentication.ctaTitle
+              link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+          - title: Configure RBAC
+            titleKey: steps.configureRbac.title
+            icon: Rbac
+            description:
+              Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and
+              efficient collaboration.
+            descriptionKey: steps.configureRbac.description
+            cta:
+              text: Manage access
+              textKey: steps.configureRbac.ctaTitle
+              link: /rbac
+          - title: Configure Git
+            titleKey: steps.configureGit.title
+            icon: Git
+            description:
+              Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform
+              features.
+            descriptionKey: steps.configureGit.description
+            cta:
+              text: Learn more
+              textKey: steps.configureGit.ctaTitle
+              link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+          - title: Manage plugins
+            titleKey: steps.managePlugins.title
+            icon: Plugins
+            description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+            descriptionKey: steps.managePlugins.description
+            cta:
+              text: Explore plugins
+              textKey: steps.managePlugins.ctaTitle
+              link: /extensions
+          - title: Import application
+            roles:
+              - developer
+            icon: Import
+            description:
+              Import your existing code and services into the catalog to organize and access them through your developer
+              portal.
+            cta:
+              text: Import
+              link: /bulk-import/repositories
+          - title: Learn about the Catalog
+            roles:
+              - developer
+            icon: Catalog
+            description: Discover all software components, services, and APIs, and view their owners and documentation.
+            cta:
+              text: View Catalog
+              link: /catalog
+          - title: Explore Self-service templates
+            roles:
+              - developer
+            icon: SelfService
+            description: Use our self-service templates to quickly set up new projects, services, or documentation.
+            cta:
+              text: Explore templates
+              link: /create
+          - title: Find all Learning Paths
+            roles:
+              - developer
+            icon: Learning
+            description:
+              Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close
+              skill gaps, and promote best practices.
+            cta:
+              text: View Learning Paths
+              link: /learning-paths
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-quickstart:
+            translationResources:
+              - importName: quickstartTranslations
+                module: Alpha
+                ref: quickstartTranslationRef
+            mountPoints:
+              - mountPoint: application/provider
+                importName: QuickstartDrawerProvider
+              - mountPoint: application/internal/drawer-state
+                importName: QuickstartDrawerStateExposer
+              - mountPoint: application/internal/drawer-content
+                importName: QuickstartDrawerContent
+                config:
+                  id: quickstart
+              - mountPoint: global.header/help
+                importName: QuickstartButton
+                config:
+                  priority: 100
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+    disabled: false
+    pluginConfig:
+      catalog:
+        providers:
+          github:
+            my-test-org:
+              organization: janus-qe
+              catalogPath: "/catalog-info.yaml"
+              schedule:
+                frequency:
+                  hours: 24
+                timeout:
+                  minutes: 1
+                initialDelay:
+                  seconds: 15
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+    disabled: false
+    pluginConfig:
+      catalog:
+        providers:
+          githubOrg:
+            id: production
+            githubUrl: ${GITHUB_URL}
+            orgs:
+              - ${GITHUB_ORG}
+              - ${GITHUB_ORG_2}
+            schedule:
+              frequency:
+                hours: 24
+              initialDelay:
+                seconds: 15
+              timeout:
+                minutes: 15
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:bs_1.45.3__0.16.0!backstage-community-plugin-github-issues
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2!roadiehq-backstage-plugin-github-pull-requests
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0!backstage-community-plugin-github-actions
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1!backstage-community-plugin-quay-backend
+    disabled: false
+    pluginConfig:
+      quay:
+        apiUrl: https://quay.io
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1!backstage-community-plugin-quay
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-quay:
+            mountPoints:
+              - mountPoint: entity.page.image-registry/cards
+                importName: QuayPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    anyOf:
+                      - isQuayAvailable
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+    disabled: false
+    pluginConfig:
+      kubernetes:
+        clusterLocatorMethods:
+          - clusters:
+              - authProvider: serviceAccount
+                name: "my-cluster"
+                serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
+                url: ${K8S_CLUSTER_API_SERVER_URL}
+                skipTLSVerify: true
+            type: config
+        customResources:
+          # Add for tekton
+          - apiVersion: "v1beta1"
+            group: "tekton.dev"
+            plural: "pipelines"
+          - apiVersion: v1beta1
+            group: tekton.dev
+            plural: pipelineruns
+          - apiVersion: v1beta1
+            group: tekton.dev
+            plural: taskruns
+          # Add for topology plugin
+          - apiVersion: "v1"
+            group: "route.openshift.io"
+            plural: "routes"
+        serviceLocatorMethod:
+          type: multiTenant
+  # Enable Bulk import plugins.
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+    disabled: false
+  # Enable tech-radar plugin.
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-rbac:
+            translationResources:
+              - importName: rbacTranslations
+                ref: rbacTranslationRef
+                module: Alpha
+            appIcons:
+              - name: rbacIcon
+                importName: RbacIcon
+            dynamicRoutes:
+              - path: /rbac
+                importName: RbacPage
+                menuItem:
+                  icon: rbacIcon
+                  text: RBAC
+                  textKey: menuItem.rbac
+            menuItems:
+              rbac:
+                parent: default.admin
+                icon: rbacIcon
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+    disabled: true
+  #Enable Scorecard plugin.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-scorecard:
+            entityTabs:
+              - path: "/scorecard"
+                title: Scorecard
+                mountPoint: entity.page.scorecard
+            mountPoints:
+              - mountPoint: entity.page.scorecard/cards
+                importName: EntityScorecardContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+              - mountPoint: home.page/cards
+                importName: ScorecardHomepageCard
+                config:
+                  id: "scorecard-jira.open_issues"
+                  title: "Jira open blocking tickets"
+                  props: { metricId: "jira.open_issues" }
+              - mountPoint: home.page/cards
+                importName: ScorecardHomepageCard
+                config:
+                  id: "scorecard-github.open_prs"
+                  title: "GitHub open PRs"
+                  props: { metricId: "github.open_prs" }
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard-backend
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
+    pluginConfig:
+      jira:
+        baseUrl: https://redhat-team-f703ynt3.atlassian.net
+        token: ${JIRA_TOKEN}
+        product: cloud
+    disabled: false
+  - disabled: false
+    package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.45.3__1.10.3!red-hat-developer-hub-backstage-plugin-dynamic-home-page
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+            dynamicRoutes:
+              - path: /
+                importName: DynamicCustomizableHomePage
+  - disabled: true
+    package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+
+  # Enable orchestrator plugins - Official release
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-orchestrator:
+            appIcons:
+              - importName: OrchestratorIcon
+                name: orchestratorIcon
+            dynamicRoutes:
+              - importName: OrchestratorPage
+                menuItem:
+                  icon: orchestratorIcon
+                  text: Orchestrator
+                  textKey: menuItem.orchestrator
+                path: /orchestrator
+            entityTabs:
+              - path: /workflows
+                title: Workflows
+                titleKey: catalog.entityPage.workflows.title
+                mountPoint: entity.page.workflows
+            mountPoints:
+              - mountPoint: entity.page.workflows/cards
+                importName: OrchestratorCatalogTab
+                config:
+                  layout:
+                    gridColumn: "1 / -1"
+                  if:
+                    anyOf:
+                      - IsOrchestratorCatalogTabAvailable
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.45.3__8.3.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+    disabled: false
+    pluginConfig:
+      orchestrator:
+        dataIndexService:
+          url: http://sonataflow-platform-data-index-service
+
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.45.3__1.3.1!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+    disabled: false
+    pluginConfig:
+      orchestrator:
+        dataIndexService:
+          url: http://sonataflow-platform-data-index-service
+
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.45.3__1.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}

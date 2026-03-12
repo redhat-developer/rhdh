@@ -25,6 +25,7 @@ initiate_gke_operator_deployment() {
   namespace::configure "${namespace}"
   deploy_redis_cache "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
+  config::merge_plugin_configs "merge" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_GKE_DIFF_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}"
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
   apply_gke_frontend_config "${namespace}"
 

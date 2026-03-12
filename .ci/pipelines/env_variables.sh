@@ -38,8 +38,15 @@ HELM_CHART_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_EKS.yaml"
 HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
 HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME="diff-values_showcase_OSD-GCP.yaml"
 HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_OSD-GCP.yaml"
-HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
-HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
+
+SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME="dynamic-plugins-showcase.yaml"
+SHOWCASE_RBAC_DYNAMIC_PLUGINS_FILE_NAME="dynamic-plugins-showcase-rbac.yaml"
+SHOWCASE_DYNAMIC_PLUGINS_SANITY_DIFF_FILE_NAME="diff-dynamic-plugins-sanity.yaml"
+SHOWCASE_DYNAMIC_PLUGINS_AKS_DIFF_FILE_NAME="diff-dynamic-plugins-showcase_AKS.yaml"
+SHOWCASE_DYNAMIC_PLUGINS_EKS_DIFF_FILE_NAME="diff-dynamic-plugins-showcase_EKS.yaml"
+SHOWCASE_DYNAMIC_PLUGINS_GKE_DIFF_FILE_NAME="diff-dynamic-plugins-showcase_GKE.yaml"
+SHOWCASE_DYNAMIC_PLUGINS_OSD_GCP_DIFF_FILE_NAME="diff-dynamic-plugins-showcase_OSD_GCP.yaml"
+SHOWCASE_RBAC_DYNAMIC_PLUGINS_OSD_GCP_DIFF_FILE_NAME="diff-dynamic-plugins-showcase-rbac_OSD_GCP.yaml"
 
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
