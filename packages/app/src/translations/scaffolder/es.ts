@@ -15,13 +15,18 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
 
 const es = createTranslationMessages({
-  ref: userSettingsTranslationRef,
+  ref: scaffolderTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Configuración',
+    'templateListPage.title': 'Autoservicio',
+    'templateListPage.pageTitle': 'Autoservicio',
+    'templateWizardPage.title': 'Autoservicio',
+    'templateWizardPage.pageTitle': 'Autoservicio',
+    'templateListPage.contentHeader.registerExistingButtonTitle':
+      'Importar un repositorio Git existente',
   },
 });
 

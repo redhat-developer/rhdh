@@ -16,7 +16,10 @@ install_rhdh_operator() {
   fi
   # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
-  curl -L "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh" > /tmp/install-rhdh-catalog-source.sh
+  if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
+    log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"
+    return 1
+  fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
   if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then

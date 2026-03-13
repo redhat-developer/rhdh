@@ -21,8 +21,8 @@ import {
   translationsPluginTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-translations/alpha';
 
-import { catalogTranslations } from '../../components/catalog/translations/catalog';
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
+import { catalogTranslations } from '../../translations/catalog/catalog';
 import { coreComponentsTranslations } from '../../translations/core-components/core-components';
 import { rhdhTranslationRef, rhdhTranslations } from '../../translations/rhdh';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';

@@ -15,14 +15,19 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
 
-const es = createTranslationMessages({
-  ref: userSettingsTranslationRef,
+const de = createTranslationMessages({
+  ref: scaffolderTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Configuración',
+    'templateListPage.title': 'Self-Service',
+    'templateListPage.pageTitle': 'Self-Service',
+    'templateWizardPage.title': 'Self-Service',
+    'templateWizardPage.pageTitle': 'Self-Service',
+    'templateListPage.contentHeader.registerExistingButtonTitle':
+      'Vorhandenes Git-Repository importieren',
   },
 });
 
-export default es;
+export default de;
