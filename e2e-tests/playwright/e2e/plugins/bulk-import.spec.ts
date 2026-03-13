@@ -99,9 +99,7 @@ spec:
       catalogRepoDetails.name,
       "Preview file",
     );
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Save")).toBeHidden();
   });
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
@@ -121,9 +119,7 @@ spec:
       /2\/(\d+) Edit/,
       /Ready to import Preview files/,
     ]);
-    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {

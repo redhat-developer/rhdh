@@ -71,9 +71,7 @@ export class TestHelper {
       const panel = page
         .getByRole("heading", { name: "Create a tekton CI Pipeline" })
         .first();
-      const isPanelVisible = await panel
-        .isVisible({ timeout: 10000 })
-        .catch(() => false);
+      const isPanelVisible = await panel.isVisible().catch(() => false);
       if (!isPanelVisible) {
         const sampleTemplate =
           "https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates/github/tekton/template.yaml";

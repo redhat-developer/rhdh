@@ -59,7 +59,6 @@ test.describe("Test OCM plugin", () => {
     // Wait for the expected path in the URL
     await page.waitForURL(`**${expectedPath}`, {
       waitUntil: "domcontentloaded", // Wait until the DOM is loaded
-      timeout: 10000, // Set timeout to 10 seconds
     });
 
     expect(page.url()).toContain(expectedPath);

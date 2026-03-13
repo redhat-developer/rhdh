@@ -89,7 +89,7 @@ export class Extensions {
   async waitForSearchResults(searchText: string) {
     await expect(
       this.page.locator(".v5-MuiPaper-outlined").first(),
-    ).toContainText(searchText, { timeout: 10000 });
+    ).toContainText(searchText);
   }
 
   async verifyPluginDetails({

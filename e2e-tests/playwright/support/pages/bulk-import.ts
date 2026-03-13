@@ -27,9 +27,7 @@ export class BulkImport {
         .fill(searchText);
 
       // Wait for the filter to be applied and verify no "no-import-jobs-found" message appears
-      await expect(this.page.getByTestId("no-import-jobs-found")).toBeHidden({
-        timeout: 2000,
-      });
+      await expect(this.page.getByTestId("no-import-jobs-found")).toBeHidden();
     }).toPass({
       intervals: [1_000, 2_000, 5_000],
       timeout: 20_000,
