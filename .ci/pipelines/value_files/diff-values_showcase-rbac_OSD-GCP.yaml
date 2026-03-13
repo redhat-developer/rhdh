@@ -9,12 +9,12 @@ orchestrator: null
 global:
   dynamic:
     plugins:
-      # Disable orchestrator plugins for OSD-GCP - Official release (Backstage 1.42.5)
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.42.5__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
+      # Disable orchestrator plugins for OSD-GCP
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.42.5__8.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.42.5__1.1.0!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.42.5__1.1.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
