@@ -171,9 +171,9 @@ common::retry() {
 }
 
 # Save a file to the artifacts directory
-# Args: namespace, file_path
+# Args: artifacts_subdir, file_path
 common::save_artifact() {
-  local namespace=$1
+  local artifacts_subdir=$1
   local file=$2
 
   if [[ -z "$ARTIFACT_DIR" ]]; then
@@ -181,8 +181,8 @@ common::save_artifact() {
     return 0
   fi
 
-  mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  rsync -a "$file" "${ARTIFACT_DIR}/${namespace}/"
+  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}"
+  rsync -a "$file" "${ARTIFACT_DIR}/${artifacts_subdir}/"
 }
 
 # Export functions for subshell usage (e.g., timeout bash -c "...")
