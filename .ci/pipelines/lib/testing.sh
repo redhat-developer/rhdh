@@ -245,13 +245,13 @@ testing::check_and_test() {
       if testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_subdir}"; then
         log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
       else
-        save_all_pod_logs "$namespace"
+        save_all_pod_logs "$namespace" "$artifacts_subdir"
       fi
     fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
     test_run_tracker::mark_deploy_failed "$artifacts_subdir"
-    save_all_pod_logs "$namespace"
+    save_all_pod_logs "$namespace" "$artifacts_subdir"
   fi
   return 0
 }
