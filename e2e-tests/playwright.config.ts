@@ -142,6 +142,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts",
       ],
     },
     {
