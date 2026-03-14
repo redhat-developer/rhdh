@@ -1,0 +1,70 @@
+# ---------------------------------------------------------------------------
+# RHDH RHEL 9 Image Mode - Quadlet-Ready Base Image (RHIDP-11826)
+# Base container image for VM-deployable RHDH appliance (Tech Preview).
+# Uses Podman Quadlet; RHDH and PostgreSQL run as containers (no Node.js on host).
+# ---------------------------------------------------------------------------
+
+FROM registry.redhat.io/rhel9/rhel-bootc:latest
+
+# Install Podman and skopeo (required for Quadlet and image handling).
+# Build must run on a RHEL 9 host registered with subscription-manager so the build container can use the host's repos.
+RUN dnf install -y podman skopeo && \
+    dnf clean all
+
+# Directories for RHDH runtime (persistence under /var per immutable OS)
+RUN mkdir -p /etc/rhdh \
+             /var/lib/rhdh \
+             /var/lib/pgsql/data \
+             /usr/share/rhdh-images \
+             /usr/share/containers/systemd
+
+# Image binding for air-gap: pull at build time and save so no registry is needed at runtime.
+# Tarballs are loaded on first boot via rhdh-load-images.service.
+ARG RHDH_IMAGE=registry.redhat.io/rhdh/rhdh-hub-rhel9:1.8
+ARG POSTGRES_IMAGE=registry.redhat.io/rhel9/postgresql-15:latest
+
+RUN --network=host \
+    podman pull "${RHDH_IMAGE}" && \
+    podman save -o /usr/share/rhdh-images/rhdh-hub-rhel9.tar "${RHDH_IMAGE}" && \
+    podman pull "${POSTGRES_IMAGE}" && \
+    podman save -o /usr/share/rhdh-images/postgresql-15.tar "${POSTGRES_IMAGE}" && \
+    podman rmi "${RHDH_IMAGE}" "${POSTGRES_IMAGE}" 2>/dev/null || true
+
+# First-boot script: load embedded image tarballs into container storage
+RUN printf '%s\n' \
+  '#!/bin/bash' \
+  'set -e' \
+  'for f in /usr/share/rhdh-images/*.tar; do' \
+  '  [ -f "$f" ] || continue' \
+  '  echo "Loading container image from $f..."' \
+  '  podman load -i "$f"' \
+  'done' \
+  'echo "RHDH image preload complete."' \
+  > /usr/local/bin/rhdh-load-images.sh && \
+  chmod +x /usr/local/bin/rhdh-load-images.sh
+
+# Systemd oneshot: run once at first boot to load images (no registry at runtime)
+# Quadlet services (rhdh.service, postgres.service) are added in RHIDP-11827 and start after this.
+RUN printf '%s\n' \
+  '[Unit]' \
+  'Description=Load embedded RHDH and Postgres container images' \
+  'DefaultDependencies=no' \
+  '' \
+  '[Service]' \
+  'Type=oneshot' \
+  'RemainAfterExit=yes' \
+  'ExecStart=/usr/local/bin/rhdh-load-images.sh' \
+  '' \
+  '[Install]' \
+  'WantedBy=multi-user.target' \
+  > /etc/systemd/system/rhdh-load-images.service && \
+  systemctl enable rhdh-load-images.service
+
+# RHDH user for ownership of /var/lib/rhdh (UID 1001 aligns with RHDH container)
+RUN useradd -r -u 1001 -g root -d /var/lib/rhdh -s /sbin/nologin rhdh || true && \
+    chown -R 1001:0 /var/lib/rhdh
+
+# bootc images run systemd as init; Quadlet services start after rhdh-load-images
+EXPOSE 7007 5432
+WORKDIR /var/lib/rhdh
+CMD ["/usr/sbin/init"]
