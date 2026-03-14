@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.48.3",
+    "supported-versions": "1.48.4",
     "pluginId": "kubernetes",
     "pluginPackages": [
       "backstage-plugin-kubernetes",

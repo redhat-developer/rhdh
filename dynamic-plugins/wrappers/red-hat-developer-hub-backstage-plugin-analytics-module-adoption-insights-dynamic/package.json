@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "frontend-plugin-module",
-    "supported-versions": "1.48.3",
+    "supported-versions": "1.48.4",
     "pluginId": "red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights",
     "pluginPackage": "@redhat-developer-hub/backstage-plugin-analytics-module-adoption-insights"
   },
