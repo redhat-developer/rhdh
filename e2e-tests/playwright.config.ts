@@ -96,6 +96,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
@@ -155,6 +156,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts",
       ],
     },
@@ -189,6 +191,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/plugins/orchestrator/token-propagation-workflow.spec.ts",
       ],
     },
@@ -213,6 +216,12 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        ...(process.env.SCHEMA_MODE_DB_HOST
+          ? [
+              "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode-operator.spec.ts",
+              "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode-helm.spec.ts",
+            ]
+          : []),
       ],
     },
     {
