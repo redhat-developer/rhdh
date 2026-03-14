@@ -20,7 +20,6 @@ import {
 } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
-import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { searchTranslationRef } from '@backstage/plugin-search/alpha';
@@ -48,6 +47,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { CustomSidebarItem } from './CustomSidebarItem';
 import { MenuIcon } from './MenuIcon';
+import { MyGroupSidebarItem } from './MyGroupSidebarItem';
 import { SidebarLogo } from './SidebarLogo';
 
 /**
@@ -259,14 +259,13 @@ const getMenuItem = (
   const translatedText = getMenuText(menuItem);
   const pluralTranslatedText = getMenuText(menuItem, 2);
   return menuItem.name === 'default.my-group' ? (
-    <Box key={menuItem.name} sx={{ '& a': menuItemStyle }}>
-      <MyGroupsSidebarItem
-        key={menuItem.name}
-        icon={renderIcon(menuItem.icon ?? '')}
-        singularTitle={translatedText}
-        pluralTitle={pluralTranslatedText}
-      />
-    </Box>
+    <MyGroupSidebarItem
+      key={menuItem.name}
+      icon={renderIcon(menuItem.icon ?? '')}
+      singularTitle={translatedText}
+      pluralTitle={pluralTranslatedText}
+      paddingLeft={menuItemStyle.paddingLeft || undefined}
+    />
   ) : (
     <CustomSidebarItem
       key={menuItem.name}
