@@ -54,7 +54,7 @@
     "node-gyp": "10.3.1",
     "rulesync": "3.34.0",
     "sherif": "1.10.0",
-    "turbo": "2.8.10"
+    "turbo": "2.8.16"
   },
   "resolutions": {
     "@types/react": "18.3.28",
