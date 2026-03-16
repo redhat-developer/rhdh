@@ -297,7 +297,7 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-        disabled: false
+        disabled: true
       # Enable orchestrator plugins
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
