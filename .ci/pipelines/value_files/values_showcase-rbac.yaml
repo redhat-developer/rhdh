@@ -20,7 +20,7 @@ global:
     plugins:
       # Enforce new quick start configuration for now but normally this should not be required.
       # FIXME: remove this again.
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-quickstart:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           app:
@@ -121,7 +121,7 @@ global:
                     importName: QuickstartButton
                     config:
                       priority: 100
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-github:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           catalog:
@@ -138,7 +138,7 @@ global:
                       minutes: 1
                     initialDelay:
                       seconds: 15
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-github-org:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           catalog:
@@ -182,15 +182,15 @@ global:
                       if:
                         anyOf:
                           - isQuayAvailable
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-keycloak:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-topology:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-kubernetes:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-kubernetes-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           kubernetes:
@@ -220,18 +220,18 @@ global:
             serviceLocatorMethod:
               type: multiTenant
       # Enable Bulk import plugins.
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-bulk-import-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-bulk-import:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-global-header:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       # Enable tech-radar plugin.
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-rbac:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           dynamicPlugins:
@@ -255,7 +255,7 @@ global:
                   rbac:
                     parent: default.admin
                     icon: rbacIcon
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
       #Enable Scorecard plugin.
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.4
@@ -356,7 +356,7 @@ global:
             frontend:
               red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
 
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-dynamic-home-page:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           dynamicPlugins:

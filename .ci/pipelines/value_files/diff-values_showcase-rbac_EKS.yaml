@@ -11,15 +11,15 @@ global:
       # See e2e-tests/playwright.config.ts SHOWCASE_RBAC_K8S config
 
       # Tekton not in showcase-rbac-k8s testMatch
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
 
       # Adoption Insights not in showcase-rbac-k8s testMatch
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
 
       # Orchestrator tests ignored on showcase-rbac-k8s: e2e-tests/playwright/e2e/plugins/orchestrator/*.spec.ts
