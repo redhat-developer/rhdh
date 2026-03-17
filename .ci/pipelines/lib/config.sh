@@ -94,7 +94,7 @@ metadata:
 data:
   dynamic-plugins.yaml: |
 EOF
-  yq '.global.dynamic' "${base_file}" | sed -e 's/^/    /' >> "${output_file}"
+  yq '.global.dynamic' "${base_file}" | sed -e 's/^/    /' -e 's/{{ "{{" }}inherit{{ "}}" }}/{{inherit}}/g' >> "${output_file}"
   return $?
 }
 
