@@ -2,17 +2,17 @@ global:
   dynamic:
     plugins:
       #  sanity check https://issues.redhat.com/browse/RHIDP-5301
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-gitlab-org:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-scaffolder-backend-module-gitlab:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
         disabled: false
         pluginConfig:
           argocd:
@@ -23,7 +23,7 @@ global:
                 instances:
                   - name: argoInstance1
                     url: "temp"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
         disabled: true
         pluginConfig:
           argocd:
@@ -54,11 +54,11 @@ global:
                 apiKey: "temp"
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-notifications:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-notifications-backend:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-notifications-backend-module-email:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
         disabled: false
         pluginConfig:
           notifications:
@@ -66,9 +66,9 @@ global:
               email:
                 transportConfig:
                 sender: "temp"
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-signals-backend:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-signals:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-signals
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
@@ -81,13 +81,13 @@ global:
                 apiKey: "123456789abcdef0123456789abcedf012"
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-dynamic-home-page:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs-backend:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs-module-addons-contrib:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
         disabled: false
         pluginConfig:
           dynamicPlugins:
@@ -110,13 +110,13 @@ global:
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-kubernetes:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-regex:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
         disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-servicenow:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
         disabled: true
         pluginConfig:
           servicenow:
@@ -158,11 +158,11 @@ global:
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-lighthouse:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-msgraph:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
         disabled: false
         pluginConfig:
           catalog:
@@ -181,7 +181,7 @@ global:
                       seconds: 15
                     timeout:
                       minutes: 15
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-ldap:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
         disabled: false
         pluginConfig:
           catalog:
@@ -209,5 +209,5 @@ global:
                     timeout:
                       minutes: 15
 
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-pingidentity:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
         disabled: false

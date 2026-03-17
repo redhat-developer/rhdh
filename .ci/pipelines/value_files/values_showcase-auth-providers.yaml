@@ -3,13 +3,13 @@ global:
     includes:
       - dynamic-plugins.default.yaml
     plugins:
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-keycloak:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-github-org:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
         disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-msgraph:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
         disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-rbac:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: true
 upstream:
   backstage:

@@ -9,11 +9,11 @@ global:
   host: $EKS_INSTANCE_DOMAIN_NAME
   dynamic:
     plugins:
-      - package: 'oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
 
       # Tekton not installed on K8s clusters
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: true
 
       # Orchestrator tests ignored on showcase-k8s

@@ -13,16 +13,16 @@ global:
 
       # Tekton - not installed on K8s clusters (AKS/EKS/GKE)
       # Not in showcase-rbac-k8s testMatch
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: true
 
       # Adoption Insights - large plugin (~300MB) causing disk space issues
       # Not in showcase-rbac-k8s testMatch
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
         disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights-backend:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
         disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
         disabled: true
 
       # Orchestrator - large OCI plugins causing disk space issues
