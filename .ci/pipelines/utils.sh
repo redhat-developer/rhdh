@@ -765,7 +765,7 @@ metadata:
   name: dynamic-plugins
 data:
   dynamic-plugins.yaml: |" > ${final_file}
-  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' >> ${final_file}
+  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' -e 's/{{ "{{" }}inherit{{ "}}" }}/{{inherit}}/g' >> ${final_file}
 }
 
 create_conditional_policies_operator() {
