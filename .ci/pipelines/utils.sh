@@ -765,7 +765,10 @@ metadata:
   name: dynamic-plugins
 data:
   dynamic-plugins.yaml: |" > ${final_file}
-  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' -e 's/{{ "{{" }}inherit{{ "}}" }}/{{inherit}}/g' >> ${final_file}
+  # Render Helm template escapes: {{ "{{" }}inherit{{ "}}" }} -> {{inherit}}
+  # Value files use Helm escaping for {{inherit}} which Helm renders automatically,
+  # but operator deployments use these files directly without Helm rendering.
+  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' -e 's/{{ "{{" }}/{{/g' -e 's/{{ "}}" }}/}}/g' >> ${final_file}
 }
 
 create_conditional_policies_operator() {
