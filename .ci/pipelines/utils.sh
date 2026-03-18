@@ -1409,8 +1409,46 @@ force_delete_namespace() {
 }
 
 oc_login() {
-  oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
-  echo "OCP version: $(oc version)"
+  local max_attempts=${1:-5}
+  local wait_seconds=${2:-30}
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true; then
+      log::success "Logged in to cluster successfully"
+      echo "OCP version: $(oc version)"
+      return 0
+    fi
+    if [[ $i -lt $max_attempts ]]; then
+      log::warn "Cluster login attempt ${i}/${max_attempts} failed. Retrying in ${wait_seconds}s..."
+      sleep "$wait_seconds"
+    fi
+  done
+
+  log::error "Failed to login to cluster after ${max_attempts} attempts"
+  return 1
+}
+
+# Wait for the cluster API server to be fully responsive after login.
+# Clusters resuming from hibernation may accept login but have degraded API availability.
+wait_for_cluster_ready() {
+  local max_attempts=${1:-20}
+  local wait_seconds=${2:-15}
+
+  log::info "Checking cluster API server readiness..."
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get nodes &> /dev/null && oc get route console -n openshift-console &> /dev/null; then
+      log::success "Cluster API server is ready"
+      return 0
+    fi
+    if [[ $i -lt $max_attempts ]]; then
+      log::warn "Cluster API not fully ready (attempt ${i}/${max_attempts}). Retrying in ${wait_seconds}s..."
+      sleep "$wait_seconds"
+    fi
+  done
+
+  log::error "Cluster API server did not become ready after ${max_attempts} attempts ($((max_attempts * wait_seconds))s)"
+  return 1
 }
 
 is_openshift() {
