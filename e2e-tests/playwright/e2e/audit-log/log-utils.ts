@@ -187,8 +187,10 @@ export class LogUtils {
     maxRetries: number = 4,
     retryDelay: number = 2000,
   ): Promise<string> {
-    const podSelector =
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub";
+    const isOperator = process.env.JOB_NAME?.includes("operator") ?? false;
+    const podSelector = isOperator
+      ? "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage"
+      : "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub";
     const tailNumber = 100;
 
     let grepCommand = `oc logs -l ${podSelector} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
