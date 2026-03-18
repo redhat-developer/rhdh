@@ -91,6 +91,8 @@ export class UIhelper {
     const isPressed = await button.getAttribute("aria-pressed");
 
     if (isPressed === "false") {
+      await button.scrollIntoViewIfNeeded();
+      await expect(button).toBeVisible();
       await button.click();
     }
   }
@@ -251,11 +253,13 @@ export class UIhelper {
   async goToSettingsPage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
-    await this.clickLink(
-      // TODO: RHDHBUGS-2552 - Strings not getting translated
-      // t["plugin.global-header"][lang]["profile.settings"],
-      "Settings",
-    );
+    // TODO: RHDHBUGS-2552 - Strings not getting translated
+    // The profile dropdown renders Settings as a menuitem, not an <a> link
+    const settingsItem = this.page.getByRole("menuitem", {
+      name: "Settings",
+    });
+    await expect(settingsItem).toBeVisible();
+    await settingsItem.click();
   }
 
   async goToSelfServicePage() {
@@ -862,6 +866,9 @@ export class UIhelper {
     });
     if (await quickstartHideButton.isVisible()) {
       await quickstartHideButton.click();
+      // Wait for the quickstart overlay to be fully removed from the page
+      // to prevent it from intercepting pointer events on other elements
+      await quickstartHideButton.waitFor({ state: "hidden", timeout: 5000 });
     }
   }
 }
