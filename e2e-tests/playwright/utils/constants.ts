@@ -75,5 +75,5 @@ export type IsOpenShiftValue =
 export const BACKSTAGE_POD_SELECTOR = {
   HELM: "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub",
   OPERATOR:
-    "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage",
+    "app.kubernetes.io/component=backstage,app.kubernetes.io/name=backstage",
 } as const;
