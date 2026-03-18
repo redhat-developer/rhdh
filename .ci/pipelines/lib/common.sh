@@ -188,19 +188,28 @@ common::retry() {
   return 1
 }
 
-# Save a file to the artifacts directory
-# Args: artifacts_subdir, file_path
+# Save a file or directory to the artifacts directory
+# Args:
+#   $1 - artifacts_subdir: Subdirectory under ARTIFACT_DIR (typically playwright_project)
+#   $2 - file_path: File or directory to save
+#   $3 - subdir: (optional) Additional subdirectory under artifacts_subdir
 common::save_artifact() {
   local artifacts_subdir=$1
   local file=$2
+  local subdir=${3:-}
 
   if [[ -z "$ARTIFACT_DIR" ]]; then
     log::warn "ARTIFACT_DIR not set, skipping artifact save"
     return 0
   fi
 
-  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}"
-  rsync -a "$file" "${ARTIFACT_DIR}/${artifacts_subdir}/"
+  local target_dir="${ARTIFACT_DIR}/${artifacts_subdir}"
+  if [[ -n "$subdir" ]]; then
+    target_dir="${target_dir}/${subdir}"
+  fi
+
+  mkdir -p "${target_dir}"
+  rsync -a "$file" "${target_dir}/"
 }
 
 # Export functions for subshell usage (e.g., timeout bash -c "...")
