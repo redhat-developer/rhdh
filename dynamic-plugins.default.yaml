@@ -1476,9 +1476,9 @@ plugins:
                 parent: default.admin
 
   # Group: Orchestrator
-  - package: "@redhat/backstage-plugin-orchestrator@1.8.2"
+  - package: "@redhat/backstage-plugin-orchestrator@1.8.9"
     disabled: true
-    integrity: sha512-rnUA6iZ2JVAyASfwS4P9HeFmpqCgH6FQouzzg4s6lCPAsYUFvu6tifJ3df5lThXPUTJ2cDvvQgamU+4DiHP2jw==
+    integrity: sha512-k9r4xEfy3a5En1DTBZkzjhbUVFfbP8Pb+/uCkTXwqqwDJaM2ZzPMzaMj4x65XBnpKTdEZJA0rf/mFMFnfM8I6w==
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -1507,25 +1507,25 @@ plugins:
                     if:
                       anyOf:
                         - IsOrchestratorCatalogTabAvailable
-  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.8.2"
+  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.8.9"
     disabled: true
-    integrity: sha512-6G0YguzCM5nCDpOrIGJpLTXVMr6EBdIVqSXtsLH9RvBH25RTuFpfJ7q6eEp26DqveaiqUCfBpJ51smdjcsEzFQ==
+    integrity: sha512-V6Css2y21le4SrMj1tpupppjSkvaZcfvfF9sLoknUnFLCCYkKCH21Fpk2BxA1MMRpVXTUjUJ8lTwYAdrrxBEjg==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.8.2"
+  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.8.9"
     disabled: true
-    integrity: sha512-N2hCn9RI/QVEoK56FAkGkSDbvfQCOIzVsJTwDX0kf//npO++2crRSJpB1Lr/m2UtYxfaXZX53p8sPcK3g8yWkQ==
+    integrity: sha512-VRM/RvqQUemJLBdwm3nYwn2pSTUumZ1YEaHhgh4ELTiuVy2KQcyZCN9cSOCUswjHldmuPyT8dyfGQvSriGNS8Q==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.8.2"
+  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.8.9"
     disabled: true
-    integrity: sha512-Pe0dn3g+YTK3jbl36E8nt4zdyH/3w+MWgRyFWPc2B0eV4/L/aRfRC4KxcktmHPdamRGXTIaXL6cFae8TZl8Htw==
+    integrity: sha512-fWlawBQUenXQXBUPe04mrIFPhNE05f1aVRJXXFS0FT0doo8X4vijmEeZf4Qm3b1Owgup8E6HHKQr3a94lBrNew==
     pluginConfig:
       dynamicPlugins:
         frontend:
