@@ -6,7 +6,7 @@ on:
       - "main"
       - "release-*"
     paths:
-      - '.ibm/**'
+      - '.ci/**'
 
 jobs:
   lint:
@@ -23,15 +23,15 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Install dependencies
-        working-directory: ./.ibm
+        working-directory: ./.ci
         run: yarn install
 
       - name: Run ShellCheck check
-        working-directory: ./.ibm
+        working-directory: ./.ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn shellcheck
 
       - name: Run Prettier check
-        working-directory: ./.ibm
+        working-directory: ./.ci
         run: yarn prettier:check

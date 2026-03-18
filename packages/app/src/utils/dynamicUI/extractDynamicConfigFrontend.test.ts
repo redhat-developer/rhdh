@@ -166,6 +166,47 @@ describe('buildTree', () => {
         createMenuItem('item4', 'Item 4', 'icon4'),
       ],
     },
+    {
+      description:
+        'should preserve title/titleKey/icon/to from first entry when merging same name (e.g. dynamic route + menuItems parent)',
+      input: [
+        {
+          name: 'default.admin',
+          title: 'Administration',
+          titleKey: 'menuItem.administration',
+          icon: 'admin',
+          children: [],
+        },
+        {
+          name: 'extensions',
+          title: 'Extensions',
+          titleKey: 'menuItem.extensions',
+          parent: 'default.admin',
+          icon: 'pluginsIcon',
+          to: '/extensions',
+          children: [],
+        } as MenuItem,
+      ],
+      expectedOutput: [
+        {
+          name: 'default.admin',
+          title: 'Administration',
+          titleKey: 'menuItem.administration',
+          icon: 'admin',
+          children: [
+            {
+              name: 'extensions',
+              title: 'Extensions',
+              titleKey: 'menuItem.extensions',
+              icon: 'pluginsIcon',
+              to: '/extensions',
+              parent: 'default.admin',
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
   ];
 
   it.each(testCases)('$description', ({ input, expectedOutput }) => {

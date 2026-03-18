@@ -155,7 +155,7 @@ function getAuthProviderFactory(
         authenticator: githubAuthenticator,
         ...applySignInResolvers({
           signInResolver:
-            githubSignInResolvers.usernameMatchingUserEntityName(),
+            githubSignInResolvers.userIdMatchingUserEntityAnnotation(),
           signInResolverFactories: {
             ...githubSignInResolvers,
             ...commonSignInResolvers,
@@ -167,7 +167,7 @@ function getAuthProviderFactory(
         authenticator: gitlabAuthenticator,
         ...applySignInResolvers({
           signInResolver:
-            gitlabSignInResolvers.usernameMatchingUserEntityName(),
+            gitlabSignInResolvers.userIdMatchingUserEntityAnnotation(),
           signInResolverFactories: {
             ...gitlabSignInResolvers,
             ...commonSignInResolvers,
@@ -274,7 +274,7 @@ function getAuthProviderFactory(
 
 const authProvidersModule = createBackendModule({
   pluginId: 'auth',
-  moduleId: 'auth.providers',
+  moduleId: 'auth-providers',
   register(reg) {
     reg.registerInit({
       deps: {

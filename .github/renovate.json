@@ -8,6 +8,9 @@
     ":automergeBranch",
     ":disableMajorUpdates"
   ],
+  "ignorePresets":[
+    ":maintainLockFilesWeekly"
+  ],
   "labels": [
     "kind/dependency upgrade"
   ],
@@ -70,7 +73,7 @@
         "minor"
       ],      
       "matchFileNames": [
-        ".ibm/images/**"
+        ".ci/images/**"
       ],         
       "additionalBranchPrefix": "test-dockerfile ",        
       "groupName": "Test dockerfile images (non-major)",

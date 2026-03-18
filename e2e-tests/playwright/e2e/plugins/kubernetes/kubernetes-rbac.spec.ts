@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
@@ -6,6 +6,9 @@ import { KUBERNETES_COMPONENTS } from "../../../support/page-objects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
 test.describe("Test Kubernetes Plugin", () => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2817
+  test.fixme(() => process.env.IS_OPENSHIFT === "false");
+
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
@@ -55,9 +58,7 @@ test.describe("Test Kubernetes Plugin", () => {
   // User is able to read from the catalog
   // User is unable to read kubernetes resources / clusters and use kubernetes proxy (needed for pod logs)
   test.describe("Verify that a user without permissions is not able to access parts of the Kubernetes plugin", () => {
-    test("Verify pods are not visible in the Kubernetes tab", async ({
-      page,
-    }) => {
+    test("Verify pods are not visible in the Kubernetes tab", async () => {
       await common.loginAsKeycloakUser(
         process.env.QE_USER6_ID,
         process.env.QE_USER6_PASS,
@@ -67,11 +68,7 @@ test.describe("Test Kubernetes Plugin", () => {
       await uiHelper.clickTab("Kubernetes");
       await uiHelper.verifyText("backstage-janus");
 
-      await expect(
-        page
-          .getByRole("heading")
-          .filter({ hasText: "Warning: Permission required" }),
-      ).toBeVisible();
+      await uiHelper.verifyHeading("Warning: Permission required");
     });
 
     // User is able to read from the catalog and read kubernetes resources and kubernetes clusters

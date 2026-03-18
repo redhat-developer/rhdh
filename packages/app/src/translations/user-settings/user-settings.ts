@@ -4,11 +4,11 @@ import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alph
 export const userSettingsTranslations = createTranslationResource({
   ref: userSettingsTranslationRef,
   translations: {
-    en: () => import('./user-settings-en'),
     de: () => import('./user-settings-de'),
-    fr: () => import('./user-settings-fr'),
-    ja: () => import('./ja'),
+    en: () => import('./user-settings-en'),
     es: () => import('./user-settings-es'),
+    fr: () => import('./user-settings-fr'),
     it: () => import('./user-settings-it'),
+    ja: () => import('./ja'),
   },
 });
