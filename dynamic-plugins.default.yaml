@@ -1727,30 +1727,30 @@ plugins:
                 token: ${ARGOCD_AUTH_TOKEN2}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.45.3__4.1.1
     disabled: true
-  # Tag: 1.9.0--1.0.1, Build date: 2026-02-17T19:47:10Z
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki@sha256:4690f183eff37c90ffc893d385cbd04757c922a533035a7ae99674b633b41274
+  # Tag: 1.9.2--1.0.4, Build date: 2026-03-18T10:58:35Z
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki@sha256:47105a25335b7b81b70f1a94d59ef36d8f7fc00652e881c59235b7529db422a3
     disabled: true
     pluginConfig:
       orchestrator:
         workflowLogProvider:
           loki:
             baseUrl: ${LOKI_BASE_URL}
-  # Tag: 1.9.0--8.6.1, Build date: 2026-02-17T19:45:11Z
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:3a3d10258d1da0529ba853f82742cb55740ce8799599a41f1c5fff6a76d8d84d
+  # Tag: 1.9.2--8.6.3, Build date: 2026-03-18T10:56:40Z
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:65dff6b447257b469005be8e882a4b53db182c901e216b67953a2ce9f1c58a18
     disabled: true
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
-  # Tag: 1.9.0--1.6.2, Build date: 2026-02-17T19:47:09Z
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:692afe6b19aabf47a4ea02177d7637083db0adfeb7240b5321d64ee39d5cd040
+  # Tag: 1.9.2--1.6.3, Build date: 2026-03-18T10:58:45Z
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:90ad03763a07ab8f49f48a0eaafdb73f792eab033089637a37d8b7a259cf75a9
     disabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
-  # Tag: 1.9.0--5.4.1, Build date: 2026-02-17T19:48:15Z
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator@sha256:f40d39fb7599d2cbfa8f64d6f4703d69539e4a4b0e49518499f47ca986fbd814
+  # Tag: 1.9.2--5.4.2, Build date: 2026-03-18T10:58:35Z
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator@sha256:2bbc01aa98aeece7042bcc7efffe8f6b950f6d755e81ca4b81800cdd69c98e35
     disabled: true
     pluginConfig:
       dynamicPlugins:
@@ -1780,8 +1780,8 @@ plugins:
                     if:
                       anyOf:
                         - IsOrchestratorCatalogTabAvailable
-  # Tag: 1.9.0--1.3.3, Build date: 2026-02-17T19:47:56Z
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:566c09637572fe80c3769d92e6847f1def5b8a7e2a7fc52e046b55cfc6dcea4f
+  # Tag: 1.9.2--1.3.4, Build date: 2026-03-18T10:58:35Z
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:cbb0733c18541479edfbc76b06e9863bb08e6c4663ffec53fc1471c80bfe5db9
     disabled: true
     pluginConfig:
       orchestrator:
