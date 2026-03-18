@@ -771,6 +771,27 @@ data:
   yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' -e 's/{{ "{{" }}/{{/g' -e 's/{{ "}}" }}/}}/g' >> ${final_file}
 }
 
+# Clean up orchestrator/SonataFlow resources in non-OpenShift environments.
+# The RHDH operator's internal Helm chart may create orchestrator infrastructure
+# (SonataFlow jobs, deployments) even on K8s where it's not supported.
+# This function removes those resources to prevent deployment failures.
+cleanup_orchestrator_resources() {
+  local namespace=$1
+  log::info "Cleaning up orchestrator resources in namespace '$namespace' (not supported on K8s)..."
+
+  # Delete sonataflow database creation jobs that fail on K8s
+  set +e
+  kubectl delete jobs -n "$namespace" -l app.kubernetes.io/component=sonataflow 2> /dev/null
+  kubectl delete jobs -n "$namespace" --field-selector "metadata.name=create-sonataflow-database-${RELEASE_NAME}" 2> /dev/null
+  kubectl delete jobs -n "$namespace" --field-selector "metadata.name=create-sonataflow-database-${RELEASE_NAME_RBAC}" 2> /dev/null
+  # Delete any SonataFlow platform resources
+  kubectl delete sonataflowplatforms --all -n "$namespace" 2> /dev/null
+  kubectl delete sonataflows --all -n "$namespace" 2> /dev/null
+  set -e
+
+  log::info "Orchestrator cleanup complete for namespace '$namespace'"
+}
+
 create_conditional_policies_operator() {
   local destination_file=$1
   yq '.upstream.backstage.initContainers[0].command[2]' "${DIR}/value_files/values_showcase-rbac.yaml" | head -n -4 | tail -n +2 > $destination_file
