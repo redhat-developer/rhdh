@@ -1,0 +1,77 @@
+# apiVersion: backstage.io/v1alpha1
+# kind: Component
+# metadata:
+#   name: backstage
+#   description: |
+#     Backstage is an open-source developer portal that puts the developer experience first.
+#   links:
+#     - title: Website
+#       url: http://backstage.io
+#     - title: Documentation
+#       url: https://backstage.io/docs
+#     - title: Storybook
+#       url: https://backstage.io/storybook
+#     - title: Discord Chat
+#       url: https://discord.com/invite/EBHEGzX
+#   annotations:
+#     github.com/project-slug: backstage/backstage
+#     lighthouse.com/website-url: https://backstage.io
+# spec:
+#   type: library
+#   owner: CNCF
+#   lifecycle: experimental
+
+###############################
+# SYSTEMS
+###############################
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: rhdh-local
+  title: RHDH Local
+  description: |
+    RHDH Local is used by platform engineers to test and experiment with RHDH configuration with a faster inner loop cycle time. 
+    RHDH Local uses Docker or PodMan to run the RHDH container. No Kubernetes is required.
+    When writing and testing TechDocs, Templates, or Catalog items, RHDH Local offers a fast and simple solution that lets you 
+    work quickly and retain full control over your setup and your database. See the TechDocs for more details.
+  tags:
+    - developer-hub
+    - rhdh-local
+  links:
+    - url: https://red.ht/rhdh
+      title: RHDH Homepage
+      icon: star
+      type: website
+    - url: https://developers.redhat.com/blog
+      title: Red Hat Developer Blog
+      icon: catalog
+      type: blog
+    - url: https://docs.redhat.com/fr/documentation/red_hat_developer_hub/
+      title: RHDH Documentation
+      icon: docs
+      type: docs
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: RHDH Jira
+      icon: help
+      type: jira
+    - url: https://github.com/redhat-developer/rhdh-local
+      title: RHDH Local Source Code
+      icon: github
+      type: sourcecode
+    - url: https://youtu.be/LB1w8hjBt5k?si=2LxmEtIxIyAKcHx6
+      title: RHDH Video Overview (YouTube)
+      type: video
+      icon: YouTube
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    feedback/type: 'MAIL' # allows for feedback via EMAIL
+    feedback/email-to: ${EMAIL_SENDER} # Sets where the EMAIL feedback is to go
+    quay.io/repository-slug: rhdh-community/rhdh
+    github.com/project-slug: redhat-developer/rhdh-local
+    github.com/team-slug: redhat-developer/rhdh-team
+spec: 
+  owner: user:default/user
+  type: product
+  lifecycle: production
+  profile:
+    displayName: RHDH Local

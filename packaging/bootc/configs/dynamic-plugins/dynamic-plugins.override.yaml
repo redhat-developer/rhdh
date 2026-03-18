@@ -1,0 +1,50 @@
+# This is the default dynamic plugins config, and any user configuration should be added dynamic-plugins.override.yaml instead
+includes:
+  - dynamic-plugins.default.yaml
+
+plugins:
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+    disabled: true  # Disabled - causes installation failures
+
+  # Requires tarball in local-plugins/ — enable when you ship the .tgz in the image
+  - package: /opt/app-root/src/local-plugins/ansible-plugin-scaffolder-backend-module-backstage-rhaap-dynamic-2.0.1.tgz
+    disabled: true
+    integrity: sha512-VOC8s1TpumDTJKFXMOrqpw/zPousW7GK3WvPpfzTvGE9pl1CqfIVOf8BOLkj84svgOhFgYglH2mOfKRDJ4CfGw==
+    pluginConfig:
+      dynamicPlugins:
+        backend:
+          ansible.plugin-scaffolder-backend-module-backstage-rhaap: null
+
+  - package: /opt/app-root/src/local-plugins/ansible-backstage-plugin-catalog-backend-module-rhaap-dynamic-2.0.1.tgz
+    disabled: true
+    integrity: sha512-VSRfaCajhmv77U+hge9eIln4nJ33P9vIMgYOoJjcOoe+w18vkqNRBqF0U/8JDEgSuy4PU1Y3lmD1DmrjmncZDA==
+
+  - package: /opt/app-root/src/local-plugins/ansible-plugin-backstage-self-service-dynamic-2.0.1.tgz
+    disabled: true
+    integrity: sha512-M/ZkyIm8o590pQ2q+kJOXovoAQNZE5i+ciAY/E9VN2eCp6qawa54QCXnLME4HIqBBDMR9lUOJZQYJ6Q1tNxvdg==
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          ansible.plugin-backstage-self-service:
+            signInPage:
+              importName: SignInPage
+            providerSettings:
+              - title: RHAAP
+                description: Sign in with RHAAP
+                provider: ansible.auth.rhaap
+            scaffolderFieldExtensions:
+              - importName: AAPTokenFieldExtension
+              - importName: AAPResourcePickerExtension
+            dynamicRoutes:
+              - importName: LandingPage
+                path: /
+              - importName: SelfServicePage
+                path: /self-service
+            mountPoints:
+              - mountPoint: application/listener
+                importName: LocationListener
+
+  - package: /opt/app-root/src/local-plugins/ansible-backstage-plugin-auth-backend-module-rhaap-provider-dynamic-2.0.1.tgz
+    disabled: true
+    integrity: sha512-94mJmjhr6xPb4KkLpKT6nc3f3QAegyEF3x+3dRk2J84CIkhUm3mBn4J5xiyRAnvEBJrOiY0dAQCSJHeDaSUKZA==
+    pluginConfig: {}

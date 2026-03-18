@@ -1,0 +1,59 @@
+# Podman Quadlet .container file for RHDH (with PostgreSQL dependency)
+# This file defines how to run the RHDH container as a systemd service
+[Unit]
+Description=Red Hat Developer Hub with Ansible Self-Service Portal
+After=network-online.target postgres.service
+Wants=network-online.target
+Requires=postgres.service
+
+[Container]
+Image=registry.redhat.io/rhdh/rhdh-hub-rhel9:1.8
+ContainerName=rhdh
+SecurityLabelDisable=true
+
+# Same as postgres.container — use default storage so Quadlet works in podman run
+# tests and on normal disks; bootc bound-image store is optional on real appliances.
+
+# Environment variables from file (cleaner approach)
+EnvironmentFile=/etc/rhdh/rhdh.env
+
+# Mount configuration and persistent data
+Volume=/etc/rhdh/configs:/opt/app-root/src/configs:Z
+# Volume=/etc/rhdh/default.env:/opt/app-root/src/default.env:Z  # Using rhdh.env only for Quadlet
+Volume=/var/lib/rhdh/local-plugins:/opt/app-root/src/local-plugins:Z
+Volume=/var/lib/rhdh/config:/var/lib/rhdh/config:Z
+Volume=/var/lib/rhdh/dynamic-plugins-root:/opt/app-root/src/dynamic-plugins-root:Z
+Volume=/var/lib/rhdh/generated:/opt/app-root/src/generated:Z
+Volume=/var/lib/rhdh/.npm:/opt/app-root/src/.npm:Z
+Volume=/var/lib/rhdh/scripts/wait-for-plugins-and-start.sh:/opt/app-root/src/wait-for-plugins-and-start.sh:Z
+Volume=/var/lib/rhdh/scripts/prepare-and-install-dynamic-plugins.sh:/usr/local/bin/prepare-and-install-dynamic-plugins.sh:Z
+Volume=/var/lib/rhdh/config/dynamic-plugins.yaml:/opt/app-root/src/dynamic-plugins.yaml:Z
+
+# Network and ports
+PublishPort=7007:7007
+
+# User and working directory
+User=1001:0
+WorkingDir=/opt/app-root/src
+
+# Use the proper RHDH entrypoint script (loads env and handles plugin setup)
+Entrypoint=/opt/app-root/src/wait-for-plugins-and-start.sh
+
+# Health check
+HealthCmd=/bin/bash -c 'curl -f http://localhost:7007 >/dev/null 2>&1'
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+# Network
+Network=rhdh-network
+
+[Service]
+# Detect VM IP and update BASE_URL before starting container (run with full privileges)
+ExecStartPre=+/usr/local/bin/detect-and-set-base-url.sh
+Restart=always
+RestartSec=15
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target

@@ -1,0 +1,21 @@
+# Quadlet network file for RHDH and PostgreSQL communication
+# Creates isolated network for RHDH components
+
+[Unit]
+Description=RHDH Network for PostgreSQL and RHDH containers
+Wants=network-online.target
+After=network-online.target
+
+[Network]
+NetworkName=rhdh-network
+Driver=bridge
+# Enable DNS resolution between containers
+DisableDNS=false
+Internal=false
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+

@@ -1,70 +1,85 @@
-# ---------------------------------------------------------------------------
-# RHDH RHEL 9 Image Mode - Quadlet-Ready Base Image (RHIDP-11826)
-# Base container image for VM-deployable RHDH appliance (Tech Preview).
-# Uses Podman Quadlet; RHDH and PostgreSQL run as containers (no Node.js on host).
-# ---------------------------------------------------------------------------
+# RHDH RHEL 9 bootc + Quadlet (copied from ansible image_mode quadlet flow).
+# Build context: this directory (packaging/bootc). Requires auth.json (see build.sh).
 
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
-# Install Podman and skopeo (required for Quadlet and image handling).
-# Build must run on a RHEL 9 host registered with subscription-manager so the build container can use the host's repos.
-RUN dnf install -y podman skopeo && \
+RUN dnf install -y nodejs npm python3 curl sudo podman && \
     dnf clean all
 
-# Directories for RHDH runtime (persistence under /var per immutable OS)
-RUN mkdir -p /etc/rhdh \
-             /var/lib/rhdh \
-             /var/lib/pgsql/data \
-             /usr/share/rhdh-images \
-             /usr/share/containers/systemd
+RUN useradd -r -u 1001 -g root -d /opt/app-root/src -s /sbin/nologin rhdh && \
+    mkdir -p /opt/app-root/src /opt/app-root/src/dynamic-plugins-root /etc/rhdh /var/lib/rhdh /etc/containers && \
+    echo "rhdh ALL=(root) NOPASSWD: /usr/bin/chown, /usr/bin/chmod, /usr/bin/mkdir" > /etc/sudoers.d/rhdh && \
+    dnf install -y openssh-server && \
+    systemctl enable sshd && \
+    useradd -m -u 1000 -G wheel -s /bin/bash admin && \
+    echo 'admin123' | passwd --stdin admin && \
+    echo 'root123' | passwd --stdin root && \
+    passwd -u admin && \
+    passwd -u root && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/' /etc/ssh/sshd_config && \
+    echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
-# Image binding for air-gap: pull at build time and save so no registry is needed at runtime.
-# Tarballs are loaded on first boot via rhdh-load-images.service.
-ARG RHDH_IMAGE=registry.redhat.io/rhdh/rhdh-hub-rhel9:1.8
-ARG POSTGRES_IMAGE=registry.redhat.io/rhel9/postgresql-15:latest
+COPY ./configs /etc/rhdh/configs
+COPY ./quadlet/rhdh.env /etc/rhdh/rhdh.env
+COPY ./local-plugins /var/lib/rhdh/local-plugins
+COPY ./scripts/prepare-and-install-dynamic-plugins.sh /usr/local/bin/
+COPY ./scripts/wait-for-plugins-and-start.sh /usr/local/bin/
+COPY ./scripts/detect-and-set-base-url.sh /usr/local/bin/
 
-RUN --network=host \
-    podman pull "${RHDH_IMAGE}" && \
-    podman save -o /usr/share/rhdh-images/rhdh-hub-rhel9.tar "${RHDH_IMAGE}" && \
-    podman pull "${POSTGRES_IMAGE}" && \
-    podman save -o /usr/share/rhdh-images/postgresql-15.tar "${POSTGRES_IMAGE}" && \
-    podman rmi "${RHDH_IMAGE}" "${POSTGRES_IMAGE}" 2>/dev/null || true
+COPY ./auth.json /etc/containers/auth.json
+# systemd/Quadlet runs podman as root; root reads ~/.config/containers/auth.json, not /etc/containers alone
+RUN mkdir -p /root/.config/containers && \
+    cp /etc/containers/auth.json /root/.config/containers/auth.json && \
+    chmod 600 /etc/containers/auth.json /root/.config/containers/auth.json
 
-# First-boot script: load embedded image tarballs into container storage
+COPY ./quadlet/rhdh.container /usr/share/containers/systemd/rhdh.container
+COPY ./quadlet/postgres.container /usr/share/containers/systemd/postgres.container
+COPY ./quadlet/rhdh-network.network /usr/share/containers/systemd/rhdh-network.network
+COPY ./quadlet/postgres.env /etc/rhdh/postgres.env
+
+RUN mkdir -p /usr/lib/bootc/bound-images.d && \
+    ln -s /usr/share/containers/systemd/rhdh.container /usr/lib/bootc/bound-images.d/rhdh.container && \
+    ln -s /usr/share/containers/systemd/postgres.container /usr/lib/bootc/bound-images.d/postgres.container
+
+RUN chmod +x /usr/local/bin/prepare-and-install-dynamic-plugins.sh /usr/local/bin/wait-for-plugins-and-start.sh /usr/local/bin/detect-and-set-base-url.sh && \
+    mkdir -p /var/lib/rhdh/{dynamic-plugins-root,generated,config,.npm,scripts} && \
+    mkdir -p /var/lib/rhdh/postgres-data && \
+    chown 26:26 /var/lib/rhdh/postgres-data && \
+    chmod 700 /var/lib/rhdh/postgres-data && \
+    cp /usr/local/bin/prepare-and-install-dynamic-plugins.sh /var/lib/rhdh/scripts/ && \
+    cp /usr/local/bin/wait-for-plugins-and-start.sh /var/lib/rhdh/scripts/ && \
+    cp /usr/local/bin/detect-and-set-base-url.sh /var/lib/rhdh/scripts/ && \
+    chmod +x /var/lib/rhdh/scripts/*.sh && \
+    cp /etc/rhdh/configs/dynamic-plugins/dynamic-plugins.override.yaml /var/lib/rhdh/config/dynamic-plugins.yaml && \
+    ln -sf /var/lib/rhdh/config/dynamic-plugins.yaml /var/lib/rhdh/dynamic-plugins-root/dynamic-plugins.yaml && \
+    ln -sf /var/lib/rhdh/config/dynamic-plugins.yaml /var/lib/rhdh/dynamic-plugins.yaml && \
+    sed -i 's|LINK_TARGET="/var/lib/rhdh/dynamic-plugins.yaml"|LINK_TARGET="/opt/app-root/src/dynamic-plugins.yaml"|' /var/lib/rhdh/scripts/prepare-and-install-dynamic-plugins.sh && \
+    sed -i '41,50s/^/# /' /var/lib/rhdh/scripts/prepare-and-install-dynamic-plugins.sh && \
+    sed -i '53,55s/^/# /' /var/lib/rhdh/scripts/prepare-and-install-dynamic-plugins.sh && \
+    chown -R 1001:0 /opt/app-root /var/lib/rhdh /etc/rhdh && \
+    chmod -R g=u /opt/app-root /var/lib/rhdh /etc/rhdh && \
+    chmod 644 /usr/share/containers/systemd/rhdh.container
+
 RUN printf '%s\n' \
   '#!/bin/bash' \
-  'set -e' \
-  'for f in /usr/share/rhdh-images/*.tar; do' \
-  '  [ -f "$f" ] || continue' \
-  '  echo "Loading container image from $f..."' \
-  '  podman load -i "$f"' \
-  'done' \
-  'echo "RHDH image preload complete."' \
-  > /usr/local/bin/rhdh-load-images.sh && \
-  chmod +x /usr/local/bin/rhdh-load-images.sh
+  'echo "=== RHDH + PostgreSQL Health Check ==="' \
+  'if systemctl is-active --quiet postgres.service; then echo "PostgreSQL service active"; else exit 1; fi' \
+  'podman exec rhdh-postgres pg_isready -U rhdh_user >/dev/null 2>&1 || exit 1' \
+  'if systemctl is-active --quiet rhdh.service; then echo "RHDH service active"; else exit 1; fi' \
+  'curl -f http://localhost:7007 >/dev/null 2>&1 || exit 1' \
+  'curl -f http://localhost:7007/self-service >/dev/null 2>&1 || exit 1' \
+  'echo "OK"' \
+  > /usr/local/bin/health-check.sh && chmod +x /usr/local/bin/health-check.sh
 
-# Systemd oneshot: run once at first boot to load images (no registry at runtime)
-# Quadlet services (rhdh.service, postgres.service) are added in RHIDP-11827 and start after this.
 RUN printf '%s\n' \
-  '[Unit]' \
-  'Description=Load embedded RHDH and Postgres container images' \
-  'DefaultDependencies=no' \
-  '' \
-  '[Service]' \
-  'Type=oneshot' \
-  'RemainAfterExit=yes' \
-  'ExecStart=/usr/local/bin/rhdh-load-images.sh' \
-  '' \
-  '[Install]' \
-  'WantedBy=multi-user.target' \
-  > /etc/systemd/system/rhdh-load-images.service && \
-  systemctl enable rhdh-load-images.service
+  '#!/bin/bash' \
+  'ls -la /usr/lib/bootc/bound-images.d/ 2>/dev/null || true' \
+  'podman images' \
+  > /usr/local/bin/manage-bound-images.sh && chmod +x /usr/local/bin/manage-bound-images.sh
 
-# RHDH user for ownership of /var/lib/rhdh (UID 1001 aligns with RHDH container)
-RUN useradd -r -u 1001 -g root -d /var/lib/rhdh -s /sbin/nologin rhdh || true && \
-    chown -R 1001:0 /var/lib/rhdh
-
-# bootc images run systemd as init; Quadlet services start after rhdh-load-images
 EXPOSE 7007 5432
-WORKDIR /var/lib/rhdh
+WORKDIR /opt/app-root/src
 CMD ["/usr/sbin/init"]

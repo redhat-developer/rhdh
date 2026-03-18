@@ -1,0 +1,28 @@
+[Unit]
+Description=Start RHDH Quadlet stack (Postgres then RHDH)
+Documentation=man:podman-systemd.unit(5)
+After=network-online.target
+Wants=network-online.target
+After=dbus.socket
+# Quadlet generator must have created postgres.service / rhdh.service
+After=sysinit.target
+TimeoutStartSec=900
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Ensures stack starts in podman-in-container and --network host cases where units stay inactive
+ExecStart=/usr/bin/bash -c '\
+set -e; \
+for attempt in $(seq 1 40); do \
+  systemctl daemon-reload; \
+  systemctl reset-failed postgres.service rhdh.service 2>/dev/null || true; \
+  if systemctl start postgres.service 2>/dev/null || systemctl is-active --quiet postgres.service; then break; fi; \
+  sleep 3; \
+done; \
+for i in $(seq 1 300); do systemctl is-active --quiet postgres.service && break; sleep 1; done; \
+systemctl is-active --quiet postgres.service; \
+systemctl start rhdh.service'
+
+[Install]
+WantedBy=multi-user.target

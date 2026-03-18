@@ -1,0 +1,42 @@
+# Podman Quadlet .container file for PostgreSQL
+[Unit]
+Description=PostgreSQL Database for RHDH
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=registry.redhat.io/rhel9/postgresql-15:latest
+ContainerName=rhdh-postgres
+SecurityLabelDisable=true
+
+# Default rootful Podman storage (/var/lib/containers). Do not use
+# additionalimagestore=/usr/lib/bootc/storage here — that path only exists
+# after a real bootc install; podman-in-podman / lab tests would fail (exit 125).
+
+# Environment variables for PostgreSQL (Red Hat format)
+Environment=POSTGRESQL_DATABASE=rhdh_backstage
+Environment=POSTGRESQL_USER=rhdh_user
+Environment=POSTGRESQL_PASSWORD=secure_rhdh_password_123
+Environment=POSTGRESQL_ADMIN_PASSWORD=secure_admin_password_123
+
+# Persistent storage
+Volume=postgres-data:/var/lib/pgsql/data:Z
+
+# Network
+Network=rhdh-network
+# Host port 5433 → container 5432 (avoids clash with host PostgreSQL when using podman --network host)
+PublishPort=5433:5432
+
+# Health check
+HealthCmd=/bin/bash -c 'pg_isready -U rhdh_user -d rhdh_backstage'
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+[Service]
+Restart=always
+RestartSec=10
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target

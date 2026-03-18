@@ -1,0 +1,15 @@
+site_name: rhdh-local
+site_description: RHDH Local
+site_author: user:user
+docs_dir: docs
+plugins:
+  - techdocs-core
+nav:
+  - "Welcome To RHDH Local": index.md
+  - "Highlights Of Red Hat Developer Hub": features.md
+  - "Comparing Red Hat Developer Hub to CNCF Backstage": comparison.md
+  - "Making Your TechDocs More Appealing": extensions.md
+  - "Top 10 Tips For Better Software Templates": ten_template_tips.md
+
+
+  

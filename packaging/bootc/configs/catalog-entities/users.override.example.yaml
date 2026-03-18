@@ -1,0 +1,14 @@
+# This is an example override file for catalog users.
+# If present, this file will be used instead of users.yaml.
+# Uncomment and edit the entries below to override catalog users.
+
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: my-user
+spec:
+  profile:
+    displayName: My User
+  memberOf:
+    - my-group1
+    - my-group2

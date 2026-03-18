@@ -1,0 +1,13 @@
+# Optional .npmrc file for RHDH Local Dynamic Plugin Installation
+#
+# This file allows you to configure npm behavior during dynamic plugin installation.
+# It's useful if you need to pull plugins from private registries or behind proxies.
+#
+# If you don't need private plugins or custom registries, you can leave this file empty.
+#
+# Example entries:
+#   //registry.npmjs.org/:_authToken=YOUR_TOKEN_HERE
+#   registry=https://your-custom-registry.example.com/
+#
+# For more details, see:
+# https://docs.npmjs.com/cli/v10/configuring-npm/npmrc
