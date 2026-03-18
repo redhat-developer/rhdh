@@ -67,3 +67,13 @@ export type JobTypePattern =
   (typeof JOB_TYPE_PATTERNS)[keyof typeof JOB_TYPE_PATTERNS];
 export type IsOpenShiftValue =
   (typeof IS_OPENSHIFT_VALUES)[keyof typeof IS_OPENSHIFT_VALUES];
+
+/**
+ * Kubernetes label selectors for backstage pods per deployment method.
+ * Helm and Operator use different `app.kubernetes.io/name` values.
+ */
+export const BACKSTAGE_POD_SELECTOR = {
+  HELM: "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub",
+  OPERATOR:
+    "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage",
+} as const;

@@ -1,6 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
+import { getBackstagePodSelector } from "./helper";
 
 /**
  * Interface representing the structure of Kubernetes API errors.
@@ -622,8 +623,7 @@ export class KubeClient {
     checkInterval: number = 10000, // 10 seconds
   ) {
     const endTime = Date.now() + timeout;
-    const labelSelector =
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+    const labelSelector = getBackstagePodSelector();
 
     while (Date.now() < endTime) {
       try {
@@ -731,9 +731,7 @@ export class KubeClient {
   }
 
   async logPodConditions(namespace: string, labelSelector?: string) {
-    const selector =
-      labelSelector ||
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+    const selector = labelSelector || getBackstagePodSelector();
 
     try {
       const response = await this.coreV1Api.listNamespacedPod(

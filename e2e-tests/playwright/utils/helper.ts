@@ -1,10 +1,11 @@
 import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
-import type {
-  JobNamePattern,
-  JobNameRegexPattern,
-  JobTypePattern,
-  IsOpenShiftValue,
+import {
+  BACKSTAGE_POD_SELECTOR,
+  type JobNamePattern,
+  type JobNameRegexPattern,
+  type JobTypePattern,
+  type IsOpenShiftValue,
 } from "./constants";
 
 export async function downloadAndReadFile(
@@ -103,4 +104,22 @@ export function skipIfJobType(jobTypePattern: JobTypePattern): boolean {
  */
 export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
   return process.env.IS_OPENSHIFT === isOpenShiftValue;
+}
+
+/**
+ * Returns the Kubernetes label selector for backstage pods based on deployment method.
+ * Operator and Helm deployments use different `app.kubernetes.io/name` values.
+ *
+ * @returns The appropriate label selector string
+ *
+ * @example
+ * const selector = getBackstagePodSelector();
+ * // Helm:     "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub"
+ * // Operator: "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage"
+ */
+export function getBackstagePodSelector(): string {
+  const isOperator = process.env.JOB_NAME?.includes("operator") ?? false;
+  return isOperator
+    ? BACKSTAGE_POD_SELECTOR.OPERATOR
+    : BACKSTAGE_POD_SELECTOR.HELM;
 }
