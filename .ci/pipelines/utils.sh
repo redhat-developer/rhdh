@@ -1415,7 +1415,7 @@ oc_login() {
   for ((i = 1; i <= max_attempts; i++)); do
     if oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true; then
       log::success "Logged in to cluster successfully"
-      echo "OCP version: $(oc version)"
+      log::info "OCP version: $(oc version --client 2>&1 | head -1)"
       return 0
     fi
     if [[ $i -lt $max_attempts ]]; then
