@@ -17,6 +17,7 @@ handle_ocp_nightly() {
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db-nightly}"
 
   common::oc_login
+  common::wait_for_cluster_ready
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE

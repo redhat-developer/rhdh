@@ -16,6 +16,7 @@ source "$DIR"/playwright-projects.sh
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
   common::oc_login
+  common::wait_for_cluster_ready
   namespace::configure "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
 
