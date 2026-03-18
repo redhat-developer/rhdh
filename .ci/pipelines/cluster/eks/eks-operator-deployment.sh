@@ -2,6 +2,10 @@
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
+# shellcheck source=.ci/pipelines/lib/namespace.sh
+source "$DIR"/lib/namespace.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/install-methods/operator.sh
@@ -11,6 +15,7 @@ initiate_eks_operator_deployment() {
   local namespace=$1
   local rhdh_base_url=$2
 
+  common::require_vars "RELEASE_NAME" "REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON" || return 1
   log::info "Initiating Operator-backed non-RBAC deployment on EKS"
 
   namespace::configure "${namespace}"
@@ -21,7 +26,7 @@ initiate_eks_operator_deployment() {
   log::info "Creating and applying ConfigMap for dynamic plugins"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   config::create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
-  common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins.yaml"
+  common::save_artifact "${PW_PROJECT_SHOWCASE_K8S}" "/tmp/configmap-dynamic-plugins.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins.yaml -n "${namespace}"
 
   namespace::setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
@@ -35,6 +40,7 @@ initiate_rbac_eks_operator_deployment() {
   local namespace=$1
   local rhdh_base_url=$2
 
+  common::require_vars "RELEASE_NAME_RBAC" "REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON" || return 1
   log::info "Initiating Operator-backed RBAC deployment on EKS"
 
   namespace::configure "${namespace}"
@@ -46,7 +52,7 @@ initiate_rbac_eks_operator_deployment() {
   log::info "Creating and applying ConfigMap for dynamic plugins"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   config::create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
-  common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
+  common::save_artifact "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${namespace}"
 
   namespace::setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"

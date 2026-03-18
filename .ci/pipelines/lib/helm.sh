@@ -171,9 +171,14 @@ helm::get_chart_version() {
     return 1
   fi
 
-  curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" \
+  local version
+  version=$(curl -sSfX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" \
     -H "Content-Type: application/json" \
-    | jq -r '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
+    | jq -r '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI') || {
+    log::error "Failed to resolve chart version for ${chart_major_version}"
+    return 1
+  }
+  echo "$version"
 }
 
 # Uninstall a Helm chart if it exists

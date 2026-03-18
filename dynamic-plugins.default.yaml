@@ -385,7 +385,7 @@ plugins:
   # the 'package' line above and remove the next two lines, keeping the pluginConfig.
   # disabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-    disabled: false
+    disabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:

@@ -25,10 +25,10 @@ export const rhdhTranslations = createTranslationResource({
   ref: rhdhTranslationRef,
   translations: {
     de: () => import('./de') as any,
+    es: () => import('./es') as any,
     fr: () => import('./fr') as any,
     it: () => import('./it') as any,
     ja: () => import('./ja') as any,
-    es: () => import('./es') as any,
   },
 });
 

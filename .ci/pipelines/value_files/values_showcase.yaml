@@ -125,7 +125,7 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0!red-hat-developer-hub-backstage-plugin-application-provider-test
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -138,7 +138,7 @@ global:
                     importName: TestProviderOne
                   - mountPoint: application/provider
                     importName: TestProviderTwo
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-listener-test:bs_1.45.3__0.6.0!red-hat-developer-hub-backstage-plugin-application-listener-test
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-listener-test:bs_1.45.3__0.6.0
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -164,18 +164,18 @@ global:
                     seconds: 15
                   timeout:
                     minutes: 15
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:bs_1.45.3__0.16.0!backstage-community-plugin-github-issues
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2!roadiehq-backstage-plugin-github-pull-requests
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0!backstage-community-plugin-github-actions
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1!backstage-community-plugin-quay-backend
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           quay:
             apiUrl: https://quay.io
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1!backstage-community-plugin-quay
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           dynamicPlugins:
@@ -190,7 +190,7 @@ global:
                       if:
                         anyOf:
                           - isQuayAvailable
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0!backstage-community-plugin-scaffolder-backend-module-quay
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
@@ -234,7 +234,7 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
         disabled: false
       # Enable an extra header test plugin
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header-test:bs_1.45.3__0.7.0!red-hat-developer-hub-backstage-plugin-global-header-test
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header-test:bs_1.45.3__0.7.0
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -278,7 +278,7 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0!immobiliarelabs-backstage-plugin-gitlab-backend
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
         disabled: false
@@ -297,9 +297,9 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-        disabled: false
+        disabled: true
       # Enable orchestrator plugins
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           dynamicPlugins:
@@ -329,21 +329,21 @@ global:
                       if:
                         anyOf:
                           - IsOrchestratorCatalogTabAvailable
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.45.3__8.3.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.45.3__1.3.1!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.45.3__1.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
         pluginConfig:
           dynamicPlugins:

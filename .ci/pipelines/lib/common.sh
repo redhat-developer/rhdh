@@ -127,6 +127,18 @@ common::create_configmap_from_files() {
     --dry-run=client -o yaml | oc apply -f -
 }
 
+# Validate that required variables are set and non-empty
+# Args: variable_names...
+# Returns: 1 if any variable is unset or empty
+common::require_vars() {
+  for var in "$@"; do
+    if [[ -z "${!var:-}" ]]; then
+      log::error "Required variable $var is not set"
+      return 1
+    fi
+  done
+}
+
 # Base64 encode a string (no newlines, cross-platform)
 common::base64_encode() {
   echo -n "$1" | base64 | tr -d '\n'
@@ -159,9 +171,9 @@ common::retry() {
 }
 
 # Save a file to the artifacts directory
-# Args: namespace, file_path
+# Args: artifacts_subdir, file_path
 common::save_artifact() {
-  local namespace=$1
+  local artifacts_subdir=$1
   local file=$2
 
   if [[ -z "$ARTIFACT_DIR" ]]; then
@@ -169,6 +181,10 @@ common::save_artifact() {
     return 0
   fi
 
-  mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  rsync -a "$file" "${ARTIFACT_DIR}/${namespace}/"
+  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}"
+  rsync -a "$file" "${ARTIFACT_DIR}/${artifacts_subdir}/"
 }
+
+# Export functions for subshell usage (e.g., timeout bash -c "...")
+export -f common::base64_encode
+export -f common::require_vars

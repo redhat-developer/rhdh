@@ -133,6 +133,9 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await uiHelper.selectMuiBox("Kind", "Template");
 
       // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
+      await page
+        .getByRole("textbox", { name: "Search" })
+        .fill("Greeting Test Picker");
       const templateLink = page.getByRole("link", {
         name: /Greeting Test Picker/i,
       });
@@ -327,6 +330,9 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await uiHelper.selectMuiBox("Kind", "Template");
 
       // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
+      await page
+        .getByRole("textbox", { name: "Search" })
+        .fill("Greeting Test Picker");
       const templateLink = page.getByRole("link", {
         name: /Greeting Test Picker/i,
       });

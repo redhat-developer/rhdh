@@ -1,12 +1,40 @@
 # This file is for GKE installation only.
 # It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for GKE.
 # Note, that it overwrites the whole key that is present in this file.
-#   e.g. global.dynamic.plugins key is completely overwritten by the content of this file.
+# The only exception is global.dynamic.plugins, that gets merged with the base file.
 route:
   enabled: false
 global:
   dynamic:
-    plugins: []
+    plugins:
+      # Disable plugins to save disk space on GKE
+      # These plugins correspond to tests that are ignored in showcase-rbac-k8s project
+      # See e2e-tests/playwright.config.ts SHOWCASE_RBAC_K8S config
+
+      # Tekton - not installed on K8s clusters (AKS/EKS/GKE)
+      # Not in showcase-rbac-k8s testMatch
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+        disabled: true
+
+      # Adoption Insights - large plugin (~300MB) causing disk space issues
+      # Not in showcase-rbac-k8s testMatch
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+        disabled: true
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+        disabled: true
+
+      # Orchestrator - large OCI plugins causing disk space issues
+      # Tests ignored on showcase-rbac-k8s: e2e-tests/playwright/e2e/plugins/orchestrator/*.spec.ts
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
 upstream:
   backstage:
     appConfig:

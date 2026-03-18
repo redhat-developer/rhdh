@@ -126,6 +126,10 @@ export class ScorecardPage {
     ).toBeHidden({ timeout: 5000 });
   }
 
+  async expectWidgetCount(count: number) {
+    await expect(this.page.locator(".react-grid-item")).toHaveCount(count);
+  }
+
   async saveChanges() {
     await this.page.getByRole("button", { name: "Save" }).click();
   }

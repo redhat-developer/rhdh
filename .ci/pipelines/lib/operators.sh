@@ -72,13 +72,6 @@ operator::install_postgres_ocp() {
   return 0
 }
 
-# Install Crunchy Postgres Operator from OperatorHub.io
-operator::install_postgres_k8s() {
-  operator::install_subscription crunchy-postgres-operator "${OPERATOR_NAMESPACE}" v5 crunchy-postgres-operator certified-operators openshift-marketplace
-  operator::check_status 300 "operators" "Crunchy Postgres for Kubernetes" "${OPERATOR_STATUS_SUCCEEDED}"
-  return $?
-}
-
 # Install OpenShift Serverless Logic Operator (SonataFlow)
 operator::install_serverless_logic() {
   operator::install_subscription logic-operator-rhel8 "${OPERATOR_NAMESPACE}" alpha logic-operator-rhel8 redhat-operators openshift-marketplace
