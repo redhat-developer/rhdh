@@ -62,9 +62,8 @@
     "@backstage/plugin-search@1.4.29": "patch:@backstage/plugin-search@npm%3A1.4.29#./.yarn/patches/@backstage-plugin-search-npm-1.4.29-73fcb2942c.patch",
     "@backstage/backend-defaults@0.12.0": "patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch",
     "@backstage/backend-defaults@^0.12.0": "patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch",
+    "@backstage/plugin-scaffolder-node": "patch:@backstage/plugin-scaffolder-node@npm%3A0.11.0#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.0-2e81f51535.patch",
     "@backstage/plugin-scaffolder-backend@2.2.0": "patch:@backstage/plugin-scaffolder-backend@npm%3A2.2.0#./.yarn/patches/@backstage-plugin-scaffolder-backend-npm-2.2.0-487419bad1.patch",
-    "@backstage/plugin-scaffolder-node:^0.11.0": "patch:@backstage/plugin-scaffolder-node@npm%3A0.11.2#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.2-3956e03632.patch",
-    "@backstage/plugin-scaffolder-node:^0.8.2": "patch:@backstage/plugin-scaffolder-node@npm%3A0.11.2#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.2-3956e03632.patch",
     "@backstage/cli": "patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch"
   },
   "jest": {
