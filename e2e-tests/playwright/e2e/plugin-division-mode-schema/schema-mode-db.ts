@@ -144,6 +144,35 @@ export async function cleanupOldPluginDatabases(
 }
 
 /**
+ * Assert that the DB user has restricted permissions: cannot create databases
+ * (NOCREATEDB). This ensures the test runs with the same constraints as
+ * environments where schema mode is required (e.g. managed DB with no CREATEDB).
+ */
+export async function assertDbUserHasRestrictedPermissions(
+  adminClient: Client,
+  dbUser: string,
+  _dbName: string,
+): Promise<void> {
+  const r = await adminClient.query<{ rolcreatedb: boolean }>(
+    `SELECT rolcreatedb FROM pg_roles WHERE rolname = $1`,
+    [dbUser],
+  );
+  if (r.rows.length === 0) {
+    throw new Error(
+      `Database user "${dbUser}" not found in pg_roles. Cannot assert restricted permissions.`,
+    );
+  }
+  if (r.rows[0].rolcreatedb) {
+    throw new Error(
+      `Database user "${dbUser}" has CREATEDB privilege. Schema-mode tests require a user that cannot create databases (NOCREATEDB).`,
+    );
+  }
+  console.log(
+    `✓ Verified DB user "${dbUser}" has restricted permissions (NOCREATEDB)`,
+  );
+}
+
+/**
  * Create test database (if not postgres), create/update runtime user with restricted
  * role (NOSUPERUSER, NOCREATEDB), grant access to exactly one database, revoke
  * CONNECT on all others, and verify the runtime user can connect.
@@ -199,6 +228,9 @@ export async function setupSchemaModeDatabase(
   await adminClient.query(
     `GRANT CONNECT ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
+
+  // Assert the runtime user cannot create databases (required for schema-mode test validity)
+  await assertDbUserHasRestrictedPermissions(adminClient, dbUser, dbName);
   await adminClient.end();
 
   const dbClient = new Client({
