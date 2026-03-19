@@ -7,7 +7,7 @@ E2E test for `pluginDivisionMode: schema` on **OpenShift (OCP)**.
 These tests focus on **RHDH behavior** with `pluginDivisionMode: schema`, not on upstream Backstage or Knex internals:
 
 1. **DB user has restricted permissions** — Before starting, we assert the configured DB user cannot create databases (NOCREATEDB). This matches environments where schema mode is required (e.g. managed PostgreSQL without `CREATEDB`).
-2. **RHDH works with schema mode** — After configuring RHDH for schema mode and restarting, we verify RHDH is accessible (e.g. guest login, UI loads). We do *not* assert that specific schemas exist or that no plugin databases were created; that behavior is guaranteed by upstream Backstage.
+2. **RHDH works with schema mode** — After configuring RHDH for schema mode and restarting, we verify RHDH is accessible (e.g. guest login, UI loads). We do _not_ assert that specific schemas exist or that no plugin databases were created; that behavior is guaranteed by upstream Backstage.
 
 ## Prerequisites
 

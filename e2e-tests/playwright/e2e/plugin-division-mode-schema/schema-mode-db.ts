@@ -9,6 +9,11 @@ import { quoteIdent } from "../../utils/postgres-config";
 
 export { quoteIdent } from "../../utils/postgres-config";
 
+/** Escape a string for use inside PostgreSQL single-quoted literal (doubles single quotes). */
+function escapePasswordLiteral(value: string): string {
+  return String(value).replace(/'/g, "''");
+}
+
 export interface SchemaModeEnv {
   dbHost: string;
   dbAdminUser: string;
@@ -42,8 +47,7 @@ export function getSchemaModeEnv(): SchemaModeEnv {
     dbAdminUser: process.env.SCHEMA_MODE_DB_ADMIN_USER || "postgres",
     dbAdminPassword: dbAdminPassword!,
     dbName: process.env.SCHEMA_MODE_DB_NAME || "postgres",
-    dbUser:
-      process.env.SCHEMA_MODE_DB_USER || "backstage_schema_user", // default; Helm spec overrides to bn_backstage
+    dbUser: process.env.SCHEMA_MODE_DB_USER || "backstage_schema_user", // default; Helm spec overrides to bn_backstage
     dbPassword: dbPassword!,
   };
 }
@@ -175,14 +179,8 @@ export async function setupSchemaModeDatabase(
   adminClient: Client,
   config: SchemaModeEnv,
 ): Promise<void> {
-  const {
-    dbHost,
-    dbAdminUser,
-    dbAdminPassword,
-    dbName,
-    dbUser,
-    dbPassword,
-  } = config;
+  const { dbHost, dbAdminUser, dbAdminPassword, dbName, dbUser, dbPassword } =
+    config;
 
   if (dbName !== "postgres") {
     await adminClient
@@ -197,14 +195,12 @@ export async function setupSchemaModeDatabase(
 
   await adminClient
     .query(
-      `CREATE USER ${quoteIdent(dbUser)} WITH PASSWORD $1 NOSUPERUSER NOCREATEDB`,
-      [dbPassword],
+      `CREATE USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}' NOSUPERUSER NOCREATEDB`,
     )
     .catch(async (err: Error) => {
       if (err.message.includes("already exists")) {
         await adminClient.query(
-          `ALTER USER ${quoteIdent(dbUser)} WITH PASSWORD $1 NOSUPERUSER NOCREATEDB`,
-          [dbPassword],
+          `ALTER USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}' NOSUPERUSER NOCREATEDB`,
         );
       } else {
         throw err;
@@ -245,18 +241,14 @@ export async function setupSchemaModeDatabase(
   await dbClient.query(
     `GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
-  await dbClient.query(
-    `GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
-  );
+  await dbClient.query(`GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`);
   await dbClient.query(
     `GRANT CREATE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
   );
   await dbClient.query(
     `GRANT ALL PRIVILEGES ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
-  await dbClient.query(
-    `ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`,
-  );
+  await dbClient.query(`ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`);
   await dbClient.end();
   console.log("✓ Database setup complete");
 
@@ -286,4 +278,3 @@ export async function setupSchemaModeDatabase(
     );
   }
 }
-

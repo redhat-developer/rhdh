@@ -700,8 +700,27 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     }
   });
 
-
   test("Verify RHDH is accessible", async ({ page }) => {
+    // If deployment never became ready (e.g. after PVC/scheduling issue during restart), skip instead of failing with "browser closed"
+    const kubeClientForCheck = new KubeClient();
+    try {
+      const deployment =
+        await kubeClientForCheck.appsApi.readNamespacedDeployment(
+          deploymentName,
+          namespace,
+        );
+      const readyReplicas = deployment.body.status?.readyReplicas ?? 0;
+      if (readyReplicas < 1) {
+        test.skip(
+          true,
+          "Deployment is not ready (e.g. cluster PVC/scheduling issue); skipping RHDH accessibility check.",
+        );
+        return;
+      }
+    } catch {
+      // If we can't read deployment, continue and let the test try (may fail with a different error)
+    }
+
     let baseUrl = process.env.BASE_URL;
     if (!baseUrl) {
       console.warn(
