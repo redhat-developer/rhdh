@@ -93,9 +93,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/topology/*.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
-        ...(shouldSkipOrchestratorTests
-          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
-          : []),
+        "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts",
       ],
     },
     {

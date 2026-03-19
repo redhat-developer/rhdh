@@ -288,9 +288,9 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
-      # Enable orchestrator plugins
+      # Orchestrator plugins disabled for this test PR
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
+        disabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -320,21 +320,21 @@ global:
                         anyOf:
                           - IsOrchestratorCatalogTabAvailable
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
+        disabled: true
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
+        disabled: true
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
+        disabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -442,15 +442,15 @@ upstream:
         targetPort: 9464
 
 orchestrator:
-  plugins: [] # disable chart-based orchestrator plugins and define above for clarity (may need a new test config to cover helm chart plugins)
-  enabled: true
+  plugins: []
+  enabled: false
   serverlessLogicOperator:
-    enabled: true
+    enabled: false
   serverlessOperator:
-    enabled: true
+    enabled: false
   sonataflowPlatform:
     monitoring:
-      enabled: true
+      enabled: false
     eventing:
       broker:
         name: ""
