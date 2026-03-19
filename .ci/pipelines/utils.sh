@@ -796,10 +796,10 @@ cleanup_orchestrator_resources() {
   kubectl delete jobs -n "$namespace" -l app.kubernetes.io/component=sonataflow 2> /dev/null
   # Delete sonataflow-database jobs by name prefix (job names include random suffixes)
   local sonataflow_jobs
-  sonataflow_jobs=$(kubectl get jobs -n "$namespace" --no-headers -o custom-columns=":metadata.name" 2>/dev/null | grep "create-sonataflow-database" || true)
+  sonataflow_jobs=$(kubectl get jobs -n "$namespace" --no-headers -o custom-columns=":metadata.name" 2> /dev/null | grep "create-sonataflow-database" || true)
   if [[ -n "$sonataflow_jobs" ]]; then
     echo "$sonataflow_jobs" | while read -r job; do
-      kubectl delete job "$job" -n "$namespace" --ignore-not-found 2>/dev/null
+      kubectl delete job "$job" -n "$namespace" --ignore-not-found 2> /dev/null
     done
   fi
   kubectl delete sonataflowplatforms --all -n "$namespace" 2> /dev/null
@@ -807,6 +807,7 @@ cleanup_orchestrator_resources() {
   set -e
 
   log::info "Orchestrator cleanup complete for namespace '$namespace'"
+  return 0
 }
 
 create_conditional_policies_operator() {
