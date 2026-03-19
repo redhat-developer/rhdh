@@ -1573,16 +1573,25 @@ deploy_orchestrator_workflows() {
     local patch_namespace="$namespace"
   fi
 
-  oc apply -f "${failswitch_manifests}" -n "$namespace"
-  oc apply -f "${greeting_manifests}" -n "$namespace"
+  local persistence_json="{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
 
-  until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
-    echo "Waiting for 2 sonataflow resources. Retrying in 5 seconds..."
-    sleep 5
-  done
+  # Deploy each workflow individually: apply manifests, patch with persistence immediately,
+  # then wait for rollout. This avoids a double rollout where the operator creates a deployment
+  # without persistence and old replicas get stuck in pending termination during the update.
+  local workflow_names=("failswitch" "greeting")
+  local workflow_dirs=("${failswitch_manifests}" "${greeting_manifests}")
 
-  for workflow in greeting failswitch; do
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
+  for idx in "${!workflow_names[@]}"; do
+    local workflow="${workflow_names[$idx]}"
+    local manifest_dir="${workflow_dirs[$idx]}"
+
+    log::info "Deploying workflow '$workflow'..."
+    oc apply -f "${manifest_dir}" -n "$namespace"
+
+    # Patch with persistence config immediately to minimize the race window
+    # before the operator reconciles and creates a deployment without persistence
+    log::info "Patching '$workflow' with persistence config..."
+    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$persistence_json"
 
     # Wait for SonataFlow operator to reconcile and create the deployment
     log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
