@@ -31,7 +31,8 @@ initiate_aks_helm_deployment() {
     -f "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=false
 }
 
 initiate_rbac_aks_helm_deployment() {
@@ -55,5 +56,6 @@ initiate_rbac_aks_helm_deployment() {
     -f "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=false
 }
