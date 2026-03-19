@@ -6515,7 +6515,7 @@ __metadata:
 
 "@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.11.0#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.0-2e81f51535.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 0.11.0
-  resolution: "@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.11.0#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.0-2e81f51535.patch::version=0.11.0&hash=3375a5&locator=dynamic-plugins-root%40workspace%3A."
+  resolution: "@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.11.0#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.0-2e81f51535.patch::version=0.11.0&hash=2d3033&locator=dynamic-plugins-root%40workspace%3A."
   dependencies:
     "@backstage/backend-plugin-api": ^1.4.2
     "@backstage/catalog-model": ^1.7.5
@@ -6537,7 +6537,7 @@ __metadata:
     winston-transport: ^4.7.0
     zod: ^3.22.4
     zod-to-json-schema: ^3.20.4
-  checksum: 69dcf53813cfd763b2b702a596337eb10304ce38dde6a936ad3e5c93f5b323e3767f0398b691ce65520b4af1c9c5d905cebbba1e0ff86d4c1c5fa6f08fbf4c57
+  checksum: caec4a8a6047e02c243a2686d47849a8ce052449b1b519efced34e2e71011c3296d9378b3a9801a76fe97a3f68b750703caf271cccacefc140ec488d5d686f97
   languageName: node
   linkType: hard
 
