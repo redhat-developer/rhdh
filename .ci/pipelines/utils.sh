@@ -702,12 +702,12 @@ apply_yaml_files() {
     --namespace="${project}" \
     --dry-run=client -o yaml | oc apply -f -
 
-  # Create Pipeline run for tekton test case.
-  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+  # Tekton/Pipelines disabled for this test PR
+  # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+  # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
-  # Create Deployment and Pipeline for Topology test.
-  oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+  # Topology pipeline resources disabled (depends on Tekton)
+  # oc apply -f "$dir/resources/topology_test/topology-test.yaml"
   if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
     kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
   else
@@ -998,14 +998,15 @@ delete_tekton_pipelines() {
 
 cluster_setup_ocp_helm() {
   # first install all operators to run the installation in parallel
-  install_pipelines_operator
+  # Tekton/Pipelines operator disabled for this test PR
+  # install_pipelines_operator
   install_crunchy_postgres_ocp_operator
 
   # Orchestrator infra disabled for this test PR
   log::info "Skipping orchestrator-infra installation (disabled)"
 
   # then wait for the right status one by one
-  waitfor_pipelines_operator
+  # waitfor_pipelines_operator
   waitfor_crunchy_postgres_ocp_operator
 }
 

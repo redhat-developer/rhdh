@@ -185,7 +185,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
-        disabled: false
+        disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
@@ -203,16 +203,6 @@ global:
                     skipTLSVerify: true
                 type: config
             customResources:
-              # Add for tekton
-              - apiVersion: "v1beta1"
-                group: "tekton.dev"
-                plural: "pipelines"
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: pipelineruns
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: taskruns
               # Add for topology plugin
               - apiVersion: "v1"
                 group: "route.openshift.io"

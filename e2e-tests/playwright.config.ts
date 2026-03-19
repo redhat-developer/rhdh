@@ -90,6 +90,7 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/topology/*.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
         ...(shouldSkipOrchestratorTests
@@ -100,6 +101,10 @@ export default defineConfig({
     {
       name: PW_PROJECT.SHOWCASE_RBAC,
       dependencies: [PW_PROJECT.SMOKE_TEST],
+      testIgnore: [
+        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/topology/*.spec.ts",
+      ],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -132,6 +137,7 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/topology/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -149,6 +155,10 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_RBAC_K8S,
       ...k8sSpecificConfig,
       dependencies: [PW_PROJECT.SMOKE_TEST],
+      testIgnore: [
+        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/topology/*.spec.ts",
+      ],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -166,6 +176,7 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/topology/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
@@ -180,6 +191,10 @@ export default defineConfig({
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR_RBAC,
       dependencies: [PW_PROJECT.SMOKE_TEST],
+      testIgnore: [
+        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/topology/*.spec.ts",
+      ],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
