@@ -777,14 +777,25 @@ data:
 # This function removes those resources to prevent deployment failures.
 cleanup_orchestrator_resources() {
   local namespace=$1
+  local max_wait=${2:-60}
   log::info "Cleaning up orchestrator resources in namespace '$namespace' (not supported on K8s)..."
 
-  # Delete sonataflow database creation jobs that fail on K8s
+  # The operator creates orchestrator resources asynchronously after the Backstage
+  # CR is applied. Wait briefly for them to appear before attempting cleanup.
+  local elapsed=0
+  while [[ $elapsed -lt $max_wait ]]; do
+    if kubectl get jobs -n "$namespace" 2> /dev/null | grep -q "create-sonataflow-database"; then
+      log::info "Found sonataflow resources, proceeding with cleanup..."
+      break
+    fi
+    sleep 5
+    elapsed=$((elapsed + 5))
+  done
+
   set +e
   kubectl delete jobs -n "$namespace" -l app.kubernetes.io/component=sonataflow 2> /dev/null
   kubectl delete jobs -n "$namespace" --field-selector "metadata.name=create-sonataflow-database-${RELEASE_NAME}" 2> /dev/null
   kubectl delete jobs -n "$namespace" --field-selector "metadata.name=create-sonataflow-database-${RELEASE_NAME_RBAC}" 2> /dev/null
-  # Delete any SonataFlow platform resources
   kubectl delete sonataflowplatforms --all -n "$namespace" 2> /dev/null
   kubectl delete sonataflows --all -n "$namespace" 2> /dev/null
   set -e
