@@ -41,7 +41,7 @@ log::debug "Sourcing utils.sh"
 # shellcheck source=.ci/pipelines/utils.sh
 source "${DIR}/utils.sh"
 
-export K8S_CLUSTER_URL='https://api.xuys5-sp4s7-68e.eash.p3.openshiftapps.com:443'
+export K8S_CLUSTER_URL='https://api.b2bpp-pzipk-agn.sai6.p3.openshiftapps.com:443'
 export OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 
