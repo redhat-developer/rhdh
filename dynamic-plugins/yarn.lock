@@ -3914,7 +3914,7 @@ __metadata:
 
 "@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 0.12.0
-  resolution: "@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch::version=0.12.0&hash=747c0d&locator=dynamic-plugins-root%40workspace%3A."
+  resolution: "@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch::version=0.12.0&hash=8053d5&locator=dynamic-plugins-root%40workspace%3A."
   dependencies:
     "@aws-sdk/abort-controller": ^3.347.0
     "@aws-sdk/client-codecommit": ^3.350.0
@@ -3992,7 +3992,7 @@ __metadata:
   peerDependenciesMeta:
     "@google-cloud/cloud-sql-connector":
       optional: true
-  checksum: 714109fbc2bed1c37ac7606669abc7f2fdf0fc8e695730489f0ae74053277535f8f857231c874c9d23f25c5826d18e776bdb2f38021a7e05f5caea152833cd67
+  checksum: f3c50992c6c69dea5603c0a6662720bf3fbc94a3e33a7010d4c168f79f6c159666d3f9802d727ea785e0c232d18211db6e97482b2dc2f921cb6accc0525562c8
   languageName: node
   linkType: hard
 
@@ -4404,7 +4404,7 @@ __metadata:
 
 "@backstage/cli@patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 0.34.1
-  resolution: "@backstage/cli@patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch::version=0.34.1&hash=f34747&locator=dynamic-plugins-root%40workspace%3A."
+  resolution: "@backstage/cli@patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch::version=0.34.1&hash=0929ef&locator=dynamic-plugins-root%40workspace%3A."
   dependencies:
     "@backstage/catalog-model": ^1.7.5
     "@backstage/cli-common": ^0.1.15
@@ -4542,7 +4542,7 @@ __metadata:
       optional: true
   bin:
     backstage-cli: bin/backstage-cli
-  checksum: f7df036248df1e501b2f0cdaab9f10627bcf86a9007f1d1690fafd75ccf5994cf9b95cc1740feef74415860617e2dfa00809b28603d27b99ba7693a9f67f3b03
+  checksum: ecb63647a064fde9dcace99f6203329b908ec79c03798331edd2d3bc38d6b39f02dcfaddcdaa96e082891b85e6056074697fb5bfdbe962410b4d445e6dd417db
   languageName: node
   linkType: hard
 
