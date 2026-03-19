@@ -4337,67 +4337,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-plugin-api@npm:1.4.2":
-  version: 1.4.2
-  resolution: "@backstage/backend-plugin-api@npm:1.4.2"
-  dependencies:
-    "@backstage/cli-common": ^0.1.15
-    "@backstage/config": ^1.3.3
-    "@backstage/errors": ^1.2.7
-    "@backstage/plugin-auth-node": ^0.6.6
-    "@backstage/plugin-permission-common": ^0.9.1
-    "@backstage/plugin-permission-node": ^0.10.3
-    "@backstage/types": ^1.2.1
-    "@types/express": ^4.17.6
-    "@types/json-schema": ^7.0.6
-    "@types/luxon": ^3.0.0
-    json-schema: ^0.4.0
-    knex: ^3.0.0
-    luxon: ^3.0.0
-    zod: ^3.22.4
-  checksum: 4aa4ff08a1166f21ff3abc58036ac240b4ca1ebb61132d724119e2f98a76d53a296bb786d3abfbc70511817de7cb6eb08f5060f13b8b0254b6464ce337812f5c
-  languageName: node
-  linkType: hard
-
-"@backstage/backend-plugin-api@npm:^0.6.18":
-  version: 0.6.21
-  resolution: "@backstage/backend-plugin-api@npm:0.6.21"
-  dependencies:
-    "@backstage/cli-common": ^0.1.14
-    "@backstage/config": ^1.2.0
-    "@backstage/errors": ^1.2.4
-    "@backstage/plugin-auth-node": ^0.4.16
-    "@backstage/plugin-permission-common": ^0.7.14
-    "@backstage/types": ^1.1.1
-    "@types/express": ^4.17.6
-    "@types/luxon": ^3.0.0
-    express: ^4.17.1
-    knex: ^3.0.0
-    luxon: ^3.0.0
-  checksum: d6b81036579108835cbf63fcc2c3e5a9ac684e3797d415d1ac4e26a32db72c0b0b182c098fb91e7a3219eaed2362a85d717327f69f6d2b566c3f5c6a8963c9d1
-  languageName: node
-  linkType: hard
-
-"@backstage/backend-plugin-api@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@backstage/backend-plugin-api@npm:0.7.0"
-  dependencies:
-    "@backstage/cli-common": ^0.1.14
-    "@backstage/config": ^1.2.0
-    "@backstage/errors": ^1.2.4
-    "@backstage/plugin-auth-node": ^0.4.17
-    "@backstage/plugin-permission-common": ^0.8.0
-    "@backstage/types": ^1.1.1
-    "@types/express": ^4.17.6
-    "@types/luxon": ^3.0.0
-    express: ^4.17.1
-    knex: ^3.0.0
-    luxon: ^3.0.0
-  checksum: ea3f8a97750b8f9afae5ee45e0afdb4b04f46c889108b32fe0a86447d1578f4d5e1bca37c4fccdd6270593b6db0729d2e281349d8e11e2528e76ab18ab649c33
-  languageName: node
-  linkType: hard
-
-"@backstage/backend-plugin-api@npm:^1.0.0, @backstage/backend-plugin-api@npm:^1.2.0, @backstage/backend-plugin-api@npm:^1.2.1, @backstage/backend-plugin-api@npm:^1.3.0, @backstage/backend-plugin-api@npm:^1.4.0, @backstage/backend-plugin-api@npm:^1.4.1":
+"@backstage/backend-plugin-api@npm:1.4.3":
   version: 1.4.3
   resolution: "@backstage/backend-plugin-api@npm:1.4.3"
   dependencies:
@@ -4419,17 +4359,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch::locator=dynamic-plugins-root%40workspace%3A.":
-  version: 1.4.2
-  resolution: "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch::version=1.4.2&hash=8d8f56&locator=dynamic-plugins-root%40workspace%3A."
+"@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.4.3#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.3-b7f08217ef.patch::locator=dynamic-plugins-root%40workspace%3A.":
+  version: 1.4.3
+  resolution: "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.4.3#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.3-b7f08217ef.patch::version=1.4.3&hash=8d8f56&locator=dynamic-plugins-root%40workspace%3A."
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/config": ^1.3.3
     "@backstage/errors": ^1.2.7
-    "@backstage/plugin-auth-node": ^0.6.6
+    "@backstage/plugin-auth-node": ^0.6.7
     "@backstage/plugin-permission-common": ^0.9.1
-    "@backstage/plugin-permission-node": ^0.10.3
-    "@backstage/types": ^1.2.1
+    "@backstage/plugin-permission-node": ^0.10.4
+    "@backstage/types": ^1.2.2
     "@types/express": ^4.17.6
     "@types/json-schema": ^7.0.6
     "@types/luxon": ^3.0.0
@@ -4437,7 +4377,7 @@ __metadata:
     knex: ^3.0.0
     luxon: ^3.0.0
     zod: ^3.22.4
-  checksum: b7a72a33a36ce7a6df14d7a7e472ab3ef47c90f04f7a98312651b0da27a5d133ec4e41acb91b403fce32a083c5139f38f6b748fea7c242955d44b6574be0aab1
+  checksum: 1348e9d79d8af2fb53d3baa361c7ed8fbeeba4e485b580a79ea746bdb46842cbd4579e7322e8e7b57d6ca81382799a5a393a99dc5092ec7d3a66a6dd5603fc49
   languageName: node
   linkType: hard
 
@@ -6302,7 +6242,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-common@npm:^0.8.0, @backstage/plugin-permission-common@npm:^0.8.4":
+"@backstage/plugin-permission-common@npm:^0.8.4":
   version: 0.8.4
   resolution: "@backstage/plugin-permission-common@npm:0.8.4"
   dependencies:

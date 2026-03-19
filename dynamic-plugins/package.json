@@ -36,10 +36,7 @@
     "@backstage/plugin-home@^0.8.11": "patch:@backstage/plugin-home@npm%3A0.8.12#./.yarn/patches/@backstage-plugin-home-npm-0.8.12-0d7fbcc764.patch",
     "@backstage/plugin-techdocs@1.14.1": "patch:@backstage/plugin-techdocs@npm%3A1.14.1#./.yarn/patches/@backstage-plugin-techdocs-npm-1.14.1-c83e1ea3d7.patch",
     "@backstage/cli-common@^0.1.15": "patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch",
-    "@backstage/backend-plugin-api@^1.4.2": "patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch",
-    "@backstage/backend-plugin-api@^1.4.3": "patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch",
-    "@backstage/backend-plugin-api@^0.8.1": "patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch",
-    "@backstage/backend-plugin-api@^0.6.21": "patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch",
+    "@backstage/backend-plugin-api": "patch:@backstage/backend-plugin-api@npm%3A1.4.3#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.3-b7f08217ef.patch",
     "@backstage/plugin-techdocs-node@^1.13.6": "patch:@backstage/plugin-techdocs-node@npm%3A1.13.6#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.6-0ad8839a3e.patch"
   },
   "packageManager": "yarn@3.8.7"
