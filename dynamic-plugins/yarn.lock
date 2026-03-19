@@ -4421,7 +4421,7 @@ __metadata:
 
 "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 1.4.2
-  resolution: "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch::version=1.4.2&hash=845794&locator=dynamic-plugins-root%40workspace%3A."
+  resolution: "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.4.2#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.2-00e99e5ef3.patch::version=1.4.2&hash=8d8f56&locator=dynamic-plugins-root%40workspace%3A."
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/config": ^1.3.3
@@ -4437,7 +4437,7 @@ __metadata:
     knex: ^3.0.0
     luxon: ^3.0.0
     zod: ^3.22.4
-  checksum: 8a3f0f7d95a79d586ea73d43977cab4a6c138ff97f7f647e70a0960902f5e99d42fcd1674ec4b680a6a3574faaf560626c7554c672255115a838d46e7569e692
+  checksum: b7a72a33a36ce7a6df14d7a7e472ab3ef47c90f04f7a98312651b0da27a5d133ec4e41acb91b403fce32a083c5139f38f6b748fea7c242955d44b6574be0aab1
   languageName: node
   linkType: hard
 
@@ -4495,8 +4495,8 @@ __metadata:
 
 "@backstage/cli-common@patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 0.1.15
-  resolution: "@backstage/cli-common@patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch::version=0.1.15&hash=513512&locator=dynamic-plugins-root%40workspace%3A."
-  checksum: b57f82325a6a7394390ea9cf6a8ed151b59352caa5fb2f4602bbfda7c7b8db72ad45c67a00e15bc1d444462edfaa3babeefe141526c6882a58cdea4461ec4be0
+  resolution: "@backstage/cli-common@patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch::version=0.1.15&hash=abcf5e&locator=dynamic-plugins-root%40workspace%3A."
+  checksum: f88d8be851deb0a7170f204d11c9df52c16879932b3f945f6541ca5b17997cf086c663737ffe47e84ae1c261ea7bb0421a1b93fe79685809073ae67d147910ad
   languageName: node
   linkType: hard
 
@@ -7210,7 +7210,7 @@ __metadata:
 
 "@backstage/plugin-techdocs-node@patch:@backstage/plugin-techdocs-node@npm%3A1.13.6#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.6-0ad8839a3e.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 1.13.6
-  resolution: "@backstage/plugin-techdocs-node@patch:@backstage/plugin-techdocs-node@npm%3A1.13.6#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.6-0ad8839a3e.patch::version=1.13.6&hash=9d6d4b&locator=dynamic-plugins-root%40workspace%3A."
+  resolution: "@backstage/plugin-techdocs-node@patch:@backstage/plugin-techdocs-node@npm%3A1.13.6#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.6-0ad8839a3e.patch::version=1.13.6&hash=faaddf&locator=dynamic-plugins-root%40workspace%3A."
   dependencies:
     "@aws-sdk/client-s3": ^3.350.0
     "@aws-sdk/credential-providers": ^3.350.0
@@ -7241,7 +7241,7 @@ __metadata:
     p-limit: ^3.1.0
     recursive-readdir: ^2.2.2
     winston: ^3.2.1
-  checksum: a2baf98cc8400e89b71f53d6c5c6048225036af1f4d9810cbfb5283b034f20ce4a06fe3ab5e1a6427a1a0944b8e3d6a2572fe3db232cff790b553d7b7d14c8e4
+  checksum: 9c1cdd1d1f04fda164101b04c57132515d234600059d246d728674eccfa3fffc46dfa72cdc33918cb035fde20c18b1aecb8d8a096934480c50267a8d0986a948
   languageName: node
   linkType: hard
 
