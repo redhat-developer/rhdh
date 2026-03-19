@@ -9,11 +9,6 @@ import { quoteIdent } from "../../utils/postgres-config";
 
 export { quoteIdent } from "../../utils/postgres-config";
 
-/** Escape a string for use inside PostgreSQL single-quoted literal (doubles single quotes). */
-function escapePasswordLiteral(value: string): string {
-  return String(value).replace(/'/g, "''");
-}
-
 export interface SchemaModeEnv {
   dbHost: string;
   dbAdminUser: string;
@@ -47,7 +42,8 @@ export function getSchemaModeEnv(): SchemaModeEnv {
     dbAdminUser: process.env.SCHEMA_MODE_DB_ADMIN_USER || "postgres",
     dbAdminPassword: dbAdminPassword!,
     dbName: process.env.SCHEMA_MODE_DB_NAME || "postgres",
-    dbUser: process.env.SCHEMA_MODE_DB_USER || "backstage_schema_user", // default; Helm spec overrides to bn_backstage
+    dbUser:
+      process.env.SCHEMA_MODE_DB_USER || "backstage_schema_user", // default; Helm spec overrides to bn_backstage
     dbPassword: dbPassword!,
   };
 }
@@ -151,7 +147,6 @@ export async function cleanupOldPluginDatabases(
 export async function assertDbUserHasRestrictedPermissions(
   adminClient: Client,
   dbUser: string,
-  _dbName: string,
 ): Promise<void> {
   const r = await adminClient.query<{ rolcreatedb: boolean }>(
     `SELECT rolcreatedb FROM pg_roles WHERE rolname = $1`,
@@ -173,16 +168,21 @@ export async function assertDbUserHasRestrictedPermissions(
 }
 
 /**
- * Create test database (if not postgres), create/update runtime user with restricted
- * role (NOSUPERUSER, NOCREATEDB), grant access to exactly one database, revoke
- * CONNECT on all others, and verify the runtime user can connect.
+ * Create test database (if not postgres), create/update runtime user, grant single-DB access,
+ * and verify the runtime user can connect. Leaves adminClient open; caller must end it.
  */
 export async function setupSchemaModeDatabase(
   adminClient: Client,
   config: SchemaModeEnv,
 ): Promise<void> {
-  const { dbHost, dbAdminUser, dbAdminPassword, dbName, dbUser, dbPassword } =
-    config;
+  const {
+    dbHost,
+    dbAdminUser,
+    dbAdminPassword,
+    dbName,
+    dbUser,
+    dbPassword,
+  } = config;
 
   if (dbName !== "postgres") {
     await adminClient
@@ -195,22 +195,23 @@ export async function setupSchemaModeDatabase(
     );
   }
 
-  // Create or update user with restricted role: no superuser, no createdb.
   await adminClient
     .query(
-      `CREATE USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}' NOSUPERUSER NOCREATEDB`,
+      `CREATE USER ${quoteIdent(dbUser)} WITH PASSWORD $1 NOSUPERUSER NOCREATEDB`,
+      [dbPassword],
     )
     .catch(async (err: Error) => {
       if (err.message.includes("already exists")) {
         await adminClient.query(
-          `ALTER USER ${quoteIdent(dbUser)} WITH PASSWORD '${escapePasswordLiteral(dbPassword)}' NOSUPERUSER NOCREATEDB`,
+          `ALTER USER ${quoteIdent(dbUser)} WITH PASSWORD $1 NOSUPERUSER NOCREATEDB`,
+          [dbPassword],
         );
       } else {
         throw err;
       }
     });
 
-  // Restrict to single database: revoke CONNECT on all databases except the target.
+  // Restrict to single database: revoke CONNECT on all others
   const otherDbs = await adminClient.query<{ datname: string }>(
     `SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> $1`,
     [dbName],
@@ -229,8 +230,7 @@ export async function setupSchemaModeDatabase(
     `GRANT CONNECT ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
 
-  // Assert the runtime user cannot create databases (required for schema-mode test validity)
-  await assertDbUserHasRestrictedPermissions(adminClient, dbUser, dbName);
+  await assertDbUserHasRestrictedPermissions(adminClient, dbUser);
   await adminClient.end();
 
   const dbClient = new Client({
@@ -245,14 +245,18 @@ export async function setupSchemaModeDatabase(
   await dbClient.query(
     `GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
-  await dbClient.query(`GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`);
+  await dbClient.query(
+    `GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
+  );
   await dbClient.query(
     `GRANT CREATE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
   );
   await dbClient.query(
     `GRANT ALL PRIVILEGES ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
-  await dbClient.query(`ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`);
+  await dbClient.query(
+    `ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`,
+  );
   await dbClient.end();
   console.log("✓ Database setup complete");
 
@@ -282,3 +286,4 @@ export async function setupSchemaModeDatabase(
     );
   }
 }
+
