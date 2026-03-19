@@ -45,6 +45,11 @@ export K8S_CLUSTER_URL='https://api.b2bpp-pzipk-agn.sai6.p3.openshiftapps.com:44
 export OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 
+# Recalculate derived variables (originally computed in env_variables.sh before the override)
+export K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" "$K8S_CLUSTER_TOKEN" | base64 | tr -d '\n')
+export K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
+export K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
+
 export CHART_VERSION="1.9-211-CI"
 export HELM_CHART_URL="oci://quay.io/rhdh/chart"
 export QUAY_REPO="rhdh/rhdh-hub-rhel9"
