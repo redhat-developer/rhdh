@@ -33,7 +33,6 @@ initiate_gke_operator_deployment() {
   setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start_K8s.yaml"
-  cleanup_orchestrator_resources "${namespace}"
 
   apply_gke_operator_ingress "$namespace" "backstage-$RELEASE_NAME"
 }
@@ -61,7 +60,6 @@ initiate_rbac_gke_operator_deployment() {
   setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
-  cleanup_orchestrator_resources "${namespace}"
 
   apply_gke_operator_ingress "$namespace" "backstage-$RELEASE_NAME_RBAC"
 }
