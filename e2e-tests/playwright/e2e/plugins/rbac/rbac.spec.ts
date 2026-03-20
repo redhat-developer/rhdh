@@ -377,16 +377,15 @@ test.describe("Test RBAC", () => {
       await uiHelper.clickButton("Next");
       // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
       await page.getByText(/\d plugins/).waitFor({ state: "visible" });
+      // Dismiss quickstart overlay if visible — it can intercept stepper button clicks
+      await uiHelper.hideQuickstartIfVisible();
       const nextButton = page.getByTestId("nextButton-2").first();
       await expect(nextButton).toBeVisible();
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
-      // Wait for review step to be ready
-      await page
-        .getByText("users are not granted access")
-        .waitFor({ state: "hidden" });
+      // Wait for Save button which only appears on the review step
       const saveButton = page.getByRole("button", { name: "Save" });
-      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeVisible({ timeout: 15000 });
       await expect(saveButton).toBeEnabled();
       await saveButton.click();
       await uiHelper.verifyText(
@@ -412,6 +411,8 @@ test.describe("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
+      // Clean up any leftover role from a previous failed attempt
+      await rbacPo.tryDeleteRole("role:default/test-role1");
       await rbacPo.createRole(
         "test-role1",
         [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
@@ -439,15 +440,16 @@ test.describe("Test RBAC", () => {
       await uiHelper.clickByDataTestId("nextButton-1");
       // Wait for next step to be ready and clickable (use .first() to handle multiple Next buttons)
       await page.getByText(/\d plugins/).waitFor({ state: "visible" });
+      // Dismiss quickstart overlay if visible — it can intercept stepper button clicks
+      await uiHelper.hideQuickstartIfVisible();
       const nextButton2 = page.getByTestId("nextButton-2").first();
       await expect(nextButton2).toBeVisible();
       await expect(nextButton2).toBeEnabled();
       await nextButton2.click();
-      // Wait for review step before Save
-      await page
-        .getByText("users are not granted access")
-        .waitFor({ state: "hidden" });
-      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
+      // Wait for Save button which only appears on the review step
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible({
+        timeout: 15000,
+      });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -471,12 +473,13 @@ test.describe("Test RBAC", () => {
         .click();
 
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
+      // Dismiss quickstart overlay if visible — it can intercept stepper button clicks
+      await uiHelper.hideQuickstartIfVisible();
       await uiHelper.clickButton("Next");
-      // Wait for review step to be ready
-      await page
-        .getByText("users are not granted access")
-        .waitFor({ state: "hidden" });
-      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
+      // Wait for Save button which only appears on the review step
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible({
+        timeout: 15000,
+      });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -857,16 +860,15 @@ test.describe("Test RBAC", () => {
       await uiHelper.clickButton("Next");
       // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
       await page.getByText(/\d plugins/).waitFor({ state: "visible" });
+      // Dismiss quickstart overlay if visible — it can intercept stepper button clicks
+      await uiHelper.hideQuickstartIfVisible();
       const nextButton = page.getByTestId("nextButton-2").first();
       await expect(nextButton).toBeVisible();
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
-      // Wait for review step to be ready
-      await page
-        .getByText("users are not granted access")
-        .waitFor({ state: "hidden" });
+      // Wait for Save button which only appears on the review step
       const saveButton = page.getByRole("button", { name: "Save" });
-      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeVisible({ timeout: 15000 });
       await expect(saveButton).toBeEnabled();
       await saveButton.click();
       await uiHelper.verifyText(

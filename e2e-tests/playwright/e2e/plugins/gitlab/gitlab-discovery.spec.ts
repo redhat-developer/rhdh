@@ -23,7 +23,15 @@ test.describe("gitlab discovery UI tests", () => {
     await uiHelper.openSidebar("Catalog");
   });
 
-  test("GitLab integration for discovering catalog entities from GitLab", async () => {
+  test("GitLab integration for discovering catalog entities from GitLab", async ({
+    page,
+  }) => {
+    // Dismiss quickstart overlay if visible — it can interfere with search input
+    await uiHelper.hideQuickstartIfVisible();
+    // Wait for catalog table search input to be ready before searching
+    await page
+      .getByRole("textbox", { name: "Search" })
+      .waitFor({ state: "visible" });
     await uiHelper.searchInputPlaceholder("scaffoldedForm");
     await uiHelper.verifyText("scaffoldedForm-test");
     await uiHelper.clickLink("scaffoldedForm-test");
