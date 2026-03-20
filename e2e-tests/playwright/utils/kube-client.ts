@@ -633,11 +633,10 @@ export class KubeClient {
         const readyReplicas = response.body.status?.readyReplicas || 0;
         const conditions = response.body.status?.conditions || [];
 
-        // Derive the pod label selector from the deployment's matchLabels
-        const matchLabels = response.body.spec?.selector?.matchLabels || {};
-        const podSelector = Object.entries(matchLabels)
-          .map(([k, v]) => `${k}=${v}`)
-          .join(",");
+        const podSelector = await this.getDeploymentPodSelector(
+          deploymentName,
+          namespace,
+        );
 
         console.log(`Available replicas: ${availableReplicas}`);
         console.log(
@@ -736,7 +735,6 @@ export class KubeClient {
 
   /**
    * Resolves the pod label selector from a deployment's spec.selector.matchLabels.
-   * Follows the same pattern as auth-providers' rhdh-deployment.ts.
    */
   private async getDeploymentPodSelector(
     deploymentName: string,
