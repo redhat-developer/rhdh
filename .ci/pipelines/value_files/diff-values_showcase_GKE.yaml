@@ -72,4 +72,5 @@ upstream:
       ingress.gcp.kubernetes.io/pre-shared-cert: ""
       networking.gke.io/v1beta1.FrontendConfig: rhdh-gke-ingress-security-config
     className: gce
-orchestrator: null
+orchestrator:
+  enabled: false
