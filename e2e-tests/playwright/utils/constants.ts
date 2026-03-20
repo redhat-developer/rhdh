@@ -69,11 +69,14 @@ export type IsOpenShiftValue =
   (typeof IS_OPENSHIFT_VALUES)[keyof typeof IS_OPENSHIFT_VALUES];
 
 /**
- * Kubernetes label selectors for backstage pods per deployment method.
- * Helm and Operator use different `app.kubernetes.io/name` values.
+ * Kubernetes deployment-level label selectors for backstage.
+ * Both Helm and Operator set `app.kubernetes.io/name` on Deployment metadata
+ * (but with different values). Use these to resolve the deployment, then
+ * target pods via `oc logs deployment/<name>` or `listNamespacedDeployment`.
+ *
+ * @see https://github.com/redhat-developer/rhdh-operator/blob/main/pkg/utils/utils.go
  */
-export const BACKSTAGE_POD_SELECTOR = {
+export const BACKSTAGE_DEPLOY_SELECTOR = {
   HELM: "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub",
-  OPERATOR:
-    "app.kubernetes.io/component=backstage,app.kubernetes.io/name=backstage",
+  OPERATOR: "app.kubernetes.io/name=backstage",
 } as const;

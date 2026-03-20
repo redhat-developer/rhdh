@@ -1,7 +1,7 @@
 import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
 import {
-  BACKSTAGE_POD_SELECTOR,
+  BACKSTAGE_DEPLOY_SELECTOR,
   type JobNamePattern,
   type JobNameRegexPattern,
   type JobTypePattern,
@@ -107,19 +107,24 @@ export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
 }
 
 /**
- * Returns the Kubernetes label selector for backstage pods based on deployment method.
- * Operator and Helm deployments use different `app.kubernetes.io/name` values.
- *
- * @returns The appropriate label selector string
- *
- * @example
- * const selector = getBackstagePodSelector();
- * // Helm:     "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub"
- * // Operator: "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage"
+ * Returns whether the current job is an Operator deployment.
  */
-export function getBackstagePodSelector(): string {
-  const isOperator = process.env.JOB_NAME?.includes("operator") ?? false;
-  return isOperator
-    ? BACKSTAGE_POD_SELECTOR.OPERATOR
-    : BACKSTAGE_POD_SELECTOR.HELM;
+export function isOperatorDeployment(): boolean {
+  return process.env.JOB_NAME?.includes("operator") ?? false;
+}
+
+/**
+ * Returns the deployment-level label selector for the backstage Deployment.
+ * Works with `oc get deploy -l` or `listNamespacedDeployment` to resolve the
+ * deployment, then target pods via `oc logs deployment/<name>`.
+ *
+ * Generalizes the auth-providers pattern from rhdh-deployment.ts which queries
+ * deployments (not pods) by `app.kubernetes.io/name` + `app.kubernetes.io/instance`.
+ *
+ * @returns The appropriate deployment label selector string
+ */
+export function getBackstageDeploySelector(): string {
+  return isOperatorDeployment()
+    ? BACKSTAGE_DEPLOY_SELECTOR.OPERATOR
+    : BACKSTAGE_DEPLOY_SELECTOR.HELM;
 }
