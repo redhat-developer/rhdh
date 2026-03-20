@@ -7,7 +7,7 @@ import {
   type EventStatus,
   type EventSeverityLevel,
 } from "./logs";
-import { getBackstagePodSelector } from "../../utils/helper";
+import { getBackstageDeploySelector } from "../../utils/helper";
 
 export class LogUtils {
   /**
@@ -188,10 +188,14 @@ export class LogUtils {
     maxRetries: number = 4,
     retryDelay: number = 2000,
   ): Promise<string> {
-    const podSelector = getBackstagePodSelector();
+    const deploySelector = getBackstageDeploySelector();
     const tailNumber = 100;
 
-    let grepCommand = `oc logs -l ${podSelector} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
+    // Resolve the deployment by its metadata labels, then fetch logs from it.
+    // This works for both Helm and Operator since both set app.kubernetes.io/name
+    // on the Deployment (with different values), even though pod labels differ.
+    const deployTarget = `$(oc get deploy -n ${namespace} -l ${deploySelector} -o name)`;
+    let grepCommand = `oc logs ${deployTarget} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
     for (const word of filterWords) {
       grepCommand += ` | grep '${word}'`;
     }
