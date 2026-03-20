@@ -64,6 +64,8 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     test.setTimeout(130000);
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Self-service");
+    // Wait for the Self-service page to fully load before searching
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.searchInputPlaceholder("Create React App Template");
     await uiHelper.verifyText("Create React App Template");
     await uiHelper.waitForTextDisappear("Add ArgoCD to an existing project");

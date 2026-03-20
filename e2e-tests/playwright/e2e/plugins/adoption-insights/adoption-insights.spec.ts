@@ -141,14 +141,17 @@ test.describe.serial("Test Adoption Insights", () => {
           catalogEntitiesFirstEntry,
           techdocsFirstEntry,
         );
-        // Do a search
+        // Do a search — set up response listener before triggering the action
+        const searchResponse = testHelper.waitUntilApiCallSucceeds(page);
         await page.getByPlaceholder("Search...").fill("Dummy search");
-        await testHelper.waitUntilApiCallSucceeds(page);
+        await searchResponse;
         await expect(page.getByText("No results found")).toBeVisible();
 
         await uiHelper.clickLink("Catalog");
+        // Set up response listener before reload to avoid race condition
+        const reloadResponse = testHelper.waitUntilApiCallSucceeds(page);
         await page.reload();
-        await testHelper.waitUntilApiCallSucceeds(page);
+        await reloadResponse;
         await uiHelper.openSidebarButton("Administration");
 
         await uiHelper.clickLink("Adoption Insights");
