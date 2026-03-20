@@ -148,10 +148,8 @@ test.describe.serial("Test Adoption Insights", () => {
         await expect(page.getByText("No results found")).toBeVisible();
 
         await uiHelper.clickLink("Catalog");
-        // Set up response listener before reload to avoid race condition
-        const reloadResponse = testHelper.waitUntilApiCallSucceeds(page);
         await page.reload();
-        await reloadResponse;
+        await page.waitForLoadState("networkidle");
         await uiHelper.openSidebarButton("Administration");
 
         await uiHelper.clickLink("Adoption Insights");
