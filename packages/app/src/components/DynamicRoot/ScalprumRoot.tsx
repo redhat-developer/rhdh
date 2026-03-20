@@ -13,7 +13,7 @@ import { ScalprumProvider } from '@scalprum/react-core';
 import { TranslationConfig } from '../../types/types';
 import { DynamicPluginConfig } from '../../utils/dynamicUI/extractDynamicConfig';
 import overrideBaseUrlConfigs from '../../utils/dynamicUI/overrideBaseUrlConfigs';
-import { DynamicRoot, StaticPlugins } from './DynamicRoot';
+import { DynamicRoot } from './DynamicRoot';
 import Loader from './Loader';
 
 export type ScalprumApiHolder = {
@@ -24,13 +24,11 @@ const ScalprumRoot = ({
   apis,
   afterInit,
   baseFrontendConfig,
-  plugins,
 }: {
   // Static APIs
   apis: AnyApiFactory[];
   afterInit: () => Promise<{ default: React.ComponentType }>;
   baseFrontendConfig?: AppConfig;
-  plugins?: StaticPlugins;
 }) => {
   const { loading, value } = useAsync(
     async (): Promise<{
@@ -114,7 +112,6 @@ const ScalprumRoot = ({
         afterInit={afterInit}
         apis={apis}
         dynamicPlugins={dynamicPlugins ?? {}}
-        staticPluginStore={plugins}
         scalprumConfig={scalprumConfig ?? {}}
         translationConfig={translationConfig}
         baseUrl={baseUrl as string}

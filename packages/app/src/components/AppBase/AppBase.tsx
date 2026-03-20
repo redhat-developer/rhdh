@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { memo, useCallback, useContext, useMemo } from 'react';
 import { Route } from 'react-router-dom';
 
 import { FlatRoutes } from '@backstage/core-app-api';
@@ -38,7 +38,13 @@ import ConfigUpdater from '../Root/ConfigUpdater';
 import { SearchPage } from '../search/SearchPage';
 import { settingsPage } from '../UserSettings/SettingsPages';
 
-const AppBase = () => {
+/**
+ * Stabilize the subtree passed to Backstage AppProvider so `children` does not
+ * get a new reference on every parent re-render. AppManager's internal
+ * useMemo(..., [children]) calls getApiHolder(); if that runs twice before
+ * this.apiHolder is assigned, plugin API registration throws duplicates.
+ */
+const AppBaseImpl = () => {
   const {
     AppProvider,
     AppRouter,
@@ -48,118 +54,140 @@ const AppBase = () => {
     scaffolderFieldExtensions,
   } = useContext(DynamicRootContext);
 
-  const myCustomColumnsFunc: CatalogTableColumnsFunc = entityListContext => [
-    ...CatalogTable.defaultColumnsFunc(entityListContext),
-    {
-      title: 'Created At',
-      customSort: (a: CatalogTableRow, b: CatalogTableRow): any => {
-        const timestampA =
-          a.entity.metadata.annotations?.['backstage.io/createdAt'];
-        const timestampB =
-          b.entity.metadata.annotations?.['backstage.io/createdAt'];
+  const myCustomColumnsFunc: CatalogTableColumnsFunc = useCallback(
+    entityListContext => [
+      ...CatalogTable.defaultColumnsFunc(entityListContext),
+      {
+        title: 'Created At',
+        customSort: (a: CatalogTableRow, b: CatalogTableRow): any => {
+          const timestampA =
+            a.entity.metadata.annotations?.['backstage.io/createdAt'];
+          const timestampB =
+            b.entity.metadata.annotations?.['backstage.io/createdAt'];
 
-        const dateA =
-          timestampA && timestampA !== ''
-            ? new Date(timestampA).toISOString()
+          const dateA =
+            timestampA && timestampA !== ''
+              ? new Date(timestampA).toISOString()
+              : '';
+          const dateB =
+            timestampB && timestampB !== ''
+              ? new Date(timestampB).toISOString()
+              : '';
+
+          return dateA.localeCompare(dateB);
+        },
+        render: (data: CatalogTableRow) => {
+          const date =
+            data.entity.metadata.annotations?.['backstage.io/createdAt'];
+          return !isNaN(new Date(date || '') as any)
+            ? data.entity.metadata.annotations?.['backstage.io/createdAt']
             : '';
-        const dateB =
-          timestampB && timestampB !== ''
-            ? new Date(timestampB).toISOString()
-            : '';
-
-        return dateA.localeCompare(dateB);
+        },
       },
-      render: (data: CatalogTableRow) => {
-        const date =
-          data.entity.metadata.annotations?.['backstage.io/createdAt'];
-        return !isNaN(new Date(date || '') as any)
-          ? data.entity.metadata.annotations?.['backstage.io/createdAt']
-          : '';
-      },
-    },
-  ];
-
-  return (
-    <AppProvider>
-      <AlertDisplay />
-      <OAuthRequestDialog />
-      <ConfigUpdater />
-      <AppRouter>
-        <ApplicationProvider>
-          <ApplicationListener />
-          <Root>
-            <FlatRoutes>
-              <Route
-                path="/catalog"
-                element={
-                  <CatalogIndexPage
-                    pagination
-                    columns={myCustomColumnsFunc}
-                    filters={<CustomCatalogFilters />}
-                  />
-                }
-              />
-              <Route
-                path="/catalog/:namespace/:kind/:name"
-                element={<CatalogEntityPage />}
-              >
-                {entityPage(entityTabOverrides)}
-              </Route>
-              <Route path="/create" element={<ScaffolderPage />}>
-                <ScaffolderFieldExtensions>
-                  {scaffolderFieldExtensions.map(
-                    ({ scope, module, importName, Component }) => (
-                      <Component key={`${scope}-${module}-${importName}`} />
-                    ),
-                  )}
-                </ScaffolderFieldExtensions>
-                scaffolderFieldExtensions
-              </Route>
-              <Route path="/api-docs" element={<ApiExplorerPage />} />
-
-              <Route
-                path="/catalog-import"
-                element={
-                  <RequirePermission permission={catalogEntityCreatePermission}>
-                    <CatalogImportPage />
-                  </RequirePermission>
-                }
-              />
-              <Route path="/search" element={<BackstageSearchPage />}>
-                <SearchPage />
-              </Route>
-              <Route path="/settings" element={<UserSettingsPage />}>
-                {settingsPage(providerSettings)}
-              </Route>
-              <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-              <Route path="/learning-paths" element={<LearningPaths />} />
-              {dynamicRoutes.map(
-                ({ Component, staticJSXContent, path, config: { props } }) => {
-                  return (
-                    <Route
-                      key={path}
-                      path={path}
-                      element={<Component {...props} />}
-                    >
-                      {typeof staticJSXContent === 'function'
-                        ? staticJSXContent(getDynamicRootConfig())
-                        : staticJSXContent}
-                    </Route>
-                  );
-                },
-              )}
-            </FlatRoutes>
-          </Root>
-          <ApplicationDrawer />
-        </ApplicationProvider>
-      </AppRouter>
-      <AutoLogout
-        enabled={false}
-        idleTimeoutMinutes={60}
-        useWorkerTimers={false}
-      />
-    </AppProvider>
+    ],
+    [],
   );
+
+  const appProviderChildren = useMemo(() => {
+    return (
+      <>
+        <AlertDisplay />
+        <OAuthRequestDialog />
+        <ConfigUpdater />
+        <AppRouter>
+          <ApplicationProvider>
+            <ApplicationListener />
+            <Root>
+              <FlatRoutes>
+                <Route
+                  path="/catalog"
+                  element={
+                    <CatalogIndexPage
+                      pagination
+                      columns={myCustomColumnsFunc}
+                      filters={<CustomCatalogFilters />}
+                    />
+                  }
+                />
+                <Route
+                  path="/catalog/:namespace/:kind/:name"
+                  element={<CatalogEntityPage />}
+                >
+                  {entityPage(entityTabOverrides)}
+                </Route>
+                <Route path="/create" element={<ScaffolderPage />}>
+                  <ScaffolderFieldExtensions>
+                    {scaffolderFieldExtensions.map(
+                      ({ scope, module, importName, Component }) => (
+                        <Component key={`${scope}-${module}-${importName}`} />
+                      ),
+                    )}
+                  </ScaffolderFieldExtensions>
+                </Route>
+                <Route path="/api-docs" element={<ApiExplorerPage />} />
+
+                <Route
+                  path="/catalog-import"
+                  element={
+                    <RequirePermission
+                      permission={catalogEntityCreatePermission}
+                    >
+                      <CatalogImportPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route path="/search" element={<BackstageSearchPage />}>
+                  <SearchPage />
+                </Route>
+                <Route path="/settings" element={<UserSettingsPage />}>
+                  {settingsPage(providerSettings)}
+                </Route>
+                <Route path="/catalog-graph" element={<CatalogGraphPage />} />
+                <Route path="/learning-paths" element={<LearningPaths />} />
+                {dynamicRoutes.map(
+                  ({
+                    Component,
+                    staticJSXContent,
+                    path,
+                    config: { props },
+                  }) => {
+                    return (
+                      <Route
+                        key={path}
+                        path={path}
+                        element={<Component {...props} />}
+                      >
+                        {typeof staticJSXContent === 'function'
+                          ? staticJSXContent(getDynamicRootConfig())
+                          : staticJSXContent}
+                      </Route>
+                    );
+                  },
+                )}
+              </FlatRoutes>
+            </Root>
+            <ApplicationDrawer />
+          </ApplicationProvider>
+        </AppRouter>
+        <AutoLogout
+          enabled={false}
+          idleTimeoutMinutes={60}
+          useWorkerTimers={false}
+        />
+      </>
+    );
+  }, [
+    AppRouter,
+    dynamicRoutes,
+    entityTabOverrides,
+    myCustomColumnsFunc,
+    providerSettings,
+    scaffolderFieldExtensions,
+  ]);
+
+  return <AppProvider>{appProviderChildren}</AppProvider>;
 };
+
+const AppBase = memo(AppBaseImpl);
 
 export default AppBase;

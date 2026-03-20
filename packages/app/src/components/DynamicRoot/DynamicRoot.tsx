@@ -84,21 +84,10 @@ type AnalyticsApiClass = {
 
 type AppThemeProvider = Partial<AppTheme> & Omit<AppTheme, 'theme'>;
 
-export type StaticPlugins = Record<
-  string,
-  {
-    plugin: BackstagePlugin;
-    module:
-      | React.ComponentType<any>
-      | { [importName: string]: React.ComponentType<any> };
-  }
->;
-
 export const DynamicRoot = ({
   afterInit,
   apis: staticApis,
   dynamicPlugins,
-  staticPluginStore = {},
   scalprumConfig,
   translationConfig,
   baseUrl,
@@ -107,7 +96,6 @@ export const DynamicRoot = ({
   // Static APIs
   apis: AnyApiFactory[];
   dynamicPlugins: DynamicPluginConfig;
-  staticPluginStore?: StaticPlugins;
   scalprumConfig: AppsConfig;
   baseUrl: string;
   translationConfig?: TranslationConfig;
@@ -191,15 +179,6 @@ export const DynamicRoot = ({
       })) ?? []),
     ];
 
-    const staticPlugins = Object.keys(staticPluginStore).reduce(
-      (acc, pluginKey) => {
-        return {
-          ...acc,
-          [pluginKey]: { PluginRoot: staticPluginStore[pluginKey].module },
-        };
-      },
-      {},
-    ) as RemotePlugins;
     const remotePlugins = await initializeRemotePlugins(
       pluginStore,
       scalprumConfig,
@@ -227,11 +206,10 @@ export const DynamicRoot = ({
       );
     }) as BackstagePlugin<{}>[];
 
-    const allPlugins = { ...staticPlugins, ...remotePlugins };
     const resolvedRouteBindingTargets = Object.fromEntries(
       routeBindingTargets.reduce<[string, BackstagePlugin<{}>][]>(
         (acc, { name, importName, scope, module }) => {
-          const plugin = allPlugins[scope]?.[module]?.[importName];
+          const plugin = remotePlugins[scope]?.[module]?.[importName];
 
           if (plugin) {
             acc.push([name, plugin as BackstagePlugin<{}>]);
@@ -250,7 +228,7 @@ export const DynamicRoot = ({
     let icons = Object.fromEntries(
       appIcons.reduce<[string, React.ComponentType<{}>][]>(
         (acc, { scope, module, importName, name }) => {
-          const Component = allPlugins[scope]?.[module]?.[importName];
+          const Component = remotePlugins[scope]?.[module]?.[importName];
 
           if (Component) {
             acc.push([name, Component as React.ComponentType<{}>]);
@@ -270,7 +248,7 @@ export const DynamicRoot = ({
 
     const remoteApis = apiFactories.reduce<AnyApiFactory[]>(
       (acc, { scope, module, importName }) => {
-        const apiFactory = allPlugins[scope]?.[module]?.[importName];
+        const apiFactory = remotePlugins[scope]?.[module]?.[importName];
 
         if (apiFactory) {
           acc.push(apiFactory as AnyApiFactory);
@@ -288,7 +266,7 @@ export const DynamicRoot = ({
     const dynamicPluginsAnalyticsApis = analyticsApiExtensions.reduce<
       AnalyticsApiClass[]
     >((acc, { scope, module, importName }) => {
-      const analyticsApi = allPlugins[scope]?.[module]?.[importName];
+      const analyticsApi = remotePlugins[scope]?.[module]?.[importName];
 
       if (analyticsApi) {
         acc.push(analyticsApi as AnalyticsApiClass);
@@ -330,7 +308,7 @@ export const DynamicRoot = ({
           | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);
       }[]
     >((acc, { module, importName, mountPoint, scope, config }) => {
-      const Component = allPlugins[scope]?.[module]?.[importName];
+      const Component = remotePlugins[scope]?.[module]?.[importName];
       // Only add mount points that have a component
       if (Component) {
         const ifCondition = configIfToCallable(
@@ -339,7 +317,7 @@ export const DynamicRoot = ({
               k,
               v.map(c => {
                 if (typeof c === 'string') {
-                  const remoteFunc = allPlugins[scope]?.[module]?.[c];
+                  const remoteFunc = remotePlugins[scope]?.[module]?.[c];
                   if (remoteFunc === undefined) {
                     // eslint-disable-next-line no-console
                     console.warn(
@@ -406,7 +384,7 @@ export const DynamicRoot = ({
           return route.menuItem;
         }
         const MenuItemComponent =
-          allPlugins[route.scope]?.[route.menuItem.module ?? route.module]?.[
+          remotePlugins[route.scope]?.[route.menuItem.module ?? route.module]?.[
             route.menuItem.importName
           ];
         if (MenuItemComponent === undefined) {
@@ -418,7 +396,7 @@ export const DynamicRoot = ({
         };
       }
       const Component =
-        allPlugins[route.scope]?.[route.module]?.[route.importName];
+        remotePlugins[route.scope]?.[route.module]?.[route.importName];
       if (Component) {
         acc.push({
           ...route,
@@ -460,7 +438,7 @@ export const DynamicRoot = ({
     const scaffolderFieldExtensionComponents = scaffolderFieldExtensions.reduce<
       ScaffolderFieldExtension[]
     >((acc, { scope, module, importName }) => {
-      const extensionComponent = allPlugins[scope]?.[module]?.[importName];
+      const extensionComponent = remotePlugins[scope]?.[module]?.[importName];
       if (extensionComponent) {
         acc.push({
           scope,
@@ -479,7 +457,7 @@ export const DynamicRoot = ({
 
     const techdocsAddonComponents = techdocsAddons.reduce<TechdocsAddon[]>(
       (acc, { scope, module, importName, config }) => {
-        const extensionComponent = allPlugins[scope]?.[module]?.[importName];
+        const extensionComponent = remotePlugins[scope]?.[module]?.[importName];
         if (extensionComponent) {
           acc.push({
             scope,
@@ -503,7 +481,7 @@ export const DynamicRoot = ({
 
     const dynamicThemeProviders = pluginThemes.reduce<AppThemeProvider[]>(
       (acc, { scope, module, importName, icon, ...rest }) => {
-        const provider = allPlugins[scope]?.[module]?.[importName];
+        const provider = remotePlugins[scope]?.[module]?.[importName];
         if (provider) {
           acc.push({
             ...rest,
@@ -528,7 +506,7 @@ export const DynamicRoot = ({
     const signInPage = signInPages
       .map<React.ComponentType<{}> | undefined>(
         ({ scope, module, importName }) => {
-          const candidate = allPlugins[scope]?.[module]?.[
+          const candidate = remotePlugins[scope]?.[module]?.[
             importName
           ] as React.ComponentType<{}>;
           if (!candidate) {
@@ -563,7 +541,7 @@ export const DynamicRoot = ({
       processAllTranslationResources(
         dynamicTranslationConfigs,
         staticTranslationConfigs,
-        allPlugins,
+        remotePlugins,
         overrideTranslations,
       );
 
@@ -601,10 +579,7 @@ export const DynamicRoot = ({
           bindAppRoutes(bind, resolvedRouteBindingTargets, routeBindings);
         },
         icons,
-        plugins: [
-          ...Object.values(staticPluginStore).map(entry => entry.plugin),
-          ...remoteBackstagePlugins,
-        ],
+        plugins: remoteBackstagePlugins,
         themes: [...filteredStaticThemes, ...dynamicThemeProviders],
         components: {
           ...defaultAppComponents,
@@ -650,7 +625,6 @@ export const DynamicRoot = ({
     pluginStore,
     scalprumConfig,
     staticApis,
-    staticPluginStore,
     themes,
     translationConfig,
     baseUrl,
