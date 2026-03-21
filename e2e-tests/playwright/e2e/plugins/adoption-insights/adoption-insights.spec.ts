@@ -149,7 +149,7 @@ test.describe.serial("Test Adoption Insights", () => {
 
         await uiHelper.clickLink("Catalog");
         await page.reload();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
         await uiHelper.openSidebarButton("Administration");
 
         await uiHelper.clickLink("Adoption Insights");
