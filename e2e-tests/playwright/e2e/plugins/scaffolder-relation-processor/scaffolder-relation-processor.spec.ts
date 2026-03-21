@@ -51,10 +51,13 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
   test("Register the template for scaffolder relation processor", async () => {
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.verifyText("Name");
+    // Wait for the Catalog page table to fully load before proceeding
+    await expect(page.getByText("Name", { exact: true }).first()).toBeVisible({
+      timeout: 20000,
+    });
 
     await uiHelper.clickButton("Self-service");
-    await uiHelper.verifyHeading("Templates");
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
   });
