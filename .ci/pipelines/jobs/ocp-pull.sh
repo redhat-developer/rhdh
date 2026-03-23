@@ -11,7 +11,7 @@ handle_ocp_pull() {
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 
   log::info "Configuring namespace: ${NAME_SPACE}"
-  oc_login
+  common::oc_login
   wait_for_cluster_ready
   log::info "OCP version: $(oc version)"
 

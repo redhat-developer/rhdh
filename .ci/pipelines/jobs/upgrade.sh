@@ -30,7 +30,7 @@ handle_ocp_helm_upgrade() {
   log::info "Using previous release version: ${previous_release_version} and chart version: ${CHART_VERSION_BASE}"
   export TAG_NAME_BASE=$previous_release_version
 
-  oc_login
+  common::oc_login
   wait_for_cluster_ready
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')

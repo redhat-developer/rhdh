@@ -22,6 +22,8 @@ handle_eks_operator() {
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
+  common::kubectl_login
+
   cluster_setup_k8s_operator
 
   prepare_operator "3"
