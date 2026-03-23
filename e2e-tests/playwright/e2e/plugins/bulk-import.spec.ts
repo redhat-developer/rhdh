@@ -333,18 +333,19 @@ test.describe
     );
 
     // Verify in bulk import's Added Repositories
-    // The backend may take time to sync the import status, so retry
-    await uiHelper.openSidebar("Bulk import");
-    await common.waitForLoad();
+    // Navigate directly to ensure a clean page state (avoids landing on the import tab)
+    // The backend may take time to sync the import status, so retry with page reload
     await expect(async () => {
+      await page.goto("/bulk-import");
+      await common.waitForLoad();
       await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
       await uiHelper.verifyRowInTableByUniqueText(
         existingComponentDetails.repoName,
         ["Imported"],
       );
     }).toPass({
-      intervals: [2_000, 5_000, 10_000],
-      timeout: 60_000,
+      intervals: [5_000, 10_000, 15_000],
+      timeout: 90_000,
     });
   });
 });
