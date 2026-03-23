@@ -2,7 +2,7 @@
 
 handle_ocp_pull() {
   echo "Configuring namespace: ${NAME_SPACE}"
-  oc_login
+  common::oc_login
   echo "OCP version: $(oc version)"
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')

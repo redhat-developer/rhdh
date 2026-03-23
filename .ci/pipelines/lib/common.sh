@@ -62,3 +62,15 @@ common::kubectl_login() {
 
   return 0
 }
+
+# Validate that required variables are set and non-empty
+# Args: variable_names...
+# Returns: 1 if any variable is unset or empty
+common::require_vars() {
+  for var in "$@"; do
+    if [[ -z "${!var:-}" ]]; then
+      log::error "Required variable $var is not set"
+      return 1
+    fi
+  done
+}
