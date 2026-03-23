@@ -441,9 +441,9 @@ test.describe("Test RBAC", () => {
       await expect(nextButton2).toBeEnabled();
       await nextButton2.click();
       // Wait for review step before Save — stepper transition may take time
-      await expect(
-        page.getByRole("button", { name: "Save" }),
-      ).toBeVisible({ timeout: 20000 });
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible({
+        timeout: 20000,
+      });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
