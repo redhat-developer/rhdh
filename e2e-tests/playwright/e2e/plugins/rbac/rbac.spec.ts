@@ -408,6 +408,8 @@ test.describe("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
+      // Clean up leftover role from a previous failed run
+      await rbacPo.tryDeleteRole("role:default/test-role1");
       await rbacPo.createRole(
         "test-role1",
         [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
@@ -438,8 +440,10 @@ test.describe("Test RBAC", () => {
       await expect(nextButton2).toBeVisible();
       await expect(nextButton2).toBeEnabled();
       await nextButton2.click();
-      // Wait for review step before Save
-      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
+      // Wait for review step before Save — stepper transition may take time
+      await expect(
+        page.getByRole("button", { name: "Save" }),
+      ).toBeVisible({ timeout: 20000 });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
