@@ -190,7 +190,10 @@ test.describe.serial("Test Adoption Insights", () => {
       // "No results for this date range" even after a successful run.
       test("Visited templates shows in top templates", async () => {
         // eslint-disable-next-line playwright/no-skipped-test
-        test.skip(true, "RHIDP-12818: template usage events are not reliably tracked");
+        test.skip(
+          true,
+          "RHIDP-12818: template usage events are not reliably tracked",
+        );
         await ensureOnAdoptionInsightsPage();
         await testHelper.expectTopEntriesToBePresent("templates");
       });
