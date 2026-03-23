@@ -270,13 +270,13 @@ arches:
     name: go-srpm-macros
     evr: 3.6.0-13.el9_7
     sourcerpm: go-rpm-macros-3.6.0-13.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-611.41.1.el9_7.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-611.42.1.el9_7.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 2983373
-    checksum: sha256:1038cfa43ab3b4f6b7eff2c3e5ddd5d670911fef8d1f3fb06da3219d8286c23b
+    size: 2983905
+    checksum: sha256:6cb300c43d383278e6419f20536ec6d06d4972d8e512687eaf3d54a606b52f84
     name: kernel-headers
-    evr: 5.14.0-611.41.1.el9_7
-    sourcerpm: kernel-5.14.0-611.41.1.el9_7.src.rpm
+    evr: 5.14.0-611.42.1.el9_7
+    sourcerpm: kernel-5.14.0-611.42.1.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 14098
@@ -2734,13 +2734,6 @@ arches:
     name: less
     evr: 590-6.el9
     sourcerpm: less-590-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libarchive-3.5.3-7.el9_7.aarch64.rpm
-    repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 400454
-    checksum: sha256:5b9508503bf6dcd57161bbde6d4da4eb4cf186a225c77de374436618076fce02
-    name: libarchive
-    evr: 3.5.3-7.el9_7
-    sourcerpm: libarchive-3.5.3-7.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libbpf-1.5.0-2.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 189720
@@ -7916,13 +7909,6 @@ arches:
     name: less
     evr: 590-6.el9
     sourcerpm: less-590-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libarchive-3.5.3-7.el9_7.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 402587
-    checksum: sha256:609bfa9ffb43ecd00be7c8bac56f98f4a1861651d3ca9cfbcec647bfb9dcf612
-    name: libarchive
-    evr: 3.5.3-7.el9_7
-    sourcerpm: libarchive-3.5.3-7.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libbpf-1.5.0-2.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 190170
