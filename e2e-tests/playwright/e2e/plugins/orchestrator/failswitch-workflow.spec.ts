@@ -2,12 +2,9 @@ import { test, expect } from "@playwright/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { Orchestrator } from "../../../support/pages/orchestrator";
-import { skipOrchestratorOnUnsupportedPlatforms } from "../../../utils/helper";
 import { LogUtils } from "../../audit-log/log-utils";
 
 test.describe("Orchestrator failswitch workflow tests", () => {
-  skipOrchestratorOnUnsupportedPlatforms(test);
-
   let uiHelper: UIhelper;
   let common: Common;
   let orchestrator: Orchestrator;

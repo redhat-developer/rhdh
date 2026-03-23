@@ -1,11 +1,10 @@
 import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
-import {
-  JOB_NAME_PATTERNS,
-  type JobNamePattern,
-  type JobNameRegexPattern,
-  type JobTypePattern,
-  type IsOpenShiftValue,
+import type {
+  JobNamePattern,
+  JobNameRegexPattern,
+  JobTypePattern,
+  IsOpenShiftValue,
 } from "./constants";
 
 export async function downloadAndReadFile(
@@ -104,25 +103,4 @@ export function skipIfJobType(jobTypePattern: JobTypePattern): boolean {
  */
 export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
   return process.env.IS_OPENSHIFT === isOpenShiftValue;
-}
-
-/**
- * Skips orchestrator tests on platforms where the orchestrator plugin is disabled.
- * Call this inside a test.describe() block to skip all tests in the suite.
- *
- * @param test - Playwright test object
- *
- * @example
- * test.describe("Orchestrator tests", () => {
- *   skipOrchestratorOnUnsupportedPlatforms(test);
- *   // ...tests
- * });
- */
-export function skipOrchestratorOnUnsupportedPlatforms(test: {
-  skip: (fn: () => boolean) => void;
-}): void {
-  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP));
-  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE));
-  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.AKS));
-  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.EKS));
 }
