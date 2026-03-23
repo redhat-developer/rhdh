@@ -2,7 +2,10 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { Orchestrator } from "../../../support/pages/orchestrator";
-import { skipIfJobName, skipOrchestratorOnUnsupportedPlatforms } from "../../../utils/helper";
+import {
+  skipIfJobName,
+  skipOrchestratorOnUnsupportedPlatforms,
+} from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
 test.describe("Orchestrator greeting workflow tests", () => {
