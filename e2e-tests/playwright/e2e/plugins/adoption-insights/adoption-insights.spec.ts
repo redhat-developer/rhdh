@@ -160,15 +160,33 @@ test.describe.serial("Test Adoption Insights", () => {
         ]);
       });
 
+      // Helper to ensure we're on the Adoption Insights page before assertions.
+      // On retry, beforeAll does not re-run, so the page may have navigated away.
+      async function ensureOnAdoptionInsightsPage() {
+        const heading = page.getByRole("heading", {
+          name: "Adoption Insights",
+        });
+        const isOnPage = await heading
+          .isVisible({ timeout: 3000 })
+          .catch(() => false);
+        if (!isOnPage) {
+          await page.goto("/adoption-insights");
+          await expect(heading).toBeVisible({ timeout: 20000 });
+        }
+      }
+
       test("Visited component shows up in top catalog entities", async () => {
+        await ensureOnAdoptionInsightsPage();
         await testHelper.expectTopEntriesToBePresent("catalog entities");
       });
 
       test("Visited techdoc shows up in top techdocs", async () => {
+        await ensureOnAdoptionInsightsPage();
         await testHelper.expectTopEntriesToBePresent("techdocs");
       });
 
       test("Visited templates shows in top templates", async () => {
+        await ensureOnAdoptionInsightsPage();
         await testHelper.expectTopEntriesToBePresent("templates");
       });
 
