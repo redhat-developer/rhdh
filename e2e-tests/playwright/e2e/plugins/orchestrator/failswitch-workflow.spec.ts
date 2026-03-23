@@ -9,6 +9,7 @@ import { LogUtils } from "../../audit-log/log-utils";
 test.describe("Orchestrator failswitch workflow tests", () => {
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP)); // skipping orchestrator tests on OSD-GCP due to infra not being installed
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE)); // skipping orchestrator tests on GKE - plugins disabled to save disk space
+  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.AKS)); // skipping orchestrator tests on AKS - plugins disabled
 
   let uiHelper: UIhelper;
   let common: Common;
