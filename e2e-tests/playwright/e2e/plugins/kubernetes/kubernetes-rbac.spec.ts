@@ -6,6 +6,9 @@ import { KUBERNETES_COMPONENTS } from "../../../support/page-objects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
 test.describe("Test Kubernetes Plugin", () => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2817
+  test.fixme(() => process.env.IS_OPENSHIFT === "false");
+
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;

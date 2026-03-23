@@ -132,6 +132,7 @@ _retrieve_all_logs_for_pod() {
 save_all_pod_logs() {
   set +e
   local namespace=$1
+  local artifacts_subdir="${2:-$namespace}"
   rm -rf pod_logs && mkdir -p pod_logs
 
   local pod_names
@@ -153,8 +154,8 @@ save_all_pod_logs() {
     wait "$pid" 2> /dev/null || true
   done
 
-  mkdir -p "${ARTIFACT_DIR}/${namespace}/pod_logs"
-  rsync -a pod_logs/ "${ARTIFACT_DIR}/${namespace}/pod_logs/" || true
+  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/pod_logs"
+  rsync -a pod_logs/ "${ARTIFACT_DIR}/${artifacts_subdir}/pod_logs/" || true
   set -e
 }
 

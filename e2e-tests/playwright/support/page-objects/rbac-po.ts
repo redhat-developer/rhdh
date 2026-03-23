@@ -390,6 +390,21 @@ export class RbacPo extends PageObject {
     }
   }
 
+  async tryDeleteRole(name: string): Promise<void> {
+    await this.page.goto("/rbac");
+    await this.uiHelper.searchInputAriaLabel(name);
+    const deleteButton = this.page.locator(
+      ROLES_PAGE_COMPONENTS.deleteRole(name),
+    );
+    if ((await deleteButton.count()) > 0) {
+      await deleteButton.click();
+      await this.uiHelper.verifyHeading("Delete this role?");
+      await this.page.fill(DELETE_ROLE_COMPONENTS.roleName, name);
+      await this.uiHelper.clickButton("Delete");
+      await this.uiHelper.verifyText(`Role ${name} deleted successfully`);
+    }
+  }
+
   async deleteRole(name: string, header: string = "All roles (0)") {
     await this.page.goto("/rbac");
     await this.uiHelper.searchInputAriaLabel(name);

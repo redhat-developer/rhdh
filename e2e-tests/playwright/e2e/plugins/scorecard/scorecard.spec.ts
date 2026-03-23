@@ -63,6 +63,8 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     await scorecardPage.expectNoProgressBar();
     await scorecardPage.openAddWidgetDialog();
     await scorecardPage.selectWidget("Jira open blocking tickets");
+    await scorecardPage.expectWidgetCount(2);
+
     await scorecardPage.saveChanges();
 
     const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
