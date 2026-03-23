@@ -3217,7 +3217,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-defaults@npm:0.13.1, @backstage/backend-defaults@npm:^0.13.1":
+"@backstage/backend-defaults@npm:0.13.1":
   version: 0.13.1
   resolution: "@backstage/backend-defaults@npm:0.13.1"
   dependencies:
@@ -3301,7 +3301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-defaults@npm:^0.13.2":
+"@backstage/backend-defaults@npm:^0.13.1, @backstage/backend-defaults@npm:^0.13.2":
   version: 0.13.2
   resolution: "@backstage/backend-defaults@npm:0.13.2"
   dependencies:
@@ -17123,16 +17123,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=13.7.0":
-  version: 22.19.1
-  resolution: "@types/node@npm:22.19.1"
-  dependencies:
-    undici-types: ~6.21.0
-  checksum: 62b72e26a51659e654cfd6791f296a95ebc4b1deb1fa97f7a5cea4032434d1b4f14021f6e52eb9ea0cc1d1a7ab90567797a25c3865e3ea3d2caf6b3ea0ac4c4d
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:22.19.7":
+"@types/node@npm:*, @types/node@npm:22.19.7, @types/node@npm:>=13.7.0":
   version: 22.19.7
   resolution: "@types/node@npm:22.19.7"
   dependencies:
@@ -30182,17 +30173,14 @@ __metadata:
   linkType: hard
 
 "multer@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "multer@npm:2.0.2"
+  version: 2.1.1
+  resolution: "multer@npm:2.1.1"
   dependencies:
     append-field: ^1.0.0
     busboy: ^1.6.0
     concat-stream: ^2.0.0
-    mkdirp: ^0.5.6
-    object-assign: ^4.1.1
     type-is: ^1.6.18
-    xtend: ^4.0.2
-  checksum: 187f3539b3d5b7f80a289288fc21d3e4116ab9ed21ac9b9ceb25272c7344d215e9572f7e7ed01edb876afddf24661b06578f2c0fc67f36655ebb51a13ccf83dc
+  checksum: 1d2f4ad42a318b3881afe01d3ea2c16af5822c55a65151eaf94b7f807df0e72ac7bb11c174b65b1815bd814f5f60b06f8b95e2a074d77e0af5cb5b6f2a426aff
   languageName: node
   linkType: hard
 
