@@ -185,13 +185,15 @@ test.describe.serial("Test Adoption Insights", () => {
         await testHelper.expectTopEntriesToBePresent("techdocs");
       });
 
-      // Template tracking is unreliable — the scaffolder task run may not
-      // register as a template usage event in adoption-insights, causing
+      // RHIDP-12818: Template tracking is unreliable — the scaffolder task run
+      // may not register as a template usage event in adoption-insights, causing
       // "No results for this date range" even after a successful run.
-      test.fixme(
-        "Visited templates shows in top templates",
-        "RHIDP-12818: template usage events are not reliably tracked",
-      );
+      test("Visited templates shows in top templates", async () => {
+        // eslint-disable-next-line playwright/no-skipped-test
+        test.skip(true, "RHIDP-12818: template usage events are not reliably tracked");
+        await ensureOnAdoptionInsightsPage();
+        await testHelper.expectTopEntriesToBePresent("templates");
+      });
 
       test("Changes are Reflecting in panels", async () => {
         const titles = ["catalog entities", "techdocs"];
