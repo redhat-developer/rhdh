@@ -12,6 +12,8 @@ source "$DIR"/cluster/k8s/k8s-utils.sh
 handle_gke_helm() {
   echo "Starting GKE Helm deployment"
 
+  common::kubectl_login
+
   IS_OPENSHIFT=false
   export IS_OPENSHIFT
 
@@ -28,8 +30,6 @@ handle_gke_helm() {
   K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL OCM_CLUSTER_URL
-
-  re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
 
   cluster_setup_k8s_helm
 

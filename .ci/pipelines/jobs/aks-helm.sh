@@ -10,6 +10,8 @@ source "$DIR"/cluster/aks/az.sh
 handle_aks_helm() {
   echo "Starting AKS Helm deployment"
 
+  common::kubectl_login
+
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   export K8S_CLUSTER_ROUTER_BASE
 
