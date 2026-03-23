@@ -623,6 +623,11 @@ export class KubeClient {
   ) {
     const endTime = Date.now() + timeout;
 
+    const podSelector = await this.getDeploymentPodSelector(
+      deploymentName,
+      namespace,
+    );
+
     while (Date.now() < endTime) {
       try {
         const response = await this.appsApi.readNamespacedDeployment(
@@ -632,11 +637,6 @@ export class KubeClient {
         const availableReplicas = response.body.status?.availableReplicas || 0;
         const readyReplicas = response.body.status?.readyReplicas || 0;
         const conditions = response.body.status?.conditions || [];
-
-        const podSelector = await this.getDeploymentPodSelector(
-          deploymentName,
-          namespace,
-        );
 
         console.log(`Available replicas: ${availableReplicas}`);
         console.log(
@@ -739,22 +739,19 @@ export class KubeClient {
   private async getDeploymentPodSelector(
     deploymentName: string,
     namespace: string,
-  ): Promise<string | null> {
-    try {
-      const response = await this.appsApi.readNamespacedDeployment(
-        deploymentName,
-        namespace,
+  ): Promise<string> {
+    const response = await this.appsApi.readNamespacedDeployment(
+      deploymentName,
+      namespace,
+    );
+    const matchLabels = response.body.spec?.selector?.matchLabels || {};
+    const entries = Object.entries(matchLabels);
+    if (entries.length === 0) {
+      throw new Error(
+        `Deployment '${deploymentName}' in namespace '${namespace}' has no matchLabels in selector`,
       );
-      const matchLabels = response.body.spec?.selector?.matchLabels || {};
-      const entries = Object.entries(matchLabels);
-      if (entries.length === 0) return null;
-      return entries.map(([k, v]) => `${k}=${v}`).join(",");
-    } catch (error) {
-      console.error(
-        `Error resolving pod selector for deployment '${deploymentName}': ${getKubeApiErrorMessage(error)}`,
-      );
-      return null;
     }
+    return entries.map(([k, v]) => `${k}=${v}`).join(",");
   }
 
   /**
@@ -765,15 +762,15 @@ export class KubeClient {
     deploymentName: string,
     namespace: string,
   ) {
-    const selector = await this.getDeploymentPodSelector(
-      deploymentName,
-      namespace,
-    );
-    if (selector) {
+    try {
+      const selector = await this.getDeploymentPodSelector(
+        deploymentName,
+        namespace,
+      );
       await this.logPodConditions(namespace, selector);
-    } else {
+    } catch (error) {
       console.warn(
-        `Could not resolve pod selector for deployment '${deploymentName}'`,
+        `Could not resolve pod selector for deployment '${deploymentName}': ${getKubeApiErrorMessage(error)}`,
       );
     }
   }
