@@ -137,8 +137,8 @@ Follow the RHDH-local testing instructions in the README:
 
 ```bash
 # Stage changes
-git add catalog-entities/extensions/packages/{plugin-name}.yaml
-git add catalog-entities/extensions/plugins/{plugin-name}.yaml
+git add catalog-entities/marketplace/packages/{plugin-name}.yaml
+git add catalog-entities/marketplace/plugins/{plugin-name}.yaml
 
 # Commit with descriptive message
 git commit -m "feat: add {plugin-name} plugin to RHDH marketplace

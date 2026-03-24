@@ -72,9 +72,9 @@ dynamic-plugins-root/*
 .claude/settings.local.json
 
 # CI/Pipeline local overrides
-.ibm/pipelines/shared_dir/*
-.ibm/pipelines/artifact_dir/*
-.ibm/pipelines/env_override.local.sh
+.ci/pipelines/shared_dir/*
+.ci/pipelines/artifact_dir/*
+.ci/pipelines/env_override.local.sh
 
 # Python Caches
 **/__pycache__/

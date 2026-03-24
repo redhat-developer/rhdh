@@ -56,7 +56,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces. Different sets of tests are executed for both the **non-RBAC RHDH instance** and the **RBAC RHDH instance**, each deployed in separate namespaces.
-- **Access:** In order to access the environment, you can run the bash at `.ibm/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you test calimed a cluster, this script will forward the cluster web console url along with the credentials.
+- **Access:** In order to access the environment, you can run the bash at `.ci/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you test calimed a cluster, this script will forward the cluster web console url along with the credentials.
 - **Steps:**
 
   1. **Detection:** OpenShift-CI detects the PR event.
@@ -141,9 +141,9 @@ The nightly job for the `main` branch also runs against three OpenShift Containe
 
 ### High-Level Overview of `openshift-ci-tests.sh`
 
-The `openshift-ci-tests.sh` script (located at [`.ibm/pipelines/openshift-ci-tests.sh`](../../.ibm/pipelines/openshift-ci-tests.sh)) orchestrates the deployment and testing workflow for both PR and nightly jobs. The configuration for the Red Hat Developer Hub instance is managed using `yaml` config files for the application itself and the plugins in use. Those files are located in `.ibm/pipelines/resources`. These files define essential setup details and configurations specific to each test instance, ultimately determining the precise environment for the RHDH deployment.
+The `openshift-ci-tests.sh` script (located at [`.ci/pipelines/openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh)) orchestrates the deployment and testing workflow for both PR and nightly jobs. The configuration for the Red Hat Developer Hub instance is managed using `yaml` config files for the application itself and the plugins in use. Those files are located in `.ci/pipelines/resources`. These files define essential setup details and configurations specific to each test instance, ultimately determining the precise environment for the RHDH deployment.
 
-Additionally, a **test runner** based on a custom Docker image (defined in [this Dockerfile](https://github.com/redhat-developer/rhdh/blob/main/.ibm/images/Dockerfile)) is set up as part of the environment. This runner helps standardize the testing environment and provides the necessary dependencies for test execution.
+Additionally, a **test runner** based on a custom Docker image (defined in [this Dockerfile](https://github.com/redhat-developer/rhdh/blob/main/.ci/images/Dockerfile)) is set up as part of the environment. This runner helps standardize the testing environment and provides the necessary dependencies for test execution.
 
 The OpenShift CI definitions for PR checks and nightly runs, as well as execution of `openshift-ci-tests.sh`, are managed here:
 
@@ -163,7 +163,7 @@ Detailed steps on how the tests and reports are managed can be found in the `run
 All Playwright project names are defined in a single JSON file: [`e2e-tests/playwright/projects.json`](../../e2e-tests/playwright/projects.json). This file serves as the single source of truth for:
 
 - **TypeScript** (`playwright.config.ts`): Imports via `e2e-tests/playwright/projects.ts`
-- **CI/CD Scripts**: Loaded via `.ibm/pipelines/playwright-projects.sh` as `$PW_PROJECT_*` environment variables
+- **CI/CD Scripts**: Loaded via `.ci/pipelines/playwright-projects.sh` as `$PW_PROJECT_*` environment variables
 
 When adding or modifying Playwright projects, update `projects.json` first. The project names are automatically available as:
 
