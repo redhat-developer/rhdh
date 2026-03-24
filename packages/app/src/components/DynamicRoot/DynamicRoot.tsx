@@ -46,6 +46,7 @@ import extractDynamicConfig, {
   DynamicRoute,
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
+import { attachPseudolocalizationIfEnabled } from '../../utils/i18n/pseudolocalization';
 import { getDefaultLanguage } from '../../utils/language/language';
 import { fetchOverrideTranslations } from '../../utils/translations/fetchOverrideTranslations';
 import { staticTranslationConfigs } from '../../utils/translations/staticTranslationConfigs';
@@ -589,12 +590,15 @@ export const DynamicRoot = ({
           ...multipleAnalyticsApi,
           createApiFactory({
             api: translationApiRef,
-            deps: { languageApi: appLanguageApiRef },
-            factory: ({ languageApi }) =>
-              I18nextTranslationApi.create({
+            deps: { languageApi: appLanguageApiRef, configApi: configApiRef },
+            factory: ({ languageApi, configApi }) => {
+              const translationApi = I18nextTranslationApi.create({
                 languageApi,
                 resources: allTranslationResources,
-              }) as any,
+              }) as any;
+              attachPseudolocalizationIfEnabled(translationApi, configApi);
+              return translationApi;
+            },
           }),
         ],
         bindRoutes({ bind }) {

@@ -331,6 +331,22 @@ export interface Config {
      * @visibility frontend
      */
     overrides?: string[];
+    /**
+     * Pseudolocalization stretches translated strings to test layout (i18next-pseudo).
+     * @deepVisibility frontend
+     */
+    pseudolocalization?: {
+      /**
+       * When true, enables i18next-pseudo for strings that go through the translation API.
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      /**
+       * Language code to pseudolocalize (e.g. en, de). Defaults to the active UI language when omitted.
+       * @visibility frontend
+       */
+      language?: string;
+    };
   };
   /**
    * Configuration options for your user settings.
