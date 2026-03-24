@@ -680,6 +680,7 @@ export class KubeClient {
       deploymentName,
       namespace,
     );
+    const finalLabelSelector = labelSelector ?? podSelector;
 
     while (Date.now() < endTime) {
       try {
@@ -725,6 +726,7 @@ export class KubeClient {
               `Deployment ${deploymentName} failed to start: ${podFailureReason}`,
             );
           }
+        }
 
         // Log pod conditions using the deployment's pod selector
         await this.logPodConditions(namespace, podSelector);
@@ -762,8 +764,8 @@ export class KubeClient {
     );
     await this.logDeploymentEvents(deploymentName, namespace);
     await this.logReplicaSetStatus(deploymentName, namespace);
-    await this.logPodEvents(namespace, labelSelector);
-    await this.logPodConditions(namespace, labelSelector);
+    await this.logPodEvents(namespace, finalLabelSelector);
+    await this.logPodConditions(namespace, finalLabelSelector);
     throw new Error(
       `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
     );
