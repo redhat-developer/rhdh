@@ -12,6 +12,8 @@ source "$DIR"/cluster/eks/aws.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_eks_helm() {
   log::info "Starting EKS Helm deployment"

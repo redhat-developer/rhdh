@@ -12,6 +12,8 @@ source "$DIR"/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/eks/aws.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_eks_operator() {
   log::info "Starting EKS Operator deployment"

@@ -10,6 +10,8 @@ source "$DIR"/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gke-helm-deployment.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_gke_helm() {
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"

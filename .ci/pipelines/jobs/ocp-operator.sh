@@ -8,6 +8,8 @@ source "$DIR"/utils.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"

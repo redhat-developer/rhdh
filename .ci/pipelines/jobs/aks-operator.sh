@@ -10,6 +10,8 @@ source "$DIR"/cluster/aks/aks-operator-deployment.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_aks_operator() {
   log::info "Starting AKS Operator deployment"

@@ -8,6 +8,8 @@ source "$DIR"/utils.sh
 source "$DIR"/cluster/aks/aks-helm-deployment.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_aks_helm() {
   log::info "Starting AKS Helm deployment"
