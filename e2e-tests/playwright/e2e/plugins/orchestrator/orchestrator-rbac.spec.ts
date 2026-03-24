@@ -5,6 +5,7 @@ import { Orchestrator } from "../../../support/pages/orchestrator";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { Policy } from "../../../support/api/rbac-api-structures";
+import { OrchestratorRbacHelper } from "../../../support/api/orchestrator-rbac-helper";
 import { Response } from "../../../support/pages/rbac";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
@@ -470,6 +471,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let page: Page;
     let apiToken: string;
 
+    // Helper to manage generic orchestrator.workflow permissions
+    // These must be removed for the individual deny test to work correctly
+    // (generic allow overrides specific deny per RHDH documentation)
+    const orchestratorRbacHelper = new OrchestratorRbacHelper();
+
     test.beforeAll(async ({ browser }, testInfo) => {
       page = (await setupBrowser(browser, testInfo)).page;
 
@@ -483,6 +489,14 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     test.beforeEach(async ({}, testInfo) => {
       console.log(
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
+      );
+    });
+
+    test("Remove any generic orchestrator.workflow permissions for test user", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
+        rbacApi,
+        "user:default/rhdh-qe",
       );
     });
 
@@ -583,6 +597,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
+        // Clean up the test role
         const remainingPoliciesResponse = await rbacApi.getPoliciesByRole(
           "default/workflowGreetingDenied",
         );
@@ -602,6 +617,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
         expect(deleteRemainingPolicies.ok()).toBeTruthy();
         expect(deleteRole.ok()).toBeTruthy();
+
+        // Restore any generic orchestrator policies that were removed
+        await orchestratorRbacHelper.restoreGenericOrchestratorPermissions(
+          rbacApi,
+        );
       } catch (error) {
         console.error("Error during cleanup in afterAll:", error);
       }

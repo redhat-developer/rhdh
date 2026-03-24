@@ -4,6 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { Policy } from "../../../support/api/rbac-api-structures";
+import { OrchestratorRbacHelper } from "../../../support/api/orchestrator-rbac-helper";
 import { Response } from "../../../support/pages/rbac";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
@@ -22,6 +23,8 @@ import { JOB_NAME_PATTERNS } from "../../../utils/constants";
  * Templates used (from catalog locations):
  * - greeting_w_component.yaml: name=greetingComponent, title="Greeting Test Picker" - HAS annotation
  */
+const testUser = "user:default/rhdh-qe";
+
 test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
   test.fixme(() => skipIfJobName(JOB_NAME_PATTERNS.OPERATOR));
@@ -53,7 +56,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
 
     test("Setup: Create role with catalog+scaffolder but NO orchestrator permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = [testUser];
 
       const role = {
         memberReferences: members,
@@ -239,6 +242,11 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     let apiToken: string;
     const roleName = "role:default/catalogSuperuserWithWorkflowTest";
 
+    // Helper to manage generic orchestrator.workflow permissions
+    // These must be removed to avoid conflicts with orchestrator-rbac.spec.ts
+    // (generic allow overrides specific deny per RHDH documentation)
+    const orchestratorRbacHelper = new OrchestratorRbacHelper();
+
     test.beforeAll(async ({ browser }, testInfo) => {
       page = (await setupBrowser(browser, testInfo)).page;
       uiHelper = new UIhelper(page);
@@ -248,9 +256,17 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       apiToken = await RhdhAuthApiHack.getToken(page);
     });
 
+    test("Setup: Remove any pre-existing generic orchestrator.workflow permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
+        rbacApi,
+        testUser,
+      );
+    });
+
     test("Setup: Create role with catalog+scaffolder+orchestrator permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = [testUser];
 
       const role = {
         memberReferences: members,
@@ -346,6 +362,9 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Launch template and run workflow - verify success", async () => {
+      // Increase timeout for this test since workflow execution can take longer than 90s
+      test.setTimeout(150000); // 2.5 minutes
+
       // Navigate to Self-service page via global header link
       await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await uiHelper.verifyHeading("Self-service");
@@ -409,6 +428,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
+        // Clean up the test role
         const roleNameForApi = roleName.replace("role:", "");
         const policiesResponse =
           await rbacApi.getPoliciesByRole(roleNameForApi);
@@ -419,6 +439,11 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
           await rbacApi.deletePolicy(roleNameForApi, policies as Policy[]);
           await rbacApi.deleteRole(roleNameForApi);
         }
+
+        // Restore any generic orchestrator policies that were removed
+        await orchestratorRbacHelper.restoreGenericOrchestratorPermissions(
+          rbacApi,
+        );
       } catch (error) {
         console.error("Error during cleanup:", error);
       }
