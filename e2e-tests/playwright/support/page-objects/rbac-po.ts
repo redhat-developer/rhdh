@@ -390,6 +390,15 @@ export class RbacPo extends PageObject {
     }
   }
 
+  async tryDeleteRole(name: string) {
+    try {
+      await this.deleteRole(name);
+    } catch {
+      // Role may not exist (e.g., first run or already cleaned up) — ignore
+      await this.page.goto("/rbac");
+    }
+  }
+
   async deleteRole(name: string, header: string = "All roles (0)") {
     await this.page.goto("/rbac");
     await this.uiHelper.searchInputAriaLabel(name);
