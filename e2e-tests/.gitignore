@@ -69,6 +69,9 @@ site
 # e2e test results
 junit-results.xml
 
+# Local e2e test run files
+.local-test
+
 # auth-providers local runs files
 **/app-config.test.yaml
 **/dynamic-plugins.test.yaml

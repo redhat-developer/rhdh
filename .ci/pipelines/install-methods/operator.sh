@@ -51,19 +51,22 @@ prepare_operator() {
   k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || return 1
 }
 
-deploy_rhdh_operator() {
-  local namespace=$1
-  local backstage_crd_path=$2
-
-  # Ensure PostgresCluster CRD is available before deploying Backstage CR
-  # This is required because the operator relies on CrunchyDB for its internal database
+# Waits for the Crunchy Data PostgreSQL Operator's PostgresCluster CRD to become available.
+# Must be called after the Crunchy DB CRD is created and before RHDH is deployed
+# with internal DB disabled and configured to use Crunchy DB as the external PostgreSQL database.
+wait_for_crunchy_crd() {
   log::info "Verifying PostgresCluster CRD is available before deploying Backstage CR..."
   k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 60 5 || {
     log::error "PostgresCluster CRD not available - operator won't be able to create internal database"
     return 1
   }
+}
 
-  # Verify Backstage CRD is also available
+deploy_rhdh_operator() {
+  local namespace=$1
+  local backstage_crd_path=$2
+
+  # Verify Backstage CRD is available
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
 
   rendered_yaml=$(envsubst < "$backstage_crd_path")

@@ -132,6 +132,7 @@ _retrieve_all_logs_for_pod() {
 save_all_pod_logs() {
   set +e
   local namespace=$1
+  local artifacts_subdir="${2:-$namespace}"
   rm -rf pod_logs && mkdir -p pod_logs
 
   local pod_names
@@ -153,8 +154,7 @@ save_all_pod_logs() {
     wait "$pid" 2> /dev/null || true
   done
 
-  mkdir -p "${ARTIFACT_DIR}/${namespace}/pod_logs"
-  rsync -a pod_logs/ "${ARTIFACT_DIR}/${namespace}/pod_logs/" || true
+  common::save_artifact "${artifacts_subdir}" "pod_logs/" "pod_logs" || true
   set -e
 }
 
@@ -527,6 +527,8 @@ cluster_setup_k8s_helm() {
 # ==============================================================================
 
 base_deployment() {
+  local artifacts_subdir=$1
+
   namespace::configure ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
@@ -541,8 +543,7 @@ base_deployment() {
     helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
 
-    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
-    rsync -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
+    common::save_artifact "${artifacts_subdir}" "${merged_pr_value_file}" || true
     # shellcheck disable=SC2046
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -561,6 +562,8 @@ base_deployment() {
 }
 
 rbac_deployment() {
+  local artifacts_subdir=$1
+
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
@@ -582,8 +585,7 @@ rbac_deployment() {
     helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
 
-    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
-    rsync -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
+    common::save_artifact "${artifacts_subdir}" "${merged_pr_rbac_value_file}" || true
     # shellcheck disable=SC2046
     helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -617,13 +619,18 @@ rbac_deployment() {
 }
 
 initiate_deployments() {
+  local base_artifacts_subdir=$1
+  local rbac_artifacts_subdir=$2
+
   cd "${DIR}"
-  base_deployment
-  rbac_deployment
+  base_deployment "${base_artifacts_subdir}"
+  rbac_deployment "${rbac_artifacts_subdir}"
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
 base_deployment_osd_gcp() {
+  local artifacts_subdir=$1
+
   namespace::configure ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
@@ -634,8 +641,7 @@ base_deployment_osd_gcp() {
 
   # Merge base values with OSD-GCP diff file
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
-  rsync -a "/tmp/merged-values_showcase_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${artifacts_subdir}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
 
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
@@ -651,6 +657,8 @@ base_deployment_osd_gcp() {
 }
 
 rbac_deployment_osd_gcp() {
+  local artifacts_subdir=$1
+
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
@@ -661,8 +669,7 @@ rbac_deployment_osd_gcp() {
 
   # Merge RBAC values with OSD-GCP diff file
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
-  rsync -a "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${artifacts_subdir}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
 
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
 
@@ -678,9 +685,12 @@ rbac_deployment_osd_gcp() {
 }
 
 initiate_deployments_osd_gcp() {
+  local base_artifacts_subdir=$1
+  local rbac_artifacts_subdir=$2
+
   cd "${DIR}"
-  base_deployment_osd_gcp
-  rbac_deployment_osd_gcp
+  base_deployment_osd_gcp "${base_artifacts_subdir}"
+  rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
 }
 
 # install base RHDH deployment before upgrade
@@ -760,14 +770,14 @@ initiate_sanity_plugin_checks_deployment() {
   local release_name=$1
   local name_space_sanity_plugins_check=$2
   local sanity_plugins_url=$3
+  local artifacts_subdir=$4
 
   namespace::configure "${name_space_sanity_plugins_check}"
   helm::uninstall "${name_space_sanity_plugins_check}" "${release_name}"
   deploy_redis_cache "${name_space_sanity_plugins_check}"
   apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
   helm::merge_values "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
-  mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
-  rsync -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  common::save_artifact "${artifacts_subdir}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" || true
   # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \

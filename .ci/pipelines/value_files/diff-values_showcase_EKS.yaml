@@ -11,7 +11,12 @@ global:
     plugins:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
-      # Disable orchestrator plugins for EKS
+
+      # Tekton not installed on K8s clusters
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+        disabled: true
+
+      # Orchestrator tests ignored on showcase-k8s
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'

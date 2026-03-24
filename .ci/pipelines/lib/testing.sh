@@ -87,18 +87,16 @@ testing::run_tests() {
   pkill Xvfb || true
 
   # Use artifacts_subdir for artifact directory to keep artifacts organized
-  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/test-results"
-  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots"
-  rsync -a "${e2e_tests_dir}/test-results/" "${ARTIFACT_DIR}/${artifacts_subdir}/test-results/" || true
-  rsync -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" || true
+  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
+  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${JUNIT_RESULTS}" || true
   if [[ "${CI}" == "true" ]]; then
     rsync "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
   fi
 
-  rsync -a "${e2e_tests_dir}/screenshots/" "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots/" || true
+  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  rsync -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}/" || true
-  rsync -a "${e2e_tests_dir}/playwright-report/" "${ARTIFACT_DIR}/${artifacts_subdir}/" || true
+  common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}.html" || true
+  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/playwright-report/" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   local test_passed="true"
@@ -134,8 +132,9 @@ testing::run_tests() {
 #   $1 - release_name: The Helm release name
 #   $2 - namespace: The namespace where Backstage is deployed
 #   $3 - url: The URL to check
-#   $4 - max_attempts: (optional) Maximum number of attempts (default: 30)
-#   $5 - wait_seconds: (optional) Seconds to wait between attempts (default: 30)
+#   $4 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to namespace)
+#   $5 - max_attempts: (optional) Maximum number of attempts (default: 30)
+#   $6 - wait_seconds: (optional) Seconds to wait between attempts (default: 30)
 # Returns:
 #   0 - Backstage is running
 #   1 - Backstage is not running or crashed
@@ -143,17 +142,13 @@ testing::check_backstage_running() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  local max_attempts=${4:-30}
-  local wait_seconds=${5:-30}
+  local artifacts_subdir=$4
+  local max_attempts=${5:-30}
+  local wait_seconds=${6:-30}
 
-  if [[ -z "$release_name" || -z "$namespace" ]]; then
+  if [[ -z "$release_name" || -z "$namespace" || -z "$url" || -z "$artifacts_subdir" ]]; then
     log::error "${_TESTING_ERR_MISSING_PARAMS}"
-    log::info "Usage: testing::check_backstage_running <release_name> <namespace> <url> [max_attempts] [wait_seconds]"
-    return 1
-  fi
-
-  if [[ -z "${url}" ]]; then
-    log::error "Error: URL is not set. Please provide a valid URL."
+    log::info "Usage: testing::check_backstage_running <release_name> <namespace> <url> <artifacts_subdir> [max_attempts] [wait_seconds]"
     return 1
   fi
 
@@ -190,8 +185,7 @@ testing::check_backstage_running() {
           || oc logs deployment/${release_name} -n "${namespace}" --tail=100 --all-containers=true 2> /dev/null || true
         log::error "Recent events:"
         oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
-        mkdir -p "${ARTIFACT_DIR}/${namespace}"
-        rsync -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+        common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}" || true
         return 1
       fi
 
@@ -201,8 +195,7 @@ testing::check_backstage_running() {
 
   log::error "Failed to reach Backstage at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
-  mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  rsync -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+  common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}" || true
   return 1
 }
 
@@ -235,7 +228,7 @@ testing::check_and_test() {
     return 1
   fi
 
-  if testing::check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+  if testing::check_backstage_running "${release_name}" "${namespace}" "${url}" "${artifacts_subdir}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
     if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
@@ -245,13 +238,13 @@ testing::check_and_test() {
       if testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_subdir}"; then
         log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
       else
-        save_all_pod_logs "$namespace"
+        save_all_pod_logs "$namespace" "$artifacts_subdir"
       fi
     fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
     test_run_tracker::mark_deploy_failed "$artifacts_subdir"
-    save_all_pod_logs "$namespace"
+    save_all_pod_logs "$namespace" "$artifacts_subdir"
   fi
   return 0
 }

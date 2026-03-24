@@ -2,6 +2,7 @@
 
 # AWS utilities for EKS deployments: Route53 DNS, ACM certificates, ingress configuration
 # Dependencies: aws, kubectl, jq, nslookup, lib/log.sh
+# Expects $SHARED_DIR/kubeconfig file to exist (for parsing the cluster region)
 
 if [[ -n "${AWS_EKS_LIB_SOURCED:-}" ]]; then return 0; fi
 readonly AWS_EKS_LIB_SOURCED=1
@@ -116,9 +117,10 @@ _aws::apply_route53_change() {
 # ==============================================================================
 
 # Get AWS region from EKS cluster endpoint URL.
+# Parses the server URL from $SHARED_DIR/kubeconfig.
 aws::get_cluster_region() {
   local cluster_url
-  cluster_url=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2> /dev/null)
+  cluster_url=$(KUBECONFIG="${SHARED_DIR}/kubeconfig" kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2> /dev/null)
 
   if [[ "${cluster_url}" =~ \.([a-z0-9-]+)\.eks\.amazonaws\.com ]]; then
     local region="${BASH_REMATCH[1]}"

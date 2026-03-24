@@ -28,7 +28,7 @@ initiate_eks_helm_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   envsubst < "${DIR}/value_files/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" > "/tmp/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
-  common::save_artifact "${NAME_SPACE}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${PW_PROJECT_SHOWCASE_K8S}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   if ! helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -59,7 +59,7 @@ initiate_rbac_eks_helm_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   envsubst < "${DIR}/value_files/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" > "/tmp/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
-  common::save_artifact "${NAME_SPACE_RBAC}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_RBAC}"
   if ! helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \

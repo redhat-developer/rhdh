@@ -11,7 +11,10 @@ const isPrOcpHelmJob =
 
 const isOsdGcpJob = process.env.JOB_NAME.includes("osd-gcp");
 
-const shouldSkipOrchestratorTests = isPrOcpHelmJob || isOsdGcpJob;
+const isNonOpenShiftJob = process.env.IS_OPENSHIFT === "false";
+
+const shouldSkipOrchestratorTests =
+  isPrOcpHelmJob || isOsdGcpJob || isNonOpenShiftJob;
 
 // Set LOCALE based on which project is being run
 const args = process.argv;
