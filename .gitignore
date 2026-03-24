@@ -91,3 +91,7 @@ e2e-tests/test-results/
 # Hermeto Cache
 hermeto-cache/
 build/containerfiles/Containerfile.hermeto
+
+# Dynamic plugins build output
+/dynamic-plugins
+/dist-dynamic-plugins
