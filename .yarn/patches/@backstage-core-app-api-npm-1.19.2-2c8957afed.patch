@@ -1,0 +1,28 @@
+diff --git a/dist/app/AppManager.esm.js b/dist/app/AppManager.esm.js
+index b161a799c6719e2042a785a122f0a00c770f2f1b..f3a8b06135317eec4f5a48bb9f2f41592592de86 100644
+--- a/dist/app/AppManager.esm.js
++++ b/dist/app/AppManager.esm.js
+@@ -329,12 +329,11 @@
+     for (const factory of this.defaultApis) {
+       this.apiFactoryRegistry.register("default", factory);
+     }
++    this.apiHolder = new ApiResolver(this.apiFactoryRegistry);
+     for (const plugin of this.plugins) {
+       for (const factory of plugin.getApis()) {
+-        if (!this.apiFactoryRegistry.register("default", factory)) {
+-          throw new Error(
+-            `Plugin ${plugin.getId()} tried to register duplicate or forbidden API factory for ${factory.api}`
+-          );
++        if (!this.apiFactoryRegistry.get(factory.api)) {
++          this.apiFactoryRegistry.register("default", factory);
+         }
+       }
+     }
+@@ -349,7 +348,6 @@
+       this.apiFactoryRegistry,
+       this.apiFactoryRegistry.getAllApis()
+     );
+-    this.apiHolder = new ApiResolver(this.apiFactoryRegistry);
+     return this.apiHolder;
+   }
+   verifyPlugins(plugins) {
