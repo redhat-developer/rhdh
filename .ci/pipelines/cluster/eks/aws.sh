@@ -328,7 +328,7 @@ get_eks_certificate() {
 get_cluster_aws_region() {
   # Get region from EKS cluster ARN
   local cluster_arn
-  cluster_arn=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2> /dev/null)
+  cluster_arn=$(KUBECONFIG="${SHARED_DIR}/kubeconfig" kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2> /dev/null)
 
   # Extract region from EKS cluster URL
   if [[ "${cluster_arn}" =~ \.([a-z0-9-]+)\.eks\.amazonaws\.com ]]; then
