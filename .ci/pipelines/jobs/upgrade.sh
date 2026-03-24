@@ -6,6 +6,8 @@ source "$DIR"/lib/log.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_ocp_helm_upgrade() {
   export NAME_SPACE="${NAME_SPACE:-showcase-upgrade-nightly}"
@@ -30,7 +32,7 @@ handle_ocp_helm_upgrade() {
   log::info "Using previous release version: ${previous_release_version} and chart version: ${CHART_VERSION_BASE}"
   export TAG_NAME_BASE=$previous_release_version
 
-  oc_login
+  common::oc_login
   wait_for_cluster_ready
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')

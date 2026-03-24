@@ -8,6 +8,8 @@ source "$DIR"/utils.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
@@ -97,7 +99,7 @@ handle_ocp_operator() {
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
   export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 
-  oc_login
+  common::oc_login
   wait_for_cluster_ready
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')

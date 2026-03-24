@@ -12,6 +12,8 @@ source "$DIR"/cluster/eks/aws.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_eks_helm() {
   log::info "Starting EKS Helm deployment"
@@ -21,6 +23,8 @@ handle_eks_helm() {
 
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
+
+  common::kubectl_login
 
   cluster_setup_k8s_helm
 

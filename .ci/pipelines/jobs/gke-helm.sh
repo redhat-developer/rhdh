@@ -10,10 +10,14 @@ source "$DIR"/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gke-helm-deployment.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_gke_helm() {
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
+
+  common::kubectl_login
 
   log::info "Creating GKE SSL certificate..."
   gcloud_ssl_cert_create "$GKE_CERT_NAME" "$GKE_INSTANCE_DOMAIN_NAME" "$GOOGLE_CLOUD_PROJECT"
@@ -21,9 +25,8 @@ handle_gke_helm() {
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   export K8S_CLUSTER_ROUTER_BASE
 
-  K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-  K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
-  export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL
+  K8S_CLUSTER_API_SERVER_URL=$(common::base64_encode "$K8S_CLUSTER_URL")
+  export K8S_CLUSTER_API_SERVER_URL
 
   log::info "Starting GKE Helm deployment"
 

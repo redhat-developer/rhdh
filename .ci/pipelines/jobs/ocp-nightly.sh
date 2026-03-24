@@ -6,13 +6,15 @@ source "$DIR"/lib/log.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_ocp_nightly() {
   export NAME_SPACE="${NAME_SPACE:-showcase-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-nightly}"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db-nightly}"
 
-  oc_login
+  common::oc_login
   wait_for_cluster_ready
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')

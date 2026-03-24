@@ -4,6 +4,8 @@
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_ocp_pull() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
@@ -11,7 +13,7 @@ handle_ocp_pull() {
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 
   log::info "Configuring namespace: ${NAME_SPACE}"
-  oc_login
+  common::oc_login
   wait_for_cluster_ready
   log::info "OCP version: $(oc version)"
 

@@ -1408,26 +1408,6 @@ force_delete_namespace() {
   log::success "Namespace '${project}' successfully deleted."
 }
 
-oc_login() {
-  local max_attempts=${1:-5}
-  local wait_seconds=${2:-30}
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    if oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true; then
-      log::success "Logged in to cluster successfully"
-      log::info "OCP version: $(oc version --client 2>&1 | head -1)"
-      return 0
-    fi
-    if [[ $i -lt $max_attempts ]]; then
-      log::warn "Cluster login attempt ${i}/${max_attempts} failed. Retrying in ${wait_seconds}s..."
-      sleep "$wait_seconds"
-    fi
-  done
-
-  log::error "Failed to login to cluster after ${max_attempts} attempts"
-  return 1
-}
-
 # Wait for the cluster API server to be fully responsive after login.
 # Clusters resuming from hibernation may accept login but have degraded API availability.
 wait_for_cluster_ready() {

@@ -10,12 +10,16 @@ source "$DIR"/cluster/aks/aks-operator-deployment.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_aks_operator() {
   log::info "Starting AKS Operator deployment"
 
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
+
+  common::kubectl_login
 
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   export K8S_CLUSTER_ROUTER_BASE
