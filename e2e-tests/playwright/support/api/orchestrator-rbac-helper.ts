@@ -1,4 +1,3 @@
-import { expect } from "@playwright/test";
 import RhdhRbacApi from "./rbac-api";
 import { Policy } from "./rbac-api-structures";
 
@@ -11,6 +10,16 @@ export interface SavedRolePolicy {
 }
 
 /**
+ * Represents the expected shape of a policy from the RBAC API response.
+ */
+interface ApiPolicy {
+  permission: string;
+  policy: string;
+  effect: string;
+  metadata?: unknown;
+}
+
+/**
  * Helper class for managing orchestrator RBAC policies during tests.
  *
  * This is needed because generic orchestrator.workflow permissions override
@@ -20,6 +29,41 @@ export interface SavedRolePolicy {
  */
 export class OrchestratorRbacHelper {
   private savedGenericPolicies: SavedRolePolicy[] = [];
+
+  /**
+   * Validates that a policy object has the required fields.
+   */
+  private isValidPolicy(policy: unknown): policy is ApiPolicy {
+    if (typeof policy !== "object" || policy === null) return false;
+    const p = policy as Record<string, unknown>;
+    return (
+      typeof p.permission === "string" &&
+      typeof p.policy === "string" &&
+      typeof p.effect === "string"
+    );
+  }
+
+  /**
+   * Removes metadata from policy objects and validates their shape.
+   * Similar to Response.removeMetadataFromResponse pattern used elsewhere.
+   */
+  private cleanAndValidatePolicies(policies: unknown[]): ApiPolicy[] {
+    const validPolicies: ApiPolicy[] = [];
+    for (const policy of policies) {
+      if (!this.isValidPolicy(policy)) {
+        console.warn(
+          `Skipping invalid policy object: ${JSON.stringify(policy)}`,
+        );
+        continue;
+      }
+      validPolicies.push({
+        permission: policy.permission,
+        policy: policy.policy,
+        effect: policy.effect,
+      });
+    }
+    return validPolicies;
+  }
 
   /**
    * Removes any generic orchestrator.workflow permissions for the specified user.
@@ -35,9 +79,10 @@ export class OrchestratorRbacHelper {
   ): Promise<SavedRolePolicy[]> {
     this.savedGenericPolicies = [];
 
-    // Get all roles that the user is a member of
     const rolesResponse = await rbacApi.getRoles();
-    expect(rolesResponse.ok()).toBeTruthy();
+    if (!rolesResponse.ok()) {
+      throw new Error(`Failed to get roles: ${await rolesResponse.text()}`);
+    }
     const roles = await rolesResponse.json();
 
     const userRoles = roles.filter(
@@ -45,37 +90,30 @@ export class OrchestratorRbacHelper {
         role.memberReferences?.includes(userEntityRef),
     );
 
-    // For each role, check if it has generic orchestrator.workflow permissions
     for (const role of userRoles) {
       const roleNameForApi = role.name.replace("role:", "");
       const policiesResponse = await rbacApi.getPoliciesByRole(roleNameForApi);
 
       if (!policiesResponse.ok()) continue;
 
-      const policies = await policiesResponse.json();
-      const genericOrchestratorPolicies = policies.filter(
-        (policy: { permission: string }) =>
+      const rawPolicies = await policiesResponse.json();
+      if (!Array.isArray(rawPolicies)) {
+        console.warn(
+          `Expected array of policies for ${role.name}, got: ${typeof rawPolicies}`,
+        );
+        continue;
+      }
+
+      const validPolicies = this.cleanAndValidatePolicies(rawPolicies);
+      const genericOrchestratorPolicies = validPolicies.filter(
+        (policy) =>
           policy.permission === "orchestrator.workflow" ||
           policy.permission === "orchestrator.workflow.use",
       );
 
       if (genericOrchestratorPolicies.length > 0) {
-        // Save these policies for restoration later
-        this.savedGenericPolicies.push({
-          roleName: roleNameForApi,
-          policies: genericOrchestratorPolicies.map(
-            (p: { permission: string; policy: string; effect: string }) => ({
-              entityReference: role.name,
-              permission: p.permission,
-              policy: p.policy,
-              effect: p.effect,
-            }),
-          ),
-        });
-
-        // Remove the generic policies
-        const policiesToDelete = genericOrchestratorPolicies.map(
-          (p: { permission: string; policy: string; effect: string }) => ({
+        const policiesToDelete: Policy[] = genericOrchestratorPolicies.map(
+          (p) => ({
             entityReference: role.name,
             permission: p.permission,
             policy: p.policy,
@@ -91,7 +129,18 @@ export class OrchestratorRbacHelper {
           roleNameForApi,
           policiesToDelete,
         );
-        expect(deleteResponse.ok()).toBeTruthy();
+
+        if (!deleteResponse.ok()) {
+          throw new Error(
+            `Failed to remove orchestrator policies from ${role.name}: ${await deleteResponse.text()}`,
+          );
+        }
+
+        // Only save policies after successful deletion
+        this.savedGenericPolicies.push({
+          roleName: roleNameForApi,
+          policies: policiesToDelete,
+        });
       }
     }
 
@@ -104,12 +153,16 @@ export class OrchestratorRbacHelper {
 
   /**
    * Restores any generic orchestrator.workflow permissions that were previously removed.
+   * Throws an error if restoration fails to ensure test environment integrity.
    *
    * @param rbacApi - The RBAC API instance
+   * @throws Error if any policy restoration fails
    */
   async restoreGenericOrchestratorPermissions(
     rbacApi: RhdhRbacApi,
   ): Promise<void> {
+    const errors: string[] = [];
+
     for (const saved of this.savedGenericPolicies) {
       console.log(
         `Restoring generic orchestrator policies to ${saved.roleName}:`,
@@ -117,11 +170,20 @@ export class OrchestratorRbacHelper {
       );
       const restoreResponse = await rbacApi.createPolicies(saved.policies);
       if (!restoreResponse.ok()) {
-        console.error(
-          `Failed to restore policies to ${saved.roleName}:`,
-          await restoreResponse.text(),
+        const errorText = await restoreResponse.text();
+        errors.push(
+          `Failed to restore policies to ${saved.roleName}: ${errorText}`,
         );
       }
+    }
+
+    // Reset state after restoration attempt
+    this.savedGenericPolicies = [];
+
+    if (errors.length > 0) {
+      throw new Error(
+        `Policy restoration failed. Environment may be in inconsistent state:\n${errors.join("\n")}`,
+      );
     }
   }
 

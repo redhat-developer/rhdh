@@ -439,13 +439,17 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
           await rbacApi.deletePolicy(roleNameForApi, policies as Policy[]);
           await rbacApi.deleteRole(roleNameForApi);
         }
-
-        // Restore any generic orchestrator policies that were removed
-        await orchestratorRbacHelper.restoreGenericOrchestratorPermissions(
-          rbacApi,
-        );
       } catch (error) {
-        console.error("Error during cleanup:", error);
+        console.error("Error during role cleanup:", error);
+      } finally {
+        // Always restore generic orchestrator policies, even if role cleanup fails
+        try {
+          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions(
+            rbacApi,
+          );
+        } catch (restoreError) {
+          console.error("Error restoring orchestrator policies:", restoreError);
+        }
       }
     });
   });
