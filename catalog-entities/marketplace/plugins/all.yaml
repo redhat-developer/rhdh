@@ -13,7 +13,6 @@ spec:
     - ./argocd-scaffolder-actions.yaml
     - ./azure-container-registry.yaml
     - ./azure-devops.yaml
-    - ./azure-repositories.yaml
     - ./azure-scaffolder-actions.yaml
     - ./backstage-community-plugin-quay.yaml
     - ./bitbucket-cloud-catalog-integration.yaml
