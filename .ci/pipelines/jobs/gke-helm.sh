@@ -8,6 +8,8 @@ source "$DIR"/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gke-helm-deployment.sh
 # shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_gke_helm() {
   echo "Starting GKE Helm deployment"

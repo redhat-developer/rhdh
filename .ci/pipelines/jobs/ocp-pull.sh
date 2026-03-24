@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
+
 handle_ocp_pull() {
   echo "Configuring namespace: ${NAME_SPACE}"
   common::oc_login

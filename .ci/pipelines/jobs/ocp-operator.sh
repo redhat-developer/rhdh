@@ -4,6 +4,8 @@
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 initiate_operator_deployments() {
   echo "Initiating Operator-backed deployments on OCP"

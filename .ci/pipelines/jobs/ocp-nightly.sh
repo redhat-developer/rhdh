@@ -2,6 +2,8 @@
 
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_ocp_nightly() {
   export NAME_SPACE="showcase-ci-nightly"

@@ -2,6 +2,8 @@
 
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_ocp_helm_upgrade() {
   export NAME_SPACE="showcase-upgrade-nightly"

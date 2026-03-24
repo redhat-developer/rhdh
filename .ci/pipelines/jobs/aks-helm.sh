@@ -6,6 +6,8 @@ source "$DIR"/utils.sh
 source "$DIR"/cluster/aks/aks-helm-deployment.sh
 # shellcheck source=.ci/pipelines/cluster/aks/az.sh
 source "$DIR"/cluster/aks/az.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_aks_helm() {
   echo "Starting AKS Helm deployment"

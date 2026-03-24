@@ -10,6 +10,8 @@ source "$DIR"/cluster/gke/gke-operator-deployment.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_gke_operator() {
   echo "Starting GKE Operator deployment"

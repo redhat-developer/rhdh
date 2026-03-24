@@ -6,6 +6,8 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/cluster/aks/aks-operator-deployment.sh
 # shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_aks_operator() {
   echo "Starting AKS Operator deployment"

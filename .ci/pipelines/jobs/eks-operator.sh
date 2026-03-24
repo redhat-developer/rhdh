@@ -8,6 +8,8 @@ source "$DIR"/cluster/eks/eks-operator-deployment.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/cluster/eks/aws.sh
 source "$DIR"/cluster/eks/aws.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_eks_operator() {
   echo "Starting EKS Operator deployment"
