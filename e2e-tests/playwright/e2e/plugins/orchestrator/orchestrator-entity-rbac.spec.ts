@@ -6,6 +6,7 @@ import RhdhRbacApi from "../../../support/api/rbac-api";
 import { Policy } from "../../../support/api/rbac-api-structures";
 import { OrchestratorRbacHelper } from "../../../support/api/orchestrator-rbac-helper";
 import { Response } from "../../../support/pages/rbac";
+import { Catalog } from "../../../support/pages/catalog";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
@@ -131,14 +132,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading(/Catalog|All/);
-      await uiHelper.selectMuiBox("Kind", "Template");
+      // Use openCatalogSidebar which handles navigation, kind selection, and waits for table
+      await uiHelper.openCatalogSidebar("Template");
 
-      // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
-      await page
-        .getByRole("textbox", { name: "Search" })
-        .fill("Greeting Test Picker");
+      // Use Catalog helper to search (waits for API response)
+      const catalog = new Catalog(page);
+      await catalog.search("Greeting Test Picker");
+
       const templateLink = page.getByRole("link", {
         name: /Greeting Test Picker/i,
       });
@@ -341,14 +341,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading(/Catalog|All/);
-      await uiHelper.selectMuiBox("Kind", "Template");
+      // Use openCatalogSidebar which handles navigation, kind selection, and waits for table
+      await uiHelper.openCatalogSidebar("Template");
 
-      // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
-      await page
-        .getByRole("textbox", { name: "Search" })
-        .fill("Greeting Test Picker");
+      // Use Catalog helper to search (waits for API response)
+      const catalog = new Catalog(page);
+      await catalog.search("Greeting Test Picker");
+
       const templateLink = page.getByRole("link", {
         name: /Greeting Test Picker/i,
       });
