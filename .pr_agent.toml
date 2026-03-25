@@ -1,41 +1,28 @@
 [jira]
-jira_api_token = "${{ secrets.JIRA_API_TOKEN }}"
-jira_base_url = "https://issues.redhat.com"
+jira_base_url = "https://redhat.atlassian.net"
 
 [github_app]
 # what should be launched automatically
 pr_commands = [
-    "/review",
-    "/describe --pr_description.final_update_message=false",
-    "/improve",
+    "/agentic_review",
+    "/agentic_describe --pr_description.final_update_message=false",
+    "/generate_labels",
 ]
-feedback_on_draft_pr = false
-
-[pr_reviewer] # /review #
-persistent_comment = true
-require_tests_review = false
-require_ticket_analysis_review = true
-enable_review_labels_security = true
-enable_review_labels_effort = true
-
-[pr_description] # /describe #
-enable_pr_diagram = false
-publish_labels = true
-final_update_message = true
-# without this, it can interfere with Sourcery AI
-publish_description_as_comment = true
-publish_description_as_comment_persistent = true
-add_original_user_description = false
-
-[pr_code_suggestions]
-commitable_code_suggestions = false
 
 [pr_test]
 enable=false
 
+[review_agent]
+comments_location_policy = "summary"
+
+[checks]
+enable_auto_checks_feedback = "true"
+persistent_comment = "true"
+final_update_message = "false"
+
 [config]
 ignore_pr_authors = ["renovate","openshift-cherrypick-robot","rhdh-bot"]
-allow_only_specific_folders=["e2e-tests"]
+allow_only_specific_folders=["e2e-tests",".ci"]
 
 [rag_arguments]
 enable_rag=true
