@@ -16,9 +16,9 @@ enable=false
 comments_location_policy = "summary"
 
 [checks]
-enable_auto_checks_feedback = "true"
-persistent_comment = "true"
-final_update_message = "false"
+enable_auto_checks_feedback = true
+persistent_comment = true
+final_update_message = false
 
 [config]
 ignore_pr_authors = ["renovate","openshift-cherrypick-robot","rhdh-bot"]
