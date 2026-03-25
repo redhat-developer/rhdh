@@ -11,7 +11,7 @@ upstream:
     image:
       # Note: repository and tag are set via --set flags in helm upgrade -i commands
       pullPolicy: Always
-      registry: quay.io
+
     appConfig:
       app:
         title: Red Hat Developer Hub

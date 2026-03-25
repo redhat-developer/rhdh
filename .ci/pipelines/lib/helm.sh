@@ -208,14 +208,17 @@ helm::uninstall() {
 # ==============================================================================
 
 # Get common Helm set parameters for image configuration
-# Uses global variables: QUAY_REPO, TAG_NAME
+# Uses global variables: IMAGE_REGISTRY, IMAGE_REPO, TAG_NAME
 # Returns:
 #   Prints the Helm --set parameters string
 helm::get_image_params() {
   local params=""
 
+  # Add image registry
+  params+="--set upstream.backstage.image.registry=${IMAGE_REGISTRY} "
+
   # Add image repository
-  params+="--set upstream.backstage.image.repository=${QUAY_REPO} "
+  params+="--set upstream.backstage.image.repository=${IMAGE_REPO} "
 
   # Add image tag
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
