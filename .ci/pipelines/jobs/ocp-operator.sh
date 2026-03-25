@@ -45,8 +45,6 @@ initiate_operator_deployments() {
 initiate_operator_deployments_osd_gcp() {
   log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
 
-  prepare_operator
-
   configure_namespace "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -100,7 +98,6 @@ handle_ocp_operator() {
   export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 
   common::oc_login
-  wait_for_cluster_ready
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
