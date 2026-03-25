@@ -14,7 +14,6 @@ source "$DIR"/lib/common.sh
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
   common::oc_login
-  wait_for_cluster_ready
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
   wait_for_backstage_crd "default"

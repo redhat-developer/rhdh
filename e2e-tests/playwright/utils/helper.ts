@@ -1,10 +1,11 @@
 import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
-import type {
-  JobNamePattern,
-  JobNameRegexPattern,
-  JobTypePattern,
-  IsOpenShiftValue,
+import {
+  BACKSTAGE_DEPLOY_SELECTOR,
+  type JobNamePattern,
+  type JobNameRegexPattern,
+  type JobTypePattern,
+  type IsOpenShiftValue,
 } from "./constants";
 
 export async function downloadAndReadFile(
@@ -103,4 +104,27 @@ export function skipIfJobType(jobTypePattern: JobTypePattern): boolean {
  */
 export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
   return process.env.IS_OPENSHIFT === isOpenShiftValue;
+}
+
+/**
+ * Returns whether the current job is an Operator deployment.
+ */
+export function isOperatorDeployment(): boolean {
+  return process.env.JOB_NAME?.includes("operator") ?? false;
+}
+
+/**
+ * Returns the deployment-level label selector for the backstage Deployment.
+ * Works with `oc get deploy -l` or `listNamespacedDeployment` to resolve the
+ * deployment, then target pods via `oc logs deployment/<name>`.
+ *
+ * Generalizes the auth-providers pattern from rhdh-deployment.ts which queries
+ * deployments (not pods) by `app.kubernetes.io/name` + `app.kubernetes.io/instance`.
+ *
+ * @returns The appropriate deployment label selector string
+ */
+export function getBackstageDeploySelector(): string {
+  return isOperatorDeployment()
+    ? BACKSTAGE_DEPLOY_SELECTOR.OPERATOR
+    : BACKSTAGE_DEPLOY_SELECTOR.HELM;
 }

@@ -14,8 +14,6 @@ handle_ocp_pull() {
 
   log::info "Configuring namespace: ${NAME_SPACE}"
   common::oc_login
-  wait_for_cluster_ready
-  log::info "OCP version: $(oc version)"
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE

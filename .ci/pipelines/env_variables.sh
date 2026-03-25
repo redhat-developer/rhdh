@@ -131,7 +131,6 @@ AZURE_DB_CERTIFICATES_PATH="/tmp/secrets/azure-db-certificates.pem"
 
 JUNIT_RESULTS="junit-results.xml"
 
-SLACK_DATA_ROUTER_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_DATA_ROUTER_WEBHOOK_URL)
 REDIS_USERNAME=temp
 REDIS_USERNAME_ENCODED=$(printf "%s" $REDIS_USERNAME | base64 | tr -d '\n')
 REDIS_PASSWORD=test123

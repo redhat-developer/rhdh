@@ -765,7 +765,7 @@ metadata:
   name: dynamic-plugins
 data:
   dynamic-plugins.yaml: |" > ${final_file}
-  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' >> ${final_file}
+  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' -e 's/{{ "{{" }}inherit{{ "}}" }}/{{inherit}}/g' >> ${final_file}
 }
 
 create_conditional_policies_operator() {
@@ -1406,29 +1406,6 @@ force_delete_namespace() {
   done
 
   log::success "Namespace '${project}' successfully deleted."
-}
-
-# Wait for the cluster API server to be fully responsive after login.
-# Clusters resuming from hibernation may accept login but have degraded API availability.
-wait_for_cluster_ready() {
-  local max_attempts=${1:-20}
-  local wait_seconds=${2:-15}
-
-  log::info "Checking cluster API server readiness..."
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    if oc get nodes &> /dev/null && oc get route console -n openshift-console &> /dev/null; then
-      log::success "Cluster API server is ready"
-      return 0
-    fi
-    if [[ $i -lt $max_attempts ]]; then
-      log::warn "Cluster API not fully ready (attempt ${i}/${max_attempts}). Retrying in ${wait_seconds}s..."
-      sleep "$wait_seconds"
-    fi
-  done
-
-  log::error "Cluster API server did not become ready after ${max_attempts} attempts ($((max_attempts * wait_seconds))s)"
-  return 1
 }
 
 is_openshift() {
