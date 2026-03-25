@@ -366,10 +366,9 @@ upstream:
                 token: test-token
                 subject: test-subject
     image:
+      # Note: repository and tag are set via --set flags in helm upgrade -i commands
       pullPolicy: Always
       registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
     extraEnvVars:
       - name: BACKEND_SECRET
         valueFrom:
