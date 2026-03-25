@@ -24,10 +24,6 @@ const CI_VALUES_SHOWCASE_RBAC_CONFIG_FILE = path.join(
   ROOT_DIR,
   ".ci/pipelines/value_files/values_showcase-rbac.yaml",
 );
-const CI_VALUES_SHOWCASE_AUTH_PROVIDERS_CONFIG_FILE = path.join(
-  ROOT_DIR,
-  ".ci/pipelines/value_files/values_showcase-auth-providers.yaml",
-);
 const RHDH_OPENSHIFT_SETUP_CONFIG_FILE = path.join(
   ROOT_DIR,
   "scripts/rhdh-openshift-setup/values.yaml",
@@ -290,16 +286,6 @@ describe("Dynamic Plugin Wrappers", () => {
   describe("(ci: values_showcase-rbac.yaml) should have a valid config", () => {
     const config = parseYamlFile<GlobalDynamicPluginsConfig>(
       CI_VALUES_SHOWCASE_RBAC_CONFIG_FILE,
-    );
-
-    it("should have a corresponding package", () => {
-      validateDynamicPluginsConfig(config.global.dynamic, wrapperDirNames);
-    });
-  });
-
-  describe("(ci: values_showcase_auth-providers.yaml) should have a valid config", () => {
-    const config = parseYamlFile<GlobalDynamicPluginsConfig>(
-      CI_VALUES_SHOWCASE_AUTH_PROVIDERS_CONFIG_FILE,
     );
 
     it("should have a corresponding package", () => {
