@@ -2734,13 +2734,6 @@ arches:
     name: less
     evr: 590-6.el9
     sourcerpm: less-590-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libarchive-3.5.3-7.el9_7.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 402587
-    checksum: sha256:609bfa9ffb43ecd00be7c8bac56f98f4a1861651d3ca9cfbcec647bfb9dcf612
-    name: libarchive
-    evr: 3.5.3-7.el9_7
-    sourcerpm: libarchive-3.5.3-7.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libbpf-1.5.0-2.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 190170
