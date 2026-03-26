@@ -765,7 +765,41 @@ metadata:
   name: dynamic-plugins
 data:
   dynamic-plugins.yaml: |" > ${final_file}
-  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' -e 's/{{ "{{" }}inherit{{ "}}" }}/{{inherit}}/g' >> ${final_file}
+  # Render Helm template escapes: {{ "{{" }}inherit{{ "}}" }} -> {{inherit}}
+  # Value files use Helm escaping for {{inherit}} which Helm renders automatically,
+  # but operator deployments use these files directly without Helm rendering.
+  yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' -e 's/{{ "{{" }}/{{/g' -e 's/{{ "}}" }}/}}/g' >> ${final_file}
+}
+
+# Wait for the RHDH operator to finish reconciling and the deployment rollout to stabilize.
+# The operator may update the Deployment spec multiple times after the Backstage CR is applied,
+# causing multiple ReplicaSets. This function waits for the deployment to exist and for
+# the rollout to complete so only one ReplicaSet is active.
+wait_for_operator_rollout() {
+  local namespace=$1
+  local deployment_name=$2
+  local max_wait=${3:-180}
+
+  log::info "Waiting for deployment '$deployment_name' to be created in namespace '$namespace'..."
+  local elapsed=0
+  while [[ $elapsed -lt $max_wait ]]; do
+    if kubectl get deployment "$deployment_name" -n "$namespace" &> /dev/null; then
+      log::info "Deployment '$deployment_name' found, waiting for rollout to stabilize..."
+      break
+    fi
+    sleep 5
+    elapsed=$((elapsed + 5))
+  done
+
+  if ! kubectl get deployment "$deployment_name" -n "$namespace" &> /dev/null; then
+    log::warn "Deployment '$deployment_name' not found after ${max_wait}s, continuing..."
+    return 0
+  fi
+
+  # Wait for rollout to complete (operator may trigger multiple updates)
+  kubectl rollout status deployment/"$deployment_name" -n "$namespace" --timeout="${max_wait}s" 2> /dev/null || true
+  log::info "Deployment '$deployment_name' rollout stabilized"
+  return 0
 }
 
 create_conditional_policies_operator() {

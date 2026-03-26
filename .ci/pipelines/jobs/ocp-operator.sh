@@ -22,6 +22,7 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
+  wait_for_operator_rollout "${NAME_SPACE}" "backstage-${RELEASE_NAME}"
   # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
   # enable_orchestrator_plugins_op "${NAME_SPACE}"
   # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
@@ -35,6 +36,7 @@ initiate_operator_deployments() {
   create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
+  wait_for_operator_rollout "${NAME_SPACE_RBAC}" "backstage-${RELEASE_NAME_RBAC}"
   # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
   # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
   # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
@@ -59,6 +61,7 @@ initiate_operator_deployments_osd_gcp() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
+  wait_for_operator_rollout "${NAME_SPACE}" "backstage-${RELEASE_NAME}"
 
   # Skip orchestrator plugins and workflows for OSD-GCP
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
@@ -77,6 +80,7 @@ initiate_operator_deployments_osd_gcp() {
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
+  wait_for_operator_rollout "${NAME_SPACE_RBAC}" "backstage-${RELEASE_NAME_RBAC}"
 
   # Skip orchestrator plugins and workflows for OSD-GCP RBAC
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP RBAC environment"
@@ -88,6 +92,7 @@ run_operator_runtime_config_change_tests() {
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
+  wait_for_operator_rollout "${NAME_SPACE_RUNTIME}" "backstage-${RELEASE_NAME}"
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"
 }

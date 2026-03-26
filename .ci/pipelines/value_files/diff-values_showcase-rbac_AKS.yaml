@@ -180,4 +180,5 @@ upstream:
     enabled: true
     className: webapprouting.kubernetes.azure.com
     host: ""
-orchestrator: null
+orchestrator:
+  enabled: false

@@ -4,7 +4,8 @@
 # The only exception is global.dynamic.plugins, that gets merged with the base file.
 
 # Disable orchestrator for OSD-GCP due to infrastructure limitations
-orchestrator: null
+orchestrator:
+  enabled: false
 
 global:
   dynamic:
