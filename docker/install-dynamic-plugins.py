@@ -475,7 +475,7 @@ class PluginInstaller:
 
 class OciPackageMerger(PackageMerger):
     EXPECTED_OCI_PATTERN = (
-        r'^(' + OCI_PROTOCOL_PREFIX + r'[^\s:@]+)'
+        r'^(' + OCI_PROTOCOL_PREFIX + r'[^\s/:@]+(?::\d+)?(?:/[^\s:@]+)*)'
         r'(?:'
             r':([^\s!@:]+)'  # tag only
             r'|'
@@ -501,7 +501,7 @@ class OciPackageMerger(PackageMerger):
         """
         match = re.match(self.EXPECTED_OCI_PATTERN, package)
         if not match:
-            raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@sha<algo>:<digest>\' (optionally followed by \'!<path>\') in {self.dynamic_plugins_file} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') in {self.dynamic_plugins_file} where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}")
 
         # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
         # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin

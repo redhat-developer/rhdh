@@ -222,6 +222,38 @@ class TestOciPackageMergerParsePluginKey:
             '{{inherit}}',
             True
         ),
+
+        # Host:port registry format
+        (
+            'oci://registry.localhost:5000/rhdh-plugins/plugin:v1.0!plugin-name',
+            'oci://registry.localhost:5000/rhdh-plugins/plugin:!plugin-name',
+            'v1.0',
+            False
+        ),
+        (
+            'oci://registry.localhost:5000/rhdh-plugins/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0!my-plugin',
+            'oci://registry.localhost:5000/rhdh-plugins/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:!my-plugin',
+            'bs_1.45.3__2.14.0',
+            False
+        ),
+        (
+            'oci://registry.localhost:5000/path@sha256:abc123!plugin',
+            'oci://registry.localhost:5000/path:!plugin',
+            'sha256:abc123',
+            False
+        ),
+        (
+            'oci://registry.localhost:5000/path:{{inherit}}!plugin',
+            'oci://registry.localhost:5000/path:!plugin',
+            '{{inherit}}',
+            True
+        ),
+        (
+            'oci://10.0.0.1:5000/repo/plugin:tag!plugin',
+            'oci://10.0.0.1:5000/repo/plugin:!plugin',
+            'tag',
+            False
+        ),
     ])
     def test_parse_plugin_key_success_cases(
         self, oci_merger, input_package, expected_key, expected_version, expected_inherit
@@ -260,6 +292,9 @@ class TestOciPackageMergerParsePluginKey:
         # No oci:// prefix (but this should fail the regex)
         ('registry.io/plugin:v1.0!plugin', 'not in the expected format'),
         ('registry.io/plugin:v1.0', 'not in the expected format'),
+
+        # Non-numeric port
+        ('oci://host:abc/path:tag!plugin', 'not in the expected format'),
     ])
     def test_parse_plugin_key_error_cases(self, oci_merger, invalid_package, error_substring):
         """Test that parse_plugin_key raises InstallException for invalid OCI package formats."""
