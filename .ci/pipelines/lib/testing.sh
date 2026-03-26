@@ -174,6 +174,7 @@ testing::parallel_check_and_test() {
 
   kill "${xvfb_pid}" 2> /dev/null || true
   unset DISPLAY
+  return 0
 }
 
 # ==============================================================================
