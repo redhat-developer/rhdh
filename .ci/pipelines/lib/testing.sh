@@ -113,7 +113,7 @@ testing::run_tests() {
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
   ansi2html < "/tmp/${project_logfile}" > "/tmp/${project_logfile}.html"
   common::save_artifact "${artifacts_subdir}" "/tmp/${project_logfile}.html" || true
-  common::save_artifact "${artifacts_subdir}" "${project_pw_report}/" "playwright-report" || true
+  common::save_artifact "${artifacts_subdir}" "${project_pw_report}/" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   local test_passed="true"
