@@ -9,10 +9,9 @@ upstream:
     backstage.io/kubernetes-id: developer-hub
   backstage:
     image:
+      # Note: repository and tag are set via --set flags in helm upgrade -i commands
       pullPolicy: Always
       registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
     appConfig:
       app:
         title: Red Hat Developer Hub
