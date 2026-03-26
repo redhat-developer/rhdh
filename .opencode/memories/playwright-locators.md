@@ -1,7 +1,3 @@
----
-paths:
-  - e2e-tests/**
----
 # Playwright Locator Best Practices
 
 ## Locator Priority (Use in Order)

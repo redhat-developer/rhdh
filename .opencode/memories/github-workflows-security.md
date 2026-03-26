@@ -1,8 +1,3 @@
----
-paths:
-  - .github/workflows/**
-  - .github/actions/**
----
 # GitHub Workflows Security Best Practices
 
 This rule provides comprehensive guidance for creating secure GitHub Actions workflows, based on the [GitHub Security Lab](https://securitylab.github.com/) blog series on GitHub Actions security.

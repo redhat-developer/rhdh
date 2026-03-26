@@ -70,6 +70,7 @@ dynamic-plugins-root/*
 .rulesync/**/*.local.md
 .claude/**/*.local.md
 .claude/settings.local.json
+.opencode/**/*.local.md
 
 # CI/Pipeline local overrides
 .ci/pipelines/shared_dir/*

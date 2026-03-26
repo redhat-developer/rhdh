@@ -1,5 +1,7 @@
 ---
-description: Trigger RHDH nightly CI jobs on demand via the OpenShift CI Gangway REST API. Allows natural language selection of jobs and image tags.
+description: >-
+  Trigger RHDH nightly CI jobs on demand via the OpenShift CI Gangway REST API.
+  Allows natural language selection of jobs and image tags.
 ---
 # Trigger Nightly Job
 
