@@ -478,7 +478,7 @@ class OciPackageMerger(PackageMerger):
         r'^(' + OCI_PROTOCOL_PREFIX +
             r'[^\s/:@]+'       # hostname (e.g. registry.localhost)
             r'(?::\d+)?'       # optional port (e.g. :5000)
-            r'(?:/[^\s:@]+)*'  # path segments (e.g. /org/plugin)
+            r'(?:/[^\s:@]+)+'  # path segments (e.g. /org/plugin), at least one required
         r')'
         r'(?:'
             r':([^\s!@:]+)'  # tag only
