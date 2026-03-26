@@ -667,6 +667,7 @@ _run_parallel() {
   if [[ ${base_result} -ne 0 || ${rbac_result} -ne 0 ]]; then
     return 1
   fi
+  return 0
 }
 
 initiate_deployments() {
