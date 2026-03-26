@@ -269,32 +269,45 @@ class TestOciPackageMergerParsePluginKey:
         # Missing tag/digest
         ('oci://registry.io/plugin!path', 'not in the expected format'),
         ('oci://registry.io/plugin', 'not in the expected format'),
+        ('oci://host:1000/path', 'not in the expected format'),
 
         # Invalid format - no tag or digest before !
         ('oci://registry.io!path', 'not in the expected format'),
+        ('oci://host:1000!path', 'not in the expected format'),
 
         # Invalid digest algorithm (md5 not in RECOGNIZED_ALGORITHMS)
         ('oci://registry.io/plugin@md5:abc123!plugin', 'not in the expected format'),
+        ('oci://host:1000/path@md5:abc123!plugin', 'not in the expected format'),
 
         # Invalid format - multiple @ symbols
         ('oci://registry.io/plugin@@sha256:abc!plugin', 'not in the expected format'),
+        ('oci://host:1000/path@@sha256:abc!plugin', 'not in the expected format'),
 
         # Invalid format - multiple : symbols in tag
         ('oci://registry.io/plugin:v1:v2!plugin', 'not in the expected format'),
+        ('oci://host:1000/path:v1:v2!plugin', 'not in the expected format'),
 
         # Empty tag
         ('oci://registry.io/plugin:!plugin', 'not in the expected format'),
         ('oci://registry.io/plugin:', 'not in the expected format'),
+        ('oci://host:1000/path:!plugin', 'not in the expected format'),
+        ('oci://host:1000/path:', 'not in the expected format'),
 
         # Empty path after !
         ('oci://registry.io/plugin:v1.0!', 'not in the expected format'),
+        ('oci://host:1000/path:v1.0!', 'not in the expected format'),
 
         # No oci:// prefix (but this should fail the regex)
         ('registry.io/plugin:v1.0!plugin', 'not in the expected format'),
         ('registry.io/plugin:v1.0', 'not in the expected format'),
+        ('host:1000/path:v1.0!plugin', 'not in the expected format'),
+        ('host:1000/path:v1.0', 'not in the expected format'),
 
         # Non-numeric port
         ('oci://host:abc/path:tag!plugin', 'not in the expected format'),
+        ('oci://host:abc/path', 'not in the expected format'),
+        ('oci://10.0.0.1:abc/path', 'not in the expected format'), # NOSONAR
+        ('oci://10.0.0.1:abc/path:tag!plugin', 'not in the expected format'), # NOSONAR
     ])
     def test_parse_plugin_key_error_cases(self, oci_merger, invalid_package, error_substring):
         """Test that parse_plugin_key raises InstallException for invalid OCI package formats."""
