@@ -422,7 +422,7 @@ upstream:
     image:
       registry: quay.io
       repository: fedora/postgresql-15
-      tag: latest@sha256:e18386e401b709298d60d44182033915ca5ab814e7f779f55498153d33ea9336
+      tag: latest@sha256:062c55e9d8ffc09f5fe8c6f4278cefa693a86c9ed08a0691133cd839393e8444
     auth:
       secretKeys:
         adminPasswordKey: postgres-password
