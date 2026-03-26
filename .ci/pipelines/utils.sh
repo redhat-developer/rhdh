@@ -102,9 +102,9 @@ retrieve_pod_logs() {
     fi
   done
 
-  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
+  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" --previous > "${_POD_LOGS_DIR:-pod_logs}/${pod_name}_${container}-previous.log" 2> /dev/null || {
     log::debug "Previous logs for container $container not found or timed out"
-    rm -f "pod_logs/${pod_name}_${container}-previous.log"
+    rm -f "${_POD_LOGS_DIR:-pod_logs}/${pod_name}_${container}-previous.log"
   }
 }
 
