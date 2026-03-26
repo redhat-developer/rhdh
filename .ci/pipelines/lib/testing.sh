@@ -61,11 +61,17 @@ testing::run_tests() {
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
 
-  yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
+  # Use per-project paths for all outputs to allow parallel test execution
+  local project_logfile="${LOGFILE}-${artifacts_subdir}"
+  local project_test_results="${e2e_tests_dir}/test-results-${artifacts_subdir}"
+  local project_junit="junit-results-${artifacts_subdir}.xml"
+  local project_pw_report="${e2e_tests_dir}/playwright-report-${artifacts_subdir}"
+
+  yarn install --immutable > "/tmp/yarn.install.${artifacts_subdir}.log.txt" 2>&1
   local install_status=$?
   if [[ $install_status -ne 0 ]]; then
     log::error "=== YARN INSTALL FAILED ==="
-    cat /tmp/yarn.install.log.txt
+    cat "/tmp/yarn.install.${artifacts_subdir}.log.txt"
     exit $install_status
   else
     log::success "Yarn install completed successfully."
@@ -73,30 +79,41 @@ testing::run_tests() {
 
   yarn playwright install chromium
 
-  Xvfb :99 &
-  export DISPLAY=:99
+  # Reuse existing Xvfb display if already running (e.g. in parallel test execution).
+  # Only start a new Xvfb instance if DISPLAY is not set.
+  local xvfb_pid=""
+  if [[ -z "${DISPLAY:-}" ]]; then
+    Xvfb :99 &
+    xvfb_pid=$!
+    export DISPLAY=:99
+  fi
 
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
-    yarn playwright test --project="${playwright_project}"
-  ) 2>&1 | tee "/tmp/${LOGFILE}"
+    JUNIT_RESULTS="${project_junit}" \
+      PLAYWRIGHT_HTML_REPORT="${project_pw_report}" \
+      yarn playwright test --project="${playwright_project}" --output="${project_test_results}"
+  ) 2>&1 | tee "/tmp/${project_logfile}"
 
   local test_result=${PIPESTATUS[0]}
 
-  pkill Xvfb || true
+  # Only kill the Xvfb instance we started (not shared instances from the parent)
+  if [[ -n "${xvfb_pid}" ]]; then
+    kill "${xvfb_pid}" 2> /dev/null || true
+  fi
 
   # Use artifacts_subdir for artifact directory to keep artifacts organized
-  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
-  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${JUNIT_RESULTS}" || true
+  common::save_artifact "${artifacts_subdir}" "${project_test_results}/" "test-results" || true
+  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${project_junit}" || true
   if [[ "${CI}" == "true" ]]; then
-    rsync "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
+    rsync "${ARTIFACT_DIR}/${artifacts_subdir}/${project_junit}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
   fi
 
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
-  ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}.html" || true
-  common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/playwright-report/" || true
+  ansi2html < "/tmp/${project_logfile}" > "/tmp/${project_logfile}.html"
+  common::save_artifact "${artifacts_subdir}" "/tmp/${project_logfile}.html" || true
+  common::save_artifact "${artifacts_subdir}" "${project_pw_report}/" "playwright-report" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   local test_passed="true"
@@ -110,17 +127,53 @@ testing::run_tests() {
   local failed_tests
   if [[ "${test_result}" -eq 0 ]]; then
     failed_tests="0"
-  elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
-    failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+  elif [[ -f "${e2e_tests_dir}/${project_junit}" ]]; then
+    failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${project_junit}" | head -n 1)
     failed_tests="${failed_tests:-some}"
     echo "Number of failed tests: ${failed_tests}"
   else
-    echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
+    echo "JUnit results file not found: ${e2e_tests_dir}/${project_junit}"
     failed_tests="some"
     echo "Number of failed tests unknown, saving as $failed_tests."
   fi
   test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
   return "$test_result"
+}
+
+# Run two check_and_test calls in parallel with a shared Xvfb display.
+# Starts Xvfb before forking and cleans up after both finish.
+# Args: pairs of (release_name namespace playwright_project url) for base and RBAC
+#   $1-$4: base args for testing::check_and_test
+#   $5-$8: RBAC args for testing::check_and_test
+testing::parallel_check_and_test() {
+  local base_release=$1
+  local base_namespace=$2
+  local base_project=$3
+  local base_url=$4
+  local rbac_release=$5
+  local rbac_namespace=$6
+  local rbac_project=$7
+  local rbac_url=$8
+
+  Xvfb :99 &
+  local xvfb_pid=$!
+  export DISPLAY=:99
+
+  log::section "Starting parallel test execution (base + RBAC)"
+
+  testing::check_and_test "${base_release}" "${base_namespace}" "${base_project}" "${base_url}" &
+  local base_pid=$!
+  log::info "Base tests started in background (PID: ${base_pid})"
+
+  testing::check_and_test "${rbac_release}" "${rbac_namespace}" "${rbac_project}" "${rbac_url}" &
+  local rbac_pid=$!
+  log::info "RBAC tests started in background (PID: ${rbac_pid})"
+
+  wait "${base_pid}" || true
+  wait "${rbac_pid}" || true
+
+  kill "${xvfb_pid}" 2> /dev/null || true
+  unset DISPLAY
 }
 
 # ==============================================================================
