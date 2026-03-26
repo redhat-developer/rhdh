@@ -249,8 +249,8 @@ class TestOciPackageMergerParsePluginKey:
             True
         ),
         (
-            'oci://10.0.0.1:5000/repo/plugin:tag!plugin',
-            'oci://10.0.0.1:5000/repo/plugin:!plugin',
+            'oci://10.0.0.1:5000/repo/plugin:tag!plugin',  # NOSONAR
+            'oci://10.0.0.1:5000/repo/plugin:!plugin',  # NOSONAR
             'tag',
             False
         ),
