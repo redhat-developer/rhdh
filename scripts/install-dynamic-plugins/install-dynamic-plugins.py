@@ -475,7 +475,11 @@ class PluginInstaller:
 
 class OciPackageMerger(PackageMerger):
     EXPECTED_OCI_PATTERN = (
-        r'^(' + OCI_PROTOCOL_PREFIX + r'[^\s/:@]+(?::\d+)?(?:/[^\s:@]+)*)'
+        r'^(' + OCI_PROTOCOL_PREFIX +
+            r'[^\s/:@]+'       # hostname (e.g. registry.localhost)
+            r'(?::\d+)?'       # optional port (e.g. :5000)
+            r'(?:/[^\s:@]+)*'  # path segments (e.g. /org/plugin)
+        r')'
         r'(?:'
             r':([^\s!@:]+)'  # tag only
             r'|'
