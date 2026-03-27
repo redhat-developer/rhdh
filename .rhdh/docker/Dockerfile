@@ -285,6 +285,35 @@ RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
 # suppress warnings about dereferencing symlinks
 RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
+# RHIDP-11298 quick workaround for removing build-time rpms
+# in future it would be better if we never install these in the first place and build the python stuff in a higher layer
+RUN for pkg in \
+  python3.11-devel \
+  make \
+  cmake \
+  cmake-data \
+  cmake-filesystem \
+  cmake-rpm-macros \
+  cpp \
+  gcc \
+  gcc-c++ \
+  kernel-headers \
+  binutils \
+  binutils-gold \
+  glibc-devel \
+  glibc-headers \
+  libstdc++-devel \
+  libxcrypt-devel \
+  libmpc \
+  zlib-devel \
+  openssl-devel \
+  brotli-devel \
+  annobin \
+  gcc-plugin-annobin \
+  redhat-rpm-config \
+  vim-filesystem \
+ ; do rpm -e --nodeps --allmatches "$pkg" 2>/dev/null || true; done
+
 # Switch to nodejs user
 USER 1001
 
