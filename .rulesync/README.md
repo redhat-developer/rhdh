@@ -1,6 +1,6 @@
 # Rulesync - AI Assistant Rules Management
 
-This directory contains the source of truth for AI assistant rules (Cursor, Claude Code, Copilot, etc.).
+This directory contains the source of truth for AI assistant rules (Cursor, Claude Code, OpenCode, Copilot, etc.).
 
 ## 📁 Directory Structure
 
@@ -19,17 +19,17 @@ This directory contains the source of truth for AI assistant rules (Cursor, Clau
 # Just stage and commit - lint-staged handles the rest!
 git add .rulesync/rules/my-rule.md
 git commit -m "docs: update AI assistant rules"
-# ✨ lint-staged automatically runs rulesync:generate and stages .cursor/.claude
+# ✨ lint-staged automatically runs rulesync:generate and stages .cursor/.claude/.opencode
 ```
 
 **What happens:**
 1. You stage `.rulesync` files
 2. Pre-commit hook runs `lint-staged`
 3. `lint-staged` detects `.rulesync` changes and runs `yarn rulesync:generate`
-4. Generated files in `.cursor` and `.claude` are automatically staged
+4. Generated files in `.cursor`, `.claude`, and `.opencode` are automatically staged
 5. Commit includes both source and generated files
 
-### When you edit `.cursor` or `.claude` files directly (Manual with notification):
+### When you edit `.cursor`, `.claude`, or `.opencode` files directly (Manual with notification):
 
 > ⚠️ **Note:** Prefer editing `.rulesync` files as the source of truth for easier management
 
@@ -61,21 +61,23 @@ git commit --amend --no-edit  # Add to the same commit
 
 | Command | Description |
 |---------|-------------|
-| `yarn rulesync:generate` | Generate `.cursor` and `.claude` configs from `.rulesync` |
+| `yarn rulesync:generate` | Generate `.cursor`, `.claude`, and `.opencode` configs from `.rulesync` |
 | `yarn rulesync:import:cursor` | Import changes from `.cursor` only |
 | `yarn rulesync:import:claude` | Import changes from `.claude` only |
+| `yarn rulesync:import:opencode` | Import changes from `.opencode` only |
 
 ## 🤖 Continuous Integration
 
 A GitHub Actions workflow automatically validates synchronization on all PRs and pushes to main:
 
 - **Workflow**: `.github/workflows/rulesync-check.yaml`
-- **Triggers**: Changes to `.rulesync`, `.cursor`, `.claude`, or config files
+- **Triggers**: Changes to `.rulesync`, `.cursor`, `.claude`, `.opencode`, or config files
 - **What it does**: Runs `yarn rulesync:generate` and checks for differences
 - **If it fails**: Run the appropriate command based on what you edited:
   - `yarn rulesync:generate` if you forgot to generate files from `.rulesync`
   - `yarn rulesync:import:cursor` if you edited `.cursor` files directly
   - `yarn rulesync:import:claude` if you edited `.claude` files directly
+  - `yarn rulesync:import:opencode` if you edited `.opencode` files directly
   - Then commit the changes
 
 ## 🎯 Best Practices
@@ -90,7 +92,7 @@ A GitHub Actions workflow automatically validates synchronization on all PRs and
    - Generated files are automatically included
    - No manual `yarn rulesync:generate` needed!
 
-3. **Manual sync for `.cursor`/`.claude` edits**
+3. **Manual sync for `.cursor`/`.claude`/`.opencode` edits**
    - You'll get a notification on commit
    - Run the suggested import command
    - This gives you control over when to sync back
