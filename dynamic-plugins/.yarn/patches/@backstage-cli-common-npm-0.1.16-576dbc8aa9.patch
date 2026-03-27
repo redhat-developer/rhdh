@@ -1,0 +1,184 @@
+diff --git a/dist/index.cjs.js b/dist/index.cjs.js
+index 160e7d7ef81e1545581e1cb3e163f7cc6058b558..0eeca7ec3875ee18be6554d8eabef8a29b5bfc72 100644
+--- a/dist/index.cjs.js
++++ b/dist/index.cjs.js
+@@ -2,18 +2,10 @@
+ 
+ var paths = require('./paths.cjs.js');
+ var isChildPath = require('./isChildPath.cjs.js');
+-var proxyBootstrap = require('./proxyBootstrap.cjs.js');
+-var run = require('./run.cjs.js');
+-var errors = require('./errors.cjs.js');
+ 
+ 
+ 
+ exports.BACKSTAGE_JSON = paths.BACKSTAGE_JSON;
+ exports.findPaths = paths.findPaths;
+ exports.isChildPath = isChildPath.isChildPath;
+-exports.bootstrapEnvProxyAgents = proxyBootstrap.bootstrapEnvProxyAgents;
+-exports.run = run.run;
+-exports.runCheck = run.runCheck;
+-exports.runOutput = run.runOutput;
+-exports.ExitCodeError = errors.ExitCodeError;
+ //# sourceMappingURL=index.cjs.js.map
+diff --git a/dist/index.cjs.js.map b/dist/index.cjs.js.map
+index 059ca02e639c5a2803370e8e5d1e007123ce486e..fe596610d0b233adb6217822c7fd8d6fd7fc020c 100644
+--- a/dist/index.cjs.js.map
++++ b/dist/index.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"index.cjs.js","sources":[],"sourcesContent":[],"names":[],"mappings":";;;;;;;;;;;;;;;;;"}
+\ No newline at end of file
++{"version":3,"file":"index.cjs.js","sources":[],"sourcesContent":[],"names":[],"mappings":";;;;;;;;;"}
+\ No newline at end of file
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 09db2a1c5b65229f425bc6722c8295bc060972f1..fb1d3b8e6ab301705b289d4e57eec28b1cf48d44 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,6 +1,3 @@
+-import { SpawnOptions, ChildProcess } from 'child_process';
+-import { CustomErrorBase } from '@backstage/errors';
+-
+ /**
+  * A function that takes a set of path fragments and resolves them into a
+  * single complete path, relative to some root.
+@@ -47,88 +44,4 @@ declare const BACKSTAGE_JSON = "backstage.json";
+  */
+ declare function isChildPath(base: string, path: string): boolean;
+ 
+-/**
+- * This function can be called to setup undici and node-fetch Proxy agents.
+- *
+- * You can set GLOBAL_AGENT_HTTP(S)_PROXY to configure a proxy to be used in the
+- * CLIs.
+- *
+- * You can also configure a custom namespace by setting
+- * GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE which will replace the default
+- * "GLOBAL_AGENT_" env-var prefix.
+- *
+- * Make sure to call this function before any other imports.
+- *
+- * @public
+- */
+-declare function bootstrapEnvProxyAgents(): void;
+-
+-/**
+- * Callback function that can be used to receive stdout or stderr data from a child process.
+- *
+- * @public
+- */
+-type RunOnOutput = (data: Buffer) => void;
+-/**
+- * Options for running a child process with {@link run} or related functions.
+- *
+- * @public
+- */
+-type RunOptions = Omit<SpawnOptions, 'env'> & {
+-    env?: Partial<NodeJS.ProcessEnv>;
+-    onStdout?: RunOnOutput;
+-    onStderr?: RunOnOutput;
+-    stdio?: SpawnOptions['stdio'];
+-};
+-/**
+- * Child process handle returned by {@link run}.
+- *
+- * @public
+- */
+-interface RunChildProcess extends ChildProcess {
+-    /**
+-     * Waits for the child process to exit.
+-     *
+-     * @remarks
+-     *
+-     * Resolves when the process exits successfully (exit code 0) or is terminated by a signal.
+-     * If the process exits with a non-zero exit code, the promise is rejected with an {@link ExitCodeError}.
+-     *
+-     * @returns A promise that resolves when the process exits successfully or is terminated by a signal, or rejects on error.
+-     */
+-    waitForExit(): Promise<void>;
+-}
+-/**
+- * Runs a command and returns a child process handle.
+- *
+- * @public
+- */
+-declare function run(args: string[], options?: RunOptions): RunChildProcess;
+-/**
+- * Runs a command and returns the stdout.
+- *
+- * @remarks
+- *
+- * On error, both stdout and stderr are attached to the error object as properties.
+- *
+- * @public
+- */
+-declare function runOutput(args: string[], options?: RunOptions): Promise<string>;
+-/**
+- * Runs a command and returns true if it exits with code 0, false otherwise.
+- *
+- * @public
+- */
+-declare function runCheck(args: string[]): Promise<boolean>;
+-
+-/**
+- * Error thrown when a child process exits with a non-zero code.
+- * @public
+- */
+-declare class ExitCodeError extends CustomErrorBase {
+-    readonly code: number;
+-    constructor(code: number, command?: string);
+-}
+-
+-export { BACKSTAGE_JSON, ExitCodeError, bootstrapEnvProxyAgents, findPaths, isChildPath, run, runCheck, runOutput };
+-export type { Paths, ResolveFunc, RunChildProcess, RunOnOutput, RunOptions };
++export { BACKSTAGE_JSON, type Paths, type ResolveFunc, findPaths, isChildPath };
+diff --git a/dist/isChildPath.cjs.js b/dist/isChildPath.cjs.js
+index 5cf7220d78e55371a86d5e93f8474c5db728d485..7bfae6e7f2f62f6600b82c5b047ecdb5721e9440 100644
+--- a/dist/isChildPath.cjs.js
++++ b/dist/isChildPath.cjs.js
+@@ -1,9 +1,36 @@
+ 'use strict';
+ 
+ var path = require('path');
++var fs = require('fs');
+ 
++function resolveRealPath(path$1) {
++  try {
++    return fs.realpathSync(path$1);
++  } catch (ex) {
++    if (ex.code !== "ENOENT") {
++      throw ex;
++    }
++  }
++  try {
++    if (fs.lstatSync(path$1).isSymbolicLink()) {
++      const target = path.resolve(path.dirname(path$1), fs.readlinkSync(path$1));
++      return resolveRealPath(target);
++    }
++  } catch (ex) {
++    if (ex.code !== "ENOENT") {
++      throw ex;
++    }
++  }
++  const parent = path.dirname(path$1);
++  if (parent === path$1) {
++    return path$1;
++  }
++  return path.resolve(resolveRealPath(parent), path.basename(path$1));
++}
+ function isChildPath(base, path$1) {
+-  const relativePath = path.relative(base, path$1);
++  const resolvedBase = resolveRealPath(base);
++  const resolvedPath = resolveRealPath(path$1);
++  const relativePath = path.relative(resolvedBase, resolvedPath);
+   if (relativePath === "") {
+     return true;
+   }
+diff --git a/dist/isChildPath.cjs.js.map b/dist/isChildPath.cjs.js.map
+index 7beb3b2ec8dcbf3c1fe44da980ad674fc5ffd2d4..dfa90ca27342cfaaa038657c9580d62208cb7ab3 100644
+--- a/dist/isChildPath.cjs.js.map
++++ b/dist/isChildPath.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"isChildPath.cjs.js","sources":["../src/isChildPath.ts"],"sourcesContent":["/*\n * Copyright 2021 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport { relative, isAbsolute } from 'path';\n\n/**\n * Checks if path is the same as or a child path of base.\n *\n * @public\n */\nexport function isChildPath(base: string, path: string): boolean {\n  const relativePath = relative(base, path);\n  if (relativePath === '') {\n    // The same directory\n    return true;\n  }\n\n  const outsideBase = relativePath.startsWith('..'); // not outside base\n  const differentDrive = isAbsolute(relativePath); // on Windows, this means dir is on a different drive from base.\n\n  return !outsideBase && !differentDrive;\n}\n"],"names":["path","relative","isAbsolute"],"mappings":";;;;AAuBO,SAAS,WAAA,CAAY,MAAcA,MAAA,EAAuB;AAC/D,EAAA,MAAM,YAAA,GAAeC,aAAA,CAAS,IAAA,EAAMD,MAAI,CAAA;AACxC,EAAA,IAAI,iBAAiB,EAAA,EAAI;AAEvB,IAAA,OAAO,IAAA;AAAA,EACT;AAEA,EAAA,MAAM,WAAA,GAAc,YAAA,CAAa,UAAA,CAAW,IAAI,CAAA;AAChD,EAAA,MAAM,cAAA,GAAiBE,gBAAW,YAAY,CAAA;AAE9C,EAAA,OAAO,CAAC,eAAe,CAAC,cAAA;AAC1B;;;;"}
+\ No newline at end of file
++{"version":3,"file":"isChildPath.cjs.js","sources":["../src/isChildPath.ts"],"sourcesContent":["/*\n * Copyright 2021 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  relative,\n  isAbsolute,\n  resolve as resolvePath,\n  dirname,\n  basename,\n} from 'path';\nimport { realpathSync, lstatSync, readlinkSync } from 'fs';\n\n// Resolves a path to its real location, following symlinks.\n// Handles cases where the final target doesn't exist by recursively\n// resolving parent directories.\nfunction resolveRealPath(path: string): string {\n  try {\n    return realpathSync(path);\n  } catch (ex) {\n    if (ex.code !== 'ENOENT') {\n      throw ex;\n    }\n  }\n\n  // Check if path itself is a dangling symlink - recursively resolve the target\n  // to handle symlink chains (e.g., link1 -> link2 -> /outside)\n  try {\n    if (lstatSync(path).isSymbolicLink()) {\n      const target = resolvePath(dirname(path), readlinkSync(path));\n      return resolveRealPath(target);\n    }\n  } catch (ex) {\n    if (ex.code !== 'ENOENT') {\n      throw ex;\n    }\n  }\n\n  // Path doesn't exist - walk up the tree until we find an existing path,\n  // resolve it, then rebuild the non-existent portion on top\n  const parent = dirname(path);\n  if (parent === path) {\n    return path; // Hit filesystem root\n  }\n\n  return resolvePath(resolveRealPath(parent), basename(path));\n}\n\n/**\n * Checks if path is the same as or a child path of base.\n *\n * @public\n */\nexport function isChildPath(base: string, path: string): boolean {\n  const resolvedBase = resolveRealPath(base);\n  const resolvedPath = resolveRealPath(path);\n\n  const relativePath = relative(resolvedBase, resolvedPath);\n  if (relativePath === '') {\n    // The same directory\n    return true;\n  }\n\n  const outsideBase = relativePath.startsWith('..'); // not outside base\n  const differentDrive = isAbsolute(relativePath); // on Windows, this means dir is on a different drive from base.\n\n  return !outsideBase && !differentDrive;\n}\n"],"names":["path","realpathSync","lstatSync","resolvePath","dirname","readlinkSync","basename","relative","isAbsolute"],"mappings":";;;;;AA4BA,SAAS,gBAAgBA,MAAA,EAAsB;AAC7C,EAAA,IAAI;AACF,IAAA,OAAOC,gBAAaD,MAAI,CAAA;AAAA,EAC1B,SAAS,EAAA,EAAI;AACX,IAAA,IAAI,EAAA,CAAG,SAAS,QAAA,EAAU;AACxB,MAAA,MAAM,EAAA;AAAA,IACR;AAAA,EACF;AAIA,EAAA,IAAI;AACF,IAAA,IAAIE,YAAA,CAAUF,MAAI,CAAA,CAAE,cAAA,EAAe,EAAG;AACpC,MAAA,MAAM,SAASG,YAAA,CAAYC,YAAA,CAAQJ,MAAI,CAAA,EAAGK,eAAA,CAAaL,MAAI,CAAC,CAAA;AAC5D,MAAA,OAAO,gBAAgB,MAAM,CAAA;AAAA,IAC/B;AAAA,EACF,SAAS,EAAA,EAAI;AACX,IAAA,IAAI,EAAA,CAAG,SAAS,QAAA,EAAU;AACxB,MAAA,MAAM,EAAA;AAAA,IACR;AAAA,EACF;AAIA,EAAA,MAAM,MAAA,GAASI,aAAQJ,MAAI,CAAA;AAC3B,EAAA,IAAI,WAAWA,MAAA,EAAM;AACnB,IAAA,OAAOA,MAAA;AAAA,EACT;AAEA,EAAA,OAAOG,aAAY,eAAA,CAAgB,MAAM,CAAA,EAAGG,aAAA,CAASN,MAAI,CAAC,CAAA;AAC5D;AAOO,SAAS,WAAA,CAAY,MAAcA,MAAA,EAAuB;AAC/D,EAAA,MAAM,YAAA,GAAe,gBAAgB,IAAI,CAAA;AACzC,EAAA,MAAM,YAAA,GAAe,gBAAgBA,MAAI,CAAA;AAEzC,EAAA,MAAM,YAAA,GAAeO,aAAA,CAAS,YAAA,EAAc,YAAY,CAAA;AACxD,EAAA,IAAI,iBAAiB,EAAA,EAAI;AAEvB,IAAA,OAAO,IAAA;AAAA,EACT;AAEA,EAAA,MAAM,WAAA,GAAc,YAAA,CAAa,UAAA,CAAW,IAAI,CAAA;AAChD,EAAA,MAAM,cAAA,GAAiBC,gBAAW,YAAY,CAAA;AAE9C,EAAA,OAAO,CAAC,eAAe,CAAC,cAAA;AAC1B;;;;"}
+\ No newline at end of file

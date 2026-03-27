@@ -3116,7 +3116,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli-common@npm:^0.1.15":
+"@backstage/cli-common@npm:0.1.16":
   version: 0.1.16
   resolution: "@backstage/cli-common@npm:0.1.16"
   dependencies:
@@ -3125,6 +3125,18 @@ __metadata:
     global-agent: ^3.0.0
     undici: ^7.2.3
   checksum: 8fba4579aa834a22786df220985a90ef68308c3be9a5ee89b416d69aec4e575551192eb4936175c858bb45418a3c9a6b269742c42798bc39cd00bcb051eabe67
+  languageName: node
+  linkType: hard
+
+"@backstage/cli-common@patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch::locator=root%40workspace%3A.":
+  version: 0.1.16
+  resolution: "@backstage/cli-common@patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch::version=0.1.16&hash=1f1779&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/errors": ^1.2.7
+    cross-spawn: ^7.0.3
+    global-agent: ^3.0.0
+    undici: ^7.2.3
+  checksum: 96953d5a79f029327cafdbf2e47ced402f6a65819733fb3720eb1c151bdf0a089daadcfbd9c802eafb7b792d985c3db89edf5befafe5532280d9cdd4d5d3875a
   languageName: node
   linkType: hard
 
