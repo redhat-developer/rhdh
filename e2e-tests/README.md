@@ -97,18 +97,22 @@ For automation or quick runs, use CLI flags to skip interactive prompts:
 # Deploy downstream next image
 ./local-run.sh --repo rhdh/rhdh-hub-rhel9 --tag next --skip-tests
 
+# Use a custom registry
+./local-run.sh --registry registry.redhat.io --repo rhdh/rhdh-hub-rhel9 --tag latest --skip-tests
+
 # Full flags
-./local-run.sh -j pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm -r rhdh/rhdh-hub-rhel9 -t next -s
+./local-run.sh -j pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm -R registry.redhat.io -r rhdh/rhdh-hub-rhel9 -t next -s
 ```
 
-| Flag               | Description                                                          |
-| ------------------ | -------------------------------------------------------------------- |
-| `-j, --job`        | Job name                                                             |
-| `-r, --repo`       | Quay repository (e.g., `rhdh/rhdh-hub-rhel9`)                        |
-| `-t, --tag`        | Image tag (e.g., `next`, `latest`, `1.5`)                            |
-| `-p, --pr`         | PR number (sets repo to `rhdh-community/rhdh`, tag to `pr-<number>`) |
-| `-s, --skip-tests` | Deploy only, skip running tests                                      |
-| `-h, --help`       | Show help message                                                    |
+| Flag                  | Description                                                          |
+| --------------------- | -------------------------------------------------------------------- |
+| `-j, --job`           | Job name                                                             |
+| `-R, --registry`      | Image registry (default: `quay.io`)                                  |
+| `-r, --repo`          | Image repository (e.g., `rhdh/rhdh-hub-rhel9`)                      |
+| `-t, --tag`           | Image tag (e.g., `next`, `latest`, `1.5`)                            |
+| `-p, --pr`            | PR number (sets repo to `rhdh-community/rhdh`, tag to `pr-<number>`) |
+| `-s, --skip-tests`    | Deploy only, skip running tests                                      |
+| `-h, --help`          | Show help message                                                    |
 
 ---
 
@@ -371,7 +375,6 @@ After running `local-test-setup.sh`, these variables are set:
 | `JOB_NAME`                  | Selected job name                             |
 | `IMAGE_REGISTRY`            | Image registry (default: `quay.io`)           |
 | `IMAGE_REPO`                | Image repository (fallback: `QUAY_REPO`)      |
-| `QUAY_REPO`                 | Image repository (legacy, use `IMAGE_REPO`)   |
 | `TAG_NAME`                  | Image tag                                     |
 | Plus all secrets from Vault | (exported with `-`, `.`, `/` replaced by `_`) |
 
@@ -399,7 +402,7 @@ Run `oc login` before running local-test-setup.sh.
 
 #### Error: Image does not exist
 
-The script verifies the image exists on quay.io before proceeding. For PR images, ensure the PR build has completed.
+The script verifies the image exists on quay.io before proceeding (verification is skipped for non-quay registries). For PR images, ensure the PR build has completed.
 
 ### Security Notes
 
@@ -407,3 +410,70 @@ The script verifies the image exists on quay.io before proceeding. For PR images
 - K8S_CLUSTER_TOKEN is generated fresh each time (not stored)
 - The repo is copied to `e2e-tests/.local-test/rhdh` so the original stays clean
 - Service account tokens have a 48-hour duration
+
+---
+
+## Triggering Nightly CI Jobs
+
+The script at `.ci/pipelines/trigger-nightly-job.sh` triggers RHDH nightly ProwJobs via the OpenShift CI Gangway REST API.
+
+### Prerequisites
+
+- `oc` CLI installed
+- `curl` and `jq` installed
+- Access to the OpenShift CI cluster (SSO login via browser)
+
+### Usage
+
+```bash
+# Basic trigger (default image):
+.ci/pipelines/trigger-nightly-job.sh --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly
+
+# Trigger with a specific image:
+.ci/pipelines/trigger-nightly-job.sh \
+  --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \
+  --image-registry registry.redhat.io \
+  --image-repo rhdh/rhdh-hub-rhel9 \
+  --tag 1.9-123
+
+# Dry-run (print the curl command without executing):
+.ci/pipelines/trigger-nightly-job.sh \
+  --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \
+  --dry-run
+```
+
+### Flags
+
+| Flag                         | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| `-j, --job`                  | **(required)** Full ProwJob name to trigger                  |
+| `-I, --image-registry`       | Override the image registry (default: `quay.io`)             |
+| `-q, --image-repo`           | Override the image repository (requires `--tag`)             |
+| `-t, --tag`                  | Override the image tag                                       |
+| `-o, --org`                  | Override the GitHub org (default: `redhat-developer`)        |
+| `-r, --repo`                 | Override the GitHub repo name (default: `rhdh`)              |
+| `-b, --branch`               | Override the branch name                                     |
+| `-S, --send-alerts`          | Send Slack alerts (default: alerts are skipped)              |
+| `-n, --dry-run`              | Print the curl command without executing                     |
+
+### Authentication
+
+The script uses a dedicated kubeconfig (`~/.config/openshift-ci/kubeconfig`) to avoid interfering with the current cluster context. If not logged in or the token is expired, it opens a browser for SSO login.
+
+### AI-Assisted Triggering
+
+A Claude Code command is available at `.claude/commands/trigger-nightly-job.md` that provides an interactive, AI-guided workflow for triggering nightly jobs. It:
+
+- Fetches available jobs from Prow and presents them in a table
+- Maps natural language descriptions to job names (e.g., "ocp helm" or "azure operator")
+- Checks for shared cluster constraints (GKE and OSD-GCP jobs share clusters)
+- Fetches available image tags from Quay when needed
+- Builds the command and asks for confirmation before executing
+
+To use it, run the `/trigger-nightly-job` command in Claude Code or OpenCode.
+
+### Available Job Names
+
+The full list of configured nightly jobs is at: https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh
+
+Job name pattern: `periodic-ci-redhat-developer-rhdh-{BRANCH}-e2e-{PLATFORM}-{METHOD}-nightly`
