@@ -2,6 +2,40 @@
 
 There are several different methods for running the RHDH app today. We currently have support for running the application locally, using a helm chart to deploy to a cluster, and manifests for deployment using ArgoCD.
 
+## Inheriting values from the `dynamic-plugins.default.yaml` file
+
+Note that as of 1.10, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image, and has been removed from this repo.
+
+If you need a copy, you can do this:
+
+```shell
+unpack () {
+  if [[ ! $1 ]]; then
+    echo "Usage: unpack reg/org/container:tagorsha [file(s)-to-unpack-pattern]"
+    echo "Example: unpack quay.io/rhdh/plugin-catalog-index:1.10 dynamic-plugins.default.yaml"
+  else
+    local FILES=""
+    if [[ $2 ]]; then FILES="$2"; fi
+    local IMAGE="$1"
+    local DIR="${IMAGE//:/_}"
+    DIR="/tmp/${DIR//\//-}"
+    rm -fr "$DIR"; mkdir -p "$DIR"; container_id=$(podman create "${IMAGE}")
+    podman export $container_id -o /tmp/image.tar && tar xf /tmp/image.tar -C "${DIR}/" $FILES; podman rm $container_id; rm -f /tmp/image.tar
+    echo "Unpacked $IMAGE into $DIR"
+    cd $DIR;
+    if [[ $FILES ]]; then ls -la $FILES; else tree -d -L 3 -I "usr|root|buildinfo"; fi
+  fi
+}
+
+unpack registry.access.redhat.com/rhdh/plugin-catalog-index:1.10 dynamic-plugins.default.yaml
+
+# or for a pre-GA CI container:
+unpack quay.io/rhdh/plugin-catalog-index:1.10 dynamic-plugins.default.yaml
+
+```
+
+Otherwise you can simply use an oci:// reference to a plugin, and the special `{{inherit}}` tag to use the latest compatible plugin for your current RHDH version.
+
 ## Telemetry collection
 
 The telemetry data collection feature is used to enhance your experience with the application.
@@ -39,6 +73,16 @@ Add the following code in your Helm configuration file:
 global:
   dynamic:
     plugins:
+      - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+        disabled: true
+```
+
+or using the deprecated wrapper syntax:
+
+```yaml
+global:
+  dynamic:
+    plugins:
       - package: './dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment'
         disabled: true
 ```
@@ -58,16 +102,43 @@ data:
     includes:
       - dynamic-plugins.default.yaml
     plugins:
+      - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+        disabled: true
+```
+
+or using the deprecated wrapper syntax:
+
+```yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dynamic-plugins-rhdh
+data:
+  dynamic-plugins.yaml: |
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins:
       - package: './dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment'
         disabled: true
 ```
 
-Note that as of 1.9, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image. It is recommened to NOT use the file in this reepo anymore, as it is now generated from the contents of that container image.
+Note that as of 1.10, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image, and has been removed from this repo.
+
+See previous section `Inheriting values` for how to fetch this file from the index image.
 
 ### Disable Telemetry for Local Development
 
 By default, the `analytics-provider-segment` plugin is disabled when you run your application locally without using the `dynamic-plugins.default.yaml` file.
-However, if you run your application using the `dynamic-plugins.default.yaml` file, you can disable the `analytics-provider-segment` plugin as shown in the following example:
+However, if you run your application using the `dynamic-plugins.default.yaml` file, it is enabled by default. To disable the `analytics-provider-segment` plugin. follow this example:
+
+```yaml
+dynamicPlugins:
+  plugins:
+    - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+      disabled: true
+```
+
+or, using the deprecated wrapper syntax:
 
 ```yaml
 dynamicPlugins:
@@ -76,9 +147,11 @@ dynamicPlugins:
       disabled: true
 ```
 
-Than delete the `dynamic-plugins-root/backstage-community-plugin-analytics-provider-segment` plugin directory, to stop plugin from loading.
+If using the deprecated wrapper approach, you should then delete the `dynamic-plugins-root/backstage-community-plugin-analytics-provider-segment` plugin directory, to stop the plugin from loading.
 
-Note that as of 1.9, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image. It is recommened to NOT use the file in this reepo anymore, as it is now generated from the contents of that container image.
+Note that as of 1.10, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image, and has been removed from this repo.
+
+See previous section `Inheriting values` for how to fetch this file from the index image.
 
 ### Disabling Telemetry in Continuous Integration (CI) Environments
 
@@ -88,11 +161,21 @@ To disable telemetry while running Backstage in a CI environment, set the value 
 
 To turn on the telemetry feature, you must enable the `analytics-provider-segment` plugin either using the Helm Chart or the RHDH Operator.
 
-NOTE: If the `analytics-provider-segment` plugin is already present in your dynamic plugins configuration, set the value of the `plugins.disabled` parameter to `false` to enable telemetry, or `true` to enable it.
+NOTE: If the `analytics-provider-segment` plugin is already present in your dynamic plugins configuration, set the value of the `plugins.disabled` parameter to `false` to enable telemetry, or `true` to disable it.
 
 #### Using Helm Chart
 
-Add the following code in your Helm configuration file:
+Add the following code to your Helm configuration file to enable the latest analytics-provider-segment plugin:
+
+```yaml
+global:
+  dynamic:
+    plugins:
+      - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+        disabled: false
+```
+
+or, using the deprecated wrapper syntax:
 
 ```yaml
 global:
@@ -107,6 +190,22 @@ global:
 If you have created the `dynamic-plugins-rhdh` ConfigMap file, add the `analytics-provider-segment` plugin to the list of plugins and set the `plugins.disabled` parameter to `true` to disable telemetry, or `false` to enable it.
 
 If you have not created the `dynamic-plugins-rhdh` ConfigMap file, create it with the following content:
+
+```yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dynamic-plugins-rhdh
+data:
+  dynamic-plugins.yaml: |
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins:
+      - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+        disabled: false
+```
+
+or, using the deprecated wrapper syntax:
 
 ```yaml
 kind: ConfigMap

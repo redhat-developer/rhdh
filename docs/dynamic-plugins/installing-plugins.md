@@ -16,12 +16,12 @@ Note: Duplicate plugins found across config files in the `includes` field will t
 
 ## Dynamic plugins included in the RHDH container image
 
-The RHDH container image is preloaded with a variety of dynamic plugins, the majority of which are initially disabled due to mandatory configuration requirements. The comprehensive list of these plugins is outlined in the [`dynamic-plugins.default.yaml`](https://github.com/redhat-developer/rhdh/blob/main/dynamic-plugins.default.yaml) file.
+The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configued to work. The comprehensive list of these packages is at [`default.packages.yaml`](https://github.com/redhat-developer/rhdh/blob/main/default.packages.yaml) file.
 
-Upon the application startup, for each plugin disabled by default, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's log will exhibit a line similar to the following:
+On application start, for each disabled package, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's will log something like:
 
 ```console
-======= Skipping disabled dynamic plugin ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+======= Skipping disabled dynamic plugin oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment
 ```
 
 To activate this plugin, simply add a package with the same name and adjust the `disabled` field.
@@ -29,7 +29,7 @@ To activate this plugin, simply add a package with the same name and adjust the 
 ```yaml
 plugins:
   - disabled: false
-    package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+    package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
 ```
 
 While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file, you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
@@ -83,7 +83,7 @@ The extraction destination is governed by the `CATALOG_ENTITIES_EXTRACT_DIR` env
 - If `CATALOG_ENTITIES_EXTRACT_DIR` is set, entities are extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/catalog-entities`
 - If not set, it defaults to `/tmp/extensions/catalog-entities`
 
-**Note:** If the catalog index image does not contain the `catalog-entities/extensions` (or `catalog-entities/marketplace`) directory, a warning will be printed but the extraction of `dynamic-plugins.default.yaml` will still succeed.
+**Note:** If the catalog index image does not contain the `catalog-entities/extensions` directory, a warning will be printed but the extraction of `dynamic-plugins.default.yaml` will still succeed.
 
 ## Installing External Dynamic Plugins
 
