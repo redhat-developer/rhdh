@@ -286,20 +286,24 @@ EOF
     echo ""
 fi
 
-# Verify image exists on quay.io
-echo "Verifying image exists on quay.io..."
-IMAGE_CHECK_RESPONSE=$(curl -s "https://quay.io/api/v1/repository/${IMAGE_REPO}/tag/?specificTag=${TAG_NAME}")
-TAG_COUNT=$(echo "$IMAGE_CHECK_RESPONSE" | jq '.tags | length')
+# Verify image exists (only supported for quay.io)
+if [[ "$IMAGE_REGISTRY" == "quay.io" ]]; then
+    echo "Verifying image exists on quay.io..."
+    IMAGE_CHECK_RESPONSE=$(curl -s "https://quay.io/api/v1/repository/${IMAGE_REPO}/tag/?specificTag=${TAG_NAME}")
+    TAG_COUNT=$(echo "$IMAGE_CHECK_RESPONSE" | jq '.tags | length')
 
-if [[ "$TAG_COUNT" -eq 0 ]]; then
-    log::error "Image ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME} does not exist!"
-    if [[ "$image_type_choice" == "2" ]]; then
-        log::info "The PR image may not have been built yet."
-        log::info "Check the PR build status or wait for the image to be pushed."
+    if [[ "$TAG_COUNT" -eq 0 ]]; then
+        log::error "Image ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME} does not exist!"
+        if [[ "$image_type_choice" == "2" ]]; then
+            log::info "The PR image may not have been built yet."
+            log::info "Check the PR build status or wait for the image to be pushed."
+        fi
+        exit 1
     fi
-    exit 1
+    log::success "Image verified: ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
+else
+    log::warn "Skipping image verification: not supported for registry '${IMAGE_REGISTRY}'"
 fi
-log::success "Image verified: ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
 
 # Derive CONTAINER_PLATFORM from JOB_NAME
 if [[ "$JOB_NAME" == *"aks"* ]]; then
