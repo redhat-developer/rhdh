@@ -114,7 +114,7 @@ parse_args() {
         ;;
       -I | --image-registry)
         [[ $# -ge 2 ]] || {
-          log::error "$1 requires an argument"
+          log::error "--image-registry requires an argument"
           exit 1
         }
         IMAGE_REGISTRY="$2"
@@ -122,7 +122,7 @@ parse_args() {
         ;;
       -q | --image-repo)
         [[ $# -ge 2 ]] || {
-          log::error "$1 requires an argument"
+          log::error "--image-repo requires an argument"
           exit 1
         }
         IMAGE_REPO="$2"
