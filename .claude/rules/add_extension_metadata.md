@@ -1,5 +1,7 @@
 ---
-paths: 'catalog-entities/extensions/**, docs/dynamic-plugins/**'
+paths:
+  - catalog-entities/extensions/**
+  - docs/dynamic-plugins/**
 ---
 # RHDH Extensions Catalog - Plugin Metadata Workflow
 

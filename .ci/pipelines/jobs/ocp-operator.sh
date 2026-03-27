@@ -36,6 +36,7 @@ initiate_operator_deployments() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
+  wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
   # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
   # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
@@ -46,8 +47,6 @@ initiate_operator_deployments() {
 # OSD-GCP specific operator deployment that skips orchestrator workflows
 initiate_operator_deployments_osd_gcp() {
   log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
-
-  prepare_operator
 
   namespace::configure "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
@@ -78,6 +77,7 @@ initiate_operator_deployments_osd_gcp() {
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
+  wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP RBAC

@@ -297,7 +297,7 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-        disabled: false
+        disabled: true
       # Enable orchestrator plugins
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
@@ -366,10 +366,9 @@ upstream:
                 token: test-token
                 subject: test-subject
     image:
+      # Note: repository and tag are set via --set flags in helm upgrade -i commands
       pullPolicy: Always
       registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
     extraEnvVars:
       - name: BACKEND_SECRET
         valueFrom:

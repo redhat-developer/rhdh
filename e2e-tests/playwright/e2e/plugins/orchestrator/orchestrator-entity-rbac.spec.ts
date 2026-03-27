@@ -23,8 +23,8 @@ import { JOB_NAME_PATTERNS } from "../../../utils/constants";
  * - greeting_w_component.yaml: name=greetingComponent, title="Greeting Test Picker" - HAS annotation
  */
 test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
-  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP)); // skipping orchestrator tests on OSD-GCP due to infra not being installed
-  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE)); // skipping orchestrator tests on GKE - plugins disabled to save disk space
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
+  test.fixme(() => skipIfJobName(JOB_NAME_PATTERNS.OPERATOR));
 
   test.beforeAll(async ({}, testInfo) => {
     testInfo.annotations.push({

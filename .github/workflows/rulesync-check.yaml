@@ -7,6 +7,8 @@ on:
       - '.cursor/**'
       - '.cursorignore'
       - '.claude/**'
+      - '.opencode/**'
+      - 'opencode.json'
       - 'rulesync.jsonc'
       - '.rulesyncignore'
   push:
@@ -18,6 +20,8 @@ on:
       - '.cursor/**'
       - '.cursorignore'
       - '.claude/**'
+      - '.opencode/**'
+      - 'opencode.json'
       - 'rulesync.jsonc'
       - '.rulesyncignore'
 
@@ -48,8 +52,10 @@ jobs:
           files: |
             .cursor/**
             .claude/**
+            .opencode/**
             .cursorignore
             .rulesyncignore
+            opencode.json
 
       - name: Report out-of-sync files
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -62,5 +68,6 @@ jobs:
           echo "  - yarn rulesync:generate if you forgot to generate the files from .rulesync"
           echo "  - yarn rulesync:import:cursor if you edited .cursor files directly"
           echo "  - yarn rulesync:import:claude if you edited .claude files directly"
+          echo "  - yarn rulesync:import:opencode if you edited .opencode files directly"
           echo "  and then commit the changes"
           exit 1

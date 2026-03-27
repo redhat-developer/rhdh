@@ -622,8 +622,11 @@ export class KubeClient {
     checkInterval: number = 10000, // 10 seconds
   ) {
     const endTime = Date.now() + timeout;
-    const labelSelector =
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+
+    const podSelector = await this.getDeploymentPodSelector(
+      deploymentName,
+      namespace,
+    );
 
     while (Date.now() < endTime) {
       try {
@@ -642,10 +645,10 @@ export class KubeClient {
         );
 
         // Check for pod failure states when expecting replicas > 0
-        if (expectedReplicas > 0) {
+        if (expectedReplicas > 0 && podSelector) {
           const podFailureReason = await this.checkPodFailureStates(
             namespace,
-            labelSelector,
+            podSelector,
           );
           if (podFailureReason) {
             console.error(
@@ -658,8 +661,8 @@ export class KubeClient {
           }
         }
 
-        // Log pod conditions using label selector
-        await this.logPodConditions(namespace, labelSelector);
+        // Log pod conditions using the deployment's pod selector
+        await this.logPodConditions(namespace, podSelector);
 
         // Check if the expected replicas match
         if (availableReplicas === expectedReplicas) {
@@ -701,7 +704,7 @@ export class KubeClient {
       // Scale down deployment to 0 replicas
       console.log(`Scaling down deployment ${deploymentName} to 0 replicas.`);
       console.log(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
-      await this.logPodConditions(namespace);
+      await this.logPodConditionsForDeployment(deploymentName, namespace);
       await this.scaleDeployment(deploymentName, namespace, 0);
       await this.waitForDeploymentReady(deploymentName, namespace, 0, 300000); // 5 minutes for scale down
 
@@ -722,7 +725,7 @@ export class KubeClient {
       console.error(
         `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}': ${getKubeApiErrorMessage(error)}`,
       );
-      await this.logPodConditions(namespace);
+      await this.logPodConditionsForDeployment(deploymentName, namespace);
       await this.logDeploymentEvents(deploymentName, namespace);
       throw new Error(
         `Failed to restart deployment '${deploymentName}' in namespace '${namespace}': ${getKubeApiErrorMessage(error)}`,
@@ -730,11 +733,49 @@ export class KubeClient {
     }
   }
 
-  async logPodConditions(namespace: string, labelSelector?: string) {
-    const selector =
-      labelSelector ||
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+  /**
+   * Resolves the pod label selector from a deployment's spec.selector.matchLabels.
+   */
+  private async getDeploymentPodSelector(
+    deploymentName: string,
+    namespace: string,
+  ): Promise<string> {
+    const response = await this.appsApi.readNamespacedDeployment(
+      deploymentName,
+      namespace,
+    );
+    const matchLabels = response.body.spec?.selector?.matchLabels || {};
+    const entries = Object.entries(matchLabels);
+    if (entries.length === 0) {
+      throw new Error(
+        `Deployment '${deploymentName}' in namespace '${namespace}' has no matchLabels in selector`,
+      );
+    }
+    return entries.map(([k, v]) => `${k}=${v}`).join(",");
+  }
 
+  /**
+   * Logs pod conditions for pods belonging to a specific deployment.
+   * Resolves the pod selector from the deployment's matchLabels.
+   */
+  async logPodConditionsForDeployment(
+    deploymentName: string,
+    namespace: string,
+  ) {
+    try {
+      const selector = await this.getDeploymentPodSelector(
+        deploymentName,
+        namespace,
+      );
+      await this.logPodConditions(namespace, selector);
+    } catch (error) {
+      console.warn(
+        `Could not resolve pod selector for deployment '${deploymentName}': ${getKubeApiErrorMessage(error)}`,
+      );
+    }
+  }
+
+  async logPodConditions(namespace: string, labelSelector: string) {
     try {
       const response = await this.coreV1Api.listNamespacedPod(
         namespace,
@@ -742,11 +783,11 @@ export class KubeClient {
         undefined,
         undefined,
         undefined,
-        selector,
+        labelSelector,
       );
 
       if (response.body.items.length === 0) {
-        console.warn(`No pods found for selector: ${selector}`);
+        console.warn(`No pods found for selector: ${labelSelector}`);
       }
 
       for (const pod of response.body.items) {
@@ -758,7 +799,7 @@ export class KubeClient {
       }
     } catch (error) {
       console.error(
-        `Error while retrieving pod conditions for selector '${selector}': ${getKubeApiErrorMessage(error)}`,
+        `Error while retrieving pod conditions for selector '${labelSelector}': ${getKubeApiErrorMessage(error)}`,
       );
     }
   }

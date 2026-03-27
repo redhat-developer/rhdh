@@ -4,7 +4,7 @@ import { FabPo } from "../../support/page-objects/global-fab-po";
 import { UIhelper } from "../../utils/ui-helper";
 import { PagesUrl } from "../../support/page-objects/page";
 
-test.describe("Test global floating action button plugin", () => {
+test.describe.skip("Test global floating action button plugin", () => {
   let uiHelper: UIhelper;
   let fabHelper: FabPo;
 

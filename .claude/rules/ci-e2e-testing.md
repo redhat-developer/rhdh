@@ -1,5 +1,8 @@
 ---
-paths: '.ci/**, e2e-tests/**, docs/e2e-tests/**'
+paths:
+  - .ci/**
+  - e2e-tests/**
+  - docs/e2e-tests/**
 ---
 # RHDH (Red Hat Developer Hub) Repository Context
 

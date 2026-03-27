@@ -1,5 +1,7 @@
 ---
-paths: '.github/workflows/**, .github/actions/**'
+paths:
+  - .github/workflows/**
+  - .github/actions/**
 ---
 # GitHub Workflows Security Best Practices
 
