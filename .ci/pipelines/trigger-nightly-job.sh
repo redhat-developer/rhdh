@@ -70,7 +70,7 @@ Required:
   -j, --job JOB_NAME           Full ProwJob name to trigger.
 
 Optional overrides (passed as env var overrides to the job):
-  -I, --registry IMAGE_REGISTRY  Override the image registry (default: quay.io).
+  -I, --image-registry IMAGE_REGISTRY  Override the image registry (default: quay.io).
   -q, --image-repo IMAGE_REPO  Override the image repository (e.g. rhdh/rhdh-hub-rhel9). Requires --tag to be set.
   -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-123).
   -o, --org GITHUB_ORG_NAME    Override the GitHub org (default in job: redhat-developer).
@@ -87,7 +87,7 @@ Examples:
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly
 
   # Trigger with custom image:
-  $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --registry my-registry.io --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9-123
+  $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --image-registry quay.io --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9-123
 
   # Trigger against a fork, with Slack alerts enabled:
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --org my-org --repo my-fork --branch release-1.9 --send-alerts
@@ -112,7 +112,7 @@ parse_args() {
         JOB_NAME="$2"
         shift 2
         ;;
-      -I | --registry)
+      -I | --image-registry)
         [[ $# -ge 2 ]] || {
           log::error "$1 requires an argument"
           exit 1
