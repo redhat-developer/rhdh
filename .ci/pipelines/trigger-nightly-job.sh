@@ -20,7 +20,7 @@
 #   # Trigger with a custom image (e.g. RC verification):
 #   ./trigger-nightly-job.sh \
 #     --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \
-#     --quay-repo rhdh/rhdh-hub-rhel9 \
+#     --image-repo rhdh/rhdh-hub-rhel9 \
 #     --tag 1.9-123
 #
 #   # Trigger against a fork:
@@ -51,7 +51,8 @@ log::error() { echo "[ERROR] $*" >&2; }
 
 # --- Defaults ---
 JOB_NAME=""
-QUAY_REPO=""
+IMAGE_REPO=""
+IMAGE_REGISTRY=""
 TAG_NAME=""
 GITHUB_ORG_NAME=""
 GITHUB_REPOSITORY_NAME=""
@@ -69,7 +70,8 @@ Required:
   -j, --job JOB_NAME           Full ProwJob name to trigger.
 
 Optional overrides (passed as env var overrides to the job):
-  -q, --quay-repo QUAY_REPO    Override the Quay repository (e.g. rhdh/rhdh-hub-rhel9). Requires --tag to be set.
+  -I, --registry IMAGE_REGISTRY  Override the image registry (default: quay.io).
+  -q, --image-repo IMAGE_REPO  Override the image repository (e.g. rhdh/rhdh-hub-rhel9). Requires --tag to be set.
   -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-123).
   -o, --org GITHUB_ORG_NAME    Override the GitHub org (default in job: redhat-developer).
   -r, --repo GITHUB_REPO_NAME  Override the GitHub repo name (default in job: rhdh).
@@ -85,7 +87,7 @@ Examples:
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly
 
   # Trigger with custom image:
-  $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --quay-repo rhdh/rhdh-hub-rhel9 --tag 1.9-123
+  $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --registry my-registry.io --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9-123
 
   # Trigger against a fork, with Slack alerts enabled:
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --org my-org --repo my-fork --branch release-1.9 --send-alerts
@@ -110,12 +112,20 @@ parse_args() {
         JOB_NAME="$2"
         shift 2
         ;;
-      -q | --quay-repo)
+      -I | --registry)
         [[ $# -ge 2 ]] || {
           log::error "$1 requires an argument"
           exit 1
         }
-        QUAY_REPO="$2"
+        IMAGE_REGISTRY="$2"
+        shift 2
+        ;;
+      -q | --image-repo)
+        [[ $# -ge 2 ]] || {
+          log::error "$1 requires an argument"
+          exit 1
+        }
+        IMAGE_REPO="$2"
         shift 2
         ;;
       -t | --tag)
@@ -183,8 +193,8 @@ validate_args() {
     exit 1
   fi
 
-  if [[ -n "${QUAY_REPO}" && -z "${TAG_NAME}" ]]; then
-    log::error "--quay-repo requires --tag to be set."
+  if [[ -n "${IMAGE_REPO}" && -z "${TAG_NAME}" ]]; then
+    log::error "--image-repo requires --tag to be set."
     exit 1
   fi
 }
@@ -192,13 +202,14 @@ validate_args() {
 build_payload() {
   local -a jq_args=()
 
-  [[ -n "${QUAY_REPO}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_QUAY_REPO "${QUAY_REPO}")
+  [[ -n "${IMAGE_REPO}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_IMAGE_REPO "${IMAGE_REPO}")
   [[ -n "${TAG_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_TAG_NAME "${TAG_NAME}")
   [[ -n "${GITHUB_ORG_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_GITHUB_ORG_NAME "${GITHUB_ORG_NAME}")
   [[ -n "${GITHUB_REPOSITORY_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_GITHUB_REPOSITORY_NAME "${GITHUB_REPOSITORY_NAME}")
   [[ -n "${RELEASE_BRANCH_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_RELEASE_BRANCH_NAME "${RELEASE_BRANCH_NAME}")
   jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_SKIP_SEND_ALERT "${SKIP_SEND_ALERT}")
 
+  [[ -n "${IMAGE_REGISTRY}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_IMAGE_REGISTRY "${IMAGE_REGISTRY}")
   jq -n --arg job "${JOB_NAME}" "${jq_args[@]}" \
     '{job_name: $job, job_execution_type: "1", pod_spec_options: {envs: ($ARGS.named | del(.job))}}'
 }
