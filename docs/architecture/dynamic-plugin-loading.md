@@ -4,7 +4,7 @@ This document explains how dynamic plugins are loaded into RHDH at runtime, how 
 
 ## Architecture Overview
 
-Dynamic plugin loading follows an **init container pattern**: a dedicated `install-dynamic-plugins` init container runs before the main RHDH backend starts, downloading, extracting, and configuring plugins into a shared volume.
+Dynamic plugin loading follows an **init container pattern** (a Kubernetes mechanism that runs a container to completion before the application starts): a dedicated `install-dynamic-plugins` init container runs before the main RHDH backend starts, downloading, extracting, and configuring plugins into a shared volume.
 
 ```mermaid
 flowchart TB
@@ -28,7 +28,7 @@ The script at `scripts/install-dynamic-plugins/install-dynamic-plugins.py` is th
 
 Creates a file lock (`install-dynamic-plugins.lock`) in the `dynamic-plugins-root` directory to prevent concurrent installations. This is important when multiple pods share a persistent volume. Uses `atexit` to clean up the lock on exit. If a lock already exists, it polls every second until released.
 
-If the init container is killed with `SIGKILL` (e.g., OOM, pod eviction), the lock file will not be cleaned up and must be removed manually. See [installing-plugins.md](../dynamic-plugins/installing-plugins.md#storage-of-dynamic-plugins) for details.
+> **Warning:** If the init container is killed with `SIGKILL` (e.g., OOM, pod eviction), the lock file will not be cleaned up and must be removed manually. See [installing-plugins.md](../dynamic-plugins/installing-plugins.md#storage-of-dynamic-plugins) for details.
 
 ### Step 2: Catalog Index Image Extraction
 
@@ -47,7 +47,7 @@ Reads `dynamic-plugins.yaml` which has two sections:
 - **`includes`**: list of YAML files to load as base defaults (typically `dynamic-plugins.default.yaml`)
 - **`plugins`**: user-defined plugin overrides
 
-**Catalog index integration**: If the catalog index was extracted, the script **replaces** `dynamic-plugins.default.yaml` in the `includes` list with the file extracted from the catalog index image. This is how the catalog index overrides the embedded defaults.
+> **Key behavior**: If the catalog index was extracted, the script **replaces** `dynamic-plugins.default.yaml` in the `includes` list with the file extracted from the catalog index image. This is how the catalog index overrides the embedded defaults.
 
 Plugins are merged in two passes:
 
@@ -59,7 +59,7 @@ Duplicate detection prevents the same plugin from being defined twice at the sam
 Two merger classes handle plugin key generation:
 
 - **`NPMPackageMerger`**: Strips version info from package names to create stable keys (e.g., `@scope/pkg@1.0` becomes `@scope/pkg`). Also handles aliases, git URLs, and GitHub shorthand.
-- **`OciPackageMerger`**: Strips the tag/digest to create keys like `oci://registry/image:!plugin-path`. Supports `{{inherit}}` to inherit version from included configs, and auto-detection of plugin paths from the `io.backstage.dynamic-packages` OCI annotation.
+- **`OciPackageMerger`**: Strips the tag/digest to create keys like `oci://registry/image:!plugin-path` (the `!` character separates the OCI image reference from the plugin subdirectory path within the image). Supports `{{inherit}}` to inherit version from included configs, and auto-detection of plugin paths from the `io.backstage.dynamic-packages` OCI annotation.
 
 ### Step 4: Plugin Installation
 
@@ -90,7 +90,7 @@ The `OciDownloader` class handles OCI image downloads:
 
 #### Registry Fallback
 
-Plugin OCI images are published to multiple registries by `rhdh-plugin-catalog`: `quay.io/rhdh/` (community/upstream) and `registry.redhat.io/rhdh/` (Red Hat product). For images from `registry.access.redhat.com/rhdh/`, if the image doesn't exist there, the script falls back to `quay.io/rhdh/`. This is checked via `skopeo inspect`.
+Plugin OCI images are published to multiple registries by `rhdh-plugin-catalog`: `quay.io/rhdh/` (community/upstream) and `registry.redhat.io/rhdh/` (Red Hat product). When a plugin references `registry.access.redhat.com/rhdh/`, the script first checks whether the image exists there via `skopeo inspect`. If not found, it falls back to `quay.io/rhdh/`.
 
 ### Step 5: Config Output
 
@@ -100,7 +100,7 @@ If two plugins define conflicting values for the same config key, an `InstallExc
 
 ### Step 6: Cleanup
 
-Removes any plugin directories that were previously installed but are no longer in the current configuration. Detection uses hash file tracking: plugins whose hashes are still in `plugin_path_by_hash` after installation have been removed from the config.
+Removes any plugin directories that were previously installed but are no longer in the current configuration. Before installation, the script reads all existing `dynamic-plugin-config.hash` files into a `plugin_path_by_hash` map. As each plugin is installed, its hash is consumed from the map. Entries remaining after installation represent plugins that were previously installed but removed from the config — their directories are deleted.
 
 ## Environment Variables
 
@@ -110,8 +110,13 @@ Removes any plugin directories that were previously installed but are no longer 
 | `CATALOG_ENTITIES_EXTRACT_DIR` | Directory for extracting catalog entities | `/tmp/extensions` |
 | `MAX_ENTRY_SIZE` | Maximum size of a file in an archive (zip bomb protection) | `20000000` (20MB) |
 | `SKIP_INTEGRITY_CHECK` | Set to `"true"` to skip integrity check of remote NPM packages | Not set |
-| `REGISTRY_AUTH_FILE` | Path to container registry auth config for private OCI registries | Not set |
-| `NPM_CONFIG_USERCONFIG` | Path to `.npmrc` for custom NPM registry configuration | Not set |
+
+The following environment variables are not read by the install script itself, but are picked up by the underlying tools (`skopeo` and `npm`) when invoked during plugin installation:
+
+| Variable | Description | Used By |
+|----------|-------------|---------|
+| `REGISTRY_AUTH_FILE` | Path to container registry auth config (sets the default `--authfile` for all `skopeo` commands) | [skopeo](https://github.com/containers/skopeo/blob/main/docs/skopeo-copy.1.md) |
+| `NPM_CONFIG_USERCONFIG` | Path to `.npmrc` for custom NPM registry configuration (overrides the default `~/.npmrc`) | [npm](https://docs.npmjs.com/cli/v11/using-npm/config/) |
 
 ## Catalog Index Image
 
@@ -147,7 +152,7 @@ The catalog entities extracted to `/extensions/catalog-entities/` are consumed b
 
 ### Operator-Specific Behavior
 
-In the operator (`rhdh-operator/pkg/model/deployment.go:115-120`), the `RELATED_IMAGE_catalog_index` env var is read at reconciliation time and injected into the `install-dynamic-plugins` init container **before** user-specified `extraEnvs` are applied. This allows users to override the catalog index image via the Backstage CR's `extraEnvs`.
+In the operator (`rhdh-operator/pkg/model/deployment.go:115-119`), the `RELATED_IMAGE_catalog_index` env var is read at reconciliation time and injected into the `install-dynamic-plugins` init container **before** user-specified `extraEnvs` are applied. This allows users to override the catalog index image via the Backstage CR's `extraEnvs`.
 
 ## Cross-Repository Relationships
 
@@ -209,7 +214,7 @@ flowchart LR
 | `src/commands/package-dynamic-plugins/` | rhdh-cli | Packages exported plugins as `FROM scratch` OCI images |
 | `build/scripts/generateCatalogIndex.py` | rhdh-plugin-catalog | Generates catalog index from synced overlay content |
 | `build/ci/sync-midstream.sh` | rhdh-plugin-catalog | Syncs overlay content for midstream builds |
-| `.tekton/*.yaml` | rhdh-plugin-catalog | 114+ Konflux PipelineRun definitions for plugin builds |
+| `.tekton/*.yaml` | rhdh-plugin-catalog | 56 Konflux PipelineRun definitions for plugin builds |
 | `workspaces/extensions/packages/cli/` | rhdh-plugins | Extensions CLI (`generate` command for Package entities) |
 | `.github/workflows/export-dynamic.yaml` | rhdh-plugin-export-utils | Reusable per-workspace export workflow |
 | `workspaces/*/source.json` | rhdh-plugin-export-overlays | Upstream repo + commit pin per workspace |

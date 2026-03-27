@@ -36,7 +36,7 @@ By packaging these as a standalone OCI image, the default plugin list and catalo
 
 ## Build Pipeline Overview
 
-The catalog index image is assembled from **three distinct input sources** spread across multiple repositories. The actual image build happens in Red Hat's internal CI infrastructure (Konflux/Tekton) via the **`rhdh-plugin-catalog`** midstream repository, but all source content is produced in the public repositories.
+The catalog index image is assembled from multiple input sources spread across multiple repositories. Community plugins are built in the **`rhdh-plugin-export-overlays`** repository via GitHub Actions, while Tech Preview (TP) and Generally Available (GA) plugins are built in Red Hat's internal CI infrastructure (Konflux/Tekton) via the **`rhdh-plugin-catalog`** midstream repository. The catalog index image itself is always assembled in `rhdh-plugin-catalog`, but all source content is produced in the public repositories.
 
 ```mermaid
 flowchart TB
@@ -128,7 +128,7 @@ This directory contains the Backstage catalog entities that power the RHDH Exten
 
 - **`plugins/*.yaml`** — `Plugin` kind entities containing user-facing metadata: title, description, icon, categories, highlights, documentation, and links to constituent packages
 - **`packages/*.yaml`** — `Package` kind entities generated from `dynamic-plugins.default.yaml` using the `extensions-cli generate` command; contain OCI artifact references and version info
-- **`collections/*.yaml`** — Curated groupings of plugins (e.g., "featured", "recommended", "CI/CD", "OpenShift")
+- **`collections/*.yaml`** — `PluginCollection` kind entities: curated groupings of plugins (e.g., "featured", "recommended", "CI/CD", "OpenShift")
 
 The `all.yaml` files in each subdirectory are Backstage `Location` entities that enumerate all entities for catalog ingestion.
 
@@ -154,7 +154,9 @@ This command:
 
 ## Individual Plugin Image Build Pipeline
 
-While the catalog index image is a *manifest*, the individual plugin OCI images it references are built by a separate pipeline in the overlays ecosystem:
+While the catalog index image is a *manifest*, the individual plugin OCI images it references are built by separate pipelines. **Community plugins** are built via GitHub Actions in the `rhdh-plugin-export-overlays` repository and published to `ghcr.io`. **Tech Preview (TP) and Generally Available (GA) plugins** are built via Konflux/Tekton pipelines in `rhdh-plugin-catalog` and published to `quay.io/rhdh/` and `registry.redhat.io/rhdh/`.
+
+The community plugin build pipeline works as follows:
 
 ```mermaid
 flowchart TB
@@ -205,7 +207,12 @@ This encodes both the Backstage version the plugin was built against and the plu
 
 ## Catalog Index Assembly (`rhdh-plugin-catalog`)
 
-The final catalog index image is built via the **`rhdh-plugin-catalog`** midstream repository using Konflux/Tekton pipelines. This repo syncs content from `rhdh-plugin-export-overlays` (via `build/ci/sync-midstream.sh`), generates the catalog index (via `build/scripts/generateCatalogIndex.py`), and publishes to both `quay.io/rhdh/` and `registry.redhat.io/rhdh/`. The repo contains 114+ Tekton PipelineRun definitions in `.tekton/`, with each plugin having a dedicated pipeline triggered by changes to its workspace directory.
+The final catalog index image is built via the **`rhdh-plugin-catalog`** midstream repository using Konflux/Tekton pipelines. This repo:
+
+- Syncs content from `rhdh-plugin-export-overlays` via `build/ci/sync-midstream.sh`
+- Builds TP and GA plugin OCI images via 56 Tekton PipelineRun definitions in `.tekton/` (each plugin has a dedicated pipeline triggered by changes to its workspace directory)
+- Generates the catalog index via `build/scripts/generateCatalogIndex.py`
+- Publishes to both `quay.io/rhdh/` and `registry.redhat.io/rhdh/`
 
 ```mermaid
 flowchart TB
@@ -253,7 +260,7 @@ This ensures that `dynamic-plugins.default.yaml` in the RHDH repo stays consiste
 
 ## Consumption Flow at Runtime
 
-Once the catalog index image is published, here is how it flows through to a running RHDH instance:
+Once the catalog index image is published, here is how it flows through to a running RHDH instance. See also [Dynamic Plugin Loading](dynamic-plugin-loading.md) for detailed runtime behavior.
 
 ```mermaid
 flowchart TB
@@ -326,7 +333,7 @@ Set via `.env` file or `environment:` block in `compose.yaml`.
 
 ## Version Alignment
 
-The catalog index image version is aligned with the RHDH release version:
+The catalog index image version is aligned with the RHDH release version. Each RHDH release has a corresponding catalog index tag:
 
 | RHDH Version | Catalog Index Image Tag | Backstage Version |
 |---|---|---|
@@ -353,7 +360,7 @@ The `versions.json` in the overlays repo pins the exact Backstage version and CL
 | **rhdh-plugin-export-utils** | Provides reusable GitHub Actions and workflows used by the overlays repo: `override-sources`, `export-dynamic`, `validate-metadata`, and orchestration workflows. |
 | **rhdh-cli** | Provides `export-dynamic` command that packages plugins into `dist-dynamic/` or `dist-scalprum/` directories, and `package-dynamic-plugins` command that builds `FROM scratch` OCI images. |
 | **rhdh-plugins** | Houses the `extensions-cli` (`generate` command) that produces `Package` entity YAML files from `dynamic-plugins.default.yaml`. Also contains the extensions frontend/backend plugins that consume catalog entities at runtime. |
-| **rhdh-plugin-catalog** | Midstream infrastructure repo. Syncs plugin source from `rhdh-plugin-export-overlays` via `sync-midstream.sh`. Builds plugins via Konflux/Tekton pipelines (114+ PipelineRun definitions in `.tekton/`). Generates catalog index via `generateCatalogIndex.py`. Publishes to `quay.io/rhdh/` and `registry.redhat.io/rhdh/`. Contains `plugin_builds/` metadata and 24 plugin workspace directories. |
+| **rhdh-plugin-catalog** | Midstream infrastructure repo. Syncs plugin source from `rhdh-plugin-export-overlays` via `sync-midstream.sh`. Builds plugins via Konflux/Tekton pipelines (56 PipelineRun definitions in `.tekton/`). Generates catalog index via `generateCatalogIndex.py`. Publishes to `quay.io/rhdh/` and `registry.redhat.io/rhdh/`. Contains `plugin_builds/` metadata and 23 plugin workspace directories. |
 | **rhdh-operator** | Injects `CATALOG_INDEX_IMAGE` env var into the init container from `RELATED_IMAGE_catalog_index`. |
 | **rhdh-chart** | Configures `CATALOG_INDEX_IMAGE` via `global.catalogIndex.image` Helm values. |
 | **rhdh-local** | Docker Compose local dev environment. Uses the same two-container architecture (init + main) with shared volumes. Supports four plugin sources: local directory (`local-plugins/`), OCI image (`oci://`), tarball URL, and pre-bundled plugins. |
@@ -379,7 +386,7 @@ The `versions.json` in the overlays repo pins the exact Backstage version and CL
 | `build/scripts/generatePluginBuildInfo.py` | rhdh-plugin-catalog | Generates per-plugin build metadata |
 | `build/ci/sync-midstream.sh` | rhdh-plugin-catalog | Syncs overlay content from `rhdh-plugin-export-overlays` |
 | `catalog-index/index.json` | rhdh-plugin-catalog | Master catalog of all plugins |
-| `.tekton/*.yaml` | rhdh-plugin-catalog | 114+ Konflux PipelineRun definitions |
+| `.tekton/*.yaml` | rhdh-plugin-catalog | 56 Konflux PipelineRun definitions for plugin builds |
 | `plugin_builds/<plugin>/*.json` | rhdh-plugin-catalog | Per-plugin build metadata (versions, image refs) |
 | `pkg/model/deployment.go` | rhdh-operator | `CATALOG_INDEX_IMAGE` injection logic |
 | `charts/backstage/values.yaml` | rhdh-chart | `global.catalogIndex.image` config |
