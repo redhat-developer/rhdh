@@ -230,7 +230,16 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     read -r -p "Enter choice [1]: " image_type_choice
     image_type_choice=${image_type_choice:-1}
 
-    IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
+    # Image registry selection
+    if [[ -n "$CLI_IMAGE_REGISTRY" ]]; then
+        IMAGE_REGISTRY="$CLI_IMAGE_REGISTRY"
+    else
+        echo "Image registry (press Enter for default: quay.io):"
+        read -r -p "Registry [quay.io]: " registry_input
+        IMAGE_REGISTRY="${registry_input:-quay.io}"
+        echo ""
+    fi
+
     case "$image_type_choice" in
         1)
             # Downstream image
