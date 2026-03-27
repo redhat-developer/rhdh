@@ -120,7 +120,7 @@ parse_args() {
         IMAGE_REGISTRY="$2"
         shift 2
         ;;
-      -q | --image-repo)
+      -q | --image-repo) # -q is kept for backward compatibility (was --quay-repo)
         [[ $# -ge 2 ]] || {
           log::error "--image-repo requires an argument"
           exit 1
