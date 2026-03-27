@@ -83,16 +83,17 @@ retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
   local namespace=$3
-  local log_timeout=${4:-5}
-  local max_retries=${5:-3}
-  local backoff=${6:-2}
+  local pod_logs_dir=$4
+  local log_timeout=${5:-5}
+  local max_retries=${6:-3}
+  local backoff=${7:-2}
 
   log::debug "Retrieving logs for container: $container"
 
   # Retry with backoff for transient kubectl failures
   local attempt
   for ((attempt = 1; attempt <= max_retries; attempt++)); do
-    if timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "${_POD_LOGS_DIR:-pod_logs}/${pod_name}_${container}.log" 2> /dev/null; then
+    if timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "${pod_logs_dir}/${pod_name}_${container}.log" 2> /dev/null; then
       break
     fi
     if ((attempt == max_retries)); then
@@ -102,9 +103,9 @@ retrieve_pod_logs() {
     fi
   done
 
-  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" --previous > "${_POD_LOGS_DIR:-pod_logs}/${pod_name}_${container}-previous.log" 2> /dev/null || {
+  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" --previous > "${pod_logs_dir}/${pod_name}_${container}-previous.log" 2> /dev/null || {
     log::debug "Previous logs for container $container not found or timed out"
-    rm -f "${_POD_LOGS_DIR:-pod_logs}/${pod_name}_${container}-previous.log"
+    rm -f "${pod_logs_dir}/${pod_name}_${container}-previous.log"
   }
 }
 
@@ -113,18 +114,19 @@ retrieve_pod_logs() {
 _retrieve_all_logs_for_pod() {
   local pod_name=$1
   local namespace=$2
+  local pod_logs_dir=$3
   log::debug "Retrieving logs for pod: $pod_name in namespace $namespace"
 
   local init_containers
   init_containers=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.spec.initContainers[*].name}' 2> /dev/null)
   for init_container in $init_containers; do
-    retrieve_pod_logs "$pod_name" "$init_container" "$namespace"
+    retrieve_pod_logs "$pod_name" "$init_container" "$namespace" "$pod_logs_dir"
   done
 
   local containers
   containers=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.spec.containers[*].name}' 2> /dev/null)
   for container in $containers; do
-    retrieve_pod_logs "$pod_name" "$container" "$namespace"
+    retrieve_pod_logs "$pod_name" "$container" "$namespace" "$pod_logs_dir"
   done
   return 0
 }
@@ -134,14 +136,13 @@ save_all_pod_logs() {
   local namespace=$1
   local artifacts_subdir="${2:-$namespace}"
 
-  # Use a unique temp directory per artifacts_subdir to allow parallel pod log collection
-  export _POD_LOGS_DIR="/tmp/pod_logs-${artifacts_subdir}"
-  rm -rf "${_POD_LOGS_DIR}" && mkdir -p "${_POD_LOGS_DIR}"
+  # Use a unique temp directory per artifacts_subdir to avoid conflicts
+  local pod_logs_dir="/tmp/pod_logs-${artifacts_subdir}"
+  rm -rf "${pod_logs_dir}" && mkdir -p "${pod_logs_dir}"
 
   local pod_names
   if ! pod_names=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}' 2> /dev/null); then
     log::warn "Failed to list pods in namespace $namespace — skipping pod log collection"
-    unset _POD_LOGS_DIR
     set -e
     return 0
   fi
@@ -149,7 +150,7 @@ save_all_pod_logs() {
   # Gather logs from all pods in parallel
   local pids=()
   for pod_name in $pod_names; do
-    _retrieve_all_logs_for_pod "$pod_name" "$namespace" &
+    _retrieve_all_logs_for_pod "$pod_name" "$namespace" "$pod_logs_dir" &
     pids+=($!)
   done
 
@@ -158,8 +159,7 @@ save_all_pod_logs() {
     wait "$pid" 2> /dev/null || true
   done
 
-  common::save_artifact "${artifacts_subdir}" "${_POD_LOGS_DIR}/" "pod_logs" || true
-  unset _POD_LOGS_DIR
+  common::save_artifact "${artifacts_subdir}" "${pod_logs_dir}/" "pod_logs" || true
   set -e
 }
 
@@ -623,61 +623,28 @@ rbac_deployment() {
   fi
 }
 
-# Run two functions in parallel, wait for both, and report results.
-# Args:
-#   $1 - label: Human-readable label for logging (e.g. "deployments")
-#   $2 - base_func: Name of the base function to run
-#   $3 - base_arg: Argument for the base function
-#   $4 - rbac_func: Name of the RBAC function to run
-#   $5 - rbac_arg: Argument for the RBAC function
-# Returns: 0 if both succeed, 1 if either fails
-_run_parallel() {
-  local label=$1
-  local base_func=$2
-  local base_arg=$3
-  local rbac_func=$4
-  local rbac_arg=$5
-
-  log::section "Starting parallel ${label} (base + RBAC)"
-
-  "${base_func}" "${base_arg}" &
-  local base_pid=$!
-  log::info "Base ${label} started in background (PID: ${base_pid})"
-
-  "${rbac_func}" "${rbac_arg}" &
-  local rbac_pid=$!
-  log::info "RBAC ${label} started in background (PID: ${rbac_pid})"
-
-  local base_result=0
-  local rbac_result=0
-  wait "${base_pid}" || base_result=$?
-  wait "${rbac_pid}" || rbac_result=$?
-
-  if [[ ${base_result} -ne 0 ]]; then
-    log::error "Base ${label} failed (exit code: ${base_result})"
-  else
-    log::success "Base ${label} completed"
-  fi
-  if [[ ${rbac_result} -ne 0 ]]; then
-    log::error "RBAC ${label} failed (exit code: ${rbac_result})"
-  else
-    log::success "RBAC ${label} completed"
-  fi
-
-  if [[ ${base_result} -ne 0 || ${rbac_result} -ne 0 ]]; then
-    return 1
-  fi
-  return 0
-}
-
 initiate_deployments() {
   local base_artifacts_subdir=$1
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  _run_parallel "deployments" \
-    base_deployment "${base_artifacts_subdir}" \
-    rbac_deployment "${rbac_artifacts_subdir}"
+  log::section "Starting parallel deployments (base + RBAC)"
+
+  base_deployment "${base_artifacts_subdir}" &
+  local base_pid=$!
+  rbac_deployment "${rbac_artifacts_subdir}" &
+  local rbac_pid=$!
+
+  local failed=0
+  wait "${base_pid}" || {
+    log::error "Base deployment failed"
+    failed=1
+  }
+  wait "${rbac_pid}" || {
+    log::error "RBAC deployment failed"
+    failed=1
+  }
+  return "${failed}"
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
@@ -742,9 +709,23 @@ initiate_deployments_osd_gcp() {
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  _run_parallel "OSD-GCP deployments" \
-    base_deployment_osd_gcp "${base_artifacts_subdir}" \
-    rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
+  log::section "Starting parallel OSD-GCP deployments (base + RBAC)"
+
+  base_deployment_osd_gcp "${base_artifacts_subdir}" &
+  local base_pid=$!
+  rbac_deployment_osd_gcp "${rbac_artifacts_subdir}" &
+  local rbac_pid=$!
+
+  local failed=0
+  wait "${base_pid}" || {
+    log::error "OSD-GCP base deployment failed"
+    failed=1
+  }
+  wait "${rbac_pid}" || {
+    log::error "OSD-GCP RBAC deployment failed"
+    failed=1
+  }
+  return "${failed}"
 }
 
 # install base RHDH deployment before upgrade

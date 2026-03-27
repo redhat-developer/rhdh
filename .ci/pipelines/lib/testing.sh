@@ -140,12 +140,14 @@ testing::run_tests() {
   return "$test_result"
 }
 
-# Run readiness checks in parallel, then execute tests sequentially.
+# Overlap readiness waits, then run tests sequentially.
 # Parallelizing the readiness waits (~5 min each) saves significant time while
 # running tests sequentially avoids OOM from concurrent Playwright instances.
-# Args: pairs of (release_name namespace playwright_project url) for base and RBAC
-#   $1-$4: base args
-#   $5-$8: RBAC args
+# After the parallel wait, check_and_test re-checks readiness (instant if already up).
+# Hardcoded for the base + RBAC deployment pair.
+# Args:
+#   $1-$4: base (release_name namespace playwright_project url)
+#   $5-$8: RBAC (release_name namespace playwright_project url)
 testing::parallel_check_and_test() {
   local base_release=$1
   local base_namespace=$2
@@ -155,62 +157,27 @@ testing::parallel_check_and_test() {
   local rbac_namespace=$6
   local rbac_project=$7
   local rbac_url=$8
-  local base_artifacts="${base_project}"
-  local rbac_artifacts="${rbac_project}"
 
   # Phase 1: Wait for both deployments to be ready in parallel (lightweight HTTP polling)
   log::section "Waiting for both deployments to be ready in parallel"
 
-  testing::check_backstage_running "${base_release}" "${base_namespace}" "${base_url}" "${base_artifacts}" &
+  testing::check_backstage_running "${base_release}" "${base_namespace}" "${base_url}" "${base_project}" &
   local base_ready_pid=$!
   log::info "Base readiness check started in background (PID: ${base_ready_pid})"
 
-  testing::check_backstage_running "${rbac_release}" "${rbac_namespace}" "${rbac_url}" "${rbac_artifacts}" &
+  testing::check_backstage_running "${rbac_release}" "${rbac_namespace}" "${rbac_url}" "${rbac_project}" &
   local rbac_ready_pid=$!
   log::info "RBAC readiness check started in background (PID: ${rbac_ready_pid})"
 
-  local base_ready=0
-  local rbac_ready=0
-  wait "${base_ready_pid}" || base_ready=$?
-  wait "${rbac_ready_pid}" || rbac_ready=$?
+  wait "${base_ready_pid}" || true
+  wait "${rbac_ready_pid}" || true
 
-  # Phase 2: Run tests sequentially to avoid OOM from concurrent Playwright instances
+  # Phase 2: Run tests sequentially to avoid OOM from concurrent Playwright instances.
+  # Re-uses check_and_test which re-checks readiness (instant if deployment is already up).
   log::section "Running tests sequentially"
 
-  _run_check_and_test_phase "${base_release}" "${base_namespace}" "${base_project}" "${base_url}" "${base_artifacts}" "${base_ready}"
-  _run_check_and_test_phase "${rbac_release}" "${rbac_namespace}" "${rbac_project}" "${rbac_url}" "${rbac_artifacts}" "${rbac_ready}"
-  return 0
-}
-
-# Run test or mark failure for a single deployment after readiness check.
-# Args:
-#   $1-$5: release_name, namespace, playwright_project, url, artifacts_subdir
-#   $6: readiness check exit code (0 = ready)
-_run_check_and_test_phase() {
-  local release_name=$1
-  local namespace=$2
-  local playwright_project=$3
-  local url=$4
-  local artifacts_subdir=$5
-  local ready_status=$6
-
-  if [[ "${ready_status}" -eq 0 ]]; then
-    echo "Display pods for verification..."
-    oc get pods -n "${namespace}"
-    if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
-      log::info "SKIP_TESTS=true, skipping test execution for namespace: ${namespace}"
-    else
-      if testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_subdir}"; then
-        log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
-      else
-        save_all_pod_logs "$namespace" "$artifacts_subdir"
-      fi
-    fi
-  else
-    echo "Backstage is not running in namespace ${namespace}. Marking deployment as failed and continuing..."
-    test_run_tracker::mark_deploy_failed "$artifacts_subdir"
-    save_all_pod_logs "$namespace" "$artifacts_subdir"
-  fi
+  testing::check_and_test "${base_release}" "${base_namespace}" "${base_project}" "${base_url}"
+  testing::check_and_test "${rbac_release}" "${rbac_namespace}" "${rbac_project}" "${rbac_url}"
   return 0
 }
 
@@ -276,7 +243,7 @@ testing::check_backstage_running() {
           || oc logs deployment/${release_name} -n "${namespace}" --tail=100 --all-containers=true 2> /dev/null || true
         log::error "Recent events:"
         oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
-        common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}" || true
+        common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}-${artifacts_subdir}" || true
         return 1
       fi
 
