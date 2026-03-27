@@ -8,10 +8,11 @@ const IGNORE_GLOB = ["**/node_modules/**", "**/dist-dynamic/**"];
 
 const ROOT_DIR = path.join(__dirname, "../../..");
 const DYNAMIC_PLUGINS_DIR = path.join(ROOT_DIR, "dynamic-plugins/wrappers");
-const DYNAMIC_PLUGINS_CONFIG_FILE = path.join(
-  ROOT_DIR,
-  "dynamic-plugins.default.yaml",
-);
+// RHIDP-10876 don't use the dynamic-plugins.default.yaml in the root of the RHDH repo anymore
+// const DYNAMIC_PLUGINS_CONFIG_FILE = path.join(
+//   ROOT_DIR,
+//   "dynamic-plugins.default.yaml",
+// );
 const APP_CONFIG_DYNAMIC_PLUGINS_CONFIG_FILE = path.join(
   ROOT_DIR,
   "app-config.dynamic-plugins.yaml",
@@ -195,28 +196,29 @@ describe("Dynamic Plugin Wrappers", () => {
     );
   });
 
-  describe("(dynamic-plugins.default.yaml) should have a valid config", () => {
-    const config = parseYamlFile<DynamicPluginsConfig>(
-      DYNAMIC_PLUGINS_CONFIG_FILE,
-    );
+  // RHIDP-10876 don't use the dynamic-plugins.default.yaml in the root of the RHDH repo anymore
+  // describe("(dynamic-plugins.default.yaml) should have a valid config", () => {
+  //   const config = parseYamlFile<DynamicPluginsConfig>(
+  //     DYNAMIC_PLUGINS_CONFIG_FILE,
+  //   );
 
-    it("should have a corresponding package", () => {
-      validateDynamicPluginsConfig(config, wrapperDirNames);
-    });
+  //   it("should have a corresponding package", () => {
+  //     validateDynamicPluginsConfig(config, wrapperDirNames);
+  //   });
 
-    it.each(frontendPackageJsonFiles)(
-      "$scalprum.name should exist in the config",
-      ({ scalprum }) => {
-        expect(
-          config.plugins.some((plugin) =>
-            Object.keys(
-              plugin.pluginConfig?.dynamicPlugins?.frontend ?? {},
-            ).includes(scalprum.name),
-          ),
-        ).toBeTruthy();
-      },
-    );
-  });
+  //   it.each(frontendPackageJsonFiles)(
+  //     "$scalprum.name should exist in the config",
+  //     ({ scalprum }) => {
+  //       expect(
+  //         config.plugins.some((plugin) =>
+  //           Object.keys(
+  //             plugin.pluginConfig?.dynamicPlugins?.frontend ?? {},
+  //           ).includes(scalprum.name),
+  //         ),
+  //       ).toBeTruthy();
+  //     },
+  //   );
+  // });
 
   describe("(app-config.dynamic-plugins.yaml) should have a valid config", () => {
     const config = parseYamlFile<DynamicPluginAppConfig>(
