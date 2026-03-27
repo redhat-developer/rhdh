@@ -259,6 +259,7 @@ def resolve_image_reference(image: str, prefix: str = '') -> str:
     # Fallback to quay.io/rhdh/
     fallback_image = check_image.replace(RHDH_REGISTRY_PREFIX, RHDH_FALLBACK_PREFIX, 1)
     print(f'{prefix} Image not found in {RHDH_REGISTRY_PREFIX}, falling back to {fallback_image}\n', flush=True)
+    print(f'Using fallback image: {fallback_image}\n', flush=True)
 
     return f"{protocol_prefix}{fallback_image}"
 
@@ -699,7 +700,7 @@ class OciPackageMerger(PackageMerger):
 
             registry_part = plugin_key.split(':!')[0]
             self.plugin['package'] = f"{registry_part}:{version}!{resolved_path}"
-            print(f'[installer] Inheriting version {version} and plugin path {resolved_path} for {plugin_key}\n', flush=True)
+            print(f'[installer] Inheriting version `{version}` and plugin path `{resolved_path}` for {plugin_key}\n', flush=True)
 
         # Update package with resolved path if it was auto-detected (package didn't originally contain !path)
         elif '!' not in package:
