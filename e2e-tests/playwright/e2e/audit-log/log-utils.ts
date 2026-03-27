@@ -153,7 +153,7 @@ export class LogUtils {
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/name=developer-hub";
-    const tailNumber = 100;
+    const tailNumber = 500;
 
     let grepCommand = `oc logs -l ${podSelector} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
     for (const word of filterWords) {
@@ -261,6 +261,9 @@ export class LogUtils {
     if (request?.method) filterWordsAll.push(request.method);
     if (request?.url) filterWordsAll.push(request.url);
     try {
+      // Allow time for the audit log to be flushed to pod stdout before fetching
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const actualLog = await LogUtils.getPodLogsWithGrep(
         filterWordsAll,
         namespace,
