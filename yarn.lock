@@ -2880,9 +2880,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-defaults@npm:^0.13.1, @backstage/backend-defaults@npm:^0.13.2":
-  version: 0.13.2
-  resolution: "@backstage/backend-defaults@npm:0.13.2"
+"@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch::locator=root%40workspace%3A.":
+  version: 0.13.1
+  resolution: "@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch::version=0.13.1&hash=c0d965&locator=root%40workspace%3A."
   dependencies:
     "@aws-sdk/abort-controller": ^3.347.0
     "@aws-sdk/client-codecommit": ^3.350.0
@@ -2960,7 +2960,7 @@ __metadata:
   peerDependenciesMeta:
     "@google-cloud/cloud-sql-connector":
       optional: true
-  checksum: 8e929bd03316dcfa59cf10689de4b185efa1290d9f00591a6adf4def14591b6f2dce9e7b19e75a4f06b0f9a2af085024bdb7390c797fd7b3eda0929c86b6dea5
+  checksum: b1b78a2dcf6d661c8a21ab51d5419ea4db1e49eea443b09fedb0551658213e1b1646e640b6b456df0de1567bbb3d70b3fbeca0ebcc3f1576c69c49c702755a7f
   languageName: node
   linkType: hard
 
@@ -5054,7 +5054,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-node@npm:^0.12.1":
+"@backstage/plugin-scaffolder-node@npm:0.12.1":
   version: 0.12.1
   resolution: "@backstage/plugin-scaffolder-node@npm:0.12.1"
   dependencies:
@@ -5079,6 +5079,34 @@ __metadata:
     zod: ^3.22.4
     zod-to-json-schema: ^3.20.4
   checksum: 8c075497314b0f55a16b7d595a6815ce67eb07b891881151634c114801277b19ed15ccea0cb3ece170cf4d27663d63d122ce25cf68d43c9038badaf43f89cd79
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.12.1#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.12.1-7ce02a35bc.patch::locator=root%40workspace%3A.":
+  version: 0.12.1
+  resolution: "@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.12.1#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.12.1-7ce02a35bc.patch::version=0.12.1&hash=7aa336&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.5.0
+    "@backstage/catalog-model": ^1.7.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/integration": ^1.18.2
+    "@backstage/plugin-permission-common": ^0.9.3
+    "@backstage/plugin-scaffolder-common": ^1.7.3
+    "@backstage/types": ^1.2.2
+    "@isomorphic-git/pgp-plugin": ^0.0.7
+    concat-stream: ^2.0.0
+    fs-extra: ^11.2.0
+    globby: ^11.0.0
+    isomorphic-git: ^1.23.0
+    jsonschema: ^1.5.0
+    lodash: ^4.17.21
+    p-limit: ^3.1.0
+    tar: ^6.1.12
+    winston: ^3.2.1
+    winston-transport: ^4.7.0
+    zod: ^3.22.4
+    zod-to-json-schema: ^3.20.4
+  checksum: 69d675b300d40a9883c4bc88e8f94092d7ef848680801bb3139fa975f64a5ebc2b387563f4425dd47bf5bbbf7bb06c2602cda264893774014f8af286af53d3ab
   languageName: node
   linkType: hard
 
