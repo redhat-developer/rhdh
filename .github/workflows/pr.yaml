@@ -148,9 +148,9 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
 
-      - name: Run Python tests
+      - name: Run install-dynamic-plugins shell tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v
+        run: bash scripts/install-dynamic-plugins/test_install-dynamic-plugins.sh
 
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}

@@ -489,7 +489,7 @@ brew install gnu-sed
 - [Cluster Login Script](.ci/pipelines/ocp-cluster-claim-login.sh)
 - [Test Reporting Script](.ci/pipelines/reporting.sh)
 - [Environment Variables](.ci/pipelines/env_variables.sh)
-- [Dynamic Plugin Installer](scripts/install-dynamic-plugins/install-dynamic-plugins.py)
+- [Dynamic Plugin Installer](scripts/install-dynamic-plugins/install-dynamic-plugins.sh)
 
 ## Test Configuration Files (Config Maps)
 

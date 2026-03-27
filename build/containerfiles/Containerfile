@@ -267,8 +267,10 @@ COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh ./
-RUN chmod -R a+rx ./install-dynamic-plugins.*
+COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh \
+     $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/*.cjs \
+     ./
+RUN chmod a+rx ./install-dynamic-plugins.sh ./*.cjs
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
