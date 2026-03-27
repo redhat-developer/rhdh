@@ -11,7 +11,10 @@ const isPrOcpHelmJob =
 
 const isOsdGcpJob = process.env.JOB_NAME.includes("osd-gcp");
 
-const shouldSkipOrchestratorTests = isPrOcpHelmJob || isOsdGcpJob;
+const isNonOpenShiftJob = process.env.IS_OPENSHIFT === "false";
+
+const shouldSkipOrchestratorTests =
+  isPrOcpHelmJob || isOsdGcpJob || isNonOpenShiftJob;
 
 // Set LOCALE based on which project is being run
 const args = process.argv;
@@ -51,14 +54,17 @@ export default defineConfig({
     locale: process.env.LOCALE || "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
+    trace: "on",
+    screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
+    // Note: this video config only applies to tests using the built-in { page } fixture.
+    // Tests that create their own context via setupBrowser() in playwright/utils/common.ts
+    // must configure recordVideo explicitly because manually created contexts don't
+    // inherit these recording options.
     video: {
-      mode: "on",
-      size: { width: 1920, height: 1080 },
+      mode: "retain-on-failure",
+      size: { width: 1280, height: 720 },
     },
     actionTimeout: 10 * 1000,
     navigationTimeout: 50 * 1000,
@@ -139,6 +145,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts",
       ],
     },
     {

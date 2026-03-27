@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Red Hat, Inc.
+# Copyright Red Hat, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -475,7 +475,11 @@ class PluginInstaller:
 
 class OciPackageMerger(PackageMerger):
     EXPECTED_OCI_PATTERN = (
-        r'^(' + OCI_PROTOCOL_PREFIX + r'[^\s:@]+)'
+        r'^(' + OCI_PROTOCOL_PREFIX +
+            r'[^\s/:@]+'       # hostname (e.g. registry.localhost)
+            r'(?::\d+)?'       # optional port (e.g. :5000)
+            r'(?:/[^\s:@]+)+'  # path segments (e.g. /org/plugin), at least one required
+        r')'
         r'(?:'
             r':([^\s!@:]+)'  # tag only
             r'|'
@@ -501,7 +505,7 @@ class OciPackageMerger(PackageMerger):
         """
         match = re.match(self.EXPECTED_OCI_PATTERN, package)
         if not match:
-            raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@sha<algo>:<digest>\' (optionally followed by \'!<path>\') in {self.dynamic_plugins_file} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') in {self.dynamic_plugins_file} where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}")
 
         # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
         # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
@@ -671,7 +675,7 @@ class OciDownloader:
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
             image_url = resolved_image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
-            self.skopeo(['copy', image_url, f'dir:{local_dir}'])
+            self.skopeo(['copy', '--override-os=linux', '--override-arch=amd64', image_url, f'dir:{local_dir}'])
             manifest_path = os.path.join(local_dir, 'manifest.json')
             manifest = json.load(open(manifest_path))
             # get the first layer of the image
@@ -1091,7 +1095,7 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
 
         # Download the OCI image using skopeo
         run_command(
-            [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
+            [skopeo_path, 'copy', '--override-os=linux', '--override-arch=amd64', image_url, f'dir:{local_dir}'],
             f"Failed to download catalog index image {resolved_image}"
         )
 

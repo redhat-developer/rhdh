@@ -1,0 +1,184 @@
+# This file is for AKS installation only.
+# It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for AKS.
+# Note, that it overwrites the whole key that is present in this file.
+# The only exception is global.dynamic.plugins, that gets merged with the base file.
+route:
+  enabled: false
+global:
+  dynamic:
+    plugins:
+      # These plugins correspond to tests that are ignored in showcase-rbac-k8s project
+      # See e2e-tests/playwright.config.ts SHOWCASE_RBAC_K8S config
+
+      # Tekton not in showcase-rbac-k8s testMatch
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+        disabled: true
+
+      # Adoption Insights not in showcase-rbac-k8s testMatch
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+        disabled: true
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+        disabled: true
+
+      # Orchestrator tests ignored on showcase-rbac-k8s: e2e-tests/playwright/e2e/plugins/orchestrator/*.spec.ts
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+upstream:
+  backstage:
+    appConfig:
+      app:
+        # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+      backend:
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        cors:
+          origin: 'https://{{- include "janus-idp.hostname" . }}'
+        database:
+          connection:
+            host: null
+            port: null
+            password: ${POSTGRESQL_ADMIN_PASSWORD}
+            user: postgres
+            ssl: null
+        auth:
+          keys:
+            - secret: ${BACKEND_SECRET}
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+      - name: POSTGRESQL_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: postgres-password
+            name: "{{ .Release.Name }}-postgresql"
+      # disable telemetry in CI
+      - name: SEGMENT_TEST_MODE
+        value: "true"
+      - name: NODE_TLS_REJECT_UNAUTHORIZED
+        value: "0"
+      - name: NODE_ENV
+        value: "production"
+      - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
+        value: "true"
+    extraVolumeMounts:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
+      # The initContainer below will install dynamic plugins in this volume mount.
+      - name: dynamic-plugins-root
+        mountPath: /opt/app-root/src/dynamic-plugins-root
+      - name: extensions-catalog
+        mountPath: /extensions
+      - name: temp
+        mountPath: /tmp
+
+      - name: rbac-policy
+        mountPath: /opt/app-root/src/rbac
+    extraVolumes:
+      # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
+      # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
+      # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
+      - name: dynamic-plugins-root
+        emptyDir: {}
+      # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
+      # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
+      - name: dynamic-plugins
+        configMap:
+          defaultMode: 420
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
+          optional: true
+      # Optional volume that allows exposing the `.npmrc` file (through a `dynamic-plugins-npmrc` secret)
+      # to be used when running `npm pack` during the dynamic plugins installation by the initContainer.
+      - name: dynamic-plugins-npmrc
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
+      - name: dynamic-plugins-registry-auth
+        secret:
+          defaultMode: 416
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: npmcacache
+        emptyDir: {}
+      # -- Ephemeral volume used by the install-dynamic-plugins init container to extract catalog entities from the catalog index image.
+      # Mounted at the /extensions path in the backstage-backend main container for automatic discovery by the extension catalog backend providers.
+      - name: extensions-catalog
+        emptyDir: {}
+      - name: temp
+        emptyDir: {}
+
+      - name: rbac-policy
+        configMap:
+          defaultMode: 420
+          name: rbac-policy
+    extraEnvVarsSecrets:
+      - rhdh-secrets
+    podSecurityContext:
+      fsGroup: 3000
+    startupProbe:
+      failureThreshold: 10 # Override the default to account for longer startup time on Kubernetes.
+  postgresql:
+    enabled: true
+    postgresqlDataDir: /var/lib/pgsql/data/userdata
+    image:
+      registry: quay.io
+      repository: fedora/postgresql-15
+      tag: latest
+    auth:
+      secretKeys:
+        adminPasswordKey: postgres-password
+        userPasswordKey: password
+      existingSecret: null
+    primary:
+      securityContext:
+        enabled: false
+      podSecurityContext:
+        enabled: true
+        fsGroup: 3000
+      containerSecurityContext:
+        enabled: false
+      persistence:
+        enabled: true
+        size: 1Gi
+        mountPath: /var/lib/pgsql/data
+      extraEnvVars:
+        - name: POSTGRESQL_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: postgres-password
+              name: "{{ .Release.Name }}-postgresql"
+      # Tolerations and affinity needed to be scheduled on a spot AKS cluster. Only `postgresql` require it.
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: "kubernetes.azure.com/scalesetpriority"
+                    operator: In
+                    values:
+                      - "spot"
+  volumePermissions:
+    enabled: true
+  ingress:
+    enabled: true
+    className: webapprouting.kubernetes.azure.com
+    host: ""
+orchestrator:
+  enabled: false

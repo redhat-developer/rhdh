@@ -3077,20 +3077,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-scaffolder-backend-module-servicenow@npm:2.11.0":
-  version: 2.11.0
-  resolution: "@backstage-community/plugin-scaffolder-backend-module-servicenow@npm:2.11.0"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.5.0
-    "@backstage/plugin-scaffolder-node": ^0.12.1
-    abort-controller: ^3.0.0
-    axios: ^1.7.4
-    form-data: ^4.0.0
-    yaml: ^2.3.3
-  checksum: 77a9ebabcf3277756e03df24843debf65ab9c4201de900f25da1e03cf3326d8e8be3f81dabc1f60c32402afac4fcb8d6e8dba8da03c455a9b14847da4e384560
-  languageName: node
-  linkType: hard
-
 "@backstage-community/plugin-tech-radar-backend@npm:1.12.0":
   version: 1.12.0
   resolution: "@backstage-community/plugin-tech-radar-backend@npm:1.12.0"
@@ -5560,6 +5546,49 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 3294d2317f80ed3c42efa9adb86a9c880db2bbfbea8bf1e38059dbe0d567974ebcc59f9b4a8eacfa88561f5484161761073a066a194c6018214685a23a7a0b4a
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-techdocs@patch:@backstage/plugin-techdocs@npm%3A1.16.0#./.yarn/patches/@backstage-plugin-techdocs-npm-1.16.0-2323c61c09.patch::locator=dynamic-plugins-root%40workspace%3A.":
+  version: 1.16.0
+  resolution: "@backstage/plugin-techdocs@patch:@backstage/plugin-techdocs@npm%3A1.16.0#./.yarn/patches/@backstage-plugin-techdocs-npm-1.16.0-2323c61c09.patch::version=1.16.0&hash=bcd6af&locator=dynamic-plugins-root%40workspace%3A."
+  dependencies:
+    "@backstage/catalog-client": ^1.12.1
+    "@backstage/catalog-model": ^1.7.6
+    "@backstage/config": ^1.3.6
+    "@backstage/core-compat-api": ^0.5.4
+    "@backstage/core-components": ^0.18.3
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-plugin-api": ^0.13.0
+    "@backstage/integration": ^1.18.2
+    "@backstage/integration-react": ^1.2.12
+    "@backstage/plugin-auth-react": ^0.1.21
+    "@backstage/plugin-catalog-react": ^1.21.3
+    "@backstage/plugin-search-common": ^1.2.21
+    "@backstage/plugin-search-react": ^1.10.0
+    "@backstage/plugin-techdocs-common": ^0.1.1
+    "@backstage/plugin-techdocs-react": ^1.3.5
+    "@backstage/theme": ^0.7.0
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    "@material-ui/styles": ^4.10.0
+    "@microsoft/fetch-event-source": ^2.0.1
+    dompurify: ^3.2.4
+    git-url-parse: ^15.0.0
+    lodash: ^4.17.21
+    react-helmet: 6.1.0
+    react-use: ^17.2.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: af782aa375d6892eedc9c4900826c9ffa6a83ca782e324c672ab8d87c2d3b07955377505d5658bdb23c344d75e96dd626234c51487a622ab4215c55b49a1ac94
   languageName: node
   linkType: hard
 
@@ -16869,17 +16898,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"backstage-community-plugin-scaffolder-backend-module-servicenow@workspace:wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic":
-  version: 0.0.0-use.local
-  resolution: "backstage-community-plugin-scaffolder-backend-module-servicenow@workspace:wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic"
-  dependencies:
-    "@backstage-community/plugin-scaffolder-backend-module-servicenow": 2.11.0
-    "@backstage/cli": 0.34.5
-    "@janus-idp/cli": 3.7.0
-    typescript: 5.9.3
-  languageName: unknown
-  linkType: soft
-
 "backstage-community-plugin-tech-radar-backend@workspace:wrappers/backstage-community-plugin-tech-radar-backend-dynamic":
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-tech-radar-backend@workspace:wrappers/backstage-community-plugin-tech-radar-backend-dynamic"
@@ -27106,17 +27124,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^0.5.6":
-  version: 0.5.6
-  resolution: "mkdirp@npm:0.5.6"
-  dependencies:
-    minimist: ^1.2.6
-  bin:
-    mkdirp: bin/cmd.js
-  checksum: 0c91b721bb12c3f9af4b77ebf73604baf350e64d80df91754dc509491ae93bf238581e59c7188360cec7cb62fc4100959245a42cfe01834efedc5e9d068376c2
-  languageName: node
-  linkType: hard
-
 "mkdirp@npm:^1.0.3":
   version: 1.0.4
   resolution: "mkdirp@npm:1.0.4"
@@ -27279,17 +27286,14 @@ __metadata:
   linkType: hard
 
 "multer@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "multer@npm:2.0.2"
+  version: 2.1.1
+  resolution: "multer@npm:2.1.1"
   dependencies:
     append-field: ^1.0.0
     busboy: ^1.6.0
     concat-stream: ^2.0.0
-    mkdirp: ^0.5.6
-    object-assign: ^4.1.1
     type-is: ^1.6.18
-    xtend: ^4.0.2
-  checksum: 187f3539b3d5b7f80a289288fc21d3e4116ab9ed21ac9b9ceb25272c7344d215e9572f7e7ed01edb876afddf24661b06578f2c0fc67f36655ebb51a13ccf83dc
+  checksum: 1d2f4ad42a318b3881afe01d3ea2c16af5822c55a65151eaf94b7f807df0e72ac7bb11c174b65b1815bd814f5f60b06f8b95e2a074d77e0af5cb5b6f2a426aff
   languageName: node
   linkType: hard
 
