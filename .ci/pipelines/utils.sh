@@ -527,6 +527,7 @@ cluster_setup_k8s_helm() {
 # ==============================================================================
 
 base_deployment() {
+  common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
   namespace::configure ${NAME_SPACE}
@@ -562,6 +563,7 @@ base_deployment() {
 }
 
 rbac_deployment() {
+  common::require_vars "RELEASE_NAME_RBAC" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
@@ -629,6 +631,7 @@ initiate_deployments() {
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
 base_deployment_osd_gcp() {
+  common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
   namespace::configure ${NAME_SPACE}
@@ -657,6 +660,7 @@ base_deployment_osd_gcp() {
 }
 
 rbac_deployment_osd_gcp() {
+  common::require_vars "RELEASE_NAME_RBAC" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
