@@ -241,7 +241,7 @@ WORKDIR $CONTAINER_SOURCE/
 # Install techdocs dependencies using requirements files
 # hadolint ignore=DL3013,DL3041,SC2086
 COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
-RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
+RUN microdnf install -y jq python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
   # fix ownership for pip install folder
