@@ -366,7 +366,7 @@ upstream:
                 token: test-token
                 subject: test-subject
     image:
-      # Note: repository and tag are set via --set flags in helm upgrade -i commands
+      # Note: registry, repository and tag are set via --set flags in helm upgrade -i commands
       pullPolicy: Always
 
     extraEnvVars:
