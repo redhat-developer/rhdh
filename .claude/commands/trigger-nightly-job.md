@@ -76,26 +76,43 @@ Use WebFetch to check each relevant job history page and look for any job with a
 
 ## Step 3: Image Selection
 
-Ask the user whether they want to use the **default nightly image** or a **specific image tag**.
+Ask the user whether they want to use the **default nightly image** or a **specific image**.
 
-- **Default image**: Skip the `--quay-repo` and `--tag` flags entirely. Proceed to Step 4.
-- **Specific image tag**: Fetch the latest available tags from Quay and let the user pick one (continue below).
+- **Default image**: Skip the `--image-registry`, `--image-repo`, and `--tag` flags entirely. Proceed to Step 4.
+- **Specific image**: Ask for registry, repository, and tag (continue below).
 
-### Fetching Available Tags
+### Registry
 
-Only if the user wants a specific tag, fetch the latest available tags:
+If the user wants a non-default registry, use `--image-registry <REGISTRY>`. Default is `quay.io` — only pass the flag if a different registry is needed.
+
+### Repository and Tag
+
+Ask if they want the default downstream repo (`rhdh/rhdh-hub-rhel9`) or a different one. Then fetch tags.
+
+#### Fetching Available Tags from Quay
+
+Only if the image is on quay.io, fetch the latest available tags:
 
 ```bash
 curl -s 'https://quay.io/api/v1/repository/rhdh/rhdh-hub-rhel9/tag/?limit=20&onlyActiveTags=true&filter_tag_name=like:1.' | jq -r '.tags[].name | select(test("^[0-9]+\\.[0-9]+(-[0-9]+)?$"))' | sort -V | tail -20
 ```
 
+If the user specifies a different repo (e.g. `rhdh-community/rhdh`), adjust the API URL accordingly:
+
+```bash
+curl -s 'https://quay.io/api/v1/repository/<IMAGE_REPO>/tag/?limit=20&onlyActiveTags=true' | jq -r '.tags[].name' | head -20
+```
+
+If the registry is not quay.io, tag fetching is not available — ask the user to provide the tag directly.
+
 Present the tags to the user so they can choose. Common tag formats:
 - `1.9` - latest 1.9 release
 - `1.9-204` - specific build number
 - `1.10` - latest 1.10 release
-- `latest` - latest build overall
+- `next` - latest development build
+- `latest` - latest stable build
 
-When the user picks a tag, use `--tag` alone to override just the tag (the job's default Quay repo will be used). Only add `--quay-repo` if the user explicitly specifies a different repo.
+When the user picks a tag, use `--tag` alone to override just the tag (the job's default repo will be used). Only add `--image-repo` if the user explicitly specifies a different repo.
 
 ## Step 4: Fork Override
 
@@ -117,7 +134,9 @@ Construct the command and show it to the user before executing:
 ```bash
 .ci/pipelines/trigger-nightly-job.sh \
   --job <FULL_JOB_NAME> \
-  [--quay-repo rhdh/rhdh-hub-rhel9 --tag <TAG>] \
+  [--image-registry <REGISTRY>] \
+  [--image-repo <REPO>] \
+  [--tag <TAG>] \
   [--dry-run] \
   [--send-alerts] \
   [--org <ORG>] \
@@ -143,3 +162,4 @@ After execution:
 - If authentication is needed, the script will open a browser for SSO login.
 - The full list of configured jobs is at: https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh
 - Available image tags can be browsed at: https://quay.io/repository/rhdh/rhdh-hub-rhel9?tab=tags
+- The script flags are: `-j/--job`, `-I/--image-registry`, `-q/--image-repo`, `-t/--tag`, `-o/--org`, `-r/--repo`, `-b/--branch`, `-S/--send-alerts`, `-n/--dry-run`

@@ -203,13 +203,13 @@ build_payload() {
   local -a jq_args=()
 
   [[ -n "${IMAGE_REPO}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_IMAGE_REPO "${IMAGE_REPO}")
+  [[ -n "${IMAGE_REGISTRY}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_IMAGE_REGISTRY "${IMAGE_REGISTRY}")
   [[ -n "${TAG_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_TAG_NAME "${TAG_NAME}")
   [[ -n "${GITHUB_ORG_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_GITHUB_ORG_NAME "${GITHUB_ORG_NAME}")
   [[ -n "${GITHUB_REPOSITORY_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_GITHUB_REPOSITORY_NAME "${GITHUB_REPOSITORY_NAME}")
   [[ -n "${RELEASE_BRANCH_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_RELEASE_BRANCH_NAME "${RELEASE_BRANCH_NAME}")
   jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_SKIP_SEND_ALERT "${SKIP_SEND_ALERT}")
 
-  [[ -n "${IMAGE_REGISTRY}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_IMAGE_REGISTRY "${IMAGE_REGISTRY}")
   jq -n --arg job "${JOB_NAME}" "${jq_args[@]}" \
     '{job_name: $job, job_execution_type: "1", pod_spec_options: {envs: ($ARGS.named | del(.job))}}'
 }
