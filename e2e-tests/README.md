@@ -369,7 +369,9 @@ After running `local-test-setup.sh`, these variables are set:
 | `K8S_CLUSTER_URL`           | OpenShift API server URL                      |
 | `K8S_CLUSTER_TOKEN`         | Service account token (48-hour duration)      |
 | `JOB_NAME`                  | Selected job name                             |
-| `QUAY_REPO`                 | Image repository                              |
+| `IMAGE_REGISTRY`            | Image registry (default: `quay.io`)           |
+| `IMAGE_REPO`                | Image repository (fallback: `QUAY_REPO`)      |
+| `QUAY_REPO`                 | Image repository (legacy, use `IMAGE_REPO`)   |
 | `TAG_NAME`                  | Image tag                                     |
 | Plus all secrets from Vault | (exported with `-`, `.`, `/` replaced by `_`) |
 
