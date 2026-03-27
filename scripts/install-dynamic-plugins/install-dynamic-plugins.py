@@ -1338,7 +1338,7 @@ def main():
             index = includes.index(embedded_default)
             includes[index] = catalog_index_default_file
 
-    # --- Phase 1: parse all plugin lists (includes + main) ---
+    # parse all plugin lists
     parsed_includes: list[tuple[str, list[dict]]] = []
     for include in includes:
         if not isinstance(include, str):
@@ -1364,11 +1364,11 @@ def main():
     if not isinstance(plugins, list):
         raise InstallException(f"content of the \'plugins\' field must be a list in {dynamic_plugins_file}")
 
-    # --- Phase 2: pre-fetch all OCI plugin paths in parallel via skopeo inspect ---
+    # pre-fetch all OCI plugin paths in parallel via skopeo inspect
     all_plugin_entries = [p for (_, ps) in parsed_includes for p in ps] + plugins
     prefetch_oci_paths(all_plugin_entries)
 
-    # --- Phase 3: sequential merge loop (cache hits only — no network I/O) ---
+    # merge loop (has to be sequential) - we're only hitting cached values
     for (include_path, include_plugins) in parsed_includes:
         print(f'[installer] Including plugins from {include_path}\n', flush=True)
         for plugin in include_plugins:
