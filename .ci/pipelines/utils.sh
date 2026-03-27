@@ -912,7 +912,14 @@ spec:
         command: ["sh", "-c"]
         args:
           - |
-            psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
+            output=$(psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' 2>&1) && echo "Database created successfully" || {
+              if echo "$output" | grep -q "already exists"; then
+                echo "Database already exists, skipping creation"
+              else
+                echo "ERROR: Database creation failed: $output"
+                exit 1
+              fi
+            }
         env:
         - name: POSTGRES_HOST
           valueFrom:
