@@ -230,10 +230,10 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     read -r -p "Enter choice [1]: " image_type_choice
     image_type_choice=${image_type_choice:-1}
 
+    IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
     case "$image_type_choice" in
         1)
             # Downstream image
-            IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
             IMAGE_REPO="rhdh/rhdh-hub-rhel9"
             echo ""
             echo "Select image tag (quay.io/rhdh/rhdh-hub-rhel9):"
@@ -255,14 +255,12 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
             ;;
         2)
             # PR image
-            IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
             IMAGE_REPO="rhdh-community/rhdh"
             echo ""
             read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
             TAG_NAME="pr-${PR_NUMBER}"
             ;;
         *)
-            IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
             IMAGE_REPO="rhdh/rhdh-hub-rhel9"
             TAG_NAME="next"
             ;;
