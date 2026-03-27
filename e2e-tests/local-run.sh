@@ -149,7 +149,6 @@ if [[ -n "$CLI_IMAGE_REPO" && -n "$CLI_TAG_NAME" ]]; then
     JOB_NAME="${CLI_JOB_NAME:-pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm}"
     IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
     IMAGE_REPO="$CLI_IMAGE_REPO"
-    QUAY_REPO="$IMAGE_REPO"
     TAG_NAME="$CLI_TAG_NAME"
     SKIP_TESTS="${CLI_SKIP_TESTS:-false}"
     log::info "Using CLI flags (non-interactive mode)"
@@ -236,7 +235,6 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
             # Downstream image
             IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
             IMAGE_REPO="rhdh/rhdh-hub-rhel9"
-            QUAY_REPO="$IMAGE_REPO"
             echo ""
             echo "Select image tag (quay.io/rhdh/rhdh-hub-rhel9):"
             echo "  1) next (latest development build)"
@@ -259,7 +257,6 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
             # PR image
             IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
             IMAGE_REPO="rhdh-community/rhdh"
-            QUAY_REPO="$IMAGE_REPO"
             echo ""
             read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
             TAG_NAME="pr-${PR_NUMBER}"
@@ -267,7 +264,6 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
         *)
             IMAGE_REGISTRY="${CLI_IMAGE_REGISTRY:-quay.io}"
             IMAGE_REPO="rhdh/rhdh-hub-rhel9"
-            QUAY_REPO="$IMAGE_REPO"
             TAG_NAME="next"
             ;;
     esac
@@ -283,7 +279,6 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
 JOB_NAME="$JOB_NAME"
 IMAGE_REGISTRY="$IMAGE_REGISTRY"
 IMAGE_REPO="$IMAGE_REPO"
-QUAY_REPO="$QUAY_REPO"
 TAG_NAME="$TAG_NAME"
 SKIP_TESTS="$SKIP_TESTS"
 EOF
@@ -293,7 +288,7 @@ fi
 
 # Verify image exists on quay.io
 echo "Verifying image exists on quay.io..."
-IMAGE_CHECK_RESPONSE=$(curl -s "https://quay.io/api/v1/repository/${QUAY_REPO}/tag/?specificTag=${TAG_NAME}")
+IMAGE_CHECK_RESPONSE=$(curl -s "https://quay.io/api/v1/repository/${IMAGE_REPO}/tag/?specificTag=${TAG_NAME}")
 TAG_COUNT=$(echo "$IMAGE_CHECK_RESPONSE" | jq '.tags | length')
 
 if [[ "$TAG_COUNT" -eq 0 ]]; then
@@ -451,7 +446,6 @@ podman run -v "$WORK_DIR":/tmp/rhdh \
     -e JOB_NAME="$JOB_NAME" \
     -e IMAGE_REGISTRY="$IMAGE_REGISTRY" \
     -e IMAGE_REPO="$IMAGE_REPO" \
-    -e QUAY_REPO="$QUAY_REPO" \
     -e TAG_NAME="$TAG_NAME" \
     -e SKIP_TESTS="$SKIP_TESTS" \
     "$RUNNER_IMAGE" \

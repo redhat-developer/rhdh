@@ -65,7 +65,6 @@ echo ""
 export JOB_NAME
 export IMAGE_REGISTRY
 export IMAGE_REPO
-export QUAY_REPO
 export TAG_NAME
 export K8S_CLUSTER_URL
 export SHOWCASE_URL
