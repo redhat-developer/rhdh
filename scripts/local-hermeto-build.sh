@@ -84,6 +84,7 @@ clean_directories() {
       popd > /dev/null
     fi
   done
+  return 
 }
 
 #######################################
@@ -169,7 +170,7 @@ transform_containerfile() {
     "${transformed_containerfile}"
 
   # inject the cachi2 env variables to every RUN command
-  sed -i 's/^\s*RUN /RUN . \/cachi2\/cachi2.env \&\& /' $transformed_containerfile
+  sed -i 's/^\s*RUN /RUN . \/cachi2\/cachi2.env \&\& /' "$transformed_containerfile"
 }
 
 #######################################
@@ -185,11 +186,11 @@ transform_containerfile() {
 build_cache() {
   local local_cache_dir="$1"
   local local_cache_output_dir="$2"
-  local platform_args=""
+  local platform_args=()
 
   # Set platform args if TARGET_PLATFORM is specified
   if [[ -n "${TARGET_PLATFORM}" ]]; then
-    platform_args="--platform ${TARGET_PLATFORM}"
+    platform_args=("--platform" "${TARGET_PLATFORM}")
     echo "Building cache for platform: ${TARGET_PLATFORM} (arch: ${TARGET_ARCH})"
   fi
 
@@ -197,11 +198,11 @@ build_cache() {
   mkdir -p "${local_cache_output_dir}"
 
   # Ensure the latest hermeto image
-  podman pull ${platform_args} "${HERMETO_IMAGE}"
+  podman pull "${platform_args[@]}" "${HERMETO_IMAGE}"
 
   # Build cache
   podman run --rm -ti \
-    ${platform_args} \
+    "${platform_args[@]}" \
     -v "${PWD}:/source:z" \
     -v "${local_cache_dir}:/cachi2:z" \
     -w /source \
@@ -213,7 +214,7 @@ build_cache() {
     '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "yarn","path": "./dynamic-plugins"}, {"type": "pip","path": "./python", "allow_binary": "false"}]'
 
   podman run --rm -ti \
-    ${platform_args} \
+    "${platform_args[@]}" \
     -v "${PWD}:/source:z" \
     -v "${local_cache_dir}:/cachi2:z" \
     -w /source \
@@ -221,7 +222,7 @@ build_cache() {
     generate-env --format env --output /cachi2/cachi2.env /cachi2/output
 
   podman run --rm -ti \
-    ${platform_args} \
+    "${platform_args[@]}" \
     -v "${PWD}:/source:z" \
     -v "${local_cache_dir}:/cachi2:z" \
     -w /source \
@@ -244,11 +245,11 @@ build_image() {
   local component_dir="$1"
   local local_cache_dir="$2"
   local image="$3"
-  local platform_args=""
+  local platform_args=()
 
   # Set platform args if TARGET_PLATFORM is specified
   if [[ -n "${TARGET_PLATFORM}" ]]; then
-    platform_args="--platform ${TARGET_PLATFORM}"
+    platform_args=("--platform" "${TARGET_PLATFORM}")
     echo "Building image for platform: ${TARGET_PLATFORM} (arch: ${TARGET_ARCH})"
   fi
 
@@ -273,7 +274,7 @@ build_image() {
   trap 'rm -rf "${EMPTY_DIR}"' EXIT
 
   podman build -t "${image}" \
-    ${platform_args} \
+    "${platform_args[@]}" \
     --network none \
     --no-cache \
     -f "${component_dir}/build/containerfiles/Containerfile.hermeto" \
