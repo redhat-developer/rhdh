@@ -6,7 +6,6 @@
   ],
   "features": [
     "rules",
-    "ignore",
     "commands"
   ],
   "baseDirs": [
