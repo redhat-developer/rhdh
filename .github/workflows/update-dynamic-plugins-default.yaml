@@ -17,10 +17,6 @@ name: Update dynamic-plugins.default.yaml
 on:
   # workflow_dispatch so that it can be triggered manually if needed
   workflow_dispatch:
-  schedule:
-    # run at 2:48 UTC every day
-    - cron: "48 2 * * *"
-
   push:
     branches:
       # RHIDP-9862 disable updating the DPDY file in main; only update for 1.9 branch
