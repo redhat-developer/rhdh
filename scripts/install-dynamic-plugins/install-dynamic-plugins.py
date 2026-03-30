@@ -131,7 +131,6 @@ def merge(source, destination, prefix = ''):
 
 def maybe_merge_config(config, global_config):
     if config is not None and isinstance(config, dict):
-        print('Merging plugin-specific configuration', flush=True)
         return merge(config, global_config)
     else:
         return global_config
@@ -1430,8 +1429,12 @@ def main():
     display.summary()
 
     # Merge plugin configurations sequentially after all installs complete
+    merged_count = sum(1 for c in plugin_configs if c is not None and isinstance(c, dict))
     for plugin_config in plugin_configs:
         global_config = maybe_merge_config(plugin_config, global_config)
+
+    if merged_count > 0:
+        print(f'[installer] Merged plugin-specific configuration for {merged_count} plugin(s) into {dynamic_plugins_global_config_file}', flush=True)
 
     yaml.safe_dump(global_config, open(dynamic_plugins_global_config_file, 'w'))
 
