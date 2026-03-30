@@ -16,7 +16,7 @@ Note: Duplicate plugins found across config files in the `includes` field will t
 
 ## Dynamic plugins included in the RHDH container image
 
-The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configued to work. The comprehensive list of these packages is at [`default.packages.yaml`](https://github.com/redhat-developer/rhdh/blob/main/default.packages.yaml) file.
+The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configued to work. The comprehensive list of these packages is at [`default.packages.yaml`](../../default.packages.yaml) file.
 
 On application start, for each disabled package, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's will log something like:
 
