@@ -8,10 +8,6 @@ import { DEFAULT_CATALOG_INFO_YAML } from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.skip(
-    () => process.env.JOB_NAME.includes("osd-gcp"),
-    "skipping due to RHDHBUGS-555 on OSD Env",
-  );
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
