@@ -64,6 +64,29 @@ get_target_arch() {
 TARGET_ARCH="$(get_target_arch)"
 
 #######################################
+# Cleans node_modules and yarn cache in the root and dynamic-plugins directory
+# Globals:
+#   None
+# Arguments:
+#   component_dir: Path to the component directory
+# Outputs:
+#   None
+#######################################
+clean_directories() {
+  local component_dir="$1"
+  local directories=("${component_dir}" "${component_dir}/dynamic-plugins")
+  for directory in "${directories[@]}"; do
+    if [[ -d "${directory}" ]]; then
+      pushd "${directory}" > /dev/null
+      rm -rf node_modules
+      yarn cache clean
+      echo "Cleaned node_modules and yarn cache in ${directory}"
+      popd > /dev/null
+    fi
+  done
+}
+
+#######################################
 # Prints usage information and exits.
 # Globals:
 #   None
@@ -84,6 +107,7 @@ Options:
                           Required to build image unless --no-image is specified
   --no-cache              Skip cache build (use existing cache). Script will build the cache by default this is is specified.
   --no-image              Skip image build (only build cache)
+  --clean                 Automatically remove node_modules and yarn cache in the root/dynamic-plugins directory
   -h, --help              Show this help message
 
 Environment variables:
@@ -95,6 +119,7 @@ Examples (assume you are in the root of the rhdh repository):
   $0 -d . --no-image                                # Build cache only (build cache by default unless --no-cache is specified)
   $0 -d . -i quay.io/example/image:tag              # Builds cache and image
   $0 -d . -i quay.io/example/image:tag --no-cache   # Build image only (hermeto cache must exist)
+  $0 -d . --clean                                   # Clean node_modules and yarn cache in the root/dynamic-plugins directory
 
 Cross-platform build (ARM on x86), requires \`qemu-user-static\` to be installed:
   TARGET_PLATFORM=linux/arm64 $0 -d . -i quay.io/example/image:tag
@@ -273,6 +298,7 @@ main() {
   local image=""
   local no_cache=false
   local no_image=false
+  local clean=false
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -300,6 +326,10 @@ main() {
         no_image=true
         shift
         ;;
+      --clean)
+        clean=true
+        shift
+        ;;
       -h|--help)
         usage
         ;;
@@ -323,6 +353,18 @@ main() {
   # If image is not provided, implicitly skip image build
   if [[ -z "${image}" ]]; then
     no_image=true
+  fi
+
+  if [[ "${clean}" == true ]]; then
+    clean_directories "${component_dir}"
+  else
+    read -p "This script requires removal of node_modules and yarn cache in the root/dynamic-plugins directory. Continue? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Exiting..."
+      exit 1
+    fi
+    clean_directories "${component_dir}"
   fi
 
   mkdir -p "${LOCAL_CACHE_BASEDIR}"
