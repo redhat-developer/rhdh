@@ -104,15 +104,15 @@ For automation or quick runs, use CLI flags to skip interactive prompts:
 ./local-run.sh -j pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm -R registry.redhat.io -r rhdh/rhdh-hub-rhel9 -t next -s
 ```
 
-| Flag                  | Description                                                          |
-| --------------------- | -------------------------------------------------------------------- |
-| `-j, --job`           | Job name                                                             |
-| `-R, --registry`      | Image registry (default: `quay.io`)                                  |
-| `-r, --repo`          | Image repository (e.g., `rhdh/rhdh-hub-rhel9`)                      |
-| `-t, --tag`           | Image tag (e.g., `next`, `latest`, `1.5`)                            |
-| `-p, --pr`            | PR number (sets repo to `rhdh-community/rhdh`, tag to `pr-<number>`) |
-| `-s, --skip-tests`    | Deploy only, skip running tests                                      |
-| `-h, --help`          | Show help message                                                    |
+| Flag               | Description                                                          |
+| ------------------ | -------------------------------------------------------------------- |
+| `-j, --job`        | Job name                                                             |
+| `-R, --registry`   | Image registry (default: `quay.io`)                                  |
+| `-r, --repo`       | Image repository (e.g., `rhdh/rhdh-hub-rhel9`)                       |
+| `-t, --tag`        | Image tag (e.g., `next`, `latest`, `1.5`)                            |
+| `-p, --pr`         | PR number (sets repo to `rhdh-community/rhdh`, tag to `pr-<number>`) |
+| `-s, --skip-tests` | Deploy only, skip running tests                                      |
+| `-h, --help`       | Show help message                                                    |
 
 ---
 
@@ -444,17 +444,17 @@ The script at `.ci/pipelines/trigger-nightly-job.sh` triggers RHDH nightly ProwJ
 
 ### Flags
 
-| Flag                         | Description                                                  |
-| ---------------------------- | ------------------------------------------------------------ |
-| `-j, --job`                  | **(required)** Full ProwJob name to trigger                  |
-| `-I, --image-registry`       | Override the image registry (default: `quay.io`)             |
-| `-q, --image-repo`           | Override the image repository (requires `--tag`)             |
-| `-t, --tag`                  | Override the image tag                                       |
-| `-o, --org`                  | Override the GitHub org (default: `redhat-developer`)        |
-| `-r, --repo`                 | Override the GitHub repo name (default: `rhdh`)              |
-| `-b, --branch`               | Override the branch name                                     |
-| `-S, --send-alerts`          | Send Slack alerts (default: alerts are skipped)              |
-| `-n, --dry-run`              | Print the curl command without executing                     |
+| Flag                   | Description                                           |
+| ---------------------- | ----------------------------------------------------- |
+| `-j, --job`            | **(required)** Full ProwJob name to trigger           |
+| `-I, --image-registry` | Override the image registry (default: `quay.io`)      |
+| `-q, --image-repo`     | Override the image repository (requires `--tag`)      |
+| `-t, --tag`            | Override the image tag                                |
+| `-o, --org`            | Override the GitHub org (default: `redhat-developer`) |
+| `-r, --repo`           | Override the GitHub repo name (default: `rhdh`)       |
+| `-b, --branch`         | Override the branch name                              |
+| `-S, --send-alerts`    | Send Slack alerts (default: alerts are skipped)       |
+| `-n, --dry-run`        | Print the curl command without executing              |
 
 ### Authentication
 
