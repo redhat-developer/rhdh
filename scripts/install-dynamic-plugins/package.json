@@ -1,0 +1,29 @@
+{
+  "name": "@internal/install-dynamic-plugins",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dynamic Plugin Installer (TypeScript) — Registry HTTP API v2, npm pack, OCI images",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && rm -f dist/cli.cjs dist/cli.cjs.map && node esbuild.config.cjs",
+    "build:tsc": "tsc -p tsconfig.build.json",
+    "start": "node dist/install-dynamic-plugins.cjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "yarn build"
+  },
+  "dependencies": {
+    "proper-lockfile": "4.1.2",
+    "yaml": "2.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.3",
+    "esbuild": "0.27.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  },
+  "packageManager": "yarn@4.12.0"
+}

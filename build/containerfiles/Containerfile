@@ -241,7 +241,7 @@ WORKDIR $CONTAINER_SOURCE/
 # Install techdocs dependencies using requirements files
 # hadolint ignore=DL3013,DL3041,SC2086
 COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
-RUN microdnf install -y jq python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
+RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
   # fix ownership for pip install folder
@@ -266,11 +266,12 @@ COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
-# Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh \
-     $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/*.cjs \
+# Copy TypeScript installer bundle (yarn install && yarn build in scripts/install-dynamic-plugins) + launcher
+COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/dist/install-dynamic-plugins.cjs \
+     $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh \
      ./
-RUN chmod a+rx ./install-dynamic-plugins.sh ./*.cjs
+RUN chmod a+rx ./install-dynamic-plugins.sh ./install-dynamic-plugins.cjs && \
+  cd scripts/install-dynamic-plugins; yarn install && yarn build
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
