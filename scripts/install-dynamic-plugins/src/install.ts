@@ -38,7 +38,7 @@ const ociTarCache = new Map<string, string>();
 
 function needCmd(name: string): void {
   try {
-    execFileSync('sh', ['-c', `command -v "${name.replace(/"/g, '\\"')}"`], {
+    execFileSync('sh', ['-c', 'command -v "$1"', 'sh', name], {
       stdio: 'ignore'
     });
   } catch {
