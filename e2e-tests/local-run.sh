@@ -222,27 +222,20 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     echo "JOB_NAME: $JOB_NAME"
     echo ""
 
-    # Image selection - Downstream vs PR
+    # Image selection - Downstream vs PR vs Released vs Custom
     echo "Select image type:"
     echo "  1) Downstream image (quay.io/rhdh/rhdh-hub-rhel9)"
     echo "  2) PR image (quay.io/rhdh-community/rhdh)"
+    echo "  3) Released image (registry.redhat.io/rhdh/rhdh-hub-rhel9)"
+    echo "  4) Custom registry image"
     echo ""
     read -r -p "Enter choice [1]: " image_type_choice
     image_type_choice=${image_type_choice:-1}
 
-    # Image registry selection
-    if [[ -n "$CLI_IMAGE_REGISTRY" ]]; then
-        IMAGE_REGISTRY="$CLI_IMAGE_REGISTRY"
-    else
-        echo "Image registry (press Enter for default: quay.io):"
-        read -r -p "Registry [quay.io]: " registry_input
-        IMAGE_REGISTRY="${registry_input:-quay.io}"
-        echo ""
-    fi
-
     case "$image_type_choice" in
         1)
             # Downstream image
+            IMAGE_REGISTRY="quay.io"
             IMAGE_REPO="rhdh/rhdh-hub-rhel9"
             echo ""
             echo "Select image tag (quay.io/rhdh/rhdh-hub-rhel9):"
@@ -264,12 +257,28 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
             ;;
         2)
             # PR image
+            IMAGE_REGISTRY="quay.io"
             IMAGE_REPO="rhdh-community/rhdh"
             echo ""
             read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
             TAG_NAME="pr-${PR_NUMBER}"
             ;;
+        3)
+            # Released image
+            IMAGE_REGISTRY="registry.redhat.io"
+            IMAGE_REPO="rhdh/rhdh-hub-rhel9"
+            echo ""
+            read -r -p "Enter version tag (e.g., 1.5, 1.4): " TAG_NAME
+            ;;
+        4)
+            # Custom registry image
+            echo ""
+            read -r -p "Enter image registry (e.g., registry.example.com): " IMAGE_REGISTRY
+            read -r -p "Enter image repository (e.g., rhdh/rhdh-hub-rhel9): " IMAGE_REPO
+            read -r -p "Enter image tag (e.g., 1.5): " TAG_NAME
+            ;;
         *)
+            IMAGE_REGISTRY="quay.io"
             IMAGE_REPO="rhdh/rhdh-hub-rhel9"
             TAG_NAME="next"
             ;;
