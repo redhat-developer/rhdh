@@ -85,7 +85,7 @@ Where `<REPO>` is the image repository (default: `rhdh/rhdh-hub-rhel9`). Present
 **If 4 selected (non-quay registry)** — ask for all three values (tag fetching not available):
 - Registry (e.g. `brew.registry.redhat.io`)
 - Image repo (e.g. `rhdh/rhdh-hub-rhel9`)
-- Tag (e.g. `1.9-42`)
+- Tag (e.g. `1.9`)
 
 **If 5 selected** — ask for:
 - GitHub org (`--org`): e.g. `my-github-user`
