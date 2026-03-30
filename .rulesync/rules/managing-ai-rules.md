@@ -1,25 +1,8 @@
 ---
+root: false
 targets:
   - '*'
-root: false
-description: >-
-  Guidelines for creating and managing AI assistant rules, commands, and
-  configurations in the .rulesync folder
-globs:
-  - .rulesync/**
-  - .cursor/**
-  - .claude/**
-  - .opencode/**
-cursor:
-  alwaysApply: false
-  description: >-
-    Guidelines for creating and managing AI assistant rules, commands, and
-    configurations in the .rulesync folder
-  globs:
-    - .rulesync/**
-    - .cursor/**
-    - .claude/**
-    - .opencode/**
+globs: []
 ---
 # Managing AI Assistant Rules
 

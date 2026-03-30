@@ -1,10 +1,3 @@
----
-paths:
-  - .rulesync/**
-  - .cursor/**
-  - .claude/**
-  - .opencode/**
----
 # Managing AI Assistant Rules
 
 This document provides guidelines for creating, importing, and managing AI assistant rules, commands, and configurations.
