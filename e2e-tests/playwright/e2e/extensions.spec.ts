@@ -46,9 +46,7 @@ test.describe("Admin > Extensions", () => {
     await uiHelper.openSidebarButton(
       t["rhdh"][lang]["menuItem.administration"],
     );
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2782
-    // await uiHelper.openSidebar(t["plugin.extensions"][lang]["header.title"]);
-    await uiHelper.openSidebar("Extensions");
+    await uiHelper.openSidebar(t["rhdh"][lang]["menuItem.extensions"]);
     await uiHelper.verifyHeading(
       t["plugin.extensions"][lang]["header.extensions"],
     );
