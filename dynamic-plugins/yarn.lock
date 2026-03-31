@@ -3457,29 +3457,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-plugin-api@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@backstage/backend-plugin-api@npm:1.5.0"
-  dependencies:
-    "@backstage/cli-common": ^0.1.15
-    "@backstage/config": ^1.3.6
-    "@backstage/errors": ^1.2.7
-    "@backstage/plugin-auth-node": ^0.6.9
-    "@backstage/plugin-permission-common": ^0.9.3
-    "@backstage/plugin-permission-node": ^0.10.6
-    "@backstage/types": ^1.2.2
-    "@types/express": ^4.17.6
-    "@types/json-schema": ^7.0.6
-    "@types/luxon": ^3.0.0
-    json-schema: ^0.4.0
-    knex: ^3.0.0
-    luxon: ^3.0.0
-    zod: ^3.22.4
-  checksum: 2994e06a6833178da5c6eaea33889102f654bbaf73c3915af4b19f117f615a74c7d44d7458165c45add32d14455ad2ebbd35d93330181d945049b936724d6932
-  languageName: node
-  linkType: hard
-
-"@backstage/backend-plugin-api@npm:^1.4.4, @backstage/backend-plugin-api@npm:^1.5.0, @backstage/backend-plugin-api@npm:^1.6.0":
+"@backstage/backend-plugin-api@npm:1.6.0":
   version: 1.6.0
   resolution: "@backstage/backend-plugin-api@npm:1.6.0"
   dependencies:
@@ -3498,6 +3476,28 @@ __metadata:
     luxon: ^3.0.0
     zod: ^3.22.4
   checksum: 547bbef0db45cbc3ff2ddeaf19c8358ea537ebc62632fbe8413742a441896371970a2f4d56245f1f66eed204636f294e6c51cc3cc1ed669b18c44be616bdbe51
+  languageName: node
+  linkType: hard
+
+"@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.6.0#./.yarn/patches/@backstage-backend-plugin-api-npm-1.6.0-eaa7987a8e.patch::locator=dynamic-plugins-root%40workspace%3A.":
+  version: 1.6.0
+  resolution: "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.6.0#./.yarn/patches/@backstage-backend-plugin-api-npm-1.6.0-eaa7987a8e.patch::version=1.6.0&hash=e8ef03&locator=dynamic-plugins-root%40workspace%3A."
+  dependencies:
+    "@backstage/cli-common": ^0.1.16
+    "@backstage/config": ^1.3.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.6.10
+    "@backstage/plugin-permission-common": ^0.9.3
+    "@backstage/plugin-permission-node": ^0.10.7
+    "@backstage/types": ^1.2.2
+    "@types/express": ^4.17.6
+    "@types/json-schema": ^7.0.6
+    "@types/luxon": ^3.0.0
+    json-schema: ^0.4.0
+    knex: ^3.0.0
+    luxon: ^3.0.0
+    zod: ^3.22.4
+  checksum: 7441051a3d4fd54fe7ac957b38d1f627bf9ced39e8e8b86f7b3686cee376319a4991925edce60d4412bbc9942c7fa9f8c722001bb3e81744232a0374d8bc9537
   languageName: node
   linkType: hard
 
@@ -3525,7 +3525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli-common@npm:^0.1.15, @backstage/cli-common@npm:^0.1.16":
+"@backstage/cli-common@npm:0.1.16":
   version: 0.1.16
   resolution: "@backstage/cli-common@npm:0.1.16"
   dependencies:
@@ -3534,6 +3534,18 @@ __metadata:
     global-agent: ^3.0.0
     undici: ^7.2.3
   checksum: 8fba4579aa834a22786df220985a90ef68308c3be9a5ee89b416d69aec4e575551192eb4936175c858bb45418a3c9a6b269742c42798bc39cd00bcb051eabe67
+  languageName: node
+  linkType: hard
+
+"@backstage/cli-common@patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch::locator=dynamic-plugins-root%40workspace%3A.":
+  version: 0.1.16
+  resolution: "@backstage/cli-common@patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch::version=0.1.16&hash=1f1779&locator=dynamic-plugins-root%40workspace%3A."
+  dependencies:
+    "@backstage/errors": ^1.2.7
+    cross-spawn: ^7.0.3
+    global-agent: ^3.0.0
+    undici: ^7.2.3
+  checksum: 96953d5a79f029327cafdbf2e47ced402f6a65819733fb3720eb1c151bdf0a089daadcfbd9c802eafb7b792d985c3db89edf5befafe5532280d9cdd4d5d3875a
   languageName: node
   linkType: hard
 
@@ -5386,7 +5398,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-techdocs-node@npm:^1.13.10, @backstage/plugin-techdocs-node@npm:^1.13.9":
+"@backstage/plugin-techdocs-node@npm:1.13.10":
   version: 1.13.10
   resolution: "@backstage/plugin-techdocs-node@npm:1.13.10"
   dependencies:
@@ -5420,6 +5432,43 @@ __metadata:
     recursive-readdir: ^2.2.2
     winston: ^3.2.1
   checksum: d44582205efee6d478c826762fa394e1e9a718af9f2a7fe334040bc334db507dbdfb2dae6aed4a9324e298636973031e56b1fd5120bd08084e5f5ba3c85c5bf7
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-techdocs-node@patch:@backstage/plugin-techdocs-node@npm%3A1.13.10#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.10-3167b4dd48.patch::locator=dynamic-plugins-root%40workspace%3A.":
+  version: 1.13.10
+  resolution: "@backstage/plugin-techdocs-node@patch:@backstage/plugin-techdocs-node@npm%3A1.13.10#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.10-3167b4dd48.patch::version=1.13.10&hash=ed46f9&locator=dynamic-plugins-root%40workspace%3A."
+  dependencies:
+    "@aws-sdk/client-s3": ^3.350.0
+    "@aws-sdk/credential-providers": ^3.350.0
+    "@aws-sdk/lib-storage": ^3.350.0
+    "@aws-sdk/types": ^3.347.0
+    "@azure/identity": ^4.0.0
+    "@azure/storage-blob": ^12.5.0
+    "@backstage/backend-plugin-api": ^1.6.0
+    "@backstage/catalog-model": ^1.7.6
+    "@backstage/config": ^1.3.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/integration": ^1.19.0
+    "@backstage/integration-aws-node": ^0.1.19
+    "@backstage/plugin-search-common": ^1.2.21
+    "@backstage/plugin-techdocs-common": ^0.1.1
+    "@google-cloud/storage": ^7.0.0
+    "@smithy/node-http-handler": ^3.0.0
+    "@trendyol-js/openstack-swift-sdk": ^0.0.7
+    "@types/express": ^4.17.6
+    dockerode: ^4.0.0
+    express: ^4.22.0
+    fs-extra: ^11.2.0
+    git-url-parse: ^15.0.0
+    hpagent: ^1.2.0
+    js-yaml: ^4.0.0
+    json5: ^2.1.3
+    mime-types: ^2.1.27
+    p-limit: ^3.1.0
+    recursive-readdir: ^2.2.2
+    winston: ^3.2.1
+  checksum: 380afa64fc004f49aa72df122934db6580c4833b8c90afce01220ce49058ed706b113ef70d558ae1ddac4580f2935b0493731ec19680dd0a03cdaed5a52c4d3a
   languageName: node
   linkType: hard
 
