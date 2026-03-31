@@ -44,7 +44,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
   // Helm chart resource names
   let deploymentName = releaseName;
   const postgresPodName = `${releaseName}-postgresql-0`;
-  let postgresServiceName = `${releaseName}-postgresql`;
+  const postgresServiceName = `${releaseName}-postgresql`;
   let configMapName = `${releaseName}-app-config`;
   let secretName = `${releaseName}-postgresql`; // Helm chart managed secret
   const podLabelSelector = `app.kubernetes.io/component=backstage,app.kubernetes.io/instance=${releaseName},app.kubernetes.io/name=developer-hub`;
