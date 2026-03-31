@@ -1,21 +1,8 @@
 ---
+root: false
 targets:
   - '*'
-root: false
-description: >-
-  AI-guided workflow for adding dynamic plugin metadata to the RHDH Extensions
-  Catalog
-globs:
-  - catalog-entities/extensions/**
-  - docs/dynamic-plugins/**
-cursor:
-  alwaysApply: false
-  description: >-
-    AI-guided workflow for adding dynamic plugin metadata to the RHDH Extensions
-    Catalog
-  globs:
-    - catalog-entities/extensions/**
-    - docs/dynamic-plugins/**
+globs: []
 ---
 # RHDH Extensions Catalog - Plugin Metadata Workflow
 

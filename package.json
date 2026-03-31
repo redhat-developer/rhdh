@@ -31,7 +31,8 @@
     "versions:bump": "node ./scripts/update-backstage.mjs",
     "rulesync:generate": "rulesync generate",
     "rulesync:import:cursor": "rulesync import --targets cursor",
-    "rulesync:import:claude": "rulesync import --targets claudecode"
+    "rulesync:import:claude": "rulesync import --targets claudecode",
+    "rulesync:import:opencode": "rulesync import --targets opencode"
   },
   "workspaces": {
     "packages": [
@@ -52,7 +53,7 @@
     "jsdom": "27.4.0",
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
-    "rulesync": "3.34.0",
+    "rulesync": "7.23.0",
     "sherif": "1.10.0",
     "turbo": "2.8.10"
   },

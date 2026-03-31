@@ -495,12 +495,24 @@ orchestrator::deploy_workflows() {
     patch_namespace="$namespace"
   fi
 
-  # Apply manifests and wait for resources
-  _orchestrator::apply_manifests "$namespace"
-  _orchestrator::wait_for_sonataflow_resources "$namespace"
-
-  # Patch each workflow with PostgreSQL configuration
+  # Deploy each workflow individually: apply manifest, patch with persistence
+  # immediately, then wait for rollout. This avoids a double rollout where the
+  # operator creates a deployment without persistence and old replicas get stuck
+  # in pending termination during the update.
+  local workflow_manifests
   for workflow in $ORCHESTRATOR_WORKFLOWS; do
+    case "$workflow" in
+      greeting) workflow_manifests="${GREETING_MANIFESTS}" ;;
+      failswitch) workflow_manifests="${FAILSWITCH_MANIFESTS}" ;;
+      *)
+        log::error "Unknown workflow: $workflow"
+        return 1
+        ;;
+    esac
+
+    log::info "Deploying workflow '$workflow'..."
+    oc apply -f "${workflow_manifests}" -n "$namespace"
+
     _orchestrator::patch_workflow_postgres "$namespace" "$workflow" \
       "$pqsl_secret_name" "$pqsl_user_key" "$pqsl_password_key" \
       "$pqsl_svc_name" "$patch_namespace"

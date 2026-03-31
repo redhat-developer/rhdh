@@ -1,14 +1,8 @@
 ---
+root: false
 targets:
   - '*'
-root: false
-description: Best practices for using Playwright locators in RHDH e2e tests
-globs:
-  - e2e-tests/**
-cursor:
-  description: Best practices for using Playwright locators in RHDH e2e tests
-  globs:
-    - e2e-tests/**
+globs: []
 ---
 # Playwright Locator Best Practices
 

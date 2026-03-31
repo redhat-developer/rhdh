@@ -51,10 +51,13 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
   test("Register the template for scaffolder relation processor", async () => {
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.verifyText("Name");
+    // Wait for the Catalog page table to fully load before proceeding
+    await expect(page.getByText("Name", { exact: true }).first()).toBeVisible({
+      timeout: 20000,
+    });
 
     await uiHelper.clickButton("Self-service");
-    await uiHelper.verifyHeading("Templates");
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
   });
@@ -87,8 +90,15 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await uiHelper.clickButton("Review");
 
     await uiHelper.clickButton("Create");
-    await page.waitForTimeout(5000);
+    // Wait for the scaffolder task to complete and the link to appear
+    await expect(
+      page.getByRole("link", { name: "Open in catalog" }),
+    ).toBeVisible({ timeout: 60000 });
     await uiHelper.clickLink("Open in catalog");
+    // Ensure the entity page has loaded
+    await expect(page.getByText(reactAppDetails.componentName)).toBeVisible({
+      timeout: 20000,
+    });
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {

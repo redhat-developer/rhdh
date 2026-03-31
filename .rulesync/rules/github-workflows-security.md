@@ -1,21 +1,8 @@
 ---
+root: false
 targets:
   - '*'
-root: false
-description: >-
-  Security best practices for GitHub Actions workflows based on GitHub Security
-  Lab guidelines
-globs:
-  - .github/workflows/**
-  - .github/actions/**
-cursor:
-  alwaysApply: false
-  description: >-
-    Security best practices for GitHub Actions workflows based on GitHub
-    Security Lab guidelines
-  globs:
-    - .github/workflows/**
-    - .github/actions/**
+globs: []
 ---
 # GitHub Workflows Security Best Practices
 

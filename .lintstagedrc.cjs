@@ -2,18 +2,18 @@
  * @type {import('lint-staged').Configuration}
  */
 module.exports = {
-  ".{cursor,claude,rulesync}/**/*.{mdc,md,json}": (filenames) => {
+  ".{cursor,claude,opencode,rulesync}/**/*.{mdc,md,json}": (filenames) => {
     const hasRulesync = filenames.some((f) => f.includes(".rulesync/"));
-    const changedDirs = ["cursor", "claude"].filter((dir) =>
+    const changedDirs = ["cursor", "claude", "opencode"].filter((dir) =>
       filenames.some((f) => f.includes(`.${dir}/`))
     );
 
-    // If .rulesync changed, generate and sync to .cursor and .claude
+    // If .rulesync changed, generate and sync to .cursor, .claude, and .opencode
     if (hasRulesync) {
-      return ["yarn rulesync:generate", "git add .cursor .claude"];
+      return ["yarn rulesync:generate", "git add .cursor .claude .opencode"];
     }
 
-    // If .cursor or .claude changed directly, throw error
+    // If .cursor, .claude, or .opencode changed directly, throw error
     if (changedDirs.length > 0) {
       changedDirs.forEach((dir) => {
         console.error(`⚠️  Direct changes to .${dir} detected!`);

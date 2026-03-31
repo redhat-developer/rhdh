@@ -3,8 +3,7 @@ global:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
     includes:
-      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
-      # This file ONLY works with the `rhdh-community/rhdh` container image.
+      # -- List of dynamic plugin wrappers included in, or side-loaded as oci artifacts to, the `rhdh` container image, some of which are disabled by default.
       - 'dynamic-plugins.default.yaml'
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
@@ -422,7 +421,7 @@ upstream:
     image:
       registry: quay.io
       repository: fedora/postgresql-15
-      tag: latest@sha256:e18386e401b709298d60d44182033915ca5ab814e7f779f55498153d33ea9336
+      tag: latest@sha256:062c55e9d8ffc09f5fe8c6f4278cefa693a86c9ed08a0691133cd839393e8444
     auth:
       secretKeys:
         adminPasswordKey: postgres-password
