@@ -2,17 +2,16 @@
 
 ## Overview
 
-The RHDH deployment for end-to-end (e2e) tests in CI has been updated to use **ephemeral clusters**
-on OpenShift Container Platform (OCP) instead of persistent clusters.
+The RHDH deployment for end-to-end (e2e) tests in CI uses **ephemeral clusters** on OpenShift
+Container Platform (OCP).
 
-### Key Updates
+### Key Details
 
-- Starting from version **1.5**, ephemeral clusters are used for:
-  - OCP nightly jobs (v4.17, v4.16, and v4.14).
-  - PR checks on the main branch.
-- Previously, RHDH PR checks utilized persistent clusters created on IBM Cloud.
-- Now, ephemeral clusters are provisioned using the **OpenShift CI cluster claim** on AWS via the
+- Ephemeral OCP clusters are provisioned using the **OpenShift CI cluster claim** on AWS via the
   RHDH-QE account in the `us-east-2` region.
+- Used for OCP nightly jobs (multiple OCP versions) and PR checks on the main branch.
+- Non-OCP platforms (AKS, EKS) use ephemeral clusters provisioned by
+  [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running shared cluster.
 
 ---
 
@@ -28,23 +27,12 @@ To access ephemeral clusters, you must:
 
 ## Cluster Pools
 
-The following cluster pools are available for different OCP versions:
+RHDH uses dedicated Hive cluster pools with the `rhdh` prefix. Pool versions rotate as new OCP
+releases come out.
 
-- **RHDH-4-19-US-EAST-2**
-  - Usage: OCP v4.19 nightly jobs.
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-19-0-amd64-aws-us-east-2_clusterpool.yaml).
-
-- **RHDH-4-18-US-EAST-2**
-  - Usage: OCP v4.18 nightly jobs.
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-18-0-amd64-aws-us-east-2_clusterpool.yaml).
-
-- **RHDH-4-17-US-EAST-2**
-  - Usage: PR checks on the main branch and OCP v4.17 nightly jobs.
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-17-0-amd64-aws-us-east-2_clusterpool.yaml).
-
-- **RHDH-4-16-US-EAST-2**
-  - Usage: OCP v4.16 nightly jobs.
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-16-0-amd64-aws-us-east-2_clusterpool.yaml).
+To find the current list of available pools, filter for `rhdh` in the
+[existing cluster pools](https://docs.ci.openshift.org/how-tos/cluster-claim/#existing-cluster-pools)
+page.
 
 ---
 
@@ -87,7 +75,7 @@ ephemeral environment credentials.
    .ci/pipelines/ocp-cluster-claim-login.sh
    ```
 2. Provide the Prow log URL when prompted, for example:
-   `https://prow.ci.openshift.org/view/gs/test-platform-results/pr-logs/pull/janus-idp_backstage-showcase/2089/pull-ci-janus-idp-backstage-showcase-main-e2e-tests/1866766753132974080 `
+   `https://prow.ci.openshift.org/view/gs/test-platform-results/logs/periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly/<BUILD_ID>`
 3. The script will:
    - Log in to the hosted-mgmt cluster, which manages ephemeral cluster creation.
    - Retrieve admin credentials and log in to the ephemeral cluster.
@@ -153,20 +141,8 @@ yarn shellcheck
 
 ### Modular Architecture
 
-Pipeline utilities are organized into modules in `.ci/pipelines/lib/`:
+Pipeline utilities are organized into modules in `.ci/pipelines/lib/`. See
+[`lib/README.md`](lib/README.md) for the full list of modules, function signatures, and conventions.
 
-- `log.sh` - Logging functions
-- `common.sh` - Common utilities (oc_login, sed_inplace, etc.)
-- `k8s-wait.sh` - Kubernetes wait/polling operations
-- `operators.sh` - Operator installations
-
-Usage example:
-
-```bash
-# Using modular functions
-k8s_wait::deployment "namespace" "deployment"
-common::oc_login
-operator::install_pipelines
-```
-
-See `lib/README.md` for module details.
+For detailed triage and failure investigation, see the
+[CI Medic Guide](../../docs/e2e-tests/CI-medic-guide.md).

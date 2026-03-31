@@ -132,7 +132,7 @@ The step is configured in job definitions to run after test execution completes,
 
 ## Slack Notifications
 
-For nightly runs, the system automatically sends notifications to the `#rhdh-e2e-alerts` Slack channel. The message format includes:
+For nightly runs, the system automatically sends notifications to the `#rhdh-e2e-alerts` Slack channel (main branch) or `#rhdh-e2e-alerts-{VERSION}` channels for release branches (e.g., `#rhdh-e2e-alerts-1-9`, `#rhdh-e2e-alerts-1-10`). The message format includes:
 
 - **Job Header**: Job name with overall status
 - **Logs Link**: Direct link to job logs
