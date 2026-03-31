@@ -4,7 +4,7 @@ This document describes the enhanced CI reporting system that provides detailed 
 
 ## Overview
 
-The enhanced CI reporting system uses the [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script to track various aspects of test execution and deployment status. Results are stored in the `SHARED_DIR` for use by OpenShift CI steps and are formatted into Slack notifications sent to the `#rhdh-e2e-test-alerts` channel.
+The enhanced CI reporting system uses the [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) script to track various aspects of test execution and deployment status. Results are stored in the `SHARED_DIR` for use by OpenShift CI steps and are formatted into Slack notifications sent to the `#rhdh-e2e-alerts` channel.
 
 **Note:** The `SHARED_DIR` can only contain files. No directories or nested structures are supported.
 
@@ -115,7 +115,7 @@ The reporting system integrates with OpenShift CI through:
 
 1. **Step Registry**: OpenShift CI steps can read the status files from `SHARED_DIR`
 2. **Artifact Collection**: Status files are preserved in artifacts for debugging
-3. **Slack Notifications**: Results are formatted and sent to `#rhdh-e2e-test-alerts`
+3. **Slack Notifications**: Results are formatted and sent to `#rhdh-e2e-alerts`
 
 ### The `redhat-developer-rhdh-send-alert` step
 
@@ -124,7 +124,7 @@ The `redhat-developer-rhdh-send-alert` step is defined in the [OpenShift release
 - Runs as a post-step in OpenShift CI jobs
 - Reads the status files from `SHARED_DIR` that were written by the reporting functions
 - Formats the collected status information into structured Slack messages
-- Sends notifications to the `#rhdh-e2e-test-alerts` channel
+- Sends notifications to the `#rhdh-e2e-alerts` channel
 - Handles multiple deployments and their individual test results
 - Provides links to job logs, artifacts, and ReportPortal results
 
@@ -132,7 +132,7 @@ The step is configured in job definitions to run after test execution completes,
 
 ## Slack Notifications
 
-For nightly runs, the system automatically sends notifications to the `#rhdh-e2e-test-alerts` Slack channel. The message format includes:
+For nightly runs, the system automatically sends notifications to the `#rhdh-e2e-alerts` Slack channel. The message format includes:
 
 - **Job Header**: Job name with overall status
 - **Logs Link**: Direct link to job logs
