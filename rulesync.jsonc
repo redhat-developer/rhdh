@@ -1,11 +1,11 @@
 {
   "targets": [
     "cursor",
-    "claudecode"
+    "claudecode",
+    "opencode"
   ],
   "features": [
     "rules",
-    "ignore",
     "commands"
   ],
   "baseDirs": [

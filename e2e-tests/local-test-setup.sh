@@ -63,7 +63,8 @@ echo ""
 
 # Export config vars
 export JOB_NAME
-export QUAY_REPO
+export IMAGE_REGISTRY
+export IMAGE_REPO
 export TAG_NAME
 export K8S_CLUSTER_URL
 export SHOWCASE_URL
@@ -74,7 +75,7 @@ export IS_OPENSHIFT
 log::info "Configuration:"
 log::info "  JOB_NAME:         $JOB_NAME"
 log::info "  PLATFORM:         $CONTAINER_PLATFORM"
-log::info "  IMAGE:            quay.io/${QUAY_REPO}:${TAG_NAME}"
+log::info "  IMAGE:            ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
 log::info "  K8S_CLUSTER_URL:  $K8S_CLUSTER_URL"
 echo ""
 
