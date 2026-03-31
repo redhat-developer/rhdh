@@ -28,7 +28,7 @@ configure_schema_mode_runtime_env() {
 
   local postgres_service=""
   for candidate in "${service_candidates[@]}"; do
-    if oc get svc "${candidate}" -n "${namespace}" &>/dev/null; then
+    if oc get svc "${candidate}" -n "${namespace}" &> /dev/null; then
       postgres_service="${candidate}"
       break
     fi
@@ -41,13 +41,13 @@ configure_schema_mode_runtime_env() {
 
   local admin_password=""
   for candidate in "${secret_candidates[@]}"; do
-    if ! oc get secret "${candidate}" -n "${namespace}" &>/dev/null; then
+    if ! oc get secret "${candidate}" -n "${namespace}" &> /dev/null; then
       continue
     fi
 
-    admin_password=$(oc get secret "${candidate}" -n "${namespace}" -o jsonpath='{.data.postgres-password}' 2>/dev/null | base64 -d || true)
+    admin_password=$(oc get secret "${candidate}" -n "${namespace}" -o jsonpath='{.data.postgres-password}' 2> /dev/null | base64 -d || true)
     if [[ -z "${admin_password}" ]]; then
-      admin_password=$(oc get secret "${candidate}" -n "${namespace}" -o jsonpath='{.data.POSTGRES_PASSWORD}' 2>/dev/null | base64 -d || true)
+      admin_password=$(oc get secret "${candidate}" -n "${namespace}" -o jsonpath='{.data.POSTGRES_PASSWORD}' 2> /dev/null | base64 -d || true)
     fi
     if [[ -n "${admin_password}" ]]; then
       break
@@ -60,7 +60,7 @@ configure_schema_mode_runtime_env() {
   fi
 
   pkill -f "port-forward.*${namespace}.*5432:5432" || true
-  oc port-forward -n "${namespace}" "svc/${postgres_service}" 5432:5432 >/tmp/schema-mode-port-forward-operator.log 2>&1 &
+  oc port-forward -n "${namespace}" "svc/${postgres_service}" 5432:5432 > /tmp/schema-mode-port-forward-operator.log 2>&1 &
   sleep 2
   if ! nc -z localhost 5432; then
     log::warn "Schema-mode nightly (operator): port-forward to ${postgres_service} failed; schema tests remain opt-in."
