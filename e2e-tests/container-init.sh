@@ -30,16 +30,57 @@ fi
 
 # Fetch and write secrets to /tmp/secrets/
 log::section "Fetching Vault Secrets"
-SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r ".data.data")
+mkdir -p /tmp/secrets
+if SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" 2>/tmp/vault-fetch.err | jq -r ".data.data"); then
+    for key in $(echo "$SECRETS" | jq -r "keys[]"); do
+        if [[ "$key" == */* ]]; then
+            mkdir -p "/tmp/secrets/$(dirname "$key")"
+        fi
+        echo "$SECRETS" | jq -r --arg k "$key" '.[$k]' > "/tmp/secrets/$key"
+    done
+    log::success "Secrets written to /tmp/secrets/"
+else
+    log::warn "Vault fetch failed; continuing with local fallback secrets for local-run."
+    cat /tmp/vault-fetch.err || true
+    rm -f /tmp/vault-fetch.err || true
 
-for key in $(echo "$SECRETS" | jq -r "keys[]"); do
-    if [[ "$key" == */* ]]; then
+    # Create placeholder files for every /tmp/secrets/<name> reference in env_variables.sh.
+    # This allows local debugging flows where Vault access is restricted.
+    sed -n 's/.*cat \/tmp\/secrets\/\([A-Za-z0-9_.\/-]*\).*/\1/p' \
+        /tmp/rhdh/.ci/pipelines/env_variables.sh | sort -u | while read -r key; do
+        [[ -z "$key" ]] && continue
         mkdir -p "/tmp/secrets/$(dirname "$key")"
-    fi
-    echo "$SECRETS" | jq -r --arg k "$key" '.[$k]' > "/tmp/secrets/$key"
-done
+        [[ -e "/tmp/secrets/$key" ]] || echo "ZHVtbXk=" > "/tmp/secrets/$key"
+    done
 
-log::success "Secrets written to /tmp/secrets/"
+    # Prefer the namespace from the image repository (e.g. rhdh-community/rhdh -> rhdh-community).
+    : "${QUAY_REPO:=rhdh-community/rhdh}"
+    quay_namespace="${QUAY_REPO%%/*}"
+    echo "${quay_namespace}" > /tmp/secrets/QUAY_NAMESPACE
+    if [[ ! -s /tmp/secrets/QUAY_TOKEN ]]; then
+        echo "dummy" > /tmp/secrets/QUAY_TOKEN
+    fi
+    log::warn "Generated placeholder secrets under /tmp/secrets (for local debug only)."
+fi
+
+# Ensure required Quay secrets exist even if Vault payload omitted them.
+: "${QUAY_REPO:=rhdh-community/rhdh}"
+quay_namespace="${QUAY_REPO%%/*}"
+if [[ ! -s /tmp/secrets/QUAY_NAMESPACE ]]; then
+    echo "${quay_namespace}" > /tmp/secrets/QUAY_NAMESPACE
+fi
+if [[ ! -s /tmp/secrets/QUAY_TOKEN ]]; then
+    echo "dummy" > /tmp/secrets/QUAY_TOKEN
+fi
+
+# Ensure all /tmp/secrets/* files referenced by env_variables.sh exist.
+# Vault payloads can vary by user permissions; local-run should still be debuggable.
+sed -n 's/.*cat \/tmp\/secrets\/\([A-Za-z0-9_.\/-]*\).*/\1/p' \
+    /tmp/rhdh/.ci/pipelines/env_variables.sh | sort -u | while read -r key; do
+    [[ -z "$key" ]] && continue
+    mkdir -p "/tmp/secrets/$(dirname "$key")"
+    [[ -e "/tmp/secrets/$key" ]] || echo "ZHVtbXk=" > "/tmp/secrets/$key"
+done
 
 # Login using service account token from host
 log::section "Cluster Service Account and Token Management"

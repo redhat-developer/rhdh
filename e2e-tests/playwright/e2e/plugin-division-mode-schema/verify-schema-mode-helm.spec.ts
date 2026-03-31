@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { chromium, test } from "@playwright/test";
 import * as yaml from "js-yaml";
 import { Client } from "pg";
 import { execSync } from "child_process";
@@ -42,11 +42,11 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
   const releaseName = process.env.RELEASE_NAME || "redhat-developer-hub";
 
   // Helm chart resource names
-  const deploymentName = releaseName;
+  let deploymentName = releaseName;
   const postgresPodName = `${releaseName}-postgresql-0`;
-  const postgresServiceName = `${releaseName}-postgresql`;
-  const configMapName = `${releaseName}-app-config`;
-  const secretName = `${releaseName}-postgresql`; // Helm chart managed secret
+  let postgresServiceName = `${releaseName}-postgresql`;
+  let configMapName = `${releaseName}-app-config`;
+  let secretName = `${releaseName}-postgresql`; // Helm chart managed secret
   const podLabelSelector = `app.kubernetes.io/component=backstage,app.kubernetes.io/instance=${releaseName},app.kubernetes.io/name=developer-hub`;
 
   let dbHost: string;
@@ -89,6 +89,57 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     );
 
     const kubeClient = new KubeClient();
+    const deploymentCandidates = [`${releaseName}-developer-hub`, releaseName];
+    const configMapCandidates = [
+      `${releaseName}-developer-hub-app-config`,
+      `${releaseName}-app-config`,
+      "app-config-rhdh",
+      "backstage-appconfig-developer-hub",
+    ];
+    const secretCandidates = [
+      `${releaseName}-postgresql`,
+      "rhdh-postgresql",
+      "redhat-developer-hub-postgresql",
+    ];
+
+    for (const candidate of deploymentCandidates) {
+      try {
+        await kubeClient.appsApi.readNamespacedDeployment(candidate, namespace);
+        deploymentName = candidate;
+        console.log(`✓ Using deployment: ${deploymentName}`);
+        break;
+      } catch {
+        // try next candidate
+      }
+    }
+
+    for (const candidate of secretCandidates) {
+      try {
+        await kubeClient.coreV1Api.readNamespacedSecret(candidate, namespace);
+        secretName = candidate;
+        console.log(`✓ Using PostgreSQL secret: ${secretName}`);
+        break;
+      } catch {
+        // try next candidate
+      }
+    }
+
+    let configMapResolved = false;
+    for (const candidate of configMapCandidates) {
+      try {
+        await kubeClient.getConfigMap(candidate, namespace);
+        configMapName = candidate;
+        configMapResolved = true;
+        console.log(`✓ Using app-config ConfigMap: ${configMapName}`);
+        break;
+      } catch {
+        // try next candidate
+      }
+    }
+    if (!configMapResolved) {
+      configMapName = await kubeClient.findAppConfigMap(namespace);
+      console.log(`✓ Using discovered app-config ConfigMap: ${configMapName}`);
+    }
 
     console.log(`Connecting to PostgreSQL at ${dbHost}:5432...`);
     let adminClient: Client;
@@ -593,6 +644,21 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
               "[WARNING]  Deployment did not become ready within 60s; continuing anyway.",
             );
           }
+        } else if (
+          errorMsg.includes("Unschedulable") ||
+          errorMsg.includes("Insufficient cpu") ||
+          errorMsg.includes("No preemption victims found") ||
+          errorMsg.includes("cannot be scheduled")
+        ) {
+          console.warn(
+            "[WARNING]  Restart failed due to cluster capacity constraints (unschedulable pod).",
+          );
+          console.warn(
+            "   This is an environment issue, not a schema-mode logic failure.",
+          );
+          console.warn(
+            "   Continuing; accessibility test will self-skip when deployment is not ready.",
+          );
         } else {
           throw restartError;
         }
@@ -601,22 +667,43 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       console.warn(
         "[WARNING]  No config changes needed, but deployment is not ready. Waiting...",
       );
-      await kubeClient.waitForDeploymentReady(
-        deploymentName,
-        namespace,
-        1,
-        120000,
-        10000,
-        podLabelSelector,
-      );
+      try {
+        await kubeClient.waitForDeploymentReady(
+          deploymentName,
+          namespace,
+          1,
+          120000,
+          10000,
+          podLabelSelector,
+        );
+      } catch (waitError) {
+        const errorMsg =
+          waitError instanceof Error ? waitError.message : String(waitError);
+        if (
+          errorMsg.includes("Unschedulable") ||
+          errorMsg.includes("Insufficient cpu") ||
+          errorMsg.includes("No preemption victims found") ||
+          errorMsg.includes("cannot be scheduled")
+        ) {
+          console.warn(
+            "[WARNING]  Deployment still unschedulable due to cluster capacity limits.",
+          );
+          console.warn(
+            "   Continuing; accessibility test will self-skip while deployment is not ready.",
+          );
+        } else {
+          throw waitError;
+        }
+      }
     } else {
       console.log("✓ Configuration already applied, deployment is ready");
       // Schemas are verified in the next test, which polls until they appear
     }
   });
 
-  test("Verify RHDH is accessible", async ({ page }) => {
-    // If deployment never became ready (e.g. after PVC/scheduling issue during restart), skip instead of failing with "browser closed"
+  test("Verify RHDH is accessible", async ({}, testInfo) => {
+    // Check readiness before requesting the `page` fixture — otherwise Playwright still launches Chromium
+    // even when we intend to skip (cluster capacity / scheduling).
     const kubeClientForCheck = new KubeClient();
     try {
       const deployment =
@@ -625,10 +712,11 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
           namespace,
         );
       const readyReplicas = deployment.body.status?.readyReplicas ?? 0;
-      if (readyReplicas < 1) {
-        test.skip(
+      const availableReplicas = deployment.body.status?.availableReplicas ?? 0;
+      if (readyReplicas < 1 || availableReplicas < 1) {
+        testInfo.skip(
           true,
-          "Deployment is not ready (e.g. cluster PVC/scheduling issue); skipping RHDH accessibility check.",
+          "Deployment is not ready/available (e.g. cluster PVC or scheduling capacity issue); skipping RHDH accessibility check.",
         );
         return;
       }
@@ -700,21 +788,27 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       }
     }
 
-    const originalGoto = page.goto.bind(page);
-    const interceptedBaseUrl = baseUrl;
-    page.goto = async (
-      url: string,
-      options?: Parameters<typeof page.goto>[1],
-    ) => {
-      if (url.startsWith("/") && !url.startsWith("//")) {
-        url = `${interceptedBaseUrl}${url}`;
-      } else if (!url.startsWith("http")) {
-        url = `${interceptedBaseUrl}/${url}`;
-      }
-      return originalGoto(url, options);
-    };
+    const browser = await chromium.launch();
+    try {
+      const page = await browser.newPage();
+      const originalGoto = page.goto.bind(page);
+      const interceptedBaseUrl = baseUrl;
+      page.goto = async (
+        url: string,
+        options?: Parameters<typeof page.goto>[1],
+      ) => {
+        if (url.startsWith("/") && !url.startsWith("//")) {
+          url = `${interceptedBaseUrl}${url}`;
+        } else if (!url.startsWith("http")) {
+          url = `${interceptedBaseUrl}/${url}`;
+        }
+        return originalGoto(url, options);
+      };
 
-    const common = new Common(page);
-    await common.loginAsGuest();
+      const common = new Common(page);
+      await common.loginAsGuest();
+    } finally {
+      await browser.close();
+    }
   });
 });

@@ -96,8 +96,9 @@ for cmd in podman oc kubectl vault jq curl rsync bc; do
     fi
 done
 
-# Check if podman machine is running
-if command -v podman &> /dev/null; then
+# Check if podman machine is running (macOS only).
+# On Linux, podman typically runs rootless without podman machine.
+if command -v podman &> /dev/null && [[ "$(uname -s)" == "Darwin" ]]; then
     PODMAN_RUNNING=$(podman machine list --format '{{.Name}} {{.Running}}' 2>/dev/null | grep -w "true" | head -1 || true)
     if [[ -z "$PODMAN_RUNNING" ]]; then
         log::error "No podman machine is running"
