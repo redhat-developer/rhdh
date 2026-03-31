@@ -1022,34 +1022,6 @@ plugins:
             techdocsAddons:
               - importName: ReportIssue
 
-  # Group: PagerDuty
-  - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin
-    disabled: true
-    pluginConfig:
-      dynamicPlugins:
-        frontend:
-          pagerduty.backstage-plugin:
-            mountPoints:
-              - mountPoint: entity.page.overview/cards
-                importName: EntityPagerDutyCard
-                config:
-                  layout:
-                    gridColumnEnd:
-                      md: "span 6"
-                      xs: "span 12"
-                  if:
-                    allOf:
-                      - isPluginApplicableToEntity
-  - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin-backend-dynamic
-    disabled: true
-    pluginConfig:
-      pagerDuty:
-        apiBaseUrl: ${PAGERDUTY_API_BASE}
-        oauth:
-          clientId: ${PAGERDUTY_CLIENT_ID}
-          clientSecret: ${PAGERDUTY_CLIENT_SECRET}
-          subDomain: ${PAGERDUTY_SUBDOMAIN}
-
   # Standalone plugins
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gerrit-dynamic
     disabled: true

@@ -55,7 +55,6 @@ spec:
     - ./openshift-cluster-manager.yaml
     - ./orchestrator-scaffolder-actions.yaml
     - ./orchestrator.yaml
-    - ./pagerduty.yaml
     - ./pingidentity.yaml
     - ./quay-scaffolder-actions.yaml
     - ./rbac.yaml
