@@ -73,3 +73,6 @@ junit-results.xml
 **/app-config.test.yaml
 **/dynamic-plugins.test.yaml
 **/rbac.test.csv
+
+# local-run.sh deployment artifacts
+.local-test

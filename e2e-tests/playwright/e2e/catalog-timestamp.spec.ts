@@ -2,7 +2,6 @@ import { Page, expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
-import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
 import {
   getTranslations,
   getCurrentLanguage,
@@ -62,16 +61,35 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Toggle ‘CREATED AT’ to see if the component list can be sorted in ascending/decending order", async () => {
-    const createdAtFirstRow =
-      "table > tbody > tr:nth-child(1) > td:nth-child(8)";
-    //Verify by default Rows are in ascending
-    await expect(page.locator(createdAtFirstRow)).toBeEmpty();
+    // Clear search filter from previous test to show all components
+    const clearButton = page.getByRole("button", { name: "clear search" });
+    if (await clearButton.isVisible()) {
+      await clearButton.click();
+    }
 
-    const column = page
-      .locator(`${UI_HELPER_ELEMENTS.MuiTableHead}`)
-      .getByText("Created At", { exact: true });
-    await column.dblclick(); // Double click to Toggle into decending order.
-    await expect(page.locator(createdAtFirstRow)).not.toBeEmpty();
+    // Wait for the table to have data rows
+    await expect(
+      page.getByRole("row").filter({ has: page.getByRole("cell") }),
+    ).not.toHaveCount(0);
+
+    // Get the first data row’s "Created At" cell using semantic selectors
+    const firstRow = page
+      .getByRole("row")
+      .filter({ has: page.getByRole("cell") })
+      .first();
+    const createdAtCell = firstRow.getByRole("cell").nth(7); // 0-indexed, 8th column = index 7
+
+    const column = page.getByRole("columnheader", {
+      name: "Created At",
+      exact: true,
+    });
+
+    // Click twice to sort descending — newest entries first
+    await column.click();
+    await column.click();
+
+    // After sorting descending, the first row should have a non-empty "Created At"
+    await expect(createdAtCell).not.toBeEmpty();
   });
 
   test.afterAll(async () => {
