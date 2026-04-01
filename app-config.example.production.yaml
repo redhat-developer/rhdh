@@ -22,10 +22,6 @@ backend:
   # config options: https://node-postgres.com/api/client
   database:
     client: pg
-    # Use 'schema' mode for single-database deployments
-    # Requires: CREATE SCHEMA permission (not CREATEDB)
-    # See docs/database-configuration.md for details
-    # pluginDivisionMode: schema
     connection:
       host: ${POSTGRES_HOST}
       password: ${POSTGRES_PASSWORD}
