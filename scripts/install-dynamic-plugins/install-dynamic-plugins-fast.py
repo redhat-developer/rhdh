@@ -617,7 +617,8 @@ def extract_catalog_index(skopeo: Skopeo, image: str, mount_dir: str, entities_d
         log("\t==> Downloading catalog index image")
         skopeo.copy(url, f"dir:{local}")
 
-        manifest = json.load(open(os.path.join(local, "manifest.json")))
+        manifest = json.load(open(os.path.join(local, "manifest.json")))  # NOSONAR - local is a temp dir created by this script
+        temp_dir_abs = os.path.abspath(temp_dir)
         for layer in manifest.get("layers", []):
             digest = layer.get("digest", "")
             if not digest:
@@ -625,9 +626,21 @@ def extract_catalog_index(skopeo: Skopeo, image: str, mount_dir: str, entities_d
             fname = digest.split(":")[1]
             fpath = os.path.join(local, fname)
             if os.path.isfile(fpath):
-                with tarfile.open(fpath, "r:*") as tar:
-                    safe = [m for m in tar.getmembers() if m.size <= MAX_ENTRY_SIZE]
-                    tar.extractall(temp_dir, members=safe, filter="data")
+                with tarfile.open(fpath, "r:*") as tar:  # NOSONAR - fpath is derived from skopeo-downloaded OCI manifest
+                    safe = []
+                    for m in tar.getmembers():
+                        if m.size > MAX_ENTRY_SIZE:
+                            continue
+                        if m.islnk() or m.issym():
+                            link_target = os.path.realpath(os.path.join(temp_dir_abs, m.linkname))
+                            if not link_target.startswith(temp_dir_abs):
+                                continue
+                        # Prevent path traversal in member names
+                        member_path = os.path.realpath(os.path.join(temp_dir_abs, m.name))
+                        if not member_path.startswith(temp_dir_abs):
+                            continue
+                        safe.append(m)
+                    tar.extractall(temp_dir_abs, members=safe, filter="data")
 
     dpdy = os.path.join(temp_dir, "dynamic-plugins.default.yaml")
     if not os.path.isfile(dpdy):

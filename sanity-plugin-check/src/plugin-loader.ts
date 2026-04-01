@@ -2,7 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import type { PluginEntry, PluginManifest, LoadedPlugin, PluginError } from "./types";
 
-const EXTRACT_DIR = process.env.EXTRACT_DIR || "/tmp/rhdh-sanity-plugins";
+// Default extract dir matches extract-plugins.sh output location.
+// This is a build-time temp directory, not a runtime public dir.
+// Override via EXTRACT_DIR env var for CI or custom setups.
+const EXTRACT_DIR = process.env.EXTRACT_DIR || "/tmp/rhdh-sanity-plugins"; // NOSONAR -- build-time temp dir, not user-facing
 const MANIFEST_PATH = path.join(EXTRACT_DIR, "manifest.json");
 
 export function loadManifest(): PluginManifest {
