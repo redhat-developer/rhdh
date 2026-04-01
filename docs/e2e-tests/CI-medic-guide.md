@@ -381,7 +381,7 @@ The most comprehensive nightly job. Runs on OpenShift using ephemeral cluster cl
 3. **Sanity plugins check** (`showcase-sanity-plugins`) -- validates plugin loading and basic functionality
 4. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
 
-**OSD-GCP variant**: When the job name contains `osd-gcp`, orchestrator is disabled and localization tests are skipped.
+**OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler but orchestrator is disabled and localization tests are skipped.
 
 ### OCP Operator (`ocp-operator`)
 

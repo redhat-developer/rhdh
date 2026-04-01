@@ -17,13 +17,13 @@ For scenarios where tests are not automatically triggered, or when you need to m
 
 1. **Commenting `/ok-to-test`:**
    - **Purpose:** This command is used to validate a PR for testing, especially important for external contributors or when tests are not automatically triggered.
-   - **Who Can Use It:** Only members of the [openshift](https://github.com/openshift) or [redhat-developer](https://github.com/redhat-developer) GitHub organizations can mark the PR with this comment.
+   - **Who Can Use It:** Only members of both the [openshift](https://github.com/openshift) and [redhat-developer](https://github.com/redhat-developer) GitHub organizations can mark the PR with this comment.
    - **Use Cases:**
      - **External Contributors:** For PRs from contributors outside the organization, a member needs to comment `/ok-to-test` to initiate tests.
    - **More Details:** For additional information about `/ok-to-test`, please refer to the [Kubernetes Community Pull Requests Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#more-about-ok-to-test).
 
 2. **Triggering Tests Post-Validation:**
-   - After an `openshift` or `redhat-developer` org member has validated the PR with `/ok-to-test`, anyone can trigger tests using the following commands:
+   - After an `openshift` and `redhat-developer` org member has validated the PR with `/ok-to-test`, anyone can trigger tests using the following commands:
      - `/test ?` to get a list of all available jobs
      - `/test e2e-ocp-helm` for mandatory PR checks
    - **Note:** Avoid using `/test all` as it may trigger unnecessary jobs and consume CI resources. Instead, use `/test ?` to see available options and trigger only the specific tests you need.
@@ -51,7 +51,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 - **Purpose:** Validate new PRs for code quality, functionality, and integration.
 - **Trigger:**
   - **Automatic:** When a PR includes code changes affecting tests (excluding doc-only changes), tests are automatically triggered.
-  - **Manual:** When `/ok-to-test` is commented by an `openshift` or `redhat-developer` org member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
+  - **Manual:** When `/ok-to-test` is commented by an `openshift` and `redhat-developer` org member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces. Different sets of tests are executed for both the **non-RBAC RHDH instance** and the **RBAC RHDH instance**, each deployed in separate namespaces.
