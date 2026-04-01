@@ -1,5 +1,5 @@
 #!/bin/bash
-# Extract all OCI plugins from the catalog index using install-dynamic-plugins.py
+# Extract all OCI plugins from the catalog index using install-dynamic-plugins-fast.py
 # Usage: ./extract-plugins.sh [VERSION]
 #
 # Prerequisites: skopeo, python3 with pyyaml
@@ -7,7 +7,7 @@
 # This script:
 # 1. Extracts the catalog index to get dynamic-plugins.default.yaml
 # 2. Generates an override YAML that enables all OCI plugins and disables local ones
-# 3. Runs install-dynamic-plugins.py to download and extract all OCI plugin packages
+# 3. Runs install-dynamic-plugins-fast.py to download and extract all OCI plugin packages
 # 4. Generates a manifest.json for the test runner
 
 set -euo pipefail
@@ -17,7 +17,7 @@ CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${VERSION}"
 EXTRACT_DIR="${EXTRACT_DIR:-/tmp/rhdh-sanity-plugins}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-INSTALLER="${REPO_ROOT}/scripts/install-dynamic-plugins/install-dynamic-plugins.py"
+INSTALLER="${REPO_ROOT}/scripts/install-dynamic-plugins/install-dynamic-plugins-fast.py"
 
 echo "==> Catalog index: ${CATALOG_INDEX_IMAGE}"
 echo "==> Output: ${EXTRACT_DIR}"
@@ -32,7 +32,7 @@ for cmd in skopeo python3; do
 done
 
 if [ ! -f "$INSTALLER" ]; then
-  echo "ERROR: install-dynamic-plugins.py not found at ${INSTALLER}"
+  echo "ERROR: install-dynamic-plugins-fast.py not found at ${INSTALLER}"
   exit 1
 fi
 
@@ -96,7 +96,7 @@ PYEOF
 # Step 3: Copy DPDY into extract dir so the installer can find it via includes
 cp "${DPDY}" "${EXTRACT_DIR}/dynamic-plugins.default.yaml"
 
-# Step 4: Run install-dynamic-plugins.py to download all OCI plugin packages
+# Step 4: Run install-dynamic-plugins-fast.py to download all OCI plugin packages
 # The installer reads dynamic-plugins.yaml from cwd, so cd into EXTRACT_DIR
 echo "==> Installing OCI plugins (this may take a few minutes)..."
 (cd "${EXTRACT_DIR}" && \

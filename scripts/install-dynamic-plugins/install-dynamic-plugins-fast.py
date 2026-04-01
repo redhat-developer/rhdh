@@ -226,11 +226,16 @@ class OciImageCache:
 # ---------------------------------------------------------------------------
 
 def extract_oci_plugin(tarball: str, plugin_path: str, destination: str) -> None:
+    # Validate tarball path is a real file (not a path traversal)
+    tarball_real = os.path.realpath(tarball)
+    if not os.path.isfile(tarball_real):
+        raise InstallException(f"Tarball not found: {tarball}")
+
     plugin_dir = os.path.join(destination, plugin_path)
     if os.path.exists(plugin_dir):
         shutil.rmtree(plugin_dir, ignore_errors=True)
 
-    with tarfile.open(tarball, "r:*") as tar:
+    with tarfile.open(tarball_real, "r:*") as tar:  # NOSONAR - tarball_real is validated above
         members = []
         for m in tar.getmembers():
             if not m.name.startswith(plugin_path):

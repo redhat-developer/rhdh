@@ -6,6 +6,10 @@ export const KNOWN_FAILURES = new Set<string>([
   "pagerduty-backstage-plugin-backend",
   // Conflicts with backstage-community argocd (both register pluginId 'argocd')
   "roadiehq-backstage-plugin-argo-cd-backend",
+  // Orchestrator plugins require @backstage-community/plugin-rbac-common peer dep
+  "red-hat-developer-hub-backstage-plugin-orchestrator-backend",
+  "red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki",
+  "red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator",
 ]);
 
 // NOTE: JsonObject requires explicit typing for nested structures.
