@@ -115,7 +115,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow access is allowed", async () => {
-      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -264,7 +263,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow read-only access - Run button disabled", async () => {
-      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -421,7 +419,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow denied access - no workflows visible", async () => {
-      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -559,7 +556,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow denied access - no workflows visible", async () => {
-      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -705,7 +701,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow read-write access - only Greeting workflow visible and runnable", async () => {
-      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -859,7 +854,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow read-only access - only Greeting workflow visible, Run button disabled", async () => {
-      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -1135,7 +1129,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("rhdh-qe user runs greeting workflow and captures instance ID", async () => {
-      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 

@@ -3,8 +3,7 @@ global:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
     includes:
-      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
-      # This file ONLY works with the `rhdh-community/rhdh` container image.
+      # -- List of dynamic plugin wrappers included in, or side-loaded as oci artifacts to, the `rhdh` container image, some of which are disabled by default.
       - 'dynamic-plugins.default.yaml'
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.

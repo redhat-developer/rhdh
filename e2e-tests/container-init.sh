@@ -85,11 +85,13 @@ log::info "IS_OPENSHIFT=${IS_OPENSHIFT}"
 
 # These are passed from local-run.sh - export them for child scripts
 export JOB_NAME
-export QUAY_REPO
+export IMAGE_REGISTRY
+export IMAGE_REPO
 export TAG_NAME
 export SKIP_TESTS
 log::info "JOB_NAME=${JOB_NAME}"
-log::info "QUAY_REPO=${QUAY_REPO}"
+log::info "IMAGE_REGISTRY=${IMAGE_REGISTRY}"
+log::info "IMAGE_REPO=${IMAGE_REPO}"
 log::info "TAG_NAME=${TAG_NAME}"
 log::info "SKIP_TESTS=${SKIP_TESTS}"
 
@@ -111,7 +113,7 @@ log::info "CONTAINER_PLATFORM_VERSION=${CONTAINER_PLATFORM_VERSION}"
 log::section "Current branch"
 cd /tmp/rhdh
 log::info "Current branch: $(git branch --show-current)"
-log::info "Using Image: ${QUAY_REPO}:${TAG_NAME}"
+log::info "Using Image: ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
 
 # Pre-compute URLs and save config BEFORE deployment (so it's available even if deployment fails)
 log::section "Preparing Configuration"
@@ -141,7 +143,8 @@ cat > /tmp/rhdh/.local-test/config.env <<EOF
 SHOWCASE_URL="${SHOWCASE_URL}"
 SHOWCASE_RBAC_URL="${SHOWCASE_RBAC_URL}"
 JOB_NAME="${JOB_NAME}"
-QUAY_REPO="${QUAY_REPO}"
+IMAGE_REGISTRY="${IMAGE_REGISTRY}"
+IMAGE_REPO="${IMAGE_REPO}"
 TAG_NAME="${TAG_NAME}"
 K8S_CLUSTER_URL="${K8S_CLUSTER_URL}"
 CONTAINER_PLATFORM="${CONTAINER_PLATFORM}"
@@ -167,7 +170,7 @@ fi
 
 log::info "Configuration:"
 log::info "  JOB_NAME:   ${JOB_NAME}"
-log::info "  IMAGE:      quay.io/${QUAY_REPO}:${TAG_NAME}"
+log::info "  IMAGE:      ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
 echo ""
 log::info "Deployed URLs:"
 log::info "  Showcase:      ${SHOWCASE_URL}"

@@ -1,23 +1,8 @@
 ---
+root: false
 targets:
   - '*'
-root: false
-description: >-
-  Guidelines for creating and managing AI assistant rules, commands, and
-  configurations in the .rulesync folder
-globs:
-  - .rulesync/**
-  - .cursor/**
-  - .claude/**
-cursor:
-  alwaysApply: false
-  description: >-
-    Guidelines for creating and managing AI assistant rules, commands, and
-    configurations in the .rulesync folder
-  globs:
-    - .rulesync/**
-    - .cursor/**
-    - .claude/**
+globs: []
 ---
 # Managing AI Assistant Rules
 
@@ -34,7 +19,7 @@ This document provides guidelines for creating, importing, and managing AI assis
 
 ## 🤖 Automated Checks
 
-A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automatically validates that generated files in `.cursor` and `.claude` are in sync with `.rulesync` on:
+A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automatically validates that generated files in `.cursor`, `.claude`, and `.opencode` are in sync with `.rulesync` on:
 - All pull requests
 - Pushes to main and release branches
 
@@ -48,7 +33,7 @@ A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automaticall
 ```bash
 # If you forgot to generate from .rulesync
 yarn rulesync:generate
-git add .cursor .claude
+git add .cursor .claude .opencode
 
 # If you edited .cursor files directly
 yarn rulesync:import:cursor
@@ -56,6 +41,10 @@ git add .rulesync
 
 # If you edited .claude files directly
 yarn rulesync:import:claude
+git add .rulesync
+
+# If you edited .opencode files directly
+yarn rulesync:import:opencode
 git add .rulesync
 
 # Then commit and push
@@ -137,7 +126,7 @@ After creating or editing the rule:
 yarn rulesync:generate
 
 # Then stage and commit
-git add .rulesync/rules/api-development.md .cursor .claude
+git add .rulesync/rules/api-development.md .cursor .claude .opencode
 git commit -m "docs: add API development rule"
 ```
 
@@ -207,7 +196,8 @@ Execute the following steps:
   - `["*"]` - All assistants
   - `["cursor"]` - Cursor only
   - `["claudecode"]` - Claude Code only
-  - `["cursor", "copilot"]` - Multiple specific assistants
+  - `["opencode"]` - OpenCode only
+  - `["cursor", "claudecode", "opencode"]` - Multiple specific assistants
 
 - **`description`** - Brief description of the rule/command
 
@@ -241,7 +231,7 @@ Execute the following steps:
 
 ## 🚫 What NOT to Do
 
-### ❌ Don't Edit Generated Files in `.cursor` and `.claude` Directly
+### ❌ Don't Edit Generated Files in `.cursor`, `.claude`, and `.opencode` Directly
 
 Instead, edit the source in `.rulesync/` and then regenerate them:
 
@@ -315,6 +305,7 @@ Local files:
 - ✅ `.cursor/rules/*.local.mdc` - Ignored
 - ✅ `.claude/**/*.local.md` - Ignored
 - ✅ `.claude/settings.local.json` - Ignored
+- ✅ `.opencode/**/*.local.md` - Ignored
 
 ## 🎓 Examples
 
@@ -376,7 +367,7 @@ These standards apply to all code in this repository...
 
 ## ❓ Troubleshooting
 
-### Problem: Rules not loading in AI Assistant (Cursor, Claude Code, ...)
+### Problem: Rules not loading in AI Assistant (Cursor, Claude Code, OpenCode, ...)
 
 **Solution:**
 1. Check frontmatter is valid YAML

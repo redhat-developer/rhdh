@@ -1,7 +1,9 @@
 ---
 targets:
   - '*'
-description: 'PR prioritization assistant that helps determine which pull request should be reviewed next based on a systematic scoring framework.'
+description: >-
+  PR prioritization assistant that helps determine which pull request should be
+  reviewed next based on a systematic scoring framework.
 ---
 # PR Review Prioritizer LLM Prompt
 
