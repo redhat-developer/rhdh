@@ -1,0 +1,15 @@
+# Config overrides for local sanity plugin tests
+# Deep-merges with app-config.yaml
+
+app:
+  baseUrl: http://localhost:7007
+
+auth:
+  providers:
+    guest: {}
+
+dynamicPlugins:
+  frontend: {}
+
+permission:
+  enabled: false
