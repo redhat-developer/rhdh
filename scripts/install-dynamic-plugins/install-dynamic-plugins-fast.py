@@ -226,7 +226,12 @@ class OciImageCache:
 # ---------------------------------------------------------------------------
 
 def extract_oci_plugin(tarball: str, plugin_path: str, destination: str) -> None:
-    plugin_dir = os.path.join(destination, plugin_path)
+    # Validate plugin_path has no path traversal
+    if ".." in plugin_path or os.path.isabs(plugin_path):
+        raise InstallException(f"Invalid plugin path (path traversal detected): {plugin_path}")
+
+    dest_abs = os.path.abspath(destination)
+    plugin_dir = os.path.join(dest_abs, plugin_path)
     if os.path.exists(plugin_dir):
         shutil.rmtree(plugin_dir, ignore_errors=True)
 
@@ -237,12 +242,14 @@ def extract_oci_plugin(tarball: str, plugin_path: str, destination: str) -> None
                 continue
             if m.size > MAX_ENTRY_SIZE:
                 raise InstallException(f"Zip bomb detected: {m.name}")
-            if (m.islnk() or m.issym()):
-                real = os.path.realpath(os.path.join(plugin_path, *os.path.split(m.linkname)))
-                if not real.startswith(plugin_path):
+            if m.islnk() or m.issym():
+                # Validate symlink target stays within destination
+                link_target = os.path.realpath(os.path.join(dest_abs, m.linkname))
+                if not link_target.startswith(dest_abs):
+                    log(f"\t==> WARNING: skipping link outside destination: {m.name} -> {m.linkname}")
                     continue
             members.append(m)
-        tar.extractall(os.path.abspath(destination), members=members, filter="tar")
+        tar.extractall(dest_abs, members=members, filter="tar")
 
 
 def extract_npm_package(archive: str, destination: str) -> str:
@@ -267,13 +274,14 @@ def extract_npm_package(archive: str, destination: str) -> str:
                 m.name = m.name.removeprefix(prefix)
                 members.append(m)
             elif m.islnk() or m.issym():
-                if not m.linkpath.startswith(prefix):
-                    raise InstallException(f"NPM archive link outside archive: {m.name} -> {m.linkpath}")
+                # For symlinks: linkname is the target path
+                if not m.linkname.startswith(prefix):
+                    raise InstallException(f"NPM archive link outside archive: {m.name} -> {m.linkname}")
                 m.name = m.name.removeprefix(prefix)
-                m.linkpath = m.linkpath.removeprefix(prefix)
-                real = os.path.realpath(os.path.join(pkg_dir, *os.path.split(m.linkname)))
-                if not real.startswith(pkg_dir_real):
-                    raise InstallException(f"NPM archive link escape: {m.name} -> {m.linkpath}")
+                m.linkname = m.linkname.removeprefix(prefix)
+                link_target = os.path.realpath(os.path.join(pkg_dir, m.linkname))
+                if not link_target.startswith(pkg_dir_real):
+                    raise InstallException(f"NPM archive link escape: {m.name} -> {m.linkname}")
                 members.append(m)
             else:
                 raise InstallException(f"NPM archive non-regular file: {m.name}")
