@@ -5,12 +5,13 @@ A practical guide for investigating test failures in RHDH nightly jobs and PR ch
 ## Table of Contents
 
 - [Overview](#overview)
+- [How to Use This Guide](#how-to-use-this-guide)
 - [Anatomy of a Prow Job](#anatomy-of-a-prow-job)
 - [Where to Find Logs and Artifacts](#where-to-find-logs-and-artifacts)
 - [Job Lifecycle and Failure Points](#job-lifecycle-and-failure-points)
 - [Job Types Reference](#job-types-reference)
 - [Identifying Failure Types](#identifying-failure-types)
-- [Common Failure Patterns (Cheat Sheet)](#common-failure-patterns-cheat-sheet)
+- [Finding Past Failures](#finding-past-failures)
 - [Useful Links and Tools](#useful-links-and-tools)
 - [AI Test Triager](#ai-test-triager-nightly-test-alerts)
 
@@ -20,7 +21,7 @@ A practical guide for investigating test failures in RHDH nightly jobs and PR ch
 
 ### What is a CI Medic?
 
-The CI medic is a **weekly rotating role** responsible for maintaining the health of PR checks and nightly E2E test jobs. When your rotation starts, you'll receive a Slack message with your responsibilities.
+The CI medic is a **weekly rotating role** responsible for maintaining the health of PR checks and nightly E2E test jobs. When your rotation starts, you'll receive a Slack message with your responsibilities as a reminder. The complete role description is described in [this Google Doc](https://docs.google.com/document/d/1CjqSQYA6g35-95OpHXobcJdWFRGS5yu-MV8-mfuDmQA/edit?usp=sharing)
 
 ### Core Responsibilities
 
@@ -39,7 +40,7 @@ The CI medic is a **weekly rotating role** responsible for maintaining the healt
 - **Main branch**: `#rhdh-e2e-alerts` Slack channel
 - **Release branches**: Dedicated channels like `#rhdh-e2e-alerts-1-8`, `#rhdh-e2e-alerts-1-9`, etc.
 - **Infrastructure announcements**: `#announce-testplatform` (general OpenShift CI status)
-- **Getting help**: `#forum-ocp-testplatform` (ask questions about CI platform issues)
+- **Getting help**: `#forum-ocp-testplatform` (ask questions about CI platform issues, or see if others face similar issues)
 
 Each alert includes links to the job logs, artifacts, and a summary of which deployments/tests passed or failed. Check the bookmarks/folders in the `#rhdh-e2e-alerts` channel for additional resources.
 
@@ -54,6 +55,53 @@ Each alert includes links to the job logs, artifacts, and a summary of which dep
 | **Alert channel** | `#rhdh-e2e-alerts` / `#rhdh-e2e-alerts-{version}` | PR status checks on GitHub |
 
 **Triggering jobs on a PR**: All nightly job variants can also be triggered on a PR by commenting `/test <job-name>`. Use `/test ?` to list all available jobs for that PR. This is useful for verifying a fix against a specific platform or install method before merging.
+
+---
+
+## How to Use This Guide
+
+This guide is a **reference**, not a textbook. You don't need to read it cover-to-cover before your rotation starts. Instead, use it as a companion that you come back to as situations arise during the week.
+
+### Getting Started (Day 1)
+
+When your rotation begins:
+
+1. **Read the [Overview](#overview)** above to understand the role and where alerts come in.
+2. **Familiarize yourself with the [Useful Links and Tools](#useful-links-and-tools)** section -- open the Prow dashboards, join the Slack channels, and make sure you have access.
+3. **Try the [AI Test Triager](#ai-test-triager-nightly-test-alerts)** on a recent failure in `#rhdh-e2e-alerts` to see how it works. It will handle most of the initial analysis for you.
+
+That's enough to start triaging.
+
+### During Your Rotation
+
+Use the rest of the guide on demand as you encounter specific situations:
+
+| Situation | Section to consult |
+|-----------|-------------------|
+| A job failed and you need to find the logs | [Where to Find Logs and Artifacts](#where-to-find-logs-and-artifacts) |
+| You can't tell *where* in the pipeline it broke | [Job Lifecycle and Failure Points](#job-lifecycle-and-failure-points) |
+| You need to understand what a specific job does | [Job Types Reference](#job-types-reference) |
+| You're unsure if it's infra, deployment, or a test bug | [Identifying Failure Types](#identifying-failure-types) |
+| You need to re-trigger a job or access a cluster | [Useful Links and Tools](#useful-links-and-tools) |
+
+### Understanding the CI Scripts
+
+The guide links heavily to scripts in `.ci/pipelines/`. You don't need to read those scripts upfront either. When you're investigating a failure and need to understand what a specific phase does, follow the links from the relevant [Job Lifecycle](#job-lifecycle-and-failure-points) or [Job Types](#job-types-reference) section to the source code.
+
+Key entry points if you do want to explore:
+- [`.ci/pipelines/openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh) -- the main dispatcher, start here to understand how jobs are routed
+- [`.ci/pipelines/jobs/`](../../.ci/pipelines/jobs/) -- one handler per job type, each is self-contained
+- [`.ci/pipelines/lib/testing.sh`](../../.ci/pipelines/lib/testing.sh) -- how tests are executed, health-checked, and artifacts collected
+
+### Improving This Guide
+
+This guide is a living document. When you finish your rotation:
+
+- **Update outdated information** -- job names, namespaces, and platform details change over time.
+- **Clarify anything that confused you** -- if you had to figure something out the hard way, save the next person the trouble.
+- **Remove stale content** -- if a job type or failure mode no longer exists, remove it rather than leaving it to confuse future medics.
+
+Small, incremental improvements after each rotation keep this guide accurate and useful.
 
 ---
 
@@ -155,16 +203,9 @@ This is especially useful when:
 - You need to check pod resource consumption (OOM suspicion)
 - You want to watch deployment progress in real time rather than waiting for artifacts
 
-**Logging into the claimed cluster (OCP jobs):** While a job is executing, you can also log into the ephemeral OCP cluster where RHDH is being deployed and tested. Use the [`ocp-cluster-claim-login.sh`](../../.ci/pipelines/ocp-cluster-claim-login.sh) script:
+**Logging into the claimed cluster (OCP jobs):** While a job is executing, you can also log into the ephemeral OCP cluster using [`ocp-cluster-claim-login.sh`](../../.ci/pipelines/ocp-cluster-claim-login.sh). See [`.ci/pipelines/README.md`](../../.ci/pipelines/README.md) for prerequisites, access requirements, and usage.
 
-```bash
-# Provide the Prow job URL
-.ci/pipelines/ocp-cluster-claim-login.sh "https://prow.ci.openshift.org/view/gs/..."
-```
-
-This gives you direct `oc` access to the cluster, allowing you to inspect pods, check logs, describe resources, and debug issues live. See [Cluster Access](#cluster-access-ocp-jobs-only) for details.
-
-**Prerequisite**: You must be a member of the `openshift` GitHub organization. Request access at [DevServices GitHub Access Request](https://devservices.dpp.openshift.com/support/github_access_request/). For cluster login, you also need to be in the `rhdh-pool-admins` [Rover group](https://rover.redhat.com/groups/search?q=rhdh-pool-admins).
+**Prerequisite**: You must be a member of the `openshift` GitHub organization. Request access at [DevServices GitHub Access Request](https://devservices.dpp.openshift.com/support/github_access_request/).
 
 ### Artifact Directory Structure
 
@@ -297,19 +338,7 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 
 ### Phase 5: Test Execution
 
-**What happens**: Playwright tests run inside the test container against the deployed RHDH instance (see [testing.sh](../../.ci/pipelines/lib/testing.sh)).
-
-```bash
-yarn playwright test --project="${playwright_project}"
-```
-
-Tests are configured in [`playwright.config.ts`](../../e2e-tests/playwright.config.ts) with:
-- **Timeout**: 90 seconds per test
-- **Retries**: 2 on CI (1 for auth-providers)
-- **Workers**: 3 parallel
-- **Viewport**: 1920x1080
-
-Project names are defined in [`projects.json`](../../e2e-tests/playwright/projects.json) (single source of truth) and loaded by CI via [`playwright-projects.sh`](../../.ci/pipelines/playwright-projects.sh).
+**What happens**: Playwright tests run inside the test container against the deployed RHDH instance (see [testing.sh](../../.ci/pipelines/lib/testing.sh)). For test configuration details (timeouts, retries, workers), see [`playwright.config.ts`](../../e2e-tests/playwright.config.ts). For project names, see [`projects.json`](../../e2e-tests/playwright/projects.json).
 
 **What can go wrong**:
 - Individual test failures (assertions, timeouts, element not found)
@@ -425,17 +454,7 @@ Tests on Azure Kubernetes Service. See [`aks-helm.sh`](../../.ci/pipelines/jobs/
 
 **Test suites**: `showcase-k8s`, `showcase-rbac-k8s`
 
-**Platform specifics**:
-- Uses Azure Spot VMs -- pods may be preempted mid-test (tolerations/affinity patches via [`aks-spot-patch.yaml`](../../.ci/pipelines/cluster/aks/patch/aks-spot-patch.yaml))
-- Ingress via Azure Web App Routing controller (`webapprouting.kubernetes.azure.com`) -- see [`aks-operator-ingress.yaml`](../../.ci/pipelines/cluster/aks/manifest/aks-operator-ingress.yaml)
-- Gets LoadBalancer IP from `app-routing-system` namespace (`nginx` service)
-- Image pull secrets from Red Hat registry required
-
-**Common failures**:
-- Spot VM preemption causing pod evictions
-- LoadBalancer IP not obtained (check `app-routing-system` namespace)
-- Azure API throttling
-- Image pull failures from Red Hat registry
+**Common failures**: Most failures are either [Mapt](https://github.com/redhat-developer/mapt) failing to create the cluster (check the `create` step in artifacts) or the cluster being slower than OCP, causing timeouts during deployment or networking setup. Re-trigger in both cases.
 
 ### EKS Helm / EKS Operator
 
@@ -451,21 +470,7 @@ Tests on AWS Elastic Kubernetes Service. See [`eks-helm.sh`](../../.ci/pipelines
 - **ALB ingress controller**: AWS Application Load Balancer with SSL redirect -- see [`eks-operator-ingress.yaml`](../../.ci/pipelines/cluster/eks/manifest/eks-operator-ingress.yaml)
 - **External DNS**: Automatically creates Route53 records from ingress annotations
 
-**Network setup flow**:
-1. Generate unique domain name and reserve in Route53
-2. Request certificate from ACM, wait for DNS validation (up to 30 minutes)
-3. Deploy with ALB ingress, get LoadBalancer hostname
-4. Update Route53 CNAME to point to ALB
-5. Verify DNS resolution (30 attempts, 15 second intervals)
-
-**Common failures**:
-- Domain number exhaustion (50 limit)
-- Certificate issuance delays or validation failures (ACM)
-- DNS propagation delays (can take 15-30 minutes)
-- Route53 API throttling
-- ALB creation/deletion race conditions
-
-**Cleanup**: Route53 DNS records are deleted after test completion.
+**Common failures**: Usually AWS resource limits (domain slots, certificates, Route53 throttling). If persistent, check the job handler for which resource is exhausted.
 
 ### GKE Helm / GKE Operator
 
@@ -477,17 +482,10 @@ Tests on Google Kubernetes Engine. See [`gke-helm.sh`](../../.ci/pipelines/jobs/
 
 **Platform specifics** (cert logic in [`gcloud.sh`](../../.ci/pipelines/cluster/gke/gcloud.sh)):
 - Uses a **long-running cluster** (not ephemeral like OCP)
-- Pre-provisioned static IP: `rhdh-static-ip`
 - Google-managed SSL certificates via `gcloud`
 - GCE ingress class with FrontendConfig for SSL policy and HTTPS redirect -- see [`frontend-config.yaml`](../../.ci/pipelines/cluster/gke/manifest/frontend-config.yaml) and [`gke-operator-ingress.yaml`](../../.ci/pipelines/cluster/gke/manifest/gke-operator-ingress.yaml)
-- Ingress annotation: `ingress.gcp.kubernetes.io/pre-shared-cert`
 
-**Common failures**:
-- SSL certificate creation delays (CA issuance timing)
-- Static IP already in use or unavailable
-- GCP quota limits on certificates/IPs
-- Cloud Load Balancer propagation delays
-- FrontendConfig not applying (timing issues)
+**Common failures**: Since GKE uses a long-running shared cluster, most issues stem from stale state -- a previous job exited without proper cleanup, or two jobs were triggered at the same time and collided on shared resources (namespaces, certificates, static IP). If jobs overlap, adjust the cron schedule in the [ci-operator config](https://github.com/openshift/release/tree/master/ci-operator/config/redhat-developer/rhdh) to space them out.
 
 ---
 
@@ -501,7 +499,7 @@ The job never got to run tests. Something went wrong with the CI platform itself
 - Prow shows the job as `error` (red circle) rather than `failure` (red X)
 - Failure is in `build-log.txt` (top level), not in the test step
 - `ci-operator.log` shows provisioning or setup errors
-- No test artifacts exist at all
+- No test artifacts for RHDH exist at all
 
 **Where to look**:
 - Top-level `build-log.txt`
@@ -511,9 +509,8 @@ The job never got to run tests. Something went wrong with the CI platform itself
 **Common causes**:
 - Cluster pool exhaustion
 - Cloud provider API failures (AKS/EKS/GKE auth, quota)
-- Operator marketplace down
 - Network/DNS issues at the CI level
-- Image registry unavailable
+- Image or the image registry unavailable
 
 **Action**: Re-trigger the job. If it persists across multiple runs, escalate to CI platform team.
 
@@ -522,7 +519,6 @@ The job never got to run tests. Something went wrong with the CI platform itself
 The cluster was provisioned, but RHDH failed to deploy or start properly.
 
 **Indicators**:
-- `STATUS_FAILED_TO_DEPLOY.txt` contains `true` for one or more namespaces
 - `build-log.txt` (test step) shows deployment errors before any test execution
 - `pod_logs/` contain application crash logs
 - No JUnit XML or Playwright report exists for that namespace
@@ -534,7 +530,6 @@ The cluster was provisioned, but RHDH failed to deploy or start properly.
 
 **Common causes**:
 - Bad configuration in ConfigMaps (see [`resources/config_map/`](../../.ci/pipelines/resources/config_map/)) or values files (see [`value_files/`](../../.ci/pipelines/value_files/))
-- Missing secrets (especially PostgreSQL user secret for RBAC)
 - Image pull failures (wrong tag, registry auth, rate limiting)
 - Resource constraints (OOM, CPU limits)
 - Operator CRD not available in time
@@ -546,13 +541,9 @@ The cluster was provisioned, but RHDH failed to deploy or start properly.
 RHDH deployed successfully, but one or more Playwright tests failed.
 
 **Indicators**:
-- `STATUS_FAILED_TO_DEPLOY.txt` is `false` (deployment succeeded)
-- `STATUS_TEST_FAILED.txt` is `true`
 - JUnit XML and Playwright report exist with specific test failures
-- `STATUS_NUMBER_OF_TEST_FAILED.txt` shows the count
 
 **Where to look**:
-- `junit-results-{project}.xml` -- which tests failed
 - Playwright HTML report -- screenshots, videos, error messages
 - `test-log.html` -- full console output of the test run
 - `pod_logs/` -- if the test failure suggests a backend issue
@@ -563,33 +554,26 @@ RHDH deployed successfully, but one or more Playwright tests failed.
 |---------|-------------|--------|
 | Single test fails, passes on retry | Flaky test | File flaky test ticket |
 | Single test fails consistently | Real test bug or app regression | Investigate, file bug |
-| Login/auth tests fail | Keycloak or auth provider issue | Check Keycloak pod logs |
 | Many tests timeout | App slow or partially broken | Check pod logs, resource usage |
 | All tests fail uniformly | Deployment issue not caught by health check | Treat as deployment failure |
 
 ---
 
-## Common Failure Patterns (Cheat Sheet)
+## Finding Past Failures
 
-| Symptom | Type | Where to Look | Likely Cause | Action |
-|---------|------|---------------|--------------|--------|
-| Job status is `error` (not `failure`) | Infra | Top-level `build-log.txt` | Cluster provisioning failed | Re-trigger |
-| `failed to acquire cluster lease` | Infra | `ci-operator.log` | Cluster pool exhausted | Wait and re-trigger |
-| `CrashLoopBackOff` in test step log | Deploy | `pod_logs/`, K8s events | Bad config, missing secret, OOM | Check pod logs |
-| `Failed to reach Backstage after N attempts` | Deploy | Test step `build-log.txt` | Pod didn't start or health check path wrong | Check pod logs, events |
-| `postgress-external-db-pguser-janus-idp` secret timeout | Deploy | Test step log | Crunchy Postgres operator issue | Check operator logs |
-| `Failed to install subscription` | Infra/Deploy | Test step `build-log.txt` | OperatorHub/Marketplace issue | Re-trigger, check OLM |
-| `ImagePullBackOff` or `ErrImagePull` | Deploy | K8s events, pod describe | Wrong image tag or registry auth | Verify image exists, check pull secrets |
-| `helm upgrade` command fails | Deploy | Test step `build-log.txt` | Invalid values, missing CRDs | Check recent values file changes |
-| Playwright timeout on login page | Test | HTML report, videos | Keycloak down or misconfigured | Check Keycloak pod logs |
-| `backstages.rhdh.redhat.com` CRD timeout | Deploy | Test step log | RHDH Operator not installed | Check operator subscription |
-| Test passes on retry (flaky) | Test | JUnit XML (failures > 0 but exit 0) | Non-deterministic test | File flaky test ticket |
-| All tests fail with same error | Deploy | Pod logs, HTML report | App not functional despite health check | Investigate app state |
-| Certificate issuance timeout (EKS/GKE) | Infra | Test step `build-log.txt` | ACM/GCP cert delays | Re-trigger |
-| DNS resolution failure (EKS) | Infra | Test step `build-log.txt` | Route53 propagation delay | Re-trigger |
-| Spot VM preemption (AKS) | Infra | K8s events | Azure reclaimed spot instance | Re-trigger |
-| `LoadBalancer` IP not obtained (K8s) | Infra | Test step `build-log.txt` | Ingress controller issue | Check ingress controller pods |
-| Domain number exhaustion (EKS) | Infra | Test step `build-log.txt` | All 50 domain slots taken | Manual DNS cleanup needed |
+Instead of maintaining a static cheat sheet that goes stale, use these two sources to find how similar failures were investigated and resolved in the past:
+
+### AI Test Triager
+
+The **AI Test Triager** (`@Nightly Test Alerts` Slack app) is your first stop for any failure. It automatically analyzes failed nightly jobs, provides root cause analysis, and searches Jira for similar existing issues. See [AI Test Triager](#ai-test-triager-nightly-test-alerts) for details.
+
+### Resolved Jira `ci-fail` Issues
+
+Previously resolved CI failures are tracked in Jira with the **`ci-fail`** label. Search for resolved issues to find patterns, root causes, and fixes for failures you're seeing:
+
+- [Resolved `ci-fail` issues (RHDHBUGS)](https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20ci-fail%20AND%20status%20in%20(Done%2C%20Closed)%20ORDER%20BY%20resolved%20DESC)
+
+When investigating a failure, search these resolved issues for keywords from the error message (e.g., `CrashLoopBackOff`, `Failed to reach Backstage`, `ImagePullBackOff`). The resolution comments often describe exactly what was wrong and how it was fixed.
 
 ---
 
@@ -639,87 +623,15 @@ Artifacts are stored in GCS. You can browse them via:
 
 ### Cluster Access (OCP Jobs Only)
 
-To log into the ephemeral cluster of a running or recent OCP job:
-
-```bash
-.ci/pipelines/ocp-cluster-claim-login.sh
-# Or provide the Prow URL directly:
-.ci/pipelines/ocp-cluster-claim-login.sh "https://prow.ci.openshift.org/view/gs/..."
-```
-
-The script will:
-1. Extract the cluster namespace from the Prow build log
-2. Log into the hosted-mgmt cluster
-3. Retrieve `kubeadmin` credentials
-4. Log into the ephemeral cluster
-5. Offer to open the web console (copies password to clipboard)
-
-**Requirements**: You must be a member of the `rhdh-pool-admins` [Rover group](https://rover.redhat.com/groups/search?q=rhdh-pool-admins).
-
-**Important**: Ephemeral clusters are deleted when the CI job terminates. You can only access them while the job is running or shortly after.
+Use [`.ci/pipelines/ocp-cluster-claim-login.sh`](../../.ci/pipelines/ocp-cluster-claim-login.sh) to log into the ephemeral cluster of a running or recent OCP job. See [`.ci/pipelines/README.md`](../../.ci/pipelines/README.md) for prerequisites and usage.
 
 ### Re-triggering a Nightly Job
 
-Use the trigger script to re-run a failed nightly job:
+Use [`.ci/pipelines/trigger-nightly-job.sh`](../../.ci/pipelines/trigger-nightly-job.sh) to re-run a failed nightly job. Run with `--help` for all options. You can also use the `/trigger-nightly-job` AI command to trigger jobs interactively.
 
-```bash
-# Basic re-trigger
-.ci/pipelines/trigger-nightly-job.sh --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly
+### Related Documentation
 
-# Dry run (preview without triggering)
-.ci/pipelines/trigger-nightly-job.sh --job <JOB_NAME> --dry-run
-
-# With custom image (e.g., RC verification)
-.ci/pipelines/trigger-nightly-job.sh --job <JOB_NAME> --quay-repo rhdh/rhdh-hub-rhel9 --tag 1.9-123
-
-# With Slack alerts enabled
-.ci/pipelines/trigger-nightly-job.sh --job <JOB_NAME> --send-alerts
-```
-
-**Authentication**: The script uses a dedicated kubeconfig at `~/.config/openshift-ci/kubeconfig`. If the token is expired, it will open a browser for SSO login.
-
-### CI Configuration (openshift/release repo)
-
-The Prow job definitions and ci-operator configs live in the [openshift/release](https://github.com/openshift/release) repo:
-
-| Path | Description |
-|------|-------------|
-| [`ci-operator/config/redhat-developer/rhdh/`](https://github.com/openshift/release/tree/master/ci-operator/config/redhat-developer/rhdh) | ci-operator configuration files |
-| [`ci-operator/jobs/redhat-developer/rhdh/`](https://github.com/openshift/release/tree/master/ci-operator/jobs/redhat-developer/rhdh) | Generated Prow job definitions |
-| [`ci-operator/step-registry/redhat-developer/rhdh/`](https://github.com/openshift/release/tree/master/ci-operator/step-registry/redhat-developer/rhdh) | Step registry (test steps, alert sending) |
-
-### Documentation
-
-| Resource | Link |
-|----------|------|
-| OpenShift CI Documentation | [docs.ci.openshift.org](https://docs.ci.openshift.org/) |
-| ci-operator Architecture | [ci-operator docs](https://docs.ci.openshift.org/docs/architecture/ci-operator/) |
-| Artifacts Documentation | [Artifacts how-to](https://docs.ci.openshift.org/docs/how-tos/artifacts/) |
-| Prow Overview | [Prow docs](https://docs.ci.openshift.org/docs/architecture/prow/) |
-| Cluster Pools & Claims | [Cluster pools docs](https://docs.ci.openshift.org/docs/how-tos/cluster-claim/) |
-| RHDH CI Pipeline README | [`.ci/pipelines/README.md`](../../.ci/pipelines/README.md) |
-| E2E Testing CI Documentation | [`CI.md`](CI.md) |
-| Playwright Documentation | [playwright.dev](https://playwright.dev/) |
-| Playwright Trace Viewer | [Trace viewer docs](https://playwright.dev/docs/trace-viewer) |
-
-### Key Files in This Repo
-
-| File | Purpose |
-|------|---------|
-| [`.ci/pipelines/openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh) | Main entry point -- dispatches to job handlers |
-| [`.ci/pipelines/lib/testing.sh`](../../.ci/pipelines/lib/testing.sh) | Test execution, health checks, artifact collection |
-| [`.ci/pipelines/lib/log.sh`](../../.ci/pipelines/lib/log.sh) | Structured logging (log levels, colors, sections) |
-| [`.ci/pipelines/reporting.sh`](../../.ci/pipelines/reporting.sh) | Status tracking and result persistence |
-| [`.ci/pipelines/env_variables.sh`](../../.ci/pipelines/env_variables.sh) | Environment variables and secrets |
-| [`.ci/pipelines/jobs/`](../../.ci/pipelines/jobs/) | Per-job-type handlers (ocp-nightly, aks-helm, etc.) |
-| [`.ci/pipelines/trigger-nightly-job.sh`](../../.ci/pipelines/trigger-nightly-job.sh) | Manual nightly job trigger via Gangway API |
-| [`.ci/pipelines/ocp-cluster-claim-login.sh`](../../.ci/pipelines/ocp-cluster-claim-login.sh) | Cluster access for debugging |
-| [`e2e-tests/playwright/projects.json`](../../e2e-tests/playwright/projects.json) | Playwright project definitions (source of truth) |
-| [`e2e-tests/playwright.config.ts`](../../e2e-tests/playwright.config.ts) | Playwright configuration (timeouts, retries, workers) |
-| [`.ci/pipelines/lib/config.sh`](../../.ci/pipelines/lib/config.sh) | ConfigMap selection and app-config management |
-| [`.ci/pipelines/lib/operators.sh`](../../.ci/pipelines/lib/operators.sh) | Operator/OLM installation functions |
-| [`.ci/pipelines/lib/helm.sh`](../../.ci/pipelines/lib/helm.sh) | Helm chart operations and value merging |
-| [`.ci/pipelines/lib/namespace.sh`](../../.ci/pipelines/lib/namespace.sh) | Namespace lifecycle and image pull secrets |
-| [`.ci/pipelines/cleanup.sh`](../../.ci/pipelines/cleanup.sh) | Exit trap for cleanup |
-| [`.ci/pipelines/resources/config_map/`](../../.ci/pipelines/resources/config_map/) | App-config YAML files (RBAC and non-RBAC variants) |
-| [`.ci/pipelines/value_files/`](../../.ci/pipelines/value_files/) | Helm values overrides for different platforms |
+- [`.ci/pipelines/README.md`](../../.ci/pipelines/README.md) -- cluster pools, access requirements, development guidelines
+- [`.ci/pipelines/lib/README.md`](../../.ci/pipelines/lib/README.md) -- full list of pipeline library modules and function signatures
+- [`CI.md`](CI.md) -- CI testing processes, job definitions, openshift/release repo links
+- [OpenShift CI Documentation](https://docs.ci.openshift.org/) -- Prow, ci-operator, cluster pools, artifacts
