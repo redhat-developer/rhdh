@@ -68,7 +68,8 @@ When your rotation begins:
 
 1. **Read the [Overview](#overview)** above to understand the role and where alerts come in.
 2. **Familiarize yourself with the [Useful Links and Tools](#useful-links-and-tools)** section -- open the Prow dashboards, join the Slack channels, and make sure you have access.
-3. **Try the [AI Test Triager](#ai-test-triager-nightly-test-alerts)** on a recent failure in `#rhdh-e2e-alerts` to see how it works. It will handle most of the initial analysis for you.
+3. **Review the [Internal Resources doc](https://docs.google.com/document/d/1yiMU-u2v8_rC-TBawcaJwV5jAvWcbTjhspuTe3KNcCo/edit?usp=sharing)** -- it covers Vault secrets, ReportPortal dashboards, DevLake analytics, and how to unredact artifacts. These are internal tools you'll need during triage.
+4. **Try the [AI Test Triager](#ai-test-triager-nightly-test-alerts)** on a recent failure in `#rhdh-e2e-alerts` to see how it works. It will handle most of the initial analysis for you.
 
 That's enough to start triaging.
 
@@ -631,6 +632,7 @@ Use [`.ci/pipelines/trigger-nightly-job.sh`](../../.ci/pipelines/trigger-nightly
 
 ### Related Documentation
 
+- [Internal Resources (Google Doc)](https://docs.google.com/document/d/1yiMU-u2v8_rC-TBawcaJwV5jAvWcbTjhspuTe3KNcCo/edit?usp=sharing) -- Vault secrets, ReportPortal, DevLake, unredacting artifacts (Red Hat internal)
 - [`.ci/pipelines/README.md`](../../.ci/pipelines/README.md) -- cluster pools, access requirements, development guidelines
 - [`.ci/pipelines/lib/README.md`](../../.ci/pipelines/lib/README.md) -- full list of pipeline library modules and function signatures
 - [`CI.md`](CI.md) -- CI testing processes, job definitions, openshift/release repo links
