@@ -24,6 +24,8 @@ handle_eks_helm() {
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
+  common::kubectl_login
+
   cluster_setup_k8s_helm
 
   EKS_INSTANCE_DOMAIN_NAME=$(aws::generate_domain_name)

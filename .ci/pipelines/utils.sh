@@ -154,8 +154,7 @@ save_all_pod_logs() {
     wait "$pid" 2> /dev/null || true
   done
 
-  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/pod_logs"
-  rsync -a pod_logs/ "${ARTIFACT_DIR}/${artifacts_subdir}/pod_logs/" || true
+  common::save_artifact "${artifacts_subdir}" "pod_logs/" "pod_logs" || true
   set -e
 }
 
@@ -528,6 +527,9 @@ cluster_setup_k8s_helm() {
 # ==============================================================================
 
 base_deployment() {
+  common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
+  local artifacts_subdir=$1
+
   namespace::configure ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
@@ -535,15 +537,14 @@ base_deployment() {
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   if should_skip_orchestrator; then
     local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
     helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
 
-    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
-    rsync -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
+    common::save_artifact "${artifacts_subdir}" "${merged_pr_value_file}" || true
     # shellcheck disable=SC2046
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -562,6 +563,9 @@ base_deployment() {
 }
 
 rbac_deployment() {
+  common::require_vars "RELEASE_NAME_RBAC" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
+  local artifacts_subdir=$1
+
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
@@ -577,14 +581,13 @@ rbac_deployment() {
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   if should_skip_orchestrator; then
     local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
     helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
 
-    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
-    rsync -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
+    common::save_artifact "${artifacts_subdir}" "${merged_pr_rbac_value_file}" || true
     # shellcheck disable=SC2046
     helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -618,13 +621,19 @@ rbac_deployment() {
 }
 
 initiate_deployments() {
+  local base_artifacts_subdir=$1
+  local rbac_artifacts_subdir=$2
+
   cd "${DIR}"
-  base_deployment
-  rbac_deployment
+  base_deployment "${base_artifacts_subdir}"
+  rbac_deployment "${rbac_artifacts_subdir}"
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
 base_deployment_osd_gcp() {
+  common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
+  local artifacts_subdir=$1
+
   namespace::configure ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
@@ -635,10 +644,9 @@ base_deployment_osd_gcp() {
 
   # Merge base values with OSD-GCP diff file
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
-  rsync -a "/tmp/merged-values_showcase_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${artifacts_subdir}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
 
-  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   # shellcheck disable=SC2046
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
@@ -652,6 +660,9 @@ base_deployment_osd_gcp() {
 }
 
 rbac_deployment_osd_gcp() {
+  common::require_vars "RELEASE_NAME_RBAC" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
+  local artifacts_subdir=$1
+
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
@@ -662,10 +673,9 @@ rbac_deployment_osd_gcp() {
 
   # Merge RBAC values with OSD-GCP diff file
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
-  rsync -a "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${artifacts_subdir}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
 
-  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
 
   # shellcheck disable=SC2046
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
@@ -679,9 +689,12 @@ rbac_deployment_osd_gcp() {
 }
 
 initiate_deployments_osd_gcp() {
+  local base_artifacts_subdir=$1
+  local rbac_artifacts_subdir=$2
+
   cd "${DIR}"
-  base_deployment_osd_gcp
-  rbac_deployment_osd_gcp
+  base_deployment_osd_gcp "${base_artifacts_subdir}"
+  rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
 }
 
 # install base RHDH deployment before upgrade
@@ -702,7 +715,7 @@ initiate_upgrade_base_deployments() {
   cd "${DIR}" || return 1
 
   apply_yaml_files "${DIR}" "${namespace}" "${url}"
-  log::info "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
+  log::info "Deploying image from base repository: ${IMAGE_REGISTRY}/${IMAGE_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
 
   # Get dynamic value file path based on previous release version
   local previous_release_value_file
@@ -713,7 +726,8 @@ initiate_upgrade_base_deployments() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${previous_release_value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
+    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
+    --set upstream.backstage.image.repository="${IMAGE_REPO_BASE}" \
     --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
 }
 
@@ -727,13 +741,14 @@ initiate_upgrade_deployments() {
   cd "${DIR}" || return 1
 
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_upgrade.yaml" "/tmp/merged_value_file.yaml"
-  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/merged_value_file.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
+    --set upstream.backstage.image.repository="${IMAGE_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}" \
     --wait --timeout=${wait_upgrade}
 
@@ -761,21 +776,20 @@ initiate_sanity_plugin_checks_deployment() {
   local release_name=$1
   local name_space_sanity_plugins_check=$2
   local sanity_plugins_url=$3
+  local artifacts_subdir=$4
 
   namespace::configure "${name_space_sanity_plugins_check}"
   helm::uninstall "${name_space_sanity_plugins_check}" "${release_name}"
   deploy_redis_cache "${name_space_sanity_plugins_check}"
   apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
   helm::merge_values "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
-  mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
-  rsync -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  common::save_artifact "${artifacts_subdir}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" || true
   # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params) \
-    --set orchestrator.enabled=true
+    $(helm::get_image_params)
 }
 
 # ==============================================================================

@@ -208,6 +208,7 @@ global:
                       seconds: 15
                     timeout:
                       minutes: 15
-
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
         disabled: false
+orchestrator:
+  enabled: true

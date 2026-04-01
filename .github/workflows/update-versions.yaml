@@ -31,7 +31,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Run update-versions-doc script
-        run: node scripts/update-versions-doc.mjs docs/dynamic-plugins/versions.md
+        run: node scripts/update-versions-doc.mjs docs/dynamic-plugins/versions.md "${{ github.ref_name }}"
         # Note: GITHUB_REPOSITORY is available as a default env var in the github runner
 
       - name: Create Pull Request

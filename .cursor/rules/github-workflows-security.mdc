@@ -1,7 +1,4 @@
 ---
-alwaysApply: false
-description: Security best practices for GitHub Actions workflows based on GitHub Security Lab guidelines
-globs: .github/workflows/**,.github/actions/**
 ---
 
 # GitHub Workflows Security Best Practices

@@ -10,10 +10,10 @@ spec:
           spec:
             containers:
               - name: backstage-backend
-                image: "quay.io/$QUAY_REPO:$TAG_NAME"
+                image: "$IMAGE_REGISTRY/$IMAGE_REPO:$TAG_NAME"
             initContainers:
               - name: install-dynamic-plugins
-                image: "quay.io/$QUAY_REPO:$TAG_NAME"
+                image: "$IMAGE_REGISTRY/$IMAGE_REPO:$TAG_NAME"
             volumes:
               - name: dynamic-plugins-root
                 ephemeral:

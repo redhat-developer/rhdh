@@ -126,7 +126,8 @@ export class TestHelper {
       hasText: panelTitle,
     });
     const entries = panel.locator("tbody").locator("tr");
-    expect(await entries.count()).toBeGreaterThan(0);
+    // Use auto-retrying assertion instead of instant count check
+    await expect(entries.first()).toBeVisible({ timeout: 30000 });
   }
 
   async clickAndVerifyText(

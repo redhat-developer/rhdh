@@ -1,19 +1,8 @@
 ---
+root: false
 targets:
   - '*'
-root: false
-description: E2E/CI context of RHDH to assist the agent in testing and pipeline tasks.
-globs:
-  - .ci/**
-  - e2e-tests/**
-  - docs/e2e-tests/**
-cursor:
-  alwaysApply: false
-  description: E2E/CI context of RHDH to assist the agent in testing and pipeline tasks.
-  globs:
-    - .ci/**
-    - e2e-tests/**
-    - docs/e2e-tests/**
+globs: []
 ---
 # RHDH (Red Hat Developer Hub) Repository Context
 
