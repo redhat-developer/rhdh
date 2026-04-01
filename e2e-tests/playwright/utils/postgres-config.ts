@@ -97,8 +97,7 @@ export async function configurePostgresCredentials(
   // NODE_EXTRA_CA_CERTS; createOrUpdateSecret replaces secret data entirely
   // so a previously set value is removed.
   if (sslMode !== "disable") {
-    data.NODE_EXTRA_CA_CERTS =
-      Buffer.from(nodeExtraCaCerts).toString("base64");
+    data.NODE_EXTRA_CA_CERTS = Buffer.from(nodeExtraCaCerts).toString("base64");
   }
 
   if (credentials.user) {
