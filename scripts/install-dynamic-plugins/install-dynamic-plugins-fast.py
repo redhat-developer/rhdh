@@ -191,7 +191,7 @@ class OciImageCache:
         log(f"\t==> Downloading {resolved}")
         self._skopeo.copy(docker_url, f"dir:{local_dir}")
 
-        manifest = json.load(open(os.path.join(local_dir, "manifest.json")))
+        manifest = json.load(open(os.path.join(local_dir, "manifest.json")))  # NOSONAR - local_dir is a temp dir created by this script
         layer_digest = manifest["layers"][0]["digest"]
         tarball = os.path.join(local_dir, layer_digest.split(":")[1])
 
@@ -254,7 +254,7 @@ def extract_npm_package(archive: str, destination: str) -> str:
         shutil.rmtree(pkg_dir, ignore_errors=True)
     os.mkdir(pkg_dir)
 
-    with tarfile.open(archive, "r:*") as tar:
+    with tarfile.open(archive, "r:*") as tar:  # NOSONAR - archive is an internal path from npm pack output
         members = []
         for m in tar.getmembers():
             if m.isdir():
@@ -302,7 +302,7 @@ def verify_integrity(package: str, archive: str, integrity_str: str) -> None:
         raise InstallException(f"{package}: invalid base64 hash")
 
     h = hashlib.new(algo)
-    with open(archive, "rb") as f:
+    with open(archive, "rb") as f:  # NOSONAR - archive is an internal path from npm pack output
         for chunk in iter(lambda: f.read(65536), b""):
             h.update(chunk)
     actual_b64 = base64.b64encode(h.digest()).decode("utf-8")
