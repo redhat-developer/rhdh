@@ -89,13 +89,16 @@ export async function configurePostgresCredentials(
     PGSSLMODE: Buffer.from(sslMode).toString("base64"),
   };
 
+  // In-cluster path where RHDH reads the mounted postgres TLS bundle (override via POSTGRES_NODE_EXTRA_CA_CERTS).
+  const nodeExtraCaCerts =
+    process.env.POSTGRES_NODE_EXTRA_CA_CERTS ||
+    "/opt/app-root/src/postgres-crt.pem";
   // Only set certificate path when SSL is enabled. When disable, we omit
   // NODE_EXTRA_CA_CERTS; createOrUpdateSecret replaces secret data entirely
   // so a previously set value is removed.
   if (sslMode !== "disable") {
-    data.NODE_EXTRA_CA_CERTS = Buffer.from(
-      "/opt/app-root/src/postgres-crt.pem",
-    ).toString("base64");
+    data.NODE_EXTRA_CA_CERTS =
+      Buffer.from(nodeExtraCaCerts).toString("base64");
   }
 
   if (credentials.user) {

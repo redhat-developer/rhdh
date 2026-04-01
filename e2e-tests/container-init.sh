@@ -29,6 +29,8 @@ if ! command -v vault &> /dev/null; then
 fi
 
 # Fetch and write secrets to /tmp/secrets/
+# On success, real values populate /tmp/secrets for CI. On failure, placeholders below allow local/container
+# runs without Vault access (debug only — not for production).
 log::section "Fetching Vault Secrets"
 mkdir -p /tmp/secrets
 if SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" 2>/tmp/vault-fetch.err | jq -r ".data.data"); then
@@ -53,9 +55,9 @@ else
         [[ -e "/tmp/secrets/$key" ]] || echo "ZHVtbXk=" > "/tmp/secrets/$key"
     done
 
-    # Prefer the namespace from the image repository (e.g. rhdh-community/rhdh -> rhdh-community).
-    : "${QUAY_REPO:=rhdh-community/rhdh}"
-    quay_namespace="${QUAY_REPO%%/*}"
+    # Match .ci/pipelines/env_variables.sh: IMAGE_REPO is canonical; QUAY_REPO is a legacy alias.
+    : "${IMAGE_REPO:=${QUAY_REPO:-rhdh-community/rhdh}}"
+    quay_namespace="${IMAGE_REPO%%/*}"
     echo "${quay_namespace}" > /tmp/secrets/QUAY_NAMESPACE
     if [[ ! -s /tmp/secrets/QUAY_TOKEN ]]; then
         echo "dummy" > /tmp/secrets/QUAY_TOKEN
@@ -64,8 +66,8 @@ else
 fi
 
 # Ensure required Quay secrets exist even if Vault payload omitted them.
-: "${QUAY_REPO:=rhdh-community/rhdh}"
-quay_namespace="${QUAY_REPO%%/*}"
+: "${IMAGE_REPO:=${QUAY_REPO:-rhdh-community/rhdh}}"
+quay_namespace="${IMAGE_REPO%%/*}"
 if [[ ! -s /tmp/secrets/QUAY_NAMESPACE ]]; then
     echo "${quay_namespace}" > /tmp/secrets/QUAY_NAMESPACE
 fi

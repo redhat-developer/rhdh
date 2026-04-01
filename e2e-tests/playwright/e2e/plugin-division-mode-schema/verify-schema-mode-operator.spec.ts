@@ -12,6 +12,7 @@ import {
   cleanupOldPluginDatabases,
   setupSchemaModeDatabase,
 } from "./schema-mode-db";
+import { ensureSchemaModePortForward } from "./schema-mode-port-forward";
 
 interface AppConfigDatabaseConnection {
   database?: string;
@@ -52,18 +53,31 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   let dbName: string;
   let dbUser: string;
   let dbPassword: string;
+  let stopSchemaModePortForward: (() => void) | undefined;
 
   test.beforeAll(async () => {
     test.setTimeout(300000);
+    const hasPfMeta =
+      !!process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE &&
+      !!process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
+    const hasDirectHost = !!process.env.SCHEMA_MODE_DB_HOST;
     if (
-      !process.env.SCHEMA_MODE_DB_HOST ||
       !process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD ||
-      !process.env.SCHEMA_MODE_DB_PASSWORD
+      !process.env.SCHEMA_MODE_DB_PASSWORD ||
+      (!hasPfMeta && !hasDirectHost)
     ) {
       test.skip(
         true,
-        "SCHEMA_MODE_* env vars not set; schema-mode tests are opt-in",
+        "SCHEMA_MODE_* not set (need admin + app passwords and either port-forward metadata or SCHEMA_MODE_DB_HOST); schema-mode tests are opt-in",
       );
+      return;
+    }
+    try {
+      const pf = await ensureSchemaModePortForward();
+      stopSchemaModePortForward = pf.stop;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      test.skip(true, `Schema-mode port-forward: ${msg}`);
       return;
     }
     const env = getSchemaModeEnv();
@@ -698,6 +712,10 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
         "✓ No restart needed - configuration already applied and deployment is ready",
       );
     }
+  });
+
+  test.afterAll(() => {
+    stopSchemaModePortForward?.();
   });
 
   test("Verify RHDH is accessible", async ({ page }) => {
