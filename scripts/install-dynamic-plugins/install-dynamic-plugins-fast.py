@@ -44,6 +44,9 @@ RHDH_REGISTRY = "registry.access.redhat.com/rhdh/"
 RHDH_FALLBACK = "quay.io/rhdh/"
 MAX_ENTRY_SIZE = int(os.environ.get("MAX_ENTRY_SIZE", 20_000_000))
 RECOGNIZED_ALGORITHMS = ("sha512", "sha384", "sha256")
+CONFIG_HASH_FILE = "dynamic-plugin-config.hash"
+IMAGE_HASH_FILE = "dynamic-plugin-image.hash"
+DPDY_FILENAME = "dynamic-plugins.default.yaml"
 
 
 class PullPolicy(StrEnum):
@@ -152,7 +155,12 @@ def resolve_image(skopeo: Skopeo, image: str) -> str:
     if not raw.startswith(RHDH_REGISTRY):
         return image
 
-    proto = OCI_PROTO if image.startswith(OCI_PROTO) else (DOCKER_PROTO if image.startswith(DOCKER_PROTO) else "")
+    if image.startswith(OCI_PROTO):
+        proto = OCI_PROTO
+    elif image.startswith(DOCKER_PROTO):
+        proto = DOCKER_PROTO
+    else:
+        proto = ""
     docker_url = f"{DOCKER_PROTO}{raw}"
 
     if skopeo.exists(docker_url):
@@ -252,7 +260,7 @@ def extract_oci_plugin(tarball: str, plugin_path: str, destination: str) -> None
         tar.extractall(dest_abs, members=members, filter="tar")
 
 
-def extract_npm_package(archive: str, destination: str) -> str:
+def extract_npm_package(archive: str) -> str:
     prefix = "package/"
     pkg_dir = archive.replace(".tgz", "")
     pkg_dir_real = os.path.realpath(pkg_dir)
@@ -449,20 +457,22 @@ def _merge_oci_plugin(
 
 
 def _do_merge(key: str, plugin: dict, all_plugins: dict, src: str, level: int) -> None:
+    if key in all_plugins and all_plugins[key].get("_level") == level:
+        raise InstallException(f"Duplicate plugin config for {plugin['package']} in {src}")
+
+    plugin["_level"] = level
+
     if key not in all_plugins:
-        plugin["_level"] = level
         all_plugins[key] = plugin
-    else:
-        if all_plugins[key].get("_level") == level:
-            raise InstallException(f"Duplicate plugin config for {plugin['package']} in {src}")
-        all_plugins[key]["_level"] = level
-        for k, v in plugin.items():
-            if k == "package" and plugin["package"].startswith(OCI_PROTO):
-                all_plugins[key][k] = v
-            elif k != "version":
-                all_plugins[key][k] = v
-        if "version" in plugin:
-            all_plugins[key]["version"] = plugin["version"]
+        return
+
+    for k, v in plugin.items():
+        if k == "package" and plugin["package"].startswith(OCI_PROTO):
+            all_plugins[key][k] = v
+        elif k != "version":
+            all_plugins[key][k] = v
+    if "version" in plugin:
+        all_plugins[key]["version"] = plugin["version"]
 
 
 # ---------------------------------------------------------------------------
@@ -515,18 +525,18 @@ def install_oci_plugin(
     pull_policy = plugin.get("pullPolicy", PullPolicy.ALWAYS if ":latest!" in pkg else PullPolicy.IF_NOT_PRESENT)
     if plugin_hash in installed:
         if pull_policy == PullPolicy.IF_NOT_PRESENT:
-            log(f"\t==> Already installed, skipping")
+            log("\t==> Already installed, skipping")
             installed.pop(plugin_hash)
             return None, plugin.get("pluginConfig", {})
         if pull_policy == PullPolicy.ALWAYS:
             path_installed = installed[plugin_hash]
-            digest_file = os.path.join(destination, path_installed, "dynamic-plugin-image.hash")
+            digest_file = os.path.join(destination, path_installed, IMAGE_HASH_FILE)
             if os.path.isfile(digest_file):
                 local_digest = open(digest_file).read().strip()
                 image_part = pkg.split("!")[0]
                 remote_digest = image_cache.get_digest(image_part)
                 if local_digest == remote_digest:
-                    log(f"\t==> Digest unchanged, skipping")
+                    log("\t==> Digest unchanged, skipping")
                     installed.pop(plugin_hash)
                     return None, plugin.get("pluginConfig", {})
 
@@ -541,11 +551,11 @@ def install_oci_plugin(
     # Save digest
     plugin_dir = os.path.join(destination, plugin_path)
     os.makedirs(plugin_dir, exist_ok=True)
-    with open(os.path.join(plugin_dir, "dynamic-plugin-image.hash"), "w") as f:
+    with open(os.path.join(plugin_dir, IMAGE_HASH_FILE), "w") as f:
         f.write(image_cache.get_digest(image_part))
 
     # Save config hash
-    with open(os.path.join(plugin_dir, "dynamic-plugin-config.hash"), "w") as f:
+    with open(os.path.join(plugin_dir, CONFIG_HASH_FILE), "w") as f:
         f.write(plugin_hash)
 
     # Clean old hash tracking
@@ -571,7 +581,7 @@ def install_npm_plugin(
     if plugin_hash in installed and not force:
         pull_policy = plugin.get("pullPolicy", PullPolicy.IF_NOT_PRESENT)
         if pull_policy != PullPolicy.ALWAYS:
-            log(f"\t==> Already installed, skipping")
+            log("\t==> Already installed, skipping")
             installed.pop(plugin_hash)
             return None, plugin.get("pluginConfig", {})
 
@@ -581,17 +591,17 @@ def install_npm_plugin(
     if not is_local and not skip_integrity and "integrity" not in plugin:
         raise InstallException(f"No integrity hash for {pkg}")
 
-    log(f"\t==> Running npm pack")
+    log("\t==> Running npm pack")
     result = run(["npm", "pack", actual_pkg], f"npm pack failed for {pkg}", cwd=destination)
     archive = os.path.join(destination, result.stdout.strip())
 
     if not is_local and not skip_integrity:
-        log(f"\t==> Verifying integrity")
+        log("\t==> Verifying integrity")
         verify_integrity(pkg, archive, plugin["integrity"])
 
-    plugin_path = extract_npm_package(archive, destination)
+    plugin_path = extract_npm_package(archive)
 
-    with open(os.path.join(destination, plugin_path, "dynamic-plugin-config.hash"), "w") as f:
+    with open(os.path.join(destination, plugin_path, CONFIG_HASH_FILE), "w") as f:
         f.write(plugin_hash)
 
     for k in [k for k, v in installed.items() if v == plugin_path]:
@@ -642,7 +652,7 @@ def extract_catalog_index(skopeo: Skopeo, image: str, mount_dir: str, entities_d
                         safe.append(m)
                     tar.extractall(temp_dir_abs, members=safe, filter="data")
 
-    dpdy = os.path.join(temp_dir, "dynamic-plugins.default.yaml")
+    dpdy = os.path.join(temp_dir, DPDY_FILENAME)
     if not os.path.isfile(dpdy):
         raise InstallException(f"dynamic-plugins.default.yaml not found in {image}")
     log("\t==> Extracted dynamic-plugins.default.yaml")
@@ -684,6 +694,113 @@ def remove_lock(path: str) -> None:
         log(f"======= Removed lock: {path}")
     except FileNotFoundError:
         pass
+
+
+def _categorize_plugins(all_plugins: dict) -> tuple[dict, dict, dict]:
+    oci: dict[str, dict] = {}
+    npm: dict[str, dict] = {}
+    skipped: dict[str, dict] = {}
+
+    for k, v in all_plugins.items():
+        pkg = v["package"]
+        if v.get("disabled", False):
+            log(f"\n======= Skipping disabled plugin {pkg}")
+        elif pkg.startswith(OCI_PROTO):
+            oci[k] = v
+        elif pkg.startswith("./"):
+            local_path = os.path.join(os.getcwd(), pkg[2:])
+            if os.path.isdir(local_path):
+                npm[k] = v
+            else:
+                skipped[k] = v
+        else:
+            npm[k] = v
+
+    return oci, npm, skipped
+
+
+def _handle_skipped_local(skipped: dict, global_config: dict) -> dict:
+    if not skipped:
+        return global_config
+    log(f"\n======= Skipping {len(skipped)} local plugins (directories not found)")
+    for _k, v in skipped.items():
+        log(f"\t==> {v['package']} (not found at {os.path.join(os.getcwd(), v['package'][2:])})")
+        pc = v.get("pluginConfig")
+        if pc and isinstance(pc, dict):
+            global_config = deep_merge(pc, global_config)
+    return global_config
+
+
+def _install_one(install_fn, plugin: dict, global_config: dict, errors: list[str]) -> dict:
+    try:
+        path, config = install_fn(plugin)
+        if config and isinstance(config, dict):
+            global_config = deep_merge(config, global_config)
+        if path:
+            log(f"\t==> Installed {plugin['package']}")
+    except Exception as e:
+        errors.append(f"{plugin['package']}: {e}")
+        log(f"\t==> ERROR: {plugin['package']}: {e}")
+    return global_config
+
+
+def _install_oci_plugins(
+    oci_plugins: dict, root: str, image_cache: OciImageCache,
+    installed: dict, workers: int, global_config: dict, errors: list[str],
+) -> dict:
+    if not oci_plugins:
+        return global_config
+
+    log(f"\n======= Installing {len(oci_plugins)} OCI plugins ({workers} workers)")
+
+    def do_install(plugin: dict) -> tuple[str | None, dict]:
+        log(f"\n======= Installing OCI plugin {plugin['package']}")
+        return install_oci_plugin(plugin, root, image_cache, installed)
+
+    if workers > 1:
+        lock = Lock()
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {pool.submit(do_install, v): v for v in oci_plugins.values()}
+            for future in as_completed(futures):
+                plugin = futures[future]
+                try:
+                    path, config = future.result()
+                    if config and isinstance(config, dict):
+                        with lock:
+                            global_config = deep_merge(config, global_config)
+                    if path:
+                        log(f"\t==> Installed {plugin['package']}")
+                except Exception as e:
+                    errors.append(f"{plugin['package']}: {e}")
+                    log(f"\t==> ERROR: {plugin['package']}: {e}")
+    else:
+        for plugin in oci_plugins.values():
+            global_config = _install_one(do_install, plugin, global_config, errors)
+
+    return global_config
+
+
+def _install_npm_plugins(
+    npm_plugins: dict, root: str, skip_integrity: bool,
+    installed: dict, global_config: dict, errors: list[str],
+) -> dict:
+    if not npm_plugins:
+        return global_config
+
+    log(f"\n======= Installing {len(npm_plugins)} NPM plugins (sequential)")
+    for plugin in npm_plugins.values():
+        log(f"\n======= Installing NPM plugin {plugin['package']}")
+        fn = lambda p: install_npm_plugin(p, root, skip_integrity, installed)
+        global_config = _install_one(fn, plugin, global_config, errors)
+
+    return global_config
+
+
+def _cleanup_removed_plugins(root: str, installed: dict) -> None:
+    for _h, d in installed.items():
+        plugin_dir = os.path.join(root, d)
+        log(f"\n======= Removing old plugin {d}")
+        shutil.rmtree(plugin_dir, ignore_errors=True)
 
 
 # ---------------------------------------------------------------------------
@@ -738,8 +855,8 @@ def main() -> None:
     all_plugins: dict[str, dict] = {}
     includes = content.get("includes", [])
 
-    if catalog_dpdy and "dynamic-plugins.default.yaml" in includes:
-        idx = includes.index("dynamic-plugins.default.yaml")
+    if catalog_dpdy and DPDY_FILENAME in includes:
+        idx = includes.index(DPDY_FILENAME)
         includes[idx] = catalog_dpdy
 
     for inc in includes:
@@ -765,110 +882,23 @@ def main() -> None:
     # Read currently installed
     installed: dict[str, str] = {}
     for d in os.listdir(root):
-        hf = os.path.join(root, d, "dynamic-plugin-config.hash")
+        hf = os.path.join(root, d, CONFIG_HASH_FILE)
         if os.path.isfile(hf):
             installed[open(hf).read().strip()] = d
 
     global_config: dict = {"dynamicPlugins": {"rootDirectory": "dynamic-plugins-root"}}
 
-    # Separate plugins by type for different installation strategies
-    oci_plugins: dict[str, dict] = {}
-    npm_plugins: dict[str, dict] = {}
-    disabled: dict[str, dict] = {}
-    skipped_local: dict[str, dict] = {}
+    oci_plugins, npm_plugins, skipped_local = _categorize_plugins(all_plugins)
+    global_config = _handle_skipped_local(skipped_local, global_config)
 
-    for k, v in all_plugins.items():
-        pkg = v["package"]
-        if v.get("disabled", False):
-            disabled[k] = v
-        elif pkg.startswith(OCI_PROTO):
-            oci_plugins[k] = v
-        elif pkg.startswith("./"):
-            # Local plugins: check if the directory actually exists
-            local_path = os.path.join(os.getcwd(), pkg[2:])
-            if os.path.isdir(local_path):
-                npm_plugins[k] = v
-            else:
-                skipped_local[k] = v
-        else:
-            npm_plugins[k] = v
-
-    for k, v in disabled.items():
-        log(f"\n======= Skipping disabled plugin {v['package']}")
-
-    if skipped_local:
-        log(f"\n======= Skipping {len(skipped_local)} local plugins (directories not found)")
-        for k, v in skipped_local.items():
-            log(f"\t==> {v['package']} (not found at {os.path.join(os.getcwd(), v['package'][2:])})")
-            # Still merge pluginConfig so frontend config is available
-            pc = v.get("pluginConfig")
-            if pc and isinstance(pc, dict):
-                global_config = deep_merge(pc, global_config)
-
-    install_lock = Lock()
     errors: list[str] = []
+    global_config = _install_oci_plugins(oci_plugins, root, image_cache, installed, workers, global_config, errors)
+    global_config = _install_npm_plugins(npm_plugins, root, skip_integrity, installed, global_config, errors)
 
-    def install_one_oci(key: str, plugin: dict) -> tuple[str | None, dict]:
-        log(f"\n======= Installing OCI plugin {plugin['package']}")
-        return install_oci_plugin(plugin, root, image_cache, installed)
-
-    # Phase 1: Parallel OCI downloads + extraction
-    if oci_plugins:
-        log(f"\n======= Installing {len(oci_plugins)} OCI plugins ({workers} workers)")
-
-        if workers > 1:
-            with ThreadPoolExecutor(max_workers=workers) as pool:
-                futures = {pool.submit(install_one_oci, k, v): (k, v) for k, v in oci_plugins.items()}
-                for future in as_completed(futures):
-                    key, plugin = futures[future]
-                    try:
-                        path, config = future.result()
-                        if config:
-                            with install_lock:
-                                global_config = deep_merge(config, global_config) if isinstance(config, dict) else global_config
-                        if path:
-                            log(f"\t==> Installed {plugin['package']}")
-                    except Exception as e:
-                        errors.append(f"{plugin['package']}: {e}")
-                        log(f"\t==> ERROR: {plugin['package']}: {e}")
-        else:
-            for key, plugin in oci_plugins.items():
-                try:
-                    path, config = install_one_oci(key, plugin)
-                    if config and isinstance(config, dict):
-                        global_config = deep_merge(config, global_config)
-                    if path:
-                        log(f"\t==> Installed {plugin['package']}")
-                except Exception as e:
-                    errors.append(f"{plugin['package']}: {e}")
-                    log(f"\t==> ERROR: {plugin['package']}: {e}")
-
-    # Phase 2: Sequential NPM installs (npm pack is not thread-safe)
-    if npm_plugins:
-        log(f"\n======= Installing {len(npm_plugins)} NPM plugins (sequential)")
-        for key, plugin in npm_plugins.items():
-            log(f"\n======= Installing NPM plugin {plugin['package']}")
-            try:
-                path, config = install_npm_plugin(plugin, root, skip_integrity, installed)
-                if config and isinstance(config, dict):
-                    global_config = deep_merge(config, global_config)
-                if path:
-                    log(f"\t==> Installed {plugin['package']}")
-            except Exception as e:
-                errors.append(f"{plugin['package']}: {e}")
-                log(f"\t==> ERROR: {plugin['package']}: {e}")
-
-    # Write global config
     with open(global_config_file, "w") as f:
         yaml.safe_dump(global_config, f)
 
-    # Clean removed plugins
-    for h, d in installed.items():
-        plugin_dir = os.path.join(root, d)
-        log(f"\n======= Removing old plugin {d}")
-        shutil.rmtree(plugin_dir, ignore_errors=True)
-
-    # Clean temp
+    _cleanup_removed_plugins(root, installed)
     tmp_obj.cleanup()
 
     if errors:

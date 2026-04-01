@@ -26,13 +26,13 @@ echo "==> Installer: ${INSTALLER}"
 # Check prerequisites
 for cmd in skopeo python3; do
   if ! command -v "$cmd" &>/dev/null; then
-    echo "ERROR: ${cmd} is required but not installed."
+    echo "ERROR: ${cmd} is required but not installed." >&2
     exit 1
   fi
 done
 
-if [ ! -f "$INSTALLER" ]; then
-  echo "ERROR: install-dynamic-plugins-fast.py not found at ${INSTALLER}"
+if [[ ! -f "$INSTALLER" ]]; then
+  echo "ERROR: install-dynamic-plugins-fast.py not found at ${INSTALLER}" >&2
   exit 1
 fi
 
@@ -54,8 +54,8 @@ for layer_digest in $(jq -r '.layers[].digest' "${CATALOG_DIR}/manifest.json" | 
 done
 
 DPDY="${EXTRACT_DIR}/.catalog-content/dynamic-plugins.default.yaml"
-if [ ! -f "$DPDY" ]; then
-  echo "ERROR: dynamic-plugins.default.yaml not found in catalog index"
+if [[ ! -f "$DPDY" ]]; then
+  echo "ERROR: dynamic-plugins.default.yaml not found in catalog index" >&2
   exit 1
 fi
 echo "==> Found dynamic-plugins.default.yaml ($(wc -l < "$DPDY") lines)"
