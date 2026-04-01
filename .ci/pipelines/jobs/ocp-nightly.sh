@@ -10,69 +10,8 @@ source "$DIR"/utils.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
-
-configure_schema_mode_runtime_env() {
-  local namespace=$1
-  local release_name=$2
-
-  local service_candidates=(
-    "${release_name}-postgresql"
-    "redhat-developer-hub-postgresql"
-  )
-  local secret_candidates=(
-    "${release_name}-postgresql"
-    "redhat-developer-hub-postgresql"
-    "postgres-cred"
-  )
-
-  local postgres_service=""
-  for candidate in "${service_candidates[@]}"; do
-    if oc get svc "${candidate}" -n "${namespace}" &> /dev/null; then
-      postgres_service="${candidate}"
-      break
-    fi
-  done
-
-  if [[ -z "${postgres_service}" ]]; then
-    log::warn "Schema-mode nightly: PostgreSQL service not found in ${namespace}; schema tests remain opt-in."
-    return 1
-  fi
-
-  local admin_password=""
-  for candidate in "${secret_candidates[@]}"; do
-    if ! oc get secret "${candidate}" -n "${namespace}" &> /dev/null; then
-      continue
-    fi
-
-    admin_password=$(oc get secret "${candidate}" -n "${namespace}" -o jsonpath='{.data.postgres-password}' 2> /dev/null | base64 -d || true)
-    if [[ -z "${admin_password}" ]]; then
-      admin_password=$(oc get secret "${candidate}" -n "${namespace}" -o jsonpath='{.data.POSTGRES_PASSWORD}' 2> /dev/null | base64 -d || true)
-    fi
-    if [[ -n "${admin_password}" ]]; then
-      break
-    fi
-  done
-
-  if [[ -z "${admin_password}" ]]; then
-    log::warn "Schema-mode nightly: unable to resolve PostgreSQL admin password in ${namespace}; schema tests remain opt-in."
-    return 1
-  fi
-
-  pkill -f "port-forward.*${namespace}.*5432:5432" || true
-  oc port-forward -n "${namespace}" "svc/${postgres_service}" 5432:5432 > /tmp/schema-mode-port-forward.log 2>&1 &
-  sleep 2
-  if ! nc -z localhost 5432; then
-    log::warn "Schema-mode nightly: port-forward to ${postgres_service} failed; schema tests remain opt-in."
-    return 1
-  fi
-
-  export SCHEMA_MODE_DB_HOST="localhost"
-  export SCHEMA_MODE_DB_ADMIN_PASSWORD="${admin_password}"
-  export SCHEMA_MODE_DB_PASSWORD="${SCHEMA_MODE_DB_PASSWORD:-test_password_123}"
-  export SCHEMA_MODE_DB_USER="${SCHEMA_MODE_DB_USER:-bn_backstage}"
-
-  log::info "Schema-mode nightly env configured for namespace ${namespace}"
-}
+# shellcheck source=.ci/pipelines/lib/schema-mode-env.sh
+source "$DIR"/lib/schema-mode-env.sh
 
 handle_ocp_nightly() {
   export NAME_SPACE="${NAME_SPACE:-showcase-ci-nightly}"
@@ -117,7 +56,7 @@ run_standard_deployment_tests() {
 run_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   initiate_runtime_deployment "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}"
-  configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" || true
+  configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" helm || true
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
