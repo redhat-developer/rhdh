@@ -23,14 +23,6 @@ function unescapeNewlines(value: string): string {
 }
 
 /**
- * Quote a PostgreSQL identifier (safe against injection).
- * Use for database, schema, and role names in dynamic SQL.
- */
-export function quoteIdent(name: string): string {
-  return '"' + String(name).replace(/"/g, '""') + '"';
-}
-
-/**
  * Read certificate content from a file path.
  * @param filePath - Path to the certificate file
  * @returns Certificate content with escaped newlines converted, or null if file doesn't exist
@@ -82,23 +74,14 @@ export async function configurePostgresCredentials(
     sslMode?: string;
   },
 ): Promise<void> {
-  const sslMode = credentials.sslMode || "require";
   const data: Record<string, string> = {
     POSTGRES_HOST: Buffer.from(credentials.host).toString("base64"),
     POSTGRES_PORT: Buffer.from(credentials.port || "5432").toString("base64"),
-    PGSSLMODE: Buffer.from(sslMode).toString("base64"),
+    PGSSLMODE: Buffer.from(credentials.sslMode || "require").toString("base64"),
+    NODE_EXTRA_CA_CERTS: Buffer.from(
+      "/opt/app-root/src/postgres-crt.pem",
+    ).toString("base64"),
   };
-
-  // In-cluster path where RHDH reads the mounted postgres TLS bundle (override via POSTGRES_NODE_EXTRA_CA_CERTS).
-  const nodeExtraCaCerts =
-    process.env.POSTGRES_NODE_EXTRA_CA_CERTS ||
-    "/opt/app-root/src/postgres-crt.pem";
-  // Only set certificate path when SSL is enabled. When disable, we omit
-  // NODE_EXTRA_CA_CERTS; createOrUpdateSecret replaces secret data entirely
-  // so a previously set value is removed.
-  if (sslMode !== "disable") {
-    data.NODE_EXTRA_CA_CERTS = Buffer.from(nodeExtraCaCerts).toString("base64");
-  }
 
   if (credentials.user) {
     data.POSTGRES_USER = Buffer.from(credentials.user).toString("base64");
@@ -203,9 +186,7 @@ export async function clearDatabase(credentials: {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           // WITH (FORCE) atomically terminates connections and drops the database
-          await client.query(
-            `DROP DATABASE IF EXISTS ${quoteIdent(db)} WITH (FORCE)`,
-          );
+          await client.query(`DROP DATABASE IF EXISTS "${db}" WITH (FORCE)`);
           success = true;
           break;
         } catch (error) {

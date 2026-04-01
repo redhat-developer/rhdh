@@ -511,8 +511,7 @@ export class KubeClient {
 
   /**
    * Create or update a Kubernetes secret (upsert pattern).
-   * Replaces the secret's data entirely so that keys not in secret.data are removed
-   * (avoids stale keys when switching e.g. from SSL to non-SSL).
+   * Tries to update the secret first; if it doesn't exist, creates it.
    */
   async createOrUpdateSecret(
     secret: k8s.V1Secret,

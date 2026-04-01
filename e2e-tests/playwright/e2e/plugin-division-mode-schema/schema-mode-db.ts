@@ -5,9 +5,11 @@
 
 import { expect } from "@playwright/test";
 import { Client } from "pg";
-import { quoteIdent } from "../../utils/postgres-config";
 
-export { quoteIdent } from "../../utils/postgres-config";
+/** Quote a PostgreSQL identifier (safe against injection in dynamic SQL). */
+function quoteIdent(name: string): string {
+  return '"' + String(name).replace(/"/g, '""') + '"';
+}
 
 /** Escape a string for use inside PostgreSQL single-quoted literal (doubles single quotes). */
 function escapePasswordLiteral(value: string): string {
