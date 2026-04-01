@@ -534,5 +534,3 @@ The choice of config map depends on the **Playwright test project** being execut
 ### **Configuration Deployment Process**
 
 The config maps are deployed as Kubernetes ConfigMaps during CI/CD pipeline execution and are mounted into the RHDH pods to provide runtime configuration. The pipeline selects the appropriate config map based on the test project being executed.
-
----
