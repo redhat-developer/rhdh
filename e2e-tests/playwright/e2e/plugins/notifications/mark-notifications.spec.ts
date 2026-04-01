@@ -91,6 +91,7 @@ test.describe("Mark notification tests", () => {
     };
     await notificationsApi.createNotification(notification);
     await notificationPage.clickNotificationsNavBarItem();
+    await notificationPage.notificationContains(`${notificationTitle}-${r}`);
     await notificationPage.selectNotification();
     await notificationPage.saveSelected();
     await notificationPage.viewSaved();

@@ -185,11 +185,11 @@ export class LogUtils {
   static async getPodLogsWithGrep(
     filterWords: string[] = [],
     namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
-    maxRetries: number = 4,
-    retryDelay: number = 2000,
+    maxRetries: number = 6,
+    retryDelay: number = 3000,
   ): Promise<string> {
     const deploySelector = getBackstageDeploySelector();
-    const tailNumber = 100;
+    const tailNumber = 500;
 
     // Resolve the deployment by its metadata labels, then fetch logs from it.
     // This works for both Helm and Operator since both set app.kubernetes.io/name

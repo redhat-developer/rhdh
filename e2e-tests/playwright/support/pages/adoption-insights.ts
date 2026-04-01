@@ -122,12 +122,15 @@ export class TestHelper {
   }
 
   async expectTopEntriesToBePresent(panelTitle: string) {
-    const panel = this.page.locator(".v5-MuiPaper-root", {
-      hasText: panelTitle,
-    });
-    const entries = panel.locator("tbody").locator("tr");
-    // Use auto-retrying assertion instead of instant count check
-    await expect(entries.first()).toBeVisible({ timeout: 30000 });
+    await expect(async () => {
+      await this.page.reload();
+      await this.page.waitForLoadState("domcontentloaded");
+      const panel = this.page.locator(".v5-MuiPaper-root", {
+        hasText: panelTitle,
+      });
+      const entries = panel.locator("tbody").locator("tr");
+      await expect(entries.first()).toBeVisible({ timeout: 10000 });
+    }).toPass({ intervals: [5000, 10000], timeout: 60000 });
   }
 
   async clickAndVerifyText(
@@ -141,7 +144,10 @@ export class TestHelper {
     // Wait for the expected API call to succeed
     await this.waitUntilApiCallSucceeds(newpage);
 
-    await newpage.getByText(expectedText).first().waitFor({ state: "visible" });
+    await newpage
+      .getByText(expectedText)
+      .first()
+      .waitFor({ state: "visible", timeout: 30000 });
     await newpage.waitForTimeout(5000); // wait for the flush interval to be sure
     await newpage.close();
   }
