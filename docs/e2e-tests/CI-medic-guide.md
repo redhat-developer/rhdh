@@ -1,6 +1,6 @@
 # CI Medic Guide
 
-A practical guide for investigating test failures in RHDH nightly jobs and PR checks.
+A practical guide for investigating test failures in RHDH Core (`redhat-developer/rhdh`) nightly jobs and PR checks.
 
 ## Table of Contents
 
