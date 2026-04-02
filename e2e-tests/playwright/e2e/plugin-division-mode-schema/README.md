@@ -12,6 +12,7 @@ E2E tests for `pluginDivisionMode: schema` on **OpenShift (OCP)**. Two specs exi
 **Schema-mode tests are OPT-IN.** They only run when the required `SCHEMA_MODE_*` environment variables are configured:
 
 ### When Tests RUN
+
 - ✅ `SCHEMA_MODE_DB_ADMIN_PASSWORD` is set (PostgreSQL admin password)
 - ✅ `SCHEMA_MODE_DB_PASSWORD` is set (test user password)
 - ✅ Either:
@@ -19,11 +20,13 @@ E2E tests for `pluginDivisionMode: schema` on **OpenShift (OCP)**. Two specs exi
   - `SCHEMA_MODE_DB_HOST` is set (manual port-forward or direct access)
 
 ### When Tests SKIP
+
 - ❌ Any required `SCHEMA_MODE_*` variable is missing
 - ❌ PostgreSQL is not available in the runtime namespace
 - ❌ Port-forward fails to establish connection
 
 **Expected in CI:**
+
 - **OCP Helm/Operator nightly jobs**: Tests run (env auto-configured by `schema-mode-env.sh`)
 - **PR jobs**: Tests skip (env not configured by default)
 - **Non-OCP jobs (AKS, EKS, GKE)**: Tests skip (no PostgreSQL deployment)
