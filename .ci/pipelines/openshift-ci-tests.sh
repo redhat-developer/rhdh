@@ -51,6 +51,11 @@ case $result in
   4) override_github_app_env_with_prefix "5" ;;
 esac
 
+export CHART_VERSION="1.9-217-CI"
+export HELM_CHART_URL="oci://quay.io/rhdh/chart"
+export QUAY_REPO="rhdh/rhdh-hub-rhel9"
+export TAG_NAME="1.9-217"
+
 main() {
   log::info "Log file: ${LOGFILE}"
   log::info "JOB_NAME : $JOB_NAME"
