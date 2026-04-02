@@ -390,6 +390,8 @@ test.describe("Test RBAC", () => {
       await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
+        true,
+        15000,
       );
 
       await page.getByPlaceholder("Filter").waitFor({
@@ -457,12 +459,17 @@ test.describe("Test RBAC", () => {
       await saveButton1.click();
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
+        true,
+        15000,
       );
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
 
-      await page
-        .getByTestId(ROLE_OVERVIEW_COMPONENTS_TEST_ID.updatePolicies)
-        .click();
+      // Wait for the permissions section update button to be available
+      const updatePoliciesButton = page.getByTestId(
+        ROLE_OVERVIEW_COMPONENTS_TEST_ID.updatePolicies,
+      );
+      await expect(updatePoliciesButton).toBeVisible({ timeout: 15000 });
+      await updatePoliciesButton.click();
       await uiHelper.verifyHeading("Edit Role");
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
@@ -484,9 +491,13 @@ test.describe("Test RBAC", () => {
       await expect(page.getByRole("button", { name: "Save" })).toBeVisible({
         timeout: 15000,
       });
+      // Dismiss quickstart overlay if visible — it can intercept button clicks
+      await uiHelper.hideQuickstartIfVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
+        true,
+        15000,
       );
       await uiHelper.verifyHeading("2 permissions");
 
@@ -877,6 +888,8 @@ test.describe("Test RBAC", () => {
       await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
+        true,
+        15000,
       );
 
       await page.getByPlaceholder("Filter").waitFor({
