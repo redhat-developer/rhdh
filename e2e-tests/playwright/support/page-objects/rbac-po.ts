@@ -283,7 +283,8 @@ export class RbacPo extends PageObject {
     await this.verifyPermissionPoliciesHeader(policies.length);
     await this.create();
 
-    // Wait for either success message or error alert
+    // Wait for either success message or error alert.
+    // Wrap both waitFor calls so the losing promise cannot reject unhandled.
     const successLocator = this.page
       .getByText(`Role role:default/${name} created successfully`, {
         exact: true,
@@ -293,15 +294,27 @@ export class RbacPo extends PageObject {
       .getByRole("alert")
       .filter({ hasText: /error/i });
 
-    await Promise.race([
-      successLocator.waitFor({ state: "visible", timeout: 30000 }),
-      errorAlert.waitFor({ state: "visible", timeout: 30000 }),
+    const outcome = await Promise.race([
+      successLocator
+        .waitFor({ state: "visible", timeout: 30000 })
+        .then(() => "success" as const)
+        .catch(() => "success_timeout" as const),
+      errorAlert
+        .waitFor({ state: "visible", timeout: 30000 })
+        .then(() => "error" as const)
+        .catch(() => "error_timeout" as const),
     ]);
 
-    if (await errorAlert.isVisible()) {
+    if (outcome === "error") {
       const errorMessage = await errorAlert.textContent();
       throw new Error(
         `Failed to create role: ${errorMessage}. This may indicate insufficient permissions or a leftover role from a previous test run.`,
+      );
+    }
+
+    if (outcome !== "success") {
+      throw new Error(
+        `Role creation timed out: neither success message nor error alert appeared within 30s.`,
       );
     }
 
