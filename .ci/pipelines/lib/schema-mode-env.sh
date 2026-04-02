@@ -22,12 +22,13 @@ configure_schema_mode_runtime_env() {
   local forward_namespace=""
   local admin_password=""
   local forward_via_pod=0
+  local rhdh_psql_svc_name="redhat-developer-hub-postgresql"
 
   if [[ "${install_kind}" == "operator" ]]; then
     local -a service_candidates=(
       "backstage-psql-${release_name}"
       "rhdh-postgresql"
-      "redhat-developer-hub-postgresql"
+      "${rhdh_psql_svc_name}"
     )
     local candidate
     for candidate in "${service_candidates[@]}"; do
@@ -43,7 +44,7 @@ configure_schema_mode_runtime_env() {
       return 1
     fi
 
-    local -a secret_candidates=("postgres-cred" "rhdh-postgresql" "redhat-developer-hub-postgresql")
+    local -a secret_candidates=("postgres-cred" "rhdh-postgresql" "${rhdh_psql_svc_name}")
     local sec
     for sec in "${secret_candidates[@]}"; do
       if ! oc get secret "${sec}" -n "${runtime_namespace}" &> /dev/null; then
@@ -65,7 +66,7 @@ configure_schema_mode_runtime_env() {
   else
     local -a helm_svc_candidates=(
       "${release_name}-postgresql"
-      "redhat-developer-hub-postgresql"
+      "${rhdh_psql_svc_name}"
     )
     local hsvc
     for hsvc in "${helm_svc_candidates[@]}"; do
@@ -79,7 +80,7 @@ configure_schema_mode_runtime_env() {
     if [[ -n "${postgres_service}" ]]; then
       local -a secret_candidates=(
         "${release_name}-postgresql"
-        "redhat-developer-hub-postgresql"
+        "${rhdh_psql_svc_name}"
         "postgres-cred"
       )
       local sec

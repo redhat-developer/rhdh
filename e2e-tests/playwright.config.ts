@@ -229,6 +229,19 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
       ],
+      // Helm vs Operator schema specs: select by JOB_NAME (replaces test.skip in each file for Sonar S1607).
+      testIgnore: [
+        ...(process.env.JOB_NAME.includes("operator")
+          ? [
+              "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode-helm.spec.ts",
+            ]
+          : []),
+        ...(process.env.JOB_NAME.includes("helm")
+          ? [
+              "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode-operator.spec.ts",
+            ]
+          : []),
+      ],
     },
 
     {

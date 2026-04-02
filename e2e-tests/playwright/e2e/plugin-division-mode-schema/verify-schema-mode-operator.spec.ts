@@ -36,11 +36,6 @@ interface AppConfigYaml {
 }
 
 test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
-  test.skip(
-    !!process.env.JOB_NAME?.includes("helm"),
-    "This test file is for Operator only",
-  );
-
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   // Operator deployment naming: backstage-${RELEASE_NAME}
   const releaseName = process.env.RELEASE_NAME || "developer-hub";
@@ -55,7 +50,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   let dbPassword: string;
   let stopSchemaModePortForward: (() => void) | undefined;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(300000);
     const hasPfMeta =
       !!process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE &&
@@ -66,7 +61,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       !process.env.SCHEMA_MODE_DB_PASSWORD ||
       (!hasPfMeta && !hasDirectHost)
     ) {
-      test.skip(
+      testInfo.skip(
         true,
         "SCHEMA_MODE_* not set (need admin + app passwords and either port-forward metadata or SCHEMA_MODE_DB_HOST); schema-mode tests are opt-in",
       );
@@ -77,7 +72,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       stopSchemaModePortForward = pf.stop;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      test.skip(true, `Schema-mode port-forward: ${msg}`);
+      testInfo.skip(true, `Schema-mode port-forward: ${msg}`);
       return;
     }
     const env = getSchemaModeEnv();
@@ -718,7 +713,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     stopSchemaModePortForward?.();
   });
 
-  test("Verify RHDH is accessible", async ({ page }) => {
+  test("Verify RHDH is accessible", async ({ page }, testInfo) => {
     // If deployment never became ready (e.g. after PVC/scheduling issue during restart), skip instead of failing with "browser closed"
     const kubeClientForCheck = new KubeClient();
     try {
@@ -729,7 +724,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
         );
       const readyReplicas = deployment.body.status?.readyReplicas ?? 0;
       if (readyReplicas < 1) {
-        test.skip(
+        testInfo.skip(
           true,
           "Deployment is not ready (e.g. cluster PVC/scheduling issue); skipping RHDH accessibility check.",
         );

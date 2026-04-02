@@ -34,11 +34,6 @@ interface AppConfigYaml {
 }
 
 test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
-  test.skip(
-    !!process.env.JOB_NAME?.includes("operator"),
-    "This test file is for Helm Chart only",
-  );
-
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const releaseName = process.env.RELEASE_NAME || "redhat-developer-hub";
 
@@ -58,7 +53,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
   let dbPassword: string;
   let stopSchemaModePortForward: (() => void) | undefined;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(300000);
     const hasPfMeta =
       !!process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE &&
@@ -69,7 +64,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       !process.env.SCHEMA_MODE_DB_PASSWORD ||
       (!hasPfMeta && !hasDirectHost)
     ) {
-      test.skip(
+      testInfo.skip(
         true,
         "SCHEMA_MODE_* not set (need admin + app passwords and either port-forward metadata or SCHEMA_MODE_DB_HOST); schema-mode tests are opt-in",
       );
@@ -80,7 +75,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       stopSchemaModePortForward = pf.stop;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      test.skip(true, `Schema-mode port-forward: ${msg}`);
+      testInfo.skip(true, `Schema-mode port-forward: ${msg}`);
       return;
     }
     const env = getSchemaModeEnv();

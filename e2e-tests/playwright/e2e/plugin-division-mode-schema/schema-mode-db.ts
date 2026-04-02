@@ -5,6 +5,7 @@
 
 import { expect } from "@playwright/test";
 import { Client } from "pg";
+import type { ClientConfig } from "pg";
 
 /** Quote a PostgreSQL identifier (safe against injection in dynamic SQL). */
 function quoteIdent(name: string): string {
@@ -26,7 +27,43 @@ export interface SchemaModeEnv {
 }
 
 /**
- * Read schema-mode config from environment. Asserts required vars are set (use test.skip before calling if opt-in).
+ * Normalize localhost to IPv4 loopback to avoid "::1" pg_hba mismatches on some clusters.
+ */
+function normalizeDbHost(host: string): string {
+  return host === "localhost" ? "127.0.0.1" : host;
+}
+
+function shouldRetryWithSsl(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  return (
+    msg.includes("no pg_hba.conf entry") &&
+    (msg.includes("no encryption") || msg.includes("hostssl"))
+  );
+}
+
+async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
+  const client = new Client(config);
+  try {
+    await client.connect();
+    return client;
+  } catch (error) {
+    await client.end().catch(() => {});
+    if (!shouldRetryWithSsl(error)) {
+      throw error;
+    }
+  }
+
+  const sslClient = new Client({
+    ...config,
+    // Port-forwarded managed DBs can require encryption and often use self-signed certs.
+    ssl: { rejectUnauthorized: false },
+  });
+  await sslClient.connect();
+  return sslClient;
+}
+
+/**
+ * Read schema-mode config from environment. Asserts required vars are set (call from skipped beforeAll if opt-in).
  */
 export function getSchemaModeEnv(): SchemaModeEnv {
   const dbHost = process.env.SCHEMA_MODE_DB_HOST;
@@ -60,15 +97,14 @@ export function getSchemaModeEnv(): SchemaModeEnv {
 export async function connectAdminClient(
   config: Pick<SchemaModeEnv, "dbHost" | "dbAdminUser" | "dbAdminPassword">,
 ): Promise<Client> {
-  const client = new Client({
-    host: config.dbHost,
+  const client = await connectWithSslFallback({
+    host: normalizeDbHost(config.dbHost),
     port: 5432,
     user: config.dbAdminUser,
     password: config.dbAdminPassword,
     database: "postgres",
     connectionTimeoutMillis: 30000,
   });
-  await client.connect();
   return client;
 }
 
@@ -232,14 +268,77 @@ export async function setupSchemaModeDatabase(
   await adminClient.end();
 
   const dbClient = new Client({
-    host: dbHost,
+    host: normalizeDbHost(dbHost),
     port: 5432,
     user: dbAdminUser,
     password: dbAdminPassword,
     database: dbName,
     connectionTimeoutMillis: 30000,
   });
-  await dbClient.connect();
+  try {
+    await dbClient.connect();
+  } catch (error) {
+    await dbClient.end().catch(() => {});
+    if (!shouldRetryWithSsl(error)) {
+      throw error;
+    }
+    const sslDbClient = new Client({
+      host: normalizeDbHost(dbHost),
+      port: 5432,
+      user: dbAdminUser,
+      password: dbAdminPassword,
+      database: dbName,
+      connectionTimeoutMillis: 30000,
+      ssl: { rejectUnauthorized: false },
+    });
+    await sslDbClient.connect();
+    await sslDbClient.query(
+      `GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
+    );
+    await sslDbClient.query(
+      `GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
+    );
+    await sslDbClient.query(
+      `GRANT CREATE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
+    );
+    await sslDbClient.query(
+      `GRANT ALL PRIVILEGES ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
+    );
+    await sslDbClient.query(
+      `ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`,
+    );
+    await sslDbClient.end();
+    console.log("✓ Database setup complete");
+    console.log("Verifying test database connection...");
+
+    const sslTestConnectionClient = new Client({
+      host: normalizeDbHost(dbHost),
+      port: 5432,
+      user: dbUser,
+      password: dbPassword,
+      database: dbName,
+      connectionTimeoutMillis: 10000,
+      ssl: { rejectUnauthorized: false },
+    });
+    try {
+      await sslTestConnectionClient.connect();
+      await sslTestConnectionClient.query("SELECT 1");
+      await sslTestConnectionClient.end();
+      console.log("✓ Test database connection verified");
+      return;
+    } catch (testError) {
+      const errorMsg =
+        testError instanceof Error ? testError.message : String(testError);
+      throw new Error(
+        `Test database connection failed. This means RHDH pods will also fail to connect.\n` +
+          `Error: ${errorMsg}\n` +
+          `Please verify:\n` +
+          `  - Database ${dbName} exists\n` +
+          `  - User ${dbUser} has proper permissions\n` +
+          `  - Password is correct`,
+      );
+    }
+  }
   await dbClient.query(
     `GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
@@ -256,7 +355,7 @@ export async function setupSchemaModeDatabase(
 
   console.log("Verifying test database connection...");
   const testConnectionClient = new Client({
-    host: dbHost,
+    host: normalizeDbHost(dbHost),
     port: 5432,
     user: dbUser,
     password: dbPassword,
