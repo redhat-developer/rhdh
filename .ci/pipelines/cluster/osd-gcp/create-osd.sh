@@ -8,7 +8,7 @@ export PATH=$WORKSPACE:$PATH
 CLIENT_ID="${CLIENT_ID:-$(cat /tmp/osdsecrets/OSD_CLIENT_ID)}"
 CLIENT_SECRET="${CLIENT_SECRET:-$(cat /tmp/osdsecrets/OSD_CLIENT_SECRET)}"
 SERVICE_ACCOUNT_FILE="${SERVICE_ACCOUNT_FILE:-$(cat /tmp/osdsecrets/SERVICE_ACCOUNT_FILE)}"
-OSD_VERSION="${OSD_VERSION:-4.17.12}"
+OSD_VERSION="${OSD_VERSION:-4.20.0}"
 
 if [ -n "$CLUSTER_NAME" ]; then
   echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
