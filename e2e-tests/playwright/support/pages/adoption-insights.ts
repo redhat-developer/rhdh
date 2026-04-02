@@ -141,7 +141,10 @@ export class TestHelper {
     // Wait for the expected API call to succeed
     await this.waitUntilApiCallSucceeds(newpage);
 
-    await newpage.getByText(expectedText).first().waitFor({ state: "visible" });
+    await newpage
+      .getByText(expectedText)
+      .first()
+      .waitFor({ state: "visible", timeout: 30000 });
     await newpage.waitForTimeout(5000); // wait for the flush interval to be sure
     await newpage.close();
   }

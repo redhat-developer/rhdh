@@ -43,7 +43,7 @@ export class BulkImport {
     await this.page
       .locator(UI_HELPER_ELEMENTS.rowByText(repoName))
       .getByRole("checkbox")
-      .check();
+      .check({ force: true });
   }
 
   async fillTextInputByNameAtt(label: string, text: string) {

@@ -464,7 +464,7 @@ test.describe("Test RBAC", () => {
       await rbacPo.selectOption("scaffolder");
 
       // Close the plugins dropdown to access the permissions table
-      await page.getByRole("button", { name: "Close" }).click();
+      await page.keyboard.press("Escape");
 
       // Expand the Scaffolder row to access its permissions
       await page

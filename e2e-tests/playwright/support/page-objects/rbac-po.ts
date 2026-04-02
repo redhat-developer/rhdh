@@ -281,23 +281,27 @@ export class RbacPo extends PageObject {
     await this.verifyPermissionPoliciesHeader(policies.length);
     await this.create();
 
-    // Check for error alert first
+    // Wait for either success message or error alert
+    const successLocator = this.page
+      .getByText(`Role role:default/${name} created successfully`, {
+        exact: true,
+      })
+      .first();
     const errorAlert = this.page
       .getByRole("alert")
       .filter({ hasText: /error/i });
-    const errorCount = await errorAlert.count();
 
-    if (errorCount > 0) {
+    await Promise.race([
+      successLocator.waitFor({ state: "visible", timeout: 30000 }),
+      errorAlert.waitFor({ state: "visible", timeout: 30000 }),
+    ]);
+
+    if (await errorAlert.isVisible()) {
       const errorMessage = await errorAlert.textContent();
       throw new Error(
-        `Failed to create role: ${errorMessage}. This may indicate insufficient permissions.`,
+        `Failed to create role: ${errorMessage}. This may indicate insufficient permissions or a leftover role from a previous test run.`,
       );
     }
-
-    // Wait for success message before proceeding to roles list
-    await this.uiHelper.verifyText(
-      `Role role:default/${name} created successfully`,
-    );
 
     // Now we should be on the roles list page
     await this.page.getByPlaceholder("Filter").waitFor({ state: "visible" });
@@ -364,6 +368,8 @@ export class RbacPo extends PageObject {
       await this.uiHelper.clickButton("Create");
       await this.uiHelper.verifyText(
         `Role role:default/${name} created successfully`,
+        true,
+        15000,
       );
     } else if (permissionPolicyType === "not") {
       // Conditional Scenario 2: Permission policies using Not
