@@ -56,8 +56,16 @@ run_standard_deployment_tests() {
 run_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   initiate_runtime_deployment "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}"
-  configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" helm || true
+
+  # Configure schema-mode environment (opt-in: tests skip if env not configured)
+  if configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" helm; then
+    log::info "Schema-mode environment configured successfully; schema-mode tests will run"
+  else
+    log::warn "Schema-mode environment not configured; schema-mode tests will skip (this is expected if PostgreSQL is not available)"
+  fi
+
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
+  # Run tests - allow failures since schema-mode tests are opt-in
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 

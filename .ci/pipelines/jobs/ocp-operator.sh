@@ -92,8 +92,16 @@ run_operator_runtime_config_change_tests() {
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
-  configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" operator || true
+
+  # Configure schema-mode environment (opt-in: tests skip if env not configured)
+  if configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" operator; then
+    log::info "Schema-mode environment configured successfully; schema-mode tests will run"
+  else
+    log::warn "Schema-mode environment not configured; schema-mode tests will skip (this is expected if PostgreSQL is not available)"
+  fi
+
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
+  # Run tests - allow failures since schema-mode tests are opt-in
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 

@@ -7,6 +7,27 @@ E2E tests for `pluginDivisionMode: schema` on **OpenShift (OCP)**. Two specs exi
 1. **DB user posture** — The configured DB user cannot create databases (NOCREATEDB).
 2. **RHDH with schema mode** — After configuring for schema mode and restarting when needed, RHDH is reachable (e.g. guest login). They do **not** assert specific plugin schema names (upstream Backstage).
 
+## Opt-In Behavior
+
+**Schema-mode tests are OPT-IN.** They only run when the required `SCHEMA_MODE_*` environment variables are configured:
+
+### When Tests RUN
+- ✅ `SCHEMA_MODE_DB_ADMIN_PASSWORD` is set (PostgreSQL admin password)
+- ✅ `SCHEMA_MODE_DB_PASSWORD` is set (test user password)
+- ✅ Either:
+  - `SCHEMA_MODE_PORT_FORWARD_NAMESPACE` + `SCHEMA_MODE_PORT_FORWARD_RESOURCE` are set (CI auto-discovery), OR
+  - `SCHEMA_MODE_DB_HOST` is set (manual port-forward or direct access)
+
+### When Tests SKIP
+- ❌ Any required `SCHEMA_MODE_*` variable is missing
+- ❌ PostgreSQL is not available in the runtime namespace
+- ❌ Port-forward fails to establish connection
+
+**Expected in CI:**
+- **OCP Helm/Operator nightly jobs**: Tests run (env auto-configured by `schema-mode-env.sh`)
+- **PR jobs**: Tests skip (env not configured by default)
+- **Non-OCP jobs (AKS, EKS, GKE)**: Tests skip (no PostgreSQL deployment)
+
 ## CI (nightly / Prow)
 
 On **OCP Helm** and **OCP Operator** nightly jobs, [`.ci/pipelines/lib/schema-mode-env.sh`](../../../../.ci/pipelines/lib/schema-mode-env.sh) runs before the runtime Playwright project: it discovers PostgreSQL credentials and exports `SCHEMA_MODE_*`, including **`SCHEMA_MODE_PORT_FORWARD_NAMESPACE`** and **`SCHEMA_MODE_PORT_FORWARD_RESOURCE`** (`svc/...` or `pod/...`). The schema specs then start **`oc port-forward` in `beforeAll`** (same idea as [`verify-redis-cache.spec.ts`](../../verify-redis-cache.spec.ts)) and tear it down in `afterAll`. For **Helm** when the runtime namespace has no Bitnami `*-postgresql` Service, discovery uses the Crunchy cluster in `NAME_SPACE_POSTGRES_DB`: admin password from `${SCHEMA_MODE_CRUNCHY_CLUSTER_NAME:-postgress-external-db}-pguser-janus-idp`, and forward target is a **Running postgres pod** (the `*-primary` Service has no selector, so forwarding the Service fails). Optional override: `SCHEMA_MODE_CRUNCHY_CLUSTER_NAME` if your `PostgresCluster` metadata name differs. Set **`DEBUG_SCHEMA_MODE_PF=1`** to log port-forward output. Tests run in the **`showcase-runtime`** Playwright project together with `config-map.spec.ts` (see [`playwright.config.ts`](../../../playwright.config.ts)).
