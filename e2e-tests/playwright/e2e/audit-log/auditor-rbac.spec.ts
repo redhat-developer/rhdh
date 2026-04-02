@@ -240,12 +240,18 @@ test.describe("Auditor check for RBAC Plugin", () => {
 
   for (const s of conditionRead) {
     test(`condition-read → ${s.name}`, async () => {
-      await s.call();
+      const response = await s.call();
+      // Condition by-id may return 404 if no conditions exist (e.g., empty
+      // conditional-policies.yaml). The audit log still records the event
+      // but with status "failed" instead of "succeeded".
+      const status = response.ok() ? "succeeded" : "failed";
       await validateRbacLogEvent(
         "condition-read",
         USER_ENTITY_REF,
         { method: "GET", url: s.url },
         s.meta,
+        undefined,
+        status,
       );
     });
   }

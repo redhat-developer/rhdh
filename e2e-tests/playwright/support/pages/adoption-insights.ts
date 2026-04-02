@@ -103,6 +103,7 @@ export class TestHelper {
       await page
         .getByText("Run of Create a tekton CI")
         .waitFor({ state: "visible" });
+      await page.waitForTimeout(5000); // wait for the flush interval to be sure
     }
 
     if (catalogEntitiesFirstLast.length === 0) {

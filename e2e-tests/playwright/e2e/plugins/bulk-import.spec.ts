@@ -144,7 +144,10 @@ spec:
       "Preview file",
     );
 
-    await expect(await uiHelper.clickButton("Save")).toBeHidden();
+    const saveButton = page.getByRole("button", { name: "Save" });
+    await saveButton.scrollIntoViewIfNeeded();
+    await saveButton.click();
+    await expect(saveButton).toBeHidden();
     await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
