@@ -89,6 +89,11 @@ initiate_operator_deployments_osd_gcp() {
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   namespace::configure "${NAME_SPACE_RUNTIME}"
+
+  # Configure external PostgreSQL credentials and certificates for runtime namespace
+  # This creates postgres-crt and postgres-cred secrets needed by rhdh-start-runtime.yaml
+  configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
+
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"

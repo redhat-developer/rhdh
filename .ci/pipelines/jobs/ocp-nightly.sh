@@ -55,6 +55,11 @@ run_standard_deployment_tests() {
 
 run_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
+
+  # Configure external PostgreSQL credentials and certificates for runtime namespace
+  # This creates postgres-crt and postgres-cred secrets needed by values-showcase-postgres.yaml
+  configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
+
   initiate_runtime_deployment "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}"
 
   # Configure schema-mode environment (opt-in: tests skip if env not configured)

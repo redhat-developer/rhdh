@@ -245,6 +245,15 @@ configure_external_postgres_db() {
     return 1
   fi
 
+  # Create postgres-crt secret for Backstage deployment (Helm/Operator)
+  # This secret is referenced by rhdh-start-runtime.yaml and values-showcase-postgres.yaml
+  if ! oc create secret generic postgres-crt \
+    --from-file=postgres-crt.pem=postgres-ca \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
+    log::error "Failed to create postgres-crt secret"
+    return 1
+  fi
+
   # Wait for USER secret (this is the critical one that causes CI failures!)
   log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
   log::info "This secret is created by the Crunchy Postgres operator after the database is ready"
