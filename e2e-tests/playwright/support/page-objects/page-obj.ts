@@ -80,64 +80,6 @@ export const CATALOG_IMPORT_COMPONENTS = {
 };
 
 /**
- * KUBERNETES_COMPONENTS - Kubernetes plugin selectors
- */
-export const KUBERNETES_COMPONENTS = {
-  // Legacy selectors - maintained for backward compatibility
-  /** @deprecated Use getClusterAccordion() method */
-  MuiAccordion: 'div[class*="MuiAccordion-root-"]',
-  /** ✅ This is already semantic - using aria-label */
-  statusOk: 'span[aria-label="Status ok"]',
-  /** ✅ This is already semantic - using aria-label */
-  podLogs: 'label[aria-label="get logs"]',
-  /** @deprecated Use SemanticSelectors.alert() */
-  MuiSnackbarContent: 'div[class*="MuiSnackbarContent-message-"]',
-
-  // Semantic methods - preferred
-  /**
-   * Get cluster accordion by cluster name
-   * ✅ Preferred over MuiAccordion
-   * @example KUBERNETES_COMPONENTS.getClusterAccordion(page, 'production').click()
-   */
-  getClusterAccordion: (page: Page, clusterName?: string | RegExp): Locator => {
-    if (clusterName) {
-      return page
-        .getByRole("button", { name: clusterName, expanded: false })
-        .or(page.getByRole("button", { name: clusterName, expanded: true }));
-    }
-    // Get first accordion button (buttons with expanded attribute)
-    return page
-      .getByRole("button", { expanded: false })
-      .or(page.getByRole("button", { expanded: true }))
-      .first();
-  },
-
-  /**
-   * Get status indicator
-   * @example await expect(KUBERNETES_COMPONENTS.getStatus(page, 'ok')).toBeVisible()
-   */
-  getStatus: (page: Page, status: string): Locator =>
-    page.locator(`span[aria-label="Status ${status}"]`),
-
-  /**
-   * Get pod logs label/button
-   * @example KUBERNETES_COMPONENTS.getPodLogsButton(page).click()
-   */
-  getPodLogsButton: (page: Page): Locator =>
-    page.locator('label[aria-label="get logs"]'),
-
-  /**
-   * Get error/notification snackbar
-   * ✅ Preferred over MuiSnackbarContent
-   * @example await expect(KUBERNETES_COMPONENTS.getNotification(page)).toContainText('Error')
-   */
-  getNotification: (page: Page, message?: string | RegExp): Locator =>
-    message
-      ? SemanticSelectors.alert(page, message)
-      : SemanticSelectors.alert(page),
-};
-
-/**
  * BACKSTAGE_SHOWCASE_COMPONENTS - Table pagination selectors
  */
 export const BACKSTAGE_SHOWCASE_COMPONENTS = {
