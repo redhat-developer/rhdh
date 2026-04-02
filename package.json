@@ -58,6 +58,11 @@
     "sherif": "1.10.0",
     "turbo": "2.8.10"
   },
+  "dependenciesMeta": {
+    "keytar": {
+      "built": false
+    }
+  },
   "resolutions": {
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",

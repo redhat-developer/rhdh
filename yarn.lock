@@ -35352,6 +35352,9 @@ __metadata:
     rulesync: "npm:7.23.0"
     sherif: "npm:1.10.0"
     turbo: "npm:2.8.10"
+  dependenciesMeta:
+    keytar:
+      built: false
   languageName: unknown
   linkType: soft
 

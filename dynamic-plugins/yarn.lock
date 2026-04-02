@@ -20987,6 +20987,9 @@ __metadata:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     turbo: "npm:2.8.10"
+  dependenciesMeta:
+    keytar:
+      built: false
   languageName: unknown
   linkType: soft
 
