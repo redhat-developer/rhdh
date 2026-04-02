@@ -367,14 +367,30 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
-      // Wait for task to finish — either success or 409 Conflict (catalog entity already registered
-      // from a prior run). Both are acceptable.
-      const completed = page.getByText(/Completed|succeeded|finished/i);
-      const conflictError = page.getByText(/409 Conflict/i);
+      // Wait for the scaffolder task to complete. The "Start Over" button appears
+      // on both success and failure, so we include it to avoid a 120s timeout if
+      // the task fails fast.
+      const viewInCatalog = page.getByRole("link", {
+        name: "View in catalog",
+      });
+      const openWorkflowRun = page.getByRole("link", {
+        name: "Open workflow run",
+      });
       const startOver = page.getByRole("button", { name: "Start Over" });
 
-      await expect(completed.or(conflictError).or(startOver)).toBeVisible({
+      await expect(
+        viewInCatalog.or(openWorkflowRun).or(startOver),
+      ).toBeVisible({
         timeout: 120000,
+      });
+
+      // Verify the task actually succeeded. The output links "View in catalog"
+      // and "Open workflow run" are defined in the greeting_w_component.yaml
+      // template and are only rendered when all scaffolder steps pass.
+      // If the workflow was denied (e.g. missing RBAC permissions), the step
+      // fails and only "Start Over" is shown — this assertion catches that.
+      await expect(viewInCatalog.or(openWorkflowRun)).toBeVisible({
+        timeout: 10000,
       });
     });
 

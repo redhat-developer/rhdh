@@ -190,7 +190,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with global orchestrator.workflow read-only permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = ["user:default/rhdh-qe-2"];
 
       const orchestratorReadonlyRole = {
         memberReferences: members,
@@ -235,7 +235,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowReadonly",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowReadonly",
@@ -263,6 +263,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow read-only access - Run button disabled", async () => {
+      // Login as non-admin user to verify RBAC enforcement
+      await common.loginAsKeycloakUser(
+        process.env.GH_USER2_ID,
+        process.env.GH_USER2_PASS,
+      );
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -346,7 +351,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with global orchestrator.workflow denied permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = ["user:default/rhdh-qe-2"];
 
       const orchestratorDeniedRole = {
         memberReferences: members,
@@ -391,7 +396,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowDenied",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowDenied",
@@ -419,6 +424,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow denied access - no workflows visible", async () => {
+      // Login as non-admin user to verify RBAC enforcement
+      await common.loginAsKeycloakUser(
+        process.env.GH_USER2_ID,
+        process.env.GH_USER2_PASS,
+      );
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -485,7 +495,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with greeting workflow denied permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = ["user:default/rhdh-qe-2"];
 
       const greetingDeniedRole = {
         memberReferences: members,
@@ -528,7 +538,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingDenied",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingDenied",
@@ -556,6 +566,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow denied access - no workflows visible", async () => {
+      // Login as non-admin user to verify RBAC enforcement
+      await common.loginAsKeycloakUser(
+        process.env.GH_USER2_ID,
+        process.env.GH_USER2_PASS,
+      );
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -630,7 +645,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with greeting workflow read-write permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = ["user:default/rhdh-qe-2"];
 
       const greetingReadwriteRole = {
         memberReferences: members,
@@ -673,7 +688,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingReadwrite",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingReadwrite",
@@ -701,6 +716,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow read-write access - only Greeting workflow visible and runnable", async () => {
+      // Login as non-admin user to verify RBAC enforcement
+      await common.loginAsKeycloakUser(
+        process.env.GH_USER2_ID,
+        process.env.GH_USER2_PASS,
+      );
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
@@ -783,7 +803,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with greeting workflow read-only permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = ["user:default/rhdh-qe-2"];
 
       const greetingReadonlyRole = {
         memberReferences: members,
@@ -826,7 +846,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingReadonly",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingReadonly",
@@ -854,6 +874,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow read-only access - only Greeting workflow visible, Run button disabled", async () => {
+      // Login as non-admin user to verify RBAC enforcement
+      await common.loginAsKeycloakUser(
+        process.env.GH_USER2_ID,
+        process.env.GH_USER2_PASS,
+      );
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
 
