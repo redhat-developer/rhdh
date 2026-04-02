@@ -24,7 +24,11 @@ export class Orchestrator {
     await expect(workflowHeader).toBeVisible();
     await expect(workflowHeader).toHaveText("Workflows");
     await expect(Workflows.workflowsTable(this.page)).toBeVisible();
-    await this.page.getByRole("link", { name: "Greeting workflow" }).click();
+    const greetingLink = this.page.getByRole("link", {
+      name: "Greeting workflow",
+    });
+    await expect(greetingLink).toBeVisible({ timeout: 30000 });
+    await greetingLink.click();
   }
 
   async runGreetingWorkflow(language = "English", status = "Completed") {
@@ -257,7 +261,11 @@ export class Orchestrator {
     await expect(workflowHeader).toBeVisible();
     await expect(workflowHeader).toHaveText("Workflows");
     await expect(Workflows.workflowsTable(this.page)).toBeVisible();
-    await this.page.getByRole("link", { name: "FailSwitch workflow" }).click();
+    const failSwitchLink = this.page.getByRole("link", {
+      name: "FailSwitch workflow",
+    });
+    await expect(failSwitchLink).toBeVisible({ timeout: 30000 });
+    await failSwitchLink.click();
   }
 
   async runFailSwitchWorkflow(input = "OK") {
