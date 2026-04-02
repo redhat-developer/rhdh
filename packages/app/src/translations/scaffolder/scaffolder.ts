@@ -1,5 +1,5 @@
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder';
 
 export const scaffolderTranslations = createTranslationResource({
   ref: scaffolderTranslationRef,

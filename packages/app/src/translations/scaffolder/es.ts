@@ -15,7 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder';
 
 const es = createTranslationMessages({
   ref: scaffolderTranslationRef,

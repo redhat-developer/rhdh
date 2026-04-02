@@ -1,5 +1,5 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
+import { catalogTranslationRef } from '@backstage/plugin-catalog';
 
 const en = createTranslationMessages({
   ref: catalogTranslationRef,
