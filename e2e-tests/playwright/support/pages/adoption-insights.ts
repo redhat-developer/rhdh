@@ -64,44 +64,68 @@ export class TestHelper {
     techdocsFirstLast: string[] | undefined,
   ): Promise<void> {
     if (!templatesFirstLast?.length) {
-      // Navigate to a template scaffolder form to generate a template analytics event
-      await page.goto("/create/templates/default/techdocs-template");
-      await page.waitForLoadState("domcontentloaded");
-      // The techdocs-template has no required fields, so click Create directly
-      const createBtn = page.getByRole("button", { name: "Create" });
-      await createBtn.waitFor({ state: "visible", timeout: 15000 });
-      await createBtn.click();
+      await page.getByRole("link", { name: "Self-service" }).click();
       await page
-        .getByText("Run of")
-        .first()
-        .waitFor({ state: "visible", timeout: 30000 });
+        .getByText("Templates", { exact: true })
+        .waitFor({ state: "visible" });
+      const panel = page
+        .getByRole("heading", { name: "Create a tekton CI Pipeline" })
+        .first();
+      const isPanelVisible = await panel
+        .isVisible({ timeout: 10000 })
+        .catch(() => false);
+      if (!isPanelVisible) {
+        const sampleTemplate =
+          "https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates/github/tekton/template.yaml";
+        await page
+          .getByRole("button", { name: "Import an existing Git repository" })
+          .click();
+        await page.getByRole("textbox", { name: "URL" }).fill(sampleTemplate);
+        await page.getByRole("button", { name: "Analyze" }).click();
+        await page.getByRole("button", { name: "Import" }).click();
+        await page.getByRole("button", { name: "Register" }).click();
+        await page.getByRole("link", { name: "Self-service" }).click();
+      }
+      // Run a template — click the heading link instead of a "Choose" button
+      const pipelineCard = panel.locator("..").locator("..");
+      const chooseBtn = pipelineCard.getByRole("button", { name: "Choose" });
+      const headingLink = panel.getByRole("link").first();
+      if (await chooseBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await chooseBtn.click();
+      } else {
+        await headingLink.click();
+      }
+
+      const inputText = "reallyUniqueName";
+      await uiHelper.fillTextInputByLabel("Organization", inputText);
+      await uiHelper.fillTextInputByLabel("Repository", inputText);
+      await uiHelper.clickButton("Next");
+      await uiHelper.fillTextInputByLabel("Image Builder", inputText);
+      await uiHelper.fillTextInputByLabel("Image URL", inputText);
+      await uiHelper.fillTextInputByLabel("Namespace", inputText);
+      await page.getByRole("spinbutton", { name: "Port" }).fill("8080");
+      await uiHelper.clickButton("Review");
+      await uiHelper.clickButton("Create");
+      await page
+        .getByText("Run of Create a tekton CI")
+        .waitFor({ state: "visible" });
       await page.waitForTimeout(5000); // wait for the flush interval to be sure
     }
 
     if (!catalogEntitiesFirstLast?.length) {
-      // Visit any catalog entity to generate an analytics event
-      await page.goto("/catalog");
-      await page.waitForLoadState("domcontentloaded");
-      const firstEntityLink = page
-        .locator("table tbody tr td:first-child a")
-        .first();
-      await firstEntityLink.waitFor({ state: "visible", timeout: 30000 });
-      await firstEntityLink.click();
-      await page.waitForLoadState("domcontentloaded");
+      // Visit a catalog entity
+      await uiHelper.clickLink("Catalog");
+      await uiHelper.clickLink("Red Hat Developer Hub");
       await page.waitForTimeout(5000); // wait for the flush interval to be sure
+      await expect(page.getByText("Red Hat Developer Hub")).toBeVisible();
     }
 
     if (!techdocsFirstLast?.length) {
-      // Visit any techdoc to generate an analytics event
+      // Visit docs
       await page.goto("/docs");
-      await page.waitForLoadState("domcontentloaded");
-      const firstDocLink = page
-        .locator("table tbody tr td:first-child a")
-        .first();
-      await firstDocLink.waitFor({ state: "visible", timeout: 30000 });
-      await firstDocLink.click();
-      await page.waitForLoadState("domcontentloaded");
+      await uiHelper.clickLink("Red Hat Developer Hub");
       await page.waitForTimeout(5000); // wait for the flush interval to be sure
+      await uiHelper.openSidebarButton("Administration");
     }
   }
 
