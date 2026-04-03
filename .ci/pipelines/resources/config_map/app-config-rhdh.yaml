@@ -252,8 +252,9 @@ userSettings:
 i18n:
   locales:
     - en
+    - de
+    - es
     - fr
     - it
     - ja
-    - de
   defaultLocale: en

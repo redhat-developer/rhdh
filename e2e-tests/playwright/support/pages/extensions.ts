@@ -93,7 +93,6 @@ export class Extensions {
 
   async verifyMultipleHeadings(headings: string[] = this.commonHeadings) {
     for (const heading of headings) {
-      console.log(`Verifying heading: ${heading}`);
       await this.uiHelper.verifyHeading(heading);
     }
   }
