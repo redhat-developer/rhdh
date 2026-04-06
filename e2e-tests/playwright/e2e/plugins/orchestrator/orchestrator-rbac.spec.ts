@@ -187,6 +187,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
       );
       await page.context().clearCookies();
+      await page.goto("/");
+      await page.waitForLoadState("load");
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -350,6 +352,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
       );
       await page.context().clearCookies();
+      await page.goto("/");
+      await page.waitForLoadState("load");
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -496,6 +500,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
       );
       await page.context().clearCookies();
+      await page.goto("/");
+      await page.waitForLoadState("load");
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -648,6 +654,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
       );
       await page.context().clearCookies();
+      await page.goto("/");
+      await page.waitForLoadState("load");
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -808,6 +816,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
       );
       await page.context().clearCookies();
+      await page.goto("/");
+      await page.waitForLoadState("load");
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
