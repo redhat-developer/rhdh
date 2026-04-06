@@ -330,18 +330,22 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       });
       const startOver = page.getByRole("button", { name: "Start Over" });
 
-      await expect(viewInCatalog.or(openWorkflowRun).or(startOver)).toBeVisible(
-        {
-          timeout: 120000,
-        },
-      );
+      // A 409 Conflict is acceptable — the catalog entity may already exist
+      // from a prior run. In that case only "Start Over" is shown.
+      const conflictError = page.getByText(/409 Conflict/i);
 
-      // Verify the task actually succeeded. The output links "View in catalog"
-      // and "Open workflow run" are defined in the greeting_w_component.yaml
-      // template and are only rendered when all scaffolder steps pass.
-      // If the workflow was denied (e.g. missing RBAC permissions), the step
-      // fails and only "Start Over" is shown — this assertion catches that.
-      await expect(viewInCatalog.or(openWorkflowRun)).toBeVisible({
+      await expect(
+        viewInCatalog.or(openWorkflowRun).or(conflictError).or(startOver),
+      ).toBeVisible({
+        timeout: 120000,
+      });
+
+      // Verify the task succeeded or hit a 409 Conflict (acceptable).
+      // If only "Start Over" is shown without output links or 409, the
+      // workflow was denied — that indicates a real failure.
+      await expect(
+        viewInCatalog.or(openWorkflowRun).or(conflictError),
+      ).toBeVisible({
         timeout: 10000,
       });
     });
