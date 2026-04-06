@@ -160,10 +160,23 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       // Wait for template form to load
       await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
-      // The "Greeting Test Picker" template has NO input fields - it goes straight to Review
-      // with just a Create button. It auto-generates a component name and runs the workflow.
+      // Step 1: Fill in workflow parameters
+      const languageField = page.getByLabel("Language");
+      await expect(languageField).toBeVisible({ timeout: 15000 });
+      await languageField.click();
+      await page.getByRole("option", { name: "English" }).click();
 
-      // Click Create to execute (we're already on the Review step)
+      const nameField = page.getByLabel("Name");
+      await expect(nameField).toBeVisible({ timeout: 10000 });
+      await nameField.fill(`test-rbac-deny-${Date.now()}`);
+
+      // Click Review to proceed to Step 2
+      const reviewButton = page.getByRole("button", { name: /Review/i });
+      await expect(reviewButton).toBeVisible({ timeout: 10000 });
+      await reviewButton.click();
+      await page.waitForLoadState("domcontentloaded");
+
+      // Click Create to execute
       const createButton = page.getByRole("button", { name: /Create/i });
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
@@ -359,10 +372,23 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       // Wait for template form to load
       await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
-      // The "Greeting Test Picker" template has NO input fields - it goes straight to Review
-      // with just a Create button. It auto-generates a component name and runs the workflow.
+      // Step 1: Fill in workflow parameters
+      const languageField = page.getByLabel("Language");
+      await expect(languageField).toBeVisible({ timeout: 15000 });
+      await languageField.click();
+      await page.getByRole("option", { name: "English" }).click();
 
-      // Click Create to execute (we're already on the Review step)
+      const nameField = page.getByLabel("Name");
+      await expect(nameField).toBeVisible({ timeout: 10000 });
+      await nameField.fill(`test-rbac-allow-${Date.now()}`);
+
+      // Click Review to proceed to Step 2
+      const reviewButton = page.getByRole("button", { name: /Review/i });
+      await expect(reviewButton).toBeVisible({ timeout: 10000 });
+      await reviewButton.click();
+      await page.waitForLoadState("domcontentloaded");
+
+      // Click Create to execute
       const createButton = page.getByRole("button", { name: /Create/i });
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
