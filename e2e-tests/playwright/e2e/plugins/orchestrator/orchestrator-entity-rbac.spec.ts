@@ -170,14 +170,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await expect(nameField).toBeVisible({ timeout: 10000 });
       await nameField.fill(`test-rbac-deny-${Date.now()}`);
 
-      // Click Review to proceed to Step 2
-      const reviewButton = page.getByRole("button", { name: /Review/i });
-      await expect(reviewButton).toBeVisible({ timeout: 10000 });
-      await reviewButton.click();
-      await page.waitForLoadState("domcontentloaded");
+      // Click Next to proceed to the Review step
+      const nextButton = page.getByRole("button", { name: "Next" });
+      await expect(nextButton).toBeVisible({ timeout: 10000 });
+      await nextButton.click();
 
       // Click Create to execute
-      const createButton = page.getByRole("button", { name: /Create/i });
+      const createButton = page.getByRole("button", { name: "Create" });
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
@@ -382,14 +381,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await expect(nameField).toBeVisible({ timeout: 10000 });
       await nameField.fill(`test-rbac-allow-${Date.now()}`);
 
-      // Click Review to proceed to Step 2
-      const reviewButton = page.getByRole("button", { name: /Review/i });
-      await expect(reviewButton).toBeVisible({ timeout: 10000 });
-      await reviewButton.click();
-      await page.waitForLoadState("domcontentloaded");
+      // Click Next to proceed to the Review step
+      const nextButton = page.getByRole("button", { name: "Next" });
+      await expect(nextButton).toBeVisible({ timeout: 10000 });
+      await nextButton.click();
 
       // Click Create to execute
-      const createButton = page.getByRole("button", { name: /Create/i });
+      const createButton = page.getByRole("button", { name: "Create" });
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
