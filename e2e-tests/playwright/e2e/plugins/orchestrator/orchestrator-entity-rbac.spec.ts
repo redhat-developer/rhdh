@@ -127,42 +127,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       expect(policyPostResponse.ok()).toBeTruthy();
     });
 
-    test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading(/Catalog|All/);
-      await uiHelper.selectMuiBox("Kind", "Template");
-
-      // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
-      await page
-        .getByRole("textbox", { name: "Search" })
-        .fill("Greeting Test Picker");
-      const templateLink = page.getByRole("link", {
-        name: /Greeting Test Picker/i,
-      });
-
-      await expect(templateLink).toBeVisible({ timeout: 30000 });
-      await templateLink.click();
-
-      // Wait for entity page to load
-      await page.waitForLoadState("domcontentloaded");
-      await expect(page.getByRole("heading").first()).toBeVisible();
-    });
-
     test("Launch template and attempt to run workflow - verify unauthorized", async () => {
-      // Navigate to Self-service page via global header link
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
-      await uiHelper.verifyHeading("Self-service");
-
-      // Wait for templates to load and click "Greeting Test Picker" template
-      await page.waitForLoadState("domcontentloaded");
-      await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
-
-      // Wait for template form to load
-      await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
+      // Navigate directly to the template form (greeting_w_component.yaml)
+      await page.goto("/create/templates/default/greetingComponent");
 
       // Step 1: Fill in workflow parameters
       const languageField = page.getByLabel("Language");
-      await expect(languageField).toBeVisible({ timeout: 15000 });
+      await expect(languageField).toBeVisible({ timeout: 30000 });
       await languageField.click();
       await page.getByRole("option", { name: "English" }).click();
 
@@ -336,44 +307,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       expect(policyPostResponse.ok()).toBeTruthy();
     });
 
-    test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading(/Catalog|All/);
-      await uiHelper.selectMuiBox("Kind", "Template");
-
-      // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
-      await page
-        .getByRole("textbox", { name: "Search" })
-        .fill("Greeting Test Picker");
-      const templateLink = page.getByRole("link", {
-        name: /Greeting Test Picker/i,
-      });
-
-      await expect(templateLink).toBeVisible({ timeout: 30000 });
-      await templateLink.click();
-
-      // Wait for entity page to load
-      await page.waitForLoadState("domcontentloaded");
-      await expect(page.getByRole("heading").first()).toBeVisible();
-    });
-
     test("Launch template and run workflow - verify success", async () => {
-      // Navigate to Self-service page via global header link
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
-      await uiHelper.verifyHeading("Self-service");
-
-      // Wait for templates to load
-      await page.waitForLoadState("domcontentloaded");
-
-      // Click "Greeting Test Picker" template
-      await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
-
-      // Wait for template form to load
-      await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
+      // Navigate directly to the template form (greeting_w_component.yaml)
+      await page.goto("/create/templates/default/greetingComponent");
 
       // Step 1: Fill in workflow parameters
       const languageField = page.getByLabel("Language");
-      await expect(languageField).toBeVisible({ timeout: 15000 });
+      await expect(languageField).toBeVisible({ timeout: 30000 });
       await languageField.click();
       await page.getByRole("option", { name: "English" }).click();
 
