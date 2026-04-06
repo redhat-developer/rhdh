@@ -128,12 +128,16 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Launch template and attempt to run workflow - verify unauthorized", async () => {
-      // Navigate directly to the template form (greeting_w_component.yaml)
-      await page.goto("/create/templates/default/greetingComponent");
+      // Navigate to Self-service and select the template
+      await page.goto("/create");
+      await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
+      await expect(page.getByText("Greeting Test Picker")).toBeVisible({
+        timeout: 30000,
+      });
 
       // Step 1: Fill in workflow parameters
       const languageField = page.getByLabel("Language");
-      await expect(languageField).toBeVisible({ timeout: 30000 });
+      await expect(languageField).toBeVisible({ timeout: 15000 });
       await languageField.click();
       await page.getByRole("option", { name: "English" }).click();
 
@@ -308,8 +312,12 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Launch template and run workflow - verify success", async () => {
-      // Navigate directly to the template form (greeting_w_component.yaml)
-      await page.goto("/create/templates/default/greetingComponent");
+      // Navigate to Self-service and select the template
+      await page.goto("/create");
+      await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
+      await expect(page.getByText("Greeting Test Picker")).toBeVisible({
+        timeout: 30000,
+      });
 
       // Step 1: Fill in workflow parameters
       const languageField = page.getByLabel("Language");
