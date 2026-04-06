@@ -263,7 +263,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow read-only access - Run button disabled", async () => {
-      // Login as non-admin user to verify RBAC enforcement
+      // Clear admin session and login as non-admin user to verify RBAC enforcement
+      await page.context().clearCookies();
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -424,7 +425,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow denied access - no workflows visible", async () => {
-      // Login as non-admin user to verify RBAC enforcement
+      // Clear admin session and login as non-admin user to verify RBAC enforcement
+      await page.context().clearCookies();
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -566,7 +568,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow denied access - no workflows visible", async () => {
-      // Login as non-admin user to verify RBAC enforcement
+      // Clear admin session and login as non-admin user to verify RBAC enforcement
+      await page.context().clearCookies();
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -716,7 +719,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow read-write access - only Greeting workflow visible and runnable", async () => {
-      // Login as non-admin user to verify RBAC enforcement
+      // Clear admin session and login as non-admin user to verify RBAC enforcement
+      await page.context().clearCookies();
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
@@ -874,7 +878,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test individual workflow read-only access - only Greeting workflow visible, Run button disabled", async () => {
-      // Login as non-admin user to verify RBAC enforcement
+      // Clear admin session and login as non-admin user to verify RBAC enforcement
+      await page.context().clearCookies();
       await common.loginAsKeycloakUser(
         process.env.GH_USER2_ID,
         process.env.GH_USER2_PASS,
