@@ -127,6 +127,14 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       expect(policyPostResponse.ok()).toBeTruthy();
     });
 
+    test("Verify Greeting Test Picker template exists in Catalog", async () => {
+      await page.goto("/catalog?filters[kind]=template");
+      const templateLink = page.getByRole("link", {
+        name: /Greeting Test Picker/i,
+      });
+      await expect(templateLink).toBeVisible({ timeout: 30000 });
+    });
+
     test("Launch template and attempt to run workflow - verify unauthorized", async () => {
       // Navigate to Self-service and select the template
       await page.goto("/create");
@@ -291,6 +299,14 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
+    });
+
+    test("Verify Greeting Test Picker template exists in Catalog", async () => {
+      await page.goto("/catalog?filters[kind]=template");
+      const templateLink = page.getByRole("link", {
+        name: /Greeting Test Picker/i,
+      });
+      await expect(templateLink).toBeVisible({ timeout: 30000 });
     });
 
     test("Launch template and run workflow - verify success", async () => {
