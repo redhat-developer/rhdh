@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import Workflows from "./workflows";
 
 export class Orchestrator {
@@ -6,6 +6,21 @@ export class Orchestrator {
 
   constructor(page: Page) {
     this.page = page;
+  }
+
+  // Waits for a workflow link to appear in the table, reloading
+  // the page if needed (backend may still be registering it).
+  private async waitForWorkflowToAppear(locator: Locator) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await expect(locator).toBeVisible({ timeout: 3000 });
+        return;
+      } catch {
+        await this.page.reload({ waitUntil: "domcontentloaded" });
+        await expect(Workflows.workflowsTable(this.page)).toBeVisible();
+      }
+    }
+    await expect(locator).toBeVisible({ timeout: 10000 });
   }
 
   async openWorkflowAlert() {
@@ -264,7 +279,8 @@ export class Orchestrator {
     const failSwitchLink = this.page.getByRole("link", {
       name: "FailSwitch workflow",
     });
-    await expect(failSwitchLink).toBeVisible({ timeout: 30000 });
+
+    await this.waitForWorkflowToAppear(failSwitchLink);
     await failSwitchLink.click();
   }
 
