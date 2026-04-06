@@ -131,28 +131,10 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       // Navigate to Self-service and select the template
       await page.goto("/create");
       await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
-      await expect(page.getByText("Greeting Test Picker")).toBeVisible({
-        timeout: 30000,
-      });
 
-      // Step 1: Fill in workflow parameters
-      const languageField = page.getByLabel("Language");
-      await expect(languageField).toBeVisible({ timeout: 15000 });
-      await languageField.click();
-      await page.getByRole("option", { name: "English" }).click();
-
-      const nameField = page.getByLabel("Name");
-      await expect(nameField).toBeVisible({ timeout: 10000 });
-      await nameField.fill(`test-rbac-deny-${Date.now()}`);
-
-      // Click Next to proceed to the Review step
-      const nextButton = page.getByRole("button", { name: "Next" });
-      await expect(nextButton).toBeVisible({ timeout: 10000 });
-      await nextButton.click();
-
-      // Click Create to execute
+      // This template has no input fields — it goes straight to Review with a Create button
       const createButton = page.getByRole("button", { name: "Create" });
-      await expect(createButton).toBeVisible({ timeout: 10000 });
+      await expect(createButton).toBeVisible({ timeout: 30000 });
       await createButton.click();
 
       // Template execution should succeed, but workflow execution should be denied
@@ -315,28 +297,10 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       // Navigate to Self-service and select the template
       await page.goto("/create");
       await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
-      await expect(page.getByText("Greeting Test Picker")).toBeVisible({
-        timeout: 30000,
-      });
 
-      // Step 1: Fill in workflow parameters
-      const languageField = page.getByLabel("Language");
-      await expect(languageField).toBeVisible({ timeout: 30000 });
-      await languageField.click();
-      await page.getByRole("option", { name: "English" }).click();
-
-      const nameField = page.getByLabel("Name");
-      await expect(nameField).toBeVisible({ timeout: 10000 });
-      await nameField.fill(`test-rbac-allow-${Date.now()}`);
-
-      // Click Next to proceed to the Review step
-      const nextButton = page.getByRole("button", { name: "Next" });
-      await expect(nextButton).toBeVisible({ timeout: 10000 });
-      await nextButton.click();
-
-      // Click Create to execute
+      // This template has no input fields — it goes straight to Review with a Create button
       const createButton = page.getByRole("button", { name: "Create" });
-      await expect(createButton).toBeVisible({ timeout: 10000 });
+      await expect(createButton).toBeVisible({ timeout: 30000 });
       await createButton.click();
 
       // Wait for the scaffolder task to complete. The "Start Over" button appears
