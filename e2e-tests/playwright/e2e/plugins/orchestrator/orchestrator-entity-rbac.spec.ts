@@ -342,11 +342,11 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       });
       const startOver = page.getByRole("button", { name: "Start Over" });
 
-      await expect(
-        viewInCatalog.or(openWorkflowRun).or(startOver),
-      ).toBeVisible({
-        timeout: 120000,
-      });
+      await expect(viewInCatalog.or(openWorkflowRun).or(startOver)).toBeVisible(
+        {
+          timeout: 120000,
+        },
+      );
 
       // Verify the task actually succeeded. The output links "View in catalog"
       // and "Open workflow run" are defined in the greeting_w_component.yaml

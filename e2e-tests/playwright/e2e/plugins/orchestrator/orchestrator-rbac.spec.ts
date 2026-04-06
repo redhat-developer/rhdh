@@ -240,7 +240,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowReadonly",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
+      expect(workflowRole?.memberReferences).toContain(
+        "user:default/rhdh-qe-2",
+      );
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowReadonly",
@@ -401,7 +403,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowDenied",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
+      expect(workflowRole?.memberReferences).toContain(
+        "user:default/rhdh-qe-2",
+      );
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowDenied",
@@ -543,7 +547,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingDenied",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
+      expect(workflowRole?.memberReferences).toContain(
+        "user:default/rhdh-qe-2",
+      );
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingDenied",
@@ -693,7 +699,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingReadwrite",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
+      expect(workflowRole?.memberReferences).toContain(
+        "user:default/rhdh-qe-2",
+      );
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingReadwrite",
@@ -851,7 +859,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingReadonly",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
+      expect(workflowRole?.memberReferences).toContain(
+        "user:default/rhdh-qe-2",
+      );
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingReadonly",
