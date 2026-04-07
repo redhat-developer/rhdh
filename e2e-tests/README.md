@@ -138,7 +138,7 @@ The container will deploy RHDH and exit. You'll see next steps printed in the te
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh           # For Showcase tests
+source local-test-setup.sh # For Showcase tests
 # or: source local-test-setup.sh rbac  # For RBAC tests
 ```
 
@@ -288,7 +288,7 @@ cd e2e-tests
 
 # New terminal:
 cd e2e-tests
-source local-test-setup.sh rbac    # Use RBAC URL
+source local-test-setup.sh rbac # Use RBAC URL
 yarn install
 yarn playwright test --headed --project=showcase-rbac
 ```

@@ -93,7 +93,9 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     // Wait for the scaffolder task to complete and the link to appear
     await expect(
       page.getByRole("link", { name: "Open in catalog" }),
-    ).toBeVisible({ timeout: 60000 });
+    ).toBeVisible({
+      timeout: 60000,
+    });
     await uiHelper.clickLink("Open in catalog");
     // Ensure the entity page has loaded
     await expect(page.getByText(reactAppDetails.componentName)).toBeVisible({

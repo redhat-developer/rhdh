@@ -27,6 +27,7 @@
     "postinstall": "playwright install chromium",
     "tsc": "tsc",
     "tsc:check": "tsc -p tsconfig.json",
+    "shellcheck": "shellcheck --severity=warning --color=always **/*.sh",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
@@ -46,6 +47,8 @@
     "ioredis": "5.9.3",
     "otplib": "12.0.1",
     "prettier": "3.8.1",
+    "prettier-plugin-sh": "0.18.0",
+    "shellcheck": "4.1.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.56.1"
   },
@@ -60,7 +63,6 @@
     "node-fetch": "2.7.0",
     "octokit": "4.1.4",
     "pg": "8.18.0",
-    "prettier-plugin-sh": "0.18.1",
     "uuid": "11.1.0",
     "winston": "3.14.2",
     "yaml": "2.8.3"
