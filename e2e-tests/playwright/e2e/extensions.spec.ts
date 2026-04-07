@@ -46,9 +46,7 @@ test.describe("Admin > Extensions", () => {
     await uiHelper.openSidebarButton(
       t["rhdh"][lang]["menuItem.administration"],
     );
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2782
-    // await uiHelper.openSidebar(t["plugin.extensions"][lang]["header.title"]);
-    await uiHelper.openSidebar("Extensions");
+    await uiHelper.openSidebar(t["plugin.extensions"][lang]["header.title"]);
     await uiHelper.verifyHeading(
       t["plugin.extensions"][lang]["header.extensions"],
     );
@@ -259,7 +257,6 @@ test.describe("Admin > Extensions", () => {
       ).toBeVisible();
 
       for (const heading of commonHeadings) {
-        console.log(`Verifying heading: ${heading}`);
         await uiHelper.verifyHeading(heading);
       }
 
@@ -332,7 +329,6 @@ test.describe("Admin > Extensions", () => {
 
       await uiHelper.verifyText(t["plugin.extensions"][lang]["metadata.about"]);
       for (const heading of commonHeadings) {
-        console.log(`Verifying heading: ${heading}`);
         await uiHelper.verifyHeading(heading);
       }
 
@@ -410,7 +406,7 @@ test.describe("Admin > Extensions", () => {
       await uiHelper.clickButton(t["plugin.extensions"][lang]["install.back"]);
       await expect(
         page.getByRole("button", {
-          name: t["plugin.extensions"][lang]["actions.view"],
+          name: new RegExp(`^${t["plugin.extensions"][lang]["actions.view"]}$`),
         }),
       ).toBeVisible();
       await uiHelper.verifyHeading("Application Topology for Kubernetes");
