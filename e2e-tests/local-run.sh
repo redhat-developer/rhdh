@@ -374,7 +374,7 @@ log::info "CONTAINER_PLATFORM: $CONTAINER_PLATFORM"
 
 SA_NAME="rhdh-local-tester"
 SA_NAMESPACE="rhdh-local-test"
-SA_SECRET_NAME="${SA_NAME}-secret"
+SA_BINDING_NAME="${SA_NAME}-binding"
 
 # Check cluster connectivity and create service account token based on platform
 if [[ "$CONTAINER_PLATFORM" == "ocp" || "$CONTAINER_PLATFORM" == "osd-gcp" ]]; then
@@ -399,48 +399,24 @@ else
   fi
   K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
 
-  # Check if token already exists
-  if token="$(kubectl get secret ${SA_SECRET_NAME} -n ${SA_NAMESPACE} -o jsonpath='{.data.token}' 2>/dev/null)"; then
-    K8S_CLUSTER_TOKEN=$(echo "${token}" | base64 --decode)
-    log::info "Using existing service account token"
-  else
-    # Create namespace and service account
+  # Create service account and acquire a short-lived token via TokenRequest API
+  if ! kubectl get serviceaccount ${SA_NAME} -n ${SA_NAMESPACE} &>/dev/null; then
+    log::info "Creating namespace ${SA_NAMESPACE}..."
     kubectl create namespace "$SA_NAMESPACE" 2>/dev/null || log::info "Namespace already exists"
-    if ! kubectl get serviceaccount ${SA_NAME} -n ${SA_NAMESPACE} &>/dev/null; then
-      log::info "Creating service account ${SA_NAME}..."
-      kubectl create serviceaccount ${SA_NAME} -n ${SA_NAMESPACE}
-      kubectl create clusterrolebinding ${SA_NAME}-binding \
-        --clusterrole=cluster-admin \
-        --serviceaccount=${SA_NAMESPACE}:${SA_NAME} 2>/dev/null || true
-    fi
-
-    # Create secret for service account token (non-OpenShift approach)
-    log::info "Creating secret for service account token..."
-    kubectl apply --namespace="${SA_NAMESPACE}" -f - <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ${SA_SECRET_NAME}
-  namespace: ${SA_NAMESPACE}
-  annotations:
-    kubernetes.io/service-account.name: ${SA_NAME}
-type: kubernetes.io/service-account-token
-EOF
-
-    # Wait for token to be populated
-    log::info "Waiting for token to be populated..."
-    for i in {1..12}; do
-      if token="$(kubectl get secret ${SA_SECRET_NAME} -n ${SA_NAMESPACE} -o jsonpath='{.data.token}' 2>/dev/null)" && [[ -n "$token" ]]; then
-        log::info "Token acquired on attempt $i"
-        break
-      elif [[ $i -eq 12 ]]; then
-        log::error "Failed to get token after $i attempts"
-        exit 1
-      fi
-      sleep 5
-    done
-    K8S_CLUSTER_TOKEN=$(echo "${token}" | base64 --decode)
+    log::info "Creating service account ${SA_NAME}..."
+    kubectl create serviceaccount ${SA_NAME} -n ${SA_NAMESPACE}
+    log::info "Creating cluster role binding..."
+    kubectl create clusterrolebinding ${SA_BINDING_NAME} \
+      --clusterrole=cluster-admin \
+      --serviceaccount=${SA_NAMESPACE}:${SA_NAME}
+    log::info "Service account and binding created successfully"
+  else
+    log::info "Service account ${SA_NAME} already exists in namespace ${SA_NAMESPACE}"
   fi
+
+  log::info "Creating short-lived token for service account (48h TTL)"
+  K8S_CLUSTER_TOKEN=$(kubectl create token ${SA_NAME} -n ${SA_NAMESPACE} --duration=48h)
+  log::info "Acquired short-lived token for the service account"
 fi
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
 
