@@ -388,9 +388,9 @@ test.describe("Test RBAC", () => {
       await expect(saveButton).toBeVisible({ timeout: 15000 });
       await expect(saveButton).toBeEnabled();
       await saveButton.click();
-      await uiHelper.verifyText(
-        "Role role:default/test-role updated successfully",
-      );
+      await expect(
+        page.getByText("Role role:default/test-role updated successfully"),
+      ).toBeVisible({ timeout: 15000 });
 
       await page.getByPlaceholder("Filter").waitFor({
         state: "visible",
@@ -871,9 +871,9 @@ test.describe("Test RBAC", () => {
       await expect(saveButton).toBeVisible({ timeout: 15000 });
       await expect(saveButton).toBeEnabled();
       await saveButton.click();
-      await uiHelper.verifyText(
-        "Role role:default/test-role updated successfully",
-      );
+      await expect(
+        page.getByText("Role role:default/test-role updated successfully"),
+      ).toBeVisible({ timeout: 15000 });
 
       await page.getByPlaceholder("Filter").waitFor({
         state: "visible",
