@@ -838,8 +838,8 @@ test.describe("Test RBAC", () => {
           await rbacApi.deletePolicy("default/test-role", policies as Policy[]);
           await rbacApi.deleteRole("default/test-role");
         }
-      } catch {
-        // Role doesn't exist — nothing to clean up
+      } catch (error) {
+        console.log("Role cleanup skipped — role may not exist:", error);
       }
       await adminPage.close();
       await page.context().clearCookies();
