@@ -842,6 +842,7 @@ test.describe("Test RBAC", () => {
         // Role doesn't exist — nothing to clean up
       }
       await adminPage.close();
+      await page.context().clearCookies();
 
       const common = new Common(page);
       await common.loginAsKeycloakUser(
