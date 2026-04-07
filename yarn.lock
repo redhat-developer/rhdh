@@ -2892,7 +2892,7 @@ __metadata:
 
 "@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch::locator=root%40workspace%3A.":
   version: 0.12.0
-  resolution: "@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch::version=0.12.0&hash=8d31fb&locator=root%40workspace%3A."
+  resolution: "@backstage/backend-defaults@patch:@backstage/backend-defaults@npm%3A0.12.0#./.yarn/patches/@backstage-backend-defaults-npm-0.12.0-ef8b4e5984.patch::version=0.12.0&hash=8053d5&locator=root%40workspace%3A."
   dependencies:
     "@aws-sdk/abort-controller": ^3.347.0
     "@aws-sdk/client-codecommit": ^3.350.0
@@ -2970,7 +2970,7 @@ __metadata:
   peerDependenciesMeta:
     "@google-cloud/cloud-sql-connector":
       optional: true
-  checksum: 0ced6361c5bc9c7bc274ee4328bc55c3eb1070846f0e978876d2f2ebd61dc00fc90c8e4e1df16da776e9942b3e9e347652f62afd7f3c97d9f808ca8e78dd0231
+  checksum: f3c50992c6c69dea5603c0a6662720bf3fbc94a3e33a7010d4c168f79f6c159666d3f9802d727ea785e0c232d18211db6e97482b2dc2f921cb6accc0525562c8
   languageName: node
   linkType: hard
 
@@ -3330,6 +3330,150 @@ __metadata:
   bin:
     backstage-cli: bin/backstage-cli
   checksum: 1070467303be5d5e9209de4228f8046c094d990c597fbcdb3a27e8c49027b174452689e6fe0c4e719aebd4d33a9608202fc741cb9ac7dec32b8b76f30ed820a0
+  languageName: node
+  linkType: hard
+
+"@backstage/cli@patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch::locator=root%40workspace%3A.":
+  version: 0.34.1
+  resolution: "@backstage/cli@patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch::version=0.34.1&hash=0929ef&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/cli-common": ^0.1.15
+    "@backstage/cli-node": ^0.2.14
+    "@backstage/config": ^1.3.3
+    "@backstage/config-loader": ^1.10.2
+    "@backstage/errors": ^1.2.7
+    "@backstage/eslint-plugin": ^0.1.11
+    "@backstage/integration": ^1.17.1
+    "@backstage/release-manifests": ^0.0.13
+    "@backstage/types": ^1.2.1
+    "@manypkg/get-packages": ^1.1.3
+    "@module-federation/enhanced": ^0.9.0
+    "@octokit/graphql": ^5.0.0
+    "@octokit/graphql-schema": ^13.7.0
+    "@octokit/oauth-app": ^4.2.0
+    "@octokit/request": ^8.0.0
+    "@rollup/plugin-commonjs": ^26.0.0
+    "@rollup/plugin-json": ^6.0.0
+    "@rollup/plugin-node-resolve": ^15.0.0
+    "@rollup/plugin-yaml": ^4.0.0
+    "@rspack/core": ^1.4.11
+    "@rspack/dev-server": ^1.1.4
+    "@rspack/plugin-react-refresh": ^1.4.3
+    "@spotify/eslint-config-base": ^15.0.0
+    "@spotify/eslint-config-react": ^15.0.0
+    "@spotify/eslint-config-typescript": ^15.0.0
+    "@swc/core": ^1.3.46
+    "@swc/helpers": ^0.5.0
+    "@swc/jest": ^0.2.22
+    "@types/jest": ^29.5.11
+    "@types/webpack-env": ^1.15.2
+    "@typescript-eslint/eslint-plugin": ^8.17.0
+    "@typescript-eslint/parser": ^8.16.0
+    "@yarnpkg/lockfile": ^1.1.0
+    "@yarnpkg/parsers": ^3.0.0
+    bfj: ^8.0.0
+    buffer: ^6.0.3
+    chalk: ^4.0.0
+    chokidar: ^3.3.1
+    commander: ^12.0.0
+    cross-fetch: ^4.0.0
+    cross-spawn: ^7.0.3
+    css-loader: ^6.5.1
+    ctrlc-windows: ^2.1.0
+    esbuild: ^0.25.0
+    eslint: ^8.6.0
+    eslint-config-prettier: ^9.0.0
+    eslint-formatter-friendly: ^7.0.0
+    eslint-plugin-deprecation: ^3.0.0
+    eslint-plugin-import: ^2.31.0
+    eslint-plugin-jest: ^28.9.0
+    eslint-plugin-jsx-a11y: ^6.10.2
+    eslint-plugin-react: ^7.37.2
+    eslint-plugin-react-hooks: ^5.0.0
+    eslint-plugin-unused-imports: ^4.1.4
+    eslint-rspack-plugin: ^4.2.1
+    express: ^4.17.1
+    fs-extra: ^11.2.0
+    git-url-parse: ^15.0.0
+    glob: ^7.1.7
+    global-agent: ^3.0.0
+    globby: ^11.1.0
+    handlebars: ^4.7.3
+    html-webpack-plugin: ^5.6.3
+    inquirer: ^8.2.0
+    jest: ^29.7.0
+    jest-cli: ^29.7.0
+    jest-css-modules: ^2.1.0
+    jest-environment-jsdom: ^29.0.2
+    jest-runtime: ^29.0.2
+    json-schema: ^0.4.0
+    lodash: ^4.17.21
+    minimatch: ^9.0.0
+    node-stdlib-browser: ^1.3.1
+    npm-packlist: ^5.0.0
+    ora: ^5.3.0
+    p-queue: ^6.6.2
+    pirates: ^4.0.6
+    postcss: ^8.1.0
+    process: ^0.11.10
+    raw-loader: ^4.0.2
+    react-dev-utils: ^12.0.0-next.60
+    react-refresh: ^0.17.0
+    recursive-readdir: ^2.2.2
+    replace-in-file: ^7.1.0
+    rollup: ^4.27.3
+    rollup-plugin-dts: ^6.1.0
+    rollup-plugin-esbuild: ^6.1.1
+    rollup-plugin-postcss: ^4.0.0
+    rollup-pluginutils: ^2.8.2
+    semver: ^7.5.3
+    style-loader: ^3.3.1
+    sucrase: ^3.20.2
+    swc-loader: ^0.2.3
+    tar: ^6.1.12
+    ts-checker-rspack-plugin: ^1.1.5
+    ts-morph: ^24.0.0
+    undici: ^7.2.3
+    util: ^0.12.3
+    yaml: ^2.0.0
+    yargs: ^16.2.0
+    yml-loader: ^2.1.0
+    yn: ^4.0.0
+    zod: ^3.22.4
+    zod-validation-error: ^3.4.0
+  peerDependencies:
+    "@module-federation/enhanced": ^0.9.0
+    "@pmmmwh/react-refresh-webpack-plugin": ^0.5.7
+    esbuild-loader: ^4.0.0
+    eslint-webpack-plugin: ^4.2.0
+    fork-ts-checker-webpack-plugin: ^9.0.0
+    mini-css-extract-plugin: ^2.4.2
+    terser-webpack-plugin: ^5.1.3
+    webpack: ~5.96.0
+    webpack-dev-server: ^5.0.0
+  peerDependenciesMeta:
+    "@module-federation/enhanced":
+      optional: true
+    "@pmmmwh/react-refresh-webpack-plugin":
+      optional: true
+    esbuild-loader:
+      optional: true
+    eslint-webpack-plugin:
+      optional: true
+    fork-ts-checker-webpack-plugin:
+      optional: true
+    mini-css-extract-plugin:
+      optional: true
+    terser-webpack-plugin:
+      optional: true
+    webpack:
+      optional: true
+    webpack-dev-server:
+      optional: true
+  bin:
+    backstage-cli: bin/backstage-cli
+  checksum: ecb63647a064fde9dcace99f6203329b908ec79c03798331edd2d3bc38d6b39f02dcfaddcdaa96e082891b85e6056074697fb5bfdbe962410b4d445e6dd417db
   languageName: node
   linkType: hard
 
@@ -5241,7 +5385,7 @@ __metadata:
 
 "@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.11.0#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.0-2e81f51535.patch::locator=root%40workspace%3A.":
   version: 0.11.0
-  resolution: "@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.11.0#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.0-2e81f51535.patch::version=0.11.0&hash=7aa336&locator=root%40workspace%3A."
+  resolution: "@backstage/plugin-scaffolder-node@patch:@backstage/plugin-scaffolder-node@npm%3A0.11.0#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.11.0-2e81f51535.patch::version=0.11.0&hash=2d3033&locator=root%40workspace%3A."
   dependencies:
     "@backstage/backend-plugin-api": ^1.4.2
     "@backstage/catalog-model": ^1.7.5
@@ -5263,7 +5407,7 @@ __metadata:
     winston-transport: ^4.7.0
     zod: ^3.22.4
     zod-to-json-schema: ^3.20.4
-  checksum: 8b9516afe77e7ac6ddefaf1fdbcf09afc0c965bcb65d44085c1880acd3ad7d93dee38ffb2c28e766112936b963f42ead96d98910468cb76ef9ea84d03fe93aca
+  checksum: caec4a8a6047e02c243a2686d47849a8ce052449b1b519efced34e2e71011c3296d9378b3a9801a76fe97a3f68b750703caf271cccacefc140ec488d5d686f97
   languageName: node
   linkType: hard
 
@@ -7720,6 +7864,15 @@ __metadata:
     wrap-ansi: ^8.1.0
     wrap-ansi-cjs: "npm:wrap-ansi@^7.0.0"
   checksum: 4a473b9b32a7d4d3cfb7a614226e555091ff0c5a29a1734c28c72a182c2f6699b26fc6b5c2131dfd841e86b185aea714c72201d7c98c2fba5f17709333a67aeb
+  languageName: node
+  linkType: hard
+
+"@isaacs/fs-minipass@npm:^4.0.0":
+  version: 4.0.1
+  resolution: "@isaacs/fs-minipass@npm:4.0.1"
+  dependencies:
+    minipass: ^7.0.4
+  checksum: 5d36d289960e886484362d9eb6a51d1ea28baed5f5d0140bbe62b99bac52eaf06cc01c2bc0d3575977962f84f6b2c4387b043ee632216643d4787b0999465bf2
   languageName: node
   linkType: hard
 
@@ -20054,6 +20207,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chownr@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "chownr@npm:3.0.0"
+  checksum: fd73a4bab48b79e66903fe1cafbdc208956f41ea4f856df883d0c7277b7ab29fd33ee65f93b2ec9192fc0169238f2f8307b7735d27c155821d886b84aa97aa8d
+  languageName: node
+  linkType: hard
+
 "chrome-trace-event@npm:^1.0.2":
   version: 1.0.3
   resolution: "chrome-trace-event@npm:1.0.3"
@@ -29555,6 +29715,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minipass@npm:^7.0.4":
+  version: 7.1.3
+  resolution: "minipass@npm:7.1.3"
+  checksum: 2ede17c0bf8fec499be3360fd07f0ec7666189e3907320a9b653f1530cf84af98928c5b12d80bfb75f321833bf2e97785b940540213ebdafe97a5f10327e664d
+  languageName: node
+  linkType: hard
+
 "minizlib@npm:^2.1.1, minizlib@npm:^2.1.2":
   version: 2.1.2
   resolution: "minizlib@npm:2.1.2"
@@ -29562,6 +29729,15 @@ __metadata:
     minipass: ^3.0.0
     yallist: ^4.0.0
   checksum: f1fdeac0b07cf8f30fcf12f4b586795b97be856edea22b5e9072707be51fc95d41487faec3f265b42973a304fe3a64acd91a44a3826a963e37b37bafde0212c3
+  languageName: node
+  linkType: hard
+
+"minizlib@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "minizlib@npm:3.1.0"
+  dependencies:
+    minipass: ^7.1.2
+  checksum: a15e6f0128f514b7d41a1c68ce531155447f4669e32d279bba1c1c071ef6c2abd7e4d4579bb59ccc2ed1531346749665968fdd7be8d83eb6b6ae2fe1f3d370a7
   languageName: node
   linkType: hard
 
@@ -36039,7 +36215,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^6.1.11, tar@npm:^6.1.12, tar@npm:^6.2.1":
+"tar@npm:^6.1.11, tar@npm:^6.2.1":
   version: 6.2.1
   resolution: "tar@npm:6.2.1"
   dependencies:
@@ -36050,6 +36226,19 @@ __metadata:
     mkdirp: ^1.0.3
     yallist: ^4.0.0
   checksum: f1322768c9741a25356c11373bce918483f40fa9a25c69c59410c8a1247632487edef5fe76c5f12ac51a6356d2f1829e96d2bc34098668a2fc34d76050ac2b6c
+  languageName: node
+  linkType: hard
+
+"tar@npm:^7.5.13":
+  version: 7.5.13
+  resolution: "tar@npm:7.5.13"
+  dependencies:
+    "@isaacs/fs-minipass": ^4.0.0
+    chownr: ^3.0.0
+    minipass: ^7.1.2
+    minizlib: ^3.1.0
+    yallist: ^5.0.0
+  checksum: adcc2a9179dab1b36ecb26575e698d2df8491a1df2cc83e2a0fdd8eaefd076da60dd2e20383a37760b5790bee34e9291aa2b2a9b3deef37ff03c1046219e5df7
   languageName: node
   linkType: hard
 
@@ -38571,6 +38760,13 @@ __metadata:
   version: 3.1.1
   resolution: "yallist@npm:3.1.1"
   checksum: 48f7bb00dc19fc635a13a39fe547f527b10c9290e7b3e836b9a8f1ca04d4d342e85714416b3c2ab74949c9c66f9cebb0473e6bc353b79035356103b47641285d
+  languageName: node
+  linkType: hard
+
+"yallist@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "yallist@npm:5.0.0"
+  checksum: eba51182400b9f35b017daa7f419f434424410691bbc5de4f4240cc830fdef906b504424992700dc047f16b4d99100a6f8b8b11175c193f38008e9c96322b6a5
   languageName: node
   linkType: hard
 

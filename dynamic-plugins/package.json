@@ -30,7 +30,7 @@
     "@types/react": "18.3.23",
     "@types/react-dom": "18.3.7",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
-    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
+    "@kubernetes/client-node@0.20.0": "0.22.3",
     "@backstage/plugin-auth-node": "0.6.6",
     "@backstage/plugin-home@^0.8.11": "patch:@backstage/plugin-home@npm%3A0.8.12#./.yarn/patches/@backstage-plugin-home-npm-0.8.12-0d7fbcc764.patch",
     "@backstage/plugin-techdocs@1.14.1": "patch:@backstage/plugin-techdocs@npm%3A1.14.1#./.yarn/patches/@backstage-plugin-techdocs-npm-1.14.1-c83e1ea3d7.patch",
@@ -39,12 +39,14 @@
     "@backstage/cli-common@^0.1.15": "patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch",
     "@backstage/backend-plugin-api": "patch:@backstage/backend-plugin-api@npm%3A1.4.3#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.3-b7f08217ef.patch",
     "@backstage/plugin-techdocs-node@^1.13.6": "patch:@backstage/plugin-techdocs-node@npm%3A1.13.6#./.yarn/patches/@backstage-plugin-techdocs-node-npm-1.13.6-0ad8839a3e.patch",
+    "@backstage/cli": "patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch",
     "@backstage/plugin-permission-node": "0.10.4",
     "@backstage/backend-app-api@^1.2.6": "1.2.6",
     "@backstage/plugin-scaffolder-common": "1.7.2",
     "@backstage/integration": "1.18.1",
     "@backstage/plugin-permission-common@^0.9.1": "0.9.2",
-    "@backstage/plugin-permission-common@^0.9.2": "0.9.2"
+    "@backstage/plugin-permission-common@^0.9.2": "0.9.2",
+    "tar@^6.1.12": "^7.5.13"
   },
   "packageManager": "yarn@3.8.7"
 }
