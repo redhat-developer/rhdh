@@ -1016,13 +1016,13 @@ __metadata:
   linkType: hard
 
 "@aws-sdk/xml-builder@npm:^3.972.9":
-  version: 3.972.9
-  resolution: "@aws-sdk/xml-builder@npm:3.972.9"
+  version: 3.972.16
+  resolution: "@aws-sdk/xml-builder@npm:3.972.16"
   dependencies:
-    "@smithy/types": ^4.13.0
-    fast-xml-parser: 5.4.1
+    "@smithy/types": ^4.13.1
+    fast-xml-parser: 5.5.8
     tslib: ^2.6.2
-  checksum: befa1c9557ff921180f0d9094fba4b2719bcf504094810eee29588602c979ce935e741b917dbba16786d84da9d478d5cc60b722feba53b9cb61f655da78f9776
+  checksum: 92c74e5c02a2e2430db0fdb3416647cb016e8eab08bdef565057234eba20fa96233c30750ef83237890e7555ed615063a4a1c5346890e074b8e107650ab128f7
   languageName: node
   linkType: hard
 
@@ -13050,6 +13050,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@smithy/types@npm:^4.13.1":
+  version: 4.13.1
+  resolution: "@smithy/types@npm:4.13.1"
+  dependencies:
+    tslib: ^2.6.2
+  checksum: 615dd29f7b5a9d2f3910842d9883660142eec12ec5caaf3f59903c5a41cc81521d3748de5a3bd7593881f61938c0d812e54043a51955adcc076384fa3ef5b5d8
+  languageName: node
+  linkType: hard
+
 "@smithy/url-parser@npm:^3.0.8":
   version: 3.0.8
   resolution: "@smithy/url-parser@npm:3.0.8"
@@ -13828,13 +13837,6 @@ __metadata:
     axios-cached-dns-resolve: 0.5.2
     file-type: ^16.5.4
   checksum: 06d39c350d9c70a4fee0ff7bc12f29784a92e162b5a72dd28aacccfa523826f113d599cbb706b631f534c2dcb48cc252078e853e3dfa953c6223606d052f64b8
-  languageName: node
-  linkType: hard
-
-"@trysound/sax@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@trysound/sax@npm:0.2.0"
-  checksum: 11226c39b52b391719a2a92e10183e4260d9651f86edced166da1d95f39a0a1eaa470e44d14ac685ccd6d3df7e2002433782872c0feeb260d61e80f21250e65c
   languageName: node
   linkType: hard
 
@@ -15666,26 +15668,26 @@ __metadata:
   linkType: hard
 
 "ajv@npm:^6.12.2, ajv@npm:^6.12.3, ajv@npm:^6.12.4, ajv@npm:^6.12.5":
-  version: 6.12.6
-  resolution: "ajv@npm:6.12.6"
+  version: 6.14.0
+  resolution: "ajv@npm:6.14.0"
   dependencies:
     fast-deep-equal: ^3.1.1
     fast-json-stable-stringify: ^2.0.0
     json-schema-traverse: ^0.4.1
     uri-js: ^4.2.2
-  checksum: 874972efe5c4202ab0a68379481fbd3d1b5d0a7bd6d3cc21d40d3536ebff3352a2a1fabb632d4fd2cc7fe4cbdcd5ed6782084c9bbf7f32a1536d18f9da5007d4
+  checksum: 7bb3ea97bb8af52521589079f427e799b6561acaa94f50e13410cb87588c51df8db1afe1157b3e48f1a829269adaa11116e0c2cafe2b998add1523789809a3c5
   languageName: node
   linkType: hard
 
 "ajv@npm:^8.0.0, ajv@npm:^8.1.0, ajv@npm:^8.10.0, ajv@npm:^8.12.0, ajv@npm:^8.16.0, ajv@npm:^8.17.1, ajv@npm:^8.6.2, ajv@npm:^8.6.3, ajv@npm:^8.9.0":
-  version: 8.17.1
-  resolution: "ajv@npm:8.17.1"
+  version: 8.18.0
+  resolution: "ajv@npm:8.18.0"
   dependencies:
     fast-deep-equal: ^3.1.3
     fast-uri: ^3.0.1
     json-schema-traverse: ^1.0.0
     require-from-string: ^2.0.2
-  checksum: 1797bf242cfffbaf3b870d13565bd1716b73f214bb7ada9a497063aada210200da36e3ed40237285f3255acc4feeae91b1fb183625331bad27da95973f7253d9
+  checksum: bcdf6c7b040ca488108e2b4e219b31cf9ed478331007d4dd1ed8acc3946dd6b84295817c0f4724207b8dd8589c9966168b2fd4c7f32109d4b8526cdd3743e936
   languageName: node
   linkType: hard
 
@@ -21724,33 +21726,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-builder@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "fast-xml-builder@npm:1.0.0"
-  checksum: d6fb6d860ebb67c0dbec4c91a5cde3bf3e4cc40407db249539fe0d4e98e5c1bc09b3d45e5cbc412aaee8dd16605467f8c054c104fbccba23cf78ec15ff8767ab
+"fast-xml-builder@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "fast-xml-builder@npm:1.1.4"
+  dependencies:
+    path-expression-matcher: ^1.1.3
+  checksum: 90b019ed6f52cb30342a58d4bf8726a7723b4110cb9c0fd3fa2031e87506e8b18740fd349472926c9e2925d22ca6637b6d46a20eda537473cf63366970db4d7b
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:5.4.1":
-  version: 5.4.1
-  resolution: "fast-xml-parser@npm:5.4.1"
+"fast-xml-parser@npm:5.5.8":
+  version: 5.5.8
+  resolution: "fast-xml-parser@npm:5.5.8"
   dependencies:
-    fast-xml-builder: ^1.0.0
-    strnum: ^2.1.2
+    fast-xml-builder: ^1.1.4
+    path-expression-matcher: ^1.2.0
+    strnum: ^2.2.0
   bin:
     fxparser: src/cli/cli.js
-  checksum: 98b8d2f208dea6be10740509e4ef59dc175584cfb29cb3f82849f0a79645ccaf40916589533029c30b4b47a78e744e8fc08ff468f214a231f450e51f0d8d32c6
+  checksum: 58261aaaeb355a325dc1b27ae28e6f8da55e9f8e0560dd752c8a39a4adbaebe560cbbfe924efb44ebf991dbdff76ae6f80a4900d1d03fd720509cb323263bf13
   languageName: node
   linkType: hard
 
 "fast-xml-parser@npm:^4.3.0":
-  version: 4.5.4
-  resolution: "fast-xml-parser@npm:4.5.4"
+  version: 4.5.5
+  resolution: "fast-xml-parser@npm:4.5.5"
   dependencies:
     strnum: ^1.0.5
   bin:
     fxparser: src/cli/cli.js
-  checksum: 29db513a5f0ad5ac33691c27d67315ee22e041b5e8fa5982f8bccf46af400e35c576c17f3087f1b8d4cd81fa91519f5fda4b2a31441ff1bf7596ecc5e934f44d
+  checksum: bfbe4986fd7e00cd577039cb200cc6d34102f3baf839ba98cad4cc4ff777264d9d0630bc128e78c1a9f0de3ec72a278a479fe1cf4345719e23ea86b49a0192fc
   languageName: node
   linkType: hard
 
@@ -29699,6 +29704,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"path-expression-matcher@npm:^1.1.3, path-expression-matcher@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "path-expression-matcher@npm:1.2.0"
+  checksum: 2811aab3269c288893aef09e5127124d3c434bfc7e1352fea6b7dd81ed20260001b072ff60bdcaaa393d50a4333725290dbad47bb612d95f5448e499b4ac887f
+  languageName: node
+  linkType: hard
+
 "path-is-absolute@npm:^1.0.0":
   version: 1.0.1
   resolution: "path-is-absolute@npm:1.0.1"
@@ -32901,6 +32913,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sax@npm:^1.5.0":
+  version: 1.6.0
+  resolution: "sax@npm:1.6.0"
+  checksum: 83ae2a17f524bd35b1b7d1c867700b1fab41e4cbb4f7635b7e66398421e06ff2cd43ec651c151cb99c67c3681ec7d0493cb6a98fd2e7799ea15b5d0a4615f870
+  languageName: node
+  linkType: hard
+
 "saxes@npm:^6.0.0":
   version: 6.0.0
   resolution: "saxes@npm:6.0.0"
@@ -34080,10 +34099,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strnum@npm:^2.1.2":
-  version: 2.2.0
-  resolution: "strnum@npm:2.2.0"
-  checksum: cf9fda01ab16e1295db16a8f62b852fd92f3ed9ef940b4326a0053e3e658e7b35de82c2cac6ad946dcf6b6044d4d804845baae4659f7afcb4cdc3dcf2870d152
+"strnum@npm:^2.2.0":
+  version: 2.2.2
+  resolution: "strnum@npm:2.2.2"
+  checksum: 9142f1188b12041661353f8d8b658c495fa7b56a0f15d3bb6af38b3473c623ba31eead97aba0ea70956bcde1061fb4802e917a95b825aa939132e18d6320a8fb
   languageName: node
   linkType: hard
 
@@ -34242,19 +34261,19 @@ __metadata:
   linkType: hard
 
 "svgo@npm:^2.7.0, svgo@npm:^2.8.0":
-  version: 2.8.0
-  resolution: "svgo@npm:2.8.0"
+  version: 2.8.2
+  resolution: "svgo@npm:2.8.2"
   dependencies:
-    "@trysound/sax": 0.2.0
     commander: ^7.2.0
     css-select: ^4.1.3
     css-tree: ^1.1.3
     csso: ^4.2.0
     picocolors: ^1.0.0
+    sax: ^1.5.0
     stable: ^0.1.8
   bin:
-    svgo: bin/svgo
-  checksum: b92f71a8541468ffd0b81b8cdb36b1e242eea320bf3c1a9b2c8809945853e9d8c80c19744267eb91cabf06ae9d5fff3592d677df85a31be4ed59ff78534fa420
+    svgo: ./bin/svgo
+  checksum: 6294a2a1cd7b324c5aa7a087d6eb91aa5a0c62ca604ef39271bf830c790cda3cc3bd97b7ada2e0ed2a5b3609367bb0739e1e799e8f777d6117601c30ed90bd22
   languageName: node
   linkType: hard
 
