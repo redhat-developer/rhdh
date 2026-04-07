@@ -4,6 +4,8 @@
 source "$DIR"/reporting.sh
 # shellcheck source=.ci/pipelines/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gcloud.sh
+# shellcheck source=.ci/pipelines/cluster/eks/aws.sh
+source "$DIR"/cluster/eks/aws.sh
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 
@@ -26,6 +28,12 @@ cleanup() {
       *gke*)
         log::info "Calling cleanup_gke"
         cleanup_gke
+        ;;
+      *eks*)
+        if [[ -n "${EKS_INSTANCE_DOMAIN_NAME:-}" ]]; then
+          log::info "Calling aws::cleanup_dns_record"
+          aws::cleanup_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
+        fi
         ;;
     esac
   fi
