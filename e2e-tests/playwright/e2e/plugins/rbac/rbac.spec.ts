@@ -823,6 +823,26 @@ test.describe("Test RBAC", () => {
     test("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
       page,
     }) => {
+      // Clean up test-role via API (admin) in case a prior run left it behind
+      const adminPage = (await page.context().newPage()) as Page;
+      const adminCommon = new Common(adminPage);
+      await adminCommon.loginAsKeycloakUser();
+      const adminToken = await RhdhAuthApiHack.getToken(adminPage);
+      const rbacApi = await RhdhRbacApi.build(adminToken);
+      try {
+        const policiesRes =
+          await rbacApi.getPoliciesByRole("default/test-role");
+        if (policiesRes.ok()) {
+          const policies =
+            await Response.removeMetadataFromResponse(policiesRes);
+          await rbacApi.deletePolicy("default/test-role", policies as Policy[]);
+          await rbacApi.deleteRole("default/test-role");
+        }
+      } catch {
+        // Role doesn't exist — nothing to clean up
+      }
+      await adminPage.close();
+
       const common = new Common(page);
       await common.loginAsKeycloakUser(
         process.env.QE_USER6_ID,
