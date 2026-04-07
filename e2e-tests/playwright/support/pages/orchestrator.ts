@@ -18,7 +18,11 @@ export class Orchestrator {
         return;
       } catch {
         await this.page.reload({ waitUntil: "domcontentloaded" });
-        await expect(Workflows.workflowsTable(this.page)).toBeVisible();
+        // Wait for the table to render after reload; use the heading
+        // instead of Workflows.workflowsTable (fragile nth() locator).
+        await expect(
+          this.page.getByRole("heading", { name: "Workflows" }),
+        ).toBeVisible({ timeout: 15000 });
       }
     }
     await expect(locator).toBeVisible({ timeout: 30000 });
