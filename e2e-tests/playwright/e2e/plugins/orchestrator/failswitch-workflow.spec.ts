@@ -5,6 +5,10 @@ import { Orchestrator } from "../../../support/pages/orchestrator";
 import { LogUtils } from "../../audit-log/log-utils";
 
 test.describe("Orchestrator failswitch workflow tests", () => {
+  // SonataFlow operator + Data Index can take over a minute to
+  // register workflows after deploy; default 90s is not enough.
+  test.describe.configure({ timeout: 180_000 });
+
   let uiHelper: UIhelper;
   let common: Common;
   let orchestrator: Orchestrator;

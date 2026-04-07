@@ -8,19 +8,20 @@ export class Orchestrator {
     this.page = page;
   }
 
-  // Waits for a workflow link to appear in the table, reloading
-  // the page if needed (backend may still be registering it).
+  // Waits for a workflow to appear in the table, reloading the page
+  // between attempts. The SonataFlow operator + Data Index Service
+  // can take over a minute to register a workflow after deploy.
   private async waitForWorkflowToAppear(locator: Locator) {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 10; i++) {
       try {
-        await expect(locator).toBeVisible({ timeout: 3000 });
+        await expect(locator).toBeVisible({ timeout: 5000 });
         return;
       } catch {
         await this.page.reload({ waitUntil: "domcontentloaded" });
         await expect(Workflows.workflowsTable(this.page)).toBeVisible();
       }
     }
-    await expect(locator).toBeVisible({ timeout: 10000 });
+    await expect(locator).toBeVisible({ timeout: 30000 });
   }
 
   async openWorkflowAlert() {
