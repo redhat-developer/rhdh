@@ -115,11 +115,17 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("Test global orchestrator workflow access is allowed", async () => {
-      await uiHelper.goToPageUrl("/orchestrator");
-      await uiHelper.verifyHeading("Workflows");
-
-      const orchestrator = new Orchestrator(page);
-      await orchestrator.selectGreetingWorkflowItem();
+      // Retry with reload to handle RBAC policy propagation delay.
+      // After role creation, the Orchestrator page may render workflow
+      // names as plain text (not links) until policies propagate.
+      const greetingLink = page.getByRole("link", {
+        name: "Greeting workflow",
+      });
+      await expect(async () => {
+        await page.goto("/orchestrator");
+        await expect(greetingLink).toBeVisible({ timeout: 5000 });
+      }).toPass({ timeout: 60000 });
+      await greetingLink.click();
 
       // Verify we're on the greeting workflow page
       await expect(
