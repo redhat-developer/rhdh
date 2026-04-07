@@ -19,7 +19,15 @@ const shouldSkipOrchestratorTests =
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
-if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
+if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_DE))) {
+  process.env.LOCALE = "de";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_ES))
+) {
+  process.env.LOCALE = "es";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))
+) {
   process.env.LOCALE = "fr";
 } else if (
   args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))
@@ -264,6 +272,34 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_DE,
+      use: {
+        locale: "de",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_ES,
+      use: {
+        locale: "es",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
       ],
     },
     {

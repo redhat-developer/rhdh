@@ -18,6 +18,8 @@
     "showcase-upgrade": "playwright test --project=showcase-upgrade",
     "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
     "showcase-sanity-plugins": "playwright test --project=showcase-sanity-plugins",
+    "showcase-localization-de": "LOCALE=de playwright test --project=showcase-localization-de",
+    "showcase-localization-es": "LOCALE=es playwright test --project=showcase-localization-es",
     "showcase-localization-fr": "LOCALE=fr playwright test --project=showcase-localization-fr",
     "showcase-localization-it": "LOCALE=it playwright test --project=showcase-localization-it",
     "showcase-localization-ja": "LOCALE=ja playwright test --project=showcase-localization-ja",

@@ -82,7 +82,7 @@ run_sanity_plugins_check() {
 
 run_localization_tests() {
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  local locales=("FR" "IT" "JA")
+  local locales=("DE" "ES" "FR" "IT" "JA")
 
   log::section "Running localization tests"
   # Loop through all locales - uses project name as artifacts_subdir to avoid overwriting test artifacts

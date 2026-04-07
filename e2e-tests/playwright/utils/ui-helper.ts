@@ -397,7 +397,8 @@ export class UIhelper {
     // Use semantic selector with fallback to CSS selector
     const combobox = this.page
       .getByRole("combobox", { name: label })
-      .or(this.page.locator(`div[aria-label="${label}"]`));
+      .or(this.page.locator(`div[aria-label="${label}"]`))
+      .first();
 
     await expect(combobox).toBeVisible();
     await combobox.click();
