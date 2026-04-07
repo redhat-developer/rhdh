@@ -53,14 +53,14 @@ log::info "CONTAINER_PLATFORM: $CONTAINER_PLATFORM"
 
 # Login based on platform
 if [[ "$CONTAINER_PLATFORM" == "ocp" || "$CONTAINER_PLATFORM" == "osd-gcp" ]]; then
-    oc login --token="$K8S_CLUSTER_TOKEN" --server="$K8S_CLUSTER_URL" --insecure-skip-tls-verify=true
+  oc login --token="$K8S_CLUSTER_TOKEN" --server="$K8S_CLUSTER_URL" --insecure-skip-tls-verify=true
 else
-    # For AKS/EKS/GKE, configure kubectl with the token
-    kubectl config set-cluster local-cluster --server="$K8S_CLUSTER_URL" --insecure-skip-tls-verify=true
-    kubectl config set-credentials local-user --token="$K8S_CLUSTER_TOKEN"
-    kubectl config set-context local-context --cluster=local-cluster --user=local-user
-    kubectl config use-context local-context
-    kubectl cluster-info
+  # For AKS/EKS/GKE, configure kubectl with the token
+  kubectl config set-cluster local-cluster --server="$K8S_CLUSTER_URL" --insecure-skip-tls-verify=true
+  kubectl config set-credentials local-user --token="$K8S_CLUSTER_TOKEN"
+  kubectl config set-context local-context --cluster=local-cluster --user=local-user
+  kubectl config use-context local-context
+  kubectl cluster-info
 fi
 
 log::info "Service account token is valid for 48 hours."
