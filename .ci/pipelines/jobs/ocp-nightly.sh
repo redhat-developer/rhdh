@@ -56,11 +56,23 @@ run_standard_deployment_tests() {
 run_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
 
+  # Create the namespace first (this will delete/recreate it)
+  namespace::configure "${NAME_SPACE_RUNTIME}"
+
   # Configure external PostgreSQL credentials and certificates for runtime namespace
   # This creates postgres-crt and postgres-cred secrets needed by values-showcase-postgres.yaml
+  # IMPORTANT: Must be called AFTER namespace is created but BEFORE helm install
   configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
 
-  initiate_runtime_deployment "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}"
+  # Deploy RHDH with Helm (skip namespace creation since we already did it)
+  helm::uninstall "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}"
+  oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
+  # shellcheck disable=SC2046
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_RUNTIME}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+    -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    $(helm::get_image_params)
 
   # Configure schema-mode environment (opt-in: tests skip if env not configured)
   if configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" helm; then
