@@ -34,10 +34,10 @@ Creates a file lock (`install-dynamic-plugins.lock`) in the `dynamic-plugins-roo
 
 If the `CATALOG_INDEX_IMAGE` environment variable is set, the script calls `extract_catalog_index()`, which:
 
-1. Uses **skopeo** to download the OCI image to a temporary directory
+1. Uses **skopeo** to download the OCI image to a temporary directory (with `--override-os=linux --override-arch=amd64` to ensure consistent platform selection, since plugin images are arch-agnostic `FROM scratch` images but may be published with a default arch by Konflux)
 2. Reads the `manifest.json` and extracts all layers
 3. Looks for a `dynamic-plugins.default.yaml` file inside the extracted content
-4. Extracts catalog entities from `catalog-entities/extensions/` (or `catalog-entities/marketplace/` for backward compatibility) into the directory specified by `CATALOG_ENTITIES_EXTRACT_DIR` (defaults to `/tmp/extensions/catalog-entities`)
+4. Extracts catalog entities from `catalog-entities/extensions/` (or `catalog-entities/marketplace/` for backward compatibility) into the directory specified by `CATALOG_ENTITIES_EXTRACT_DIR` (defaults to `/tmp/extensions`; a `catalog-entities` subdirectory is created within it during extraction)
 5. Returns the path to the extracted `dynamic-plugins.default.yaml`
 
 ### Step 3: Configuration Merging
@@ -59,7 +59,7 @@ Duplicate detection prevents the same plugin from being defined twice at the sam
 Two merger classes handle plugin key generation:
 
 - **`NPMPackageMerger`**: Strips version info from package names to create stable keys (e.g., `@scope/pkg@1.0` becomes `@scope/pkg`). Also handles aliases, git URLs, and GitHub shorthand.
-- **`OciPackageMerger`**: Strips the tag/digest to create keys like `oci://registry/image:!plugin-path` (the `!` character separates the OCI image reference from the plugin subdirectory path within the image). Supports `{{inherit}}` to inherit version from included configs, and auto-detection of plugin paths from the `io.backstage.dynamic-packages` OCI annotation.
+- **`OciPackageMerger`**: Strips the tag/digest to create keys like `oci://registry/image:!plugin-path` (the `!` character separates the OCI image reference from the plugin subdirectory path within the image). The registry portion may include a custom port (e.g., `oci://myregistry:5000/org/plugin:tag!path`). Supports `{{inherit}}` to inherit version from included configs, and auto-detection of plugin paths from the `io.backstage.dynamic-packages` OCI annotation.
 
 ### Step 4: Plugin Installation
 
@@ -82,7 +82,7 @@ For each enabled plugin, the script creates a SHA-256 hash of the plugin configu
 
 The `OciDownloader` class handles OCI image downloads:
 
-1. `skopeo copy docker://registry/image dir:/tmp/...` — downloads image layers to a local directory
+1. `skopeo copy --override-os=linux --override-arch=amd64 docker://registry/image dir:/tmp/...` — downloads image layers to a local directory
 2. Reads `manifest.json` to get the first layer's digest and locate the tarball
 3. Extracts only the plugin subdirectory from the tarball into `dynamic-plugins-root/`
 4. Saves the image digest to `dynamic-plugin-image.hash` for future comparison
@@ -146,13 +146,13 @@ The catalog entities extracted to `/extensions/catalog-entities/` are consumed b
 
 | Deployment Method | How `CATALOG_INDEX_IMAGE` Is Set |
 |---|---|
-| **Operator** (`rhdh-operator`) | `RELATED_IMAGE_catalog_index` env var on the operator pod is injected as `CATALOG_INDEX_IMAGE` on the init container (`pkg/model/deployment.go`). Default in `config/profile/rhdh/default-config/deployment.yaml`: `quay.io/rhdh/plugin-catalog-index:1.9` |
+| **Operator** (`rhdh-operator`) | `CATALOG_INDEX_IMAGE` is set directly in the default deployment template (`config/profile/rhdh/default-config/deployment.yaml`). OLM's `RELATED_IMAGE_*` substitution mechanism replaces it with `RELATED_IMAGE_catalog_index` when set on the operator pod. Default: `quay.io/rhdh/plugin-catalog-index:1.9` |
 | **Helm chart** (`rhdh-chart`) | `global.catalogIndex.image.{registry,repository,tag}` in `values.yaml` is rendered into the init container's env vars |
 | **Docker Compose** (`rhdh-local`) | Set via `.env` file or `environment:` block in `compose.yaml` |
 
 ### Operator-Specific Behavior
 
-In the operator (`rhdh-operator/pkg/model/deployment.go:115-119`), the `RELATED_IMAGE_catalog_index` env var is read at reconciliation time and injected into the `install-dynamic-plugins` init container **before** user-specified `extraEnvs` are applied. This allows users to override the catalog index image via the Backstage CR's `extraEnvs`.
+The operator's default deployment template (`config/profile/rhdh/default-config/deployment.yaml`) sets `CATALOG_INDEX_IMAGE` directly on the `install-dynamic-plugins` init container. When deployed via OLM (Operator Lifecycle Manager), the `RELATED_IMAGE_catalog_index` env var on the operator pod automatically overrides this value through OLM's standard `RELATED_IMAGE_*` substitution mechanism. Users can further override it via the Backstage CR's `extraEnvs` or a deployment patch, both of which take precedence.
 
 ## Cross-Repository Relationships
 
@@ -162,13 +162,13 @@ flowchart LR
         r1["install-dynamic-plugins.py — core script<br>install-dynamic-plugins.sh — shell wrapper<br>default.packages.yaml — master plugin manifest"]
     end
     subgraph operator["rhdh-operator"]
-        o1["deployment.go — Sets CATALOG_INDEX_IMAGE<br>dynamic-plugins.go — Mounts ConfigMap<br>deployment.yaml — Default init container spec"]
+        o1["default-config/deployment.yaml — Sets CATALOG_INDEX_IMAGE<br>dynamic-plugins.go — Mounts ConfigMap<br>OLM RELATED_IMAGE substitution"]
     end
     subgraph chart["rhdh-chart"]
         c1["values.yaml — global.catalogIndex.image"]
     end
     subgraph local["rhdh-local"]
-        l1["compose.yaml — Two-container arch<br>4 plugin sources: local, OCI, tarball, pre-bundled"]
+        l1["compose.yaml — 2 services + shared volume<br>4 plugin sources: local, OCI, tarball, pre-bundled"]
     end
     subgraph cli["rhdh-cli"]
         cl1["export-dynamic-plugin/ — dist-dynamic + dist-scalprum<br>package-dynamic-plugins/ — FROM scratch OCI images"]
@@ -203,13 +203,12 @@ flowchart LR
 | `scripts/install-dynamic-plugins/install-dynamic-plugins.py` | rhdh | Core plugin installation script |
 | `scripts/install-dynamic-plugins/install-dynamic-plugins.sh` | rhdh | Shell wrapper for the Python script |
 | `build/containerfiles/Containerfile` | rhdh | Copies the scripts into the RHDH container image |
-| `dynamic-plugins.default.yaml` | rhdh | Embedded default plugin configurations |
+| `dynamic-plugins.default.yaml` | rhdh | Embedded default plugin configurations (removed from main branch in 1.10+; only maintained on `release-1.9`. The catalog index image is now the sole source of this file at runtime.) |
 | `pkg/model/dynamic-plugins.go` | rhdh-operator | Operator logic for init container and ConfigMap mounting |
-| `pkg/model/deployment.go` | rhdh-operator | Operator logic for `CATALOG_INDEX_IMAGE` injection |
+| `pkg/model/deployment.go` | rhdh-operator | Backstage deployment reconciliation logic |
 | `config/profile/rhdh/default-config/deployment.yaml` | rhdh-operator | Default deployment manifest with init container spec |
 | `charts/backstage/values.yaml` | rhdh-chart | Helm values including `global.catalogIndex.image` |
-| `compose.yaml` | rhdh-local | Docker Compose two-container setup |
-| `prepare-and-install-dynamic-plugins.sh` | rhdh-local | Entrypoint wrapper for the init container in Compose |
+| `compose.yaml` | rhdh-local | Docker Compose setup with 2 services (`rhdh`, `install-dynamic-plugins`) and a shared `dynamic-plugins-root` volume |
 | `src/commands/export-dynamic-plugin/` | rhdh-cli | Exports plugins to `dist-dynamic/` (backend) or `dist-scalprum/` (frontend) |
 | `src/commands/package-dynamic-plugins/` | rhdh-cli | Packages exported plugins as `FROM scratch` OCI images |
 | `build/scripts/generateCatalogIndex.py` | rhdh-plugin-catalog | Generates catalog index from synced overlay content |

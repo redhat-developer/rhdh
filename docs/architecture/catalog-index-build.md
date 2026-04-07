@@ -23,16 +23,18 @@ By packaging these as a standalone OCI image, the default plugin list and catalo
         │   ├── 3scale.yaml            # Plugin entity (UI metadata, description, icon)
         │   ├── argocd.yaml
         │   └── ...
-        ├── packages/
+        ├── packages/                  # Generated at build time by extensions-cli
         │   ├── all.yaml               # Location entity listing all packages
         │   ├── backstage-community-plugin-3scale-backend.yaml  # Package entity (OCI ref, version)
         │   └── ...
         └── collections/
             ├── all.yaml               # Location entity listing all collections
-            ├── featured.yaml          # Curated plugin collections
+            ├── featured.yaml          # PluginCollection entities (curated groupings)
             ├── recommended.yaml
             └── ...
 ```
+
+> **Note:** The `packages/` directory does not exist in the source repositories — it is generated at build time by the `extensions-cli generate` command from `dynamic-plugins.default.yaml`. The `plugins/` and `collections/` directories are maintained in the `rhdh-plugin-export-overlays` repo.
 
 ## Build Pipeline Overview
 
@@ -243,11 +245,13 @@ flowchart TB
 
 ## Sync Back to RHDH Repo
 
-A daily GitHub Actions workflow keeps the RHDH repo's `dynamic-plugins.default.yaml` in sync with the latest catalog index image:
+> **Note:** As of RHDH 1.10/main, the `dynamic-plugins.default.yaml` file has been **removed from the main branch** (RHIDP-9863) and the sync workflow is disabled for main. The file is only maintained on the `release-1.9` branch. In 1.10+, the catalog index image is the **sole source** of `dynamic-plugins.default.yaml` at runtime — the init container extracts it directly from the image. The sync workflow below only applies to the 1.9 branch.
+
+A GitHub Actions workflow keeps the RHDH repo's `dynamic-plugins.default.yaml` in sync with the latest catalog index image on the `release-1.9` branch:
 
 ```mermaid
 flowchart TB
-    trigger["Trigger: daily at 02:48 UTC,<br>push to main/release-**, or manual"]
+    trigger["Trigger: push to release-1.9,<br>or manual dispatch"]
     s1["1. Read RHDH version from package.json"]
     s2["2. Download catalog index image via skopeo"]
     s3["3. Extract all layers"]
@@ -256,7 +260,7 @@ flowchart TB
     trigger --> s1 --> s2 --> s3 --> s4 --> s5
 ```
 
-This ensures that `dynamic-plugins.default.yaml` in the RHDH repo stays consistent with the published catalog index image, even though the authoritative source is the image itself.
+This ensures that `dynamic-plugins.default.yaml` in the RHDH 1.9 branch stays consistent with the published catalog index image.
 
 ## Consumption Flow at Runtime
 
@@ -294,26 +298,17 @@ flowchart TB
 
 ### Operator
 
-In `rhdh-operator/pkg/model/deployment.go`:
+In `rhdh-operator/config/profile/rhdh/default-config/deployment.yaml`, the `CATALOG_INDEX_IMAGE` env var is set directly on the `install-dynamic-plugins` init container:
 
-```go
-const CatalogIndexImageEnvVar = "RELATED_IMAGE_catalog_index"
-
-// Set CATALOG_INDEX_IMAGE from operator env var BEFORE extraEnvs
-if catalogIndexImage := os.Getenv(CatalogIndexImageEnvVar); catalogIndexImage != "" {
-    if i, _ := DynamicPluginsInitContainer(b.podSpec().InitContainers); i >= 0 {
-        b.setOrAppendEnvVar(&b.podSpec().InitContainers[i], "CATALOG_INDEX_IMAGE", catalogIndexImage)
-    }
-}
-```
-
-The operator's `RELATED_IMAGE_catalog_index` env var is injected into the `install-dynamic-plugins` init container as `CATALOG_INDEX_IMAGE`. This is set **before** user-specified `extraEnvs`, allowing users to override it via the Backstage CR.
-
-Default in `config/profile/rhdh/default-config/deployment.yaml`:
 ```yaml
+# CATALOG_INDEX_IMAGE will be replaced by the value of the `RELATED_IMAGE_catalog_index` env var, if set
 - name: CATALOG_INDEX_IMAGE
   value: "quay.io/rhdh/plugin-catalog-index:1.9"
+- name: CATALOG_ENTITIES_EXTRACT_DIR
+  value: '/extensions'
 ```
+
+When deployed via OLM (Operator Lifecycle Manager), the `RELATED_IMAGE_catalog_index` env var on the operator pod automatically overrides this value through OLM's standard `RELATED_IMAGE_*` substitution mechanism. Users can further override it via the Backstage CR's `extraEnvs` or a deployment patch, both of which take precedence over the default and OLM-injected values.
 
 ### Helm Chart
 
@@ -355,23 +350,23 @@ The `versions.json` in the overlays repo pins the exact Backstage version and CL
 
 | Repository | Role in Catalog Index Pipeline |
 |---|---|
-| **rhdh** | Defines `default.packages.yaml` (which plugins, enabled/disabled). Contains the `install-dynamic-plugins.py` consumer script. Has sync workflow to pull latest `dynamic-plugins.default.yaml` from the published image. |
+| **rhdh** | Defines `default.packages.yaml` (which plugins, enabled/disabled). Contains the `install-dynamic-plugins.py` consumer script. Has sync workflow to pull latest `dynamic-plugins.default.yaml` from the published image (active on `release-1.9` only; disabled for main/1.10+). |
 | **rhdh-plugin-export-overlays** | Contains per-plugin metadata (`workspaces/*/metadata/*.yaml`), catalog entities (`catalog-entities/extensions/`), and CI workflows that build individual plugin OCI images. Source-of-truth for plugin descriptions, icons, and UI metadata. |
 | **rhdh-plugin-export-utils** | Provides reusable GitHub Actions and workflows used by the overlays repo: `override-sources`, `export-dynamic`, `validate-metadata`, and orchestration workflows. |
 | **rhdh-cli** | Provides `export-dynamic` command that packages plugins into `dist-dynamic/` or `dist-scalprum/` directories, and `package-dynamic-plugins` command that builds `FROM scratch` OCI images. |
 | **rhdh-plugins** | Houses the `extensions-cli` (`generate` command) that produces `Package` entity YAML files from `dynamic-plugins.default.yaml`. Also contains the extensions frontend/backend plugins that consume catalog entities at runtime. |
 | **rhdh-plugin-catalog** | Midstream infrastructure repo. Syncs plugin source from `rhdh-plugin-export-overlays` via `sync-midstream.sh`. Builds plugins via Konflux/Tekton pipelines (56 PipelineRun definitions in `.tekton/`). Generates catalog index via `generateCatalogIndex.py`. Publishes to `quay.io/rhdh/` and `registry.redhat.io/rhdh/`. Contains `plugin_builds/` metadata and 23 plugin workspace directories. |
-| **rhdh-operator** | Injects `CATALOG_INDEX_IMAGE` env var into the init container from `RELATED_IMAGE_catalog_index`. |
+| **rhdh-operator** | Sets `CATALOG_INDEX_IMAGE` in default deployment template. OLM's `RELATED_IMAGE_catalog_index` substitution overrides it at deploy time. |
 | **rhdh-chart** | Configures `CATALOG_INDEX_IMAGE` via `global.catalogIndex.image` Helm values. |
-| **rhdh-local** | Docker Compose local dev environment. Uses the same two-container architecture (init + main) with shared volumes. Supports four plugin sources: local directory (`local-plugins/`), OCI image (`oci://`), tarball URL, and pre-bundled plugins. |
+| **rhdh-local** | Docker Compose local dev environment with 2 services (`rhdh`, `install-dynamic-plugins`) and a shared `dynamic-plugins-root` volume. Uses init container pattern. Supports four plugin sources: local directory (`local-plugins/`), OCI image (`oci://`), tarball URL, and pre-bundled plugins. |
 
 ## Key Files Reference
 
 | File | Repository | Purpose |
 |------|------------|---------|
 | `default.packages.yaml` | rhdh | Master plugin enable/disable manifest |
-| `dynamic-plugins.default.yaml` | rhdh (generated) | Synced copy from catalog index image |
-| `.github/workflows/update-dynamic-plugins-default.yaml` | rhdh | Daily sync workflow |
+| `dynamic-plugins.default.yaml` | rhdh (generated, `release-1.9` only) | Synced copy from catalog index image. Removed from main branch in 1.10+ (RHIDP-9863). |
+| `.github/workflows/update-dynamic-plugins-default.yaml` | rhdh | Sync workflow (disabled for main in 1.10+, active on `release-1.9` only) |
 | `scripts/install-dynamic-plugins/install-dynamic-plugins.py` | rhdh | Runtime catalog index extraction logic |
 | `workspaces/*/metadata/*.yaml` | rhdh-plugin-export-overlays | Per-plugin Package metadata |
 | `workspaces/*/source.json` | rhdh-plugin-export-overlays | Upstream repo + commit pin |
@@ -388,5 +383,5 @@ The `versions.json` in the overlays repo pins the exact Backstage version and CL
 | `catalog-index/index.json` | rhdh-plugin-catalog | Master catalog of all plugins |
 | `.tekton/*.yaml` | rhdh-plugin-catalog | 56 Konflux PipelineRun definitions for plugin builds |
 | `plugin_builds/<plugin>/*.json` | rhdh-plugin-catalog | Per-plugin build metadata (versions, image refs) |
-| `pkg/model/deployment.go` | rhdh-operator | `CATALOG_INDEX_IMAGE` injection logic |
+| `config/profile/rhdh/default-config/deployment.yaml` | rhdh-operator | Default deployment template with `CATALOG_INDEX_IMAGE` |
 | `charts/backstage/values.yaml` | rhdh-chart | `global.catalogIndex.image` config |
