@@ -225,10 +225,8 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
   fi; \
   done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
 
-# Techdocs: pip/mkdocs and native wheels are built here using skeleton toolchain (gcc, cmake, *-devel).
-# Those RPMs never appear in the final minimal image.
-FROM build AS techdocs
-USER 0
+# Techdocs: Installing Python dependencies and building the techdocs venv.
+# Prevents duplicating the same dependencies in the final minimal image.
 # hadolint ignore=DL3013,DL3041,SC2086
 RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
   python3.11 -m venv /opt/techdocs-venv && \
@@ -261,9 +259,9 @@ RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
 
-# App tree and techdocs venv from techdocs stage (no compiler/devel RPMs in these layers)
-COPY --from=techdocs --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
-COPY --from=techdocs --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
+# App tree and techdocs venv from build stage (no compiler/devel RPMs in final layer)
+COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
+COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
 
 ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 
