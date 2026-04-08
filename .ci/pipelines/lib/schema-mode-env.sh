@@ -102,7 +102,7 @@ configure_schema_mode_runtime_env() {
       if oc get svc postgress-external-db-primary -n "${pdb}" &> /dev/null; then
         forward_namespace="${pdb}"
         log::info "Schema-mode (helm): no in-cluster Postgres Service in ${runtime_namespace}; using Crunchy cluster in ${pdb}"
-        local crunchy_admin_secret="${crunchy_cluster}-pguser-postgres"
+        local crunchy_admin_secret="${crunchy_cluster}-pguser-janus-idp"
         if oc get secret "${crunchy_admin_secret}" -n "${pdb}" &> /dev/null; then
           admin_password=$(oc get secret "${crunchy_admin_secret}" -n "${pdb}" -o jsonpath='{.data.password}' 2> /dev/null | base64 -d || true)
         fi
@@ -140,7 +140,18 @@ configure_schema_mode_runtime_env() {
 
   export SCHEMA_MODE_PORT_FORWARD_NAMESPACE="${forward_namespace}"
   export SCHEMA_MODE_PORT_FORWARD_RESOURCE="${pf_target}"
-  export SCHEMA_MODE_DB_ADMIN_USER="${SCHEMA_MODE_DB_ADMIN_USER:-postgres}"
+
+  # Set admin user based on database type:
+  # - For in-cluster PostgreSQL (Helm/Operator managed): use 'postgres' (default superuser)
+  # - For Crunchy external cluster: use 'janus-idp' (defined in postgres.yaml with SUPERUSER)
+  if [[ "${forward_via_pod}" -eq 1 ]]; then
+    # Crunchy cluster - use janus-idp user
+    export SCHEMA_MODE_DB_ADMIN_USER="${SCHEMA_MODE_DB_ADMIN_USER:-janus-idp}"
+  else
+    # In-cluster PostgreSQL - use postgres user
+    export SCHEMA_MODE_DB_ADMIN_USER="${SCHEMA_MODE_DB_ADMIN_USER:-postgres}"
+  fi
+
   export SCHEMA_MODE_DB_ADMIN_PASSWORD="${admin_password}"
   export SCHEMA_MODE_DB_PASSWORD="${SCHEMA_MODE_DB_PASSWORD:-test_password_123}"
 
