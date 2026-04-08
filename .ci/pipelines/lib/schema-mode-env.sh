@@ -102,12 +102,12 @@ configure_schema_mode_runtime_env() {
       if oc get svc postgress-external-db-primary -n "${pdb}" &> /dev/null; then
         forward_namespace="${pdb}"
         log::info "Schema-mode (helm): no in-cluster Postgres Service in ${runtime_namespace}; using Crunchy cluster in ${pdb}"
-        local crunchy_user_secret="${crunchy_cluster}-pguser-janus-idp"
-        if oc get secret "${crunchy_user_secret}" -n "${pdb}" &> /dev/null; then
-          admin_password=$(oc get secret "${crunchy_user_secret}" -n "${pdb}" -o jsonpath='{.data.password}' 2> /dev/null | base64 -d || true)
+        local crunchy_admin_secret="${crunchy_cluster}-pguser-postgres"
+        if oc get secret "${crunchy_admin_secret}" -n "${pdb}" &> /dev/null; then
+          admin_password=$(oc get secret "${crunchy_admin_secret}" -n "${pdb}" -o jsonpath='{.data.password}' 2> /dev/null | base64 -d || true)
         fi
         if [[ -z "${admin_password}" ]]; then
-          log::warn "Schema-mode (helm): could not read ${crunchy_user_secret} password in ${pdb}; schema tests remain opt-in."
+          log::warn "Schema-mode (helm): could not read ${crunchy_admin_secret} password in ${pdb}; schema tests remain opt-in."
           return 1
         fi
         postgres_service=$(oc get pods -n "${pdb}" \
@@ -140,6 +140,7 @@ configure_schema_mode_runtime_env() {
 
   export SCHEMA_MODE_PORT_FORWARD_NAMESPACE="${forward_namespace}"
   export SCHEMA_MODE_PORT_FORWARD_RESOURCE="${pf_target}"
+  export SCHEMA_MODE_DB_ADMIN_USER="${SCHEMA_MODE_DB_ADMIN_USER:-postgres}"
   export SCHEMA_MODE_DB_ADMIN_PASSWORD="${admin_password}"
   export SCHEMA_MODE_DB_PASSWORD="${SCHEMA_MODE_DB_PASSWORD:-test_password_123}"
 
