@@ -92,36 +92,42 @@ done
 PREREQ_FAILED=false
 MISSING_CMDS=""
 
-# Check required binaries (bc is used for memory comparison)
+# Check required binaries
 # Note: kubectl is needed for AKS/EKS, oc is needed for OCP
-for cmd in podman oc kubectl vault jq curl rsync bc; do
+for cmd in podman oc kubectl vault jq curl rsync; do
     if ! command -v "$cmd" &> /dev/null; then
         MISSING_CMDS="$MISSING_CMDS $cmd"
         PREREQ_FAILED=true
     fi
 done
 
-# Check if podman machine is running (macOS only).
-# On Linux, podman typically runs rootless without podman machine.
-if command -v podman &> /dev/null && [[ "$(uname -s)" == "Darwin" ]]; then
-    PODMAN_RUNNING=$(podman machine list --format '{{.Name}} {{.Running}}' 2>/dev/null | grep -w "true" | head -1 || true)
-    if [[ -z "$PODMAN_RUNNING" ]]; then
-        log::error "No podman machine is running"
-        log::info "  Run: podman machine start"
+# On macOS, podman runs inside a VM ("podman machine") that needs to be started
+# and have enough resources. On Linux, podman runs natively -- no machine needed.
+HOST_OS="$(uname -s)"
+if [[ "$HOST_OS" == "Darwin" ]] && command -v podman &> /dev/null; then
+    if ! command -v bc &> /dev/null; then
+        MISSING_CMDS="$MISSING_CMDS bc"
         PREREQ_FAILED=true
     else
-        # Warn if memory or CPUs are low
-        MACHINE_NAME=$(echo "$PODMAN_RUNNING" | awk '{print $1}')
-        MACHINE_MEM=$(podman machine list --format '{{.Name}} {{.Memory}}' | grep "^${MACHINE_NAME}" | awk '{print $2}')
-        MACHINE_CPUS=$(podman machine list --format '{{.Name}} {{.CPUs}}' | grep "^${MACHINE_NAME}" | awk '{print $2}')
-        MEM_GB=$(echo "$MACHINE_MEM" | sed 's/GiB//' | sed 's/MiB//')
-        if [[ "$MACHINE_MEM" == *"MiB"* ]] || [[ $(echo "$MEM_GB < 8" | bc -l) -eq 1 ]]; then
-            log::warn "Podman machine '$MACHINE_NAME' has only $MACHINE_MEM RAM"
-            log::info "  Recommend at least 8GB RAM and 4 CPUs for Playwright tests"
-            log::info "  Run: podman machine stop $MACHINE_NAME && podman machine set $MACHINE_NAME --memory 8192 --cpus 4 && podman machine start $MACHINE_NAME"
-        elif [[ "$MACHINE_CPUS" -lt 4 ]]; then
-            log::warn "Podman machine '$MACHINE_NAME' has only $MACHINE_CPUS CPUs"
-            log::info "  Recommend at least 8GB RAM and 4 CPUs for Playwright tests"
+        PODMAN_RUNNING=$(podman machine list --format '{{.Name}} {{.Running}}' 2>/dev/null | grep -w "true" | head -1 || true)
+        if [[ -z "$PODMAN_RUNNING" ]]; then
+            log::error "No podman machine is running"
+            log::info "  Run: podman machine start"
+            PREREQ_FAILED=true
+        else
+            # Warn if memory or CPUs are low
+            MACHINE_NAME=$(echo "$PODMAN_RUNNING" | awk '{print $1}')
+            MACHINE_MEM=$(podman machine list --format '{{.Name}} {{.Memory}}' | grep "^${MACHINE_NAME}" | awk '{print $2}')
+            MACHINE_CPUS=$(podman machine list --format '{{.Name}} {{.CPUs}}' | grep "^${MACHINE_NAME}" | awk '{print $2}')
+            MEM_GB=$(echo "$MACHINE_MEM" | sed 's/GiB//' | sed 's/MiB//')
+            if [[ "$MACHINE_MEM" == *"MiB"* ]] || [[ $(echo "$MEM_GB < 8" | bc -l) -eq 1 ]]; then
+                log::warn "Podman machine '$MACHINE_NAME' has only $MACHINE_MEM RAM"
+                log::info "  Recommend at least 8GB RAM and 4 CPUs for Playwright tests"
+                log::info "  Run: podman machine stop $MACHINE_NAME && podman machine set $MACHINE_NAME --memory 8192 --cpus 4 && podman machine start $MACHINE_NAME"
+            elif [[ "$MACHINE_CPUS" -lt 4 ]]; then
+                log::warn "Podman machine '$MACHINE_NAME' has only $MACHINE_CPUS CPUs"
+                log::info "  Recommend at least 8GB RAM and 4 CPUs for Playwright tests"
+            fi
         fi
     fi
 fi
@@ -131,9 +137,13 @@ fi
 if [[ -n "$MISSING_CMDS" ]]; then
     log::error "Missing required commands:$MISSING_CMDS"
     log::info "  Install missing tools:"
-    log::info "    brew install podman jq rsync openshift-cli kubernetes-cli"
-    log::info "    (bc is pre-installed on macOS, install via 'brew install bc' if missing)"
-    log::info "    brew tap hashicorp/tap && brew install hashicorp/tap/vault"
+    if [[ "$HOST_OS" == "Darwin" ]]; then
+        log::info "    brew install podman jq rsync openshift-cli kubernetes-cli"
+        log::info "    (bc is pre-installed on macOS, install via 'brew install bc' if missing)"
+        log::info "    brew tap hashicorp/tap && brew install hashicorp/tap/vault"
+    else
+        log::info "    Install the missing tools using your package manager"
+    fi
 fi
 
 if [[ "$PREREQ_FAILED" == "true" ]]; then
