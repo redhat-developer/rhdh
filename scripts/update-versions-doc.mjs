@@ -2,11 +2,17 @@
 
 import { writeFile } from 'fs/promises';
 
-// Check for output file argument
+// Check for required arguments
 const outputFilePath = process.argv[2];
-if (!outputFilePath) {
-  console.error('Please provide an output file path as an argument.');
-  console.error(`Usage: node ${process.argv[1]} <output-file-path>`);
+const targetBranch = process.argv[3];
+if (!outputFilePath || !targetBranch) {
+  console.error('Please provide an output file path and target branch as arguments.');
+  console.error(`Usage: node ${process.argv[1]} <output-file-path> <branch>`);
+  process.exit(1);
+}
+
+if (targetBranch !== 'main' && !targetBranch.startsWith('release-')) {
+  console.error(`Invalid branch "${targetBranch}". Expected "main" or "release-*".`);
   process.exit(1);
 }
 
@@ -149,29 +155,13 @@ async function writeToFile(filePath, content) {
 }
 
 async function main() {
-
-  const allBranches = await listBranchNames(repository);
-
-  // only release branches and not in skipBranches
-  const releaseBranches = allBranches
-    .filter((branch) => branch.startsWith('release-'))
-    .filter((branch) => !skipBranches.includes(branch))
-
-
-  // sort the branches by the number after release- in descending order
-  releaseBranches.sort((a, b) => {
-    const aNum = parseFloat(a.split('-')[1]);
-    const bNum = parseFloat(b.split('-')[1]);
-    return bNum - aNum;
-  });
-
-  // limit to 4 latest branches
-  if (releaseBranches.length > 4) {
-    releaseBranches.length = 4;
+  if (targetBranch.startsWith('release-') && skipBranches.includes(targetBranch)) {
+    console.error(`Branch "${targetBranch}" is intentionally skipped.`);
+    process.exit(0);
   }
-  
-  // add main branch as first in the list as we want to document version for pre-release
-  releaseBranches.unshift("main")
+
+  // Generate docs only for the branch passed in from workflow.
+  const releaseBranches = [targetBranch];
 
   console.log(`Release branches found: ${releaseBranches.join(", ")}`);
 

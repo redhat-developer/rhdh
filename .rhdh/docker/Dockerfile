@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1770626511@sha256:b7c468c6cafa40380bf6cd8c89ad2f94ad4c85e47e2fa6e2e4a33d0c5d0c8ef7 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1774935123@sha256:fa15e6e14cdd3378f6c301457ea1c4ec3b7080aa41e9a0232e07ed8a4f433f44 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -232,7 +232,7 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1770309067@sha256:449f3e1b0a9c1ef766777ca84ea89bcc040a96d5f6d456c3a9acdd558dfc2b4f AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1774226014@sha256:70b52265ba3836ee702ab4ad0f478ae8d1f8bf2a1b5bbd2e9d0803a19f26252a AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -260,6 +260,10 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
   popd >/dev/null; \
   rm -fr python/; \
   microdnf clean all
+
+# RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
+# For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
+COPY $EXTERNAL_SOURCE_NESTED/docker/policy.json /etc/containers/policy.json
 
 # Upstream only - copy from cleanup stage
 # COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./

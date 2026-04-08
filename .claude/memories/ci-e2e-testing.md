@@ -83,7 +83,7 @@ test.beforeAll(async ({ }, testInfo) => {
 
    **Note**: All project names are defined in `e2e-tests/playwright/projects.json` as the single source of truth. This file is consumed by:
    - `playwright.config.ts` via TypeScript import (`e2e-tests/playwright/projects.ts`)
-   - CI/CD scripts via `.ibm/pipelines/playwright-projects.sh` (exports as `$PW_PROJECT_*` variables)
+   - CI/CD scripts via `.ci/pipelines/playwright-projects.sh` (exports as `$PW_PROJECT_*` variables)
 
 3. **Authentication Provider Tests** (`showcase-auth-providers`)
    - OIDC (Red Hat Backstage Keycloak)
@@ -114,7 +114,7 @@ test.beforeAll(async ({ }, testInfo) => {
 
 #### CI/CD Pipeline Execution
 
-In the CI/CD pipeline, tests are executed directly using Playwright's `--project` flag via the `run_tests()` function in `.ibm/pipelines/utils.sh`:
+In the CI/CD pipeline, tests are executed directly using Playwright's `--project` flag via the `run_tests()` function in `.ci/pipelines/utils.sh`:
 
 ```bash
 yarn playwright test --project="${playwright_project}"
@@ -167,7 +167,7 @@ yarn prettier:fix                  # Prettier fixing
 
 ### Environment Variables
 
-All the important environment variables are sourced in `.ibm/pipelines/env_variables.sh`
+All the important environment variables are sourced in `.ci/pipelines/env_variables.sh`
 Most of them are populated by secrets from the Vault.
 
 ⚠️ Important Notice
@@ -203,7 +203,7 @@ The `showcase-auth-providers` project has several significant differences from o
 - **showcase-auth-providers**: Uses TypeScript for configuration and deployment management
 - **Configuration Files**: Uses different configuration files compared to other showcase projects:
   - `e2e-tests/playwright/e2e/auth-providers/` directory structure with TypeScript test files
-  - Dedicated values file: `.ibm/pipelines/value_files/values_showcase-auth-providers.yaml`
+  - Dedicated values file: `.ci/pipelines/value_files/values_showcase-auth-providers.yaml`
   - TypeScript-based test configuration instead of Bash scripts
   - Dynamic RHDH instance management (create, update, restart, delete)
 
@@ -238,7 +238,7 @@ These differences make `showcase-auth-providers` a specialized testing environme
 
 The RHDH CI/CD pipeline uses **OpenShift CI** with **Prow-based** automation and **ephemeral clusters** for testing.
 
-Check the readme at `.ibm/pipelines/README.md`
+Check the readme at `.ci/pipelines/README.md`
 
 #### Key Components
 
@@ -268,7 +268,7 @@ Available cluster pools for different OCP versions:
   - Usage: OCP v4.16 nightly jobs
   - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-16-0-amd64-aws-us-east-2_clusterpool.yaml)
 
-**Note:** This is subject to change. Use `.ibm/pipelines/README.md` as a source of truth.
+**Note:** This is subject to change. Use `.ci/pipelines/README.md` as a source of truth.
 
 ### CI Job Types
 
@@ -289,27 +289,27 @@ Available cluster pools for different OCP versions:
 Tests are run directly using Playwright Test with Node.js 22 and Yarn 3.8.7 as specified in the technology stack above.
 
 #### CI/CD Pipeline Execution
-For CI/CD pipeline execution, tests run in a containerized environment using the image `.ibm/images/Dockerfile`. This image is based on `mcr.microsoft.com/playwright` and uses Ubuntu as the base operating system.
+For CI/CD pipeline execution, tests run in a containerized environment using the image `.ci/images/Dockerfile`. This image is based on `mcr.microsoft.com/playwright` and uses Ubuntu as the base operating system.
 
 **Note**: Any additional system dependencies required for testing must be installed in this Docker image to ensure CI/CD pipeline compatibility.
 
 #### Alternative Execution Methods
-**Podman Usage**: If you need to prepare the environment or run tests close to how CI/CD pipeline runs them, you can use Podman to run the `.ibm/pipelines/openshift-ci-tests.sh` script inside the Docker image.
+**Podman Usage**: If you need to prepare the environment or run tests close to how CI/CD pipeline runs them, you can use Podman to run the `.ci/pipelines/openshift-ci-tests.sh` script inside the Docker image.
 
 **RHEL/Fedora Systems**: On Playwright unsupported systems such as RHEL or Fedora, running tests inside the containerized environment using Podman is the recommended approach to avoid compatibility issues.
 
 ### Key CI Scripts
 
 #### Main Orchestration
-- **`.ibm/pipelines/openshift-ci-tests.sh`**: Main test orchestration script
-- **`.ibm/pipelines/utils.sh`**: Utility functions
-- **`.ibm/pipelines/reporting.sh`**: Reporting and notifications
-- **`.ibm/pipelines/env_variables.sh`**: Environment variable management
-- **`.ibm/pipelines/playwright-projects.sh`**: Loads Playwright project names from `projects.json` as `$PW_PROJECT_*` variables
+- **`.ci/pipelines/openshift-ci-tests.sh`**: Main test orchestration script
+- **`.ci/pipelines/utils.sh`**: Utility functions
+- **`.ci/pipelines/reporting.sh`**: Reporting and notifications
+- **`.ci/pipelines/env_variables.sh`**: Environment variable management
+- **`.ci/pipelines/playwright-projects.sh`**: Loads Playwright project names from `projects.json` as `$PW_PROJECT_*` variables
 
 #### CI Infrastructure Package Configuration
 
-The `.ibm/package.json` file defines the CI infrastructure package configuration and development tools:
+The `.ci/package.json` file defines the CI infrastructure package configuration and development tools:
 
 **Available Scripts:**
 ```bash
@@ -319,15 +319,15 @@ yarn prettier:check          # Check formatting for shell, markdown, and YAML fi
 yarn prettier:fix            # Fix formatting for shell, markdown, and YAML files
 ```
 
-⚠️ **Important**: Before using any of these scripts, you must first run `yarn install` in the `.ibm` folder to install the required dependencies (prettier, prettier-plugin-sh, shellcheck).
+⚠️ **Important**: Before using any of these scripts, you must first run `yarn install` in the `.ci` folder to install the required dependencies (prettier, prettier-plugin-sh, shellcheck).
 
 **Purpose**: This package provides essential tooling for maintaining code quality in the CI infrastructure, ensuring consistent formatting and shell script best practices across the pipeline scripts.
 
 #### Shell Script Conventions
 
-**Shell scripts in `.ibm/` folder:**
+**Shell scripts in `.ci/` folder:**
 - **Never use** `set pipefail` or `set -o pipefail`
-- Only `.ibm/pipelines/openshift-ci-tests.sh` defines global `set` options; other scripts inherit them
+- Only `.ci/pipelines/openshift-ci-tests.sh` defines global `set` options; other scripts inherit them
 - Functions may temporarily disable/re-enable error handling with `set +e` / `set -e` pattern
 
 #### Job Handlers
@@ -344,7 +344,7 @@ The main script handles different job types:
 
 The `showcase-auth-providers` project has a unique deployment workflow that differs significantly from other showcase projects:
 
-**Handler**: `handle_auth_providers()` function in `.ibm/pipelines/jobs/auth-providers.sh`
+**Handler**: `handle_auth_providers()` function in `.ci/pipelines/jobs/auth-providers.sh`
 **Configuration**: Uses dedicated values file `values_showcase-auth-providers.yaml` with auth provider-specific settings
 **Test Execution**: Runs TypeScript-based tests from `e2e-tests/playwright/e2e/auth-providers/` directory
 
@@ -353,7 +353,7 @@ The `showcase-auth-providers` project has a unique deployment workflow that diff
 #### Cluster Access
 For cluster pool admins, use the login script:
 ```bash
-.ibm/pipelines/ocp-cluster-claim-login.sh
+.ci/pipelines/ocp-cluster-claim-login.sh
 ```
 
 #### Debugging Process
@@ -450,14 +450,14 @@ brew install gnu-sed
 - [E2E Testing CI Documentation](docs/e2e-tests/CI.md)
 - [Dynamic Plugins Documentation](docs/dynamic-plugins/index.md)
 - [Authentication Providers README](e2e-tests/playwright/e2e/auth-providers/README.md)
-- [OpenShift CI Pipeline README](.ibm/pipelines/README.md)
+- [OpenShift CI Pipeline README](.ci/pipelines/README.md)
 
 ### Configuration Files
 - [Playwright Project Names (Single Source of Truth)](e2e-tests/playwright/projects.json)
 - [Playwright Configuration](e2e-tests/playwright.config.ts)
 - [Package Configuration](e2e-tests/package.json)
 - [Dynamic Plugins Config](dynamic-plugins/package.json)
-- [CI Test Script](.ibm/pipelines/openshift-ci-tests.sh)
+- [CI Test Script](.ci/pipelines/openshift-ci-tests.sh)
 
 ### External Resources
 - [OpenShift CI Documentation](https://docs.ci.openshift.org/)
@@ -467,16 +467,16 @@ brew install gnu-sed
 - [Dynamic Plugins Guide](https://github.com/backstage/backstage/tree/master/packages/backend-dynamic-feature-service)
 
 ### Key Scripts and Tools
-- [Cluster Login Script](.ibm/pipelines/ocp-cluster-claim-login.sh)
-- [Test Reporting Script](.ibm/pipelines/reporting.sh)
-- [Environment Variables](.ibm/pipelines/env_variables.sh)
+- [Cluster Login Script](.ci/pipelines/ocp-cluster-claim-login.sh)
+- [Test Reporting Script](.ci/pipelines/reporting.sh)
+- [Environment Variables](.ci/pipelines/env_variables.sh)
 - [Dynamic Plugin Installer](docker/install-dynamic-plugins.py)
 
 ## Test Configuration Files (Config Maps)
 
 ### Overview
 
-The RHDH e2e testing infrastructure uses two main configuration files located in `.ibm/pipelines/resources/config_map/`:
+The RHDH e2e testing infrastructure uses two main configuration files located in `.ci/pipelines/resources/config_map/`:
 
 1. **`app-config-rhdh.yaml`** - Non-RBAC configuration
 2. **`app-config-rhdh-rbac.yaml`** - RBAC-enabled configuration

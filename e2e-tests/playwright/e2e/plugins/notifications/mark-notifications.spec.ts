@@ -38,7 +38,7 @@ test.describe("Mark notification tests", () => {
     await notificationPage.markNotificationAsRead(`${notificationTitle}-${r}`);
     await notificationPage.viewRead();
     await notificationPage.notificationContains(
-      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
+      RegExp(`${notificationTitle}-${r}.*(?:a few seconds ago|a minute ago)`),
     );
   });
 
@@ -64,12 +64,12 @@ test.describe("Mark notification tests", () => {
     await notificationPage.markNotificationAsRead(`${notificationTitle}-${r}`);
     await notificationPage.viewRead();
     await notificationPage.notificationContains(
-      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
+      RegExp(`${notificationTitle}-${r}.*(?:a few seconds ago|a minute ago)`),
     );
     await notificationPage.markLastNotificationAsUnRead();
     await notificationPage.viewUnRead();
     await notificationPage.notificationContains(
-      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
+      RegExp(`${notificationTitle}-${r}.*(?:a few seconds ago|a minute ago)`),
     );
   });
 
@@ -91,11 +91,13 @@ test.describe("Mark notification tests", () => {
     };
     await notificationsApi.createNotification(notification);
     await notificationPage.clickNotificationsNavBarItem();
+    // Wait for the new notification to appear before selecting it
+    await notificationPage.notificationContains(`${notificationTitle}-${r}`);
     await notificationPage.selectNotification();
     await notificationPage.saveSelected();
     await notificationPage.viewSaved();
     await notificationPage.notificationContains(
-      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
+      RegExp(`${notificationTitle}-${r}.*(?:a few seconds ago|a minute ago)`),
     );
   });
 });

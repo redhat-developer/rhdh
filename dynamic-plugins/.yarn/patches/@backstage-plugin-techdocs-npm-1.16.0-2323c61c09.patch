@@ -1,0 +1,13 @@
+diff --git a/config.d.ts b/config.d.ts
+index 7294f52816a0280525d525d304daeeeb9aa21684..8edab641761b19d15f8bdb42788523311ab2320a 100644
+--- a/config.d.ts
++++ b/config.d.ts
+@@ -67,7 +67,7 @@ export interface Config {
+        *  @see: https://raw.githubusercontent.com/cure53/DOMPurify/master/src/regexp.ts
+        * @visibility frontend
+        */
+-      additionalAllowedURIProtocols?: string;
++      additionalAllowedURIProtocols?: string[];
+     };
+   };
+ }

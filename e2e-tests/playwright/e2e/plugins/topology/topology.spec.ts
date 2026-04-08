@@ -32,18 +32,17 @@ test.describe("Test Topology Plugin", () => {
     return hasIngresses ? "ingress" : "route";
   }
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2101
-  test.fixme("Verify pods visibility in the Topology tab", async ({
+  test("Verify pods visibility in the Topology tab", async ({
     page,
   }, testInfo) => {
     // progressively increase test timeout for retries
     test.setTimeout(150000 + testInfo.retry * 30000);
+    const topologyTestLocator = page.locator(`[data-test-id="topology-test"]`);
     await catalog.goToBackstageJanusProject();
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
     await page.getByRole("button", { name: "Fit to Screen" }).click();
-    await page
-      .getByTestId("topology-test")
+    await topologyTestLocator
       .getByTestId(/(status-error|status-ok)/)
       .first()
       .click();
@@ -53,7 +52,6 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.verifyDivHasText(/\d+ (Succeeded|Failed|Cancelled|Running)/);
     await topology.verifyDeployment("topology-test");
     // Use Locator object for better reusability and type safety
-    const topologyTestLocator = page.getByTestId("topology-test");
     await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
       locator: topologyTestLocator,
     });
@@ -96,15 +94,13 @@ test.describe("Test Topology Plugin", () => {
     );
     await uiHelper.clickTab("Resources");
     await uiHelper.verifyText("P");
-    await expect(page.getByTestId("icon-with-title-Running")).toBeVisible();
-    await expect(
-      page.getByTestId("icon-with-title-Running").getByRole("img", {
-        includeHidden: true,
-      }),
-    ).toBeVisible();
-    await expect(
-      page.getByTestId("icon-with-title-Running").getByTestId("status-text"),
-    ).toHaveText("Running");
+
+    const podStatus = page
+      .getByTestId("pod-list")
+      .locator(`[data-test="resource-status"]`);
+    await expect(podStatus).toBeVisible();
+    await expect(podStatus.getByTestId("status-running")).toBeVisible();
+    await expect(podStatus).toHaveText("Running");
     await uiHelper.verifyHeading("PipelineRuns");
     await uiHelper.verifyText("PL");
     await uiHelper.verifyText("PLR");
