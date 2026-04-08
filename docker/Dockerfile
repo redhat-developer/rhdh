@@ -160,7 +160,7 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
   /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
   /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
   /opt/techdocs-venv/bin/mkdocs --version && \
-  rm -rf python/ && \
+  rm -rf python/ /opt/techdocs-venv/bin/pip && \
   dnf clean all
 
 # Stage 4 - Build the actual backend image and install production dependencies
