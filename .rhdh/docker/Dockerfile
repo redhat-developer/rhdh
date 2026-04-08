@@ -260,17 +260,16 @@ RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
   microdnf clean all
 
+# RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
+# For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
+COPY $EXTERNAL_SOURCE_NESTED/docker/policy.json /etc/containers/policy.json
+
 # Upstream only - copy from cleanup stage
 # COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
 # Downstream only - copy from build, not cleanup stage
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
 ENV PATH="/opt/techdocs-venv/bin:${PATH}"
-
-# Upstream only - copy from cleanup stage
-# COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
-# Downstream only - copy from build, not cleanup stage
-COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
