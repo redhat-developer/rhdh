@@ -11,7 +11,7 @@ source "$SCRIPT_DIR/../.ci/pipelines/lib/log.sh"
 
 # ========== CLI Flags ==========
 show_help() {
-  cat <<EOF
+  cat << EOF
 Usage: ./local-run.sh [OPTIONS]
 
 Run RHDH e2e tests locally against a Kubernetes cluster (OCP, AKS, EKS, GKE).
@@ -52,39 +52,39 @@ EOF
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-  -j | --job)
-    CLI_JOB_NAME="$2"
-    shift 2
-    ;;
-  -R | --registry)
-    CLI_IMAGE_REGISTRY="$2"
-    shift 2
-    ;;
-  -r | --repo)
-    CLI_IMAGE_REPO="$2"
-    shift 2
-    ;;
-  -t | --tag)
-    CLI_TAG_NAME="$2"
-    shift 2
-    ;;
-  -p | --pr)
-    CLI_IMAGE_REPO="rhdh-community/rhdh"
-    CLI_TAG_NAME="pr-$2"
-    shift 2
-    ;;
-  -s | --skip-tests)
-    CLI_SKIP_TESTS="true"
-    shift
-    ;;
-  -h | --help)
-    show_help
-    ;;
-  *)
-    log::error "Unknown option: $1"
-    echo "Use --help for usage information"
-    exit 1
-    ;;
+    -j | --job)
+      CLI_JOB_NAME="$2"
+      shift 2
+      ;;
+    -R | --registry)
+      CLI_IMAGE_REGISTRY="$2"
+      shift 2
+      ;;
+    -r | --repo)
+      CLI_IMAGE_REPO="$2"
+      shift 2
+      ;;
+    -t | --tag)
+      CLI_TAG_NAME="$2"
+      shift 2
+      ;;
+    -p | --pr)
+      CLI_IMAGE_REPO="rhdh-community/rhdh"
+      CLI_TAG_NAME="pr-$2"
+      shift 2
+      ;;
+    -s | --skip-tests)
+      CLI_SKIP_TESTS="true"
+      shift
+      ;;
+    -h | --help)
+      show_help
+      ;;
+    *)
+      log::error "Unknown option: $1"
+      echo "Use --help for usage information"
+      exit 1
+      ;;
   esac
 done
 
@@ -95,7 +95,7 @@ MISSING_CMDS=""
 # Check required binaries
 # Note: kubectl is needed for AKS/EKS, oc is needed for OCP
 for cmd in podman oc kubectl vault jq curl rsync; do
-  if ! command -v "$cmd" &>/dev/null; then
+  if ! command -v "$cmd" &> /dev/null; then
     MISSING_CMDS="$MISSING_CMDS $cmd"
     PREREQ_FAILED=true
   fi
@@ -104,12 +104,12 @@ done
 # On macOS, podman runs inside a VM ("podman machine") that needs to be started
 # and have enough resources. On Linux, podman runs natively -- no machine needed.
 HOST_OS="$(uname -s)"
-if [[ "$HOST_OS" == "Darwin" ]] && command -v podman &>/dev/null; then
-  if ! command -v bc &>/dev/null; then
+if [[ "$HOST_OS" == "Darwin" ]] && command -v podman &> /dev/null; then
+  if ! command -v bc &> /dev/null; then
     MISSING_CMDS="$MISSING_CMDS bc"
     PREREQ_FAILED=true
   else
-    PODMAN_RUNNING=$(podman machine list --format '{{.Name}} {{.Running}}' 2>/dev/null | grep -w "true" | head -1 || true)
+    PODMAN_RUNNING=$(podman machine list --format '{{.Name}} {{.Running}}' 2> /dev/null | grep -w "true" | head -1 || true)
     if [[ -z "$PODMAN_RUNNING" ]]; then
       log::error "No podman machine is running"
       log::info "  Run: podman machine start"
@@ -196,9 +196,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   run_choice=${run_choice:-1}
 
   case "$run_choice" in
-  1) SKIP_TESTS="true" ;;
-  2) SKIP_TESTS="false" ;;
-  *) SKIP_TESTS="true" ;;
+    1) SKIP_TESTS="true" ;;
+    2) SKIP_TESTS="false" ;;
+    *) SKIP_TESTS="true" ;;
   esac
   echo ""
 
@@ -218,18 +218,18 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   job_choice=${job_choice:-1}
 
   case "$job_choice" in
-  1) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;
-  2) JOB_NAME="periodic-ci-ocp-helm-nightly" ;;
-  3) JOB_NAME="periodic-ci-ocp-operator-nightly" ;;
-  4) JOB_NAME="periodic-ci-ocp-helm-upgrade-nightly" ;;
-  5) JOB_NAME="periodic-ci-ocp-operator-auth-providers-nightly" ;;
-  6) JOB_NAME="periodic-ci-aks-helm-nightly" ;;
-  7) JOB_NAME="periodic-ci-eks-helm-nightly" ;;
-  8) JOB_NAME="periodic-ci-gke-helm-nightly" ;;
-  9)
-    read -r -p "Enter custom JOB_NAME: " JOB_NAME
-    ;;
-  *) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;
+    1) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;
+    2) JOB_NAME="periodic-ci-ocp-helm-nightly" ;;
+    3) JOB_NAME="periodic-ci-ocp-operator-nightly" ;;
+    4) JOB_NAME="periodic-ci-ocp-helm-upgrade-nightly" ;;
+    5) JOB_NAME="periodic-ci-ocp-operator-auth-providers-nightly" ;;
+    6) JOB_NAME="periodic-ci-aks-helm-nightly" ;;
+    7) JOB_NAME="periodic-ci-eks-helm-nightly" ;;
+    8) JOB_NAME="periodic-ci-gke-helm-nightly" ;;
+    9)
+      read -r -p "Enter custom JOB_NAME: " JOB_NAME
+      ;;
+    *) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;
   esac
   echo "JOB_NAME: $JOB_NAME"
   echo ""
@@ -245,55 +245,55 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   image_type_choice=${image_type_choice:-1}
 
   case "$image_type_choice" in
-  1)
-    # Downstream image
-    IMAGE_REGISTRY="quay.io"
-    IMAGE_REPO="rhdh/rhdh-hub-rhel9"
-    echo ""
-    echo "Select image tag (quay.io/rhdh/rhdh-hub-rhel9):"
-    echo "  1) next (latest development build)"
-    echo "  2) latest (latest stable release)"
-    echo "  3) Release-specific tag (e.g., 1.5, 1.4)"
-    echo ""
-    read -r -p "Enter choice [1]: " tag_choice
-    tag_choice=${tag_choice:-1}
+    1)
+      # Downstream image
+      IMAGE_REGISTRY="quay.io"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel9"
+      echo ""
+      echo "Select image tag (quay.io/rhdh/rhdh-hub-rhel9):"
+      echo "  1) next (latest development build)"
+      echo "  2) latest (latest stable release)"
+      echo "  3) Release-specific tag (e.g., 1.5, 1.4)"
+      echo ""
+      read -r -p "Enter choice [1]: " tag_choice
+      tag_choice=${tag_choice:-1}
 
-    case "$tag_choice" in
-    1) TAG_NAME="next" ;;
-    2) TAG_NAME="latest" ;;
-    3)
-      read -r -p "Enter release tag (e.g., 1.5): " TAG_NAME
+      case "$tag_choice" in
+        1) TAG_NAME="next" ;;
+        2) TAG_NAME="latest" ;;
+        3)
+          read -r -p "Enter release tag (e.g., 1.5): " TAG_NAME
+          ;;
+        *) TAG_NAME="next" ;;
+      esac
       ;;
-    *) TAG_NAME="next" ;;
-    esac
-    ;;
-  2)
-    # PR image
-    IMAGE_REGISTRY="quay.io"
-    IMAGE_REPO="rhdh-community/rhdh"
-    echo ""
-    read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
-    TAG_NAME="pr-${PR_NUMBER}"
-    ;;
-  3)
-    # Released image
-    IMAGE_REGISTRY="registry.redhat.io"
-    IMAGE_REPO="rhdh/rhdh-hub-rhel9"
-    echo ""
-    read -r -p "Enter version tag (e.g., 1.5, 1.4): " TAG_NAME
-    ;;
-  4)
-    # Custom registry image
-    echo ""
-    read -r -p "Enter image registry (e.g., registry.example.com): " IMAGE_REGISTRY
-    read -r -p "Enter image repository (e.g., rhdh/rhdh-hub-rhel9): " IMAGE_REPO
-    read -r -p "Enter image tag (e.g., 1.5): " TAG_NAME
-    ;;
-  *)
-    IMAGE_REGISTRY="quay.io"
-    IMAGE_REPO="rhdh/rhdh-hub-rhel9"
-    TAG_NAME="next"
-    ;;
+    2)
+      # PR image
+      IMAGE_REGISTRY="quay.io"
+      IMAGE_REPO="rhdh-community/rhdh"
+      echo ""
+      read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
+      TAG_NAME="pr-${PR_NUMBER}"
+      ;;
+    3)
+      # Released image
+      IMAGE_REGISTRY="registry.redhat.io"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel9"
+      echo ""
+      read -r -p "Enter version tag (e.g., 1.5, 1.4): " TAG_NAME
+      ;;
+    4)
+      # Custom registry image
+      echo ""
+      read -r -p "Enter image registry (e.g., registry.example.com): " IMAGE_REGISTRY
+      read -r -p "Enter image repository (e.g., rhdh/rhdh-hub-rhel9): " IMAGE_REPO
+      read -r -p "Enter image tag (e.g., 1.5): " TAG_NAME
+      ;;
+    *)
+      IMAGE_REGISTRY="quay.io"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel9"
+      TAG_NAME="next"
+      ;;
   esac
   echo ""
   echo "Image: ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
@@ -301,7 +301,7 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
 
   # Save configuration for next run
   mkdir -p "$(dirname "$RUN_CONFIG_FILE")"
-  cat >"$RUN_CONFIG_FILE" <<EOF
+  cat > "$RUN_CONFIG_FILE" << EOF
 # Auto-generated by local-run.sh
 # Generated at: $(date)
 JOB_NAME="$JOB_NAME"
@@ -379,19 +379,19 @@ SA_BINDING_NAME="${SA_NAME}-binding"
 # Check cluster connectivity and create service account token based on platform
 if [[ "$CONTAINER_PLATFORM" == "ocp" || "$CONTAINER_PLATFORM" == "osd-gcp" ]]; then
   # OpenShift platforms - use oc commands
-  if ! oc cluster-info &>/dev/null; then
+  if ! oc cluster-info &> /dev/null; then
     log::error "Not logged into OpenShift cluster"
     log::info "  Run: oc login <cluster-url>"
     exit 1
   fi
   K8S_CLUSTER_URL=$(oc whoami --show-server)
-  oc create namespace "$SA_NAMESPACE" 2>/dev/null || log::info "Namespace already exists"
-  oc create serviceaccount "$SA_NAME" -n "$SA_NAMESPACE" 2>/dev/null || log::info "Service account already exists"
-  oc adm policy add-cluster-role-to-user cluster-admin "system:serviceaccount:${SA_NAMESPACE}:${SA_NAME}" 2>/dev/null || true
+  oc create namespace "$SA_NAMESPACE" 2> /dev/null || log::info "Namespace already exists"
+  oc create serviceaccount "$SA_NAME" -n "$SA_NAMESPACE" 2> /dev/null || log::info "Service account already exists"
+  oc adm policy add-cluster-role-to-user cluster-admin "system:serviceaccount:${SA_NAMESPACE}:${SA_NAME}" 2> /dev/null || true
   K8S_CLUSTER_TOKEN=$(oc create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
 else
   # Non-OpenShift platforms (AKS, EKS, GKE) - use kubectl commands
-  if ! kubectl cluster-info &>/dev/null; then
+  if ! kubectl cluster-info &> /dev/null; then
     log::error "Cannot connect to Kubernetes cluster"
     log::info "  Ensure your kubeconfig is set correctly"
     log::info "  Run: kubectl cluster-info"
@@ -400,9 +400,9 @@ else
   K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
 
   # Create service account and acquire a short-lived token via TokenRequest API
-  if ! kubectl get serviceaccount ${SA_NAME} -n ${SA_NAMESPACE} &>/dev/null; then
+  if ! kubectl get serviceaccount ${SA_NAME} -n ${SA_NAMESPACE} &> /dev/null; then
     log::info "Creating namespace ${SA_NAMESPACE}..."
-    kubectl create namespace "$SA_NAMESPACE" 2>/dev/null || log::info "Namespace already exists"
+    kubectl create namespace "$SA_NAMESPACE" 2> /dev/null || log::info "Namespace already exists"
     log::info "Creating service account ${SA_NAME}..."
     kubectl create serviceaccount ${SA_NAME} -n ${SA_NAMESPACE}
     log::info "Creating cluster role binding..."
