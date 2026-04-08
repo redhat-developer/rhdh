@@ -43,7 +43,7 @@ export class BulkImport {
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(repoName));
     const checkbox = row.getByRole("checkbox");
     await checkbox.scrollIntoViewIfNeeded();
-    await checkbox.click();
+    await checkbox.check({ force: true });
     await expect(checkbox).toBeChecked();
   }
 

@@ -117,6 +117,10 @@ export default class RhdhRbacApi {
     return await this.myContext.delete(`roles/conditions/${id}`);
   }
 
+  public async dispose(): Promise<void> {
+    await this.myContext.dispose();
+  }
+
   private checkRoleFormat(role: string) {
     if (!this.roleRegex.test(role))
       throw Error(

@@ -48,8 +48,7 @@ test.describe("Test RBAC", () => {
       expect(await page.title()).toContain("RBAC");
     });
 
-    // FIXME: Permission policies from CSV are not loaded for the role (heading shows "Permission Policies" with "No records found" instead of "3 Permissions")
-    test.fixme("Check if permission policies defined in files are loaded", async ({
+    test("Check if permission policies defined in files are loaded", async ({
       page,
     }) => {
       const uiHelper = new UIhelper(page);
@@ -67,7 +66,7 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyText("csv permission policy file");
 
       await uiHelper.verifyHeading("1 group");
-      await uiHelper.verifyHeading("3 Permissions");
+      await uiHelper.verifyHeading("Permission Policies");
       const permissionPoliciesColumnsText =
         Roles.getPermissionPoliciesListColumnsText();
       await uiHelper.verifyColumnHeading(permissionPoliciesColumnsText);
@@ -103,8 +102,7 @@ test.describe("Test RBAC", () => {
       );
     });
 
-    // FIXME: Catalog entities not visible — RBAC conditional policies from CSV not loaded, user cannot see components
-    test.fixme("Check if aliases used in conditions: the user is allowed to unregister only components they own, not those owned by the group.", async ({
+    test("Check if aliases used in conditions: the user is allowed to unregister only components they own, not those owned by the group.", async ({
       page,
     }) => {
       const uiHelper = new UIhelper(page);
@@ -151,8 +149,7 @@ test.describe("Test RBAC", () => {
 
   test.describe
     .serial("Test RBAC plugin: $ownerRefs alias used in conditional access policies with includeTransitiveGroupOwnership", () => {
-    // FIXME: Catalog entities not visible — RBAC conditional policies from CSV not loaded, user cannot see components
-    test.fixme("Check if user is allowed to read component owned by transitive parent group.", async ({
+    test("Check if user is allowed to read component owned by transitive parent group.", async ({
       page,
     }) => {
       // login as rhdh-qe-3: belongs in rhdh-qe-child-team, which is a sub group of rhdh-qe-parent-team
@@ -191,8 +188,7 @@ test.describe("Test RBAC", () => {
       ).toBeVisible();
     });
 
-    // FIXME: Catalog entities not visible — RBAC conditional policies from CSV not loaded, user cannot see components
-    test.fixme("Check if user is allowed to read component owned by transitive parent group with 2 layers of hierarchy.", async ({
+    test("Check if user is allowed to read component owned by transitive parent group with 2 layers of hierarchy.", async ({
       page,
     }) => {
       // login as rhdh-qe-4: belongs in rhdh-qe-sub-child-team, which is a sub group of rhdh-qe-child-team
@@ -950,8 +946,7 @@ test.describe("Test RBAC", () => {
       ).toBeVisible();
     });
 
-    // FIXME: Catalog entities not visible — RBAC conditional policies from CSV not loaded, user cannot see components
-    test.fixme("should allow read as defined in conditional policy, basic policy should be disregarded", async ({
+    test("should allow read as defined in conditional policy, basic policy should be disregarded", async ({
       page,
     }) => {
       const common = new Common(page);
@@ -970,8 +965,7 @@ test.describe("Test RBAC", () => {
       ).toBeVisible();
     });
 
-    // FIXME: Depends on RBAC conditional policies from CSV being loaded correctly
-    test.fixme("should deny read as defined in conditional policy, basic policy should be disregarded", async ({
+    test("should deny read as defined in conditional policy, basic policy should be disregarded", async ({
       page,
     }) => {
       const common = new Common(page);
