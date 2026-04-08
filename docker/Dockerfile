@@ -152,6 +152,17 @@ RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plu
 
 WORKDIR $CONTAINER_SOURCE
 
+# Techdocs: Installing Python dependencies and building the techdocs venv.
+# Prevents duplicating the same dependencies in the final minimal image.
+# hadolint ignore=DL3013,DL3041,SC2086
+RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
+  python3.11 -m venv /opt/techdocs-venv && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
+  /opt/techdocs-venv/bin/mkdocs --version && \
+  rm -rf python/ && \
+  dnf clean all
+
 # Stage 4 - Build the actual backend image and install production dependencies
 # Upstream only
 FROM skeleton AS cleanup
@@ -209,22 +220,10 @@ ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
-# Install techdocs dependencies using requirements files
-# hadolint ignore=DL3013,DL3041,SC2086
-COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
-RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
+# Runtime Python for techdocs (venv built in build stage; mkdocs on PATH via venv)
+RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-  alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
-  # fix ownership for pip install folder
-  mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
-  # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
-  pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
-  set -e; \
-  python3.11 -V; pip3.11 -V; \
-  pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
-  pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
-  popd >/dev/null; \
-  rm -fr python/; \
+  alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
   microdnf clean all
 
 # Upstream only - copy from cleanup stage
@@ -234,6 +233,9 @@ COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
 
 # Copy embedded dynamic plugins from $CONTAINER_SOURCE
 COPY --from=build --chown=1001:1001 $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist/
+
+COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
+ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
