@@ -35,6 +35,10 @@ podman machine init --memory 8192 --cpus 4
 podman machine start
 ```
 
+#### Installing Prerequisites (Linux)
+
+Install `podman`, `oc`, `kubectl`, `vault`, `jq`, `rsync`, and `curl` using your distribution's package manager.
+
 ### Getting a Cluster
 
 You need an OpenShift cluster to run e2e tests. Here are your options:
