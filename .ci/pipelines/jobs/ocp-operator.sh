@@ -90,6 +90,9 @@ run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   namespace::configure "${NAME_SPACE_RUNTIME}"
 
+  # Create PostgreSQL namespace before configuring external database
+  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
+
   # Configure external PostgreSQL credentials and certificates for runtime namespace
   # This creates postgres-crt and postgres-cred secrets needed by rhdh-start-runtime.yaml
   configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
@@ -114,6 +117,7 @@ handle_ocp_operator() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
   export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
+  export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 
   common::oc_login
 
