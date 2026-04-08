@@ -281,7 +281,7 @@ export class LogUtils {
         plugin,
         request,
         meta,
-        error,
+        stack: error,
         status,
         severityLevel,
       };
