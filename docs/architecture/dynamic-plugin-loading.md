@@ -12,7 +12,7 @@ flowchart TB
         init["Init Container: install-dynamic-plugins<br><br>Runs: install-dynamic-plugins.sh → .py"]
         main["Main Container: backstage-backend<br><br>Reads: dynamic-plugins-root/<br>app-config.dynamic-plugins.yaml"]
         init -->|runs before| main
-        vol1["Shared Volume: dynamic-plugins-root<br>ephemeral PVC / emptyDir<br><br>• plugin-dir/ — extracted plugin files<br>• app-config.dynamic-plugins.yaml — merged config<br>• install-dynamic-plugins.lock"]
+        vol1["Shared Volume: dynamic-plugins-root<br>ephemeral PVC / emptyDir<br><br>• &lt;plugin-name&gt;/ — one directory per installed plugin<br>• app-config.dynamic-plugins.yaml — merged config<br>• install-dynamic-plugins.lock"]
         vol2["Shared Volume: extensions-catalog — emptyDir<br><br>• catalog-entities/ — from catalog index image"]
         init -.->|writes| vol1
         main -.->|reads| vol1
