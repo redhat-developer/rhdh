@@ -9,6 +9,7 @@ import { Response } from "../../../support/pages/rbac";
 import { Catalog } from "../../../support/pages/catalog";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
+import { TEST_USER } from "../../../data/rbac-constants";
 
 /**
  * Orchestrator Entity-Workflow RBAC Tests
@@ -21,10 +22,15 @@ import { JOB_NAME_PATTERNS } from "../../../utils/constants";
  * Important: These tests should run in the SHOWCASE_RBAC project since
  * they require permission.enabled: true.
  *
+ * Note on parallelism: This file and orchestrator-rbac.spec.ts both modify
+ * RBAC state for TEST_USER. While test.describe.serial ensures tests within
+ * each file run serially, the files themselves may run on different workers.
+ * Each test block uses its own OrchestratorRbacHelper instance which saves
+ * and restores only the policies it removes, mitigating cross-file interference.
+ *
  * Templates used (from catalog locations):
  * - greeting_w_component.yaml: name=greetingComponent, title="Greeting Test Picker" - HAS annotation
  */
-const testUser = "user:default/rhdh-qe";
 
 test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
@@ -44,6 +50,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     let uiHelper: UIhelper;
     let page: Page;
     let apiToken: string;
+    let orchestratorRbacHelper: OrchestratorRbacHelper;
     const roleName = "role:default/catalogSuperuserNoWorkflowTest";
 
     test.beforeAll(async ({ browser }, testInfo) => {
@@ -55,9 +62,17 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       apiToken = await RhdhAuthApiHack.getToken(page);
     });
 
+    test("Setup: Remove any pre-existing generic orchestrator.workflow permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      orchestratorRbacHelper = new OrchestratorRbacHelper(rbacApi);
+      await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
+        TEST_USER,
+      );
+    });
+
     test("Setup: Create role with catalog+scaffolder but NO orchestrator permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const role = {
         memberReferences: members,
@@ -228,7 +243,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
           await rbacApi.deleteRole(roleNameForApi);
         }
       } catch (error) {
-        console.error("Error during cleanup:", error);
+        console.error("Error during role cleanup:", error);
+      } finally {
+        try {
+          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions();
+        } catch (restoreError) {
+          console.error("Error restoring orchestrator policies:", restoreError);
+        }
       }
     });
   });
@@ -240,12 +261,8 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     let uiHelper: UIhelper;
     let page: Page;
     let apiToken: string;
+    let orchestratorRbacHelper: OrchestratorRbacHelper;
     const roleName = "role:default/catalogSuperuserWithWorkflowTest";
-
-    // Helper to manage generic orchestrator.workflow permissions
-    // These must be removed to avoid conflicts with orchestrator-rbac.spec.ts
-    // (generic allow overrides specific deny per RHDH documentation)
-    const orchestratorRbacHelper = new OrchestratorRbacHelper();
 
     test.beforeAll(async ({ browser }, testInfo) => {
       page = (await setupBrowser(browser, testInfo)).page;
@@ -258,15 +275,15 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
 
     test("Setup: Remove any pre-existing generic orchestrator.workflow permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
+      orchestratorRbacHelper = new OrchestratorRbacHelper(rbacApi);
       await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
-        rbacApi,
-        testUser,
+        TEST_USER,
       );
     });
 
     test("Setup: Create role with catalog+scaffolder+orchestrator permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const role = {
         memberReferences: members,
@@ -361,8 +378,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Launch template and run workflow - verify success", async () => {
-      // Increase timeout for this test since workflow execution can take longer than 90s
-      test.setTimeout(150000); // 2.5 minutes
+      test.setTimeout(150_000); // 2.5 minutes - workflow execution can take longer than default
 
       // Navigate to Self-service page via global header link
       await uiHelper.clickLink({ ariaLabel: "Self-service" });
@@ -427,7 +443,6 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
-        // Clean up the test role
         const roleNameForApi = roleName.replace("role:", "");
         const policiesResponse =
           await rbacApi.getPoliciesByRole(roleNameForApi);
@@ -441,11 +456,8 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       } catch (error) {
         console.error("Error during role cleanup:", error);
       } finally {
-        // Always restore generic orchestrator policies, even if role cleanup fails
         try {
-          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions(
-            rbacApi,
-          );
+          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions();
         } catch (restoreError) {
           console.error("Error restoring orchestrator policies:", restoreError);
         }

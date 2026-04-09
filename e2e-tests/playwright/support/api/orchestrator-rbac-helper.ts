@@ -1,22 +1,22 @@
 import RhdhRbacApi from "./rbac-api";
 import { Policy } from "./rbac-api-structures";
+import { Response } from "../pages/rbac";
+
+/**
+ * Generic orchestrator workflow permissions that override specific workflow deny policies.
+ * Per RHDH documentation, these must be removed before testing individual workflow denials.
+ */
+const genericWorkflowPermissions = [
+  "orchestrator.workflow",
+  "orchestrator.workflow.use",
+] as const;
 
 /**
  * Represents saved RBAC policies for a role that can be restored later.
  */
-export interface SavedRolePolicy {
+interface SavedRolePolicy {
   roleName: string;
   policies: Policy[];
-}
-
-/**
- * Represents the expected shape of a policy from the RBAC API response.
- */
-interface ApiPolicy {
-  permission: string;
-  policy: string;
-  effect: string;
-  metadata?: unknown;
 }
 
 /**
@@ -26,60 +26,34 @@ interface ApiPolicy {
  * specific workflow deny policies (per RHDH documentation). Tests that need
  * to verify individual workflow denials must first remove any generic
  * orchestrator.workflow permissions.
+ *
+ * Usage:
+ *   const helper = new OrchestratorRbacHelper(rbacApi);
+ *   await helper.removeGenericOrchestratorPermissions(userEntityRef);
+ *   // ... run tests ...
+ *   await helper.restoreGenericOrchestratorPermissions();
  */
 export class OrchestratorRbacHelper {
   private savedGenericPolicies: SavedRolePolicy[] = [];
+  private readonly rbacApi: RhdhRbacApi;
 
-  /**
-   * Validates that a policy object has the required fields.
-   */
-  private isValidPolicy(policy: unknown): policy is ApiPolicy {
-    if (typeof policy !== "object" || policy === null) return false;
-    const p = policy as Record<string, unknown>;
-    return (
-      typeof p.permission === "string" &&
-      typeof p.policy === "string" &&
-      typeof p.effect === "string"
-    );
-  }
-
-  /**
-   * Removes metadata from policy objects and validates their shape.
-   * Similar to Response.removeMetadataFromResponse pattern used elsewhere.
-   */
-  private cleanAndValidatePolicies(policies: unknown[]): ApiPolicy[] {
-    const validPolicies: ApiPolicy[] = [];
-    for (const policy of policies) {
-      if (!this.isValidPolicy(policy)) {
-        console.warn(
-          `Skipping invalid policy object: ${JSON.stringify(policy)}`,
-        );
-        continue;
-      }
-      validPolicies.push({
-        permission: policy.permission,
-        policy: policy.policy,
-        effect: policy.effect,
-      });
-    }
-    return validPolicies;
+  constructor(rbacApi: RhdhRbacApi) {
+    this.rbacApi = rbacApi;
   }
 
   /**
    * Removes any generic orchestrator.workflow permissions for the specified user.
    * Saves the removed policies so they can be restored later.
    *
-   * @param rbacApi - The RBAC API instance
    * @param userEntityRef - The user entity reference (e.g., "user:default/rhdh-qe")
    * @returns The saved policies that were removed
    */
   async removeGenericOrchestratorPermissions(
-    rbacApi: RhdhRbacApi,
     userEntityRef: string,
   ): Promise<SavedRolePolicy[]> {
     this.savedGenericPolicies = [];
 
-    const rolesResponse = await rbacApi.getRoles();
+    const rolesResponse = await this.rbacApi.getRoles();
     if (!rolesResponse.ok()) {
       throw new Error(`Failed to get roles: ${await rolesResponse.text()}`);
     }
@@ -92,23 +66,19 @@ export class OrchestratorRbacHelper {
 
     for (const role of userRoles) {
       const roleNameForApi = role.name.replace("role:", "");
-      const policiesResponse = await rbacApi.getPoliciesByRole(roleNameForApi);
+      const policiesResponse =
+        await this.rbacApi.getPoliciesByRole(roleNameForApi);
 
       if (!policiesResponse.ok()) continue;
 
-      const rawPolicies = await policiesResponse.json();
-      if (!Array.isArray(rawPolicies)) {
-        console.warn(
-          `Expected array of policies for ${role.name}, got: ${typeof rawPolicies}`,
-        );
-        continue;
-      }
+      const policies = (await Response.removeMetadataFromResponse(
+        policiesResponse,
+      )) as { permission: string; policy: string; effect: string }[];
 
-      const validPolicies = this.cleanAndValidatePolicies(rawPolicies);
-      const genericOrchestratorPolicies = validPolicies.filter(
-        (policy) =>
-          policy.permission === "orchestrator.workflow" ||
-          policy.permission === "orchestrator.workflow.use",
+      const genericOrchestratorPolicies = policies.filter((policy) =>
+        genericWorkflowPermissions.includes(
+          policy.permission as (typeof genericWorkflowPermissions)[number],
+        ),
       );
 
       if (genericOrchestratorPolicies.length > 0) {
@@ -125,7 +95,7 @@ export class OrchestratorRbacHelper {
           `Removing generic orchestrator policies from ${role.name}:`,
           policiesToDelete,
         );
-        const deleteResponse = await rbacApi.deletePolicy(
+        const deleteResponse = await this.rbacApi.deletePolicy(
           roleNameForApi,
           policiesToDelete,
         );
@@ -136,7 +106,6 @@ export class OrchestratorRbacHelper {
           );
         }
 
-        // Only save policies after successful deletion
         this.savedGenericPolicies.push({
           roleName: roleNameForApi,
           policies: policiesToDelete,
@@ -155,12 +124,9 @@ export class OrchestratorRbacHelper {
    * Restores any generic orchestrator.workflow permissions that were previously removed.
    * Throws an error if restoration fails to ensure test environment integrity.
    *
-   * @param rbacApi - The RBAC API instance
    * @throws Error if any policy restoration fails
    */
-  async restoreGenericOrchestratorPermissions(
-    rbacApi: RhdhRbacApi,
-  ): Promise<void> {
+  async restoreGenericOrchestratorPermissions(): Promise<void> {
     const errors: string[] = [];
 
     for (const saved of this.savedGenericPolicies) {
@@ -168,7 +134,7 @@ export class OrchestratorRbacHelper {
         `Restoring generic orchestrator policies to ${saved.roleName}:`,
         saved.policies,
       );
-      const restoreResponse = await rbacApi.createPolicies(saved.policies);
+      const restoreResponse = await this.rbacApi.createPolicies(saved.policies);
       if (!restoreResponse.ok()) {
         const errorText = await restoreResponse.text();
         errors.push(
@@ -177,7 +143,6 @@ export class OrchestratorRbacHelper {
       }
     }
 
-    // Reset state after restoration attempt
     this.savedGenericPolicies = [];
 
     if (errors.length > 0) {
@@ -185,12 +150,5 @@ export class OrchestratorRbacHelper {
         `Policy restoration failed. Environment may be in inconsistent state:\n${errors.join("\n")}`,
       );
     }
-  }
-
-  /**
-   * Gets the saved policies (useful for debugging or verification).
-   */
-  getSavedPolicies(): SavedRolePolicy[] {
-    return this.savedGenericPolicies;
   }
 }

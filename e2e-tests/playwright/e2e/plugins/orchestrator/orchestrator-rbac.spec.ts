@@ -9,9 +9,7 @@ import { OrchestratorRbacHelper } from "../../../support/api/orchestrator-rbac-h
 import { Response } from "../../../support/pages/rbac";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
-
-const testUser = "user:default/rhdh-qe";
-const testUser2 = "user:default/rhdh-qe-2";
+import { TEST_USER, TEST_USER_2 } from "../../../data/rbac-constants";
 
 test.describe.serial("Test Orchestrator RBAC", () => {
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
@@ -49,7 +47,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with global orchestrator.workflow read and update permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const orchestratorRole = {
         memberReferences: members,
@@ -91,7 +89,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowReadwrite",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain(testUser);
+      expect(workflowRole?.memberReferences).toContain(TEST_USER);
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowReadwrite",
@@ -195,7 +193,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with global orchestrator.workflow read-only permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const orchestratorReadonlyRole = {
         memberReferences: members,
@@ -240,7 +238,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowReadonly",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain(testUser);
+      expect(workflowRole?.memberReferences).toContain(TEST_USER);
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowReadonly",
@@ -352,7 +350,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with global orchestrator.workflow denied permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const orchestratorDeniedRole = {
         memberReferences: members,
@@ -397,7 +395,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowDenied",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain(testUser);
+      expect(workflowRole?.memberReferences).toContain(TEST_USER);
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowDenied",
@@ -473,11 +471,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let uiHelper: UIhelper;
     let page: Page;
     let apiToken: string;
-
-    // Helper to manage generic orchestrator.workflow permissions
-    // These must be removed for the individual deny test to work correctly
-    // (generic allow overrides specific deny per RHDH documentation)
-    const orchestratorRbacHelper = new OrchestratorRbacHelper();
+    let orchestratorRbacHelper: OrchestratorRbacHelper;
 
     test.beforeAll(async ({ browser }, testInfo) => {
       page = (await setupBrowser(browser, testInfo)).page;
@@ -497,15 +491,15 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Remove any generic orchestrator.workflow permissions for test user", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
+      orchestratorRbacHelper = new OrchestratorRbacHelper(rbacApi);
       await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
-        rbacApi,
-        testUser,
+        TEST_USER,
       );
     });
 
     test("Create role with greeting workflow denied permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const greetingDeniedRole = {
         memberReferences: members,
@@ -548,7 +542,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingDenied",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain(testUser);
+      expect(workflowRole?.memberReferences).toContain(TEST_USER);
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingDenied",
@@ -623,11 +617,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       } catch (error) {
         console.error("Error during role cleanup in afterAll:", error);
       } finally {
-        // Always restore generic orchestrator policies, even if role cleanup fails
         try {
-          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions(
-            rbacApi,
-          );
+          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions();
         } catch (restoreError) {
           console.error("Error restoring orchestrator policies:", restoreError);
         }
@@ -661,7 +652,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with greeting workflow read-write permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const greetingReadwriteRole = {
         memberReferences: members,
@@ -704,7 +695,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingReadwrite",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain(testUser);
+      expect(workflowRole?.memberReferences).toContain(TEST_USER);
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingReadwrite",
@@ -815,7 +806,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with greeting workflow read-only permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser];
+      const members = [TEST_USER];
 
       const greetingReadonlyRole = {
         memberReferences: members,
@@ -858,7 +849,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === "role:default/workflowGreetingReadonly",
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain(testUser);
+      expect(workflowRole?.memberReferences).toContain(TEST_USER);
 
       const policiesResponse = await rbacApi.getPoliciesByRole(
         "default/workflowGreetingReadonly",
@@ -1062,7 +1053,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Create role with greeting workflow read-write permissions for both users", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = [testUser, testUser2];
+      const members = [TEST_USER, TEST_USER_2];
 
       workflowUserRoleName = `role:default/workflowUser`;
 
@@ -1132,7 +1123,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === workflowUserRoleName,
       );
       expect(workflowRole).toBeDefined();
-      expect(workflowRole?.memberReferences).toContain(testUser);
+      expect(workflowRole?.memberReferences).toContain(TEST_USER);
       expect(workflowRole?.memberReferences).toContain(
         "user:default/rhdh-qe-2",
       );
@@ -1303,7 +1294,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       // First, create the workflowUser role if it doesn't exist (for individual test runs)
-      const members = [testUser, testUser2];
+      const members = [TEST_USER, TEST_USER_2];
       const workflowUserRole = {
         memberReferences: members,
         name: workflowUserRoleName,
@@ -1380,11 +1371,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       // Update workflowUser role to remove rhdh-qe-2
       const oldWorkflowUserRole = {
-        memberReferences: [testUser, testUser2],
+        memberReferences: [TEST_USER, TEST_USER_2],
         name: workflowUserRoleName,
       };
       const updatedWorkflowUserRole = {
-        memberReferences: [testUser],
+        memberReferences: [TEST_USER],
         name: workflowUserRoleName,
       };
 
@@ -1441,8 +1432,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           role.name === workflowUserRoleName,
       );
       expect(workflowUserRole).toBeDefined();
-      expect(workflowUserRole?.memberReferences).toContain(testUser);
-      expect(workflowUserRole?.memberReferences).not.toContain(testUser2);
+      expect(workflowUserRole?.memberReferences).toContain(TEST_USER);
+      expect(workflowUserRole?.memberReferences).not.toContain(TEST_USER_2);
     });
 
     test("rhdh-qe-2 with instanceAdminView CAN access rhdh-qe's workflow instance", async () => {
