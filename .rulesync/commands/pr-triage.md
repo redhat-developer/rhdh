@@ -20,12 +20,26 @@ Automated triage for RHDH PR check failures. Analyzes build logs, detects patter
 
 ## Step 1: Gather Inputs
 
-Ask the user which PRs or jobs they want to analyze. Accept any of these formats:
+Accept flexible input formats from the user:
 
-- **PR numbers**: `4537`, `4418`, `4501`
-- **Job URLs**: Full Prow job URLs
+- **PR URLs**: `https://github.com/redhat-developer/rhdh/pull/4537`
+- **PR numbers**: `4537`, `4418`, `4501`, `#4537`
+- **Prow job URLs**: Full URLs like `https://prow.ci.openshift.org/view/gs/test-platform-results/pr-logs/pull/redhat-developer_rhdh/4537/...`
 - **Natural language**: "check the last 5 failed PR checks", "analyze ocp-helm failures today"
 - **Keywords**: "all failed", "recent failures", "release-1.8 failures"
+
+### Extract PR Number from Input
+
+```bash
+# From GitHub PR URL
+echo "https://github.com/redhat-developer/rhdh/pull/4537" | grep -oP 'pull/\K\d+'
+
+# From Prow job URL
+echo "https://prow.ci.openshift.org/view/gs/.../pull/redhat-developer_rhdh/4537/..." | grep -oP 'redhat-developer_rhdh/\K\d+'
+
+# From user input with # prefix
+echo "#4537" | grep -oP '\d+'
+```
 
 ### Auto-detection Mode
 
@@ -72,10 +86,23 @@ curl -s "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-r
   grep -oP 'pull-ci-redhat-developer-rhdh[^"]+' | sort -u
 ```
 
-**Fetch the log:**
+**Fetch the log and extract errors:**
 ```bash
-curl -s "https://storage.googleapis.com/test-platform-results/pr-logs/pull/redhat-developer_rhdh/{PR_NUMBER}/{JOB_NAME}/{BUILD_ID}/build-log.txt"
+# Download full build log
+BUILD_LOG_URL="https://storage.googleapis.com/test-platform-results/pr-logs/pull/redhat-developer_rhdh/{PR_NUMBER}/{JOB_NAME}/{BUILD_ID}/build-log.txt"
+curl -s "$BUILD_LOG_URL" > /tmp/build-log-{PR_NUMBER}.txt
+
+# Extract actual error messages (NOT summaries - show raw errors)
+grep -A 10 -B 5 "Error\|FAIL\|Failed\|Timed out" /tmp/build-log-{PR_NUMBER}.txt | tail -50
+
+# Extract structured error logs
+grep -E '"level":"error"' /tmp/build-log-{PR_NUMBER}.txt | tail -10
+
+# Get final failure summary
+tail -100 /tmp/build-log-{PR_NUMBER}.txt | head -50
 ```
+
+**CRITICAL**: Always show the ACTUAL error text from the log, not AI-generated summaries. Users need to see the real errors to verify the analysis.
 
 ## Step 3: Analyze Error Patterns
 
@@ -200,122 +227,82 @@ PR #4501: DEPLOY_POSTGRES:Crunchy Postgres operator failed:showcase-nightly
 
 ## Step 5: Search Jira for Existing Issues
 
-**IMPORTANT:** Check if Jira MCP tools are available first. If available, use them for authenticated access.
+**ALWAYS** search Jira for existing ci-fail tickets to avoid creating duplicates.
 
-### Option A: Use Jira MCP (Preferred - when available)
+### Use MCP Atlassian Tool
 
-**⚠️ Note:** After adding MCP server with `claude mcp add`, you must **restart Claude Code** for the tools to become available.
+Use the `mcp__atlassian__searchJiraIssuesUsingJql` tool to search Jira:
 
-Check for available MCP tools with:
 ```
-ToolSearch(query: "jql", max_results: 10)
+mcp__atlassian__searchJiraIssuesUsingJql({
+  cloudId: "redhat.atlassian.net",
+  jql: "project = RHDHBUGS AND labels = \"ci-fail\" AND resolution = Unresolved AND updated >= -365d ORDER BY created DESC",
+  maxResults: 50,
+  responseContentFormat: "markdown",
+  fields: ["key", "summary", "status", "created", "description", "labels"]
+})
 ```
 
-If Jira MCP is configured and loaded, use these tools:
+**CRITICAL**: 
+- Jira Cloud requires **bounded JQL** (always add `updated >= -365d` or similar)
+- Use `cloudId: "redhat.atlassian.net"` for Red Hat Jira
+- Request `responseContentFormat: "markdown"` for readable output
 
-```bash
-# Search for all ci-fail tickets in RHDHBUGS project
-jql_search(
-  jql: 'project = RHDHBUGS AND labels = "ci-fail" AND resolution = Unresolved ORDER BY created DESC',
+### Search by Error Pattern
+
+Extract keywords from the error and search Jira for matching tickets:
+
+```
+# Example: Search for Docker image timeout issues
+mcp__atlassian__searchJiraIssuesUsingJql({
+  cloudId: "redhat.atlassian.net",
+  jql: "project = RHDHBUGS AND labels = \"ci-fail\" AND (summary ~ \"Docker image\" OR summary ~ \"timeout\" OR description ~ \"Docker image\") AND resolution = Unresolved",
   maxResults: 20,
+  responseContentFormat: "markdown",
   fields: ["key", "summary", "status", "created", "description"]
-)
-
-# Semantic search for specific error patterns
-jql_search(
-  jql: 'project = RHDHBUGS AND labels = "ci-fail" AND text ~ "PostgreSQL operator"',
-  maxResults: 10
-)
-
-jql_search(
-  jql: 'project = RHDHBUGS AND labels = "ci-fail" AND summary ~ "Adoption Insights"',
-  maxResults: 10
-)
-
-# Get specific issue details
-get_issue(
-  issueIdOrKey: "RHDHBUGS-1234",
-  fields: ["summary", "description", "status", "created", "assignee"]
-)
+})
 ```
 
-**MCP Setup:** If Jira MCP is not available or tools not loaded, guide the user to set it up:
+### Extract Search Keywords from Error
 
-1. **Get API token:** https://id.atlassian.com/manage-profile/security/api-tokens
-   - Click "Create API token"
-   - Name: "Claude Code - PR Triage"
-   - Copy the token
+For each detected failure, extract keywords for Jira searching:
 
-2. **Add Jira MCP server using Claude Code CLI:**
+1. **Extract key error terms**: 
    ```bash
-   claude mcp add jira \
-     -e JIRA_INSTANCE_URL=https://redhat.atlassian.net \
-     -e JIRA_USER_EMAIL=your.email@redhat.com \
-     -e JIRA_API_KEY=your-api-token \
-     -- npx -y jira-mcp
+   # Example error: "Timed out waiting for Docker image :pr-4537-9c77192a"
+   # Keywords: "Docker image", "timeout", "waiting"
+   
+   # Example error: "Crunchy Postgres operator failed to create the user"
+   # Keywords: "PostgreSQL operator", "create user", "failed"
    ```
 
-3. **Verify installation:**
+2. **Build Jira search URLs**:
    ```bash
-   claude mcp list
-   # Should show: jira: npx -y jira-mcp - ✓ Connected
+   # URL encode keywords (replace spaces with %20)
+   # "Docker image" → "Docker%20image"
+   
+   # Generate search URL
+   https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20text%20~%20%22{KEYWORD}%22%20AND%20resolution%20%3D%20Unresolved
    ```
 
-4. **Restart Claude Code** to load the MCP tools
-
-After restart, check with: `ToolSearch(query: "jql", max_results: 5)`
-
-### Option B: Fallback Methods (when MCP unavailable)
-
-**Fallback 1 - Direct Jira REST API (v3):**
-
-⚠️ **Important:** Red Hat Jira requires API v3 (v2 is deprecated).
-
-```bash
-# Basic search for ci-fail tickets in RHDHBUGS project
-curl -s -u "${JIRA_USER}:${JIRA_TOKEN}" \
-  "https://redhat.atlassian.net/rest/api/3/search/jql?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20ORDER%20BY%20created%20DESC&maxResults=15&fields=key,summary,status,created,description" | \
-  jq -r '.issues[] | "\(.key)|\(.fields.summary)|\(.fields.status.name)|\(.fields.created[0:10])"'
-
-# Search for specific error patterns
-curl -s -u "${JIRA_USER}:${JIRA_TOKEN}" \
-  "https://redhat.atlassian.net/rest/api/3/search/jql?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20text%20~%20%22PostgreSQL%20operator%22&maxResults=10&fields=key,summary,status" | \
-  jq -r '.issues[] | "\(.key)|\(.fields.summary)|\(.fields.status.name)"'
-
-# Search by summary text
-curl -s -u "${JIRA_USER}:${JIRA_TOKEN}" \
-  "https://redhat.atlassian.net/rest/api/3/search/jql?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20summary%20~%20%22Adoption%20Insights%22&maxResults=10&fields=key,summary,status" | \
-  jq -r '.issues[] | "\(.key)|\(.fields.summary)|\(.fields.status.name)"'
-```
-
-**Key API v3 differences:**
-- Endpoint: `/rest/api/3/search/jql` (not `/rest/api/2/search`)
-- Use `fields` parameter to specify which fields to retrieve
-- Always include `project = RHDHBUGS` filter for RHDH-specific tickets
-
-**Fallback 2 - Manual Jira web search:**
-Provide user with direct links and search terms to check manually:
-- [All ci-fail tickets](https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20ORDER%20BY%20created%20DESC)
-
-### Semantic Matching
-
-For each detected failure, search for similar Jira tickets:
-
-1. Extract key terms from error message
-2. Search Jira ticket summaries and descriptions
-3. Use fuzzy matching on error patterns
-4. Consider these as "similar":
+3. **Semantic matching criteria** (if manually checking):
    - Same error message substring (>70% match)
-   - Same failure phase + namespace
-   - Same Playwright project failures
+   - Same failure phase + component
+   - Same infrastructure/deployment pattern
+   - Same test failure pattern
 
 **Example:**
 ```
-Detected: "Crunchy Postgres operator failed to create the user"
+Detected Error: "Timed out waiting for Docker image :pr-4537-9c77192a"
 
-Searching Jira...
-Found: RHDHBUGS-1234 "PostgreSQL operator user creation timeout"
-Similarity: 85% (high confidence match)
+Search Keywords:
+- "Docker image timeout"
+- "waiting for Docker image"  
+- "image availability"
+- "fork PR"
+
+Generated URLs:
+https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20text%20~%20%22Docker%20image%22%20AND%20resolution%20%3D%20Unresolved
 ```
 
 ## Step 6: Generate Triage Report
@@ -339,24 +326,54 @@ PR #{NUMBER} - {JOB_NAME}
 ├─ 🎭 Playwright: {PLAYWRIGHT_PROJECT}
 ├─ 📦 Namespace: {NAMESPACE}
 ├─ ⚠️  Failure Type: {FAILURE_TYPE}
-├─ 💬 Error Message:
-│   {ERROR_MESSAGE}
-└─ 📝 Stack Trace (first 10 lines):
-    {STACK_TRACE}
+│
+├─ 💬 **Actual Error Message(s) from Build Log**:
+│   ```
+│   {ACTUAL_RAW_ERROR_TEXT_FROM_LOG}
+│   ```
+│
+├─ 📝 **Structured Error Log** (if available):
+│   ```json
+│   {JSON_ERROR_IF_PRESENT}
+│   ```
+│
+└─ 🔍 **Error Context** (surrounding lines):
+    ```
+    {LINES_BEFORE_AND_AFTER_ERROR}
+    ```
 
 [Repeat for each PR]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎫 JIRA TICKET ANALYSIS
+🎫 JIRA TICKET SEARCH RESULTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Group 1: PostgreSQL Operator User Creation Failure
-├─ Existing Ticket: RHDHBUGS-1234 (Open)
-├─ Title: "PostgreSQL operator user creation timeout"
-├─ URL: https://redhat.atlassian.net/browse/RHDHBUGS-1234
-├─ Match Confidence: 85%
-├─ Status: Open
-├─ Assigned: @team-member
+**Search Keywords**: {EXTRACTED_KEYWORDS}
+
+**All ci-fail Tickets (last 365 days)**:
+
+{LIST_OF_TICKETS_FROM_API}
+
+Example:
+- RHDHBUGS-1234: PostgreSQL operator timeout (Status: Open, Created: 2026-03-15)
+  https://redhat.atlassian.net/browse/RHDHBUGS-1234
+  
+- RHDHBUGS-5678: Docker image build failure for fork PRs (Status: In Progress, Created: 2026-03-20)
+  https://redhat.atlassian.net/browse/RHDHBUGS-5678
+
+**Search by Error Pattern** ("{KEYWORDS}"):
+
+{FILTERED_TICKETS_MATCHING_ERROR}
+
+**Potential Matches**:
+
+Group 1: {FAILURE_PATTERN_NAME}
+├─ Existing Ticket: {TICKET_KEY} ({STATUS})
+├─ Title: "{TICKET_SUMMARY}"
+├─ URL: https://redhat.atlassian.net/browse/{TICKET_KEY}
+├─ Match Confidence: {PERCENTAGE}%
+├─ Status: {STATUS}
+├─ Assigned: {ASSIGNEE}
 └─ Recommendation: ✅ Use existing ticket (update with new PR numbers)
 
 Group 2: {PATTERN_NAME}
@@ -452,11 +469,30 @@ Reference the CI Medic Guide for known patterns:
 
 ## Implementation Notes
 
-- Use WebFetch tool to fetch build logs from GCS URLs
+**CRITICAL - Error Extraction:**
+- **DO NOT use WebFetch** for build logs - it gives AI summaries, not actual errors
+- **Use Bash + curl + grep** to extract REAL error messages from build logs
+- Always show the actual error text from the log (first 200 chars minimum)
+- Include structured error logs (JSON format) if available
+- Show the surrounding context (5-10 lines before/after error)
+
+**CRITICAL - Jira Search:**
+- **Use MCP Atlassian tool**: `mcp__atlassian__searchJiraIssuesUsingJql`
+- **Bounded JQL**: Always add `updated >= -365d` to JQL queries (Jira Cloud requirement)
+- **Cloud ID**: Use `redhat.atlassian.net` for Red Hat Jira
+- **Example**:
+  ```
+  mcp__atlassian__searchJiraIssuesUsingJql({
+    cloudId: "redhat.atlassian.net",
+    jql: "project = RHDHBUGS AND labels = \"ci-fail\" AND resolution = Unresolved AND updated >= -365d",
+    maxResults: 50
+  })
+  ```
+
+**Other Notes:**
 - Use pattern matching and regex to extract error signatures
 - Implement fuzzy string matching for error similarity (Levenshtein distance ~70% threshold)
-- Cache fetched logs to avoid redundant requests
-- Handle rate limiting on Jira/GitHub API calls
+- Cache fetched logs to /tmp/ to avoid redundant requests
 - Support both manual PR input and auto-detection of recent failures
 - Save report to file for sharing with team
 
