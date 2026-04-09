@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1773809184@sha256:779375d8e6cb7a6232213f799128ac3e9d9717afa75fc40c23a95917b68ffa79 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1775622655@sha256:9ccd3f0b19e33b0cfe303ac04ba6053627a9f5c0c579831c76923be56ddf5c1a AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -225,9 +225,20 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
   fi; \
   done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
 
+# Techdocs: Installing Python dependencies and building the techdocs venv.
+# Prevents duplicating the same dependencies in the final minimal image.
+# hadolint ignore=DL3013,DL3041,SC2086
+RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
+  python3.11 -m venv /opt/techdocs-venv && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
+  /opt/techdocs-venv/bin/mkdocs --version && \
+  rm -rf python/  /opt/techdocs-venv/bin/pip && \
+  dnf clean all
+
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1774226014@sha256:70b52265ba3836ee702ab4ad0f478ae8d1f8bf2a1b5bbd2e9d0803a19f26252a AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1775651415@sha256:42b9a1d66c1de96de83fdf20b79d5ed5aefcfa0e3d878b9b31b3d2de4c12fab7 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -238,30 +249,21 @@ WORKDIR $CONTAINER_SOURCE/
 #   export PIP_FIND_LINKS=/cachi2/output/deps/pip
 #   export PIP_NO_INDEX=true
 
-# Install techdocs dependencies using requirements files
-# hadolint ignore=DL3013,DL3041,SC2086
-COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
-RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
+# Runtime Python for techdocs (interpreter + skopeo only; mkdocs lives in the pre-built venv from techdocs stage)
+RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-  alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
-  # fix ownership for pip install folder
-  mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
-  # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
-  pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
-  set -e; \
-  python3.11 -V; pip3.11 -V; \
-  pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
-  pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
-  popd >/dev/null; \
-  rm -fr python/; \
+  alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
   microdnf clean all
 
 # RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
 
-# copy from build, not cleanup stage
+# App tree and techdocs venv from build stage (no compiler/devel RPMs in final layer)
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
+COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
+
+ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
