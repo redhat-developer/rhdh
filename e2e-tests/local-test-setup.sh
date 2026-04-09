@@ -84,7 +84,6 @@ echo ""
 log::info "Getting K8S_CLUSTER_TOKEN from cluster..."
 SA_NAME="rhdh-local-tester"
 SA_NAMESPACE="rhdh-local-test"
-SA_SECRET_NAME="${SA_NAME}-secret"
 
 if [[ "$IS_OPENSHIFT" == "true" ]]; then
   # OpenShift platforms - use oc create token
@@ -95,19 +94,13 @@ if [[ "$IS_OPENSHIFT" == "true" ]]; then
   fi
   K8S_CLUSTER_TOKEN=$(oc create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
 else
-  # Non-OpenShift platforms (AKS/EKS/GKE) - get token from secret
+  # Non-OpenShift platforms (AKS/EKS/GKE) - use short-lived token via TokenRequest API
   if ! kubectl cluster-info &> /dev/null; then
     log::error "Cannot connect to Kubernetes cluster."
     log::info "Please ensure your kubeconfig is set correctly: kubectl cluster-info"
     return 1 2> /dev/null || exit 1
   fi
-  token=$(kubectl get secret ${SA_SECRET_NAME} -n ${SA_NAMESPACE} -o jsonpath='{.data.token}' 2> /dev/null)
-  if [[ -z "$token" ]]; then
-    log::error "Service account token not found."
-    log::info "Please run deployment first: ./local-run.sh"
-    return 1 2> /dev/null || exit 1
-  fi
-  K8S_CLUSTER_TOKEN=$(echo "${token}" | base64 --decode)
+  K8S_CLUSTER_TOKEN=$(kubectl create token ${SA_NAME} -n ${SA_NAMESPACE} --duration=48h)
 fi
 export K8S_CLUSTER_TOKEN
 log::success "K8S_CLUSTER_TOKEN: [set]"
