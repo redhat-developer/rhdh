@@ -5,6 +5,7 @@ import { Response } from "../pages/rbac";
 /**
  * Generic orchestrator workflow permissions that override specific workflow deny policies.
  * Per RHDH documentation, these must be removed before testing individual workflow denials.
+ * @see https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/orchestrator_in_red_hat_developer_hub/index#assembly-orchestrator-rbac
  */
 const genericWorkflowPermissions = [
   "orchestrator.workflow",
@@ -23,9 +24,10 @@ interface SavedRolePolicy {
  * Helper class for managing orchestrator RBAC policies during tests.
  *
  * This is needed because generic orchestrator.workflow permissions override
- * specific workflow deny policies (per RHDH documentation). Tests that need
- * to verify individual workflow denials must first remove any generic
- * orchestrator.workflow permissions.
+ * specific workflow deny policies. Tests that need to verify individual
+ * workflow denials must first remove any generic orchestrator.workflow permissions.
+ *
+ * @see https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/orchestrator_in_red_hat_developer_hub/index#assembly-orchestrator-rbac
  *
  * Usage:
  *   const helper = new OrchestratorRbacHelper(rbacApi);
