@@ -66,7 +66,7 @@
     "@backstage/cli-common@^0.1.15": "patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch",
     "@backstage/backend-plugin-api": "patch:@backstage/backend-plugin-api@npm%3A1.4.3#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.3-b7f08217ef.patch",
     "@backstage/cli": "patch:@backstage/cli@npm%3A0.34.1#./.yarn/patches/@backstage-cli-npm-0.34.1-c74e1f6bbc.patch",
-    "tar@^6.1.12": "^7.5.13"
+    "tar": "^7.5.13"
   },
   "jest": {
     "testTimeout": 20000

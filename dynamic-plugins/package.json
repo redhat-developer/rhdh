@@ -46,7 +46,7 @@
     "@backstage/integration": "1.18.1",
     "@backstage/plugin-permission-common@^0.9.1": "0.9.2",
     "@backstage/plugin-permission-common@^0.9.2": "0.9.2",
-    "tar@^6.1.12": "^7.5.13"
+    "tar": "^7.5.13"
   },
   "packageManager": "yarn@3.8.7"
 }
