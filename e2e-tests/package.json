@@ -27,7 +27,7 @@
     "postinstall": "playwright install chromium",
     "tsc": "tsc",
     "tsc:check": "tsc -p tsconfig.json",
-    "shellcheck": "shellcheck --severity=warning --color=always **/*.sh",
+    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
