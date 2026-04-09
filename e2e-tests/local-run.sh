@@ -400,22 +400,22 @@ else
   K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
 
   # Create service account and acquire a short-lived token via TokenRequest API
-  if ! kubectl get serviceaccount ${SA_NAME} -n ${SA_NAMESPACE} &> /dev/null; then
+  if ! kubectl get serviceaccount "$SA_NAME" -n "$SA_NAMESPACE" &> /dev/null; then
     log::info "Creating namespace ${SA_NAMESPACE}..."
     kubectl create namespace "$SA_NAMESPACE" 2> /dev/null || log::info "Namespace already exists"
     log::info "Creating service account ${SA_NAME}..."
-    kubectl create serviceaccount ${SA_NAME} -n ${SA_NAMESPACE}
+    kubectl create serviceaccount "$SA_NAME" -n "$SA_NAMESPACE"
     log::info "Creating cluster role binding..."
-    kubectl create clusterrolebinding ${SA_BINDING_NAME} \
+    kubectl create clusterrolebinding "$SA_BINDING_NAME" \
       --clusterrole=cluster-admin \
-      --serviceaccount=${SA_NAMESPACE}:${SA_NAME}
+      --serviceaccount="${SA_NAMESPACE}:${SA_NAME}"
     log::info "Service account and binding created successfully"
   else
     log::info "Service account ${SA_NAME} already exists in namespace ${SA_NAMESPACE}"
   fi
 
   log::info "Creating short-lived token for service account (48h TTL)"
-  K8S_CLUSTER_TOKEN=$(kubectl create token ${SA_NAME} -n ${SA_NAMESPACE} --duration=48h)
+  K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
   log::info "Acquired short-lived token for the service account"
 fi
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
