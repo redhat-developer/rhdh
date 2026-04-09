@@ -1,6 +1,3 @@
----
-paths: '.ci/**, e2e-tests/**, docs/e2e-tests/**'
----
 # RHDH (Red Hat Developer Hub) Repository Context
 
 This document serves as a comprehensive starting point for LLMs working with the RHDH repository. It provides detailed information about the e2e-tests, testing infrastructure and CI/CD pipeline.
@@ -82,6 +79,8 @@ test.beforeAll(async ({ }, testInfo) => {
    - `showcase-runtime`: Runtime environment tests
    - `showcase-sanity-plugins`: Plugin sanity checks
    - `showcase-upgrade`: Upgrade scenario tests
+   - `showcase-localization-de`: German localization tests
+   - `showcase-localization-es`: Spanish localization tests
    - `showcase-localization-fr`: French localization tests
    - `showcase-localization-it`: Italian localization tests
    - `showcase-localization-ja`: Japanese localization tests
@@ -118,9 +117,9 @@ test.beforeAll(async ({ }, testInfo) => {
 
 7. **Localization Tests** (`playwright/e2e/localization/`)
    - Verify UI displays correctly translated strings
-   - Supports **French (fr)**, **Italian (it)**, and **Japanese (ja)**
+   - Supports **German (de)**, **Spanish (es)**, **French (fr)**, **Italian (it)**, and **Japanese (ja)**
    - Runs as part of OCP nightly job (skipped for OSD-GCP)
-   - Uses `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja` Playwright projects
+   - Uses `showcase-localization-de`, `showcase-localization-es`, `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja` Playwright projects
    - Translation files located in `translations/` directory
    - Test helper: `e2e-tests/playwright/e2e/localization/locale.ts`
 
@@ -170,6 +169,8 @@ yarn showcase-auth-providers       # Auth provider tests
 yarn showcase-sanity-plugins       # Plugin sanity tests
 
 # Localization tests
+yarn showcase-localization-de      # German localization tests
+yarn showcase-localization-es      # Spanish localization tests
 yarn showcase-localization-fr      # French localization tests
 yarn showcase-localization-it      # Italian localization tests
 yarn showcase-localization-ja      # Japanese localization tests
@@ -515,6 +516,8 @@ The choice of config map depends on the **Playwright test project** being execut
 - `showcase-runtime` - Runtime environment tests
 - `showcase-sanity-plugins` - Plugin sanity tests
 - `showcase-upgrade` - Upgrade scenario tests
+- `showcase-localization-de` - German localization tests
+- `showcase-localization-es` - Spanish localization tests
 - `showcase-localization-fr` - French localization tests
 - `showcase-localization-it` - Italian localization tests
 - `showcase-localization-ja` - Japanese localization tests

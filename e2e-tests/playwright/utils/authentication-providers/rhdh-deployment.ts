@@ -657,9 +657,12 @@ class RHDHDeployment {
   async loadBackstageCR(): Promise<unknown> {
     const configPath = join(currentDirName, "yamls", "backstage.yaml");
     const backstageConfig = await this.readYamlToJson(configPath);
-    expect(process.env.QUAY_REPO).toBeDefined();
-    expect(process.env.TAG_NAME).toBeDefined();
-    const image = `quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`;
+    const imageRegistry = process.env.IMAGE_REGISTRY || "quay.io";
+    const imageRepo = process.env.IMAGE_REPO || process.env.QUAY_REPO;
+    const tagName = process.env.TAG_NAME;
+    expect(imageRepo, "IMAGE_REPO or QUAY_REPO must be set").toBeTruthy();
+    expect(tagName, "TAG_NAME must be set").toBeTruthy();
+    const image = `${imageRegistry}/${imageRepo}:${tagName}`;
     backstageConfig.spec.deployment = {
       patch: {
         spec: {

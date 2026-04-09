@@ -1,3 +1,15 @@
+import deBackstage from "../../../../translations/backstage-de.json" with { type: "json" };
+import deCommunityPluginsBase from "../../../../translations/community-plugins-de.json" with { type: "json" };
+import deRhdh from "../../../../translations/test/rhdh-de.json" with { type: "json" };
+import deCommunityPlugins from "../../../../translations/test/community-plugins-de.json" with { type: "json" };
+import deRhdhPlugins from "../../../../translations/test/rhdh-plugins-de.json" with { type: "json" };
+
+import esBackstage from "../../../../translations/backstage-es.json" with { type: "json" };
+import esCommunityPluginsBase from "../../../../translations/community-plugins-es.json" with { type: "json" };
+import esRhdh from "../../../../translations/test/rhdh-es.json" with { type: "json" };
+import esCommunityPlugins from "../../../../translations/test/community-plugins-es.json" with { type: "json" };
+import esRhdhPlugins from "../../../../translations/test/rhdh-plugins-es.json" with { type: "json" };
+
 import frBackstage from "../../../../translations/backstage-fr.json" with { type: "json" };
 import frCommunityPluginsBase from "../../../../translations/community-plugins-fr.json" with { type: "json" };
 import frRhdh from "../../../../translations/test/rhdh-fr.json" with { type: "json" };
@@ -17,6 +29,22 @@ import jaCommunityPlugins from "../../../../translations/test/community-plugins-
 import jaRhdhPlugins from "../../../../translations/test/rhdh-plugins-ja.json" with { type: "json" };
 
 import en from "../../../../translations/test/all-v1.8_s3281-en.json" with { type: "json" };
+
+const de = {
+  ...deBackstage,
+  ...deCommunityPluginsBase,
+  ...deRhdh,
+  ...deCommunityPlugins,
+  ...deRhdhPlugins,
+};
+
+const es = {
+  ...esBackstage,
+  ...esCommunityPluginsBase,
+  ...esRhdh,
+  ...esCommunityPlugins,
+  ...esRhdhPlugins,
+};
 
 const fr = {
   ...frBackstage,
@@ -42,7 +70,7 @@ const ja = {
   ...jaRhdhPlugins,
 };
 
-export type Locale = "en" | "fr" | "it" | "ja";
+export type Locale = "de" | "en" | "es" | "fr" | "it" | "ja";
 
 type TranslationFile = Record<string, Record<string, Record<string, string>>>;
 
@@ -53,6 +81,8 @@ type TranslationFile = Record<string, Record<string, Record<string, string>>>;
 function createMergedTranslations() {
   const allNamespaces = new Set([
     ...Object.keys(en),
+    ...Object.keys(de),
+    ...Object.keys(es),
     ...Object.keys(fr),
     ...Object.keys(it),
     ...Object.keys(ja),
@@ -64,6 +94,8 @@ function createMergedTranslations() {
     const enKeys = (en as TranslationFile)[namespace]?.en || {};
     merged[namespace] = {
       en: enKeys,
+      de: { ...enKeys, ...((de as TranslationFile)[namespace]?.de || {}) },
+      es: { ...enKeys, ...((es as TranslationFile)[namespace]?.es || {}) },
       fr: { ...enKeys, ...((fr as TranslationFile)[namespace]?.fr || {}) },
       it: { ...enKeys, ...((it as TranslationFile)[namespace]?.it || {}) },
       ja: { ...enKeys, ...((ja as TranslationFile)[namespace]?.ja || {}) },

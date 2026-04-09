@@ -14,6 +14,13 @@ install_rhdh_operator() {
   if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
     namespace::setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
   fi
+  # Note: The operator is always installed from quay.io/rhdh/iib regardless of IMAGE_REGISTRY.
+  # The install-rhdh-catalog-source.sh script from the rhdh-operator repo has quay.io hardcoded
+  # as the IIB image source. IMAGE_REGISTRY only affects the RHDH application image, not the operator.
+  if [[ "${IMAGE_REGISTRY}" != "quay.io" ]]; then
+    log::warn "IMAGE_REGISTRY is set to '${IMAGE_REGISTRY}', but the RHDH operator is always installed from quay.io/rhdh/iib"
+  fi
+
   # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
   if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then

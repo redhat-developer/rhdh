@@ -30,19 +30,22 @@ test.describe(`Settings page`, () => {
     `);
 
     await expect(page.getByTestId("select")).toContainText(
-      /English|Français|Italiano|日本語|Deutsch/,
+      /English|Deutsch|Español|Français|Italiano|日本語/,
     );
     await page
       .getByTestId("select")
-      .getByRole("button", { name: /English|Français|Italiano|日本語|Deutsch/ })
+      .getByRole("button", {
+        name: /English|Deutsch|Español|Français|Italiano|日本語/,
+      })
       .click();
     await expect(page.getByRole("listbox")).toMatchAriaSnapshot(`
     - listbox:
       - option "English"
+      - option "Deutsch"
+      - option "Español"
       - option "Français"
       - option "Italiano"
       - option "日本語"
-      - option "Deutsch"
     `);
     await page.getByRole("option", { name: "Français" }).click();
     await expect(page.getByTestId("select")).toContainText("Français");

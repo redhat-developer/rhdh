@@ -17,14 +17,11 @@ name: Update dynamic-plugins.default.yaml
 on:
   # workflow_dispatch so that it can be triggered manually if needed
   workflow_dispatch:
-  schedule:
-    # run at 2:48 UTC every day
-    - cron: "48 2 * * *"
-
   push:
     branches:
-      - 'main'
-      - 'release-**'
+      # RHIDP-9862 disable updating the DPDY file in main; only update for 1.9 branch
+      # - 'main'
+      - 'release-1.9'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -45,7 +42,7 @@ jobs:
               local IMAGE="$1"
               DIR="/tmp/${IMAGE//:/_}"
               rm -fr "$DIR"; mkdir -p "$DIR"
-              # set -x 
+              # set -x
               skopeo copy "docker://quay.io/rhdh/${IMAGE}" "oci:/tmp/oci-${IMAGE//:/_}" || \
                 { echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!"; exit 0; }
               # Extract all layers
@@ -53,7 +50,7 @@ jobs:
                 tar -xf "$blob" -C "$DIR/" 2>/dev/null || true
               done
               rm -rf "/tmp/oci-${IMAGE//:/_}"
-              # set +x 
+              # set +x
               echo "Unpacked $IMAGE into $DIR"
 
               # replace local dynamic-plugins.default.yaml file with latest from the index container image, and add a deprecation warning
@@ -93,11 +90,11 @@ jobs:
               This PR contains generated updates to *dynamic-plugins.default.yaml* from *quay.io/rhdh/plugin-catalog-index:${{ env.TAG }}*
 
               NOTE:
-              
+
               File dynamic-plugins.default.yaml is now generated from default.package.yaml (in this repo)
               and default configuration located in the overlays repo under workspaces/*/metadata/*.yaml
               See https://github.com/redhat-developer/rhdh-plugin-export-overlays/
-              
+
               To fetch + unpack the latest index image see
               https://github.com/redhat-developer/rhdh/blob/main/.github/workflows/update-dynamic-plugins-default.yaml#L44-L75
 
