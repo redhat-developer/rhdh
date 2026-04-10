@@ -32,13 +32,13 @@ Accept flexible input formats from the user:
 
 ```bash
 # From GitHub PR URL
-echo "https://github.com/redhat-developer/rhdh/pull/4537" | grep -oP 'pull/\K\d+'
+echo "https://github.com/redhat-developer/rhdh/pull/4537" | sed -nE 's|.*/pull/([0-9]+).*|\1|p'
 
 # From Prow job URL
-echo "https://prow.ci.openshift.org/view/gs/.../pull/redhat-developer_rhdh/4537/..." | grep -oP 'redhat-developer_rhdh/\K\d+'
+echo "https://prow.ci.openshift.org/view/gs/.../pull/redhat-developer_rhdh/4537/..." | sed -nE 's|.*/redhat-developer_rhdh/([0-9]+).*|\1|p'
 
 # From user input with # prefix
-echo "#4537" | grep -oP '\d+'
+echo "#4537" | grep -oE '[0-9]+'
 ```
 
 ### Auto-detection Mode
@@ -83,7 +83,7 @@ Option C: List directory to find latest build
 ```bash
 # Use gcsweb or gsutil to list builds for the PR
 curl -s "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/pr-logs/pull/redhat-developer_rhdh/{PR_NUMBER}/" | \
-  grep -oP 'pull-ci-redhat-developer-rhdh[^"]+' | sort -u
+  grep -oE 'pull-ci-redhat-developer-rhdh[^"]+' | sort -u
 ```
 
 **Fetch the log and extract errors:**
@@ -186,10 +186,10 @@ For each failure, extract:
 grep -A 5 "❌\|Error\|FAIL\|Failed" build-log.txt | head -20
 
 # Find which namespace failed
-grep -oP "namespace:\s*\K[^\s]+" build-log.txt
+sed -nE 's/.*namespace:[[:space:]]*([^[:space:]]+).*/\1/p' build-log.txt
 
 # Find Playwright project
-grep -oP "playwright test --project=\K[^\s]+" build-log.txt
+sed -nE 's/.*playwright test --project=([^[:space:]]+).*/\1/p' build-log.txt
 ```
 
 ## Step 4: Compare Failures Across PRs
