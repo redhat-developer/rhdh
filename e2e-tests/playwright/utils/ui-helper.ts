@@ -440,7 +440,7 @@ export class UIhelper {
       ? this.page.locator(locator).getByText(text, { exact }).first()
       : this.page.getByText(text, { exact }).first();
 
-    await elementLocator.waitFor({ state: "visible", timeout: 5000 });
+    await elementLocator.waitFor({ state: "visible" });
     await elementLocator.waitFor({ state: "attached" });
 
     try {
