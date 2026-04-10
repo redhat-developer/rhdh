@@ -47,8 +47,9 @@ If the user says "recent failures" or "check failed PRs", fetch recent failures:
 
 ```bash
 # Fetch recent PR jobs from Prow
-curl -s 'https://prow.ci.openshift.org/prowjobs.js?job=pull-ci-redhat-developer-rhdh-*-e2e-*' | \
-  jq -r '.items[] | select(.status.state == "failure") | "\(.spec.refs.pulls[0].number)|\(.spec.job)|\(.status.url)"' | \
+# Note: prowjobs.js returns ALL jobs (several MB), so we filter client-side with jq
+curl -s 'https://prow.ci.openshift.org/prowjobs.js' | \
+  jq -r '.items[] | select(.spec.job | test("^pull-ci-redhat-developer-rhdh-.*-e2e-")) | select(.status.state == "failure") | "\(.spec.refs.pulls[0].number)|\(.spec.job)|\(.status.url)"' | \
   head -20
 ```
 
@@ -73,10 +74,13 @@ https://prow.ci.openshift.org/view/gs/test-platform-results/pr-logs/pull/redhat-
 
 Option B: Query Prow API for latest build ID
 ```bash
-gh api --method GET https://prow.ci.openshift.org/prowjobs.js \
-  -F job="pull-ci-redhat-developer-rhdh-{BRANCH}-e2e-{PLATFORM}-{METHOD}" \
-  -F pull={PR_NUMBER} | \
-  jq -r '.items[0].status.build_id'
+# Note: prowjobs.js doesn't support query parameters, filter in jq
+JOB_NAME="pull-ci-redhat-developer-rhdh-{BRANCH}-e2e-{PLATFORM}-{METHOD}"
+PR_NUM={PR_NUMBER}
+curl -s 'https://prow.ci.openshift.org/prowjobs.js' | \
+  jq -r --arg job "$JOB_NAME" --arg pr "$PR_NUM" \
+    '.items[] | select(.spec.job == $job and .spec.refs.pulls[0].number == ($pr | tonumber)) | .status.build_id' | \
+  head -1
 ```
 
 Option C: List directory to find latest build
