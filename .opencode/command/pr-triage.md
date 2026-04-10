@@ -244,65 +244,83 @@ PR #4501: DEPLOY_POSTGRES:Crunchy Postgres operator failed:showcase-nightly
 
 **ALWAYS** search Jira for existing ci-fail tickets to avoid creating duplicates.
 
-### Option A: Search via Jira Web Dashboard (Recommended)
+### Automatic MCP Detection and Search
 
-Open the Jira dashboard in a browser to manually review existing tickets:
+**Step 1: Check if Atlassian MCP server is available**
 
-```bash
-# All unresolved ci-fail tickets (last 365 days)
-open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20AND%20updated%20%3E%3D%20-365d%20ORDER%20BY%20created%20DESC"
-
-# Search by keywords (example: Docker image)
-KEYWORDS="Docker%20image"
-open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20text%20~%20%22$KEYWORDS%22%20AND%20resolution%20%3D%20Unresolved"
+```
+Use ListMcpResourcesTool with server: "atlassian"
 ```
 
-**JQL Pattern** (Jira Query Language):
-```
-project = RHDHBUGS AND labels = "ci-fail" AND resolution = Unresolved AND updated >= -365d ORDER BY created DESC
-```
+- If MCP server exists → Proceed to **Programmatic Search** (below)
+- If MCP server not found → Proceed to **Fallback: Web Dashboard Links** (below)
+
+### Programmatic Search (MCP Available)
+
+When Atlassian MCP server is configured, automatically search Jira and include results in the report.
 
 **CRITICAL**: Jira Cloud requires **bounded JQL** - always add `updated >= -365d` or similar time constraint.
 
-### Option B: Search via GitHub CLI (if available)
+**Search 1: All unresolved ci-fail tickets (last 365 days)**
 
-If you have `gh` CLI configured with Jira integration:
-
-```bash
-# Note: Requires gh-jira extension or similar integration
-gh jira list --label "ci-fail" --status open --project RHDHBUGS
-```
-
-### Advanced: Use MCP Atlassian Server (Optional)
-
-If you have the Atlassian MCP server configured, you can use programmatic search:
-
-**Requirements:**
-- MCP server named `atlassian` in your MCP configuration
-- Configured with Red Hat Jira credentials
-
-**Usage:**
 ```
 mcp__atlassian__searchJiraIssuesUsingJql({
   cloudId: "redhat.atlassian.net",
   jql: "project = RHDHBUGS AND labels = \"ci-fail\" AND resolution = Unresolved AND updated >= -365d ORDER BY created DESC",
   maxResults: 50,
   responseContentFormat: "markdown",
-  fields: ["key", "summary", "status", "created", "description", "labels"]
+  fields: ["key", "summary", "status", "created", "description", "labels", "assignee"]
 })
 ```
 
-**Search by error pattern:**
+**Search 2: Filter by error pattern keywords**
+
+For each detected failure, extract keywords and search:
+
 ```
-# Example: Search for Docker image timeout issues
+# Example: Docker image timeout
 mcp__atlassian__searchJiraIssuesUsingJql({
   cloudId: "redhat.atlassian.net",
-  jql: "project = RHDHBUGS AND labels = \"ci-fail\" AND (summary ~ \"Docker image\" OR summary ~ \"timeout\" OR description ~ \"Docker image\") AND resolution = Unresolved",
+  jql: "project = RHDHBUGS AND labels = \"ci-fail\" AND (summary ~ \"Docker image\" OR summary ~ \"timeout\" OR description ~ \"Docker image\") AND resolution = Unresolved AND updated >= -365d",
   maxResults: 20,
   responseContentFormat: "markdown",
-  fields: ["key", "summary", "status", "created", "description"]
+  fields: ["key", "summary", "status", "created", "description", "assignee"]
 })
 ```
+
+**Analyze Results:**
+- Compare error patterns from build logs with Jira ticket summaries/descriptions
+- Calculate match confidence (>70% = potential match)
+- Identify duplicate tickets vs. need to create new
+
+**Include in Report:**
+- List of matching tickets with ticket key, summary, status, assignee
+- Match confidence percentage
+- Recommendation: Update existing vs. create new
+
+### Fallback: Web Dashboard Links (MCP Not Available)
+
+If MCP is not configured or returns an error, provide search URLs for manual review:
+
+**JQL Pattern** (Jira Query Language):
+```
+project = RHDHBUGS AND labels = "ci-fail" AND resolution = Unresolved AND updated >= -365d ORDER BY created DESC
+```
+
+**Generated Search URLs:**
+
+```bash
+# All unresolved ci-fail tickets (last 365 days)
+https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20AND%20updated%20%3E%3D%20-365d%20ORDER%20BY%20created%20DESC
+
+# Search by keywords (example: Docker image)
+https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20(summary%20~%20%22Docker%20image%22%20OR%20summary%20~%20%22timeout%22)%20AND%20resolution%20%3D%20Unresolved
+```
+
+**Include in Report:**
+- Note that MCP is not configured
+- Provide clickable search URLs
+- Instruct user to manually review for duplicates
 
 ### Extract Search Keywords from Error
 
@@ -393,36 +411,60 @@ PR #{NUMBER} - {JOB_NAME}
 
 **Search Keywords**: {EXTRACTED_KEYWORDS}
 
-**All ci-fail Tickets (last 365 days)**:
+**MCP Status**: {✅ Available | ❌ Not configured}
 
-{LIST_OF_TICKETS_FROM_API}
+[IF MCP AVAILABLE - Include actual search results]:
 
-Example:
-- RHDHBUGS-1234: PostgreSQL operator timeout (Status: Open, Created: 2026-03-15)
+**All ci-fail Tickets (last 365 days)** - {N} tickets found:
+
+- RHDHBUGS-1234: PostgreSQL operator timeout
+  Status: Open | Assignee: user@redhat.com | Created: 2026-03-15
   https://redhat.atlassian.net/browse/RHDHBUGS-1234
   
-- RHDHBUGS-5678: Docker image build failure for fork PRs (Status: In Progress, Created: 2026-03-20)
+- RHDHBUGS-5678: Docker image build failure for fork PRs
+  Status: In Progress | Assignee: dev@redhat.com | Created: 2026-03-20
   https://redhat.atlassian.net/browse/RHDHBUGS-5678
 
-**Search by Error Pattern** ("{KEYWORDS}"):
+**Filtered by Error Pattern** ("{KEYWORDS}") - {N} matches:
 
-{FILTERED_TICKETS_MATCHING_ERROR}
+- RHDHBUGS-5678: Docker image build failure for fork PRs
+  Status: In Progress | Assignee: dev@redhat.com
+  Description excerpt: "...timed out waiting for Docker image..."
+  **Match Confidence**: 85% (keywords: Docker image, timeout, fork PR)
 
 **Potential Matches**:
 
 Group 1: {FAILURE_PATTERN_NAME}
-├─ Existing Ticket: {TICKET_KEY} ({STATUS})
-├─ Title: "{TICKET_SUMMARY}"
-├─ URL: https://redhat.atlassian.net/browse/{TICKET_KEY}
-├─ Match Confidence: {PERCENTAGE}%
-├─ Status: {STATUS}
-├─ Assigned: {ASSIGNEE}
-└─ Recommendation: ✅ Use existing ticket (update with new PR numbers)
+├─ Existing Ticket: RHDHBUGS-5678 (In Progress)
+├─ Title: "Docker image build failure for fork PRs"
+├─ URL: https://redhat.atlassian.net/browse/RHDHBUGS-5678
+├─ Match Confidence: 85%
+├─ Assignee: dev@redhat.com
+├─ Description Match: "timed out waiting for Docker image" (similar to current error)
+└─ Recommendation: ✅ Update existing ticket with PR #4537
 
 Group 2: {PATTERN_NAME}
 ├─ Existing Ticket: None found
 ├─ Recommendation: ⚠️  Create new Jira ticket
 └─ Suggested Title: "{AUTO_GENERATED_TITLE}"
+
+[IF MCP NOT AVAILABLE - Include search links]:
+
+**MCP Not Configured** - Manual search required
+
+**Search Links** (Click to open in browser):
+
+1. All unresolved ci-fail tickets (last 365 days):
+   https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20AND%20updated%20%3E%3D%20-365d%20ORDER%20BY%20created%20DESC
+
+2. Search for Docker image timeout issues:
+   https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20(summary%20~%20%22Docker%20image%22%20OR%20summary%20~%20%22timeout%22)%20AND%20resolution%20%3D%20Unresolved
+
+**Manual Review Steps**:
+1. Open the search links above
+2. Review ticket summaries and descriptions
+3. Look for matches with error patterns from this report
+4. Update existing ticket if found, otherwise create new
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎯 RECOMMENDATIONS
@@ -457,6 +499,19 @@ Existing Jira Tickets: {N}
 New Tickets Needed: {N}
 
 Most Common Failure: {FAILURE_TYPE} ({N} occurrences)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔗 MONITORING LINKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Monitor CI/CD Status**:
+- Monitor PR Check Status: https://prow.ci.openshift.org/?job=pull-ci-redhat-developer-rhdh-%2A-e2e%2A
+- Monitor PR Checks Queue: https://prow.ci.openshift.org/job-history/gs/test-platform-results/pr-logs/directory/pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm
+- Monitor Nightly Jobs: https://prow.ci.openshift.org/?type=periodic&job=periodic-ci-redhat-developer-rhdh-%2A-e2e-%2A
+
+**Documentation**:
+- CI Medic Guide: docs/e2e-tests/CI-medic-guide.md
+- Jira ci-fail Dashboard: https://redhat.atlassian.net/issues/?jql=labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20ORDER%20BY%20created%20DESC
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -504,11 +559,14 @@ Reference the CI Medic Guide for known patterns:
 
 ## Reference Links
 
+### Monitoring Links
+- **Monitor PR Check Status:** https://prow.ci.openshift.org/?job=pull-ci-redhat-developer-rhdh-%2A-e2e%2A
+- **Monitor PR Checks Queue:** https://prow.ci.openshift.org/job-history/gs/test-platform-results/pr-logs/directory/pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm
+- **Monitor Nightly Jobs:** https://prow.ci.openshift.org/?type=periodic&job=periodic-ci-redhat-developer-rhdh-%2A-e2e-%2A
+
+### Documentation
 - **CI Medic Guide:** `docs/e2e-tests/CI-medic-guide.md`
-- **Jira Dashboard:** https://redhat.atlassian.net/issues/?jql=labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20ORDER%20BY%20created%20DESC
-- **Prow PR Jobs:** https://prow.ci.openshift.org/?job=pull-ci-redhat-developer-rhdh-*-e2e*
-- **Job History:** https://prow.ci.openshift.org/job-history/gs/test-platform-results/pr-logs/directory/pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm
-- **GCS Artifacts:** https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/pr-logs/
+- **Jira ci-fail Dashboard:** https://redhat.atlassian.net/issues/?jql=labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20ORDER%20BY%20created%20DESC
 
 ## Implementation Notes
 
@@ -520,14 +578,13 @@ Reference the CI Medic Guide for known patterns:
 - Show the surrounding context (5-10 lines before/after error)
 
 **CRITICAL - Jira Search:**
-- **Primary method**: Use Jira web dashboard with JQL URLs (works without dependencies)
+- **Automatic MCP Detection**: Always check if `atlassian` MCP server is available using `ListMcpResourcesTool`
+- **If MCP Available**: Use `mcp__atlassian__searchJiraIssuesUsingJql` to search programmatically and include actual results in report
+- **If MCP Not Available**: Fall back to providing Jira web dashboard URLs for manual search
 - **Bounded JQL**: Always add `updated >= -365d` to JQL queries (Jira Cloud requirement)
 - **Base JQL pattern**: `project = RHDHBUGS AND labels = "ci-fail" AND resolution = Unresolved AND updated >= -365d`
-- **Optional**: If MCP Atlassian server is configured, use `mcp__atlassian__searchJiraIssuesUsingJql` for programmatic access
-  ```bash
-  # Web dashboard (recommended - works out of the box)
-  open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20AND%20updated%20%3E%3D%20-365d"
-  ```
+- **Match Analysis**: When MCP is available, compare error patterns with ticket summaries/descriptions and calculate match confidence
+- **Report Content**: Include actual ticket data (key, summary, status, assignee) when MCP works, or search URLs when it doesn't
 
 **CRITICAL - Report Output:**
 - **Output report directly to conversation** - Do NOT write to /tmp and then cat
