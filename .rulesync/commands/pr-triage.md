@@ -245,10 +245,44 @@ PR #4501: DEPLOY_POSTGRES:Crunchy Postgres operator failed:showcase-nightly
 
 **ALWAYS** search Jira for existing ci-fail tickets to avoid creating duplicates.
 
-### Use MCP Atlassian Tool
+### Option A: Search via Jira Web Dashboard (Recommended)
 
-Use the `mcp__atlassian__searchJiraIssuesUsingJql` tool to search Jira:
+Open the Jira dashboard in a browser to manually review existing tickets:
 
+```bash
+# All unresolved ci-fail tickets (last 365 days)
+open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20AND%20updated%20%3E%3D%20-365d%20ORDER%20BY%20created%20DESC"
+
+# Search by keywords (example: Docker image)
+KEYWORDS="Docker%20image"
+open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20text%20~%20%22$KEYWORDS%22%20AND%20resolution%20%3D%20Unresolved"
+```
+
+**JQL Pattern** (Jira Query Language):
+```
+project = RHDHBUGS AND labels = "ci-fail" AND resolution = Unresolved AND updated >= -365d ORDER BY created DESC
+```
+
+**CRITICAL**: Jira Cloud requires **bounded JQL** - always add `updated >= -365d` or similar time constraint.
+
+### Option B: Search via GitHub CLI (if available)
+
+If you have `gh` CLI configured with Jira integration:
+
+```bash
+# Note: Requires gh-jira extension or similar integration
+gh jira list --label "ci-fail" --status open --project RHDHBUGS
+```
+
+### Advanced: Use MCP Atlassian Server (Optional)
+
+If you have the Atlassian MCP server configured, you can use programmatic search:
+
+**Requirements:**
+- MCP server named `atlassian` in your MCP configuration
+- Configured with Red Hat Jira credentials
+
+**Usage:**
 ```
 mcp__atlassian__searchJiraIssuesUsingJql({
   cloudId: "redhat.atlassian.net",
@@ -259,15 +293,7 @@ mcp__atlassian__searchJiraIssuesUsingJql({
 })
 ```
 
-**CRITICAL**: 
-- Jira Cloud requires **bounded JQL** (always add `updated >= -365d` or similar)
-- Use `cloudId: "redhat.atlassian.net"` for Red Hat Jira
-- Request `responseContentFormat: "markdown"` for readable output
-
-### Search by Error Pattern
-
-Extract keywords from the error and search Jira for matching tickets:
-
+**Search by error pattern:**
 ```
 # Example: Search for Docker image timeout issues
 mcp__atlassian__searchJiraIssuesUsingJql({
@@ -295,10 +321,10 @@ For each detected failure, extract keywords for Jira searching:
 2. **Build Jira search URLs**:
    ```bash
    # URL encode keywords (replace spaces with %20)
-   # "Docker image" → "Docker%20image"
+   KEYWORDS="Docker%20image"
    
-   # Generate search URL
-   https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20text%20~%20%22{KEYWORD}%22%20AND%20resolution%20%3D%20Unresolved
+   # Generate and open search URL
+   open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20text%20~%20%22$KEYWORDS%22%20AND%20resolution%20%3D%20Unresolved"
    ```
 
 3. **Semantic matching criteria** (if manually checking):
@@ -493,16 +519,13 @@ Reference the CI Medic Guide for known patterns:
 - Show the surrounding context (5-10 lines before/after error)
 
 **CRITICAL - Jira Search:**
-- **Use MCP Atlassian tool**: `mcp__atlassian__searchJiraIssuesUsingJql`
+- **Primary method**: Use Jira web dashboard with JQL URLs (works without dependencies)
 - **Bounded JQL**: Always add `updated >= -365d` to JQL queries (Jira Cloud requirement)
-- **Cloud ID**: Use `redhat.atlassian.net` for Red Hat Jira
-- **Example**:
-  ```
-  mcp__atlassian__searchJiraIssuesUsingJql({
-    cloudId: "redhat.atlassian.net",
-    jql: "project = RHDHBUGS AND labels = \"ci-fail\" AND resolution = Unresolved AND updated >= -365d",
-    maxResults: 50
-  })
+- **Base JQL pattern**: `project = RHDHBUGS AND labels = "ci-fail" AND resolution = Unresolved AND updated >= -365d`
+- **Optional**: If MCP Atlassian server is configured, use `mcp__atlassian__searchJiraIssuesUsingJql` for programmatic access
+  ```bash
+  # Web dashboard (recommended - works out of the box)
+  open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20AND%20updated%20%3E%3D%20-365d"
   ```
 
 **Other Notes:**
