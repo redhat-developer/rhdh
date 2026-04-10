@@ -86,15 +86,9 @@ export class TestHelper {
         await page.getByRole("button", { name: "Register" }).click();
         await page.getByRole("link", { name: "Self-service" }).click();
       }
-      // Run a template — click the heading link instead of a "Choose" button
+      // Run a template
       const pipelineCard = panel.locator("..").locator("..");
-      const chooseBtn = pipelineCard.getByRole("button", { name: "Choose" });
-      const headingLink = panel.getByRole("link").first();
-      if (await chooseBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await chooseBtn.click();
-      } else {
-        await headingLink.click();
-      }
+      await pipelineCard.getByRole("button", { name: "Choose" }).click();
 
       const inputText = "reallyUniqueName";
       await uiHelper.fillTextInputByLabel("Organization", inputText);
