@@ -18274,7 +18274,7 @@ __metadata:
     "@types/react": 18.3.27
     "@types/react-dom": 18.3.7
     eslint-plugin-unused-imports: ^4.3.0
-    lodash: 4.17.23
+    lodash: 4.18.0
     prettier: 3.7.4
     react: 18.3.1
     react-dom: 18.3.1
@@ -28448,10 +28448,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.23, lodash@npm:~4.17.21":
-  version: 4.17.23
-  resolution: "lodash@npm:4.17.23"
-  checksum: 7daad39758a72872e94651630fbb54ba76868f904211089721a64516ce865506a759d9ad3d8ff22a2a49a50a09db5d27c36f22762d21766e47e3ba918d6d7bab
+"lodash@npm:4.18.0":
+  version: 4.18.0
+  resolution: "lodash@npm:4.18.0"
+  checksum: 220e1b40f80425cbde3fcdd0915c0ef87e29cbce5fe9a6c82ad80a1d50cfab713eed7dc97a2f7697b11760796ec45cd1d9daf9767a9bee26da5502af487c9f45
   languageName: node
   linkType: hard
 
@@ -28459,6 +28459,13 @@ __metadata:
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: bb5f5b49aad29614e709af02b64c56b0f8b78c6a81434a3c1ae527d2f0f78ca08f9d9fb22aa825a053876c9d2166e9c01f31c356014b5e2bdc0556c057433102
+  languageName: node
+  linkType: hard
+
+"lodash@npm:~4.17.21":
+  version: 4.17.23
+  resolution: "lodash@npm:4.17.23"
+  checksum: 7daad39758a72872e94651630fbb54ba76868f904211089721a64516ce865506a759d9ad3d8ff22a2a49a50a09db5d27c36f22762d21766e47e3ba918d6d7bab
   languageName: node
   linkType: hard
 
