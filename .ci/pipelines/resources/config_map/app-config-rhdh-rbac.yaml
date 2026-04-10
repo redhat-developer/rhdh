@@ -168,7 +168,6 @@ permission:
       - kubernetes
       - scorecard
       - orchestrator
-      - adoption-insights
     admin:
       users:
         - name: user:default/rhdh-qe
