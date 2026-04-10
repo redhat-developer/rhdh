@@ -66,7 +66,7 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyText("csv permission policy file");
 
       await uiHelper.verifyHeading("1 group");
-      await uiHelper.verifyHeading("Permission Policies");
+      await uiHelper.verifyHeading("3 Permissions");
       const permissionPoliciesColumnsText =
         Roles.getPermissionPoliciesListColumnsText();
       await uiHelper.verifyColumnHeading(permissionPoliciesColumnsText);
