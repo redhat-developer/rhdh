@@ -122,8 +122,7 @@ aws::get_cluster_region() {
   local cluster_url="${1:?Usage: aws::get_cluster_region <cluster_url>}"
 
   if [[ "${cluster_url}" =~ \.([a-z0-9-]+)\.eks\.amazonaws\.com ]]; then
-    # BASH_REMATCH for bash, match for zsh
-    local region="${BASH_REMATCH[1]:-${match[1]}}"
+    local region="${BASH_REMATCH[1]}"
     log::info "Region of the EKS cluster found: ${region}"
     echo "${region}"
     return 0
