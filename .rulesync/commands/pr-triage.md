@@ -349,6 +349,8 @@ https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels
 
 ## Step 6: Generate Triage Report
 
+**CRITICAL**: Output the report directly to the conversation. DO NOT write to a file first unless explicitly told by the user. You are to display the full report in your response so the user can see it immediately.
+
 Present a comprehensive report with this structure:
 
 ```
@@ -461,12 +463,12 @@ Most Common Failure: {FAILURE_TYPE} ({N} occurrences)
 
 ## Step 7: Interactive Actions
 
-After presenting the report, offer these actions:
+After presenting the report (which you've already output directly to the conversation), offer these optional actions:
 
 1. **Create Jira ticket** - Generate Jira issue for new failures
 2. **Update existing ticket** - Add PR numbers to existing Jira ticket
 3. **View detailed logs** - Fetch and display full error context
-4. **Export report** - Save report to file (markdown or JSON)
+4. **Save report to file** - Export the report to a file if needed for sharing (markdown or JSON)
 5. **Re-trigger jobs** - Suggest re-trigger for infrastructure failures
 6. **Mark tests as fixme** - Generate test.fixme annotations for blocking tests
 
@@ -528,12 +530,16 @@ Reference the CI Medic Guide for known patterns:
   open "https://redhat.atlassian.net/issues/?jql=project%20%3D%20RHDHBUGS%20AND%20labels%20%3D%20%22ci-fail%22%20AND%20resolution%20%3D%20Unresolved%20AND%20updated%20%3E%3D%20-365d"
   ```
 
+**CRITICAL - Report Output:**
+- **Output report directly to conversation** - Do NOT write to /tmp and then cat
+- Display the full formatted report in your response text
+- Only save to file if user explicitly requests it (Step 7, option 4)
+
 **Other Notes:**
 - Use pattern matching and regex to extract error signatures
 - Implement fuzzy string matching for error similarity (Levenshtein distance ~70% threshold)
-- Cache fetched logs to /tmp/ to avoid redundant requests
+- Cache fetched logs to /tmp/ to avoid redundant requests (logs only, not the final report)
 - Support both manual PR input and auto-detection of recent failures
-- Save report to file for sharing with team
 
 ## Future Enhancements
 
