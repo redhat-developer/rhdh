@@ -102,27 +102,6 @@ EOF
 # Operator Configuration
 # ==============================================================================
 
-# Create conditional policies file for RBAC operator deployment
-# Args:
-#   $1 - destination_file: Path for the generated policies file
-# Returns:
-#   0 - Success
-config::create_conditional_policies_operator() {
-  local destination_file=$1
-
-  if [[ -z "$destination_file" ]]; then
-    log::error "Missing required parameter: destination_file"
-    log::info "Usage: config::create_conditional_policies_operator <destination_file>"
-    return 1
-  fi
-
-  yq '.upstream.backstage.initContainers[0].command[2]' "${DIR}/value_files/values_showcase-rbac.yaml" \
-    | head -n -4 \
-    | tail -n +2 > "$destination_file"
-  common::sed_inplace 's/\\\$/\$/g' "$destination_file"
-  return $?
-}
-
 # Prepare app configuration for operator deployment with RBAC
 # Args:
 #   $1 - config_file: Path to the app configuration file to modify

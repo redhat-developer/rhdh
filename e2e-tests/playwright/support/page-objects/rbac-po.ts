@@ -6,7 +6,6 @@ import {
   ROLES_PAGE_COMPONENTS,
 } from "./page-obj";
 import { type RoleBasedPolicy } from "@backstage-community/plugin-rbac-common";
-import { RhdhAuthApiHack } from "../api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../api/rbac-api";
 
 type PermissionPolicyType = "anyOf" | "not";
@@ -415,9 +414,8 @@ export class RbacPo extends PageObject {
     // Use the RBAC REST API for reliable cleanup — the UI-based approach
     // can silently fail if the page hasn't fully loaded or the filter
     // doesn't match, leaving a leftover role that blocks recreation.
+    const rbacApi = await RhdhRbacApi.buildRbacApi(this.page);
     try {
-      const token = await RhdhAuthApiHack.getToken(this.page);
-      const rbacApi = await RhdhRbacApi.build(token);
       // name is fully qualified like "role:default/test-role1"
       // The API expects just "default/test-role1"
       const apiRoleName = name.replace(/^role:/, "");
@@ -463,6 +461,8 @@ export class RbacPo extends PageObject {
       }
     } catch (error) {
       console.warn(`API cleanup of role ${name} failed: ${error}`);
+    } finally {
+      await rbacApi.dispose();
     }
     // Navigate to RBAC page for the subsequent test steps
     await this.page.goto("/rbac");
