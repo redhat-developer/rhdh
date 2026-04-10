@@ -401,15 +401,25 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
-      // Wait for task to finish — either success or 409 Conflict (catalog entity already registered
-      // from a prior run). Both are acceptable.
+      // Verify we navigated to the task execution page
+      await expect(page).toHaveURL(/\/create\/tasks\//, { timeout: 30000 });
+
+      // Wait for task to finish — either success, 409 Conflict (catalog entity already registered
+      // from a prior run), or failure. Success and conflict are acceptable outcomes.
       const completed = page.getByText(/Completed|succeeded|finished/i);
       const conflictError = page.getByText(/409 Conflict/i);
       const startOver = page.getByRole("button", { name: "Start Over" });
+      const failed = page.getByText(/failed/i);
 
-      await expect(completed.or(conflictError).or(startOver)).toBeVisible({
-        timeout: 120000,
-      });
+      await expect(
+        completed.or(conflictError).or(startOver).or(failed),
+      ).toBeVisible({ timeout: 120000 });
+
+      // If task failed, capture error details
+      if (await failed.isVisible()) {
+        const url = page.url();
+        throw new Error(`Scaffolder task failed. URL: ${url}`);
+      }
     });
 
     test("Verify workflow run appears in Orchestrator", async () => {

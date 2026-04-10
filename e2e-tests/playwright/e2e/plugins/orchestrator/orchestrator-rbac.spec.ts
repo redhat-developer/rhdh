@@ -787,6 +787,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let uiHelper: UIhelper;
     let page: Page;
     let apiToken: string;
+    let orchestratorRbacHelper: OrchestratorRbacHelper;
 
     test.beforeAll(async ({ browser }, testInfo) => {
       page = (await setupBrowser(browser, testInfo)).page;
@@ -796,6 +797,13 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       await common.loginAsKeycloakUser();
       apiToken = await RhdhAuthApiHack.getToken(page);
+
+      // Remove generic orchestrator permissions that would override specific deny
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      orchestratorRbacHelper = new OrchestratorRbacHelper(rbacApi);
+      await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
+        TEST_USER,
+      );
     });
 
     test.beforeEach(async ({}, testInfo) => {
@@ -940,6 +948,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         expect(deleteRole.ok()).toBeTruthy();
       } catch (error) {
         console.error("Error during cleanup in afterAll:", error);
+      } finally {
+        try {
+          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions();
+        } catch (restoreError) {
+          console.error("Error restoring orchestrator policies:", restoreError);
+        }
       }
     });
   });
