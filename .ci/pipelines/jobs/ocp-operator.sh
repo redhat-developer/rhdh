@@ -4,6 +4,8 @@
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 initiate_operator_deployments() {
   echo "Initiating Operator-backed deployments on OCP"
@@ -51,7 +53,7 @@ run_operator_runtime_config_change_tests() {
 }
 
 handle_ocp_operator() {
-  oc_login
+  common::oc_login
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE

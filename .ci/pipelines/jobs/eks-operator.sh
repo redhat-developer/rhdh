@@ -8,15 +8,13 @@ source "$DIR"/cluster/eks/eks-operator-deployment.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/cluster/eks/aws.sh
 source "$DIR"/cluster/eks/aws.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_eks_operator() {
   echo "Starting EKS Operator deployment"
 
-  # Verify EKS cluster connectivity
-  aws_eks_verify_cluster
-
-  # Get cluster information
-  aws_eks_get_cluster_info
+  common::kubectl_login
 
   NAME_SPACE="showcase-k8s-ci-nightly"
   NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
@@ -26,8 +24,6 @@ handle_eks_operator() {
   K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL OCM_CLUSTER_URL
-
-  re_create_k8s_service_account_and_get_token
 
   cluster_setup_k8s_operator
 

@@ -912,7 +912,14 @@ spec:
         command: ["sh", "-c"]
         args:
           - |
-            psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
+            output=$(psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' 2>&1) && echo "Database created successfully" || {
+              if echo "$output" | grep -q "already exists"; then
+                echo "Database already exists, skipping creation"
+              else
+                echo "ERROR: Database creation failed: $output"
+                exit 1
+              fi
+            }
         env:
         - name: POSTGRES_HOST
           valueFrom:
@@ -1231,83 +1238,6 @@ force_delete_namespace() {
   done
 
   echo "Namespace '${project}' successfully deleted."
-}
-
-oc_login() {
-  oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
-  echo "OCP version: $(oc version)"
-}
-
-is_openshift() {
-  oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
-}
-
-detect_ocp() {
-  echo "Detecting OCP or K8s and populating IS_OPENSHIFT variable..."
-  if [[ "${IS_OPENSHIFT}" == "" ]]; then
-    IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
-  fi
-
-  echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
-  save_is_openshift "${IS_OPENSHIFT}"
-}
-
-detect_container_platform() {
-  echo "Detecting container platform and populating CONTAINER_PLATFORM variable..."
-
-  # Determine platform type based on IS_OPENSHIFT variable
-  if [[ "${IS_OPENSHIFT}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *osd-gcp*)
-        CONTAINER_PLATFORM="osd-gcp"
-        ;;
-      *)
-        CONTAINER_PLATFORM="ocp"
-        ;;
-    esac
-    # Get OCP version
-    if command -v oc &> /dev/null; then
-      CONTAINER_PLATFORM_VERSION=$(oc version 2> /dev/null | grep "Server Version:" | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "unknown")
-    else
-      CONTAINER_PLATFORM_VERSION="unknown"
-    fi
-  else
-    # Determine Kubernetes distribution based on JOB_NAME pattern
-    case "$JOB_NAME" in
-      *aks*)
-        CONTAINER_PLATFORM="aks"
-        ;;
-      *eks*)
-        CONTAINER_PLATFORM="eks"
-        ;;
-      *gke*)
-        CONTAINER_PLATFORM="gke"
-        ;;
-      *iks*)
-        CONTAINER_PLATFORM="iks"
-        ;;
-      *)
-        CONTAINER_PLATFORM="unknown"
-        ;;
-    esac
-
-    # Get Kubernetes version
-    if command -v kubectl &> /dev/null; then
-      CONTAINER_PLATFORM_VERSION=$(kubectl version 2> /dev/null | grep "Server Version:" | cut -d' ' -f3 | sed 's/^v//' | cut -d'.' -f1,2 || echo "unknown")
-    else
-      CONTAINER_PLATFORM_VERSION="unknown"
-    fi
-  fi
-
-  echo "CONTAINER_PLATFORM: ${CONTAINER_PLATFORM}"
-  echo "CONTAINER_PLATFORM_VERSION: ${CONTAINER_PLATFORM_VERSION}"
-
-  # Export variables for use in other scripts
-  export CONTAINER_PLATFORM
-  export CONTAINER_PLATFORM_VERSION
-
-  # Save platform information for reporting
-  save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 }
 
 # Helper function for cross-platform sed

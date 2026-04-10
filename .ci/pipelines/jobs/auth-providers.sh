@@ -4,10 +4,12 @@
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
-  oc_login
+  common::oc_login
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
   wait_for_backstage_crd "default"

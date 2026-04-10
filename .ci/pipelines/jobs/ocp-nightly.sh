@@ -2,13 +2,15 @@
 
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_ocp_nightly() {
   export NAME_SPACE="showcase-ci-nightly"
   export NAME_SPACE_RBAC="showcase-rbac-nightly"
   export NAME_SPACE_POSTGRES_DB="postgress-external-db-nightly"
 
-  oc_login
+  common::oc_login
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE

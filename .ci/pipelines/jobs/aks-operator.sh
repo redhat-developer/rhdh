@@ -6,9 +6,13 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/cluster/aks/aks-operator-deployment.sh
 # shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 
 handle_aks_operator() {
   echo "Starting AKS Operator deployment"
+
+  common::kubectl_login
 
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   export K8S_CLUSTER_ROUTER_BASE
