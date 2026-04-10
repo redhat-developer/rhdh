@@ -73,7 +73,8 @@
     "@backstage/backend-defaults@0.13.1": "patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch",
     "@backstage/backend-defaults@^0.13.1": "patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch",
     "@backstage/backend-defaults@^0.13.2": "patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch",
-    "@backstage/plugin-scaffolder-node@^0.12.1": "patch:@backstage/plugin-scaffolder-node@npm%3A0.12.1#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.12.1-7ce02a35bc.patch"
+    "@backstage/plugin-scaffolder-node@^0.12.1": "patch:@backstage/plugin-scaffolder-node@npm%3A0.12.1#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.12.1-7ce02a35bc.patch",
+    "infinispan": "0.13.0"
   },
   "jest": {
     "testTimeout": 20000
