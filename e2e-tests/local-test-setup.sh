@@ -100,7 +100,7 @@ else
     log::info "Please ensure your kubeconfig is set correctly: kubectl cluster-info"
     return 1 2> /dev/null || exit 1
   fi
-  K8S_CLUSTER_TOKEN=$(kubectl create token ${SA_NAME} -n ${SA_NAMESPACE} --duration=48h)
+  K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
 fi
 export K8S_CLUSTER_TOKEN
 log::success "K8S_CLUSTER_TOKEN: [set]"
