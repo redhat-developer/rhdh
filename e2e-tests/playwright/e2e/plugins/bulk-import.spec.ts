@@ -144,14 +144,7 @@ spec:
       "Preview file",
     );
 
-    const saveButton = page.getByRole("button", { name: "Save" });
-    await saveButton.scrollIntoViewIfNeeded();
-    // Use dispatchEvent because the Save button is inside a drawer with its own
-    // scroll context and remains outside the main viewport even after scrolling.
-    // click({ force: true }) still fails with "outside of the viewport" in this case.
-    // The subsequent toBeHidden() assertion validates the click was effective.
-    await saveButton.dispatchEvent("click");
-    await expect(saveButton).toBeHidden();
+    await expect(await uiHelper.clickButton("Save")).toBeHidden();
     await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 

@@ -40,11 +40,10 @@ export class BulkImport {
   }
 
   async selectRepoInTable(repoName: string) {
-    const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(repoName));
-    const checkbox = row.getByRole("checkbox");
-    await checkbox.scrollIntoViewIfNeeded();
-    await checkbox.check({ force: true });
-    await expect(checkbox).toBeChecked();
+    await this.page
+      .locator(UI_HELPER_ELEMENTS.rowByText(repoName))
+      .getByRole("checkbox")
+      .check();
   }
 
   async fillTextInputByNameAtt(label: string, text: string) {
