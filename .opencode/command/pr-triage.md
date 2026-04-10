@@ -92,7 +92,7 @@ BUILD_LOG_URL="https://storage.googleapis.com/test-platform-results/pr-logs/pull
 curl -s "$BUILD_LOG_URL" > /tmp/build-log-{PR_NUMBER}.txt
 
 # Extract actual error messages (NOT summaries - show raw errors)
-grep -A 10 -B 5 "Error\|FAIL\|Failed\|Timed out" /tmp/build-log-{PR_NUMBER}.txt | tail -50
+grep -E -A 10 -B 5 "Error|FAIL|Failed|Timed out" /tmp/build-log-{PR_NUMBER}.txt | tail -50
 
 # Extract structured error logs
 grep -E '"level":"error"' /tmp/build-log-{PR_NUMBER}.txt | tail -10
@@ -182,7 +182,7 @@ For each failure, extract:
 
 ```bash
 # Extract the main error
-grep -A 5 "❌\|Error\|FAIL\|Failed" build-log.txt | head -20
+grep -E -A 5 "❌|Error|FAIL|Failed" build-log.txt | head -20
 
 # Find which namespace failed
 sed -nE 's/.*namespace:[[:space:]]*([^[:space:]]+).*/\1/p' build-log.txt
