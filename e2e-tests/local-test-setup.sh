@@ -92,7 +92,7 @@ if [[ "$IS_OPENSHIFT" == "true" ]]; then
     log::info "Please login first: oc login"
     return 1 2> /dev/null || exit 1
   fi
-  K8S_CLUSTER_TOKEN=$(oc create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
+  K8S_CLUSTER_TOKEN=$(oc create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=8h)
 else
   # Non-OpenShift platforms (AKS/EKS/GKE) - use short-lived token via TokenRequest API
   if ! kubectl cluster-info &> /dev/null; then
@@ -100,7 +100,7 @@ else
     log::info "Please ensure your kubeconfig is set correctly: kubectl cluster-info"
     return 1 2> /dev/null || exit 1
   fi
-  K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
+  K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=8h)
 fi
 export K8S_CLUSTER_TOKEN
 log::success "K8S_CLUSTER_TOKEN: [set]"

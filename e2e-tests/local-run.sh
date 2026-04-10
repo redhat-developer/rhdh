@@ -388,7 +388,7 @@ if [[ "$CONTAINER_PLATFORM" == "ocp" || "$CONTAINER_PLATFORM" == "osd-gcp" ]]; t
   oc create namespace "$SA_NAMESPACE" 2> /dev/null || log::info "Namespace already exists"
   oc create serviceaccount "$SA_NAME" -n "$SA_NAMESPACE" 2> /dev/null || log::info "Service account already exists"
   oc adm policy add-cluster-role-to-user cluster-admin "system:serviceaccount:${SA_NAMESPACE}:${SA_NAME}" 2> /dev/null || true
-  K8S_CLUSTER_TOKEN=$(oc create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
+  K8S_CLUSTER_TOKEN=$(oc create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=8h)
 else
   # Non-OpenShift platforms (AKS, EKS, GKE) - use kubectl commands
   if ! kubectl cluster-info &> /dev/null; then
@@ -406,8 +406,8 @@ else
     --clusterrole=cluster-admin \
     --serviceaccount="${SA_NAMESPACE}:${SA_NAME}" 2> /dev/null || true
 
-  log::info "Creating short-lived token for service account (48h TTL)"
-  K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=48h)
+  log::info "Creating short-lived token for service account (8h TTL)"
+  K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=8h)
   log::info "Acquired short-lived token for the service account"
 fi
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
