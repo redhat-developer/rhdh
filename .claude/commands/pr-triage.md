@@ -58,9 +58,12 @@ Present as a table and let the user select which ones to analyze.
 
 For each PR/job, construct the GCS URL and fetch the build log:
 
-**URL Pattern:**
+**URL Pattern** (replace placeholders with actual values):
 ```
 https://storage.googleapis.com/test-platform-results/pr-logs/pull/redhat-developer_rhdh/{PR_NUMBER}/{JOB_NAME}/{BUILD_ID}/build-log.txt
+
+Example:
+https://storage.googleapis.com/test-platform-results/pr-logs/pull/redhat-developer_rhdh/4537/pull-ci-redhat-developer-rhdh-release-1.8-e2e-ocp-helm/2042237810542383104/build-log.txt
 ```
 
 **How to find the BUILD_ID:**
@@ -74,35 +77,44 @@ https://prow.ci.openshift.org/view/gs/test-platform-results/pr-logs/pull/redhat-
 Option B: Query Prow API for latest build ID
 ```bash
 # Note: prowjobs.js doesn't support query parameters, filter in jq
-JOB_NAME="pull-ci-redhat-developer-rhdh-{BRANCH}-e2e-{PLATFORM}-{METHOD}"
-PR_NUM={PR_NUMBER}
+# Example: Set your values here
+PR_NUMBER=4537
+JOB_NAME="pull-ci-redhat-developer-rhdh-release-1.8-e2e-ocp-helm"
+
 curl -s 'https://prow.ci.openshift.org/prowjobs.js' | \
-  jq -r --arg job "$JOB_NAME" --arg pr "$PR_NUM" \
+  jq -r --arg job "$JOB_NAME" --arg pr "$PR_NUMBER" \
     '.items[] | select(.spec.job == $job and .spec.refs.pulls[0].number == ($pr | tonumber)) | .status.build_id' | \
   head -1
 ```
 
 Option C: List directory to find latest build
 ```bash
-# Use gcsweb or gsutil to list builds for the PR
-curl -s "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/pr-logs/pull/redhat-developer_rhdh/{PR_NUMBER}/" | \
+# Example: Set your PR number here
+PR_NUMBER=4537
+
+curl -s "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/pr-logs/pull/redhat-developer_rhdh/$PR_NUMBER/" | \
   grep -oE 'pull-ci-redhat-developer-rhdh[^"]+' | sort -u
 ```
 
 **Fetch the log and extract errors:**
 ```bash
+# Example: Set your values here (from steps above)
+PR_NUMBER=4537
+JOB_NAME="pull-ci-redhat-developer-rhdh-release-1.8-e2e-ocp-helm"
+BUILD_ID="2042237810542383104"
+
 # Download full build log
-BUILD_LOG_URL="https://storage.googleapis.com/test-platform-results/pr-logs/pull/redhat-developer_rhdh/{PR_NUMBER}/{JOB_NAME}/{BUILD_ID}/build-log.txt"
-curl -s "$BUILD_LOG_URL" > /tmp/build-log-{PR_NUMBER}.txt
+BUILD_LOG_URL="https://storage.googleapis.com/test-platform-results/pr-logs/pull/redhat-developer_rhdh/$PR_NUMBER/$JOB_NAME/$BUILD_ID/build-log.txt"
+curl -s "$BUILD_LOG_URL" > /tmp/build-log-$PR_NUMBER.txt
 
 # Extract actual error messages (NOT summaries - show raw errors)
-grep -E -A 10 -B 5 "Error|FAIL|Failed|Timed out" /tmp/build-log-{PR_NUMBER}.txt | tail -50
+grep -E -A 10 -B 5 "Error|FAIL|Failed|Timed out" /tmp/build-log-$PR_NUMBER.txt | tail -50
 
 # Extract structured error logs
-grep -E '"level":"error"' /tmp/build-log-{PR_NUMBER}.txt | tail -10
+grep -E '"level":"error"' /tmp/build-log-$PR_NUMBER.txt | tail -10
 
 # Get final failure summary
-tail -100 /tmp/build-log-{PR_NUMBER}.txt | head -50
+tail -100 /tmp/build-log-$PR_NUMBER.txt | head -50
 ```
 
 **CRITICAL**: Always show the ACTUAL error text from the log, not AI-generated summaries. Users need to see the real errors to verify the analysis.
