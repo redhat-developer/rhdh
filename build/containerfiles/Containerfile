@@ -258,6 +258,10 @@ RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
   microdnf clean all
 
+# Copy openssl binary from build stage (needed for dynamic plugin integrity verification)
+# The nodejs-24-minimal image doesn't include openssl CLI by default
+COPY --from=build /usr/bin/openssl /usr/bin/openssl
+
 # RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
