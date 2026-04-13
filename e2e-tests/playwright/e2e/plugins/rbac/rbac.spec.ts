@@ -449,14 +449,10 @@ test.describe("Test RBAC", () => {
       await expect(nextButton2).toBeEnabled();
       await nextButton2.click();
       // Wait for Save button which only appears on the review step
-      const saveButton1 = page.getByRole("button", { name: "Save" });
-      await expect(saveButton1).toBeVisible({
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible({
         timeout: 15000,
       });
-      // Dismiss quickstart overlay if visible — it can intercept button clicks
-      await uiHelper.hideQuickstartIfVisible();
-      await expect(saveButton1).toBeEnabled();
-      await saveButton1.click();
+      await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
         true,
@@ -491,8 +487,6 @@ test.describe("Test RBAC", () => {
       await expect(page.getByRole("button", { name: "Save" })).toBeVisible({
         timeout: 15000,
       });
-      // Dismiss quickstart overlay if visible — it can intercept button clicks
-      await uiHelper.hideQuickstartIfVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
