@@ -13,7 +13,6 @@
     "tsc": "tsc --noEmit",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint:check": "eslint src __tests__ --max-warnings=0 || true",
     "prettier:check": "prettier --check src __tests__",
     "prettier:fix": "prettier --write src __tests__"
   },

@@ -5,6 +5,7 @@ import { type OciImageCache } from './image-cache.js';
 import { log } from './log.js';
 import { extractOciPlugin } from './tar-extract.js';
 import { CONFIG_HASH_FILE, IMAGE_HASH_FILE, type Plugin, PullPolicy } from './types.js';
+import { fileExists, markAsFresh } from './util.js';
 
 export type OciInstallResult = {
   /** The installed plugin's directory name (relative to destination), or null when skipped. */
@@ -78,19 +79,6 @@ export async function installOciPlugin(
   );
   await fs.writeFile(path.join(pluginDir, CONFIG_HASH_FILE), hash);
 
-  // Old installed entries pointing at the same directory are now stale.
-  for (const [k, v] of installed) {
-    if (v === pluginPath) installed.delete(k);
-  }
-
+  markAsFresh(installed, pluginPath);
   return { pluginPath, pluginConfig: config };
-}
-
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
 }

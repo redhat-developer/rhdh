@@ -24,11 +24,11 @@ Both files live at `/opt/app-root/src/` inside the runtime image. Node.js 22 is 
 
 ```
 src/
-├── index.ts              # main() — orchestrates the full install flow
-├── cli.ts                # argv handling
+├── index.ts              # main() — argv + orchestration of the full install flow
 ├── log.ts                # uniform stdout logger
 ├── errors.ts             # InstallException
-├── types.ts              # Plugin / PluginMap / PullPolicy + constants
+├── types.ts              # PluginSpec / Plugin / PluginMap / PullPolicy + constants
+├── util.ts               # shared helpers (fileExists, isInside, isPlainObject, tar filters)
 ├── run.ts                # subprocess wrapper with structured errors
 ├── concurrency.ts        # Semaphore + mapConcurrent + getWorkers()
 ├── which.ts              # PATH lookup (no `which` dep)
@@ -84,6 +84,7 @@ All tar extraction is streaming via `node-tar` — large layers never load into 
 | `CATALOG_INDEX_IMAGE`          | _(unset)_            | OCI image to extract `dynamic-plugins.default.yaml` and catalog entities from                          |
 | `CATALOG_ENTITIES_EXTRACT_DIR` | `$TMPDIR/extensions` | Where to extract `catalog-entities/` from the catalog-index image                                      |
 | `DYNAMIC_PLUGINS_WORKERS`      | `auto`               | Worker count override for parallel OCI downloads (`auto` uses `availableParallelism()/2`, capped at 6) |
+| `DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS` | `600000` (10 min)   | Max time to wait for the lock file before aborting with an error                                         |
 
 ## Development
 

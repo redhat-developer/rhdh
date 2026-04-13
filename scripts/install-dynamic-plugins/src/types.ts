@@ -5,17 +5,27 @@ export const PullPolicy = {
 
 export type PullPolicy = (typeof PullPolicy)[keyof typeof PullPolicy];
 
-export type Plugin = {
+/**
+ * External schema — the fields a user may declare in `dynamic-plugins.yaml`.
+ * Keep this in sync with RHDH documentation.
+ */
+export type PluginSpec = {
   package: string;
   disabled?: boolean;
   pullPolicy?: PullPolicy;
   forceDownload?: boolean;
   integrity?: string;
   pluginConfig?: Record<string, unknown>;
+};
+
+/**
+ * Internal plugin record. Extends the YAML schema with fields populated at
+ * runtime (version from the package string, `plugin_hash` for change detection,
+ * `_level` to track include-file precedence).
+ */
+export type Plugin = PluginSpec & {
   version?: string;
-  /** Computed at runtime by computePluginHash(). */
   plugin_hash?: string;
-  /** Internal: include-file nesting level. 0 = included file, 1 = main file. */
   _level?: number;
 };
 
@@ -23,7 +33,7 @@ export type PluginMap = Record<string, Plugin>;
 
 export type DynamicPluginsConfig = {
   includes?: string[];
-  plugins?: Plugin[];
+  plugins?: PluginSpec[];
 };
 
 export const DOCKER_PROTO = 'docker://';

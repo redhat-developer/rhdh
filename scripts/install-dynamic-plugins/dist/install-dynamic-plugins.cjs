@@ -103,17 +103,17 @@ var require_visit = __commonJS({
     visit.BREAK = BREAK;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    function visit_(key, node, visitor, path9) {
-      const ctrl = callVisitor(key, node, visitor, path9);
+    function visit_(key, node, visitor, path10) {
+      const ctrl = callVisitor(key, node, visitor, path10);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path9, ctrl);
-        return visit_(key, ctrl, visitor, path9);
+        replaceNode(key, path10, ctrl);
+        return visit_(key, ctrl, visitor, path10);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path9 = Object.freeze(path9.concat(node));
+          path10 = Object.freeze(path10.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci2 = visit_(i, node.items[i], visitor, path9);
+            const ci2 = visit_(i, node.items[i], visitor, path10);
             if (typeof ci2 === "number")
               i = ci2 - 1;
             else if (ci2 === BREAK)
@@ -124,13 +124,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path9 = Object.freeze(path9.concat(node));
-          const ck = visit_("key", node.key, visitor, path9);
+          path10 = Object.freeze(path10.concat(node));
+          const ck = visit_("key", node.key, visitor, path10);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = visit_("value", node.value, visitor, path9);
+          const cv = visit_("value", node.value, visitor, path10);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -151,17 +151,17 @@ var require_visit = __commonJS({
     visitAsync.BREAK = BREAK;
     visitAsync.SKIP = SKIP;
     visitAsync.REMOVE = REMOVE;
-    async function visitAsync_(key, node, visitor, path9) {
-      const ctrl = await callVisitor(key, node, visitor, path9);
+    async function visitAsync_(key, node, visitor, path10) {
+      const ctrl = await callVisitor(key, node, visitor, path10);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path9, ctrl);
-        return visitAsync_(key, ctrl, visitor, path9);
+        replaceNode(key, path10, ctrl);
+        return visitAsync_(key, ctrl, visitor, path10);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path9 = Object.freeze(path9.concat(node));
+          path10 = Object.freeze(path10.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci2 = await visitAsync_(i, node.items[i], visitor, path9);
+            const ci2 = await visitAsync_(i, node.items[i], visitor, path10);
             if (typeof ci2 === "number")
               i = ci2 - 1;
             else if (ci2 === BREAK)
@@ -172,13 +172,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path9 = Object.freeze(path9.concat(node));
-          const ck = await visitAsync_("key", node.key, visitor, path9);
+          path10 = Object.freeze(path10.concat(node));
+          const ck = await visitAsync_("key", node.key, visitor, path10);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = await visitAsync_("value", node.value, visitor, path9);
+          const cv = await visitAsync_("value", node.value, visitor, path10);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -205,23 +205,23 @@ var require_visit = __commonJS({
       }
       return visitor;
     }
-    function callVisitor(key, node, visitor, path9) {
+    function callVisitor(key, node, visitor, path10) {
       if (typeof visitor === "function")
-        return visitor(key, node, path9);
+        return visitor(key, node, path10);
       if (identity.isMap(node))
-        return visitor.Map?.(key, node, path9);
+        return visitor.Map?.(key, node, path10);
       if (identity.isSeq(node))
-        return visitor.Seq?.(key, node, path9);
+        return visitor.Seq?.(key, node, path10);
       if (identity.isPair(node))
-        return visitor.Pair?.(key, node, path9);
+        return visitor.Pair?.(key, node, path10);
       if (identity.isScalar(node))
-        return visitor.Scalar?.(key, node, path9);
+        return visitor.Scalar?.(key, node, path10);
       if (identity.isAlias(node))
-        return visitor.Alias?.(key, node, path9);
+        return visitor.Alias?.(key, node, path10);
       return void 0;
     }
-    function replaceNode(key, path9, node) {
-      const parent = path9[path9.length - 1];
+    function replaceNode(key, path10, node) {
+      const parent = path10[path10.length - 1];
       if (identity.isCollection(parent)) {
         parent.items[key] = node;
       } else if (identity.isPair(parent)) {
@@ -829,10 +829,10 @@ var require_Collection = __commonJS({
     var createNode = require_createNode();
     var identity = require_identity();
     var Node = require_Node();
-    function collectionFromPath(schema, path9, value) {
+    function collectionFromPath(schema, path10, value) {
       let v2 = value;
-      for (let i = path9.length - 1; i >= 0; --i) {
-        const k2 = path9[i];
+      for (let i = path10.length - 1; i >= 0; --i) {
+        const k2 = path10[i];
         if (typeof k2 === "number" && Number.isInteger(k2) && k2 >= 0) {
           const a = [];
           a[k2] = v2;
@@ -851,7 +851,7 @@ var require_Collection = __commonJS({
         sourceObjects: /* @__PURE__ */ new Map()
       });
     }
-    var isEmptyPath = (path9) => path9 == null || typeof path9 === "object" && !!path9[Symbol.iterator]().next().done;
+    var isEmptyPath = (path10) => path10 == null || typeof path10 === "object" && !!path10[Symbol.iterator]().next().done;
     var Collection = class extends Node.NodeBase {
       constructor(type, schema) {
         super(type);
@@ -881,11 +881,11 @@ var require_Collection = __commonJS({
        * be a Pair instance or a `{ key, value }` object, which may not have a key
        * that already exists in the map.
        */
-      addIn(path9, value) {
-        if (isEmptyPath(path9))
+      addIn(path10, value) {
+        if (isEmptyPath(path10))
           this.add(value);
         else {
-          const [key, ...rest] = path9;
+          const [key, ...rest] = path10;
           const node = this.get(key, true);
           if (identity.isCollection(node))
             node.addIn(rest, value);
@@ -899,8 +899,8 @@ var require_Collection = __commonJS({
        * Removes a value from the collection.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path9) {
-        const [key, ...rest] = path9;
+      deleteIn(path10) {
+        const [key, ...rest] = path10;
         if (rest.length === 0)
           return this.delete(key);
         const node = this.get(key, true);
@@ -914,8 +914,8 @@ var require_Collection = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path9, keepScalar) {
-        const [key, ...rest] = path9;
+      getIn(path10, keepScalar) {
+        const [key, ...rest] = path10;
         const node = this.get(key, true);
         if (rest.length === 0)
           return !keepScalar && identity.isScalar(node) ? node.value : node;
@@ -933,8 +933,8 @@ var require_Collection = __commonJS({
       /**
        * Checks if the collection includes a value with the key `key`.
        */
-      hasIn(path9) {
-        const [key, ...rest] = path9;
+      hasIn(path10) {
+        const [key, ...rest] = path10;
         if (rest.length === 0)
           return this.has(key);
         const node = this.get(key, true);
@@ -944,8 +944,8 @@ var require_Collection = __commonJS({
        * Sets a value in this collection. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path9, value) {
-        const [key, ...rest] = path9;
+      setIn(path10, value) {
+        const [key, ...rest] = path10;
         if (rest.length === 0) {
           this.set(key, value);
         } else {
@@ -3449,9 +3449,9 @@ var require_Document = __commonJS({
           this.contents.add(value);
       }
       /** Adds a value to the document. */
-      addIn(path9, value) {
+      addIn(path10, value) {
         if (assertCollection(this.contents))
-          this.contents.addIn(path9, value);
+          this.contents.addIn(path10, value);
       }
       /**
        * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
@@ -3526,14 +3526,14 @@ var require_Document = __commonJS({
        * Removes a value from the document.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path9) {
-        if (Collection.isEmptyPath(path9)) {
+      deleteIn(path10) {
+        if (Collection.isEmptyPath(path10)) {
           if (this.contents == null)
             return false;
           this.contents = null;
           return true;
         }
-        return assertCollection(this.contents) ? this.contents.deleteIn(path9) : false;
+        return assertCollection(this.contents) ? this.contents.deleteIn(path10) : false;
       }
       /**
        * Returns item at `key`, or `undefined` if not found. By default unwraps
@@ -3548,10 +3548,10 @@ var require_Document = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path9, keepScalar) {
-        if (Collection.isEmptyPath(path9))
+      getIn(path10, keepScalar) {
+        if (Collection.isEmptyPath(path10))
           return !keepScalar && identity.isScalar(this.contents) ? this.contents.value : this.contents;
-        return identity.isCollection(this.contents) ? this.contents.getIn(path9, keepScalar) : void 0;
+        return identity.isCollection(this.contents) ? this.contents.getIn(path10, keepScalar) : void 0;
       }
       /**
        * Checks if the document includes a value with the key `key`.
@@ -3562,10 +3562,10 @@ var require_Document = __commonJS({
       /**
        * Checks if the document includes a value at `path`.
        */
-      hasIn(path9) {
-        if (Collection.isEmptyPath(path9))
+      hasIn(path10) {
+        if (Collection.isEmptyPath(path10))
           return this.contents !== void 0;
-        return identity.isCollection(this.contents) ? this.contents.hasIn(path9) : false;
+        return identity.isCollection(this.contents) ? this.contents.hasIn(path10) : false;
       }
       /**
        * Sets a value in this document. For `!!set`, `value` needs to be a
@@ -3582,13 +3582,13 @@ var require_Document = __commonJS({
        * Sets a value in this document. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path9, value) {
-        if (Collection.isEmptyPath(path9)) {
+      setIn(path10, value) {
+        if (Collection.isEmptyPath(path10)) {
           this.contents = value;
         } else if (this.contents == null) {
-          this.contents = Collection.collectionFromPath(this.schema, Array.from(path9), value);
+          this.contents = Collection.collectionFromPath(this.schema, Array.from(path10), value);
         } else if (assertCollection(this.contents)) {
-          this.contents.setIn(path9, value);
+          this.contents.setIn(path10, value);
         }
       }
       /**
@@ -3974,10 +3974,10 @@ var require_resolve_block_map = __commonJS({
       let offset = bm.offset;
       let commentEnd = null;
       for (const collItem of bm.items) {
-        const { start, key, sep: sep3, value } = collItem;
+        const { start, key, sep: sep2, value } = collItem;
         const keyProps = resolveProps.resolveProps(start, {
           indicator: "explicit-key-ind",
-          next: key ?? sep3?.[0],
+          next: key ?? sep2?.[0],
           offset,
           onError,
           parentIndent: bm.indent,
@@ -3991,7 +3991,7 @@ var require_resolve_block_map = __commonJS({
             else if ("indent" in key && key.indent !== bm.indent)
               onError(offset, "BAD_INDENT", startColMsg);
           }
-          if (!keyProps.anchor && !keyProps.tag && !sep3) {
+          if (!keyProps.anchor && !keyProps.tag && !sep2) {
             commentEnd = keyProps.end;
             if (keyProps.comment) {
               if (map.comment)
@@ -4015,7 +4015,7 @@ var require_resolve_block_map = __commonJS({
         ctx.atKey = false;
         if (utilMapIncludes.mapIncludes(ctx, map.items, keyNode))
           onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
-        const valueProps = resolveProps.resolveProps(sep3 ?? [], {
+        const valueProps = resolveProps.resolveProps(sep2 ?? [], {
           indicator: "map-value-ind",
           next: value,
           offset: keyNode.range[2],
@@ -4031,7 +4031,7 @@ var require_resolve_block_map = __commonJS({
             if (ctx.options.strict && keyProps.start < valueProps.found.offset - 1024)
               onError(keyNode.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key");
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep3, null, valueProps, onError);
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep2, null, valueProps, onError);
           if (ctx.schema.compat)
             utilFlowIndentCheck.flowIndentCheck(bm.indent, value, onError);
           offset = valueNode.range[2];
@@ -4122,7 +4122,7 @@ var require_resolve_end = __commonJS({
       let comment = "";
       if (end) {
         let hasSpace = false;
-        let sep3 = "";
+        let sep2 = "";
         for (const token of end) {
           const { source, type } = token;
           switch (type) {
@@ -4136,13 +4136,13 @@ var require_resolve_end = __commonJS({
               if (!comment)
                 comment = cb;
               else
-                comment += sep3 + cb;
-              sep3 = "";
+                comment += sep2 + cb;
+              sep2 = "";
               break;
             }
             case "newline":
               if (comment)
-                sep3 += source;
+                sep2 += source;
               hasSpace = true;
               break;
             default:
@@ -4185,18 +4185,18 @@ var require_resolve_flow_collection = __commonJS({
       let offset = fc.offset + fc.start.source.length;
       for (let i = 0; i < fc.items.length; ++i) {
         const collItem = fc.items[i];
-        const { start, key, sep: sep3, value } = collItem;
+        const { start, key, sep: sep2, value } = collItem;
         const props = resolveProps.resolveProps(start, {
           flow: fcName,
           indicator: "explicit-key-ind",
-          next: key ?? sep3?.[0],
+          next: key ?? sep2?.[0],
           offset,
           onError,
           parentIndent: fc.indent,
           startOnNewline: false
         });
         if (!props.found) {
-          if (!props.anchor && !props.tag && !sep3 && !value) {
+          if (!props.anchor && !props.tag && !sep2 && !value) {
             if (i === 0 && props.comma)
               onError(props.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${fcName}`);
             else if (i < fc.items.length - 1)
@@ -4250,8 +4250,8 @@ var require_resolve_flow_collection = __commonJS({
             }
           }
         }
-        if (!isMap && !sep3 && !props.found) {
-          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep3, null, props, onError);
+        if (!isMap && !sep2 && !props.found) {
+          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep2, null, props, onError);
           coll.items.push(valueNode);
           offset = valueNode.range[2];
           if (isBlock(value))
@@ -4263,7 +4263,7 @@ var require_resolve_flow_collection = __commonJS({
           if (isBlock(key))
             onError(keyNode.range, "BLOCK_IN_FLOW", blockMsg);
           ctx.atKey = false;
-          const valueProps = resolveProps.resolveProps(sep3 ?? [], {
+          const valueProps = resolveProps.resolveProps(sep2 ?? [], {
             flow: fcName,
             indicator: "map-value-ind",
             next: value,
@@ -4274,8 +4274,8 @@ var require_resolve_flow_collection = __commonJS({
           });
           if (valueProps.found) {
             if (!isMap && !props.found && ctx.options.strict) {
-              if (sep3)
-                for (const st2 of sep3) {
+              if (sep2)
+                for (const st2 of sep2) {
                   if (st2 === valueProps.found)
                     break;
                   if (st2.type === "newline") {
@@ -4292,7 +4292,7 @@ var require_resolve_flow_collection = __commonJS({
             else
               onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep3, null, valueProps, onError) : null;
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep2, null, valueProps, onError) : null;
           if (valueNode) {
             if (isBlock(value))
               onError(valueNode.range, "BLOCK_IN_FLOW", blockMsg);
@@ -4472,7 +4472,7 @@ var require_resolve_block_scalar = __commonJS({
           chompStart = i + 1;
       }
       let value = "";
-      let sep3 = "";
+      let sep2 = "";
       let prevMoreIndented = false;
       for (let i = 0; i < contentStart; ++i)
         value += lines[i][0].slice(trimIndent) + "\n";
@@ -4489,24 +4489,24 @@ var require_resolve_block_scalar = __commonJS({
           indent = "";
         }
         if (type === Scalar.Scalar.BLOCK_LITERAL) {
-          value += sep3 + indent.slice(trimIndent) + content;
-          sep3 = "\n";
+          value += sep2 + indent.slice(trimIndent) + content;
+          sep2 = "\n";
         } else if (indent.length > trimIndent || content[0] === "	") {
-          if (sep3 === " ")
-            sep3 = "\n";
-          else if (!prevMoreIndented && sep3 === "\n")
-            sep3 = "\n\n";
-          value += sep3 + indent.slice(trimIndent) + content;
-          sep3 = "\n";
+          if (sep2 === " ")
+            sep2 = "\n";
+          else if (!prevMoreIndented && sep2 === "\n")
+            sep2 = "\n\n";
+          value += sep2 + indent.slice(trimIndent) + content;
+          sep2 = "\n";
           prevMoreIndented = true;
         } else if (content === "") {
-          if (sep3 === "\n")
+          if (sep2 === "\n")
             value += "\n";
           else
-            sep3 = "\n";
+            sep2 = "\n";
         } else {
-          value += sep3 + content;
-          sep3 = " ";
+          value += sep2 + content;
+          sep2 = " ";
           prevMoreIndented = false;
         }
       }
@@ -4688,25 +4688,25 @@ var require_resolve_flow_scalar = __commonJS({
       if (!match)
         return source;
       let res = match[1];
-      let sep3 = " ";
+      let sep2 = " ";
       let pos = first.lastIndex;
       line.lastIndex = pos;
       while (match = line.exec(source)) {
         if (match[1] === "") {
-          if (sep3 === "\n")
-            res += sep3;
+          if (sep2 === "\n")
+            res += sep2;
           else
-            sep3 = "\n";
+            sep2 = "\n";
         } else {
-          res += sep3 + match[1];
-          sep3 = " ";
+          res += sep2 + match[1];
+          sep2 = " ";
         }
         pos = line.lastIndex;
       }
       const last = /[ \t]*(.*)/sy;
       last.lastIndex = pos;
       match = last.exec(source);
-      return res + sep3 + (match?.[1] ?? "");
+      return res + sep2 + (match?.[1] ?? "");
     }
     function doubleQuotedValue(source, onError) {
       let res = "";
@@ -5508,14 +5508,14 @@ var require_cst_stringify = __commonJS({
         }
       }
     }
-    function stringifyItem({ start, key, sep: sep3, value }) {
+    function stringifyItem({ start, key, sep: sep2, value }) {
       let res = "";
       for (const st2 of start)
         res += st2.source;
       if (key)
         res += stringifyToken(key);
-      if (sep3)
-        for (const st2 of sep3)
+      if (sep2)
+        for (const st2 of sep2)
           res += st2.source;
       if (value)
         res += stringifyToken(value);
@@ -5540,9 +5540,9 @@ var require_cst_visit = __commonJS({
     visit.BREAK = BREAK;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    visit.itemAtPath = (cst, path9) => {
+    visit.itemAtPath = (cst, path10) => {
       let item = cst;
-      for (const [field, index] of path9) {
+      for (const [field, index] of path10) {
         const tok = item?.[field];
         if (tok && "items" in tok) {
           item = tok.items[index];
@@ -5551,23 +5551,23 @@ var require_cst_visit = __commonJS({
       }
       return item;
     };
-    visit.parentCollection = (cst, path9) => {
-      const parent = visit.itemAtPath(cst, path9.slice(0, -1));
-      const field = path9[path9.length - 1][0];
+    visit.parentCollection = (cst, path10) => {
+      const parent = visit.itemAtPath(cst, path10.slice(0, -1));
+      const field = path10[path10.length - 1][0];
       const coll = parent?.[field];
       if (coll && "items" in coll)
         return coll;
       throw new Error("Parent collection not found");
     };
-    function _visit(path9, item, visitor) {
-      let ctrl = visitor(item, path9);
+    function _visit(path10, item, visitor) {
+      let ctrl = visitor(item, path10);
       if (typeof ctrl === "symbol")
         return ctrl;
       for (const field of ["key", "value"]) {
         const token = item[field];
         if (token && "items" in token) {
           for (let i = 0; i < token.items.length; ++i) {
-            const ci2 = _visit(Object.freeze(path9.concat([[field, i]])), token.items[i], visitor);
+            const ci2 = _visit(Object.freeze(path10.concat([[field, i]])), token.items[i], visitor);
             if (typeof ci2 === "number")
               i = ci2 - 1;
             else if (ci2 === BREAK)
@@ -5578,10 +5578,10 @@ var require_cst_visit = __commonJS({
             }
           }
           if (typeof ctrl === "function" && field === "key")
-            ctrl = ctrl(item, path9);
+            ctrl = ctrl(item, path10);
         }
       }
-      return typeof ctrl === "function" ? ctrl(item, path9) : ctrl;
+      return typeof ctrl === "function" ? ctrl(item, path10) : ctrl;
     }
     exports2.visit = visit;
   }
@@ -6665,18 +6665,18 @@ var require_parser = __commonJS({
         if (this.type === "map-value-ind") {
           const prev = getPrevProps(this.peek(2));
           const start = getFirstKeyStartProps(prev);
-          let sep3;
+          let sep2;
           if (scalar.end) {
-            sep3 = scalar.end;
-            sep3.push(this.sourceToken);
+            sep2 = scalar.end;
+            sep2.push(this.sourceToken);
             delete scalar.end;
           } else
-            sep3 = [this.sourceToken];
+            sep2 = [this.sourceToken];
           const map = {
             type: "block-map",
             offset: scalar.offset,
             indent: scalar.indent,
-            items: [{ start, key: scalar, sep: sep3 }]
+            items: [{ start, key: scalar, sep: sep2 }]
           };
           this.onKeyLine = true;
           this.stack[this.stack.length - 1] = map;
@@ -6829,15 +6829,15 @@ var require_parser = __commonJS({
                 } else if (isFlowToken(it2.key) && !includesToken(it2.sep, "newline")) {
                   const start2 = getFirstKeyStartProps(it2.start);
                   const key = it2.key;
-                  const sep3 = it2.sep;
-                  sep3.push(this.sourceToken);
+                  const sep2 = it2.sep;
+                  sep2.push(this.sourceToken);
                   delete it2.key;
                   delete it2.sep;
                   this.stack.push({
                     type: "block-map",
                     offset: this.offset,
                     indent: this.indent,
-                    items: [{ start: start2, key, sep: sep3 }]
+                    items: [{ start: start2, key, sep: sep2 }]
                   });
                 } else if (start.length > 0) {
                   it2.sep = it2.sep.concat(start, this.sourceToken);
@@ -6866,14 +6866,14 @@ var require_parser = __commonJS({
             case "scalar":
             case "single-quoted-scalar":
             case "double-quoted-scalar": {
-              const fs10 = this.flowScalar(this.type);
+              const fs11 = this.flowScalar(this.type);
               if (atNextItem || it2.value) {
-                map.items.push({ start, key: fs10, sep: [] });
+                map.items.push({ start, key: fs11, sep: [] });
                 this.onKeyLine = true;
               } else if (it2.sep) {
-                this.stack.push(fs10);
+                this.stack.push(fs11);
               } else {
-                Object.assign(it2, { key: fs10, sep: [] });
+                Object.assign(it2, { key: fs11, sep: [] });
                 this.onKeyLine = true;
               }
               return;
@@ -7001,13 +7001,13 @@ var require_parser = __commonJS({
             case "scalar":
             case "single-quoted-scalar":
             case "double-quoted-scalar": {
-              const fs10 = this.flowScalar(this.type);
+              const fs11 = this.flowScalar(this.type);
               if (!it2 || it2.value)
-                fc.items.push({ start: [], key: fs10, sep: [] });
+                fc.items.push({ start: [], key: fs11, sep: [] });
               else if (it2.sep)
-                this.stack.push(fs10);
+                this.stack.push(fs11);
               else
-                Object.assign(it2, { key: fs10, sep: [] });
+                Object.assign(it2, { key: fs11, sep: [] });
               return;
             }
             case "flow-map-end":
@@ -7031,13 +7031,13 @@ var require_parser = __commonJS({
             const prev = getPrevProps(parent);
             const start = getFirstKeyStartProps(prev);
             fixFlowSeqItems(fc);
-            const sep3 = fc.end.splice(1, fc.end.length);
-            sep3.push(this.sourceToken);
+            const sep2 = fc.end.splice(1, fc.end.length);
+            sep2.push(this.sourceToken);
             const map = {
               type: "block-map",
               offset: fc.offset,
               indent: fc.indent,
-              items: [{ start, key: fc, sep: sep3 }]
+              items: [{ start, key: fc, sep: sep2 }]
             };
             this.onKeyLine = true;
             this.stack[this.stack.length - 1] = map;
@@ -7317,15 +7317,15 @@ var require_dist = __commonJS({
 
 // src/index.ts
 var import_node_fs11 = require("node:fs");
-var fs9 = __toESM(require("node:fs/promises"));
+var fs10 = __toESM(require("node:fs/promises"));
 var os4 = __toESM(require("node:os"));
-var path8 = __toESM(require("node:path"));
+var path9 = __toESM(require("node:path"));
 var import_yaml2 = __toESM(require_dist());
 
 // src/catalog-index.ts
-var fs2 = __toESM(require("node:fs/promises"));
+var fs3 = __toESM(require("node:fs/promises"));
 var os2 = __toESM(require("node:os"));
-var path = __toESM(require("node:path"));
+var path2 = __toESM(require("node:path"));
 
 // node_modules/tar/dist/esm/index.min.js
 var import_events = __toESM(require("events"), 1);
@@ -10280,75 +10280,9 @@ function stripProto(image) {
   return { proto: "", raw: image };
 }
 
-// src/catalog-index.ts
-async function extractCatalogIndex(skopeo, image, mountDir, entitiesDir) {
-  log(`
-======= Extracting catalog index from ${image}`);
-  const resolved = await resolveImage(skopeo, image);
-  const tempDir = path.join(mountDir, ".catalog-index-temp");
-  await fs2.mkdir(tempDir, { recursive: true });
-  const tempDirAbs = path.resolve(tempDir);
-  const workDir = await fs2.mkdtemp(path.join(os2.tmpdir(), "rhdh-catalog-index-"));
-  try {
-    const url = resolved.startsWith(DOCKER_PROTO) ? resolved : `${DOCKER_PROTO}${resolved.replace(OCI_PROTO, "")}`;
-    const localDir = path.join(workDir, "idx");
-    log("	==> Downloading catalog index image");
-    await skopeo.copy(url, `dir:${localDir}`);
-    const manifest = JSON.parse(
-      await fs2.readFile(path.join(localDir, "manifest.json"), "utf8")
-    );
-    const layers = manifest.layers ?? [];
-    for (const layer of layers) {
-      const digest = layer.digest;
-      if (!digest) continue;
-      const [, fname] = digest.split(":");
-      if (!fname) continue;
-      const layerPath = path.join(localDir, fname);
-      if (!await fileExists(layerPath)) continue;
-      await co({
-        file: layerPath,
-        cwd: tempDirAbs,
-        preservePaths: false,
-        filter: (filePath, entry) => {
-          const stat = entry;
-          if (stat.size > MAX_ENTRY_SIZE) return false;
-          if (stat.type === "SymbolicLink" || stat.type === "Link") {
-            const linkTarget = path.resolve(tempDirAbs, stat.linkpath ?? "");
-            if (!isInside(linkTarget, tempDirAbs)) return false;
-          }
-          const memberPath = path.resolve(tempDirAbs, filePath);
-          if (!isInside(memberPath, tempDirAbs)) return false;
-          return stat.type === "File" || stat.type === "Directory" || stat.type === "SymbolicLink" || stat.type === "Link";
-        }
-      });
-    }
-  } finally {
-    await fs2.rm(workDir, { recursive: true, force: true });
-  }
-  const dpdy = path.join(tempDir, DPDY_FILENAME);
-  if (!await fileExists(dpdy)) {
-    throw new InstallException(`dynamic-plugins.default.yaml not found in ${image}`);
-  }
-  log("	==> Extracted dynamic-plugins.default.yaml");
-  for (const sub of ["catalog-entities/extensions", "catalog-entities/marketplace"]) {
-    const src = path.join(tempDir, sub);
-    if (await fileExists(src)) {
-      await fs2.mkdir(entitiesDir, { recursive: true });
-      const dst = path.join(entitiesDir, "catalog-entities");
-      await fs2.rm(dst, { recursive: true, force: true });
-      await copyDir(src, dst);
-      log(`	==> Extracted catalog entities from ${sub}`);
-      break;
-    }
-  }
-  return dpdy;
-}
-async function cleanupCatalogIndexTemp(mountDir) {
-  await fs2.rm(path.join(mountDir, ".catalog-index-temp"), {
-    recursive: true,
-    force: true
-  });
-}
+// src/util.ts
+var fs2 = __toESM(require("node:fs/promises"));
+var path = __toESM(require("node:path"));
 async function fileExists(filePath) {
   try {
     await fs2.access(filePath);
@@ -10361,16 +10295,104 @@ function isInside(childAbs, parentAbs) {
   const normalized = parentAbs.endsWith(path.sep) ? parentAbs : parentAbs + path.sep;
   return childAbs === parentAbs || childAbs.startsWith(normalized);
 }
+function isPlainObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isAllowedEntryType(type) {
+  return type === "File" || type === "Directory" || type === "SymbolicLink" || type === "Link" || type === "OldFile" || type === "ContiguousFile";
+}
+function markAsFresh(installed, pluginPath) {
+  for (const [k2, v2] of installed) {
+    if (v2 === pluginPath) installed.delete(k2);
+  }
+}
+
+// src/catalog-index.ts
+async function extractCatalogIndex(skopeo, image, mountDir, entitiesDir) {
+  log(`
+======= Extracting catalog index from ${image}`);
+  const resolved = await resolveImage(skopeo, image);
+  const tempDir = path2.join(mountDir, ".catalog-index-temp");
+  await fs3.mkdir(tempDir, { recursive: true });
+  const tempDirAbs = path2.resolve(tempDir);
+  const workDir = await fs3.mkdtemp(path2.join(os2.tmpdir(), "rhdh-catalog-index-"));
+  try {
+    const url = resolved.startsWith(DOCKER_PROTO) ? resolved : `${DOCKER_PROTO}${resolved.replace(OCI_PROTO, "")}`;
+    const localDir = path2.join(workDir, "idx");
+    log("	==> Downloading catalog index image");
+    await skopeo.copy(url, `dir:${localDir}`);
+    const manifest = JSON.parse(
+      await fs3.readFile(path2.join(localDir, "manifest.json"), "utf8")
+    );
+    const layers = manifest.layers ?? [];
+    let pending = null;
+    for (const layer of layers) {
+      if (pending) break;
+      const digest = layer.digest;
+      if (!digest) continue;
+      const [, fname] = digest.split(":");
+      if (!fname) continue;
+      const layerPath = path2.join(localDir, fname);
+      if (!await fileExists(layerPath)) continue;
+      await co({
+        file: layerPath,
+        cwd: tempDirAbs,
+        preservePaths: false,
+        filter: (filePath, entry) => {
+          if (pending) return false;
+          const stat = entry;
+          if (stat.size > MAX_ENTRY_SIZE) {
+            pending = new InstallException(`Zip bomb detected in ${filePath}`);
+            return false;
+          }
+          if (stat.type === "SymbolicLink" || stat.type === "Link") {
+            const linkTarget = path2.resolve(tempDirAbs, stat.linkpath ?? "");
+            if (!isInside(linkTarget, tempDirAbs)) return false;
+          }
+          const memberPath = path2.resolve(tempDirAbs, filePath);
+          if (!isInside(memberPath, tempDirAbs)) return false;
+          return isAllowedEntryType(stat.type);
+        }
+      });
+    }
+    if (pending) throw pending;
+  } finally {
+    await fs3.rm(workDir, { recursive: true, force: true });
+  }
+  const dpdy = path2.join(tempDir, DPDY_FILENAME);
+  if (!await fileExists(dpdy)) {
+    throw new InstallException(`dynamic-plugins.default.yaml not found in ${image}`);
+  }
+  log("	==> Extracted dynamic-plugins.default.yaml");
+  for (const sub of ["catalog-entities/extensions", "catalog-entities/marketplace"]) {
+    const src = path2.join(tempDir, sub);
+    if (await fileExists(src)) {
+      await fs3.mkdir(entitiesDir, { recursive: true });
+      const dst = path2.join(entitiesDir, "catalog-entities");
+      await fs3.rm(dst, { recursive: true, force: true });
+      await copyDir(src, dst);
+      log(`	==> Extracted catalog entities from ${sub}`);
+      break;
+    }
+  }
+  return dpdy;
+}
+async function cleanupCatalogIndexTemp(mountDir) {
+  await fs3.rm(path2.join(mountDir, ".catalog-index-temp"), {
+    recursive: true,
+    force: true
+  });
+}
 async function copyDir(src, dst) {
-  await fs2.mkdir(dst, { recursive: true });
-  const entries = await fs2.readdir(src, { withFileTypes: true });
+  await fs3.mkdir(dst, { recursive: true });
+  const entries = await fs3.readdir(src, { withFileTypes: true });
   for (const entry of entries) {
-    const s3 = path.join(src, entry.name);
-    const d = path.join(dst, entry.name);
+    const s3 = path2.join(src, entry.name);
+    const d = path2.join(dst, entry.name);
     if (entry.isDirectory()) {
       await copyDir(s3, d);
     } else if (entry.isFile()) {
-      await fs2.copyFile(s3, d);
+      await fs3.copyFile(s3, d);
     }
   }
 }
@@ -10425,8 +10447,8 @@ function getWorkers() {
 
 // src/image-cache.ts
 var import_node_crypto2 = require("node:crypto");
-var fs3 = __toESM(require("node:fs/promises"));
-var path2 = __toESM(require("node:path"));
+var fs4 = __toESM(require("node:fs/promises"));
+var path3 = __toESM(require("node:path"));
 var OciImageCache = class {
   constructor(skopeo, tmpDir) {
     this.skopeo = skopeo;
@@ -10477,13 +10499,13 @@ var OciImageCache = class {
   }
   async downloadAndLocateTarball(resolved) {
     const digest = (0, import_node_crypto2.createHash)("sha256").update(resolved).digest("hex");
-    const localDir = path2.join(this.tmpDir, digest);
-    await fs3.mkdir(localDir, { recursive: true });
+    const localDir = path3.join(this.tmpDir, digest);
+    await fs4.mkdir(localDir, { recursive: true });
     const dockerUrl = resolved.replace(OCI_PROTO, DOCKER_PROTO);
     log(`	==> Downloading ${resolved}`);
     await this.skopeo.copy(dockerUrl, `dir:${localDir}`);
-    const manifestPath = path2.join(localDir, "manifest.json");
-    const manifest = JSON.parse(await fs3.readFile(manifestPath, "utf8"));
+    const manifestPath = path3.join(localDir, "manifest.json");
+    const manifest = JSON.parse(await fs4.readFile(manifestPath, "utf8"));
     const firstLayer = manifest.layers?.[0]?.digest;
     if (!firstLayer) {
       throw new InstallException(`OCI manifest for ${resolved} has no layers`);
@@ -10492,13 +10514,13 @@ var OciImageCache = class {
     if (!filename) {
       throw new InstallException(`Malformed layer digest ${firstLayer} in ${resolved}`);
     }
-    return path2.join(localDir, filename);
+    return path3.join(localDir, filename);
   }
 };
 
 // src/installer-npm.ts
-var fs5 = __toESM(require("node:fs/promises"));
-var path4 = __toESM(require("node:path"));
+var fs6 = __toESM(require("node:fs/promises"));
+var path5 = __toESM(require("node:path"));
 
 // src/integrity.ts
 var import_node_crypto3 = require("node:crypto");
@@ -10573,15 +10595,15 @@ async function run(cmd, errMsg, options = {}) {
 }
 
 // src/tar-extract.ts
-var fs4 = __toESM(require("node:fs/promises"));
-var path3 = __toESM(require("node:path"));
+var fs5 = __toESM(require("node:fs/promises"));
+var path4 = __toESM(require("node:path"));
 var PACKAGE_PREFIX = "package/";
 async function extractOciPlugin(tarball, pluginPath, destination) {
   assertSafePluginPath(pluginPath);
-  const destAbs = path3.resolve(destination);
-  const pluginDir = path3.join(destAbs, pluginPath);
-  await fs4.rm(pluginDir, { recursive: true, force: true });
-  await fs4.mkdir(destAbs, { recursive: true });
+  const destAbs = path4.resolve(destination);
+  const pluginDir = path4.join(destAbs, pluginPath);
+  await fs5.rm(pluginDir, { recursive: true, force: true });
+  await fs5.mkdir(destAbs, { recursive: true });
   const pluginPathBoundary = pluginPath.endsWith("/") ? pluginPath : pluginPath + "/";
   let pending = null;
   await co({
@@ -10598,8 +10620,8 @@ async function extractOciPlugin(tarball, pluginPath, destination) {
       }
       if (stat.type === "SymbolicLink" || stat.type === "Link") {
         const linkName = stat.linkpath ?? "";
-        const linkTarget = path3.resolve(destAbs, linkName);
-        if (!isInside2(linkTarget, destAbs)) {
+        const linkTarget = path4.resolve(destAbs, linkName);
+        if (!isInside(linkTarget, destAbs)) {
           log(
             `	==> WARNING: skipping file containing link outside of the archive: ${filePath} -> ${linkName}`
           );
@@ -10620,9 +10642,9 @@ async function extractNpmPackage(archive) {
     throw new InstallException(`Expected .tgz archive, got ${archive}`);
   }
   const pkgDir = archive.slice(0, -".tgz".length);
-  const pkgDirReal = path3.resolve(pkgDir);
-  await fs4.rm(pkgDir, { recursive: true, force: true });
-  await fs4.mkdir(pkgDir, { recursive: true });
+  const pkgDirReal = path4.resolve(pkgDir);
+  await fs5.rm(pkgDir, { recursive: true, force: true });
+  await fs5.mkdir(pkgDir, { recursive: true });
   let pending = null;
   await co({
     file: archive,
@@ -10656,8 +10678,8 @@ async function extractNpmPackage(archive) {
         }
         stat.path = filePath.slice(PACKAGE_PREFIX.length);
         stat.linkpath = linkPath.slice(PACKAGE_PREFIX.length);
-        const linkTarget = path3.resolve(pkgDir, stat.linkpath);
-        if (!isInside2(linkTarget, pkgDirReal)) {
+        const linkTarget = path4.resolve(pkgDir, stat.linkpath);
+        if (!isInside(linkTarget, pkgDirReal)) {
           pending = new InstallException(
             `NPM package archive contains a link outside of the archive: ${stat.path} -> ${stat.linkpath}`
           );
@@ -10672,20 +10694,13 @@ async function extractNpmPackage(archive) {
     }
   });
   if (pending) throw pending;
-  await fs4.rm(archive, { force: true });
-  return path3.basename(pkgDirReal);
+  await fs5.rm(archive, { force: true });
+  return path4.basename(pkgDirReal);
 }
 function assertSafePluginPath(pluginPath) {
-  if (pluginPath.includes("..") || path3.isAbsolute(pluginPath)) {
+  if (pluginPath.includes("..") || path4.isAbsolute(pluginPath)) {
     throw new InstallException(`Invalid plugin path (path traversal detected): ${pluginPath}`);
   }
-}
-function isInside2(childAbs, parentAbs) {
-  const normalizedParent = parentAbs.endsWith(path3.sep) ? parentAbs : parentAbs + path3.sep;
-  return childAbs === parentAbs || childAbs.startsWith(normalizedParent);
-}
-function isAllowedEntryType(type) {
-  return type === "File" || type === "Directory" || type === "SymbolicLink" || type === "Link" || type === "OldFile" || type === "ContiguousFile";
 }
 
 // src/installer-npm.ts
@@ -10709,36 +10724,52 @@ async function installNpmPlugin(plugin, destination, skipIntegrity, installed) {
     }
   }
   const isLocal = pkg.startsWith("./");
-  const actualPkg = isLocal ? path4.join(process.cwd(), pkg.slice(2)) : pkg;
-  if (!isLocal && !skipIntegrity && !plugin.integrity) {
+  const actualPkg = isLocal ? path5.join(process.cwd(), pkg.slice(2)) : pkg;
+  const verifyRemoteIntegrity = !isLocal && !skipIntegrity;
+  if (verifyRemoteIntegrity && !plugin.integrity) {
     throw new InstallException(
       `No integrity hash provided for Package ${pkg}. This is an insecure installation. To ignore this error, set the SKIP_INTEGRITY_CHECK environment variable to 'true'.`
     );
   }
   log("	==> Running npm pack");
-  const { stdout } = await run(["npm", "pack", actualPkg], `npm pack failed for ${pkg}`, {
-    cwd: destination
-  });
-  const archiveName = stdout.trim().split("\n").slice(-1)[0];
-  if (!archiveName) {
-    throw new InstallException(`npm pack produced no archive for ${pkg}`);
-  }
-  const archive = path4.join(destination, archiveName);
-  if (!isLocal && !skipIntegrity && plugin.integrity) {
+  const archiveName = await npmPack(actualPkg, destination);
+  const archive = path5.join(destination, archiveName);
+  if (verifyRemoteIntegrity) {
     log("	==> Verifying package integrity");
     await verifyIntegrity(pkg, archive, plugin.integrity);
   }
   const pluginPath = await extractNpmPackage(archive);
-  await fs5.writeFile(path4.join(destination, pluginPath, CONFIG_HASH_FILE), hash);
-  for (const [k2, v2] of installed) {
-    if (v2 === pluginPath) installed.delete(k2);
-  }
+  await fs6.writeFile(path5.join(destination, pluginPath, CONFIG_HASH_FILE), hash);
+  markAsFresh(installed, pluginPath);
   return { pluginPath, pluginConfig: config };
+}
+async function npmPack(actualPkg, destination) {
+  const { stdout } = await run(
+    ["npm", "pack", "--json", actualPkg],
+    `npm pack failed for ${actualPkg}`,
+    { cwd: destination }
+  );
+  let parsed;
+  try {
+    parsed = JSON.parse(stdout);
+  } catch (err) {
+    throw new InstallException(
+      `npm pack produced invalid JSON for ${actualPkg}: ${err.message}`
+    );
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new InstallException(`npm pack produced no archives for ${actualPkg}`);
+  }
+  const first = parsed[0];
+  if (!first || typeof first !== "object" || typeof first.filename !== "string") {
+    throw new InstallException(`npm pack output missing 'filename' for ${actualPkg}`);
+  }
+  return first.filename;
 }
 
 // src/installer-oci.ts
-var fs6 = __toESM(require("node:fs/promises"));
-var path5 = __toESM(require("node:path"));
+var fs7 = __toESM(require("node:fs/promises"));
+var path6 = __toESM(require("node:path"));
 async function installOciPlugin(plugin, destination, imageCache, installed) {
   if (plugin.disabled) {
     return { pluginPath: null, pluginConfig: {} };
@@ -10758,9 +10789,9 @@ async function installOciPlugin(plugin, destination, imageCache, installed) {
       return { pluginPath: null, pluginConfig: config };
     }
     if (pullPolicy === PullPolicy.ALWAYS) {
-      const digestFile = path5.join(destination, pathInstalled, IMAGE_HASH_FILE);
-      if (await fileExists2(digestFile)) {
-        const localDigest = (await fs6.readFile(digestFile, "utf8")).trim();
+      const digestFile = path6.join(destination, pathInstalled, IMAGE_HASH_FILE);
+      if (await fileExists(digestFile)) {
+        const localDigest = (await fs7.readFile(digestFile, "utf8")).trim();
         const imagePart2 = pkg.split("!")[0];
         const remoteDigest = await imageCache.getDigest(imagePart2);
         if (localDigest === remoteDigest) {
@@ -10780,47 +10811,50 @@ async function installOciPlugin(plugin, destination, imageCache, installed) {
   }
   const tarball = await imageCache.getTarball(imagePart);
   await extractOciPlugin(tarball, pluginPath, destination);
-  const pluginDir = path5.join(destination, pluginPath);
-  await fs6.mkdir(pluginDir, { recursive: true });
-  await fs6.writeFile(
-    path5.join(pluginDir, IMAGE_HASH_FILE),
+  const pluginDir = path6.join(destination, pluginPath);
+  await fs7.mkdir(pluginDir, { recursive: true });
+  await fs7.writeFile(
+    path6.join(pluginDir, IMAGE_HASH_FILE),
     await imageCache.getDigest(imagePart)
   );
-  await fs6.writeFile(path5.join(pluginDir, CONFIG_HASH_FILE), hash);
-  for (const [k2, v2] of installed) {
-    if (v2 === pluginPath) installed.delete(k2);
-  }
+  await fs7.writeFile(path6.join(pluginDir, CONFIG_HASH_FILE), hash);
+  markAsFresh(installed, pluginPath);
   return { pluginPath, pluginConfig: config };
-}
-async function fileExists2(filePath) {
-  try {
-    await fs6.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 // src/lock-file.ts
 var import_node_fs8 = require("node:fs");
-var fs7 = __toESM(require("node:fs/promises"));
+var fs8 = __toESM(require("node:fs/promises"));
 var POLL_INTERVAL_MS = 1e3;
+var DEFAULT_LOCK_TIMEOUT_MS = 10 * 60 * 1e3;
 async function createLock(lockPath) {
+  const timeoutMs = parseLockTimeout(process.env.DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS);
+  const deadline = Date.now() + timeoutMs;
   for (; ; ) {
     try {
-      await fs7.writeFile(lockPath, String(process.pid), { flag: "wx" });
+      await fs8.writeFile(lockPath, String(process.pid), { flag: "wx" });
       log(`======= Created lock file: ${lockPath}`);
       return;
     } catch (err) {
       if (err.code !== "EEXIST") throw err;
     }
+    if (Date.now() >= deadline) {
+      throw new InstallException(
+        `Timed out after ${timeoutMs}ms waiting for lock file ${lockPath}. Another install may be stuck \u2014 remove the file manually to proceed.`
+      );
+    }
     log(`======= Waiting for lock to be released: ${lockPath}`);
-    await waitForPath(lockPath);
+    await waitForPath(lockPath, deadline);
   }
+}
+function parseLockTimeout(raw) {
+  if (!raw) return DEFAULT_LOCK_TIMEOUT_MS;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n >= 1 ? n : DEFAULT_LOCK_TIMEOUT_MS;
 }
 async function removeLock(lockPath) {
   try {
-    await fs7.unlink(lockPath);
+    await fs8.unlink(lockPath);
     log(`======= Removed lock file: ${lockPath}`);
   } catch (err) {
     if (err.code !== "ENOENT") throw err;
@@ -10843,13 +10877,14 @@ function registerLockCleanup(lockPath) {
     process.exit(130);
   });
 }
-async function waitForPath(lockPath) {
+async function waitForPath(lockPath, deadline) {
   for (; ; ) {
     try {
-      await fs7.access(lockPath);
+      await fs8.access(lockPath);
     } catch {
       return;
     }
+    if (Date.now() >= deadline) return;
     await sleep(POLL_INTERVAL_MS);
   }
 }
@@ -10858,7 +10893,7 @@ function sleep(ms2) {
 }
 
 // src/merger.ts
-var fs8 = __toESM(require("node:fs/promises"));
+var fs9 = __toESM(require("node:fs/promises"));
 var import_yaml = __toESM(require_dist());
 
 // src/npm-key.ts
@@ -10918,13 +10953,13 @@ async function ociPluginKey(pkg, imageCache) {
   const registry = m2[1];
   const tag = m2[2];
   const digest = m2[3];
-  let path9 = m2[4] ?? null;
+  let path10 = m2[4] ?? null;
   const version = tag ?? digest;
   const inherit = tag === "{{inherit}}" && digest === void 0;
-  if (inherit && !path9) {
+  if (inherit && !path10) {
     return { pluginKey: registry, version, inherit, resolvedPath: null };
   }
-  if (!path9) {
+  if (!path10) {
     if (!imageCache) {
       throw new InstallException(
         `Cannot auto-detect plugin path for ${pkg}: no image cache provided`
@@ -10947,15 +10982,15 @@ ${formatted}
 Please specify which plugin to install using the syntax: ${fullImage}!<plugin-name>`
       );
     }
-    path9 = paths[0];
+    path10 = paths[0];
     log(`
-======= Auto-resolving OCI package ${fullImage} to use plugin path: ${path9}`);
+======= Auto-resolving OCI package ${fullImage} to use plugin path: ${path10}`);
   }
   return {
-    pluginKey: `${registry}:!${path9}`,
+    pluginKey: `${registry}:!${path10}`,
     version,
     inherit,
-    resolvedPath: path9
+    resolvedPath: path10
   };
 }
 function escape(s3) {
@@ -10984,7 +11019,7 @@ function deepMerge(src, dst, prefix = "") {
   return dst;
 }
 async function mergePluginsFromFile(configFile, allPlugins, level, imageCache) {
-  const content = (0, import_yaml.parse)(await fs8.readFile(configFile, "utf8"));
+  const content = (0, import_yaml.parse)(await fs9.readFile(configFile, "utf8"));
   if (!isPlainObject(content)) {
     throw new InstallException(`${configFile} must contain a mapping`);
   }
@@ -11114,9 +11149,6 @@ function copyPluginFields(src, dst, skip) {
     )
   );
 }
-function isPlainObject(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 function isEqual(a, b2) {
   if (a === b2) return true;
   if (typeof a !== typeof b2) return false;
@@ -11142,7 +11174,7 @@ function isEqual(a, b2) {
 // src/plugin-hash.ts
 var import_node_crypto4 = require("node:crypto");
 var import_node_fs9 = require("node:fs");
-var path6 = __toESM(require("node:path"));
+var path7 = __toESM(require("node:path"));
 function computePluginHash(plugin) {
   const copy = {};
   for (const [k2, v2] of Object.entries(plugin)) {
@@ -11156,8 +11188,8 @@ function computePluginHash(plugin) {
   return (0, import_node_crypto4.createHash)("sha256").update(serialized).digest("hex");
 }
 function localPackageInfo(pkgPath) {
-  const absPath = path6.isAbsolute(pkgPath) ? pkgPath : path6.join(process.cwd(), pkgPath.slice(2));
-  const pj = path6.join(absPath, "package.json");
+  const absPath = path7.isAbsolute(pkgPath) ? pkgPath : path7.join(process.cwd(), pkgPath.slice(2));
+  const pj = path7.join(absPath, "package.json");
   if (!(0, import_node_fs9.existsSync)(pj)) {
     try {
       return { _mtime: (0, import_node_fs9.statSync)(absPath).mtimeMs };
@@ -11171,7 +11203,7 @@ function localPackageInfo(pkgPath) {
       _pj_mtime: (0, import_node_fs9.statSync)(pj).mtimeMs
     };
     for (const lockFile of ["package-lock.json", "yarn.lock"]) {
-      const lockPath = path6.join(absPath, lockFile);
+      const lockPath = path7.join(absPath, lockFile);
       if ((0, import_node_fs9.existsSync)(lockPath)) {
         info[`_${lockFile}_mtime`] = (0, import_node_fs9.statSync)(lockPath).mtimeMs;
       }
@@ -11196,15 +11228,15 @@ var import_node_child_process2 = require("node:child_process");
 
 // src/which.ts
 var import_node_fs10 = require("node:fs");
-var path7 = __toESM(require("node:path"));
+var path8 = __toESM(require("node:path"));
 function which(bin) {
   const pathEnv = process.env.PATH ?? "";
-  const sep3 = process.platform === "win32" ? ";" : ":";
+  const sep2 = process.platform === "win32" ? ";" : ":";
   const exts = process.platform === "win32" ? (process.env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").split(";") : [""];
-  for (const dir of pathEnv.split(sep3)) {
+  for (const dir of pathEnv.split(sep2)) {
     if (!dir) continue;
     for (const ext of exts) {
-      const full = path7.join(dir, bin + ext);
+      const full = path8.join(dir, bin + ext);
       try {
         (0, import_node_fs10.accessSync)(full, import_node_fs10.constants.X_OK);
         return full;
@@ -11280,10 +11312,10 @@ async function main() {
 `);
     process.exit(1);
   }
-  const root = path8.resolve(argv[0]);
-  const lockPath = path8.join(root, LOCK_FILENAME);
+  const root = path9.resolve(argv[0]);
+  const lockPath = path9.join(root, LOCK_FILENAME);
   registerLockCleanup(lockPath);
-  await fs9.mkdir(root, { recursive: true });
+  await fs10.mkdir(root, { recursive: true });
   await createLock(lockPath);
   let exitCode = 0;
   try {
@@ -11301,26 +11333,26 @@ async function runInstaller(root) {
   const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? "";
   let catalogDpdy = null;
   if (catalogImage) {
-    const entitiesDir = process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path8.join(os4.tmpdir(), "extensions");
+    const entitiesDir = process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path9.join(os4.tmpdir(), "extensions");
     catalogDpdy = await extractCatalogIndex(skopeo, catalogImage, root, entitiesDir);
   }
   const skipIntegrity = (process.env.SKIP_INTEGRITY_CHECK ?? "").toLowerCase() === "true";
-  const globalConfigFile = path8.join(root, GLOBAL_CONFIG_FILENAME);
-  if (!await fileExists3(CONFIG_FILE)) {
+  const globalConfigFile = path9.join(root, GLOBAL_CONFIG_FILENAME);
+  if (!await fileExists(CONFIG_FILE)) {
     log(`No ${CONFIG_FILE} found. Skipping.`);
-    await fs9.writeFile(globalConfigFile, "");
+    await fs10.writeFile(globalConfigFile, "");
     return 0;
   }
-  const rawContent = await fs9.readFile(CONFIG_FILE, "utf8");
+  const rawContent = await fs10.readFile(CONFIG_FILE, "utf8");
   const content = (0, import_yaml2.parse)(rawContent);
   if (!content) {
     log(`${CONFIG_FILE} is empty. Skipping.`);
-    await fs9.writeFile(globalConfigFile, "");
+    await fs10.writeFile(globalConfigFile, "");
     return 0;
   }
   const imageCache = new OciImageCache(
     skopeo,
-    await fs9.mkdtemp(path8.join(os4.tmpdir(), "rhdh-oci-cache-"))
+    await fs10.mkdtemp(path9.join(os4.tmpdir(), "rhdh-oci-cache-"))
   );
   const allPlugins = {};
   const includes = [...content.includes ?? []];
@@ -11329,7 +11361,7 @@ async function runInstaller(root) {
     if (idx !== -1) includes[idx] = catalogDpdy;
   }
   for (const inc of includes) {
-    if (!await fileExists3(inc)) {
+    if (!await fileExists(inc)) {
       log(`WARNING: include file ${inc} not found, skipping`);
       continue;
     }
@@ -11365,7 +11397,7 @@ async function runInstaller(root) {
   const errors = [];
   await installOci(oci, root, imageCache, installed, workers, globalConfig, errors);
   await installNpm(npm, root, skipIntegrity, installed, globalConfig, errors);
-  await fs9.writeFile(globalConfigFile, (0, import_yaml2.stringify)(globalConfig));
+  await fs10.writeFile(globalConfigFile, (0, import_yaml2.stringify)(globalConfig));
   await cleanupRemoved(root, installed);
   if (errors.length > 0) {
     log(`
@@ -11391,7 +11423,7 @@ function categorize(allPlugins) {
       continue;
     }
     if (plugin.package.startsWith("./")) {
-      const localPath = path8.join(process.cwd(), plugin.package.slice(2));
+      const localPath = path9.join(process.cwd(), plugin.package.slice(2));
       if (existsSyncSafe(localPath)) npm.push(plugin);
       else skipped.push(plugin);
       continue;
@@ -11405,7 +11437,7 @@ function handleSkippedLocals(skipped, globalConfig) {
   log(`
 ======= Skipping ${skipped.length} local plugins (directories not found)`);
   for (const plugin of skipped) {
-    const abs = path8.join(process.cwd(), plugin.package.slice(2));
+    const abs = path9.join(process.cwd(), plugin.package.slice(2));
     log(`	==> ${plugin.package} (not found at ${abs})`);
     const pc = plugin.pluginConfig;
     if (pc && typeof pc === "object" && !Array.isArray(pc)) {
@@ -11431,7 +11463,7 @@ async function installOci(plugins, root, imageCache, installed, workers, globalC
       continue;
     }
     const { value, item } = outcome;
-    if (isPlainObject2(value.pluginConfig)) {
+    if (isPlainObject(value.pluginConfig)) {
       try {
         deepMerge(value.pluginConfig, globalConfig);
       } catch (err) {
@@ -11451,7 +11483,7 @@ async function installNpm(plugins, root, skipIntegrity, installed, globalConfig,
 ======= Installing NPM plugin ${plugin.package}`);
     try {
       const result = await installNpmPlugin(plugin, root, skipIntegrity, installed);
-      if (isPlainObject2(result.pluginConfig)) {
+      if (isPlainObject(result.pluginConfig)) {
         deepMerge(result.pluginConfig, globalConfig);
       }
       if (result.pluginPath) log(`	==> Installed ${plugin.package}`);
@@ -11463,37 +11495,29 @@ async function installNpm(plugins, root, skipIntegrity, installed, globalConfig,
 }
 async function cleanupRemoved(root, installed) {
   for (const [, dir] of installed) {
-    const pluginDir = path8.join(root, dir);
+    const pluginDir = path9.join(root, dir);
     log(`
 ======= Removing obsolete plugin ${dir}`);
-    await fs9.rm(pluginDir, { recursive: true, force: true });
+    await fs10.rm(pluginDir, { recursive: true, force: true });
   }
 }
 async function readInstalledPluginHashes(root) {
   const installed = /* @__PURE__ */ new Map();
   let entries;
   try {
-    entries = await fs9.readdir(root);
+    entries = await fs10.readdir(root);
   } catch {
     return installed;
   }
   for (const entry of entries) {
-    const hashFile = path8.join(root, entry, CONFIG_HASH_FILE);
+    const hashFile = path9.join(root, entry, CONFIG_HASH_FILE);
     try {
-      const hash = (await fs9.readFile(hashFile, "utf8")).trim();
+      const hash = (await fs10.readFile(hashFile, "utf8")).trim();
       if (hash) installed.set(hash, entry);
     } catch {
     }
   }
   return installed;
-}
-async function fileExists3(filePath) {
-  try {
-    await fs9.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
 }
 function existsSyncSafe(filePath) {
   try {
@@ -11502,9 +11526,6 @@ function existsSyncSafe(filePath) {
   } catch {
     return false;
   }
-}
-function isPlainObject2(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 main().catch((err) => {
   const msg = err instanceof InstallException ? err.message : String(err);

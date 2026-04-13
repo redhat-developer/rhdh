@@ -4,6 +4,7 @@ import * as tar from 'tar';
 import { InstallException } from './errors.js';
 import { log } from './log.js';
 import { MAX_ENTRY_SIZE } from './types.js';
+import { isAllowedEntryType, isInside } from './util.js';
 
 const PACKAGE_PREFIX = 'package/';
 
@@ -151,22 +152,4 @@ function assertSafePluginPath(pluginPath: string): void {
   if (pluginPath.includes('..') || path.isAbsolute(pluginPath)) {
     throw new InstallException(`Invalid plugin path (path traversal detected): ${pluginPath}`);
   }
-}
-
-function isInside(childAbs: string, parentAbs: string): boolean {
-  const normalizedParent = parentAbs.endsWith(path.sep) ? parentAbs : parentAbs + path.sep;
-  return childAbs === parentAbs || childAbs.startsWith(normalizedParent);
-}
-
-function isAllowedEntryType(type: tar.ReadEntry['type']): boolean {
-  // `tar` exposes these entry types — we allow the regular file/dir/link kinds
-  // and reject anything exotic (CharacterDevice, BlockDevice, FIFO, etc.).
-  return (
-    type === 'File' ||
-    type === 'Directory' ||
-    type === 'SymbolicLink' ||
-    type === 'Link' ||
-    type === 'OldFile' ||
-    type === 'ContiguousFile'
-  );
 }

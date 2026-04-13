@@ -24,6 +24,7 @@ import {
   type Plugin,
   type PluginMap,
 } from './types.js';
+import { fileExists, isPlainObject } from './util.js';
 
 const CONFIG_FILE = 'dynamic-plugins.yaml';
 
@@ -272,15 +273,6 @@ async function readInstalledPluginHashes(root: string): Promise<Map<string, stri
   return installed;
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function existsSyncSafe(filePath: string): boolean {
   try {
     accessSync(filePath);
@@ -288,10 +280,6 @@ function existsSyncSafe(filePath: string): boolean {
   } catch {
     return false;
   }
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 main().catch((err: unknown) => {

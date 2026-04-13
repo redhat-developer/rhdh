@@ -30,4 +30,17 @@ describe('lock-file', () => {
     await expect(acquired).resolves.toBeUndefined();
     expect(existsSync(lockPath)).toBe(true);
   });
+
+  it('times out when the existing lock is never released', async () => {
+    const lockPath = join(workDir, 'stale.lock');
+    writeFileSync(lockPath, 'other-pid');
+    const prev = process.env.DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS;
+    process.env.DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS = '50';
+    try {
+      await expect(createLock(lockPath)).rejects.toThrow(/Timed out.*waiting for lock/);
+    } finally {
+      if (prev === undefined) delete process.env.DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS;
+      else process.env.DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS = prev;
+    }
+  });
 });

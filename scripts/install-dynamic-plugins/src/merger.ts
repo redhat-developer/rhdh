@@ -6,6 +6,7 @@ import { type OciImageCache } from './image-cache.js';
 import { npmPluginKey } from './npm-key.js';
 import { ociPluginKey } from './oci-key.js';
 import { type DynamicPluginsConfig, OCI_PROTO, type Plugin, type PluginMap } from './types.js';
+import { isPlainObject } from './util.js';
 
 /**
  * Recursively merges `src` into `dst` in place and returns `dst`. Raises on
@@ -220,10 +221,6 @@ function copyPluginFields(
       Object.entries(src).filter(([k]) => !skipSet.has(k) && !FORBIDDEN_KEYS.has(k)),
     ),
   );
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isEqual(a: unknown, b: unknown): boolean {

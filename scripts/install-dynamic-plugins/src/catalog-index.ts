@@ -7,6 +7,7 @@ import { log } from './log.js';
 import { resolveImage } from './image-resolver.js';
 import { type Skopeo } from './skopeo.js';
 import { DOCKER_PROTO, DPDY_FILENAME, MAX_ENTRY_SIZE, OCI_PROTO } from './types.js';
+import { fileExists, isAllowedEntryType, isInside } from './util.js';
 
 type OciManifest = {
   layers?: Array<{ digest: string }>;
@@ -47,7 +48,9 @@ export async function extractCatalogIndex(
     ) as OciManifest;
     const layers = manifest.layers ?? [];
 
+    let pending: InstallException | null = null;
     for (const layer of layers) {
+      if (pending) break;
       const digest = layer.digest;
       if (!digest) continue;
       const [, fname] = digest.split(':');
@@ -60,8 +63,13 @@ export async function extractCatalogIndex(
         cwd: tempDirAbs,
         preservePaths: false,
         filter: (filePath, entry) => {
+          if (pending) return false;
           const stat = entry as tar.ReadEntry;
-          if (stat.size > MAX_ENTRY_SIZE) return false;
+
+          if (stat.size > MAX_ENTRY_SIZE) {
+            pending = new InstallException(`Zip bomb detected in ${filePath}`);
+            return false;
+          }
 
           if (stat.type === 'SymbolicLink' || stat.type === 'Link') {
             const linkTarget = path.resolve(tempDirAbs, stat.linkpath ?? '');
@@ -72,15 +80,11 @@ export async function extractCatalogIndex(
           const memberPath = path.resolve(tempDirAbs, filePath);
           if (!isInside(memberPath, tempDirAbs)) return false;
 
-          return (
-            stat.type === 'File' ||
-            stat.type === 'Directory' ||
-            stat.type === 'SymbolicLink' ||
-            stat.type === 'Link'
-          );
+          return isAllowedEntryType(stat.type);
         },
       });
     }
+    if (pending) throw pending;
   } finally {
     await fs.rm(workDir, { recursive: true, force: true });
   }
@@ -111,20 +115,6 @@ export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
     recursive: true,
     force: true,
   });
-}
-
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function isInside(childAbs: string, parentAbs: string): boolean {
-  const normalized = parentAbs.endsWith(path.sep) ? parentAbs : parentAbs + path.sep;
-  return childAbs === parentAbs || childAbs.startsWith(normalized);
 }
 
 async function copyDir(src: string, dst: string): Promise<void> {

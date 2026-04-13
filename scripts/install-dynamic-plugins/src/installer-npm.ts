@@ -6,6 +6,7 @@ import { log } from './log.js';
 import { run } from './run.js';
 import { extractNpmPackage } from './tar-extract.js';
 import { CONFIG_HASH_FILE, type Plugin, PullPolicy } from './types.js';
+import { markAsFresh } from './util.js';
 
 export type NpmInstallResult = {
   pluginPath: string | null;
@@ -47,7 +48,8 @@ export async function installNpmPlugin(
   const isLocal = pkg.startsWith('./');
   const actualPkg = isLocal ? path.join(process.cwd(), pkg.slice(2)) : pkg;
 
-  if (!isLocal && !skipIntegrity && !plugin.integrity) {
+  const verifyRemoteIntegrity = !isLocal && !skipIntegrity;
+  if (verifyRemoteIntegrity && !plugin.integrity) {
     throw new InstallException(
       `No integrity hash provided for Package ${pkg}. This is an insecure installation. ` +
         `To ignore this error, set the SKIP_INTEGRITY_CHECK environment variable to 'true'.`,
@@ -55,26 +57,47 @@ export async function installNpmPlugin(
   }
 
   log('\t==> Running npm pack');
-  const { stdout } = await run(['npm', 'pack', actualPkg], `npm pack failed for ${pkg}`, {
-    cwd: destination,
-  });
-  const archiveName = stdout.trim().split('\n').slice(-1)[0];
-  if (!archiveName) {
-    throw new InstallException(`npm pack produced no archive for ${pkg}`);
-  }
+  const archiveName = await npmPack(actualPkg, destination);
   const archive = path.join(destination, archiveName);
 
-  if (!isLocal && !skipIntegrity && plugin.integrity) {
+  if (verifyRemoteIntegrity) {
     log('\t==> Verifying package integrity');
-    await verifyIntegrity(pkg, archive, plugin.integrity);
+    // `plugin.integrity` is guaranteed present — the check above throws otherwise.
+    await verifyIntegrity(pkg, archive, plugin.integrity as string);
   }
 
   const pluginPath = await extractNpmPackage(archive);
   await fs.writeFile(path.join(destination, pluginPath, CONFIG_HASH_FILE), hash);
 
-  for (const [k, v] of installed) {
-    if (v === pluginPath) installed.delete(k);
-  }
-
+  markAsFresh(installed, pluginPath);
   return { pluginPath, pluginConfig: config };
+}
+
+/**
+ * Run `npm pack --json` and extract the archive filename from the structured
+ * output. The text form of `npm pack` intermixes warnings with the filename
+ * (last-line parsing is fragile); `--json` gives `[{ filename, ... }]`.
+ */
+async function npmPack(actualPkg: string, destination: string): Promise<string> {
+  const { stdout } = await run(
+    ['npm', 'pack', '--json', actualPkg],
+    `npm pack failed for ${actualPkg}`,
+    { cwd: destination },
+  );
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stdout);
+  } catch (err) {
+    throw new InstallException(
+      `npm pack produced invalid JSON for ${actualPkg}: ${(err as Error).message}`,
+    );
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new InstallException(`npm pack produced no archives for ${actualPkg}`);
+  }
+  const first = parsed[0];
+  if (!first || typeof first !== 'object' || typeof (first as { filename?: unknown }).filename !== 'string') {
+    throw new InstallException(`npm pack output missing 'filename' for ${actualPkg}`);
+  }
+  return (first as { filename: string }).filename;
 }
