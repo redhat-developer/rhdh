@@ -11204,23 +11204,18 @@ function copyPluginFields(src, dst, skip) {
 function isEqual(a, b2) {
   if (a === b2) return true;
   if (typeof a !== typeof b2) return false;
-  if (Array.isArray(a) && Array.isArray(b2)) {
-    if (a.length !== b2.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (!isEqual(a[i], b2[i])) return false;
-    }
-    return true;
-  }
-  if (isPlainObject(a) && isPlainObject(b2)) {
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b2);
-    if (keysA.length !== keysB.length) return false;
-    for (const k2 of keysA) {
-      if (!isEqual(a[k2], b2[k2])) return false;
-    }
-    return true;
-  }
+  if (Array.isArray(a) && Array.isArray(b2)) return isArrayEqual(a, b2);
+  if (isPlainObject(a) && isPlainObject(b2)) return isObjectEqual(a, b2);
   return false;
+}
+function isArrayEqual(a, b2) {
+  if (a.length !== b2.length) return false;
+  return a.every((v2, i) => isEqual(v2, b2[i]));
+}
+function isObjectEqual(a, b2) {
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b2).length) return false;
+  return keysA.every((k2) => isEqual(a[k2], b2[k2]));
 }
 
 // src/plugin-hash.ts
@@ -11266,7 +11261,9 @@ function localPackageInfo(pkgPath) {
   }
 }
 function compareCodePoint(a, b2) {
-  return a < b2 ? -1 : a > b2 ? 1 : 0;
+  if (a < b2) return -1;
+  if (a > b2) return 1;
+  return 0;
 }
 function stableStringify(value) {
   if (value === null || typeof value !== "object") return JSON.stringify(value);

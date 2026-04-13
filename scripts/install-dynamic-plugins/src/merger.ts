@@ -253,21 +253,21 @@ function copyPluginFields(src: Plugin, dst: Plugin, skip: ReadonlyArray<string>)
 function isEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (typeof a !== typeof b) return false;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (!isEqual(a[i], b[i])) return false;
-    }
-    return true;
-  }
-  if (isPlainObject(a) && isPlainObject(b)) {
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
-    if (keysA.length !== keysB.length) return false;
-    for (const k of keysA) {
-      if (!isEqual(a[k], b[k])) return false;
-    }
-    return true;
-  }
+  if (Array.isArray(a) && Array.isArray(b)) return isArrayEqual(a, b);
+  if (isPlainObject(a) && isPlainObject(b)) return isObjectEqual(a, b);
   return false;
+}
+
+function isArrayEqual(a: readonly unknown[], b: readonly unknown[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((v, i) => isEqual(v, b[i]));
+}
+
+function isObjectEqual(
+  a: Record<string, unknown>,
+  b: Record<string, unknown>,
+): boolean {
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b).length) return false;
+  return keysA.every(k => isEqual(a[k], b[k]));
 }
