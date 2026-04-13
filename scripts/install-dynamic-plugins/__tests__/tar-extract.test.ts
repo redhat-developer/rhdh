@@ -90,6 +90,19 @@ describe('extractOciPlugin', () => {
     expect(existsSync(join(dest, 'plugin-one/ok.txt'))).toBe(true);
     expect(existsSync(join(dest, 'plugin-one/bad-link'))).toBe(false);
   });
+
+  it('does not extract sibling directories with the same name prefix', async () => {
+    await makeTarball(tarball, ['plugin-one', 'plugin-one-evil'], stage => {
+      require('node:fs').mkdirSync(join(stage, 'plugin-one'));
+      require('node:fs').mkdirSync(join(stage, 'plugin-one-evil'));
+      writeFileSync(join(stage, 'plugin-one/index.js'), 'module.exports = 1');
+      writeFileSync(join(stage, 'plugin-one-evil/index.js'), 'module.exports = 2');
+    });
+    const dest = join(workDir, 'out');
+    await extractOciPlugin(tarball, 'plugin-one', dest);
+    expect(existsSync(join(dest, 'plugin-one/index.js'))).toBe(true);
+    expect(existsSync(join(dest, 'plugin-one-evil'))).toBe(false);
+  });
 });
 
 describe('extractNpmPackage', () => {

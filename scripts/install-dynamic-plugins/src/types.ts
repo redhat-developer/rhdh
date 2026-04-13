@@ -36,6 +36,19 @@ export const DPDY_FILENAME = 'dynamic-plugins.default.yaml';
 export const LOCK_FILENAME = 'install-dynamic-plugins.lock';
 export const GLOBAL_CONFIG_FILENAME = 'app-config.dynamic-plugins.yaml';
 
-export const MAX_ENTRY_SIZE = Number(process.env.MAX_ENTRY_SIZE ?? 20_000_000);
+const DEFAULT_MAX_ENTRY_SIZE = 20_000_000;
+
+/**
+ * Parse the MAX_ENTRY_SIZE env var, falling back to the default when unset,
+ * non-numeric, or < 1. Exported for unit tests — the `MAX_ENTRY_SIZE` constant
+ * below is the module-level value used by the extractors.
+ */
+export function parseMaxEntrySize(raw: string | undefined = process.env.MAX_ENTRY_SIZE): number {
+  if (!raw) return DEFAULT_MAX_ENTRY_SIZE;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n >= 1 ? n : DEFAULT_MAX_ENTRY_SIZE;
+}
+
+export const MAX_ENTRY_SIZE = parseMaxEntrySize();
 export const RECOGNIZED_ALGORITHMS = ['sha512', 'sha384', 'sha256'] as const;
 export type Algorithm = (typeof RECOGNIZED_ALGORITHMS)[number];

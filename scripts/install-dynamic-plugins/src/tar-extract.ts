@@ -30,6 +30,10 @@ export async function extractOciPlugin(
   await fs.rm(pluginDir, { recursive: true, force: true });
   await fs.mkdir(destAbs, { recursive: true });
 
+  // Boundary-safe path prefix — prevents `plugin-one` from matching sibling
+  // directories with the same prefix (e.g., `plugin-one-evil/`).
+  const pluginPathBoundary = pluginPath.endsWith('/') ? pluginPath : pluginPath + '/';
+
   // Errors thrown inside `tar` filter callbacks are sometimes swallowed by the
   // parser; capture them in a closure and re-throw after extraction completes.
   let pending: InstallException | null = null;
@@ -41,7 +45,7 @@ export async function extractOciPlugin(
     filter: (filePath, entry) => {
       if (pending) return false;
       const stat = entry as tar.ReadEntry;
-      if (!filePath.startsWith(pluginPath)) return false;
+      if (filePath !== pluginPath && !filePath.startsWith(pluginPathBoundary)) return false;
 
       if (stat.size > MAX_ENTRY_SIZE) {
         pending = new InstallException(`Zip bomb detected in ${filePath}`);

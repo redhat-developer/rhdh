@@ -24,6 +24,18 @@ describe('deepMerge', () => {
     const dst: Record<string, unknown> = { a: { x: 1 } };
     expect(() => deepMerge({ a: { x: 2 } }, dst)).toThrow(/Config key 'a.x' defined differently/);
   });
+
+  it('ignores prototype-polluting keys (__proto__, constructor, prototype)', () => {
+    const dst: Record<string, unknown> = {};
+    const malicious = JSON.parse(
+      '{"__proto__":{"polluted":true},"constructor":{"x":1},"prototype":{"y":2}}',
+    ) as Record<string, unknown>;
+    deepMerge(malicious, dst);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(Object.prototype.hasOwnProperty.call(dst, '__proto__')).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(dst, 'constructor')).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(dst, 'prototype')).toBe(false);
+  });
 });
 
 describe('mergePlugin — NPM', () => {

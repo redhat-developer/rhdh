@@ -10254,7 +10254,13 @@ var IMAGE_HASH_FILE = "dynamic-plugin-image.hash";
 var DPDY_FILENAME = "dynamic-plugins.default.yaml";
 var LOCK_FILENAME = "install-dynamic-plugins.lock";
 var GLOBAL_CONFIG_FILENAME = "app-config.dynamic-plugins.yaml";
-var MAX_ENTRY_SIZE = Number(process.env.MAX_ENTRY_SIZE ?? 2e7);
+var DEFAULT_MAX_ENTRY_SIZE = 2e7;
+function parseMaxEntrySize(raw = process.env.MAX_ENTRY_SIZE) {
+  if (!raw) return DEFAULT_MAX_ENTRY_SIZE;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n >= 1 ? n : DEFAULT_MAX_ENTRY_SIZE;
+}
+var MAX_ENTRY_SIZE = parseMaxEntrySize();
 var RECOGNIZED_ALGORITHMS = ["sha512", "sha384", "sha256"];
 
 // src/image-resolver.ts
@@ -10576,6 +10582,7 @@ async function extractOciPlugin(tarball, pluginPath, destination) {
   const pluginDir = path3.join(destAbs, pluginPath);
   await fs4.rm(pluginDir, { recursive: true, force: true });
   await fs4.mkdir(destAbs, { recursive: true });
+  const pluginPathBoundary = pluginPath.endsWith("/") ? pluginPath : pluginPath + "/";
   let pending = null;
   await co({
     file: tarball,
@@ -10584,7 +10591,7 @@ async function extractOciPlugin(tarball, pluginPath, destination) {
     filter: (filePath, entry) => {
       if (pending) return false;
       const stat = entry;
-      if (!filePath.startsWith(pluginPath)) return false;
+      if (filePath !== pluginPath && !filePath.startsWith(pluginPathBoundary)) return false;
       if (stat.size > MAX_ENTRY_SIZE) {
         pending = new InstallException(`Zip bomb detected in ${filePath}`);
         return false;
@@ -10956,8 +10963,10 @@ function escape(s3) {
 }
 
 // src/merger.ts
+var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
 function deepMerge(src, dst, prefix = "") {
   for (const [key, value] of Object.entries(src)) {
+    if (FORBIDDEN_KEYS.has(key)) continue;
     if (isPlainObject(value)) {
       const existing = dst[key];
       const node = isPlainObject(existing) ? existing : {};
@@ -11098,7 +11107,12 @@ function doMerge(key, plugin, allPlugins, configFile, level) {
 }
 function copyPluginFields(src, dst, skip) {
   const skipSet = new Set(skip);
-  Object.assign(dst, Object.fromEntries(Object.entries(src).filter(([k2]) => !skipSet.has(k2))));
+  Object.assign(
+    dst,
+    Object.fromEntries(
+      Object.entries(src).filter(([k2]) => !skipSet.has(k2) && !FORBIDDEN_KEYS.has(k2))
+    )
+  );
 }
 function isPlainObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);

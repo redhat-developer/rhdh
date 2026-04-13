@@ -11,13 +11,19 @@ import { type DynamicPluginsConfig, OCI_PROTO, type Plugin, type PluginMap } fro
  * Recursively merges `src` into `dst` in place and returns `dst`. Raises on
  * conflicting scalar values so duplicate plugin configs never silently
  * overwrite each other (matches the Python `merge()` contract).
+ *
+ * Skips `__proto__`, `constructor`, and `prototype` keys to prevent prototype
+ * pollution via user-supplied YAML.
  */
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 export function deepMerge<T extends Record<string, unknown>>(
   src: Record<string, unknown>,
   dst: T,
   prefix = '',
 ): T {
   for (const [key, value] of Object.entries(src)) {
+    if (FORBIDDEN_KEYS.has(key)) continue;
     if (isPlainObject(value)) {
       const existing = (dst as Record<string, unknown>)[key];
       const node = isPlainObject(existing) ? existing : {};
@@ -208,7 +214,12 @@ function copyPluginFields(
   skip: ReadonlyArray<keyof Plugin | string>,
 ): void {
   const skipSet = new Set<string>(skip);
-  Object.assign(dst, Object.fromEntries(Object.entries(src).filter(([k]) => !skipSet.has(k))));
+  Object.assign(
+    dst,
+    Object.fromEntries(
+      Object.entries(src).filter(([k]) => !skipSet.has(k) && !FORBIDDEN_KEYS.has(k)),
+    ),
+  );
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
