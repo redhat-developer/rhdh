@@ -6,7 +6,7 @@
     "node": "22"
   },
   "scripts": {
-    "shellcheck": "shellcheck --severity=warning --color=always **/*.sh",
+    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
     "prettier:check": "npx prettier --check **/*.{sh,md,yaml,yml}",
     "prettier:fix": "npx prettier --write **/*.{sh,md,yaml,yml}"
   },
