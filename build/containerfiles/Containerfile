@@ -28,7 +28,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
   glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
   ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
-  libacl libarchive libassuan libattr libblkid libbpf libbrotli libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libacl libarchive libassuan libattr libblkid libbpf libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \

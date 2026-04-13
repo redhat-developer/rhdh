@@ -128,7 +128,6 @@ packages:
   - libattr
   - libblkid
   - libbpf
-  - libbrotli
   - libcap
   - libcap-ng
   - libcbor
