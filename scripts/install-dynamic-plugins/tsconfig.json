@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node", "jest"],
+    "outDir": "./build",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": ["src/**/*.ts", "__tests__/**/*.ts", "esbuild.config.mjs"],
+  "exclude": ["node_modules", "dist", "build"]
+}

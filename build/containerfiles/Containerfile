@@ -269,7 +269,8 @@ ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh ./
+# Bundled TypeScript .cjs (built from scripts/install-dynamic-plugins/src) replaces the previous Python implementation.
+COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/dist/install-dynamic-plugins.cjs $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh ./
 RUN chmod -R a+rx ./install-dynamic-plugins.*
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
