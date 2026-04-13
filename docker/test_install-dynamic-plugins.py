@@ -58,6 +58,10 @@ spec.loader.exec_module(install_dynamic_plugins)
 NPMPackageMerger = install_dynamic_plugins.NPMPackageMerger
 OciPackageMerger = install_dynamic_plugins.OciPackageMerger
 InstallException = install_dynamic_plugins.InstallException
+pre_merge_oci_disabled_state = install_dynamic_plugins.pre_merge_oci_disabled_state
+filter_disabled_oci_plugins = install_dynamic_plugins.filter_disabled_oci_plugins
+merge_plugin = install_dynamic_plugins.merge_plugin
+OCI_PROTOCOL_PREFIX = install_dynamic_plugins.OCI_PROTOCOL_PREFIX
 
 # Test helper functions
 import tarfile  # noqa: E402
@@ -3058,6 +3062,311 @@ class TestResolveImageReference:
 
         result = install_dynamic_plugins.resolve_image_reference('oci://registry.access.redhat.com/rhdh/catalog/plugin-name:v2.0')
         assert result == 'oci://quay.io/rhdh/catalog/plugin-name:v2.0'
+
+
+class TestPreMergeOciDisabledState:
+    """Test cases for pre_merge_oci_disabled_state function."""
+
+    @pytest.mark.parametrize("include_plugins,main_plugins,expected_disabled", [
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            True, id="include_enabled-main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            False, id="include_disabled-main_enabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [],
+            True, id="include_disabled-no_main"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': True}],
+            True, id="crossform_pathless_include-explicit_main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            True, id="crossform_explicit_include-pathless_main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            False, id="crossform_explicit_include_disabled-pathless_main_enabled"),
+    ])
+    def test_level_override(self, include_plugins, main_plugins, expected_disabled):
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        if expected_disabled:
+            assert 'oci://registry.example.com/plugin' in result
+        else:
+            assert 'oci://registry.example.com/plugin' not in result
+
+    def test_pathless_multiple_explicit_paths_raises_error(self):
+        """Path-less + multiple explicit paths for same image -> raises error with source file info."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginA'},
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginB'},
+        ]
+        main_plugins = [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}]
+        with pytest.raises(InstallException, match=r'(?s)Ambiguous path-less OCI reference.*main\.yaml.*pluginA \(in include\.yaml\).*pluginB \(in include\.yaml\)'):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+            )
+
+    def test_non_oci_entries_ignored(self):
+        """Non-OCI entries are ignored by pre-merge."""
+        include_plugins = [{'package': '@backstage/plugin-catalog@1.0.0', 'disabled': True}]
+        main_plugins = [{'package': './local-plugin', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        assert len(result) == 0
+
+    def test_duplicate_same_level_pathless_raises_error(self):
+        """Duplicate same-level entries (both path-less) -> raises error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False},
+            {'package': 'oci://registry.example.com/plugin:2.0', 'disabled': True},
+        ]
+        with pytest.raises(InstallException, match='Duplicate OCI plugin configuration'):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], [], 'main.yaml'
+            )
+
+    def test_duplicate_same_level_explicit_path_raises_error(self):
+        """Duplicate same-level entries (same explicit path) -> raises error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginA'},
+            {'package': 'oci://registry.example.com/plugin:2.0!pluginA'},
+        ]
+        with pytest.raises(InstallException, match='Duplicate OCI plugin configuration'):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], [], 'main.yaml'
+            )
+
+    def test_invalid_oci_format_raises_error(self):
+        """Invalid OCI format raises error with source file name."""
+        include_plugins = [{'package': 'oci://bad-format'}]
+        with pytest.raises(InstallException, match="oci package.*not in the expected format.*include.yaml"):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], [], 'main.yaml'
+            )
+
+    def test_default_disabled_is_false(self):
+        """Entry without explicit disabled flag defaults to False (enabled)."""
+        include_plugins = [{'package': 'oci://registry.example.com/plugin:1.0'}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/plugin' not in result
+
+    def test_multiple_registries_independent(self):
+        """Multiple different registries are tracked independently."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/pluginA:1.0', 'disabled': True},
+            {'package': 'oci://registry.example.com/pluginB:1.0', 'disabled': False},
+        ]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/pluginA' in result
+        assert 'oci://registry.example.com/pluginB' not in result
+
+    def test_explicit_path_only_no_pathless_not_in_result(self):
+        """Entries with only explicit paths (no path-less) are NOT in the disabled set
+        since only path-less entries need skopeo inspect protection."""
+        include_plugins = [{'package': 'oci://registry.example.com/plugin:1.0!pluginA', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/plugin' not in result
+
+    def test_digest_format_supported(self):
+        """OCI entries with digest format (sha256:...) are supported."""
+        include_plugins = [{'package': 'oci://registry.example.com/plugin@sha256:abcdef1234567890', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/plugin' in result
+
+
+class TestFilterDisabledOciPlugins:
+    """Test cases for filter_disabled_oci_plugins function."""
+
+    def test_disabled_registry_removed(self):
+        """OCI entries for disabled registries are removed."""
+        plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0'},
+            {'package': 'oci://other.example.com/plugin:1.0'},
+        ]
+        disabled = {'oci://registry.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 1
+        assert result[0]['package'] == 'oci://other.example.com/plugin:1.0'
+
+    def test_non_disabled_registry_kept(self):
+        """OCI entries for non-disabled registries are kept."""
+        plugins = [{'package': 'oci://registry.example.com/plugin:1.0'}]
+        disabled = {'oci://other.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 1
+
+    def test_non_oci_entries_always_kept(self):
+        """Non-OCI entries are always kept regardless of disabled set."""
+        plugins = [
+            {'package': '@backstage/plugin-catalog@1.0.0'},
+            {'package': './local-plugin'},
+        ]
+        disabled = {'oci://registry.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 2
+
+    def test_explicit_path_for_disabled_registry_removed(self):
+        """Entries with explicit paths for disabled registries are also removed."""
+        plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!my-plugin'},
+            {'package': 'oci://registry.example.com/plugin:1.0!other-plugin'},
+        ]
+        disabled = {'oci://registry.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 0
+
+    def test_empty_disabled_set_keeps_all(self):
+        """Empty disabled set keeps all entries."""
+        plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0'},
+            {'package': '@backstage/plugin-catalog'},
+        ]
+        result = filter_disabled_oci_plugins(plugins, set())
+        assert len(result) == 2
+
+    def test_mixed_oci_and_npm(self, capsys):
+        """Mixed OCI and NPM plugins: only disabled OCI registries affected."""
+        plugins = [
+            {'package': 'oci://registry.example.com/pluginA:1.0'},
+            {'package': '@backstage/plugin-catalog@1.0.0', 'disabled': True},
+            {'package': 'oci://registry.example.com/pluginB:1.0'},
+        ]
+        disabled = {'oci://registry.example.com/pluginA'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 2
+        assert result[0]['package'] == '@backstage/plugin-catalog@1.0.0'
+        assert result[1]['package'] == 'oci://registry.example.com/pluginB:1.0'
+
+        captured = capsys.readouterr()
+        assert 'Disabling OCI plugin oci://registry.example.com/pluginA:1.0' in captured.out
+
+
+class TestPreMergeFilterIntegration:
+    """Integration tests: pre-merge + filter + merge together."""
+
+    @pytest.mark.parametrize("include_plugins,main_plugins", [
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="include_enabled-main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="airgapped-include_enabled-main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="inherit-main_disables"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="inherit-both_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="crossform-explicit_include-pathless_main_disabled"),
+    ])
+    def test_disabled_no_skopeo_inspect(self, mocker, include_plugins, main_plugins):
+        """Disabled entries are filtered and no skopeo inspect call is made."""
+        mock_get_paths = mocker.patch.object(
+            install_dynamic_plugins, 'get_oci_plugin_paths',
+            side_effect=AssertionError("get_oci_plugin_paths should not be called for disabled plugins")
+        )
+
+        disabled = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        filtered_includes = filter_disabled_oci_plugins(include_plugins, disabled)
+        filtered_main = filter_disabled_oci_plugins(main_plugins, disabled)
+
+        assert len(filtered_includes) == 0
+        assert len(filtered_main) == 0
+
+        all_plugins = {}
+        for plugin in filtered_includes:
+            merge_plugin(plugin, all_plugins, 'include.yaml', level=0)
+        for plugin in filtered_main:
+            merge_plugin(plugin, all_plugins, 'main.yaml', level=1)
+
+        assert len(all_plugins) == 0
+        mock_get_paths.assert_not_called()
+
+    @pytest.mark.parametrize("include_plugins,main_plugins", [
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="both_enabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="include_disabled-main_enables"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="inherit-both_enabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="inherit-include_disabled-main_enables"),
+    ])
+    def test_enabled_entries_pass_through(self, include_plugins, main_plugins):
+        """Enabled entries are not filtered and both lists pass through."""
+        disabled = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+
+        filtered_includes = filter_disabled_oci_plugins(include_plugins, disabled)
+        filtered_main = filter_disabled_oci_plugins(main_plugins, disabled)
+
+        assert len(filtered_includes) == 1
+        assert len(filtered_main) == 1
+
+    def test_mixed_oci_and_npm_only_oci_affected(self, mocker):
+        """Mixed OCI and NPM plugins -> only OCI disabled registries affected."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False},
+            {'package': '@backstage/plugin-catalog@1.0.0'},
+        ]
+        main_plugins = [
+            {'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True},
+            {'package': '@backstage/plugin-catalog@2.0.0'},
+        ]
+
+        disabled = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+
+        filtered_includes = filter_disabled_oci_plugins(include_plugins, disabled)
+        filtered_main = filter_disabled_oci_plugins(main_plugins, disabled)
+
+        assert len(filtered_includes) == 1
+        assert filtered_includes[0]['package'] == '@backstage/plugin-catalog@1.0.0'
+        assert len(filtered_main) == 1
+        assert filtered_main[0]['package'] == '@backstage/plugin-catalog@2.0.0'
+
+        all_plugins = {}
+        for plugin in filtered_includes:
+            merge_plugin(plugin, all_plugins, 'include.yaml', level=0)
+        for plugin in filtered_main:
+            merge_plugin(plugin, all_plugins, 'main.yaml', level=1)
+        assert '@backstage/plugin-catalog' in all_plugins
 
 
 if __name__ == '__main__':
