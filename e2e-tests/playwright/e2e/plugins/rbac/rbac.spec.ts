@@ -479,7 +479,9 @@ test.describe("Test RBAC", () => {
         .getByRole("button", { name: "expand row" })
         .click();
 
-      await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
+      await rbacPo.selectPermissionCheckbox(
+        "scaffolder.template.parameter.read",
+      );
       // Dismiss quickstart overlay if visible — it can intercept stepper button clicks
       await uiHelper.hideQuickstartIfVisible();
       await uiHelper.clickButton("Next");

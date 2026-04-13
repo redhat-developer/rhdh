@@ -1,20 +1,20 @@
-import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
+import { coreComponentsTranslationRef } from '@backstage/core-components';
 import {
   createTranslationResource,
   TranslationRef,
   TranslationResource,
 } from '@backstage/core-plugin-api/alpha';
-import { apiDocsTranslationRef } from '@backstage/plugin-api-docs/alpha';
-import { catalogGraphTranslationRef } from '@backstage/plugin-catalog-graph/alpha';
-import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
-import { catalogReactTranslationRef } from '@backstage/plugin-catalog-react/alpha';
-import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
-import { orgTranslationRef } from '@backstage/plugin-org/alpha';
-import { scaffolderReactTranslationRef } from '@backstage/plugin-scaffolder-react/alpha';
-import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
-import { searchReactTranslationRef } from '@backstage/plugin-search-react/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { apiDocsTranslationRef } from '@backstage/plugin-api-docs';
+import { catalogTranslationRef } from '@backstage/plugin-catalog';
+import { catalogGraphTranslationRef } from '@backstage/plugin-catalog-graph';
+import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import';
+import { catalogReactTranslationRef } from '@backstage/plugin-catalog-react';
+import { orgTranslationRef } from '@backstage/plugin-org';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder';
+import { scaffolderReactTranslationRef } from '@backstage/plugin-scaffolder-react';
+import { searchTranslationRef } from '@backstage/plugin-search';
+import { searchReactTranslationRef } from '@backstage/plugin-search-react';
+import { userSettingsTranslationRef } from '@backstage/plugin-user-settings';
 
 import {
   translationsPluginTranslationRef,

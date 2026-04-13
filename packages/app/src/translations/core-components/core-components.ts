@@ -1,4 +1,4 @@
-import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
+import { coreComponentsTranslationRef } from '@backstage/core-components';
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
 export const coreComponentsTranslations = createTranslationResource({

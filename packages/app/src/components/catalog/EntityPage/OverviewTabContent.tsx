@@ -88,7 +88,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityCatalogGraphCard variant="gridItem" height={400} />
+          <EntityCatalogGraphCard height={400} />
         </Grid>
         <Grid
           item
@@ -100,7 +100,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityHasSystemsCard variant="gridItem" />
+          <EntityHasSystemsCard />
         </Grid>
       </EntitySwitch.Case>
       <EntitySwitch.Case if={isKind('group')}>
@@ -114,7 +114,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityGroupProfileCard variant="gridItem" />
+          <EntityGroupProfileCard />
         </Grid>
         <Grid
           item
@@ -125,7 +125,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityOwnershipCard variant="gridItem" />
+          <EntityOwnershipCard />
         </Grid>
         <Grid
           item
@@ -150,7 +150,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityUserProfileCard variant="gridItem" />
+          <EntityUserProfileCard />
         </Grid>
         <Grid
           item
@@ -161,7 +161,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityOwnershipCard variant="gridItem" />
+          <EntityOwnershipCard />
         </Grid>
       </EntitySwitch.Case>
       <EntitySwitch.Case if={isKind('api')}>
@@ -175,7 +175,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityCatalogGraphCard variant="gridItem" height={400} />
+          <EntityCatalogGraphCard height={400} />
         </Grid>
         <Grid
           item
@@ -211,7 +211,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityCatalogGraphCard variant="gridItem" height={400} />
+          <EntityCatalogGraphCard height={400} />
         </Grid>
         <Grid
           item
@@ -258,7 +258,7 @@ export const OverviewTabContent = () => (
             },
           }}
         >
-          <EntityCatalogGraphCard variant="gridItem" height={400} />
+          <EntityCatalogGraphCard height={400} />
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
