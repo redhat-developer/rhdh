@@ -35,6 +35,10 @@ podman machine init --memory 8192 --cpus 4
 podman machine start
 ```
 
+#### Installing Prerequisites (Linux)
+
+Install `podman`, `oc`, `kubectl`, `vault`, `jq`, `rsync`, and `curl` using your distribution's package manager.
+
 ### Getting a Cluster
 
 You need an OpenShift cluster to run e2e tests. Here are your options:
@@ -134,7 +138,7 @@ The container will deploy RHDH and exit. You'll see next steps printed in the te
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh           # For Showcase tests
+source local-test-setup.sh # For Showcase tests
 # or: source local-test-setup.sh rbac  # For RBAC tests
 ```
 
@@ -284,7 +288,7 @@ cd e2e-tests
 
 # New terminal:
 cd e2e-tests
-source local-test-setup.sh rbac    # Use RBAC URL
+source local-test-setup.sh rbac # Use RBAC URL
 yarn install
 yarn playwright test --headed --project=showcase-rbac
 ```

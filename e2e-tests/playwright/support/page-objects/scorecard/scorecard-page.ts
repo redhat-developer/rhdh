@@ -123,7 +123,9 @@ export class ScorecardPage {
   async expectNoProgressBar() {
     await expect(
       this.page.getByRole("article").getByRole("progressbar").first(),
-    ).toBeHidden({ timeout: 5000 });
+    ).toBeHidden({
+      timeout: 5000,
+    });
   }
 
   async expectWidgetCount(count: number) {

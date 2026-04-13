@@ -6,3 +6,4 @@ metadata:
 spec:
   targets:
     - ./components/showcase.yaml
+    - ./components/community-plugins.yaml
