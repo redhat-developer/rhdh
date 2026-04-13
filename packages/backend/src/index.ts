@@ -144,10 +144,10 @@ backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-events-backend'));
 
 backend.add(import('@backstage/plugin-permission-backend'));
-backend.add(import('@backstage-community/plugin-rbac-backend'));
 backend.add(
   import('@backstage-community/plugin-scaffolder-backend-module-annotator'),
 );
+
 backend.add(pluginIDProviderService);
 backend.add(rbacDynamicPluginsProvider);
 
