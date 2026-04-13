@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": "22"
+    "node": "24"
   },
   "scripts": {
     "showcase": "playwright test --project=showcase",
@@ -36,7 +36,7 @@
     "@eslint/js": "9.39.3",
     "@microsoft/microsoft-graph-types": "2.43.1",
     "@playwright/test": "1.58.2",
-    "@types/node": "22.19.17",
+    "@types/node": "24.12.2",
     "@types/pg": "8.20.0",
     "@typescript-eslint/eslint-plugin": "8.56.1",
     "@typescript-eslint/parser": "8.56.1",

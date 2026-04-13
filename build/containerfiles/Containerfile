@@ -14,8 +14,8 @@
 # limitations under the License.
 
 # Stage 1 - Build nodejs skeleton
-# https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1775695872@sha256:052f576671bd8f7f8276b84a3eaef08e3e1de4d669270e8f2543bf23d3e168a4 AS skeleton
+# https://registry.access.redhat.com/ubi9/nodejs-24
+FROM registry.access.redhat.com/ubi9/nodejs-24:1-1775622735@sha256:6a669f8cb015201832e47a250b8d985df4f20a78fedd21db1c0ff05a13eb4151 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -92,6 +92,9 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
+
+# Enable C++20 for native module compilation (required for Node 24's V8 headers)
+ENV CXXFLAGS="-std=c++20"
 
 # Using cachi2 env vars:
 #   export YARN_ENABLE_GLOBAL_CACHE=false
@@ -237,8 +240,8 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
   dnf clean all
 
 # Stage 5 - Build the runner image
-# https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1775651415@sha256:42b9a1d66c1de96de83fdf20b79d5ed5aefcfa0e3d878b9b31b3d2de4c12fab7 AS runner
+# https://registry.access.redhat.com/ubi9/nodejs-24-minimal
+FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:1-1775651495@sha256:0b771c6ace14f3484a7164c5c90b9d4f752abf92c7edc4dd939c854316b5187e AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.

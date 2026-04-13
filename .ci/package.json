@@ -3,7 +3,7 @@
   "version": "1.10.0",
   "private": true,
   "engines": {
-    "node": "22"
+    "node": "24"
   },
   "scripts": {
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",

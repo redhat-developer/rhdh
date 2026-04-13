@@ -25,7 +25,7 @@ contentOrigin:
     #   # gpgcheck: 0
 
 moduleEnable:
-  - nodejs:22
+  - nodejs:24
 packages:
   - acl
   - alsa-lib

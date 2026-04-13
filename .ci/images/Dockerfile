@@ -1,6 +1,6 @@
 # Base image from Microsoft Playwright
-# Must stay pinned to a version which includes Nodejs 22, until we move to 24
-FROM mcr.microsoft.com/playwright:v1.58.2-jammy@sha256:4698a73749c5848d3f5fcd42a2174d172fcad2b2283e087843b115424303a565
+# Playwright v1.59.1-noble includes Node 24.14.1
+FROM mcr.microsoft.com/playwright:v1.59.1-noble
 
 # Set environment variables for the container
 ENV CI=1 \
