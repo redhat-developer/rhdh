@@ -39,8 +39,6 @@ packages:
   - bash
   - binutils
   - binutils-gold
-  - brotli
-  - brotli-devel
   - bsdtar
   - bzip2-libs
   - ca-certificates
