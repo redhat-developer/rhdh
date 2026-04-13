@@ -59,8 +59,8 @@ async function sleep(ms: number): Promise<void> {
 
 async function connectWithRetry(
   config: ClientConfig,
-  maxRetries = 3,
-  baseDelayMs = 1000,
+  maxRetries = 5,
+  baseDelayMs = 2000,
 ): Promise<Client> {
   let lastError: unknown;
 
@@ -79,6 +79,10 @@ async function connectWithRetry(
         await client.end().catch(() => {});
       }
 
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const isPortForwardDead =
+        errorMsg.includes("ECONNREFUSED") && config.host === "127.0.0.1";
+
       if (!isTransientConnectionError(error)) {
         // Not a transient error, don't retry
         throw error;
@@ -86,11 +90,22 @@ async function connectWithRetry(
 
       if (attempt < maxRetries) {
         const delayMs = baseDelayMs * Math.pow(2, attempt - 1); // Exponential backoff
-        const errorMsg = error instanceof Error ? error.message : String(error);
         console.warn(
           `[WARNING] Connection attempt ${attempt}/${maxRetries} failed: ${errorMsg}`,
         );
-        console.warn(`   Retrying in ${delayMs}ms...`);
+
+        if (isPortForwardDead) {
+          console.warn(
+            "   Port-forward may have crashed (ECONNREFUSED on localhost)",
+          );
+          console.warn(
+            "   This is usually caused by pod instability or network namespace issues",
+          );
+          console.warn(`   Waiting ${delayMs}ms before retry...`);
+        } else {
+          console.warn(`   Retrying in ${delayMs}ms...`);
+        }
+
         await sleep(delayMs);
       }
     }
@@ -239,6 +254,14 @@ export async function cleanupOldPluginDatabases(
         `  Could not drop database ${db.datname}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
+  }
+
+  // Give the database and port-forward time to stabilize after heavy cleanup operations
+  if (oldDbsResult.rows.length > 0) {
+    console.log(
+      "Allowing database to stabilize after cleanup (waiting 3 seconds)...",
+    );
+    await sleep(3000);
   }
 }
 
