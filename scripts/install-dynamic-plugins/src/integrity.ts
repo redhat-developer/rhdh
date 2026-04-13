@@ -51,15 +51,53 @@ function isRecognizedAlgorithm(value: string): value is Algorithm {
   return (RECOGNIZED_ALGORITHMS as readonly string[]).includes(value);
 }
 
+/**
+ * Validate a base64 string without regex (avoids Sonar ReDoS flags and is
+ * genuinely linear-time). Accepts the standard base64 alphabet plus up to two
+ * trailing `=` padding characters; requires the round-trip encoding to match
+ * so malformed padding is rejected.
+ */
 function isValidBase64(value: string): boolean {
-  // Reject empty, reject strings with characters outside the base64 alphabet,
-  // reject strings whose round-trip doesn't match (catches bad padding).
   if (value.length === 0) return false;
-  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value)) return false;
+  if (!isBase64Shape(value)) return false;
   try {
     const buf = Buffer.from(value, 'base64');
-    return buf.toString('base64').replace(/=+$/, '') === value.replace(/=+$/, '');
+    return stripTrailingEquals(buf.toString('base64')) === stripTrailingEquals(value);
   } catch {
     return false;
   }
+}
+
+const EQUALS = 0x3d;
+
+function isBase64Shape(value: string): boolean {
+  let paddingCount = 0;
+  for (let i = 0; i < value.length; i++) {
+    const c = value.charCodeAt(i);
+    if (c === EQUALS) {
+      paddingCount++;
+      if (paddingCount > 2) return false;
+      continue;
+    }
+    // Padding, once started, must run to the end of the string.
+    if (paddingCount > 0) return false;
+    if (!isBase64Char(c)) return false;
+  }
+  return true;
+}
+
+function isBase64Char(c: number): boolean {
+  return (
+    (c >= 0x41 && c <= 0x5a) || // A-Z
+    (c >= 0x61 && c <= 0x7a) || // a-z
+    (c >= 0x30 && c <= 0x39) || // 0-9
+    c === 0x2b || // +
+    c === 0x2f // /
+  );
+}
+
+function stripTrailingEquals(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === EQUALS) end--;
+  return s.slice(0, end);
 }

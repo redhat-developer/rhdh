@@ -10559,13 +10559,40 @@ function isRecognizedAlgorithm(value) {
 }
 function isValidBase64(value) {
   if (value.length === 0) return false;
-  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value)) return false;
+  if (!isBase64Shape(value)) return false;
   try {
     const buf = Buffer.from(value, "base64");
-    return buf.toString("base64").replace(/=+$/, "") === value.replace(/=+$/, "");
+    return stripTrailingEquals(buf.toString("base64")) === stripTrailingEquals(value);
   } catch {
     return false;
   }
+}
+var EQUALS = 61;
+function isBase64Shape(value) {
+  let paddingCount = 0;
+  for (let i = 0; i < value.length; i++) {
+    const c = value.charCodeAt(i);
+    if (c === EQUALS) {
+      paddingCount++;
+      if (paddingCount > 2) return false;
+      continue;
+    }
+    if (paddingCount > 0) return false;
+    if (!isBase64Char(c)) return false;
+  }
+  return true;
+}
+function isBase64Char(c) {
+  return c >= 65 && c <= 90 || // A-Z
+  c >= 97 && c <= 122 || // a-z
+  c >= 48 && c <= 57 || // 0-9
+  c === 43 || // +
+  c === 47;
+}
+function stripTrailingEquals(s3) {
+  let end = s3.length;
+  while (end > 0 && s3.charCodeAt(end - 1) === EQUALS) end--;
+  return s3.slice(0, end);
 }
 
 // src/run.ts
