@@ -528,7 +528,9 @@ export class KubeClient {
         namespace,
       );
       const body = existing.body;
-      body.data = secret.data ?? {};
+      // Merge new keys into existing data to preserve keys not in the update
+      // (e.g., RHDH_RUNTIME_URL when updating only DB credentials)
+      body.data = { ...(body.data ?? {}), ...(secret.data ?? {}) };
       await this.coreV1Api.replaceNamespacedSecret(secretName, namespace, body);
       console.log(`Secret ${secretName} updated in namespace ${namespace}`);
     } catch (err: unknown) {
