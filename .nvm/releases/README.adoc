@@ -3,21 +3,21 @@ To determine the specific version of node headers to include in this folder, pul
 ```
 podman run -it --rm --entrypoint /bin/bash --user root registry.access.redhat.com/ubi9/nodejs-24 -c "node --version"
 
-v24.14.1
+v24.13.0
 ```
 
 Or, go to https://catalog.redhat.com/software/containers/ubi9/nodejs-24 and search for `nodejs` to get the version.
 
-As of 2026/04/08, this version is `v24.14.1`
+As of 2026/04/13, this version is `v24.13.0`
 
-The latest RPM is `v24.14.1`.
+The latest RPM is `v24.13.0`.
 
 To download headers:
 
 ```
 NODE_HEADERS_VERSION=$(podman run -it --rm --entrypoint /bin/bash --user root registry.access.redhat.com/ubi9/nodejs-24 -c "node --version" | tr -d "\n\r")
 # or some hardcoded value if there's a newer RPM
-NODE_HEADERS_VERSION=v24.14.1
+NODE_HEADERS_VERSION=v24.13.0
 
 cd .nvm/releases/
 curl -sSLO https://nodejs.org/dist/${NODE_HEADERS_VERSION}/node-${NODE_HEADERS_VERSION}-headers.tar.gz
