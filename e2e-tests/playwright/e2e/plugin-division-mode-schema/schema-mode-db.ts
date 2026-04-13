@@ -6,6 +6,7 @@
 import { expect } from "@playwright/test";
 import { Client } from "pg";
 import type { ClientConfig } from "pg";
+import { getPortForwardRestarter } from "./schema-mode-port-forward";
 
 /** Quote a PostgreSQL identifier (safe against injection in dynamic SQL). */
 function quoteIdent(name: string): string {
@@ -98,10 +99,32 @@ async function connectWithRetry(
           console.warn(
             "   Port-forward may have crashed (ECONNREFUSED on localhost)",
           );
-          console.warn(
-            "   This is usually caused by pod instability or network namespace issues",
-          );
-          console.warn(`   Waiting ${delayMs}ms before retry...`);
+
+          // Try to restart the port-forward if we have a restart function
+          const restarter = getPortForwardRestarter();
+          if (restarter && attempt <= 2) {
+            // Only try restart on first 2 attempts to avoid infinite loops
+            console.warn("   Attempting to restart port-forward...");
+            try {
+              await restarter();
+              console.log("   ✓ Port-forward restarted, retrying connection");
+              // Give it a moment to stabilize
+              await sleep(2000);
+              continue; // Skip the exponential backoff, try immediately
+            } catch (restartError) {
+              console.warn(
+                `   Failed to restart port-forward: ${restartError instanceof Error ? restartError.message : String(restartError)}`,
+              );
+              console.warn(
+                `   Falling back to normal retry with ${delayMs}ms delay`,
+              );
+            }
+          } else {
+            console.warn(
+              "   This is usually caused by pod instability or network namespace issues",
+            );
+            console.warn(`   Waiting ${delayMs}ms before retry...`);
+          }
         } else {
           console.warn(`   Retrying in ${delayMs}ms...`);
         }

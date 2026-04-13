@@ -10,10 +10,12 @@ import * as net from "net";
 export interface SchemaModePortForwardHandle {
   stop: () => void;
   isHealthy: () => boolean;
+  restart: () => Promise<void>;
 }
 
 let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
 let portForwardHealthy = false;
+let globalRestartFunction: (() => Promise<void>) | undefined;
 
 function waitForLocalPort(port: number, timeoutMs: number): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -70,6 +72,7 @@ export async function ensureSchemaModePortForward(): Promise<SchemaModePortForwa
       return {
         stop: () => {},
         isHealthy: () => true,
+        restart: async () => {},
       };
     }
     throw new Error(
@@ -185,10 +188,36 @@ export async function ensureSchemaModePortForward(): Promise<SchemaModePortForwa
 
   process.env.SCHEMA_MODE_DB_HOST = "localhost";
 
+  // Create a restart function that can be called to restart the port-forward
+  const restart = async () => {
+    console.log("[schema-mode pf] Restarting port-forward...");
+    // Stop existing process
+    portForwardHealthy = false;
+    if (portForwardProcess) {
+      try {
+        portForwardProcess.kill("SIGTERM");
+      } catch {
+        /* ignore */
+      }
+      portForwardProcess = undefined;
+    }
+
+    // Wait a moment for cleanup
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Start new process - call ensureSchemaModePortForward recursively
+    await ensureSchemaModePortForward();
+    console.log("[schema-mode pf] Port-forward restarted successfully");
+  };
+
+  // Store globally so database connection code can access it
+  globalRestartFunction = restart;
+
   return {
     stop: () => {
       console.log("[schema-mode pf] Stopping port-forward");
       portForwardHealthy = false;
+      globalRestartFunction = undefined;
       if (portForwardProcess) {
         try {
           portForwardProcess.kill("SIGTERM");
@@ -205,5 +234,14 @@ export async function ensureSchemaModePortForward(): Promise<SchemaModePortForwa
         !portForwardProcess.killed
       );
     },
+    restart,
   };
+}
+
+/**
+ * Get the port-forward restart function if available.
+ * Returns undefined if no port-forward is active or if using direct host connection.
+ */
+export function getPortForwardRestarter(): (() => Promise<void>) | undefined {
+  return globalRestartFunction;
 }
