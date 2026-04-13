@@ -55,6 +55,14 @@ async function runInstaller(root: string): Promise<number> {
   const workers = getWorkers();
   log(`======= Workers: ${workers} (CPUs: ${os.cpus().length})`);
 
+  // Resolve the config file and include paths against the current working
+  // directory at startup. Includes are resolved relative to the config file's
+  // directory (matches the Python installer's behaviour and makes the
+  // cwd-dependency explicit to operators reading the logs).
+  const configFileAbs = path.resolve(CONFIG_FILE);
+  const configDir = path.dirname(configFileAbs);
+  log(`======= Config file: ${configFileAbs}`);
+
   // Optional catalog index extraction — surfaces `dynamic-plugins.default.yaml`.
   const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? '';
   let catalogDpdy: string | null = null;
@@ -67,16 +75,16 @@ async function runInstaller(root: string): Promise<number> {
   const skipIntegrity = (process.env.SKIP_INTEGRITY_CHECK ?? '').toLowerCase() === 'true';
 
   const globalConfigFile = path.join(root, GLOBAL_CONFIG_FILENAME);
-  if (!(await fileExists(CONFIG_FILE))) {
-    log(`No ${CONFIG_FILE} found. Skipping.`);
+  if (!(await fileExists(configFileAbs))) {
+    log(`No ${CONFIG_FILE} found at ${configFileAbs}. Skipping.`);
     await fs.writeFile(globalConfigFile, '');
     return 0;
   }
 
-  const rawContent = await fs.readFile(CONFIG_FILE, 'utf8');
+  const rawContent = await fs.readFile(configFileAbs, 'utf8');
   const content = parseYaml(rawContent) as DynamicPluginsConfig | null;
   if (!content) {
-    log(`${CONFIG_FILE} is empty. Skipping.`);
+    log(`${configFileAbs} is empty. Skipping.`);
     await fs.writeFile(globalConfigFile, '');
     return 0;
   }
@@ -87,11 +95,13 @@ async function runInstaller(root: string): Promise<number> {
   );
 
   const allPlugins: PluginMap = {};
-  const includes = [...(content.includes ?? [])];
+  const includes = (content.includes ?? []).map(inc =>
+    path.isAbsolute(inc) ? inc : path.resolve(configDir, inc),
+  );
 
   // Substitute the placeholder DPDY include with the extracted catalog-index file.
   if (catalogDpdy) {
-    const idx = includes.indexOf(DPDY_FILENAME);
+    const idx = includes.findIndex(inc => path.basename(inc) === DPDY_FILENAME);
     if (idx !== -1) includes[idx] = catalogDpdy;
   }
 
@@ -105,7 +115,7 @@ async function runInstaller(root: string): Promise<number> {
   }
 
   for (const plugin of content.plugins ?? []) {
-    await mergePlugin(plugin, allPlugins, CONFIG_FILE, /* level */ 1, imageCache);
+    await mergePlugin(plugin, allPlugins, configFileAbs, /* level */ 1, imageCache);
   }
 
   for (const p of Object.values(allPlugins)) {

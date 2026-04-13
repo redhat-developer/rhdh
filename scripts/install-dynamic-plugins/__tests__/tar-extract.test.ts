@@ -46,7 +46,7 @@ describe('extractOciPlugin', () => {
     expect(existsSync(join(dest, 'plugin-two'))).toBe(false);
   });
 
-  it("rejects plugin paths containing '..'", async () => {
+  it("rejects plugin paths with a '..' segment", async () => {
     await makeTarball(tarball, ['plugin-one'], stage => {
       require('node:fs').mkdirSync(join(stage, 'plugin-one'));
       writeFileSync(join(stage, 'plugin-one/index.js'), 'x');
@@ -54,6 +54,32 @@ describe('extractOciPlugin', () => {
     await expect(extractOciPlugin(tarball, '../etc/passwd', workDir)).rejects.toBeInstanceOf(
       InstallException,
     );
+    await expect(extractOciPlugin(tarball, 'foo/../bar', workDir)).rejects.toBeInstanceOf(
+      InstallException,
+    );
+  });
+
+  it("rejects plugin paths with a '.' segment or empty segments", async () => {
+    await makeTarball(tarball, ['plugin-one'], stage => {
+      require('node:fs').mkdirSync(join(stage, 'plugin-one'));
+      writeFileSync(join(stage, 'plugin-one/index.js'), 'x');
+    });
+    await expect(extractOciPlugin(tarball, './plugin-one', workDir)).rejects.toBeInstanceOf(
+      InstallException,
+    );
+    await expect(extractOciPlugin(tarball, 'foo//bar', workDir)).rejects.toBeInstanceOf(
+      InstallException,
+    );
+  });
+
+  it("accepts a plugin name that contains '..' inside a segment (not as a segment)", async () => {
+    await makeTarball(tarball, ['my..plugin'], stage => {
+      require('node:fs').mkdirSync(join(stage, 'my..plugin'));
+      writeFileSync(join(stage, 'my..plugin/index.js'), 'ok');
+    });
+    const dest = join(workDir, 'out');
+    await extractOciPlugin(tarball, 'my..plugin', dest);
+    expect(existsSync(join(dest, 'my..plugin/index.js'))).toBe(true);
   });
 
   it('rejects absolute plugin paths', async () => {

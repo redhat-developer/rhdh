@@ -10725,8 +10725,17 @@ async function extractNpmPackage(archive) {
   return path4.basename(pkgDirReal);
 }
 function assertSafePluginPath(pluginPath) {
-  if (pluginPath.includes("..") || path4.isAbsolute(pluginPath)) {
-    throw new InstallException(`Invalid plugin path (path traversal detected): ${pluginPath}`);
+  if (path4.isAbsolute(pluginPath)) {
+    throw new InstallException(`Invalid plugin path (absolute): ${pluginPath}`);
+  }
+  if (pluginPath.length === 0) {
+    throw new InstallException("Invalid plugin path (empty)");
+  }
+  const segments = pluginPath.split(/[/\\]/);
+  for (const segment of segments) {
+    if (segment === "" || segment === "." || segment === "..") {
+      throw new InstallException(`Invalid plugin path (path traversal detected): ${pluginPath}`);
+    }
   }
 }
 
@@ -11382,6 +11391,9 @@ async function runInstaller(root) {
   const skopeo = new Skopeo();
   const workers = getWorkers();
   log(`======= Workers: ${workers} (CPUs: ${os4.cpus().length})`);
+  const configFileAbs = path9.resolve(CONFIG_FILE);
+  const configDir = path9.dirname(configFileAbs);
+  log(`======= Config file: ${configFileAbs}`);
   const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? "";
   let catalogDpdy = null;
   if (catalogImage) {
@@ -11390,15 +11402,15 @@ async function runInstaller(root) {
   }
   const skipIntegrity = (process.env.SKIP_INTEGRITY_CHECK ?? "").toLowerCase() === "true";
   const globalConfigFile = path9.join(root, GLOBAL_CONFIG_FILENAME);
-  if (!await fileExists(CONFIG_FILE)) {
-    log(`No ${CONFIG_FILE} found. Skipping.`);
+  if (!await fileExists(configFileAbs)) {
+    log(`No ${CONFIG_FILE} found at ${configFileAbs}. Skipping.`);
     await fs10.writeFile(globalConfigFile, "");
     return 0;
   }
-  const rawContent = await fs10.readFile(CONFIG_FILE, "utf8");
+  const rawContent = await fs10.readFile(configFileAbs, "utf8");
   const content = (0, import_yaml2.parse)(rawContent);
   if (!content) {
-    log(`${CONFIG_FILE} is empty. Skipping.`);
+    log(`${configFileAbs} is empty. Skipping.`);
     await fs10.writeFile(globalConfigFile, "");
     return 0;
   }
@@ -11407,9 +11419,11 @@ async function runInstaller(root) {
     await fs10.mkdtemp(path9.join(os4.tmpdir(), "rhdh-oci-cache-"))
   );
   const allPlugins = {};
-  const includes = [...content.includes ?? []];
+  const includes = (content.includes ?? []).map(
+    (inc) => path9.isAbsolute(inc) ? inc : path9.resolve(configDir, inc)
+  );
   if (catalogDpdy) {
-    const idx = includes.indexOf(DPDY_FILENAME);
+    const idx = includes.findIndex((inc) => path9.basename(inc) === DPDY_FILENAME);
     if (idx !== -1) includes[idx] = catalogDpdy;
   }
   for (const inc of includes) {
@@ -11431,7 +11445,7 @@ async function runInstaller(root) {
     await mergePlugin(
       plugin,
       allPlugins,
-      CONFIG_FILE,
+      configFileAbs,
       /* level */
       1,
       imageCache

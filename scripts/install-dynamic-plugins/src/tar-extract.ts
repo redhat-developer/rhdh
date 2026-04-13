@@ -148,8 +148,23 @@ export async function extractNpmPackage(archive: string): Promise<string> {
   return path.basename(pkgDirReal);
 }
 
+/**
+ * Validate a plugin path against traversal attempts. Segment-based — a bare
+ * `..` substring in a filename (`my..plugin`) is allowed; a `..` path segment
+ * (`foo/../bar`) is not. Absolute paths, empty segments, and `.` segments are
+ * also rejected.
+ */
 function assertSafePluginPath(pluginPath: string): void {
-  if (pluginPath.includes('..') || path.isAbsolute(pluginPath)) {
-    throw new InstallException(`Invalid plugin path (path traversal detected): ${pluginPath}`);
+  if (path.isAbsolute(pluginPath)) {
+    throw new InstallException(`Invalid plugin path (absolute): ${pluginPath}`);
+  }
+  if (pluginPath.length === 0) {
+    throw new InstallException('Invalid plugin path (empty)');
+  }
+  const segments = pluginPath.split(/[/\\]/);
+  for (const segment of segments) {
+    if (segment === '' || segment === '.' || segment === '..') {
+      throw new InstallException(`Invalid plugin path (path traversal detected): ${pluginPath}`);
+    }
   }
 }
