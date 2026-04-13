@@ -9,22 +9,42 @@ import * as net from "net";
 
 export interface SchemaModePortForwardHandle {
   stop: () => void;
+  isHealthy: () => boolean;
 }
+
+let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
+let portForwardHealthy = false;
 
 function waitForLocalPort(port: number, timeoutMs: number): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   return new Promise((resolve, reject) => {
+    let attemptCount = 0;
     const tryConnect = () => {
+      attemptCount++;
       if (Date.now() > deadline) {
-        reject(new Error(`Timeout waiting for localhost:${port}`));
+        reject(
+          new Error(
+            `Timeout waiting for localhost:${port} after ${attemptCount} attempts`,
+          ),
+        );
         return;
       }
       const socket = net.createConnection({ port, host: "127.0.0.1" }, () => {
         socket.end();
+        if (process.env.DEBUG_SCHEMA_MODE_PF) {
+          console.log(
+            `[schema-mode pf] Port ${port} ready after ${attemptCount} attempts`,
+          );
+        }
         resolve();
       });
-      socket.on("error", () => {
+      socket.on("error", (err) => {
         socket.destroy();
+        if (process.env.DEBUG_SCHEMA_MODE_PF && attemptCount % 10 === 0) {
+          console.log(
+            `[schema-mode pf] Waiting for port ${port}, attempt ${attemptCount}: ${err.message}`,
+          );
+        }
         setTimeout(tryConnect, 300);
       });
     };
@@ -47,12 +67,31 @@ export async function ensureSchemaModePortForward(): Promise<SchemaModePortForwa
 
   if (!hasMeta) {
     if (hasHostOnly) {
-      return { stop: () => {} };
+      return {
+        stop: () => {},
+        isHealthy: () => true,
+      };
     }
     throw new Error(
       "Set SCHEMA_MODE_PORT_FORWARD_NAMESPACE + SCHEMA_MODE_PORT_FORWARD_RESOURCE (CI), or SCHEMA_MODE_DB_HOST for a direct connection",
     );
   }
+
+  // Clean up any existing port-forward process
+  if (portForwardProcess) {
+    console.log("[schema-mode pf] Cleaning up existing port-forward process");
+    try {
+      portForwardProcess.kill("SIGTERM");
+    } catch {
+      /* ignore */
+    }
+    portForwardProcess = undefined;
+    portForwardHealthy = false;
+  }
+
+  console.log(
+    `[schema-mode pf] Starting port-forward: ${resource} in ${ns} -> localhost:${localPort}`,
+  );
 
   const child = spawn(
     "oc",
@@ -63,25 +102,84 @@ export async function ensureSchemaModePortForward(): Promise<SchemaModePortForwa
     },
   ) as ChildProcessWithoutNullStreams;
 
+  portForwardProcess = child;
+  portForwardHealthy = false;
+
+  const outputLines: string[] = [];
   const onOutput = (buf: Buffer) => {
-    if (!process.env.DEBUG_SCHEMA_MODE_PF) {
-      return;
+    const line = buf.toString().trimEnd();
+    outputLines.push(line);
+    // Keep only last 50 lines
+    if (outputLines.length > 50) {
+      outputLines.shift();
     }
-    console.log(`[schema-mode pf] ${buf.toString().trimEnd()}`);
+
+    if (line.includes("Forwarding from")) {
+      portForwardHealthy = true;
+      if (process.env.DEBUG_SCHEMA_MODE_PF) {
+        console.log(`[schema-mode pf] ${line}`);
+      }
+    } else if (line.includes("error") || line.includes("Error")) {
+      console.error(`[schema-mode pf] Error: ${line}`);
+      portForwardHealthy = false;
+    } else if (process.env.DEBUG_SCHEMA_MODE_PF) {
+      console.log(`[schema-mode pf] ${line}`);
+    }
   };
   child.stdout.on("data", onOutput);
   child.stderr.on("data", onOutput);
 
   child.on("error", (err) => {
-    console.error("schema-mode port-forward spawn error:", err);
+    console.error("[schema-mode pf] Process error:", err);
+    portForwardHealthy = false;
+  });
+
+  child.on("exit", (code, signal) => {
+    portForwardHealthy = false;
+    if (code !== null && code !== 0) {
+      console.error(
+        `[schema-mode pf] Process exited with code ${code}, signal ${signal}`,
+      );
+      if (outputLines.length > 0) {
+        console.error(
+          `[schema-mode pf] Last output:\n${outputLines.join("\n")}`,
+        );
+      }
+    } else if (process.env.DEBUG_SCHEMA_MODE_PF) {
+      console.log(
+        `[schema-mode pf] Process exited normally (code ${code}, signal ${signal})`,
+      );
+    }
   });
 
   try {
     await waitForLocalPort(localPort, 45_000);
+    portForwardHealthy = true;
+    console.log(`[schema-mode pf] Port-forward established successfully`);
   } catch (e) {
-    child.kill("SIGTERM");
+    portForwardHealthy = false;
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    console.error(
+      `[schema-mode pf] Failed to establish port-forward: ${errorMsg}`,
+    );
+    if (outputLines.length > 0) {
+      console.error(
+        `[schema-mode pf] Port-forward output:\n${outputLines.join("\n")}`,
+      );
+    }
+    try {
+      child.kill("SIGTERM");
+    } catch {
+      /* ignore */
+    }
+    portForwardProcess = undefined;
     throw new Error(
-      `${e instanceof Error ? e.message : String(e)}. Check oc login and resource ${resource} in ${ns}`,
+      `Failed to establish port-forward to ${resource} in ${ns}.\n` +
+        `Error: ${errorMsg}\n` +
+        `Check that:\n` +
+        `  - You are logged in to OpenShift (oc whoami)\n` +
+        `  - Resource ${resource} exists in namespace ${ns}\n` +
+        `  - Resource is in Running state`,
     );
   }
 
@@ -89,11 +187,23 @@ export async function ensureSchemaModePortForward(): Promise<SchemaModePortForwa
 
   return {
     stop: () => {
-      try {
-        child.kill("SIGTERM");
-      } catch {
-        /* ignore */
+      console.log("[schema-mode pf] Stopping port-forward");
+      portForwardHealthy = false;
+      if (portForwardProcess) {
+        try {
+          portForwardProcess.kill("SIGTERM");
+        } catch {
+          /* ignore */
+        }
+        portForwardProcess = undefined;
       }
+    },
+    isHealthy: () => {
+      return (
+        portForwardHealthy &&
+        portForwardProcess !== undefined &&
+        !portForwardProcess.killed
+      );
     },
   };
 }

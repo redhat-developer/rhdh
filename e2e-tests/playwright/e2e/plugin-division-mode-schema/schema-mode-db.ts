@@ -41,25 +41,86 @@ function shouldRetryWithSsl(error: unknown): boolean {
   );
 }
 
+function isTransientConnectionError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  return (
+    msg.includes("ECONNRESET") ||
+    msg.includes("Connection terminated unexpectedly") ||
+    msg.includes("ECONNREFUSED") ||
+    msg.includes("ETIMEDOUT") ||
+    msg.includes("read ECONNRESET") ||
+    msg.includes("write EPIPE")
+  );
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function connectWithRetry(
+  config: ClientConfig,
+  maxRetries = 3,
+  baseDelayMs = 1000,
+): Promise<Client> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let client: Client | undefined;
+    try {
+      client = new Client(config);
+      await client.connect();
+      if (attempt > 1) {
+        console.log(`✓ Connected to PostgreSQL after ${attempt} attempts`);
+      }
+      return client;
+    } catch (error) {
+      lastError = error;
+      if (client) {
+        await client.end().catch(() => {});
+      }
+
+      if (!isTransientConnectionError(error)) {
+        // Not a transient error, don't retry
+        throw error;
+      }
+
+      if (attempt < maxRetries) {
+        const delayMs = baseDelayMs * Math.pow(2, attempt - 1); // Exponential backoff
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `[WARNING] Connection attempt ${attempt}/${maxRetries} failed: ${errorMsg}`,
+        );
+        console.warn(`   Retrying in ${delayMs}ms...`);
+        await sleep(delayMs);
+      }
+    }
+  }
+
+  // All retries exhausted
+  const errorMsg =
+    lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(
+    `Failed to connect after ${maxRetries} attempts. Last error: ${errorMsg}`,
+  );
+}
+
 async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
-  const client = new Client(config);
   try {
-    await client.connect();
-    return client;
+    return await connectWithRetry(config);
   } catch (error) {
-    await client.end().catch(() => {});
     if (!shouldRetryWithSsl(error)) {
       throw error;
     }
   }
 
-  const sslClient = new Client({
+  // Retry with SSL
+  console.log("Retrying connection with SSL...");
+  const sslConfig = {
     ...config,
     // Port-forwarded managed DBs can require encryption and often use self-signed certs.
     ssl: { rejectUnauthorized: false },
-  });
-  await sslClient.connect();
-  return sslClient;
+  };
+  return await connectWithRetry(sslConfig);
 }
 
 /**
@@ -267,106 +328,60 @@ export async function setupSchemaModeDatabase(
   await assertDbUserHasRestrictedPermissions(adminClient, dbUser);
   await adminClient.end();
 
-  const dbClient = new Client({
-    host: normalizeDbHost(dbHost),
-    port: 5432,
-    user: dbAdminUser,
-    password: dbAdminPassword,
-    database: dbName,
-    connectionTimeoutMillis: 30000,
-  });
+  // Connect to the target database to grant permissions
+  let dbClient: Client;
   try {
-    await dbClient.connect();
-  } catch (error) {
-    await dbClient.end().catch(() => {});
-    if (!shouldRetryWithSsl(error)) {
-      throw error;
-    }
-    const sslDbClient = new Client({
+    dbClient = await connectWithSslFallback({
       host: normalizeDbHost(dbHost),
       port: 5432,
       user: dbAdminUser,
       password: dbAdminPassword,
       database: dbName,
       connectionTimeoutMillis: 30000,
-      ssl: { rejectUnauthorized: false },
     });
-    await sslDbClient.connect();
-    await sslDbClient.query(
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to connect to database ${dbName} as admin user.\n` +
+        `Error: ${errorMsg}\n` +
+        `Please verify the database exists and admin credentials are correct.`,
+    );
+  }
+
+  // Grant permissions to the runtime user
+  try {
+    await dbClient.query(
       `GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
     );
-    await sslDbClient.query(
+    await dbClient.query(
       `GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
     );
-    await sslDbClient.query(
+    await dbClient.query(
       `GRANT CREATE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
     );
-    await sslDbClient.query(
+    await dbClient.query(
       `GRANT ALL PRIVILEGES ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
     );
-    await sslDbClient.query(
-      `ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`,
-    );
-    await sslDbClient.end();
-    console.log("✓ Database setup complete");
-    console.log("Verifying test database connection...");
+    await dbClient.query(`ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`);
+    console.log("✓ Database permissions configured");
+  } finally {
+    await dbClient.end();
+  }
 
-    const sslTestConnectionClient = new Client({
+  console.log("✓ Database setup complete");
+
+  // Verify the runtime user can connect
+  console.log("Verifying test database connection...");
+  let testConnectionClient: Client;
+  try {
+    testConnectionClient = await connectWithSslFallback({
       host: normalizeDbHost(dbHost),
       port: 5432,
       user: dbUser,
       password: dbPassword,
       database: dbName,
       connectionTimeoutMillis: 10000,
-      ssl: { rejectUnauthorized: false },
     });
-    try {
-      await sslTestConnectionClient.connect();
-      await sslTestConnectionClient.query("SELECT 1");
-      await sslTestConnectionClient.end();
-      console.log("✓ Test database connection verified");
-      return;
-    } catch (testError) {
-      const errorMsg =
-        testError instanceof Error ? testError.message : String(testError);
-      throw new Error(
-        `Test database connection failed. This means RHDH pods will also fail to connect.\n` +
-          `Error: ${errorMsg}\n` +
-          `Please verify:\n` +
-          `  - Database ${dbName} exists\n` +
-          `  - User ${dbUser} has proper permissions\n` +
-          `  - Password is correct`,
-      );
-    }
-  }
-  await dbClient.query(
-    `GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
-  );
-  await dbClient.query(`GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`);
-  await dbClient.query(
-    `GRANT CREATE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
-  );
-  await dbClient.query(
-    `GRANT ALL PRIVILEGES ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
-  );
-  await dbClient.query(`ALTER SCHEMA public OWNER TO ${quoteIdent(dbUser)}`);
-  await dbClient.end();
-  console.log("✓ Database setup complete");
-
-  console.log("Verifying test database connection...");
-  const testConnectionClient = new Client({
-    host: normalizeDbHost(dbHost),
-    port: 5432,
-    user: dbUser,
-    password: dbPassword,
-    database: dbName,
-    connectionTimeoutMillis: 10000,
-  });
-  try {
-    await testConnectionClient.connect();
-    await testConnectionClient.query("SELECT 1");
-    await testConnectionClient.end();
-    console.log("✓ Test database connection verified");
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     throw new Error(
@@ -377,5 +392,12 @@ export async function setupSchemaModeDatabase(
         `  - User ${dbUser} has proper permissions\n` +
         `  - Password is correct`,
     );
+  }
+
+  try {
+    await testConnectionClient.query("SELECT 1");
+    console.log("✓ Test database connection verified");
+  } finally {
+    await testConnectionClient.end();
   }
 }
