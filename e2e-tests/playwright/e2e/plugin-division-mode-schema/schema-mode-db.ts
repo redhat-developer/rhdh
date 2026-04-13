@@ -29,7 +29,7 @@ export interface SchemaModeEnv {
 /**
  * Normalize localhost to IPv4 loopback to avoid "::1" pg_hba mismatches on some clusters.
  */
-function normalizeDbHost(host: string): string {
+export function normalizeDbHost(host: string): string {
   return host === "localhost" ? "127.0.0.1" : host;
 }
 
