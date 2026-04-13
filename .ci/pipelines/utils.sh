@@ -323,15 +323,9 @@ apply_yaml_files() {
   common::create_configmap_from_file "dynamic-plugins-config" "$project" \
     "dynamic-plugins-config.yaml" "$dir/resources/config_map/dynamic-plugins-config.yaml"
 
-  if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
-    common::create_configmap_from_files "rbac-policy" "$project" \
-      "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
-      "conditional-policies.yaml=/tmp/conditional-policies.yaml"
-  else
-    common::create_configmap_from_files "rbac-policy" "$project" \
-      "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
-      "conditional-policies.yaml=$dir/resources/config_map/conditional-policies.yaml"
-  fi
+  common::create_configmap_from_files "rbac-policy" "$project" \
+    "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
+    "conditional-policies.yaml=$dir/resources/config_map/conditional-policies.yaml"
 
   # configuration for testing global floating action button.
   common::create_configmap_from_file "dynamic-global-floating-action-button-config" "$project" \

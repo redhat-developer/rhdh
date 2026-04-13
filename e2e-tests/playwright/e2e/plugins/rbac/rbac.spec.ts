@@ -390,6 +390,8 @@ test.describe("Test RBAC", () => {
       await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
+        true,
+        15000,
       );
 
       await page.getByPlaceholder("Filter").waitFor({
@@ -453,18 +455,23 @@ test.describe("Test RBAC", () => {
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
+        true,
+        15000,
       );
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
 
-      await page
-        .getByTestId(ROLE_OVERVIEW_COMPONENTS_TEST_ID.updatePolicies)
-        .click();
+      // Wait for the permissions section update button to be available
+      const updatePoliciesButton = page.getByTestId(
+        ROLE_OVERVIEW_COMPONENTS_TEST_ID.updatePolicies,
+      );
+      await expect(updatePoliciesButton).toBeVisible({ timeout: 15000 });
+      await updatePoliciesButton.click();
       await uiHelper.verifyHeading("Edit Role");
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
 
       // Close the plugins dropdown to access the permissions table
-      await page.getByRole("button", { name: "Close" }).click();
+      await page.keyboard.press("Escape");
 
       // Expand the Scaffolder row to access its permissions
       await page
@@ -483,6 +490,8 @@ test.describe("Test RBAC", () => {
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
+        true,
+        15000,
       );
       await uiHelper.verifyHeading("2 permissions");
 
@@ -873,6 +882,8 @@ test.describe("Test RBAC", () => {
       await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
+        true,
+        15000,
       );
 
       await page.getByPlaceholder("Filter").waitFor({

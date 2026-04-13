@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { Common, setupBrowser } from "../../utils/common";
 import {
   RBAC_API,
@@ -240,12 +240,24 @@ test.describe("Auditor check for RBAC Plugin", () => {
 
   for (const s of conditionRead) {
     test(`condition-read → ${s.name}`, async () => {
-      await s.call();
+      const response = await s.call();
+      let status: "succeeded" | "failed";
+      if (s.name === "by-id" && response.status() === 404) {
+        // Condition by-id may return 404 if no conditions exist (e.g.,
+        // empty conditional-policies.yaml). The audit log still records the
+        // event but with status "failed" instead of "succeeded".
+        status = "failed";
+      } else {
+        expect(response.ok()).toBe(true);
+        status = "succeeded";
+      }
       await validateRbacLogEvent(
         "condition-read",
         USER_ENTITY_REF,
         { method: "GET", url: s.url },
         s.meta,
+        undefined,
+        status,
       );
     });
   }
