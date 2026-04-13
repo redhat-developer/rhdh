@@ -50,6 +50,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   let dbUser: string;
   let dbPassword: string;
   let stopSchemaModePortForward: (() => void) | undefined;
+  let postgresPodName: string;
 
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(300000);
@@ -98,7 +99,7 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     const kubeClient = new KubeClient();
 
     console.log(`Connecting to PostgreSQL at ${dbHost}:5432...`);
-    const postgresPodName = `backstage-psql-${releaseName}-0`;
+    postgresPodName = `backstage-psql-${releaseName}-0`;
     let adminClient: Client;
     try {
       adminClient = await connectAdminClient({
