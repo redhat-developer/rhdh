@@ -10571,7 +10571,7 @@ var EQUALS = 61;
 function isBase64Shape(value) {
   let paddingCount = 0;
   for (let i = 0; i < value.length; i++) {
-    const c = value.charCodeAt(i);
+    const c = value.codePointAt(i) ?? 0;
     if (c === EQUALS) {
       paddingCount++;
       if (paddingCount > 2) return false;
@@ -10591,7 +10591,7 @@ function isBase64Char(c) {
 }
 function stripTrailingEquals(s3) {
   let end = s3.length;
-  while (end > 0 && s3.charCodeAt(end - 1) === EQUALS) end--;
+  while (end > 0 && s3.codePointAt(end - 1) === EQUALS) end--;
   return s3.slice(0, end);
 }
 
@@ -10807,46 +10807,48 @@ async function installOciPlugin(plugin, destination, imageCache, installed) {
   }
   const pkg = plugin.package;
   const config = plugin.pluginConfig ?? {};
-  const pullPolicy = plugin.pullPolicy ?? (pkg.includes(":latest!") ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT);
-  if (installed.has(hash)) {
-    const pathInstalled = installed.get(hash);
-    if (pullPolicy === PullPolicy.IF_NOT_PRESENT) {
-      log("	==> Already installed, skipping");
-      installed.delete(hash);
-      return { pluginPath: null, pluginConfig: config };
-    }
-    if (pullPolicy === PullPolicy.ALWAYS) {
-      const digestFile = path6.join(destination, pathInstalled, IMAGE_HASH_FILE);
-      if (await fileExists(digestFile)) {
-        const localDigest = (await fs7.readFile(digestFile, "utf8")).trim();
-        const imagePart2 = pkg.split("!")[0];
-        const remoteDigest = await imageCache.getDigest(imagePart2);
-        if (localDigest === remoteDigest) {
-          log("	==> Digest unchanged, skipping");
-          installed.delete(hash);
-          return { pluginPath: null, pluginConfig: config };
-        }
-      }
-    }
+  const pullPolicy = resolvePullPolicy(plugin, pkg);
+  if (await isAlreadyInstalled(plugin, hash, pkg, pullPolicy, destination, imageCache, installed)) {
+    installed.delete(hash);
+    return { pluginPath: null, pluginConfig: config };
   }
   if (!plugin.version) {
     throw new InstallException(`No version for ${pkg}`);
   }
   const [imagePart, pluginPath] = pkg.split("!");
-  if (!pluginPath) {
+  if (!pluginPath || !imagePart) {
     throw new InstallException(`OCI package ${pkg} missing !plugin-path suffix`);
   }
   const tarball = await imageCache.getTarball(imagePart);
   await extractOciPlugin(tarball, pluginPath, destination);
   const pluginDir = path6.join(destination, pluginPath);
   await fs7.mkdir(pluginDir, { recursive: true });
-  await fs7.writeFile(
-    path6.join(pluginDir, IMAGE_HASH_FILE),
-    await imageCache.getDigest(imagePart)
-  );
+  await fs7.writeFile(path6.join(pluginDir, IMAGE_HASH_FILE), await imageCache.getDigest(imagePart));
   await fs7.writeFile(path6.join(pluginDir, CONFIG_HASH_FILE), hash);
   markAsFresh(installed, pluginPath);
   return { pluginPath, pluginConfig: config };
+}
+function resolvePullPolicy(plugin, pkg) {
+  if (plugin.pullPolicy) return plugin.pullPolicy;
+  return pkg.includes(":latest!") ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT;
+}
+async function isAlreadyInstalled(_plugin, hash, pkg, pullPolicy, destination, imageCache, installed) {
+  const pathInstalled = installed.get(hash);
+  if (pathInstalled === void 0) return false;
+  if (pullPolicy === PullPolicy.IF_NOT_PRESENT) {
+    log("	==> Already installed, skipping");
+    return true;
+  }
+  if (pullPolicy !== PullPolicy.ALWAYS) return false;
+  const digestFile = path6.join(destination, pathInstalled, IMAGE_HASH_FILE);
+  if (!await fileExists(digestFile)) return false;
+  const localDigest = (await fs7.readFile(digestFile, "utf8")).trim();
+  const imagePart = pkg.split("!")[0];
+  if (!imagePart) return false;
+  const remoteDigest = await imageCache.getDigest(imagePart);
+  if (localDigest !== remoteDigest) return false;
+  log("	==> Digest unchanged, skipping");
+  return true;
 }
 
 // src/lock-file.ts
@@ -10936,27 +10938,26 @@ var GIT_URL_PATTERNS = [
   /^github:([^/@]+)\/([^/#]+)(?:#(.+))?$/
 ];
 function npmPluginKey(pkg) {
-  if (pkg.startsWith("./")) return pkg;
-  if (pkg.endsWith(".tgz")) return pkg;
-  const alias = NPM_ALIAS_PATTERN.exec(pkg);
-  if (alias) {
-    const [, aliasName, scope, name] = alias;
-    return `${aliasName}@npm:${scope ?? ""}${name}`;
-  }
-  for (const re2 of GIT_URL_PATTERNS) {
-    if (re2.test(pkg)) {
-      const hash = pkg.indexOf("#");
-      return hash >= 0 ? pkg.slice(0, hash) : pkg;
-    }
-  }
-  if (!pkg.includes("://") && !pkg.startsWith("@")) {
-    const gh = GITHUB_SHORTHAND_PATTERN.exec(pkg);
-    if (gh) {
-      const hash = pkg.indexOf("#");
-      return hash >= 0 ? pkg.slice(0, hash) : pkg;
-    }
-  }
+  if (pkg.startsWith("./") || pkg.endsWith(".tgz")) return pkg;
+  const aliasKey = tryParseAlias(pkg);
+  if (aliasKey) return aliasKey;
+  if (isGitLikeSpec(pkg)) return stripRefSuffix(pkg);
   return stripStandardNpmVersion(pkg);
+}
+function tryParseAlias(pkg) {
+  const m2 = NPM_ALIAS_PATTERN.exec(pkg);
+  if (!m2) return null;
+  const [, aliasName, scope, name] = m2;
+  return `${aliasName}@npm:${scope ?? ""}${name}`;
+}
+function isGitLikeSpec(pkg) {
+  if (GIT_URL_PATTERNS.some((re2) => re2.test(pkg))) return true;
+  if (pkg.includes("://") || pkg.startsWith("@")) return false;
+  return GITHUB_SHORTHAND_PATTERN.test(pkg);
+}
+function stripRefSuffix(pkg) {
+  const hash = pkg.indexOf("#");
+  return hash >= 0 ? pkg.slice(0, hash) : pkg;
 }
 function stripStandardNpmVersion(pkg) {
   const m2 = NPM_PACKAGE_PATTERN.exec(pkg);
@@ -10967,7 +10968,12 @@ function stripStandardNpmVersion(pkg) {
 
 // src/oci-key.ts
 var OCI_REGEX = new RegExp(
-  "^(" + escape(OCI_PROTO) + "[^\\s/:@]+(?::\\d+)?(?:/[^\\s:@]+)+)(?::([^\\s!@:]+)|@((?:sha256|sha512|blake3):[^\\s!@:]+))(?:!([^\\s]+))?$"
+  "^(" + escape(OCI_PROTO) + String.raw`[^\s/:@]+` + // registry host
+  String.raw`(?::\d+)?` + // optional port
+  String.raw`(?:/[^\s:@]+)+` + // at least one path segment
+  ")" + String.raw`(?::([^\s!@:]+)` + // tag
+  "|" + String.raw`@((?:sha256|sha512|blake3):[^\s!@:]+))` + // or digest
+  String.raw`(?:!([^\s]+))?$`
   // optional !<plugin-path>
 );
 async function ociPluginKey(pkg, imageCache) {
@@ -10987,31 +10993,7 @@ async function ociPluginKey(pkg, imageCache) {
     return { pluginKey: registry, version, inherit, resolvedPath: null };
   }
   if (!path10) {
-    if (!imageCache) {
-      throw new InstallException(
-        `Cannot auto-detect plugin path for ${pkg}: no image cache provided`
-      );
-    }
-    const fullImage = tag ? `${registry}:${version}` : `${registry}@${version}`;
-    log(`
-======= No plugin path specified for ${fullImage}, auto-detecting from OCI manifest`);
-    const paths = await imageCache.getPluginPaths(fullImage);
-    if (paths.length === 0) {
-      throw new InstallException(
-        `No plugins found in OCI image ${fullImage}. The image might not contain the 'io.backstage.dynamic-packages' annotation. Please ensure it was packaged using the @red-hat-developer-hub/cli plugin package command.`
-      );
-    }
-    if (paths.length > 1) {
-      const formatted = paths.map((p2) => `  - ${p2}`).join("\n");
-      throw new InstallException(
-        `Multiple plugins found in OCI image ${fullImage}:
-${formatted}
-Please specify which plugin to install using the syntax: ${fullImage}!<plugin-name>`
-      );
-    }
-    path10 = paths[0];
-    log(`
-======= Auto-resolving OCI package ${fullImage} to use plugin path: ${path10}`);
+    path10 = await autoDetectPluginPath(pkg, registry, version, tag !== void 0, imageCache);
   }
   return {
     pluginKey: `${registry}:!${path10}`,
@@ -11020,27 +11002,64 @@ Please specify which plugin to install using the syntax: ${fullImage}!<plugin-na
     resolvedPath: path10
   };
 }
+async function autoDetectPluginPath(pkg, registry, version, isTag, imageCache) {
+  if (!imageCache) {
+    throw new InstallException(
+      `Cannot auto-detect plugin path for ${pkg}: no image cache provided`
+    );
+  }
+  const fullImage = isTag ? `${registry}:${version}` : `${registry}@${version}`;
+  log(`
+======= No plugin path specified for ${fullImage}, auto-detecting from OCI manifest`);
+  const paths = await imageCache.getPluginPaths(fullImage);
+  if (paths.length === 0) {
+    throw new InstallException(
+      `No plugins found in OCI image ${fullImage}. The image might not contain the 'io.backstage.dynamic-packages' annotation. Please ensure it was packaged using the @red-hat-developer-hub/cli plugin package command.`
+    );
+  }
+  if (paths.length > 1) {
+    const formatted = paths.map((p2) => `  - ${p2}`).join("\n");
+    throw new InstallException(
+      `Multiple plugins found in OCI image ${fullImage}:
+${formatted}
+Please specify which plugin to install using the syntax: ${fullImage}!<plugin-name>`
+    );
+  }
+  const resolved = paths[0];
+  log(`
+======= Auto-resolving OCI package ${fullImage} to use plugin path: ${resolved}`);
+  return resolved;
+}
 function escape(s3) {
-  return s3.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  return s3.replaceAll(/[.*+?^${}()|[\]\\/]/g, String.raw`\$&`);
 }
 
 // src/merger.ts
 var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
+function safeSet(dst, key, value) {
+  Object.defineProperty(dst, key, {
+    value,
+    writable: true,
+    enumerable: true,
+    configurable: true
+  });
+}
 function deepMerge(src, dst, prefix = "") {
   for (const [key, value] of Object.entries(src)) {
     if (FORBIDDEN_KEYS.has(key)) continue;
+    const dstRecord = dst;
     if (isPlainObject(value)) {
-      const existing = dst[key];
+      const existing = dstRecord[key];
       const node = isPlainObject(existing) ? existing : {};
-      dst[key] = node;
+      safeSet(dstRecord, key, node);
       deepMerge(value, node, `${prefix}${key}.`);
     } else {
-      if (key in dst && !isEqual(dst[key], value)) {
+      if (key in dst && !isEqual(dstRecord[key], value)) {
         throw new InstallException(
           `Config key '${prefix}${key}' defined differently for 2 dynamic plugins`
         );
       }
-      dst[key] = value;
+      safeSet(dstRecord, key, value);
     }
   }
   return dst;
@@ -11079,37 +11098,7 @@ function mergeNpmPlugin(plugin, allPlugins, configFile, level) {
 async function mergeOciPlugin(plugin, allPlugins, configFile, level, imageCache) {
   let parsed = await ociPluginKey(plugin.package, imageCache);
   if (parsed.inherit && parsed.resolvedPath === null) {
-    const matches = Object.keys(allPlugins).filter((k2) => k2.startsWith(`${parsed.pluginKey}:!`));
-    if (matches.length === 0) {
-      throw new InstallException(
-        `Cannot use {{inherit}} for ${parsed.pluginKey}: no existing plugin configuration found. Ensure a plugin from this image is defined in an included file with an explicit version.`
-      );
-    }
-    if (matches.length > 1) {
-      const formatted = matches.map((m2) => {
-        const basePlugin2 = allPlugins[m2];
-        const baseVersion = basePlugin2?.version ?? "";
-        const registryPart2 = m2.split(":!")[0];
-        const pathPart = m2.split(":!").slice(-1)[0];
-        return `  - ${registryPart2}:${baseVersion}!${pathPart}`;
-      }).join("\n");
-      throw new InstallException(
-        `Cannot use {{inherit}} for ${parsed.pluginKey}: multiple plugins from this image are defined in the included files:
-${formatted}
-Please specify which plugin configuration to inherit from using: ${parsed.pluginKey}:{{inherit}}!<plugin_path>`
-      );
-    }
-    const matchedKey = matches[0];
-    const basePlugin = allPlugins[matchedKey];
-    const version = basePlugin.version;
-    const resolvedPath = matchedKey.split(":!").slice(-1)[0];
-    const registryPart = matchedKey.split(":!")[0];
-    plugin.package = `${registryPart}:${version}!${resolvedPath}`;
-    parsed = { pluginKey: matchedKey, version, inherit: true, resolvedPath };
-    log(
-      `
-======= Inheriting version \`${version}\` and plugin path \`${resolvedPath}\` for ${matchedKey}`
-    );
+    parsed = resolveInherit(plugin, allPlugins, parsed);
   } else if (!plugin.package.includes("!") && parsed.resolvedPath) {
     plugin.package = `${plugin.package}!${parsed.resolvedPath}`;
   }
@@ -11147,6 +11136,42 @@ Please specify which plugin configuration to inherit from using: ${parsed.plugin
   }
   copyPluginFields(plugin, existing, ["package", "version", "_level"]);
   existing._level = level;
+}
+function resolveInherit(plugin, allPlugins, parsed) {
+  const prefix = `${parsed.pluginKey}:!`;
+  const matches = Object.keys(allPlugins).filter((k2) => k2.startsWith(prefix));
+  if (matches.length === 0) {
+    throw new InstallException(
+      `Cannot use {{inherit}} for ${parsed.pluginKey}: no existing plugin configuration found. Ensure a plugin from this image is defined in an included file with an explicit version.`
+    );
+  }
+  if (matches.length > 1) {
+    const formatted = matches.map((m2) => {
+      const baseVersion = allPlugins[m2]?.version ?? "";
+      const registryPart2 = m2.split(":!")[0] ?? "";
+      const pathPart = m2.split(":!").at(-1) ?? "";
+      return `  - ${registryPart2}:${baseVersion}!${pathPart}`;
+    }).join("\n");
+    throw new InstallException(
+      `Cannot use {{inherit}} for ${parsed.pluginKey}: multiple plugins from this image are defined in the included files:
+${formatted}
+Please specify which plugin configuration to inherit from using: ${parsed.pluginKey}:{{inherit}}!<plugin_path>`
+    );
+  }
+  const matchedKey = matches[0];
+  const basePlugin = allPlugins[matchedKey];
+  if (!basePlugin?.version) {
+    throw new InstallException(`Internal: inherited plugin ${matchedKey} has no version`);
+  }
+  const version = basePlugin.version;
+  const resolvedPath = matchedKey.split(":!").at(-1) ?? "";
+  const registryPart = matchedKey.split(":!")[0] ?? "";
+  plugin.package = `${registryPart}:${version}!${resolvedPath}`;
+  log(
+    `
+======= Inheriting version \`${version}\` and plugin path \`${resolvedPath}\` for ${matchedKey}`
+  );
+  return { pluginKey: matchedKey, version, inherit: true, resolvedPath };
 }
 function doMerge(key, plugin, allPlugins, configFile, level) {
   const existing = allPlugins[key];
@@ -11240,13 +11265,16 @@ function localPackageInfo(pkgPath) {
     return { _err: err.message };
   }
 }
+function compareCodePoint(a, b2) {
+  return a < b2 ? -1 : a > b2 ? 1 : 0;
+}
 function stableStringify(value) {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) {
     return `[${value.map(stableStringify).join(",")}]`;
   }
   const obj = value;
-  const entries = Object.keys(obj).sort().map((k2) => `${JSON.stringify(k2)}:${stableStringify(obj[k2])}`);
+  const entries = Object.keys(obj).sort(compareCodePoint).map((k2) => `${JSON.stringify(k2)}:${stableStringify(obj[k2])}`);
   return `{${entries.join(",")}}`;
 }
 
@@ -11466,9 +11494,8 @@ function handleSkippedLocals(skipped, globalConfig) {
   for (const plugin of skipped) {
     const abs = path9.join(process.cwd(), plugin.package.slice(2));
     log(`	==> ${plugin.package} (not found at ${abs})`);
-    const pc = plugin.pluginConfig;
-    if (pc && typeof pc === "object" && !Array.isArray(pc)) {
-      deepMerge(pc, globalConfig);
+    if (isPlainObject(plugin.pluginConfig)) {
+      deepMerge(plugin.pluginConfig, globalConfig);
     }
   }
 }

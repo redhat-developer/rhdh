@@ -28,36 +28,35 @@ const GIT_URL_PATTERNS: RegExp[] = [
 
 export function npmPluginKey(pkg: string): string {
   // Local packages and tarballs have no version to strip.
-  if (pkg.startsWith('./')) return pkg;
-  if (pkg.endsWith('.tgz')) return pkg;
+  if (pkg.startsWith('./') || pkg.endsWith('.tgz')) return pkg;
 
   // Aliases: "my-alias@npm:real-pkg@1.2.3" -> "my-alias@npm:real-pkg"
-  const alias = NPM_ALIAS_PATTERN.exec(pkg);
-  if (alias) {
-    const [, aliasName, scope, name] = alias;
-    return `${aliasName}@npm:${scope ?? ''}${name}`;
-  }
+  const aliasKey = tryParseAlias(pkg);
+  if (aliasKey) return aliasKey;
 
-  // Git URLs: strip `#ref` suffix (tries `git+https`, `git+ssh`, `git://`,
-  // `https://github.com/...`, `git@github.com:...`, `github:user/repo`).
-  for (const re of GIT_URL_PATTERNS) {
-    if (re.test(pkg)) {
-      const hash = pkg.indexOf('#');
-      return hash >= 0 ? pkg.slice(0, hash) : pkg;
-    }
-  }
-
-  // GitHub shorthand `user/repo#ref` — only match if there's no `://` or
-  // leading `@` (those would be scoped packages).
-  if (!pkg.includes('://') && !pkg.startsWith('@')) {
-    const gh = GITHUB_SHORTHAND_PATTERN.exec(pkg);
-    if (gh) {
-      const hash = pkg.indexOf('#');
-      return hash >= 0 ? pkg.slice(0, hash) : pkg;
-    }
-  }
+  // Git URLs / GitHub shorthand: strip `#ref` suffix.
+  if (isGitLikeSpec(pkg)) return stripRefSuffix(pkg);
 
   return stripStandardNpmVersion(pkg);
+}
+
+function tryParseAlias(pkg: string): string | null {
+  const m = NPM_ALIAS_PATTERN.exec(pkg);
+  if (!m) return null;
+  const [, aliasName, scope, name] = m;
+  return `${aliasName}@npm:${scope ?? ''}${name}`;
+}
+
+function isGitLikeSpec(pkg: string): boolean {
+  if (GIT_URL_PATTERNS.some(re => re.test(pkg))) return true;
+  // GitHub shorthand `user/repo#ref` — but not scoped packages or full URLs.
+  if (pkg.includes('://') || pkg.startsWith('@')) return false;
+  return GITHUB_SHORTHAND_PATTERN.test(pkg);
+}
+
+function stripRefSuffix(pkg: string): string {
+  const hash = pkg.indexOf('#');
+  return hash >= 0 ? pkg.slice(0, hash) : pkg;
 }
 
 function stripStandardNpmVersion(pkg: string): string {

@@ -60,7 +60,17 @@ function localPackageInfo(pkgPath: string): LocalPackageInfo {
   }
 }
 
-/** Deterministic JSON stringification — keys sorted at every level. */
+/**
+ * Deterministic JSON stringification — keys sorted at every level. Uses an
+ * explicit code-point comparator so the hash is locale-independent (the
+ * default `.sort()` is lexicographic on UTF-16 code units which is what we
+ * want; the explicit form silences Sonar's "provide a compare function" rule
+ * without pulling in `String.localeCompare` which varies per-locale).
+ */
+function compareCodePoint(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 function stableStringify(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) {
@@ -68,7 +78,7 @@ function stableStringify(value: unknown): string {
   }
   const obj = value as Record<string, unknown>;
   const entries = Object.keys(obj)
-    .sort()
+    .sort(compareCodePoint)
     .map(k => `${JSON.stringify(k)}:${stableStringify(obj[k])}`);
   return `{${entries.join(',')}}`;
 }

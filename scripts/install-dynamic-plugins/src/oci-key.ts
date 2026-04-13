@@ -6,14 +6,14 @@ import { OCI_PROTO, RECOGNIZED_ALGORITHMS } from './types.js';
 const OCI_REGEX = new RegExp(
   '^(' +
     escape(OCI_PROTO) +
-    '[^\\s/:@]+' + // registry host
-    '(?::\\d+)?' + // optional port
-    '(?:/[^\\s:@]+)+' + // at least one path segment
+    String.raw`[^\s/:@]+` + // registry host
+    String.raw`(?::\d+)?` + // optional port
+    String.raw`(?:/[^\s:@]+)+` + // at least one path segment
     ')' +
-    '(?::([^\\s!@:]+)' + // tag
+    String.raw`(?::([^\s!@:]+)` + // tag
     '|' +
-    '@((?:sha256|sha512|blake3):[^\\s!@:]+))' + // or digest
-    '(?:!([^\\s]+))?$', // optional !<plugin-path>
+    String.raw`@((?:sha256|sha512|blake3):[^\s!@:]+))` + // or digest
+    String.raw`(?:!([^\s]+))?$`, // optional !<plugin-path>
 );
 
 export type ParsedOciKey = {
@@ -61,30 +61,7 @@ export async function ociPluginKey(pkg: string, imageCache?: OciImageCache): Pro
   }
 
   if (!path) {
-    if (!imageCache) {
-      throw new InstallException(
-        `Cannot auto-detect plugin path for ${pkg}: no image cache provided`,
-      );
-    }
-    const fullImage = tag ? `${registry}:${version}` : `${registry}@${version}`;
-    log(`\n======= No plugin path specified for ${fullImage}, auto-detecting from OCI manifest`);
-    const paths = await imageCache.getPluginPaths(fullImage);
-    if (paths.length === 0) {
-      throw new InstallException(
-        `No plugins found in OCI image ${fullImage}. ` +
-          `The image might not contain the 'io.backstage.dynamic-packages' annotation. ` +
-          `Please ensure it was packaged using the @red-hat-developer-hub/cli plugin package command.`,
-      );
-    }
-    if (paths.length > 1) {
-      const formatted = paths.map(p => `  - ${p}`).join('\n');
-      throw new InstallException(
-        `Multiple plugins found in OCI image ${fullImage}:\n${formatted}\n` +
-          `Please specify which plugin to install using the syntax: ${fullImage}!<plugin-name>`,
-      );
-    }
-    path = paths[0] as string;
-    log(`\n======= Auto-resolving OCI package ${fullImage} to use plugin path: ${path}`);
+    path = await autoDetectPluginPath(pkg, registry, version, tag !== undefined, imageCache);
   }
 
   return {
@@ -95,6 +72,40 @@ export async function ociPluginKey(pkg: string, imageCache?: OciImageCache): Pro
   };
 }
 
+async function autoDetectPluginPath(
+  pkg: string,
+  registry: string,
+  version: string,
+  isTag: boolean,
+  imageCache: OciImageCache | undefined,
+): Promise<string> {
+  if (!imageCache) {
+    throw new InstallException(
+      `Cannot auto-detect plugin path for ${pkg}: no image cache provided`,
+    );
+  }
+  const fullImage = isTag ? `${registry}:${version}` : `${registry}@${version}`;
+  log(`\n======= No plugin path specified for ${fullImage}, auto-detecting from OCI manifest`);
+  const paths = await imageCache.getPluginPaths(fullImage);
+  if (paths.length === 0) {
+    throw new InstallException(
+      `No plugins found in OCI image ${fullImage}. ` +
+        `The image might not contain the 'io.backstage.dynamic-packages' annotation. ` +
+        `Please ensure it was packaged using the @red-hat-developer-hub/cli plugin package command.`,
+    );
+  }
+  if (paths.length > 1) {
+    const formatted = paths.map(p => `  - ${p}`).join('\n');
+    throw new InstallException(
+      `Multiple plugins found in OCI image ${fullImage}:\n${formatted}\n` +
+        `Please specify which plugin to install using the syntax: ${fullImage}!<plugin-name>`,
+    );
+  }
+  const resolved = paths[0] as string;
+  log(`\n======= Auto-resolving OCI package ${fullImage} to use plugin path: ${resolved}`);
+  return resolved;
+}
+
 function escape(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+  return s.replaceAll(/[.*+?^${}()|[\]\\/]/g, String.raw`\$&`);
 }

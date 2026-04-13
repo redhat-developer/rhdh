@@ -4,9 +4,26 @@ import { InstallException } from './errors.js';
 import { log } from './log.js';
 import { type OciImageCache } from './image-cache.js';
 import { npmPluginKey } from './npm-key.js';
-import { ociPluginKey } from './oci-key.js';
+import { ociPluginKey, type ParsedOciKey } from './oci-key.js';
 import { type DynamicPluginsConfig, OCI_PROTO, type Plugin, type PluginMap } from './types.js';
 import { isPlainObject } from './util.js';
+
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+/**
+ * Safely assign `value` to `dst[key]` without touching the prototype chain —
+ * `Object.defineProperty` goes through the descriptor slot, not the setter on
+ * `Object.prototype.__proto__`. Combined with the `FORBIDDEN_KEYS` guard, this
+ * gives CodeQL the pattern it recognizes for prototype-pollution safety.
+ */
+function safeSet(dst: Record<string, unknown>, key: string, value: unknown): void {
+  Object.defineProperty(dst, key, {
+    value,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+}
 
 /**
  * Recursively merges `src` into `dst` in place and returns `dst`. Raises on
@@ -16,8 +33,6 @@ import { isPlainObject } from './util.js';
  * Skips `__proto__`, `constructor`, and `prototype` keys to prevent prototype
  * pollution via user-supplied YAML.
  */
-const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-
 export function deepMerge<T extends Record<string, unknown>>(
   src: Record<string, unknown>,
   dst: T,
@@ -25,18 +40,19 @@ export function deepMerge<T extends Record<string, unknown>>(
 ): T {
   for (const [key, value] of Object.entries(src)) {
     if (FORBIDDEN_KEYS.has(key)) continue;
+    const dstRecord = dst as Record<string, unknown>;
     if (isPlainObject(value)) {
-      const existing = (dst as Record<string, unknown>)[key];
+      const existing = dstRecord[key];
       const node = isPlainObject(existing) ? existing : {};
-      (dst as Record<string, unknown>)[key] = node;
-      deepMerge(value, node as Record<string, unknown>, `${prefix}${key}.`);
+      safeSet(dstRecord, key, node);
+      deepMerge(value, node, `${prefix}${key}.`);
     } else {
-      if (key in dst && !isEqual((dst as Record<string, unknown>)[key], value)) {
+      if (key in dst && !isEqual(dstRecord[key], value)) {
         throw new InstallException(
           `Config key '${prefix}${key}' defined differently for 2 dynamic plugins`,
         );
       }
-      (dst as Record<string, unknown>)[key] = value;
+      safeSet(dstRecord, key, value);
     }
   }
   return dst;
@@ -106,43 +122,7 @@ async function mergeOciPlugin(
   let parsed = await ociPluginKey(plugin.package, imageCache);
 
   if (parsed.inherit && parsed.resolvedPath === null) {
-    // {{inherit}} without a path: find a single earlier-included plugin from
-    // the same image (key starts with `registry:!`) and adopt its version + path.
-    const matches = Object.keys(allPlugins).filter(k => k.startsWith(`${parsed.pluginKey}:!`));
-    if (matches.length === 0) {
-      throw new InstallException(
-        `Cannot use {{inherit}} for ${parsed.pluginKey}: no existing plugin ` +
-          `configuration found. Ensure a plugin from this image is defined in an ` +
-          `included file with an explicit version.`,
-      );
-    }
-    if (matches.length > 1) {
-      const formatted = matches
-        .map(m => {
-          const basePlugin = allPlugins[m];
-          const baseVersion = basePlugin?.version ?? '';
-          const registryPart = m.split(':!')[0];
-          const pathPart = m.split(':!').slice(-1)[0];
-          return `  - ${registryPart}:${baseVersion}!${pathPart}`;
-        })
-        .join('\n');
-      throw new InstallException(
-        `Cannot use {{inherit}} for ${parsed.pluginKey}: multiple plugins from ` +
-          `this image are defined in the included files:\n${formatted}\n` +
-          `Please specify which plugin configuration to inherit from using: ` +
-          `${parsed.pluginKey}:{{inherit}}!<plugin_path>`,
-      );
-    }
-    const matchedKey = matches[0] as string;
-    const basePlugin = allPlugins[matchedKey] as Plugin;
-    const version = basePlugin.version as string;
-    const resolvedPath = matchedKey.split(':!').slice(-1)[0] as string;
-    const registryPart = matchedKey.split(':!')[0] as string;
-    plugin.package = `${registryPart}:${version}!${resolvedPath}`;
-    parsed = { pluginKey: matchedKey, version, inherit: true, resolvedPath };
-    log(
-      `\n======= Inheriting version \`${version}\` and plugin path \`${resolvedPath}\` for ${matchedKey}`,
-    );
+    parsed = resolveInherit(plugin, allPlugins, parsed);
   } else if (!plugin.package.includes('!') && parsed.resolvedPath) {
     plugin.package = `${plugin.package}!${parsed.resolvedPath}`;
   }
@@ -185,6 +165,57 @@ async function mergeOciPlugin(
   existing._level = level;
 }
 
+/**
+ * Resolve `{{inherit}}` without a plugin path — finds a single previously-
+ * merged plugin from the same image, adopts its version + path, and mutates
+ * `plugin.package` in place. Throws with a helpful message when zero or
+ * multiple matches are found.
+ */
+function resolveInherit(
+  plugin: Plugin,
+  allPlugins: PluginMap,
+  parsed: ParsedOciKey,
+): ParsedOciKey {
+  const prefix = `${parsed.pluginKey}:!`;
+  const matches = Object.keys(allPlugins).filter(k => k.startsWith(prefix));
+  if (matches.length === 0) {
+    throw new InstallException(
+      `Cannot use {{inherit}} for ${parsed.pluginKey}: no existing plugin ` +
+        `configuration found. Ensure a plugin from this image is defined in an ` +
+        `included file with an explicit version.`,
+    );
+  }
+  if (matches.length > 1) {
+    const formatted = matches
+      .map(m => {
+        const baseVersion = allPlugins[m]?.version ?? '';
+        const registryPart = m.split(':!')[0] ?? '';
+        const pathPart = m.split(':!').at(-1) ?? '';
+        return `  - ${registryPart}:${baseVersion}!${pathPart}`;
+      })
+      .join('\n');
+    throw new InstallException(
+      `Cannot use {{inherit}} for ${parsed.pluginKey}: multiple plugins from ` +
+        `this image are defined in the included files:\n${formatted}\n` +
+        `Please specify which plugin configuration to inherit from using: ` +
+        `${parsed.pluginKey}:{{inherit}}!<plugin_path>`,
+    );
+  }
+  const matchedKey = matches[0] as string;
+  const basePlugin = allPlugins[matchedKey];
+  if (!basePlugin?.version) {
+    throw new InstallException(`Internal: inherited plugin ${matchedKey} has no version`);
+  }
+  const version = basePlugin.version;
+  const resolvedPath = matchedKey.split(':!').at(-1) ?? '';
+  const registryPart = matchedKey.split(':!')[0] ?? '';
+  plugin.package = `${registryPart}:${version}!${resolvedPath}`;
+  log(
+    `\n======= Inheriting version \`${version}\` and plugin path \`${resolvedPath}\` for ${matchedKey}`,
+  );
+  return { pluginKey: matchedKey, version, inherit: true, resolvedPath };
+}
+
 function doMerge(
   key: string,
   plugin: Plugin,
@@ -209,11 +240,7 @@ function doMerge(
   existing._level = level;
 }
 
-function copyPluginFields(
-  src: Plugin,
-  dst: Plugin,
-  skip: ReadonlyArray<keyof Plugin | string>,
-): void {
+function copyPluginFields(src: Plugin, dst: Plugin, skip: ReadonlyArray<string>): void {
   const skipSet = new Set<string>(skip);
   Object.assign(
     dst,

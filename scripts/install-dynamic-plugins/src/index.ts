@@ -175,9 +175,8 @@ function handleSkippedLocals(skipped: Plugin[], globalConfig: Record<string, unk
   for (const plugin of skipped) {
     const abs = path.join(process.cwd(), plugin.package.slice(2));
     log(`\t==> ${plugin.package} (not found at ${abs})`);
-    const pc = plugin.pluginConfig;
-    if (pc && typeof pc === 'object' && !Array.isArray(pc)) {
-      deepMerge(pc as Record<string, unknown>, globalConfig);
+    if (isPlainObject(plugin.pluginConfig)) {
+      deepMerge(plugin.pluginConfig, globalConfig);
     }
   }
 }

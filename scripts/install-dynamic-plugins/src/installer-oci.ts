@@ -32,53 +32,72 @@ export async function installOciPlugin(
     throw new InstallException(`Internal error: plugin ${plugin.package} missing plugin_hash`);
   }
   const pkg = plugin.package;
-  const config = (plugin.pluginConfig ?? {}) as Record<string, unknown>;
+  const config: Record<string, unknown> = plugin.pluginConfig ?? {};
+  const pullPolicy = resolvePullPolicy(plugin, pkg);
 
-  const pullPolicy: PullPolicy =
-    plugin.pullPolicy ?? (pkg.includes(':latest!') ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT);
-
-  if (installed.has(hash)) {
-    const pathInstalled = installed.get(hash) as string;
-    if (pullPolicy === PullPolicy.IF_NOT_PRESENT) {
-      log('\t==> Already installed, skipping');
-      installed.delete(hash);
-      return { pluginPath: null, pluginConfig: config };
-    }
-    if (pullPolicy === PullPolicy.ALWAYS) {
-      const digestFile = path.join(destination, pathInstalled, IMAGE_HASH_FILE);
-      if (await fileExists(digestFile)) {
-        const localDigest = (await fs.readFile(digestFile, 'utf8')).trim();
-        const imagePart = pkg.split('!')[0] as string;
-        const remoteDigest = await imageCache.getDigest(imagePart);
-        if (localDigest === remoteDigest) {
-          log('\t==> Digest unchanged, skipping');
-          installed.delete(hash);
-          return { pluginPath: null, pluginConfig: config };
-        }
-      }
-    }
+  if (await isAlreadyInstalled(plugin, hash, pkg, pullPolicy, destination, imageCache, installed)) {
+    installed.delete(hash);
+    return { pluginPath: null, pluginConfig: config };
   }
 
   if (!plugin.version) {
     throw new InstallException(`No version for ${pkg}`);
   }
-
   const [imagePart, pluginPath] = pkg.split('!');
-  if (!pluginPath) {
+  if (!pluginPath || !imagePart) {
     throw new InstallException(`OCI package ${pkg} missing !plugin-path suffix`);
   }
 
-  const tarball = await imageCache.getTarball(imagePart as string);
+  const tarball = await imageCache.getTarball(imagePart);
   await extractOciPlugin(tarball, pluginPath, destination);
 
   const pluginDir = path.join(destination, pluginPath);
   await fs.mkdir(pluginDir, { recursive: true });
-  await fs.writeFile(
-    path.join(pluginDir, IMAGE_HASH_FILE),
-    await imageCache.getDigest(imagePart as string),
-  );
+  await fs.writeFile(path.join(pluginDir, IMAGE_HASH_FILE), await imageCache.getDigest(imagePart));
   await fs.writeFile(path.join(pluginDir, CONFIG_HASH_FILE), hash);
 
   markAsFresh(installed, pluginPath);
   return { pluginPath, pluginConfig: config };
+}
+
+function resolvePullPolicy(plugin: Plugin, pkg: string): PullPolicy {
+  if (plugin.pullPolicy) return plugin.pullPolicy;
+  return pkg.includes(':latest!') ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT;
+}
+
+/**
+ * Returns true when the plugin is already installed and can be skipped:
+ *   - IfNotPresent policy → skip unconditionally
+ *   - Always policy → skip only when the remote digest matches what's on disk
+ */
+async function isAlreadyInstalled(
+  _plugin: Plugin,
+  hash: string,
+  pkg: string,
+  pullPolicy: PullPolicy,
+  destination: string,
+  imageCache: OciImageCache,
+  installed: Map<string, string>,
+): Promise<boolean> {
+  const pathInstalled = installed.get(hash);
+  if (pathInstalled === undefined) return false;
+
+  if (pullPolicy === PullPolicy.IF_NOT_PRESENT) {
+    log('\t==> Already installed, skipping');
+    return true;
+  }
+
+  if (pullPolicy !== PullPolicy.ALWAYS) return false;
+
+  const digestFile = path.join(destination, pathInstalled, IMAGE_HASH_FILE);
+  if (!(await fileExists(digestFile))) return false;
+
+  const localDigest = (await fs.readFile(digestFile, 'utf8')).trim();
+  const imagePart = pkg.split('!')[0];
+  if (!imagePart) return false;
+  const remoteDigest = await imageCache.getDigest(imagePart);
+  if (localDigest !== remoteDigest) return false;
+
+  log('\t==> Digest unchanged, skipping');
+  return true;
 }

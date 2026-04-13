@@ -73,7 +73,7 @@ const EQUALS = 0x3d;
 function isBase64Shape(value: string): boolean {
   let paddingCount = 0;
   for (let i = 0; i < value.length; i++) {
-    const c = value.charCodeAt(i);
+    const c = value.codePointAt(i) ?? 0;
     if (c === EQUALS) {
       paddingCount++;
       if (paddingCount > 2) return false;
@@ -98,6 +98,6 @@ function isBase64Char(c: number): boolean {
 
 function stripTrailingEquals(s: string): string {
   let end = s.length;
-  while (end > 0 && s.charCodeAt(end - 1) === EQUALS) end--;
+  while (end > 0 && s.codePointAt(end - 1) === EQUALS) end--;
   return s.slice(0, end);
 }

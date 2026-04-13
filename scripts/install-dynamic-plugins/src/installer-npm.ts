@@ -34,7 +34,7 @@ export async function installNpmPlugin(
   }
   const pkg = plugin.package;
   const force = plugin.forceDownload ?? false;
-  const config = (plugin.pluginConfig ?? {}) as Record<string, unknown>;
+  const config: Record<string, unknown> = plugin.pluginConfig ?? {};
 
   if (installed.has(hash) && !force) {
     const pullPolicy = plugin.pullPolicy ?? PullPolicy.IF_NOT_PRESENT;
