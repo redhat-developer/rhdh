@@ -1,49 +1,26 @@
 # E2E Test Fix Workflow
 
-This rule provides the complete knowledge base for the autonomous E2E CI failure investigation and fix workflow, triggered by the `/fix-e2e` command. It covers the full lifecycle: parsing CI failures, deploying RHDH, reproducing failures, diagnosing and fixing tests, and submitting PRs.
-
-## Table of Contents
-
-- [Workflow Overview](#workflow-overview)
-- [Parsing CI Failures](#parsing-ci-failures)
-- [Branch and Deployment Setup](#branch-and-deployment-setup)
-- [Reproducing Failures](#reproducing-failures)
-- [Diagnosing and Fixing Tests](#diagnosing-and-fixing-tests)
-- [Playwright Test Agents](#playwright-test-agents)
-- [Verification and PR Submission](#verification-and-pr-submission)
+Reference knowledge for the `/fix-e2e` command. For detailed instructions, load the corresponding skill for each phase.
 
 ## Workflow Overview
 
 The `/fix-e2e` command orchestrates a 7-phase workflow to autonomously fix E2E CI failures:
 
-1. **Parse CI Failure** — Extract failure details from Prow URL or Jira ticket
+1. **Parse CI Failure** (`e2e-parse-ci-failure`) — Extract failure details from Prow URL, Playwright report, or Jira ticket
 2. **Setup Fix Branch** — Create a branch from the correct upstream release branch
-3. **Deploy RHDH** — Deploy RHDH to a cluster using `local-run.sh`
-4. **Reproduce Failure** — Confirm the failure reproduces locally
-5. **Diagnose and Fix** — Analyze root cause and implement a fix using Playwright agents
-6. **Verify Fix** — Run the test multiple times and check code quality
-7. **Submit and Review** — Create PR, trigger Qodo review, address feedback, monitor CI
+3. **Deploy RHDH** (`e2e-deploy-rhdh`) — Deploy RHDH to a cluster using `local-run.sh`
+4. **Reproduce Failure** (`e2e-reproduce-failure`) — Confirm the failure reproduces locally
+5. **Diagnose and Fix** (`e2e-diagnose-and-fix`) — Analyze root cause and implement a fix
+6. **Verify Fix** (`e2e-verify-fix`) — Run the test multiple times and check code quality
+7. **Submit and Review** (`e2e-submit-and-review`) — Create PR, trigger review, monitor CI
 
-Each phase has a corresponding skill (in `.opencode/skills/` and `.claude/skills/`) with detailed instructions. This rule provides consolidated reference knowledge for all tools.
+**Critical rule**: No phase may be skipped without **explicit user approval**.
 
-**Critical rule**: No phase may be skipped without **explicit user approval**. If a phase cannot be executed (e.g., no cluster connection for deployment/reproduction), ask the user before proceeding — never skip silently.
+## Job Name Mapping Tables
 
-## Parsing CI Failures
+These tables are the **single source of truth** — referenced by `e2e-parse-ci-failure` and other skills.
 
-### Prow URL Structure
-
-```
-https://prow.ci.openshift.org/view/gs/test-platform-results/logs/<job-name>/<build-id>
-```
-
-Build logs and JUnit XML results are in the GCS artifacts directory. Look for Playwright output patterns:
-```
-✘  [<project>] › <path>/<spec-file>.spec.ts:<line> › <describe> › <test-name>
-```
-
-### Job Name Mapping Tables
-
-#### Job Name → Release Branch
+### Job Name → Release Branch
 
 Extract the release branch from the Prow job name using the `-rhdh-<branch>-` pattern:
 
@@ -51,7 +28,7 @@ Extract the release branch from the Prow job name using the `-rhdh-<branch>-` pa
 BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | sed 's/^-rhdh-//;s/-$//')
 ```
 
-#### Job Name → Platform and Deployment Method
+### Job Name → Platform and Deployment Method
 
 | Pattern | Platform | Method |
 |---------|----------|--------|
@@ -65,7 +42,7 @@ BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | s
 | `*gke*operator*` | GKE | Operator |
 | `*osd-gcp*` | OSD-GCP | Helm/Operator |
 
-#### Job Name → Playwright Projects
+### Job Name → Playwright Projects
 
 | Job pattern | Projects |
 |-------------|----------|
@@ -77,18 +54,14 @@ BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | s
 | `*aks*`/`*eks*`/`*gke*` helm | `showcase-k8s`, `showcase-rbac-k8s` |
 | `*aks*`/`*eks*`/`*gke*` operator | `showcase-k8s`, `showcase-rbac-k8s` |
 
-#### Job Name → local-run.sh `-j` Parameter
+### Job Name → local-run.sh `-j` Parameter
 
-Use the **full Prow CI job name** directly as the `-j` parameter. The `openshift-ci-tests.sh` handler uses bash glob patterns (like `*ocp*helm*nightly*`) to match the job name, so the full name works correctly.
+Use the **full Prow CI job name** directly as the `-j` parameter. Do NOT use shortened names.
 
-**Example (OCP)**: `./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4-20-helm-nightly -r rhdh-community/rhdh -t next -s`
-**Example (K8s)**: `./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-eks-helm-nightly -r rhdh-community/rhdh -t next`
+**OCP** (deploy-only with `-s`): `./local-run.sh -j <full-job-name> -r <repo> -t <tag> -s`
+**K8s** (full execution, no `-s`): `./local-run.sh -j <full-job-name> -r <repo> -t <tag>`
 
-Do NOT use shortened names like `nightly-ocp-helm` — these do not match the glob patterns.
-
-#### Release Branch → Image Repo and Tag
-
-Derive from the branch name — no hardcoded version list needed:
+### Release Branch → Image Repo and Tag
 
 ```bash
 if [[ "$BRANCH" == "main" ]]; then
@@ -98,187 +71,8 @@ else
 fi
 ```
 
-## Branch and Deployment Setup
-
-### Branch Creation
-
-Always create branches from upstream, never from local copies:
-
-```bash
-git fetch upstream <release-branch>
-git checkout -b fix/e2e-<description> upstream/<release-branch>
-```
-
-### Deployment via local-run.sh
-
-CLI mode requires **all three** flags (`-j`, `-r`, `-t`). Without `-r`, the script enters interactive mode.
-
-```bash
-cd e2e-tests
-# OCP jobs: use -s to deploy only, then run tests manually
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag> -s
-# K8s jobs (AKS, EKS, GKE): do NOT use -s — full execution required
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag>
-```
-
-Prerequisites: `podman` (machine with 8GB RAM, 4 CPUs), `oc`, `vault`, `jq`, `curl`, `rsync`, `bc`.
-
-After deployment, source the test environment:
-```bash
-source e2e-tests/local-test-setup.sh <showcase|rbac>
-```
-
-### Deployment Error Recovery
-
-| Error | Investigation | Common Fix |
-|-------|--------------|------------|
-| CrashLoopBackOff | `oc logs -n <ns> <pod> --previous` | Fix ConfigMap, plugin config, or secrets |
-| ImagePullBackOff | `oc describe pod -n <ns> <pod>` | Verify image exists, check pull secrets |
-| Helm failure | `helm status <release> -n <ns>` | Check values against `.ci/pipelines/value_files/` |
-| Operator failure | `oc get backstage -n <ns>` | Check CR against `.ci/pipelines/resources/rhdh-operator/` |
-
-For config issues, search these repos for reference:
-- **rhdh-operator**: `redhat-developer/rhdh-operator` — Backstage CR, CatalogSource, operator scripts
-- **rhdh-chart**: `redhat-developer/rhdh-chart` — Helm values, chart templates, defaults
-
-## Reproducing Failures
-
-### Test Execution
-
-```bash
-cd e2e-tests
-yarn playwright test <spec-file> --project=<project> --retries=0 --workers=1
-```
-
-### Flakiness Detection
-
-If the test passes on first run, repeat 10 times:
-- **10/10 pass** → cannot reproduce (check environment differences)
-- **Mixed results** → flaky (focus on reliability improvements)
-- **0/10 pass** → consistent failure
-
-For headed mode, debug mode, and trace viewing, see the `playwright-locators` and `ci-e2e-testing` rules.
-
-## Diagnosing and Fixing Tests
-
-### Failure Classification
-
-1. **Locator drift** — UI changed, selectors don't match → update to semantic selectors
-2. **Timing/race** — Test acts before UI ready → add `expect().toPass()` with intervals
-3. **Assertion mismatch** — Expected values changed → update test data or report product bug
-4. **Data dependency** — Test data missing → add proper setup/teardown
-5. **Platform-specific** — Works on one platform, fails on another → add `skipIfJobName()` conditional
-6. **Deployment config** — RHDH itself broken → fix ConfigMap/values in `.ci/pipelines/`
-
-### RHDH Coding Conventions
+## Coding Conventions
 
 All test code must follow the project's coding rules:
 - **`playwright-locators`** — locator priority, anti-patterns, assertions, Page Objects
 - **`ci-e2e-testing`** — test structure, component annotations, utility classes, CI scripts
-
-### Product Bug Decision
-
-**`test.fixme()` is a last resort.** You must be absolutely certain the failure is a product bug — the Playwright healer agent must have confirmed the test is correct and the application behavior is wrong. Ask the user for confirmation before proceeding. Then:
-1. File or update a Jira bug in the `RHDHBUGS` project
-2. Mark the test with a `// TODO:` comment linking to the Jira ticket, followed by `test.fixme()`:
-   ```typescript
-   // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-XXXX
-   test.fixme('Description of the product bug');
-   ```
-3. Do **not** change assertions to match broken behavior
-4. Proceed with the `test.fixme()` change
-
-## Playwright Test Agents
-
-The project uses Playwright Test Agents (configured in `e2e-tests/opencode.json`) with an MCP server for live browser interaction.
-
-### Available Agents
-
-| Agent | Mode | Purpose |
-|-------|------|---------|
-| `playwright-test-healer` | subagent | Debug and fix failing tests — runs tests, inspects UI, generates locators, edits code |
-| `playwright-test-generator` | subagent | Create new test code from a test plan |
-| `playwright-test-planner` | subagent | Explore app and create test plans |
-
-### Healer Agent Usage (Primary for Fixes)
-
-The healer agent is the primary tool for test repair:
-1. Runs tests with `test_run` to identify failures
-2. Debugs with `test_debug` to step through failing tests
-3. Inspects UI state via `browser_snapshot`, `browser_console_messages`
-4. Generates correct locators with `browser_generate_locator`
-5. Edits test code with `edit`/`write` tools
-6. Re-runs tests to verify the fix
-
-Invoke with: `@playwright-test-healer Fix the failing test in <spec-file>`
-
-## Verification and PR Submission
-
-### Verification Checklist
-
-1. Single test run passes
-2. 5 consecutive runs pass (stability)
-3. `yarn tsc:check` passes
-4. `yarn lint:check` passes
-5. `yarn prettier:check` passes
-
-### Pre-Commit Hooks
-
-Before committing, run `yarn install` in all relevant workspaces to ensure pre-commit hooks pass:
-
-```bash
-yarn install                          # Root workspace
-cd e2e-tests && yarn install && cd .. # If e2e-tests files changed
-cd .ci && yarn install && cd ..       # If .ci files changed
-```
-
-### PR Creation
-
-Always create PRs as **drafts**:
-
-```bash
-git push -u origin <branch>
-# Determine GitHub username from fork remote
-GITHUB_USER=$(git remote get-url origin | sed 's|.*github.com[:/]||;s|/.*||')
-gh pr create --draft --repo redhat-developer/rhdh --head "${GITHUB_USER}:<branch>" --base <release-branch>
-```
-
-### Qodo Review
-
-```bash
-gh pr comment <PR#> --repo redhat-developer/rhdh --body "/agentic_review"
-```
-
-The `.pr_agent.toml` config enables RAG across `rhdh`, `rhdh-operator`, `rhdh-chart`, and docs repos. Qodo will auto-run `/review`, `/describe`, and `/improve` on PR creation.
-
-### Trigger Affected CI Job
-
-After addressing Qodo review feedback, trigger the presubmit E2E job that matches the platform and deployment method of the original failure:
-
-```bash
-# List available presubmit jobs
-gh pr comment <PR#> --repo redhat-developer/rhdh --body "/test ?"
-
-# Trigger the matching presubmit job
-gh pr comment <PR#> --repo redhat-developer/rhdh --body "/test <presubmit-job-name>"
-```
-
-Match the presubmit job by platform and deployment method — e.g., if the original failure was `*ocp*helm*nightly*`, look for a presubmit job containing `*ocp*helm*`.
-
-### CI Monitoring
-
-```bash
-gh pr checks <PR#> --repo redhat-developer/rhdh --watch
-```
-
-Re-trigger with: `gh pr comment <PR#> --repo redhat-developer/rhdh --body "/retest"`
-
-## Reference Files
-
-See the `ci-e2e-testing` rule for the full list of CI scripts, test utilities, and config files. Files specific to the fix workflow:
-
-| Category | Key files |
-|----------|-----------|
-| Local test runner | `e2e-tests/local-run.sh` |
-| Local test env | `e2e-tests/local-test-setup.sh` |
-| Qodo config | `.pr_agent.toml` |
