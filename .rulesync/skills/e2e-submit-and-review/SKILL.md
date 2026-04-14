@@ -132,11 +132,6 @@ The Qodo bot will:
 2. Post review comments with suggestions
 3. Optionally approve or request changes
 
-Note: The `.pr_agent.toml` in the repo configures Qodo with:
-- RAG enabled across `rhdh`, `rhdh-operator`, `rhdh-chart`, and documentation repos
-- Auto-review, auto-describe, and auto-improve on PR creation
-- Scoped to `e2e-tests` folder changes
-
 ## Step 5: Wait for and Address Qodo Review
 
 ### Poll for Review Comments
@@ -216,7 +211,7 @@ If no response is received after 1 minute, ask the user for guidance.
 
 The bot's response has two sections:
 
-1. **Required jobs** — triggered automatically on PR creation/update. These run the basic presubmit checks:
+1. **Required jobs** — triggered automatically when the PR is marked as ready for review (not on draft PRs). These run the basic presubmit checks:
   ```
   /test e2e-ocp-helm
   ```
