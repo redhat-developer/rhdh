@@ -12,6 +12,29 @@ Analyze the root cause of a failing E2E test and implement a fix following RHDH 
 
 Use this skill after reproducing a failure (via `e2e-reproduce-failure`) when you have confirmed the test fails and need to determine the root cause and implement a fix.
 
+## Check for Existing Fix on Main (Release Branches Only)
+
+If the fix branch is based on a **release branch** (e.g., `release-1.9`), check whether the failing test was already fixed on `main` before proceeding with the healer:
+
+```bash
+git fetch upstream main
+git log --oneline upstream/main -- <path-to-failing-spec-file> | head -10
+```
+
+If there are recent commits touching the failing spec file or its page objects, inspect them:
+
+```bash
+git log --oneline upstream/main -p -- <path-to-failing-spec-file> | head -100
+```
+
+If a fix exists on `main`, cherry-pick it onto the release branch:
+
+```bash
+git cherry-pick <commit-sha>
+```
+
+Then verify the cherry-picked fix works (proceed to `e2e-verify-fix`). If the cherry-pick has conflicts or doesn't apply cleanly, proceed with the healer below to create a release-branch-specific fix.
+
 ## MANDATORY: Always Use the Playwright Healer Agent
 
 **The Playwright healer agent MUST be used for ALL test failures, regardless of failure category.** Do not attempt manual diagnosis without first running the healer. The healer can run the test, debug it step-by-step, inspect the live UI, generate correct locators, and edit the code — often resolving the issue end-to-end without manual intervention.
