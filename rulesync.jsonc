@@ -6,7 +6,8 @@
   ],
   "features": [
     "rules",
-    "commands"
+    "commands",
+    "skills"
   ],
   "baseDirs": [
     "."
