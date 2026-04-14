@@ -88,7 +88,7 @@ gh pr create \
   --repo redhat-developer/rhdh \
   --head "${GITHUB_USER}:<branch-name>" \
   --base <release-branch> \
-  --title "fix(e2e): <description>" \
+  --title "fix(e2e): <description> [AI /e2e-fix]" \
   --body "$(cat <<'EOF'
 ## Summary
 - <1-2 bullet points explaining what was fixed and why>
@@ -313,7 +313,7 @@ PR Status Report:
 GITHUB_USER=$(git remote get-url origin | sed 's|.*github.com[:/]||;s|/.*||')
 
 # Create draft PR (always use --draft)
-gh pr create --draft --repo redhat-developer/rhdh --head "${GITHUB_USER}:<branch>" --base <release-branch>
+gh pr create --draft --repo redhat-developer/rhdh --head "${GITHUB_USER}:<branch>" --base <release-branch> --title "fix(e2e): <description> [AI /e2e-fix]"
 
 # Trigger Qodo review
 gh pr comment <PR#> --repo redhat-developer/rhdh --body "/agentic_review"
