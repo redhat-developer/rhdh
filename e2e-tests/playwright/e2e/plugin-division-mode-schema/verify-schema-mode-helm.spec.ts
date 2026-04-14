@@ -11,6 +11,7 @@ import {
   cleanupOldPluginDatabases,
   setupSchemaModeDatabase,
   normalizeDbHost,
+  connectWithSslFallback,
 } from "./schema-mode-db";
 import { ensureSchemaModePortForward } from "./schema-mode-port-forward";
 
@@ -824,7 +825,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
   test("Verify plugin schemas were created and no plugin databases exist", async () => {
     console.log("Validating schema-mode database structure...");
 
-    // Connect to the database to verify schema structure
+    // Connect to the postgres database to check for plugin databases
     let adminClient: Client;
     try {
       adminClient = await connectAdminClient({
@@ -841,97 +842,17 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       // 1. Verify that plugin schemas were created in the single database
       console.log(`Checking for plugin schemas in database: ${dbName}`);
 
-      // Connect to the target database
-      const dbClient = await connectAdminClient({
-        dbHost,
-        dbAdminUser,
-        dbAdminPassword,
-      });
-      await dbClient.end();
-
-      // Use a database-specific admin client
-      const targetDbClient = new Client({
+      // Connect to the target database using SSL fallback helper (has retry/restart logic)
+      const targetDbConfig = {
         host: normalizeDbHost(dbHost),
         port: 5432,
         user: dbAdminUser,
         password: dbAdminPassword,
         database: dbName,
         connectionTimeoutMillis: 30000,
-      });
+      };
 
-      try {
-        await targetDbClient.connect();
-      } catch {
-        await targetDbClient.end().catch(() => {});
-        // Retry with SSL if needed
-        const sslClient = new Client({
-          host: normalizeDbHost(dbHost),
-          port: 5432,
-          user: dbAdminUser,
-          password: dbAdminPassword,
-          database: dbName,
-          connectionTimeoutMillis: 30000,
-          ssl: { rejectUnauthorized: false },
-        });
-        await sslClient.connect();
-        const schemasResult = await sslClient.query<{ schema_name: string }>(
-          `
-          SELECT schema_name
-          FROM information_schema.schemata
-          WHERE schema_name LIKE 'backstage_plugin_%'
-          ORDER BY schema_name
-        `,
-        );
-        await sslClient.end();
-
-        const pluginSchemas = schemasResult.rows.map((r) => r.schema_name);
-        console.log(
-          `Found ${pluginSchemas.length} plugin schemas: ${pluginSchemas.join(", ")}`,
-        );
-
-        // Assert that at least some core plugin schemas exist
-        // We don't assert specific schema names as Backstage may change over time,
-        // but we expect at least a few schemas to exist
-        if (pluginSchemas.length === 0) {
-          throw new Error(
-            `Schema mode validation failed: No plugin schemas (backstage_plugin_*) found in database ${dbName}.\n` +
-              `Expected to find plugin schemas like backstage_plugin_catalog, backstage_plugin_scaffolder, etc.\n` +
-              `This indicates that pluginDivisionMode: schema is not working correctly.`,
-          );
-        }
-
-        console.log(
-          `✓ Verified ${pluginSchemas.length} plugin schemas exist in database ${dbName}`,
-        );
-
-        // 2. Verify that NO separate plugin databases were created
-        console.log("Checking that no plugin databases exist...");
-        const pluginDbsResult = await adminClient.query<{ datname: string }>(
-          `
-          SELECT datname
-          FROM pg_database
-          WHERE datistemplate = false
-            AND datname LIKE 'backstage_plugin_%'
-          ORDER BY datname
-        `,
-        );
-
-        const pluginDatabases = pluginDbsResult.rows.map((r) => r.datname);
-
-        if (pluginDatabases.length > 0) {
-          throw new Error(
-            `Schema mode validation failed: Found ${pluginDatabases.length} plugin databases: ${pluginDatabases.join(", ")}\n` +
-              `In schema mode, plugins should create schemas within a single database, not separate databases.\n` +
-              `This indicates that pluginDivisionMode: schema is not working correctly.`,
-          );
-        }
-
-        console.log("✓ Verified no plugin databases exist (as expected)");
-        console.log(
-          "✓ Schema mode validation passed: plugins are using schemas, not databases",
-        );
-        return;
-      }
+      const targetDbClient = await connectWithSslFallback(targetDbConfig);
 
       const schemasResult = await targetDbClient.query<{ schema_name: string }>(
         `

@@ -142,7 +142,7 @@ async function connectWithRetry(
   );
 }
 
-async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
+export async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
   try {
     return await connectWithRetry(config);
   } catch (error) {
