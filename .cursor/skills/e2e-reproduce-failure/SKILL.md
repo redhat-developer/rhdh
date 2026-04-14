@@ -184,10 +184,7 @@ yarn playwright show-trace test-results/<test-path>/trace.zip
 
 ### HTML Report
 
-```bash
-# Generate and open the HTML report
-yarn playwright show-report
-```
+**Never use `yarn playwright show-report`** — it starts a blocking HTTP server that will hang the session. Instead, the HTML report is generated automatically in `playwright-report/` after test runs. To view it, open `playwright-report/index.html` directly in a browser, or use Playwright MCP to navigate to it.
 
 ### Screenshots and Videos
 
