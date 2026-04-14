@@ -1,5 +1,7 @@
 import { Page, expect } from "@playwright/test";
 import { APIHelper } from "../../utils/api-helper";
+import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
 import { UI_HELPER_ELEMENTS } from "../page-objects/global-obj";
 
 export class BulkImport {
@@ -57,5 +59,33 @@ export class BulkImport {
     await this.page
       .locator(`input[name*="${label}"], textarea[name*="${label}"]`)
       .fill(text);
+  }
+
+  /**
+   * Navigates to the Bulk import page, filters for the repo, and asserts
+   * that the row is visible with the expected status text. Retries the
+   * entire sequence to handle backend processing delays.
+   */
+  async filterAndVerifyAddedRepo(
+    repoName: string,
+    expectedCellTexts: (string | RegExp)[],
+    uiHelper: UIhelper,
+    common: Common,
+  ) {
+    await expect(async () => {
+      await uiHelper.openSidebar("Bulk import");
+      await common.waitForLoad();
+      await this.filterAddedRepo(repoName);
+      const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(repoName));
+      await row.waitFor({ timeout: 5_000 });
+      for (const cellText of expectedCellTexts) {
+        await expect(
+          row.locator("td").filter({ hasText: cellText }).first(),
+        ).toBeVisible({ timeout: 5_000 });
+      }
+    }).toPass({
+      intervals: [2_000, 5_000, 10_000],
+      timeout: 60_000,
+    });
   }
 }
