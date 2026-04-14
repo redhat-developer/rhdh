@@ -35,7 +35,7 @@ git cherry-pick <commit-sha>
 
 If the cherry-pick has conflicts, **resolve them manually** using the `main` commit as the source of truth and adapting to the release branch's code. Do not abandon the cherry-pick in favor of the healer — the fix on `main` is the authoritative solution.
 
-After a successful cherry-pick (with or without conflict resolution), proceed to `e2e-verify-fix`. Only proceed to the healer below if **no relevant fix exists on `main`**.
+After a successful cherry-pick (with or without conflict resolution), proceed to `e2e-verify-fix`. Only proceed to the healer below if **no relevant fix exists on `main`**, or if the cherry-picked fix doesn't resolve the issue on the release branch.
 
 ## MANDATORY: Always Use the Playwright Healer Agent
 
