@@ -37,6 +37,12 @@ Parse the input to extract:
 
 **Decision gate**: If the input cannot be parsed (invalid URL, inaccessible Jira ticket), report the error and ask the user for clarification.
 
+**Multiple failures**: If the job has more than one failing test:
+1. Present all failures in a table with test name, spec file, error type, and consistency (e.g., "failed 3/3" vs "failed 1/3")
+2. Group failures that likely share a root cause (same spec file, same error pattern, same page object)
+3. **Ask the user** which failure(s) to focus on
+4. If failures share a root cause, fix them together in one PR. If they're unrelated, fix them in separate branches/PRs — complete one before starting the next.
+
 ### Phase 2: Setup Fix Branch
 
 First, check the current branch:
