@@ -48,11 +48,18 @@ Build logs and JUnit XML results are in the GCS artifacts directory. Look for Pl
 
 #### Job Name → Release Branch
 
-| Pattern in job name | Release branch |
-|---------------------|---------------|
-| `*-rhdh-main-*` | `main` |
-| `*-rhdh-release-1.9-*` | `release-1.9` |
-| `*-rhdh-release-1.8-*` | `release-1.8` |
+Extract the release branch from the Prow job name using the `-rhdh-<branch>-` pattern:
+
+```bash
+BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | sed 's/^-rhdh-//;s/-$//')
+```
+
+If you're already on a feature branch and need to determine the base release branch:
+
+```bash
+# Find which upstream branch the current branch is based on
+git branch -r --contains "$(git merge-base HEAD upstream/main)" | grep 'upstream/' | head -1 | sed 's|.*upstream/||'
+```
 
 #### Job Name → Platform and Deployment Method
 
@@ -91,11 +98,15 @@ Do NOT use shortened names like `nightly-ocp-helm` — these do not match the gl
 
 #### Release Branch → Image Repo and Tag
 
-| Branch | `-r` (image repo) | `-t` (image tag) |
-|--------|-------------------|-------------------|
-| `main` | `rhdh-community/rhdh` | `next` |
-| `release-1.9` | `rhdh/rhdh-hub-rhel9` | `1.9` |
-| `release-1.8` | `rhdh/rhdh-hub-rhel9` | `1.8` |
+Derive from the branch name — no hardcoded version list needed:
+
+```bash
+if [[ "$BRANCH" == "main" ]]; then
+  REPO="rhdh-community/rhdh"; TAG="next"
+else
+  REPO="rhdh/rhdh-hub-rhel9"; TAG="${BRANCH#release-}"
+fi
+```
 
 ## Branch and Deployment Setup
 
