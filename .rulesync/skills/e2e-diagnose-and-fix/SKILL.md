@@ -20,7 +20,7 @@ Use this skill after reproducing a failure (via `e2e-reproduce-failure`) when yo
 
 ### Healer Initialization
 
-Before first use in a session, initialize the healer agent in the `e2e-tests/` directory. Use the `--loop` flag matching your AI coding tool:
+If not already initialized in this session, initialize the healer agent in `e2e-tests/`:
 
 ```bash
 cd e2e-tests
@@ -32,9 +32,7 @@ npx playwright init-agents --loop=opencode
 npx playwright init-agents --loop=claude
 ```
 
-See https://playwright.dev/docs/test-agents for the full list of supported tools and options.
-
-This creates configuration files with the Playwright MCP server and agent definitions. The generated files are local tooling — do NOT commit them.
+See https://playwright.dev/docs/test-agents for the full list of supported tools and options. The generated files are local tooling — do NOT commit them.
 
 ### Environment Setup for Healer
 

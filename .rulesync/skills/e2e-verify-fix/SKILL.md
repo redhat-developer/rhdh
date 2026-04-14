@@ -20,7 +20,7 @@ Always use the Playwright healer agent for test verification. The healer provide
 
 ### Healer Initialization
 
-If not already initialized in this session, use the `--loop` flag matching your AI coding tool:
+If not already initialized in this session, initialize the healer agent in `e2e-tests/`:
 
 ```bash
 cd e2e-tests
@@ -32,7 +32,7 @@ npx playwright init-agents --loop=opencode
 npx playwright init-agents --loop=claude
 ```
 
-See https://playwright.dev/docs/test-agents for the full list of supported tools and options.
+See https://playwright.dev/docs/test-agents for the full list of supported tools and options. The generated files are local tooling — do NOT commit them.
 
 Ensure the `.env` file exists — generate it with `source local-test-setup.sh <showcase|rbac> --env`. To regenerate (e.g. after token expiry), re-run the same command.
 
