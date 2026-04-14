@@ -84,10 +84,9 @@ cd e2e-tests
 
 Use the **full Prow CI job name** for `-j` (not shortened names).
 
-Select the image repo and tag based on the release branch:
+Derive the image repo and tag from the release branch (see the `e2e-fix-workflow` rule for the derivation logic):
 - `main` → `-r rhdh-community/rhdh -t next`
-- `release-1.9` → `-r rhdh/rhdh-hub-rhel9 -t 1.9`
-- `release-1.8` → `-r rhdh/rhdh-hub-rhel9 -t 1.8`
+- `release-X.Y` → `-r rhdh/rhdh-hub-rhel9 -t X.Y`
 
 After deployment completes, set up the local test environment:
 ```bash
