@@ -27,13 +27,15 @@ If there are recent commits touching the failing spec file or its page objects, 
 git log --oneline upstream/main -p -- <path-to-failing-spec-file> | head -100
 ```
 
-If a fix exists on `main`, cherry-pick it onto the release branch:
+If a fix exists on `main`, **always cherry-pick it** — this takes priority over running the healer:
 
 ```bash
 git cherry-pick <commit-sha>
 ```
 
-Then verify the cherry-picked fix works (proceed to `e2e-verify-fix`). If the cherry-pick has conflicts or doesn't apply cleanly, proceed with the healer below to create a release-branch-specific fix.
+If the cherry-pick has conflicts, **resolve them manually** using the `main` commit as the source of truth and adapting to the release branch's code. Do not abandon the cherry-pick in favor of the healer — the fix on `main` is the authoritative solution.
+
+After a successful cherry-pick (with or without conflict resolution), proceed to `e2e-verify-fix`. Only proceed to the healer below if **no relevant fix exists on `main`**.
 
 ## MANDATORY: Always Use the Playwright Healer Agent
 
