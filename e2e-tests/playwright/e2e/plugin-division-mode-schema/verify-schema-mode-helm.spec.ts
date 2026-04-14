@@ -254,46 +254,38 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
 
     if (secretNeedsUpdate) {
       try {
-        const helmSecret = await kubeClient.coreV1Api.readNamespacedSecret(
-          secretName,
-          namespace,
-        );
-        const updatedSecret = helmSecret.body;
-        if (!updatedSecret.data) updatedSecret.data = {};
-
-        // Update password in all possible keys
-        updatedSecret.data.password =
-          Buffer.from(dbPassword).toString("base64");
-        updatedSecret.data["postgres-password"] =
-          Buffer.from(dbPassword).toString("base64");
-        updatedSecret.data["postgresql-password"] =
-          Buffer.from(dbPassword).toString("base64");
-
-        // CRITICAL: Set POSTGRES_DB to the test database name
-        // Helm chart reads this from the secret and uses it as the database name
-        updatedSecret.data.POSTGRES_DB = Buffer.from(dbName).toString("base64");
-        // Also set it in other possible keys that Helm chart might use
-        updatedSecret.data["postgres-db"] =
-          Buffer.from(dbName).toString("base64");
-        updatedSecret.data["postgresql-db"] =
-          Buffer.from(dbName).toString("base64");
-
-        delete updatedSecret.metadata?.resourceVersion;
-        await kubeClient.coreV1Api.replaceNamespacedSecret(
-          secretName,
-          namespace,
-          updatedSecret,
-        );
+        // Use createOrUpdateSecret to handle both create and update cases
+        await kubeClient.createOrUpdateSecret(namespace, {
+          metadata: {
+            name: secretName,
+          },
+          data: {
+            // Update password in all possible keys
+            password: Buffer.from(dbPassword).toString("base64"),
+            "postgres-password": Buffer.from(dbPassword).toString("base64"),
+            "postgresql-password": Buffer.from(dbPassword).toString("base64"),
+            // CRITICAL: Set POSTGRES_DB to the test database name
+            // Helm chart reads this from the secret and uses it as the database name
+            POSTGRES_DB: Buffer.from(dbName).toString("base64"),
+            // Also set it in other possible keys that Helm chart might use
+            "postgres-db": Buffer.from(dbName).toString("base64"),
+            "postgresql-db": Buffer.from(dbName).toString("base64"),
+            // Set POSTGRES_USER for completeness
+            POSTGRES_USER: Buffer.from(dbUser).toString("base64"),
+            "postgres-user": Buffer.from(dbUser).toString("base64"),
+            "postgresql-user": Buffer.from(dbUser).toString("base64"),
+          },
+        });
         console.log(
-          `✓ Updated Helm chart secret ${secretName} with test user password`,
+          `✓ Created/updated Helm chart secret ${secretName} with test user credentials`,
         );
         needsRestart = true; // Helm chart deployments need restart to pick up secret changes
       } catch (error) {
         console.warn(
-          `[WARNING]  Could not update Helm chart secret ${secretName}: ${error instanceof Error ? error.message : String(error)}`,
+          `[WARNING]  Could not create/update Helm chart secret ${secretName}: ${error instanceof Error ? error.message : String(error)}`,
         );
         console.warn(
-          `   You may need to manually update the secret or ensure the Helm chart user password matches the test user password.`,
+          `   You may need to manually create the secret or ensure the Helm chart user password matches the test user password.`,
         );
       }
     }
