@@ -11,10 +11,10 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp") ?? false); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.fixme(() => process.env.JOB_TYPE?.includes("presubmit") ?? false); // skip on PR checks
+  test.fixme(() => !(process.env.JOB_NAME?.includes("ocp") ?? false)); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
@@ -135,7 +135,7 @@ spec:
     ]);
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Waiting for Approval",
+      "Waiting for approval",
     ]);
   });
 
@@ -188,11 +188,11 @@ spec:
     await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Already imported",
+      "Imported",
     ]);
     await uiHelper.searchInputPlaceholder(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Waiting for Approval",
+      "Waiting for approval",
     ]);
   });
 
@@ -220,7 +220,7 @@ spec:
       "Refresh",
     );
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Already imported",
+      "Imported",
     ]);
   });
 
@@ -282,10 +282,10 @@ spec:
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp") ?? false); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.fixme(() => process.env.JOB_TYPE?.includes("presubmit") ?? false); // skip on PR checks
+  test.fixme(() => !(process.env.JOB_NAME?.includes("ocp") ?? false)); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -316,7 +316,7 @@ test.describe
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
     await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-      "Already imported",
+      "Imported",
     ]);
   });
 
@@ -336,17 +336,17 @@ test.describe
     await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(
       existingComponentDetails.repoName,
-      ["Already imported"],
+      ["Imported"],
     );
   });
 });
 
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp") ?? false); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.fixme(() => process.env.JOB_TYPE?.includes("presubmit") ?? false); // skip on PR checks
+  test.fixme(() => !(process.env.JOB_NAME?.includes("ocp") ?? false)); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;

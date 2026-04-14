@@ -18,16 +18,18 @@ export class BulkImport {
 
   async filterAddedRepo(searchText: string) {
     await expect(async () => {
+      const searchInput = this.page.getByRole("textbox", { name: "search" });
+
       // Clear any existing filter first
-      await this.page.getByPlaceholder("Filter", { exact: true }).clear();
+      await searchInput.clear();
 
       // Fill the filter with search text
-      await this.page
-        .getByPlaceholder("Filter", { exact: true })
-        .fill(searchText);
+      await searchInput.fill(searchText);
 
-      // Wait for the filter to be applied and verify no "no-import-jobs-found" message appears
-      await expect(this.page.getByTestId("no-import-jobs-found")).toBeHidden({
+      // Wait for the table to update and show matching results
+      await expect(
+        this.page.getByRole("rowheader", { name: searchText }),
+      ).toBeVisible({
         timeout: 2000,
       });
     }).toPass({
