@@ -68,9 +68,23 @@ echo "Stability results: $PASS/5 passed"
 
 **Acceptance criteria**: 5/5 passes. If any run fails, invoke the healer agent on the failing run to diagnose and fix the remaining issue — do not manually guess at fixes.
 
+### 3. Full Project Stability Check (if failure was only reproducible with full project)
+
+If during reproduction (in `e2e-reproduce-failure`) the failure only appeared when running the full CI project (not in isolated test runs), the verification **must** also use the full project run to confirm the fix:
+
+```bash
+cd e2e-tests
+set -a && source .env && set +a
+CI=true yarn playwright test --project=<ci-project> --retries=0
+```
+
+Replace `<ci-project>` with the project from the CI failure (e.g., `showcase`, `showcase-rbac`). This ensures the fix holds under the same concurrency and test interaction conditions that triggered the original failure.
+
+**Acceptance criteria**: The full project run must pass. If the fixed test still fails when run alongside other tests, the fix is incomplete — return to `e2e-diagnose-and-fix`.
+
 **IMPORTANT**: Never skip verification steps. If you cannot run tests (e.g., no cluster available, environment issues), **stop and ask the user for explicit approval** before proceeding without verification. Do not assume it's OK to skip.
 
-### 3. Code Quality Checks
+### 4. Code Quality Checks
 
 Run all code quality checks in the e2e-tests workspace:
 
@@ -97,7 +111,7 @@ yarn lint:fix
 yarn prettier:fix
 ```
 
-### 4. Optional: Full Project Regression Check
+### 5. Optional: Full Project Regression Check
 
 If the fix touches shared utilities or page objects, run the entire Playwright project to check for regressions:
 

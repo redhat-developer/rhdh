@@ -130,11 +130,6 @@ The Qodo bot will:
 2. Post review comments with suggestions
 3. Optionally approve or request changes
 
-Note: The `.pr_agent.toml` in the repo configures Qodo with:
-- RAG enabled across `rhdh`, `rhdh-operator`, `rhdh-chart`, and documentation repos
-- Auto-review, auto-describe, and auto-improve on PR creation
-- Scoped to `e2e-tests` folder changes
-
 ## Step 5: Wait for and Address Qodo Review
 
 ### Poll for Review Comments
@@ -191,11 +186,11 @@ gh pr comment <PR-number> --repo redhat-developer/rhdh --body "/test ?"
 
 ### Step 6b: Wait for the Bot Response
 
-Poll PR comments every 30 seconds (up to 5 minutes) for a response from the `openshift-ci` bot containing the available job list:
+The bot usually responds within seconds. Poll PR comments for the `openshift-ci` bot's response:
 
 ```bash
-# Poll for the openshift-ci bot response (check every 30s, up to 10 attempts = 5 min)
-for i in $(seq 1 10); do
+# Poll for the openshift-ci bot response (check every 5s, up to 12 attempts = 1 min)
+for i in $(seq 1 12); do
   BOT_RESPONSE=$(gh api repos/redhat-developer/rhdh/issues/<PR-number>/comments \
     --jq '[.[] | select(.user.login == "openshift-ci[bot]" or .user.login == "openshift-ci-robot")] | last | .body // empty')
   if [[ -n "$BOT_RESPONSE" ]] && echo "$BOT_RESPONSE" | grep -q '/test'; then
@@ -203,38 +198,52 @@ for i in $(seq 1 10); do
     echo "$BOT_RESPONSE"
     break
   fi
-  echo "Waiting for openshift-ci bot response (attempt $i/10)..."
-  sleep 30
+  echo "Waiting for openshift-ci bot response (attempt $i/12)..."
+  sleep 5
 done
 ```
 
-If no response is received after 5 minutes, ask the user for guidance.
+If no response is received after 1 minute, ask the user for guidance.
 
-### Step 6c: Select the Right Job from the Bot Response
+### Step 6c: Understand the Bot Response
 
-Parse the bot's response to find the presubmit job name matching the platform and deployment method from Phase 1. Use these patterns to identify the right job:
+The bot's response has two sections:
 
-| Original failure pattern | Look for presubmit containing |
-|--------------------------|-------------------------------|
-| `*ocp*helm*nightly*` | `*ocp*helm*` (not nightly) |
-| `*ocp*operator*nightly*` | `*ocp*operator*` |
-| `*aks*helm*` | `*aks*helm*` |
-| `*eks*helm*` | `*eks*helm*` |
-| `*gke*helm*` | `*gke*helm*` |
+1. **Required jobs** — triggered automatically when the PR is marked as ready for review (not on draft PRs). These run the basic presubmit checks:
+  ```
+  /test e2e-ocp-helm
+  ```
+2. **Optional jobs** — must be triggered explicitly. These include nightly variants, other platforms, and operators:
+  ```
+  /test e2e-ocp-helm-nightly
+  /test e2e-eks-helm-nightly
+  /test e2e-aks-operator-nightly
+  ...
+  ```
 
-**Example**: If the original failure was `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4-20-helm-nightly`, look for a presubmit job in the bot's response like `pull-ci-redhat-developer-rhdh-main-e2e-ocp-v4-17-helm`.
+Note: the job names in the bot's response are **shortened** (e.g., `e2e-ocp-helm`), not the full Prow `pull-ci-redhat-developer-rhdh-...` format. Use these short names directly with `/test`.
 
-If no matching job appears in the bot's response, pick the closest available job for the same platform and deployment method **from the list the bot returned**. If no suitable job exists in the list, inform the user and ask how to proceed.
+### Step 6d: Select and Trigger the Right Job
 
-### Step 6d: Trigger the Job
+Match the original failure to the right presubmit job from the bot's list:
 
-Comment `/test <job-name>` using **only** a job name that appeared in the bot's response from Step 6b:
+| Original failure pattern | Trigger |
+|--------------------------|---------|
+| `*ocp*helm*nightly*` | `/test e2e-ocp-helm-nightly` |
+| `*ocp*operator*nightly*` | `/test e2e-ocp-operator-nightly` |
+| `*ocp*v4-19*helm*` | `/test e2e-ocp-v4-19-helm-nightly` |
+| `*aks*helm*` | `/test e2e-aks-helm-nightly` |
+| `*eks*helm*` | `/test e2e-eks-helm-nightly` |
+| `*gke*operator*` | `/test e2e-gke-operator-nightly` |
 
 ```bash
-gh pr comment <PR-number> --repo redhat-developer/rhdh --body "/test <presubmit-job-name>"
+gh pr comment <PR-number> --repo redhat-developer/rhdh --body "/test <job-name-from-bot-response>"
 ```
 
-**Never** construct, guess, or infer job names from the original periodic/nightly job name. Only use exact job names from the `openshift-ci` bot's `/test ?` response.
+**Rules**:
+- **Only use job names that appeared in the bot's response** — never construct or guess names
+- The required job (`e2e-ocp-helm`) runs automatically — you usually only need to trigger the optional job matching the original failure
+- If no matching job exists in the list, inform the user and ask how to proceed
 
 ## Step 7: Monitor CI Status
 

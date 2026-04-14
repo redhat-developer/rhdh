@@ -154,12 +154,18 @@ echo "Results: $PASS passed, $FAIL failed out of 10 runs"
 
 ### Cannot Reproduce
 - **Definition**: Passes all runs locally (0/10 fail)
-- **Action**: **Stop and ask the user for approval before skipping this step.** Present the reproduction results and the list of possible environment differences. Do not proceed to diagnose-and-fix without explicit user confirmation.
+- **Before giving up**, try running the **entire Playwright project** that failed in CI with `CI=true` to simulate CI conditions (this sets the worker count to 3, matching CI):
+  ```bash
+  cd e2e-tests
+  CI=true yarn playwright test --project=<ci-project> --retries=0
+  ```
+  Replace `<ci-project>` with the project from the CI failure (e.g., `showcase`, `showcase-rbac`). This runs all tests in that project concurrently, which can expose race conditions and resource contention that single-test runs miss.
+- If the full project run also passes, **stop and ask the user for approval before skipping this step.** Present the reproduction results and the list of possible environment differences. Do not proceed to diagnose-and-fix without explicit user confirmation.
 - **Investigation**: Check environment differences between local and CI:
   - **Cluster version**: CI may use a different OCP version (check the cluster pool version)
   - **Image version**: CI may use a different RHDH image
   - **Resource constraints**: CI clusters may have less resources
-  - **Parallel execution**: CI runs with 3 workers; try `--workers=3`
+  - **Parallel execution**: CI runs with 3 workers; the full project run above simulates this
   - **Network**: CI clusters are in `us-east-2` AWS region
   - **External services**: GitHub API rate limits, Keycloak availability
 

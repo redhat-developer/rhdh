@@ -101,7 +101,7 @@ yarn playwright test <spec-file> --project=any-test --retries=0 --workers=1
 - **No cluster or deployment available**: If Phase 3 was skipped or no running RHDH instance exists, **ask the user for explicit approval** before skipping reproduction — do not skip silently.
 - **Consistent failure**: Proceed to Phase 5
 - **Flaky** (fails sometimes): Proceed to Phase 5, focus on reliability
-- **Cannot reproduce** (passes every time after 10 runs): Report the reproduction results and possible environment differences, then **ask the user for explicit approval** before proceeding. Do not skip this step silently.
+- **Cannot reproduce** (passes every time after 10 runs): Before giving up, try running the entire CI project with `CI=true yarn playwright test --project=<ci-project> --retries=0` to simulate CI conditions (3 workers, full test suite). If that also passes, report the results and **ask the user for explicit approval** before proceeding.
 
 ### Phase 5: Diagnose and Fix
 
