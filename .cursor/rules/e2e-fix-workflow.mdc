@@ -156,18 +156,7 @@ If the test passes on first run, repeat 10 times:
 - **Mixed results** → flaky (focus on reliability improvements)
 - **0/10 pass** → consistent failure
 
-### Debugging Modes
-
-```bash
-# Headed (visible browser)
-yarn playwright test <spec-file> --project=<project> --headed
-
-# Debug (Playwright Inspector)
-yarn playwright test <spec-file> --project=<project> --debug
-
-# View trace
-yarn playwright show-trace test-results/<path>/trace.zip
-```
+For headed mode, debug mode, and trace viewing, see the `playwright-locators` and `ci-e2e-testing` rules.
 
 ## Diagnosing and Fixing Tests
 
@@ -180,61 +169,11 @@ yarn playwright show-trace test-results/<path>/trace.zip
 5. **Platform-specific** — Works on one platform, fails on another → add `skipIfJobName()` conditional
 6. **Deployment config** — RHDH itself broken → fix ConfigMap/values in `.ci/pipelines/`
 
-### RHDH Coding Conventions (Required)
+### RHDH Coding Conventions
 
-**Locators** — Always use semantic role-based locators:
-```typescript
-// GOOD
-page.getByRole('button', { name: 'Create' })
-page.getByRole('heading', { name: 'Catalog' })
-page.getByText('No results found')
-
-// BAD — deprecated CSS selectors
-page.locator('.MuiButton-root')
-page.locator('[data-testid="..."]')
-```
-
-**Component annotations** — Every spec file must have:
-```typescript
-test.beforeAll(async ({}, testInfo) => {
-  testInfo.annotations.push({
-    type: 'component',
-    description: 'your_component_name',
-  });
-});
-```
-
-**Retry patterns** for async assertions:
-```typescript
-await expect(async () => {
-  await page.reload();
-  await expect(page.getByText('entity')).toBeVisible();
-}).toPass({ intervals: [2000, 5000, 10000], timeout: 60_000 });
-```
-
-**Conditional skips**:
-```typescript
-import { skipIfJobName } from '../utils/helper';
-import * as constants from '../utils/constants';
-skipIfJobName(constants.GKE_JOBS);
-```
-
-**Forbidden patterns**:
-- `page.waitForNetworkIdle()` / `networkidle`
-- Raw CSS class selectors (`.MuiButton-root`)
-- `page.waitForTimeout()` for synchronization
-- Hardcoded secrets or credentials
-
-### Key Utility Classes
-
-| Class | Path | Purpose |
-|-------|------|---------|
-| `Common` | `utils/common.ts` | Login flows, `waitForLoad()`, `signOut()` |
-| `UIhelper` | `utils/ui-helper.ts` | 90+ UI interaction methods |
-| `APIHelper` | `utils/api-helper.ts` | GitHub API, Backstage catalog API |
-| `KubeClient` | `utils/kube-client.ts` | K8s resource management |
-| `SemanticSelectors` | `support/selectors/semantic-selectors.ts` | Role-based selector helpers |
-| `RHDHDeployment` | `utils/authentication-providers/rhdh-deployment.ts` | RHDH deployment lifecycle |
+All test code must follow the project's coding rules:
+- **`playwright-locators`** — locator priority, anti-patterns, assertions, Page Objects
+- **`ci-e2e-testing`** — test structure, component annotations, utility classes, CI scripts
 
 ### Product Bug Decision
 
@@ -335,18 +274,10 @@ Re-trigger with: `gh pr comment <PR#> --repo redhat-developer/rhdh --body "/rete
 
 ## Reference Files
 
+See the `ci-e2e-testing` rule for the full list of CI scripts, test utilities, and config files. Files specific to the fix workflow:
+
 | Category | Key files |
 |----------|-----------|
-| Playwright config | `e2e-tests/playwright.config.ts` |
-| Project names (SOT) | `e2e-tests/playwright/projects.json` |
-| Test specs | `e2e-tests/playwright/e2e/**/*.spec.ts` |
-| Utilities | `e2e-tests/playwright/utils/`, `e2e-tests/playwright/support/` |
-| CI entry point | `.ci/pipelines/openshift-ci-tests.sh` |
-| Deployment lib | `.ci/pipelines/lib/helm.sh`, `.ci/pipelines/lib/operators.sh` |
-| ConfigMaps | `.ci/pipelines/resources/config_map/` |
-| Helm values | `.ci/pipelines/value_files/` |
-| Operator CRs | `.ci/pipelines/resources/rhdh-operator/` |
-| Environment vars | `.ci/pipelines/env_variables.sh` |
 | Local test runner | `e2e-tests/local-run.sh` |
 | Local test env | `e2e-tests/local-test-setup.sh` |
 | Qodo config | `.pr_agent.toml` |
