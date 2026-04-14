@@ -193,11 +193,11 @@ gh pr comment <PR-number> --repo redhat-developer/rhdh --body "/test ?"
 
 ### Step 6b: Wait for the Bot Response
 
-Poll PR comments every 30 seconds (up to 5 minutes) for a response from the `openshift-ci` bot containing the available job list:
+The bot usually responds within seconds. Poll PR comments for the `openshift-ci` bot's response:
 
 ```bash
-# Poll for the openshift-ci bot response (check every 30s, up to 10 attempts = 5 min)
-for i in $(seq 1 10); do
+# Poll for the openshift-ci bot response (check every 5s, up to 12 attempts = 1 min)
+for i in $(seq 1 12); do
   BOT_RESPONSE=$(gh api repos/redhat-developer/rhdh/issues/<PR-number>/comments \
     --jq '[.[] | select(.user.login == "openshift-ci[bot]" or .user.login == "openshift-ci-robot")] | last | .body // empty')
   if [[ -n "$BOT_RESPONSE" ]] && echo "$BOT_RESPONSE" | grep -q '/test'; then
@@ -205,28 +205,28 @@ for i in $(seq 1 10); do
     echo "$BOT_RESPONSE"
     break
   fi
-  echo "Waiting for openshift-ci bot response (attempt $i/10)..."
-  sleep 30
+  echo "Waiting for openshift-ci bot response (attempt $i/12)..."
+  sleep 5
 done
 ```
 
-If no response is received after 5 minutes, ask the user for guidance.
+If no response is received after 1 minute, ask the user for guidance.
 
 ### Step 6c: Understand the Bot Response
 
 The bot's response has two sections:
 
 1. **Required jobs** — triggered automatically on PR creation/update. These run the basic presubmit checks:
-   ```
-   /test e2e-ocp-helm
-   ```
+  ```
+  /test e2e-ocp-helm
+  ```
 2. **Optional jobs** — must be triggered explicitly. These include nightly variants, other platforms, and operators:
-   ```
-   /test e2e-ocp-helm-nightly
-   /test e2e-eks-helm-nightly
-   /test e2e-aks-operator-nightly
-   ...
-   ```
+  ```
+  /test e2e-ocp-helm-nightly
+  /test e2e-eks-helm-nightly
+  /test e2e-aks-operator-nightly
+  ...
+  ```
 
 Note: the job names in the bot's response are **shortened** (e.g., `e2e-ocp-helm`), not the full Prow `pull-ci-redhat-developer-rhdh-...` format. Use these short names directly with `/test`.
 
