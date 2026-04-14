@@ -18,6 +18,8 @@ Use this skill after implementing a fix (via `e2e-diagnose-and-fix`) to confirm 
 
 Always use the Playwright healer agent for test verification. The healer provides step-by-step debugging if a run fails, making it faster to iterate on fixes.
 
+> **Note**: The Playwright healer agent is currently supported in **OpenCode** and **Claude Code** only. In **Cursor** or other tools without Playwright agent support, skip the healer initialization and use direct test execution for all verification steps (`yarn playwright test ...`).
+
 ### Healer Initialization
 
 If not already initialized in this session, initialize the healer agent in `e2e-tests/`:

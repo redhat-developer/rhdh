@@ -18,6 +18,8 @@ Use this skill after reproducing a failure (via `e2e-reproduce-failure`) when yo
 
 **The Playwright healer agent MUST be used for ALL test failures, regardless of failure category.** Do not attempt manual diagnosis without first running the healer. The healer can run the test, debug it step-by-step, inspect the live UI, generate correct locators, and edit the code — often resolving the issue end-to-end without manual intervention.
 
+> **Note**: The Playwright healer agent is currently supported in **OpenCode** and **Claude Code** only. In **Cursor** or other tools without Playwright agent support, skip the healer initialization and proceed directly to the "Failure Pattern Recognition" section below. Use manual diagnosis with direct test execution (`yarn playwright test ...`) and headed/debug mode (`--headed`, `--debug`) for live UI inspection.
+
 ### Healer Initialization
 
 If not already initialized in this session, initialize the healer agent in `e2e-tests/`:
