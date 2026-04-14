@@ -136,17 +136,31 @@ The Qodo bot will:
 
 ### Poll for Review Comments
 
-Check for Qodo review completion (it typically takes 1-3 minutes):
+Poll for Qodo review completion (typically takes 1-3 minutes):
 
 ```bash
-# Check for Qodo bot comments
-gh api repos/redhat-developer/rhdh/pulls/<PR-number>/reviews \
-  --jq '.[] | select(.user.login | test("github-actions|qodo|codium|pr-agent")) | .state'
+# Poll for Qodo bot review (check every 15s, up to 20 attempts = 5 min)
+for i in $(seq 1 20); do
+  REVIEW_STATE=$(gh api repos/redhat-developer/rhdh/pulls/<PR-number>/reviews \
+    --jq '[.[] | select(.user.login | test("github-actions|qodo|codium|pr-agent"))] | last | .state // empty')
+  if [[ -n "$REVIEW_STATE" ]]; then
+    echo "Qodo review received (state: $REVIEW_STATE)"
+    break
+  fi
+  echo "Waiting for Qodo review (attempt $i/20)..."
+  sleep 15
+done
+```
 
-# Check for inline comments
+If a review is received, fetch the inline comments:
+
+```bash
+# Get inline review comments
 gh api repos/redhat-developer/rhdh/pulls/<PR-number>/comments \
   --jq '.[] | select(.user.login | test("github-actions|qodo|codium|pr-agent")) | {path: .path, line: .line, body: .body}'
 ```
+
+If no review is received after 5 minutes, ask the user for guidance.
 
 ### Address Review Comments
 

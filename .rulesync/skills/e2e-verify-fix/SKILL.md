@@ -130,7 +130,7 @@ This is optional for isolated spec file changes but recommended for changes to:
 - `e2e-tests/playwright/data/` (shared test data)
 - `playwright.config.ts` (configuration)
 
-### 5. Review the Diff
+### 6. Review the Diff
 
 Before submitting, review all changes:
 

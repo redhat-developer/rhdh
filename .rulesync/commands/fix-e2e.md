@@ -12,8 +12,9 @@ Autonomous workflow to investigate, reproduce, fix, and submit a PR for a failin
 
 ## Input
 
-`$ARGUMENTS` — A Prow job URL, Jira ticket ID, or Jira URL:
+`$ARGUMENTS` — A Prow job URL, Playwright report URL, Jira ticket ID, or Jira URL:
 - **Prow URL**: `https://prow.ci.openshift.org/view/gs/...`
+- **Playwright report URL**: `https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/.../index.html[#?testId=...]`
 - **Jira ticket ID**: `RHIDP-XXXX`
 - **Jira URL**: `https://redhat.atlassian.net/browse/RHIDP-XXXX`
 
@@ -146,7 +147,7 @@ Verify the fix:
 3. **Push**: `git push -u origin <branch>`
 4. **Create draft PR**: Always use `--draft`. Determine the GitHub username from the fork remote: `git remote get-url origin | sed 's|.*github.com[:/]||;s|/.*||'`. Then use `gh pr create --draft --repo redhat-developer/rhdh --head <username>:<branch> --base <release-branch>`
 5. **Trigger Qodo review**: Comment `/agentic_review` on the PR
-6. **Wait for review**: Poll for Qodo bot comments (check every 60s, up to 10 minutes)
+6. **Wait for review**: Poll for Qodo bot review (check every 15s, up to 5 minutes)
 7. **Address feedback**: Apply valid suggestions, explain rejections
 8. **Trigger affected CI job**: After addressing review feedback, comment `/test ?` on the PR to list available presubmit jobs, then comment `/test <job-name>` to trigger the presubmit job matching the platform and deployment method from Phase 1
 9. **Monitor CI**: Watch CI checks with `gh pr checks`
