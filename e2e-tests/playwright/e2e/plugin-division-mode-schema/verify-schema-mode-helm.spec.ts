@@ -177,42 +177,61 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
 
     console.log("Configuring RHDH for schema mode...");
 
+    // Determine the PostgreSQL host that RHDH pods should use
+    // - If using external Crunchy cluster (port-forward scenario), use cluster-internal service
+    // - Otherwise use in-namespace service
+    let rhdhPostgresHost = postgresServiceName;
+    const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
+    const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
+
     if (dbHost === "localhost" || dbHost === "127.0.0.1") {
-      try {
-        await kubeClient.coreV1Api.readNamespacedService(
-          postgresServiceName,
-          namespace,
-        );
-        console.log(
-          `✓ Verified PostgreSQL service exists: ${postgresServiceName}`,
-        );
-      } catch {
-        console.warn(
-          `[WARNING]  Warning: Could not verify PostgreSQL service '${postgresServiceName}' exists`,
-        );
-        console.warn(
-          `   Service might have a different name. Checking available services...`,
-        );
+      // Port-forward scenario - check if it's to external cluster
+      if (pfNamespace && pfNamespace !== namespace) {
+        // External cluster - use fully qualified service name
+        rhdhPostgresHost = `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`;
+        console.log(`✓ Using external Crunchy cluster: ${rhdhPostgresHost}`);
+      } else {
+        // In-namespace PostgreSQL service
         try {
-          const services =
-            await kubeClient.coreV1Api.listNamespacedService(namespace);
-          const pgServices = services.body.items.filter(
-            (s) =>
-              s.metadata?.name?.includes("postgresql") ||
-              s.metadata?.name?.includes("postgres"),
+          await kubeClient.coreV1Api.readNamespacedService(
+            postgresServiceName,
+            namespace,
           );
-          if (pgServices.length > 0) {
-            console.warn(
-              `   Found PostgreSQL-related services: ${pgServices.map((s) => s.metadata?.name).join(", ")}`,
-            );
-            console.warn(
-              `   Using: ${postgresServiceName} (if this fails, check the actual service name)`,
-            );
-          }
+          console.log(
+            `✓ Verified PostgreSQL service exists: ${postgresServiceName}`,
+          );
         } catch {
-          // Ignore list errors
+          console.warn(
+            `[WARNING]  Warning: Could not verify PostgreSQL service '${postgresServiceName}' exists`,
+          );
+          console.warn(
+            `   Service might have a different name. Checking available services...`,
+          );
+          try {
+            const services =
+              await kubeClient.coreV1Api.listNamespacedService(namespace);
+            const pgServices = services.body.items.filter(
+              (s) =>
+                s.metadata?.name?.includes("postgresql") ||
+                s.metadata?.name?.includes("postgres"),
+            );
+            if (pgServices.length > 0) {
+              console.warn(
+                `   Found PostgreSQL-related services: ${pgServices.map((s) => s.metadata?.name).join(", ")}`,
+              );
+              console.warn(
+                `   Using: ${postgresServiceName} (if this fails, check the actual service name)`,
+              );
+            }
+          } catch {
+            // Ignore list errors
+          }
         }
       }
+    } else {
+      // Direct host (not port-forward) - use as-is
+      rhdhPostgresHost = dbHost;
+      console.log(`✓ Using direct PostgreSQL host: ${rhdhPostgresHost}`);
     }
 
     // Update Helm chart secret with test user password
@@ -276,12 +295,21 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
               POSTGRES_USER: Buffer.from(dbUser).toString("base64"),
               "postgres-user": Buffer.from(dbUser).toString("base64"),
               "postgresql-user": Buffer.from(dbUser).toString("base64"),
+              // CRITICAL: Set POSTGRES_HOST to the cluster-internal service that RHDH pods can reach
+              POSTGRES_HOST: Buffer.from(rhdhPostgresHost).toString("base64"),
+              "postgres-host": Buffer.from(rhdhPostgresHost).toString("base64"),
+              "postgresql-host":
+                Buffer.from(rhdhPostgresHost).toString("base64"),
+              // Set POSTGRES_PORT
+              POSTGRES_PORT: Buffer.from("5432").toString("base64"),
+              "postgres-port": Buffer.from("5432").toString("base64"),
+              "postgresql-port": Buffer.from("5432").toString("base64"),
             },
           },
           namespace,
         );
         console.log(
-          `✓ Created/updated Helm chart secret ${secretName} with test user credentials`,
+          `✓ Created/updated Helm chart secret ${secretName} with test user credentials and host: ${rhdhPostgresHost}`,
         );
         needsRestart = true; // Helm chart deployments need restart to pick up secret changes
       } catch (error) {
@@ -294,8 +322,8 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       }
     }
 
-    // CRITICAL: Ensure POSTGRES_DB environment variable is set in the deployment
-    // Helm chart might not set this by default, causing Backstage to default to username as database name
+    // CRITICAL: Ensure all PostgreSQL environment variables are set in the deployment
+    // Helm chart might not set these by default
     try {
       const deployment = await kubeClient.appsApi.readNamespacedDeployment(
         deploymentName,
@@ -309,11 +337,22 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
 
       if (backstageContainer) {
         const env = backstageContainer.env || [];
-        const hasPostgresDb = env.some((e) => e.name === "POSTGRES_DB");
 
-        if (!hasPostgresDb) {
+        // Check which variables are missing
+        const requiredVars = [
+          "POSTGRES_HOST",
+          "POSTGRES_PORT",
+          "POSTGRES_DB",
+          "POSTGRES_USER",
+          "POSTGRES_PASSWORD",
+        ];
+        const missingVars = requiredVars.filter(
+          (varName) => !env.some((e) => e.name === varName),
+        );
+
+        if (missingVars.length > 0) {
           console.log(
-            "Adding POSTGRES_DB environment variable to deployment...",
+            `Adding PostgreSQL environment variables to deployment: ${missingVars.join(", ")}`,
           );
           // Need to ensure the env array exists
           const patch: { op: string; path: string; value?: unknown }[] = [];
@@ -327,20 +366,22 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
             });
           }
 
-          // Add POSTGRES_DB environment variable
-          patch.push({
-            op: "add",
-            path: `/spec/template/spec/containers/${backstageContainerIndex}/env/-`,
-            value: {
-              name: "POSTGRES_DB",
-              valueFrom: {
-                secretKeyRef: {
-                  name: secretName,
-                  key: "POSTGRES_DB",
+          // Add each missing environment variable
+          for (const varName of missingVars) {
+            patch.push({
+              op: "add",
+              path: `/spec/template/spec/containers/${backstageContainerIndex}/env/-`,
+              value: {
+                name: varName,
+                valueFrom: {
+                  secretKeyRef: {
+                    name: secretName,
+                    key: varName,
+                  },
                 },
               },
-            },
-          });
+            });
+          }
 
           try {
             await kubeClient.appsApi.patchNamespacedDeployment(
@@ -355,7 +396,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
               { headers: { "Content-Type": "application/json-patch+json" } },
             );
             console.log(
-              "✓ Added POSTGRES_DB environment variable to deployment via API",
+              `✓ Added PostgreSQL environment variables to deployment via API: ${missingVars.join(", ")}`,
             );
             needsRestart = true;
           } catch (apiError) {
@@ -374,7 +415,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
                 { stdio: "pipe", encoding: "utf-8" },
               );
               console.log(
-                "✓ Added POSTGRES_DB environment variable to deployment via oc command",
+                `✓ Added PostgreSQL environment variables to deployment via oc command: ${missingVars.join(", ")}`,
               );
 
               // Verify the patch was applied
@@ -389,17 +430,18 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
                   (c) => c.name === "backstage-backend",
                 );
               const verifyEnv = verifyContainer?.env || [];
-              const verifyPostgresDb = verifyEnv.find(
-                (e) => e.name === "POSTGRES_DB",
-              );
 
-              if (!verifyPostgresDb) {
+              // Verify at least one of the critical variables was added
+              const hasPostgresHost = verifyEnv.some(
+                (e) => e.name === "POSTGRES_HOST",
+              );
+              if (!hasPostgresHost) {
                 throw new Error(
-                  "Patch command succeeded but POSTGRES_DB was not found in deployment after patching",
+                  "Patch command succeeded but POSTGRES_HOST was not found in deployment after patching",
                 );
               }
               console.log(
-                "✓ Verified POSTGRES_DB environment variable was added to deployment",
+                "✓ Verified PostgreSQL environment variables were added to deployment",
               );
               needsRestart = true;
             } catch (ocError) {
@@ -409,33 +451,17 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
                 `[ERROR]  Failed to patch deployment via oc command: ${ocErrorMsg}`,
               );
               console.error(
-                `   Please manually run this command to add POSTGRES_DB:`,
-              );
-              console.error(
-                `   oc patch deployment ${deploymentName} -n ${namespace} --type='json' -p='[{"op":"add","path":"/spec/template/spec/containers/0/env/-","value":{"name":"POSTGRES_DB","valueFrom":{"secretKeyRef":{"name":"${secretName}","key":"POSTGRES_DB"}}}}]'`,
+                `   Please manually add PostgreSQL environment variables to deployment`,
               );
               throw new Error(
-                `Failed to add POSTGRES_DB environment variable to deployment. Both API and oc command failed.`,
+                `Failed to add PostgreSQL environment variables to deployment. Both API and oc command failed.`,
               );
             }
           }
         } else {
           console.log(
-            "✓ POSTGRES_DB environment variable already exists in deployment",
+            "✓ All required PostgreSQL environment variables already exist in deployment",
           );
-          // Verify it's reading from the correct secret
-          const postgresDbEnv = env.find((e) => e.name === "POSTGRES_DB");
-          if (postgresDbEnv?.valueFrom?.secretKeyRef) {
-            const secretRef = postgresDbEnv.valueFrom.secretKeyRef;
-            if (
-              secretRef.name !== secretName ||
-              secretRef.key !== "POSTGRES_DB"
-            ) {
-              console.warn(
-                `[WARNING]  POSTGRES_DB env var references secret ${secretRef.name}/${secretRef.key}, expected ${secretName}/POSTGRES_DB`,
-              );
-            }
-          }
         }
       }
     } catch (deploymentError) {
@@ -444,50 +470,15 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
           ? deploymentError.message
           : String(deploymentError);
       // Only log warning if it's not a critical error (critical errors are already thrown above)
-      if (!errorMsg.includes("Failed to add POSTGRES_DB")) {
+      if (!errorMsg.includes("Failed to add PostgreSQL")) {
         console.warn(
-          `[WARNING]  Could not check/add POSTGRES_DB to deployment: ${errorMsg}`,
+          `[WARNING]  Could not check/add PostgreSQL environment variables to deployment: ${errorMsg}`,
         );
         console.warn(
-          `   The deployment might need POSTGRES_DB as an environment variable for Backstage to use the correct database.`,
+          `   The deployment might need PostgreSQL environment variables for Backstage to connect to the database.`,
         );
       } else {
         throw deploymentError; // Re-throw critical errors
-      }
-    }
-
-    // Validate configuration before proceeding
-    try {
-      const verifyDeployment =
-        await kubeClient.appsApi.readNamespacedDeployment(
-          deploymentName,
-          namespace,
-        );
-      const verifyContainer =
-        verifyDeployment.body.spec?.template?.spec?.containers?.find(
-          (c) => c.name === "backstage-backend",
-        );
-      const verifyEnv = verifyContainer?.env || [];
-      const verifyPostgresDb = verifyEnv.find((e) => e.name === "POSTGRES_DB");
-
-      if (!verifyPostgresDb) {
-        console.error(
-          `[ERROR]  Deployment does not have POSTGRES_DB environment variable!`,
-        );
-        console.error(
-          `   Backstage will not be able to resolve \${POSTGRES_DB} in app-config.`,
-        );
-      }
-    } catch (validationError) {
-      // Only log if it's a critical error
-      const errorMsg =
-        validationError instanceof Error
-          ? validationError.message
-          : String(validationError);
-      if (!errorMsg.includes("not found")) {
-        console.warn(
-          `[WARNING]  Could not validate configuration: ${errorMsg}`,
-        );
       }
     }
 
