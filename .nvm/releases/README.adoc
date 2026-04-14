@@ -6,7 +6,7 @@ podman run -it --rm --entrypoint /bin/bash --user root registry.access.redhat.co
 v24.13.0
 ```
 
-Or, go to https://catalog.redhat.com/software/containers/ubi9/nodejs-24 and search for `nodejs` to get the version.
+Or, go to https://catalog.redhat.com/en/software/containers/ubi9/nodejs-24/67f6255dbaa28af763e21805, select the `packages` tab, and search for `nodejs` to get the version.
 
 As of 2026/04/13, this version is `v24.13.0`
 
