@@ -42,9 +42,11 @@ curl -sSk "$BASE_URL" -o /dev/null -w "HTTP Status: %{http_code}\n"
 
 Always use the Playwright healer agent to run and reproduce failing tests. The healer provides richer diagnostics than plain `yarn playwright test` — it can debug step-by-step, inspect the live UI, and collect detailed failure context automatically.
 
-### Healer Initialization (First Time Only)
+> **Note**: The Playwright healer agent is currently supported in **OpenCode** and **Claude Code** only. In **Cursor** or other tools without Playwright agent support, skip the healer initialization and use the "Fallback: Direct Execution" method below instead.
 
-Before first use in a session, initialize the healer agent with the `--loop` flag matching your AI coding tool:
+### Healer Initialization
+
+If not already initialized in this session, initialize the healer agent in `e2e-tests/`:
 
 ```bash
 cd e2e-tests
@@ -56,7 +58,7 @@ npx playwright init-agents --loop=opencode
 npx playwright init-agents --loop=claude
 ```
 
-See https://playwright.dev/docs/test-agents for the full list of supported tools and options.
+See https://playwright.dev/docs/test-agents for the full list of supported tools and options. The generated files are local tooling — do NOT commit them.
 
 ### Environment Setup
 
@@ -92,7 +94,7 @@ Report: pass/fail, exact error message, what the UI shows at the point of failur
 
 ### Fallback: Direct Execution
 
-If the healer agent is unavailable, run tests directly:
+If the healer agent is unavailable (e.g., in Cursor), run tests directly:
 
 ```bash
 cd e2e-tests
