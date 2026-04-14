@@ -22,10 +22,14 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import { usePermission } from '@backstage/plugin-permission-react';
-import { SidebarSearchModal } from '@backstage/plugin-search';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
-import { Settings as SidebarSettings } from '@backstage/plugin-user-settings';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import {
+  searchTranslationRef,
+  SidebarSearchModal,
+} from '@backstage/plugin-search';
+import {
+  Settings as SidebarSettings,
+  userSettingsTranslationRef,
+} from '@backstage/plugin-user-settings';
 
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';

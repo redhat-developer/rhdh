@@ -2,8 +2,10 @@ import React from 'react';
 
 import { Entity } from '@backstage/catalog-model';
 import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
-import { EntityAutocompletePicker } from '@backstage/plugin-catalog-react';
-import { catalogReactTranslationRef } from '@backstage/plugin-catalog-react/alpha';
+import {
+  catalogReactTranslationRef,
+  EntityAutocompletePicker,
+} from '@backstage/plugin-catalog-react';
 
 // Custom EntityTagFilter with OR logic instead of AND logic
 export class CustomEntityTagFilter {

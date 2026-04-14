@@ -29,11 +29,7 @@ export const DependenciesTabContent = () => (
           gridRowEnd: 'span 6',
         }}
       >
-        <EntityCatalogGraphCard
-          variant="gridItem"
-          direction={Direction.TOP_BOTTOM}
-          height={900}
-        />
+        <EntityCatalogGraphCard direction={Direction.TOP_BOTTOM} height={900} />
       </Grid>
       <Grid
         item
@@ -44,7 +40,7 @@ export const DependenciesTabContent = () => (
           },
         }}
       >
-        <EntityDependsOnComponentsCard variant="gridItem" />
+        <EntityDependsOnComponentsCard />
       </Grid>
       <Grid
         item
@@ -55,7 +51,7 @@ export const DependenciesTabContent = () => (
           },
         }}
       >
-        <EntityDependsOnResourcesCard variant="gridItem" />
+        <EntityDependsOnResourcesCard />
       </Grid>
       <Grid
         item
@@ -66,7 +62,7 @@ export const DependenciesTabContent = () => (
           },
         }}
       >
-        <EntityHasSubcomponentsCard variant="gridItem" />
+        <EntityHasSubcomponentsCard />
       </Grid>
       <Grid
         item

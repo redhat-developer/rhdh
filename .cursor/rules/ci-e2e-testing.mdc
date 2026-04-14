@@ -80,6 +80,7 @@ test.beforeAll(async ({ }, testInfo) => {
    - `showcase-operator`: General functionality tests with base deployment using Operator
    - `showcase-operator-rbac`: General functionality tests with RBAC-enabled deployment using Operator
    - `showcase-runtime`: Runtime environment tests
+   - `showcase-runtime-db`: Runtime database tests
    - `showcase-sanity-plugins`: Plugin sanity checks
    - `showcase-upgrade`: Upgrade scenario tests
    - `showcase-localization-de`: German localization tests
@@ -130,18 +131,18 @@ test.beforeAll(async ({ }, testInfo) => {
 
 #### CI/CD Pipeline Execution
 
-In the CI/CD pipeline, tests are executed directly using Playwright's `--project` flag via the `run_tests()` function in `.ci/pipelines/utils.sh`:
+In the CI/CD pipeline, tests are executed directly using Playwright's `--project` flag via `testing::run_tests()` in `.ci/pipelines/lib/testing.sh`:
 
 ```bash
 yarn playwright test --project="${playwright_project}"
 ```
 
-The namespace and Playwright project are decoupled, allowing flexible reuse. The `check_and_test()` and `run_tests()` functions accept an explicit `playwright_project` argument:
+The namespace and Playwright project are decoupled, allowing flexible reuse. The `testing::check_and_test()` and `testing::run_tests()` functions accept an explicit `playwright_project` argument:
 
 ```bash
 # Function signatures:
-check_and_test "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}" [max_attempts] [wait_seconds]
-run_tests "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}"
+testing::check_and_test "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}" [max_attempts] [wait_seconds]
+testing::run_tests "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}"
 ```
 
 #### Local Development Scripts
@@ -273,25 +274,7 @@ Check the readme at `.ci/pipelines/README.md`
 
 ### Cluster Pools
 
-Available cluster pools for different OCP versions:
-
-- **RHDH-4-19-US-EAST-2**
-  - Usage: OCP v4.19 nightly jobs
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-19-0-amd64-aws-us-east-2_clusterpool.yaml)
-
-- **RHDH-4-18-US-EAST-2**
-  - Usage: OCP v4.18 nightly jobs
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-18-0-amd64-aws-us-east-2_clusterpool.yaml)
-
-- **RHDH-4-17-US-EAST-2**
-  - Usage: PR checks on main branch and OCP v4.17 nightly jobs
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-17-0-amd64-aws-us-east-2_clusterpool.yaml)
-
-- **RHDH-4-16-US-EAST-2**
-  - Usage: OCP v4.16 nightly jobs
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-16-0-amd64-aws-us-east-2_clusterpool.yaml)
-
-**Note:** This is subject to change. Use `.ci/pipelines/README.md` as a source of truth.
+RHDH uses dedicated Hive cluster pools with the `rhdh` prefix on AWS `us-east-2`. Pool versions rotate as new OCP releases come out. Find the current list by filtering for `rhdh` in the [existing cluster pools](https://docs.ci.openshift.org/how-tos/cluster-claim/#existing-cluster-pools) page. See also `.ci/pipelines/README.md`.
 
 ### CI Job Types
 
@@ -304,7 +287,7 @@ Available cluster pools for different OCP versions:
 #### Nightly Tests
 - **Schedule**: Automated nightly runs
 - **Environments**: Multiple OCP versions, AKS, GKE
-- **Reporting**: Slack notifications to `#rhdh-e2e-test-alerts`
+- **Reporting**: Slack notifications to `#rhdh-e2e-alerts`
 
 ### Test Execution Environment
 
@@ -354,14 +337,15 @@ yarn prettier:fix            # Fix formatting for shell, markdown, and YAML file
 - Functions may temporarily disable/re-enable error handling with `set +e` / `set -e` pattern
 
 #### Job Handlers
-The main script handles different job types:
-- `handle_aks_helm`: AKS Helm deployment
-- `handle_eks_helm`: EKS Helm deployment
-- `handle_gke_helm`: GKE Helm deployment
-- `handle_ocp_operator`: OCP Operator deployment
-- `handle_ocp_nightly`: OCP nightly tests
-- `handle_ocp_pull`: OCP PR tests
+The main script dispatches to job-specific handlers in `.ci/pipelines/jobs/`:
+- `handle_aks_helm` / `handle_aks_operator`: AKS Helm/Operator deployment
+- `handle_eks_helm` / `handle_eks_operator`: EKS Helm/Operator deployment
+- `handle_gke_helm` / `handle_gke_operator`: GKE Helm/Operator deployment
+- `handle_ocp_nightly`: OCP Helm nightly tests (also handles OSD-GCP Helm)
+- `handle_ocp_operator`: OCP Operator nightly tests (also handles OSD-GCP Operator)
+- `handle_ocp_pull`: OCP PR checks
 - `handle_auth_providers`: Auth provider tests
+- `handle_ocp_helm_upgrade`: Upgrade scenario tests
 
 #### Special Case: showcase-auth-providers Deployment
 
@@ -553,5 +537,3 @@ The choice of config map depends on the **Playwright test project** being execut
 ### **Configuration Deployment Process**
 
 The config maps are deployed as Kubernetes ConfigMaps during CI/CD pipeline execution and are mounted into the RHDH pods to provide runtime configuration. The pipeline selects the appropriate config map based on the test project being executed.
-
----
