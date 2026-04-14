@@ -182,7 +182,6 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     // - Otherwise use in-namespace service
     let rhdhPostgresHost = postgresServiceName;
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
-    const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
 
     if (dbHost === "localhost" || dbHost === "127.0.0.1") {
       // Port-forward scenario - check if it's to external cluster
