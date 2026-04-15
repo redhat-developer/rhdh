@@ -36,7 +36,8 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions": "0.15.0"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions": "0.15.0",
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "0.15.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.36.0",
