@@ -18,7 +18,7 @@ on:
   # workflow_dispatch so that it can be triggered manually if needed
   workflow_dispatch:
   schedule:
-    # run at 3:18 UTC every day
+    # run at 3:18 UTC every day
     - cron: "18 3 * * *"
 
   # in addition to building multi-arch :next images daily,
