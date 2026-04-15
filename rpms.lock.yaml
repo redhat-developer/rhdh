@@ -3266,13 +3266,6 @@ arches:
     name: systemd
     evr: 252-55.el9_7.8
     sourcerpm: systemd-252-55.el9_7.8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-55.el9_7.8.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 678105
-    checksum: sha256:59231ce96ab64d81527771954195722d61e8914786dd35b185cefa6a10df6c3e
-    name: systemd-libs
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-55.el9_7.8.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 274195
@@ -3329,20 +3322,20 @@ arches:
     name: util-linux-core
     evr: 2.37.4-21.el9_7
     sourcerpm: util-linux-2.37.4-21.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-filesystem-8.2.2637-23.el9_7.1.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-filesystem-8.2.2637-23.el9_7.2.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 20544
-    checksum: sha256:cf19763151f587fbb5ecd77231f0e64c6a3328bbd2800c86fc0dcfce2058c506
+    size: 20860
+    checksum: sha256:e3fc2d706b1e395043a8a9bc76bb04c1ef7174269c840cb73176d00260df2724
     name: vim-filesystem
-    evr: 2:8.2.2637-23.el9_7.1
-    sourcerpm: vim-8.2.2637-23.el9_7.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-minimal-8.2.2637-23.el9_7.1.x86_64.rpm
+    evr: 2:8.2.2637-23.el9_7.2
+    sourcerpm: vim-8.2.2637-23.el9_7.2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-minimal-8.2.2637-23.el9_7.2.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 692680
-    checksum: sha256:15277e31ef3134c11d789a5ee07d7cced1a50a5ec3bed96803e114e7c6692a2b
+    size: 693296
+    checksum: sha256:7a1ffe6240020c5dd70753ddfb07da01f569964e89e2091b39098eb43e41739f
     name: vim-minimal
-    evr: 2:8.2.2637-23.el9_7.1
-    sourcerpm: vim-8.2.2637-23.el9_7.1.src.rpm
+    evr: 2:8.2.2637-23.el9_7.2
+    sourcerpm: vim-8.2.2637-23.el9_7.2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/virt-what-1.27-2.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 43565
@@ -5172,12 +5165,12 @@ arches:
     checksum: sha256:023c096f5d669249836bc5d5a445a96ce86b7bbc0b52a1321c371d208df69a57
     name: util-linux
     evr: 2.37.4-21.el9_7
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-23.el9_7.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-23.el9_7.2.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 12820241
-    checksum: sha256:0c28c75aae0bf11b7f9145678914992522cdf19be0450a56223641cdd394d26f
+    size: 12831935
+    checksum: sha256:05df518a59b103d0a1ba3911b6f638062eac651f54bfe0ffdf75ab169cda0ff3
     name: vim
-    evr: 2:8.2.2637-23.el9_7.1
+    evr: 2:8.2.2637-23.el9_7.2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/virt-what-1.27-2.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 572569
