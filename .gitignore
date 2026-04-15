@@ -28,6 +28,9 @@ node_modules/
 .env
 .env.test
 
+# Playwright MCP snapshots
+.playwright-mcp
+
 # Build output
 dist
 dist-types
