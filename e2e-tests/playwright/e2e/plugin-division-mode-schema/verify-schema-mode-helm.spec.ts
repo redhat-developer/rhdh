@@ -573,6 +573,11 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
       console.log("✓ App-config updated for schema mode");
     } else {
       console.log("✓ RHDH is already configured for schema mode in app-config");
+
+      // Even if ConfigMap is correct, always restart to ensure pods load the configuration
+      // (ConfigMap might have been updated by a previous run, but pods may still be using old config)
+      console.log("   Restarting deployment to ensure pods pick up schema mode configuration");
+      needsRestart = true;
     }
 
     // After restart, validate what Backstage is actually reading
