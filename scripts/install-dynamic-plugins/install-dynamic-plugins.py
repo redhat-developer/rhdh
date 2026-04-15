@@ -129,8 +129,16 @@ def _path_ends_with_duration_subtree(full_path: str) -> bool:
         for tail in _DURATION_SUBTREE_PATHS
     )
 
+# Keys kept in sync with the TS reference impl's UNSAFE_KEYS set. Python dicts
+# do not have a prototype chain so the guard is not strictly required here,
+# but skipping these keys matches the JS behavior and prevents surprises if a
+# plugin author accidentally puts a reserved key in their config.
+_UNSAFE_KEYS = frozenset(('__proto__', 'constructor', 'prototype'))
+
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
+        if key in _UNSAFE_KEYS:
+            continue
         full_path = prefix + key
         if isinstance(value, dict):
             if _path_ends_with_duration_subtree(full_path):

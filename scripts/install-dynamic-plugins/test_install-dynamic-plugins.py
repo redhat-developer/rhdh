@@ -3094,6 +3094,12 @@ class TestMerge:
         with pytest.raises(InstallException, match=r"Config key 'outer' defined differently for 2 dynamic plugins"):
             merge({'outer': {'inner': 2}}, destination)
 
+    @pytest.mark.parametrize("unsafe_key", ['__proto__', 'constructor', 'prototype'])
+    def test_ignores_unsafe_keys(self, unsafe_key):
+        destination = {}
+        merge({unsafe_key: {'polluted': True}}, destination)
+        assert unsafe_key not in destination
+
 
 class TestMergeDurationSubtrees:
     """Test cases for replace-semantics on schedule duration subtrees (RHDHBUGS-2139)."""

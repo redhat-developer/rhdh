@@ -33,12 +33,24 @@ function isPlainObject(value: unknown): value is PluginConfig {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+// Keys that can mutate Object.prototype (or a parent constructor) when
+// assigned directly. Skipping them matches the behavior of Backstage's own
+// config loader, which rejects reserved keys at the schema layer.
+const UNSAFE_KEYS: ReadonlySet<string> = new Set([
+  "__proto__",
+  "constructor",
+  "prototype",
+]);
+
 export function mergePluginConfig(
   source: PluginConfig,
   destination: PluginConfig,
   prefix = "",
 ): PluginConfig {
   for (const [key, value] of Object.entries(source)) {
+    if (UNSAFE_KEYS.has(key)) {
+      continue;
+    }
     const fullPath = prefix ? `${prefix}.${key}` : key;
 
     if (isPlainObject(value)) {

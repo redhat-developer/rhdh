@@ -53,6 +53,30 @@ describe("mergePluginConfig", () => {
     );
   });
 
+  describe("prototype pollution", () => {
+    // Build sources via a parsed string to keep TS's structural checks out of
+    // the test. A YAML/JSON loader can produce an own-property "__proto__".
+    const unsafeSource = (key: string): Record<string, unknown> =>
+      JSON.parse(`{"${key}": {"polluted": true}}`);
+
+    afterEach(() => {
+      // Guard against test pollution even if the implementation regresses.
+      delete (Object.prototype as Record<string, unknown>).polluted;
+    });
+
+    it.each(["__proto__", "constructor", "prototype"])(
+      "ignores the unsafe key %s",
+      (key) => {
+        const destination: Record<string, unknown> = {};
+        mergePluginConfig(unsafeSource(key), destination);
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+        expect(Object.prototype.hasOwnProperty.call(destination, key)).toBe(
+          false,
+        );
+      },
+    );
+  });
+
   describe("replace-semantics for schedule duration subtrees", () => {
     it("replaces schedule.frequency rather than combining sibling duration keys (RHDHBUGS-2139)", () => {
       const destination = {
