@@ -41,8 +41,9 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "0.35.4",
-    "@backstage/frontend-test-utils": "0.5.0",
+    "@backstage/cli": "0.36.0",
+    "@backstage/cli-defaults": "0.1.0",
+    "@backstage/frontend-test-utils": "0.5.1",
     "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@jest/environment-jsdom-abstract": "30.2.0",
     "@manypkg/cli": "0.25.1",
@@ -57,12 +58,19 @@
     "sherif": "1.10.0",
     "turbo": "2.8.10"
   },
+  "dependenciesMeta": {
+    "keytar": {
+      "built": false
+    }
+  },
   "resolutions": {
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
-    "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
-    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
-    "refractor@npm:3.6.0/prismjs": "^1.30.0"
+    "refractor@npm:3.6.0/prismjs": "^1.30.0",
+    "zod@^3.22.4": "3.25.76",
+    "zod@^3.25.76": "3.25.76",
+    "zod@^3.25.76 || ^4.0.0": "3.25.76",
+    "zod@^3.25 || ^4.0": "3.25.76"
   },
   "jest": {
     "testTimeout": 20000

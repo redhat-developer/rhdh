@@ -61,8 +61,7 @@ Functions: `namespace::configure`, `namespace::delete`, `namespace::force_delete
 Configuration management for ConfigMaps, dynamic plugins, and app configuration.
 
 Functions: `config::create_app_config_map`, `config::select_config_map_file`,
-`config::create_dynamic_plugins_config`, `config::create_conditional_policies_operator`,
-`config::prepare_operator_app_config`
+`config::create_dynamic_plugins_config`, `config::prepare_operator_app_config`
 
 ### `testing.sh`
 

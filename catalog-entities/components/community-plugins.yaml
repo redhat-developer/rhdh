@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backstage-community-plugins
+  title: Backstage Community Plugins
+  description: A collection of Backstage plugins maintained by the community.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: backstage/community-plugins
+  links:
+    - url: https://github.com/backstage/community-plugins
+      title: GitHub Repository
+      icon: github
+      type: sourcecode
+spec:
+  type: repository
+  lifecycle: active
+  owner: rhdh-team
+  system: rhdh

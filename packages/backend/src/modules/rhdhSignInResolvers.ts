@@ -8,7 +8,7 @@ import {
 } from '@backstage/plugin-auth-node';
 
 import { decodeJwt } from 'jose';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 import { createOidcSubClaimResolver, OidcProviderInfo } from './resolverUtils';
 

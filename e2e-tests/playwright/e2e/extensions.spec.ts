@@ -359,7 +359,9 @@ test.describe("Admin > Extensions", () => {
       const productionEnvAlert = page.getByRole("alert").first();
       productionEnvAlert.getByText(
         t["plugin.extensions"][lang]["alert.productionDisabled"],
-        { exact: true },
+        {
+          exact: true,
+        },
       );
       await extensions.searchExtensions("Topology");
       await extensions.waitForSearchResults("Topology");

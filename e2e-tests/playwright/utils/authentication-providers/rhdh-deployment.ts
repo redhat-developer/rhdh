@@ -1099,6 +1099,32 @@ class RHDHDeployment {
     return this;
   }
 
+  async enablePingFederateOIDCLogin(): Promise<RHDHDeployment> {
+    console.log("Enabling PingFederate OIDC login...");
+
+    // Expect the config variables to be set
+    expect(process.env.PINGFEDERATE_BASE_URL).toBeDefined();
+    expect(process.env.PINGFEDERATE_CLIENT_ID).toBeDefined();
+    expect(process.env.PINGFEDERATE_CLIENT_SECRET).toBeDefined();
+
+    // Enable the PingFederate OIDC login provider
+    this.setAppConfigProperty("auth.providers.oidc", {
+      production: {
+        metadataUrl:
+          "${PINGFEDERATE_BASE_URL}/.well-known/openid-configuration",
+        clientId: "${PINGFEDERATE_CLIENT_ID}",
+        clientSecret: "${PINGFEDERATE_CLIENT_SECRET}",
+        prompt: "auto",
+        callbackUrl:
+          "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
+      },
+    });
+    this.setAppConfigProperty("auth.environment", "production");
+    this.setAppConfigProperty("signInPage", "oidc");
+
+    return this;
+  }
+
   async enableLDAPLoginWithIngestion(): Promise<RHDHDeployment> {
     console.log("Enabling LDAP login with ingestion...");
     //expect the config variable to be set

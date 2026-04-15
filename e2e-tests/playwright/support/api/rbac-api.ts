@@ -15,7 +15,7 @@ export default class RhdhRbacApi {
     Authorization: string;
   };
   private myContext: APIRequestContext;
-  private readonly roleRegex = /^[a-zA-Z]+\/[a-zA-Z_]+$/;
+  private readonly roleRegex = /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/;
 
   private constructor(private readonly token: string) {
     this.authHeader = {
@@ -111,6 +111,14 @@ export default class RhdhRbacApi {
 
   public async getConditionById(id: number): Promise<APIResponse> {
     return await this.myContext.get(`roles/conditions/${id}`);
+  }
+
+  public async deleteConditionById(id: number): Promise<APIResponse> {
+    return await this.myContext.delete(`roles/conditions/${id}`);
+  }
+
+  public async dispose(): Promise<void> {
+    await this.myContext.dispose();
   }
 
   private checkRoleFormat(role: string) {

@@ -106,7 +106,9 @@ export class Extensions {
       .or(
         this.page.getByPlaceholder(
           t["plugin.extensions"][lang]["search.placeholder"],
-          { exact: true },
+          {
+            exact: true,
+          },
         ),
       );
 
@@ -119,7 +121,9 @@ export class Extensions {
     );
     await expect(
       this.page.locator(".v5-MuiPaper-outlined").first(),
-    ).toContainText(searchText, { timeout: 10000 });
+    ).toContainText(searchText, {
+      timeout: 10000,
+    });
   }
 
   async verifyPluginDetails({
