@@ -109,16 +109,38 @@ OCI_PROTOCOL_PREFIX = 'oci://'
 RHDH_REGISTRY_PREFIX = 'registry.access.redhat.com/rhdh/'
 RHDH_FALLBACK_PREFIX = 'quay.io/rhdh/'
 
+# Subtree paths whose contents represent a Backstage HumanDuration. Deep-merging
+# two HumanDurations silently combines sibling keys (e.g. a default {minutes: 60}
+# plus a user {seconds: 30} becomes PT60M30S — see RHDHBUGS-2139). For these
+# specific paths we replace the subtree instead so the most recent source wins
+# outright. Keep this list in sync with
+# dynamic-plugins/_utils/src/merge-plugin-config.ts.
+_DURATION_SUBTREE_PATHS = (
+    'schedule.frequency',
+    'schedule.timeout',
+    'schedule.initialDelay',
+)
+
+def _path_ends_with_duration_subtree(full_path):
+    return any(
+        full_path == tail or full_path.endswith('.' + tail)
+        for tail in _DURATION_SUBTREE_PATHS
+    )
+
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
+        full_path = prefix + key
         if isinstance(value, dict):
+            if _path_ends_with_duration_subtree(full_path):
+                destination[key] = dict(value)
+                continue
             # get node or create one
             node = destination.setdefault(key, {})
-            merge(value, node, key + '.')
+            merge(value, node, full_path + '.')
         else:
             # if key exists in destination trigger an error
             if key in destination and destination[key] != value:
-                raise InstallException(f"Config key '{ prefix + key }' defined differently for 2 dynamic plugins")
+                raise InstallException(f"Config key '{ full_path }' defined differently for 2 dynamic plugins")
 
             destination[key] = value
 
