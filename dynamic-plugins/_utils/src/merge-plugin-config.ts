@@ -33,14 +33,25 @@ function isPlainObject(value: unknown): value is PluginConfig {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-// Keys that can mutate Object.prototype (or a parent constructor) when
-// assigned directly. Skipping them matches the behavior of Backstage's own
-// config loader, which rejects reserved keys at the schema layer.
-const UNSAFE_KEYS: ReadonlySet<string> = new Set([
-  "__proto__",
-  "constructor",
-  "prototype",
-]);
+// Direct equality check rather than Set.has so CodeQL recognizes the guard
+// against prototype-polluting keys. These are the keys that can mutate
+// Object.prototype (or a parent constructor) when assigned as own properties.
+function isUnsafeKey(key: string): boolean {
+  return key === "__proto__" || key === "constructor" || key === "prototype";
+}
+
+function assign(
+  target: PluginConfig,
+  key: string,
+  value: unknown,
+): void {
+  Object.defineProperty(target, key, {
+    value,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+}
 
 export function mergePluginConfig(
   source: PluginConfig,
@@ -48,14 +59,14 @@ export function mergePluginConfig(
   prefix = "",
 ): PluginConfig {
   for (const [key, value] of Object.entries(source)) {
-    if (UNSAFE_KEYS.has(key)) {
+    if (isUnsafeKey(key)) {
       continue;
     }
     const fullPath = prefix ? `${prefix}.${key}` : key;
 
     if (isPlainObject(value)) {
       if (pathEndsWithDurationSubtree(fullPath)) {
-        destination[key] = { ...value };
+        assign(destination, key, { ...value });
         continue;
       }
       const existing = destination[key];
@@ -65,7 +76,7 @@ export function mergePluginConfig(
         );
       }
       const node: PluginConfig = isPlainObject(existing) ? existing : {};
-      destination[key] = node;
+      assign(destination, key, node);
       mergePluginConfig(value, node, fullPath);
     } else {
       if (key in destination && destination[key] !== value) {
@@ -73,7 +84,7 @@ export function mergePluginConfig(
           `Config key '${fullPath}' defined differently for 2 dynamic plugins`,
         );
       }
-      destination[key] = value;
+      assign(destination, key, value);
     }
   }
   return destination;
