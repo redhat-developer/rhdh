@@ -54,6 +54,8 @@
     "@types/react-dom": "18.3.7",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
     "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
+    "@stoplight/spectral-core@npm:1.19.5/lodash": "4.18.1",
+    "@stoplight/spectral-functions@npm:1.9.4/lodash": "4.18.1",
     "@backstage/plugin-permission-backend": "0.7.3",
     "@backstage/plugin-catalog-react": "1.20.1",
     "@backstage/plugin-auth-node": "0.6.6",
