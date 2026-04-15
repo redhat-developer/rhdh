@@ -284,6 +284,7 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
               password: Buffer.from(dbPassword).toString("base64"),
               "postgres-password": Buffer.from(dbPassword).toString("base64"),
               "postgresql-password": Buffer.from(dbPassword).toString("base64"),
+              POSTGRES_PASSWORD: Buffer.from(dbPassword).toString("base64"),
               // CRITICAL: Set POSTGRES_DB to the test database name
               // Helm chart reads this from the secret and uses it as the database name
               POSTGRES_DB: Buffer.from(dbName).toString("base64"),
