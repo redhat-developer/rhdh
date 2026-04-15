@@ -176,6 +176,13 @@ const SidebarLayout = styled(Box, {
       top: `max(0px, ${aboveSidebarHeaderHeight ?? 0}px)`,
       width: isSidebarOpen ? '250px !important' : 'auto',
     },
+
+    // SidebarSubmenu flyout uses position:fixed with top:0, which causes it to
+    // render behind the global header. Offset it by the header height.
+    '& > div > nav > div > div > div > div > div > div > div': {
+      top: `${aboveSidebarHeaderHeight ?? 0}px`,
+      bottom: 0,
+    },
   }),
 );
 
