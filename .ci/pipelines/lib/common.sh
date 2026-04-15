@@ -74,3 +74,12 @@ common::require_vars() {
     fi
   done
 }
+
+# Base64 encode a string (no newlines, cross-platform)
+common::base64_encode() {
+  echo -n "$1" | base64 | tr -d '\n'
+}
+
+# Export functions for subshell usage (e.g., timeout bash -c "...")
+export -f common::base64_encode
+export -f common::require_vars
