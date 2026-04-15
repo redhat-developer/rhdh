@@ -26,6 +26,12 @@ interface AppConfigBackend {
       user?: string;
       password?: string;
       database?: string;
+      ssl?: {
+        rejectUnauthorized?: boolean;
+        ca?: string;
+        key?: string;
+        cert?: string;
+      };
     };
   };
 }
