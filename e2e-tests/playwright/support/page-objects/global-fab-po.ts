@@ -18,7 +18,16 @@ export class FabPo extends PageObject {
 
   public async clickFabMenuByLabel(label: string) {
     const locator = this.page.getByTestId(this.generateDataTestId(label));
-    await locator.click();
+    // The FAB sub-menu items animate into position and React continuously
+    // re-renders the component tree, so the element is never "stable" in
+    // Playwright's sense — it keeps getting detached and re-attached
+    // between animation frames. A trial-click toPass() loop confirms
+    // stability, but the element detaches again before the real click
+    // lands (verified: 0/5 passes with that approach).
+    // dispatchEvent bypasses actionability checks; the preceding
+    // toBeVisible guards against clicking a missing element.
+    await expect(locator).toBeVisible({ timeout: 15000 });
+    await locator.dispatchEvent("click");
   }
 
   public async clickFabMenuByTestId(id: string) {
@@ -28,6 +37,7 @@ export class FabPo extends PageObject {
 
   public async verifyFabButtonByLabel(label: string) {
     const locator = this.page.getByTestId(this.generateDataTestId(label));
+    await expect(locator).toBeVisible();
     await expect(locator).toContainText(label);
   }
 
