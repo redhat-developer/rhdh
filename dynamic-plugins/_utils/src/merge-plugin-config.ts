@@ -53,6 +53,43 @@ function assign(
   });
 }
 
+function raiseCollision(fullPath: string): never {
+  throw new Error(
+    `Config key '${fullPath}' defined differently for 2 dynamic plugins`,
+  );
+}
+
+function mergeDictValue(
+  key: string,
+  value: PluginConfig,
+  destination: PluginConfig,
+  fullPath: string,
+): void {
+  if (pathEndsWithDurationSubtree(fullPath)) {
+    assign(destination, key, { ...value });
+    return;
+  }
+  const existing = destination[key];
+  if (key in destination && !isPlainObject(existing)) {
+    raiseCollision(fullPath);
+  }
+  const node: PluginConfig = isPlainObject(existing) ? existing : {};
+  assign(destination, key, node);
+  mergePluginConfig(value, node, fullPath);
+}
+
+function mergeScalarValue(
+  key: string,
+  value: unknown,
+  destination: PluginConfig,
+  fullPath: string,
+): void {
+  if (key in destination && destination[key] !== value) {
+    raiseCollision(fullPath);
+  }
+  assign(destination, key, value);
+}
+
 export function mergePluginConfig(
   source: PluginConfig,
   destination: PluginConfig,
@@ -63,28 +100,10 @@ export function mergePluginConfig(
       continue;
     }
     const fullPath = prefix ? `${prefix}.${key}` : key;
-
     if (isPlainObject(value)) {
-      if (pathEndsWithDurationSubtree(fullPath)) {
-        assign(destination, key, { ...value });
-        continue;
-      }
-      const existing = destination[key];
-      if (key in destination && !isPlainObject(existing)) {
-        throw new Error(
-          `Config key '${fullPath}' defined differently for 2 dynamic plugins`,
-        );
-      }
-      const node: PluginConfig = isPlainObject(existing) ? existing : {};
-      assign(destination, key, node);
-      mergePluginConfig(value, node, fullPath);
+      mergeDictValue(key, value, destination, fullPath);
     } else {
-      if (key in destination && destination[key] !== value) {
-        throw new Error(
-          `Config key '${fullPath}' defined differently for 2 dynamic plugins`,
-        );
-      }
-      assign(destination, key, value);
+      mergeScalarValue(key, value, destination, fullPath);
     }
   }
   return destination;
