@@ -35,6 +35,24 @@ describe("mergePluginConfig", () => {
     expect(destination).toEqual({ a: 1 });
   });
 
+  it("throws when destination has a scalar and source has a dict at the same key", () => {
+    const destination: Record<string, unknown> = { outer: 1 };
+    expect(() =>
+      mergePluginConfig({ outer: { inner: 2 } }, destination),
+    ).toThrow(
+      "Config key 'outer' defined differently for 2 dynamic plugins",
+    );
+  });
+
+  it("treats arrays as scalars and throws on array collision", () => {
+    const destination: Record<string, unknown> = { locations: [1, 2] };
+    expect(() =>
+      mergePluginConfig({ locations: [3] }, destination),
+    ).toThrow(
+      "Config key 'locations' defined differently for 2 dynamic plugins",
+    );
+  });
+
   describe("replace-semantics for schedule duration subtrees", () => {
     it("replaces schedule.frequency rather than combining sibling duration keys (RHDHBUGS-2139)", () => {
       const destination = {

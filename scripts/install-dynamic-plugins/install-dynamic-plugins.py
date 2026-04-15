@@ -113,15 +113,17 @@ RHDH_FALLBACK_PREFIX = 'quay.io/rhdh/'
 # two HumanDurations silently combines sibling keys (e.g. a default {minutes: 60}
 # plus a user {seconds: 30} becomes PT60M30S — see RHDHBUGS-2139). For these
 # specific paths we replace the subtree instead so the most recent source wins
-# outright. Keep this list in sync with
-# dynamic-plugins/_utils/src/merge-plugin-config.ts.
+# outright. Leaves inside these subtrees are assumed to be numeric scalars
+# (minutes, seconds, milliseconds, ...); any nested structure would be dropped
+# by the replace, which is acceptable because HumanDuration does not allow it.
+# Keep this list in sync with dynamic-plugins/_utils/src/merge-plugin-config.ts.
 _DURATION_SUBTREE_PATHS = (
     'schedule.frequency',
     'schedule.timeout',
     'schedule.initialDelay',
 )
 
-def _path_ends_with_duration_subtree(full_path):
+def _path_ends_with_duration_subtree(full_path: str) -> bool:
     return any(
         full_path == tail or full_path.endswith('.' + tail)
         for tail in _DURATION_SUBTREE_PATHS
@@ -134,13 +136,17 @@ def merge(source, destination, prefix = ''):
             if _path_ends_with_duration_subtree(full_path):
                 destination[key] = dict(value)
                 continue
+            # Schema violation: destination has a scalar where source has a dict.
+            # Surface this explicitly instead of letting the recursion crash.
+            if key in destination and not isinstance(destination[key], dict):
+                raise InstallException(f"Config key '{full_path}' defined differently for 2 dynamic plugins")
             # get node or create one
             node = destination.setdefault(key, {})
             merge(value, node, full_path + '.')
         else:
             # if key exists in destination trigger an error
             if key in destination and destination[key] != value:
-                raise InstallException(f"Config key '{ full_path }' defined differently for 2 dynamic plugins")
+                raise InstallException(f"Config key '{full_path}' defined differently for 2 dynamic plugins")
 
             destination[key] = value
 

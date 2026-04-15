@@ -14,6 +14,9 @@
 
 type PluginConfig = Record<string, unknown>;
 
+// Leaves inside these subtrees are assumed to be numeric scalars (minutes,
+// seconds, milliseconds, ...); any nested structure would be dropped by the
+// replace, which is acceptable because HumanDuration does not allow it.
 const DURATION_SUBTREE_PATHS: readonly string[] = [
   "schedule.frequency",
   "schedule.timeout",
@@ -44,6 +47,11 @@ export function mergePluginConfig(
         continue;
       }
       const existing = destination[key];
+      if (key in destination && !isPlainObject(existing)) {
+        throw new Error(
+          `Config key '${fullPath}' defined differently for 2 dynamic plugins`,
+        );
+      }
       const node: PluginConfig = isPlainObject(existing) ? existing : {};
       destination[key] = node;
       mergePluginConfig(value, node, fullPath);

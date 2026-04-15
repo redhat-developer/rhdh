@@ -58,6 +58,7 @@ spec.loader.exec_module(install_dynamic_plugins)
 NPMPackageMerger = install_dynamic_plugins.NPMPackageMerger
 OciPackageMerger = install_dynamic_plugins.OciPackageMerger
 InstallException = install_dynamic_plugins.InstallException
+merge = install_dynamic_plugins.merge
 
 # Test helper functions
 import tarfile  # noqa: E402
@@ -3058,6 +3059,115 @@ class TestResolveImageReference:
 
         result = install_dynamic_plugins.resolve_image_reference('oci://registry.access.redhat.com/rhdh/catalog/plugin-name:v2.0')
         assert result == 'oci://quay.io/rhdh/catalog/plugin-name:v2.0'
+
+
+class TestMerge:
+    """Test cases for the top-level merge() function."""
+
+    def test_copies_scalar_keys_from_source_when_destination_is_empty(self):
+        destination = {}
+        merge({'a': 1, 'b': 'foo'}, destination)
+        assert destination == {'a': 1, 'b': 'foo'}
+
+    def test_deep_merges_non_duration_sibling_keys(self):
+        destination = {'a': {'b': 1}}
+        merge({'a': {'c': 2}}, destination)
+        assert destination == {'a': {'b': 1, 'c': 2}}
+
+    def test_throws_when_scalar_key_defined_with_different_values(self):
+        destination = {'a': 1}
+        with pytest.raises(InstallException, match=r"Config key 'a' defined differently for 2 dynamic plugins"):
+            merge({'a': 2}, destination)
+
+    def test_includes_full_path_in_collision_error(self):
+        destination = {'outer': {'inner': {'leaf': 1}}}
+        with pytest.raises(InstallException, match=r"Config key 'outer\.inner\.leaf' defined differently for 2 dynamic plugins"):
+            merge({'outer': {'inner': {'leaf': 2}}}, destination)
+
+    def test_does_not_throw_when_scalar_key_defined_with_same_value(self):
+        destination = {'a': 1}
+        merge({'a': 1}, destination)
+        assert destination == {'a': 1}
+
+    def test_throws_when_destination_has_scalar_and_source_has_dict_at_same_key(self):
+        destination = {'outer': 1}
+        with pytest.raises(InstallException, match=r"Config key 'outer' defined differently for 2 dynamic plugins"):
+            merge({'outer': {'inner': 2}}, destination)
+
+
+class TestMergeDurationSubtrees:
+    """Test cases for replace-semantics on schedule duration subtrees (RHDHBUGS-2139)."""
+
+    def test_replaces_schedule_frequency_rather_than_combining_sibling_duration_keys(self):
+        destination = {
+            'catalog': {'providers': {'keycloakOrg': {'default': {
+                'schedule': {
+                    'frequency': {'minutes': 60},
+                    'initialDelay': {'seconds': 15},
+                    'timeout': {'minutes': 50},
+                },
+            }}}}
+        }
+        merge({
+            'catalog': {'providers': {'keycloakOrg': {'default': {
+                'schedule': {'frequency': {'seconds': 30}},
+            }}}}
+        }, destination)
+        schedule = destination['catalog']['providers']['keycloakOrg']['default']['schedule']
+        assert schedule['frequency'] == {'seconds': 30}
+        assert schedule['initialDelay'] == {'seconds': 15}
+        assert schedule['timeout'] == {'minutes': 50}
+
+    def test_replaces_schedule_timeout(self):
+        destination = {'schedule': {'timeout': {'minutes': 50}}}
+        merge({'schedule': {'timeout': {'seconds': 5}}}, destination)
+        assert destination['schedule']['timeout'] == {'seconds': 5}
+
+    def test_replaces_schedule_initial_delay(self):
+        destination = {'schedule': {'initialDelay': {'seconds': 15}}}
+        merge({'schedule': {'initialDelay': {'minutes': 1}}}, destination)
+        assert destination['schedule']['initialDelay'] == {'minutes': 1}
+
+    def test_applies_regular_deep_merge_to_frequency_key_outside_schedule_subtree(self):
+        destination = {'metrics': {'frequency': {'minutes': 10}}}
+        merge({'metrics': {'frequency': {'seconds': 5}}}, destination)
+        assert destination['metrics']['frequency'] == {'minutes': 10, 'seconds': 5}
+
+    def test_is_a_no_op_when_both_sides_have_the_same_duration_value(self):
+        destination = {'schedule': {'frequency': {'minutes': 60}}}
+        merge({'schedule': {'frequency': {'minutes': 60}}}, destination)
+        assert destination['schedule']['frequency'] == {'minutes': 60}
+
+    def test_replaces_all_three_duration_subtrees_in_a_single_merge_call(self):
+        destination = {
+            'schedule': {
+                'frequency': {'minutes': 60},
+                'initialDelay': {'seconds': 15},
+                'timeout': {'minutes': 50},
+            },
+        }
+        merge({
+            'schedule': {
+                'frequency': {'seconds': 30},
+                'initialDelay': {'seconds': 5},
+                'timeout': {'minutes': 1},
+            },
+        }, destination)
+        assert destination['schedule'] == {
+            'frequency': {'seconds': 30},
+            'initialDelay': {'seconds': 5},
+            'timeout': {'minutes': 1},
+        }
+
+    def test_inserts_duration_subtree_when_destination_does_not_have_it(self):
+        destination = {'schedule': {'timeout': {'minutes': 1}}}
+        merge({'schedule': {'frequency': {'seconds': 30}}}, destination)
+        assert destination == {
+            'schedule': {
+                'timeout': {'minutes': 1},
+                'frequency': {'seconds': 30},
+            },
+        }
 
 
 if __name__ == '__main__':
