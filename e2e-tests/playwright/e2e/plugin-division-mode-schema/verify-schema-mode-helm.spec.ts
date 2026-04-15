@@ -537,6 +537,10 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
           user: `\${POSTGRES_USER}`,
           password: `\${POSTGRES_PASSWORD}`,
           database: `\${POSTGRES_DB}`, // Use environment variable from secret
+          // SSL configuration for external Crunchy cluster (uses self-signed certs)
+          ssl: {
+            rejectUnauthorized: false,
+          },
         },
       };
 
