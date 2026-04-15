@@ -21,6 +21,12 @@ interface AppConfigDatabaseConnection {
   port?: string;
   user?: string;
   password?: string;
+  ssl?: {
+    rejectUnauthorized?: boolean;
+    ca?: string;
+    key?: string;
+    cert?: string;
+  };
 }
 
 interface AppConfigDatabase {
@@ -346,6 +352,10 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
             user: `\${POSTGRES_USER}`,
             password: `\${POSTGRES_PASSWORD}`,
             database: `\${POSTGRES_DB}`,
+            // SSL configuration for external Crunchy cluster (uses self-signed certs)
+            ssl: {
+              rejectUnauthorized: false,
+            },
           },
         },
       },
@@ -554,12 +564,13 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     const appConfig = yaml.load(configMap.data[configKey]) as AppConfigYaml;
     if (!appConfig.backend) appConfig.backend = {};
 
-    // Check if already configured for schema mode with the correct database
+    // Check if already configured for schema mode with SSL
     const currentDbConfig = appConfig.backend.database;
     const isAlreadyConfigured =
       currentDbConfig?.pluginDivisionMode === "schema" &&
       (currentDbConfig?.connection?.database === `\${POSTGRES_DB}` ||
-        currentDbConfig?.connection?.database === dbName);
+        currentDbConfig?.connection?.database === dbName) &&
+      currentDbConfig?.connection?.ssl !== undefined; // Ensure SSL is configured for external cluster
 
     if (!isAlreadyConfigured) {
       console.log(
@@ -580,6 +591,10 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
           user: `\${POSTGRES_USER}`,
           password: `\${POSTGRES_PASSWORD}`,
           database: `\${POSTGRES_DB}`, // Use environment variable from secret
+          // SSL configuration for external Crunchy cluster (uses self-signed certs)
+          ssl: {
+            rejectUnauthorized: false,
+          },
         },
       };
 
