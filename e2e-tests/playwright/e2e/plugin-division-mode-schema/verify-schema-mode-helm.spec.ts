@@ -523,12 +523,13 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     const appConfig = yaml.load(configMap.data[configKey]) as AppConfigYaml;
     if (!appConfig.backend) appConfig.backend = {};
 
-    // Check if already configured for schema mode
+    // Check if already configured for schema mode with SSL
     const currentDbConfig = appConfig.backend.database;
     const isAlreadyConfigured =
       currentDbConfig?.pluginDivisionMode === "schema" &&
       (currentDbConfig?.connection?.database === `\${POSTGRES_DB}` ||
-        currentDbConfig?.connection?.database === dbName);
+        currentDbConfig?.connection?.database === dbName) &&
+      currentDbConfig?.connection?.ssl !== undefined; // Ensure SSL is configured for external cluster
 
     if (!isAlreadyConfigured) {
       console.log("Updating Helm chart app-config for schema mode...");
