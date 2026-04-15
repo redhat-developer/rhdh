@@ -127,18 +127,13 @@ spec:
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
-    await bulkimport.filterAndVerifyAddedRepo(
-      catalogRepoDetails.name,
-      [catalogRepoDetails.url, "Added"],
-      uiHelper,
-      common,
-    );
-    await bulkimport.filterAndVerifyAddedRepo(
-      newRepoDetails.repoName,
-      ["Waiting for Approval"],
-      uiHelper,
-      common,
-    );
+    await bulkimport.filterAndVerifyAddedRepo(catalogRepoDetails.name, [
+      catalogRepoDetails.url,
+      "Added",
+    ]);
+    await bulkimport.filterAndVerifyAddedRepo(newRepoDetails.repoName, [
+      "Waiting for Approval",
+    ]);
   });
 
   test("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
@@ -216,22 +211,12 @@ spec:
     ).toHaveLength(0);
 
     // Verify that the status has changed to "Added" after merging the PR.
-    // Use retry to wait for the backend to process the merge.
-    await expect(async () => {
-      await uiHelper.openSidebar("Bulk import");
-      await common.waitForLoad();
-      await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-      await uiHelper.clickOnButtonInTableByUniqueText(
-        newRepoDetails.repoName,
-        "Refresh",
-      );
-      await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-        "Added",
-      ]);
-    }).toPass({
-      intervals: [2_000, 5_000, 10_000],
-      timeout: 60_000,
-    });
+    // Use retry with a Refresh click to wait for the backend to process.
+    await bulkimport.filterAndVerifyAddedRepo(
+      newRepoDetails.repoName,
+      ["Added"],
+      { refresh: true },
+    );
   });
 
   test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
@@ -322,12 +307,9 @@ test.describe
   });
 
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
-    await bulkimport.filterAndVerifyAddedRepo(
-      existingRepoFromAppConfig,
-      ["Added"],
-      uiHelper,
-      common,
-    );
+    await bulkimport.filterAndVerifyAddedRepo(existingRepoFromAppConfig, [
+      "Added",
+    ]);
   });
 
   test('Verify repo from "import an existing git repository"  are displayed in bulk import Added repositories', async () => {
@@ -344,8 +326,6 @@ test.describe
     await bulkimport.filterAndVerifyAddedRepo(
       existingComponentDetails.repoName,
       ["Added"],
-      uiHelper,
-      common,
     );
   });
 });
