@@ -668,13 +668,6 @@ plugins:
               realm: ${KEYCLOAK_REALM}
               clientId: ${KEYCLOAK_CLIENT_ID}
               clientSecret: ${KEYCLOAK_CLIENT_SECRET}
-              schedule:
-                frequency:
-                  minutes: 60
-                initialDelay:
-                  seconds: 15
-                timeout:
-                  minutes: 50
   # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-pingidentity@sha256:1cc83000a34c68b7410aeed322135d628a78f976b33adf33b61d0fe98be5efe6
   # Tag: 1.9.0--0.9.0, Build date: 2026-01-29T15:50:21Z
   # new approach using oci images: to switch to the new approach, uncommment
