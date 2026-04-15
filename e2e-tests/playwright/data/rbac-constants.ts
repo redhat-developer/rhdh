@@ -1,5 +1,11 @@
 import { Policy, Role } from "../support/api/rbac-api-structures";
 
+/**
+ * Common test user entity references used across RBAC tests.
+ */
+export const TEST_USER = "user:default/rhdh-qe";
+export const TEST_USER_2 = "user:default/rhdh-qe-2";
+
 export class RbacConstants {
   static getExpectedRoles(): Role[] {
     return [

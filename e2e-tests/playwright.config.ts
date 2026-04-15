@@ -100,6 +100,7 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
+        "**/playwright/seed.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
@@ -150,6 +151,7 @@ export default defineConfig({
       ...k8sSpecificConfig,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
+        "**/playwright/seed.spec.ts",
         "**/playwright/e2e/smoke-test.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -187,6 +189,7 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_OPERATOR,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
+        "**/playwright/seed.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
