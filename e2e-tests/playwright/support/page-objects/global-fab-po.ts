@@ -18,7 +18,8 @@ export class FabPo extends PageObject {
 
   public async clickFabMenuByLabel(label: string) {
     const locator = this.page.getByTestId(this.generateDataTestId(label));
-    await locator.click();
+    await expect(locator).toBeVisible({ timeout: 15000 });
+    await locator.dispatchEvent("click");
   }
 
   public async clickFabMenuByTestId(id: string) {
@@ -28,6 +29,7 @@ export class FabPo extends PageObject {
 
   public async verifyFabButtonByLabel(label: string) {
     const locator = this.page.getByTestId(this.generateDataTestId(label));
+    await expect(locator).toBeVisible();
     await expect(locator).toContainText(label);
   }
 

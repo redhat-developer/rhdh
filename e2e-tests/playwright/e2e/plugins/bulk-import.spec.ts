@@ -11,10 +11,10 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp") ?? false); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.fixme(() => !(process.env.JOB_NAME?.includes("nightly") ?? false)); // run only on nightly jobs
+  test.fixme(() => !(process.env.JOB_NAME?.includes("ocp") ?? false)); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
@@ -127,14 +127,11 @@ spec:
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
-    await common.waitForLoad();
-    await bulkimport.filterAddedRepo(catalogRepoDetails.name);
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+    await bulkimport.filterAndVerifyAddedRepo(catalogRepoDetails.name, [
       catalogRepoDetails.url,
       "Added",
     ]);
-    await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+    await bulkimport.filterAndVerifyAddedRepo(newRepoDetails.repoName, [
       "Waiting for Approval",
     ]);
   });
@@ -213,15 +210,13 @@ spec:
       ),
     ).toHaveLength(0);
 
-    await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    // verify that the status has changed to "Already imported."
-    await uiHelper.clickOnButtonInTableByUniqueText(
+    // Verify that the status has changed to "Added" after merging the PR.
+    // Use retry with a Refresh click to wait for the backend to process.
+    await bulkimport.filterAndVerifyAddedRepo(
       newRepoDetails.repoName,
-      "Refresh",
+      ["Added"],
+      { refresh: true },
     );
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Already imported",
-    ]);
   });
 
   test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
@@ -282,10 +277,10 @@ spec:
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp") ?? false); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.fixme(() => !(process.env.JOB_NAME?.includes("nightly") ?? false)); // run only on nightly jobs
+  test.fixme(() => !(process.env.JOB_NAME?.includes("ocp") ?? false)); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -312,11 +307,8 @@ test.describe
   });
 
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
-    await uiHelper.openSidebar("Bulk import");
-    await common.waitForLoad();
-    await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
-    await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-      "Already imported",
+    await bulkimport.filterAndVerifyAddedRepo(existingRepoFromAppConfig, [
+      "Added",
     ]);
   });
 
@@ -331,22 +323,19 @@ test.describe
     );
 
     // Verify in bulk import's Added Repositories
-    await uiHelper.openSidebar("Bulk import");
-    await common.waitForLoad();
-    await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
-    await uiHelper.verifyRowInTableByUniqueText(
+    await bulkimport.filterAndVerifyAddedRepo(
       existingComponentDetails.repoName,
-      ["Already imported"],
+      ["Added"],
     );
   });
 });
 
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp") ?? false); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.fixme(() => !(process.env.JOB_NAME?.includes("nightly") ?? false)); // run only on nightly jobs
+  test.fixme(() => !(process.env.JOB_NAME?.includes("ocp") ?? false)); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
