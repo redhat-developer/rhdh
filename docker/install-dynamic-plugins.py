@@ -391,19 +391,58 @@ RECOGNIZED_ALGORITHMS = (
     'sha256',
 )
 
+# Subtree paths whose contents represent a Backstage HumanDuration. Deep-merging
+# two HumanDurations silently combines sibling keys (e.g. a default {minutes: 60}
+# plus a user {seconds: 30} becomes PT60M30S — see RHDHBUGS-2139). For these
+# specific paths we replace the subtree instead so the most recent source wins
+# outright. Leaves inside these subtrees are assumed to be numeric scalars
+# (minutes, seconds, milliseconds, ...); any nested structure would be dropped
+# by the replace, which is acceptable because HumanDuration does not allow it.
+_DURATION_SUBTREE_PATHS = (
+    'schedule.frequency',
+    'schedule.timeout',
+    'schedule.initialDelay',
+)
+
+def _path_ends_with_duration_subtree(full_path: str) -> bool:
+    return any(
+        full_path == tail or full_path.endswith('.' + tail)
+        for tail in _DURATION_SUBTREE_PATHS
+    )
+
+# Guard against keys that can mutate Object.prototype when the merged config is
+# later consumed by the JS/TS side of Backstage. Python dicts do not have a
+# prototype chain so this is cheap defense-in-depth.
+_UNSAFE_KEYS = frozenset(('__proto__', 'constructor', 'prototype'))
+
+def _raise_collision(full_path: str):
+    raise InstallException(f"Config key '{full_path}' defined differently for 2 dynamic plugins")
+
+def _merge_dict_value(key: str, value: dict, destination: dict, full_path: str):
+    if _path_ends_with_duration_subtree(full_path):
+        destination[key] = dict(value)
+        return
+    # Schema violation: destination has a scalar where source has a dict.
+    # Surface this explicitly instead of letting the recursion crash.
+    if key in destination and not isinstance(destination[key], dict):
+        _raise_collision(full_path)
+    node = destination.setdefault(key, {})
+    merge(value, node, full_path + '.')
+
+def _merge_scalar_value(key: str, value, destination: dict, full_path: str):
+    if key in destination and destination[key] != value:
+        _raise_collision(full_path)
+    destination[key] = value
+
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
+        if key in _UNSAFE_KEYS:
+            continue
+        full_path = prefix + key
         if isinstance(value, dict):
-            # get node or create one
-            node = destination.setdefault(key, {})
-            merge(value, node, key + '.')
+            _merge_dict_value(key, value, destination, full_path)
         else:
-            # if key exists in destination trigger an error
-            if key in destination and destination[key] != value:
-                raise InstallException(f"Config key '{ prefix + key }' defined differently for 2 dynamic plugins")
-
-            destination[key] = value
-
+            _merge_scalar_value(key, value, destination, full_path)
     return destination
 
 def get_local_package_info(package_path: str) -> dict:
