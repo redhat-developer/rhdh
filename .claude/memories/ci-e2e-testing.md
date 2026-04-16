@@ -301,7 +301,7 @@ Available cluster pools for different OCP versions:
 #### Nightly Tests
 - **Schedule**: Automated nightly runs
 - **Environments**: Multiple OCP versions, AKS, GKE
-- **Reporting**: Slack notifications to `#rhdh-e2e-test-alerts`
+- **Reporting**: Slack notifications to `#rhdh-e2e-alerts`
 
 ### Test Execution Environment
 

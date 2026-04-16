@@ -6,6 +6,7 @@ import {
   ROLES_PAGE_COMPONENTS,
 } from "./page-obj";
 import { type RoleBasedPolicy } from "@backstage-community/plugin-rbac-common";
+import RhdhRbacApi from "../api/rbac-api";
 
 type PermissionPolicyType = "anyOf" | "not";
 
@@ -281,23 +282,40 @@ export class RbacPo extends PageObject {
     await this.verifyPermissionPoliciesHeader(policies.length);
     await this.create();
 
-    // Check for error alert first
+    // Wait for either success message or error alert.
+    // Wrap both waitFor calls so the losing promise cannot reject unhandled.
+    const successLocator = this.page
+      .getByText(`Role role:default/${name} created successfully`, {
+        exact: true,
+      })
+      .first();
     const errorAlert = this.page
       .getByRole("alert")
       .filter({ hasText: /error/i });
-    const errorCount = await errorAlert.count();
 
-    if (errorCount > 0) {
+    const outcome = await Promise.race([
+      successLocator
+        .waitFor({ state: "visible", timeout: 30000 })
+        .then(() => "success" as const)
+        .catch(() => "success_timeout" as const),
+      errorAlert
+        .waitFor({ state: "visible", timeout: 30000 })
+        .then(() => "error" as const)
+        .catch(() => "error_timeout" as const),
+    ]);
+
+    if (outcome === "error") {
       const errorMessage = await errorAlert.textContent();
       throw new Error(
-        `Failed to create role: ${errorMessage}. This may indicate insufficient permissions.`,
+        `Failed to create role: ${errorMessage}. This may indicate insufficient permissions or a leftover role from a previous test run.`,
       );
     }
 
-    // Wait for success message before proceeding to roles list
-    await this.uiHelper.verifyText(
-      `Role role:default/${name} created successfully`,
-    );
+    if (outcome !== "success") {
+      throw new Error(
+        `Role creation timed out: neither success message nor error alert appeared within 30s.`,
+      );
+    }
 
     // Now we should be on the roles list page
     await this.page.getByPlaceholder("Filter").waitFor({ state: "visible" });
@@ -364,6 +382,8 @@ export class RbacPo extends PageObject {
       await this.uiHelper.clickButton("Create");
       await this.uiHelper.verifyText(
         `Role role:default/${name} created successfully`,
+        true,
+        15000,
       );
     } else if (permissionPolicyType === "not") {
       // Conditional Scenario 2: Permission policies using Not
@@ -391,18 +411,61 @@ export class RbacPo extends PageObject {
   }
 
   async tryDeleteRole(name: string): Promise<void> {
-    await this.page.goto("/rbac");
-    await this.uiHelper.searchInputAriaLabel(name);
-    const deleteButton = this.page.locator(
-      ROLES_PAGE_COMPONENTS.deleteRole(name),
-    );
-    if ((await deleteButton.count()) > 0) {
-      await deleteButton.click();
-      await this.uiHelper.verifyHeading("Delete this role?");
-      await this.page.fill(DELETE_ROLE_COMPONENTS.roleName, name);
-      await this.uiHelper.clickButton("Delete");
-      await this.uiHelper.verifyText(`Role ${name} deleted successfully`);
+    // Use the RBAC REST API for reliable cleanup — the UI-based approach
+    // can silently fail if the page hasn't fully loaded or the filter
+    // doesn't match, leaving a leftover role that blocks recreation.
+    const rbacApi = await RhdhRbacApi.buildRbacApi(this.page);
+    try {
+      // name is fully qualified like "role:default/test-role1"
+      // The API expects just "default/test-role1"
+      const apiRoleName = name.replace(/^role:/, "");
+
+      // Delete policies associated with the role first
+      const policiesResponse = await rbacApi.getPoliciesByRole(apiRoleName);
+      if (policiesResponse.ok()) {
+        const policies = await policiesResponse.json();
+        if (policies.length > 0) {
+          await rbacApi.deletePolicy(apiRoleName, policies);
+          console.log(
+            `Deleted ${policies.length} leftover policies for ${name} via API`,
+          );
+        }
+      }
+
+      // Delete conditions associated with the role
+      const conditionsResponse = await rbacApi.getConditionByQuery({
+        roleEntityRef: name,
+      });
+      if (conditionsResponse.ok()) {
+        const conditions = await conditionsResponse.json();
+        for (const condition of conditions) {
+          const delResponse = await rbacApi.deleteConditionById(condition.id);
+          if (delResponse.ok()) {
+            console.log(
+              `Deleted leftover condition ${condition.id} for ${name} via API`,
+            );
+          }
+        }
+      }
+
+      // Delete the role itself
+      const response = await rbacApi.deleteRole(apiRoleName);
+      if (response.ok()) {
+        console.log(`Successfully deleted leftover role ${name} via API`);
+      } else if (response.status() === 404) {
+        console.log(`Role ${name} does not exist, no cleanup needed`);
+      } else {
+        console.warn(
+          `Unexpected status ${response.status()} when deleting role ${name} via API`,
+        );
+      }
+    } catch (error) {
+      console.warn(`API cleanup of role ${name} failed: ${error}`);
+    } finally {
+      await rbacApi.dispose();
     }
+    // Navigate to RBAC page for the subsequent test steps
+    await this.page.goto("/rbac");
   }
 
   async deleteRole(name: string, header: string = "All roles (0)") {

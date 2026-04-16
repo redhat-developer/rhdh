@@ -28,6 +28,9 @@ node_modules/
 .env
 .env.test
 
+# Playwright MCP snapshots
+.playwright-mcp
+
 # Build output
 dist
 dist-types
@@ -42,6 +45,7 @@ site
 
 # Local configuration files
 *.local.yaml
+*.local.md
 
 # Sensitive credentials
 *-credentials.local.yaml

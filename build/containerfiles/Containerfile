@@ -14,21 +14,21 @@
 # limitations under the License.
 
 # Stage 1 - Build nodejs skeleton
-# https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1775695872@sha256:052f576671bd8f7f8276b84a3eaef08e3e1de4d669270e8f2543bf23d3e168a4 AS skeleton
+# https://registry.access.redhat.com/ubi9/nodejs-24
+FROM registry.access.redhat.com/ubi9/nodejs-24:1-1776041334@sha256:99fd09fbbaedd1ce700507d40b21f3bfd8dcde389c144d3e42e7a9d2d5db0c2f AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
 RUN dnf install -q -y --allowerasing --nobest \
-  acl alternatives attr audit-libs basesystem bash binutils binutils-gold brotli brotli-devel bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
+  acl alternatives attr audit-libs basesystem bash binutils binutils-gold bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
   cracklib cracklib-dicts criu criu-libs crun crypto-policies crypto-policies-scripts curl-minimal cyrus-sasl-lib dbus dbus-broker dbus-common dbus-libs dejavu-sans-fonts \
   dmidecode dnf dnf-data elfutils-debuginfod-client elfutils-default-yama-scope elfutils-libelf elfutils-libs emacs-filesystem environment-modules expat file-libs filesystem \
   findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
   glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
   ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
-  libacl libarchive libassuan libattr libblkid libbpf libbrotli libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libacl libarchive libassuan libattr libblkid libbpf libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
@@ -92,6 +92,9 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
+
+# Enable C++20 for native module compilation (required for Node 24's V8 headers)
+ENV CXXFLAGS="-std=c++20"
 
 # Using cachi2 env vars:
 #   export YARN_ENABLE_GLOBAL_CACHE=false
@@ -237,8 +240,8 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
   dnf clean all
 
 # Stage 5 - Build the runner image
-# https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1775651415@sha256:42b9a1d66c1de96de83fdf20b79d5ed5aefcfa0e3d878b9b31b3d2de4c12fab7 AS runner
+# https://registry.access.redhat.com/ubi9/nodejs-24-minimal
+FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:1-1776142263@sha256:d47b6e33e972020e416f875bc0fa5fe54ad8745a66ae53ae686d58d9fd1c22e3 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -254,6 +257,10 @@ RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
   microdnf clean all
+
+# Copy openssl binary from build stage (needed for dynamic plugin integrity verification)
+# The nodejs-24-minimal image doesn't include openssl CLI by default
+COPY --from=build /usr/bin/openssl /usr/bin/openssl
 
 # RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
