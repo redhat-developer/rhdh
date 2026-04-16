@@ -79,8 +79,13 @@ export async function installNpmPlugin(
  * (last-line parsing is fragile); `--json` gives `[{ filename, ... }]`.
  */
 async function npmPack(actualPkg: string, destination: string): Promise<string> {
+  // `--ignore-scripts` blocks `preinstall` / `prepack` / `prepare` lifecycle
+  // hooks that NPM packages can declare. Dynamic plugins are not expected
+  // to ship build steps that need to run at install time, and skipping the
+  // hooks both removes a code-execution-on-install attack surface and
+  // shaves a fork+exec per package off the wall clock.
   const { stdout } = await run(
-    ['npm', 'pack', '--json', actualPkg],
+    ['npm', 'pack', '--json', '--ignore-scripts', actualPkg],
     `npm pack failed for ${actualPkg}`,
     { cwd: destination },
   );
