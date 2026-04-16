@@ -386,8 +386,7 @@ pathspec==0.12.1 \
     #   hatchling
     #   mkdocs
 plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip \
-    --hash=sha256:0ac39c5d13d3ea8b84ec88f57369a85d058ff15c0c225591dd649b327586142c \
-    --hash=sha256:52c8507be5b4e5b57e3c4c1cfbe8894b6204f4b6bac2279896efb03d3b79bacf
+    --hash=sha256:adb7dd7f1aa90a0fdb279f3ad58ede6cdc9eb826adc9d1405b02d4491e492df0
     # via
     #   -r requirements.in
     #   mkdocs-techdocs-core
