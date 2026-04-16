@@ -12,6 +12,7 @@ import {
   cleanupOldPluginDatabases,
   setupSchemaModeDatabase,
   normalizeDbHost,
+  connectWithSslFallback,
 } from "./schema-mode-db";
 import { ensureSchemaModePortForward } from "./schema-mode-port-forward";
 
@@ -837,7 +838,56 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
   test("Verify plugin schemas were created and no plugin databases exist", async () => {
     console.log("Validating schema-mode database structure...");
 
-    // Connect to the database to verify schema structure
+    // Trigger schema creation by accessing RHDH catalog API
+    // Schemas are created lazily when plugins first access the database
+    console.log("Triggering schema creation by accessing catalog API...");
+    let baseUrl = process.env.BASE_URL;
+    if (!baseUrl) {
+      const kubeClient = new KubeClient();
+      const routeNames = [`backstage-${releaseName}`, releaseName];
+      for (const routeName of routeNames) {
+        try {
+          const route =
+            (await kubeClient.customObjectsApi.getNamespacedCustomObject(
+              "route.openshift.io",
+              "v1",
+              namespace,
+              "routes",
+              routeName,
+            )) as { body?: { spec?: { host?: string } } };
+          if (route?.body?.spec?.host) {
+            baseUrl = `https://${route.body.spec.host}`;
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
+
+    if (baseUrl) {
+      try {
+        // Access catalog API to trigger schema creation
+        const catalogUrl = `${baseUrl}/api/catalog/entities`;
+        const response = await fetch(catalogUrl, {
+          headers: { Accept: "application/json" },
+        });
+        if (response.ok) {
+          console.log("✓ Successfully triggered catalog access");
+        } else {
+          console.warn(
+            `[WARNING] Catalog API returned ${response.status}, schemas may not be created yet`,
+          );
+        }
+      } catch (error) {
+        console.warn(
+          `[WARNING] Could not access catalog API: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        console.warn("   Proceeding with schema validation anyway...");
+      }
+    }
+
+    // Connect to the postgres database to check for plugin databases
     let adminClient: Client;
     try {
       adminClient = await connectAdminClient({
@@ -852,42 +902,30 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
 
     try {
       // 1. Verify that plugin schemas were created in the single database
-      console.log(`Checking for plugin schemas in database: ${dbName}`);
+      // Poll for schemas with timeout since they're created lazily
+      console.log(
+        `Polling for plugin schemas in database: ${dbName} (timeout: 60s)...`,
+      );
 
-      // Connect to the target database
-      const dbClient = await connectAdminClient({
-        dbHost,
-        dbAdminUser,
-        dbAdminPassword,
-      });
-      await dbClient.end();
-
-      // Use a database-specific admin client
-      const targetDbClient = new Client({
+      const targetDbConfig = {
         host: normalizeDbHost(dbHost),
         port: 5432,
         user: dbAdminUser,
         password: dbAdminPassword,
         database: dbName,
         connectionTimeoutMillis: 30000,
-      });
+      };
 
-      try {
-        await targetDbClient.connect();
-      } catch {
-        await targetDbClient.end().catch(() => {});
-        // Retry with SSL if needed
-        const sslClient = new Client({
-          host: normalizeDbHost(dbHost),
-          port: 5432,
-          user: dbAdminUser,
-          password: dbAdminPassword,
-          database: dbName,
-          connectionTimeoutMillis: 30000,
-          ssl: { rejectUnauthorized: false },
-        });
-        await sslClient.connect();
-        const schemasResult = await sslClient.query<{ schema_name: string }>(
+      let pluginSchemas: string[] = [];
+      const maxAttempts = 12; // 12 attempts * 5s = 60s total
+      const pollIntervalMs = 5000;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const targetDbClient = await connectWithSslFallback(targetDbConfig);
+
+        const schemasResult = await targetDbClient.query<{
+          schema_name: string;
+        }>(
           `
           SELECT schema_name
           FROM information_schema.schemata
@@ -895,80 +933,86 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
           ORDER BY schema_name
         `,
         );
-        await sslClient.end();
+        await targetDbClient.end();
 
-        const pluginSchemas = schemasResult.rows.map((r) => r.schema_name);
-        console.log(
-          `Found ${pluginSchemas.length} plugin schemas: ${pluginSchemas.join(", ")}`,
-        );
+        pluginSchemas = schemasResult.rows.map((r) => r.schema_name);
 
-        // Assert that at least some core plugin schemas exist
-        // We don't assert specific schema names as Backstage may change over time,
-        // but we expect at least a few schemas to exist
-        if (pluginSchemas.length === 0) {
-          throw new Error(
-            `Schema mode validation failed: No plugin schemas (backstage_plugin_*) found in database ${dbName}.\n` +
-              `Expected to find plugin schemas like backstage_plugin_catalog, backstage_plugin_scaffolder, etc.\n` +
-              `This indicates that pluginDivisionMode: schema is not working correctly.`,
+        if (pluginSchemas.length > 0) {
+          console.log(
+            `✓ Found ${pluginSchemas.length} plugin schemas after ${attempt} attempt(s): ${pluginSchemas.join(", ")}`,
           );
+          break;
         }
 
-        console.log(
-          `✓ Verified ${pluginSchemas.length} plugin schemas exist in database ${dbName}`,
-        );
-
-        // 2. Verify that NO separate plugin databases were created
-        console.log("Checking that no plugin databases exist...");
-        const pluginDbsResult = await adminClient.query<{ datname: string }>(
-          `
-          SELECT datname
-          FROM pg_database
-          WHERE datistemplate = false
-            AND datname LIKE 'backstage_plugin_%'
-          ORDER BY datname
-        `,
-        );
-
-        const pluginDatabases = pluginDbsResult.rows.map((r) => r.datname);
-
-        if (pluginDatabases.length > 0) {
-          throw new Error(
-            `Schema mode validation failed: Found ${pluginDatabases.length} plugin databases: ${pluginDatabases.join(", ")}\n` +
-              `In schema mode, plugins should create schemas within a single database, not separate databases.\n` +
-              `This indicates that pluginDivisionMode: schema is not working correctly.`,
+        if (attempt < maxAttempts) {
+          console.log(
+            `   No schemas found yet (attempt ${attempt}/${maxAttempts}), waiting ${pollIntervalMs}ms...`,
           );
+          await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
         }
-
-        console.log("✓ Verified no plugin databases exist (as expected)");
-        console.log(
-          "✓ Schema mode validation passed: plugins are using schemas, not databases",
-        );
-        return;
       }
 
-      const schemasResult = await targetDbClient.query<{ schema_name: string }>(
-        `
-        SELECT schema_name
-        FROM information_schema.schemata
-        WHERE schema_name LIKE 'backstage_plugin_%'
-        ORDER BY schema_name
-      `,
-      );
-      await targetDbClient.end();
-
-      const pluginSchemas = schemasResult.rows.map((r) => r.schema_name);
-      console.log(
-        `Found ${pluginSchemas.length} plugin schemas: ${pluginSchemas.join(", ")}`,
-      );
-
       // Assert that at least some core plugin schemas exist
-      // We don't assert specific schema names as Backstage may change over time,
-      // but we expect at least a few schemas to exist
       if (pluginSchemas.length === 0) {
+        // Provide diagnostic information
+        console.error(
+          "Diagnostic: Checking RHDH pod logs for schema creation issues...",
+        );
+        try {
+          const kubeClient = new KubeClient();
+          const podLabelSelector = `rhdh.redhat.com/backstage=${releaseName}`;
+          const pods = await kubeClient.coreV1Api.listNamespacedPod(
+            namespace,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            podLabelSelector,
+          );
+          if (pods.body.items.length > 0) {
+            const podName = pods.body.items[0].metadata?.name;
+            if (podName) {
+              const logs = await kubeClient.coreV1Api.readNamespacedPodLog(
+                podName,
+                namespace,
+                "backstage-backend",
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                1000, // Last 1000 lines
+              );
+              const relevantLogs = logs.body
+                .split("\n")
+                .filter(
+                  (line) =>
+                    line.includes("database") ||
+                    line.includes("schema") ||
+                    line.includes("plugin") ||
+                    line.includes("error"),
+                );
+              if (relevantLogs.length > 0) {
+                console.error(
+                  "Relevant pod logs:\n" + relevantLogs.slice(-20).join("\n"),
+                );
+              }
+            }
+          }
+        } catch {
+          // Ignore diagnostic errors
+        }
+
         throw new Error(
-          `Schema mode validation failed: No plugin schemas (backstage_plugin_*) found in database ${dbName}.\n` +
+          `Schema mode validation failed: No plugin schemas (backstage_plugin_*) found in database ${dbName} after 60s.\n` +
             `Expected to find plugin schemas like backstage_plugin_catalog, backstage_plugin_scaffolder, etc.\n` +
-            `This indicates that pluginDivisionMode: schema is not working correctly.`,
+            `This indicates that pluginDivisionMode: schema is not working correctly.\n` +
+            `Possible causes:\n` +
+            `  - RHDH pods are not reading the pluginDivisionMode: schema configuration\n` +
+            `  - Database connection from RHDH pods is failing\n` +
+            `  - Plugins are not being initialized\n` +
+            `Check the RHDH pod logs above for more details.`,
         );
       }
 
