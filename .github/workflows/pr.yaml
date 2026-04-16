@@ -148,11 +148,11 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
 
-      - name: Test install-dynamic-plugins (TypeScript)
+      - name: Test install-dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         working-directory: scripts/install-dynamic-plugins
         run: |
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run tsc
           npm test
 

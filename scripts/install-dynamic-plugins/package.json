@@ -7,27 +7,29 @@
   "engines": {
     "node": ">=22"
   },
-  "main": "dist/install-dynamic-plugins.cjs",
+  "bin": {
+    "install-dynamic-plugins": "dist/install-dynamic-plugins.cjs"
+  },
   "scripts": {
     "build": "node esbuild.config.mjs",
-    "tsc": "tsc --noEmit",
+    "tsc": "tsc",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prettier:check": "prettier --check src __tests__",
     "prettier:fix": "prettier --write src __tests__"
   },
   "dependencies": {
-    "tar": "7.5.13",
-    "yaml": "2.8.2"
+    "tar": "^7.5.13",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
-    "@types/jest": "29.5.12",
-    "@types/node": "22.10.0",
-    "@types/tar": "6.1.13",
-    "esbuild": "0.25.0",
-    "jest": "29.7.0",
-    "prettier": "3.3.3",
-    "ts-jest": "29.4.4",
-    "typescript": "5.9.3"
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.10.0",
+    "@types/tar": "^6.1.13",
+    "esbuild": "^0.25.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.3",
+    "ts-jest": "^29.4.4",
+    "typescript": "^5.9.3"
   }
 }

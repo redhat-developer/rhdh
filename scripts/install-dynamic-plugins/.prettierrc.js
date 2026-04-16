@@ -1,15 +1,13 @@
 // @ts-check
 
-/** @type {import("prettier").Config} */
+/**
+ * Only the options that diverge from Prettier 3 defaults are listed here —
+ * matches the Backstage / RHDH conventions used elsewhere in this repo.
+ *
+ * @type {import("prettier").Config}
+ */
 module.exports = {
   printWidth: 100,
-  tabWidth: 2,
-  useTabs: false,
-  semi: true,
   singleQuote: true,
-  trailingComma: 'all',
-  bracketSpacing: true,
-  bracketSameLine: false,
   arrowParens: 'avoid',
-  endOfLine: 'lf',
 };

@@ -3,20 +3,14 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
     "strict": true,
-    "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "types": ["node", "jest"],
-    "outDir": "./build",
-    "declaration": false,
-    "sourceMap": false
+    "noEmit": true
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts", "esbuild.config.mjs"],
-  "exclude": ["node_modules", "dist", "build"]
+  "exclude": ["node_modules", "dist"]
 }
