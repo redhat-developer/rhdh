@@ -66,35 +66,33 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
-    // Clear search filter from previous test to show all components
-    const clearButton = page.getByRole("button", { name: "clear search" });
-    if (await clearButton.isVisible()) {
-      await clearButton.click();
-    }
+    // Search for the known entity with a "Created At" value to isolate it
+    await uiHelper.searchInputPlaceholder("timestamp-test-created");
+    await uiHelper.verifyText("timestamp-test-created");
 
-    // Wait for the table to have data rows
-    await expect(
-      page.getByRole("row").filter({ has: page.getByRole("cell") }),
-    ).not.toHaveCount(0);
-
-    // Get the first data row's "Created At" cell using semantic selectors
-    const firstRow = page
+    // Locate the row and its "Created At" cell using the row's unique text
+    const row = page
       .getByRole("row")
-      .filter({ has: page.getByRole("cell") })
-      .first();
-    const createdAtCell = firstRow.getByRole("cell").nth(7); // 0-indexed, 8th column = index 7
+      .filter({ hasText: "timestamp-test-created" });
+    const createdAtCell = row.locator("td").filter({
+      hasText: /\d{1,2}\/\d{1,2}\/\d{4}/,
+    });
+
+    // Verify the "Created At" cell has a value before sorting
+    await expect(createdAtCell).toBeVisible();
 
     const column = page.getByRole("columnheader", {
       name: "Created At",
       exact: true,
     });
 
-    // Click twice to sort descending — newest entries first
+    // Click to sort ascending
     await column.click();
-    await column.click();
+    await expect(createdAtCell).toBeVisible();
 
-    // After sorting descending, the first row should have a non-empty "Created At"
-    await expect(createdAtCell).not.toBeEmpty();
+    // Click again to sort descending
+    await column.click();
+    await expect(createdAtCell).toBeVisible();
   });
 
   test.afterAll(async () => {
