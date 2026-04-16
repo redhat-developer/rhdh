@@ -44,7 +44,7 @@ describe('mergePlugin — NPM', () => {
     await mergePlugin({ package: 'pkg@1.0.0' }, all, 'cfg.yaml', 0);
     expect(all['pkg']).toBeDefined();
     expect(all['pkg']?.package).toBe('pkg@1.0.0');
-    expect(all['pkg']?._level).toBe(0);
+    expect(all['pkg']?.last_modified_level).toBe(0);
   });
 
   it('overrides a lower-level plugin from a higher level', async () => {
@@ -53,7 +53,7 @@ describe('mergePlugin — NPM', () => {
     await mergePlugin({ package: 'pkg@2.0.0', disabled: true }, all, 'cfg.yaml', 1);
     expect(all['pkg']?.package).toBe('pkg@2.0.0');
     expect(all['pkg']?.disabled).toBe(true);
-    expect(all['pkg']?._level).toBe(1);
+    expect(all['pkg']?.last_modified_level).toBe(1);
   });
 
   it('raises on duplicates within the same level', async () => {

@@ -135,15 +135,35 @@ async function runInstaller(root: string): Promise<number> {
   await installOci(oci, root, imageCache, installed, workers, globalConfig, errors);
   await installNpm(npm, root, skipIntegrity, installed, globalConfig, errors);
 
-  await fs.writeFile(globalConfigFile, stringifyYaml(globalConfig));
+  return finalizeInstall(errors, globalConfigFile, globalConfig, root, installed);
+}
 
-  await cleanupRemoved(root, installed);
-
+export async function finalizeInstall(
+  errors: string[],
+  globalConfigFile: string,
+  globalConfig: Record<string, unknown>,
+  root: string,
+  installed: Map<string, string>,
+): Promise<number> {
   if (errors.length > 0) {
     log(`\n======= ${errors.length} plugin(s) failed:`);
     for (const err of errors) log(`  - ${err}`);
+    // Skip writing the global config and cleaning up previously-installed
+    // plugin dirs so the filesystem does not end up in an "almost valid"
+    // state. Exit 1 is enough for init containers to block startup, but a
+    // manual restart of the main container (or a deployment that does not
+    // enforce init-container success) could otherwise pick up a partial
+    // config — e.g. a frontend plugin without its backend dep, yielding a
+    // broken UI. Preserving the prior state makes the next run a clean retry.
+    log(
+      `\n======= Skipping ${GLOBAL_CONFIG_FILENAME} write and cleanup because of install failures. ` +
+        `Fix the errors above and re-run; the previous successful state is preserved.`,
+    );
     return 1;
   }
+
+  await fs.writeFile(globalConfigFile, stringifyYaml(globalConfig));
+  await cleanupRemoved(root, installed);
 
   log('\n======= All plugins installed successfully');
   return 0;
@@ -201,11 +221,34 @@ async function installOci(
   errors: string[],
 ): Promise<void> {
   if (plugins.length === 0) return;
+
+  // Fast pre-pass: short-circuit plugins that are definitely a no-op (already
+  // installed, IF_NOT_PRESENT pull policy, no force) without going through the
+  // worker-pool / Promise machinery. Avoids 6-way parallel skopeo invocations
+  // for the common steady-state restart case.
+  const needsWork: Plugin[] = [];
+  for (const plugin of plugins) {
+    if (definitelyNoOp(plugin, installed)) {
+      log(`\t==> ${plugin.package}: already installed, skipping`);
+      installed.delete(plugin.plugin_hash as string);
+      if (isPlainObject(plugin.pluginConfig)) {
+        try {
+          deepMerge(plugin.pluginConfig, globalConfig);
+        } catch (err) {
+          errors.push(`${plugin.package}: ${(err as Error).message}`);
+        }
+      }
+    } else {
+      needsWork.push(plugin);
+    }
+  }
+
+  if (needsWork.length === 0) return;
   log(
-    `\n======= Installing ${plugins.length} OCI plugin(s) (${workers} worker${workers === 1 ? '' : 's'})`,
+    `\n======= Installing ${needsWork.length} OCI plugin(s) (${workers} worker${workers === 1 ? '' : 's'})`,
   );
 
-  const results = await mapConcurrent(plugins, workers, async plugin => {
+  const results = await mapConcurrent(needsWork, workers, async plugin => {
     log(`\n======= Installing OCI plugin ${plugin.package}`);
     return installOciPlugin(plugin, root, imageCache, installed);
   });
@@ -227,6 +270,21 @@ async function installOci(
     }
     if (value.pluginPath) log(`\t==> Installed ${item.package}`);
   }
+}
+
+/**
+ * Cheap synchronous check: a plugin is "definitely" a no-op when its hash is
+ * already on disk, the user did not force a re-download, and the pull policy
+ * doesn't demand a remote-digest comparison. ALWAYS-pull plugins still go
+ * through the regular install path because they need a `skopeo inspect` to
+ * compare local vs remote digest.
+ */
+function definitelyNoOp(plugin: Plugin, installed: Map<string, string>): boolean {
+  if (!plugin.plugin_hash || !installed.has(plugin.plugin_hash)) return false;
+  if (plugin.forceDownload) return false;
+  const isLatest = plugin.package.includes(':latest!');
+  const pullPolicy = plugin.pullPolicy ?? (isLatest ? 'Always' : 'IfNotPresent');
+  return pullPolicy !== 'Always';
 }
 
 async function installNpm(
@@ -291,8 +349,13 @@ function existsSyncSafe(filePath: string): boolean {
   }
 }
 
-main().catch((err: unknown) => {
-  const msg = err instanceof InstallException ? err.message : String(err);
-  process.stderr.write(`\ninstall-dynamic-plugins failed: ${msg}\n`);
-  process.exit(1);
-});
+// Only run main() when invoked directly (CLI or esbuild's CJS bundle entry),
+// not when imported for tests. Under ts-jest the source is transpiled to CJS,
+// so `require.main === module` is the reliable signal.
+if (require.main === module) {
+  main().catch((err: unknown) => {
+    const msg = err instanceof InstallException ? err.message : String(err);
+    process.stderr.write(`\ninstall-dynamic-plugins failed: ${msg}\n`);
+    process.exit(1);
+  });
+}

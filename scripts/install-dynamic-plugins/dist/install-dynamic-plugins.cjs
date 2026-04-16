@@ -9,6 +9,10 @@ var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 var __copyProps = (to2, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -25,6 +29,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // node_modules/yaml/dist/nodes/identity.js
 var require_identity = __commonJS({
@@ -7316,6 +7321,11 @@ var require_dist = __commonJS({
 });
 
 // src/index.ts
+var index_exports = {};
+__export(index_exports, {
+  finalizeInstall: () => finalizeInstall
+});
+module.exports = __toCommonJS(index_exports);
 var import_node_fs11 = require("node:fs");
 var fs10 = __toESM(require("node:fs/promises"));
 var os4 = __toESM(require("node:os"));
@@ -11123,13 +11133,13 @@ async function mergeOciPlugin(plugin, allPlugins, configFile, level, imageCache)
       `
 ======= Adding new dynamic plugin configuration for version \`${parsed.version}\` of ${parsed.pluginKey}`
     );
-    plugin._level = level;
+    plugin.last_modified_level = level;
     allPlugins[parsed.pluginKey] = plugin;
     return;
   }
   log(`
 ======= Overriding dynamic plugin configuration ${parsed.pluginKey}`);
-  if (existing._level === level) {
+  if (existing.last_modified_level === level) {
     throw new InstallException(
       `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`
     );
@@ -11143,8 +11153,8 @@ async function mergeOciPlugin(plugin, allPlugins, configFile, level, imageCache)
     }
     existing.version = parsed.version;
   }
-  copyPluginFields(plugin, existing, ["package", "version", "_level"]);
-  existing._level = level;
+  copyPluginFields(plugin, existing, ["package", "version", "last_modified_level"]);
+  existing.last_modified_level = level;
 }
 function resolveInherit(plugin, allPlugins, parsed) {
   const prefix = `${parsed.pluginKey}:!`;
@@ -11187,19 +11197,19 @@ function doMerge(key, plugin, allPlugins, configFile, level) {
   if (!existing) {
     log(`
 ======= Adding new dynamic plugin configuration for ${key}`);
-    plugin._level = level;
+    plugin.last_modified_level = level;
     allPlugins[key] = plugin;
     return;
   }
   log(`
 ======= Overriding dynamic plugin configuration ${key}`);
-  if (existing._level === level) {
+  if (existing.last_modified_level === level) {
     throw new InstallException(
       `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`
     );
   }
-  copyPluginFields(plugin, existing, ["_level"]);
-  existing._level = level;
+  copyPluginFields(plugin, existing, ["last_modified_level"]);
+  existing.last_modified_level = level;
 }
 function copyPluginFields(src, dst, skip) {
   const skipSet = new Set(skip);
@@ -11234,11 +11244,11 @@ var path7 = __toESM(require("node:path"));
 function computePluginHash(plugin) {
   const copy = {};
   for (const [k2, v2] of Object.entries(plugin)) {
-    if (k2 === "pluginConfig" || k2 === "version" || k2 === "_level" || k2 === "plugin_hash") continue;
+    if (k2 === "pluginConfig" || k2 === "version" || k2 === "plugin_hash") continue;
     copy[k2] = v2;
   }
   if (plugin.package.startsWith("./")) {
-    copy["_local"] = localPackageInfo(plugin.package);
+    copy["_local_package_info"] = localPackageInfo(plugin.package);
   }
   const serialized = stableStringify(copy);
   return (0, import_node_crypto4.createHash)("sha256").update(serialized).digest("hex");
@@ -11248,26 +11258,29 @@ function localPackageInfo(pkgPath) {
   const pj = path7.join(absPath, "package.json");
   if (!(0, import_node_fs9.existsSync)(pj)) {
     try {
-      return { _mtime: (0, import_node_fs9.statSync)(absPath).mtimeMs };
+      return { _directory_mtime: toSeconds((0, import_node_fs9.statSync)(absPath).mtimeMs) };
     } catch {
-      return { _missing: true };
+      return { _not_found: true };
     }
   }
   try {
     const info = {
-      _pj: JSON.parse((0, import_node_fs9.readFileSync)(pj, "utf8")),
-      _pj_mtime: (0, import_node_fs9.statSync)(pj).mtimeMs
+      _package_json: JSON.parse((0, import_node_fs9.readFileSync)(pj, "utf8")),
+      _package_json_mtime: toSeconds((0, import_node_fs9.statSync)(pj).mtimeMs)
     };
     for (const lockFile of ["package-lock.json", "yarn.lock"]) {
       const lockPath = path7.join(absPath, lockFile);
       if ((0, import_node_fs9.existsSync)(lockPath)) {
-        info[`_${lockFile}_mtime`] = (0, import_node_fs9.statSync)(lockPath).mtimeMs;
+        info[`_${lockFile}_mtime`] = toSeconds((0, import_node_fs9.statSync)(lockPath).mtimeMs);
       }
     }
     return info;
   } catch (err) {
-    return { _err: err.message };
+    return { _error: err.message };
   }
+}
+function toSeconds(mtimeMs) {
+  return mtimeMs / 1e3;
 }
 function compareCodePoint(a, b2) {
   if (a < b2) return -1;
@@ -11277,11 +11290,11 @@ function compareCodePoint(a, b2) {
 function stableStringify(value) {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) {
-    return `[${value.map(stableStringify).join(",")}]`;
+    return `[${value.map(stableStringify).join(", ")}]`;
   }
   const obj = value;
-  const entries = Object.keys(obj).sort(compareCodePoint).map((k2) => `${JSON.stringify(k2)}:${stableStringify(obj[k2])}`);
-  return `{${entries.join(",")}}`;
+  const entries = Object.keys(obj).sort(compareCodePoint).map((k2) => `${JSON.stringify(k2)}: ${stableStringify(obj[k2])}`);
+  return `{${entries.join(", ")}}`;
 }
 
 // src/skopeo.ts
@@ -11313,6 +11326,7 @@ var Skopeo = class {
   path;
   inspectRawCache = /* @__PURE__ */ new Map();
   inspectCache = /* @__PURE__ */ new Map();
+  existsCache = /* @__PURE__ */ new Map();
   constructor(skopeoPath) {
     const resolved = skopeoPath ?? which("skopeo");
     if (!resolved) throw new InstallException("skopeo not found in PATH");
@@ -11348,13 +11362,23 @@ var Skopeo = class {
       throw err;
     }
   }
-  /** Returns true iff `skopeo inspect` succeeds; never throws. */
+  /**
+   * Returns true iff `skopeo inspect` succeeds; never throws. Result is
+   * memoized — subsequent calls for the same URL reuse the in-flight or
+   * resolved promise. This dedups the `resolveImage` registry probe across
+   * the many plugins that share the same OCI image (common for the RHDH
+   * plugin catalog).
+   */
   async exists(url) {
-    return new Promise((resolve4) => {
+    const cached = this.existsCache.get(url);
+    if (cached) return cached;
+    const pending = new Promise((resolve4) => {
       const child = (0, import_node_child_process2.spawn)(this.path, ["inspect", "--no-tags", url], { stdio: "ignore" });
       child.on("error", () => resolve4(false));
       child.on("close", (code) => resolve4(code === 0));
     });
+    this.existsCache.set(url, pending);
+    return pending;
   }
   async runInspect(url, raw) {
     const args = ["inspect", "--no-tags", url];
@@ -11463,14 +11487,21 @@ async function runInstaller(root) {
   const errors = [];
   await installOci(oci, root, imageCache, installed, workers, globalConfig, errors);
   await installNpm(npm, root, skipIntegrity, installed, globalConfig, errors);
-  await fs10.writeFile(globalConfigFile, (0, import_yaml2.stringify)(globalConfig));
-  await cleanupRemoved(root, installed);
+  return finalizeInstall(errors, globalConfigFile, globalConfig, root, installed);
+}
+async function finalizeInstall(errors, globalConfigFile, globalConfig, root, installed) {
   if (errors.length > 0) {
     log(`
 ======= ${errors.length} plugin(s) failed:`);
     for (const err of errors) log(`  - ${err}`);
+    log(
+      `
+======= Skipping ${GLOBAL_CONFIG_FILENAME} write and cleanup because of install failures. Fix the errors above and re-run; the previous successful state is preserved.`
+    );
     return 1;
   }
+  await fs10.writeFile(globalConfigFile, (0, import_yaml2.stringify)(globalConfig));
+  await cleanupRemoved(root, installed);
   log("\n======= All plugins installed successfully");
   return 0;
 }
@@ -11512,11 +11543,28 @@ function handleSkippedLocals(skipped, globalConfig) {
 }
 async function installOci(plugins, root, imageCache, installed, workers, globalConfig, errors) {
   if (plugins.length === 0) return;
+  const needsWork = [];
+  for (const plugin of plugins) {
+    if (definitelyNoOp(plugin, installed)) {
+      log(`	==> ${plugin.package}: already installed, skipping`);
+      installed.delete(plugin.plugin_hash);
+      if (isPlainObject(plugin.pluginConfig)) {
+        try {
+          deepMerge(plugin.pluginConfig, globalConfig);
+        } catch (err) {
+          errors.push(`${plugin.package}: ${err.message}`);
+        }
+      }
+    } else {
+      needsWork.push(plugin);
+    }
+  }
+  if (needsWork.length === 0) return;
   log(
     `
-======= Installing ${plugins.length} OCI plugin(s) (${workers} worker${workers === 1 ? "" : "s"})`
+======= Installing ${needsWork.length} OCI plugin(s) (${workers} worker${workers === 1 ? "" : "s"})`
   );
-  const results = await mapConcurrent(plugins, workers, async (plugin) => {
+  const results = await mapConcurrent(needsWork, workers, async (plugin) => {
     log(`
 ======= Installing OCI plugin ${plugin.package}`);
     return installOciPlugin(plugin, root, imageCache, installed);
@@ -11538,6 +11586,13 @@ async function installOci(plugins, root, imageCache, installed, workers, globalC
     }
     if (value.pluginPath) log(`	==> Installed ${item.package}`);
   }
+}
+function definitelyNoOp(plugin, installed) {
+  if (!plugin.plugin_hash || !installed.has(plugin.plugin_hash)) return false;
+  if (plugin.forceDownload) return false;
+  const isLatest = plugin.package.includes(":latest!");
+  const pullPolicy = plugin.pullPolicy ?? (isLatest ? "Always" : "IfNotPresent");
+  return pullPolicy !== "Always";
 }
 async function installNpm(plugins, root, skipIntegrity, installed, globalConfig, errors) {
   if (plugins.length === 0) return;
@@ -11592,10 +11647,16 @@ function existsSyncSafe(filePath) {
     return false;
   }
 }
-main().catch((err) => {
-  const msg = err instanceof InstallException ? err.message : String(err);
-  process.stderr.write(`
+if (require.main === module) {
+  main().catch((err) => {
+    const msg = err instanceof InstallException ? err.message : String(err);
+    process.stderr.write(`
 install-dynamic-plugins failed: ${msg}
 `);
-  process.exit(1);
+    process.exit(1);
+  });
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  finalizeInstall
 });

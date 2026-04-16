@@ -20,13 +20,18 @@ export type PluginSpec = {
 
 /**
  * Internal plugin record. Extends the YAML schema with fields populated at
- * runtime (version from the package string, `plugin_hash` for change detection,
- * `_level` to track include-file precedence).
+ * runtime (`version` from the package string, `plugin_hash` for change
+ * detection, `last_modified_level` to track include-file precedence).
+ *
+ * The field name `last_modified_level` matches the Python implementation so
+ * the install hashes computed by `plugin-hash.ts` stay byte-compatible
+ * across the Python ↔ TS migration. Renaming it would force every existing
+ * dynamic-plugins-root to be re-installed on the first TS run.
  */
 export type Plugin = PluginSpec & {
   version?: string;
   plugin_hash?: string;
-  _level?: number;
+  last_modified_level?: number;
 };
 
 export type PluginMap = Record<string, Plugin>;

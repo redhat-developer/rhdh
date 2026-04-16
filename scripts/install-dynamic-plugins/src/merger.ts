@@ -140,13 +140,13 @@ async function mergeOciPlugin(
     log(
       `\n======= Adding new dynamic plugin configuration for version \`${parsed.version}\` of ${parsed.pluginKey}`,
     );
-    plugin._level = level;
+    plugin.last_modified_level = level;
     allPlugins[parsed.pluginKey] = plugin;
     return;
   }
 
   log(`\n======= Overriding dynamic plugin configuration ${parsed.pluginKey}`);
-  if (existing._level === level) {
+  if (existing.last_modified_level === level) {
     throw new InstallException(
       `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`,
     );
@@ -161,8 +161,8 @@ async function mergeOciPlugin(
     }
     existing.version = parsed.version;
   }
-  copyPluginFields(plugin, existing, ['package', 'version', '_level']);
-  existing._level = level;
+  copyPluginFields(plugin, existing, ['package', 'version', 'last_modified_level']);
+  existing.last_modified_level = level;
 }
 
 /**
@@ -226,18 +226,18 @@ function doMerge(
   const existing = allPlugins[key];
   if (!existing) {
     log(`\n======= Adding new dynamic plugin configuration for ${key}`);
-    plugin._level = level;
+    plugin.last_modified_level = level;
     allPlugins[key] = plugin;
     return;
   }
   log(`\n======= Overriding dynamic plugin configuration ${key}`);
-  if (existing._level === level) {
+  if (existing.last_modified_level === level) {
     throw new InstallException(
       `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`,
     );
   }
-  copyPluginFields(plugin, existing, ['_level']);
-  existing._level = level;
+  copyPluginFields(plugin, existing, ['last_modified_level']);
+  existing.last_modified_level = level;
 }
 
 function copyPluginFields(src: Plugin, dst: Plugin, skip: ReadonlyArray<string>): void {

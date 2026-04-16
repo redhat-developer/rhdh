@@ -14,6 +14,7 @@ export class Skopeo {
   private readonly path: string;
   private readonly inspectRawCache = new Map<string, Promise<unknown>>();
   private readonly inspectCache = new Map<string, Promise<SkopeoInspect>>();
+  private readonly existsCache = new Map<string, Promise<boolean>>();
 
   constructor(skopeoPath?: string) {
     const resolved = skopeoPath ?? which('skopeo');
@@ -54,13 +55,23 @@ export class Skopeo {
     }
   }
 
-  /** Returns true iff `skopeo inspect` succeeds; never throws. */
+  /**
+   * Returns true iff `skopeo inspect` succeeds; never throws. Result is
+   * memoized — subsequent calls for the same URL reuse the in-flight or
+   * resolved promise. This dedups the `resolveImage` registry probe across
+   * the many plugins that share the same OCI image (common for the RHDH
+   * plugin catalog).
+   */
   async exists(url: string): Promise<boolean> {
-    return new Promise<boolean>(resolve => {
+    const cached = this.existsCache.get(url);
+    if (cached) return cached;
+    const pending = new Promise<boolean>(resolve => {
       const child = spawn(this.path, ['inspect', '--no-tags', url], { stdio: 'ignore' });
       child.on('error', () => resolve(false));
       child.on('close', code => resolve(code === 0));
     });
+    this.existsCache.set(url, pending);
+    return pending;
   }
 
   private async runInspect(url: string, raw: boolean): Promise<unknown> {
