@@ -4,7 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { cleanupCatalogIndexTemp, extractCatalogIndex } from './catalog-index.js';
-import { getWorkers, mapConcurrent } from './concurrency.js';
+import { getNpmWorkers, getWorkers, mapConcurrent } from './concurrency.js';
 import { InstallException } from './errors.js';
 import { OciImageCache } from './image-cache.js';
 import { installNpmPlugin } from './installer-npm.js';
@@ -325,19 +325,59 @@ async function installNpm(
   errors: string[],
 ): Promise<void> {
   if (plugins.length === 0) return;
-  log(`\n======= Installing ${plugins.length} NPM plugin(s) (sequential)`);
+
+  // Same fast pre-pass as installOci: skip the worker pool for hash-matched
+  // plugins that don't need any IO.
+  const needsWork: Plugin[] = [];
   for (const plugin of plugins) {
-    log(`\n======= Installing NPM plugin ${plugin.package}`);
-    try {
-      const result = await installNpmPlugin(plugin, root, skipIntegrity, installed);
-      if (isPlainObject(result.pluginConfig)) {
-        deepMerge(result.pluginConfig, globalConfig);
+    if (definitelyNoOp(plugin, installed)) {
+      log(`\t==> ${plugin.package}: already installed, skipping`);
+      installed.delete(plugin.plugin_hash as string);
+      if (isPlainObject(plugin.pluginConfig)) {
+        try {
+          deepMerge(plugin.pluginConfig, globalConfig);
+        } catch (err) {
+          errors.push(`${plugin.package}: ${(err as Error).message}`);
+        }
       }
-      if (result.pluginPath) log(`\t==> Installed ${plugin.package}`);
-    } catch (err) {
-      errors.push(`${plugin.package}: ${(err as Error).message}`);
-      log(`\t==> ERROR: ${plugin.package}: ${(err as Error).message}`);
+    } else {
+      needsWork.push(plugin);
     }
+  }
+
+  if (needsWork.length === 0) return;
+  const workers = getNpmWorkers();
+  log(
+    `\n======= Installing ${needsWork.length} NPM plugin(s) (${workers} worker${workers === 1 ? '' : 's'})`,
+  );
+
+  // `npm pack` writes the tarball to `cwd` with a package-derived filename
+  // (`<name>-<version>.tgz`), so concurrent invocations against different
+  // packages don't clash on the filename. The npm CLI cache (~/.npm/_cacache)
+  // handles its own locking. Cap defaults to 3 to keep the registry happy —
+  // override with `DYNAMIC_PLUGINS_NPM_WORKERS=1` to restore the original
+  // sequential behaviour.
+  const results = await mapConcurrent(needsWork, workers, async plugin => {
+    log(`\n======= Installing NPM plugin ${plugin.package}`);
+    return installNpmPlugin(plugin, root, skipIntegrity, installed);
+  });
+
+  for (const outcome of results) {
+    if (!outcome.ok) {
+      errors.push(`${outcome.item.package}: ${outcome.error.message}`);
+      log(`\t==> ERROR: ${outcome.item.package}: ${outcome.error.message}`);
+      continue;
+    }
+    const { value, item } = outcome;
+    if (isPlainObject(value.pluginConfig)) {
+      try {
+        deepMerge(value.pluginConfig, globalConfig);
+      } catch (err) {
+        errors.push(`${item.package}: ${(err as Error).message}`);
+        continue;
+      }
+    }
+    if (value.pluginPath) log(`\t==> Installed ${item.package}`);
   }
 }
 

@@ -65,7 +65,23 @@ export async function mapConcurrent<Item, T>(
  * init containers: half of available CPUs, capped at 6.
  */
 export function getWorkers(): number {
-  const env = process.env.DYNAMIC_PLUGINS_WORKERS ?? 'auto';
+  return resolveWorkers(process.env.DYNAMIC_PLUGINS_WORKERS, /* cap */ 6);
+}
+
+/**
+ * Worker count for concurrent NPM installs. Capped lower than OCI (default 3)
+ * because `npm pack` hits the public NPM registry and shares a single CLI
+ * cache (`~/.npm/_cacache`) — too much concurrency triggers throttling and
+ * cache contention without a wall-clock benefit. Override via
+ * `DYNAMIC_PLUGINS_NPM_WORKERS` (set to `1` to restore the original
+ * sequential behaviour).
+ */
+export function getNpmWorkers(): number {
+  return resolveWorkers(process.env.DYNAMIC_PLUGINS_NPM_WORKERS, /* cap */ 3);
+}
+
+function resolveWorkers(rawEnv: string | undefined, cap: number): number {
+  const env = rawEnv ?? 'auto';
   if (env !== 'auto') {
     const n = Number.parseInt(env, 10);
     if (!Number.isFinite(n) || n < 1) return 1;
@@ -73,5 +89,5 @@ export function getWorkers(): number {
   }
   const cpus =
     typeof os.availableParallelism === 'function' ? os.availableParallelism() : os.cpus().length;
-  return Math.max(1, Math.min(Math.floor(cpus / 2), 6));
+  return Math.max(1, Math.min(Math.floor(cpus / 2), cap));
 }

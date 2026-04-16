@@ -1,4 +1,4 @@
-import { getWorkers, mapConcurrent, Semaphore } from '../src/concurrency';
+import { getNpmWorkers, getWorkers, mapConcurrent, Semaphore } from '../src/concurrency';
 
 describe('Semaphore', () => {
   it('bounds the number of concurrent holders', async () => {
@@ -72,5 +72,35 @@ describe('getWorkers', () => {
     const w = getWorkers();
     expect(w).toBeGreaterThanOrEqual(1);
     expect(w).toBeLessThanOrEqual(6);
+  });
+});
+
+describe('getNpmWorkers', () => {
+  const originalEnv = process.env.DYNAMIC_PLUGINS_NPM_WORKERS;
+  afterEach(() => {
+    if (originalEnv === undefined) delete process.env.DYNAMIC_PLUGINS_NPM_WORKERS;
+    else process.env.DYNAMIC_PLUGINS_NPM_WORKERS = originalEnv;
+  });
+
+  it('honours an explicit NPM worker count', () => {
+    process.env.DYNAMIC_PLUGINS_NPM_WORKERS = '2';
+    expect(getNpmWorkers()).toBe(2);
+  });
+
+  it('falls back to 1 for non-numeric values', () => {
+    process.env.DYNAMIC_PLUGINS_NPM_WORKERS = 'banana';
+    expect(getNpmWorkers()).toBe(1);
+  });
+
+  it('auto-picks a value between 1 and 3 (lower cap than OCI)', () => {
+    process.env.DYNAMIC_PLUGINS_NPM_WORKERS = 'auto';
+    const w = getNpmWorkers();
+    expect(w).toBeGreaterThanOrEqual(1);
+    expect(w).toBeLessThanOrEqual(3);
+  });
+
+  it('explicit NPM worker count is independent of the OCI cap', () => {
+    process.env.DYNAMIC_PLUGINS_NPM_WORKERS = '8';
+    expect(getNpmWorkers()).toBe(8);
   });
 });

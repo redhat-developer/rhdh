@@ -10458,14 +10458,28 @@ async function mapConcurrent(items, limit, fn2) {
   );
 }
 function getWorkers() {
-  const env = process.env.DYNAMIC_PLUGINS_WORKERS ?? "auto";
+  return resolveWorkers(
+    process.env.DYNAMIC_PLUGINS_WORKERS,
+    /* cap */
+    6
+  );
+}
+function getNpmWorkers() {
+  return resolveWorkers(
+    process.env.DYNAMIC_PLUGINS_NPM_WORKERS,
+    /* cap */
+    3
+  );
+}
+function resolveWorkers(rawEnv, cap) {
+  const env = rawEnv ?? "auto";
   if (env !== "auto") {
     const n = Number.parseInt(env, 10);
     if (!Number.isFinite(n) || n < 1) return 1;
     return n;
   }
   const cpus3 = typeof os3.availableParallelism === "function" ? os3.availableParallelism() : os3.cpus().length;
-  return Math.max(1, Math.min(Math.floor(cpus3 / 2), 6));
+  return Math.max(1, Math.min(Math.floor(cpus3 / 2), cap));
 }
 
 // src/image-cache.ts
@@ -11624,21 +11638,49 @@ function definitelyNoOp(plugin, installed) {
 }
 async function installNpm(plugins, root, skipIntegrity, installed, globalConfig, errors) {
   if (plugins.length === 0) return;
-  log(`
-======= Installing ${plugins.length} NPM plugin(s) (sequential)`);
+  const needsWork = [];
   for (const plugin of plugins) {
+    if (definitelyNoOp(plugin, installed)) {
+      log(`	==> ${plugin.package}: already installed, skipping`);
+      installed.delete(plugin.plugin_hash);
+      if (isPlainObject(plugin.pluginConfig)) {
+        try {
+          deepMerge(plugin.pluginConfig, globalConfig);
+        } catch (err) {
+          errors.push(`${plugin.package}: ${err.message}`);
+        }
+      }
+    } else {
+      needsWork.push(plugin);
+    }
+  }
+  if (needsWork.length === 0) return;
+  const workers = getNpmWorkers();
+  log(
+    `
+======= Installing ${needsWork.length} NPM plugin(s) (${workers} worker${workers === 1 ? "" : "s"})`
+  );
+  const results = await mapConcurrent(needsWork, workers, async (plugin) => {
     log(`
 ======= Installing NPM plugin ${plugin.package}`);
-    try {
-      const result = await installNpmPlugin(plugin, root, skipIntegrity, installed);
-      if (isPlainObject(result.pluginConfig)) {
-        deepMerge(result.pluginConfig, globalConfig);
-      }
-      if (result.pluginPath) log(`	==> Installed ${plugin.package}`);
-    } catch (err) {
-      errors.push(`${plugin.package}: ${err.message}`);
-      log(`	==> ERROR: ${plugin.package}: ${err.message}`);
+    return installNpmPlugin(plugin, root, skipIntegrity, installed);
+  });
+  for (const outcome of results) {
+    if (!outcome.ok) {
+      errors.push(`${outcome.item.package}: ${outcome.error.message}`);
+      log(`	==> ERROR: ${outcome.item.package}: ${outcome.error.message}`);
+      continue;
     }
+    const { value, item } = outcome;
+    if (isPlainObject(value.pluginConfig)) {
+      try {
+        deepMerge(value.pluginConfig, globalConfig);
+      } catch (err) {
+        errors.push(`${item.package}: ${err.message}`);
+        continue;
+      }
+    }
+    if (value.pluginPath) log(`	==> Installed ${item.package}`);
   }
 }
 async function cleanupRemoved(root, installed) {
