@@ -8,7 +8,7 @@ v24.14.1
 
 Or, go to https://catalog.redhat.com/en/software/containers/ubi9/nodejs-24/67f6255dbaa28af763e21805#packages, and search for `nodejs` to get the version.
 
-As of 2026/04/13, this version is `v24.14.1`
+As of 2026/04/16, this version is `v24.14.1`
 
 The latest RPM is `v24.14.1`.
 
