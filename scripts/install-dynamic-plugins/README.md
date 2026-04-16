@@ -77,14 +77,14 @@ All tar extraction is streaming via `node-tar` — large layers never load into 
 
 ## Environment variables
 
-| Variable                       | Default              | Purpose                                                                                                |
-| ------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------ |
-| `MAX_ENTRY_SIZE`               | `20000000`           | Per-entry byte limit when extracting tarballs                                                          |
-| `SKIP_INTEGRITY_CHECK`         | `false`              | When `true`, skip the SRI integrity check for remote NPM packages                                      |
-| `CATALOG_INDEX_IMAGE`          | _(unset)_            | OCI image to extract `dynamic-plugins.default.yaml` and catalog entities from                          |
-| `CATALOG_ENTITIES_EXTRACT_DIR` | `$TMPDIR/extensions` | Where to extract `catalog-entities/` from the catalog-index image                                      |
-| `DYNAMIC_PLUGINS_WORKERS`      | `auto`               | Worker count override for parallel OCI downloads (`auto` uses `availableParallelism()/2`, capped at 6) |
-| `DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS` | `600000` (10 min)   | Max time to wait for the lock file before aborting with an error                                         |
+| Variable                          | Default              | Purpose                                                                                                |
+| --------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
+| `MAX_ENTRY_SIZE`                  | `20000000`           | Per-entry byte limit when extracting tarballs                                                          |
+| `SKIP_INTEGRITY_CHECK`            | `false`              | When `true`, skip the SRI integrity check for remote NPM packages                                      |
+| `CATALOG_INDEX_IMAGE`             | _(unset)_            | OCI image to extract `dynamic-plugins.default.yaml` and catalog entities from                          |
+| `CATALOG_ENTITIES_EXTRACT_DIR`    | `$TMPDIR/extensions` | Where to extract `catalog-entities/` from the catalog-index image                                      |
+| `DYNAMIC_PLUGINS_WORKERS`         | `auto`               | Worker count override for parallel OCI downloads (`auto` uses `availableParallelism()/2`, capped at 6) |
+| `DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS` | `600000` (10 min)    | Max time to wait for the lock file before aborting with an error                                       |
 
 ## Development
 

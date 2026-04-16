@@ -96,7 +96,11 @@ async function npmPack(actualPkg: string, destination: string): Promise<string> 
     throw new InstallException(`npm pack produced no archives for ${actualPkg}`);
   }
   const first = parsed[0];
-  if (!first || typeof first !== 'object' || typeof (first as { filename?: unknown }).filename !== 'string') {
+  if (
+    !first ||
+    typeof first !== 'object' ||
+    typeof (first as { filename?: unknown }).filename !== 'string'
+  ) {
     throw new InstallException(`npm pack output missing 'filename' for ${actualPkg}`);
   }
   return (first as { filename: string }).filename;

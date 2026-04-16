@@ -8,10 +8,11 @@ import { Skopeo } from '../src/skopeo';
  * the in-memory caches in `Skopeo.exists/inspect/inspectRaw` actually dedupe
  * forks and the wrapper survives realistic exit codes.
  */
-function makeFakeSkopeo(opts: {
-  inspectExitCode?: number;
-  inspectStdout?: string;
-}): { binPath: string; logPath: string; cleanup: () => void } {
+function makeFakeSkopeo(opts: { inspectExitCode?: number; inspectStdout?: string }): {
+  binPath: string;
+  logPath: string;
+  cleanup: () => void;
+} {
   const dir = mkdtempSync(join(tmpdir(), 'fake-skopeo-'));
   const binPath = join(dir, 'skopeo');
   const logPath = join(dir, 'invocations.log');
@@ -37,7 +38,11 @@ describe('Skopeo cache behaviour', () => {
       const skopeo = new Skopeo(binPath);
       const url = 'docker://example.com/image:1.0';
 
-      const results = await Promise.all([skopeo.exists(url), skopeo.exists(url), skopeo.exists(url)]);
+      const results = await Promise.all([
+        skopeo.exists(url),
+        skopeo.exists(url),
+        skopeo.exists(url),
+      ]);
       expect(results).toEqual([true, true, true]);
 
       // One more sequential call after the cache is populated.
