@@ -11,12 +11,21 @@ import { isPlainObject } from './util.js';
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
- * Safely assign `value` to `dst[key]` without touching the prototype chain —
- * `Object.defineProperty` goes through the descriptor slot, not the setter on
- * `Object.prototype.__proto__`. Combined with the `FORBIDDEN_KEYS` guard, this
- * gives CodeQL the pattern it recognizes for prototype-pollution safety.
+ * Safely assign `value` to `dst[key]` without touching the prototype chain.
+ *
+ * Two layers of defense:
+ *   1. The `FORBIDDEN_KEYS` guard rejects `__proto__`, `constructor`, and
+ *      `prototype` outright — even though `Object.defineProperty` would not
+ *      pollute the prototype (it bypasses the `__proto__` setter and writes
+ *      an own descriptor), CodeQL pattern-matches the assignment in
+ *      isolation, so the explicit guard here is what makes the analyzer
+ *      happy and gives us defense-in-depth against future callers.
+ *   2. `Object.defineProperty` over `dst[key] = value` so that even if a
+ *      forbidden key somehow slipped through, the prototype chain is still
+ *      not mutated.
  */
 function safeSet(dst: Record<string, unknown>, key: string, value: unknown): void {
+  if (FORBIDDEN_KEYS.has(key)) return;
   Object.defineProperty(dst, key, {
     value,
     writable: true,

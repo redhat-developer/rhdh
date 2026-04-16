@@ -11069,6 +11069,7 @@ function escape(s3) {
 // src/merger.ts
 var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
 function safeSet(dst, key, value) {
+  if (FORBIDDEN_KEYS.has(key)) return;
   Object.defineProperty(dst, key, {
     value,
     writable: true,
