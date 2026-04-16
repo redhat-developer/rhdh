@@ -43,6 +43,14 @@ export type DynamicPluginsConfig = {
 
 export const DOCKER_PROTO = 'docker://';
 export const OCI_PROTO = 'oci://';
+/**
+ * Tag suffix that, by convention, opts an OCI plugin into `pullPolicy: Always`
+ * when no explicit policy is set — mirrors the Python script's behaviour and
+ * keeps the two implementations swappable. Always parsed in combination with
+ * the `!plugin-path` separator so a plugin tagged `:latest` (no plugin path)
+ * does not accidentally trigger.
+ */
+export const LATEST_TAG_MARKER = ':latest!';
 export const RHDH_REGISTRY = 'registry.access.redhat.com/rhdh/';
 export const RHDH_FALLBACK = 'quay.io/rhdh/';
 export const CONFIG_HASH_FILE = 'dynamic-plugin-config.hash';

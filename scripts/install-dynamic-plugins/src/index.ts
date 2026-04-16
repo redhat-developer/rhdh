@@ -19,10 +19,12 @@ import {
   DPDY_FILENAME,
   type DynamicPluginsConfig,
   GLOBAL_CONFIG_FILENAME,
+  LATEST_TAG_MARKER,
   LOCK_FILENAME,
   OCI_PROTO,
   type Plugin,
   type PluginMap,
+  PullPolicy,
 } from './types.js';
 import { fileExists, isPlainObject } from './util.js';
 
@@ -240,6 +242,11 @@ function handleSkippedLocals(skipped: Plugin[], globalConfig: Record<string, unk
   }
 }
 
+type InstallOutcome = {
+  pluginPath: string | null;
+  pluginConfig: Record<string, unknown>;
+};
+
 async function installOci(
   plugins: Plugin[],
   root: string,
@@ -249,71 +256,15 @@ async function installOci(
   globalConfig: Record<string, unknown>,
   errors: string[],
 ): Promise<void> {
-  if (plugins.length === 0) return;
-
-  // Fast pre-pass: short-circuit plugins that are definitely a no-op (already
-  // installed, IF_NOT_PRESENT pull policy, no force) without going through the
-  // worker-pool / Promise machinery. Avoids 6-way parallel skopeo invocations
-  // for the common steady-state restart case.
-  const needsWork: Plugin[] = [];
-  for (const plugin of plugins) {
-    if (definitelyNoOp(plugin, installed)) {
-      log(`\t==> ${plugin.package}: already installed, skipping`);
-      installed.delete(plugin.plugin_hash as string);
-      if (isPlainObject(plugin.pluginConfig)) {
-        try {
-          deepMerge(plugin.pluginConfig, globalConfig);
-        } catch (err) {
-          errors.push(`${plugin.package}: ${(err as Error).message}`);
-        }
-      }
-    } else {
-      needsWork.push(plugin);
-    }
-  }
-
-  if (needsWork.length === 0) return;
-  log(
-    `\n======= Installing ${needsWork.length} OCI plugin(s) (${workers} worker${workers === 1 ? '' : 's'})`,
-  );
-
-  const results = await mapConcurrent(needsWork, workers, async plugin => {
-    log(`\n======= Installing OCI plugin ${plugin.package}`);
-    return installOciPlugin(plugin, root, imageCache, installed);
+  await runInstallPipeline({
+    plugins,
+    workers,
+    label: 'OCI',
+    installFn: plugin => installOciPlugin(plugin, root, imageCache, installed),
+    installed,
+    globalConfig,
+    errors,
   });
-
-  for (const outcome of results) {
-    if (!outcome.ok) {
-      errors.push(`${outcome.item.package}: ${outcome.error.message}`);
-      log(`\t==> ERROR: ${outcome.item.package}: ${outcome.error.message}`);
-      continue;
-    }
-    const { value, item } = outcome;
-    if (isPlainObject(value.pluginConfig)) {
-      try {
-        deepMerge(value.pluginConfig, globalConfig);
-      } catch (err) {
-        errors.push(`${item.package}: ${(err as Error).message}`);
-        continue;
-      }
-    }
-    if (value.pluginPath) log(`\t==> Installed ${item.package}`);
-  }
-}
-
-/**
- * Cheap synchronous check: a plugin is "definitely" a no-op when its hash is
- * already on disk, the user did not force a re-download, and the pull policy
- * doesn't demand a remote-digest comparison. ALWAYS-pull plugins still go
- * through the regular install path because they need a `skopeo inspect` to
- * compare local vs remote digest.
- */
-function definitelyNoOp(plugin: Plugin, installed: Map<string, string>): boolean {
-  if (!plugin.plugin_hash || !installed.has(plugin.plugin_hash)) return false;
-  if (plugin.forceDownload) return false;
-  const isLatest = plugin.package.includes(':latest!');
-  const pullPolicy = plugin.pullPolicy ?? (isLatest ? 'Always' : 'IfNotPresent');
-  return pullPolicy !== 'Always';
 }
 
 async function installNpm(
@@ -324,42 +275,71 @@ async function installNpm(
   globalConfig: Record<string, unknown>,
   errors: string[],
 ): Promise<void> {
+  // `npm pack` writes the tarball to `cwd` with a package-derived filename
+  // (`<name>-<version>.tgz`), so concurrent invocations against different
+  // packages don't clash on the filename. The npm CLI cache
+  // (`~/.npm/_cacache`) handles its own locking. Cap defaults to 3 to keep
+  // the registry happy — override with `DYNAMIC_PLUGINS_NPM_WORKERS=1` to
+  // restore the original sequential behaviour.
+  await runInstallPipeline({
+    plugins,
+    workers: getNpmWorkers(),
+    label: 'NPM',
+    installFn: plugin => installNpmPlugin(plugin, root, skipIntegrity, installed),
+    installed,
+    globalConfig,
+    errors,
+  });
+}
+
+type RunInstallPipelineArgs = {
+  plugins: Plugin[];
+  workers: number;
+  label: 'OCI' | 'NPM';
+  installFn: (plugin: Plugin) => Promise<InstallOutcome>;
+  installed: Map<string, string>;
+  globalConfig: Record<string, unknown>;
+  errors: string[];
+};
+
+/**
+ * Shared install pipeline used by both `installOci` and `installNpm`:
+ *   1. Synchronous pre-pass that short-circuits "definitely no-op" plugins
+ *      (hash present, no force, pull policy not Always) without spinning
+ *      up the worker pool — avoids the parallel-skopeo / parallel-npm-pack
+ *      overhead in the steady-state restart case.
+ *   2. `mapConcurrent` over the plugins that actually need work, capped by
+ *      `workers`.
+ *   3. Single-pass over the outcomes that records errors and merges plugin
+ *      configs into the global config.
+ *
+ * Keeping both categories on this shared body so a behaviour change (a new
+ * fast-path filter, a different log format, an extra error pathway) does
+ * not have to be made twice in two slightly-divergent copies.
+ */
+async function runInstallPipeline(args: RunInstallPipelineArgs): Promise<void> {
+  const { plugins, workers, label, installFn, installed, globalConfig, errors } = args;
   if (plugins.length === 0) return;
 
-  // Same fast pre-pass as installOci: skip the worker pool for hash-matched
-  // plugins that don't need any IO.
   const needsWork: Plugin[] = [];
   for (const plugin of plugins) {
     if (definitelyNoOp(plugin, installed)) {
       log(`\t==> ${plugin.package}: already installed, skipping`);
-      installed.delete(plugin.plugin_hash as string);
-      if (isPlainObject(plugin.pluginConfig)) {
-        try {
-          deepMerge(plugin.pluginConfig, globalConfig);
-        } catch (err) {
-          errors.push(`${plugin.package}: ${(err as Error).message}`);
-        }
-      }
+      installed.delete(plugin.plugin_hash);
+      mergeConfigSafely(plugin.pluginConfig, globalConfig, plugin.package, errors);
     } else {
       needsWork.push(plugin);
     }
   }
 
   if (needsWork.length === 0) return;
-  const workers = getNpmWorkers();
   log(
-    `\n======= Installing ${needsWork.length} NPM plugin(s) (${workers} worker${workers === 1 ? '' : 's'})`,
+    `\n======= Installing ${needsWork.length} ${label} plugin(s) (${workers} worker${workers === 1 ? '' : 's'})`,
   );
 
-  // `npm pack` writes the tarball to `cwd` with a package-derived filename
-  // (`<name>-<version>.tgz`), so concurrent invocations against different
-  // packages don't clash on the filename. The npm CLI cache (~/.npm/_cacache)
-  // handles its own locking. Cap defaults to 3 to keep the registry happy —
-  // override with `DYNAMIC_PLUGINS_NPM_WORKERS=1` to restore the original
-  // sequential behaviour.
   const results = await mapConcurrent(needsWork, workers, async plugin => {
-    log(`\n======= Installing NPM plugin ${plugin.package}`);
-    return installNpmPlugin(plugin, root, skipIntegrity, installed);
+    log(`\n======= Installing ${label} plugin ${plugin.package}`);
+    return installFn(plugin);
   });
 
   for (const outcome of results) {
@@ -369,16 +349,57 @@ async function installNpm(
       continue;
     }
     const { value, item } = outcome;
-    if (isPlainObject(value.pluginConfig)) {
-      try {
-        deepMerge(value.pluginConfig, globalConfig);
-      } catch (err) {
-        errors.push(`${item.package}: ${(err as Error).message}`);
-        continue;
-      }
+    if (
+      mergeConfigSafely(value.pluginConfig, globalConfig, item.package, errors) &&
+      value.pluginPath
+    ) {
+      log(`\t==> Installed ${item.package}`);
     }
-    if (value.pluginPath) log(`\t==> Installed ${item.package}`);
   }
+}
+
+/**
+ * Merge `pluginConfig` into `globalConfig` if it is a plain object. Returns
+ * `false` and pushes onto `errors` when `deepMerge` raises a key conflict —
+ * the caller uses this to skip the "Installed" success log so the operator
+ * sees only the error line for the affected plugin.
+ */
+function mergeConfigSafely(
+  pluginConfig: Record<string, unknown> | undefined,
+  globalConfig: Record<string, unknown>,
+  pkg: string,
+  errors: string[],
+): boolean {
+  if (!isPlainObject(pluginConfig)) return true;
+  try {
+    deepMerge(pluginConfig, globalConfig);
+    return true;
+  } catch (err) {
+    errors.push(`${pkg}: ${(err as Error).message}`);
+    return false;
+  }
+}
+
+/**
+ * Cheap synchronous check: a plugin is "definitely" a no-op when its hash
+ * is already on disk, the user did not force a re-download, and the pull
+ * policy doesn't demand a remote-digest comparison. ALWAYS-pull plugins
+ * still go through the regular install path because they need a
+ * `skopeo inspect` to compare local vs remote digest.
+ *
+ * Type guard: narrows `plugin.plugin_hash` to a non-undefined `string`
+ * inside the `if (definitelyNoOp(...))` branch so the caller does not
+ * need a `as string` cast on the subsequent `installed.delete` call.
+ */
+function definitelyNoOp(
+  plugin: Plugin,
+  installed: Map<string, string>,
+): plugin is Plugin & { plugin_hash: string } {
+  if (!plugin.plugin_hash || !installed.has(plugin.plugin_hash)) return false;
+  if (plugin.forceDownload) return false;
+  const isLatest = plugin.package.includes(LATEST_TAG_MARKER);
+  const pullPolicy = plugin.pullPolicy ?? (isLatest ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT);
+  return pullPolicy !== PullPolicy.ALWAYS;
 }
 
 async function cleanupRemoved(root: string, installed: Map<string, string>): Promise<void> {

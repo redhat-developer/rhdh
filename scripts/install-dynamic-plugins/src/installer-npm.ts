@@ -5,7 +5,7 @@ import { verifyIntegrity } from './integrity.js';
 import { log } from './log.js';
 import { run } from './run.js';
 import { extractNpmPackage } from './tar-extract.js';
-import { CONFIG_HASH_FILE, type Plugin, PullPolicy } from './types.js';
+import { CONFIG_HASH_FILE, type Plugin } from './types.js';
 import { markAsFresh } from './util.js';
 
 export type NpmInstallResult = {
@@ -15,9 +15,14 @@ export type NpmInstallResult = {
 
 /**
  * Install a single NPM-packaged (or local) plugin into `destination`.
- * Uses `npm pack` to produce the tarball, verifies integrity for remote
- * packages (unless skipped), then extracts. NPM installs are kept sequential
- * (no outer parallelism) to avoid registry throttling.
+ * Runs `npm pack` to produce the tarball, verifies integrity for remote
+ * packages (unless skipped), then extracts.
+ *
+ * Concurrency is the caller's responsibility — `installNpm` in `index.ts`
+ * runs a bounded `mapConcurrent` (default 3 workers via `getNpmWorkers()`)
+ * over a list of plugins that have already passed the `definitelyNoOp`
+ * pre-pass, so by the time this function is called the plugin definitely
+ * needs work.
  */
 export async function installNpmPlugin(
   plugin: Plugin,
@@ -33,17 +38,7 @@ export async function installNpmPlugin(
     throw new InstallException(`Internal error: plugin ${plugin.package} missing plugin_hash`);
   }
   const pkg = plugin.package;
-  const force = plugin.forceDownload ?? false;
   const config: Record<string, unknown> = plugin.pluginConfig ?? {};
-
-  if (installed.has(hash) && !force) {
-    const pullPolicy = plugin.pullPolicy ?? PullPolicy.IF_NOT_PRESENT;
-    if (pullPolicy !== PullPolicy.ALWAYS) {
-      log('\t==> Already installed, skipping');
-      installed.delete(hash);
-      return { pluginPath: null, pluginConfig: config };
-    }
-  }
 
   const isLocal = pkg.startsWith('./');
   const actualPkg = isLocal ? path.join(process.cwd(), pkg.slice(2)) : pkg;

@@ -4,7 +4,13 @@ import { InstallException } from './errors.js';
 import { type OciImageCache } from './image-cache.js';
 import { log } from './log.js';
 import { extractOciPlugin } from './tar-extract.js';
-import { CONFIG_HASH_FILE, IMAGE_HASH_FILE, type Plugin, PullPolicy } from './types.js';
+import {
+  CONFIG_HASH_FILE,
+  IMAGE_HASH_FILE,
+  LATEST_TAG_MARKER,
+  type Plugin,
+  PullPolicy,
+} from './types.js';
 import { fileExists, markAsFresh } from './util.js';
 
 export type OciInstallResult = {
@@ -35,7 +41,7 @@ export async function installOciPlugin(
   const config: Record<string, unknown> = plugin.pluginConfig ?? {};
   const pullPolicy = resolvePullPolicy(plugin, pkg);
 
-  if (await isAlreadyInstalled(plugin, hash, pkg, pullPolicy, destination, imageCache, installed)) {
+  if (await isAlreadyInstalled(pkg, hash, pullPolicy, destination, imageCache, installed)) {
     installed.delete(hash);
     return { pluginPath: null, pluginConfig: config };
   }
@@ -62,7 +68,7 @@ export async function installOciPlugin(
 
 function resolvePullPolicy(plugin: Plugin, pkg: string): PullPolicy {
   if (plugin.pullPolicy) return plugin.pullPolicy;
-  return pkg.includes(':latest!') ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT;
+  return pkg.includes(LATEST_TAG_MARKER) ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT;
 }
 
 /**
@@ -71,9 +77,8 @@ function resolvePullPolicy(plugin: Plugin, pkg: string): PullPolicy {
  *   - Always policy → skip only when the remote digest matches what's on disk
  */
 async function isAlreadyInstalled(
-  _plugin: Plugin,
-  hash: string,
   pkg: string,
+  hash: string,
   pullPolicy: PullPolicy,
   destination: string,
   imageCache: OciImageCache,
@@ -83,7 +88,7 @@ async function isAlreadyInstalled(
   if (pathInstalled === undefined) return false;
 
   if (pullPolicy === PullPolicy.IF_NOT_PRESENT) {
-    log('\t==> Already installed, skipping');
+    log(`\t==> ${pkg}: already installed, skipping`);
     return true;
   }
 
@@ -98,6 +103,6 @@ async function isAlreadyInstalled(
   const remoteDigest = await imageCache.getDigest(imagePart);
   if (localDigest !== remoteDigest) return false;
 
-  log('\t==> Digest unchanged, skipping');
+  log(`\t==> ${pkg}: digest unchanged, skipping`);
   return true;
 }
