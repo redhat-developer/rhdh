@@ -8,7 +8,7 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node", "jest"],
+    "types": ["node", "vitest/globals"],
     "noEmit": true
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts", "esbuild.config.mjs"],
