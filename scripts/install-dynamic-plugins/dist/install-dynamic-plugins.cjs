@@ -11431,39 +11431,52 @@ async function runInstaller(root) {
   log(`======= Workers: ${workers} (CPUs: ${os4.cpus().length})`);
   const configFileAbs = path9.resolve(CONFIG_FILE);
   const configDir = path9.dirname(configFileAbs);
-  log(`======= Config file: ${configFileAbs}`);
-  const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? "";
-  let catalogDpdy = null;
-  if (catalogImage) {
-    const entitiesDir = process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path9.join(os4.tmpdir(), "extensions");
-    catalogDpdy = await extractCatalogIndex(skopeo, catalogImage, root, entitiesDir);
-  }
-  const skipIntegrity = (process.env.SKIP_INTEGRITY_CHECK ?? "").toLowerCase() === "true";
   const globalConfigFile = path9.join(root, GLOBAL_CONFIG_FILENAME);
+  log(`======= Config file: ${configFileAbs}`);
+  const catalogDpdy = await maybeExtractCatalogIndex(skopeo, root);
+  const content = await loadDynamicPluginsConfig(configFileAbs, globalConfigFile);
+  if (!content) return 0;
+  const imageCache = new OciImageCache(
+    skopeo,
+    await fs10.mkdtemp(path9.join(os4.tmpdir(), "rhdh-oci-cache-"))
+  );
+  const allPlugins = await loadAllPlugins(content, configFileAbs, configDir, catalogDpdy, imageCache);
+  const installed = await readInstalledPluginHashes(root);
+  const globalConfig = {
+    dynamicPlugins: { rootDirectory: "dynamic-plugins-root" }
+  };
+  const { oci, npm, skipped } = categorize(allPlugins);
+  handleSkippedLocals(skipped, globalConfig);
+  const skipIntegrity = (process.env.SKIP_INTEGRITY_CHECK ?? "").toLowerCase() === "true";
+  const errors = [];
+  await installOci(oci, root, imageCache, installed, workers, globalConfig, errors);
+  await installNpm(npm, root, skipIntegrity, installed, globalConfig, errors);
+  return finalizeInstall(errors, globalConfigFile, globalConfig, root, installed);
+}
+async function maybeExtractCatalogIndex(skopeo, root) {
+  const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? "";
+  if (!catalogImage) return null;
+  const entitiesDir = process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path9.join(os4.tmpdir(), "extensions");
+  return extractCatalogIndex(skopeo, catalogImage, root, entitiesDir);
+}
+async function loadDynamicPluginsConfig(configFileAbs, globalConfigFile) {
   if (!await fileExists(configFileAbs)) {
     log(`No ${CONFIG_FILE} found at ${configFileAbs}. Skipping.`);
     await fs10.writeFile(globalConfigFile, "");
-    return 0;
+    return null;
   }
   const rawContent = await fs10.readFile(configFileAbs, "utf8");
   const content = (0, import_yaml2.parse)(rawContent);
   if (!content) {
     log(`${configFileAbs} is empty. Skipping.`);
     await fs10.writeFile(globalConfigFile, "");
-    return 0;
+    return null;
   }
-  const imageCache = new OciImageCache(
-    skopeo,
-    await fs10.mkdtemp(path9.join(os4.tmpdir(), "rhdh-oci-cache-"))
-  );
+  return content;
+}
+async function loadAllPlugins(content, configFileAbs, configDir, catalogDpdy, imageCache) {
   const allPlugins = {};
-  const includes = (content.includes ?? []).map(
-    (inc) => path9.isAbsolute(inc) ? inc : path9.resolve(configDir, inc)
-  );
-  if (catalogDpdy) {
-    const idx = includes.findIndex((inc) => path9.basename(inc) === DPDY_FILENAME);
-    if (idx !== -1) includes[idx] = catalogDpdy;
-  }
+  const includes = resolveIncludes(content.includes ?? [], configDir, catalogDpdy);
   for (const inc of includes) {
     if (!await fileExists(inc)) {
       log(`WARNING: include file ${inc} not found, skipping`);
@@ -11492,16 +11505,17 @@ async function runInstaller(root) {
   for (const p2 of Object.values(allPlugins)) {
     p2.plugin_hash = computePluginHash(p2);
   }
-  const installed = await readInstalledPluginHashes(root);
-  const globalConfig = {
-    dynamicPlugins: { rootDirectory: "dynamic-plugins-root" }
-  };
-  const { oci, npm, skipped } = categorize(allPlugins);
-  handleSkippedLocals(skipped, globalConfig);
-  const errors = [];
-  await installOci(oci, root, imageCache, installed, workers, globalConfig, errors);
-  await installNpm(npm, root, skipIntegrity, installed, globalConfig, errors);
-  return finalizeInstall(errors, globalConfigFile, globalConfig, root, installed);
+  return allPlugins;
+}
+function resolveIncludes(rawIncludes, configDir, catalogDpdy) {
+  const includes = rawIncludes.map(
+    (inc) => path9.isAbsolute(inc) ? inc : path9.resolve(configDir, inc)
+  );
+  if (catalogDpdy) {
+    const idx = includes.findIndex((inc) => path9.basename(inc) === DPDY_FILENAME);
+    if (idx !== -1) includes[idx] = catalogDpdy;
+  }
+  return includes;
 }
 async function finalizeInstall(errors, globalConfigFile, globalConfig, root, installed) {
   if (errors.length > 0) {

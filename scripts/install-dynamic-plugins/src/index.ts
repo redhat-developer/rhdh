@@ -55,55 +55,83 @@ async function runInstaller(root: string): Promise<number> {
   const workers = getWorkers();
   log(`======= Workers: ${workers} (CPUs: ${os.cpus().length})`);
 
-  // Resolve the config file and include paths against the current working
-  // directory at startup. Includes are resolved relative to the config file's
-  // directory (matches the Python installer's behaviour and makes the
-  // cwd-dependency explicit to operators reading the logs).
+  // Resolve the config file path against CWD at startup so the dependency on
+  // CWD is explicit in the operator log; includes are resolved relative to
+  // the config file's directory (matches the Python installer).
   const configFileAbs = path.resolve(CONFIG_FILE);
   const configDir = path.dirname(configFileAbs);
+  const globalConfigFile = path.join(root, GLOBAL_CONFIG_FILENAME);
   log(`======= Config file: ${configFileAbs}`);
 
-  // Optional catalog index extraction — surfaces `dynamic-plugins.default.yaml`.
-  const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? '';
-  let catalogDpdy: string | null = null;
-  if (catalogImage) {
-    const entitiesDir =
-      process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path.join(os.tmpdir(), 'extensions');
-    catalogDpdy = await extractCatalogIndex(skopeo, catalogImage, root, entitiesDir);
-  }
-
-  const skipIntegrity = (process.env.SKIP_INTEGRITY_CHECK ?? '').toLowerCase() === 'true';
-
-  const globalConfigFile = path.join(root, GLOBAL_CONFIG_FILENAME);
-  if (!(await fileExists(configFileAbs))) {
-    log(`No ${CONFIG_FILE} found at ${configFileAbs}. Skipping.`);
-    await fs.writeFile(globalConfigFile, '');
-    return 0;
-  }
-
-  const rawContent = await fs.readFile(configFileAbs, 'utf8');
-  const content = parseYaml(rawContent) as DynamicPluginsConfig | null;
-  if (!content) {
-    log(`${configFileAbs} is empty. Skipping.`);
-    await fs.writeFile(globalConfigFile, '');
-    return 0;
-  }
+  const catalogDpdy = await maybeExtractCatalogIndex(skopeo, root);
+  const content = await loadDynamicPluginsConfig(configFileAbs, globalConfigFile);
+  if (!content) return 0;
 
   const imageCache = new OciImageCache(
     skopeo,
     await fs.mkdtemp(path.join(os.tmpdir(), 'rhdh-oci-cache-')),
   );
 
-  const allPlugins: PluginMap = {};
-  const includes = (content.includes ?? []).map(inc =>
-    path.isAbsolute(inc) ? inc : path.resolve(configDir, inc),
-  );
+  const allPlugins = await loadAllPlugins(content, configFileAbs, configDir, catalogDpdy, imageCache);
+  const installed = await readInstalledPluginHashes(root);
+  const globalConfig: Record<string, unknown> = {
+    dynamicPlugins: { rootDirectory: 'dynamic-plugins-root' },
+  };
+  const { oci, npm, skipped } = categorize(allPlugins);
+  handleSkippedLocals(skipped, globalConfig);
 
-  // Substitute the placeholder DPDY include with the extracted catalog-index file.
-  if (catalogDpdy) {
-    const idx = includes.findIndex(inc => path.basename(inc) === DPDY_FILENAME);
-    if (idx !== -1) includes[idx] = catalogDpdy;
+  const skipIntegrity = (process.env.SKIP_INTEGRITY_CHECK ?? '').toLowerCase() === 'true';
+  const errors: string[] = [];
+  await installOci(oci, root, imageCache, installed, workers, globalConfig, errors);
+  await installNpm(npm, root, skipIntegrity, installed, globalConfig, errors);
+
+  return finalizeInstall(errors, globalConfigFile, globalConfig, root, installed);
+}
+
+/** Optional `CATALOG_INDEX_IMAGE` extraction — returns the path to the
+ * extracted `dynamic-plugins.default.yaml`, or `null` when the env var is
+ * unset. */
+async function maybeExtractCatalogIndex(skopeo: Skopeo, root: string): Promise<string | null> {
+  const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? '';
+  if (!catalogImage) return null;
+  const entitiesDir =
+    process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path.join(os.tmpdir(), 'extensions');
+  return extractCatalogIndex(skopeo, catalogImage, root, entitiesDir);
+}
+
+/** Read and parse `dynamic-plugins.yaml`. Writes an empty global config and
+ * returns `null` for the two short-circuit cases (file missing, file empty)
+ * so the caller can early-exit with code 0. */
+async function loadDynamicPluginsConfig(
+  configFileAbs: string,
+  globalConfigFile: string,
+): Promise<DynamicPluginsConfig | null> {
+  if (!(await fileExists(configFileAbs))) {
+    log(`No ${CONFIG_FILE} found at ${configFileAbs}. Skipping.`);
+    await fs.writeFile(globalConfigFile, '');
+    return null;
   }
+  const rawContent = await fs.readFile(configFileAbs, 'utf8');
+  const content = parseYaml(rawContent) as DynamicPluginsConfig | null;
+  if (!content) {
+    log(`${configFileAbs} is empty. Skipping.`);
+    await fs.writeFile(globalConfigFile, '');
+    return null;
+  }
+  return content;
+}
+
+/** Resolve include paths, substitute the catalog-index placeholder, merge
+ * everything into a single `PluginMap`, and compute change-detection hashes. */
+async function loadAllPlugins(
+  content: DynamicPluginsConfig,
+  configFileAbs: string,
+  configDir: string,
+  catalogDpdy: string | null,
+  imageCache: OciImageCache,
+): Promise<PluginMap> {
+  const allPlugins: PluginMap = {};
+  const includes = resolveIncludes(content.includes ?? [], configDir, catalogDpdy);
 
   for (const inc of includes) {
     if (!(await fileExists(inc))) {
@@ -121,21 +149,22 @@ async function runInstaller(root: string): Promise<number> {
   for (const p of Object.values(allPlugins)) {
     p.plugin_hash = computePluginHash(p);
   }
+  return allPlugins;
+}
 
-  const installed = await readInstalledPluginHashes(root);
-
-  const globalConfig: Record<string, unknown> = {
-    dynamicPlugins: { rootDirectory: 'dynamic-plugins-root' },
-  };
-
-  const { oci, npm, skipped } = categorize(allPlugins);
-  handleSkippedLocals(skipped, globalConfig);
-
-  const errors: string[] = [];
-  await installOci(oci, root, imageCache, installed, workers, globalConfig, errors);
-  await installNpm(npm, root, skipIntegrity, installed, globalConfig, errors);
-
-  return finalizeInstall(errors, globalConfigFile, globalConfig, root, installed);
+function resolveIncludes(
+  rawIncludes: readonly string[],
+  configDir: string,
+  catalogDpdy: string | null,
+): string[] {
+  const includes = rawIncludes.map(inc =>
+    path.isAbsolute(inc) ? inc : path.resolve(configDir, inc),
+  );
+  if (catalogDpdy) {
+    const idx = includes.findIndex(inc => path.basename(inc) === DPDY_FILENAME);
+    if (idx !== -1) includes[idx] = catalogDpdy;
+  }
+  return includes;
 }
 
 export async function finalizeInstall(
