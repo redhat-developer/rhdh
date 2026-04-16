@@ -2,6 +2,7 @@ import { Page, expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
+import { APIHelper } from "../utils/api-helper";
 import {
   getTranslations,
   getCurrentLanguage,
@@ -70,32 +71,38 @@ test.describe("Test timestamp column on Catalog", () => {
     await uiHelper.searchInputPlaceholder("timestamp-test-created");
     await uiHelper.verifyText("timestamp-test-created");
 
-    // Locate the row and its "Created At" cell using the row's unique text
-    const row = page
+    // Locate the row containing the timestamped entity and its "Created At" cell
+    const timestampRow = page
       .getByRole("row")
       .filter({ hasText: "timestamp-test-created" });
-    const createdAtCell = row.locator("td").filter({
+    const createdAtCell = timestampRow.getByRole("cell").filter({
       hasText: /\d{1,2}\/\d{1,2}\/\d{4}/,
     });
 
-    // Verify the "Created At" cell has a value before sorting
+    // Verify the "Created At" cell has a date value before sorting
     await expect(createdAtCell).toBeVisible();
+    const valueBefore = await createdAtCell.textContent();
 
     const column = page.getByRole("columnheader", {
       name: "Created At",
       exact: true,
     });
 
-    // Click to sort ascending
+    // Sort ascending — the cell value should be preserved
     await column.click();
-    await expect(createdAtCell).toBeVisible();
+    await expect(createdAtCell).toHaveText(valueBefore);
 
-    // Click again to sort descending
+    // Sort descending — the cell value should still be preserved
     await column.click();
-    await expect(createdAtCell).toBeVisible();
+    await expect(createdAtCell).toHaveText(valueBefore);
   });
 
   test.afterAll(async () => {
+    // Unregister the imported entity to ensure clean state for retries
+    const id = await APIHelper.getLocationIdByTarget(component);
+    if (id) {
+      await APIHelper.deleteEntityLocationById(id);
+    }
     await page.close();
   });
 });
