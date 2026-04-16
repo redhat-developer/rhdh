@@ -4,7 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { cleanupCatalogIndexTemp, extractCatalogIndex } from './catalog-index.js';
-import { getNpmWorkers, getWorkers, mapConcurrent } from './concurrency.js';
+import { getNpmWorkers, getWorkers, mapConcurrent, type Outcome } from './concurrency.js';
 import { InstallException } from './errors.js';
 import { OciImageCache } from './image-cache.js';
 import { installNpmPlugin } from './installer-npm.js';
@@ -74,7 +74,13 @@ async function runInstaller(root: string): Promise<number> {
     await fs.mkdtemp(path.join(os.tmpdir(), 'rhdh-oci-cache-')),
   );
 
-  const allPlugins = await loadAllPlugins(content, configFileAbs, configDir, catalogDpdy, imageCache);
+  const allPlugins = await loadAllPlugins(
+    content,
+    configFileAbs,
+    configDir,
+    catalogDpdy,
+    imageCache,
+  );
   const installed = await readInstalledPluginHashes(root);
   const globalConfig: Record<string, unknown> = {
     dynamicPlugins: { rootDirectory: 'dynamic-plugins-root' },
@@ -321,6 +327,35 @@ async function runInstallPipeline(args: RunInstallPipelineArgs): Promise<void> {
   const { plugins, workers, label, installFn, installed, globalConfig, errors } = args;
   if (plugins.length === 0) return;
 
+  const needsWork = partitionDefinitelyNoOp(plugins, installed, globalConfig, errors);
+  if (needsWork.length === 0) return;
+
+  const workerSuffix = workers === 1 ? '' : 's';
+  log(
+    `\n======= Installing ${needsWork.length} ${label} plugin(s) (${workers} worker${workerSuffix})`,
+  );
+
+  const results = await mapConcurrent(needsWork, workers, async plugin => {
+    log(`\n======= Installing ${label} plugin ${plugin.package}`);
+    return installFn(plugin);
+  });
+
+  applyInstallOutcomes(results, globalConfig, errors);
+}
+
+/**
+ * Synchronous pre-pass: drop plugins that are definitely a no-op (hash on
+ * disk, not forced, not Always-pull) without paying the worker-pool /
+ * Promise overhead, and return the remaining plugins that actually need
+ * installation work. Side-effect: removes the no-op plugins from
+ * `installed` and merges their `pluginConfig` into `globalConfig`.
+ */
+function partitionDefinitelyNoOp(
+  plugins: Plugin[],
+  installed: Map<string, string>,
+  globalConfig: Record<string, unknown>,
+  errors: string[],
+): Plugin[] {
   const needsWork: Plugin[] = [];
   for (const plugin of plugins) {
     if (definitelyNoOp(plugin, installed)) {
@@ -331,17 +366,19 @@ async function runInstallPipeline(args: RunInstallPipelineArgs): Promise<void> {
       needsWork.push(plugin);
     }
   }
+  return needsWork;
+}
 
-  if (needsWork.length === 0) return;
-  log(
-    `\n======= Installing ${needsWork.length} ${label} plugin(s) (${workers} worker${workers === 1 ? '' : 's'})`,
-  );
-
-  const results = await mapConcurrent(needsWork, workers, async plugin => {
-    log(`\n======= Installing ${label} plugin ${plugin.package}`);
-    return installFn(plugin);
-  });
-
+/**
+ * Drain a `mapConcurrent` outcome list: record errors, merge configs into
+ * the global config, log success lines. Pulled out of `runInstallPipeline`
+ * to keep that orchestrator small enough to read top-to-bottom.
+ */
+function applyInstallOutcomes(
+  results: ReadonlyArray<Outcome<InstallOutcome, Plugin>>,
+  globalConfig: Record<string, unknown>,
+  errors: string[],
+): void {
   for (const outcome of results) {
     if (!outcome.ok) {
       errors.push(`${outcome.item.package}: ${outcome.error.message}`);
@@ -349,10 +386,8 @@ async function runInstallPipeline(args: RunInstallPipelineArgs): Promise<void> {
       continue;
     }
     const { value, item } = outcome;
-    if (
-      mergeConfigSafely(value.pluginConfig, globalConfig, item.package, errors) &&
-      value.pluginPath
-    ) {
+    const merged = mergeConfigSafely(value.pluginConfig, globalConfig, item.package, errors);
+    if (merged && value.pluginPath) {
       log(`\t==> Installed ${item.package}`);
     }
   }
@@ -398,7 +433,8 @@ function definitelyNoOp(
   if (!plugin.plugin_hash || !installed.has(plugin.plugin_hash)) return false;
   if (plugin.forceDownload) return false;
   const isLatest = plugin.package.includes(LATEST_TAG_MARKER);
-  const pullPolicy = plugin.pullPolicy ?? (isLatest ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT);
+  const pullPolicy =
+    plugin.pullPolicy ?? (isLatest ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT);
   return pullPolicy !== PullPolicy.ALWAYS;
 }
 

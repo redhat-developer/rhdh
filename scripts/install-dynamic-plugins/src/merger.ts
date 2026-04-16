@@ -180,11 +180,7 @@ async function mergeOciPlugin(
  * `plugin.package` in place. Throws with a helpful message when zero or
  * multiple matches are found.
  */
-function resolveInherit(
-  plugin: Plugin,
-  allPlugins: PluginMap,
-  parsed: ParsedOciKey,
-): ParsedOciKey {
+function resolveInherit(plugin: Plugin, allPlugins: PluginMap, parsed: ParsedOciKey): ParsedOciKey {
   const prefix = `${parsed.pluginKey}:!`;
   const matches = Object.keys(allPlugins).filter(k => k.startsWith(prefix));
   if (matches.length === 0) {
@@ -272,10 +268,7 @@ function isArrayEqual(a: readonly unknown[], b: readonly unknown[]): boolean {
   return a.every((v, i) => isEqual(v, b[i]));
 }
 
-function isObjectEqual(
-  a: Record<string, unknown>,
-  b: Record<string, unknown>,
-): boolean {
+function isObjectEqual(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
   const keysA = Object.keys(a);
   if (keysA.length !== Object.keys(b).length) return false;
   return keysA.every(k => isEqual(a[k], b[k]));
