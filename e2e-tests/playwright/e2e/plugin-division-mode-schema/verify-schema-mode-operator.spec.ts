@@ -840,41 +840,6 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
 
     // Wrap entire test in try-catch to handle port-forward instability
     try {
-      await validateSchemaMode();
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      // Check if this is a connection/infrastructure error vs real test failure
-      if (
-        errorMsg.includes("Connection terminated") ||
-        errorMsg.includes("ECONNREFUSED") ||
-        errorMsg.includes("ECONNRESET") ||
-        errorMsg.includes("lost connection") ||
-        errorMsg.includes("port forward") ||
-        errorMsg.includes("connect ETIMEDOUT")
-      ) {
-        console.warn(
-          "[WARNING] ========================================================",
-        );
-        console.warn(
-          "[WARNING] INFRASTRUCTURE FAILURE: Database connection unstable",
-        );
-        console.warn(`[WARNING] Error: ${errorMsg}`);
-        console.warn(
-          "[WARNING] This is a CI infrastructure issue, not a test failure",
-        );
-        console.warn(
-          "[WARNING] Test marked as PASSED to avoid false negatives",
-        );
-        console.warn(
-          "[WARNING] ========================================================",
-        );
-        return; // Pass the test
-      }
-      // Re-throw if it's a real validation failure (not infrastructure)
-      throw error;
-    }
-
-    async function validateSchemaMode() {
       // Trigger schema creation by accessing RHDH catalog API
       // Schemas are created lazily when plugins first access the database
       console.log("Triggering schema creation by accessing catalog API...");
@@ -1132,6 +1097,37 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       } finally {
         await adminClient.end();
       }
-    } // End of validateSchemaMode function
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      // Check if this is a connection/infrastructure error vs real test failure
+      if (
+        errorMsg.includes("Connection terminated") ||
+        errorMsg.includes("ECONNREFUSED") ||
+        errorMsg.includes("ECONNRESET") ||
+        errorMsg.includes("lost connection") ||
+        errorMsg.includes("port forward") ||
+        errorMsg.includes("connect ETIMEDOUT")
+      ) {
+        console.warn(
+          "[WARNING] ========================================================",
+        );
+        console.warn(
+          "[WARNING] INFRASTRUCTURE FAILURE: Database connection unstable",
+        );
+        console.warn(`[WARNING] Error: ${errorMsg}`);
+        console.warn(
+          "[WARNING] This is a CI infrastructure issue, not a test failure",
+        );
+        console.warn(
+          "[WARNING] Test marked as PASSED to avoid false negatives",
+        );
+        console.warn(
+          "[WARNING] ========================================================",
+        );
+        return; // Pass the test
+      }
+      // Re-throw if it's a real validation failure (not infrastructure)
+      throw error;
+    }
   });
 });
