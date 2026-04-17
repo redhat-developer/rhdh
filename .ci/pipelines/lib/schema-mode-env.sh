@@ -39,25 +39,50 @@ configure_schema_mode_runtime_env() {
       fi
     done
 
-    if [[ -z "${postgres_service}" ]]; then
-      log::warn "Schema-mode (${install_kind}): PostgreSQL service not found in ${runtime_namespace}; schema tests remain opt-in."
-      return 1
+    if [[ -n "${postgres_service}" ]]; then
+      local -a secret_candidates=("postgres-cred" "rhdh-postgresql" "${rhdh_psql_svc_name}")
+      local sec
+      for sec in "${secret_candidates[@]}"; do
+        if ! oc get secret "${sec}" -n "${runtime_namespace}" &> /dev/null; then
+          continue
+        fi
+        admin_password=$(oc get secret "${sec}" -n "${runtime_namespace}" -o jsonpath='{.data.postgres-password}' 2> /dev/null | base64 -d || true)
+        if [[ -z "${admin_password}" ]]; then
+          admin_password=$(oc get secret "${sec}" -n "${runtime_namespace}" -o jsonpath='{.data.POSTGRES_PASSWORD}' 2> /dev/null | base64 -d || true)
+        fi
+        if [[ -n "${admin_password}" ]]; then
+          break
+        fi
+      done
+    else
+      # Fallback to external Crunchy PostgreSQL cluster (same as Helm)
+      local pdb="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
+      local crunchy_cluster="${SCHEMA_MODE_CRUNCHY_CLUSTER_NAME:-postgress-external-db}"
+      if oc get svc postgress-external-db-primary -n "${pdb}" &> /dev/null; then
+        forward_namespace="${pdb}"
+        log::info "Schema-mode (operator): no in-cluster Postgres Service in ${runtime_namespace}; using Crunchy cluster in ${pdb}"
+        local crunchy_admin_secret="${crunchy_cluster}-pguser-janus-idp"
+        if oc get secret "${crunchy_admin_secret}" -n "${pdb}" &> /dev/null; then
+          admin_password=$(oc get secret "${crunchy_admin_secret}" -n "${pdb}" -o jsonpath='{.data.password}' 2> /dev/null | base64 -d || true)
+        fi
+        if [[ -z "${admin_password}" ]]; then
+          log::warn "Schema-mode (operator): could not read ${crunchy_admin_secret} password in ${pdb}; schema tests remain opt-in."
+          return 1
+        fi
+        postgres_service=$(oc get pods -n "${pdb}" \
+          -l "postgres-operator.crunchydata.com/cluster=${crunchy_cluster},postgres-operator.crunchydata.com/data=postgres" \
+          --field-selector=status.phase=Running \
+          -o jsonpath='{.items[0].metadata.name}' 2> /dev/null)
+        if [[ -z "${postgres_service}" ]]; then
+          log::warn "Schema-mode (operator): no Running Postgres pod in ${pdb} for cluster ${crunchy_cluster}; schema tests remain opt-in."
+          return 1
+        fi
+        forward_via_pod=1
+      else
+        log::warn "Schema-mode (operator): PostgreSQL service not found in ${runtime_namespace} and no postgress-external-db-primary in ${pdb}; schema tests remain opt-in."
+        return 1
+      fi
     fi
-
-    local -a secret_candidates=("postgres-cred" "rhdh-postgresql" "${rhdh_psql_svc_name}")
-    local sec
-    for sec in "${secret_candidates[@]}"; do
-      if ! oc get secret "${sec}" -n "${runtime_namespace}" &> /dev/null; then
-        continue
-      fi
-      admin_password=$(oc get secret "${sec}" -n "${runtime_namespace}" -o jsonpath='{.data.postgres-password}' 2> /dev/null | base64 -d || true)
-      if [[ -z "${admin_password}" ]]; then
-        admin_password=$(oc get secret "${sec}" -n "${runtime_namespace}" -o jsonpath='{.data.POSTGRES_PASSWORD}' 2> /dev/null | base64 -d || true)
-      fi
-      if [[ -n "${admin_password}" ]]; then
-        break
-      fi
-    done
 
     if [[ -z "${admin_password}" ]]; then
       log::warn "Schema-mode (${install_kind}): unable to resolve PostgreSQL admin password in ${runtime_namespace}; schema tests remain opt-in."
