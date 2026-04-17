@@ -1163,18 +1163,25 @@ def pre_merge_oci_disabled_state(
         package = plugin.get('package', '')
         if not isinstance(package, str) or not package.startswith(OCI_PROTOCOL_PREFIX):
             return
+        disabled = plugin.get('disabled', False)
         match = re.match(OciPackageMerger.EXPECTED_OCI_PATTERN, package)
         if not match:
+            if disabled:
+                print(f"WARNING: Skipping disabled OCI plugin with invalid format: \'{package}\' in {source_file}. Expected format: \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}", flush=True)
+                return
             raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') in {source_file} where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}")
         registry = match.group(1)
         path = match.group(4)  # None for path-less
-        disabled = plugin.get('disabled', False)
 
         entry_key = (registry, path)
         if entry_key not in per_entry_state:
             per_entry_state[entry_key] = (disabled, level)
         elif per_entry_state[entry_key][1] == level:
             path_suffix = f"!{path}" if path else ""
+            if disabled:
+                print(f"WARNING: Skipping duplicate disabled OCI plugin configuration for {registry}{path_suffix} in {source_file}", flush=True)
+                return
+
             raise InstallException(
                 f"Duplicate OCI plugin configuration for {registry}{path_suffix} "
                 f"found at the same level in {source_file}: {package}"
@@ -1201,11 +1208,21 @@ def pre_merge_oci_disabled_state(
             paths_formatted = '\n  - '.join(
                 f"{path} (in {src})" for path, src in sorted(path_entries.items())
             )
+            pathless_disabled, _ = per_entry_state[(registry, None)]
+            if pathless_disabled:
+                print(
+                    f"WARNING: Skipping disabled ambiguous path-less OCI reference for {registry} in {pathless_source}: "
+                    f"multiple path-specific entries exist:\n  - {paths_formatted}\n"
+                    f"Cannot use path-less syntax for multi-plugin images. "
+                    f"Please specify a !<plugin-path> suffix for the plugin",
+                    flush=True
+                )
+                continue
             raise InstallException(
                 f"Ambiguous path-less OCI reference for {registry} in {pathless_source}: "
                 f"multiple path-specific entries exist:\n  - {paths_formatted}\n"
                 f"Cannot use path-less syntax for multi-plugin images. "
-                f"Please specify !<plugin-path> for the plugin."
+                f"Please specify a !<plugin-path> suffix for the plugin."
             )
 
     # Determine effective disabled state for each registry without explicit path.
