@@ -715,11 +715,20 @@ test.describe("Verify pluginDivisionMode: schema (Helm Chart)", () => {
     // Verify plugin schemas were created (while port-forward is still alive)
     console.log("Verifying plugin schemas were created...");
     try {
-      const schemasResult = await adminClient!.query(`
+      // Create fresh connection for verification (adminClient was closed by setupSchemaModeDatabase)
+      const verifyClient = await connectAdminClient({
+        dbHost,
+        dbAdminUser,
+        dbAdminPassword,
+      });
+
+      const schemasResult = await verifyClient.query(`
         SELECT schema_name FROM information_schema.schemata
         WHERE schema_name LIKE 'backstage_plugin_%'
         ORDER BY schema_name
       `);
+
+      await verifyClient.end();
 
       const schemas = schemasResult.rows.map(
         (r: { schema_name: string }) => r.schema_name,
