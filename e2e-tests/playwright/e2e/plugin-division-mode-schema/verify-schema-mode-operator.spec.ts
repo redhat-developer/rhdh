@@ -856,5 +856,4 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
     const common = new Common(page);
     await common.loginAsGuest();
   });
-
 });
