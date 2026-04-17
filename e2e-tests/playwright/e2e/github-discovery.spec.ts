@@ -1,8 +1,7 @@
-import { test as base } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
 import GithubApi from "../support/api/github";
 import { CATALOG_FILE, JANUS_QE_ORG } from "../utils/constants";
 import { Common } from "../utils/common";
-import { assert } from "console";
 import { Catalog } from "../support/pages/catalog";
 type GithubDiscoveryFixture = {
   catalogPage: Catalog;
@@ -29,27 +28,40 @@ test.describe("Github Discovery Catalog", () => {
     });
   });
 
-  //TODO: https://issues.redhat.com/browse/RHDHBUGS-2576
-  test.fixme(`Discover Organization's Catalog`, async ({
+  test(`Discover Organization's Catalog`, async ({
     catalogPage,
     githubApi,
     testOrganization,
   }) => {
     const organizationRepos = await githubApi.getReposFromOrg(testOrganization);
-    const reposNames: string[] = organizationRepos.map((repo) => repo["name"]);
-    const realComponents: string[] = reposNames.filter(
-      async (repo) =>
-        await githubApi.fileExistsOnRepo(
-          `${testOrganization}/${repo}`,
-          CATALOG_FILE,
-        ),
-    );
 
-    for (let i = 0; i != realComponents.length; i++) {
-      const repo = realComponents[i];
+    const reposNames: string[] = (organizationRepos as Array<{ name?: string }>)
+      .map((repo) => repo.name)
+      .filter((name): name is string => typeof name === "string")
+      // filter for subset of organization repositories where the repository name matches the entity name
+      .filter((name) => name.startsWith("test-annotator"))
+      .slice(0, 5);
+
+    const reposWithCatalogInfo: string[] = (
+      await Promise.all(
+        reposNames.map(async (repo) =>
+          (await githubApi.fileExistsInRepo(
+            testOrganization,
+            repo,
+            CATALOG_FILE,
+          ))
+            ? repo
+            : null,
+        ),
+      )
+    ).filter((repo): repo is string => typeof repo === "string");
+
+    expect(reposWithCatalogInfo.length).toBeGreaterThan(0);
+
+    for (const repo of reposWithCatalogInfo) {
       await catalogPage.search(repo);
       const row = await catalogPage.tableRow(repo);
-      assert(await row.isVisible());
+      await expect(row).toBeVisible();
     }
   });
 });
