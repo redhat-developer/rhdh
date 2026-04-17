@@ -269,6 +269,16 @@ configure_external_postgres_db() {
     return 1
   fi
 
+  # Wait for PostgreSQL pods to be Running (needed for schema-mode tests)
+  log::info "Waiting for PostgreSQL pods to be Running..."
+  if ! common::poll_until \
+    "oc get pods -n '${NAME_SPACE_POSTGRES_DB}' -l 'postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres' --field-selector=status.phase=Running -o name 2>/dev/null | grep -q pod/" \
+    "$max_attempts" "$wait_interval" \
+    "PostgreSQL pod is Running"; then
+    log::warn "PostgreSQL pod not Running yet; schema-mode tests may skip"
+    # Don't fail here - the database might work fine, just schema tests won't run
+  fi
+
   # Now we can safely get the password
   POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}')
   common::sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
