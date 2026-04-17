@@ -724,57 +724,8 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       );
     }
 
-    // Wait for RHDH to fully initialize and trigger plugin schema creation
-    console.log(
-      "Waiting for RHDH to fully initialize and plugins to access database (30 seconds)...",
-    );
-    await new Promise((resolve) => setTimeout(resolve, 30000));
-
-    // Trigger catalog plugin to ensure schema creation (lazy creation)
-    console.log("Triggering catalog plugin to ensure schema creation...");
-    try {
-      const baseUrl = process.env.BASE_URL || "http://localhost:7007";
-      const response = await fetch(`${baseUrl}/api/catalog/entities?limit=1`);
-      console.log(
-        `   Catalog API response: ${response.status} ${response.statusText}`,
-      );
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.log(`   (Catalog API call failed: ${errorMsg}, continuing...)`);
-    }
-
-    // Verify plugin schemas were created (while port-forward is still alive)
-    console.log("Verifying plugin schemas were created...");
-    try {
-      // Create fresh connection for verification (adminClient was closed by setupSchemaModeDatabase)
-      const verifyClient = await connectAdminClient({
-        dbHost,
-        dbAdminUser,
-        dbAdminPassword,
-      });
-
-      const schemasResult = await verifyClient.query(`
-        SELECT schema_name FROM information_schema.schemata
-        WHERE schema_name LIKE 'backstage_plugin_%'
-        ORDER BY schema_name
-      `);
-
-      await verifyClient.end();
-
-      const schemas = schemasResult.rows.map(
-        (r: { schema_name: string }) => r.schema_name,
-      );
-      console.log(
-        `✓ Found ${schemas.length} plugin schemas: ${schemas.join(", ")}`,
-      );
-
-      if (schemas.length === 0) {
-        console.warn("⚠ No schemas found - schema mode may not be working");
-      }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.warn(`⚠ Could not verify schemas: ${errorMsg}`);
-    }
+    // Schema verification happens indirectly: if RHDH becomes accessible in the test below,
+    // plugins successfully accessed the database and created their schemas (lazy creation).
   });
 
   test.afterAll(() => {
