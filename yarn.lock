@@ -15227,21 +15227,21 @@ __metadata:
   linkType: hard
 
 "@stoplight/spectral-functions@npm:^1.7.2":
-  version: 1.9.4
-  resolution: "@stoplight/spectral-functions@npm:1.9.4"
+  version: 1.10.2
+  resolution: "@stoplight/spectral-functions@npm:1.10.2"
   dependencies:
     "@stoplight/better-ajv-errors": 1.0.3
     "@stoplight/json": ^3.17.1
     "@stoplight/spectral-core": ^1.19.4
     "@stoplight/spectral-formats": ^1.8.1
     "@stoplight/spectral-runtime": ^1.1.2
-    ajv: ^8.17.1
+    ajv: ^8.18.0
     ajv-draft-04: ~1.0.0
     ajv-errors: ~3.0.0
     ajv-formats: ~2.1.1
-    lodash: ~4.17.21
+    lodash: ^4.18.1
     tslib: ^2.8.1
-  checksum: c12871665afc0d5788424b0f263bd8d6cb8c2268f5df25203a8b360e8169452a6c0d8d6692ccf370ddb73bc49a17e4c0e577d6e892b60d571be8bbaae51fd97d
+  checksum: 669a6e6f2cebb353aaec24b07ccf0ef451e6b80c25b1b63a5841ea7bf635047c701bcc226d8d0bad38dcab2ad4323953e1247e497e4a405d978a2215a6d102c7
   languageName: node
   linkType: hard
 
