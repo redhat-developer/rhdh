@@ -1095,7 +1095,12 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
           "✓ Schema mode validation passed: plugins are using schemas, not databases",
         );
       } finally {
-        await adminClient.end();
+        // Safely close connection - don't let this throw and override caught errors
+        try {
+          await adminClient.end();
+        } catch {
+          // Ignore cleanup errors - connection might already be closed
+        }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
