@@ -724,6 +724,25 @@ test.describe("Verify pluginDivisionMode: schema (Operator)", () => {
       );
     }
 
+    // Wait for RHDH to fully initialize and trigger plugin schema creation
+    console.log(
+      "Waiting for RHDH to fully initialize and plugins to access database (30 seconds)...",
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30000));
+
+    // Trigger catalog plugin to ensure schema creation (lazy creation)
+    console.log("Triggering catalog plugin to ensure schema creation...");
+    try {
+      const baseUrl = process.env.BASE_URL || "http://localhost:7007";
+      const response = await fetch(`${baseUrl}/api/catalog/entities?limit=1`);
+      console.log(
+        `   Catalog API response: ${response.status} ${response.statusText}`,
+      );
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.log(`   (Catalog API call failed: ${errorMsg}, continuing...)`);
+    }
+
     // Verify plugin schemas were created (while port-forward is still alive)
     console.log("Verifying plugin schemas were created...");
     try {
