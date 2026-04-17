@@ -1391,7 +1391,7 @@ class TestNpmPluginInstallerIntegration:
 
         # Test extraction
         installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
-        plugin_path = installer._extract_npm_package(str(tarball_path))
+        _plugin_path = installer._extract_npm_package(str(tarball_path))
 
         # Verify extracted files
         extracted_dir = tmp_path / "test-package-1.0.0"
@@ -3102,13 +3102,29 @@ class TestPreMergeOciDisabledState:
         else:
             assert 'oci://registry.example.com/plugin' not in result
 
-    def test_pathless_multiple_explicit_paths_raises_error(self):
-        """Path-less + multiple explicit paths for same image -> raises error with source file info."""
+    def test_pathless_multiple_explicit_paths_disabled_skips_with_warning(self, capsys):
+        """Path-less disabled + multiple explicit paths for same image -> warning, no error."""
         include_plugins = [
             {'package': 'oci://registry.example.com/plugin:1.0!pluginA'},
             {'package': 'oci://registry.example.com/plugin:1.0!pluginB'},
         ]
         main_plugins = [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        captured = capsys.readouterr()
+        assert 'WARNING: Skipping disabled ambiguous path-less OCI reference' in captured.out
+        assert 'multiple path-specific entries exist' in captured.out
+        assert 'Cannot use path-less syntax for multi-plugin images' in captured.out
+        assert 'oci://registry.example.com/plugin' in result
+
+    def test_pathless_multiple_explicit_paths_enabled_raises_error(self):
+        """Path-less enabled + multiple explicit paths for same image -> raises error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginA'},
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginB'},
+        ]
+        main_plugins = [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}]
         with pytest.raises(InstallException, match=r'(?s)Ambiguous path-less OCI reference.*main\.yaml.*pluginA \(in include\.yaml\).*pluginB \(in include\.yaml\)'):
             pre_merge_oci_disabled_state(
                 [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
@@ -3123,11 +3139,23 @@ class TestPreMergeOciDisabledState:
         )
         assert len(result) == 0
 
-    def test_duplicate_same_level_pathless_raises_error(self):
-        """Duplicate same-level entries (both path-less) -> raises error."""
+    def test_duplicate_same_level_pathless_current_disabled_skips(self, capsys):
+        """Duplicate same-level entries: second is disabled -> warning, no error."""
         include_plugins = [
             {'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False},
             {'package': 'oci://registry.example.com/plugin:2.0', 'disabled': True},
+        ]
+        pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        captured = capsys.readouterr()
+        assert 'WARNING: Skipping duplicate disabled OCI plugin configuration' in captured.out
+
+    def test_duplicate_same_level_pathless_both_enabled_raises_error(self):
+        """Duplicate same-level entries (both enabled) -> raises error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False},
+            {'package': 'oci://registry.example.com/plugin:2.0', 'disabled': False},
         ]
         with pytest.raises(InstallException, match='Duplicate OCI plugin configuration'):
             pre_merge_oci_disabled_state(
@@ -3145,13 +3173,24 @@ class TestPreMergeOciDisabledState:
                 [('include.yaml', include_plugins)], [], 'main.yaml'
             )
 
-    def test_invalid_oci_format_raises_error(self):
-        """Invalid OCI format raises error with source file name."""
+    def test_invalid_oci_format_enabled_raises_error(self):
+        """Invalid OCI format on enabled entry raises error with source file name."""
         include_plugins = [{'package': 'oci://bad-format'}]
         with pytest.raises(InstallException, match="oci package.*not in the expected format.*include.yaml"):
             pre_merge_oci_disabled_state(
                 [('include.yaml', include_plugins)], [], 'main.yaml'
             )
+
+    def test_invalid_oci_format_disabled_skips_with_warning(self, capsys):
+        """Invalid OCI format on disabled entry -> warning, no error."""
+        include_plugins = [{'package': 'oci://bad-format', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        captured = capsys.readouterr()
+        assert 'WARNING: Skipping disabled OCI plugin with invalid format' in captured.out
+        assert 'Expected format' in captured.out
+        assert len(result) == 0
 
     def test_default_disabled_is_false(self):
         """Entry without explicit disabled flag defaults to False (enabled)."""
