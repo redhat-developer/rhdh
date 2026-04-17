@@ -30,7 +30,6 @@ initiate_operator_deployments() {
   log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE deployment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
-  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
@@ -66,7 +65,6 @@ initiate_operator_deployments_osd_gcp() {
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
-  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"

@@ -22,10 +22,14 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import { usePermission } from '@backstage/plugin-permission-react';
-import { SidebarSearchModal } from '@backstage/plugin-search';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
-import { Settings as SidebarSettings } from '@backstage/plugin-user-settings';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import {
+  searchTranslationRef,
+  SidebarSearchModal,
+} from '@backstage/plugin-search';
+import {
+  Settings as SidebarSettings,
+  userSettingsTranslationRef,
+} from '@backstage/plugin-user-settings';
 
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
@@ -175,6 +179,13 @@ const SidebarLayout = styled(Box, {
       // as it takes up a fixed height at the top of the page.
       top: `max(0px, ${aboveSidebarHeaderHeight ?? 0}px)`,
       width: isSidebarOpen ? '250px !important' : 'auto',
+    },
+
+    // SidebarSubmenu flyout uses position:fixed with top:0, which causes it to
+    // render behind the global header. Offset it by the header height.
+    '& > div > nav > div > div > div > div > div > div > div': {
+      top: `${aboveSidebarHeaderHeight ?? 0}px`,
+      bottom: 0,
     },
   }),
 );

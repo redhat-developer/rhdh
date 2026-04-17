@@ -48,7 +48,6 @@ initiate_rbac_aks_operator_deployment() {
 
   namespace::configure "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
-  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
 

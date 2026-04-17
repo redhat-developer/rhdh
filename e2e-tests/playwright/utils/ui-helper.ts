@@ -427,20 +427,25 @@ export class UIhelper {
     await this.page.waitForSelector(`text=${text}`, { state: "detached" });
   }
 
-  async verifyText(text: string | RegExp, exact: boolean = true) {
-    await this.verifyTextInLocator("", text, exact);
+  async verifyText(
+    text: string | RegExp,
+    exact: boolean = true,
+    timeout: number = 5000,
+  ) {
+    await this.verifyTextInLocator("", text, exact, timeout);
   }
 
   private async verifyTextInLocator(
     locator: string,
     text: string | RegExp,
     exact: boolean,
+    timeout: number = 5000,
   ) {
     const elementLocator = locator
       ? this.page.locator(locator).getByText(text, { exact }).first()
       : this.page.getByText(text, { exact }).first();
 
-    await elementLocator.waitFor({ state: "visible", timeout: 5000 });
+    await elementLocator.waitFor({ state: "visible", timeout });
     await elementLocator.waitFor({ state: "attached" });
 
     try {

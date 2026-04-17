@@ -1,5 +1,5 @@
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { userSettingsTranslationRef } from '@backstage/plugin-user-settings';
 
 export const userSettingsTranslations = createTranslationResource({
   ref: userSettingsTranslationRef,

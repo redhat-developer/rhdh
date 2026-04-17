@@ -59,11 +59,11 @@ export class TestHelper {
   async populateMissingPanelData(
     page: Page,
     uiHelper: UIhelper,
-    templatesFirstLast: string[],
-    catalogEntitiesFirstLast: string[],
-    techdocsFirstLast: string[],
+    templatesFirstLast: string[] | undefined,
+    catalogEntitiesFirstLast: string[] | undefined,
+    techdocsFirstLast: string[] | undefined,
   ): Promise<void> {
-    if (templatesFirstLast.length === 0) {
+    if (!templatesFirstLast?.length) {
       await page.getByRole("link", { name: "Self-service" }).click();
       await page
         .getByText("Templates", { exact: true })
@@ -103,9 +103,10 @@ export class TestHelper {
       await page
         .getByText("Run of Create a tekton CI")
         .waitFor({ state: "visible" });
+      await page.waitForTimeout(5000); // wait for the flush interval to be sure
     }
 
-    if (catalogEntitiesFirstLast.length === 0) {
+    if (!catalogEntitiesFirstLast?.length) {
       // Visit a catalog entity
       await uiHelper.clickLink("Catalog");
       await uiHelper.clickLink("Red Hat Developer Hub");
@@ -113,10 +114,11 @@ export class TestHelper {
       await expect(page.getByText("Red Hat Developer Hub")).toBeVisible();
     }
 
-    if (techdocsFirstLast.length === 0) {
+    if (!techdocsFirstLast?.length) {
       // Visit docs
       await page.goto("/docs");
       await uiHelper.clickLink("Red Hat Developer Hub");
+      await page.waitForTimeout(5000); // wait for the flush interval to be sure
       await uiHelper.openSidebarButton("Administration");
     }
   }
@@ -141,7 +143,10 @@ export class TestHelper {
     // Wait for the expected API call to succeed
     await this.waitUntilApiCallSucceeds(newpage);
 
-    await newpage.getByText(expectedText).first().waitFor({ state: "visible" });
+    await newpage
+      .getByText(expectedText)
+      .first()
+      .waitFor({ state: "visible", timeout: 30000 });
     await newpage.waitForTimeout(5000); // wait for the flush interval to be sure
     await newpage.close();
   }

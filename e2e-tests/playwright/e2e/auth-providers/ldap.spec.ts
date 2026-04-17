@@ -8,9 +8,9 @@ import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 let page: Page;
 let context: BrowserContext;
 
-/* SUPORTED RESOLVERS
+/* SUPPORTED RESOLVERS
 LDAP:
-    [x] -> (Default)
+    [x] oidcLdapUuidMatchingAnnotation -> (Default)
 */
 
 test.describe("Configure LDAP Provider", async () => {
@@ -143,6 +143,19 @@ test.describe("Configure LDAP Provider", async () => {
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
     );
 
+    deployment.addSecretData(
+      "PINGFEDERATE_BASE_URL",
+      process.env.PINGFEDERATE_BASE_URL,
+    );
+    deployment.addSecretData(
+      "PINGFEDERATE_CLIENT_ID",
+      process.env.PINGFEDERATE_CLIENT_ID,
+    );
+    deployment.addSecretData(
+      "PINGFEDERATE_CLIENT_SECRET",
+      process.env.PINGFEDERATE_CLIENT_SECRET,
+    );
+
     await deployment.createSecret();
 
     // enable ldap login with ingestion through RHBK
@@ -253,6 +266,61 @@ test.describe("Configure LDAP Provider", async () => {
         "testsubsubgroup",
       ),
     ).toBe(true);
+  });
+
+  test("Login with PingFederate OIDC (with LDAP catalog)", async () => {
+    // Switch from RHBK auth to PingFederate auth (LDAP catalog remains)
+    await deployment.enablePingFederateOIDCLogin();
+
+    await deployment.updateAllConfigs();
+    await page.waitForTimeout(3000);
+    await deployment.restartLocalDeployment();
+    await deployment.waitForDeploymentReady();
+
+    // Wait for rhdh first sync and portal to be reachable
+    await deployment.waitForSynced();
+
+    const login = await common.pingFederateLogin(
+      "user1",
+      process.env.RHBK_LDAP_USER_PASSWORD,
+    );
+    expect(login).toBe("Login successful");
+
+    await uiHelper.goToSettingsPage();
+    await uiHelper.verifyHeading("User 1");
+    await common.signOut();
+  });
+
+  test("Login with PingFederate OIDC (with LDAP catalog) with sub as ldap_uuid", async () => {
+    await deployment.enablePingFederateOIDCLogin();
+
+    deployment.setAppConfigProperty(
+      "auth.providers.oidc.production.signIn.resolvers",
+      [
+        {
+          resolver: "oidcLdapUuidMatchingAnnotation",
+          ldapUuidKey: "sub", // match sub claim as required by OIDC spec
+        },
+      ],
+    );
+
+    await deployment.updateAllConfigs();
+    await page.waitForTimeout(3000);
+    await deployment.restartLocalDeployment();
+    await deployment.waitForDeploymentReady();
+
+    // Wait for rhdh first sync and portal to be reachable
+    await deployment.waitForSynced();
+
+    const login = await common.pingFederateLogin(
+      "user1",
+      process.env.RHBK_LDAP_USER_PASSWORD,
+    );
+    expect(login).toBe("Login successful");
+
+    await uiHelper.goToSettingsPage();
+    await uiHelper.verifyHeading("User 1");
+    await common.signOut();
   });
 
   test.afterAll(async () => {

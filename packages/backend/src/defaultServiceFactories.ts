@@ -1,6 +1,7 @@
 import {
   actionsRegistryServiceFactory,
   actionsServiceFactory,
+  metricsServiceFactory,
 } from '@backstage/backend-defaults/alpha';
 import { auditorServiceFactory } from '@backstage/backend-defaults/auditor';
 import { authServiceFactory } from '@backstage/backend-defaults/auth';
@@ -56,6 +57,7 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   // alpha services
   actionsRegistryServiceFactory,
   actionsServiceFactory,
+  metricsServiceFactory,
 ] as const;
 
 export const getDefaultServiceFactories = ({

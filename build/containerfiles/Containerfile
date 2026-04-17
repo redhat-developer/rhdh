@@ -14,21 +14,21 @@
 # limitations under the License.
 
 # Stage 1 - Build nodejs skeleton
-# https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1773809184@sha256:779375d8e6cb7a6232213f799128ac3e9d9717afa75fc40c23a95917b68ffa79 AS skeleton
+# https://registry.access.redhat.com/ubi9/nodejs-24
+FROM registry.access.redhat.com/ubi9/nodejs-24:9.7-1776196190@sha256:f5e9a047c6d22b609ec0faad26c2c05fa67cc870dcb31eb96740b58871efae38 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
 RUN dnf install -q -y --allowerasing --nobest \
-  acl alternatives attr audit-libs basesystem bash binutils binutils-gold brotli brotli-devel bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
+  acl alternatives attr audit-libs basesystem bash binutils binutils-gold bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
   cracklib cracklib-dicts criu criu-libs crun crypto-policies crypto-policies-scripts curl-minimal cyrus-sasl-lib dbus dbus-broker dbus-common dbus-libs dejavu-sans-fonts \
   dmidecode dnf dnf-data elfutils-debuginfod-client elfutils-default-yama-scope elfutils-libelf elfutils-libs emacs-filesystem environment-modules expat file-libs filesystem \
   findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
   glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
   ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
-  libacl libarchive libassuan libattr libblkid libbpf libbrotli libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libacl libarchive libassuan libattr libblkid libbpf libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
@@ -92,6 +92,9 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
+
+# Enable C++20 for native module compilation (required for Node 24's V8 headers)
+ENV CXXFLAGS="-std=c++20"
 
 # Using cachi2 env vars:
 #   export YARN_ENABLE_GLOBAL_CACHE=false
@@ -225,9 +228,20 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
   fi; \
   done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
 
+# Techdocs: Installing Python dependencies and building the techdocs venv.
+# Prevents duplicating the same dependencies in the final minimal image.
+# hadolint ignore=DL3013,DL3041,SC2086
+RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
+  python3.11 -m venv /opt/techdocs-venv && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
+  /opt/techdocs-venv/bin/mkdocs --version && \
+  rm -rf python/  /opt/techdocs-venv/bin/pip && \
+  dnf clean all
+
 # Stage 5 - Build the runner image
-# https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1774226014@sha256:70b52265ba3836ee702ab4ad0f478ae8d1f8bf2a1b5bbd2e9d0803a19f26252a AS runner
+# https://registry.access.redhat.com/ubi9/nodejs-24-minimal
+FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:9.7-1776142263@sha256:d47b6e33e972020e416f875bc0fa5fe54ad8745a66ae53ae686d58d9fd1c22e3 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -238,30 +252,25 @@ WORKDIR $CONTAINER_SOURCE/
 #   export PIP_FIND_LINKS=/cachi2/output/deps/pip
 #   export PIP_NO_INDEX=true
 
-# Install techdocs dependencies using requirements files
-# hadolint ignore=DL3013,DL3041,SC2086
-COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
-RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
+# Runtime Python for techdocs (interpreter + skopeo only; mkdocs lives in the pre-built venv from techdocs stage)
+RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-  alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
-  # fix ownership for pip install folder
-  mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
-  # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
-  pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
-  set -e; \
-  python3.11 -V; pip3.11 -V; \
-  pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
-  pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
-  popd >/dev/null; \
-  rm -fr python/; \
+  alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
   microdnf clean all
+
+# Copy openssl binary from build stage (needed for dynamic plugin integrity verification)
+# The nodejs-24-minimal image doesn't include openssl CLI by default
+COPY --from=build /usr/bin/openssl /usr/bin/openssl
 
 # RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
 
-# copy from build, not cleanup stage
+# App tree and techdocs venv from build stage (no compiler/devel RPMs in final layer)
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
+COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
+
+ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/

@@ -1,5 +1,5 @@
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
+import { searchTranslationRef } from '@backstage/plugin-search';
 
 export const searchTranslations = createTranslationResource({
   ref: searchTranslationRef,

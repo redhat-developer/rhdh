@@ -548,6 +548,65 @@ export class Common {
       }
     }
   }
+
+  async pingFederateLogin(username: string, password: string) {
+    let popup: Page;
+    this.page.once("popup", (asyncnewPage) => {
+      popup = asyncnewPage;
+    });
+
+    await this.page.goto("/");
+    await this.page.waitForSelector(
+      `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
+    );
+    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+
+    // Wait for the popup to appear
+    await expect(async () => {
+      await popup.waitForLoadState("domcontentloaded");
+      expect(popup).toBeTruthy();
+    }).toPass({
+      intervals: [5_000, 10_000],
+      timeout: 20 * 1000,
+    });
+
+    // Check if popup closes automatically (already logged in)
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
+      return "Already logged in";
+    } catch {
+      // Popup didn't close, proceed with login
+    }
+
+    try {
+      // Using raw locators for PingFederate login form (third-party page we don't control)
+      // Fill in username
+      await popup.locator("#username").click();
+      await popup.locator("#username").fill(username, { timeout: 5000 });
+
+      // Fill in password
+      await popup.locator("#password").click();
+      await popup.locator("#password").fill(password, { timeout: 5000 });
+
+      // Click sign in/login button (PingFederate uses id="signOnButton")
+      await popup.locator("#signOnButton").click({ timeout: 5000 });
+
+      // Click "Allow" button for scope authorization/consent
+      await popup.locator("#allowButton").click({ timeout: 10000 });
+
+      await popup.waitForEvent("close", { timeout: 2000 });
+      return "Login successful";
+    } catch (e) {
+      // Check for login error indicators
+      const errorElement = popup.locator(".ping-error, .error, [role=alert]");
+      if (await errorElement.isVisible()) {
+        await popup.close();
+        return "Login failed - invalid credentials";
+      } else {
+        throw e;
+      }
+    }
+  }
 }
 
 // Creates an isolated browser context for tests that share a page via beforeAll

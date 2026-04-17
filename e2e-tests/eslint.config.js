@@ -87,7 +87,13 @@ export default [
     },
   },
   {
-    ignores: ["node_modules/**", "playwright-report/**", "test-results/**"],
+    ignores: [
+      "node_modules/**",
+      "playwright-report/**",
+      "test-results/**",
+      ".local-test/**",
+      ".prettierrc.cjs",
+    ],
   },
   // Playwright recommended rules for test files
   {
