@@ -67,14 +67,14 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
-    // Clear search filter from previous test to show all components
-    await page.getByRole("textbox", { name: "Search" }).fill("");
+    // Keep the search filter for 'timestamp-test-created' from the previous test
+    // to ensure the entity with a "Created At" value is visible
+    await uiHelper.verifyText("timestamp-test-created");
 
     const dataRows = page
       .getByRole("row")
       .filter({ has: page.getByRole("cell") });
 
-    // Wait for the table to have data rows
     await expect(dataRows).not.toHaveCount(0);
 
     const column = page.getByRole("columnheader", {
@@ -82,26 +82,27 @@ test.describe("Test timestamp column on Catalog", () => {
       exact: true,
     });
 
-    // Verify the "Created At" column is not yet sorted
+    // Verify the sort indicator is not active before clicking
     const sortLabel = column.locator("[class*='MuiTableSortLabel-active']");
     await expect(sortLabel).toBeHidden();
 
-    // Click to sort ascending — the sort label should become active
+    // Sort ascending — the sort indicator should become active
     await column.click();
     await expect(sortLabel).toBeVisible();
 
-    // Click again to sort descending — the sort label should remain active
+    // Sort descending — the sort indicator should stay active
     await column.click();
     await expect(sortLabel).toBeVisible();
 
-    // Verify the timestamped entity's "Created At" cell still shows its value
+    // Verify the timestamped entity's "Created At" cell retained its value
     const timestampRow = page
       .getByRole("row")
       .filter({ hasText: "timestamp-test-created" });
-    const createdAtCell = timestampRow.getByRole("cell").filter({
-      hasText: /\d{1,2}\/\d{1,2}\/\d{4}/,
-    });
-    await expect(createdAtCell).toBeVisible();
+    await expect(
+      timestampRow
+        .getByRole("cell")
+        .filter({ hasText: /\d{1,2}\/\d{1,2}\/\d{4}/ }),
+    ).toBeVisible();
   });
 
   test.afterAll(async () => {
