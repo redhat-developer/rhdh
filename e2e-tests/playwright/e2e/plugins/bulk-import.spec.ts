@@ -84,11 +84,20 @@ spec:
   test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Import");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Not Generated",
-    ]);
+    // Search results and catalog-info.yaml status may take time to load;
+    // the GitHub API may return empty results or "Generating" status initially.
+    // Clear and re-enter the search on each retry to trigger a fresh API call.
+    await expect(async () => {
+      await uiHelper.searchInputPlaceholder("");
+      await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+      await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+        "Not Generated",
+      ]);
+    }).toPass({
+      intervals: [2_000, 5_000, 10_000],
+      timeout: 60_000,
+    });
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
