@@ -67,34 +67,44 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
-    // Search for the known entity with a "Created At" value to isolate it
-    await uiHelper.searchInputPlaceholder("timestamp-test-created");
-    await uiHelper.verifyText("timestamp-test-created");
+    // Clear search filter from previous test to show all components
+    const clearButton = page.getByRole("button", { name: "clear search" });
+    if ((await clearButton.isVisible()) && (await clearButton.isEnabled())) {
+      await clearButton.click();
+    }
 
-    // Locate the row containing the timestamped entity and its "Created At" cell
-    const timestampRow = page
+    const dataRows = page
       .getByRole("row")
-      .filter({ hasText: "timestamp-test-created" });
-    const createdAtCell = timestampRow.getByRole("cell").filter({
-      hasText: /\d{1,2}\/\d{1,2}\/\d{4}/,
-    });
+      .filter({ has: page.getByRole("cell") });
 
-    // Verify the "Created At" cell has a date value before sorting
-    await expect(createdAtCell).toBeVisible();
-    const valueBefore = await createdAtCell.textContent();
+    // Wait for the table to have data rows
+    await expect(dataRows).not.toHaveCount(0);
 
     const column = page.getByRole("columnheader", {
       name: "Created At",
       exact: true,
     });
 
-    // Sort ascending — the cell value should be preserved
-    await column.click();
-    await expect(createdAtCell).toHaveText(valueBefore);
+    // Verify the "Created At" column is not yet sorted
+    const sortLabel = column.locator("[class*='MuiTableSortLabel-active']");
+    await expect(sortLabel).toBeHidden();
 
-    // Sort descending — the cell value should still be preserved
+    // Click to sort ascending — the sort label should become active
     await column.click();
-    await expect(createdAtCell).toHaveText(valueBefore);
+    await expect(sortLabel).toBeVisible();
+
+    // Click again to sort descending — the sort label should remain active
+    await column.click();
+    await expect(sortLabel).toBeVisible();
+
+    // Verify the timestamped entity's "Created At" cell still shows its value
+    const timestampRow = page
+      .getByRole("row")
+      .filter({ hasText: "timestamp-test-created" });
+    const createdAtCell = timestampRow.getByRole("cell").filter({
+      hasText: /\d{1,2}\/\d{1,2}\/\d{4}/,
+    });
+    await expect(createdAtCell).toBeVisible();
   });
 
   test.afterAll(async () => {
