@@ -68,10 +68,7 @@ test.describe("Test timestamp column on Catalog", () => {
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
     // Clear search filter from previous test to show all components
-    const clearButton = page.getByRole("button", { name: "clear search" });
-    if ((await clearButton.isVisible()) && (await clearButton.isEnabled())) {
-      await clearButton.click();
-    }
+    await page.getByRole("textbox", { name: "Search" }).fill("");
 
     const dataRows = page
       .getByRole("row")
