@@ -43,8 +43,6 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops
         disabled: false
-      - package: ./dynamic-plugins/dist/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
-        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
         disabled: false
         pluginConfig:
