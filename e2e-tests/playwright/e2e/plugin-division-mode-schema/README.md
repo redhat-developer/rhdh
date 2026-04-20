@@ -1,6 +1,7 @@
 # Plugin Division Mode: Schema E2E Tests
 
 E2E tests for `pluginDivisionMode: schema` on OpenShift (OCP).
+
 ## What They Test
 
 These tests verify that RHDH can successfully start and operate with `pluginDivisionMode: schema` enabled:
