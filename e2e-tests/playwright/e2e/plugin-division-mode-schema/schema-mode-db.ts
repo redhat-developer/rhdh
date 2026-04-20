@@ -27,8 +27,16 @@ export function normalizeDbHost(host: string): string {
   return host === "localhost" ? "127.0.0.1" : host;
 }
 
+let portForwardRestarter: (() => Promise<void>) | null = null;
+
+export function setPortForwardRestarter(
+  fn: (() => Promise<void>) | null,
+): void {
+  portForwardRestarter = fn;
+}
+
 async function connectWithRetry(config: ClientConfig): Promise<Client> {
-  const maxRetries = 3;
+  const maxRetries = 5;
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -36,7 +44,7 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
     try {
       await client.connect();
       if (attempt > 1) {
-        console.log(`✓ Connected after ${attempt} attempts`);
+        console.log(`Connected after ${attempt} attempts`);
       }
       return client;
     } catch (error) {
@@ -44,10 +52,32 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
       await client.end().catch(() => {});
 
       if (attempt < maxRetries) {
-        console.warn(
-          `Connection attempt ${attempt}/${maxRetries} failed, retrying...`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const isConnectionDead =
+          errorMsg.includes("ECONNREFUSED") ||
+          errorMsg.includes("connection reset") ||
+          errorMsg.includes("ECONNRESET") ||
+          errorMsg.includes("EPIPE");
+
+        if (isConnectionDead && portForwardRestarter) {
+          console.warn(
+            `Connection attempt ${attempt}/${maxRetries} failed (${errorMsg}), restarting port-forward...`,
+          );
+          try {
+            await portForwardRestarter();
+          } catch (pfErr) {
+            console.error(
+              `Port-forward restart failed: ${pfErr instanceof Error ? pfErr.message : String(pfErr)}`,
+            );
+          }
+        } else {
+          console.warn(
+            `Connection attempt ${attempt}/${maxRetries} failed, retrying...`,
+          );
+        }
+
+        const delay = Math.min(2000 * attempt, 10000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
