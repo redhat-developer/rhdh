@@ -3,7 +3,7 @@
   "version": "1.10.0",
   "private": true,
   "engines": {
-    "node": "22"
+    "node": "24"
   },
   "scripts": {
     "prepare": "husky install",
@@ -54,9 +54,9 @@
     "jsdom": "27.4.0",
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
-    "rulesync": "7.23.0",
-    "sherif": "1.10.0",
-    "turbo": "2.8.10"
+    "rulesync": "7.30.0",
+    "sherif": "1.11.1",
+    "turbo": "2.9.6"
   },
   "dependenciesMeta": {
     "keytar": {

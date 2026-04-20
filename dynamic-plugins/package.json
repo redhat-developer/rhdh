@@ -3,7 +3,7 @@
   "version": "1.10.0",
   "private": true,
   "engines": {
-    "node": "22"
+    "node": "24"
   },
   "scripts": {
     "build": "turbo run build",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@backstage/cli": "0.36.0",
     "@backstage/cli-defaults": "0.1.0",
-    "turbo": "2.8.10"
+    "turbo": "2.9.6"
   },
   "dependenciesMeta": {
     "keytar": {
