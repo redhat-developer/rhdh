@@ -73,6 +73,9 @@ AUTHORS eol=lf
 ## These files are binary and should be left untouched
 #
 
+# Generated bundles — collapsed in GitHub diffs, excluded from language stats
+scripts/install-dynamic-plugins/dist/install-dynamic-plugins.cjs linguist-generated=true
+
 # (binary is a macro for -eol=lf -diff)
 *.png binary
 *.jpg binary

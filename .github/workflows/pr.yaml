@@ -142,9 +142,23 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
 
-      - name: Run Python tests
+      - name: Test install-dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v
+        working-directory: scripts/install-dynamic-plugins
+        run: |
+          npm ci --no-audit --no-fund
+          npm run tsc
+          npm test
+
+      - name: Verify install-dynamic-plugins bundle is up to date
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: scripts/install-dynamic-plugins
+        run: |
+          npm run build
+          if ! git diff --quiet -- dist/install-dynamic-plugins.cjs; then
+            echo "ERROR: dist/install-dynamic-plugins.cjs is out of date — run 'npm run build' and commit the result." >&2
+            exit 1
+          fi
 
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}

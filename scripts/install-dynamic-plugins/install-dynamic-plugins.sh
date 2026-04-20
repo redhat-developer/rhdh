@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-python install-dynamic-plugins.py $1
+exec node install-dynamic-plugins.cjs "$1"
