@@ -4,7 +4,6 @@
  */
 
 import * as yaml from "js-yaml";
-import { Client } from "pg";
 import { KubeClient } from "../../utils/kube-client";
 import {
   getSchemaModeEnv,
@@ -98,7 +97,7 @@ export class SchemaModeTestSetup {
         configMapName,
         this.namespace,
       );
-    } catch (err) {
+    } catch {
       throw new Error(
         `ConfigMap '${configMapName}' not found in namespace '${this.namespace}'. ` +
           `Ensure RHDH is deployed before running schema mode tests.`,

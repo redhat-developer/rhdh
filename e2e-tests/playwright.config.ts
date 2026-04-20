@@ -238,7 +238,7 @@ export default defineConfig({
       dependencies: [PW_PROJECT.SHOWCASE_RUNTIME_DB],
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
-        "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode-helm.spec.ts",
+        "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts",
       ],
     },
 
