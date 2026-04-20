@@ -1258,6 +1258,9 @@ def filter_disabled_oci_plugins(plugins: list[dict], disabled_plugin_registries:
             if match and match.group(1) in disabled_plugin_registries:
                 print(f'\n======= Disabling OCI plugin {package}', flush=True)
                 continue
+            if not match and plugin.get('disabled', False):
+                print(f'\n======= Disabling OCI plugin {package}', flush=True)
+                continue
         filtered.append(plugin)
     return filtered
 
