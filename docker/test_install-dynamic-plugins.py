@@ -3296,6 +3296,27 @@ class TestFilterDisabledOciPlugins:
         captured = capsys.readouterr()
         assert 'Disabling OCI plugin oci://registry.example.com/pluginA:1.0' in captured.out
 
+    def test_invalid_format_disabled_filtered(self, capsys):
+        """Disabled OCI entry with invalid format is filtered out."""
+        plugins = [
+            {'package': 'oci://reg.example.com:fake_port/myplugin!my-plugin', 'disabled': True},
+            {'package': 'oci://registry.example.com/plugin:1.0'},
+        ]
+        result = filter_disabled_oci_plugins(plugins, set())
+        assert len(result) == 1
+        assert result[0]['package'] == 'oci://registry.example.com/plugin:1.0'
+
+        captured = capsys.readouterr()
+        assert 'Disabling OCI plugin oci://reg.example.com:fake_port/myplugin!my-plugin' in captured.out
+
+    def test_invalid_format_enabled_not_filtered(self):
+        """Enabled OCI entry with invalid format is NOT filtered (will error later in merge)."""
+        plugins = [
+            {'package': 'oci://reg.example.com:fake_port/myplugin!my-plugin'},
+        ]
+        result = filter_disabled_oci_plugins(plugins, set())
+        assert len(result) == 1
+
 
 class TestPreMergeFilterIntegration:
     """Integration tests: pre-merge + filter + merge together."""
