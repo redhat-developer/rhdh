@@ -8,7 +8,7 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { ChildProcessWithoutNullStreams, spawn, exec } from "child_process";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import { setPortForwardRestarter } from "./schema-mode-db";
@@ -51,12 +51,28 @@ function startPortForward(
   });
 }
 
-function killPortForward(proc: ChildProcessWithoutNullStreams | undefined) {
-  if (!proc) return;
-  proc.kill("SIGTERM");
-  exec(
-    `ps aux | grep 'oc port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true`,
-  );
+function killPortForward(
+  proc: ChildProcessWithoutNullStreams | undefined,
+): Promise<void> {
+  if (!proc || proc.exitCode !== null) return Promise.resolve();
+
+  return new Promise<void>((resolve) => {
+    const forceKillTimeout = setTimeout(() => {
+      try {
+        proc.kill("SIGKILL");
+      } catch {
+        // already dead
+      }
+      resolve();
+    }, 5000);
+
+    proc.once("close", () => {
+      clearTimeout(forceKillTimeout);
+      resolve();
+    });
+
+    proc.kill("SIGTERM");
+  });
 }
 
 test.describe("Verify pluginDivisionMode: schema", () => {
@@ -107,7 +123,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       process.env.SCHEMA_MODE_DB_HOST = "localhost";
 
       setPortForwardRestarter(async () => {
-        killPortForward(portForwardProcess);
+        await killPortForward(portForwardProcess);
         console.log("Restarting port-forward...");
         portForwardProcess = await startPortForward(pfNamespace, pfResource);
         console.log("Port-forward re-established");
@@ -125,9 +141,9 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     }
   });
 
-  test.afterAll(() => {
+  test.afterAll(async () => {
     setPortForwardRestarter(null);
-    killPortForward(portForwardProcess);
+    await killPortForward(portForwardProcess);
   });
 
   test("Verify database user has restricted permissions", async () => {

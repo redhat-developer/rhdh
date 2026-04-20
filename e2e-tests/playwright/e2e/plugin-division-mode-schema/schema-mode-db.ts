@@ -89,28 +89,16 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
   );
 }
 
+const defaultConnectionOptions: Partial<ClientConfig> = {
+  ssl: { rejectUnauthorized: false },
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+};
+
 export async function connectWithSslFallback(
   config: ClientConfig,
 ): Promise<Client> {
-  try {
-    return await connectWithRetry(config);
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-
-    if (
-      errorMsg.includes("no pg_hba.conf entry") &&
-      (errorMsg.includes("no encryption") || errorMsg.includes("hostssl"))
-    ) {
-      console.log("Retrying connection with SSL...");
-      const sslConfig = {
-        ...config,
-        ssl: { rejectUnauthorized: false },
-      };
-      return await connectWithRetry(sslConfig);
-    }
-
-    throw error;
-  }
+  return await connectWithRetry({ ...defaultConnectionOptions, ...config });
 }
 
 export function getSchemaModeEnv(): SchemaModeEnv {
