@@ -1,0 +1,6 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: postgres-crt
+stringData:
+  postgres-crt.pem: placeholder
