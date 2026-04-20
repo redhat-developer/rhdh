@@ -1446,9 +1446,9 @@ plugins:
                 parent: default.admin
 
   # Group: Orchestrator
-  - package: "@redhat/backstage-plugin-orchestrator@1.8.9"
+  - package: "@redhat/backstage-plugin-orchestrator@1.8.12"
     disabled: true
-    integrity: sha512-k9r4xEfy3a5En1DTBZkzjhbUVFfbP8Pb+/uCkTXwqqwDJaM2ZzPMzaMj4x65XBnpKTdEZJA0rf/mFMFnfM8I6w==
+    integrity: sha512-Qvab3B/O6ZuJbTdq4TDlTKIw5cw4Fty+NgkoxDrx8Fs/2oe53VioBMetJ1cMxkGF8+mYVK5y85B8ssvasrSJrA==
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -1477,25 +1477,25 @@ plugins:
                     if:
                       anyOf:
                         - IsOrchestratorCatalogTabAvailable
-  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.8.9"
+  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.8.12"
     disabled: true
-    integrity: sha512-V6Css2y21le4SrMj1tpupppjSkvaZcfvfF9sLoknUnFLCCYkKCH21Fpk2BxA1MMRpVXTUjUJ8lTwYAdrrxBEjg==
+    integrity: sha512-2yTgy1APS9n2mj7j0bO2OVbU+fzwicpVcRd1tZ3xZ9AICguMEg9gFxtC0BDE23krWyZ0d1qrgpZisFoQXFBOtQ==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.8.9"
+  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.8.12"
     disabled: true
-    integrity: sha512-VRM/RvqQUemJLBdwm3nYwn2pSTUumZ1YEaHhgh4ELTiuVy2KQcyZCN9cSOCUswjHldmuPyT8dyfGQvSriGNS8Q==
+    integrity: sha512-t1B7zaRvW/LY8LXNegk6Rqn3ezk2f6DQ2BU4ANW2OswE/0waQnbXkHr54cTN1OvMhKs8bNFAdJ4AVpiESTqpOA==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.8.9"
+  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.8.12"
     disabled: true
-    integrity: sha512-fWlawBQUenXQXBUPe04mrIFPhNE05f1aVRJXXFS0FT0doo8X4vijmEeZf4Qm3b1Owgup8E6HHKQr3a94lBrNew==
+    integrity: sha512-Kw8YCqzxwChfpODU1q8IltAK8+TJ94e8qjBvT5TDQLPdUQBYdj8gLhLQF0rtZMR3b+lYlnsKkf67RMC0xRGJsw==
     pluginConfig:
       dynamicPlugins:
         frontend:

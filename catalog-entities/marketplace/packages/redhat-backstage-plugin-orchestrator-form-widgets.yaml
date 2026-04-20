@@ -18,8 +18,8 @@ metadata:
     - automation
 spec:
   packageName: "@redhat/backstage-plugin-orchestrator-form-widgets"
-  dynamicArtifact: "@redhat/backstage-plugin-orchestrator-form-widgets@1.8.9"
-  version: 1.8.9
+  dynamicArtifact: "@redhat/backstage-plugin-orchestrator-form-widgets@1.8.12"
+  version: 1.8.12
   backstage:
     role: backend-plugin
     supportedVersions: 1.39.1
