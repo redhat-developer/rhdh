@@ -1,0 +1,22 @@
+{
+  "name": "yarn-lockfile-surgeon",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Surgically bump packages in a Yarn Berry lockfile using minimum-version resolution",
+  "type": "module",
+  "bin": {
+    "yarn-lockfile-surgeon": "index.ts"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@yarnpkg/core": "^4.7.0",
+    "@yarnpkg/parsers": "^3.0.3",
+    "package-json": "^10.0.1",
+    "semver": "^7.7.4"
+  },
+  "devDependencies": {
+    "@types/semver": "^7.7.1"
+  }
+}

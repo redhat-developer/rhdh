@@ -2831,9 +2831,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-defaults@npm:0.13.2, @backstage/backend-defaults@npm:^0.13.1, @backstage/backend-defaults@npm:^0.13.2":
-  version: 0.13.2
-  resolution: "@backstage/backend-defaults@npm:0.13.2"
+"@backstage/backend-defaults@npm:0.13.3, @backstage/backend-defaults@npm:^0.13.1, @backstage/backend-defaults@npm:^0.13.3":
+  version: 0.13.3
+  resolution: "@backstage/backend-defaults@npm:0.13.3"
   dependencies:
     "@aws-sdk/abort-controller": ^3.347.0
     "@aws-sdk/client-codecommit": ^3.350.0
@@ -2897,7 +2897,7 @@ __metadata:
     rate-limit-redis: ^4.2.0
     raw-body: ^2.4.1
     selfsigned: ^2.0.0
-    tar: ^6.1.12
+    tar: ^7.4.3
     triple-beam: ^1.4.1
     uuid: ^11.0.0
     winston: ^3.2.1
@@ -2911,7 +2911,7 @@ __metadata:
   peerDependenciesMeta:
     "@google-cloud/cloud-sql-connector":
       optional: true
-  checksum: 8e929bd03316dcfa59cf10689de4b185efa1290d9f00591a6adf4def14591b6f2dce9e7b19e75a4f06b0f9a2af085024bdb7390c797fd7b3eda0929c86b6dea5
+  checksum: 917256ea3cbf0a11542afb156c56eb178f7269f0b08fadb10793a9cbdb4e0f3980f779557e23b327e2edb12c66d09b093bd593993a16f56eb64e531b00fe4517
   languageName: node
   linkType: hard
 
@@ -4971,11 +4971,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-backend@npm:3.0.2":
-  version: 3.0.2
-  resolution: "@backstage/plugin-scaffolder-backend@npm:3.0.2"
+"@backstage/plugin-scaffolder-backend@npm:3.0.3":
+  version: 3.0.3
+  resolution: "@backstage/plugin-scaffolder-backend@npm:3.0.3"
   dependencies:
-    "@backstage/backend-defaults": ^0.13.2
+    "@backstage/backend-defaults": ^0.13.3
     "@backstage/backend-openapi-utils": ^0.6.3
     "@backstage/backend-plugin-api": ^1.5.0
     "@backstage/catalog-model": ^1.7.6
@@ -5017,7 +5017,6 @@ __metadata:
     p-limit: ^3.1.0
     p-queue: ^6.6.2
     prom-client: ^15.0.0
-    tar: ^6.1.12
     triple-beam: ^1.4.1
     uuid: ^11.0.0
     winston: ^3.2.1
@@ -5026,7 +5025,7 @@ __metadata:
     zen-observable: ^0.10.0
     zod: ^3.22.4
     zod-to-json-schema: ^3.20.4
-  checksum: 2b91f486df229ce4bc60da4172c589fa2ecaa1b4564ea5e9e6b379cdffc8149aaf8f0aba40bb99856fd83757b0cf59e1b4d3ea88a7c395f4298c0b60988563d4
+  checksum: 055f2cf30d0b245ce3449c6651bd1b972fdfe946ba04519491fdc93f74b95015e306033a3a089cb18975fdf8fa8de1df75001322f57a3387f22742506c76ff74
   languageName: node
   linkType: hard
 
@@ -7381,7 +7380,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/plugin-dynamic-plugins-info-backend@workspace:plugins/dynamic-plugins-info-backend"
   dependencies:
-    "@backstage/backend-defaults": 0.13.2
+    "@backstage/backend-defaults": 0.13.3
     "@backstage/backend-dynamic-feature-service": 0.7.6
     "@backstage/backend-plugin-api": 1.5.0
     "@backstage/backend-test-utils": 1.10.1
@@ -7404,7 +7403,7 @@ __metadata:
   resolution: "@internal/plugin-licensed-users-info-backend@workspace:plugins/licensed-users-info-backend"
   dependencies:
     "@backstage-community/plugin-rbac-common": 1.22.0
-    "@backstage/backend-defaults": 0.13.2
+    "@backstage/backend-defaults": 0.13.3
     "@backstage/backend-plugin-api": 1.5.0
     "@backstage/backend-test-utils": 1.10.1
     "@backstage/catalog-client": 1.12.1
@@ -7435,7 +7434,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/plugin-scalprum-backend@workspace:plugins/scalprum-backend"
   dependencies:
-    "@backstage/backend-defaults": 0.13.2
+    "@backstage/backend-defaults": 0.13.3
     "@backstage/backend-dynamic-feature-service": 0.7.6
     "@backstage/backend-plugin-api": 1.5.0
     "@backstage/backend-test-utils": 1.10.1
@@ -7526,6 +7525,15 @@ __metadata:
     wrap-ansi: ^8.1.0
     wrap-ansi-cjs: "npm:wrap-ansi@^7.0.0"
   checksum: 4a473b9b32a7d4d3cfb7a614226e555091ff0c5a29a1734c28c72a182c2f6699b26fc6b5c2131dfd841e86b185aea714c72201d7c98c2fba5f17709333a67aeb
+  languageName: node
+  linkType: hard
+
+"@isaacs/fs-minipass@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@isaacs/fs-minipass@npm:4.0.0"
+  dependencies:
+    minipass: ^7.0.4
+  checksum: a8f46881bcffe48d8b467173fa709ef656e732d28fb4acdef2e14ba9de2ecc97527cc921f52081fff327737880af6f0b5201414c27451b56bb3b47d903f54a97
   languageName: node
   linkType: hard
 
@@ -18898,7 +18906,7 @@ __metadata:
     "@backstage-community/plugin-rbac-node": 1.16.0
     "@backstage-community/plugin-scaffolder-backend-module-annotator": 2.12.0
     "@backstage/backend-app-api": 1.3.0
-    "@backstage/backend-defaults": 0.13.2
+    "@backstage/backend-defaults": 0.13.3
     "@backstage/backend-dynamic-feature-service": 0.7.6
     "@backstage/backend-plugin-api": 1.5.0
     "@backstage/backend-test-utils": 1.10.1
@@ -18936,7 +18944,7 @@ __metadata:
     "@backstage/plugin-events-node": 0.4.17
     "@backstage/plugin-permission-backend": 0.7.6
     "@backstage/plugin-proxy-backend": 0.6.8
-    "@backstage/plugin-scaffolder-backend": 3.0.2
+    "@backstage/plugin-scaffolder-backend": 3.0.3
     "@backstage/plugin-search-backend": 2.0.8
     "@backstage/plugin-search-backend-module-catalog": 0.3.10
     "@backstage/plugin-search-backend-module-pg": 0.5.50
@@ -19874,6 +19882,13 @@ __metadata:
   version: 2.0.0
   resolution: "chownr@npm:2.0.0"
   checksum: c57cf9dd0791e2f18a5ee9c1a299ae6e801ff58fee96dc8bfd0dcb4738a6ce58dd252a3605b1c93c6418fe4f9d5093b28ffbf4d66648cb2a9c67eaef9679be2f
+  languageName: node
+  linkType: hard
+
+"chownr@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "chownr@npm:3.0.0"
+  checksum: fd73a4bab48b79e66903fe1cafbdc208956f41ea4f856df883d0c7277b7ab29fd33ee65f93b2ec9192fc0169238f2f8307b7735d27c155821d886b84aa97aa8d
   languageName: node
   linkType: hard
 
@@ -24587,7 +24602,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1, glob@npm:^10.4.5":
+"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.3.7, glob@npm:^10.4.1, glob@npm:^10.4.5":
   version: 10.5.0
   resolution: "glob@npm:10.5.0"
   dependencies:
@@ -29749,6 +29764,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minipass@npm:^7.0.4":
+  version: 7.1.3
+  resolution: "minipass@npm:7.1.3"
+  checksum: 2ede17c0bf8fec499be3360fd07f0ec7666189e3907320a9b653f1530cf84af98928c5b12d80bfb75f321833bf2e97785b940540213ebdafe97a5f10327e664d
+  languageName: node
+  linkType: hard
+
 "minizlib@npm:^2.1.1, minizlib@npm:^2.1.2":
   version: 2.1.2
   resolution: "minizlib@npm:2.1.2"
@@ -29756,6 +29778,16 @@ __metadata:
     minipass: ^3.0.0
     yallist: ^4.0.0
   checksum: f1fdeac0b07cf8f30fcf12f4b586795b97be856edea22b5e9072707be51fc95d41487faec3f265b42973a304fe3a64acd91a44a3826a963e37b37bafde0212c3
+  languageName: node
+  linkType: hard
+
+"minizlib@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "minizlib@npm:3.0.1"
+  dependencies:
+    minipass: ^7.0.4
+    rimraf: ^5.0.5
+  checksum: da0a53899252380475240c587e52c824f8998d9720982ba5c4693c68e89230718884a209858c156c6e08d51aad35700a3589987e540593c36f6713fe30cd7338
   languageName: node
   linkType: hard
 
@@ -29783,6 +29815,15 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: a96865108c6c3b1b8e1d5e9f11843de1e077e57737602de1b82030815f311be11f96f09cce59bd5b903d0b29834733e5313f9301e3ed6d6f6fba2eae0df4298f
+  languageName: node
+  linkType: hard
+
+"mkdirp@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mkdirp@npm:3.0.1"
+  bin:
+    mkdirp: dist/cjs/src/bin.js
+  checksum: 972deb188e8fb55547f1e58d66bd6b4a3623bf0c7137802582602d73e6480c1c2268dcbafbfb1be466e00cc7e56ac514d7fd9334b7cf33e3e2ab547c16f83a8d
   languageName: node
   linkType: hard
 
@@ -34272,6 +34313,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rimraf@npm:^5.0.5":
+  version: 5.0.5
+  resolution: "rimraf@npm:5.0.5"
+  dependencies:
+    glob: ^10.3.7
+  bin:
+    rimraf: dist/esm/bin.mjs
+  checksum: d66eef829b2e23b16445f34e73d75c7b7cf4cbc8834b04720def1c8f298eb0753c3d76df77325fad79d0a2c60470525d95f89c2475283ad985fd7441c32732d1
+  languageName: node
+  linkType: hard
+
 "ripemd160@npm:=2.0.1":
   version: 2.0.1
   resolution: "ripemd160@npm:2.0.1"
@@ -36425,6 +36477,20 @@ __metadata:
     mkdirp: ^1.0.3
     yallist: ^4.0.0
   checksum: f1322768c9741a25356c11373bce918483f40fa9a25c69c59410c8a1247632487edef5fe76c5f12ac51a6356d2f1829e96d2bc34098668a2fc34d76050ac2b6c
+  languageName: node
+  linkType: hard
+
+"tar@npm:^7.4.3":
+  version: 7.4.3
+  resolution: "tar@npm:7.4.3"
+  dependencies:
+    "@isaacs/fs-minipass": ^4.0.0
+    chownr: ^3.0.0
+    minipass: ^7.1.2
+    minizlib: ^3.0.1
+    mkdirp: ^3.0.1
+    yallist: ^5.0.0
+  checksum: 8485350c0688331c94493031f417df069b778aadb25598abdad51862e007c39d1dd5310702c7be4a6784731a174799d8885d2fde0484269aea205b724d7b2ffa
   languageName: node
   linkType: hard
 
@@ -39005,6 +39071,13 @@ __metadata:
   version: 3.1.1
   resolution: "yallist@npm:3.1.1"
   checksum: 48f7bb00dc19fc635a13a39fe547f527b10c9290e7b3e836b9a8f1ca04d4d342e85714416b3c2ab74949c9c66f9cebb0473e6bc353b79035356103b47641285d
+  languageName: node
+  linkType: hard
+
+"yallist@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "yallist@npm:5.0.0"
+  checksum: eba51182400b9f35b017daa7f419f434424410691bbc5de4f4240cc830fdef906b504424992700dc047f16b4d99100a6f8b8b11175c193f38008e9c96322b6a5
   languageName: node
   linkType: hard
 
