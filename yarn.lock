@@ -16820,6 +16820,48 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@turbo/darwin-64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@turbo/darwin-64@npm:2.9.6"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@turbo/darwin-arm64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@turbo/darwin-arm64@npm:2.9.6"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@turbo/linux-64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@turbo/linux-64@npm:2.9.6"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@turbo/linux-arm64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@turbo/linux-arm64@npm:2.9.6"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@turbo/windows-64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@turbo/windows-64@npm:2.9.6"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@turbo/windows-arm64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@turbo/windows-arm64@npm:2.9.6"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@tybys/wasm-util@npm:^0.10.0, @tybys/wasm-util@npm:^0.10.1":
   version: 0.10.1
   resolution: "@tybys/wasm-util@npm:0.10.1"
@@ -35348,9 +35390,9 @@ __metadata:
     jsdom: "npm:27.4.0"
     lint-staged: "npm:15.5.2"
     node-gyp: "npm:10.3.1"
-    rulesync: "npm:7.23.0"
-    sherif: "npm:1.10.0"
-    turbo: "npm:2.8.10"
+    rulesync: "npm:7.30.0"
+    sherif: "npm:1.11.1"
+    turbo: "npm:2.9.6"
   dependenciesMeta:
     keytar:
       built: false
@@ -35379,9 +35421,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rulesync@npm:7.23.0":
-  version: 7.23.0
-  resolution: "rulesync@npm:7.23.0"
+"rulesync@npm:7.30.0":
+  version: 7.30.0
+  resolution: "rulesync@npm:7.30.0"
   dependencies:
     "@modelcontextprotocol/sdk": "npm:1.27.1"
     "@octokit/request-error": "npm:7.1.0"
@@ -35401,7 +35443,7 @@ __metadata:
     zod: "npm:4.3.6"
   bin:
     rulesync: dist/cli/index.js
-  checksum: 10c0/b9b45b69a4860236e157466faf8fb5c64be136d78d1415d36791025386a833d6f306e0e56d107e8c16333bdf59c556d8a28649ad8b81a034ea6c6ae7fee0d75e
+  checksum: 10c0/058a91ac5074a29ee52f2822cd0a4534e1e46653d2884a9cdda6c7f7ebf6b94bb2aa262ac6e678394a3acc34fd53f7e372cfaaf34d338530c04504820701923c
   languageName: node
   linkType: hard
 
@@ -35899,74 +35941,74 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sherif-darwin-arm64@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-darwin-arm64@npm:1.10.0"
+"sherif-darwin-arm64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-darwin-arm64@npm:1.11.1"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-darwin-x64@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-darwin-x64@npm:1.10.0"
+"sherif-darwin-x64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-darwin-x64@npm:1.11.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64-musl@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-linux-arm64-musl@npm:1.10.0"
+"sherif-linux-arm64-musl@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-linux-arm64-musl@npm:1.11.1"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-linux-arm64@npm:1.10.0"
+"sherif-linux-arm64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-linux-arm64@npm:1.11.1"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64-musl@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-linux-x64-musl@npm:1.10.0"
+"sherif-linux-x64-musl@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-linux-x64-musl@npm:1.11.1"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-linux-x64@npm:1.10.0"
+"sherif-linux-x64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-linux-x64@npm:1.11.1"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-windows-arm64@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-windows-arm64@npm:1.10.0"
+"sherif-windows-arm64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-windows-arm64@npm:1.11.1"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-windows-x64@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif-windows-x64@npm:1.10.0"
+"sherif-windows-x64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif-windows-x64@npm:1.11.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif@npm:1.10.0":
-  version: 1.10.0
-  resolution: "sherif@npm:1.10.0"
+"sherif@npm:1.11.1":
+  version: 1.11.1
+  resolution: "sherif@npm:1.11.1"
   dependencies:
-    sherif-darwin-arm64: "npm:1.10.0"
-    sherif-darwin-x64: "npm:1.10.0"
-    sherif-linux-arm64: "npm:1.10.0"
-    sherif-linux-arm64-musl: "npm:1.10.0"
-    sherif-linux-x64: "npm:1.10.0"
-    sherif-linux-x64-musl: "npm:1.10.0"
-    sherif-windows-arm64: "npm:1.10.0"
-    sherif-windows-x64: "npm:1.10.0"
+    sherif-darwin-arm64: "npm:1.11.1"
+    sherif-darwin-x64: "npm:1.11.1"
+    sherif-linux-arm64: "npm:1.11.1"
+    sherif-linux-arm64-musl: "npm:1.11.1"
+    sherif-linux-x64: "npm:1.11.1"
+    sherif-linux-x64-musl: "npm:1.11.1"
+    sherif-windows-arm64: "npm:1.11.1"
+    sherif-windows-x64: "npm:1.11.1"
   dependenciesMeta:
     sherif-darwin-arm64:
       optional: true
@@ -35986,7 +36028,7 @@ __metadata:
       optional: true
   bin:
     sherif: index.js
-  checksum: 10c0/2f2714a291bfdfa1595768108b13aec4bbab93d1bddb621e0dfc172e7dac34a43935166dd54dc783890eec5c0c67a5a8b57115a1ae095c88d40780f7b61c7835
+  checksum: 10c0/a35e625240cb98ad0bc654d23c1a98557aa6832435d0e9fa30983377db7d009e70eb9e8594a85ba98df725d7a97baea7eb809a17afde53c270999ed25b8a6bc4
   languageName: node
   linkType: hard
 
@@ -37972,74 +38014,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.8.10":
-  version: 2.8.10
-  resolution: "turbo-darwin-64@npm:2.8.10"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"turbo-darwin-arm64@npm:2.8.10":
-  version: 2.8.10
-  resolution: "turbo-darwin-arm64@npm:2.8.10"
-  conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"turbo-linux-64@npm:2.8.10":
-  version: 2.8.10
-  resolution: "turbo-linux-64@npm:2.8.10"
-  conditions: os=linux & cpu=x64
-  languageName: node
-  linkType: hard
-
-"turbo-linux-arm64@npm:2.8.10":
-  version: 2.8.10
-  resolution: "turbo-linux-arm64@npm:2.8.10"
-  conditions: os=linux & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"turbo-windows-64@npm:2.8.10":
-  version: 2.8.10
-  resolution: "turbo-windows-64@npm:2.8.10"
-  conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"turbo-windows-arm64@npm:2.8.10":
-  version: 2.8.10
-  resolution: "turbo-windows-arm64@npm:2.8.10"
-  conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"turbo@npm:2.8.10":
-  version: 2.8.10
-  resolution: "turbo@npm:2.8.10"
+"turbo@npm:2.9.6":
+  version: 2.9.6
+  resolution: "turbo@npm:2.9.6"
   dependencies:
-    turbo-darwin-64: "npm:2.8.10"
-    turbo-darwin-arm64: "npm:2.8.10"
-    turbo-linux-64: "npm:2.8.10"
-    turbo-linux-arm64: "npm:2.8.10"
-    turbo-windows-64: "npm:2.8.10"
-    turbo-windows-arm64: "npm:2.8.10"
+    "@turbo/darwin-64": "npm:2.9.6"
+    "@turbo/darwin-arm64": "npm:2.9.6"
+    "@turbo/linux-64": "npm:2.9.6"
+    "@turbo/linux-arm64": "npm:2.9.6"
+    "@turbo/windows-64": "npm:2.9.6"
+    "@turbo/windows-arm64": "npm:2.9.6"
   dependenciesMeta:
-    turbo-darwin-64:
+    "@turbo/darwin-64":
       optional: true
-    turbo-darwin-arm64:
+    "@turbo/darwin-arm64":
       optional: true
-    turbo-linux-64:
+    "@turbo/linux-64":
       optional: true
-    turbo-linux-arm64:
+    "@turbo/linux-arm64":
       optional: true
-    turbo-windows-64:
+    "@turbo/windows-64":
       optional: true
-    turbo-windows-arm64:
+    "@turbo/windows-arm64":
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10c0/f751213327d2d61bcadf33ee510467005310b868ffc92d7ecaca29cd66158358fbb74fec0079621c731c406b662bc4221a173aadd600487b4f59c0119fa3b9d6
+  checksum: 10c0/8f06bc9f4fa8caa446b72276ba0ab69dbcaf46ffbf536926f5d2759cc5d180f027a4065286ce03d6788306b5404d7a320d8354670cabd459c599fcdca83e4611
   languageName: node
   linkType: hard
 
