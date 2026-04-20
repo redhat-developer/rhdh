@@ -5438,13 +5438,13 @@ arches:
     name: glibc-locale-source
     evr: 2.34-231.el9_7.10
     sourcerpm: glibc-2.34-231.el9_7.10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/go-srpm-macros-3.6.0-13.el9_7.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/go-srpm-macros-3.6.0-14.el9_7.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 33806
-    checksum: sha256:ea2a392fd650fc6c4928590af98a4b35f705537b0353417599ba97c21b271404
+    size: 33910
+    checksum: sha256:556c49df02b7ae8093ca2e13fc66e82c76b67c55468fae9d982796063dbbdd1d
     name: go-srpm-macros
-    evr: 3.6.0-13.el9_7
-    sourcerpm: go-rpm-macros-3.6.0-13.el9_7.src.rpm
+    evr: 3.6.0-14.el9_7
+    sourcerpm: go-rpm-macros-3.6.0-14.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-611.47.1.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 3025981
@@ -8668,12 +8668,12 @@ arches:
     checksum: sha256:815c2ae9574006ecb596000492929264de785444736ee3968d5ee34cb6e75159
     name: git
     evr: 2.47.3-1.el9_6
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/go-rpm-macros-3.6.0-13.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/go-rpm-macros-3.6.0-14.el9_7.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 140859
-    checksum: sha256:e66bea34985b5768a909ace1874bffbc5d813020c0e128829d3b91f8f90a3727
+    size: 140977
+    checksum: sha256:4a490dda96bd162297174ed4417d247e7b38eaefa7cffef256656d149500d915
     name: go-rpm-macros
-    evr: 3.6.0-13.el9_7
+    evr: 3.6.0-14.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/k/kernel-srpm-macros-1.0-14.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 22473
