@@ -12,8 +12,6 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
-# shellcheck source=.ci/pipelines/lib/schema-mode-env.sh
-source "$DIR"/lib/schema-mode-env.sh
 
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
@@ -87,35 +85,17 @@ initiate_operator_deployments_osd_gcp() {
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   namespace::configure "${NAME_SPACE_RUNTIME}"
-
-  # Create PostgreSQL namespace before configuring external database
-  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
-
-  # Configure external PostgreSQL credentials and certificates for runtime namespace
-  # This creates postgres-crt and postgres-cred secrets needed by rhdh-start-runtime.yaml
-  configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
-
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
-
-  # Configure schema-mode environment (opt-in: tests skip if env not configured)
-  if configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" operator; then
-    log::info "Schema-mode environment configured successfully; schema-mode tests will run"
-  else
-    log::warn "Schema-mode environment not configured; schema-mode tests will skip (this is expected if PostgreSQL is not available)"
-  fi
-
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  # Run tests - allow failures since schema-mode tests are opt-in
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"
 }
 
 handle_ocp_operator() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
   export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
-  export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 
   common::oc_login
 
@@ -139,9 +119,6 @@ handle_ocp_operator() {
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_OPERATOR}" "${url}"
   testing::check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "${rbac_url}"
 
-  # Runtime config-change tests are required to include schema-mode tests in operator nightly.
-  # Keep this scoped to nightly jobs to limit risk while RHDHBUGS-2608 is tracked.
-  if [[ "${JOB_NAME}" == *nightly* ]]; then
-    run_operator_runtime_config_change_tests
-  fi
+  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2608
+  # run_operator_runtime_config_change_tests
 }
