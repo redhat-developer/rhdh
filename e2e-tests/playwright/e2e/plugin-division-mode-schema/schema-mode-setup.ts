@@ -43,29 +43,17 @@ export class SchemaModeTestSetup {
     this.kubeClient = new KubeClient();
   }
 
-  /**
-   * Get the deployment name based on install method
-   */
   getDeploymentName(): string {
     if (this.installMethod === "operator") {
       return `backstage-${this.releaseName}`;
     }
-    return this.releaseName;
+    return `${this.releaseName}-developer-hub`;
   }
 
-  /**
-   * Get the ConfigMap name based on install method
-   */
-  private getConfigMapName(): string {
-    if (this.installMethod === "operator") {
-      return `backstage-appconfig-${this.releaseName}`;
-    }
-    return `${this.releaseName}-app-config`;
+  private getSecretName(): string {
+    return `${this.releaseName}-postgresql`;
   }
 
-  /**
-   * Setup database: clean old databases, create test database, configure user
-   */
   async setupDatabase(): Promise<void> {
     console.log(`Connecting to PostgreSQL at ${this.env.dbHost}:5432...`);
 
@@ -75,21 +63,160 @@ export class SchemaModeTestSetup {
       dbAdminPassword: this.env.dbAdminPassword,
     });
 
-    console.log("✓ Connected to PostgreSQL");
+    console.log("Connected to PostgreSQL");
 
     await cleanupOldPluginDatabases(adminClient);
     await setupSchemaModeDatabase(adminClient, this.env);
 
-    console.log("✓ Database setup complete");
+    console.log("Database setup complete");
   }
 
   /**
-   * Configure RHDH for schema mode by updating ConfigMap and restarting deployment
+   * Resolve the PostgreSQL host that RHDH pods should use (in-cluster DNS).
+   * The test runner connects via localhost port-forward, but pods need the
+   * cluster-internal address.
+   */
+  private resolveRhdhPostgresHost(): string {
+    const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
+
+    if (pfNamespace && pfNamespace !== this.namespace) {
+      return `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`;
+    }
+
+    if (this.env.dbHost === "localhost" || this.env.dbHost === "127.0.0.1") {
+      return `${this.releaseName}-postgresql`;
+    }
+
+    return this.env.dbHost;
+  }
+
+  /**
+   * Configure RHDH for schema mode:
+   * 1. Update the Secret with schema-mode test user credentials
+   * 2. Patch the Deployment to inject POSTGRES_* env vars from the Secret
+   * 3. Update the app-config ConfigMap for schema mode
+   * 4. Restart the deployment
    */
   async configureRHDH(): Promise<void> {
     console.log("Configuring RHDH for schema mode...");
 
-    const configMapName = this.getConfigMapName();
+    const deploymentName = this.getDeploymentName();
+    const secretName = this.getSecretName();
+    const rhdhPostgresHost = this.resolveRhdhPostgresHost();
+    console.log(`RHDH pods will connect to PostgreSQL at: ${rhdhPostgresHost}`);
+
+    // 1. Update secret with schema-mode credentials
+    await this.kubeClient.createOrUpdateSecret(
+      {
+        metadata: { name: secretName },
+        data: {
+          password: Buffer.from(this.env.dbPassword).toString("base64"),
+          "postgres-password": Buffer.from(this.env.dbPassword).toString(
+            "base64",
+          ),
+          POSTGRES_PASSWORD: Buffer.from(this.env.dbPassword).toString(
+            "base64",
+          ),
+          POSTGRES_DB: Buffer.from(this.env.dbName).toString("base64"),
+          POSTGRES_USER: Buffer.from(this.env.dbUser).toString("base64"),
+          POSTGRES_HOST: Buffer.from(rhdhPostgresHost).toString("base64"),
+          POSTGRES_PORT: Buffer.from("5432").toString("base64"),
+        },
+      },
+      this.namespace,
+    );
+    console.log(`Updated secret ${secretName} with schema-mode credentials`);
+
+    // 2. Ensure POSTGRES_* env vars are set in the deployment
+    await this.ensureDeploymentEnvVars(deploymentName, secretName);
+
+    // 3. Update app-config ConfigMap for schema mode
+    await this.updateAppConfigForSchemaMode();
+
+    // 4. Restart to apply changes
+    console.log("Restarting RHDH to apply schema mode configuration...");
+    await this.kubeClient.restartDeployment(deploymentName, this.namespace);
+    console.log("RHDH restart completed");
+  }
+
+  private async ensureDeploymentEnvVars(
+    deploymentName: string,
+    secretName: string,
+  ): Promise<void> {
+    const deployment = await this.kubeClient.appsApi.readNamespacedDeployment(
+      deploymentName,
+      this.namespace,
+    );
+    const containers = deployment.body.spec?.template?.spec?.containers || [];
+    const backstageIdx = containers.findIndex(
+      (c) => c.name === "backstage-backend",
+    );
+    const backstageContainer = containers[backstageIdx];
+
+    if (!backstageContainer) {
+      console.warn("backstage-backend container not found in deployment");
+      return;
+    }
+
+    const existingEnv = backstageContainer.env || [];
+    const requiredVars = [
+      "POSTGRES_HOST",
+      "POSTGRES_PORT",
+      "POSTGRES_DB",
+      "POSTGRES_USER",
+      "POSTGRES_PASSWORD",
+    ];
+    const missingVars = requiredVars.filter(
+      (v) => !existingEnv.some((e) => e.name === v),
+    );
+
+    if (missingVars.length === 0) {
+      console.log("POSTGRES_* env vars already present in deployment");
+      return;
+    }
+
+    console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
+    const patch: { op: string; path: string; value?: unknown }[] = [];
+
+    if (!backstageContainer.env || backstageContainer.env.length === 0) {
+      patch.push({
+        op: "add",
+        path: `/spec/template/spec/containers/${backstageIdx}/env`,
+        value: [],
+      });
+    }
+
+    for (const varName of missingVars) {
+      patch.push({
+        op: "add",
+        path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
+        value: {
+          name: varName,
+          valueFrom: {
+            secretKeyRef: { name: secretName, key: varName },
+          },
+        },
+      });
+    }
+
+    await this.kubeClient.appsApi.patchNamespacedDeployment(
+      deploymentName,
+      this.namespace,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { headers: { "Content-Type": "application/json-patch+json" } },
+    );
+    console.log("Added env vars to deployment");
+  }
+
+  private async updateAppConfigForSchemaMode(): Promise<void> {
+    const configMapName = await this.kubeClient.findAppConfigMap(
+      this.namespace,
+    );
     let configMapResponse;
 
     try {
@@ -123,59 +250,38 @@ export class SchemaModeTestSetup {
       currentDbConfig?.pluginDivisionMode === "schema" &&
       currentDbConfig?.ensureSchemaExists === true;
 
-    if (!isAlreadyConfigured) {
-      console.log("Updating app-config for schema mode...");
-
-      appConfig.backend.database = {
-        client: "pg",
-        pluginDivisionMode: "schema",
-        ensureSchemaExists: true,
-        connection: {
-          host: "${POSTGRES_HOST}",
-          port: "${POSTGRES_PORT}",
-          user: "${POSTGRES_USER}",
-          password: "${POSTGRES_PASSWORD}",
-          database: "${POSTGRES_DB}",
-          ssl: {
-            rejectUnauthorized: false,
-          },
-        },
-      };
-
-      const newConfigYaml = yaml.dump(appConfig);
-      try {
-        yaml.load(newConfigYaml);
-      } catch (error) {
-        throw new Error(
-          `Generated invalid YAML: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-
-      configMap.data[configKey] = newConfigYaml;
-      delete configMap.metadata?.creationTimestamp;
-      delete configMap.metadata?.resourceVersion;
-
-      await this.kubeClient.coreV1Api.replaceNamespacedConfigMap(
-        configMapName,
-        this.namespace,
-        configMap,
-      );
-
-      console.log("✓ App-config updated for schema mode");
-
-      console.log("Restarting RHDH to apply schema mode configuration...");
-      const deploymentName = this.getDeploymentName();
-
-      await this.kubeClient.restartDeployment(deploymentName, this.namespace);
-      console.log("✓ RHDH restart completed");
-    } else {
-      console.log("✓ RHDH already configured for schema mode");
+    if (isAlreadyConfigured) {
+      console.log("App-config already configured for schema mode");
+      return;
     }
+
+    console.log("Updating app-config for schema mode...");
+    appConfig.backend.database = {
+      client: "pg",
+      pluginDivisionMode: "schema",
+      ensureSchemaExists: true,
+      connection: {
+        host: "${POSTGRES_HOST}",
+        port: "${POSTGRES_PORT}",
+        user: "${POSTGRES_USER}",
+        password: "${POSTGRES_PASSWORD}",
+        database: "${POSTGRES_DB}",
+        ssl: { rejectUnauthorized: false },
+      },
+    };
+
+    configMap.data[configKey] = yaml.dump(appConfig);
+    delete configMap.metadata?.creationTimestamp;
+    delete configMap.metadata?.resourceVersion;
+
+    await this.kubeClient.coreV1Api.replaceNamespacedConfigMap(
+      configMapName,
+      this.namespace,
+      configMap,
+    );
+    console.log("App-config updated for schema mode");
   }
 
-  /**
-   * Get RHDH URL from OpenShift Route
-   */
   async getRHDHUrl(): Promise<string> {
     const routeNames =
       this.installMethod === "operator"
@@ -198,7 +304,7 @@ export class SchemaModeTestSetup {
 
         if (route?.body?.spec?.host) {
           const url = `https://${route.body.spec.host}`;
-          console.log(`✓ Found RHDH URL: ${url}`);
+          console.log(`Found RHDH URL: ${url}`);
           return url;
         }
       } catch {
@@ -212,9 +318,6 @@ export class SchemaModeTestSetup {
     );
   }
 
-  /**
-   * Verify that the database user has restricted permissions (NOCREATEDB)
-   */
   async verifyRestrictedDatabasePermissions(): Promise<boolean> {
     const adminClient = await connectAdminClient({
       dbHost: this.env.dbHost,
@@ -235,12 +338,12 @@ export class SchemaModeTestSetup {
       const hasCreateDb = result.rows[0].rolcreatedb;
       if (!hasCreateDb) {
         console.log(
-          `✓ Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`,
+          `Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`,
         );
         return true;
       } else {
         console.warn(
-          `⚠ Database user "${this.env.dbUser}" has CREATEDB privilege`,
+          `Database user "${this.env.dbUser}" has CREATEDB privilege`,
         );
         return false;
       }

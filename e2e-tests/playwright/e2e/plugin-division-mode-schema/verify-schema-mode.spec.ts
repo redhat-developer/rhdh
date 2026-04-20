@@ -7,7 +7,7 @@
  * Tests are opt-in - they skip when SCHEMA_MODE_* environment variables are not set.
  */
 
-import { chromium, test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { ChildProcessWithoutNullStreams, spawn, exec } from "child_process";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
@@ -106,7 +106,6 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       console.log("Port-forward established");
       process.env.SCHEMA_MODE_DB_HOST = "localhost";
 
-      // Register restarter so connectWithRetry can revive a crashed port-forward
       setPortForwardRestarter(async () => {
         killPortForward(portForwardProcess);
         console.log("Restarting port-forward...");
@@ -131,7 +130,15 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     killPortForward(portForwardProcess);
   });
 
-  test("Verify RHDH is accessible with schema mode", async ({}, testInfo) => {
+  test("Verify database user has restricted permissions", async () => {
+    const hasRestrictedPerms =
+      await testSetup.verifyRestrictedDatabasePermissions();
+    expect(hasRestrictedPerms).toBe(true);
+  });
+
+  test("Verify RHDH is accessible with schema mode", async ({
+    page,
+  }, testInfo) => {
     const kubeClient = new KubeClient();
     const deploymentName = testSetup.getDeploymentName();
 
@@ -153,42 +160,11 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       console.warn("Could not check deployment readiness:", error);
     }
 
-    let baseUrl = process.env.BASE_URL;
-    if (!baseUrl) {
-      baseUrl = await testSetup.getRHDHUrl();
-    }
+    const common = new Common(page);
+    await common.loginAsGuest();
 
-    const browser = await chromium.launch();
-    try {
-      const page = await browser.newPage();
-
-      const originalGoto = page.goto.bind(page);
-      page.goto = async (
-        url: string,
-        options?: Parameters<typeof page.goto>[1],
-      ) => {
-        if (url.startsWith("/") && !url.startsWith("//")) {
-          url = `${baseUrl}${url}`;
-        } else if (!url.startsWith("http")) {
-          url = `${baseUrl}/${url}`;
-        }
-        return originalGoto(url, options);
-      };
-
-      const common = new Common(page);
-      await common.loginAsGuest();
-
-      console.log(
-        "RHDH is accessible - plugins successfully created schemas in schema mode",
-      );
-    } finally {
-      await browser.close();
-    }
-  });
-
-  test("Verify database user has restricted permissions", async () => {
-    const hasRestrictedPerms =
-      await testSetup.verifyRestrictedDatabasePermissions();
-    expect(hasRestrictedPerms).toBe(true);
+    console.log(
+      "RHDH is accessible - plugins successfully created schemas in schema mode",
+    );
   });
 });
