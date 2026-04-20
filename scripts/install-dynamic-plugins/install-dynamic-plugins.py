@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import contextlib
 import copy
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import StrEnum
 import hashlib
 import json
 import os
 import sys
 import tempfile
+import threading
 import yaml
 import tarfile
 import shutil
@@ -41,6 +44,7 @@ Environment Variables:
     MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: 20MB)
     SKIP_INTEGRITY_CHECK: Set to "true" to skip integrity check of remote packages
     CATALOG_INDEX_IMAGE: OCI image reference for the plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9)
+    MAX_CONCURRENT_INSTALLS: Maximum number of plugins to install concurrently (default: 4)
 
 Configuration:
     The script expects the `dynamic-plugins.yaml` file to be present in the current directory and to contain the list of plugins to install along with their optional configuration.
@@ -108,6 +112,7 @@ DOCKER_PROTOCOL_PREFIX = 'docker://'
 OCI_PROTOCOL_PREFIX = 'oci://'
 RHDH_REGISTRY_PREFIX = 'registry.access.redhat.com/rhdh/'
 RHDH_FALLBACK_PREFIX = 'quay.io/rhdh/'
+MAX_CONCURRENT_INSTALLS = int(os.environ.get('MAX_CONCURRENT_INSTALLS', '5'))
 
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
@@ -126,7 +131,6 @@ def merge(source, destination, prefix = ''):
 
 def maybe_merge_config(config, global_config):
     if config is not None and isinstance(config, dict):
-        print('\t==> Merging plugin-specific configuration', flush=True)
         return merge(config, global_config)
     else:
         return global_config
@@ -203,7 +207,21 @@ def image_exists_in_registry(image_url: str) -> bool:
     except subprocess.CalledProcessError:
         return False
 
-def resolve_image_reference(image: str) -> str:
+def plugin_label(package: str) -> str:
+    """
+    helper method that returns a short label for a package used as
+    a per-plugin log prefix. E.g:
+
+    OCI:  oci://registry/image:tag!plugin-path  →  [plugin-path]
+    NPM:  @scope/plugin-name@1.0.0             →  [@scope/plugin-name]
+    """
+    if '!' in package:
+        return f"[{package.split('!')[-1]}]"
+    name = re.sub(r'@[^@/][^/]*$', '', package).lstrip('./')
+    return f"[{name}]" if name else f"[{package}]"
+
+
+def resolve_image_reference(image: str, prefix: str = '') -> str:
     """
     Resolve an image reference, falling back to quay.io/rhdh/ if the image
     starts with registry.access.redhat.com/rhdh/ and doesn't exist there.
@@ -231,18 +249,21 @@ def resolve_image_reference(image: str) -> str:
     # Construct the docker:// URL for checking
     docker_url = f"{DOCKER_PROTOCOL_PREFIX}{check_image}"
 
-    print(f'\t==> Checking if image exists in {RHDH_REGISTRY_PREFIX}...', flush=True)
+    print(f'{prefix} Checking if image exists in {RHDH_REGISTRY_PREFIX}...\n', flush=True)
 
     if image_exists_in_registry(docker_url):
-        print(f'\t==> Image found in {RHDH_REGISTRY_PREFIX}', flush=True)
+        print(f'{prefix} Image found in {RHDH_REGISTRY_PREFIX}\n', flush=True)
         return image
 
     # Fallback to quay.io/rhdh/
     fallback_image = check_image.replace(RHDH_REGISTRY_PREFIX, RHDH_FALLBACK_PREFIX, 1)
-    print(f'\t==> Image not found in {RHDH_REGISTRY_PREFIX}, falling back to {RHDH_FALLBACK_PREFIX}', flush=True)
-    print(f'\t==> Using fallback image: {fallback_image}', flush=True)
+    print(f'{prefix} Image not found in {RHDH_REGISTRY_PREFIX}, falling back to {fallback_image}\n', flush=True)
+    print(f'Using fallback image: {fallback_image}\n', flush=True)
 
     return f"{protocol_prefix}{fallback_image}"
+
+# Cache OCI plugin paths prior to the merge loop (runs sync).
+_oci_path_cache: dict[str, list[str]] = {}
 
 def get_oci_plugin_paths(image: str) -> list[str]:
     """
@@ -286,6 +307,53 @@ def get_oci_plugin_paths(image: str) -> list[str]:
 
     return plugin_paths
 
+def prefetch_oci_paths(plugin_entries: list[dict]) -> None:
+    """
+    pre-fetch OCI plugin paths in parallel using skopeo inspect.
+    """
+    # regex for inspects
+    _oci_inspect_pattern = re.compile(
+        r'^(' + OCI_PROTOCOL_PREFIX + r'[^\s:@]+)'
+        r'(?::([^\s!@:]+)|@((?:sha256|sha512|blake3):[^\s!@:]+))'
+        r'(?:!([^\s]+))?$'
+    )
+
+    images_to_fetch: set[str] = set()
+    for plugin in plugin_entries:
+        package = plugin.get('package', '')
+        if not isinstance(package, str) or not package.startswith(OCI_PROTOCOL_PREFIX):
+            continue
+        match = _oci_inspect_pattern.match(package)
+        if not match:
+            continue
+        registry, tag_version, digest_version, path = match.groups()
+
+        # skip if path is already explicit
+        if path:
+            continue
+
+        # skip {{inherit}} calls - version comes from a previously resolved plugin
+        if tag_version == '{{inherit}}':
+            continue
+
+        version = tag_version if tag_version else digest_version
+        full_image = f"{registry}:{version}" if tag_version else f"{registry}@{version}"
+        if full_image not in _oci_path_cache:
+            images_to_fetch.add(full_image)
+
+    if not images_to_fetch:
+        return
+
+    print(f'[installer] Pre-fetching OCI plugin paths for {len(images_to_fetch)} image(s) in parallel\n', flush=True)
+
+    max_workers = min(MAX_CONCURRENT_INSTALLS, len(images_to_fetch))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(get_oci_plugin_paths, image): image for image in images_to_fetch}
+        for future in as_completed(futures):
+            image = futures[future]
+            _oci_path_cache[image] = future.result()  # propagates InstallException on failure
+
+
 class PackageMerger:
     def __init__(self, plugin: dict, dynamic_plugins_file: str, all_plugins: dict):
         self.plugin = plugin
@@ -310,13 +378,13 @@ class PackageMerger:
         plugin_key = self.parse_plugin_key(plugin_key)
 
         if plugin_key not in self.all_plugins:
-            print(f'\n======= Adding new dynamic plugin configuration for {plugin_key}', flush=True)
+            print(f'[installer] Adding plugin: {plugin_key}\n', flush=True)
             # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
             self.plugin["last_modified_level"] = level
             self.add_new_plugin("", False, plugin_key)
         else:
             # Override the included plugins with fields in the main plugins list
-            print('\n======= Overriding dynamic plugin configuration', plugin_key, flush=True)
+            print(f'[installer] Overriding plugin: {plugin_key}\n', flush=True)
 
             # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
             if self.all_plugins[plugin_key].get("last_modified_level") == level:
@@ -451,9 +519,10 @@ class NPMPackageMerger(PackageMerger):
 class PluginInstaller:
     """Base class for plugin installers with common functionality."""
 
-    def __init__(self, destination: str, skip_integrity_check: bool = False):
+    def __init__(self, destination: str, skip_integrity_check: bool = False, prefix: str = ''):
         self.destination = destination
         self.skip_integrity_check = skip_integrity_check
+        self.prefix = prefix
 
     def should_skip_installation(self, plugin: dict, plugin_path_by_hash: dict) -> tuple[bool, str]:
         """Check if plugin installation should be skipped based on pull policy and current state."""
@@ -469,7 +538,7 @@ class PluginInstaller:
 
         return True, "already_installed"
 
-    def install(self, plugin: dict, plugin_path_by_hash: dict) -> str:
+    def install(self, plugin: dict, plugin_path_by_hash: dict, hash_lock: threading.Lock = None) -> str:
         """Install a plugin and return the plugin path. Must be implemented by subclasses."""
         raise NotImplementedError()
 
@@ -525,11 +594,18 @@ class OciPackageMerger(PackageMerger):
             # Return None for resolved_path - will be inherited during merge_plugin()
             return registry, version, inherit_version, None
 
-        # If path is None, auto-detect from OCI manifest
+        # if path is None, auto-detect from OCI manifest (use pre-fetched cache when available)
         if not path:
             full_image = f"{registry}:{version}" if tag_version else f"{registry}@{version}"
-            print(f"\n======= No plugin path specified for {full_image}, auto-detecting from OCI manifest", flush=True)
-            plugin_paths = get_oci_plugin_paths(full_image)
+            print(f'[installer] No plugin path specified for {full_image}, auto-detecting from OCI manifest\n', flush=True)
+
+            # check cache first to avoid redundant skopeo inspects
+            # for plugins from the same image
+            if full_image in _oci_path_cache:
+                plugin_paths = _oci_path_cache[full_image]
+            else:
+                plugin_paths = get_oci_plugin_paths(full_image)
+                _oci_path_cache[full_image] = plugin_paths
 
             if len(plugin_paths) == 0:
                 raise InstallException(
@@ -546,7 +622,7 @@ class OciPackageMerger(PackageMerger):
                 )
 
             path = plugin_paths[0]
-            print(f'\n======= Auto-resolving OCI package {full_image} to use plugin path: {path}', flush=True)
+            print(f'[installer] Auto-resolved {full_image} to plugin path: {path}\n', flush=True)
 
         # At this point, path always exists (either explicitly provided or auto-detected)
         plugin_key = f"{registry}:!{path}"
@@ -623,7 +699,7 @@ class OciPackageMerger(PackageMerger):
 
             registry_part = plugin_key.split(':!')[0]
             self.plugin['package'] = f"{registry_part}:{version}!{resolved_path}"
-            print(f'\n======= Inheriting version `{version}` and plugin path `{resolved_path}` for {plugin_key}', flush=True)
+            print(f'[installer] Inheriting version `{version}` and plugin path `{resolved_path}` for {plugin_key}\n', flush=True)
 
         # Update package with resolved path if it was auto-detected (package didn't originally contain !path)
         elif '!' not in package:
@@ -631,17 +707,17 @@ class OciPackageMerger(PackageMerger):
 
         # If package does not already exist, add it
         if plugin_key not in self.all_plugins:
-            print(f'\n======= Adding new dynamic plugin configuration for version `{version}` of {plugin_key}', flush=True)
+            print(f'[installer] Adding plugin: {plugin_key} (version {version})\n', flush=True)
             # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
             self.plugin["last_modified_level"] = level
             self.add_new_plugin(version, inherit_version, plugin_key)
         else:
             # Override the included plugins with fields in the main plugins list
-            print('\n======= Overriding dynamic plugin configuration', plugin_key, flush=True)
+            print(f'[installer] Overriding plugin: {plugin_key}\n', flush=True)
 
             # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
             if self.all_plugins[plugin_key].get("last_modified_level") == level:
-                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamic_plugins_file}.")
+                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamic_plugins_file}.\n")
 
             self.all_plugins[plugin_key]["last_modified_level"] = level
             self.override_plugin(version, inherit_version, plugin_key)
@@ -649,7 +725,7 @@ class OciPackageMerger(PackageMerger):
 class OciDownloader:
     """Helper class for downloading and extracting plugins from OCI container images."""
 
-    def __init__(self, destination: str):
+    def __init__(self, destination: str, prefix: str = ''):
         self._skopeo = shutil.which('skopeo')
         if self._skopeo is None:
             raise InstallException('skopeo executable not found in PATH')
@@ -658,6 +734,7 @@ class OciDownloader:
         self.tmp_dir = self.tmp_dir_obj.name
         self.image_to_tarball = {}
         self.destination = destination
+        self.prefix = prefix
         self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
 
     def skopeo(self, command):
@@ -670,7 +747,7 @@ class OciDownloader:
             resolved_image = resolve_image_reference(image)
 
             # run skopeo copy to copy the tar ball to the local filesystem
-            print(f'\t==> Copying image {resolved_image} to local filesystem', flush=True)
+            print(f'{self.prefix} Copying image {resolved_image} to local filesystem\n', flush=True)
             image_digest = hashlib.sha256(resolved_image.encode('utf-8'), usedforsecurity=False).hexdigest()
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
@@ -700,7 +777,7 @@ class OciDownloader:
                 if member.islnk() or member.issym():
                     realpath = os.path.realpath(os.path.join(plugin_path, *os.path.split(member.linkname)))
                     if not realpath.startswith(plugin_path):
-                        print(f'\t==> WARNING: skipping file containing link outside of the archive: {member.name} -> {member.linkpath}', flush=True)
+                        print(f'{self.prefix} WARNING: skipping link outside archive: {member.name} -> {member.linkpath}\n', flush=True)
                         continue
 
                 files_to_extract.append(member)
@@ -713,7 +790,7 @@ class OciDownloader:
         tar_file = self.get_plugin_tar(image)
         plugin_directory = os.path.join(self.destination, plugin_path)
         if os.path.exists(plugin_directory):
-            print('\t==> Removing previous plugin directory', plugin_directory, flush=True)
+            print(f'{self.prefix} Removing previous plugin directory {plugin_directory}\n', flush=True)
             shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
         self.extract_plugin(tar_file=tar_file, plugin_path=plugin_path)
         return plugin_path
@@ -737,9 +814,9 @@ class OciDownloader:
 class OciPluginInstaller(PluginInstaller):
     """Handles OCI container-based plugin installation using skopeo."""
 
-    def __init__(self, destination: str, skip_integrity_check: bool = False):
-        super().__init__(destination, skip_integrity_check)
-        self.downloader = OciDownloader(destination)
+    def __init__(self, destination: str, skip_integrity_check: bool = False, prefix: str = ''):
+        super().__init__(destination, skip_integrity_check, prefix)
+        self.downloader = OciDownloader(destination, prefix)
 
     def should_skip_installation(self, plugin: dict, plugin_path_by_hash: dict) -> tuple[bool, str]:
         """OCI packages have special digest-based checking for ALWAYS pull policy."""
@@ -769,7 +846,7 @@ class OciPluginInstaller(PluginInstaller):
 
         return False, "force_download"
 
-    def install(self, plugin: dict, plugin_path_by_hash: dict) -> str:
+    def install(self, plugin: dict, plugin_path_by_hash: dict, hash_lock: threading.Lock = None) -> str:
         """Install an OCI plugin package."""
         package = plugin['package']
         if plugin.get('version') is None:
@@ -785,9 +862,10 @@ class OciPluginInstaller(PluginInstaller):
             with open(digest_file_path, 'w') as f:
                 f.write(self.downloader.digest(package))
 
-            # Clean up duplicate hashes
-            for key in [k for k, v in plugin_path_by_hash.items() if v == plugin_path]:
-                plugin_path_by_hash.pop(key)
+            # Clean up duplicate hashes (protected to be safe under concurrent access)
+            with hash_lock if hash_lock is not None else contextlib.nullcontext():
+                for key in [k for k, v in plugin_path_by_hash.items() if v == plugin_path]:
+                    plugin_path_by_hash.pop(key)
 
             return plugin_path
 
@@ -797,11 +875,11 @@ class OciPluginInstaller(PluginInstaller):
 class NpmPluginInstaller(PluginInstaller):
     """Handles NPM and local package installation using npm pack."""
 
-    def __init__(self, destination: str, skip_integrity_check: bool = False):
-        super().__init__(destination, skip_integrity_check)
+    def __init__(self, destination: str, skip_integrity_check: bool = False, prefix: str = ''):
+        super().__init__(destination, skip_integrity_check, prefix)
         self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
 
-    def install(self, plugin: dict, plugin_path_by_hash: dict) -> str:
+    def install(self, plugin: dict, plugin_path_by_hash: dict, hash_lock: threading.Lock = None) -> str:
         """Install an NPM or local plugin package."""
         package = plugin['package']
         package_is_local = package.startswith('./')
@@ -814,7 +892,7 @@ class NpmPluginInstaller(PluginInstaller):
             raise InstallException(f"No integrity hash provided for Package {package}")
 
         # Download package
-        print('\t==> Grabbing package archive through `npm pack`', flush=True)
+        print(f'{self.prefix} Fetching via npm pack\n', flush=True)
         result = run_command(
             ['npm', 'pack', package],
             f"Error while installing plugin {package} with 'npm pack'",
@@ -825,7 +903,7 @@ class NpmPluginInstaller(PluginInstaller):
 
         # Verify integrity for remote packages
         if not (package_is_local or self.skip_integrity_check):
-            print('\t==> Verifying package integrity', flush=True)
+            print(f'{self.prefix} Verifying integrity\n', flush=True)
             verify_package_integrity(plugin, archive)
 
         # Extract package
@@ -841,11 +919,11 @@ class NpmPluginInstaller(PluginInstaller):
         plugin_path = os.path.basename(directory_realpath)
 
         if os.path.exists(directory):
-            print('\t==> Removing previous plugin directory', directory, flush=True)
+            print(f'{self.prefix} Removing previous plugin directory {directory}\n', flush=True)
             shutil.rmtree(directory, ignore_errors=True)
         os.mkdir(directory)
 
-        print('\t==> Extracting package archive', archive, flush=True)
+        print(f'{self.prefix} Extracting {archive}\n', flush=True)
         with tarfile.open(archive, 'r:*') as tar:  # NOSONAR
             for member in tar.getmembers():
                 if member.isreg():
@@ -859,7 +937,7 @@ class NpmPluginInstaller(PluginInstaller):
                     tar.extract(member, path=directory, filter='data')
 
                 elif member.isdir():
-                    print('\t\tSkipping directory entry', member.name, flush=True)
+                    print(f'{self.prefix} Skipping directory entry {member.name}\n', flush=True)
 
                 elif member.islnk() or member.issym():
                     if not member.linkpath.startswith(PACKAGE_DIRECTORY_PREFIX):
@@ -883,49 +961,106 @@ class NpmPluginInstaller(PluginInstaller):
                     type_str = type_mapping.get(member.type, "unknown")
                     raise InstallException(f'NPM package archive contains a non regular file: {member.name} - {type_str}')
 
-        print('\t==> Removing package archive', archive, flush=True)
+        print(f'{self.prefix} Removing archive {archive}\n', flush=True)
         os.remove(archive)
 
         return plugin_path
 
-def create_plugin_installer(package: str, destination: str, skip_integrity_check: bool = False) -> PluginInstaller:
+def create_plugin_installer(package: str, destination: str, skip_integrity_check: bool = False, prefix: str = '') -> PluginInstaller:
     """Factory function to create appropriate plugin installer based on package type."""
     if package.startswith(OCI_PROTOCOL_PREFIX):
-        return OciPluginInstaller(destination, skip_integrity_check)
+        return OciPluginInstaller(destination, skip_integrity_check, prefix)
     else:
-        return NpmPluginInstaller(destination, skip_integrity_check)
+        return NpmPluginInstaller(destination, skip_integrity_check, prefix)
 
-def install_plugin(plugin: dict, plugin_path_by_hash: dict, destination: str, skip_integrity_check: bool = False) -> tuple[str, dict]:
+class PluginStatusDisplay:
+    """Displays concurrent plugin installation progress in a uv-inspired style."""
+
+    def __init__(self, total: int, max_workers: int):
+        self._lock = threading.Lock()
+        self._counts = {'installed': 0, 'skipped': 0, 'disabled': 0}
+        self._start = time.time()
+        print(f'[installer] Processing {total} plugin(s) with up to {max_workers} worker(s)\n', flush=True)
+
+    def downloading(self, package: str):
+        with self._lock:
+            print(f'{plugin_label(package)} downloading...\n', flush=True)
+
+    def installed(self, package: str, elapsed: float):
+        with self._lock:
+            self._counts['installed'] += 1
+            print(f'{plugin_label(package)} installed ({elapsed:.1f}s)\n', flush=True)
+
+    def skipped(self, package: str, reason: str):
+        with self._lock:
+            self._counts['skipped'] += 1
+            print(f'{plugin_label(package)} skipped ({reason})\n', flush=True)
+
+    def disabled(self, package: str):
+        with self._lock:
+            self._counts['disabled'] += 1
+            print(f'{plugin_label(package)} disabled\n', flush=True)
+
+    def summary(self):
+        elapsed = time.time() - self._start
+        parts = [f'installed {self._counts["installed"]}']
+        if self._counts['skipped']:
+            parts.append(f'skipped {self._counts["skipped"]}')
+        if self._counts['disabled']:
+            parts.append(f'disabled {self._counts["disabled"]}')
+        print(f'[installer] Summary: {", ".join(parts)} in {elapsed:.1f}s\n', flush=True)
+
+
+def install_plugin(plugin: dict, plugin_path_by_hash: dict, destination: str, skip_integrity_check: bool = False, hash_lock: threading.Lock = None, display: PluginStatusDisplay = None) -> tuple[str, dict]:
     """Install a single plugin and handle configuration merging."""
     package = plugin['package']
 
     # Check if plugin is disabled
     if plugin.get('disabled', False):
-        print(f'\n======= Skipping disabled dynamic plugin {package}', flush=True)
+        if display:
+            display.disabled(package)
+        else:
+            print(f'[installer] Skipping disabled plugin: {package}\n', flush=True)
         return None, {}
 
-    # Create appropriate installer
-    installer = create_plugin_installer(package, destination, skip_integrity_check)
+    # Create appropriate installer (label is used to prefix all per-plugin log lines)
+    label = plugin_label(package)
+    installer = create_plugin_installer(package, destination, skip_integrity_check, prefix=label)
 
-    # Check if installation should be skipped
+    # Check if installation should be skipped.
+    # The dict reads inside are safe without a lock (CPython GIL makes individual
+    # dict lookups atomic). The lock only protects the pop() write below.
     should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
     if should_skip:
-        print(f'\n======= Skipping download of already installed dynamic plugin {package} ({reason})', flush=True)
-        # Remove from tracking dict so we don't delete it later
-        if plugin['plugin_hash'] in plugin_path_by_hash:
-            plugin_path_by_hash.pop(plugin['plugin_hash'])
+        with hash_lock if hash_lock is not None else contextlib.nullcontext():
+            if plugin['plugin_hash'] in plugin_path_by_hash:
+                plugin_path_by_hash.pop(plugin['plugin_hash'])
+
+    if should_skip:
+        if display:
+            display.skipped(package, reason)
+        else:
+            print(f'[installer] Skipping already installed plugin: {package} ({reason})\n', flush=True)
         return None, plugin.get('pluginConfig', {})
 
     # Install the plugin
-    print(f'\n======= Installing dynamic plugin {package}', flush=True)
-    plugin_path = installer.install(plugin, plugin_path_by_hash)
+    if display:
+        display.downloading(package)
+    else:
+        print(f'[installer] Installing plugin: {package}\n', flush=True)
+
+    start = time.time()
+    plugin_path = installer.install(plugin, plugin_path_by_hash, hash_lock)
 
     # Create hash file for tracking
     hash_file_path = os.path.join(destination, plugin_path, 'dynamic-plugin-config.hash')
     with open(hash_file_path, 'w') as f:
         f.write(plugin['plugin_hash'])
 
-    print(f'\t==> Successfully installed dynamic plugin {package}', flush=True)
+    if display:
+        display.installed(package, time.time() - start)
+    else:
+        print(f'[installer] Installed plugin: {package}\n', flush=True)
 
     return plugin_path, plugin.get('pluginConfig', {})
 
@@ -1012,7 +1147,7 @@ def create_lock(lock_file_path):
     while True:
       try:
         with open(lock_file_path, 'x'):
-          print(f"======= Created lock file: {lock_file_path}")
+          print(f"[installer] Created lock file: {lock_file_path}\n")
           return
       except FileExistsError:
         wait_for_lock_release(lock_file_path)
@@ -1020,23 +1155,23 @@ def create_lock(lock_file_path):
 # Remove the lock file
 def remove_lock(lock_file_path):
    os.remove(lock_file_path)
-   print(f"======= Removed lock file: {lock_file_path}")
+   print(f"[installer] Removed lock file: {lock_file_path}\n")
 
 # Wait for the lock file to be released
 def wait_for_lock_release(lock_file_path):
-   print(f"======= Waiting for lock release (file: {lock_file_path})...", flush=True)
+   print(f"[installer] Waiting for lock release (file: {lock_file_path})...\n", flush=True)
    while True:
      if not os.path.exists(lock_file_path):
        break
      time.sleep(1)
-   print("======= Lock released.")
+   print("[installer] Lock released.\n")
 
 # Clean up temporary catalog index directory
 def cleanup_catalog_index_temp_dir(dynamic_plugins_root):
    """Clean up temporary catalog index directory."""
    catalog_index_temp_dir = os.path.join(dynamic_plugins_root, '.catalog-index-temp')
    if os.path.exists(catalog_index_temp_dir):
-       print('\n======= Cleaning up temporary catalog index directory', flush=True)
+       print('[installer] Cleaning up temporary catalog index directory\n', flush=True)
        shutil.rmtree(catalog_index_temp_dir, ignore_errors=True, onerror=None)
 
 def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_temp_dir: str) -> None:
@@ -1051,10 +1186,10 @@ def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_
         (_sha, filename) = layer_digest.split(':')
         layer_file = os.path.join(local_dir, filename)
         if not os.path.isfile(layer_file):
-            print(f"\t==> WARNING: Layer file {filename} not found", flush=True)
+            print(f'[installer] WARNING: Layer file {filename} not found\n', flush=True)
             continue
 
-        print(f"\t==> Extracting layer {filename}", flush=True)
+        print(f'[installer] Extracting layer {filename}\n', flush=True)
         _extract_layer_tarball(layer_file, catalog_index_temp_dir, max_entry_size)
 
 def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_entry_size: int) -> None:
@@ -1063,18 +1198,18 @@ def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_ent
         for member in tar.getmembers():
             # Security checks
             if member.size > max_entry_size:
-                print(f"\t==> WARNING: Skipping large file {member.name} in catalog index", flush=True)
+                print(f'[installer] WARNING: Skipping large file {member.name} in catalog index\n', flush=True)
                 continue
             if member.islnk() or member.issym():
                 realpath = os.path.realpath(os.path.join(catalog_index_temp_dir, *os.path.split(member.linkname)))
                 if not realpath.startswith(catalog_index_temp_dir):
-                    print(f"\t==> WARNING: Skipping link outside archive: {member.name}", flush=True)
+                    print(f'[installer] WARNING: Skipping link outside archive: {member.name}\n', flush=True)
                     continue
             tar.extract(member, path=catalog_index_temp_dir, filter='data')
 
 def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, catalog_entities_parent_dir: str) -> str:
     """Extract the catalog index OCI image and return the path to dynamic-plugins.default.yaml if found."""
-    print(f"\n======= Extracting catalog index from {catalog_index_image}", flush=True)
+    print(f'[installer] Extracting catalog index from {catalog_index_image}\n', flush=True)
 
     skopeo_path = shutil.which('skopeo')
     if skopeo_path is None:
@@ -1090,7 +1225,7 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
         image_url = resolved_image
         if not image_url.startswith(DOCKER_PROTOCOL_PREFIX):
             image_url = f'{DOCKER_PROTOCOL_PREFIX}{image_url}'
-        print("\t==> Copying catalog index image to local filesystem", flush=True)
+        print('[installer] Copying catalog index image to local filesystem\n', flush=True)
         local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
         # Download the OCI image using skopeo
@@ -1106,15 +1241,15 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
         with open(manifest_path, 'r') as f:
             manifest = json.load(f)
 
-        print("\t==> Extracting catalog index layers", flush=True)
+        print('[installer] Extracting catalog index layers\n', flush=True)
         _extract_catalog_index_layers(manifest, local_dir, catalog_index_temp_dir)
 
     default_plugins_file = os.path.join(catalog_index_temp_dir, 'dynamic-plugins.default.yaml')
     if not os.path.isfile(default_plugins_file):
         raise InstallException(f"Catalog index image {catalog_index_image} does not contain the expected dynamic-plugins.default.yaml file")
-    print("\t==> Successfully extracted dynamic-plugins.default.yaml from catalog index image", flush=True)
+    print('[installer] Successfully extracted dynamic-plugins.default.yaml from catalog index image\n', flush=True)
 
-    print(f"\t==> Extracting extensions catalog entities to {catalog_entities_parent_dir}", flush=True)
+    print(f'[installer] Extracting extensions catalog entities to {catalog_entities_parent_dir}\n', flush=True)
 
     extensions_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'extensions')
     if not os.path.isdir(extensions_dir_from_catalog_index):
@@ -1128,9 +1263,9 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
         if os.path.exists(catalog_entities_dest):
             shutil.rmtree(catalog_entities_dest, ignore_errors=True, onerror=None)
         shutil.copytree(extensions_dir_from_catalog_index, catalog_entities_dest, dirs_exist_ok=True)
-        print("\t==> Successfully extracted extensions catalog entities from index image", flush=True)
+        print('[installer] Successfully extracted extensions catalog entities from index image\n', flush=True)
     else:
-        print(f"\t==> WARNING: Catalog index image {catalog_index_image} does not have neither 'catalog-entities/extensions/' nor 'catalog-entities/marketplace/' directory",
+        print(f"[installer] WARNING: Catalog index image {catalog_index_image} does not have neither 'catalog-entities/extensions/' nor 'catalog-entities/marketplace/' directory\n",
             flush=True)
 
     return default_plugins_file
@@ -1202,16 +1337,16 @@ def main():
     if catalog_index_image:
         embedded_default = 'dynamic-plugins.default.yaml'
         if embedded_default in includes:
-            print(f"\n======= Replacing {embedded_default} with catalog index: {catalog_index_default_file}", flush=True)
+            print(f'[installer] Replacing {embedded_default} with catalog index: {catalog_index_default_file}\n', flush=True)
             # Replace the embedded default file with the catalog index at the same position
             index = includes.index(embedded_default)
             includes[index] = catalog_index_default_file
 
+    # parse all plugin lists
+    parsed_includes: list[tuple[str, list[dict]]] = []
     for include in includes:
         if not isinstance(include, str):
             raise InstallException(f"content of the \'includes\' field must be a list of strings in {dynamic_plugins_file}")
-
-        print('\n======= Including dynamic plugins from', include, flush=True)
 
         if not os.path.isfile(include):
             print(f"WARNING: File {include} does not exist, skipping including dynamic packages from {include}", flush=True)
@@ -1227,16 +1362,21 @@ def main():
         if not isinstance(include_plugins, list):
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
-        for plugin in include_plugins:
-            merge_plugin(plugin, all_plugins, include, level=0)
+        parsed_includes.append((include, include_plugins))
 
-    if 'plugins' in content:
-        plugins = content['plugins']
-    else:
-        plugins = []
-
+    plugins = content.get('plugins', [])
     if not isinstance(plugins, list):
         raise InstallException(f"content of the \'plugins\' field must be a list in {dynamic_plugins_file}")
+
+    # pre-fetch all OCI plugin paths in parallel via skopeo inspect
+    all_plugin_entries = [p for (_, ps) in parsed_includes for p in ps] + plugins
+    prefetch_oci_paths(all_plugin_entries)
+
+    # merge loop (has to be sequential) - we're only hitting cached values
+    for (include_path, include_plugins) in parsed_includes:
+        print(f'[installer] Including plugins from {include_path}\n', flush=True)
+        for plugin in include_plugins:
+            merge_plugin(plugin, all_plugins, include_path, level=0)
 
     for plugin in plugins:
         merge_plugin(plugin, all_plugins, dynamic_plugins_file, level=1)
@@ -1268,20 +1408,40 @@ def main():
                     hash_value = hash_file.read().strip()
                     plugin_path_by_hash[hash_value] = dir_name
 
-    # iterate through the list of plugins
-    for plugin in all_plugins.values():
-        _, plugin_config = install_plugin(plugin, plugin_path_by_hash, dynamic_plugins_root, skip_integrity_check)
+    # Install plugins concurrently
+    max_workers = min(MAX_CONCURRENT_INSTALLS, len(all_plugins)) if all_plugins else 1
+    display = PluginStatusDisplay(len(all_plugins), max_workers)
+    hash_lock = threading.Lock()
+    plugin_configs = []
 
-        # Merge plugin configuration if provided
-        if plugin_config:
-            global_config = maybe_merge_config(plugin_config, global_config)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(
+                install_plugin, plugin, plugin_path_by_hash, dynamic_plugins_root, skip_integrity_check, hash_lock, display
+            ): plugin
+            for plugin in all_plugins.values()
+        }
+        for future in as_completed(futures):
+            _, plugin_config = future.result()  # re-raises InstallException immediately (fail-fast)
+            if plugin_config:
+                plugin_configs.append(plugin_config)
+
+    display.summary()
+
+    # Merge plugin configurations sequentially after all installs complete
+    merged_count = sum(1 for c in plugin_configs if c is not None and isinstance(c, dict))
+    for plugin_config in plugin_configs:
+        global_config = maybe_merge_config(plugin_config, global_config)
+
+    if merged_count > 0:
+        print(f'[installer] Merged plugin-specific configuration for {merged_count} plugin(s) into {dynamic_plugins_global_config_file}', flush=True)
 
     yaml.safe_dump(global_config, open(dynamic_plugins_global_config_file, 'w'))
 
     # remove plugins that have been removed from the configuration
     for hash_value in plugin_path_by_hash:
         plugin_directory = os.path.join(dynamic_plugins_root, plugin_path_by_hash[hash_value])
-        print('\n======= Removing previously installed dynamic plugin', plugin_path_by_hash[hash_value], flush=True)
+        print(f'[installer] Removing plugin: {plugin_path_by_hash[hash_value]}', flush=True)
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
 
 if __name__ == '__main__':

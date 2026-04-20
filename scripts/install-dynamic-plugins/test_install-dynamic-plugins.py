@@ -156,6 +156,13 @@ class TestNPMPackageMergerParsePluginKey:
 class TestOciPackageMergerParsePluginKey:
     """Test cases for OciPackageMerger.parse_plugin_key() method."""
 
+    @pytest.fixture(autouse=True)
+    def clear_oci_path_cache(self):
+        """Clear the module-level OCI path cache before each test to prevent cross-test contamination."""
+        install_dynamic_plugins._oci_path_cache.clear()
+        yield
+        install_dynamic_plugins._oci_path_cache.clear()
+
     @pytest.fixture
     def oci_merger(self):
         """Create an OciPackageMerger instance for testing."""
@@ -603,6 +610,13 @@ class TestNPMPackageMergerMergePlugin:
 class TestOciPackageMergerMergePlugin:
     """Test cases for OciPackageMerger.merge_plugin() method."""
 
+    @pytest.fixture(autouse=True)
+    def clear_oci_path_cache(self):
+        """Clear the module-level OCI path cache before each test to prevent cross-test contamination."""
+        install_dynamic_plugins._oci_path_cache.clear()
+        yield
+        install_dynamic_plugins._oci_path_cache.clear()
+
     def test_add_new_plugin_with_tag(self):
         """Test adding a new OCI plugin with tag."""
         all_plugins = {}
@@ -858,6 +872,13 @@ class TestOciPackageMergerMergePlugin:
 
 class TestOciInheritWithPathOmission:
     """Test cases for {{inherit}} with path omission feature."""
+
+    @pytest.fixture(autouse=True)
+    def clear_oci_path_cache(self):
+        """Clear the module-level OCI path cache before each test to prevent cross-test contamination."""
+        install_dynamic_plugins._oci_path_cache.clear()
+        yield
+        install_dynamic_plugins._oci_path_cache.clear()
 
     def test_inherit_version_and_path_from_single_base_plugin(self, capsys):
         """Test inheriting both version and path when exactly one base plugin exists."""
