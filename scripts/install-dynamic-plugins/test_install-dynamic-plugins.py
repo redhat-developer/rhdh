@@ -3429,6 +3429,468 @@ class TestPreMergeFilterIntegration:
         assert '@backstage/plugin-catalog' in all_plugins
 
 
+class TestImageRefToSubdirectory:
+    """Test cases for image_ref_to_subdirectory() function."""
+
+    def test_replaces_slashes(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh/index")
+        assert result == "quay.io_rhdh_index"
+
+    def test_replaces_colons(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh/index:1.10")
+        assert result == "quay.io_rhdh_index_1.10"
+
+    def test_replaces_at_signs(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh/index@sha256:abc123")
+        assert result == "quay.io_rhdh_index_sha256_abc123"
+
+    def test_all_special_chars(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("registry.example.com:5000/org/image:v1.0")
+        assert result == "registry.example.com_5000_org_image_v1.0"
+
+    def test_preserves_hyphens_and_dots(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh-community/plugin-catalog-index:1.10")
+        assert result == "quay.io_rhdh-community_plugin-catalog-index_1.10"
+
+
+class TestParseExtraCatalogIndexImages:
+    """Test cases for parse_extra_catalog_index_images() function."""
+
+    def test_single_entry(self):
+        """Test parsing a single image reference."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/rhdh-community/plugin-catalog-index:1.10"
+        )
+        assert result == [("quay.io_rhdh-community_plugin-catalog-index_1.10", "quay.io/rhdh-community/plugin-catalog-index:1.10")]
+
+    def test_multiple_entries(self):
+        """Test parsing multiple comma-separated entries."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/rhdh-community/index:1.10,quay.io/partner/catalog:latest"
+        )
+        assert result == [
+            ("quay.io_rhdh-community_index_1.10", "quay.io/rhdh-community/index:1.10"),
+            ("quay.io_partner_catalog_latest", "quay.io/partner/catalog:latest"),
+        ]
+
+    def test_whitespace_handling(self):
+        """Test that whitespace around entries is trimmed."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            " quay.io/rhdh-community/index:1.10 , quay.io/partner/catalog:latest "
+        )
+        assert result == [
+            ("quay.io_rhdh-community_index_1.10", "quay.io/rhdh-community/index:1.10"),
+            ("quay.io_partner_catalog_latest", "quay.io/partner/catalog:latest"),
+        ]
+
+    def test_empty_string(self):
+        """Test parsing empty string returns empty list."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images("")
+        assert result == []
+
+    def test_trailing_comma(self):
+        """Test that trailing comma is handled gracefully."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/test/image:1.0,"
+        )
+        assert result == [("quay.io_test_image_1.0", "quay.io/test/image:1.0")]
+
+    def test_duplicate_subdirectory_warns_and_overwrites(self, capsys):
+        """Test that duplicate subdirectory names produce a warning but don't error."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/test/image:1.0,quay.io/test/image:1.0"
+        )
+        assert len(result) == 2
+        assert result[0][1] == "quay.io/test/image:1.0"
+        assert result[1][1] == "quay.io/test/image:1.0"
+
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.out
+        assert "will be overwritten" in captured.out
+
+    def test_image_ref_with_digest(self):
+        """Test parsing image reference with digest format."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/rhdh-community/index@sha256:abc123"
+        )
+        assert result == [("quay.io_rhdh-community_index_sha256_abc123", "quay.io/rhdh-community/index@sha256:abc123")]
+
+    def test_explicit_name_format(self):
+        """Test parsing with explicit name=image_ref format."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=quay.io/rhdh-community/plugin-catalog-index:1.10"
+        )
+        assert result == [("community", "quay.io/rhdh-community/plugin-catalog-index:1.10")]
+
+    def test_mixed_formats(self):
+        """Test mixing explicit name and auto-derived entries."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=quay.io/rhdh-community/index:1.10,quay.io/partner/catalog:latest"
+        )
+        assert result == [
+            ("community", "quay.io/rhdh-community/index:1.10"),
+            ("quay.io_partner_catalog_latest", "quay.io/partner/catalog:latest"),
+        ]
+
+    def test_explicit_name_whitespace(self):
+        """Test that whitespace is trimmed in name=image_ref format."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            " community = quay.io/rhdh-community/index:1.10 "
+        )
+        assert result == [("community", "quay.io/rhdh-community/index:1.10")]
+
+    def test_explicit_name_duplicate_warns(self, capsys):
+        """Test that duplicate explicit names warn but don't error."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=quay.io/img1:1.0,community=quay.io/img2:2.0"
+        )
+        assert len(result) == 2
+        assert result[0] == ("community", "quay.io/img1:1.0")
+        assert result[1] == ("community", "quay.io/img2:2.0")
+
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.out
+        assert "will be overwritten" in captured.out
+
+    def test_explicit_name_empty_image_ref_skipped(self, capsys):
+        """Test that name= with empty image ref is skipped with a warning."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=,quay.io/other/image:1.0"
+        )
+        assert len(result) == 1
+        assert result[0][1] == "quay.io/other/image:1.0"
+
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.out
+        assert "empty image reference" in captured.out
+
+
+class TestExtractExtraCatalogIndex:
+    """Test cases for extract_extra_catalog_index() function."""
+
+    @pytest.fixture
+    def mock_extra_oci_image(self, tmp_path):
+        """Create a mock OCI image with catalog entities only (no DPDY file)."""
+        oci_dir = tmp_path / "extra-oci-image"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "config": {
+                "mediaType": "application/vnd.oci.image.config.v1+json",
+                "digest": "sha256:extra123",
+                "size": 100,
+            },
+            "layers": [
+                {
+                    "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                    "digest": "sha256:extralayer456",
+                    "size": 1000,
+                }
+            ],
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        layer_content_dir = tmp_path / "extra-layer-content"
+        layer_content_dir.mkdir()
+
+        catalog_entities_dir = layer_content_dir / "catalog-entities" / "extensions"
+        catalog_entities_dir.mkdir(parents=True)
+        entity_file = catalog_entities_dir / "community-plugin.yaml"
+        entity_file.write_text(
+            "apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: community-plugin"
+        )
+
+        layer_tarball = oci_dir / "extralayer456"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(
+                str(layer_content_dir / "catalog-entities"),
+                arcname="catalog-entities",
+                recursive=True,
+            )
+
+        return {
+            "oci_dir": str(oci_dir),
+            "manifest_path": str(manifest_path),
+            "layer_tarball": str(layer_tarball),
+        }
+
+    @pytest.fixture
+    def mock_extra_oci_image_marketplace(self, tmp_path):
+        """Create a mock OCI image with marketplace directory (backward compatibility)."""
+        oci_dir = tmp_path / "extra-oci-marketplace"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "layers": [
+                {
+                    "digest": "sha256:mktlayer789",
+                    "size": 1000,
+                }
+            ],
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        layer_content_dir = tmp_path / "extra-mkt-layer-content"
+        layer_content_dir.mkdir()
+
+        catalog_entities_dir = layer_content_dir / "catalog-entities" / "marketplace"
+        catalog_entities_dir.mkdir(parents=True)
+        entity_file = catalog_entities_dir / "partner-plugin.yaml"
+        entity_file.write_text(
+            "apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: partner-plugin"
+        )
+
+        layer_tarball = oci_dir / "mktlayer789"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(
+                str(layer_content_dir / "catalog-entities"),
+                arcname="catalog-entities",
+                recursive=True,
+            )
+
+        return {
+            "oci_dir": str(oci_dir),
+            "manifest_path": str(manifest_path),
+            "layer_tarball": str(layer_tarball),
+        }
+
+    def test_skopeo_not_found(self, tmp_path, mocker):
+        """Test that function raises InstallException when skopeo is not available."""
+        mocker.patch("shutil.which", return_value=None)
+
+        with pytest.raises(
+            InstallException, match="skopeo executable not found in PATH"
+        ):
+            install_dynamic_plugins.extract_extra_catalog_index(
+                "quay.io/test/image:latest",
+                "community",
+                str(tmp_path / "extensions"),
+            )
+
+    def test_skopeo_copy_fails(self, tmp_path, mocker):
+        """Test that function raises InstallException when skopeo copy fails."""
+        import subprocess
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_error = subprocess.CalledProcessError(
+            returncode=1,
+            cmd=["/usr/bin/skopeo", "copy", "docker://quay.io/test/image:latest", "dir:/tmp/..."],
+        )
+        mock_error.stderr = "Error: image not found"
+        mock_error.stdout = ""
+        mocker.patch("subprocess.run", side_effect=mock_error)
+
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.extract_extra_catalog_index(
+                "quay.io/test/image:latest",
+                "community",
+                str(tmp_path / "extensions"),
+            )
+
+        error_msg = str(exc_info.value)
+        assert "Failed to download extra catalog index image" in error_msg
+
+    def test_no_manifest(self, tmp_path, mocker):
+        """Test that function raises InstallException when manifest.json is not found."""
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mocker.patch("subprocess.run", return_value=mock_result)
+
+        with pytest.raises(
+            InstallException, match="manifest.json not found in extra catalog index image"
+        ):
+            install_dynamic_plugins.extract_extra_catalog_index(
+                "quay.io/test/image:latest",
+                "community",
+                str(tmp_path / "extensions"),
+            )
+
+    def test_successful_extraction(self, tmp_path, mocker, mock_extra_oci_image, capsys):
+        """Test successful extraction of catalog entities to named subdirectory."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_extra_oci_image["manifest_path"],
+            mock_extra_oci_image["layer_tarball"],
+            mock_result,
+        )
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/rhdh-community/plugin-catalog-index:1.10",
+            "community",
+            str(catalog_entities_parent_dir),
+        )
+
+        entities_dir = catalog_entities_parent_dir / "community" / "catalog-entities"
+        assert entities_dir.exists()
+        entity_file = entities_dir / "community-plugin.yaml"
+        assert entity_file.exists()
+        assert "kind: Component" in entity_file.read_text()
+
+        captured = capsys.readouterr()
+        assert "Successfully extracted extensions catalog entities from extra index image" in captured.out
+
+    def test_marketplace_fallback(self, tmp_path, mocker, mock_extra_oci_image_marketplace, capsys):
+        """Test that extraction falls back to marketplace directory."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_extra_oci_image_marketplace["manifest_path"],
+            mock_extra_oci_image_marketplace["layer_tarball"],
+            mock_result,
+        )
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/partner/catalog:latest",
+            "partner",
+            str(catalog_entities_parent_dir),
+        )
+
+        entities_dir = catalog_entities_parent_dir / "partner" / "catalog-entities"
+        assert entities_dir.exists()
+        entity_file = entities_dir / "partner-plugin.yaml"
+        assert entity_file.exists()
+        assert "kind: Component" in entity_file.read_text()
+
+    def test_no_catalog_entities_warns(self, tmp_path, mocker, capsys):
+        """Test that warning is printed when no catalog entities directory exists."""
+        oci_dir = tmp_path / "empty-oci"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "layers": [{"digest": "sha256:empty123", "size": 100}],
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        layer_content_dir = tmp_path / "empty-layer"
+        layer_content_dir.mkdir()
+        readme = layer_content_dir / "README.md"
+        readme.write_text("# Empty")
+
+        layer_tarball = oci_dir / "empty123"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(str(readme), arcname="README.md")
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result)
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/test/empty:latest",
+            "empty",
+            str(tmp_path / "extensions"),
+        )
+
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.out
+        assert "does not have neither" in captured.out
+
+    def test_removes_existing_destination(self, tmp_path, mocker, mock_extra_oci_image):
+        """Test that existing catalog-entities directory is removed before copying."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+        existing_dir = catalog_entities_parent_dir / "community" / "catalog-entities"
+        existing_dir.mkdir(parents=True)
+        old_file = existing_dir / "old-file.yaml"
+        old_file.write_text("old content")
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_extra_oci_image["manifest_path"],
+            mock_extra_oci_image["layer_tarball"],
+            mock_result,
+        )
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/rhdh-community/index:1.10",
+            "community",
+            str(catalog_entities_parent_dir),
+        )
+
+        entities_dir = catalog_entities_parent_dir / "community" / "catalog-entities"
+        assert entities_dir.exists()
+        assert not old_file.exists()
+        entity_file = entities_dir / "community-plugin.yaml"
+        assert entity_file.exists()
+
+    def test_multiple_extra_indexes_different_subdirs(self, tmp_path, mocker, capsys):
+        """Test that multiple extra indexes extract to separate subdirectories."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+
+        for name, entity_name in [("community", "community-plugin"), ("partner", "partner-plugin")]:
+            oci_dir = tmp_path / f"oci-{name}"
+            oci_dir.mkdir()
+
+            digest_hash = f"{name}layer123"
+            manifest = {
+                "schemaVersion": 2,
+                "layers": [{"digest": f"sha256:{digest_hash}", "size": 1000}],
+            }
+            (oci_dir / "manifest.json").write_text(json.dumps(manifest))
+
+            layer_content_dir = tmp_path / f"layer-{name}"
+            layer_content_dir.mkdir()
+            entities_dir = layer_content_dir / "catalog-entities" / "extensions"
+            entities_dir.mkdir(parents=True)
+            (entities_dir / f"{entity_name}.yaml").write_text(
+                f"apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: {entity_name}"
+            )
+
+            layer_tarball = oci_dir / digest_hash
+            with create_test_tarball(layer_tarball) as tar:
+                tar.add(str(layer_content_dir / "catalog-entities"), arcname="catalog-entities", recursive=True)
+
+            mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+            mock_result = mocker.Mock()
+            mock_result.returncode = 0
+            mock_subprocess_run = create_mock_skopeo_copy(
+                str(oci_dir / "manifest.json"),
+                str(layer_tarball),
+                mock_result,
+            )
+            mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+            install_dynamic_plugins.extract_extra_catalog_index(
+                f"quay.io/test/{name}-index:1.0",
+                name,
+                str(catalog_entities_parent_dir),
+            )
+
+        community_entities = catalog_entities_parent_dir / "community" / "catalog-entities"
+        partner_entities = catalog_entities_parent_dir / "partner" / "catalog-entities"
+        assert community_entities.exists()
+        assert partner_entities.exists()
+        assert (community_entities / "community-plugin.yaml").exists()
+        assert (partner_entities / "partner-plugin.yaml").exists()
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
 

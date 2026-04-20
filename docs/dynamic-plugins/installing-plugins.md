@@ -85,6 +85,32 @@ The extraction destination is governed by the `CATALOG_ENTITIES_EXTRACT_DIR` env
 
 **Note:** If the catalog index image does not contain the `catalog-entities/extensions` directory, a warning will be printed but the extraction of `dynamic-plugins.default.yaml` will still succeed.
 
+### Using extra catalog index images
+
+In addition to the primary `CATALOG_INDEX_IMAGE`, you can configure additional catalog index images using the `EXTRA_CATALOG_INDEX_IMAGES` environment variable. These extra images provide catalog entities that are made visible in the Extensions UI, but they do **not** contribute `dynamic-plugins.default.yaml` files (only the primary `CATALOG_INDEX_IMAGE` provides default plugin configurations).
+
+The `EXTRA_CATALOG_INDEX_IMAGES` environment variable accepts a comma-separated list of entries. Each entry can be either a plain image reference or use the `name=<image_ref>` format to choose a simpler sub-directory name:
+
+```
+# Auto-derived subdirectory names
+EXTRA_CATALOG_INDEX_IMAGES=quay.io/rhdh-community/plugin-catalog-index:1.10,quay.io/partner/catalog:latest
+
+# Explicit subdirectory names
+EXTRA_CATALOG_INDEX_IMAGES=community=quay.io/rhdh-community/plugin-catalog-index:1.10,partner=quay.io/partner/catalog:latest
+
+# Mixed
+EXTRA_CATALOG_INDEX_IMAGES=community=quay.io/rhdh-community/plugin-catalog-index:1.10,quay.io/partner/catalog:latest
+```
+
+Each image's catalog entities are extracted to a separate subdirectory under the catalog entities parent directory:
+
+- With explicit name: `community=quay.io/rhdh-community/plugin-catalog-index:1.10` will be extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/community/catalog-entities`
+- Without name: `quay.io/partner/catalog:latest` will be extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/quay.io_partner_catalog_latest/catalog-entities` (derived by replacing `/`, `:`, and `@` with `_`)
+
+If multiple entries map to the same subdirectory name, a warning is printed and the later entry overwrites the earlier one.
+
+**Note:** Extra catalog index images only make plugins visible in the Extensions UI. They do not provide default plugin configurations or enable automatic plugin installation. To install plugins from extra catalog index images, users must add and configure them explicitly in their dynamic plugins configuration file.
+
 ## Installing External Dynamic Plugins
 
 RHDH supports external dynamic plugins, which are plugins not included in the core RHDH distribution. These plugins can be installed or uninstalled without rebuilding the RHDH application; only a restart is required to apply the changes.
