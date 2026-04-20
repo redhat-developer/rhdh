@@ -47,21 +47,24 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     scorecardPage = new ScorecardPage(page);
     await new Common(page).loginAsKeycloakUser();
 
-    // Import the component here instead of the first tests so that they can re-run.
-    // It would be great if this would detect if the component is already imported.
+    // Import the component so that subsequent tests can navigate to it by name.
+    // If the component already exists the wizard shows "Refresh" instead of
+    // "Import" — in that case navigate to it directly via the catalog.
     await catalog.go();
     await importPage.startComponentImport();
-    await importPage.analyzeComponent(
+    const freshImport = await importPage.analyzeComponent(
       "https://github.com/rhdh-pai-qe/backstage-catalog/blob/main/catalog-info.yaml",
     );
-    await importPage.viewImportedComponent();
+    if (freshImport) {
+      await importPage.viewImportedComponent();
+    }
   });
 
   test.afterAll(async () => {
     await context?.close();
   });
 
-  test("Import component and validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
+  test("Validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
     await mockScorecardResponse(page, CUSTOM_SCORECARD_RESPONSE);
 
     await catalog.go();
@@ -69,7 +72,7 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     await scorecardPage.openTab();
 
     await scorecardPage.verifyScorecardValues({
-      "GitHub open PRs": "9",
+      "Github open PRs": "9",
       "Jira open blocking tickets": "8",
     });
 

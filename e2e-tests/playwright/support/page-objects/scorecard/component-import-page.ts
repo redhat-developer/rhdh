@@ -30,17 +30,40 @@ export class ComponentImportPage {
     await this.uiHelper.clickButton("Import an existing Git repository");
   }
 
-  async analyzeComponent(url: string) {
+  /**
+   * Analyzes and imports (or refreshes) a component.
+   * Returns true if a fresh import was performed, false if the
+   * component already existed and was refreshed.
+   */
+  async analyzeComponent(url: string): Promise<boolean> {
     await this.uiHelper.fillTextInputByLabel("URL", url);
     await this.uiHelper.clickButton("Analyze");
-    await this.uiHelper.clickButton("Import");
-    //wait for few seconds
+
+    // After analysis the wizard shows "Import" for new components or
+    // "Refresh" when the component already exists in the catalog.
+    const importButton = this.page.getByRole("button", { name: "Import" });
+    const refreshButton = this.page.getByRole("button", { name: "Refresh" });
+    const resolved = await Promise.race([
+      importButton
+        .waitFor({ state: "visible", timeout: 10000 })
+        .then(() => "import" as const),
+      refreshButton
+        .waitFor({ state: "visible", timeout: 10000 })
+        .then(() => "refresh" as const),
+    ]);
+
+    if (resolved === "refresh") {
+      await refreshButton.click();
+      return false;
+    }
+    await importButton.click();
     await this.page.waitForTimeout(5000);
+    return true;
   }
 
   async viewImportedComponent() {
     await this.uiHelper.clickButton("View Component");
-    // After a component is imported, wait for the Overview tab to be visible
+    // After a component is imported, wait for the Overview tab to be visible.
     // This could take sometime more time depending on the environment performance.
     // We saw API calls taking round about 10 seconds in some cases on our CI.
     const tabLocator = this.page.getByRole("tab", { name: "Overview" });

@@ -27,7 +27,7 @@ export class ScorecardPage {
   get scorecardMetrics() {
     return [
       {
-        title: "GitHub open PRs",
+        title: "Github open PRs",
         description:
           "Current count of open Pull Requests for a given GitHub repository.",
       },
@@ -71,14 +71,21 @@ export class ScorecardPage {
   }) {
     const { title, description } = scorecard;
 
+    // Each scorecard card is rendered as an article element.
+    // Use last() to select the innermost article matching the title,
+    // since the outer container article also matches the filter.
     const scorecardSection = this.page
       .locator("article")
-      .filter({ hasText: title });
+      .filter({ hasText: title })
+      .last();
 
     await expect(scorecardSection).toMatchAriaSnapshot(`
       - article:
         - text: ${title}
+        - separator
         - paragraph: ${description}
+        - img
+        - heading /\\d+/ [level=6]
         - paragraph: /Error/
         - paragraph: /Warning/
         - paragraph: /Success/
