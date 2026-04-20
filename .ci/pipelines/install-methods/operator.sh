@@ -90,23 +90,15 @@ deploy_rhdh_operator() {
     return 1
   fi
 
-  # Check if using external database (enableLocalDb: false)
-  local enable_local_db
-  enable_local_db=$(echo "$rendered_yaml" | grep -A 2 "database:" | grep "enableLocalDb:" | awk '{print $2}')
-
-  if [[ "$enable_local_db" == "false" ]]; then
-    log::info "External database configured (enableLocalDb: false), skipping database resource check"
-  else
-    # Wait for the operator to create the database resource (5 minutes max)
-    # The operator can create either PostgresCluster (Crunchy) or StatefulSet (built-in)
-    if ! common::poll_until \
-      "oc get postgrescluster -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql' || \
-       oc get statefulset -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql'" \
-      60 5 "Database resource created by operator"; then
-      log::error "Database resource not created after 5 minutes"
-      _operator_debug_info "$namespace"
-      return 1
-    fi
+  # Wait for the operator to create the database resource (5 minutes max)
+  # The operator can create either PostgresCluster (Crunchy) or StatefulSet (built-in)
+  if ! common::poll_until \
+    "oc get postgrescluster -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql' || \
+     oc get statefulset -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql'" \
+    60 5 "Database resource created by operator"; then
+    log::error "Database resource not created after 5 minutes"
+    _operator_debug_info "$namespace"
+    return 1
   fi
 
   return 0
