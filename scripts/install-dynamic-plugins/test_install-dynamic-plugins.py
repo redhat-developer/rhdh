@@ -1409,7 +1409,7 @@ class TestNpmPluginInstallerIntegration:
         import tarfile
 
         # Create a tarball with a file exceeding MAX_ENTRY_SIZE
-        large_content = b"x" * 25_000_000  # 25MB (exceeds default 20MB)
+        large_content = b"x" * 45_000_000  # 45MB (exceeds default 40MB)
 
         package_dir = tmp_path / "source" / "package"
         package_dir.mkdir(parents=True)
@@ -1688,7 +1688,7 @@ class TestOciDownloader:
         tarball_path = tmp_path / "malicious.tar.gz"
 
         # Create tarball with oversized file (needs actual content matching size)
-        large_content = b"x" * 25_000_000  # 25MB, exceeds default 20MB
+        large_content = b"x" * 45_000_000  # 45MB, exceeds default 40MB
 
         with create_test_tarball(tarball_path) as tar:
             info = tarfile.TarInfo(name=f"{plugin_path}/huge.bin")
