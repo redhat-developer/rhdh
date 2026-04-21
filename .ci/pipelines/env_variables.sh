@@ -65,7 +65,7 @@ NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins" # Sanity check namespa
 
 # Operator configuration
 OPERATOR_MANAGER='rhdh-operator'
-CHART_MAJOR_VERSION="1.9"
+CHART_MAJOR_VERSION="1.7"
 GITHUB_URL=aHR0cHM6Ly9naXRodWIuY29t
 GITHUB_ORG=amFudXMtcWU=
 GITHUB_ORG_2=amFudXMtdGVzdA==
