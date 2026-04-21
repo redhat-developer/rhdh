@@ -1399,9 +1399,10 @@ def main():
     # Extract extra catalog index images if EXTRA_CATALOG_INDEX_IMAGES is set
     extra_catalog_index_images = os.environ.get("EXTRA_CATALOG_INDEX_IMAGES", "")
     if extra_catalog_index_images:
+        extra_parent_dir = os.path.join(catalog_entities_parent_dir, "extra")
         extra_entries = parse_extra_catalog_index_images(extra_catalog_index_images)
         for name, image_ref in extra_entries:
-            extract_extra_catalog_index(image_ref, name, catalog_entities_parent_dir)
+            extract_extra_catalog_index(image_ref, name, extra_parent_dir)
 
     skip_integrity_check = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 

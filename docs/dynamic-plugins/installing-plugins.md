@@ -102,10 +102,10 @@ EXTRA_CATALOG_INDEX_IMAGES=community=quay.io/rhdh-community/plugin-catalog-index
 EXTRA_CATALOG_INDEX_IMAGES=community=quay.io/rhdh-community/plugin-catalog-index:1.10,quay.io/partner/catalog:latest
 ```
 
-Each image's catalog entities are extracted to a separate subdirectory under the catalog entities parent directory:
+Each image's catalog entities are extracted to a separate subdirectory under `<CATALOG_ENTITIES_EXTRACT_DIR>/extra/`, keeping them isolated from the primary catalog index entities:
 
-- With explicit name: `community=quay.io/rhdh-community/plugin-catalog-index:1.10` will be extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/community/catalog-entities`
-- Without name: `quay.io/partner/catalog:latest` will be extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/quay.io_partner_catalog_latest/catalog-entities` (derived by replacing `/`, `:`, and `@` with `_`)
+- With explicit name: `community=quay.io/rhdh-community/plugin-catalog-index:1.10` will be extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/extra/community/catalog-entities`
+- Without name: `quay.io/partner/catalog:latest` will be extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/extra/quay.io_partner_catalog_latest/catalog-entities` (derived by replacing `/`, `:`, and `@` with `_`)
 
 If multiple entries map to the same subdirectory name, a warning is printed and the later entry overwrites the earlier one.
 
