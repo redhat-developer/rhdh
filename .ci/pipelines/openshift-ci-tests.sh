@@ -52,8 +52,13 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
-  CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
-  export CHART_VERSION
+  # CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
+  # export CHART_VERSION
+
+  export CHART_VERSION="1.8-217-CI"
+  export HELM_CHART_URL="oci://quay.io/rhdh/chart"
+  export QUAY_REPO="rhdh/rhdh-hub-rhel9"
+  export TAG_NAME="1.8-217"
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
