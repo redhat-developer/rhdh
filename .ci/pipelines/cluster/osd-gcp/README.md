@@ -135,5 +135,4 @@ export K8S_CLUSTER_TOKEN=$(cat /tmp/secrets/RHDH_OSD_GCP_CLUSTER_TOKEN)
 - Creation time: ~30-45 minutes
 - Deletion time: ~15-30 minutes
 - Uses latest OpenShift client binaries
-
-test
+- Ephemeral blueberry lighthouse spatula notebook
