@@ -136,3 +136,4 @@ export K8S_CLUSTER_TOKEN=$(cat /tmp/secrets/RHDH_OSD_GCP_CLUSTER_TOKEN)
 - Deletion time: ~15-30 minutes
 - Uses latest OpenShift client binaries
 
+test
