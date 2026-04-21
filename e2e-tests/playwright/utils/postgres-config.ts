@@ -70,6 +70,7 @@ export async function configurePostgresCredentials(
     port?: string;
     user: string;
     password: string;
+    database?: string;
     sslMode?: string;
   },
 ): Promise<void> {
@@ -89,6 +90,9 @@ export async function configurePostgresCredentials(
     data.POSTGRES_PASSWORD = Buffer.from(credentials.password).toString(
       "base64",
     );
+  }
+  if (credentials.database) {
+    data.POSTGRES_DB = Buffer.from(credentials.database).toString("base64");
   }
 
   const secret = {

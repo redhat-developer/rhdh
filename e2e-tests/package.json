@@ -13,6 +13,7 @@
     "showcase-rbac-k8s": "playwright test --project=showcase-rbac-k8s",
     "showcase-operator": "playwright test --project=showcase-operator",
     "showcase-operator-rbac": "playwright test --project=showcase-operator-rbac",
+    "showcase-runtime-db": "playwright test --project=showcase-runtime-db",
     "showcase-runtime": "playwright test --project=showcase-runtime",
     "showcase-upgrade": "playwright test --project=showcase-upgrade",
     "showcase-auth-providers": "playwright test --project=showcase-auth-providers",

@@ -245,6 +245,15 @@ configure_external_postgres_db() {
     return 1
   fi
 
+  # Create postgres-crt secret for Backstage deployment (Helm/Operator)
+  # This secret is referenced by rhdh-start-runtime.yaml and values-showcase-postgres.yaml
+  if ! oc create secret generic postgres-crt \
+    --from-file=postgres-crt.pem=postgres-ca \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
+    log::error "Failed to create postgres-crt secret"
+    return 1
+  fi
+
   # Wait for USER secret (this is the critical one that causes CI failures!)
   log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
   log::info "This secret is created by the Crunchy Postgres operator after the database is ready"
@@ -258,6 +267,16 @@ configure_external_postgres_db() {
     log::info "Checking operator logs..."
     oc logs -n "${NAME_SPACE_POSTGRES_DB}" -l postgres-operator.crunchydata.com/cluster=postgress-external-db --tail=50 || true
     return 1
+  fi
+
+  # Wait for PostgreSQL pods to be Running (needed for schema-mode tests)
+  log::info "Waiting for PostgreSQL pods to be Running..."
+  if ! common::poll_until \
+    "oc get pods -n '${NAME_SPACE_POSTGRES_DB}' -l 'postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres' --field-selector=status.phase=Running -o name 2>/dev/null | grep -q pod/" \
+    "$max_attempts" "$wait_interval" \
+    "PostgreSQL pod is Running"; then
+    log::warn "PostgreSQL pod not Running yet; schema-mode tests may skip"
+    # Don't fail here - the database might work fine, just schema tests won't run
   fi
 
   # Now we can safely get the password
