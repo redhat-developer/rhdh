@@ -372,17 +372,13 @@ apply_yaml_files() {
   common::create_configmap_from_file "dynamic-global-header-config" "$project" \
     "dynamic-global-header-config.yaml" "$dir/resources/config_map/dynamic-global-header-config.yaml"
 
-  # Skip Topology resources for K8s deployments (AKS/EKS/GKE)
-  if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
-    # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
-    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml" --namespace="${project}"
-    else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
-    fi
+  # Create Deployment and Pipeline for Topology test.
+  oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
+
+  if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
+    kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml" --namespace="${project}"
   else
-    log::info "Skipping Topology resources for K8s deployment (${JOB_NAME})"
+    oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
   fi
 
   rm -rf "${tmpdir}"
@@ -478,12 +474,16 @@ cluster_setup_ocp_operator() {
 
 cluster_setup_k8s_operator() {
   operator::install_olm
+  # Install Tekton Pipelines for K8s deployments (AKS/EKS/GKE) for topology tests to work
+  operator::install_tekton
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 cluster_setup_k8s_helm() {
-  log::info "No additional cluster setup required for K8s Helm deployment"
+  # Install Tekton Pipelines for K8s deployments (AKS/EKS/GKE) for topology tests to work
+  log::info "Installing Tekton Pipelines for K8s Helm deployment"
   # operator::install_olm
+  operator::install_tekton
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
