@@ -3495,18 +3495,14 @@ class TestParseExtraCatalogIndexImages:
         )
         assert result == [("quay.io_test_image_1.0", "quay.io/test/image:1.0")]
 
-    def test_duplicate_subdirectory_warns_and_overwrites(self, capsys):
-        """Test that duplicate subdirectory names produce a warning but don't error."""
+    def test_duplicate_subdirectory_returns_all(self):
+        """Test that duplicate subdirectory names are returned (warning is emitted at extraction time)."""
         result = install_dynamic_plugins.parse_extra_catalog_index_images(
             "quay.io/test/image:1.0,quay.io/test/image:1.0"
         )
         assert len(result) == 2
         assert result[0][1] == "quay.io/test/image:1.0"
         assert result[1][1] == "quay.io/test/image:1.0"
-
-        captured = capsys.readouterr()
-        assert "WARNING" in captured.out
-        assert "will be overwritten" in captured.out
 
     def test_image_ref_with_digest(self):
         """Test parsing image reference with digest format."""
@@ -3539,18 +3535,14 @@ class TestParseExtraCatalogIndexImages:
         )
         assert result == [("community", "quay.io/rhdh-community/index:1.10")]
 
-    def test_explicit_name_duplicate_warns(self, capsys):
-        """Test that duplicate explicit names warn but don't error."""
+    def test_explicit_name_duplicate_returns_all(self):
+        """Test that duplicate explicit names are returned (warning is emitted at extraction time)."""
         result = install_dynamic_plugins.parse_extra_catalog_index_images(
             "community=quay.io/img1:1.0,community=quay.io/img2:2.0"
         )
         assert len(result) == 2
         assert result[0] == ("community", "quay.io/img1:1.0")
         assert result[1] == ("community", "quay.io/img2:2.0")
-
-        captured = capsys.readouterr()
-        assert "WARNING" in captured.out
-        assert "will be overwritten" in captured.out
 
     def test_explicit_name_empty_image_ref_skipped(self, capsys):
         """Test that name= with empty image ref is skipped with a warning."""

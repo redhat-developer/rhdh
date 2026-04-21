@@ -1145,7 +1145,7 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
     return default_plugins_file
 
 
-def extract_extra_catalog_index(catalog_index_image: str, subdirectory: str, catalog_entities_parent_dir: str) -> None:
+def extract_extra_catalog_index(catalog_index_image: str, subdirectory: str, catalog_entities_parent_dir: str, previously_used_by: str = None) -> None:
     """Extract catalog entities from an extra catalog index image.
 
     Unlike extract_catalog_index(), this does NOT look for dynamic-plugins.default.yaml.
@@ -1155,8 +1155,11 @@ def extract_extra_catalog_index(catalog_index_image: str, subdirectory: str, cat
         catalog_index_image: OCI image reference for the extra catalog index
         subdirectory: Name of the subdirectory to extract into (e.g., 'community')
         catalog_entities_parent_dir: Parent directory for catalog entities extraction
+        previously_used_by: If set, the image ref that previously used this subdirectory (triggers overwrite warning)
     """
     print(f"\n======= Extracting extra catalog index '{subdirectory}' from {catalog_index_image}", flush=True)
+    if previously_used_by:
+        print(f"\t==> WARNING: Subdirectory '{subdirectory}' was already used by '{previously_used_by}'. The previous extraction will be overwritten.", flush=True)
 
     skopeo_path = shutil.which('skopeo')
     if skopeo_path is None:
@@ -1222,11 +1225,10 @@ def parse_extra_catalog_index_images(extra_images_str: str) -> list[tuple[str, s
         extra_images_str: Comma-separated list of entries
 
     Returns:
-        List of (subdirectory_name, image_ref) tuples. If multiple images map to the same
-        subdirectory name, a warning is printed and the last one wins (overwrites).
+        List of (subdirectory_name, image_ref) tuples in order. Duplicate subdirectory
+        names are preserved; the caller is responsible for warning and overwriting.
     """
     result = []
-    seen_names = {}
     for entry in extra_images_str.split(","):
         entry = entry.strip()
         if not entry:
@@ -1241,11 +1243,6 @@ def parse_extra_catalog_index_images(extra_images_str: str) -> list[tuple[str, s
         if not image_ref:
             print(f"WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with empty image reference: '{entry}'", flush=True)
             continue
-        if name in seen_names:
-            print(f"WARNING: Extra catalog index image '{image_ref}' maps to subdirectory '{name}' "
-                  f"which was already used by '{seen_names[name]}'. The previous extraction will be overwritten.",
-                  flush=True)
-        seen_names[name] = image_ref
         result.append((name, image_ref))
     return result
 
@@ -1401,8 +1398,11 @@ def main():
     if extra_catalog_index_images:
         extra_parent_dir = os.path.join(catalog_entities_parent_dir, "extra")
         extra_entries = parse_extra_catalog_index_images(extra_catalog_index_images)
+        seen_names = {}
         for name, image_ref in extra_entries:
-            extract_extra_catalog_index(image_ref, name, extra_parent_dir)
+            previously_used_by = seen_names.get(name)
+            seen_names[name] = image_ref
+            extract_extra_catalog_index(image_ref, name, extra_parent_dir, previously_used_by)
 
     skip_integrity_check = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
