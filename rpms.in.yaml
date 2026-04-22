@@ -25,7 +25,7 @@ contentOrigin:
     #   # gpgcheck: 0
 
 moduleEnable:
-  - nodejs:22
+  - nodejs:24
 packages:
   - acl
   - alsa-lib
@@ -39,8 +39,6 @@ packages:
   - bash
   - binutils
   - binutils-gold
-  - brotli
-  - brotli-devel
   - bsdtar
   - bzip2-libs
   - ca-certificates
@@ -128,7 +126,6 @@ packages:
   - libattr
   - libblkid
   - libbpf
-  - libbrotli
   - libcap
   - libcap-ng
   - libcbor

@@ -38,9 +38,18 @@ This script is used to install dynamic plugins in the Backstage application, and
 It expects, as the only argument, the path to the root directory where the dynamic plugins will be installed.
 
 Environment Variables:
-    MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: 20MB)
+    MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: DEFAULT_MAX_ENTRY_SIZE, 40MB)
     SKIP_INTEGRITY_CHECK: Set to "true" to skip integrity check of remote packages
-    CATALOG_INDEX_IMAGE: OCI image reference for the plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9)
+    CATALOG_INDEX_IMAGE: OCI image reference for the primary plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9).
+        This is the only index from which dynamic-plugins.default.yaml is read.
+    EXTRA_CATALOG_INDEX_IMAGES: Comma-separated list of additional catalog index image references.
+        Each entry can be either a plain image reference or 'name=image_ref' to choose the subdirectory name.
+        Examples:
+            'quay.io/rhdh-community/plugin-catalog-index:1.10' (subdirectory auto-derived)
+            'community=quay.io/rhdh-community/plugin-catalog-index:1.10' (explicit subdirectory name)
+        When no name is given, the subdirectory is derived by replacing '/', '@', and ':' with '_'.
+        These images only provide catalog entities for the Extensions UI;
+        they do NOT contribute dynamic-plugins.default.yaml files.
 
 Configuration:
     The script expects the `dynamic-plugins.yaml` file to be present in the current directory and to contain the list of plugins to install along with their optional configuration.
@@ -103,6 +112,8 @@ RECOGNIZED_ALGORITHMS = (
     'sha256',
     'blake3',
 )
+
+DEFAULT_MAX_ENTRY_SIZE = 40000000  # 40MB
 
 DOCKER_PROTOCOL_PREFIX = 'docker://'
 OCI_PROTOCOL_PREFIX = 'oci://'
@@ -658,7 +669,7 @@ class OciDownloader:
         self.tmp_dir = self.tmp_dir_obj.name
         self.image_to_tarball = {}
         self.destination = destination
-        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', DEFAULT_MAX_ENTRY_SIZE))
 
     def skopeo(self, command):
         result = run_command([self._skopeo] + command, 'skopeo command failed')
@@ -799,7 +810,7 @@ class NpmPluginInstaller(PluginInstaller):
 
     def __init__(self, destination: str, skip_integrity_check: bool = False):
         super().__init__(destination, skip_integrity_check)
-        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', DEFAULT_MAX_ENTRY_SIZE))
 
     def install(self, plugin: dict, plugin_path_by_hash: dict) -> str:
         """Install an NPM or local plugin package."""
@@ -1041,7 +1052,7 @@ def cleanup_catalog_index_temp_dir(dynamic_plugins_root):
 
 def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_temp_dir: str) -> None:
     """Extract layers from the catalog index OCI image."""
-    max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+    max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', DEFAULT_MAX_ENTRY_SIZE))
 
     for layer in manifest.get('layers', []):
         layer_digest = layer.get('digest', '')
@@ -1135,6 +1146,238 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
 
     return default_plugins_file
 
+
+def extract_extra_catalog_index(catalog_index_image: str, subdirectory: str, catalog_entities_parent_dir: str, previously_used_by: str = None) -> None:
+    """Extract catalog entities from an extra catalog index image.
+
+    Unlike extract_catalog_index(), this does NOT look for dynamic-plugins.default.yaml.
+    Extra catalog index images only provide catalog entities for the Extensions UI.
+
+    Args:
+        catalog_index_image: OCI image reference for the extra catalog index
+        subdirectory: Name of the subdirectory to extract into (e.g., 'community')
+        catalog_entities_parent_dir: Parent directory for catalog entities extraction
+        previously_used_by: If set, the image ref that previously used this subdirectory (triggers overwrite warning)
+    """
+    print(f"\n======= Extracting extra catalog index '{subdirectory}' from {catalog_index_image}", flush=True)
+    if previously_used_by:
+        print(f"\t==> WARNING: Subdirectory '{subdirectory}' was already used by '{previously_used_by}'. The previous extraction will be overwritten.", flush=True)
+
+    skopeo_path = shutil.which('skopeo')
+    if skopeo_path is None:
+        raise InstallException("EXTRA_CATALOG_INDEX_IMAGES is set but skopeo executable not found in PATH. Cannot extract extra catalog index.")
+
+    resolved_image = resolve_image_reference(catalog_index_image)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        image_url = resolved_image
+        if not image_url.startswith(DOCKER_PROTOCOL_PREFIX):
+            image_url = f'{DOCKER_PROTOCOL_PREFIX}{image_url}'
+        print("\t==> Copying extra catalog index image to local filesystem", flush=True)
+        local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
+
+        run_command(
+            [skopeo_path, 'copy', '--override-os=linux', '--override-arch=amd64', image_url, f'dir:{local_dir}'],
+            f"Failed to download extra catalog index image {resolved_image}"
+        )
+
+        manifest_path = os.path.join(local_dir, 'manifest.json')
+        if not os.path.isfile(manifest_path):
+            raise InstallException(f"manifest.json not found in extra catalog index image {catalog_index_image}")
+
+        with open(manifest_path, 'r') as f:
+            manifest = json.load(f)
+
+        catalog_index_temp_dir = os.path.join(tmp_dir, 'extracted')
+        os.makedirs(catalog_index_temp_dir, exist_ok=True)
+
+        print("\t==> Extracting extra catalog index layers", flush=True)
+        _extract_catalog_index_layers(manifest, local_dir, catalog_index_temp_dir)
+
+        subdirectory_parent = os.path.join(catalog_entities_parent_dir, subdirectory)
+        print(f"\t==> Extracting extensions catalog entities to {subdirectory_parent}", flush=True)
+
+        extensions_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'extensions')
+        if not os.path.isdir(extensions_dir_from_catalog_index):
+            extensions_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'marketplace')
+
+        if os.path.isdir(extensions_dir_from_catalog_index):
+            os.makedirs(subdirectory_parent, exist_ok=True)
+            catalog_entities_dest = os.path.join(subdirectory_parent, 'catalog-entities')
+            if os.path.exists(catalog_entities_dest):
+                shutil.rmtree(catalog_entities_dest, ignore_errors=True, onerror=None)
+            shutil.copytree(extensions_dir_from_catalog_index, catalog_entities_dest, dirs_exist_ok=True)
+            print(f"\t==> Successfully extracted extensions catalog entities from extra index image to {subdirectory_parent}", flush=True)
+        else:
+            print(f"\t==> WARNING: Extra catalog index image {catalog_index_image} does not have neither 'catalog-entities/extensions/' nor 'catalog-entities/marketplace/' directory",
+                flush=True)
+
+def image_ref_to_subdirectory(image_ref: str) -> str:
+    """Derive a subdirectory name from an image reference by replacing special characters with underscores."""
+    return re.sub(r'[/:@]', '_', image_ref)
+
+def parse_extra_catalog_index_images(extra_images_str: str) -> list[tuple[str, str]]:
+    """Parse the EXTRA_CATALOG_INDEX_IMAGES environment variable value.
+
+    Supports two formats per entry:
+        - 'name=image_ref': explicit subdirectory name (e.g., 'community=quay.io/rhdh-community/index:1.10')
+        - 'image_ref': subdirectory name derived by replacing '/', ':', '@' with '_'
+
+    Args:
+        extra_images_str: Comma-separated list of entries
+
+    Returns:
+        List of (subdirectory_name, image_ref) tuples in order. Duplicate subdirectory
+        names are preserved; the caller is responsible for warning and overwriting.
+    """
+    result = []
+    for entry in extra_images_str.split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        if "=" in entry:
+            name, image_ref = entry.split("=", 1)
+            name = name.strip()
+            image_ref = image_ref.strip()
+        else:
+            image_ref = entry
+            name = image_ref_to_subdirectory(image_ref)
+        if not image_ref:
+            print(f"WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with empty image reference: '{entry}'", flush=True)
+            continue
+        result.append((name, image_ref))
+    return result
+
+def pre_merge_oci_disabled_state(
+    include_plugin_lists: list[tuple[str, list[dict]]],
+    main_plugins: list[dict],
+    dynamic_plugins_file: str
+) -> set[str]:
+    """
+    Pre-merge pass: determine which OCI registries will be disabled after all levels are applied.
+    Only considers 'package' and 'disabled' fields. Does NOT merge pluginConfig.
+
+    Args:
+        include_plugin_lists: list of (filename, plugin_list) tuples from each included config file
+        main_plugins: plugin list from the main config file
+        dynamic_plugins_file: path to the main config file (for error messages)
+    Returns:
+        Set of OCI registry strings that should skip metadata fetch (final state = disabled)
+    """
+    
+    # Track the disabled state and level of each OCI plugin entry
+    per_entry_state = {}
+    # Track the source file of each path-less OCI plugin entry
+    pathless_plugin_registries = {}  # {registry: source_file}
+    # Track the source file of each OCI plugin entry with a defined path
+    defined_paths_per_plugin_registry = {}  # {registry: {path: source_file}}
+
+    def process_entry(plugin, level, source_file):
+        package = plugin.get('package', '')
+        if not isinstance(package, str) or not package.startswith(OCI_PROTOCOL_PREFIX):
+            return
+        disabled = plugin.get('disabled', False)
+        match = re.match(OciPackageMerger.EXPECTED_OCI_PATTERN, package)
+        if not match:
+            if disabled:
+                print(f"WARNING: Skipping disabled OCI plugin with invalid format: \'{package}\' in {source_file}. Expected format: \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}", flush=True)
+                return
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') in {source_file} where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}")
+        registry = match.group(1)
+        path = match.group(4)  # None for path-less
+
+        entry_key = (registry, path)
+        if entry_key not in per_entry_state:
+            per_entry_state[entry_key] = (disabled, level)
+        elif per_entry_state[entry_key][1] == level:
+            path_suffix = f"!{path}" if path else ""
+            if disabled:
+                print(f"WARNING: Skipping duplicate disabled OCI plugin configuration for {registry}{path_suffix} in {source_file}", flush=True)
+                return
+
+            raise InstallException(
+                f"Duplicate OCI plugin configuration for {registry}{path_suffix} "
+                f"found at the same level in {source_file}: {package}"
+            )
+        elif level > per_entry_state[entry_key][1]:
+            per_entry_state[entry_key] = (disabled, level)
+
+        if path:
+            defined_paths_per_plugin_registry.setdefault(registry, {})[path] = source_file
+        else:
+            pathless_plugin_registries[registry] = source_file
+
+    for include_file, include_plugins in include_plugin_lists:
+        for plugin in include_plugins:
+            process_entry(plugin, level=0, source_file=include_file)
+
+    for plugin in main_plugins:
+        process_entry(plugin, level=1, source_file=dynamic_plugins_file)
+
+    # Initial validation for no multi-plugin OCI packages being defined without explicit path
+    for registry, pathless_source in pathless_plugin_registries.items():
+        if registry in defined_paths_per_plugin_registry and len(defined_paths_per_plugin_registry[registry]) > 1:
+            path_entries = defined_paths_per_plugin_registry[registry]
+            paths_formatted = '\n  - '.join(
+                f"{path} (in {src})" for path, src in sorted(path_entries.items())
+            )
+            pathless_disabled, _ = per_entry_state[(registry, None)]
+            if pathless_disabled:
+                print(
+                    f"WARNING: Skipping disabled ambiguous path-less OCI reference for {registry} in {pathless_source}: "
+                    f"multiple path-specific entries exist:\n  - {paths_formatted}\n"
+                    f"Cannot use path-less syntax for multi-plugin images. "
+                    f"Please specify a !<plugin-path> suffix for the plugin",
+                    flush=True
+                )
+                continue
+            raise InstallException(
+                f"Ambiguous path-less OCI reference for {registry} in {pathless_source}: "
+                f"multiple path-specific entries exist:\n  - {paths_formatted}\n"
+                f"Cannot use path-less syntax for multi-plugin images. "
+                f"Please specify a !<plugin-path> suffix for the plugin."
+            )
+
+    # Determine effective disabled state for each registry without explicit path.
+    disabled_plugin_registries = set()
+    for registry in pathless_plugin_registries:
+        pathless_disabled, pathless_level = per_entry_state[(registry, None)]
+
+        effective_disabled = pathless_disabled
+
+        # Check if a single entry with explicit path at a higher level overrides
+        if registry in defined_paths_per_plugin_registry:
+            single_path = next(iter(defined_paths_per_plugin_registry[registry]))
+            defined_disabled, defined_level = per_entry_state[(registry, single_path)]
+            if defined_level > pathless_level:
+                effective_disabled = defined_disabled
+
+        if effective_disabled:
+            disabled_plugin_registries.add(registry)
+
+    return disabled_plugin_registries
+
+
+def filter_disabled_oci_plugins(plugins: list[dict], disabled_plugin_registries: set[str]) -> list[dict]:
+    """
+    Remove all OCI plugin entries whose registry is in the disabled set.
+    Non-OCI entries are passed through unchanged.
+    """
+    filtered = []
+    for plugin in plugins:
+        package = plugin.get('package', '')
+        if isinstance(package, str) and package.startswith(OCI_PROTOCOL_PREFIX):
+            match = re.match(OciPackageMerger.EXPECTED_OCI_PATTERN, package)
+            if match and match.group(1) in disabled_plugin_registries:
+                print(f'\n======= Disabling OCI plugin {package}', flush=True)
+                continue
+            if not match and plugin.get('disabled', False):
+                print(f'\n======= Disabling OCI plugin {package}', flush=True)
+                continue
+        filtered.append(plugin)
+    return filtered
+
+
 def main():
 
     dynamic_plugins_root = sys.argv[1]
@@ -1148,10 +1391,20 @@ def main():
     # Extract catalog index if CATALOG_INDEX_IMAGE is set
     catalog_index_image = os.environ.get("CATALOG_INDEX_IMAGE", "")
     catalog_index_default_file = None
+    catalog_entities_parent_dir = os.environ.get("CATALOG_ENTITIES_EXTRACT_DIR", os.path.join(tempfile.gettempdir(), "extensions"))
     if catalog_index_image:
-        # default to a temporary directory if the env var is not set
-        catalog_entities_parent_dir = os.environ.get("CATALOG_ENTITIES_EXTRACT_DIR", os.path.join(tempfile.gettempdir(), "extensions"))
         catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamic_plugins_root, catalog_entities_parent_dir)
+
+    # Extract extra catalog index images if EXTRA_CATALOG_INDEX_IMAGES is set
+    extra_catalog_index_images = os.environ.get("EXTRA_CATALOG_INDEX_IMAGES", "")
+    if extra_catalog_index_images:
+        extra_parent_dir = os.path.join(catalog_entities_parent_dir, "extra")
+        extra_entries = parse_extra_catalog_index_images(extra_catalog_index_images)
+        seen_names = {}
+        for name, image_ref in extra_entries:
+            previously_used_by = seen_names.get(name)
+            seen_names[name] = image_ref
+            extract_extra_catalog_index(image_ref, name, extra_parent_dir, previously_used_by)
 
     skip_integrity_check = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
@@ -1207,6 +1460,7 @@ def main():
             index = includes.index(embedded_default)
             includes[index] = catalog_index_default_file
 
+    include_plugin_lists = []  # [(filename, plugin_list), ...]
     for include in includes:
         if not isinstance(include, str):
             raise InstallException(f"content of the \'includes\' field must be a list of strings in {dynamic_plugins_file}")
@@ -1227,8 +1481,7 @@ def main():
         if not isinstance(include_plugins, list):
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
-        for plugin in include_plugins:
-            merge_plugin(plugin, all_plugins, include, level=0)
+        include_plugin_lists.append((include, include_plugins))
 
     if 'plugins' in content:
         plugins = content['plugins']
@@ -1237,6 +1490,21 @@ def main():
 
     if not isinstance(plugins, list):
         raise InstallException(f"content of the \'plugins\' field must be a list in {dynamic_plugins_file}")
+
+    # Pre-merge: determine disabled OCI registries before any skopeo calls
+    disabled_plugin_registries = pre_merge_oci_disabled_state(
+        include_plugin_lists, plugins, dynamic_plugins_file
+    )
+
+    # Filter disabled OCI entries from all plugin lists before resolving paths and merging
+    for i, (include_file, include_plugins) in enumerate(include_plugin_lists):
+        include_plugin_lists[i] = (include_file, filter_disabled_oci_plugins(include_plugins, disabled_plugin_registries))
+
+    plugins = filter_disabled_oci_plugins(plugins, disabled_plugin_registries)
+
+    for include_file, include_plugins in include_plugin_lists:
+        for plugin in include_plugins:
+            merge_plugin(plugin, all_plugins, include_file, level=0)
 
     for plugin in plugins:
         merge_plugin(plugin, all_plugins, dynamic_plugins_file, level=1)

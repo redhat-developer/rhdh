@@ -32,13 +32,10 @@ concurrency:
 
 jobs:
   build:
-    name: Build with Node.js ${{ matrix.node-version }}
+    name: Build with Node.js
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      matrix:
-        node-version: [22]
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -54,7 +51,7 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: '.nvmrc'
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
@@ -71,20 +68,17 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: backstage/actions/yarn-install@2cd6978b476cbdc39fec48346f8b6ca13199dd6a # v0.7.8
         with:
-          cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
+          cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
 
       - name: Build packages
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run build --continue --affected
 
   test:
-    name: Test with Node.js ${{ matrix.node-version }}
+    name: Test with Node.js
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      matrix:
-        node-version: [22]
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -99,7 +93,7 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: '.nvmrc'
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
@@ -116,7 +110,7 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: backstage/actions/yarn-install@2cd6978b476cbdc39fec48346f8b6ca13199dd6a # v0.7.8
         with:
-          cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
+          cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
 
       - name: Install Python dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
