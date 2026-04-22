@@ -60,13 +60,7 @@ initiate_operator_deployments_osd_gcp() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
 
-  # Set CATALOG_INDEX_IMAGE to empty for OSD-GCP to override the container image's built-in
-  # default. The catalog index triggers 30+ skopeo inspect calls to ghcr.io for auto-detecting
-  # OCI plugin paths, which fail due to unreliable ghcr.io connectivity on OSD-GCP.
-  local osd_gcp_cr="/tmp/rhdh-start-osd-gcp.yaml"
-  yq '(.spec.application.extraEnvs.envs[] | select(.name == "CATALOG_INDEX_IMAGE")).value = ""' \
-    "${DIR}/resources/rhdh-operator/rhdh-start.yaml" > "$osd_gcp_cr"
-  deploy_rhdh_operator "${NAME_SPACE}" "$osd_gcp_cr"
+  deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
@@ -84,10 +78,7 @@ initiate_operator_deployments_osd_gcp() {
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   wait_for_crunchy_crd || return 1
 
-  local osd_gcp_rbac_cr="/tmp/rhdh-start-rbac-osd-gcp.yaml"
-  yq '(.spec.application.extraEnvs.envs[] | select(.name == "CATALOG_INDEX_IMAGE")).value = ""' \
-    "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml" > "$osd_gcp_rbac_cr"
-  deploy_rhdh_operator "${NAME_SPACE_RBAC}" "$osd_gcp_rbac_cr"
+  deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP RBAC
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP RBAC environment"
