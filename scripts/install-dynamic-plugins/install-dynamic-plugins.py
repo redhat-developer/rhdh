@@ -38,7 +38,7 @@ This script is used to install dynamic plugins in the Backstage application, and
 It expects, as the only argument, the path to the root directory where the dynamic plugins will be installed.
 
 Environment Variables:
-    MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: 20MB)
+    MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: DEFAULT_MAX_ENTRY_SIZE, 40MB)
     SKIP_INTEGRITY_CHECK: Set to "true" to skip integrity check of remote packages
     CATALOG_INDEX_IMAGE: OCI image reference for the primary plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9).
         This is the only index from which dynamic-plugins.default.yaml is read.
@@ -112,6 +112,8 @@ RECOGNIZED_ALGORITHMS = (
     'sha256',
     'blake3',
 )
+
+DEFAULT_MAX_ENTRY_SIZE = 40000000  # 40MB
 
 DOCKER_PROTOCOL_PREFIX = 'docker://'
 OCI_PROTOCOL_PREFIX = 'oci://'
@@ -667,7 +669,7 @@ class OciDownloader:
         self.tmp_dir = self.tmp_dir_obj.name
         self.image_to_tarball = {}
         self.destination = destination
-        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', DEFAULT_MAX_ENTRY_SIZE))
 
     def skopeo(self, command):
         result = run_command([self._skopeo] + command, 'skopeo command failed')
@@ -808,7 +810,7 @@ class NpmPluginInstaller(PluginInstaller):
 
     def __init__(self, destination: str, skip_integrity_check: bool = False):
         super().__init__(destination, skip_integrity_check)
-        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+        self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', DEFAULT_MAX_ENTRY_SIZE))
 
     def install(self, plugin: dict, plugin_path_by_hash: dict) -> str:
         """Install an NPM or local plugin package."""
@@ -1050,7 +1052,7 @@ def cleanup_catalog_index_temp_dir(dynamic_plugins_root):
 
 def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_temp_dir: str) -> None:
     """Extract layers from the catalog index OCI image."""
-    max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+    max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', DEFAULT_MAX_ENTRY_SIZE))
 
     for layer in manifest.get('layers', []):
         layer_digest = layer.get('digest', '')
