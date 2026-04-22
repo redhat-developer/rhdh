@@ -1,214 +1,231 @@
 global:
   dynamic:
     plugins:
-      #  sanity check https://issues.redhat.com/browse/RHIDP-5301
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
-        disabled: false
-        pluginConfig:
-          argocd:
-            username: "temp"
-            password: "temp"
-            appLocatorMethods:
-              - type: "config"
-                instances:
-                  - name: argoInstance1
-                    url: "temp"
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
-        disabled: true
-        pluginConfig:
-          argocd:
-            username: "temp"
-            password: "temp"
-            appLocatorMethods:
-              - type: "config"
-                instances:
-                  - name: argoInstance1
-                    url: "temp"
-                    token: "temp"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.45.3__0.2.15
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          jenkins:
+    - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+      disabled: false
+      pluginConfig:
+        argocd:
+          username: temp
+          password: temp
+          appLocatorMethods:
+          - type: config
             instances:
-              - name: default
-                baseUrl: "temp"
-                username: "temp"
-                apiKey: "temp"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-notifications
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
-        disabled: false
-        pluginConfig:
-          notifications:
-            processors:
-              email:
-                transportConfig:
-                sender: "temp"
-      - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-signals
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          sonarqube:
+            - name: argoInstance1
+              url: temp
+    - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+      disabled: true
+      pluginConfig:
+        argocd:
+          username: temp
+          password: temp
+          appLocatorMethods:
+          - type: config
             instances:
-              - name: default
-                instanceKey: "mySonarqube"
-                baseUrl: "https://default-sonarqube.example.com"
-                apiKey: "123456789abcdef0123456789abcedf012"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              backstage.plugin-techdocs-module-addons-contrib:
-                techdocsAddons:
-                  - importName: ReportIssue
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-        pluginConfig:
-          pagerDuty:
-            apiBaseUrl: "temp"
-            oauth:
-              clientId: "temp"
-              clientSecret: "temp"
-              subDomain: "temp"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-gerrit:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
-        disabled: true
-        pluginConfig:
-          servicenow:
-            # The base url of the ServiceNow instance.
-            baseUrl: "temp"
-            # The username to use for authentication.
-            username: "temp"
-            # The password to use for authentication.
-            password: "temp"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-sonarqube:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-3scale-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-        pluginConfig:
-          catalog:
-            providers:
-              threeScaleApiEntity:
-                default:
-                  baseUrl: "temp"
-                  accessToken: "temp"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          # https://backstage.io/docs/integrations/bitbucketCloud/discovery#configuration
-          catalog:
-            providers:
-              bitbucketCloud:
-                default: # identifies your ingested dataset
-                  workspace: "temp"
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-dynatrace:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-jira:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-datadog:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jfrog-artifactory:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-lighthouse:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
-        disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              microsoftGraphOrg:
-                providerId:
-                  target: https://graph.microsoft.com/v1.0
-                  tenantId: temp
-                  clientId: temp
-                  clientSecret: temp
-                  schedule:
-                    # Let's perform a single execution per test run
-                    frequency:
-                      hours: 24
-                    initialDelay:
-                      seconds: 15
-                    timeout:
-                      minutes: 15
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
-        disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              ldapOrg:
-                default:
-                  target: temp
-                  bind:
-                    dn: temp
-                    secret: temp
-                  users:
-                    - dn: temp
-                      options:
-                        filter: (uid=*)
-                  groups:
-                    - dn: temp
-                      options:
-                        filter: (cn=*)
-                  schedule:
-                    # Let's perform a single execution per test run
-                    frequency:
-                      hours: 24
-                    initialDelay:
-                      seconds: 15
-                    timeout:
-                      minutes: 15
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
-        disabled: false
+            - name: argoInstance1
+              url: temp
+              token: temp
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.45.3__0.2.15
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops-backend:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+      pluginConfig:
+        jenkins:
+          instances:
+          - name: default
+            baseUrl: temp
+            username: temp
+            apiKey: temp
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-notifications
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
+      disabled: false
+      pluginConfig:
+        notifications:
+          processors:
+            email:
+              transportConfig: null
+              sender: temp
+    - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-signals
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+      pluginConfig:
+        sonarqube:
+          instances:
+          - name: default
+            instanceKey: mySonarqube
+            baseUrl: https://default-sonarqube.example.com
+            apiKey: 123456789abcdef0123456789abcedf012
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
+      disabled: false
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            backstage.plugin-techdocs-module-addons-contrib:
+              techdocsAddons:
+              - importName: ReportIssue
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: true
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin-backend:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: true
+      pluginConfig:
+        pagerDuty:
+          apiBaseUrl: temp
+          oauth:
+            clientId: temp
+            clientSecret: temp
+            subDomain: temp
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-gerrit:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
+      disabled: true
+      pluginConfig:
+        servicenow:
+          baseUrl: temp
+          username: temp
+          password: temp
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-sonarqube:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-3scale-backend:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: true
+      pluginConfig:
+        catalog:
+          providers:
+            threeScaleApiEntity:
+              default:
+                baseUrl: temp
+                accessToken: temp
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+      pluginConfig:
+        catalog:
+          providers:
+            bitbucketCloud:
+              default:
+                workspace: temp
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-dynatrace:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-jira:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-datadog:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jfrog-artifactory:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-lighthouse:{{
+        "{{" }}inherit{{ "}}" }}
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+      disabled: false
+    - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
+      disabled: false
+      pluginConfig:
+        catalog:
+          providers:
+            microsoftGraphOrg:
+              providerId:
+                target: https://graph.microsoft.com/v1.0
+                tenantId: temp
+                clientId: temp
+                clientSecret: temp
+                schedule:
+                  frequency:
+                    hours: 24
+                  initialDelay:
+                    seconds: 15
+                  timeout:
+                    minutes: 15
+    - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
+      disabled: false
+      pluginConfig:
+        catalog:
+          providers:
+            ldapOrg:
+              default:
+                target: temp
+                bind:
+                  dn: temp
+                  secret: temp
+                users:
+                - dn: temp
+                  options:
+                    filter: (uid=*)
+                groups:
+                - dn: temp
+                  options:
+                    filter: (cn=*)
+                schedule:
+                  frequency:
+                    hours: 24
+                  initialDelay:
+                    seconds: 15
+                  timeout:
+                    minutes: 15
+    - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
+      disabled: false
 orchestrator:
-  enabled: true
+  enabled: false
