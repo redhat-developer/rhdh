@@ -11,21 +11,11 @@ global:
     # Override includes to empty: the operator's init container image (rhdh-hub-rhel9)
     # does not contain dynamic-plugins.default.yaml and the catalog index mechanism
     # is not available, so {{inherit}} cannot resolve. All plugins must use explicit versions.
+    # The {{inherit}} tags in the base file are replaced with explicit versions by
+    # replace_inherit_with_explicit_versions() in ocp-operator.sh after merging.
     includes: []
 
     plugins:
-      # Disable base {{inherit}} plugins — these cannot resolve without dynamic-plugins.default.yaml
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-
       # Disable orchestrator plugins for OSD-GCP
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
@@ -35,31 +25,3 @@ global:
         disabled: true
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
         disabled: true
-
-      # Re-add plugins with explicit versions (from catalog index 1.10)
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:bs_1.45.3__0.16.0"
-        disabled: false
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2"
-        disabled: false
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0"
-        disabled: false
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1"
-        disabled: false
-        pluginConfig:
-          quay:
-            apiUrl: https://quay.io
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1"
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              backstage-community.plugin-quay:
-                mountPoints:
-                  - mountPoint: entity.page.image-registry/cards
-                    importName: QuayPage
-                    config:
-                      layout:
-                        gridColumn: 1 / -1
-                      if:
-                        anyOf:
-                          - isQuayAvailable

@@ -43,6 +43,24 @@ initiate_operator_deployments() {
   log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE_RBAC deployment"
 }
 
+# Replaces {{ "{{" }}inherit{{ "}}" }} tags in OCI plugin URLs with explicit versions.
+# Required for OSD-GCP operator deployments where the init container cannot resolve
+# {{inherit}} because dynamic-plugins.default.yaml is not available.
+# Versions are sourced from quay.io/rhdh/plugin-catalog-index:1.10.
+replace_inherit_with_explicit_versions() {
+  local file=$1
+  log::info "Replacing {{inherit}} tags with explicit versions in ${file}"
+  sed -i \
+    -e 's|backstage-community-plugin-github-issues:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-github-issues:bs_1.45.3__0.16.0|' \
+    -e 's|roadiehq-backstage-plugin-github-pull-requests:{{ "{{" }}inherit{{ "}}" }}|roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2|' \
+    -e 's|backstage-community-plugin-github-actions:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-github-actions:bs_1.45.3__0.18.0|' \
+    -e 's|backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1|' \
+    -e 's|backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-quay:bs_1.45.3__1.28.1|' \
+    -e 's|backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0|' \
+    -e 's|immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}|immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0|' \
+    "${file}"
+}
+
 # OSD-GCP specific operator deployment that skips orchestrator workflows
 initiate_operator_deployments_osd_gcp() {
   log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
@@ -52,8 +70,10 @@ initiate_operator_deployments_osd_gcp() {
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
-  # Merge base values with OSD-GCP diff file before creating dynamic plugins config
+  # Merge base values with OSD-GCP diff file, replace {{inherit}} with explicit versions,
+  # then create dynamic plugins ConfigMap
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
+  replace_inherit_with_explicit_versions "/tmp/merged-values_showcase_OSD-GCP.yaml"
   config::create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR}" "/tmp/configmap-dynamic-plugins.yaml"
 
@@ -70,8 +90,10 @@ initiate_operator_deployments_osd_gcp() {
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
-  # Merge RBAC values with OSD-GCP diff file before creating dynamic plugins config
+  # Merge RBAC values with OSD-GCP diff file, replace {{inherit}} with explicit versions,
+  # then create dynamic plugins ConfigMap
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
+  replace_inherit_with_explicit_versions "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
   config::create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
