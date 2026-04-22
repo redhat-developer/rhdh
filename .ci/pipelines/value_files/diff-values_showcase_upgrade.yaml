@@ -1,1 +1,45 @@
-orchestrator: null
+orchestrator:
+  enabled: false
+  serverlessLogicOperator:
+    enabled: true
+  serverlessOperator:
+    enabled: true
+  sonataflowPlatform:
+    monitoring:
+      enabled: true
+    eventing:
+      broker:
+        name: ''
+        namespace: ''
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+    externalDBsecretRef: ''
+    externalDBName: ''
+    externalDBHost: ''
+    externalDBPort: ''
+    initContainerImage: {{ .Values.upstream.postgresql.image.registry }}/{{
+      .Values.upstream.postgresql.image.repository }}:{{ .Values.upstream.postgresql.image.tag
+      }}
+    createDBJobImage: {{ .Values.upstream.postgresql.image.registry }}/{{
+      .Values.upstream.postgresql.image.repository }}:{{ .Values.upstream.postgresql.image.tag
+      }}
+    jobServiceImage: ''
+    dataIndexImage: ''
+  plugins:
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{
+      "{{inherit}}" }}
+    disabled: false
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{
+      "{{inherit}}" }}
+    disabled: false
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{
+      "{{inherit}}" }}
+    disabled: false
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{
+      "{{inherit}}" }}
+    disabled: false
