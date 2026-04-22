@@ -40,7 +40,16 @@ It expects, as the only argument, the path to the root directory where the dynam
 Environment Variables:
     MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: DEFAULT_MAX_ENTRY_SIZE, 40MB)
     SKIP_INTEGRITY_CHECK: Set to "true" to skip integrity check of remote packages
-    CATALOG_INDEX_IMAGE: OCI image reference for the plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9)
+    CATALOG_INDEX_IMAGE: OCI image reference for the primary plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9).
+        This is the only index from which dynamic-plugins.default.yaml is read.
+    EXTRA_CATALOG_INDEX_IMAGES: Comma-separated list of additional catalog index image references.
+        Each entry can be either a plain image reference or 'name=image_ref' to choose the subdirectory name.
+        Examples:
+            'quay.io/rhdh-community/plugin-catalog-index:1.10' (subdirectory auto-derived)
+            'community=quay.io/rhdh-community/plugin-catalog-index:1.10' (explicit subdirectory name)
+        When no name is given, the subdirectory is derived by replacing '/', '@', and ':' with '_'.
+        These images only provide catalog entities for the Extensions UI;
+        they do NOT contribute dynamic-plugins.default.yaml files.
 
 Configuration:
     The script expects the `dynamic-plugins.yaml` file to be present in the current directory and to contain the list of plugins to install along with their optional configuration.
@@ -1137,6 +1146,108 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
 
     return default_plugins_file
 
+
+def extract_extra_catalog_index(catalog_index_image: str, subdirectory: str, catalog_entities_parent_dir: str, previously_used_by: str = None) -> None:
+    """Extract catalog entities from an extra catalog index image.
+
+    Unlike extract_catalog_index(), this does NOT look for dynamic-plugins.default.yaml.
+    Extra catalog index images only provide catalog entities for the Extensions UI.
+
+    Args:
+        catalog_index_image: OCI image reference for the extra catalog index
+        subdirectory: Name of the subdirectory to extract into (e.g., 'community')
+        catalog_entities_parent_dir: Parent directory for catalog entities extraction
+        previously_used_by: If set, the image ref that previously used this subdirectory (triggers overwrite warning)
+    """
+    print(f"\n======= Extracting extra catalog index '{subdirectory}' from {catalog_index_image}", flush=True)
+    if previously_used_by:
+        print(f"\t==> WARNING: Subdirectory '{subdirectory}' was already used by '{previously_used_by}'. The previous extraction will be overwritten.", flush=True)
+
+    skopeo_path = shutil.which('skopeo')
+    if skopeo_path is None:
+        raise InstallException("EXTRA_CATALOG_INDEX_IMAGES is set but skopeo executable not found in PATH. Cannot extract extra catalog index.")
+
+    resolved_image = resolve_image_reference(catalog_index_image)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        image_url = resolved_image
+        if not image_url.startswith(DOCKER_PROTOCOL_PREFIX):
+            image_url = f'{DOCKER_PROTOCOL_PREFIX}{image_url}'
+        print("\t==> Copying extra catalog index image to local filesystem", flush=True)
+        local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
+
+        run_command(
+            [skopeo_path, 'copy', '--override-os=linux', '--override-arch=amd64', image_url, f'dir:{local_dir}'],
+            f"Failed to download extra catalog index image {resolved_image}"
+        )
+
+        manifest_path = os.path.join(local_dir, 'manifest.json')
+        if not os.path.isfile(manifest_path):
+            raise InstallException(f"manifest.json not found in extra catalog index image {catalog_index_image}")
+
+        with open(manifest_path, 'r') as f:
+            manifest = json.load(f)
+
+        catalog_index_temp_dir = os.path.join(tmp_dir, 'extracted')
+        os.makedirs(catalog_index_temp_dir, exist_ok=True)
+
+        print("\t==> Extracting extra catalog index layers", flush=True)
+        _extract_catalog_index_layers(manifest, local_dir, catalog_index_temp_dir)
+
+        subdirectory_parent = os.path.join(catalog_entities_parent_dir, subdirectory)
+        print(f"\t==> Extracting extensions catalog entities to {subdirectory_parent}", flush=True)
+
+        extensions_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'extensions')
+        if not os.path.isdir(extensions_dir_from_catalog_index):
+            extensions_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'marketplace')
+
+        if os.path.isdir(extensions_dir_from_catalog_index):
+            os.makedirs(subdirectory_parent, exist_ok=True)
+            catalog_entities_dest = os.path.join(subdirectory_parent, 'catalog-entities')
+            if os.path.exists(catalog_entities_dest):
+                shutil.rmtree(catalog_entities_dest, ignore_errors=True, onerror=None)
+            shutil.copytree(extensions_dir_from_catalog_index, catalog_entities_dest, dirs_exist_ok=True)
+            print(f"\t==> Successfully extracted extensions catalog entities from extra index image to {subdirectory_parent}", flush=True)
+        else:
+            print(f"\t==> WARNING: Extra catalog index image {catalog_index_image} does not have neither 'catalog-entities/extensions/' nor 'catalog-entities/marketplace/' directory",
+                flush=True)
+
+def image_ref_to_subdirectory(image_ref: str) -> str:
+    """Derive a subdirectory name from an image reference by replacing special characters with underscores."""
+    return re.sub(r'[/:@]', '_', image_ref)
+
+def parse_extra_catalog_index_images(extra_images_str: str) -> list[tuple[str, str]]:
+    """Parse the EXTRA_CATALOG_INDEX_IMAGES environment variable value.
+
+    Supports two formats per entry:
+        - 'name=image_ref': explicit subdirectory name (e.g., 'community=quay.io/rhdh-community/index:1.10')
+        - 'image_ref': subdirectory name derived by replacing '/', ':', '@' with '_'
+
+    Args:
+        extra_images_str: Comma-separated list of entries
+
+    Returns:
+        List of (subdirectory_name, image_ref) tuples in order. Duplicate subdirectory
+        names are preserved; the caller is responsible for warning and overwriting.
+    """
+    result = []
+    for entry in extra_images_str.split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        if "=" in entry:
+            name, image_ref = entry.split("=", 1)
+            name = name.strip()
+            image_ref = image_ref.strip()
+        else:
+            image_ref = entry
+            name = image_ref_to_subdirectory(image_ref)
+        if not image_ref:
+            print(f"WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with empty image reference: '{entry}'", flush=True)
+            continue
+        result.append((name, image_ref))
+    return result
+
 def pre_merge_oci_disabled_state(
     include_plugin_lists: list[tuple[str, list[dict]]],
     main_plugins: list[dict],
@@ -1280,10 +1391,20 @@ def main():
     # Extract catalog index if CATALOG_INDEX_IMAGE is set
     catalog_index_image = os.environ.get("CATALOG_INDEX_IMAGE", "")
     catalog_index_default_file = None
+    catalog_entities_parent_dir = os.environ.get("CATALOG_ENTITIES_EXTRACT_DIR", os.path.join(tempfile.gettempdir(), "extensions"))
     if catalog_index_image:
-        # default to a temporary directory if the env var is not set
-        catalog_entities_parent_dir = os.environ.get("CATALOG_ENTITIES_EXTRACT_DIR", os.path.join(tempfile.gettempdir(), "extensions"))
         catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamic_plugins_root, catalog_entities_parent_dir)
+
+    # Extract extra catalog index images if EXTRA_CATALOG_INDEX_IMAGES is set
+    extra_catalog_index_images = os.environ.get("EXTRA_CATALOG_INDEX_IMAGES", "")
+    if extra_catalog_index_images:
+        extra_parent_dir = os.path.join(catalog_entities_parent_dir, "extra")
+        extra_entries = parse_extra_catalog_index_images(extra_catalog_index_images)
+        seen_names = {}
+        for name, image_ref in extra_entries:
+            previously_used_by = seen_names.get(name)
+            seen_names[name] = image_ref
+            extract_extra_catalog_index(image_ref, name, extra_parent_dir, previously_used_by)
 
     skip_integrity_check = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
