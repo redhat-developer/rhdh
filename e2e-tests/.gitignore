@@ -11,6 +11,9 @@ lerna-debug.log*
 
 # Coverage directory generated when running tests with coverage
 coverage
+# Allow source code living under a path that includes the word "coverage"
+!playwright/support/coverage
+!playwright/support/coverage/**
 
 # Dependencies
 node_modules/

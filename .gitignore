@@ -12,6 +12,11 @@ lerna-debug.log*
 # Coverage directory generated when running tests with coverage
 **/coverage
 **/.coverage
+# Allow docs and source code living under paths that include the word "coverage"
+!docs/coverage
+!docs/coverage/**
+!**/support/coverage
+!**/support/coverage/**
 # Dependencies
 node_modules/
 

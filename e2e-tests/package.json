@@ -46,6 +46,7 @@
     "eslint-plugin-filenames": "1.3.2",
     "eslint-plugin-playwright": "2.7.1",
     "ioredis": "5.10.1",
+    "monocart-coverage-reports": "2.12.11",
     "otplib": "12.0.1",
     "prettier": "3.8.1",
     "prettier-plugin-sh": "0.18.1",

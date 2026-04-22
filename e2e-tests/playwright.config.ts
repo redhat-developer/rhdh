@@ -64,6 +64,11 @@ export default defineConfig({
     ["html"],
     ["list"],
     ["junit", { outputFile: process.env.JUNIT_RESULTS || "junit-results.xml" }],
+    // Coverage reporter — RHIDP-13243. Activates only when
+    // COLLECT_COVERAGE=true; otherwise it is a no-op.
+    ...(process.env.COLLECT_COVERAGE === "true"
+      ? [["./playwright/support/coverage/reporter.ts"] as [string]]
+      : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
