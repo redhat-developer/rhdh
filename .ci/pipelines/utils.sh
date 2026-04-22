@@ -654,13 +654,65 @@ rbac_deployment() {
   fi
 }
 
+# Run base_deployment and rbac_deployment in parallel.
+# Both target disjoint namespaces (NAME_SPACE vs NAME_SPACE_RBAC + NAME_SPACE_POSTGRES_DB)
+# so there is no resource conflict. Overlapping the two helm upgrades and their
+# internal readiness waits saves ~3-5 min of wall-clock time on CI.
+#
+# Args:
+#   $1 - base_fn: function name for the base deployment
+#   $2 - base_arg: artifacts_subdir passed to base_fn
+#   $3 - rbac_fn: function name for the RBAC deployment
+#   $4 - rbac_arg: artifacts_subdir passed to rbac_fn
+#
+# Returns:
+#   0 if both deployments succeed
+#   1 if either (or both) fail — failures are always reported individually
+_run_parallel_deployments() {
+  local base_fn=$1
+  local base_arg=$2
+  local rbac_fn=$3
+  local rbac_arg=$4
+
+  log::section "Starting parallel deployments: base + RBAC"
+
+  "${base_fn}" "${base_arg}" &
+  local base_pid=$!
+  log::info "Base deployment started in background (PID: ${base_pid})"
+
+  "${rbac_fn}" "${rbac_arg}" &
+  local rbac_pid=$!
+  log::info "RBAC deployment started in background (PID: ${rbac_pid})"
+
+  local base_rc=0 rbac_rc=0
+  wait "${base_pid}" || base_rc=$?
+  wait "${rbac_pid}" || rbac_rc=$?
+
+  if [[ ${base_rc} -eq 0 ]]; then
+    log::success "Base deployment completed"
+  else
+    log::error "Base deployment failed (exit code: ${base_rc})"
+  fi
+  if [[ ${rbac_rc} -eq 0 ]]; then
+    log::success "RBAC deployment completed"
+  else
+    log::error "RBAC deployment failed (exit code: ${rbac_rc})"
+  fi
+
+  if [[ ${base_rc} -ne 0 || ${rbac_rc} -ne 0 ]]; then
+    return 1
+  fi
+  return 0
+}
+
 initiate_deployments() {
   local base_artifacts_subdir=$1
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  base_deployment "${base_artifacts_subdir}"
-  rbac_deployment "${rbac_artifacts_subdir}"
+  _run_parallel_deployments \
+    base_deployment "${base_artifacts_subdir}" \
+    rbac_deployment "${rbac_artifacts_subdir}"
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
@@ -727,8 +779,9 @@ initiate_deployments_osd_gcp() {
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  base_deployment_osd_gcp "${base_artifacts_subdir}"
-  rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
+  _run_parallel_deployments \
+    base_deployment_osd_gcp "${base_artifacts_subdir}" \
+    rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
 }
 
 # install base RHDH deployment before upgrade
