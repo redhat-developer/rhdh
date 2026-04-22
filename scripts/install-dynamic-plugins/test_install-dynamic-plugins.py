@@ -62,6 +62,9 @@ pre_merge_oci_disabled_state = install_dynamic_plugins.pre_merge_oci_disabled_st
 filter_disabled_oci_plugins = install_dynamic_plugins.filter_disabled_oci_plugins
 merge_plugin = install_dynamic_plugins.merge_plugin
 OCI_PROTOCOL_PREFIX = install_dynamic_plugins.OCI_PROTOCOL_PREFIX
+DEFAULT_MAX_ENTRY_SIZE = install_dynamic_plugins.DEFAULT_MAX_ENTRY_SIZE
+
+OVERSIZED_CONTENT = b"x" * (DEFAULT_MAX_ENTRY_SIZE + 5 * 1024 * 1024)  # DEFAULT_MAX_ENTRY_SIZE + 5MB
 
 # Test helper functions
 import tarfile  # noqa: E402
@@ -1408,8 +1411,7 @@ class TestNpmPluginInstallerIntegration:
         """Test that extraction rejects tarballs with oversized files."""
         import tarfile
 
-        # Create a tarball with a file exceeding MAX_ENTRY_SIZE
-        large_content = b"x" * 25_000_000  # 25MB (exceeds default 20MB)
+        large_content = OVERSIZED_CONTENT
 
         package_dir = tmp_path / "source" / "package"
         package_dir.mkdir(parents=True)
@@ -1687,8 +1689,7 @@ class TestOciDownloader:
         plugin_path = "plugin"
         tarball_path = tmp_path / "malicious.tar.gz"
 
-        # Create tarball with oversized file (needs actual content matching size)
-        large_content = b"x" * 25_000_000  # 25MB, exceeds default 20MB
+        large_content = OVERSIZED_CONTENT
 
         with create_test_tarball(tarball_path) as tar:
             info = tarfile.TarInfo(name=f"{plugin_path}/huge.bin")
