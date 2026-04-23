@@ -161,29 +161,7 @@ global:
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          quay:
-            apiUrl: https://quay.io
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              backstage-community.plugin-quay:
-                mountPoints:
-                  - mountPoint: entity.page.image-registry/cards
-                    importName: QuayPage
-                    config:
-                      layout:
-                        gridColumn: 1 / -1
-                      if:
-                        anyOf:
-                          - isQuayAvailable
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
         disabled: false
@@ -202,16 +180,6 @@ global:
                     skipTLSVerify: true
                 type: config
             customResources:
-              # Add for tekton
-              - apiVersion: "v1beta1"
-                group: "tekton.dev"
-                plural: "pipelines"
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: pipelineruns
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: taskruns
               # Add for topology plugin
               - apiVersion: "v1"
                 group: "route.openshift.io"

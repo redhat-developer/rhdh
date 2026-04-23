@@ -12,29 +12,6 @@ global:
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
-        disabled: false
-        pluginConfig:
-          argocd:
-            username: "temp"
-            password: "temp"
-            appLocatorMethods:
-              - type: "config"
-                instances:
-                  - name: argoInstance1
-                    url: "temp"
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
-        disabled: true
-        pluginConfig:
-          argocd:
-            username: "temp"
-            password: "temp"
-            appLocatorMethods:
-              - type: "config"
-                instances:
-                  - name: argoInstance1
-                    url: "temp"
-                    token: "temp"
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.45.3__0.2.15
@@ -111,8 +88,6 @@ global:
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
         disabled: false
