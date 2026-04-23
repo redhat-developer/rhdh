@@ -58,6 +58,10 @@ replace_inherit_with_explicit_versions() {
     -e 's|backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-quay:bs_1.45.3__1.28.1|' \
     -e 's|backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0|' \
     -e 's|immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}|immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-orchestrator@sha256:062a536d266bcd76d454fc9fdc0157b99e62074f6d3304578a68f515ced83e64|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:365d67fddeeaa2cf0b0266b012eb3e74fb5d5071b848059662353e62e7f9ceab|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:5b52adc153afcf79fb134262aa01b1e117085bf59c1a1997ff2e3a6f31c7647a|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:b8d9886e39fa1262bfe1046f6ec5825b8e576c4997c744e0f90f722453f35aec|' \
     "${file}"
 }
 
