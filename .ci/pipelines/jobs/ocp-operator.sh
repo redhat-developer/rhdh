@@ -72,6 +72,7 @@ fix_ghcr_oci_urls_for_osd_gcp() {
     -e 's|\(red-hat-developer-hub-backstage-plugin-scorecard:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-scorecard|' \
     -e 's|\(red-hat-developer-hub-backstage-plugin-dynamic-home-page:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-dynamic-home-page|' \
     "${file}"
+  return $?
 }
 
 # OSD-GCP specific operator deployment that skips orchestrator workflows
