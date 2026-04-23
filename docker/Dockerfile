@@ -239,7 +239,7 @@ COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
 
 # Copy embedded dynamic plugins from $CONTAINER_SOURCE
 COPY --from=build --chown=1001:1001 $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist/
-COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
+COPY --from=cleanup --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
 ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
