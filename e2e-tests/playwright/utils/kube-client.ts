@@ -57,6 +57,20 @@ function getKubeApiErrorMessage(error: unknown): string {
   return "Unknown Kubernetes API error";
 }
 
+/**
+ * Returns the RHDH deployment name based on the install method.
+ * Operator deployments use "backstage-<release>" naming,
+ * Helm deployments use "<release>-developer-hub" naming.
+ */
+export function getRhdhDeploymentName(): string {
+  const releaseName = process.env.RELEASE_NAME || "rhdh";
+  const job = process.env.JOB_NAME || "";
+  if (job.includes("operator")) {
+    return `backstage-${releaseName}`;
+  }
+  return `${releaseName}-developer-hub`;
+}
+
 export class KubeClient {
   coreV1Api: k8s.CoreV1Api;
   appsApi: k8s.AppsV1Api;
