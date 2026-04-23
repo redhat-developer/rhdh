@@ -199,6 +199,32 @@ install_crunchy_postgres_k8s_operator() { install_crunchy_postgres_operator "k8s
 waitfor_crunchy_postgres_ocp_operator() { waitfor_crunchy_postgres_operator "ocp"; }
 waitfor_crunchy_postgres_k8s_operator() { waitfor_crunchy_postgres_operator "k8s"; }
 
+# Create the postgres-cred secret in a target namespace.
+# Accepts key=value pairs as positional args for additional/override literals.
+# Usage: create_postgres_cred_secret <namespace> <host> <password> [extra_key=value ...]
+create_postgres_cred_secret() {
+  local namespace=$1 host=$2 password=$3
+  shift 3
+
+  local -a extra_args=()
+  for kv in "$@"; do
+    extra_args+=(--from-literal="${kv}")
+  done
+
+  if ! oc create secret generic postgres-cred \
+    --from-literal=POSTGRES_PASSWORD="${password}" \
+    --from-literal=POSTGRES_PORT="5432" \
+    --from-literal=POSTGRES_USER="janus-idp" \
+    --from-literal=POSTGRES_HOST="${host}" \
+    --from-literal=PGSSLMODE="require" \
+    --from-literal=NODE_EXTRA_CA_CERTS="/opt/app-root/src/postgres-crt.pem" \
+    "${extra_args[@]}" \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${namespace}"; then
+    log::error "Failed to apply PostgreSQL credentials to namespace ${namespace}"
+    return 1
+  fi
+}
+
 configure_external_postgres_db() {
   local project=$1
   local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
@@ -284,18 +310,7 @@ configure_external_postgres_db() {
   pg_password=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}' | base64 --decode)
   pg_host="postgress-external-db-primary.${NAME_SPACE_POSTGRES_DB}.svc.cluster.local"
 
-  # Generate the secret from literals to avoid sed issues with special characters in passwords
-  if ! oc create secret generic postgres-cred \
-    --from-literal=POSTGRES_PASSWORD="${pg_password}" \
-    --from-literal=POSTGRES_PORT="5432" \
-    --from-literal=POSTGRES_USER="janus-idp" \
-    --from-literal=POSTGRES_HOST="${pg_host}" \
-    --from-literal=PGSSLMODE="require" \
-    --from-literal=NODE_EXTRA_CA_CERTS="/opt/app-root/src/postgres-crt.pem" \
-    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
-    log::error "Failed to apply PostgreSQL credentials"
-    return 1
-  fi
+  create_postgres_cred_secret "${project}" "${pg_host}" "${pg_password}"
 
   log::success "External PostgreSQL database configured successfully!"
 }
