@@ -279,14 +279,20 @@ configure_external_postgres_db() {
     # Don't fail here - the database might work fine, just schema tests won't run
   fi
 
-  # Now we can safely get the password
-  POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}')
-  common::sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  POSTGRES_HOST=$(common::base64_encode "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local")
-  common::sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  # Now we can safely get the password (decode from base64 since K8s .data is always base64-encoded)
+  local pg_password pg_host
+  pg_password=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}' | base64 --decode)
+  pg_host="postgress-external-db-primary.${NAME_SPACE_POSTGRES_DB}.svc.cluster.local"
 
-  # Validate final configuration apply
-  if ! oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml" --namespace="${project}"; then
+  # Generate the secret from literals to avoid sed issues with special characters in passwords
+  if ! oc create secret generic postgres-cred \
+    --from-literal=POSTGRES_PASSWORD="${pg_password}" \
+    --from-literal=POSTGRES_PORT="5432" \
+    --from-literal=POSTGRES_USER="janus-idp" \
+    --from-literal=POSTGRES_HOST="${pg_host}" \
+    --from-literal=PGSSLMODE="require" \
+    --from-literal=NODE_EXTRA_CA_CERTS="/opt/app-root/src/postgres-crt.pem" \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
     log::error "Failed to apply PostgreSQL credentials"
     return 1
   fi
