@@ -20,7 +20,7 @@ import path from "node:path";
 
 const isCoverageEnabled = process.env.COLLECT_COVERAGE === "true";
 
-const COVERAGE_OUTPUT_DIR =
+const coverageOutputDir =
   process.env.COVERAGE_OUTPUT_DIR ||
   path.join(process.cwd(), "coverage", "e2e-raw");
 
@@ -36,15 +36,20 @@ async function stopCoverage(page: Page, testTitle: string): Promise<void> {
   if (entries.length === 0) {
     return;
   }
-  await fs.mkdir(COVERAGE_OUTPUT_DIR, { recursive: true });
+  await fs.mkdir(coverageOutputDir, { recursive: true });
   const safe = testTitle.replace(/[^a-z0-9-]/gi, "_").slice(0, 80);
   const fileName = `${safe}-${Date.now()}.json`;
   await fs.writeFile(
-    path.join(COVERAGE_OUTPUT_DIR, fileName),
+    path.join(coverageOutputDir, fileName),
     JSON.stringify(entries),
   );
 }
 
+// Re-exported Playwright names keep their original casing so specs can opt in
+// with the idiomatic `import { test, expect } from "..."` pattern. The project
+// naming rule requires UPPER_CASE for exported const, but shadowing the
+// Playwright convention would force every consumer to alias — worse DX.
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const test = baseTest.extend<NonNullable<unknown>>({
   page: async ({ page }, use, testInfo) => {
     if (isCoverageEnabled) {
@@ -57,4 +62,5 @@ export const test = baseTest.extend<NonNullable<unknown>>({
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const expect = baseExpect;

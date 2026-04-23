@@ -15,39 +15,35 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import type {
-  FullConfig,
-  FullResult,
-  Reporter,
-} from "@playwright/test/reporter";
+import type { Reporter } from "@playwright/test/reporter";
 
-const COVERAGE_RAW_DIR =
+const coverageRawDir =
   process.env.COVERAGE_OUTPUT_DIR ||
   path.join(process.cwd(), "coverage", "e2e-raw");
 
-const COVERAGE_REPORT_DIR =
+const coverageReportDir =
   process.env.COVERAGE_REPORT_DIR ||
   path.join(process.cwd(), "coverage", "e2e");
 
 class CoverageReporter implements Reporter {
   private enabled = process.env.COLLECT_COVERAGE === "true";
 
-  onBegin(_config: FullConfig): void {
+  onBegin(): void {
     if (!this.enabled) {
       return;
     }
     console.log(
-      `[coverage] COLLECT_COVERAGE=true — raw coverage will be written to ${COVERAGE_RAW_DIR}`,
+      `[coverage] COLLECT_COVERAGE=true — raw coverage will be written to ${coverageRawDir}`,
     );
   }
 
-  async onEnd(_result: FullResult): Promise<void> {
+  async onEnd(): Promise<void> {
     if (!this.enabled) {
       return;
     }
     try {
       const files = await fs
-        .readdir(COVERAGE_RAW_DIR)
+        .readdir(coverageRawDir)
         .catch(() => [] as string[]);
       const rawFiles = files.filter((f) => f.endsWith(".json"));
       if (rawFiles.length === 0) {
@@ -59,11 +55,11 @@ class CoverageReporter implements Reporter {
 
       // Dynamic import so this reporter does not force the dep at module-load
       // time (keeps base CI without COLLECT_COVERAGE=true unaffected).
-      const { CoverageReport } = await import("monocart-coverage-reports");
+      const monocart = await import("monocart-coverage-reports");
 
-      const report = new CoverageReport({
+      const report = new monocart.CoverageReport({
         name: "RHDH E2E Coverage",
-        outputDir: COVERAGE_REPORT_DIR,
+        outputDir: coverageReportDir,
         reports: [
           ["v8"],
           ["lcov"],
@@ -76,7 +72,7 @@ class CoverageReporter implements Reporter {
 
       for (const file of rawFiles) {
         const content = await fs.readFile(
-          path.join(COVERAGE_RAW_DIR, file),
+          path.join(coverageRawDir, file),
           "utf-8",
         );
         const entries = JSON.parse(content);
@@ -84,9 +80,7 @@ class CoverageReporter implements Reporter {
       }
 
       await report.generate();
-      console.log(
-        `[coverage] Merged report written to ${COVERAGE_REPORT_DIR}`,
-      );
+      console.log(`[coverage] Merged report written to ${coverageReportDir}`);
     } catch (err) {
       console.error(
         "[coverage] Failed to generate merged coverage report:",
