@@ -64,7 +64,11 @@ open e2e-tests/coverage/e2e/index.html
 
 ## Migrating a spec to capture coverage
 
-Specs opt in by importing the extended `test`/`expect` from the coverage helper
+There are two patterns depending on how the spec manages its browser page.
+
+### Specs that use the built-in `{ page }` fixture (most specs)
+
+Opt in by importing the extended `test`/`expect` from the coverage helper
 instead of `@playwright/test`:
 
 ```ts
@@ -83,8 +87,47 @@ import { test, expect } from "../../../support/coverage/test";
 The rest of the spec stays identical — `describe`, `beforeAll`, `expect`,
 locators, and fixtures behave exactly the same.
 
-Specs that have not migrated still run normally and simply do not contribute to
-coverage data.
+### Specs that create their own context/page via `browser.newContext()`
+
+Several existing specs (for example `plugins/adoption-insights`,
+`plugins/scorecard`) manage their own `BrowserContext` and `Page` in
+`beforeAll` instead of using the default `{ page }` fixture. These specs
+bypass the auto-instrumented fixture above — they need to call the helpers
+explicitly:
+
+```ts
+import { test, expect, startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
+
+test.describe("my feature", () => {
+  let context: BrowserContext;
+  let page: Page;
+
+  test.beforeAll(async ({ browser }) => {
+    context = await browser.newContext();
+    page = await context.newPage();
+  });
+
+  test("something", async ({}, testInfo) => {
+    await startCoverageForPage(page);
+    try {
+      // test body ...
+    } finally {
+      await stopCoverageForPage(page, testInfo);
+    }
+  });
+});
+```
+
+`startCoverageForPage` and `stopCoverageForPage` are safe to call
+unconditionally — they are no-ops when `COLLECT_COVERAGE` is unset, and any
+internal failure is logged rather than propagated so coverage collection
+cannot fail a test.
+
+### Specs that have not migrated
+
+Run normally and simply do not contribute to coverage data. Migration is
+phased by design — this PR lands the scaffolding; spec migration happens
+incrementally in follow-up PRs so each batch can be reviewed in isolation.
 
 ## Environment variables
 

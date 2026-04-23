@@ -46,9 +46,19 @@ async function withTimeout<T>(
 class CoverageReporter implements Reporter {
   private enabled = process.env.COLLECT_COVERAGE === "true";
 
-  onBegin(): void {
+  async onBegin(): Promise<void> {
     if (!this.enabled) {
       return;
+    }
+    // Clear any raw coverage left over from a previous run so the merged
+    // report only reflects the current Playwright run. Without this the
+    // reporter would accumulate stale *.json files across runs and produce
+    // an incorrect LCOV/HTML report.
+    try {
+      await fs.rm(COVERAGE_RAW_DIR, { recursive: true, force: true });
+      await fs.mkdir(COVERAGE_RAW_DIR, { recursive: true });
+    } catch (err) {
+      console.warn("[coverage] Failed to reset raw coverage dir:", err);
     }
     console.log(
       `[coverage] COLLECT_COVERAGE=true — raw coverage will be written to ${COVERAGE_RAW_DIR}`,
