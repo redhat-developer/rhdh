@@ -16,14 +16,32 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { Reporter } from "@playwright/test/reporter";
+import { COVERAGE_RAW_DIR, COVERAGE_REPORT_DIR } from "./paths";
 
-const coverageRawDir =
-  process.env.COVERAGE_OUTPUT_DIR ||
-  path.join(process.cwd(), "coverage", "e2e-raw");
+const generateTimeoutMs = Number(
+  process.env.COVERAGE_GENERATE_TIMEOUT_MS || 2 * 60 * 1000,
+);
 
-const coverageReportDir =
-  process.env.COVERAGE_REPORT_DIR ||
-  path.join(process.cwd(), "coverage", "e2e");
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  label: string,
+): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`${label} timed out after ${timeoutMs}ms`)),
+      timeoutMs,
+    );
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
 
 class CoverageReporter implements Reporter {
   private enabled = process.env.COLLECT_COVERAGE === "true";
@@ -33,7 +51,7 @@ class CoverageReporter implements Reporter {
       return;
     }
     console.log(
-      `[coverage] COLLECT_COVERAGE=true — raw coverage will be written to ${coverageRawDir}`,
+      `[coverage] COLLECT_COVERAGE=true — raw coverage will be written to ${COVERAGE_RAW_DIR}`,
     );
   }
 
@@ -42,9 +60,16 @@ class CoverageReporter implements Reporter {
       return;
     }
     try {
-      const files = await fs
-        .readdir(coverageRawDir)
-        .catch(() => [] as string[]);
+      const files = await fs.readdir(COVERAGE_RAW_DIR).catch((err: unknown) => {
+        // Only swallow "directory does not exist" — any other failure (I/O,
+        // permissions) surfaces so CI logs show the actual cause instead of
+        // the misleading "no coverage collected" warning below.
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code === "ENOENT") {
+          return [] as string[];
+        }
+        throw err;
+      });
       const rawFiles = files.filter((f) => f.endsWith(".json"));
       if (rawFiles.length === 0) {
         console.warn(
@@ -53,13 +78,14 @@ class CoverageReporter implements Reporter {
         return;
       }
 
-      // Dynamic import so this reporter does not force the dep at module-load
-      // time (keeps base CI without COLLECT_COVERAGE=true unaffected).
+      // Dynamic import defers loading the monocart module until the report
+      // is about to be generated. With COLLECT_COVERAGE unset the reporter
+      // is not even registered, so this branch is never reached.
       const monocart = await import("monocart-coverage-reports");
 
       const report = new monocart.CoverageReport({
         name: "RHDH E2E Coverage",
-        outputDir: coverageReportDir,
+        outputDir: COVERAGE_REPORT_DIR,
         reports: [
           ["v8"],
           ["lcov"],
@@ -70,17 +96,35 @@ class CoverageReporter implements Reporter {
         cleanCache: true,
       });
 
-      for (const file of rawFiles) {
-        const content = await fs.readFile(
-          path.join(coverageRawDir, file),
-          "utf-8",
-        );
-        const entries = JSON.parse(content);
-        await report.add(entries);
+      const entriesPerFile = await Promise.all(
+        rawFiles.map(async (file) => {
+          const content = await fs.readFile(
+            path.join(COVERAGE_RAW_DIR, file),
+            "utf-8",
+          );
+          const parsed: unknown = JSON.parse(content);
+          if (!Array.isArray(parsed)) {
+            console.warn(
+              `[coverage] Skipping ${file}: expected an array of V8 script coverage entries, got ${typeof parsed}`,
+            );
+            return null;
+          }
+          return parsed;
+        }),
+      );
+
+      for (const entries of entriesPerFile) {
+        if (entries !== null) {
+          await report.add(entries);
+        }
       }
 
-      await report.generate();
-      console.log(`[coverage] Merged report written to ${coverageReportDir}`);
+      await withTimeout(
+        report.generate(),
+        generateTimeoutMs,
+        "[coverage] report.generate()",
+      );
+      console.log(`[coverage] Merged report written to ${COVERAGE_REPORT_DIR}`);
     } catch (err) {
       console.error(
         "[coverage] Failed to generate merged coverage report:",

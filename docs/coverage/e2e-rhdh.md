@@ -71,8 +71,13 @@ instead of `@playwright/test`:
 // Before
 import { test, expect } from "@playwright/test";
 
-// After
+// After — relative path depends on the spec's depth under playwright/
+// 2 levels deep (e.g. playwright/e2e/smoke-test.spec.ts):
 import { test, expect } from "../support/coverage/test";
+// 3 levels deep (e.g. playwright/e2e/plugins/rbac.spec.ts):
+import { test, expect } from "../../support/coverage/test";
+// 4 levels deep (e.g. playwright/e2e/plugins/adoption-insights/*.spec.ts):
+import { test, expect } from "../../../support/coverage/test";
 ```
 
 The rest of the spec stays identical — `describe`, `beforeAll`, `expect`,
@@ -88,6 +93,11 @@ coverage data.
 | `COLLECT_COVERAGE` | (unset) | Set to `true` to enable coverage collection |
 | `COVERAGE_OUTPUT_DIR` | `<cwd>/coverage/e2e-raw` | Where per-test raw V8 coverage is written |
 | `COVERAGE_REPORT_DIR` | `<cwd>/coverage/e2e` | Where the merged Istanbul report is written |
+| `COVERAGE_GENERATE_TIMEOUT_MS` | `120000` (2 min) | Maximum time the reporter will wait for `monocart.CoverageReport.generate()` before aborting. Prevents a CI job from hanging if coverage aggregation stalls |
+
+Raw coverage file names include the spec title path, worker index, and retry
+number (for example `Smoke_test_basic_flow-w0-r0-1714003200000.json`) so
+parallel workers and retries never overwrite each other's output.
 
 ## Known limitations
 

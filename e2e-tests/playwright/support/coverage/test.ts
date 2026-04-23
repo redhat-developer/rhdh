@@ -17,30 +17,39 @@ import {
 } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { COVERAGE_RAW_DIR } from "./paths";
 
 const isCoverageEnabled = process.env.COLLECT_COVERAGE === "true";
 
-const coverageOutputDir =
-  process.env.COVERAGE_OUTPUT_DIR ||
-  path.join(process.cwd(), "coverage", "e2e-raw");
-
 async function startCoverage(page: Page): Promise<void> {
   await page.coverage.startJSCoverage({
+    // Keep coverage accumulated across navigations within the same test —
+    // resetting would drop coverage from pre-navigation setup steps.
     resetOnNavigation: false,
+    // Skip anonymous scripts (injected eval-style code with no URL) —
+    // they cannot be mapped back to source and add noise to the report.
     reportAnonymousScripts: false,
   });
 }
 
-async function stopCoverage(page: Page, testTitle: string): Promise<void> {
+async function stopCoverage(
+  page: Page,
+  titlePath: string[],
+  workerIndex: number,
+  retry: number,
+): Promise<void> {
   const entries = await page.coverage.stopJSCoverage();
   if (entries.length === 0) {
     return;
   }
-  await fs.mkdir(coverageOutputDir, { recursive: true });
-  const safe = testTitle.replace(/[^a-z0-9-]/gi, "_").slice(0, 80);
-  const fileName = `${safe}-${Date.now()}.json`;
+  await fs.mkdir(COVERAGE_RAW_DIR, { recursive: true });
+  const safeTitle = titlePath
+    .join("_")
+    .replace(/[^a-z0-9-]/gi, "_")
+    .slice(0, 80);
+  const fileName = `${safeTitle}-w${workerIndex}-r${retry}-${Date.now()}.json`;
   await fs.writeFile(
-    path.join(coverageOutputDir, fileName),
+    path.join(COVERAGE_RAW_DIR, fileName),
     JSON.stringify(entries),
   );
 }
@@ -57,7 +66,12 @@ export const test = baseTest.extend<NonNullable<unknown>>({
     }
     await use(page);
     if (isCoverageEnabled) {
-      await stopCoverage(page, testInfo.title);
+      await stopCoverage(
+        page,
+        testInfo.titlePath,
+        testInfo.workerIndex,
+        testInfo.retry,
+      );
     }
   },
 });

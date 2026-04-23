@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import type { ReporterDescription } from "@playwright/test";
 import { PW_PROJECT } from "./playwright/projects";
 
 process.env.JOB_NAME = process.env.JOB_NAME || "";
@@ -60,14 +61,16 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: 3,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  // Coverage reporter (RHIDP-13243) is appended only when COLLECT_COVERAGE=true;
+  // otherwise it is not registered at all and the default reporters run alone.
   reporter: [
     ["html"],
     ["list"],
     ["junit", { outputFile: process.env.JUNIT_RESULTS || "junit-results.xml" }],
-    // Coverage reporter — RHIDP-13243. Activates only when
-    // COLLECT_COVERAGE=true; otherwise it is a no-op.
     ...(process.env.COLLECT_COVERAGE === "true"
-      ? [["./playwright/support/coverage/reporter.ts"] as [string]]
+      ? ([
+          ["./playwright/support/coverage/reporter.ts"],
+        ] satisfies ReporterDescription[])
       : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
