@@ -321,8 +321,12 @@ apply_yaml_files() {
   local rhdh_base_url=$3
   log::info "Applying YAML files to namespace ${project}"
 
-  oc config set-context --current --namespace="${project}"
+  # Create temporary directory for namespace-patched YAMLs (parallel-deployment safe)
+  local tmpdir
+  tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/apply-yaml-${project}-XXXXXX")
+  trap 'rm -rf "${tmpdir}"' RETURN
 
+  # Copy and patch YAML files that need namespace substitution
   local files=(
     "$dir/resources/service_account/service-account-rhdh.yaml"
     "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml"
@@ -330,7 +334,9 @@ apply_yaml_files() {
   )
 
   for file in "${files[@]}"; do
-    common::sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
+    local basename
+    basename=$(basename "$file")
+    sed "s/namespace:.*/namespace: ${project}/g" "$file" > "${tmpdir}/${basename}"
   done
 
   DH_TARGET_URL=$(common::base64_encode "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}")
@@ -338,11 +344,12 @@ apply_yaml_files() {
   RHDH_BASE_URL_HTTP=$(common::base64_encode "${rhdh_base_url/https/http}")
   export DH_TARGET_URL RHDH_BASE_URL RHDH_BASE_URL_HTTP
 
-  oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
+  # Apply YAMLs from tmpdir (patched) or original location (no patch needed)
+  oc apply -f "${tmpdir}/service-account-rhdh.yaml" --namespace="${project}"
   oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
 
-  oc apply -f "$dir/resources/cluster_role/cluster-role-k8s.yaml" --namespace="${project}"
-  oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml" --namespace="${project}"
+  oc apply -f "${tmpdir}/cluster-role-k8s.yaml" --namespace="${project}"
+  oc apply -f "${tmpdir}/cluster-role-binding-k8s.yaml" --namespace="${project}"
 
   envsubst < "${DIR}/auth/secrets-rhdh-secrets.yaml" | oc apply --namespace="${project}" -f -
 
@@ -370,15 +377,15 @@ apply_yaml_files() {
   # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
   if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
     # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml" --namespace="${project}"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml" --namespace="${project}"
 
     # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
     if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml" --namespace="${project}"
     else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
     fi
   else
     log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"

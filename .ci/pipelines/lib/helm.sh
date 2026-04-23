@@ -32,14 +32,18 @@ helm::merge_values() {
   local base_file=$2
   local diff_file=$3
   local final_file=$4
-  local step_1_file="/tmp/step-without-plugins.yaml"
-  local step_2_file="/tmp/step-only-plugins.yaml"
 
   if [[ -z "$plugin_operation" || -z "$base_file" || -z "$diff_file" || -z "$final_file" ]]; then
     log::error "Missing required parameters"
     log::info "Usage: helm::merge_values <operation> <base_file> <diff_file> <output_file>"
     return 1
   fi
+
+  # Use unique temp files per invocation to support parallel deployments
+  local step_1_file step_2_file
+  step_1_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step1-XXXXXX.yaml")
+  step_2_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step2-XXXXXX.yaml")
+  trap 'rm -f "${step_1_file}" "${step_2_file}"' RETURN
 
   if [[ "$plugin_operation" == "merge" ]]; then
     # Step 1: Merge files, excluding the .global.dynamic.plugins key
