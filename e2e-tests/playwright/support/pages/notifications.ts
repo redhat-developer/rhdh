@@ -15,6 +15,10 @@ export class NotificationPage {
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
+    // Wait for the notifications page content to fully render
+    await expect(
+      this.page.getByRole("table").filter({ hasText: "Rows per page" }),
+    ).toBeVisible({ timeout: 30000 });
   }
 
   async notificationContains(text: string | RegExp) {
