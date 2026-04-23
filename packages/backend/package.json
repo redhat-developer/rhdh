@@ -21,8 +21,8 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-backend": "7.7.1",
-    "@backstage-community/plugin-rbac-node": "1.17.0",
+    "@backstage-community/plugin-rbac-backend": "7.12.2",
+    "@backstage-community/plugin-rbac-node": "1.20.0",
     "@backstage-community/plugin-scaffolder-backend-module-annotator": "2.12.0",
     "@backstage/backend-app-api": "1.6.0",
     "@backstage/backend-defaults": "0.16.0",
