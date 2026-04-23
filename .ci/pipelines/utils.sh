@@ -668,13 +668,23 @@ rbac_deployment() {
 # Returns:
 #   0 if both deployments succeed
 #   1 if either (or both) fail — failures are always reported individually
+#
+# Requires:
+#   NAME_SPACE and NAME_SPACE_RBAC must be different to avoid resource conflicts
 _run_parallel_deployments() {
   local base_fn=$1
   local base_arg=$2
   local rbac_fn=$3
   local rbac_arg=$4
 
+  # Validate that namespaces are disjoint to prevent race conditions
+  if [[ "${NAME_SPACE:-}" == "${NAME_SPACE_RBAC:-}" ]] || [[ -z "${NAME_SPACE:-}" ]] || [[ -z "${NAME_SPACE_RBAC:-}" ]]; then
+    log::error "NAME_SPACE ('${NAME_SPACE:-}') and NAME_SPACE_RBAC ('${NAME_SPACE_RBAC:-}') must be different and non-empty for parallel deployment"
+    return 1
+  fi
+
   log::section "Starting parallel deployments: base + RBAC"
+  log::info "Base namespace: ${NAME_SPACE}, RBAC namespace: ${NAME_SPACE_RBAC}"
 
   "${base_fn}" "${base_arg}" &
   local base_pid=$!
@@ -684,9 +694,11 @@ _run_parallel_deployments() {
   local rbac_pid=$!
   log::info "RBAC deployment started in background (PID: ${rbac_pid})"
 
+  log::section "Waiting for parallel deployments to complete..."
   local base_rc=0 rbac_rc=0
   wait "${base_pid}" || base_rc=$?
   wait "${rbac_pid}" || rbac_rc=$?
+  log::section "Parallel deployments finished — evaluating results"
 
   if [[ ${base_rc} -eq 0 ]]; then
     log::success "Base deployment completed"
