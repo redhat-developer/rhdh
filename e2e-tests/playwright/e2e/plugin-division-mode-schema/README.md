@@ -37,7 +37,7 @@ Tests skip when:
 ### CI Behavior
 
 - **OCP Helm nightly jobs**: Tests run (env auto-configured by `schema-mode-env.sh`)
-- **OCP Operator nightly jobs**: Tests skip (operator runtime tests disabled, tracked by [RHDHBUGS-2608](https://issues.redhat.com/browse/RHDHBUGS-2608))
+- **OCP Operator nightly jobs**: Tests run (env auto-configured by `schema-mode-env.sh` with `INSTALL_METHOD=operator`)
 - **PR jobs**: Tests skip (env not configured by default)
 - **Non-OCP jobs (AKS, EKS, GKE)**: Tests skip (no PostgreSQL deployment)
 
@@ -57,7 +57,7 @@ Set `DEBUG_SCHEMA_MODE_PF=1` to log port-forward output.
 
 Tests run in the `showcase-runtime` Playwright project together with `config-map.spec.ts` (see [`playwright.config.ts`](../../../playwright.config.ts)).
 
-**Pipeline entrypoint**: [`.ci/pipelines/openshift-ci-tests.sh`](../../../../.ci/pipelines/openshift-ci-tests.sh) → `jobs/ocp-nightly.sh`
+**Pipeline entrypoint**: [`.ci/pipelines/openshift-ci-tests.sh`](../../../../.ci/pipelines/openshift-ci-tests.sh) → `jobs/ocp-nightly.sh` (Helm) or `jobs/ocp-operator.sh` (Operator)
 
 **Environment baseline**: [`.ci/pipelines/env_variables.sh`](../../../../.ci/pipelines/env_variables.sh)
 
