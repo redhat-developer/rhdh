@@ -79,12 +79,16 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
 
       if (failed) {
         workerHadFailure = true;
-        const screenshotPath = testInfo.outputPath("failure.png");
-        await sharedPage.screenshot({ path: screenshotPath });
-        await testInfo.attach("screenshot", {
-          path: screenshotPath,
-          contentType: "image/png",
-        });
+        try {
+          const screenshotPath = testInfo.outputPath("failure.png");
+          await sharedPage.screenshot({ path: screenshotPath });
+          await testInfo.attach("screenshot", {
+            path: screenshotPath,
+            contentType: "image/png",
+          });
+        } catch {
+          // Page may have crashed — screenshot unavailable
+        }
       }
 
       const tracePath = testInfo.outputPath("trace.zip");
