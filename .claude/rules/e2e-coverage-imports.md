@@ -13,14 +13,8 @@ When creating or modifying Playwright spec files under `e2e-tests/playwright/`, 
 // WRONG - bypasses coverage collection
 import { test, expect } from "@playwright/test";
 
-// CORRECT - enables coverage collection when COLLECT_COVERAGE=true
-// Adjust the relative path based on the spec's depth under playwright/
-// 2 levels deep (e.g. playwright/e2e/smoke-test.spec.ts):
-import { test, expect } from "../support/coverage/test";
-// 3 levels deep (e.g. playwright/e2e/plugins/rbac.spec.ts):
-import { test, expect } from "../../support/coverage/test";
-// 4 levels deep (e.g. playwright/e2e/plugins/adoption-insights/*.spec.ts):
-import { test, expect } from "../../../support/coverage/test";
+// CORRECT - uses the @support path alias (configured in e2e-tests/tsconfig.json)
+import { test, expect } from "@support/coverage/test";
 ```
 
 The instrumented version is a drop-in replacement: `describe`, `beforeAll`, `expect`, locators, and all fixtures behave identically. When `COLLECT_COVERAGE` is unset (the default), the instrumented fixture is a no-op with zero overhead.
@@ -30,7 +24,7 @@ The instrumented version is a drop-in replacement: `describe`, `beforeAll`, `exp
 If the spec creates its own `BrowserContext` / `Page` via `browser.newContext()`, also import and call the explicit helpers:
 
 ```typescript
-import { test, expect, startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
+import { test, expect, startCoverageForPage, stopCoverageForPage } from "@support/coverage/test";
 
 test("my test", async ({}, testInfo) => {
   const context = await browser.newContext();

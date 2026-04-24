@@ -75,13 +75,9 @@ instead of `@playwright/test`:
 // Before
 import { test, expect } from "@playwright/test";
 
-// After — relative path depends on the spec's depth under playwright/
-// 2 levels deep (e.g. playwright/e2e/smoke-test.spec.ts):
-import { test, expect } from "../support/coverage/test";
-// 3 levels deep (e.g. playwright/e2e/plugins/rbac.spec.ts):
-import { test, expect } from "../../support/coverage/test";
-// 4 levels deep (e.g. playwright/e2e/plugins/adoption-insights/*.spec.ts):
-import { test, expect } from "../../../support/coverage/test";
+// After — uses the @support path alias (configured in tsconfig.json),
+// so the import is the same regardless of file depth:
+import { test, expect } from "@support/coverage/test";
 ```
 
 The rest of the spec stays identical — `describe`, `beforeAll`, `expect`,
@@ -96,7 +92,7 @@ bypass the auto-instrumented fixture above — they need to call the helpers
 explicitly:
 
 ```ts
-import { test, expect, startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
+import { test, expect, startCoverageForPage, stopCoverageForPage } from "@support/coverage/test";
 
 test.describe("my feature", () => {
   let context: BrowserContext;

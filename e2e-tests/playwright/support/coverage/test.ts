@@ -7,11 +7,11 @@
 // adds no measurable overhead.
 //
 // Usage in a spec using the built-in { page } fixture:
-//   import { test, expect } from "../support/coverage/test";
+//   import { test, expect } from "@support/coverage/test";
 //
 // For specs that create their own context/page via browser.newContext(),
 // import the helpers directly and call them around the test body:
-//   import { startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
+//   import { startCoverageForPage, stopCoverageForPage } from "@support/coverage/test";
 //
 // Everything else (describe, it, assertions) stays identical.
 
