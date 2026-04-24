@@ -52,16 +52,18 @@ flowchart TB
         s1["1. Read default.packages.yaml"]
         s2["2. Read metadata/*.yaml"]
         s3["3. Read catalog-entities/"]
-        s4["4. generateCatalogIndex.py<br>→ dynamic-plugins.default.yaml"]
-        s5["5. Assemble final image"]
-        s6["6. Push to quay.io/rhdh/ +<br>registry.redhat.io/rhdh/"]
+        s4["4. generateDynamicPluginsDefaultYaml.sh<br>→ dynamic-plugins.default.yaml"]
+        s4b["5. generateCatalogIndex.py<br>→ index.json + OCI ref updates"]
+        s5["6. Assemble final image"]
+        s6["7. Push to quay.io/rhdh/ +<br>registry.redhat.io/rhdh/"]
         sync --> s1
         sync --> s2
         sync --> s3
         s1 --> s4
         s2 --> s4
+        s4 --> s4b
         s3 --> s5
-        s4 --> s5 --> s6
+        s4b --> s5 --> s6
     end
 
     output["OCI Image<br>quay.io/rhdh/plugin-catalog-index:1.10"]
@@ -212,8 +214,9 @@ This encodes both the Backstage version the plugin was built against and the plu
 The final catalog index image is built via the **`rhdh-plugin-catalog`** midstream repository using Konflux/Tekton pipelines. This repo:
 
 - Syncs content from `rhdh-plugin-export-overlays` via `build/ci/sync-midstream.sh`
-- Builds TP and GA plugin OCI images via 56 Tekton PipelineRun definitions in `.tekton/` (each plugin has a dedicated pipeline triggered by changes to its workspace directory)
-- Generates the catalog index via `build/scripts/generateCatalogIndex.py`
+- Builds TP and GA plugin OCI images via 54 Tekton PipelineRun definitions in `.tekton/` (each plugin has a dedicated pipeline triggered by changes to its workspace directory)
+- Generates `dynamic-plugins.default.yaml` via `build/scripts/generateDynamicPluginsDefaultYaml.sh` (from `default.packages.yaml` + metadata)
+- Generates the catalog index and updates OCI references via `build/scripts/generateCatalogIndex.py`
 - Publishes to both `quay.io/rhdh/` and `registry.redhat.io/rhdh/`
 
 ```mermaid
@@ -224,13 +227,15 @@ flowchart TB
 
     subgraph assembly["rhdh-plugin-catalog — Konflux/Tekton"]
         a0["0. sync-midstream.sh syncs<br>overlays into overlay-repo/"]
-        a1["1. generateCatalogIndex.py merges<br>packages + metadata → dynamic-plugins.default.yaml"]
-        a2["2. Collect catalog-entities/extensions/"]
-        a3["3. Build FROM scratch OCI image"]
-        a4["4. Push to quay.io/rhdh/ +<br>registry.redhat.io/rhdh/"]
+        a1["1. generateDynamicPluginsDefaultYaml.sh<br>packages + metadata → dynamic-plugins.default.yaml"]
+        a1b["2. generateCatalogIndex.py<br>index.json + OCI ref updates"]
+        a2["3. Collect catalog-entities/extensions/"]
+        a3["4. Build FROM scratch OCI image"]
+        a4["5. Push to quay.io/rhdh/ +<br>registry.redhat.io/rhdh/"]
         a0 --> a1
+        a1 --> a1b
         a0 --> a2
-        a1 --> a3
+        a1b --> a3
         a2 --> a3
         a3 --> a4
     end
@@ -332,6 +337,7 @@ The catalog index image version is aligned with the RHDH release version. Each R
 
 | RHDH Version | Catalog Index Image Tag | Backstage Version |
 |---|---|---|
+| 1.11 | `plugin-catalog-index:1.11` | 1.49.x |
 | 1.10 | `plugin-catalog-index:1.10` | 1.45.x |
 | 1.9 | `plugin-catalog-index:1.9` | 1.42.x |
 
@@ -339,9 +345,9 @@ The `versions.json` in the overlays repo pins the exact Backstage version and CL
 
 ```json
 {
-    "backstage": "1.45.3",
-    "node": "22.19.0",
-    "cli": "1.9.1",
+    "backstage": "1.49.4",
+    "node": "22.22.0",
+    "cli": "1.10.4",
     "cliPackage": "@red-hat-developer-hub/cli"
 }
 ```
@@ -355,7 +361,7 @@ The `versions.json` in the overlays repo pins the exact Backstage version and CL
 | **rhdh-plugin-export-utils** | Provides reusable GitHub Actions and workflows used by the overlays repo: `override-sources`, `export-dynamic`, `validate-metadata`, and orchestration workflows. |
 | **rhdh-cli** | Provides `export-dynamic` command that packages plugins into `dist-dynamic/` or `dist-scalprum/` directories, and `package-dynamic-plugins` command that builds `FROM scratch` OCI images. |
 | **rhdh-plugins** | Houses the `extensions-cli` (`generate` command) that produces `Package` entity YAML files from `dynamic-plugins.default.yaml`. Also contains the extensions frontend/backend plugins that consume catalog entities at runtime. |
-| **rhdh-plugin-catalog** | Midstream infrastructure repo. Syncs plugin source from `rhdh-plugin-export-overlays` via `sync-midstream.sh`. Builds plugins via Konflux/Tekton pipelines (56 PipelineRun definitions in `.tekton/`). Generates catalog index via `generateCatalogIndex.py`. Publishes to `quay.io/rhdh/` and `registry.redhat.io/rhdh/`. Contains `plugin_builds/` metadata and 23 plugin workspace directories. |
+| **rhdh-plugin-catalog** | Midstream infrastructure repo. Syncs plugin source from `rhdh-plugin-export-overlays` via `sync-midstream.sh`. Builds plugins via Konflux/Tekton pipelines (54 PipelineRun definitions in `.tekton/`). Generates `dynamic-plugins.default.yaml` via `generateDynamicPluginsDefaultYaml.sh`, then catalog index via `generateCatalogIndex.py`. Publishes to `quay.io/rhdh/` and `registry.redhat.io/rhdh/`. Contains `plugin_builds/` metadata and 23 plugin workspace directories. |
 | **rhdh-operator** | Sets `CATALOG_INDEX_IMAGE` in default deployment template. OLM's `RELATED_IMAGE_catalog_index` substitution overrides it at deploy time. |
 | **rhdh-chart** | Configures `CATALOG_INDEX_IMAGE` via `global.catalogIndex.image` Helm values. |
 | **rhdh-local** | Docker Compose local dev environment with 2 services (`rhdh`, `install-dynamic-plugins`) and a shared `dynamic-plugins-root` volume. Uses init container pattern. Supports four plugin sources: local directory (`local-plugins/`), OCI image (`oci://`), tarball URL, and pre-bundled plugins. |
@@ -372,12 +378,13 @@ The `versions.json` in the overlays repo pins the exact Backstage version and CL
 | `workspaces/*/source.json` | rhdh-plugin-export-overlays | Upstream repo + commit pin |
 | `workspaces/*/plugins-list.yaml` | rhdh-plugin-export-overlays | Plugins to export per workspace |
 | `catalog-entities/extensions/plugins/*.yaml` | rhdh-plugin-export-overlays | Plugin entities for Extensions UI |
-| `catalog-entities/extensions/packages/*.yaml` | rhdh-plugin-export-overlays | Package entities (generated) |
+| `catalog-entities/extensions/packages/*.yaml` | rhdh-plugin-catalog (generated at build time from metadata) | Package entities for Extensions UI |
 | `catalog-entities/extensions/collections/*.yaml` | rhdh-plugin-export-overlays | Plugin collection groupings |
 | `versions.json` | rhdh-plugin-export-overlays | Backstage/Node/CLI version pins |
 | `.github/workflows/export-dynamic.yaml` | rhdh-plugin-export-utils | Reusable per-workspace export workflow |
 | `workspaces/extensions/packages/cli/` | rhdh-plugins | Extensions CLI (`generate` command) |
-| `build/scripts/generateCatalogIndex.py` | rhdh-plugin-catalog | Generates catalog index from synced content |
+| `build/scripts/generateDynamicPluginsDefaultYaml.sh` | rhdh-plugin-catalog | Generates `dynamic-plugins.default.yaml` from `default.packages.yaml` + metadata |
+| `build/scripts/generateCatalogIndex.py` | rhdh-plugin-catalog | Generates catalog index (`index.json`) and updates OCI references |
 | `build/scripts/generatePluginBuildInfo.py` | rhdh-plugin-catalog | Generates per-plugin build metadata |
 | `build/ci/sync-midstream.sh` | rhdh-plugin-catalog | Syncs overlay content from `rhdh-plugin-export-overlays` |
 | `catalog-index/index.json` | rhdh-plugin-catalog | Master catalog of all plugins |

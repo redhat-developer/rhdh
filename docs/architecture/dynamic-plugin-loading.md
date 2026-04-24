@@ -15,6 +15,7 @@ flowchart TB
         vol1["Shared Volume: dynamic-plugins-root<br>ephemeral PVC / emptyDir<br><br>• &lt;plugin-name&gt;/ — one directory per installed plugin<br>• app-config.dynamic-plugins.yaml — merged config<br>• install-dynamic-plugins.lock"]
         vol2["Shared Volume: extensions-catalog — emptyDir<br><br>• catalog-entities/ — from catalog index image"]
         init -.->|writes| vol1
+        init -.->|writes| vol2
         main -.->|reads| vol1
         main -.->|reads| vol2
     end
@@ -108,7 +109,7 @@ Removes any plugin directories that were previously installed but are no longer 
 |----------|-------------|---------|
 | `CATALOG_INDEX_IMAGE` | OCI image reference for the plugin catalog index | Not set |
 | `CATALOG_ENTITIES_EXTRACT_DIR` | Directory for extracting catalog entities | `/tmp/extensions` |
-| `MAX_ENTRY_SIZE` | Maximum size of a file in an archive (zip bomb protection) | `20000000` (20MB) |
+| `MAX_ENTRY_SIZE` | Maximum size of a file in an archive (zip bomb protection) | `40000000` (40MB) |
 | `SKIP_INTEGRITY_CHECK` | Set to `"true"` to skip integrity check of remote NPM packages | Not set |
 
 The following environment variables are not read by the install script itself, but are picked up by the underlying tools (`skopeo` and `npm`) when invoked during plugin installation:
@@ -168,7 +169,7 @@ flowchart LR
         c1["values.yaml — global.catalogIndex.image"]
     end
     subgraph local["rhdh-local"]
-        l1["compose.yaml — 2 services + shared volume<br>4 plugin sources: local, OCI, tarball, pre-bundled"]
+        l1["compose.yaml — 2 services + shared volumes<br>4 plugin sources: local, OCI, tarball, pre-bundled"]
     end
     subgraph cli["rhdh-cli"]
         cl1["export-dynamic-plugin/ — dist-dynamic + dist-scalprum<br>package-dynamic-plugins/ — FROM scratch OCI images"]
@@ -177,7 +178,7 @@ flowchart LR
         ov1["plugins-list.yaml, metadata/, patches/<br>→ ghcr.io via oci://"]
     end
     subgraph catalog["rhdh-plugin-catalog"]
-        cat1["Midstream: sync-midstream.sh, .tekton/<br>generateCatalogIndex.py → quay.io/rhdh/"]
+        cat1["Midstream: sync-midstream.sh, .tekton/<br>generateDynamicPluginsDefaultYaml.sh +<br>generateCatalogIndex.py → quay.io/rhdh/"]
     end
     subgraph plugins["rhdh-plugins"]
         pl1["extensions-cli — generate Package entities<br>extensions frontend/backend — Extensions UI"]
@@ -211,9 +212,10 @@ flowchart LR
 | `compose.yaml` | rhdh-local | Docker Compose setup with 2 services (`rhdh`, `install-dynamic-plugins`) and a shared `dynamic-plugins-root` volume |
 | `src/commands/export-dynamic-plugin/` | rhdh-cli | Exports plugins to `dist-dynamic/` (backend) or `dist-scalprum/` (frontend) |
 | `src/commands/package-dynamic-plugins/` | rhdh-cli | Packages exported plugins as `FROM scratch` OCI images |
-| `build/scripts/generateCatalogIndex.py` | rhdh-plugin-catalog | Generates catalog index from synced overlay content |
+| `build/scripts/generateDynamicPluginsDefaultYaml.sh` | rhdh-plugin-catalog | Generates `dynamic-plugins.default.yaml` from `default.packages.yaml` + metadata |
+| `build/scripts/generateCatalogIndex.py` | rhdh-plugin-catalog | Generates catalog index (`index.json`) and updates OCI references |
 | `build/ci/sync-midstream.sh` | rhdh-plugin-catalog | Syncs overlay content for midstream builds |
-| `.tekton/*.yaml` | rhdh-plugin-catalog | 56 Konflux PipelineRun definitions for plugin builds |
+| `.tekton/*.yaml` | rhdh-plugin-catalog | 54 Konflux PipelineRun definitions for plugin builds |
 | `workspaces/extensions/packages/cli/` | rhdh-plugins | Extensions CLI (`generate` command for Package entities) |
 | `.github/workflows/export-dynamic.yaml` | rhdh-plugin-export-utils | Reusable per-workspace export workflow |
 | `workspaces/*/source.json` | rhdh-plugin-export-overlays | Upstream repo + commit pin per workspace |
