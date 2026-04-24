@@ -20,7 +20,7 @@
     "clean": "backstage-cli package clean",
     "lint": "backstage-cli package lint",
     "start": "backstage-cli package start --config ../../app-config.yaml",
-    "test": "backstage-cli package test"
+    "test": "backstage-cli package test --passWithNoTests --coverage"
   },
   "browserslist": {
     "production": [
