@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@support/shared-page";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
@@ -19,7 +19,6 @@ test.describe.serial("Test Adoption Insights", () => {
 
   test.describe
     .serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
-    let context;
     let page;
     let testHelper: TestHelper;
     let uiHelper: UIhelper;
@@ -28,18 +27,12 @@ test.describe.serial("Test Adoption Insights", () => {
     let catalogEntitiesFirstEntry: string[];
     let techdocsFirstEntry: string[];
 
-    // Shared setup
-    test.beforeAll(async ({ browser }) => {
-      context = await browser.newContext();
-      page = await context.newPage();
+    test.beforeAll(async ({ sharedPage }) => {
+      page = sharedPage;
       uiHelper = new UIhelper(page);
       testHelper = new TestHelper(page);
       await new Common(page).loginAsKeycloakUser();
       await uiHelper.goToPageUrl("/", "Welcome back!");
-    });
-
-    test.afterAll(async () => {
-      await context?.close();
     });
 
     test("Check UI navigation by nav bar when adoption-insights is enabled", async () => {
