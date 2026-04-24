@@ -2637,60 +2637,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-ocm-backend@npm:5.17.0":
-  version: 5.17.0
-  resolution: "@backstage-community/plugin-ocm-backend@npm:5.17.0"
-  dependencies:
-    "@backstage-community/plugin-ocm-common": "npm:^3.20.0"
-    "@backstage/backend-defaults": "npm:^0.16.0"
-    "@backstage/backend-openapi-utils": "npm:^0.6.7"
-    "@backstage/backend-plugin-api": "npm:^1.8.0"
-    "@backstage/catalog-model": "npm:^1.7.7"
-    "@backstage/errors": "npm:^1.2.7"
-    "@backstage/plugin-catalog-node": "npm:^2.1.0"
-    "@backstage/plugin-permission-common": "npm:^0.9.7"
-    "@kubernetes/client-node": "npm:1.4.0"
-    express: "npm:^4.18.2"
-    semver: "npm:^7.5.4"
-  checksum: 10c0/f6c820c2f1d85c2718e7e3d0dc6d272f8f542e04fb7c8a51925ab18f4ccce39737a23080cb28eb944501754d1a1cb355fcb27d2ed6991b6c0291cc5a4ecd9c75
-  languageName: node
-  linkType: hard
-
-"@backstage-community/plugin-ocm-common@npm:^3.20.0":
-  version: 3.20.0
-  resolution: "@backstage-community/plugin-ocm-common@npm:3.20.0"
-  peerDependencies:
-    "@backstage/plugin-permission-common": ^0.9.7
-  checksum: 10c0/c95e6b13a1ca3cd3bb0c745ca62d73acb52c0ad6622e55ec8aae919dc3fb19adb4f2c94aac6276303787b4c4ed06973ab8cf932d4722e8a5cd1dd96f60baacff
-  languageName: node
-  linkType: hard
-
-"@backstage-community/plugin-ocm@npm:5.16.0":
-  version: 5.16.0
-  resolution: "@backstage-community/plugin-ocm@npm:5.16.0"
-  dependencies:
-    "@backstage-community/plugin-ocm-common": "npm:^3.20.0"
-    "@backstage/catalog-model": "npm:^1.7.7"
-    "@backstage/core-components": "npm:^0.18.8"
-    "@backstage/core-plugin-api": "npm:^1.12.4"
-    "@backstage/errors": "npm:^1.2.7"
-    "@backstage/plugin-catalog-react": "npm:^2.1.0"
-    "@backstage/plugin-permission-react": "npm:^0.4.41"
-    "@backstage/plugin-search-react": "npm:^1.11.0"
-    "@backstage/theme": "npm:^0.7.2"
-    "@material-ui/core": "npm:^4.9.13"
-    "@material-ui/icons": "npm:^4.11.3"
-    "@mui/icons-material": "npm:^5.16.4"
-    react-use: "npm:^17.4.0"
-    semver: "npm:^7.5.4"
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: 6.0.0-beta.0 || ^6.3.0
-  checksum: 10c0/2efa642e84c0548081297abc9654280b5ab057d156174ef98971be5aa8f67ccf8cb2880d3b7ee2622a70063d36d3ad8a9c6751bedca36afaf523fb07bf996ebc
-  languageName: node
-  linkType: hard
-
 "@backstage-community/plugin-quay-common@npm:^1.19.0":
   version: 1.19.0
   resolution: "@backstage-community/plugin-quay-common@npm:1.19.0"
@@ -3300,7 +3246,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-openapi-utils@npm:^0.6.7, @backstage/backend-openapi-utils@npm:^0.6.8":
+"@backstage/backend-openapi-utils@npm:^0.6.8":
   version: 0.6.8
   resolution: "@backstage/backend-openapi-utils@npm:0.6.8"
   dependencies:
@@ -9718,7 +9664,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.16.4, @mui/icons-material@npm:^5.16.7, @mui/icons-material@npm:^5.17.1":
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.16.7, @mui/icons-material@npm:^5.17.1":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -18556,31 +18502,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"backstage-community-plugin-ocm-backend@workspace:wrappers/backstage-community-plugin-ocm-backend-dynamic":
-  version: 0.0.0-use.local
-  resolution: "backstage-community-plugin-ocm-backend@workspace:wrappers/backstage-community-plugin-ocm-backend-dynamic"
-  dependencies:
-    "@backstage-community/plugin-ocm-backend": "npm:5.17.0"
-    "@backstage/cli": "npm:0.36.0"
-    "@backstage/cli-defaults": "npm:0.1.0"
-    "@janus-idp/cli": "npm:3.7.0"
-    typescript: "npm:5.9.3"
-  languageName: unknown
-  linkType: soft
-
-"backstage-community-plugin-ocm@workspace:wrappers/backstage-community-plugin-ocm":
-  version: 0.0.0-use.local
-  resolution: "backstage-community-plugin-ocm@workspace:wrappers/backstage-community-plugin-ocm"
-  dependencies:
-    "@backstage-community/plugin-ocm": "npm:5.16.0"
-    "@backstage/cli": "npm:0.36.0"
-    "@backstage/cli-defaults": "npm:0.1.0"
-    "@janus-idp/cli": "npm:3.7.0"
-    "@mui/material": "npm:5.18.0"
-    typescript: "npm:5.9.3"
-  languageName: unknown
-  linkType: soft
-
 "backstage-community-plugin-quay@workspace:wrappers/backstage-community-plugin-quay":
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-quay@workspace:wrappers/backstage-community-plugin-quay"
@@ -23221,7 +23142,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:^4.14.0, express@npm:^4.17.1, express@npm:^4.17.3, express@npm:^4.18.2, express@npm:^4.22.0, express@npm:^4.22.1":
+"express@npm:^4.14.0, express@npm:^4.17.1, express@npm:^4.17.3, express@npm:^4.22.0, express@npm:^4.22.1":
   version: 4.22.1
   resolution: "express@npm:4.22.1"
   dependencies:
