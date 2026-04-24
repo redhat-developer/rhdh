@@ -34,6 +34,8 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
 
       // Always record — Playwright's recordVideo has no retain-on-failure mode
       // for manual contexts, so we record unconditionally and delete on success.
+      // Tracing is auto-started by Playwright (trace: "on" in config) — only
+      // startChunk/stopChunk is needed in _sharedTraceChunk for per-test traces.
       const context = await browser.newContext({
         recordVideo: {
           dir: videoDir,
@@ -41,15 +43,8 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
         },
       });
 
-      await context.tracing.start({
-        screenshots: true,
-        snapshots: true,
-        sources: false,
-      });
-
       await use(context);
 
-      await context.tracing.stop();
       await context.close();
 
       // Retain-on-failure: delete video files when all tests passed
