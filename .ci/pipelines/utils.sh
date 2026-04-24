@@ -324,7 +324,6 @@ apply_yaml_files() {
   # Create temporary directory for namespace-patched YAMLs (parallel-deployment safe)
   local tmpdir
   tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/apply-yaml-${project}-XXXXXX")
-  trap 'rm -rf "${tmpdir}"' RETURN
 
   # Copy and patch YAML files that need namespace substitution
   local files=(
@@ -390,6 +389,8 @@ apply_yaml_files() {
   else
     log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"
   fi
+
+  rm -rf "${tmpdir}"
 }
 
 deploy_test_backstage_customization_provider() {

@@ -40,11 +40,9 @@ helm::merge_values() {
   fi
 
   if [[ "$plugin_operation" == "merge" ]]; then
-    # Temp files only needed for the merge path; overwrite writes directly to final_file
     local step_1_file step_2_file
     step_1_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step1-XXXXXX.yaml")
     step_2_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step2-XXXXXX.yaml")
-    trap 'rm -f "${step_1_file}" "${step_2_file}"' RETURN
 
     # Step 1: Merge files, excluding the .global.dynamic.plugins key
     # Values from `diff_file` override those in `base_file`
@@ -65,6 +63,8 @@ helm::merge_values() {
     yq eval-all '
       select(fileIndex == 0) * select(fileIndex == 1) | del(.. | select(. == null))
     ' "${step_2_file}" "${step_1_file}" > "${final_file}"
+
+    rm -f "${step_1_file}" "${step_2_file}"
 
   elif [[ "$plugin_operation" == "overwrite" ]]; then
     yq eval-all '
