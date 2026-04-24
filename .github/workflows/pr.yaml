@@ -142,6 +142,14 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
 
+      - name: Upload coverage to Codecov
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
+        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.5.4
+        with:
+          flags: rhdh
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
       - name: Run Python tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v
