@@ -1,13 +1,5 @@
-// Worker-scoped fixtures that share a single BrowserContext and Page across
-// all tests in a test.describe.serial() block. Unlike manual browser.newContext(),
-// these fixtures integrate with Playwright's video recording and tracing.
-//
-// Usage:
-//   import { test, expect } from "@support/shared-page";
-//
-// Then use sharedPage in test.beforeAll and individual test bodies:
-//   test.beforeAll(async ({ sharedPage }) => { ... });
-//   test("foo", async ({ sharedPage }) => { ... });
+// Worker-scoped fixtures for test.describe.serial() blocks.
+// Usage: import { test, expect } from "@support/shared-page";
 
 import {
   test as baseTest,
@@ -27,6 +19,7 @@ type WorkerFixtures = {
   sharedPage: Page;
 };
 
+// Each Playwright worker runs in its own process, so this flag is per-worker.
 let workerHadFailure = false;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -39,6 +32,8 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
         "videos",
       );
 
+      // Always record — Playwright's recordVideo has no retain-on-failure mode
+      // for manual contexts, so we record unconditionally and delete on success.
       const context = await browser.newContext({
         recordVideo: {
           dir: videoDir,
@@ -74,10 +69,23 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
   ],
 
   _sharedTraceChunk: [
-    async ({ sharedContext }, use, testInfo) => {
+    async ({ sharedContext, sharedPage }, use, testInfo) => {
       await sharedContext.tracing.startChunk({ title: testInfo.title });
 
       await use();
+
+      const failed =
+        testInfo.status !== "passed" && testInfo.status !== "skipped";
+
+      if (failed) {
+        workerHadFailure = true;
+        const screenshotPath = testInfo.outputPath("failure.png");
+        await sharedPage.screenshot({ path: screenshotPath });
+        await testInfo.attach("screenshot", {
+          path: screenshotPath,
+          contentType: "image/png",
+        });
+      }
 
       const tracePath = testInfo.outputPath("trace.zip");
       await sharedContext.tracing.stopChunk({ path: tracePath });
@@ -86,10 +94,6 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
         path: tracePath,
         contentType: "application/zip",
       });
-
-      if (testInfo.status !== "passed" && testInfo.status !== "skipped") {
-        workerHadFailure = true;
-      }
     },
     { auto: true },
   ],

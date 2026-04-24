@@ -4,6 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
+import type { Page } from "@playwright/test";
 
 /* eslint-disable playwright/no-conditional-in-test */
 
@@ -19,7 +20,7 @@ test.describe.serial("Test Adoption Insights", () => {
 
   test.describe
     .serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
-    let page;
+    let page: Page;
     let testHelper: TestHelper;
     let uiHelper: UIhelper;
     let initialSearchCount: number;
@@ -217,6 +218,7 @@ test.describe.serial("Test Adoption Insights", () => {
             .locator("table.v5-MuiTable-root tbody tr")
             .first();
           const firstEntry = firstRow.locator("td").first();
+          // @ts-expect-error PanelState.firstRow is typed as string[] but reassigned to a Locator — pre-existing issue
           state[title].firstRow = firstRow;
 
           let headerTxt: string;
