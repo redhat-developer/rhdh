@@ -11,7 +11,7 @@ type GithubDiscoveryFixture = {
 
 const test = base.extend<GithubDiscoveryFixture>({
   catalogPage: async ({ page }, use) => {
-    await new Common(page).loginAsGithubUser();
+    await new Common(page).loginAsGuest();
     const catalog = new Catalog(page);
     await catalog.go();
     await use(catalog);
@@ -21,13 +21,6 @@ const test = base.extend<GithubDiscoveryFixture>({
 });
 
 test.describe("Github Discovery Catalog", () => {
-  test.beforeAll(async () => {
-    test.info().annotations.push({
-      type: "component",
-      description: "api",
-    });
-  });
-
   test(`Discover Organization's Catalog`, async ({
     catalogPage,
     githubApi,
