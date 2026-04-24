@@ -39,13 +39,13 @@ helm::merge_values() {
     return 1
   fi
 
-  # Use unique temp files per invocation to support parallel deployments
-  local step_1_file step_2_file
-  step_1_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step1-XXXXXX.yaml")
-  step_2_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step2-XXXXXX.yaml")
-  trap 'rm -f "${step_1_file}" "${step_2_file}"' RETURN
-
   if [[ "$plugin_operation" == "merge" ]]; then
+    # Temp files only needed for the merge path; overwrite writes directly to final_file
+    local step_1_file step_2_file
+    step_1_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step1-XXXXXX.yaml")
+    step_2_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step2-XXXXXX.yaml")
+    trap 'rm -f "${step_1_file}" "${step_2_file}"' RETURN
+
     # Step 1: Merge files, excluding the .global.dynamic.plugins key
     # Values from `diff_file` override those in `base_file`
     yq eval-all '

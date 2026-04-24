@@ -571,7 +571,7 @@ base_deployment() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
-  namespace::configure ${NAME_SPACE}
+  namespace::configure "${NAME_SPACE}"
 
   deploy_redis_cache "${NAME_SPACE}"
 
@@ -701,7 +701,6 @@ _run_parallel_deployments() {
   local rbac_pid=$!
   log::info "RBAC deployment started in background (PID: ${rbac_pid})"
 
-  log::section "Waiting for parallel deployments to complete..."
   local base_rc=0 rbac_rc=0
   wait "${base_pid}" || base_rc=$?
   wait "${rbac_pid}" || rbac_rc=$?
@@ -739,7 +738,7 @@ base_deployment_osd_gcp() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
-  namespace::configure ${NAME_SPACE}
+  namespace::configure "${NAME_SPACE}"
 
   deploy_redis_cache "${NAME_SPACE}"
 
