@@ -74,13 +74,13 @@ arches:
     name: cmake-filesystem
     evr: 3.26.5-3.el9_7
     sourcerpm: cmake-3.26.5-3.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/container-selinux-2.240.0-3.el9_7.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/container-selinux-2.240.0-4.el9_7.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 61087
-    checksum: sha256:31fcb6999f1cf55dff4e292bf587c9c5930b87e223b9927e77a07b70a82c0d69
+    size: 67528
+    checksum: sha256:046938d71701d37c85c827dd2d702fd188f43d9c39dff0e03809735bfd235c27
     name: container-selinux
-    evr: 4:2.240.0-3.el9_7
-    sourcerpm: container-selinux-2.240.0-3.el9_7.src.rpm
+    evr: 4:2.240.0-4.el9_7
+    sourcerpm: container-selinux-2.240.0-4.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/containers-common-1-135.el9_7.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 156886
@@ -3400,12 +3400,12 @@ arches:
     checksum: sha256:5cdbdb206f7c94f6a2e414651615e299bb78f535dc8023c243bbbb19809e53f6
     name: cmake
     evr: 3.26.5-3.el9_7
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/c/container-selinux-2.240.0-3.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/c/container-selinux-2.240.0-4.el9_7.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
-    size: 50047
-    checksum: sha256:0678644d26b304ea3fa5aeeef567a461da41c9f533bbc6d0052542b3cbb2f313
+    size: 56399
+    checksum: sha256:7562f9a73dd11c37a16f3397b898ed81cdc853b85421f07b50db1e281391445a
     name: container-selinux
-    evr: 4:2.240.0-3.el9_7
+    evr: 4:2.240.0-4.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/c/containers-common-1-135.el9_7.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
     size: 168194
@@ -5249,13 +5249,13 @@ arches:
     name: cmake-filesystem
     evr: 3.26.5-3.el9_7
     sourcerpm: cmake-3.26.5-3.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/container-selinux-2.240.0-3.el9_7.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/container-selinux-2.240.0-4.el9_7.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 61087
-    checksum: sha256:31fcb6999f1cf55dff4e292bf587c9c5930b87e223b9927e77a07b70a82c0d69
+    size: 67528
+    checksum: sha256:046938d71701d37c85c827dd2d702fd188f43d9c39dff0e03809735bfd235c27
     name: container-selinux
-    evr: 4:2.240.0-3.el9_7
-    sourcerpm: container-selinux-2.240.0-3.el9_7.src.rpm
+    evr: 4:2.240.0-4.el9_7
+    sourcerpm: container-selinux-2.240.0-4.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/containers-common-1-135.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 156920
@@ -8582,12 +8582,12 @@ arches:
     checksum: sha256:5cdbdb206f7c94f6a2e414651615e299bb78f535dc8023c243bbbb19809e53f6
     name: cmake
     evr: 3.26.5-3.el9_7
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/c/container-selinux-2.240.0-3.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/c/container-selinux-2.240.0-4.el9_7.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 50047
-    checksum: sha256:0678644d26b304ea3fa5aeeef567a461da41c9f533bbc6d0052542b3cbb2f313
+    size: 56399
+    checksum: sha256:7562f9a73dd11c37a16f3397b898ed81cdc853b85421f07b50db1e281391445a
     name: container-selinux
-    evr: 4:2.240.0-3.el9_7
+    evr: 4:2.240.0-4.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/c/containers-common-1-135.el9_7.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 168194
