@@ -11,7 +11,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 type TestFixtures = {
-  _sharedTraceChunk: void;
+  _sharedTestHook: void;
 };
 
 type WorkerFixtures = {
@@ -34,8 +34,7 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
 
       // Always record — Playwright's recordVideo has no retain-on-failure mode
       // for manual contexts, so we record unconditionally and delete on success.
-      // Tracing is auto-started by Playwright (trace: "on" in config) — only
-      // startChunk/stopChunk is needed in _sharedTraceChunk for per-test traces.
+      // Tracing is managed automatically by Playwright (trace: "on" in config).
       const context = await browser.newContext({
         recordVideo: {
           dir: videoDir,
@@ -63,16 +62,11 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
     { scope: "worker" },
   ],
 
-  _sharedTraceChunk: [
-    async ({ sharedContext, sharedPage }, use, testInfo) => {
-      await sharedContext.tracing.startChunk({ title: testInfo.title });
-
+  _sharedTestHook: [
+    async ({ sharedPage }, use, testInfo) => {
       await use();
 
-      const failed =
-        testInfo.status !== "passed" && testInfo.status !== "skipped";
-
-      if (failed) {
+      if (testInfo.status !== "passed" && testInfo.status !== "skipped") {
         workerHadFailure = true;
         try {
           const screenshotPath = testInfo.outputPath("failure.png");
@@ -85,14 +79,6 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
           // Page may have crashed — screenshot unavailable
         }
       }
-
-      const tracePath = testInfo.outputPath("trace.zip");
-      await sharedContext.tracing.stopChunk({ path: tracePath });
-
-      await testInfo.attach("trace", {
-        path: tracePath,
-        contentType: "application/zip",
-      });
     },
     { auto: true },
   ],
