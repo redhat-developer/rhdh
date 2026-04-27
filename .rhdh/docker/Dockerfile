@@ -22,17 +22,17 @@ USER 0
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
 RUN dnf install -q -y --allowerasing --nobest \
-  acl alternatives attr audit-libs basesystem bash binutils binutils-gold bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
+  acl alternatives attr audit-libs basesystem bash binutils binutils-gold brotli brotli-devel bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
   cracklib cracklib-dicts criu criu-libs crun crypto-policies crypto-policies-scripts curl-minimal cyrus-sasl-lib dbus dbus-broker dbus-common dbus-libs dejavu-sans-fonts \
   dmidecode dnf dnf-data elfutils-debuginfod-client elfutils-default-yama-scope elfutils-libelf elfutils-libs emacs-filesystem environment-modules expat file-libs filesystem \
   findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
   glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
   ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
-  libacl libarchive libassuan libattr libblkid libbpf libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libacl libarchive libassuan libattr libblkid libbpf libbrotli libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
-  ncurses ncurses-base ncurses-libs nettle npth nss_wrapper-libs openldap \
+  ncurses ncurses-base ncurses-libs nettle nodejs nodejs-devel nodejs-docs nodejs-full-i18n nodejs-libs nodejs-nodemon nodejs-packaging npm npth nss_wrapper-libs openldap \
   openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre pcre2 pcre2-syntax \
   perl perl-AutoLoader perl-B perl-base perl-Carp perl-Class-Struct perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-DynaLoader perl-Encode perl-Errno perl-Error \
   perl-Exporter perl-Fcntl perl-File-Basename perl-File-Find perl-File-Path perl-File-stat perl-File-Temp perl-FileHandle perl-Getopt-Long perl-Getopt-Std perl-Git perl-HTTP-Tiny \
@@ -92,6 +92,13 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
+
+# Using cachi2 env vars:
+#   export YARN_ENABLE_GLOBAL_CACHE=false
+#   export YARN_ENABLE_IMMUTABLE_CACHE=false
+#   export YARN_ENABLE_MIRROR=true
+#   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
+RUN cat /cachi2/cachi2.env; echo; find /cachi2/output/deps/yarn/*
 
 RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
