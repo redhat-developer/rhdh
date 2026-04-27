@@ -152,6 +152,17 @@ RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plu
 
 WORKDIR $CONTAINER_SOURCE
 
+# Techdocs: Installing Python dependencies and building the techdocs venv.
+# Prevents duplicating the same dependencies in the final minimal image.
+# hadolint ignore=DL3013,DL3041,SC2086
+RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
+  python3.11 -m venv /opt/techdocs-venv && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
+  /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
+  /opt/techdocs-venv/bin/mkdocs --version && \
+  rm -rf python/ /opt/techdocs-venv/bin/pip && \
+  dnf clean all
+
 # Stage 4 - Build the actual backend image and install production dependencies
 # Upstream only
 FROM skeleton AS cleanup
@@ -201,17 +212,6 @@ RUN \
   # reset npm config to the default registry and absolute path to .pem file
   npm config set registry=https://registry.npmjs.org/ && \
   npm config set cafile /opt/app-root/src/registry-ca.pem
-
-# Techdocs: Installing Python dependencies and building the techdocs venv.
-# Prevents duplicating the same dependencies in the final minimal image.
-# hadolint ignore=DL3013,DL3041,SC2086
-RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
-  python3.11 -m venv /opt/techdocs-venv && \
-  /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
-  /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
-  /opt/techdocs-venv/bin/mkdocs --version && \
-  rm -rf python/ /opt/techdocs-venv/bin/pip && \
-  dnf clean all
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
