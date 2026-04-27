@@ -87,7 +87,9 @@ initiate_operator_deployments_osd_gcp() {
   # Merge base values with OSD-GCP diff file, replace {{inherit}} with explicit versions,
   # then create dynamic plugins ConfigMap
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-  fix_ghcr_oci_urls_for_osd_gcp "/tmp/merged-values_showcase_OSD-GCP.yaml"
+  fix_ghcr_oci_urls_for_osd_gcp "/tmp/merged-values_showcase_OSD-GCP.yaml" || return 1
+  # Dedup plugins after sed rewrite (base {{inherit}} entries become identical to diff @sha256 entries)
+  yq -i '.global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)' "/tmp/merged-values_showcase_OSD-GCP.yaml"
   config::create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR}" "/tmp/configmap-dynamic-plugins.yaml"
 
@@ -107,7 +109,9 @@ initiate_operator_deployments_osd_gcp() {
   # Merge RBAC values with OSD-GCP diff file, replace {{inherit}} with explicit versions,
   # then create dynamic plugins ConfigMap
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-  fix_ghcr_oci_urls_for_osd_gcp "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
+  fix_ghcr_oci_urls_for_osd_gcp "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" || return 1
+  # Dedup plugins after sed rewrite (base {{inherit}} entries become identical to diff @sha256 entries)
+  yq -i '.global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)' "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
   config::create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 

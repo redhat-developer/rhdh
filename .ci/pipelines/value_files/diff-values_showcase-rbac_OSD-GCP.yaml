@@ -12,7 +12,7 @@ global:
     # does not contain dynamic-plugins.default.yaml and the catalog index mechanism
     # is not available, so {{inherit}} cannot resolve. All plugins must use explicit versions.
     # The {{inherit}} tags in the base file are replaced with explicit versions by
-    # replace_inherit_with_explicit_versions() in ocp-operator.sh after merging.
+    # fix_ghcr_oci_urls_for_osd_gcp() in ocp-operator.sh after merging.
     includes: []
 
     plugins:
