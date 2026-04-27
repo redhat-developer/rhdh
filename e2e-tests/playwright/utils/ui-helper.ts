@@ -248,7 +248,7 @@ export class UIhelper {
     await this.openProfileDropdown();
     await this.clickLink(
       // TODO: RHDHBUGS-2552 - Strings not getting translated
-      // t["plugin.global-header"][lang]["profile.myProfile"],
+      // "My profile",
       "My profile",
     );
   }
@@ -868,26 +868,39 @@ export class UIhelper {
     await expect(tooltip).toBeVisible();
   }
 
+  // Keep in sync when adding new locales
+  private static readonly quickstartHideLabel = {
+    en: "Hide",
+    de: "Ausblenden",
+    es: "Ocultar",
+    fr: "Cacher",
+    it: "Nascondi",
+    ja: "非表示",
+  };
+
+  private getQuickstartHideButton() {
+    const label =
+      UIhelper.quickstartHideLabel[lang] ?? UIhelper.quickstartHideLabel["en"];
+    return this.page.getByRole("button", { name: label });
+  }
+
   /**
    * Hides the Quick Start panel if it is currently visible.
    * This is useful in test setup to ensure a clean state without the Quick Start overlay.
    */
   async hideQuickstartIfVisible(): Promise<void> {
-    const quickstartHideButton = this.page.getByRole("button", {
-      name: t["plugin.quickstart"][lang]["footer.hide"],
-    });
+    const quickstartHideButton = this.getQuickstartHideButton();
     if (await quickstartHideButton.isVisible()) {
       await quickstartHideButton.click();
-      // Wait for the quickstart overlay to be fully removed from the page
-      // to prevent it from intercepting pointer events on other elements
       await quickstartHideButton.waitFor({ state: "hidden", timeout: 5000 });
     }
   }
 
   async openQuickstartIfHidden(): Promise<void> {
     const quickstartHideButton = this.page.getByRole("button", {
-      name: t["plugin.quickstart"][lang]["footer.hide"],
+      name: "Hide",
     });
+
     const progressBars = this.page.getByTestId("progress");
     await expect(progressBars).toHaveCount(0);
 

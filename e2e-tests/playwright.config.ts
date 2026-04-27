@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import type { ReporterDescription } from "@playwright/test";
 import { PW_PROJECT } from "./playwright/projects";
 
 process.env.JOB_NAME = process.env.JOB_NAME || "";
@@ -60,10 +61,17 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: 3,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  // Coverage reporter (RHIDP-13243) is appended only when COLLECT_COVERAGE=true;
+  // otherwise it is not registered at all and the default reporters run alone.
   reporter: [
     ["html"],
     ["list"],
     ["junit", { outputFile: process.env.JUNIT_RESULTS || "junit-results.xml" }],
+    ...(process.env.COLLECT_COVERAGE === "true"
+      ? ([
+          ["./playwright/support/coverage/reporter.ts"],
+        ] satisfies ReporterDescription[])
+      : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -270,8 +278,6 @@ export default defineConfig({
         locale: "de",
       },
       testMatch: [
-        "**/playwright/e2e/extensions.spec.ts",
-        "**/playwright/e2e/default-global-header.spec.ts",
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
@@ -284,8 +290,6 @@ export default defineConfig({
         locale: "es",
       },
       testMatch: [
-        "**/playwright/e2e/extensions.spec.ts",
-        "**/playwright/e2e/default-global-header.spec.ts",
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
@@ -298,8 +302,6 @@ export default defineConfig({
         locale: "fr",
       },
       testMatch: [
-        "**/playwright/e2e/extensions.spec.ts",
-        "**/playwright/e2e/default-global-header.spec.ts",
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
@@ -312,8 +314,6 @@ export default defineConfig({
         locale: "it",
       },
       testMatch: [
-        "**/playwright/e2e/extensions.spec.ts",
-        "**/playwright/e2e/default-global-header.spec.ts",
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         // TODO: RHDHBUGS-2592 - Custom theme spec is not working
         // "**/playwright/e2e/custom-theme.spec.ts",
@@ -327,8 +327,6 @@ export default defineConfig({
         locale: "ja",
       },
       testMatch: [
-        "**/playwright/e2e/extensions.spec.ts",
-        "**/playwright/e2e/default-global-header.spec.ts",
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
