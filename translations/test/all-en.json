@@ -1,0 +1,77 @@
+{
+  "core-components": {
+    "en": {
+      "signIn.title": "Sign In",
+      "signIn.guestProvider.enter": "Enter",
+      "oauthRequestDialog.login": "Log in"
+    }
+  },
+  "user-settings": {
+    "en": {
+      "sidebarTitle": "Settings",
+      "settingsLayout.title": "Settings",
+      "languageToggle.title": "Language",
+      "languageToggle.description": "Change the language",
+      "themeToggle.title": "Theme",
+      "themeToggle.select": "Select {{theme}}",
+      "signOutMenu.title": "Sign Out",
+      "profileCard.title": "Profile",
+      "appearanceCard.title": "Appearance",
+      "identityCard.title": "Backstage Identity",
+      "identityCard.userEntity": "User Entity",
+      "identityCard.ownershipEntities": "Ownership Entities",
+      "pinToggle.title": "Pin Sidebar",
+      "pinToggle.description": "Prevent the sidebar from collapsing",
+      "pinToggle.ariaLabelTitle": "Pin Sidebar Switch",
+      "providerSettingsItem.buttonTitle.signIn": "Sign in",
+      "providerSettingsItem.title.signIn": "Sign in to {{title}}"
+    }
+  },
+  "catalog": {
+    "en": {
+      "indexPage.title": "{{orgName}} Catalog"
+    }
+  },
+  "scaffolder": {
+    "en": {
+      "templateListPage.contentHeader.registerExistingButtonTitle": "Import an existing Git repository"
+    }
+  },
+  "catalog-import": {
+    "en": {
+      "stepInitAnalyzeUrl.nextButtonText": "Analyze",
+      "stepReviewLocation.refresh": "Refresh",
+      "stepReviewLocation.import": "Import",
+      "stepFinishImportLocation.backButtonText": "Register another",
+      "stepFinishImportLocation.locations.viewButtonText": "View Component"
+    }
+  },
+  "catalog-react": {
+    "en": {
+      "entityKindPicker.title": "Kind"
+    }
+  },
+  "search-react": {
+    "en": {
+      "searchBar.title": "Search"
+    }
+  },
+  "rhdh": {
+    "en": {
+      "menuItem.home": "Home",
+      "menuItem.catalog": "Catalog",
+      "menuItem.apis": "APIs",
+      "menuItem.learningPaths": "Learning Paths",
+      "menuItem.selfService": "Self-service",
+      "menuItem.administration": "Administration",
+      "menuItem.docs": "Docs",
+      "signIn.page.title": "Select a sign-in method",
+      "signIn.providers.github.message": "Sign in using GitHub",
+      "signIn.providers.gitlab.message": "Sign in using GitLab",
+      "signIn.providers.microsoft.message": "Sign in using Microsoft",
+      "signIn.providers.oidc.message": "Sign in using OIDC",
+      "app.search.title": "Search",
+      "catalog.entityPage.overview.title": "Overview"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Jira: RHIDP-13232 — Unit test coverage baseline for main and release branches
+# Feature umbrella: RHDHPLAN-851, Epic: RHIDP-13242
+#
+# Runs the full test suite on push to main/release-* and uploads coverage to
+# Codecov. This establishes the project-level baseline that Codecov uses to
+# calculate coverage deltas in PRs (via the `rhdh` flag and carryforward).
+#
+# PR-level coverage is handled by the upload step in pr.yaml; this workflow
+# only covers push events so the two never duplicate work.
+
+name: Coverage Baseline
+
+on:
+  push:
+    branches:
+      - main
+      - release-1.9
+      - release-1.1[0-9]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: Unit Test Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup local Turbo cache
+        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        with:
+          cache-prefix: turbogha-coverage
+
+      - name: Use app-config.example.yaml
+        run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
+
+      - name: Install dependencies
+        uses: backstage/actions/yarn-install@2cd6978b476cbdc39fec48346f8b6ca13199dd6a # v0.7.8
+        with:
+          cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
+
+      - name: Run tests with coverage
+        run: yarn run test --continue
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          flags: rhdh
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false

@@ -91,6 +91,7 @@ export default [
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",
+      "coverage/**",
       ".local-test/**",
       ".prettierrc.cjs",
     ],

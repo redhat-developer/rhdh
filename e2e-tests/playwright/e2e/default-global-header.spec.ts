@@ -33,11 +33,7 @@ test.describe("Default Global Header", () => {
   test("Verify that global header and default header components are visible", async ({
     page,
   }) => {
-    await expect(
-      page.getByPlaceholder(
-        t["plugin.global-header"][lang]["search.placeholder"],
-      ),
-    ).toBeVisible();
+    await expect(page.getByPlaceholder("Search...")).toBeVisible();
     await uiHelper.verifyLink({
       label: "Self-service",
     });
@@ -45,7 +41,7 @@ test.describe("Default Global Header", () => {
     const globalHeader = page.getByRole("navigation").first();
     const helpDropdownButton = globalHeader
       .getByRole("button", {
-        name: t["plugin.global-header"][lang]["help.tooltip"],
+        name: "Help",
       })
       .or(
         globalHeader.getByRole("button").filter({
@@ -56,7 +52,7 @@ test.describe("Default Global Header", () => {
 
     await expect(helpDropdownButton).toBeVisible();
     await uiHelper.verifyLink({
-      label: t["plugin.global-header"][lang]["notifications.title"],
+      label: "Notifications",
     });
     expect(await uiHelper.isBtnVisible("rhdh-qe-2")).toBeTruthy();
   });
@@ -82,7 +78,7 @@ test.describe("Default Global Header", () => {
 
     const helpDropdownButton = globalHeader
       .getByRole("button", {
-        name: t["plugin.global-header"][lang]["help.tooltip"],
+        name: "Help",
       })
       .or(
         globalHeader.getByRole("button").filter({
@@ -94,10 +90,7 @@ test.describe("Default Global Header", () => {
     await helpDropdownButton.click();
     await page.waitForTimeout(500);
 
-    await uiHelper.verifyTextVisible(
-      t["plugin.global-header"][lang]["help.supportTitle"],
-      true,
-    );
+    await uiHelper.verifyTextVisible("Support", true);
 
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
@@ -116,17 +109,15 @@ test.describe("Default Global Header", () => {
     await uiHelper.openProfileDropdown();
     await uiHelper.verifyLinkVisible(
       // TODO: RHDHBUGS-2552 - Strings not getting translated
-      // t["plugin.global-header"][lang]["profile.settings"],
+      // "Settings",
       "Settings",
     );
-    await uiHelper.verifyTextVisible(
-      t["plugin.global-header"][lang]["profile.signOut"],
-    );
+    await uiHelper.verifyTextVisible("Sign out");
 
     await page
       .getByRole("menuitem", {
         // TODO: RHDHBUGS-2552 - Strings not getting translated
-        // t["plugin.global-header"][lang]["profile.settings"],
+        // "Settings",
         name: "Settings",
       })
       .click();
@@ -145,17 +136,12 @@ test.describe("Default Global Header", () => {
 
     await uiHelper.openProfileDropdown();
     // Scope sign-out search to the profile menu (role=menu)
-    await page
-      .getByRole("menu")
-      .getByText(t["plugin.global-header"][lang]["profile.signOut"])
-      .click();
+    await page.getByRole("menu").getByText("Sign out").click();
     await uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
   });
 
   test("Verify Search bar behaves as expected", async ({ page }) => {
-    const searchBar = page.getByPlaceholder(
-      t["plugin.global-header"][lang]["search.placeholder"],
-    );
+    const searchBar = page.getByPlaceholder("Search...");
     await searchBar.click();
     await searchBar.fill("test query term");
     expect(await uiHelper.isBtnVisibleByTitle("Clear")).toBeTruthy();
@@ -177,15 +163,15 @@ test.describe("Default Global Header", () => {
       .getByRole("navigation")
       .first()
       .getByRole("link", {
-        name: t["plugin.global-header"][lang]["notifications.title"],
+        name: "Notifications",
       });
 
     await uiHelper.clickLink({
-      ariaLabel: t["plugin.global-header"][lang]["notifications.title"],
+      ariaLabel: "Notifications",
     });
     await uiHelper.verifyHeading(
       // TODO: RHDHBUGS-2585 - String not getting translated
-      // t["plugin.global-header"][lang]["notifications.title"],
+      // "Notifications",
       "Notifications",
     );
     await uiHelper.markAllNotificationsAsReadIfVisible();
