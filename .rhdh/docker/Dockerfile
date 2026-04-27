@@ -1,6 +1,6 @@
 # THIS IS USED BY Konflux builds >= 1.6
 #
-# Copyright (c) 2023-2024 Red Hat, Inc.
+# Copyright (c) Red Hat, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -22,13 +22,13 @@ USER 0
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
 RUN dnf install -q -y --allowerasing --nobest \
-  acl alternatives attr audit-libs basesystem bash binutils binutils-gold brotli brotli-devel bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
+  acl alternatives attr audit-libs basesystem bash binutils binutils-gold bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
   cracklib cracklib-dicts criu criu-libs crun crypto-policies crypto-policies-scripts curl-minimal cyrus-sasl-lib dbus dbus-broker dbus-common dbus-libs dejavu-sans-fonts \
   dmidecode dnf dnf-data elfutils-debuginfod-client elfutils-default-yama-scope elfutils-libelf elfutils-libs emacs-filesystem environment-modules expat file-libs filesystem \
   findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
   glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
   ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
-  libacl libarchive libassuan libattr libblkid libbpf libbrotli libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libacl libarchive libassuan libattr libblkid libbpf libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
@@ -93,13 +93,6 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
-# Using cachi2 env vars:
-#   export YARN_ENABLE_GLOBAL_CACHE=false
-#   export YARN_ENABLE_IMMUTABLE_CACHE=false
-#   export YARN_ENABLE_MIRROR=true
-#   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
-RUN cat /cachi2/cachi2.env; echo; find /cachi2/output/deps/yarn/*
-
 RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); \
@@ -122,10 +115,8 @@ RUN echo "=== TWEAK .yarnrc.yml ==="; \
   cat .yarnrc.yml
 
 RUN git config --global --add safe.directory ./
-# Upstream only
-# RUN rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
-# Downstream only - replace midstream build-metadata.json with the version from downstream (where we include the midstream SHA)
+# replace midstream build-metadata.json with the version from downstream (where we include the midstream SHA)
 COPY packages/app/src/build-metadata.json ./packages/app/src/
 
 # hadolint ignore=DL3059,DL4006,SC2086
@@ -166,22 +157,9 @@ RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plu
 
 WORKDIR $CONTAINER_SOURCE
 
-# Downstream only - clean up dynamic plugins sources:
+# Clean up dynamic plugins sources:
 # Only keep the dist sub-folder in the dynamic-plugins folder
 RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
-
-# Stage 4 - Build the actual backend image and install production dependencies
-# Upstream only
-# FROM skeleton AS cleanup
-
-# Upstream only - copy the install dependencies from the build stage and context
-# COPY --from=build $CONTAINER_SOURCE/yarn.lock \
-#   $CONTAINER_SOURCE/package.json \
-#   ./
-# COPY --from=build \
-#   $CONTAINER_SOURCE/packages/backend/dist/skeleton.tar.gz \
-#   $CONTAINER_SOURCE/packages/backend/dist/bundle.tar.gz \
-#   ./packages/backend/dist/
 
 # unpack and remove tarballs
 ENV TARBALL_PATH=./packages/backend/dist
@@ -197,7 +175,16 @@ COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 # Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
 # TODO is this still needed? maintaining it over time will be a chore if the .so files change
 RUN echo "=== lib64 symlinks ==="; \
-  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
+  ARCH=$(uname -m); \
+  if [ "$ARCH" = "x86_64" ]; then \
+    LD_LINUX="ld-linux-x86-64.so.2"; \
+  elif [ "$ARCH" = "aarch64" ]; then \
+    LD_LINUX="ld-linux-aarch64.so.1"; \
+  else \
+    echo "Unsupported architecture: $ARCH"; \
+    exit 1; \
+  fi; \
+  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 $LD_LINUX libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
   ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
   ls -l /usr/lib64/${l%.*}; \
   done
@@ -238,7 +225,7 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
   /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
   /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
   /opt/techdocs-venv/bin/mkdocs --version && \
-  rm -rf python/ /opt/techdocs-venv/bin/pip && \
+  rm -rf python/  /opt/techdocs-venv/bin/pip && \
   dnf clean all
 
 # Stage 5 - Build the runner image
@@ -254,7 +241,7 @@ WORKDIR $CONTAINER_SOURCE/
 #   export PIP_FIND_LINKS=/cachi2/output/deps/pip
 #   export PIP_NO_INDEX=true
 
-# Runtime Python for techdocs (venv built in build stage; mkdocs on PATH via venv)
+# Runtime Python for techdocs (interpreter + skopeo only; mkdocs lives in the pre-built venv from techdocs stage)
 RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
@@ -264,11 +251,10 @@ RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/docker/policy.json /etc/containers/policy.json
 
-# Upstream only - copy from cleanup stage
-# COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
-# Downstream only - copy from build, not cleanup stage
+# App tree and techdocs venv from build stage (no compiler/devel RPMs in final layer)
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
+
 ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
@@ -298,7 +284,7 @@ ENV NPM_CONFIG_ignore-scripts='true'
 
 # gGVM6sYRK0D0ndVX22BOtS7NRcxPej8t is key for dev environment
 # Use production key in stable release-1.yy branch; use dev key in main for CI/next builds
-ENV SEGMENT_WRITE_KEY=mUr49Tkld5bj1lFFPxxqHrAzkQMRINvF
+ENV SEGMENT_WRITE_KEY=gGVM6sYRK0D0ndVX22BOtS7NRcxPej8t
 ENV SEGMENT_TEST_MODE=false
 
 # RHIDP-2217: corporate proxy support (configured using 'global-agent' for 'node-fetch' calls and 'undici' for 'fetch' calls)
@@ -313,7 +299,7 @@ ENV GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE=''
 # Users can still override this when running the image.
 ENV NO_PROXY='localhost,127.0.0.1'
 
-# The `--no-node-snapshot` node option enables the usage of the backstage scaffolder on nodejs 20
+# The `--no-node-snapshot` node option enables the usage of the backstage scaffolder on nodejs 20+
 # https://github.com/backstage/backstage/issues/20661
 
 # Copy instrumentation needed for surfacing metrics
