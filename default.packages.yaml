@@ -21,6 +21,9 @@ packages:
   - package: '@red-hat-developer-hub/backstage-plugin-extensions' # tech-preview
   - package: '@red-hat-developer-hub/backstage-plugin-extensions-backend' # tech-preview
   - package: '@red-hat-developer-hub/backstage-plugin-quickstart' # generally-available
+  - package: '@red-hat-developer-hub/backstage-plugin-scorecard' # tech-preview
+  - package: '@red-hat-developer-hub/backstage-plugin-scorecard-backend' # tech-preview
+  - package: '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf' # tech-preview
   disabled:
   - package: '@backstage-community/plugin-acr' # tech-preview
   - package: '@backstage-community/plugin-catalog-backend-module-keycloak' # generally-available
