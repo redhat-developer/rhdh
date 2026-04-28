@@ -70,7 +70,7 @@ ignore:
 
 # Flags let us view coverage per area in the Codecov dashboard.
 # - rhdh: the main monorepo Jest/Backstage CLI run
-# - install-dynamic-plugins: the Vitest-based install script coverage
+# - install-dynamic-plugins: the pytest-based install script coverage
 # Additional flags (overlays-e2e-*, community-*) will be introduced by
 # the respective Stories under RHIDP-11866 and RHIDP-11865.
 flag_management:
@@ -95,5 +95,5 @@ flag_management:
       carryforward: true
     - name: install-dynamic-plugins
       paths:
-        - scripts/install-dynamic-plugins/src/**
+        - scripts/install-dynamic-plugins/*.py
       carryforward: true

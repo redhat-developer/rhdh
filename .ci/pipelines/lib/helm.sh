@@ -32,8 +32,6 @@ helm::merge_values() {
   local base_file=$2
   local diff_file=$3
   local final_file=$4
-  local step_1_file="/tmp/step-without-plugins.yaml"
-  local step_2_file="/tmp/step-only-plugins.yaml"
 
   if [[ -z "$plugin_operation" || -z "$base_file" || -z "$diff_file" || -z "$final_file" ]]; then
     log::error "Missing required parameters"
@@ -42,6 +40,10 @@ helm::merge_values() {
   fi
 
   if [[ "$plugin_operation" == "merge" ]]; then
+    local step_1_file step_2_file
+    step_1_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step1-XXXXXX.yaml")
+    step_2_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step2-XXXXXX.yaml")
+
     # Step 1: Merge files, excluding the .global.dynamic.plugins key
     # Values from `diff_file` override those in `base_file`
     yq eval-all '
@@ -61,6 +63,8 @@ helm::merge_values() {
     yq eval-all '
       select(fileIndex == 0) * select(fileIndex == 1) | del(.. | select(. == null))
     ' "${step_2_file}" "${step_1_file}" > "${final_file}"
+
+    rm -f "${step_1_file}" "${step_2_file}"
 
   elif [[ "$plugin_operation" == "overwrite" ]]; then
     yq eval-all '
