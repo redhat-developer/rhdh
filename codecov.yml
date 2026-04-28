@@ -1,0 +1,99 @@
+# Codecov configuration for redhat-developer/rhdh
+# Reference: https://docs.codecov.com/docs/codecov-yaml
+#
+# Jira: RHIDP-13230 — Configure Codecov foundation for rhdh repo
+# Feature umbrella: RHDHPLAN-851
+#
+# Pattern: modeled after the ROSA CLI CodeCov integration (informational
+# checks while coverage matures), plus the RHDH Test Strategy Proposal
+# scope defined in Section 5.
+
+codecov:
+  require_ci_to_pass: false
+  notify:
+    wait_for_ci: true
+
+# Files and paths included in coverage measurement.
+# Keep this list aligned with the Jest collectCoverageFrom that will land
+# with RHIDP-13232 so there is no drift between the coverage collector
+# and the Codecov report filter.
+coverage:
+  precision: 2
+  round: down
+  range: "40...80"
+
+  status:
+    # Project-level check — coverage of the whole repo.
+    # Informational while the suite matures; enforcement is activated in
+    # a later Story (progressive thresholds per Strategy Proposal).
+    project:
+      default:
+        target: auto
+        threshold: 100%
+        informational: true
+        only_pulls: false
+    # Patch-level check — coverage of the lines added/changed in the PR.
+    # Informational initially; becomes blocking at 1.10.x maturity and
+    # is raised again at release 2.1 (see RHIDP-13232 progressive thresholds).
+    patch:
+      default:
+        target: auto
+        threshold: 100%
+        informational: true
+
+# Paths included in the Codecov report. Must match the Jest
+# collectCoverageFrom scope.
+# Upstream Test Strategy Proposal (Google Doc) Section 5 defines these exact
+# paths for RHDH-owned source.
+comment:
+  layout: "header, diff, flags, components, footer"
+  behavior: default
+  require_changes: false
+  show_carryforward_flags: true
+
+ignore:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/index.ts"
+  - "**/__fixtures__/**"
+  - "**/__tests__/**"
+  - "**/__mocks__/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/node_modules/**"
+  - "e2e-tests/**"
+  - "dynamic-plugins/wrappers/**"
+  - ".claude/**"
+  - "docs/**"
+
+# Flags let us view coverage per area in the Codecov dashboard.
+# - rhdh: the main monorepo Jest/Backstage CLI run
+# - install-dynamic-plugins: the pytest-based install script coverage
+# Additional flags (overlays-e2e-*, community-*) will be introduced by
+# the respective Stories under RHIDP-11866 and RHIDP-11865.
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 100%
+      - type: patch
+        target: auto
+        threshold: 100%
+
+  individual_flags:
+    - name: rhdh
+      paths:
+        - plugins/*/src/**
+        - packages/app/src/**
+        - packages/backend/src/**
+        - packages/plugin-utils/src/**
+        - dynamic-plugins/_utils/src/**
+      carryforward: true
+    - name: install-dynamic-plugins
+      paths:
+        - scripts/install-dynamic-plugins/*.py
+      carryforward: true

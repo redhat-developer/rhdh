@@ -4,9 +4,12 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { Policy } from "../../../support/api/rbac-api-structures";
+import { OrchestratorRbacHelper } from "../../../support/api/orchestrator-rbac-helper";
 import { Response } from "../../../support/pages/rbac";
+import { Catalog } from "../../../support/pages/catalog";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
+import { TEST_USER } from "../../../data/rbac-constants";
 
 /**
  * Orchestrator Entity-Workflow RBAC Tests
@@ -19,9 +22,16 @@ import { JOB_NAME_PATTERNS } from "../../../utils/constants";
  * Important: These tests should run in the SHOWCASE_RBAC project since
  * they require permission.enabled: true.
  *
+ * Note on parallelism: This file and orchestrator-rbac.spec.ts both modify
+ * RBAC state for TEST_USER. While test.describe.serial ensures tests within
+ * each file run serially, the files themselves may run on different workers.
+ * Each test block uses its own OrchestratorRbacHelper instance which saves
+ * and restores only the policies it removes, mitigating cross-file interference.
+ *
  * Templates used (from catalog locations):
  * - greeting_w_component.yaml: name=greetingComponent, title="Greeting Test Picker" - HAS annotation
  */
+
 test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
   test.fixme(() => skipIfJobName(JOB_NAME_PATTERNS.OPERATOR));
@@ -40,6 +50,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     let uiHelper: UIhelper;
     let page: Page;
     let apiToken: string;
+    let orchestratorRbacHelper: OrchestratorRbacHelper;
     const roleName = "role:default/catalogSuperuserNoWorkflowTest";
 
     test.beforeAll(async ({ browser }, testInfo) => {
@@ -51,9 +62,17 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       apiToken = await RhdhAuthApiHack.getToken(page);
     });
 
+    test("Setup: Remove any pre-existing generic orchestrator.workflow permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      orchestratorRbacHelper = new OrchestratorRbacHelper(rbacApi);
+      await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
+        TEST_USER,
+      );
+    });
+
     test("Setup: Create role with catalog+scaffolder but NO orchestrator permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = [TEST_USER];
 
       const role = {
         memberReferences: members,
@@ -128,14 +147,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading(/Catalog|All/);
-      await uiHelper.selectMuiBox("Kind", "Template");
+      // Use openCatalogSidebar which handles navigation, kind selection, and waits for table
+      await uiHelper.openCatalogSidebar("Template");
 
-      // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
-      await page
-        .getByRole("textbox", { name: "Search" })
-        .fill("Greeting Test Picker");
+      // Use Catalog helper to search (waits for API response)
+      const catalog = new Catalog(page);
+      await catalog.search("Greeting Test Picker");
+
       const templateLink = page.getByRole("link", {
         name: /Greeting Test Picker/i,
       });
@@ -225,7 +243,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
           await rbacApi.deleteRole(roleNameForApi);
         }
       } catch (error) {
-        console.error("Error during cleanup:", error);
+        console.error("Error during role cleanup:", error);
+      } finally {
+        try {
+          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions();
+        } catch (restoreError) {
+          console.error("Error restoring orchestrator policies:", restoreError);
+        }
       }
     });
   });
@@ -237,6 +261,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     let uiHelper: UIhelper;
     let page: Page;
     let apiToken: string;
+    let orchestratorRbacHelper: OrchestratorRbacHelper;
     const roleName = "role:default/catalogSuperuserWithWorkflowTest";
 
     test.beforeAll(async ({ browser }, testInfo) => {
@@ -248,9 +273,17 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       apiToken = await RhdhAuthApiHack.getToken(page);
     });
 
+    test("Setup: Remove any pre-existing generic orchestrator.workflow permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      orchestratorRbacHelper = new OrchestratorRbacHelper(rbacApi);
+      await orchestratorRbacHelper.removeGenericOrchestratorPermissions(
+        TEST_USER,
+      );
+    });
+
     test("Setup: Create role with catalog+scaffolder+orchestrator permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      const members = ["user:default/rhdh-qe"];
+      const members = [TEST_USER];
 
       const role = {
         memberReferences: members,
@@ -325,14 +358,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading(/Catalog|All/);
-      await uiHelper.selectMuiBox("Kind", "Template");
+      // Use openCatalogSidebar which handles navigation, kind selection, and waits for table
+      await uiHelper.openCatalogSidebar("Template");
 
-      // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
-      await page
-        .getByRole("textbox", { name: "Search" })
-        .fill("Greeting Test Picker");
+      // Use Catalog helper to search (waits for API response)
+      const catalog = new Catalog(page);
+      await catalog.search("Greeting Test Picker");
+
       const templateLink = page.getByRole("link", {
         name: /Greeting Test Picker/i,
       });
@@ -346,6 +378,8 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Launch template and run workflow - verify success", async () => {
+      test.setTimeout(150_000); // 2.5 minutes - workflow execution can take longer than default
+
       // Navigate to Self-service page via global header link
       await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await uiHelper.verifyHeading("Self-service");
@@ -367,15 +401,25 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
-      // Wait for task to finish — either success or 409 Conflict (catalog entity already registered
-      // from a prior run). Both are acceptable.
+      // Verify we navigated to the task execution page
+      await expect(page).toHaveURL(/\/create\/tasks\//, { timeout: 30000 });
+
+      // Wait for task to finish — either success, 409 Conflict (catalog entity already registered
+      // from a prior run), or failure. Success and conflict are acceptable outcomes.
       const completed = page.getByText(/Completed|succeeded|finished/i);
       const conflictError = page.getByText(/409 Conflict/i);
       const startOver = page.getByRole("button", { name: "Start Over" });
+      const failed = page.getByText(/failed/i);
 
-      await expect(completed.or(conflictError).or(startOver)).toBeVisible({
-        timeout: 120000,
-      });
+      await expect(
+        completed.or(conflictError).or(startOver).or(failed),
+      ).toBeVisible({ timeout: 120000 });
+
+      // If task failed, capture error details
+      if (await failed.isVisible()) {
+        const url = page.url();
+        throw new Error(`Scaffolder task failed. URL: ${url}`);
+      }
     });
 
     test("Verify workflow run appears in Orchestrator", async () => {
@@ -420,7 +464,13 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
           await rbacApi.deleteRole(roleNameForApi);
         }
       } catch (error) {
-        console.error("Error during cleanup:", error);
+        console.error("Error during role cleanup:", error);
+      } finally {
+        try {
+          await orchestratorRbacHelper.restoreGenericOrchestratorPermissions();
+        } catch (restoreError) {
+          console.error("Error restoring orchestrator policies:", restoreError);
+        }
       }
     });
   });

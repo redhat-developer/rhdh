@@ -58,6 +58,13 @@ spec.loader.exec_module(install_dynamic_plugins)
 NPMPackageMerger = install_dynamic_plugins.NPMPackageMerger
 OciPackageMerger = install_dynamic_plugins.OciPackageMerger
 InstallException = install_dynamic_plugins.InstallException
+pre_merge_oci_disabled_state = install_dynamic_plugins.pre_merge_oci_disabled_state
+filter_disabled_oci_plugins = install_dynamic_plugins.filter_disabled_oci_plugins
+merge_plugin = install_dynamic_plugins.merge_plugin
+OCI_PROTOCOL_PREFIX = install_dynamic_plugins.OCI_PROTOCOL_PREFIX
+DEFAULT_MAX_ENTRY_SIZE = install_dynamic_plugins.DEFAULT_MAX_ENTRY_SIZE
+
+OVERSIZED_CONTENT = b"x" * (DEFAULT_MAX_ENTRY_SIZE + 5 * 1024 * 1024)  # DEFAULT_MAX_ENTRY_SIZE + 5MB
 
 # Test helper functions
 import tarfile  # noqa: E402
@@ -1387,7 +1394,7 @@ class TestNpmPluginInstallerIntegration:
 
         # Test extraction
         installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
-        plugin_path = installer._extract_npm_package(str(tarball_path))
+        _plugin_path = installer._extract_npm_package(str(tarball_path))
 
         # Verify extracted files
         extracted_dir = tmp_path / "test-package-1.0.0"
@@ -1404,8 +1411,7 @@ class TestNpmPluginInstallerIntegration:
         """Test that extraction rejects tarballs with oversized files."""
         import tarfile
 
-        # Create a tarball with a file exceeding MAX_ENTRY_SIZE
-        large_content = b"x" * 25_000_000  # 25MB (exceeds default 20MB)
+        large_content = OVERSIZED_CONTENT
 
         package_dir = tmp_path / "source" / "package"
         package_dir.mkdir(parents=True)
@@ -1683,8 +1689,7 @@ class TestOciDownloader:
         plugin_path = "plugin"
         tarball_path = tmp_path / "malicious.tar.gz"
 
-        # Create tarball with oversized file (needs actual content matching size)
-        large_content = b"x" * 25_000_000  # 25MB, exceeds default 20MB
+        large_content = OVERSIZED_CONTENT
 
         with create_test_tarball(tarball_path) as tar:
             info = tarfile.TarInfo(name=f"{plugin_path}/huge.bin")
@@ -3058,6 +3063,825 @@ class TestResolveImageReference:
 
         result = install_dynamic_plugins.resolve_image_reference('oci://registry.access.redhat.com/rhdh/catalog/plugin-name:v2.0')
         assert result == 'oci://quay.io/rhdh/catalog/plugin-name:v2.0'
+
+
+class TestPreMergeOciDisabledState:
+    """Test cases for pre_merge_oci_disabled_state function."""
+
+    @pytest.mark.parametrize("include_plugins,main_plugins,expected_disabled", [
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            True, id="include_enabled-main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            False, id="include_disabled-main_enabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [],
+            True, id="include_disabled-no_main"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': True}],
+            True, id="crossform_pathless_include-explicit_main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            True, id="crossform_explicit_include-pathless_main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            False, id="crossform_explicit_include_disabled-pathless_main_enabled"),
+    ])
+    def test_level_override(self, include_plugins, main_plugins, expected_disabled):
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        if expected_disabled:
+            assert 'oci://registry.example.com/plugin' in result
+        else:
+            assert 'oci://registry.example.com/plugin' not in result
+
+    def test_pathless_multiple_explicit_paths_disabled_skips_with_warning(self, capsys):
+        """Path-less disabled + multiple explicit paths for same image -> warning, no error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginA'},
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginB'},
+        ]
+        main_plugins = [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        captured = capsys.readouterr()
+        assert 'WARNING: Skipping disabled ambiguous path-less OCI reference' in captured.out
+        assert 'multiple path-specific entries exist' in captured.out
+        assert 'Cannot use path-less syntax for multi-plugin images' in captured.out
+        assert 'oci://registry.example.com/plugin' in result
+
+    def test_pathless_multiple_explicit_paths_enabled_raises_error(self):
+        """Path-less enabled + multiple explicit paths for same image -> raises error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginA'},
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginB'},
+        ]
+        main_plugins = [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}]
+        with pytest.raises(InstallException, match=r'(?s)Ambiguous path-less OCI reference.*main\.yaml.*pluginA \(in include\.yaml\).*pluginB \(in include\.yaml\)'):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+            )
+
+    def test_non_oci_entries_ignored(self):
+        """Non-OCI entries are ignored by pre-merge."""
+        include_plugins = [{'package': '@backstage/plugin-catalog@1.0.0', 'disabled': True}]
+        main_plugins = [{'package': './local-plugin', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        assert len(result) == 0
+
+    def test_duplicate_same_level_pathless_current_disabled_skips(self, capsys):
+        """Duplicate same-level entries: second is disabled -> warning, no error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False},
+            {'package': 'oci://registry.example.com/plugin:2.0', 'disabled': True},
+        ]
+        pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        captured = capsys.readouterr()
+        assert 'WARNING: Skipping duplicate disabled OCI plugin configuration' in captured.out
+
+    def test_duplicate_same_level_pathless_both_enabled_raises_error(self):
+        """Duplicate same-level entries (both enabled) -> raises error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False},
+            {'package': 'oci://registry.example.com/plugin:2.0', 'disabled': False},
+        ]
+        with pytest.raises(InstallException, match='Duplicate OCI plugin configuration'):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], [], 'main.yaml'
+            )
+
+    def test_duplicate_same_level_explicit_path_raises_error(self):
+        """Duplicate same-level entries (same explicit path) -> raises error."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!pluginA'},
+            {'package': 'oci://registry.example.com/plugin:2.0!pluginA'},
+        ]
+        with pytest.raises(InstallException, match='Duplicate OCI plugin configuration'):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], [], 'main.yaml'
+            )
+
+    def test_invalid_oci_format_enabled_raises_error(self):
+        """Invalid OCI format on enabled entry raises error with source file name."""
+        include_plugins = [{'package': 'oci://bad-format'}]
+        with pytest.raises(InstallException, match="oci package.*not in the expected format.*include.yaml"):
+            pre_merge_oci_disabled_state(
+                [('include.yaml', include_plugins)], [], 'main.yaml'
+            )
+
+    def test_invalid_oci_format_disabled_skips_with_warning(self, capsys):
+        """Invalid OCI format on disabled entry -> warning, no error."""
+        include_plugins = [{'package': 'oci://bad-format', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        captured = capsys.readouterr()
+        assert 'WARNING: Skipping disabled OCI plugin with invalid format' in captured.out
+        assert 'Expected format' in captured.out
+        assert len(result) == 0
+
+    def test_default_disabled_is_false(self):
+        """Entry without explicit disabled flag defaults to False (enabled)."""
+        include_plugins = [{'package': 'oci://registry.example.com/plugin:1.0'}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/plugin' not in result
+
+    def test_multiple_registries_independent(self):
+        """Multiple different registries are tracked independently."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/pluginA:1.0', 'disabled': True},
+            {'package': 'oci://registry.example.com/pluginB:1.0', 'disabled': False},
+        ]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/pluginA' in result
+        assert 'oci://registry.example.com/pluginB' not in result
+
+    def test_explicit_path_only_no_pathless_not_in_result(self):
+        """Entries with only explicit paths (no path-less) are NOT in the disabled set
+        since only path-less entries need skopeo inspect protection."""
+        include_plugins = [{'package': 'oci://registry.example.com/plugin:1.0!pluginA', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/plugin' not in result
+
+    def test_digest_format_supported(self):
+        """OCI entries with digest format (sha256:...) are supported."""
+        include_plugins = [{'package': 'oci://registry.example.com/plugin@sha256:abcdef1234567890', 'disabled': True}]
+        result = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], [], 'main.yaml'
+        )
+        assert 'oci://registry.example.com/plugin' in result
+
+
+class TestFilterDisabledOciPlugins:
+    """Test cases for filter_disabled_oci_plugins function."""
+
+    def test_disabled_registry_removed(self):
+        """OCI entries for disabled registries are removed."""
+        plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0'},
+            {'package': 'oci://other.example.com/plugin:1.0'},
+        ]
+        disabled = {'oci://registry.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 1
+        assert result[0]['package'] == 'oci://other.example.com/plugin:1.0'
+
+    def test_non_disabled_registry_kept(self):
+        """OCI entries for non-disabled registries are kept."""
+        plugins = [{'package': 'oci://registry.example.com/plugin:1.0'}]
+        disabled = {'oci://other.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 1
+
+    def test_non_oci_entries_always_kept(self):
+        """Non-OCI entries are always kept regardless of disabled set."""
+        plugins = [
+            {'package': '@backstage/plugin-catalog@1.0.0'},
+            {'package': './local-plugin'},
+        ]
+        disabled = {'oci://registry.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 2
+
+    def test_explicit_path_for_disabled_registry_removed(self):
+        """Entries with explicit paths for disabled registries are also removed."""
+        plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0!my-plugin'},
+            {'package': 'oci://registry.example.com/plugin:1.0!other-plugin'},
+        ]
+        disabled = {'oci://registry.example.com/plugin'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 0
+
+    def test_empty_disabled_set_keeps_all(self):
+        """Empty disabled set keeps all entries."""
+        plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0'},
+            {'package': '@backstage/plugin-catalog'},
+        ]
+        result = filter_disabled_oci_plugins(plugins, set())
+        assert len(result) == 2
+
+    def test_mixed_oci_and_npm(self, capsys):
+        """Mixed OCI and NPM plugins: only disabled OCI registries affected."""
+        plugins = [
+            {'package': 'oci://registry.example.com/pluginA:1.0'},
+            {'package': '@backstage/plugin-catalog@1.0.0', 'disabled': True},
+            {'package': 'oci://registry.example.com/pluginB:1.0'},
+        ]
+        disabled = {'oci://registry.example.com/pluginA'}
+        result = filter_disabled_oci_plugins(plugins, disabled)
+        assert len(result) == 2
+        assert result[0]['package'] == '@backstage/plugin-catalog@1.0.0'
+        assert result[1]['package'] == 'oci://registry.example.com/pluginB:1.0'
+
+        captured = capsys.readouterr()
+        assert 'Disabling OCI plugin oci://registry.example.com/pluginA:1.0' in captured.out
+
+    def test_invalid_format_disabled_filtered(self, capsys):
+        """Disabled OCI entry with invalid format is filtered out."""
+        plugins = [
+            {'package': 'oci://reg.example.com:fake_port/myplugin!my-plugin', 'disabled': True},
+            {'package': 'oci://registry.example.com/plugin:1.0'},
+        ]
+        result = filter_disabled_oci_plugins(plugins, set())
+        assert len(result) == 1
+        assert result[0]['package'] == 'oci://registry.example.com/plugin:1.0'
+
+        captured = capsys.readouterr()
+        assert 'Disabling OCI plugin oci://reg.example.com:fake_port/myplugin!my-plugin' in captured.out
+
+    def test_invalid_format_enabled_not_filtered(self):
+        """Enabled OCI entry with invalid format is NOT filtered (will error later in merge)."""
+        plugins = [
+            {'package': 'oci://reg.example.com:fake_port/myplugin!my-plugin'},
+        ]
+        result = filter_disabled_oci_plugins(plugins, set())
+        assert len(result) == 1
+
+
+class TestPreMergeFilterIntegration:
+    """Integration tests: pre-merge + filter + merge together."""
+
+    @pytest.mark.parametrize("include_plugins,main_plugins", [
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="include_enabled-main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="airgapped-include_enabled-main_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="inherit-main_disables"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="inherit-both_disabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0!my-plugin', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True}],
+            id="crossform-explicit_include-pathless_main_disabled"),
+    ])
+    def test_disabled_no_skopeo_inspect(self, mocker, include_plugins, main_plugins):
+        """Disabled entries are filtered and no skopeo inspect call is made."""
+        mock_get_paths = mocker.patch.object(
+            install_dynamic_plugins, 'get_oci_plugin_paths',
+            side_effect=AssertionError("get_oci_plugin_paths should not be called for disabled plugins")
+        )
+
+        disabled = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+        filtered_includes = filter_disabled_oci_plugins(include_plugins, disabled)
+        filtered_main = filter_disabled_oci_plugins(main_plugins, disabled)
+
+        assert len(filtered_includes) == 0
+        assert len(filtered_main) == 0
+
+        all_plugins = {}
+        for plugin in filtered_includes:
+            merge_plugin(plugin, all_plugins, 'include.yaml', level=0)
+        for plugin in filtered_main:
+            merge_plugin(plugin, all_plugins, 'main.yaml', level=1)
+
+        assert len(all_plugins) == 0
+        mock_get_paths.assert_not_called()
+
+    @pytest.mark.parametrize("include_plugins,main_plugins", [
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="both_enabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="include_disabled-main_enables"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="inherit-both_enabled"),
+        pytest.param(
+            [{'package': 'oci://registry.example.com/plugin:1.0', 'disabled': True}],
+            [{'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': False}],
+            id="inherit-include_disabled-main_enables"),
+    ])
+    def test_enabled_entries_pass_through(self, include_plugins, main_plugins):
+        """Enabled entries are not filtered and both lists pass through."""
+        disabled = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+
+        filtered_includes = filter_disabled_oci_plugins(include_plugins, disabled)
+        filtered_main = filter_disabled_oci_plugins(main_plugins, disabled)
+
+        assert len(filtered_includes) == 1
+        assert len(filtered_main) == 1
+
+    def test_mixed_oci_and_npm_only_oci_affected(self, mocker):
+        """Mixed OCI and NPM plugins -> only OCI disabled registries affected."""
+        include_plugins = [
+            {'package': 'oci://registry.example.com/plugin:1.0', 'disabled': False},
+            {'package': '@backstage/plugin-catalog@1.0.0'},
+        ]
+        main_plugins = [
+            {'package': 'oci://registry.example.com/plugin:{{inherit}}', 'disabled': True},
+            {'package': '@backstage/plugin-catalog@2.0.0'},
+        ]
+
+        disabled = pre_merge_oci_disabled_state(
+            [('include.yaml', include_plugins)], main_plugins, 'main.yaml'
+        )
+
+        filtered_includes = filter_disabled_oci_plugins(include_plugins, disabled)
+        filtered_main = filter_disabled_oci_plugins(main_plugins, disabled)
+
+        assert len(filtered_includes) == 1
+        assert filtered_includes[0]['package'] == '@backstage/plugin-catalog@1.0.0'
+        assert len(filtered_main) == 1
+        assert filtered_main[0]['package'] == '@backstage/plugin-catalog@2.0.0'
+
+        all_plugins = {}
+        for plugin in filtered_includes:
+            merge_plugin(plugin, all_plugins, 'include.yaml', level=0)
+        for plugin in filtered_main:
+            merge_plugin(plugin, all_plugins, 'main.yaml', level=1)
+        assert '@backstage/plugin-catalog' in all_plugins
+
+
+class TestImageRefToSubdirectory:
+    """Test cases for image_ref_to_subdirectory() function."""
+
+    def test_replaces_slashes(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh/index")
+        assert result == "quay.io_rhdh_index"
+
+    def test_replaces_colons(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh/index:1.10")
+        assert result == "quay.io_rhdh_index_1.10"
+
+    def test_replaces_at_signs(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh/index@sha256:abc123")
+        assert result == "quay.io_rhdh_index_sha256_abc123"
+
+    def test_all_special_chars(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("registry.example.com:5000/org/image:v1.0")
+        assert result == "registry.example.com_5000_org_image_v1.0"
+
+    def test_preserves_hyphens_and_dots(self):
+        result = install_dynamic_plugins.image_ref_to_subdirectory("quay.io/rhdh-community/plugin-catalog-index:1.10")
+        assert result == "quay.io_rhdh-community_plugin-catalog-index_1.10"
+
+
+class TestParseExtraCatalogIndexImages:
+    """Test cases for parse_extra_catalog_index_images() function."""
+
+    def test_single_entry(self):
+        """Test parsing a single image reference."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/rhdh-community/plugin-catalog-index:1.10"
+        )
+        assert result == [("quay.io_rhdh-community_plugin-catalog-index_1.10", "quay.io/rhdh-community/plugin-catalog-index:1.10")]
+
+    def test_multiple_entries(self):
+        """Test parsing multiple comma-separated entries."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/rhdh-community/index:1.10,quay.io/partner/catalog:latest"
+        )
+        assert result == [
+            ("quay.io_rhdh-community_index_1.10", "quay.io/rhdh-community/index:1.10"),
+            ("quay.io_partner_catalog_latest", "quay.io/partner/catalog:latest"),
+        ]
+
+    def test_whitespace_handling(self):
+        """Test that whitespace around entries is trimmed."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            " quay.io/rhdh-community/index:1.10 , quay.io/partner/catalog:latest "
+        )
+        assert result == [
+            ("quay.io_rhdh-community_index_1.10", "quay.io/rhdh-community/index:1.10"),
+            ("quay.io_partner_catalog_latest", "quay.io/partner/catalog:latest"),
+        ]
+
+    def test_empty_string(self):
+        """Test parsing empty string returns empty list."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images("")
+        assert result == []
+
+    def test_trailing_comma(self):
+        """Test that trailing comma is handled gracefully."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/test/image:1.0,"
+        )
+        assert result == [("quay.io_test_image_1.0", "quay.io/test/image:1.0")]
+
+    def test_duplicate_subdirectory_returns_all(self):
+        """Test that duplicate subdirectory names are returned (warning is emitted at extraction time)."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/test/image:1.0,quay.io/test/image:1.0"
+        )
+        assert len(result) == 2
+        assert result[0][1] == "quay.io/test/image:1.0"
+        assert result[1][1] == "quay.io/test/image:1.0"
+
+    def test_image_ref_with_digest(self):
+        """Test parsing image reference with digest format."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "quay.io/rhdh-community/index@sha256:abc123"
+        )
+        assert result == [("quay.io_rhdh-community_index_sha256_abc123", "quay.io/rhdh-community/index@sha256:abc123")]
+
+    def test_explicit_name_format(self):
+        """Test parsing with explicit name=image_ref format."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=quay.io/rhdh-community/plugin-catalog-index:1.10"
+        )
+        assert result == [("community", "quay.io/rhdh-community/plugin-catalog-index:1.10")]
+
+    def test_mixed_formats(self):
+        """Test mixing explicit name and auto-derived entries."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=quay.io/rhdh-community/index:1.10,quay.io/partner/catalog:latest"
+        )
+        assert result == [
+            ("community", "quay.io/rhdh-community/index:1.10"),
+            ("quay.io_partner_catalog_latest", "quay.io/partner/catalog:latest"),
+        ]
+
+    def test_explicit_name_whitespace(self):
+        """Test that whitespace is trimmed in name=image_ref format."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            " community = quay.io/rhdh-community/index:1.10 "
+        )
+        assert result == [("community", "quay.io/rhdh-community/index:1.10")]
+
+    def test_explicit_name_duplicate_returns_all(self):
+        """Test that duplicate explicit names are returned (warning is emitted at extraction time)."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=quay.io/img1:1.0,community=quay.io/img2:2.0"
+        )
+        assert len(result) == 2
+        assert result[0] == ("community", "quay.io/img1:1.0")
+        assert result[1] == ("community", "quay.io/img2:2.0")
+
+    def test_explicit_name_empty_image_ref_skipped(self, capsys):
+        """Test that name= with empty image ref is skipped with a warning."""
+        result = install_dynamic_plugins.parse_extra_catalog_index_images(
+            "community=,quay.io/other/image:1.0"
+        )
+        assert len(result) == 1
+        assert result[0][1] == "quay.io/other/image:1.0"
+
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.out
+        assert "empty image reference" in captured.out
+
+
+class TestExtractExtraCatalogIndex:
+    """Test cases for extract_extra_catalog_index() function."""
+
+    @pytest.fixture
+    def mock_extra_oci_image(self, tmp_path):
+        """Create a mock OCI image with catalog entities only (no DPDY file)."""
+        oci_dir = tmp_path / "extra-oci-image"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "config": {
+                "mediaType": "application/vnd.oci.image.config.v1+json",
+                "digest": "sha256:extra123",
+                "size": 100,
+            },
+            "layers": [
+                {
+                    "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                    "digest": "sha256:extralayer456",
+                    "size": 1000,
+                }
+            ],
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        layer_content_dir = tmp_path / "extra-layer-content"
+        layer_content_dir.mkdir()
+
+        catalog_entities_dir = layer_content_dir / "catalog-entities" / "extensions"
+        catalog_entities_dir.mkdir(parents=True)
+        entity_file = catalog_entities_dir / "community-plugin.yaml"
+        entity_file.write_text(
+            "apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: community-plugin"
+        )
+
+        layer_tarball = oci_dir / "extralayer456"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(
+                str(layer_content_dir / "catalog-entities"),
+                arcname="catalog-entities",
+                recursive=True,
+            )
+
+        return {
+            "oci_dir": str(oci_dir),
+            "manifest_path": str(manifest_path),
+            "layer_tarball": str(layer_tarball),
+        }
+
+    @pytest.fixture
+    def mock_extra_oci_image_marketplace(self, tmp_path):
+        """Create a mock OCI image with marketplace directory (backward compatibility)."""
+        oci_dir = tmp_path / "extra-oci-marketplace"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "layers": [
+                {
+                    "digest": "sha256:mktlayer789",
+                    "size": 1000,
+                }
+            ],
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        layer_content_dir = tmp_path / "extra-mkt-layer-content"
+        layer_content_dir.mkdir()
+
+        catalog_entities_dir = layer_content_dir / "catalog-entities" / "marketplace"
+        catalog_entities_dir.mkdir(parents=True)
+        entity_file = catalog_entities_dir / "partner-plugin.yaml"
+        entity_file.write_text(
+            "apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: partner-plugin"
+        )
+
+        layer_tarball = oci_dir / "mktlayer789"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(
+                str(layer_content_dir / "catalog-entities"),
+                arcname="catalog-entities",
+                recursive=True,
+            )
+
+        return {
+            "oci_dir": str(oci_dir),
+            "manifest_path": str(manifest_path),
+            "layer_tarball": str(layer_tarball),
+        }
+
+    def test_skopeo_not_found(self, tmp_path, mocker):
+        """Test that function raises InstallException when skopeo is not available."""
+        mocker.patch("shutil.which", return_value=None)
+
+        with pytest.raises(
+            InstallException, match="skopeo executable not found in PATH"
+        ):
+            install_dynamic_plugins.extract_extra_catalog_index(
+                "quay.io/test/image:latest",
+                "community",
+                str(tmp_path / "extensions"),
+            )
+
+    def test_skopeo_copy_fails(self, tmp_path, mocker):
+        """Test that function raises InstallException when skopeo copy fails."""
+        import subprocess
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_error = subprocess.CalledProcessError(
+            returncode=1,
+            cmd=["/usr/bin/skopeo", "copy", "docker://quay.io/test/image:latest", "dir:/tmp/..."],
+        )
+        mock_error.stderr = "Error: image not found"
+        mock_error.stdout = ""
+        mocker.patch("subprocess.run", side_effect=mock_error)
+
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.extract_extra_catalog_index(
+                "quay.io/test/image:latest",
+                "community",
+                str(tmp_path / "extensions"),
+            )
+
+        error_msg = str(exc_info.value)
+        assert "Failed to download extra catalog index image" in error_msg
+
+    def test_no_manifest(self, tmp_path, mocker):
+        """Test that function raises InstallException when manifest.json is not found."""
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mocker.patch("subprocess.run", return_value=mock_result)
+
+        with pytest.raises(
+            InstallException, match="manifest.json not found in extra catalog index image"
+        ):
+            install_dynamic_plugins.extract_extra_catalog_index(
+                "quay.io/test/image:latest",
+                "community",
+                str(tmp_path / "extensions"),
+            )
+
+    def test_successful_extraction(self, tmp_path, mocker, mock_extra_oci_image, capsys):
+        """Test successful extraction of catalog entities to named subdirectory."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_extra_oci_image["manifest_path"],
+            mock_extra_oci_image["layer_tarball"],
+            mock_result,
+        )
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/rhdh-community/plugin-catalog-index:1.10",
+            "community",
+            str(catalog_entities_parent_dir),
+        )
+
+        entities_dir = catalog_entities_parent_dir / "community" / "catalog-entities"
+        assert entities_dir.exists()
+        entity_file = entities_dir / "community-plugin.yaml"
+        assert entity_file.exists()
+        assert "kind: Component" in entity_file.read_text()
+
+        captured = capsys.readouterr()
+        assert "Successfully extracted extensions catalog entities from extra index image" in captured.out
+
+    def test_marketplace_fallback(self, tmp_path, mocker, mock_extra_oci_image_marketplace, capsys):
+        """Test that extraction falls back to marketplace directory."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_extra_oci_image_marketplace["manifest_path"],
+            mock_extra_oci_image_marketplace["layer_tarball"],
+            mock_result,
+        )
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/partner/catalog:latest",
+            "partner",
+            str(catalog_entities_parent_dir),
+        )
+
+        entities_dir = catalog_entities_parent_dir / "partner" / "catalog-entities"
+        assert entities_dir.exists()
+        entity_file = entities_dir / "partner-plugin.yaml"
+        assert entity_file.exists()
+        assert "kind: Component" in entity_file.read_text()
+
+    def test_no_catalog_entities_warns(self, tmp_path, mocker, capsys):
+        """Test that warning is printed when no catalog entities directory exists."""
+        oci_dir = tmp_path / "empty-oci"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "layers": [{"digest": "sha256:empty123", "size": 100}],
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        layer_content_dir = tmp_path / "empty-layer"
+        layer_content_dir.mkdir()
+        readme = layer_content_dir / "README.md"
+        readme.write_text("# Empty")
+
+        layer_tarball = oci_dir / "empty123"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(str(readme), arcname="README.md")
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result)
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/test/empty:latest",
+            "empty",
+            str(tmp_path / "extensions"),
+        )
+
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.out
+        assert "does not have neither" in captured.out
+
+    def test_removes_existing_destination(self, tmp_path, mocker, mock_extra_oci_image):
+        """Test that existing catalog-entities directory is removed before copying."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+        existing_dir = catalog_entities_parent_dir / "community" / "catalog-entities"
+        existing_dir.mkdir(parents=True)
+        old_file = existing_dir / "old-file.yaml"
+        old_file.write_text("old content")
+
+        mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_extra_oci_image["manifest_path"],
+            mock_extra_oci_image["layer_tarball"],
+            mock_result,
+        )
+        mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_extra_catalog_index(
+            "quay.io/rhdh-community/index:1.10",
+            "community",
+            str(catalog_entities_parent_dir),
+        )
+
+        entities_dir = catalog_entities_parent_dir / "community" / "catalog-entities"
+        assert entities_dir.exists()
+        assert not old_file.exists()
+        entity_file = entities_dir / "community-plugin.yaml"
+        assert entity_file.exists()
+
+    def test_multiple_extra_indexes_different_subdirs(self, tmp_path, mocker, capsys):
+        """Test that multiple extra indexes extract to separate subdirectories."""
+        catalog_entities_parent_dir = tmp_path / "extensions"
+
+        for name, entity_name in [("community", "community-plugin"), ("partner", "partner-plugin")]:
+            oci_dir = tmp_path / f"oci-{name}"
+            oci_dir.mkdir()
+
+            digest_hash = f"{name}layer123"
+            manifest = {
+                "schemaVersion": 2,
+                "layers": [{"digest": f"sha256:{digest_hash}", "size": 1000}],
+            }
+            (oci_dir / "manifest.json").write_text(json.dumps(manifest))
+
+            layer_content_dir = tmp_path / f"layer-{name}"
+            layer_content_dir.mkdir()
+            entities_dir = layer_content_dir / "catalog-entities" / "extensions"
+            entities_dir.mkdir(parents=True)
+            (entities_dir / f"{entity_name}.yaml").write_text(
+                f"apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: {entity_name}"
+            )
+
+            layer_tarball = oci_dir / digest_hash
+            with create_test_tarball(layer_tarball) as tar:
+                tar.add(str(layer_content_dir / "catalog-entities"), arcname="catalog-entities", recursive=True)
+
+            mocker.patch("shutil.which", return_value="/usr/bin/skopeo")
+
+            mock_result = mocker.Mock()
+            mock_result.returncode = 0
+            mock_subprocess_run = create_mock_skopeo_copy(
+                str(oci_dir / "manifest.json"),
+                str(layer_tarball),
+                mock_result,
+            )
+            mocker.patch("subprocess.run", side_effect=mock_subprocess_run)
+
+            install_dynamic_plugins.extract_extra_catalog_index(
+                f"quay.io/test/{name}-index:1.0",
+                name,
+                str(catalog_entities_parent_dir),
+            )
+
+        community_entities = catalog_entities_parent_dir / "community" / "catalog-entities"
+        partner_entities = catalog_entities_parent_dir / "partner" / "catalog-entities"
+        assert community_entities.exists()
+        assert partner_entities.exists()
+        assert (community_entities / "community-plugin.yaml").exists()
+        assert (partner_entities / "partner-plugin.yaml").exists()
 
 
 if __name__ == '__main__':

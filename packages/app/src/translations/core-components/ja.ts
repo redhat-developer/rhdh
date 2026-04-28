@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
+import { coreComponentsTranslationRef } from '@backstage/core-components';
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 export default createTranslationMessages({

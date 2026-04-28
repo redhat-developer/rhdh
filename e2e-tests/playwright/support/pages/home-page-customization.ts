@@ -35,10 +35,7 @@ export class HomePageCustomization {
   async verifyHomePageLoaded(): Promise<void> {
     await this.uiHelper.verifyHeading("Welcome back");
     await expect(this.greetingText()).toBeVisible();
-    const quickstart = this.page.getByRole("button", { name: "Hide" });
-    if (await quickstart.isVisible()) {
-      await quickstart.click();
-    }
+    await this.uiHelper.hideQuickstartIfVisible();
   }
 
   async verifyAllCardsDisplayed(): Promise<void> {

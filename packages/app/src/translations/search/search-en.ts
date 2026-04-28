@@ -1,5 +1,5 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
+import { searchTranslationRef } from '@backstage/plugin-search';
 
 const en = createTranslationMessages({
   ref: searchTranslationRef,

@@ -3,7 +3,7 @@
   "version": "1.10.0",
   "private": true,
   "engines": {
-    "node": "22"
+    "node": "24"
   },
   "scripts": {
     "build": "turbo run build",
@@ -23,15 +23,20 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "0.35.4",
-    "turbo": "2.8.10"
+    "@backstage/cli": "0.36.0",
+    "@backstage/cli-defaults": "0.1.0",
+    "turbo": "2.9.6"
+  },
+  "dependenciesMeta": {
+    "keytar": {
+      "built": false
+    }
   },
   "resolutions": {
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
-    "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
-    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
-    "refractor@npm:3.6.0/prismjs": "^1.30.0"
+    "refractor@npm:3.6.0/prismjs": "^1.30.0",
+    "infinispan": "0.13.0"
   },
   "packageManager": "yarn@4.12.0"
 }

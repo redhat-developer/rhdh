@@ -30,7 +30,6 @@ initiate_operator_deployments() {
   log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE deployment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
-  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
@@ -66,7 +65,6 @@ initiate_operator_deployments_osd_gcp() {
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
-  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
@@ -87,10 +85,13 @@ initiate_operator_deployments_osd_gcp() {
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   namespace::configure "${NAME_SPACE_RUNTIME}"
-  oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
-  deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
+  # Pre-create placeholder secrets so the operator accepts the Backstage CR (enableLocalDb=false).
+  # The E2E tests (RDS/Azure DB) will overwrite these with real credentials at runtime.
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
+  create_postgres_cred_secret "${NAME_SPACE_RUNTIME}" "tmp" "tmp" "RHDH_RUNTIME_URL=${runtime_url}"
+  oc apply -f "$DIR/resources/postgres-db/postgres-crt.yaml" -n "${NAME_SPACE_RUNTIME}"
+  deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml" "true"
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
@@ -121,6 +122,5 @@ handle_ocp_operator() {
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_OPERATOR}" "${url}"
   testing::check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "${rbac_url}"
 
-  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2608
-  # run_operator_runtime_config_change_tests
+  run_operator_runtime_config_change_tests
 }

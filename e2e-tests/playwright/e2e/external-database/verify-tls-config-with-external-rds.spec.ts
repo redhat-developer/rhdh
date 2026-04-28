@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
-import { KubeClient } from "../../utils/kube-client";
+import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
   readCertificateFile,
   configurePostgresCertificate,
@@ -15,11 +15,7 @@ interface RdsConfig {
 
 test.describe("Verify TLS configuration with RDS PostgreSQL health check", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const job: string = process.env.JOB_NAME || "";
-  let deploymentName = process.env.RELEASE_NAME + "-developer-hub";
-  if (job.includes("operator")) {
-    deploymentName = "backstage-" + process.env.RELEASE_NAME;
-  }
+  const deploymentName = getRhdhDeploymentName();
 
   // RDS configuration from environment
   const rdsUser = process.env.RDS_USER;

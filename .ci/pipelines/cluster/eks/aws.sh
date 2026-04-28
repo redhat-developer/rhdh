@@ -117,10 +117,9 @@ _aws::apply_route53_change() {
 # ==============================================================================
 
 # Get AWS region from EKS cluster endpoint URL.
-# Parses the server URL from $SHARED_DIR/kubeconfig.
+# Usage: aws::get_cluster_region <cluster_url>
 aws::get_cluster_region() {
-  local cluster_url
-  cluster_url=$(KUBECONFIG="${SHARED_DIR}/kubeconfig" kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2> /dev/null)
+  local cluster_url="${1:?Usage: aws::get_cluster_region <cluster_url>}"
 
   if [[ "${cluster_url}" =~ \.([a-z0-9-]+)\.eks\.amazonaws\.com ]]; then
     local region="${BASH_REMATCH[1]}"
@@ -441,7 +440,7 @@ aws::generate_domain_name() {
   log::info "Generating dynamic domain name..."
 
   local region
-  if ! region=$(aws::get_cluster_region); then
+  if ! region=$(aws::get_cluster_region "$K8S_CLUSTER_URL"); then
     log::error "Could not determine AWS region"
     return 1
   fi
@@ -492,7 +491,7 @@ aws::get_certificate() {
   fi
 
   local region
-  if ! region=$(aws::get_cluster_region); then
+  if ! region=$(aws::get_cluster_region "$K8S_CLUSTER_URL"); then
     log::error "Failed to get cluster AWS region"
     return 1
   fi

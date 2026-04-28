@@ -17,13 +17,13 @@ For scenarios where tests are not automatically triggered, or when you need to m
 
 1. **Commenting `/ok-to-test`:**
    - **Purpose:** This command is used to validate a PR for testing, especially important for external contributors or when tests are not automatically triggered.
-   - **Who Can Use It:** Only members of the [janus-idp](https://github.com/janus-idp) GitHub organization can mark the PR with this comment.
+   - **Who Can Use It:** Only members of both the [openshift](https://github.com/openshift) and [redhat-developer](https://github.com/redhat-developer) GitHub organizations can mark the PR with this comment.
    - **Use Cases:**
      - **External Contributors:** For PRs from contributors outside the organization, a member needs to comment `/ok-to-test` to initiate tests.
    - **More Details:** For additional information about `/ok-to-test`, please refer to the [Kubernetes Community Pull Requests Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#more-about-ok-to-test).
 
 2. **Triggering Tests Post-Validation:**
-   - After a janus-idp member has validated the PR with `/ok-to-test`, anyone can trigger tests using the following commands:
+   - After an `openshift` and `redhat-developer` org member has validated the PR with `/ok-to-test`, anyone can trigger tests using the following commands:
      - `/test ?` to get a list of all available jobs
      - `/test e2e-ocp-helm` for mandatory PR checks
    - **Note:** Avoid using `/test all` as it may trigger unnecessary jobs and consume CI resources. Instead, use `/test ?` to see available options and trigger only the specific tests you need.
@@ -38,7 +38,7 @@ For scenarios where tests are not automatically triggered, or when you need to m
 
    Use `/test ?` to see the complete list of available jobs for your specific branch and PR context.
 
-These interactions are picked up by the OpenShift-CI service, which sets up a test environmentr. The configurations and steps for setting up this environment are defined in the `openshift-ci-tests.sh` script. For more details, see the [High-Level Overview of `openshift-ci-tests.sh`](#high-level-overview-of-openshift-ci-testssh).
+These interactions are picked up by the OpenShift-CI service, which sets up a test environment. The configurations and steps for setting up this environment are defined in the `openshift-ci-tests.sh` script. For more details, see the [High-Level Overview of `openshift-ci-tests.sh`](#high-level-overview-of-openshift-ci-testssh).
 
 ### Retrying Tests
 
@@ -51,11 +51,11 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 - **Purpose:** Validate new PRs for code quality, functionality, and integration.
 - **Trigger:**
   - **Automatic:** When a PR includes code changes affecting tests (excluding doc-only changes), tests are automatically triggered.
-  - **Manual:** When `/ok-to-test` is commented by a janus-idp member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
+  - **Manual:** When `/ok-to-test` is commented by an `openshift` and `redhat-developer` org member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces. Different sets of tests are executed for both the **non-RBAC RHDH instance** and the **RBAC RHDH instance**, each deployed in separate namespaces.
-- **Access:** In order to access the environment, you can run the bash at `.ci/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you test calimed a cluster, this script will forward the cluster web console url along with the credentials.
+- **Access:** In order to access the environment, you can run the bash at `.ci/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you have claimed a cluster, this script will forward the cluster web console url along with the credentials.
 - **Steps:**
   1. **Detection:** OpenShift-CI detects the PR event.
   2. **Environment Setup:** The test environment is set up using the `openshift-ci-tests.sh` script (see the [High-Level Overview](#high-level-overview-of-openshift-ci-testssh)).
@@ -86,15 +86,18 @@ Nightly tests are run to ensure the stability and reliability of our codebase ov
 
 ### Nightly Test Environments
 
-- **AKS Nightly Tests:** Nightly tests for Azure Kubernetes Service (AKS) run on a dedicated cluster. We do not have AKS PR checks; the AKS environment is exclusively used for nightly runs.
-- **IBM Cloud Tests:** All nightly tests for the `main` and `release-1.n`(depending on the latest release versions) branches run against OpenShift clusters on IBM Cloud.
-- **GKE Nightly Tests:** Nightly tests on top of Google Kubernetes Engine. As the AKS, GKE is only used for nightly tests.
+- **OCP Nightly Tests:** Run on ephemeral OpenShift clusters provisioned via Hive cluster pools on AWS. Multiple OCP versions are tested.
+- **OCP Operator Nightly Tests:** Same as OCP nightly but deploy RHDH using the Operator instead of Helm.
+- **AKS Nightly Tests:** Nightly tests on Azure Kubernetes Service (AKS) using ephemeral clusters provisioned by [Mapt](https://github.com/redhat-developer/mapt). AKS is exclusively used for nightly runs (no PR checks).
+- **EKS Nightly Tests:** Nightly tests on AWS Elastic Kubernetes Service (EKS) using ephemeral clusters provisioned by Mapt.
+- **GKE Nightly Tests:** Nightly tests on Google Kubernetes Engine using a long-running shared cluster.
+- **OSD-GCP Nightly Tests:** Nightly tests on OpenShift Dedicated on GCP.
 
 ### Additional Nightly Jobs for Main Branch
 
 The nightly job for the `main` branch also runs against three OpenShift Container Platform (OCP) versions to ensure compatibility and stability across multiple versions. We maintain testing on the three most recent OCP versions. As new OCP versions are released, we will update our testing pipeline to include the latest versions and drop support for older ones accordingly.
 
-> **Note:** The output of the nightly runs, including test results and any relevant notifications, is posted on the Slack channel **`#rhdh-e2e-test-alerts`**.
+> **Note:** The output of the nightly runs, including test results and any relevant notifications, is posted on the Slack channel **`#rhdh-e2e-alerts`**.
 
 ### Localization Tests
 
@@ -115,8 +118,10 @@ The localization test implementation is in `.ci/pipelines/jobs/ocp-nightly.sh` (
 - **Purpose:** Ensure ongoing stability and detect regressions in different environments.
 - **Trigger:** Scheduled to run every night.
 - **Environments:**
-  - **AKS Nightly Tests:** Runs on the dedicated AKS cluster.
-  - **IBM Cloud Nightly Tests:** Runs on OpenShift clusters on IBM Cloud, covering the most recent OCP versions.
+  - **OCP:** Ephemeral clusters from Hive pools (multiple OCP versions).
+  - **AKS/EKS:** Ephemeral clusters provisioned by [Mapt](https://github.com/redhat-developer/mapt).
+  - **GKE:** Long-running shared cluster.
+  - **OSD-GCP:** OpenShift Dedicated on GCP.
 - **Configurations:**
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces.
 - **Steps:**
@@ -133,10 +138,12 @@ The localization test implementation is in `.ci/pipelines/jobs/ocp-nightly.sh` (
      - Collects and aggregates results.
      - Stores artifacts for later review for a retention period of **6 months**.
   5. **Reporting:**
-     - Posts outputs to Slack channel `#rhdh-e2e-test-alerts`.
+     - Posts outputs to Slack channel `#rhdh-e2e-alerts`.
      - Generates report.
 - **Artifacts:** Comprehensive test reports, logs, screenshots.
 - **Notifications:** Results posted on Slack.
+
+> **Note:** The nightly testing diagram below is a simplified overview. For detailed job types, failure investigation, and triage workflows, see the [CI Medic Guide](CI-medic-guide.md).
 
 ### Nightly Testing Diagram
 
@@ -166,7 +173,7 @@ The OpenShift CI definitions for PR checks and nightly runs, as well as executio
 - **Testing:** Runs end-to-end tests with Playwright.
 - **Cleanup and Reporting:** Cleans up resources and collects artifacts after testing.
 
-Detailed steps on how the tests and reports are managed can be found in the `run_tests()` function within the `utils.sh` script. The CI pipeline executes tests directly using Playwright's `--project` flag (e.g., `yarn playwright test --project=showcase`) rather than yarn script aliases. The `check_and_test()` and `run_tests()` functions accept an explicit Playwright project argument, decoupling the namespace from the test project name for more flexible reuse.
+Detailed steps on how the tests and reports are managed can be found in the `testing::run_tests()` and `testing::check_and_test()` functions in `.ci/pipelines/lib/testing.sh`. The CI pipeline executes tests directly using Playwright's `--project` flag (e.g., `yarn playwright test --project=showcase`) rather than yarn script aliases. These functions accept an explicit Playwright project argument, decoupling the namespace from the test project name for more flexible reuse.
 
 ### Playwright Project Names (Single Source of Truth)
 
@@ -201,7 +208,7 @@ When the test run is complete, the status will be reported under your PR checks.
   - The script cleans up all temporary resources after tests.
 - **Reporting:**
   - Generates reports and stores artifacts for **6 months**.
-  - Nightly test results are posted to Slack channel `#rhdh-e2e-test-alerts`.
+  - Nightly test results are posted to Slack channel `#rhdh-e2e-alerts`.
 
 ### Configuration Details
 

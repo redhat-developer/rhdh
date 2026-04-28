@@ -1,12 +1,5 @@
 import { Page, expect, Locator } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../../e2e/localization/locale";
-
-const t = getTranslations();
-const lang = getCurrentLanguage();
 
 export class Extensions {
   private page: Page;
@@ -14,19 +7,19 @@ export class Extensions {
   private uiHelper: UIhelper;
 
   private commonHeadings = [
-    t["plugin.extensions"][lang]["metadata.versions"],
-    t["plugin.extensions"][lang]["search.author"],
-    t["plugin.extensions"][lang]["package.tags"],
-    t["plugin.extensions"][lang]["metadata.category"],
-    t["plugin.extensions"][lang]["metadata.publisher"],
-    t["plugin.extensions"][lang]["metadata.supportProvider"],
+    "Versions",
+    "Author",
+    "Tags",
+    "Category",
+    "Publisher",
+    "Support Provider",
   ];
   private tableHeaders = [
-    t["plugin.extensions"][lang]["table.packageName"],
-    t["plugin.extensions"][lang]["table.version"],
-    t["plugin.extensions"][lang]["table.role"],
-    t["plugin.extensions"][lang]["metadata.backstageCompatibility"],
-    t["plugin.extensions"][lang]["table.status"],
+    "Package name",
+    "Version",
+    "Role",
+    "Backstage compatibility version",
+    "Status",
   ];
 
   constructor(page: Page) {
@@ -40,20 +33,13 @@ export class Extensions {
     const targetCard = allCards.filter({ hasText: pluginTitle });
     await targetCard
       .getByRole("link", {
-        name: t["plugin.extensions"][lang]["common.readMore"],
+        name: "Read more",
       })
       .click();
     await expect(
-      this.page.getByText(
-        pluginTitle +
-          " " +
-          t["plugin.extensions"][lang]["metadata.by"] +
-          " Red Hat" +
-          badgeText,
-        {
-          exact: true,
-        },
-      ),
+      this.page.getByText(pluginTitle + " " + " by " + " Red Hat" + badgeText, {
+        exact: true,
+      }),
     ).toBeVisible();
   }
 
@@ -76,17 +62,13 @@ export class Extensions {
   }
 
   async selectSupportTypeFilter(supportType: string) {
-    await this.selectDropdown(
-      t["plugin.extensions"][lang]["search.supportType"],
-    );
+    await this.selectDropdown("Support type");
     await this.toggleOption(supportType);
     await this.page.keyboard.press("Escape");
   }
 
   async resetSupportTypeFilter(supportType: string) {
-    await this.selectDropdown(
-      t["plugin.extensions"][lang]["search.supportType"],
-    );
+    await this.selectDropdown("Support type");
     await this.toggleOption(supportType);
     await this.page.keyboard.press("Escape");
   }
@@ -100,26 +82,25 @@ export class Extensions {
   async searchExtensions(searchText: string) {
     const searchInput = this.page
       .getByRole("textbox")
-      .getByLabel(t["plugin.extensions"][lang]["search.placeholder"], {
+      .getByLabel("Search", {
         exact: true,
       })
       .or(
-        this.page.getByPlaceholder(
-          t["plugin.extensions"][lang]["search.placeholder"],
-          { exact: true },
-        ),
+        this.page.getByPlaceholder("Search", {
+          exact: true,
+        }),
       );
 
     await searchInput.fill(searchText);
   }
 
   async waitForSearchResults(searchText: string) {
-    await this.uiHelper.verifyHeading(
-      t["plugin.extensions"][lang]["header.pluginsPage"] + " (1)",
-    );
+    await this.uiHelper.verifyHeading("Plugins" + " (1)");
     await expect(
       this.page.locator(".v5-MuiPaper-outlined").first(),
-    ).toContainText(searchText, { timeout: 10000 });
+    ).toContainText(searchText, {
+      timeout: 10000,
+    });
   }
 
   async verifyPluginDetails({
@@ -143,9 +124,7 @@ export class Extensions {
     ).toBeVisible();
 
     if (includeAbout) {
-      await this.uiHelper.verifyText(
-        t["plugin.extensions"][lang]["metadata.about"],
-      );
+      await this.uiHelper.verifyText("About");
     }
 
     await this.verifyMultipleHeadings(headings);

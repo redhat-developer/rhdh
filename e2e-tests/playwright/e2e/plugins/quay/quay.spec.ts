@@ -39,6 +39,8 @@ test.describe("Test Quay.io plugin", () => {
     }
 
     await page.getByTestId("quay-repo-table").waitFor({ state: "visible" });
+    // Only show images that have a size
+    await uiHelper.searchInputAriaLabel("GB");
     // Verify cells with the adjusted selector
     const allCellsIdentifier = ImageRegistry.getAllCellsIdentifier();
     await uiHelper.verifyCellsInTable(allCellsIdentifier);

@@ -72,6 +72,7 @@ wait_for_crunchy_crd() {
 deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
+  local skip_db_wait=${3:-false}
 
   # Verify Backstage CRD is available
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
@@ -88,6 +89,11 @@ deploy_rhdh_operator() {
     log::error "Backstage deployment not created after 5 minutes"
     _operator_debug_info "$namespace"
     return 1
+  fi
+
+  if [[ "$skip_db_wait" == "true" ]]; then
+    log::info "Skipping database resource wait (enableLocalDb=false)"
+    return 0
   fi
 
   # Wait for the operator to create the database resource (5 minutes max)

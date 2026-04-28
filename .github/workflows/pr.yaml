@@ -32,16 +32,13 @@ concurrency:
 
 jobs:
   build:
-    name: Build with Node.js ${{ matrix.node-version }}
+    name: Build with Node.js
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      matrix:
-        node-version: [22]
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -52,9 +49,9 @@ jobs:
 
       - name: Setup Node.js
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: '.nvmrc'
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
@@ -71,23 +68,20 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: backstage/actions/yarn-install@2cd6978b476cbdc39fec48346f8b6ca13199dd6a # v0.7.8
         with:
-          cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
+          cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
 
       - name: Build packages
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run build --continue --affected
 
   test:
-    name: Test with Node.js ${{ matrix.node-version }}
+    name: Test with Node.js
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      matrix:
-        node-version: [22]
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -97,9 +91,9 @@ jobs:
 
       - name: Setup Node.js
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: '.nvmrc'
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
@@ -116,7 +110,7 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: backstage/actions/yarn-install@2cd6978b476cbdc39fec48346f8b6ca13199dd6a # v0.7.8
         with:
-          cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
+          cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
 
       - name: Install Python dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -148,9 +142,26 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
 
+      - name: Upload coverage to Codecov
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          flags: rhdh
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
       - name: Run Python tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v
+        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v --cov=scripts/install-dynamic-plugins --cov-report=lcov:coverage-install-dynamic-plugins.lcov
+
+      - name: Upload install-dynamic-plugins coverage to Codecov
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          files: coverage-install-dynamic-plugins.lcov
+          flags: install-dynamic-plugins
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
