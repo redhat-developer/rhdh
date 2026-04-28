@@ -78,3 +78,18 @@ jobs:
           flags: rhdh
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+
+      - name: Install Python dependencies
+        run: pip install -r python/requirements-dev.txt -r python/requirements.txt
+
+      - name: Run Python tests with coverage
+        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v --cov=scripts/install-dynamic-plugins --cov-report=lcov:coverage-install-dynamic-plugins.lcov
+
+      - name: Upload install-dynamic-plugins coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          files: coverage-install-dynamic-plugins.lcov
+          flags: install-dynamic-plugins
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
