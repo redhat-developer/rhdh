@@ -16,6 +16,9 @@ packages:
   - package: '@red-hat-developer-hub/backstage-plugin-extensions'
   - package: '@red-hat-developer-hub/backstage-plugin-extensions-backend'
   - package: '@red-hat-developer-hub/backstage-plugin-quickstart'
+  - package: '@red-hat-developer-hub/backstage-plugin-scorecard'
+  - package: '@red-hat-developer-hub/backstage-plugin-scorecard-backend'
+  - package: '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf'
   disabled:
   - package: '@backstage-community/plugin-acr'
   - package: '@backstage-community/plugin-catalog-backend-module-keycloak'
