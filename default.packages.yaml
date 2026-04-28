@@ -19,6 +19,8 @@ packages:
   - package: '@red-hat-developer-hub/backstage-plugin-global-header' # generally-available
   - package: '@red-hat-developer-hub/backstage-plugin-extensions' # tech-preview
   - package: '@red-hat-developer-hub/backstage-plugin-extensions-backend' # tech-preview
+  - package: "@red-hat-developer-hub/backstage-plugin-lightspeed" # generally-available
+  - package: "@red-hat-developer-hub/backstage-plugin-lightspeed-backend" # generally-available
   - package: '@red-hat-developer-hub/backstage-plugin-quickstart' # generally-available
   disabled: # should ideally contain no community content; TODO: remove some community or TP stuff in 2.1?
   - package: '@backstage-community/plugin-acr' # tech-preview
