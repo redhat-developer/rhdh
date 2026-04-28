@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import { test } from "@playwright/test";
+import { test } from "@support/shared-page";
 import { Common } from "../../../utils/common";
 import { Catalog } from "../../../support/pages/catalog";
 // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
 // import { CatalogImport } from "../../../support/pages/catalog-import";
 import { ScorecardPage } from "../../../support/page-objects/scorecard/scorecard-page";
-import type { BrowserContext, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 test.describe.serial("Scorecard Plugin Tests", () => {
-  let context: BrowserContext;
   let page: Page;
   let catalog: Catalog;
   // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
@@ -33,23 +32,18 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   let initialGithubCount: number;
   let initialJiraCount: number;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ sharedPage }, testInfo) => {
     testInfo.annotations.push({
       type: "component",
       description: "scorecard",
     });
 
-    context = await browser.newContext();
-    page = await context.newPage();
+    page = sharedPage;
     catalog = new Catalog(page);
     // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
     // catalogImport = new CatalogImport(page);
     scorecardPage = new ScorecardPage(page);
     await new Common(page).loginAsKeycloakUser();
-  });
-
-  test.afterAll(async () => {
-    await context?.close();
   });
 
   test("Setup aggregated scorecards on homepage", async () => {

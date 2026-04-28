@@ -321,8 +321,11 @@ apply_yaml_files() {
   local rhdh_base_url=$3
   log::info "Applying YAML files to namespace ${project}"
 
-  oc config set-context --current --namespace="${project}"
+  # Create temporary directory for namespace-patched YAMLs (parallel-deployment safe)
+  local tmpdir
+  tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/apply-yaml-${project}-XXXXXX")
 
+  # Copy and patch YAML files that need namespace substitution
   local files=(
     "$dir/resources/service_account/service-account-rhdh.yaml"
     "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml"
@@ -330,7 +333,9 @@ apply_yaml_files() {
   )
 
   for file in "${files[@]}"; do
-    common::sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
+    local basename
+    basename=$(basename "$file")
+    sed "s/namespace:.*/namespace: ${project}/g" "$file" > "${tmpdir}/${basename}"
   done
 
   DH_TARGET_URL=$(common::base64_encode "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}")
@@ -338,11 +343,12 @@ apply_yaml_files() {
   RHDH_BASE_URL_HTTP=$(common::base64_encode "${rhdh_base_url/https/http}")
   export DH_TARGET_URL RHDH_BASE_URL RHDH_BASE_URL_HTTP
 
-  oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
+  # Apply YAMLs from tmpdir (patched) or original location (no patch needed)
+  oc apply -f "${tmpdir}/service-account-rhdh.yaml" --namespace="${project}"
   oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
 
-  oc apply -f "$dir/resources/cluster_role/cluster-role-k8s.yaml" --namespace="${project}"
-  oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml" --namespace="${project}"
+  oc apply -f "${tmpdir}/cluster-role-k8s.yaml" --namespace="${project}"
+  oc apply -f "${tmpdir}/cluster-role-binding-k8s.yaml" --namespace="${project}"
 
   envsubst < "${DIR}/auth/secrets-rhdh-secrets.yaml" | oc apply --namespace="${project}" -f -
 
@@ -370,19 +376,21 @@ apply_yaml_files() {
   # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
   if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
     # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml" --namespace="${project}"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml" --namespace="${project}"
 
     # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
     if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml" --namespace="${project}"
     else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
     fi
   else
     log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"
   fi
+
+  rm -rf "${tmpdir}"
 }
 
 deploy_test_backstage_customization_provider() {
@@ -564,7 +572,7 @@ base_deployment() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
-  namespace::configure ${NAME_SPACE}
+  namespace::configure "${NAME_SPACE}"
 
   deploy_redis_cache "${NAME_SPACE}"
 
@@ -654,13 +662,76 @@ rbac_deployment() {
   fi
 }
 
+# Run base_deployment and rbac_deployment in parallel.
+# Both target disjoint namespaces (NAME_SPACE vs NAME_SPACE_RBAC + NAME_SPACE_POSTGRES_DB)
+# so there is no resource conflict. Overlapping the two helm upgrades and their
+# internal readiness waits saves ~3-5 min of wall-clock time on CI.
+#
+# Args:
+#   $1 - base_fn: function name for the base deployment
+#   $2 - base_arg: artifacts_subdir passed to base_fn
+#   $3 - rbac_fn: function name for the RBAC deployment
+#   $4 - rbac_arg: artifacts_subdir passed to rbac_fn
+#
+# Returns:
+#   0 if both deployments succeed
+#   1 if either (or both) fail — failures are always reported individually
+#
+# Requires:
+#   NAME_SPACE and NAME_SPACE_RBAC must be different to avoid resource conflicts
+_run_parallel_deployments() {
+  local base_fn=$1
+  local base_arg=$2
+  local rbac_fn=$3
+  local rbac_arg=$4
+
+  # Validate that namespaces are disjoint to prevent race conditions
+  if [[ "${NAME_SPACE:-}" == "${NAME_SPACE_RBAC:-}" ]] || [[ -z "${NAME_SPACE:-}" ]] || [[ -z "${NAME_SPACE_RBAC:-}" ]]; then
+    log::error "NAME_SPACE ('${NAME_SPACE:-}') and NAME_SPACE_RBAC ('${NAME_SPACE_RBAC:-}') must be different and non-empty for parallel deployment"
+    return 1
+  fi
+
+  log::section "Starting parallel deployments: base + RBAC"
+  log::info "Base namespace: ${NAME_SPACE}, RBAC namespace: ${NAME_SPACE_RBAC}"
+
+  "${base_fn}" "${base_arg}" &
+  local base_pid=$!
+  log::info "Base deployment started in background (PID: ${base_pid})"
+
+  "${rbac_fn}" "${rbac_arg}" &
+  local rbac_pid=$!
+  log::info "RBAC deployment started in background (PID: ${rbac_pid})"
+
+  local base_rc=0 rbac_rc=0
+  wait "${base_pid}" || base_rc=$?
+  wait "${rbac_pid}" || rbac_rc=$?
+  log::section "Parallel deployments finished — evaluating results"
+
+  if [[ ${base_rc} -eq 0 ]]; then
+    log::success "Base deployment completed"
+  else
+    log::error "Base deployment failed (exit code: ${base_rc})"
+  fi
+  if [[ ${rbac_rc} -eq 0 ]]; then
+    log::success "RBAC deployment completed"
+  else
+    log::error "RBAC deployment failed (exit code: ${rbac_rc})"
+  fi
+
+  if [[ ${base_rc} -ne 0 || ${rbac_rc} -ne 0 ]]; then
+    return 1
+  fi
+  return 0
+}
+
 initiate_deployments() {
   local base_artifacts_subdir=$1
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  base_deployment "${base_artifacts_subdir}"
-  rbac_deployment "${rbac_artifacts_subdir}"
+  _run_parallel_deployments \
+    base_deployment "${base_artifacts_subdir}" \
+    rbac_deployment "${rbac_artifacts_subdir}"
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
@@ -668,7 +739,7 @@ base_deployment_osd_gcp() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
-  namespace::configure ${NAME_SPACE}
+  namespace::configure "${NAME_SPACE}"
 
   deploy_redis_cache "${NAME_SPACE}"
 
@@ -727,8 +798,9 @@ initiate_deployments_osd_gcp() {
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  base_deployment_osd_gcp "${base_artifacts_subdir}"
-  rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
+  _run_parallel_deployments \
+    base_deployment_osd_gcp "${base_artifacts_subdir}" \
+    rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
 }
 
 # install base RHDH deployment before upgrade
