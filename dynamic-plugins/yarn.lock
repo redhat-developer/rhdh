@@ -13922,14 +13922,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.12.0":
-  version: 1.12.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.12.0"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.13.0":
+  version: 1.13.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.13.0"
   dependencies:
     "@backstage/catalog-client": "npm:^1.14.0"
     "@backstage/catalog-model": "npm:^1.7.7"
     "@backstage/core-components": "npm:^0.18.8"
     "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/plugin-app-react": "npm:^0.2.1"
     "@backstage/plugin-catalog-react": "npm:^2.1.1"
     "@backstage/plugin-home": "npm:^0.9.3"
@@ -13940,6 +13941,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styles": "npm:5.18.0"
+    "@red-hat-developer-hub/backstage-plugin-homepage-common": "npm:^0.1.0"
     "@scalprum/react-core": "npm:0.11.1"
     react-grid-layout: "npm:1.5.3"
     react-use: "npm:17.6.0"
@@ -13947,7 +13949,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.3
-  checksum: 10c0/594214193a949e9aecd9fe296d7f707ef5c40b7837f0b44befbc151daceaaa8c66cea2e7bbd1d41dfc866f1f442c57111b44e945d140fb0d3f0577f166c3744f
+  checksum: 10c0/40608e66f597cb713311a7b908c65f7e3dc50d63ee88ae9889e9fbac1bf6fb659257686f292c55207e93b54cd1c76b6cc4abccb0c9c5da94de119987199859ca
   languageName: node
   linkType: hard
 
@@ -14071,6 +14073,15 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
   checksum: 10c0/4fcf317387247d5d306529fbb77fa4bd1ab46b23442652814f5e2bfce85fb28a7df817f7085922b0da25ad175085ff6cb7db57577937a699443bbedab850baed
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.1.0"
+  dependencies:
+    "@backstage/plugin-permission-common": "npm:^0.9.7"
+  checksum: 10c0/e6ba4e32453d46bcd293cced0ca790f3d622771fda6b1abef1019283b12f9f9661e5a145aee7882c18893a1aeb7f5f3c4488bbbc0edbc8ced2d8c7b71b878ca5
   languageName: node
   linkType: hard
 
@@ -31961,7 +31972,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "npm:1.12.0"
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "npm:1.13.0"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
