@@ -69,7 +69,10 @@ jobs:
           cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
 
       - name: Install jest-junit reporter
-        run: npm install jest-junit@17.0.0 --prefix ${{ runner.temp }}/jest-junit
+        run: |
+          npm install jest-junit@17.0.0 --ignore-scripts --prefix ${{ runner.temp }}/jest-junit
+          ln -s ${{ runner.temp }}/jest-junit/node_modules/jest-junit node_modules/jest-junit
+          mkdir -p ${{ runner.temp }}/test-results
 
       - name: Run tests with coverage
         id: tests
@@ -77,7 +80,7 @@ jobs:
           JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results
           JEST_JUNIT_CLASSNAME: '{filepath}'
           JEST_JUNIT_UNIQUE_OUTPUT_NAME: 'true'
-        run: yarn run test --continue -- --reporters=default --reporters=${{ runner.temp }}/jest-junit/node_modules/jest-junit
+        run: yarn run test --continue -- --reporters=default --reporters=jest-junit
 
       - name: Upload coverage to Codecov
         if: ${{ !cancelled() }}
