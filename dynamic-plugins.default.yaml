@@ -1054,7 +1054,7 @@ plugins:
             sender: ${EMAIL_SENDER}
             broadcastConfig:
               receiver: users
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.45.3__0.2.15
+  - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-azure-dynamic
     disabled: true
   # - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-scaffolder-backend-module-github@sha256:abfd71ab7fe0ecdabfc81e06addc67068e20fc50c322af8ceea10d899dd52db3
   # Tag: 1.9.0--0.9.2, Build date: 2026-01-30T20:57:05Z
