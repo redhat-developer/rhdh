@@ -92,7 +92,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
-        uses: codecov/test-results-action@6ba3fdeec616fb91fd6a389b788a2366835a0fa2 # v1.2.1
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
         with:
           flags: rhdh
           token: ${{ secrets.CODECOV_TOKEN }}
