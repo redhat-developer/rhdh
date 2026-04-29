@@ -1,12 +1,13 @@
+# MANUALLY maintained list of "core plugins"
+#
 # Do not add packages to this list without prior agreement from PM
+#
 # New packages should only be "tech-preview" or "generally-available"
-# 30 of these are generally-available
-# 16 are tech-preview, and should be promoted via a PM-sponsored Feature to generally-available at some point
-# 6 are community, and should be removed over time
+#    16 are tech-preview, and should be promoted via a PM-sponsored Feature to generally-available at some point
+#    06 are community, and should be removed over time
 packages:
-  enabled:
+  enabled: # should onyly include GA (or TP with a path to GA) content here
   - package: '@backstage-community/plugin-analytics-provider-segment' # generally-available
-  - package: '@backstage-community/plugin-scaffolder-backend-module-quay' # community
   - package: '@backstage-community/plugin-scaffolder-backend-module-regex' # generally-available
   - package: '@backstage/plugin-techdocs' # generally-available
   - package: '@backstage/plugin-techdocs-backend' # generally-available
@@ -20,19 +21,19 @@ packages:
   - package: '@red-hat-developer-hub/backstage-plugin-global-header' # generally-available
   - package: '@red-hat-developer-hub/backstage-plugin-extensions' # tech-preview
   - package: '@red-hat-developer-hub/backstage-plugin-extensions-backend' # tech-preview
+  - package: "@red-hat-developer-hub/backstage-plugin-lightspeed" # generally-available
+  - package: "@red-hat-developer-hub/backstage-plugin-lightspeed-backend" # generally-available
   - package: '@red-hat-developer-hub/backstage-plugin-quickstart' # generally-available
-  disabled:
+
+  disabled: # should ideally contain no community content; TODO: remove some community or TP stuff in 2.1?
   - package: '@backstage-community/plugin-acr' # tech-preview
   - package: '@backstage-community/plugin-catalog-backend-module-keycloak' # generally-available
   - package: '@backstage-community/plugin-catalog-backend-module-pingidentity' # tech-preview
   - package: '@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor' # tech-preview
-  - package: '@backstage-community/plugin-quay' # community
-  - package: '@backstage-community/plugin-quay-backend' # community
   - package: '@backstage-community/plugin-rbac' # generally-available
   - package: '@backstage-community/plugin-scaffolder-backend-module-kubernetes' # generally-available
   - package: '@backstage-community/plugin-tech-radar' # generally-available
   - package: '@backstage-community/plugin-tech-radar-backend' # generally-available
-  - package: '@backstage-community/plugin-tekton' # community
   - package: '@backstage-community/plugin-topology' # generally-available
   - package: '@backstage/plugin-catalog-backend-module-github' # generally-available
   - package: '@backstage/plugin-catalog-backend-module-github-org' # generally-available
@@ -57,6 +58,12 @@ packages:
   - package: '@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki' # tech-preview
   - package: '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets' # generally-available
   - package: '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator' # generally-available
-  - package: '@roadiehq/backstage-plugin-argo-cd-backend' # community
-  - package: '@roadiehq/scaffolder-backend-argocd' # community
   - package: '@roadiehq/scaffolder-backend-module-http-request' # generally-available
+
+  # these community supported plugins do not have a downstream analogue in overlays repo's rhdh-supported-packages.txt
+  - package: '@backstage-community/plugin-quay' # community
+  - package: '@backstage-community/plugin-quay-backend' # community
+  - package: '@backstage-community/plugin-scaffolder-backend-module-quay' # community
+  - package: '@backstage-community/plugin-tekton' # community
+  - package: '@roadiehq/backstage-plugin-argo-cd-backend' # community - TODO: replace with RH Argo CD plugin when it's ready
+  - package: '@roadiehq/scaffolder-backend-argocd' # community - TODO: replace with RH Argo CD plugin when it's ready
