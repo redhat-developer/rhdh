@@ -43,6 +43,38 @@ initiate_operator_deployments() {
   log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE_RBAC deployment"
 }
 
+# Fixes ghcr.io OCI plugin URLs for OSD-GCP where ghcr.io connectivity is unreliable:
+# 1. Replaces {{inherit}} tags with explicit versions + !<plugin-path> suffixes
+#    (operator init container lacks dynamic-plugins.default.yaml to resolve {{inherit}})
+# 2. Adds !<plugin-path> suffixes to non-inherit ghcr.io plugins to skip skopeo inspect
+# Versions sourced from quay.io/rhdh/plugin-catalog-index:1.10.
+fix_ghcr_oci_urls_for_osd_gcp() {
+  local file=$1
+  log::info "Fixing ghcr.io OCI URLs for OSD-GCP in ${file}"
+  sed -i \
+    -e 's|backstage-community-plugin-github-issues:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-github-issues:bs_1.45.3__0.16.0!backstage-community-plugin-github-issues|' \
+    -e 's|roadiehq-backstage-plugin-github-pull-requests:{{ "{{" }}inherit{{ "}}" }}|roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2!roadiehq-backstage-plugin-github-pull-requests|' \
+    -e 's|backstage-community-plugin-github-actions:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-github-actions:bs_1.45.3__0.18.0!backstage-community-plugin-github-actions|' \
+    -e 's|backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1!backstage-community-plugin-quay-backend|' \
+    -e 's|backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-quay:bs_1.45.3__1.28.1!backstage-community-plugin-quay|' \
+    -e 's|backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}|backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0!backstage-community-plugin-scaffolder-backend-module-quay|' \
+    -e 's|immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}|immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0!immobiliarelabs-backstage-plugin-gitlab-backend|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-orchestrator@sha256:062a536d266bcd76d454fc9fdc0157b99e62074f6d3304578a68f515ced83e64|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:365d67fddeeaa2cf0b0266b012eb3e74fb5d5071b848059662353e62e7f9ceab|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:5b52adc153afcf79fb134262aa01b1e117085bf59c1a1997ff2e3a6f31c7647a|' \
+    -e 's|red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}|red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:b8d9886e39fa1262bfe1046f6ec5825b8e576c4997c744e0f90f722453f35aec|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-application-provider-test:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-application-provider-test|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-application-listener-test:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-application-listener-test|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-global-header-test:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-global-header-test|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-scorecard-backend:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-scorecard-backend|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-scorecard:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-scorecard|' \
+    -e 's|\(red-hat-developer-hub-backstage-plugin-dynamic-home-page:[a-zA-Z0-9._]*\)|\1!red-hat-developer-hub-backstage-plugin-dynamic-home-page|' \
+    "${file}"
+  return $?
+}
+
 # OSD-GCP specific operator deployment that skips orchestrator workflows
 initiate_operator_deployments_osd_gcp() {
   log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
@@ -52,13 +84,18 @@ initiate_operator_deployments_osd_gcp() {
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
-  # Merge base values with OSD-GCP diff file before creating dynamic plugins config
+  # Merge base values with OSD-GCP diff file, replace {{inherit}} with explicit versions,
+  # then create dynamic plugins ConfigMap
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
+  fix_ghcr_oci_urls_for_osd_gcp "/tmp/merged-values_showcase_OSD-GCP.yaml" || return 1
+  # Dedup plugins after sed rewrite (base {{inherit}} entries become identical to diff @sha256 entries)
+  yq -i '.global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)' "/tmp/merged-values_showcase_OSD-GCP.yaml"
   config::create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR}" "/tmp/configmap-dynamic-plugins.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
+
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP
@@ -69,13 +106,18 @@ initiate_operator_deployments_osd_gcp() {
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
-  # Merge RBAC values with OSD-GCP diff file before creating dynamic plugins config
+  # Merge RBAC values with OSD-GCP diff file, replace {{inherit}} with explicit versions,
+  # then create dynamic plugins ConfigMap
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
+  fix_ghcr_oci_urls_for_osd_gcp "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" || return 1
+  # Dedup plugins after sed rewrite (base {{inherit}} entries become identical to diff @sha256 entries)
+  yq -i '.global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)' "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
   config::create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   wait_for_crunchy_crd || return 1
+
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP RBAC
