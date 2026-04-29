@@ -296,12 +296,12 @@ test.describe("Admin > Extensions", () => {
       page,
     }) => {
       const productionEnvAlert = page.getByRole("alert").first();
-      productionEnvAlert.getByText(
-        "Plugin installation is disabled in the production environment.",
-        {
-          exact: true,
-        },
-      );
+      await expect(
+        productionEnvAlert.getByText(
+          "Plugin installation is disabled in the production environment.",
+          { exact: true },
+        ),
+      ).toBeVisible();
       await extensions.searchExtensions("Topology");
       await extensions.waitForSearchResults("Topology");
       await extensions.clickReadMoreByPluginTitle(
