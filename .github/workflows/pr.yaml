@@ -138,9 +138,18 @@ jobs:
             echo "ERROR: Workspace is dirty! Must run 'yarn build:dockerfile' and commit changes!"; exit 1; \
           fi
 
+      - name: Install jest-junit reporter
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: npm install jest-junit --prefix ${{ runner.temp }}/jest-junit
+
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: yarn run test --continue --affected
+        id: tests
+        env:
+          NODE_PATH: ${{ runner.temp }}/jest-junit/node_modules
+          JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results
+          JEST_JUNIT_CLASSNAME: '{filepath}'
+        run: yarn run test --continue --affected -- --reporters=default --reporters=jest-junit
 
       - name: Upload coverage to Codecov
         if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
@@ -148,6 +157,15 @@ jobs:
         with:
           flags: rhdh
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/test-results-action@6ba3fdeec616fb91fd6a389b788a2366835a0fa2 # v1.2.1
+        with:
+          flags: rhdh
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
 
       - name: Run Python tests

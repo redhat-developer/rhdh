@@ -68,8 +68,16 @@ jobs:
         with:
           cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
 
+      - name: Install jest-junit reporter
+        run: npm install jest-junit --prefix ${{ runner.temp }}/jest-junit
+
       - name: Run tests with coverage
-        run: yarn run test --continue
+        id: tests
+        env:
+          NODE_PATH: ${{ runner.temp }}/jest-junit/node_modules
+          JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results
+          JEST_JUNIT_CLASSNAME: '{filepath}'
+        run: yarn run test --continue -- --reporters=default --reporters=jest-junit
 
       - name: Upload coverage to Codecov
         if: ${{ !cancelled() }}
@@ -77,6 +85,15 @@ jobs:
         with:
           flags: rhdh
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/test-results-action@6ba3fdeec616fb91fd6a389b788a2366835a0fa2 # v1.2.1
+        with:
+          flags: rhdh
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
 
       - name: Install Python dependencies
