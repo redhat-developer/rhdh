@@ -140,16 +140,16 @@ jobs:
 
       - name: Install jest-junit reporter
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: npm install jest-junit --prefix ${{ runner.temp }}/jest-junit
+        run: npm install jest-junit@17.0.0 --prefix ${{ runner.temp }}/jest-junit
 
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         id: tests
         env:
-          NODE_PATH: ${{ runner.temp }}/jest-junit/node_modules
           JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results
           JEST_JUNIT_CLASSNAME: '{filepath}'
-        run: yarn run test --continue --affected -- --reporters=default --reporters=jest-junit
+          JEST_JUNIT_UNIQUE_OUTPUT_NAME: 'true'
+        run: yarn run test --continue --affected -- --reporters=default --reporters=${{ runner.temp }}/jest-junit/node_modules/jest-junit
 
       - name: Upload coverage to Codecov
         if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
