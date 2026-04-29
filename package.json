@@ -69,11 +69,6 @@
     "@backstage/backend-plugin-api@^1.6.0": "patch:@backstage/backend-plugin-api@npm%3A1.5.0#./.yarn/patches/@backstage-backend-plugin-api-npm-1.5.0-7a004cae77.patch",
     "@backstage/backend-plugin-api@^1.4.2": "patch:@backstage/backend-plugin-api@npm%3A1.5.0#./.yarn/patches/@backstage-backend-plugin-api-npm-1.5.0-7a004cae77.patch",
     "@backstage/cli-common@^0.1.15": "patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch",
-    "@backstage/plugin-scaffolder-backend@3.0.2": "patch:@backstage/plugin-scaffolder-backend@npm%3A3.0.2#./.yarn/patches/@backstage-plugin-scaffolder-backend-npm-3.0.2-01a7364606.patch",
-    "@backstage/backend-defaults@0.13.1": "patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch",
-    "@backstage/backend-defaults@^0.13.1": "patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch",
-    "@backstage/backend-defaults@^0.13.2": "patch:@backstage/backend-defaults@npm%3A0.13.1#./.yarn/patches/@backstage-backend-defaults-npm-0.13.1-51efe19efd.patch",
-    "@backstage/plugin-scaffolder-node@^0.12.1": "patch:@backstage/plugin-scaffolder-node@npm%3A0.12.1#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.12.1-7ce02a35bc.patch",
     "infinispan": "0.13.0",
     "@backstage/plugin-scaffolder-react@npm:1.19.3/flatted": "^3.4.2"
   },
