@@ -118,7 +118,8 @@ spec:
     `);
   });
 
-  test("Add a Repository and Confirm its Preview", async () => {
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme("Add a Repository and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
 
     // Wait to ensure the repo will appear in the Bulk Import UI
@@ -150,7 +151,8 @@ spec:
     await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
-  test("Add a Repository, generate a PR, and confirm its preview", async () => {
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme("Add a Repository, generate a PR, and confirm its preview", async () => {
     // Wait to ensure the repo will appear in the Bulk Import UI
     await expect(async () => {
       await page.reload();
@@ -178,7 +180,8 @@ spec:
     });
   });
 
-  test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -191,7 +194,8 @@ spec:
     ]);
   });
 
-  test("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,
       newRepoDetails.repoName,
@@ -206,7 +210,8 @@ spec:
     expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
   });
 
-  test("Verify Selected repositories shows catalog-info.yaml status as 'Already imported' and 'WAIT_PR_APPROVAL'", async () => {
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme("Verify Selected repositories shows catalog-info.yaml status as 'Already imported' and 'WAIT_PR_APPROVAL'", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -218,7 +223,8 @@ spec:
     ]);
   });
 
-  test("Merge the PR on GitHub and Confirm the Status Updates to 'Already imported'", async () => {
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme("Merge the PR on GitHub and Confirm the Status Updates to 'Already imported'", async () => {
     await uiHelper.openSidebar("Bulk import");
     // Merge PR is generated for the repository without the catalog.yaml file.
     await APIHelper.mergeGitHubPR(
@@ -250,7 +256,8 @@ spec:
     });
   });
 
-  test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme("Verify Added Repositories Appear in the Catalog as Expected", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
