@@ -144,6 +144,24 @@ export interface Config {
     }>;
   };
   /** @deepVisibility frontend */
+  bulkImport?: {
+    /** @visibility frontend */
+    importAPI?: 'open-pull-requests' | 'orchestrator' | 'scaffolder';
+    /** @visibility frontend */
+    instructionsEnabled?: boolean;
+    /** @visibility frontend */
+    instructionsDefaultExpanded?: boolean;
+    /** @deepVisibility frontend */
+    instructionsSteps?: Array<{
+      /** @visibility frontend */
+      id: string;
+      /** @visibility frontend */
+      text: string;
+      /** @visibility frontend */
+      icon?: string;
+    }>;
+  };
+  /** @deepVisibility frontend */
   dynamicPlugins: {
     /** @deepVisibility frontend */
     frontend?: {
