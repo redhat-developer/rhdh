@@ -2628,9 +2628,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor@npm:2.14.0":
-  version: 2.14.0
-  resolution: "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor@npm:2.14.0"
+"@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor@npm:2.14.1":
+  version: 2.14.1
+  resolution: "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor@npm:2.14.1"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.8.0"
     "@backstage/catalog-client": "npm:^1.14.0"
@@ -2644,7 +2644,7 @@ __metadata:
     "@octokit/core": "npm:^6.0.0"
     git-url-parse: "npm:^16.1.0"
     octokit-plugin-create-pull-request: "npm:^6.0.1"
-  checksum: 10c0/79e3feb8a93d573db4c38a78ab6984a56d7ca8ebc69f6c33845c1c6e026c0e24afb0eca21d556106c0fc8627c5a235b9a1eafa26b1b176050518bedbcef2f48d
+  checksum: 10c0/604309c4e880eea9f0afb2249d9ab91ba33d2df3b20afaaa1281b4e56b2a3f223ab4e9e3bd55eb571db211999460345f8f4047b60343cda627853151ef095742
   languageName: node
   linkType: hard
 
@@ -2819,17 +2819,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-tekton-react@npm:^0.4.0":
-  version: 0.4.1
-  resolution: "@backstage-community/plugin-tekton-react@npm:0.4.1"
-  dependencies:
-    "@kubernetes/client-node": "npm:1.4.0"
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/e64cafa09f69f6cf25c7a8d0fe551b3b579ca4110b25d05a5c2a63b4fa97bd03e01244fc94afcd82a5c6fcab1113532dfdf18b89e8596f1670d24c9ce219d384
-  languageName: node
-  linkType: hard
-
 "@backstage-community/plugin-tekton-react@npm:^0.5.0":
   version: 0.5.0
   resolution: "@backstage-community/plugin-tekton-react@npm:0.5.0"
@@ -2880,11 +2869,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-topology@npm:2.12.0":
-  version: 2.12.0
-  resolution: "@backstage-community/plugin-topology@npm:2.12.0"
+"@backstage-community/plugin-topology@npm:2.12.1":
+  version: 2.12.1
+  resolution: "@backstage-community/plugin-topology@npm:2.12.1"
   dependencies:
-    "@backstage-community/plugin-tekton-react": "npm:^0.4.0"
+    "@backstage-community/plugin-tekton-react": "npm:^0.5.0"
     "@backstage/catalog-model": "npm:^1.7.7"
     "@backstage/core-components": "npm:^0.18.8"
     "@backstage/core-plugin-api": "npm:^1.12.4"
@@ -2917,7 +2906,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/62462b61af3d4a936eb84881cb75e374ef09919e8300901f81db6d604945850ee2a5fede99bcd51bee65769fe791ee848422b86cc9116c9e3f637b036ed9d69c
+  checksum: 10c0/7abbee712a8c7c70613e709104e34f078d7a998c3fc617c016f5e5a9d77136aaed2694f4664ee89068390dc45065661776a1afda6918251ef46fca3e04a3fe8b
   languageName: node
   linkType: hard
 
@@ -18558,7 +18547,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor@workspace:wrappers/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic"
   dependencies:
-    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "npm:2.14.0"
+    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "npm:2.14.1"
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
@@ -18672,7 +18661,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-topology@workspace:wrappers/backstage-community-plugin-topology"
   dependencies:
-    "@backstage-community/plugin-topology": "npm:2.12.0"
+    "@backstage-community/plugin-topology": "npm:2.12.1"
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
