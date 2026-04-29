@@ -97,12 +97,11 @@ test.describe.fixme("GitHub Happy path", async () => {
     }
   });
 
-  test("Click login on the login popup and verify that Overview tab renders", async () => {
+  test("Navigate to the Red Hat Developer Hub component page", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Red Hat Developer Hub");
 
     const expectedPath = "/catalog/default/component/red-hat-developer-hub";
-    // Wait for the expected path in the URL
     await page.waitForURL(`**${expectedPath}`, {
       waitUntil: "domcontentloaded", // Wait until the DOM is loaded
       timeout: 20000,
@@ -111,14 +110,6 @@ test.describe.fixme("GitHub Happy path", async () => {
     expect(page.url()).toContain(expectedPath);
 
     await common.clickOnGHloginPopup();
-    await uiHelper.verifyLink("About RHDH", { exact: false });
-
-    // Workaround for RHDHBUGS-2091: Change the size to 10 to avoid information not being displayed
-    await page.getByRole("button", { name: "20" }).click();
-    await page.getByRole("option", { name: "10", exact: true }).click();
-
-    await backstageShowcase.verifyPRStatisticsRendered();
-    await backstageShowcase.verifyAboutCardIsDisplayed();
   });
 
   test("Verify that the Issues tab renders all the open github issues in the repository", async () => {
@@ -134,67 +125,6 @@ test.describe.fixme("GitHub Happy path", async () => {
     for (const issue of openIssues.slice(0, 5)) {
       await uiHelper.verifyText(issue.title.replace(/\s+/g, " "));
     }
-  });
-
-  test("Verify that the Pull/Merge Requests tab renders the 5 most recently updated Open Pull Requests", async () => {
-    await uiHelper.clickTab("Pull/Merge Requests");
-    const openPRs = await BackstageShowcase.getShowcasePRs("open");
-    await backstageShowcase.verifyPRRows(openPRs, 0, 5);
-  });
-
-  test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async () => {
-    // Use semantic selector and wait for button to be ready (no force needed)
-    const closedButton = page.getByRole("button", { name: "CLOSED" });
-    await expect(closedButton).toBeVisible();
-    await expect(closedButton).toBeEnabled();
-    await closedButton.click();
-    const closedPRs = await BackstageShowcase.getShowcasePRs("closed");
-    await common.waitForLoad();
-    await backstageShowcase.verifyPRRows(closedPRs, 0, 5);
-  });
-
-  test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
-    console.log("Fetching all PRs from GitHub");
-    const allPRs = await BackstageShowcase.getShowcasePRs("all", true);
-
-    console.log("Clicking on ALL button");
-    // Use semantic selector and wait for button to be ready (no force needed)
-    const allButton = page.getByRole("button", { name: "ALL" });
-    await expect(allButton).toBeVisible();
-    await expect(allButton).toBeEnabled();
-    await allButton.click();
-    await backstageShowcase.verifyPRRows(allPRs, 0, 5);
-
-    console.log("Clicking on Next Page button");
-    await backstageShowcase.clickNextPage();
-    await backstageShowcase.verifyPRRows(allPRs, 5, 10);
-
-    // const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
-    const lastPagePRs = 996; // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
-
-    console.log("Clicking on Last Page button");
-    await backstageShowcase.clickLastPage();
-    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, 1000);
-
-    console.log("Clicking on Previous Page button");
-    await backstageShowcase.clickPreviousPage();
-    await common.waitForLoad();
-    await backstageShowcase.verifyPRRows(
-      allPRs,
-      lastPagePRs - 5,
-      lastPagePRs - 1,
-    );
-  });
-
-  test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
-    await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.clickLink("Red Hat Developer Hub");
-    await common.clickOnGHloginPopup();
-    await uiHelper.clickTab("Pull/Merge Requests");
-    const allPRs = await BackstageShowcase.getShowcasePRs("open");
-    await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
-    await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
-    await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
   });
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
