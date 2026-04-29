@@ -42,6 +42,10 @@ HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plug
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
+# TODO: Remove this pinned CHART_VERSION once https://redhat.atlassian.net/browse/RHDHBUGS-3030 is fixed.
+# Workaround: pin the Helm chart OCI tag for E2E. When unset, default below applies. Set CHART_VERSION=
+# (empty) before sourcing to resolve the latest -CI tag from Quay by branch instead.
+CHART_VERSION="${CHART_VERSION-1.10-114-CI}"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
