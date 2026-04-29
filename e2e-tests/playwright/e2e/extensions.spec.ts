@@ -295,13 +295,11 @@ test.describe("Admin > Extensions", () => {
     test("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
-      const productionEnvAlert = page.getByRole("alert").first();
-      productionEnvAlert.getByText(
-        "Plugin installation is disabled in the production environment.",
-        {
-          exact: true,
-        },
-      );
+      const productionMessage =
+        "Plugin installation is disabled in the production environment.";
+      await expect(
+        page.getByRole("alert").filter({ hasText: productionMessage }),
+      ).toBeVisible();
       await extensions.searchExtensions("Topology");
       await extensions.waitForSearchResults("Topology");
       await extensions.clickReadMoreByPluginTitle(
