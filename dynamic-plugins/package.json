@@ -38,5 +38,5 @@
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "infinispan": "0.13.0"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "yarn@4.14.1"
 }
