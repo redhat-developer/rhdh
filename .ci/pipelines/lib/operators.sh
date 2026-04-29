@@ -112,19 +112,20 @@ operator::install_pipelines() {
 # Install Tekton Pipelines (alternative to OpenShift Pipelines for Kubernetes)
 operator::install_tekton() {
   local display_name="tekton-pipelines-webhook"
+  local ns="tekton-pipelines"
 
-  if oc get pods -n "tekton-pipelines" | grep -q "${display_name}"; then
-    log::info "Tekton Pipelines are already installed."
-    return 0
+  if ! kubectl get namespace "${ns}" &> /dev/null; then
+    log::info "Tekton Pipelines is not installed. Installing..."
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+  else
+    log::info "Tekton Pipelines namespace exists; ensuring webhook is ready before continuing."
   fi
 
-  log::info "Tekton Pipelines is not installed. Installing..."
-  kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-
-  # Note: Calling script should wait for deployment:
-  # k8s_wait::deployment "tekton-pipelines" "${display_name}"
-  # k8s_wait::endpoint "tekton-pipelines-webhook" "tekton-pipelines"
-  return $?
+  log::info "Waiting for Tekton Pipeline CRD and webhook (required before applying Pipeline manifests)..."
+  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
+  k8s_wait::deployment "${ns}" "${display_name}" 30 10 || return 1
+  k8s_wait::endpoint "${display_name}" "${ns}" 1800 10 || return 1
+  return 0
 }
 
 # Delete Tekton Pipelines installation

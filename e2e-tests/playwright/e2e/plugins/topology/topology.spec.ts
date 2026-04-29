@@ -119,9 +119,7 @@ async function testIngressResources(page: Page, uiHelper: UIhelper) {
       .first(),
   ).toBeVisible();
   // Verify code block is visible (pre element containing configuration)
-  await expect(
-    page.getByText(/apiVersion:|kind:|metadata:/).first(),
-  ).toBeVisible();
+  await expect(page.getByText(/rules:/).first()).toBeVisible();
 }
 
 async function testRouteResources(page: Page, uiHelper: UIhelper) {

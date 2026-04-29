@@ -372,22 +372,24 @@ apply_yaml_files() {
   common::create_configmap_from_file "dynamic-global-header-config" "$project" \
     "dynamic-global-header-config.yaml" "$dir/resources/config_map/dynamic-global-header-config.yaml"
 
-  # Skip Tekton and Topology resources for K8s deployments (AKS/EKS/GKE)
+  # Skip Tekton resources for K8s deployments (AKS/EKS/GKE)
   # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
   if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
     # Create Pipeline run for tekton test case.
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml" --namespace="${project}"
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml" --namespace="${project}"
 
-    # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
-    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml" --namespace="${project}"
-    else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
-    fi
   else
-    log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"
+    log::info "Skipping Tekton Pipeline resources for K8s deployment (${JOB_NAME})"
+  fi
+
+  # Create Deployment and Pipeline for Topology test.
+  oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
+
+  if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
+    kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml" --namespace="${project}"
+  else
+    oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
   fi
 
   rm -rf "${tmpdir}"
@@ -437,11 +439,8 @@ install_pipelines_operator() {
   fi
   # Wait for Tekton Pipeline CRD to be registered before proceeding
   k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
-}
-
-waitfor_pipelines_operator() {
-  k8s_wait::deployment "openshift-operators" "pipelines"
-  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines"
+  k8s_wait::deployment "openshift-operators" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 }
 
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
@@ -453,14 +452,10 @@ install_tekton_pipelines() {
   else
     log::info "Tekton Pipelines is not installed. Installing..."
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    k8s_wait::deployment "tekton-pipelines" "tekton-pipelines-webhook" 30 10 || return 1
+    k8s_wait::endpoint "tekton-pipelines-webhook" "tekton-pipelines" 1800 10 || return 1
+    k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
   fi
-}
-
-waitfor_tekton_pipelines() {
-  local display_name="tekton-pipelines-webhook"
-  k8s_wait::deployment "tekton-pipelines" "${display_name}"
-  k8s_wait::endpoint "tekton-pipelines-webhook" "tekton-pipelines"
-  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
 }
 
 delete_tekton_pipelines() {
@@ -512,12 +507,6 @@ enable_orchestrator_plugins_op() {
 
 cluster_setup_ocp_helm() {
   operator::install_pipelines
-
-  # Wait for OpenShift Pipelines to be ready before proceeding
-  log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
-
   operator::install_postgres_ocp
 
   # Skip orchestrator infra installation based on job type (see should_skip_orchestrator)
@@ -530,12 +519,6 @@ cluster_setup_ocp_helm() {
 
 cluster_setup_ocp_operator() {
   operator::install_pipelines
-
-  # Wait for OpenShift Pipelines to be ready before proceeding
-  log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
-
   operator::install_postgres_ocp
   operator::install_serverless
   operator::install_serverless_logic
@@ -543,18 +526,16 @@ cluster_setup_ocp_operator() {
 
 cluster_setup_k8s_operator() {
   operator::install_olm
-  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
-  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
-  # operator::install_tekton
+  # Install Tekton Pipelines for K8s deployments (AKS/EKS/GKE) for topology tests to work
+  operator::install_tekton
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 cluster_setup_k8s_helm() {
-  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
-  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
-  log::info "Skipping Tekton installation for K8s Helm deployment"
+  # Install Tekton Pipelines for K8s deployments (AKS/EKS/GKE) for topology tests to work
+  log::info "Installing Tekton Pipelines for K8s Helm deployment"
   # operator::install_olm
-  # operator::install_tekton
+  operator::install_tekton
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
