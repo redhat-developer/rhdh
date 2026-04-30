@@ -32,7 +32,6 @@ gcloud_ssl_cert_create() {
 }
 
 cleanup_gke() {
-  delete_tekton_pipelines
   uninstall_olm
   delete_rhdh_operator
 }

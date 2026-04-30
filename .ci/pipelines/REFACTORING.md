@@ -424,8 +424,6 @@ Total: 835 LOC extracted into modules.
 - `install_serverless_logic_ocp_operator` → `operator::install_serverless_logic`
 - `install_serverless_ocp_operator` → `operator::install_serverless`
 - `install_pipelines_operator` → `operator::install_pipelines`
-- `install_tekton_pipelines` → `operator::install_tekton`
-- `delete_tekton_pipelines` → `operator::delete_tekton`
 - `install_olm` → `operator::install_olm`
 - `uninstall_olm` → `operator::uninstall_olm`
 
