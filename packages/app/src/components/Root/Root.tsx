@@ -589,7 +589,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                         const props = menuItem.config?.props || {};
                         const resolvedProps = { ...props };
                         if ('textKey' in props && props.textKey) {
-                          const translated = t(props.textKey as any,{});
+                          const translated = t(props.textKey as any, {});
                           if (translated !== props.textKey) {
                             resolvedProps.text = translated;
                           }
