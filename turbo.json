@@ -22,7 +22,12 @@
       "cache": false
     },
     "test": {
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "passThroughEnv": [
+        "JEST_JUNIT_OUTPUT_DIR",
+        "JEST_JUNIT_CLASSNAME",
+        "JEST_JUNIT_UNIQUE_OUTPUT_NAME"
+      ]
     },
     "lint:check": {},
     "lint:fix": {
