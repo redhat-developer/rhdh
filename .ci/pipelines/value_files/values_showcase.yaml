@@ -164,34 +164,8 @@ global:
                     seconds: 15
                   timeout:
                     minutes: 15
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          quay:
-            apiUrl: https://quay.io
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              backstage-community.plugin-quay:
-                mountPoints:
-                  - mountPoint: entity.page.image-registry/cards
-                    importName: QuayPage
-                    config:
-                      layout:
-                        gridColumn: 1 / -1
-                      if:
-                        anyOf:
-                          - isQuayAvailable
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
+      # - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:{{ "{{" }}inherit{{ "}}" }}'
+      #   disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
@@ -277,8 +251,6 @@ global:
       - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-        disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
         disabled: false

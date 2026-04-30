@@ -372,13 +372,8 @@ apply_yaml_files() {
   common::create_configmap_from_file "dynamic-global-header-config" "$project" \
     "dynamic-global-header-config.yaml" "$dir/resources/config_map/dynamic-global-header-config.yaml"
 
-  # Skip Tekton and Topology resources for K8s deployments (AKS/EKS/GKE)
-  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  # Skip Topology resources for K8s deployments (AKS/EKS/GKE)
   if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
-    # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml" --namespace="${project}"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml" --namespace="${project}"
-
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
     if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
@@ -387,7 +382,7 @@ apply_yaml_files() {
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
     fi
   else
-    log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"
+    log::info "Skipping Topology resources for K8s deployment (${JOB_NAME})"
   fi
 
   rm -rf "${tmpdir}"

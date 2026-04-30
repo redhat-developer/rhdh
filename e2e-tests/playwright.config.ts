@@ -118,9 +118,7 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
-        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
-        "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
         ...(shouldSkipOrchestratorTests
           ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
           : []),
@@ -135,7 +133,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/quick-start.spec.ts",
-        "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
       testIgnore: [
         ...(shouldSkipOrchestratorTests
@@ -166,7 +163,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
-        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -176,7 +172,6 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
-        "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts",
       ],
@@ -189,7 +184,6 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
-        "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
       testIgnore: ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"],
     },
@@ -203,7 +197,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
-        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
@@ -212,7 +205,6 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
-        "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/plugins/orchestrator/token-propagation-workflow.spec.ts",
       ],
@@ -224,7 +216,6 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
-        "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
       testIgnore: [
         ...(shouldSkipOrchestratorTests
@@ -279,7 +270,6 @@ export default defineConfig({
       },
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
-        "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/settings.spec.ts",
       ],
@@ -291,7 +281,6 @@ export default defineConfig({
       },
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
-        "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/settings.spec.ts",
       ],
@@ -303,7 +292,6 @@ export default defineConfig({
       },
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
-        "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/settings.spec.ts",
       ],
@@ -315,8 +303,6 @@ export default defineConfig({
       },
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
-        // TODO: RHDHBUGS-2592 - Custom theme spec is not working
-        // "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/settings.spec.ts",
       ],
@@ -328,7 +314,6 @@ export default defineConfig({
       },
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
-        "**/playwright/e2e/custom-theme.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/settings.spec.ts",
       ],

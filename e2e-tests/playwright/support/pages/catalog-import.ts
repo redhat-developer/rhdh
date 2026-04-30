@@ -5,7 +5,6 @@ import {
   CATALOG_IMPORT_COMPONENTS,
 } from "../page-objects/page-obj";
 import { APIHelper } from "../../utils/api-helper";
-import { GITHUB_API_ENDPOINTS } from "../../utils/api-endpoints";
 import {
   getTranslations,
   getCurrentLanguage,
@@ -115,15 +114,6 @@ export class BackstageShowcase {
     this.uiHelper = new UIhelper(page);
   }
 
-  async getGithubOpenIssues() {
-    const rep = await APIHelper.getGithubPaginatedRequest(
-      GITHUB_API_ENDPOINTS.issues("open"),
-    );
-    return rep.filter(
-      (issue: { pull_request: boolean }) => !issue.pull_request,
-    );
-  }
-
   static async getShowcasePRs(
     state: "open" | "closed" | "all",
     paginated = false,
@@ -165,15 +155,6 @@ export class BackstageShowcase {
   async selectRowsPerPage(rows: number) {
     await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tablePageSelectBox);
     await this.page.click(`ul[role="listbox"] li[data-value="${rows}"]`);
-  }
-
-  async getWorkflowRuns() {
-    const response = await APIHelper.githubRequest(
-      "GET",
-      GITHUB_API_ENDPOINTS.workflowRuns,
-    );
-    const responseBody = await response.json();
-    return responseBody.workflow_runs;
   }
 
   async verifyPRStatisticsRendered() {
