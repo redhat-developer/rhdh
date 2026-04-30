@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "prettier": "3.8.1",
-    "prettier-plugin-sh": "0.18.0",
+    "prettier-plugin-sh": "0.18.1",
     "shellcheck": "4.1.0"
   },
   "packageManager": "yarn@4.12.0"
