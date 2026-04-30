@@ -24,13 +24,6 @@ export class Catalog {
     await this.uiHelper.clickLink(name);
   }
 
-  async goToBackstageJanusProjectCITab() {
-    await this.goToBackstageJanusProject();
-    await this.uiHelper.clickTab("CI");
-    await this.page.waitForSelector('h2:text("Pipeline Runs")');
-    await this.uiHelper.verifyHeading("Pipeline Runs");
-  }
-
   async goToBackstageJanusProject() {
     await this.goToByName("backstage-janus");
   }

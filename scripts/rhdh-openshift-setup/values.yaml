@@ -88,21 +88,6 @@ global:
       #                   anyOf:
       #                     - hasAnnotation: backstage.io/kubernetes-id
       #                     - hasAnnotation: backstage.io/kubernetes-namespace
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
-      #   disabled: false
-      #   pluginConfig:
-      #     dynamicPlugins:
-      #       frontend:
-      #         backstage-community.plugin-tekton:
-      #           mountPoints:
-      #             - mountPoint: entity.page.ci/cards
-      #               importName: TektonCI
-      #               config:
-      #                 layout:
-      #                   gridColumn: "1 / -1"
-      #                 if:
-      #                   allOf:
-      #                     - isTektonCIAvailable
       - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
         disabled: false
         pluginConfig:
