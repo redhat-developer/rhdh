@@ -99,6 +99,8 @@ dynamicPlugins:
               props:
                 titleCounterEnabled: true
                 webNotificationsEnabled: false
+                textKey: menuItem.notifications
+                text: Notifications
             importName: NotificationsSidebarItem
           path: /notifications
     backstage.plugin-signals: {}

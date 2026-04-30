@@ -586,9 +586,17 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                     {renderMenuItems(false, false)}
                     {dynamicRoutes.map(({ scope, menuItem, path }) => {
                       if (menuItem && 'Component' in menuItem) {
+                        const props = menuItem.config?.props || {};
+                        const resolvedProps = { ...props };
+                        if ('textKey' in props && props.textKey) {
+                          const translated = t(props.textKey as any,{});
+                          if (translated !== props.textKey) {
+                            resolvedProps.text = translated;
+                          }
+                        }
                         return (
                           <menuItem.Component
-                            {...(menuItem.config?.props || {})}
+                            {...resolvedProps}
                             key={`${scope}/${path}`}
                             to={path}
                           />
