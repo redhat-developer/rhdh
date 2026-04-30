@@ -423,7 +423,6 @@ Total: 835 LOC extracted into modules.
 - `install_crunchy_postgres_k8s_operator` → `operator::install_postgres_k8s`
 - `install_serverless_logic_ocp_operator` → `operator::install_serverless_logic`
 - `install_serverless_ocp_operator` → `operator::install_serverless`
-- `install_pipelines_operator` → `operator::install_pipelines`
 - `install_olm` → `operator::install_olm`
 - `uninstall_olm` → `operator::uninstall_olm`
 

@@ -22,7 +22,7 @@ source "${DIR}/lib/config.sh"
 source "${DIR}/lib/testing.sh"
 
 # Constants
-TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
+PIPELINES_OPERATOR_WEBHOOK="tekton-pipelines-webhook"
 
 # Override GitHub App env vars (showcase and RBAC) with prefixed versions for the same pair index.
 # Usage: override_github_app_env_with_prefix <PREFIX>
@@ -419,26 +419,6 @@ deploy_redis_cache() {
 install_olm() { operator::install_olm "$@"; }
 uninstall_olm() { operator::uninstall_olm "$@"; }
 
-# Installs the Red Hat OpenShift Pipelines operator if not already installed
-# Use waitfor_pipelines_operator to wait for the operator to be ready
-install_pipelines_operator() {
-  local display_name="Red Hat OpenShift Pipelines"
-  # Check if operator is already installed
-  if oc get csv -n "openshift-operators" | grep -q "${display_name}"; then
-    log::warn "Red Hat OpenShift Pipelines operator is already installed."
-  else
-    log::info "Red Hat OpenShift Pipelines operator is not installed. Installing..."
-    install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
-  fi
-  # Wait for Tekton Pipeline CRD to be registered before proceeding
-  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
-}
-
-waitfor_pipelines_operator() {
-  k8s_wait::deployment "openshift-operators" "pipelines"
-  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines"
-}
-
 # ==============================================================================
 # Cluster Setup Functions
 # These functions configure the cluster for different deployment types
@@ -471,7 +451,7 @@ cluster_setup_ocp_helm() {
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
   k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
+  k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
 
@@ -489,7 +469,7 @@ cluster_setup_ocp_operator() {
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
   k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
+  k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
   operator::install_serverless
@@ -502,9 +482,9 @@ cluster_setup_k8s_operator() {
 }
 
 cluster_setup_k8s_helm() {
+  log::info "No additional cluster setup required for K8s Helm deployment"
   # operator::install_olm
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
-  :
 }
 
 # ==============================================================================
