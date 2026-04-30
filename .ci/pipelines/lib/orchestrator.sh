@@ -181,6 +181,167 @@ _orchestrator::apply_manifests() {
   return 0
 }
 
+# Function: _orchestrator::create_sonataflow_database
+# Description: Create a dedicated 'sonataflow' database inside the RHDH
+#   PostgreSQL instance for data-index and jobs-service, mirroring the
+#   Helm path which has its own sonataflow-psql-postgresql instance.
+# Arguments:
+#   $1 - namespace
+#   $2 - psql_pod: the backstage-psql pod name (e.g. backstage-psql-rhdh-0)
+_orchestrator::create_sonataflow_database() {
+  local namespace=$1
+  local psql_pod=$2
+  local secret_name=$3
+  local user_key=$4
+
+  local db_user
+  db_user=$(oc get secret "$secret_name" -n "$namespace" -o jsonpath="{.data.${user_key}}" | base64 -d)
+
+  log::info "Ensuring 'sonataflow' database exists in $psql_pod (user: $db_user)"
+  oc exec -n "$namespace" "$psql_pod" -- \
+    psql -U "$db_user" -d postgres -tc \
+    "SELECT 1 FROM pg_database WHERE datname = 'sonataflow'" \
+    | grep -q 1 \
+    || oc exec -n "$namespace" "$psql_pod" -- \
+      psql -U "$db_user" -d postgres -c "CREATE DATABASE sonataflow"
+}
+
+# Function: _orchestrator::ensure_knative_eventing
+# Description: Ensure KnativeEventing CR exists so that the Knative Eventing
+#   controller runs.  The SonataFlow operator uses SinkBindings/Triggers to
+#   route workflow status events to data-index.  In the Helm path this is
+#   handled by the orchestrator-infra chart; the operator path must create
+#   the CR explicitly.
+_orchestrator::ensure_knative_eventing() {
+  if oc get knativeeventing knative-eventing -n knative-eventing &> /dev/null; then
+    log::info "KnativeEventing already exists"
+    return 0
+  fi
+
+  log::info "Creating KnativeEventing CR"
+  oc create namespace knative-eventing 2> /dev/null || true
+  oc apply -f - << 'EOF'
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+EOF
+
+  log::info "Waiting for KnativeEventing to be ready..."
+  local timeout=300
+  local elapsed=0
+  while [[ $elapsed -lt $timeout ]]; do
+    local ready
+    ready=$(oc get knativeeventing knative-eventing -n knative-eventing \
+      -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null || echo "")
+    if [[ "$ready" == "True" ]]; then
+      log::success "KnativeEventing is ready"
+      return 0
+    fi
+    sleep 10
+    elapsed=$((elapsed + 10))
+  done
+
+  log::warn "KnativeEventing not ready after ${timeout}s, continuing anyway"
+  return 0
+}
+
+# Function: _orchestrator::create_knative_broker
+# Description: Create a Knative Eventing Broker in the given namespace.
+#   The SonataFlow Operator uses this broker to route workflow status
+#   events (via SinkBindings/Triggers) between workflows and data-index.
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+_orchestrator::create_knative_broker() {
+  local namespace=$1
+
+  if oc get broker default -n "$namespace" &> /dev/null; then
+    log::info "Knative Broker 'default' already exists in $namespace"
+    return 0
+  fi
+
+  log::info "Creating Knative Eventing Broker 'default' in namespace $namespace"
+  oc apply -n "$namespace" -f - << 'EOF'
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+EOF
+
+  local timeout=120
+  local elapsed=0
+  while [[ $elapsed -lt $timeout ]]; do
+    local ready
+    ready=$(oc get broker default -n "$namespace" \
+      -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null || echo "")
+    if [[ "$ready" == "True" ]]; then
+      log::success "Knative Broker 'default' is ready in $namespace"
+      return 0
+    fi
+    sleep 5
+    elapsed=$((elapsed + 5))
+  done
+
+  log::warn "Knative Broker not ready after ${timeout}s, continuing anyway"
+  return 0
+}
+
+# Function: _orchestrator::create_sonataflow_platform
+# Description: Create a SonataFlowPlatform CR so the operator deploys
+#   data-index-service and jobs-service with PostgreSQL persistence
+#   against the dedicated 'sonataflow' database.
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+#   $2 - secret_name: PostgreSQL secret name
+#   $3 - user_key: key for the username in the secret
+#   $4 - password_key: key for the password in the secret
+#   $5 - svc_name: PostgreSQL service name
+_orchestrator::create_sonataflow_platform() {
+  local namespace=$1
+  local secret_name=$2
+  local user_key=$3
+  local password_key=$4
+  local svc_name=$5
+
+  log::info "Creating SonataFlowPlatform CR in namespace $namespace (persistence: $svc_name/sonataflow)"
+  oc apply -n "$namespace" -f - << EOF
+apiVersion: sonataflow.org/v1alpha08
+kind: SonataFlowPlatform
+metadata:
+  name: sonataflow-platform
+spec:
+  services:
+    dataIndex:
+      enabled: true
+      persistence:
+        postgresql:
+          secretRef:
+            name: $secret_name
+            userKey: $user_key
+            passwordKey: $password_key
+          serviceRef:
+            name: $svc_name
+            namespace: $namespace
+            port: 5432
+            databaseName: sonataflow
+    jobService:
+      enabled: true
+      persistence:
+        postgresql:
+          secretRef:
+            name: $secret_name
+            userKey: $user_key
+            passwordKey: $password_key
+          serviceRef:
+            name: $svc_name
+            namespace: $namespace
+            port: 5432
+            databaseName: sonataflow
+EOF
+  return 0
+}
+
 # Function: _orchestrator::wait_for_sonataflow_resources
 # Description: Wait for sonataflow resources to be created
 # Arguments:
@@ -264,10 +425,9 @@ _orchestrator::patch_workflow_postgres() {
   local database_name=${8:-}
   local database_schema=${9:-}
 
-  local service_ref="{\"name\": \"$svc_name\", \"namespace\": \"$svc_namespace\""
-  if [[ -n "$database_name" ]]; then
-    service_ref+=", \"databaseName\": \"$database_name\""
-  fi
+  local db="${database_name:-postgres}"
+
+  local service_ref="{\"name\": \"$svc_name\", \"namespace\": \"$svc_namespace\", \"databaseName\": \"$db\""
   if [[ -n "$database_schema" ]]; then
     service_ref+=", \"databaseSchema\": \"$database_schema\""
   fi
@@ -495,10 +655,6 @@ orchestrator::deploy_workflows() {
     patch_namespace="$namespace"
   fi
 
-  # Deploy each workflow individually: apply manifest, patch with persistence
-  # immediately, then wait for rollout. This avoids a double rollout where the
-  # operator creates a deployment without persistence and old replicas get stuck
-  # in pending termination during the update.
   local workflow_manifests
   for workflow in $ORCHESTRATOR_WORKFLOWS; do
     case "$workflow" in
@@ -540,21 +696,15 @@ orchestrator::deploy_workflows() {
 orchestrator::deploy_workflows_operator() {
   local namespace=$1
 
-  # Clone workflows repository (shallow for speed)
   _orchestrator::clone_workflows "true"
 
-  # Wait for backstage and sonataflow pods to be ready
   k8s_wait::deployment "$namespace" backstage-psql 15
-  k8s_wait::deployment "$namespace" backstage-rhdh 15
-  k8s_wait::deployment "$namespace" sonataflow-platform-data-index-service 20
-  k8s_wait::deployment "$namespace" sonataflow-platform-jobs-service 20
 
-  # Dynamic PostgreSQL configuration discovery
-  local pqsl_secret_name pqsl_svc_name
+  local pqsl_secret_name pqsl_svc_name pqsl_pod
   pqsl_secret_name=$(oc get secrets -n "$namespace" -o name | grep "backstage-psql" | grep "secret" | head -1 | sed 's/secret\///')
   pqsl_svc_name=$(oc get svc -n "$namespace" -o name | grep "backstage-psql" | grep -v "secret" | head -1 | sed 's/service\///')
+  pqsl_pod=$(oc get pods -n "$namespace" -o name 2> /dev/null | grep "backstage-psql" | head -1 | sed 's/pod\///')
 
-  # Validate discovered resources
   if [[ -z "$pqsl_secret_name" ]]; then
     log::error "No PostgreSQL secret found matching pattern 'backstage-psql.*secret' in namespace '$namespace'"
     return 1
@@ -568,19 +718,227 @@ orchestrator::deploy_workflows_operator() {
   log::info "Found PostgreSQL secret: $pqsl_secret_name"
   log::info "Found PostgreSQL service: $pqsl_svc_name"
 
-  # Apply manifests and wait for resources
-  _orchestrator::apply_manifests "$namespace"
-  _orchestrator::wait_for_sonataflow_resources "$namespace"
+  local pqsl_user_key="POSTGRES_USER"
+  local pqsl_password_key="POSTGRES_PASSWORD"
+  if oc get secret "$pqsl_secret_name" -n "$namespace" -o jsonpath='{.data.user}' 2> /dev/null | grep -q .; then
+    pqsl_user_key="user"
+    pqsl_password_key="password"
+    log::info "Detected Crunchy-style secret keys (user/password)"
+  else
+    log::info "Using standard secret keys (POSTGRES_USER/POSTGRES_PASSWORD)"
+  fi
 
-  # Patch each workflow with PostgreSQL configuration (including database name)
-  local sonataflow_db="backstage_plugin_orchestrator"
+  if [[ -n "$pqsl_pod" ]]; then
+    _orchestrator::create_sonataflow_database "$namespace" "$pqsl_pod" "$pqsl_secret_name" "$pqsl_user_key"
+  else
+    log::warn "Could not find backstage-psql pod; skipping sonataflow DB creation"
+  fi
+
+  _orchestrator::create_sonataflow_platform "$namespace" \
+    "$pqsl_secret_name" "$pqsl_user_key" "$pqsl_password_key" "$pqsl_svc_name"
+
+  k8s_wait::deployment "$namespace" sonataflow-platform-data-index-service 20
+  k8s_wait::deployment "$namespace" sonataflow-platform-jobs-service 20
+
+  local workflow_manifests
   for workflow in $ORCHESTRATOR_WORKFLOWS; do
-    _orchestrator::patch_workflow_postgres "$namespace" "$workflow" \
-      "$pqsl_secret_name" "POSTGRES_USER" "POSTGRES_PASSWORD" \
-      "$pqsl_svc_name" "$namespace" "$sonataflow_db"
+    case "$workflow" in
+      greeting) workflow_manifests="${GREETING_MANIFESTS}" ;;
+      failswitch) workflow_manifests="${FAILSWITCH_MANIFESTS}" ;;
+      *)
+        log::error "Unknown workflow: $workflow"
+        return 1
+        ;;
+    esac
+
+    log::info "Deploying workflow '$workflow'..."
+    local sf_file
+    sf_file=$(find "${workflow_manifests}" -name '*sonataflow*' -type f | head -1)
+    if [[ -n "$sf_file" ]]; then
+      export _SF_SECRET="$pqsl_secret_name"
+      export _SF_UKEY="$pqsl_user_key"
+      export _SF_PKEY="$pqsl_password_key"
+      export _SF_SVC="$pqsl_svc_name"
+      export _SF_NS="$namespace"
+      export _SF_DI_URL="http://sonataflow-platform-data-index-service.${namespace}.svc.cluster.local"
+      export _SF_SERVICE_URL="http://${workflow}.${namespace}.svc.cluster.local"
+      yq eval -i '
+        del(.status) |
+        .spec.persistence.postgresql.secretRef.name = strenv(_SF_SECRET) |
+        .spec.persistence.postgresql.secretRef.userKey = strenv(_SF_UKEY) |
+        .spec.persistence.postgresql.secretRef.passwordKey = strenv(_SF_PKEY) |
+        .spec.persistence.postgresql.serviceRef.name = strenv(_SF_SVC) |
+        .spec.persistence.postgresql.serviceRef.namespace = strenv(_SF_NS) |
+        .spec.persistence.postgresql.serviceRef.databaseName = "postgres" |
+        .spec.podTemplate.container.env += [
+          {"name": "K_SINK", "value": strenv(_SF_DI_URL)},
+          {"name": "KOGITO_SERVICE_URL", "value": strenv(_SF_SERVICE_URL)}
+        ]
+      ' "$sf_file"
+      unset _SF_SECRET _SF_UKEY _SF_PKEY _SF_SVC _SF_NS _SF_DI_URL _SF_SERVICE_URL
+    fi
+    oc apply -f "${workflow_manifests}" -n "$namespace"
+
+    _orchestrator::wait_for_sonataflow_reconciliation "$namespace" "$workflow" 60
+    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
 
   _orchestrator::wait_for_workflow_deployments "$namespace"
+
+  log::info "=== Workflow Service Diagnostics ==="
+  log::info "Services in namespace $namespace:"
+  oc get svc -n "$namespace" -o wide | grep -E "NAME|failswitch|greeting" || log::warn "No failswitch/greeting services found"
+
+  log::info "Endpoints in namespace $namespace:"
+  oc get endpoints -n "$namespace" | grep -E "NAME|failswitch|greeting" || log::warn "No failswitch/greeting endpoints found"
+
+  log::info "Service details:"
+  for wf in $ORCHESTRATOR_WORKFLOWS; do
+    if oc get svc "$wf" -n "$namespace" &> /dev/null; then
+      log::info "  Service '$wf' exists:"
+      oc get svc "$wf" -n "$namespace" -o jsonpath='{.spec.clusterIP}:{.spec.ports[0].port}' && echo
+      oc get endpoints "$wf" -n "$namespace" -o jsonpath='{.subsets[*].addresses[*].ip}' && echo
+    else
+      log::warn "  Service '$wf' NOT FOUND"
+    fi
+  done
+
+  log::info "Workflow pod environment (K_SINK / KOGITO_SERVICE_URL / KOGITO_DATA_INDEX_URL):"
+  for wf in $ORCHESTRATOR_WORKFLOWS; do
+    log::info "  $wf:"
+    oc exec -n "$namespace" "deployment/$wf" -- env 2> /dev/null \
+      | grep -iE "k_sink|kogito" \
+      || log::warn "    No KOGITO variables found!"
+  done
+
+  log::info "Data-index process definitions:"
+  local dataindex_response
+  dataindex_response=$(oc exec -n "$namespace" deploy/sonataflow-platform-data-index-service -- \
+    curl -sf "http://localhost:8080/graphql" \
+    -H 'content-type: application/json' \
+    -d '{"query":"{ ProcessDefinitions { id, version, endpoint, serviceUrl } }"}' 2> /dev/null) || log::warn "Could not query data-index GraphQL"
+
+  if [[ -n "$dataindex_response" ]]; then
+    echo "$dataindex_response"
+    log::info "Checking serviceUrl format in data-index response:"
+    echo "$dataindex_response" | jq -r '.data.ProcessDefinitions[] | "  \(.id): serviceUrl=\(.serviceUrl)"' 2> /dev/null || log::warn "Could not parse GraphQL response"
+  fi
+  echo ""
+
+  local backstage_deployment="backstage-rhdh"
+  if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
+    backstage_deployment="backstage-rhdh-rbac"
+  fi
+
+  log::info "Recycling $backstage_deployment to load orchestrator plugins..."
+  oc scale deployment/"$backstage_deployment" -n "$namespace" --replicas=0 2> /dev/null || true
+
+  local term_elapsed=0
+  while [[ $term_elapsed -lt 90 ]]; do
+    local pod_count=0
+    pod_count=$(oc get pods -n "$namespace" --no-headers 2> /dev/null \
+      | grep -c "$backstage_deployment") || true
+    if [[ "$pod_count" -eq 0 ]]; then
+      log::info "All $backstage_deployment pods terminated"
+      break
+    fi
+    sleep 5
+    term_elapsed=$((term_elapsed + 5))
+  done
+
+  oc patch deployment/"$backstage_deployment" -n "$namespace" --type=strategic \
+    -p '{"spec":{"strategy":{"type":"Recreate"}}}' 2> /dev/null || true
+  oc scale deployment/"$backstage_deployment" -n "$namespace" --replicas=1 2> /dev/null || true
+  sleep 5
+
+  local bs_rc=0
+  k8s_wait::deployment "$namespace" "$backstage_deployment" 15 || bs_rc=$?
+
+  if [[ "$bs_rc" -ne 0 ]]; then
+    log::error "$backstage_deployment failed readiness after restart"
+    log::info "Backstage plugin initialization logs:"
+    oc logs -n "$namespace" "deployment/$backstage_deployment" -c backstage-backend 2> /dev/null \
+      | grep -iE "initializ|Plugin|started|complete|error|fatal|ECONNREFUSED|timeout" \
+      | grep -iv "WorkflowCacheService" | head -60 || log::warn "  Could not retrieve logs"
+    return 1
+  fi
+
+  local max_conn_attempts=12
+  local conn_ok=false
+
+  log::info "Verifying Backstage → data-index connectivity (via Service)..."
+  local node_probe
+  node_probe=$(
+    cat << 'PROBE'
+const http = require("http");
+const data = JSON.stringify({query:"{ ProcessDefinitions { id } }"});
+const req = http.request("http://sonataflow-platform-data-index-service/graphql",
+  {method:"POST", headers:{"content-type":"application/json","content-length":Buffer.byteLength(data)}, timeout:5000},
+  res => process.exit(res.statusCode === 200 ? 0 : 1));
+req.on("error", () => process.exit(1));
+req.on("timeout", () => { req.destroy(); process.exit(1); });
+req.end(data);
+PROBE
+  )
+  for ((attempt = 1; attempt <= max_conn_attempts; attempt++)); do
+    if oc exec -n "$namespace" "deployment/$backstage_deployment" -c backstage-backend -- \
+      node -e "$node_probe" > /dev/null 2>&1; then
+      conn_ok=true
+      log::success "Backstage can reach data-index (attempt $attempt)"
+      break
+    fi
+    log::debug "Attempt $attempt/$max_conn_attempts: data-index not reachable from Backstage, retrying in 10 s..."
+    sleep 10
+  done
+
+  if [[ "$conn_ok" != "true" ]]; then
+    log::error "Backstage pod cannot reach data-index through the Service after $((max_conn_attempts * 10))s"
+    log::info "Diagnostics:"
+    log::info "  data-index Service:"
+    oc get svc -n "$namespace" sonataflow-platform-data-index-service -o wide 2> /dev/null || log::warn "  Service not found"
+    log::info "  data-index Endpoints:"
+    oc get endpoints -n "$namespace" sonataflow-platform-data-index-service 2> /dev/null || log::warn "  Endpoints not found"
+    log::info "  NetworkPolicies in namespace:"
+    oc get networkpolicy -n "$namespace" 2> /dev/null || log::warn "  None"
+    log::info "  data-index pod status:"
+    oc get pods -n "$namespace" -l "sonataflow.org/platform-service-type=data-index" -o wide 2> /dev/null \
+      || oc get pods -n "$namespace" | grep data-index || log::warn "  No data-index pods found"
+    return 1
+  fi
+
+  for wf in $ORCHESTRATOR_WORKFLOWS; do
+    local wf_ok=false
+    for ((wf_attempt = 1; wf_attempt <= 6; wf_attempt++)); do
+      if oc exec -n "$namespace" "deployment/$backstage_deployment" -c backstage-backend -- \
+        node -e "const http=require('http');const r=http.get('http://${wf}/q/health',{timeout:5000},s=>{process.exit(s.statusCode<500?0:1)});r.on('error',()=>process.exit(1));r.on('timeout',()=>{r.destroy();process.exit(1)})" > /dev/null 2>&1; then
+        wf_ok=true
+        log::success "Backstage can reach workflow '${wf}' (attempt $wf_attempt)"
+        break
+      fi
+      sleep 5
+    done
+    if [[ "$wf_ok" != "true" ]]; then
+      log::warn "Backstage cannot reach workflow '${wf}' — tests for this workflow may fail"
+    fi
+  done
+
+  log::info "Waiting 30 s for orchestrator plugin cache to discover workflows..."
+  sleep 30
+
+  local route_name
+  route_name=$(oc get routes -n "$namespace" --no-headers -o custom-columns=':metadata.name' 2> /dev/null | head -1)
+  if [[ -n "$route_name" ]]; then
+    oc annotate route "$route_name" -n "$namespace" \
+      haproxy.router.openshift.io/timeout=5m \
+      --overwrite 2> /dev/null \
+      && log::success "Route '$route_name' annotated with 5m HAProxy timeout" \
+      || log::warn "Could not annotate route '$route_name'"
+  fi
+
+  log::info "Backstage backend logs (orchestrator-related, last 200 lines):"
+  oc logs -n "$namespace" "deployment/$backstage_deployment" -c backstage-backend --tail=200 2> /dev/null \
+    | grep -iE "orchestrator|sonataflow|data-index|workflow|dataIndex|cache|Failed|Error|ECONNREFUSED|ENOTFOUND|timeout|ping|management|unavailable|available" || log::info "  (no orchestrator-related log lines found)"
+
   return 0
 }
 
@@ -611,52 +969,90 @@ orchestrator::enable_plugins_operator() {
 
   log::info "Enabling orchestrator plugins in namespace: $namespace"
 
-  # Find the dynamic plugins configmap created by the operator
-  local operator_cm
-  operator_cm=$(oc get cm -n "$namespace" -o name 2> /dev/null | grep "backstage-dynamic-plugins-" | head -1 | sed 's/configmap\///')
+  # Wait for the operator to create the dynamic plugins configmap
+  # The operator needs time after the Backstage CR is created to reconcile and create resources
+  local operator_cm=""
+  local max_attempts=30
+  local wait_seconds=5
+  local attempt=1
 
-  if [[ -z "$operator_cm" ]]; then
-    log::error "No operator dynamic plugins configmap found (backstage-dynamic-plugins-*) in namespace: $namespace"
+  log::info "Waiting for operator to create dynamic plugins configmap (max ${max_attempts} attempts, ${wait_seconds}s interval)..."
+
+  while [[ $attempt -le $max_attempts ]]; do
+    operator_cm=$(oc get cm -n "$namespace" -o name 2> /dev/null | grep "backstage-dynamic-plugins-" | head -1 | sed 's/configmap\///')
+
+    if [[ -n "$operator_cm" ]]; then
+      log::info "Found operator configmap: $operator_cm (attempt $attempt/$max_attempts)"
+      break
+    fi
+
+    if [[ $attempt -eq $max_attempts ]]; then
+      log::error "Timed out waiting for operator dynamic plugins configmap (backstage-dynamic-plugins-*) in namespace: $namespace"
+      log::error "Available configmaps in namespace:"
+      oc get cm -n "$namespace" -o name 2> /dev/null | while read -r cm; do
+        log::error "  - $cm"
+      done
+      return 1
+    fi
+
+    log::debug "Configmap not found yet, waiting ${wait_seconds}s... (attempt $attempt/$max_attempts)"
+    sleep "$wait_seconds"
+    ((attempt++))
+  done
+
+  # Create temporary working directory for merge operation
+  local work_dir="/tmp/orchestrator-plugins-merge-$$"
+  mkdir -p "$work_dir"
+  # Expand $work_dir now; locals may be unset before the RETURN trap fires under set -u
+  # shellcheck disable=SC2064
+  trap "rm -rf $(printf '%q' "$work_dir")" RETURN
+
+  # Extract the YAML content from both configmaps to files
+  log::info "Extracting dynamic plugins configmaps..."
+  if ! oc get cm "$operator_cm" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}' > "$work_dir/default-plugins.yaml"; then
+    log::error "Failed to extract operator configmap: $operator_cm"
     return 1
   fi
-  log::info "Found operator configmap: $operator_cm"
 
-  # Extract the YAML content from both configmaps
-  local operator_yaml custom_yaml
-  operator_yaml=$(oc get cm "$operator_cm" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}')
-  custom_yaml=$(oc get cm "dynamic-plugins" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}' 2> /dev/null || echo "")
-
-  if [[ -z "$custom_yaml" ]]; then
+  if ! oc get cm "dynamic-plugins" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}' > "$work_dir/custom-plugins.yaml" 2> /dev/null; then
     log::warn "No custom dynamic-plugins configmap found, using operator defaults only"
     return 0
   fi
 
-  # Merge the plugins arrays: custom plugins override operator defaults
-  # Uses package name as the unique key for deduplication
-  local merged_yaml
-  merged_yaml=$(
-    echo "$operator_yaml" "$custom_yaml" | yq eval-all '
-    {"plugins": [
-      ([.[].plugins[]] | group_by(.package) | .[] | last)
-    ]}
-  '
-  )
+  # Check if custom plugins file is empty
+  if [[ ! -s "$work_dir/custom-plugins.yaml" ]]; then
+    log::warn "Custom dynamic-plugins configmap is empty, using operator defaults only"
+    return 0
+  fi
 
-  # Patch the operator configmap with merged content
-  oc patch cm "$operator_cm" -n "$namespace" --type merge -p "{\"data\":{\"dynamic-plugins.yaml\":$(echo "$merged_yaml" | jq -Rs .)}}"
+  log::info "Merging custom and default dynamic plugins..."
+  local merged_yaml
+  if ! merged_yaml=$(yq eval-all '
+    select(fileIndex == 0) as $default |
+    select(fileIndex == 1) as $custom |
+    (($default.plugins // []) + ($custom.plugins // [])) | map(select(has("package"))) | group_by(.package) | map(.[-1]) | map(select(.package | contains("{{inherit}}") | not)) as $plugins |
+    {
+      "includes": (($default.includes // []) + ($custom.includes // [])) | unique,
+      "plugins": $plugins
+    }
+  ' "$work_dir/default-plugins.yaml" "$work_dir/custom-plugins.yaml" | yq eval 'select(di == 0)' -); then
+    log::error "Failed to merge dynamic plugins configmaps"
+    return 1
+  fi
+
+  if ! echo "$merged_yaml" | yq eval '.plugins | type' - 2> /dev/null | grep -q "!!seq"; then
+    log::error "Merged dynamic-plugins.yaml has invalid structure: .plugins must be a list. Refusing to patch."
+    log::error "Merged YAML (first 500 chars): $(echo "$merged_yaml" | head -c 500)"
+    return 1
+  fi
+
+  if ! oc patch cm "$operator_cm" -n "$namespace" --type merge -p "{\"data\":{\"dynamic-plugins.yaml\":$(echo "$merged_yaml" | jq -Rs .)}}"; then
+    log::error "Failed to patch operator configmap with merged plugins"
+    return 1
+  fi
 
   log::info "Merged dynamic plugins configmap updated"
 
-  # Find and restart the backstage deployment
-  local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" -o name 2> /dev/null | grep "backstage" | grep -v "psql" | head -1)
-
-  if [[ -n "$backstage_deployment" ]]; then
-    log::info "Restarting $backstage_deployment to pick up plugin changes..."
-    oc rollout restart "$backstage_deployment" -n "$namespace"
-    oc rollout status "$backstage_deployment" -n "$namespace" --timeout=300s
-  fi
-
-  log::success "Orchestrator plugins enabled successfully"
+  log::success "Orchestrator plugins ConfigMap updated (restart deferred to workflow deployment)"
   return 0
 }

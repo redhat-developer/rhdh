@@ -24,10 +24,8 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
-  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
-  # enable_orchestrator_plugins_op "${NAME_SPACE}"
-  # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
-  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE deployment"
+  enable_orchestrator_plugins_op "${NAME_SPACE}"
+  deploy_orchestrator_workflows_operator "${NAME_SPACE}"
 
   namespace::configure "${NAME_SPACE_RBAC}"
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
@@ -37,10 +35,8 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
-  # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
-  # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
-  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE_RBAC deployment"
+  enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
+  deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
 }
 
 # OSD-GCP specific operator deployment that skips orchestrator workflows
@@ -96,8 +92,8 @@ run_operator_runtime_config_change_tests() {
 }
 
 handle_ocp_operator() {
-  export NAME_SPACE="${NAME_SPACE:-showcase}"
-  export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
+  export NAME_SPACE="showcase-operator"
+  export NAME_SPACE_RBAC="showcase-operator-rbac"
   export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 
   common::oc_login
@@ -109,7 +105,7 @@ handle_ocp_operator() {
 
   cluster_setup_ocp_operator
 
-  prepare_operator
+  prepare_operator "3"
 
   # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then

@@ -32,6 +32,8 @@ spec:
     dynamicPluginsConfigMapName: dynamic-plugins
     extraEnvs:
       envs:
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
         - name: SEGMENT_TEST_MODE
           value: "true"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
