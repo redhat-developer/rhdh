@@ -92,6 +92,10 @@ dynamicPlugins:
               allOf:
                 - isLighthouseAvailable
     backstage.plugin-notifications:
+      translationResources:
+      - importName: notificationsTranslations
+        module: Alpha
+        ref: notificationsTranslationRef
       dynamicRoutes:
         - importName: NotificationsPage
           menuItem:
@@ -99,6 +103,8 @@ dynamicPlugins:
               props:
                 titleCounterEnabled: true
                 webNotificationsEnabled: false
+                textKey: menuItem.notifications
+                text: Notifications
             importName: NotificationsSidebarItem
           path: /notifications
     backstage.plugin-signals: {}

@@ -18811,6 +18811,7 @@ __metadata:
   dependencies:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
+    "@backstage/core-plugin-api": "npm:^1.12.4"
     "@backstage/plugin-notifications": "npm:0.5.15"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
