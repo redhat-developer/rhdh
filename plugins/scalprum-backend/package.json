@@ -31,7 +31,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/backend-defaults": "0.12.0",
+    "@backstage/backend-defaults": "0.12.2",
     "@backstage/backend-dynamic-feature-service": "0.7.3",
     "@backstage/backend-plugin-api": "1.4.2",
     "@backstage/config": "1.3.3",
