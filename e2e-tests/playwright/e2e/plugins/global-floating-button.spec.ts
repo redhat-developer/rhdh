@@ -28,6 +28,9 @@ test.describe("Test global floating action button plugin", () => {
     await fabHelper.verifyFabButtonByLabel("Git");
     await fabHelper.verifyFabButtonByDataTestId("bulk-import");
     await fabHelper.clickFabMenuByTestId("bulk-import");
+    await uiHelper.verifyHeading("Bulk import");
+    await uiHelper.verifyRowsInTable(["import"], false);
+    await fabHelper.hoverFabMenuByTestId("bulk-import");
     await uiHelper.verifyText("Register multiple repositories in bulk");
   });
 
