@@ -92,6 +92,10 @@ dynamicPlugins:
               allOf:
                 - isLighthouseAvailable
     backstage.plugin-notifications:
+      translationResources:
+      - importName: notificationsTranslations
+        module: Alpha
+        ref: notificationsTranslationRef
       dynamicRoutes:
         - importName: NotificationsPage
           menuItem:
