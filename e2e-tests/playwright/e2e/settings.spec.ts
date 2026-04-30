@@ -13,6 +13,13 @@ const lang = getCurrentLanguage();
 let uiHelper: UIhelper;
 
 test.describe(`Settings page`, () => {
+  test.beforeAll(async ({}, testInfo) => {
+    testInfo.annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
     uiHelper = new UIhelper(page);
@@ -21,8 +28,7 @@ test.describe(`Settings page`, () => {
   });
 
   // Run tests only for the selected language
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2674
-  test.fixme(`Verify settings page`, async ({ page }) => {
+  test(`Verify settings page`, async ({ page }) => {
     await page
       .getByRole("button", {
         name: t["plugin.quickstart"][lang]["footer.hide"],
@@ -55,8 +61,7 @@ test.describe(`Settings page`, () => {
     const fr = getLocale("fr");
     const langfr = "fr";
 
-    // await uiHelper.verifyText(fr["user-settings"][langfr]["profileCard.title"]);
-    await uiHelper.verifyText("Profile");
+    await uiHelper.verifyText(fr["user-settings"][langfr]["profileCard.title"]);
     await uiHelper.verifyText(
       fr["user-settings"][langfr]["appearanceCard.title"],
     );
