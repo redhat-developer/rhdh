@@ -1148,7 +1148,7 @@ base_deployment() {
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
-  deploy_orchestrator_workflows "${NAME_SPACE}"
+  deploy_orchestrator_workflows "${NAME_SPACE}" "${RELEASE_NAME}"
 }
 
 rbac_deployment() {
@@ -1173,7 +1173,7 @@ rbac_deployment() {
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # initiate orchestrator workflows deployment
-  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
+  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
 }
 
 initiate_deployments() {
@@ -1541,6 +1541,7 @@ get_previous_release_value_file() {
 # Helper function to deploy workflows for orchestrator testing
 deploy_orchestrator_workflows() {
   local namespace=$1
+  local release_name=$2
 
   local workflow_repo="https://github.com/rhdhorchestrator/serverless-workflows.git"
   local workflow_dir="${DIR}/serverless-workflows"
@@ -1571,6 +1572,12 @@ deploy_orchestrator_workflows() {
   # without persistence and old replicas get stuck in pending termination during the update.
   local workflow_names=("failswitch" "greeting")
   local workflow_dirs=("${failswitch_manifests}" "${greeting_manifests}")
+
+  # Wait for backstage and sonata flow pods to be ready before continuing
+  wait_for_deployment $namespace "${release_name}-developer-hub" 15
+  # SonataFlowPlatform v1alpha08 deploys the Data Index as `sonataflow-platform-data-index-service`
+  wait_for_deployment $namespace sonataflow-platform-data-index-service 20
+  wait_for_deployment $namespace sonataflow-platform-jobs-service 20
 
   for idx in "${!workflow_names[@]}"; do
     local workflow="${workflow_names[$idx]}"
@@ -1608,6 +1615,11 @@ deploy_orchestrator_workflows() {
 
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
+
+  log::info "Waiting for all workflow pods to be running..."
+  wait_for_deployment $namespace greeting 5
+  wait_for_deployment $namespace failswitch 5
+  log::info "All workflow pods are now running!"
 }
 
 # Helper function to deploy workflows for orchestrator testing (operator-based)
