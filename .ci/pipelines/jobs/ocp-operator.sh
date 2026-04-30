@@ -12,6 +12,8 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/schema-mode-env.sh
+source "$DIR"/lib/schema-mode-env.sh
 
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
@@ -85,13 +87,30 @@ initiate_operator_deployments_osd_gcp() {
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   namespace::configure "${NAME_SPACE_RUNTIME}"
+
+  # Deploy external PostgreSQL (Crunchy) and create real secrets in the runtime namespace
+  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
+  configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
+
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
-  # Pre-create placeholder secrets so the operator accepts the Backstage CR (enableLocalDb=false).
-  # The E2E tests (RDS/Azure DB) will overwrite these with real credentials at runtime.
+
+  # Add RHDH_RUNTIME_URL to postgres-cred (configure_external_postgres_db doesn't include it,
+  # but rds-app-config.yaml references it for app/backend baseUrl)
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  create_postgres_cred_secret "${NAME_SPACE_RUNTIME}" "tmp" "tmp" "RHDH_RUNTIME_URL=${runtime_url}"
-  oc apply -f "$DIR/resources/postgres-db/postgres-crt.yaml" -n "${NAME_SPACE_RUNTIME}"
+  oc patch secret postgres-cred -n "${NAME_SPACE_RUNTIME}" --type merge \
+    -p "{\"stringData\":{\"RHDH_RUNTIME_URL\":\"${runtime_url}\"}}"
+
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml" "true"
+
+  export INSTALL_METHOD=operator
+
+  # Configure schema-mode environment (opt-in: tests skip if env not configured)
+  if configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" operator; then
+    log::info "Schema-mode environment configured successfully; schema-mode tests will run"
+  else
+    log::warn "Schema-mode environment not configured; schema-mode tests will skip (this is expected if PostgreSQL is not available)"
+  fi
+
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
@@ -99,6 +118,7 @@ handle_ocp_operator() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
   export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
+  export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 
   common::oc_login
 

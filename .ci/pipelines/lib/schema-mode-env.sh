@@ -11,6 +11,7 @@ readonly SCHEMA_MODE_ENV_LIB_SOURCED=1
 configure_schema_mode_runtime_env() {
   local runtime_namespace=$1
   local release_name=$2
+  local install_method=${3:-helm}
 
   if [[ -z "${runtime_namespace}" || -z "${release_name}" ]]; then
     log::error "configure_schema_mode_runtime_env: runtime_namespace and release_name are required"
@@ -60,13 +61,13 @@ configure_schema_mode_runtime_env() {
     local crunchy_cluster="${SCHEMA_MODE_CRUNCHY_CLUSTER_NAME:-postgress-external-db}"
     if oc get svc postgress-external-db-primary -n "${pdb}" &> /dev/null; then
       forward_namespace="${pdb}"
-      log::info "Schema-mode (helm): no in-cluster Postgres Service in ${runtime_namespace}; using Crunchy cluster in ${pdb}"
+      log::info "Schema-mode (${install_method}): no in-cluster Postgres Service in ${runtime_namespace}; using Crunchy cluster in ${pdb}"
       local crunchy_admin_secret="${crunchy_cluster}-pguser-janus-idp"
       if oc get secret "${crunchy_admin_secret}" -n "${pdb}" &> /dev/null; then
         admin_password=$(oc get secret "${crunchy_admin_secret}" -n "${pdb}" -o jsonpath='{.data.password}' 2> /dev/null | base64 -d || true)
       fi
       if [[ -z "${admin_password}" ]]; then
-        log::warn "Schema-mode (helm): could not read ${crunchy_admin_secret} password in ${pdb}; schema tests remain opt-in."
+        log::warn "Schema-mode (${install_method}): could not read ${crunchy_admin_secret} password in ${pdb}; schema tests remain opt-in."
         return 1
       fi
       postgres_service=$(oc get pods -n "${pdb}" \
@@ -74,18 +75,18 @@ configure_schema_mode_runtime_env() {
         --field-selector=status.phase=Running \
         -o jsonpath='{.items[0].metadata.name}' 2> /dev/null)
       if [[ -z "${postgres_service}" ]]; then
-        log::warn "Schema-mode (helm): no Running Postgres pod in ${pdb} for cluster ${crunchy_cluster}; schema tests remain opt-in."
+        log::warn "Schema-mode (${install_method}): no Running Postgres pod in ${pdb} for cluster ${crunchy_cluster}; schema tests remain opt-in."
         return 1
       fi
       forward_via_pod=1
     else
-      log::warn "Schema-mode (helm): PostgreSQL service not found in ${runtime_namespace} and no postgress-external-db-primary in ${pdb}; schema tests remain opt-in."
+      log::warn "Schema-mode (${install_method}): PostgreSQL service not found in ${runtime_namespace} and no postgress-external-db-primary in ${pdb}; schema tests remain opt-in."
       return 1
     fi
   fi
 
   if [[ -z "${admin_password}" ]]; then
-    log::warn "Schema-mode (helm): unable to resolve PostgreSQL admin password; schema tests remain opt-in."
+    log::warn "Schema-mode (${install_method}): unable to resolve PostgreSQL admin password; schema tests remain opt-in."
     return 1
   fi
 
@@ -109,5 +110,5 @@ configure_schema_mode_runtime_env() {
   export SCHEMA_MODE_DB_PASSWORD="${SCHEMA_MODE_DB_PASSWORD:-test_password_123}"
   export SCHEMA_MODE_DB_USER="${SCHEMA_MODE_DB_USER:-bn_backstage}"
 
-  log::info "Schema-mode env configured (helm): Playwright will port-forward ${pf_target} in ${forward_namespace}"
+  log::info "Schema-mode env configured (${install_method}): Playwright will port-forward ${pf_target} in ${forward_namespace}"
 }
