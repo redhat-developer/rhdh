@@ -1,5 +1,5 @@
 kind: Backstage
-apiVersion: rhdh.redhat.com/v1alpha5
+apiVersion: rhdh.redhat.com/v1alpha6
 metadata:
   name: rhdh
 spec:
