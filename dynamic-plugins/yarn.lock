@@ -11117,7 +11117,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@roadiehq/backstage-plugin-argo-cd-backend@npm:4.7.1, @roadiehq/backstage-plugin-argo-cd-backend@npm:^4.5.0":
+"@roadiehq/backstage-plugin-argo-cd-backend@npm:4.7.1":
   version: 4.7.1
   resolution: "@roadiehq/backstage-plugin-argo-cd-backend@npm:4.7.1"
   dependencies:
@@ -11128,6 +11128,9 @@ __metadata:
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
   checksum: 10c0/3ad0e54414955a9bcde95d7994cfd1801de75488311d3ec6a20f67e09491e23cf3a0ed0f449ee56b676a7fc1ef0f378dc34ffb7d7cfb93eba202f1fd3d7a436a
+  languageName: node
+  linkType: hard
+
 "@roadiehq/scaffolder-backend-module-http-request@npm:5.6.0":
   version: 5.6.0
   resolution: "@roadiehq/scaffolder-backend-module-http-request@npm:5.6.0"
