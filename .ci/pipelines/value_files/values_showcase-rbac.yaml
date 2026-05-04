@@ -155,11 +155,11 @@ global:
                     seconds: 15
                   timeout:
                     minutes: 15
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:{{ "{{" }}inherit{{ "}}" }}'
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:bs_1.49.4__0.21.0"
         disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:{{ "{{" }}inherit{{ "}}" }}'
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.49.4__3.7.0"
         disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:{{ "{{" }}inherit{{ "}}" }}'
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.49.4__0.22.0"
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
@@ -183,8 +183,6 @@ global:
                           - isQuayAvailable
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
-        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
@@ -202,7 +200,7 @@ global:
                     skipTLSVerify: true
                 type: config
             customResources:
-              # Add for tekton
+              # Tekton resources used by topology plugin
               - apiVersion: "v1beta1"
                 group: "tekton.dev"
                 plural: "pipelines"

@@ -11,6 +11,8 @@ export const GITHUB_API_ENDPOINTS = {
   pull: (owner: string, repo: string, state: "open" | "closed" | "all") =>
     `${getRepoUrl(owner, repo)}/pulls?per_page=${perPage}&state=${state}`,
 
+  orgRepos: (owner: string) => `${getOrgUrl(owner)}/repos?per_page=${perPage}`,
+
   issues: (state: string) =>
     `${backstageShowcaseAPI}/issues?per_page=${perPage}&sort=updated&state=${state}`,
 
