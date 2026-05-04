@@ -210,7 +210,7 @@ catalog:
     #   orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
     #   Using Github GH_USER_ID account
     gitlab:
-      my-test-provider:
+      default:
         group: rhdh-qe-test
         host: gitlab.com
         schedule:

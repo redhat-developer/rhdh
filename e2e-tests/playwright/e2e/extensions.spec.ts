@@ -245,10 +245,10 @@ test.describe("Admin > Extensions", () => {
 
     test("Verify dev preview badge in extensions", async () => {
       await extensions.selectSupportTypeFilter("Dev preview (DP)");
-      await uiHelper.verifyHeading("Developer Lightspeed");
+      await uiHelper.verifyHeading("Cost Management");
 
       await extensions.verifyPluginDetails({
-        pluginName: "Red Hat Developer Lightspeed for Red Hat Developer Hub",
+        pluginName: "Cost Management For Red Hat Developer Hub",
         badgeLabel: "An early-stage, experimental plugin",
         badgeText: "Dev preview (DP)",
         headings: commonHeadings,

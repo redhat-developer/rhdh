@@ -118,7 +118,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
-        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
         ...(shouldSkipOrchestratorTests
@@ -166,7 +165,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
-        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -203,7 +201,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
-        "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
