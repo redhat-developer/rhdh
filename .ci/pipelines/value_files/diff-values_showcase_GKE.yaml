@@ -11,11 +11,6 @@ global:
       # These plugins correspond to tests that are ignored in showcase-k8s project
       # See e2e-tests/playwright.config.ts SHOWCASE_K8S config
 
-      # Tekton - test ignored
-      # Test file: e2e-tests/playwright/e2e/plugins/tekton/tekton.spec.ts
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
-        disabled: true
-
       # OCM - test ignored
       # Test file: e2e-tests/playwright/e2e/plugins/ocm.spec.ts (currently doesn't exist)
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic

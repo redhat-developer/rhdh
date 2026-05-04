@@ -30,8 +30,7 @@ Operator and OLM installations.
 Functions: `operator::install_subscription`, `operator::check_status`,
 `operator::install_postgres_ocp`, `operator::install_postgres_k8s`,
 `operator::install_serverless_logic`, `operator::install_serverless`, `operator::install_pipelines`,
-`operator::install_tekton`, `operator::delete_tekton`, `operator::install_olm`,
-`operator::uninstall_olm`
+`operator::install_olm`, `operator::uninstall_olm`
 
 ### `helm.sh`
 

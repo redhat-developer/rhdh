@@ -74,7 +74,7 @@ rules:
     verbs:
       - get
       - list
-  # Additional permissions for the @backstage-community/plugin-tekton
+  # Tekton resource permissions (used by topology plugin)
   - apiGroups:
       - tekton.dev
     resources:
