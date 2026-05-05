@@ -19656,7 +19656,7 @@ __metadata:
     jose: "npm:5.10.0"
     prettier: "npm:3.8.1"
     typescript: "npm:5.9.3"
-    undici: "npm:6.24.0"
+    undici: "npm:7.25.0"
     winston: "npm:3.14.2"
     zod: "npm:3.25.76"
   languageName: unknown
@@ -38470,14 +38470,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:6.24.0":
-  version: 6.24.0
-  resolution: "undici@npm:6.24.0"
-  checksum: 10c0/a97d7f1214b34c5b2802558d06cbed97ff96a27ab6548972ba9d07c13951c69e2e9f2f01581f71c86b74755d2bf92e64091cf8f2c6eba4184f10c6d583e60388
-  languageName: node
-  linkType: hard
-
-"undici@npm:^7.1.1, undici@npm:^7.16.0, undici@npm:^7.2.3, undici@npm:^7.21.0, undici@npm:^7.22.0":
+"undici@npm:7.25.0, undici@npm:^7.1.1, undici@npm:^7.16.0, undici@npm:^7.2.3, undici@npm:^7.21.0, undici@npm:^7.22.0":
   version: 7.25.0
   resolution: "undici@npm:7.25.0"
   checksum: 10c0/02a0b45dc14eb91bc488948750232450fe52f27a6b08086d6ac6736bb47908d600fe3a96d346f12eab24729c782e5c2f693bc8e8eca6696d4e4c09b1ed4cb4ec
