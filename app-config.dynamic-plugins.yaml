@@ -60,6 +60,10 @@ dynamicPlugins:
               allOf:
                 - isJenkinsAvailable
     backstage.plugin-kubernetes:
+      translationResources:
+        - importName: kubernetesTranslations
+          module: Alpha
+          ref: kubernetesTranslationRef
       mountPoints:
         - mountPoint: entity.page.kubernetes/cards
           importName: EntityKubernetesContent
@@ -526,6 +530,7 @@ dynamicPlugins:
           menuItem:
             icon: docs
             text: Docs
+            textKey: menuItem.docs
         - path: /docs/:namespace/:kind/:name/*
           importName: TechDocsReaderPage
       mountPoints:
