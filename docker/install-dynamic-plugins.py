@@ -1135,6 +1135,136 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
 
     return default_plugins_file
 
+def pre_merge_oci_disabled_state(
+    include_plugin_lists: list[tuple[str, list[dict]]],
+    main_plugins: list[dict],
+    dynamic_plugins_file: str
+) -> set[str]:
+    """
+    Pre-merge pass: determine which OCI registries will be disabled after all levels are applied.
+    Only considers 'package' and 'disabled' fields. Does NOT merge pluginConfig.
+
+    Args:
+        include_plugin_lists: list of (filename, plugin_list) tuples from each included config file
+        main_plugins: plugin list from the main config file
+        dynamic_plugins_file: path to the main config file (for error messages)
+    Returns:
+        Set of OCI registry strings that should skip metadata fetch (final state = disabled)
+    """
+    
+    # Track the disabled state and level of each OCI plugin entry
+    per_entry_state = {}
+    # Track the source file of each path-less OCI plugin entry
+    pathless_plugin_registries = {}  # {registry: source_file}
+    # Track the source file of each OCI plugin entry with a defined path
+    defined_paths_per_plugin_registry = {}  # {registry: {path: source_file}}
+
+    def process_entry(plugin, level, source_file):
+        package = plugin.get('package', '')
+        if not isinstance(package, str) or not package.startswith(OCI_PROTOCOL_PREFIX):
+            return
+        disabled = plugin.get('disabled', False)
+        match = re.match(OciPackageMerger.EXPECTED_OCI_PATTERN, package)
+        if not match:
+            if disabled:
+                print(f"WARNING: Skipping disabled OCI plugin with invalid format: \'{package}\' in {source_file}. Expected format: \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}", flush=True)
+                return
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@<algo>:<digest>\' (optionally followed by \'!<path>\') in {source_file} where <registry> may include a port (e.g. host:5000/path) and <algo> is one of {RECOGNIZED_ALGORITHMS}")
+        registry = match.group(1)
+        path = match.group(4)  # None for path-less
+
+        entry_key = (registry, path)
+        if entry_key not in per_entry_state:
+            per_entry_state[entry_key] = (disabled, level)
+        elif per_entry_state[entry_key][1] == level:
+            path_suffix = f"!{path}" if path else ""
+            if disabled:
+                print(f"WARNING: Skipping duplicate disabled OCI plugin configuration for {registry}{path_suffix} in {source_file}", flush=True)
+                return
+
+            raise InstallException(
+                f"Duplicate OCI plugin configuration for {registry}{path_suffix} "
+                f"found at the same level in {source_file}: {package}"
+            )
+        elif level > per_entry_state[entry_key][1]:
+            per_entry_state[entry_key] = (disabled, level)
+
+        if path:
+            defined_paths_per_plugin_registry.setdefault(registry, {})[path] = source_file
+        else:
+            pathless_plugin_registries[registry] = source_file
+
+    for include_file, include_plugins in include_plugin_lists:
+        for plugin in include_plugins:
+            process_entry(plugin, level=0, source_file=include_file)
+
+    for plugin in main_plugins:
+        process_entry(plugin, level=1, source_file=dynamic_plugins_file)
+
+    # Initial validation for no multi-plugin OCI packages being defined without explicit path
+    for registry, pathless_source in pathless_plugin_registries.items():
+        if registry in defined_paths_per_plugin_registry and len(defined_paths_per_plugin_registry[registry]) > 1:
+            path_entries = defined_paths_per_plugin_registry[registry]
+            paths_formatted = '\n  - '.join(
+                f"{path} (in {src})" for path, src in sorted(path_entries.items())
+            )
+            pathless_disabled, _ = per_entry_state[(registry, None)]
+            if pathless_disabled:
+                print(
+                    f"WARNING: Skipping disabled ambiguous path-less OCI reference for {registry} in {pathless_source}: "
+                    f"multiple path-specific entries exist:\n  - {paths_formatted}\n"
+                    f"Cannot use path-less syntax for multi-plugin images. "
+                    f"Please specify a !<plugin-path> suffix for the plugin",
+                    flush=True
+                )
+                continue
+            raise InstallException(
+                f"Ambiguous path-less OCI reference for {registry} in {pathless_source}: "
+                f"multiple path-specific entries exist:\n  - {paths_formatted}\n"
+                f"Cannot use path-less syntax for multi-plugin images. "
+                f"Please specify a !<plugin-path> suffix for the plugin."
+            )
+
+    # Determine effective disabled state for each registry without explicit path.
+    disabled_plugin_registries = set()
+    for registry in pathless_plugin_registries:
+        pathless_disabled, pathless_level = per_entry_state[(registry, None)]
+
+        effective_disabled = pathless_disabled
+
+        # Check if a single entry with explicit path at a higher level overrides
+        if registry in defined_paths_per_plugin_registry:
+            single_path = next(iter(defined_paths_per_plugin_registry[registry]))
+            defined_disabled, defined_level = per_entry_state[(registry, single_path)]
+            if defined_level > pathless_level:
+                effective_disabled = defined_disabled
+
+        if effective_disabled:
+            disabled_plugin_registries.add(registry)
+
+    return disabled_plugin_registries
+
+
+def filter_disabled_oci_plugins(plugins: list[dict], disabled_plugin_registries: set[str]) -> list[dict]:
+    """
+    Remove all OCI plugin entries whose registry is in the disabled set.
+    Non-OCI entries are passed through unchanged.
+    """
+    filtered = []
+    for plugin in plugins:
+        package = plugin.get('package', '')
+        if isinstance(package, str) and package.startswith(OCI_PROTOCOL_PREFIX):
+            match = re.match(OciPackageMerger.EXPECTED_OCI_PATTERN, package)
+            if match and match.group(1) in disabled_plugin_registries:
+                print(f'\n======= Disabling OCI plugin {package}', flush=True)
+                continue
+            if not match and plugin.get('disabled', False):
+                print(f'\n======= Disabling OCI plugin {package}', flush=True)
+                continue
+        filtered.append(plugin)
+    return filtered
+
+
 def main():
 
     dynamic_plugins_root = sys.argv[1]
@@ -1207,6 +1337,7 @@ def main():
             index = includes.index(embedded_default)
             includes[index] = catalog_index_default_file
 
+    include_plugin_lists = []  # [(filename, plugin_list), ...]
     for include in includes:
         if not isinstance(include, str):
             raise InstallException(f"content of the \'includes\' field must be a list of strings in {dynamic_plugins_file}")
@@ -1227,8 +1358,7 @@ def main():
         if not isinstance(include_plugins, list):
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
-        for plugin in include_plugins:
-            merge_plugin(plugin, all_plugins, include, level=0)
+        include_plugin_lists.append((include, include_plugins))
 
     if 'plugins' in content:
         plugins = content['plugins']
@@ -1237,6 +1367,21 @@ def main():
 
     if not isinstance(plugins, list):
         raise InstallException(f"content of the \'plugins\' field must be a list in {dynamic_plugins_file}")
+
+    # Pre-merge: determine disabled OCI registries before any skopeo calls
+    disabled_plugin_registries = pre_merge_oci_disabled_state(
+        include_plugin_lists, plugins, dynamic_plugins_file
+    )
+
+    # Filter disabled OCI entries from all plugin lists before resolving paths and merging
+    for i, (include_file, include_plugins) in enumerate(include_plugin_lists):
+        include_plugin_lists[i] = (include_file, filter_disabled_oci_plugins(include_plugins, disabled_plugin_registries))
+
+    plugins = filter_disabled_oci_plugins(plugins, disabled_plugin_registries)
+
+    for include_file, include_plugins in include_plugin_lists:
+        for plugin in include_plugins:
+            merge_plugin(plugin, all_plugins, include_file, level=0)
 
     for plugin in plugins:
         merge_plugin(plugin, all_plugins, dynamic_plugins_file, level=1)

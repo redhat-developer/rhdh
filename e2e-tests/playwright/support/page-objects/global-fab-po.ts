@@ -21,6 +21,11 @@ export class FabPo extends PageObject {
     await locator.click();
   }
 
+  public async hoverFabMenuByTestId(id: string) {
+    const locator = this.page.getByTestId(id);
+    await locator.hover();
+  }
+
   public async clickFabMenuByTestId(id: string) {
     const locator = this.page.getByTestId(id);
     await locator.click();
