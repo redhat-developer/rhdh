@@ -67,7 +67,8 @@
     "@backstage/cli-common@^0.1.15": "patch:@backstage/cli-common@npm%3A0.1.15#./.yarn/patches/@backstage-cli-common-npm-0.1.15-7e1948f753.patch",
     "@backstage/backend-plugin-api": "patch:@backstage/backend-plugin-api@npm%3A1.4.3#./.yarn/patches/@backstage-backend-plugin-api-npm-1.4.3-b7f08217ef.patch",
     "infinispan": "^0.13.0",
-    "@backstage/plugin-scaffolder-react@npm:1.19.0/flatted": "^3.4.2"
+    "@backstage/plugin-scaffolder-react@npm:1.19.0/flatted": "^3.4.2",
+    "@protobufjs/inquire": "1.1.0"
   },
   "jest": {
     "testTimeout": 20000
