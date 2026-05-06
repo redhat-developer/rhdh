@@ -21,6 +21,7 @@ test.describe("Test Quick Start plugin", () => {
   test("Access Quick start from Global Header", async ({ page }) => {
     await common.loginAsKeycloakUser();
     await common.waitForLoad();
+    await uiHelper.verifyHeading("Welcome back");
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (await page.getByRole("button", { name: "Hide" }).isHidden()) {
       await uiHelper.clickButtonByLabel("Help");
