@@ -245,10 +245,10 @@ test.describe("Admin > Extensions", () => {
 
     test("Verify dev preview badge in extensions", async () => {
       await extensions.selectSupportTypeFilter("Dev preview (DP)");
-      await uiHelper.verifyHeading("Cost Management");
+      await uiHelper.verifyHeading("Konflux");
 
       await extensions.verifyPluginDetails({
-        pluginName: "Cost Management For Red Hat Developer Hub",
+        pluginName: "Konflux",
         badgeLabel: "An early-stage, experimental plugin",
         badgeText: "Dev preview (DP)",
         headings: commonHeadings,
