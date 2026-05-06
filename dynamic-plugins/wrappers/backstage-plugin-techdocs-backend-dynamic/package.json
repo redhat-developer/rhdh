@@ -49,6 +49,9 @@
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },
+  "resolutions": {
+    "@protobufjs/inquire": "1.1.0"
+  },
   "files": [
     "dist",
     "dist-dynamic/*.*",
