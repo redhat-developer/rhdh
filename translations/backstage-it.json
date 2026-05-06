@@ -536,7 +536,7 @@
       "languageToggle.select": "Seleziona la lingua {{language}}",
       "themeToggle.title": "Tema",
       "themeToggle.description": "Cambia la modalità del tema",
-      "themeToggle.select": "Seleziona {{tema}}",
+      "themeToggle.select": "Seleziona {{theme}}",
       "themeToggle.selectAuto": "Seleziona tema automatico",
       "themeToggle.names.light": "Chiaro",
       "themeToggle.names.dark": "Scuro",
