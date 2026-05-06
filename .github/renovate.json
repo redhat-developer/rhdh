@@ -5,8 +5,7 @@
     ":gitSignOff",
     ":rebaseStalePrs",
     "group:allNonMajor",
-    ":automergeBranch",
-    ":disableMajorUpdates"
+    ":automergeBranch"
   ],
   "ignorePresets":[
     ":maintainLockFilesWeekly"
@@ -22,6 +21,9 @@
       "requirements.*\\.in"
     ]
   },
+  "major": {
+    "dependencyDashboardApproval": true
+  },  
   "reviewers": ["team:rhdh-security"],
   "packageRules": [    
     {
