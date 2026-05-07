@@ -313,6 +313,12 @@ test.describe
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
     );
+    const ghLogin = await common.githubLoginFromSettingsPage(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+      process.env.GH_USER2_2FA_SECRET,
+    );
+    expect(ghLogin).toBe("Login successful");
   });
 
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
