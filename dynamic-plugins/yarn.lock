@@ -11676,6 +11676,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-app-react@npm:^0.0.3":
+  version: 0.0.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.0.3"
+  dependencies:
+    "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
+    "@backstage/version-bridge": "npm:^1.0.12"
+    "@mui/material": "npm:5.18.0"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/033b2908a616f9b3204af19a5203cc038a27cc0bffc51d1da2be0e33fa8ff5b36d049b082d7c4bf0855b3395f0863fc5184e1eb516940181618657d98da01506
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.2.1":
   version: 7.2.1
   resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.2.1"
@@ -11928,6 +11943,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.21.0":
+  version: 1.21.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.21.4"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.7.7"
+    "@backstage/core-components": "npm:^0.18.8"
+    "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
+    "@backstage/plugin-catalog-react": "npm:^2.1.0"
+    "@backstage/plugin-notifications": "npm:^0.5.15"
+    "@backstage/plugin-notifications-common": "npm:^0.2.1"
+    "@backstage/plugin-search": "npm:^1.7.0"
+    "@backstage/plugin-search-backend": "npm:^2.1.0"
+    "@backstage/plugin-search-backend-module-catalog": "npm:^0.3.13"
+    "@backstage/plugin-search-backend-module-pg": "npm:^0.5.53"
+    "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.12"
+    "@backstage/plugin-search-common": "npm:^1.2.22"
+    "@backstage/plugin-search-react": "npm:^1.11.0"
+    "@backstage/plugin-signals-react": "npm:^0.0.20"
+    "@backstage/plugin-user-settings": "npm:^0.9.1"
+    "@backstage/theme": "npm:^0.7.2"
+    "@mui/icons-material": "npm:5.18.0"
+    "@mui/material": "npm:5.18.0"
+    "@mui/styled-engine": "npm:5.18.0"
+    "@scalprum/react-core": "npm:0.11.1"
+    react-use: "npm:^17.5.0"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.0.0
+  checksum: 10c0/9d6c66441553102da1ab561a6063ed3b897714651183fb78f0b6c4fef9bf19c7366bab2bb4a3f8c560ae6a78b811628d18deed4d6827fa6296616161a401356d
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.1.0":
   version: 0.1.0
   resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.1.0"
@@ -11951,22 +12000,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.8.5":
-  version: 1.8.5
-  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.8.5"
+"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.3":
+  version: 1.9.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.3"
   dependencies:
     "@backstage-community/plugin-rbac-common": "npm:^1.19.0"
     "@backstage/core-components": "npm:^0.18.8"
     "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
     "@backstage/plugin-permission-react": "npm:^0.4.41"
     "@backstage/theme": "npm:^0.7.2"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.3"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
     react-use: "npm:^17.6.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/399e6f201dfab54b638bf5f4c20946cdbb6c5958b413f3b8b8fcfa16e13f9b16463670826d5fec340d9a915c05866549bbce83b12c2f5e6583ee81230559a3dd
+  checksum: 10c0/e08a8cc7ac30e55ee7a91d63ef4046ecb9393ef07a602da046311edc0805989d6037000e28e683897533790b9878ebafbbaf41f2427b87fe4c02013d7bcc5760
   languageName: node
   linkType: hard
 
@@ -29635,7 +29688,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-quickstart": "npm:1.8.5"
+    "@red-hat-developer-hub/backstage-plugin-quickstart": "npm:1.9.3"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
