@@ -343,4 +343,61 @@ export interface Config {
      */
     persistence: 'browser' | 'database';
   };
+
+  /**
+   * Configuration for Lightspeed plugin
+   * @deepVisibility frontend
+   */
+  lightspeed?: {
+    /**
+     * Custom user prompts displayed to users
+     * @visibility frontend
+     */
+    prompts?: Array</**
+     * @visibility frontend
+     */
+    {
+      /**
+       * The title of the prompt.
+       * Displayed as the heading of the prompt.
+       * @visibility frontend
+       */
+      title: string;
+      /**
+       * The main question or message shown in the prompt.
+       * @visibility frontend
+       */
+      message: string;
+    }>;
+    /**
+     * Configuration for AI Notebooks
+     * @visibility frontend
+     */
+    notebooks?: {
+      /**
+       * Enable/disable AI Notebooks feature
+       * When enabled, exposes AI Notebooks REST API endpoints for document-based conversations with RAG.
+       * Requires Lightspeed service to be running (default: http://0.0.0.0:8080).
+       * @default false
+       * @visibility frontend
+       */
+      enabled: boolean;
+      /**
+       * Query configuration for notebooks
+       * @visibility frontend
+       */
+      queryDefaults?: {
+        /**
+         * Model to use for answering queries
+         * @visibility frontend
+         */
+        model: string;
+        /**
+         * AI provider for the query model
+         * @visibility frontend
+         */
+        provider_id: string;
+      };
+    };
+  };
 }
