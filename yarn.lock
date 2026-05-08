@@ -3535,7 +3535,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/config-loader@npm:1.10.9, @backstage/config-loader@npm:^1.10.6, @backstage/config-loader@npm:^1.10.9, @backstage/config-loader@npm:^1.9.5":
+"@backstage/config-loader@npm:^1.10.6, @backstage/config-loader@npm:^1.10.9, @backstage/config-loader@npm:^1.9.5":
   version: 1.10.9
   resolution: "@backstage/config-loader@npm:1.10.9"
   dependencies:
@@ -19603,7 +19603,6 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@backstage/cli-node": "npm:0.3.0"
     "@backstage/config": "npm:1.3.6"
-    "@backstage/config-loader": "npm:1.10.9"
     "@backstage/plugin-app-backend": "npm:0.5.12"
     "@backstage/plugin-auth-backend": "npm:0.27.3"
     "@backstage/plugin-auth-backend-module-atlassian-provider": "npm:0.4.13"
