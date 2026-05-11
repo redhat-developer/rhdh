@@ -50,8 +50,6 @@ K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n'
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
-QUAY_NAMESPACE=$(cat /tmp/secrets/QUAY_NAMESPACE)
-QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN)
 
 # =============================================================================
 # Release and Namespace Configuration
@@ -94,8 +92,6 @@ QE_USER8_ID=$(cat /tmp/secrets/QE_USER8_ID)
 QE_USER8_PASS=$(cat /tmp/secrets/QE_USER8_PASS)
 QE_USER9_ID=$(cat /tmp/secrets/QE_USER9_ID)
 QE_USER9_PASS=$(cat /tmp/secrets/QE_USER9_PASS)
-JIRA_TOKEN=$(cat /tmp/secrets/jira_token)
-
 K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
 
 GITLAB_TOKEN=$(cat /tmp/secrets/GITLAB_TOKEN)

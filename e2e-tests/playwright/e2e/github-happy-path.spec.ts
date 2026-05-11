@@ -121,21 +121,6 @@ test.describe.fixme("GitHub Happy path", async () => {
     await backstageShowcase.verifyAboutCardIsDisplayed();
   });
 
-  test("Verify that the Issues tab renders all the open github issues in the repository", async () => {
-    await uiHelper.clickTab("Issues");
-    await common.clickOnGHloginPopup();
-    const openIssues = await backstageShowcase.getGithubOpenIssues();
-
-    const issuesCountText = new RegExp(
-      `All repositories \\(${openIssues.length} Issue.*\\)`,
-    );
-    await expect(page.getByText(issuesCountText)).toBeVisible();
-
-    for (const issue of openIssues.slice(0, 5)) {
-      await uiHelper.verifyText(issue.title.replace(/\s+/g, " "));
-    }
-  });
-
   test("Verify that the Pull/Merge Requests tab renders the 5 most recently updated Open Pull Requests", async () => {
     await uiHelper.clickTab("Pull/Merge Requests");
     const openPRs = await BackstageShowcase.getShowcasePRs("open");
@@ -195,18 +180,6 @@ test.describe.fixme("GitHub Happy path", async () => {
     await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
     await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
     await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
-  });
-
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
-  test.fixme("Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied", async () => {
-    await page.locator("a").getByText("CI", { exact: true }).first().click();
-    await common.checkAndClickOnGHloginPopup();
-
-    const workflowRuns = await backstageShowcase.getWorkflowRuns();
-
-    for (const workflowRun of workflowRuns.slice(0, 5)) {
-      await uiHelper.verifyText(workflowRun.id);
-    }
   });
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099

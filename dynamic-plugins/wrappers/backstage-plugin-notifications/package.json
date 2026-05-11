@@ -9,6 +9,21 @@
     "main": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "backstage": {
     "role": "frontend-plugin",
     "supported-versions": "1.49.4",
@@ -29,6 +44,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
+    "@backstage/core-plugin-api": "^1.12.4",
     "@backstage/plugin-notifications": "0.5.15",
     "@mui/material": "5.18.0"
   },
@@ -45,7 +61,8 @@
   "scalprum": {
     "name": "backstage.plugin-notifications",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.ts"
     }
   },
   "repository": {

@@ -119,9 +119,9 @@ async function testIngressResources(page: Page, uiHelper: UIhelper) {
       .first(),
   ).toBeVisible();
   // Verify code block is visible (pre element containing configuration)
-  await expect(
-    page.getByText(/apiVersion:|kind:|metadata:/).first(),
-  ).toBeVisible();
+  const ingressCode = page.getByTestId("ingress-list").locator("code").first();
+  await expect(ingressCode).toBeVisible();
+  await expect(ingressCode).toContainText("name: topology-test-service");
 }
 
 async function testRouteResources(page: Page, uiHelper: UIhelper) {

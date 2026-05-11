@@ -60,6 +60,10 @@ dynamicPlugins:
               allOf:
                 - isJenkinsAvailable
     backstage.plugin-kubernetes:
+      translationResources:
+        - importName: kubernetesTranslations
+          module: Alpha
+          ref: kubernetesTranslationRef
       mountPoints:
         - mountPoint: entity.page.kubernetes/cards
           importName: EntityKubernetesContent
@@ -92,6 +96,10 @@ dynamicPlugins:
               allOf:
                 - isLighthouseAvailable
     backstage.plugin-notifications:
+      translationResources:
+      - importName: notificationsTranslations
+        module: Alpha
+        ref: notificationsTranslationRef
       dynamicRoutes:
         - importName: NotificationsPage
           menuItem:
@@ -99,6 +107,8 @@ dynamicPlugins:
               props:
                 titleCounterEnabled: true
                 webNotificationsEnabled: false
+                textKey: menuItem.notifications
+                text: Notifications
             importName: NotificationsSidebarItem
           path: /notifications
     backstage.plugin-signals: {}
@@ -526,6 +536,7 @@ dynamicPlugins:
           menuItem:
             icon: docs
             text: Docs
+            textKey: menuItem.docs
         - path: /docs/:namespace/:kind/:name/*
           importName: TechDocsReaderPage
       mountPoints:

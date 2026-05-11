@@ -10972,10 +10972,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/codegen@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@protobufjs/codegen@npm:2.0.4"
-  checksum: 10c0/26ae337c5659e41f091606d16465bbcc1df1f37cc1ed462438b1f67be0c1e28dfb2ca9f294f39100c52161aef82edf758c95d6d75650a1ddf31f7ddee1440b43
+"@protobufjs/codegen@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "@protobufjs/codegen@npm:2.0.5"
+  checksum: 10c0/1b8a2ae56ee60a56e9d205cd4b6072a1503c5069b8ebb905710f974ff0098a0d0700641c137e0a8d98dedf14423156a106a9433695cbf52574810f55000fdcab
   languageName: node
   linkType: hard
 
@@ -11003,7 +11003,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/inquire@npm:^1.1.0":
+"@protobufjs/inquire@npm:1.1.0":
   version: 1.1.0
   resolution: "@protobufjs/inquire@npm:1.1.0"
   checksum: 10c0/64372482efcba1fb4d166a2664a6395fa978b557803857c9c03500e0ac1013eb4b1aacc9ed851dd5fc22f81583670b4f4431bae186f3373fedcfde863ef5921a
@@ -11024,10 +11024,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/utf8@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/utf8@npm:1.1.0"
-  checksum: 10c0/a3fe31fe3fa29aa3349e2e04ee13dc170cc6af7c23d92ad49e3eeaf79b9766264544d3da824dba93b7855bd6a2982fb40032ef40693da98a136d835752beb487
+"@protobufjs/utf8@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/utf8@npm:1.1.1"
+  checksum: 10c0/641fc145f00626405e8984b6e90b9edcbcc072ffc82d0647ca3176e09c730b2d022f988e65f011a7a17e2e4d77cde7733643aa10d8ac2bfa30f134dbcad553fd
   languageName: node
   linkType: hard
 
@@ -11658,9 +11658,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.3.0"
+"@red-hat-developer-hub/backstage-plugin-app-react@npm:^0.0.3":
+  version: 0.0.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.0.3"
+  dependencies:
+    "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
+    "@backstage/version-bridge": "npm:^1.0.12"
+    "@mui/material": "npm:5.18.0"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/033b2908a616f9b3204af19a5203cc038a27cc0bffc51d1da2be0e33fa8ff5b36d049b082d7c4bf0855b3395f0863fc5184e1eb516940181618657d98da01506
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.3.3":
+  version: 7.3.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.3.3"
   dependencies:
     "@backstage/backend-defaults": "npm:^0.16.0"
     "@backstage/backend-plugin-api": "npm:^1.8.0"
@@ -11674,7 +11689,7 @@ __metadata:
     "@gitbeaker/rest": "npm:^43.4.0"
     "@octokit/auth-app": "npm:^7.2.2"
     "@octokit/rest": "npm:^20.0.2"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.3.0"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.3.3"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "npm:^3.2.0"
     ajv-formats: "npm:^3.0.1"
     eventsource-client: "npm:^1.2.0"
@@ -11686,22 +11701,22 @@ __metadata:
     luxon: "npm:^3.4.4"
     node-fetch: "npm:^2.6.7"
     openapi-backend: "npm:^5.10.6"
-  checksum: 10c0/de1c2e3ffbcca09e96ca049de56be6f07415c7b95347fa9bb64c1cb9cfdd0a06c327272623794c2f1db958e7a0457578c4dde546bc15f2539622f0c73d84f5dd
+  checksum: 10c0/a68d170a757cdbc4eada6b26c332749a197880c5b0efb250a58694d60dccb8c787d6f46ebccce35a9052733451fad5f7e3b5565b73737600ba2ede2b60980752
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:7.3.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^7.3.3":
+  version: 7.3.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:7.3.3"
   peerDependencies:
     "@backstage/plugin-permission-common": ^0.9.7
-  checksum: 10c0/1e5756d7d82fb6c268f1072adf98959e360e93cf9b1cba1eec077f03869e6d460671031936d224dff4ab05bcf089c8e91618412e9e41f2b822aadf141546e71e
+  checksum: 10c0/44859ed5709acb14106a8799932c96dcaea138a84983f660300eecdc6965f30a65b57c9e05d451a8d72d0ff9196d22fe5951ef56d9b6fc8ed94e16b6aa862b00
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.3.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.3.3":
+  version: 7.3.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.3.3"
   dependencies:
     "@backstage/catalog-model": "npm:^1.7.7"
     "@backstage/core-compat-api": "npm:^0.5.9"
@@ -11717,7 +11732,7 @@ __metadata:
     "@mui/icons-material": "npm:^5.15.17"
     "@mui/material": "npm:^5.12.2"
     "@mui/styles": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.3.0"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.3.3"
     "@tanstack/react-query": "npm:^4.29.21"
     formik: "npm:^2.4.5"
     js-yaml: "npm:^4.1.0"
@@ -11729,7 +11744,7 @@ __metadata:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^18.0.2
     react-router-dom: ^6.0.0
-  checksum: 10c0/bd754522ab7db7a606bd21abbc0ac9788e50462b7e4374e2d8ff6941b016f0182e69e4560526c5187b34910f234cc22e2e71c6d436b6e9e1a69dcc842dbfdd63
+  checksum: 10c0/520389f311c6788d268143db69d002613932e56bd3258443f3128c7fe284861f6d8036612b7579758217f84ea2af56b5e7c4d92db69b92f418a72e2009c13a89
   languageName: node
   linkType: hard
 
@@ -11911,6 +11926,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.21.0":
+  version: 1.21.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.21.4"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.7.7"
+    "@backstage/core-components": "npm:^0.18.8"
+    "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
+    "@backstage/plugin-catalog-react": "npm:^2.1.0"
+    "@backstage/plugin-notifications": "npm:^0.5.15"
+    "@backstage/plugin-notifications-common": "npm:^0.2.1"
+    "@backstage/plugin-search": "npm:^1.7.0"
+    "@backstage/plugin-search-backend": "npm:^2.1.0"
+    "@backstage/plugin-search-backend-module-catalog": "npm:^0.3.13"
+    "@backstage/plugin-search-backend-module-pg": "npm:^0.5.53"
+    "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.12"
+    "@backstage/plugin-search-common": "npm:^1.2.22"
+    "@backstage/plugin-search-react": "npm:^1.11.0"
+    "@backstage/plugin-signals-react": "npm:^0.0.20"
+    "@backstage/plugin-user-settings": "npm:^0.9.1"
+    "@backstage/theme": "npm:^0.7.2"
+    "@mui/icons-material": "npm:5.18.0"
+    "@mui/material": "npm:5.18.0"
+    "@mui/styled-engine": "npm:5.18.0"
+    "@scalprum/react-core": "npm:0.11.1"
+    react-use: "npm:^17.5.0"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.0.0
+  checksum: 10c0/9d6c66441553102da1ab561a6063ed3b897714651183fb78f0b6c4fef9bf19c7366bab2bb4a3f8c560ae6a78b811628d18deed4d6827fa6296616161a401356d
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.1.0":
   version: 0.1.0
   resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.1.0"
@@ -11934,22 +11983,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.8.5":
-  version: 1.8.5
-  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.8.5"
+"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.3":
+  version: 1.9.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.3"
   dependencies:
     "@backstage-community/plugin-rbac-common": "npm:^1.19.0"
     "@backstage/core-components": "npm:^0.18.8"
     "@backstage/core-plugin-api": "npm:^1.12.4"
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
     "@backstage/plugin-permission-react": "npm:^0.4.41"
     "@backstage/theme": "npm:^0.7.2"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.3"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
     react-use: "npm:^17.6.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/399e6f201dfab54b638bf5f4c20946cdbb6c5958b413f3b8b8fcfa16e13f9b16463670826d5fec340d9a915c05866549bbce83b12c2f5e6583ee81230559a3dd
+  checksum: 10c0/e08a8cc7ac30e55ee7a91d63ef4046ecb9393ef07a602da046311edc0805989d6037000e28e683897533790b9878ebafbbaf41f2427b87fe4c02013d7bcc5760
   languageName: node
   linkType: hard
 
@@ -16551,6 +16604,7 @@ __metadata:
   dependencies:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
+    "@backstage/core-plugin-api": "npm:^1.12.4"
     "@backstage/plugin-notifications": "npm:0.5.15"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
@@ -21375,12 +21429,12 @@ __metadata:
   linkType: hard
 
 "follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.11":
-  version: 1.15.11
-  resolution: "follow-redirects@npm:1.15.11"
+  version: 1.16.0
+  resolution: "follow-redirects@npm:1.16.0"
   peerDependenciesMeta:
     debug:
       optional: true
-  checksum: 10c0/d301f430542520a54058d4aeeb453233c564aaccac835d29d15e050beb33f339ad67d9bddbce01739c5dc46a6716dbe3d9d0d5134b1ca203effa11a7ef092343
+  checksum: 10c0/a1e2900163e6f1b4d1ed5c221b607f41decbab65534c63fe7e287e40a5d552a6496e7d9d7d976fa4ba77b4c51c11e5e9f683f10b43011ea11e442ff128d0e181
   languageName: node
   linkType: hard
 
@@ -28468,22 +28522,22 @@ __metadata:
   linkType: hard
 
 "protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.3.2, protobufjs@npm:^7.5.3":
-  version: 7.5.4
-  resolution: "protobufjs@npm:7.5.4"
+  version: 7.5.6
+  resolution: "protobufjs@npm:7.5.6"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.2"
     "@protobufjs/base64": "npm:^1.1.2"
-    "@protobufjs/codegen": "npm:^2.0.4"
+    "@protobufjs/codegen": "npm:^2.0.5"
     "@protobufjs/eventemitter": "npm:^1.1.0"
     "@protobufjs/fetch": "npm:^1.1.0"
     "@protobufjs/float": "npm:^1.0.2"
-    "@protobufjs/inquire": "npm:^1.1.0"
+    "@protobufjs/inquire": "npm:^1.1.1"
     "@protobufjs/path": "npm:^1.1.2"
     "@protobufjs/pool": "npm:^1.1.0"
-    "@protobufjs/utf8": "npm:^1.1.0"
+    "@protobufjs/utf8": "npm:^1.1.1"
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.0.0"
-  checksum: 10c0/913b676109ffb3c05d3d31e03a684e569be91f3bba8613da4a683d69d9dba948daa2afd7d2e7944d1aa6c417890c35d9d9a8883c1160affafb0f9670d59ef722
+  checksum: 10c0/220df6c3cf6d2346748639a9b0b688fecc994bff9fee7018a93167e8cd45ab0ee3b4270d9eaa6be33a11adb46514ef9dce7e8217fd578c36726a9e70b96327cd
   languageName: node
   linkType: hard
 
@@ -29513,7 +29567,7 @@ __metadata:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "npm:7.3.0"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "npm:7.3.3"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
@@ -29526,7 +29580,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": "npm:7.3.0"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": "npm:7.3.3"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
@@ -29617,7 +29671,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-quickstart": "npm:1.8.5"
+    "@red-hat-developer-hub/backstage-plugin-quickstart": "npm:1.9.3"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
@@ -32610,17 +32664,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.1.1, undici@npm:^7.24.5":
+"undici@npm:^7.1.1, undici@npm:^7.2.3, undici@npm:^7.24.5":
   version: 7.25.0
   resolution: "undici@npm:7.25.0"
   checksum: 10c0/02a0b45dc14eb91bc488948750232450fe52f27a6b08086d6ac6736bb47908d600fe3a96d346f12eab24729c782e5c2f693bc8e8eca6696d4e4c09b1ed4cb4ec
-  languageName: node
-  linkType: hard
-
-"undici@npm:^7.2.3":
-  version: 7.22.0
-  resolution: "undici@npm:7.22.0"
-  checksum: 10c0/09777c06f3f18f761f03e3a4c9c04fd9fcca8ad02ccea43602ee4adf73fcba082806f1afb637f6ea714ef6279c5323c25b16d435814c63db720f63bfc20d316b
   languageName: node
   linkType: hard
 
