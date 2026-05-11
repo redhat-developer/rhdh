@@ -413,18 +413,18 @@ test.describe("Admin > Extensions", () => {
       }
       await page
         .getByRole("button", {
-          name: new RegExp(`Rows per page: ${"5 rows"}`),
+          name: new RegExp(`rows 5 rows`),
         })
         .click();
       await page.getByRole("option", { name: "10", exact: true }).click();
       await page
         .getByRole("button", {
-          name: new RegExp(`Rows per page: ${"10 rows"}`),
+          name: new RegExp(`rows 10 rows`),
         })
         .scrollIntoViewIfNeeded();
       await expect(
         page.getByRole("button", {
-          name: new RegExp(`Rows per page: ${"10 rows"}`),
+          name: new RegExp(`rows 10 rows`),
         }),
       ).toBeVisible();
       await expect(
@@ -497,7 +497,7 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page
           .getByRole("cell", {
-            name: "To enable actions, add a catalog entity for this package",
+            name: "Package cannot be managed in the production environment",
           })
           .first(),
       ).toBeVisible();
