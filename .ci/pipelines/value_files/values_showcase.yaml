@@ -302,6 +302,14 @@ global:
             frontend:
               red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
 
+      # Disable operator-injected lightspeed plugins (lightspeed flavor is enabledByDefault in the RHDH operator).
+      # The catalog index only provides lightspeed from ghcr.io, not registry.access.redhat.com,
+      # so {{inherit}} cannot resolve. Disable to prevent InstallException in operator deployments.
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed-backend:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
   nameOverride: developer-hub
