@@ -4,18 +4,18 @@
 # Supports both OpenShift (OCP, OSD-GCP) and non-OpenShift (AKS, EKS, GKE) platforms.
 #
 # Usage (run from e2e-tests directory):
-#   source local-test-setup.sh [showcase|rbac] [--env]
+#   source local-test-setup.sh [showcase|showcase-rbac] [--env]
 #
 # Options:
-#   showcase|rbac  Select the test type (default: showcase)
-#   --env          Generate a .env file in e2e-tests/ for Playwright Test Agents
+#   showcase|showcase-rbac  Select the test type (default: showcase)
+#   --env                   Generate a .env file in e2e-tests/ for Playwright Test Agents
 #
 # Examples:
 #   cd e2e-tests
-#   source local-test-setup.sh           # Uses Showcase URL (default)
-#   source local-test-setup.sh showcase  # Uses Showcase URL
-#   source local-test-setup.sh rbac      # Uses Showcase RBAC URL
-#   source local-test-setup.sh rbac --env # RBAC + generate .env file
+#   source local-test-setup.sh                # Uses Showcase URL (default)
+#   source local-test-setup.sh showcase       # Uses Showcase URL
+#   source local-test-setup.sh showcase-rbac  # Uses Showcase RBAC URL
+#   source local-test-setup.sh showcase-rbac --env # RBAC + generate .env file
 #
 # After sourcing, you can run tests:
 #   yarn install
@@ -52,7 +52,8 @@ TEST_TYPE="showcase"
 for arg in "$@"; do
   case "$arg" in
     --env) GENERATE_ENV=true ;;
-    showcase | rbac) TEST_TYPE="$arg" ;;
+    showcase) TEST_TYPE="showcase" ;;
+    showcase-rbac | rbac) TEST_TYPE="showcase-rbac" ;;
     *) log::warn "Unknown argument: $arg (ignored)" ;;
   esac
 done
@@ -63,13 +64,13 @@ case "$TEST_TYPE" in
     export BASE_URL="$SHOWCASE_URL"
     log::info "Test type: Showcase"
     ;;
-  rbac)
+  showcase-rbac)
     export BASE_URL="$SHOWCASE_RBAC_URL"
     log::info "Test type: Showcase RBAC"
     ;;
   *)
     log::error "Unknown test type: $TEST_TYPE"
-    log::info "Valid options: showcase, rbac"
+    log::info "Valid options: showcase, showcase-rbac"
     return 1 2> /dev/null || exit 1
     ;;
 esac
@@ -209,6 +210,6 @@ echo "  cd e2e-tests"
 echo "  yarn install"
 echo "  yarn playwright test --headed"
 echo ""
-log::info "To switch to RBAC tests:"
-echo "  export BASE_URL=\"$SHOWCASE_RBAC_URL\""
+log::info "To switch to Showcase RBAC tests:"
+echo "  source local-test-setup.sh showcase-rbac"
 echo ""
