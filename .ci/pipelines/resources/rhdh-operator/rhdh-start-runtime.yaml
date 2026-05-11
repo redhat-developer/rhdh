@@ -29,6 +29,7 @@ spec:
       configMaps:
         - name: app-config-rhdh
       mountPath: /opt/app-root/src
+    dynamicPluginsConfigMapName: dynamic-plugins
     extraFiles:
       mountPath: /opt/app-root/src
       secrets:
