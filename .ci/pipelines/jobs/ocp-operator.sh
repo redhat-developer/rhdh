@@ -83,7 +83,8 @@ initiate_operator_deployments_osd_gcp() {
 }
 
 run_operator_runtime_config_change_tests() {
-  # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
+  # Deploy `showcase-runtime` to run tests that require configuration changes at runtime.
+  # Uses enableLocalDb=false with external PostgreSQL placeholder secrets.
   namespace::configure "${NAME_SPACE_RUNTIME}"
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   # Pre-create placeholder secrets so the operator accepts the Backstage CR (enableLocalDb=false).
