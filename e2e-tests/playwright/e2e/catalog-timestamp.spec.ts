@@ -1,4 +1,4 @@
-import { Page, expect, test } from "@playwright/test";
+import { Page, expect, test } from "@support/coverage/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";

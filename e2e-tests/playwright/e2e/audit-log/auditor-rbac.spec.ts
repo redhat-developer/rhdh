@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
 import { Common, setupBrowser } from "../../utils/common";
 import {
   RBAC_API,

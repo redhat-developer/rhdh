@@ -1,4 +1,4 @@
-import { Page, test } from "@playwright/test";
+import { Page, test } from "@support/coverage/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common, setupBrowser } from "../../../utils/common";
 import { CatalogImport } from "../../../support/pages/catalog-import";

@@ -76,6 +76,11 @@ testing::run_tests() {
   Xvfb :99 &
   export DISPLAY=:99
 
+  # RHIDP-13243: Enable V8 coverage collection for E2E tests.
+  # The coverage fixture wraps page.coverage.startJSCoverage/stopJSCoverage
+  # and the reporter merges raw JSON into lcov via monocart-coverage-reports.
+  export COLLECT_COVERAGE="${COLLECT_COVERAGE:-true}"
+
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
@@ -97,6 +102,26 @@ testing::run_tests() {
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
   common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}.html" || true
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/playwright-report/" || true
+
+  # RHIDP-13243: Save and upload E2E coverage report
+  if [[ -f "${e2e_tests_dir}/coverage/e2e/lcov.info" ]]; then
+    common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/coverage/e2e/" "coverage" || true
+    if [[ -n "${CODECOV_TOKEN:-}" ]]; then
+      log::info "Uploading E2E coverage to Codecov (flag: e2e)..."
+      local codecov_bin="/tmp/codecov"
+      if [[ ! -x "$codecov_bin" ]]; then
+        curl -sL -o "$codecov_bin" https://cli.codecov.io/latest/linux/codecov && chmod +x "$codecov_bin"
+      fi
+      "$codecov_bin" upload-process \
+        --token "${CODECOV_TOKEN}" \
+        --file "${e2e_tests_dir}/coverage/e2e/lcov.info" \
+        --flag e2e \
+        --slug redhat-developer/rhdh \
+        --fail-on-error 2>&1 || log::warn "Codecov E2E coverage upload failed (non-fatal)"
+    else
+      log::info "CODECOV_TOKEN not set — skipping Codecov upload. Coverage report saved as artifact."
+    fi
+  fi
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   local test_passed="true"

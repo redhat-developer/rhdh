@@ -1,4 +1,4 @@
-import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { RESOURCES } from "../support/test-data/resources";
