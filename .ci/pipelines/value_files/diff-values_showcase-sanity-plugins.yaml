@@ -12,7 +12,7 @@ global:
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:bs_1.49.4__7.0.1"
         disabled: false
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:bs_1.49.4__4.8.0"
         disabled: false
         pluginConfig:
           argocd:
@@ -23,7 +23,7 @@ global:
                 instances:
                   - name: argoInstance1
                     url: "temp"
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:bs_1.49.4__1.8.1"
         disabled: true
         pluginConfig:
           argocd:
