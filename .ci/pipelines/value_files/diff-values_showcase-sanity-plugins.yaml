@@ -37,7 +37,7 @@ global:
                     token: "temp"
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:bs_1.49.4__2.8.0"
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.49.4__0.2.19'
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.49.4__0.2.19"
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops-backend:bs_1.49.4__0.27.0"
         disabled: false
