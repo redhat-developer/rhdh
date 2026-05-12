@@ -4,6 +4,12 @@ global:
       #  sanity check https://issues.redhat.com/browse/RHIDP-5301
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              gitlab:
+                orgProvider:
+                  host: temp
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:bs_1.49.4__3.5.0"
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:bs_1.49.4__3.3.1"
@@ -176,5 +182,15 @@ global:
                       minutes: 15
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              pingIdentityOrg:
+                default:
+                  apiPath: temp
+                  authPath: temp
+                  envId: temp
+                  clientId: temp
+                  clientSecret: temp
 orchestrator:
   enabled: true
