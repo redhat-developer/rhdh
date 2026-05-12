@@ -192,5 +192,12 @@ global:
                   envId: temp
                   clientId: temp
                   clientSecret: temp
+                  schedule:
+                    frequency:
+                      hours: 24
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
 orchestrator:
   enabled: true
