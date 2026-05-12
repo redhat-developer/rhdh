@@ -97,6 +97,9 @@ flag_management:
       paths:
         - scripts/install-dynamic-plugins/*.py
       carryforward: true
+    # Paths intentionally mirror the rhdh flag — both measure the same source
+    # from different test types. Isolation relies on --flag at upload time,
+    # not on paths. If an upload omits --flag, data lands under "default".
     - name: e2e
       paths:
         - plugins/*/src/**

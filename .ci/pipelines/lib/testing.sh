@@ -76,10 +76,11 @@ testing::run_tests() {
   Xvfb :99 &
   export DISPLAY=:99
 
-  # RHIDP-13243: Enable V8 coverage collection for E2E tests.
-  # The coverage fixture wraps page.coverage.startJSCoverage/stopJSCoverage
-  # and the reporter merges raw JSON into lcov via monocart-coverage-reports.
-  export COLLECT_COVERAGE="${COLLECT_COVERAGE:-true}"
+  # RHIDP-13243: V8 coverage collection for E2E tests (opt-in).
+  # Set COLLECT_COVERAGE=true in the job config to enable. When enabled, the
+  # coverage fixture wraps page.coverage.startJSCoverage/stopJSCoverage and
+  # the reporter merges raw JSON into lcov via monocart-coverage-reports.
+  export COLLECT_COVERAGE="${COLLECT_COVERAGE:-false}"
 
   (
     set -e
@@ -110,14 +111,26 @@ testing::run_tests() {
       log::info "Uploading E2E coverage to Codecov (flag: e2e)..."
       local codecov_bin="/tmp/codecov"
       if [[ ! -x "$codecov_bin" ]]; then
-        curl -sL -o "$codecov_bin" https://cli.codecov.io/latest/linux/codecov && chmod +x "$codecov_bin"
+        curl -sL -o "$codecov_bin" https://cli.codecov.io/latest/linux/codecov
+        curl -sL -o "${codecov_bin}.SHA256SUM" https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+        if (cd /tmp && sha256sum --check --strict codecov.SHA256SUM); then
+          rm -f "${codecov_bin}.SHA256SUM"
+          chmod +x "$codecov_bin"
+        else
+          log::warn "Codecov CLI checksum verification failed — skipping upload"
+          rm -f "$codecov_bin" "${codecov_bin}.SHA256SUM"
+        fi
       fi
-      "$codecov_bin" upload-process \
-        --token "${CODECOV_TOKEN}" \
-        --file "${e2e_tests_dir}/coverage/e2e/lcov.info" \
-        --flag e2e \
-        --slug redhat-developer/rhdh \
-        --fail-on-error 2>&1 || log::warn "Codecov E2E coverage upload failed (non-fatal)"
+      if [[ -x "$codecov_bin" ]]; then
+        # --fail-on-error makes the CLI exit non-zero on upload issues so we
+        # can log it; the || ensures we never block the pipeline for coverage.
+        "$codecov_bin" upload-process \
+          --token "${CODECOV_TOKEN}" \
+          --file "${e2e_tests_dir}/coverage/e2e/lcov.info" \
+          --flag e2e \
+          --slug redhat-developer/rhdh \
+          --fail-on-error || log::warn "Codecov E2E coverage upload failed (non-fatal)"
+      fi
     else
       log::info "CODECOV_TOKEN not set — skipping Codecov upload. Coverage report saved as artifact."
     fi
