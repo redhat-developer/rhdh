@@ -63,7 +63,7 @@ The healer agent needs a `.env` file in `e2e-tests/` with all required environme
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh <showcase|rbac> --env
+source local-test-setup.sh <showcase|showcase-rbac> --env
 ```
 
 The `.env` file is gitignored — never commit it. To regenerate (e.g. after token expiry), re-run the command above.

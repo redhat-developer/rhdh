@@ -34,7 +34,7 @@ npx playwright init-agents --loop=claude
 
 See https://playwright.dev/docs/test-agents for the full list of supported tools and options. The generated files are local tooling — do NOT commit them.
 
-Ensure the `.env` file exists — generate it with `source local-test-setup.sh <showcase|rbac> --env`. To regenerate (e.g. after token expiry), re-run the same command.
+Ensure the `.env` file exists — generate it with `source local-test-setup.sh <showcase|showcase-rbac> --env`. To regenerate (e.g. after token expiry), re-run the same command.
 
 ## Verification Steps
 
