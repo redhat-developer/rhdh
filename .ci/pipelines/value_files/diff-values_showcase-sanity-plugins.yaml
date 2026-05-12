@@ -80,7 +80,7 @@ global:
               subDomain: "temp"
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-gerrit:bs_1.49.4__0.2.19"
         disabled: false
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs__1.49.4__4.1.2"
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.49.4__4.1.2"
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
         disabled: false
