@@ -49,7 +49,7 @@
   },
   "resolutions": {
     "@protobufjs/inquire": "1.1.0"
-  },  
+  },
   "files": [
     "dist",
     "dist-dynamic/*.*",

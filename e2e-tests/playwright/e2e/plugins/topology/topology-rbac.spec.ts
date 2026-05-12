@@ -5,9 +5,6 @@ import { Catalog } from "../../../support/pages/catalog";
 import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin with RBAC", () => {
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2817
-  test.fixme(() => process.env.IS_OPENSHIFT === "false");
-
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
