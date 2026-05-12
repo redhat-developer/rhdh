@@ -82,6 +82,10 @@ testing::run_tests() {
   # the reporter merges raw JSON into lcov via monocart-coverage-reports.
   export COLLECT_COVERAGE="${COLLECT_COVERAGE:-false}"
 
+  # Remove stale coverage artifacts so a previous project's lcov.info
+  # is never mistakenly uploaded for the current run.
+  rm -rf "${e2e_tests_dir}/coverage/e2e" "${e2e_tests_dir}/coverage/e2e-raw"
+
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
@@ -108,7 +112,7 @@ testing::run_tests() {
   if [[ -f "${e2e_tests_dir}/coverage/e2e/lcov.info" ]]; then
     common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/coverage/e2e/" "coverage" || true
     if [[ -n "${CODECOV_TOKEN:-}" ]]; then
-      log::info "Uploading E2E coverage to Codecov (flag: e2e)..."
+      log::info "Uploading E2E coverage to Codecov (flag: rhdh-e2e-frontend)..."
       local codecov_bin="/tmp/codecov"
       if [[ ! -x "$codecov_bin" ]]; then
         curl -sL -o "$codecov_bin" https://cli.codecov.io/latest/linux/codecov
@@ -127,7 +131,7 @@ testing::run_tests() {
         "$codecov_bin" upload-process \
           --token "${CODECOV_TOKEN}" \
           --file "${e2e_tests_dir}/coverage/e2e/lcov.info" \
-          --flag e2e \
+          --flag rhdh-e2e-frontend \
           --slug redhat-developer/rhdh \
           --fail-on-error || log::warn "Codecov E2E coverage upload failed (non-fatal)"
       fi

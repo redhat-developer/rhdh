@@ -100,7 +100,7 @@ flag_management:
     # Paths intentionally mirror the rhdh flag — both measure the same source
     # from different test types. Isolation relies on --flag at upload time,
     # not on paths. If an upload omits --flag, data lands under "default".
-    - name: e2e
+    - name: rhdh-e2e-frontend
       paths:
         - plugins/*/src/**
         - packages/app/src/**
