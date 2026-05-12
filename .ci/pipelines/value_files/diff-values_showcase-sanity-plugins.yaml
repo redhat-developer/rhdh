@@ -10,6 +10,13 @@ global:
               gitlab:
                 orgProvider:
                   host: temp
+                  schedule:
+                    frequency:
+                      hours: 24
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:bs_1.49.4__3.5.0"
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:bs_1.49.4__3.3.1"
@@ -160,7 +167,7 @@ global:
             providers:
               ldapOrg:
                 default:
-                  target: temp
+                  target: ldap://temp
                   bind:
                     dn: temp
                     secret: temp
