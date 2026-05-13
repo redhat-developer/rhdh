@@ -74,13 +74,3 @@ rules:
     verbs:
       - get
       - list
-  # Tekton resource permissions (used by topology plugin)
-  - apiGroups:
-      - tekton.dev
-    resources:
-      - pipelines
-      - pipelineruns
-      - taskruns
-    verbs:
-      - get
-      - list

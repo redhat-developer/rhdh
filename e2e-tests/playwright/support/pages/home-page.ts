@@ -25,7 +25,7 @@ export class HomePage {
 
   async verifyQuickAccess(
     section: string,
-    quickAccessItem: string,
+    items: string | string[],
     expand = false,
   ) {
     await this.page.waitForSelector(HOME_PAGE_COMPONENTS.MuiAccordion, {
@@ -41,14 +41,13 @@ export class HomePage {
       await this.page.waitForTimeout(500);
     }
 
-    const itemLocator = sectionLocator
-      .locator(`a div[class*="MuiListItemText-root"]`)
-      .filter({ hasText: quickAccessItem });
-
-    await itemLocator.waitFor({ state: "visible" });
-
-    const isVisible = itemLocator;
-    await expect(isVisible).toBeVisible();
+    for (const item of Array.isArray(items) ? items : [items]) {
+      const itemLocator = sectionLocator
+        .locator(`a div[class*="MuiListItemText-root"]`)
+        .filter({ hasText: item });
+      await itemLocator.waitFor({ state: "visible" });
+      await expect(itemLocator).toBeVisible();
+    }
   }
 
   async verifyVisitedCardContent(section: string) {

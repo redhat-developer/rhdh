@@ -25,9 +25,6 @@ integrations:
       apiBaseUrl: temp
       username: temp
       password: temp
-  gitlab:
-    - host: gitlab.com
-      token: temp
 auth:
   environment: development
   session:
@@ -50,8 +47,6 @@ auth:
           resolvers:
             - resolver: emailLocalPartMatchingUserEntityName
 signInPage: oidc
-techRadar:
-  url: "http://${DH_TARGET_URL}/tech-radar"
 proxy:
   skipInvalidProxies: true
   # endpoints: {}
@@ -62,14 +57,6 @@ proxy:
       target: ${DH_TARGET_URL}
       changeOrigin: true
       # Change to "false" in case of using self hosted cluster with a self-signed certificate
-      secure: false
-    "/acr/api":
-      target: "https://rhdhqetest.azurecr.io/acr/v1/"
-      changeOrigin: true
-      headers:
-        # If you use Bearer Token for authorization, please replace the 'Basic' with 'Bearer' in the following line.
-        Authorization: "${ACR_SECRET}"
-      # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
       secure: false
 catalog:
   processingInterval: { hours: 24 }
@@ -146,7 +133,6 @@ permission:
       - catalog
       - permission
       - scaffolder
-      - kubernetes
       - orchestrator
     admin:
       users:

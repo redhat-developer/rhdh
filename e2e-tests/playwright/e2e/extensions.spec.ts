@@ -435,7 +435,7 @@ test.describe("Admin > Extensions", () => {
       ).toBeVisible();
     });
 
-    test("Topology package sidebar for CI", async ({ page }) => {
+    test("Global Header package sidebar for CI", async ({ page }) => {
       await page
         .getByRole("textbox", {
           name: "Search",
@@ -445,38 +445,40 @@ test.describe("Admin > Extensions", () => {
         .getByRole("textbox", {
           name: "Search",
         })
-        .fill("Topology");
+        .fill("Global Header");
       await expect(
-        page.getByRole("cell", { name: "backstage-community-plugin-topology" }),
+        page.getByRole("cell", {
+          name: "red-hat-developer-hub-backstage-plugin-global-header",
+        }),
       ).toBeVisible();
       await expect(
         page
-          .getByRole("row", { name: "Topology backstage-community" })
+          .getByRole("row", { name: "Global Header red-hat-developer-hub" })
           .getByRole("button")
           .first(),
       ).toBeVisible();
       await expect(
         page
           .getByRole("row", {
-            name: "Topology backstage-community-plugin-topology",
+            name: "Global Header red-hat-developer-hub-backstage-plugin-global-header",
           })
           .getByTestId("FileDownloadOutlinedIcon"),
       ).toBeVisible();
       await expect(
         page
           .getByRole("row", {
-            name: "Topology backstage-community-plugin-topology",
+            name: "Global Header red-hat-developer-hub-backstage-plugin-global-header",
           })
           .getByRole("checkbox"),
       ).toBeVisible();
       await page
         .getByRole("link", {
-          name: "Topology",
+          name: "Global Header",
         })
         .click();
       await expect(
         page.getByRole("heading", {
-          name: "Topology",
+          name: "Global Header",
         }),
       ).toBeVisible();
       await expect(

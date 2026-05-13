@@ -127,11 +127,9 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_RBAC,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
-        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
-        "**/playwright/e2e/plugins/quick-start.spec.ts",
       ],
       testIgnore: [
         ...(shouldSkipOrchestratorTests
@@ -178,7 +176,6 @@ export default defineConfig({
       ...k8sSpecificConfig,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
-        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
       ],
@@ -209,7 +206,6 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_OPERATOR_RBAC,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
-        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
       ],
@@ -242,8 +238,8 @@ export default defineConfig({
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
-        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/home-page-customization.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/instance-health-check.spec.ts",
       ],
     },
@@ -254,10 +250,7 @@ export default defineConfig({
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,
       dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/home-page-customization.spec.ts",
-        "**/playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts",
-      ],
+      testMatch: ["**/playwright/e2e/home-page-customization.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_DE,

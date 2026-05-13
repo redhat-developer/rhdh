@@ -364,23 +364,6 @@ apply_yaml_files() {
     "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
     "conditional-policies.yaml=$dir/resources/config_map/conditional-policies.yaml"
 
-  # configuration for testing global floating action button.
-  common::create_configmap_from_file "dynamic-global-floating-action-button-config" "$project" \
-    "dynamic-global-floating-action-button-config.yaml" "$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml"
-
-  # configuration for testing global header and header mount points.
-  common::create_configmap_from_file "dynamic-global-header-config" "$project" \
-    "dynamic-global-header-config.yaml" "$dir/resources/config_map/dynamic-global-header-config.yaml"
-
-  # Create Deployment and Pipeline for Topology test.
-  oc apply -f "$dir/resources/topology_test/topology-test.yaml" --namespace="${project}"
-
-  if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-    kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml" --namespace="${project}"
-  else
-    oc apply -f "$dir/resources/topology_test/topology-test-route.yaml" --namespace="${project}"
-  fi
-
   rm -rf "${tmpdir}"
 }
 

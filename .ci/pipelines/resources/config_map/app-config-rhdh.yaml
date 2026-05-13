@@ -11,7 +11,7 @@ app:
   branding:
     fullLogo: # QE Red Hat Developer Hub
       light: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22160pt%22%20height%3D%2280pt%22%20viewBox%3D%220%200%20160%2080%22%3E%3Cg%20fill%3D%22%23000%22%20style%3D%22text-align%3Astart%3Btext-align-last%3Aauto%22%20letter-spacing%3D%220%22%3E%3Ctext%20font-family%3D%22Red%20Hat%20Display%22%20font-size%3D%2240%22%20font-weight%3D%22700%22%20transform%3D%22translate(-.177%2054.263)%22%20word-spacing%3D%220%22%3E%3Ctspan%20x%3D%220%22%3EQE%3C%2Ftspan%3E%3C%2Ftext%3E%3Ctext%20font-family%3D%22Red%20Hat%20Text%22%20font-size%3D%2214%22%20font-weight%3D%22700%22%20transform%3D%22translate(57.565%2035.73)%22%20word-spacing%3D%220%22%3E%3Ctspan%20x%3D%220%22%3ERed%20Hat%3C%2Ftspan%3E%3Ctspan%20x%3D%220%22%20dy%3D%2218.516%22%3EDeveloper%20Hub%3C%2Ftspan%3E%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E"
-      dark: "" # Dark logo in dynamic-global-header-config.yaml
+      dark: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22160pt%22%20height%3D%2280pt%22%20viewBox%3D%220%200%20160%2080%22%3E%3Cg%20fill%3D%22%23fff%22%20style%3D%22text-align%3Astart%3Btext-align-last%3Aauto%22%20letter-spacing%3D%220%22%3E%3Ctext%20font-family%3D%22Red%20Hat%20Display%22%20font-size%3D%2240%22%20font-weight%3D%22700%22%20transform%3D%22translate(-.177%2054.263)%22%20word-spacing%3D%220%22%3E%3Ctspan%20x%3D%220%22%3EQE%3C%2Ftspan%3E%3C%2Ftext%3E%3Ctext%20font-family%3D%22Red%20Hat%20Text%22%20font-size%3D%2214%22%20font-weight%3D%22700%22%20transform%3D%22translate(57.565%2035.73)%22%20word-spacing%3D%220%22%3E%3Ctspan%20x%3D%220%22%3ERed%20Hat%3C%2Ftspan%3E%3Ctspan%20x%3D%220%22%20dy%3D%2218.516%22%3EDeveloper%20Hub%3C%2Ftspan%3E%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E"
     iconLogo: # QE icon
       light: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280pt%22%20height%3D%2280pt%22%20viewBox%3D%220%200%2080%2080%22%3E%3Ctext%20fill%3D%22%23000%22%20font-family%3D%22Red%20Hat%20Mono%22%20font-size%3D%2264%22%20font-weight%3D%22700%22%20letter-spacing%3D%220%22%20style%3D%22text-align%3Astart%3Btext-align-last%3Aauto%22%20transform%3D%22translate(1.6%2062.813)%22%20word-spacing%3D%220%22%3E%3Ctspan%20x%3D%220%22%3EQE%3C%2Ftspan%3E%3C%2Ftext%3E%3C%2Fsvg%3E"
       dark: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280pt%22%20height%3D%2280pt%22%20viewBox%3D%220%200%2080%2080%22%3E%3Ctext%20fill%3D%22%23fff%22%20font-family%3D%22Red%20Hat%20Mono%22%20font-size%3D%2264%22%20font-weight%3D%22700%22%20letter-spacing%3D%220%22%20style%3D%22text-align%3Astart%3Btext-align-last%3Aauto%22%20transform%3D%22translate(1.6%2062.813)%22%20word-spacing%3D%220%22%3E%3Ctspan%20x%3D%220%22%3EQE%3C%2Ftspan%3E%3C%2Ftext%3E%3C%2Fsvg%3E"
@@ -80,10 +80,6 @@ integrations:
       apiBaseUrl: temp
       username: temp
       password: temp
-  #   Using Github GH_USER_ID account
-  gitlab:
-    - host: gitlab.com
-      token: ${GITLAB_TOKEN}
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   environment: development
@@ -112,24 +108,11 @@ auth:
           resolvers:
             - resolver: emailLocalPartMatchingUserEntityName
 signInPage: oidc
-techRadar:
-  url: "http://${DH_TARGET_URL}/tech-radar"
-techdocs:
-  cache:
-    ttl: 3600000 # 1 hour, required for Redis cache tests to be stable
 proxy:
   skipInvalidProxies: true
   # endpoints: {}
   endpoints:
     # Other Proxies
-    "/acr/api":
-      target: "https://rhdhqetest.azurecr.io/acr/v1/"
-      changeOrigin: true
-      headers:
-        # If you use Bearer Token for authorization, please replace the 'Basic' with 'Bearer' in the following line.
-        Authorization: "${ACR_SECRET}"
-      # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
-      secure: false
     "/quay/api":
       target: https://quay.io/
       headers:
@@ -155,10 +138,6 @@ catalog:
     - type: url
       target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
     - type: url
-      target: https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-kubernetes/plugins/kubernetes-actions/examples/templates/01-kubernetes-template.yaml
-    - type: url
-      target: https://github.com/janus-qe/acr-catalog/blob/main/catalog-info.yaml
-    - type: url
       target: https://github.com/janus-qe/rhdh-test/blob/main/user.yml
       rules:
         - allow: [User]
@@ -172,6 +151,11 @@ catalog:
     - type: url
       target: https://github.com/testetson22/greeting_54mjks/blob/main/templates/greeting/greeting_w_component.yaml
   providers:
+    # githubOrg:
+    #   id: production
+    #   githubUrl: "${GITHUB_URL}"
+    #   orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
+    #   Using Github GH_USER_ID account
     keycloakOrg:
       default:
         baseUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth
@@ -195,30 +179,6 @@ catalog:
           frequency: { hours: 24 }
           timeout: { minutes: 1 }
           initialDelay: { seconds: 15 }
-    github:
-      providerId:
-        organization: "${GITHUB_ORG}"
-        schedule:
-          # Let's perform a single execution
-          frequency: { hours: 24 }
-          timeout: { minutes: 30 }
-    gitlab:
-      default:
-        group: rhdh-qe-test
-        host: gitlab.com
-        schedule:
-          # Let's perform a single execution per test run
-          frequency:
-            hours: 24
-          initialDelay:
-            seconds: 15
-          timeout:
-            minutes: 1
-    # githubOrg:
-    #   id: production
-    #   githubUrl: "${GITHUB_URL}"
-    #   orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
-    #   Using Github GH_USER_ID account
 dynatrace:
   baseUrl: temp
 argocd:

@@ -18,109 +18,6 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
-      # Enforce new quick start configuration for now but normally this should not be required.
-      # FIXME: remove this again.
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
-        disabled: false
-        pluginConfig:
-          app:
-            quickstart:
-              - title: Set up authentication
-                titleKey: steps.setupAuthentication.title
-                icon: Admin
-                description: Set up secure login credentials to protect your account from unauthorized access.
-                descriptionKey: steps.setupAuthentication.description
-                cta:
-                  text: Learn more
-                  textKey: steps.setupAuthentication.ctaTitle
-                  link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
-              - title: Configure RBAC
-                titleKey: steps.configureRbac.title
-                icon: Rbac
-                description:
-                  Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and
-                  efficient collaboration.
-                descriptionKey: steps.configureRbac.description
-                cta:
-                  text: Manage access
-                  textKey: steps.configureRbac.ctaTitle
-                  link: /rbac
-              - title: Configure Git
-                titleKey: steps.configureGit.title
-                icon: Git
-                description:
-                  Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform
-                  features.
-                descriptionKey: steps.configureGit.description
-                cta:
-                  text: Learn more
-                  textKey: steps.configureGit.ctaTitle
-                  link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
-              - title: Manage plugins
-                titleKey: steps.managePlugins.title
-                icon: Plugins
-                description: Browse and install extensions to add features, connect with external tools, and customize your experience.
-                descriptionKey: steps.managePlugins.description
-                cta:
-                  text: Explore plugins
-                  textKey: steps.managePlugins.ctaTitle
-                  link: /extensions
-              - title: Import application
-                roles:
-                  - developer
-                icon: Import
-                description:
-                  Import your existing code and services into the catalog to organize and access them through your developer
-                  portal.
-                cta:
-                  text: Import
-                  link: /bulk-import/repositories
-              - title: Learn about the Catalog
-                roles:
-                  - developer
-                icon: Catalog
-                description: Discover all software components, services, and APIs, and view their owners and documentation.
-                cta:
-                  text: View Catalog
-                  link: /catalog
-              - title: Explore Self-service templates
-                roles:
-                  - developer
-                icon: SelfService
-                description: Use our self-service templates to quickly set up new projects, services, or documentation.
-                cta:
-                  text: Explore templates
-                  link: /create
-              - title: Find all Learning Paths
-                roles:
-                  - developer
-                icon: Learning
-                description:
-                  Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close
-                  skill gaps, and promote best practices.
-                cta:
-                  text: View Learning Paths
-                  link: /learning-paths
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-quickstart:
-                translationResources:
-                  - importName: quickstartTranslations
-                    module: Alpha
-                    ref: quickstartTranslationRef
-                mountPoints:
-                  - mountPoint: application/provider
-                    importName: QuickstartDrawerProvider
-                  - mountPoint: application/internal/drawer-state
-                    importName: QuickstartDrawerStateExposer
-                  - mountPoint: application/internal/drawer-content
-                    importName: QuickstartDrawerContent
-                    config:
-                      id: quickstart
-                  - mountPoint: global.header/help
-                    importName: QuickstartButton
-                    config:
-                      priority: 100
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
         disabled: false
         pluginConfig:
@@ -137,72 +34,14 @@ global:
                       minutes: 1
                     initialDelay:
                       seconds: 15
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
-        disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              githubOrg:
-                id: production
-                githubUrl: ${GITHUB_URL}
-                orgs:
-                  - ${GITHUB_ORG}
-                  - ${GITHUB_ORG_2}
-                schedule:
-                  frequency:
-                    hours: 24
-                  initialDelay:
-                    seconds: 15
-                  timeout:
-                    minutes: 15
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.49.4__3.7.0"
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
-        disabled: false
-        pluginConfig:
-          kubernetes:
-            clusterLocatorMethods:
-              - clusters:
-                  - authProvider: serviceAccount
-                    name: "my-cluster"
-                    serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
-                    url: ${K8S_CLUSTER_API_SERVER_URL}
-                    skipTLSVerify: true
-                type: config
-            customResources:
-              # Tekton resources used by topology plugin
-              - apiVersion: "v1beta1"
-                group: "tekton.dev"
-                plural: "pipelines"
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: pipelineruns
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: taskruns
-              # Add for topology plugin
-              - apiVersion: "v1"
-                group: "route.openshift.io"
-                plural: "routes"
-            serviceLocatorMethod:
-              type: multiTenant
       # Enable Bulk import plugins.
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
-        disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-        disabled: false
-      # Enable tech-radar plugin.
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
@@ -228,8 +67,6 @@ global:
                   rbac:
                     parent: default.admin
                     icon: rbacIcon
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
-        disabled: true
       # Enable orchestrator plugins - Official release
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
@@ -281,6 +118,14 @@ global:
           dynamicPlugins:
             frontend:
               red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+
+      # Disable operator-injected lightspeed plugins (lightspeed flavor is enabledByDefault in the RHDH operator).
+      # The catalog index only provides lightspeed from ghcr.io, not registry.access.redhat.com,
+      # so {{inherit}} cannot resolve. Disable to prevent InstallException in operator deployments.
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed-backend:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings

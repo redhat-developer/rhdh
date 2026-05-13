@@ -18,16 +18,6 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
         disabled: true
 
-      # Adoption Insights - large plugin (~300MB) causing disk space issues
-      # This plugin IS tested on showcase-k8s normally, but disabled on GKE to save disk space
-      # Test skipped on GKE: e2e-tests/playwright/e2e/plugins/adoption-insights/adoption-insights.spec.ts
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
-        disabled: true
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
-        disabled: true
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
-        disabled: true
-
       # Orchestrator - large OCI plugins causing disk space issues
       # Tests skipped on GKE: e2e-tests/playwright/e2e/plugins/orchestrator/*.spec.ts
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'

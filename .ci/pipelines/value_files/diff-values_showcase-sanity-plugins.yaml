@@ -4,6 +4,19 @@ global:
       #  sanity check https://issues.redhat.com/browse/RHIDP-5301
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              gitlab:
+                orgProvider:
+                  host: temp
+                  schedule:
+                    frequency:
+                      hours: 24
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:bs_1.49.4__3.5.0"
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:bs_1.49.4__3.3.1"
@@ -12,7 +25,7 @@ global:
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:bs_1.49.4__7.0.1"
         disabled: false
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:bs_1.49.4__4.8.0"
         disabled: false
         pluginConfig:
           argocd:
@@ -23,7 +36,7 @@ global:
                 instances:
                   - name: argoInstance1
                     url: "temp"
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:bs_1.49.4__1.8.1"
         disabled: true
         pluginConfig:
           argocd:
@@ -37,7 +50,7 @@ global:
                     token: "temp"
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:bs_1.49.4__2.8.0"
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.49.4__0.2.19'
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-azure:bs_1.49.4__0.2.19"
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops-backend:bs_1.49.4__0.27.0"
         disabled: false
@@ -54,22 +67,6 @@ global:
                 apiKey: "temp"
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins:bs_1.49.4__0.30.0"
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-notifications
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
-        disabled: false
-        pluginConfig:
-          notifications:
-            processors:
-              email:
-                transportConfig:
-                sender: "temp"
-      - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-signals
-        disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:bs_1.49.4__1.1.0"
         disabled: false
         pluginConfig:
@@ -83,18 +80,6 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              backstage.plugin-techdocs-module-addons-contrib:
-                techdocsAddons:
-                  - importName: ReportIssue
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin:bs_1.49.4__0.18.0"
         disabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin-backend:bs_1.49.4__0.11.0"
@@ -108,9 +93,7 @@ global:
               subDomain: "temp"
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-gerrit:bs_1.49.4__0.2.19"
         disabled: false
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs__1.49.4__4.1.2"
-        disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.49.4__4.1.2"
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
         disabled: false
@@ -156,8 +139,6 @@ global:
         disabled: false
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-lighthouse:bs_1.49.4__0.20.0"
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
-        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
@@ -186,7 +167,7 @@ global:
             providers:
               ldapOrg:
                 default:
-                  target: temp
+                  target: ldap://temp
                   bind:
                     dn: temp
                     secret: temp
@@ -208,5 +189,22 @@ global:
                       minutes: 15
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              pingIdentityOrg:
+                default:
+                  apiPath: temp
+                  authPath: temp
+                  envId: temp
+                  clientId: temp
+                  clientSecret: temp
+                  schedule:
+                    frequency:
+                      hours: 24
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
 orchestrator:
   enabled: true
