@@ -4568,6 +4568,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-auth@npm:0.1.6":
+  version: 0.1.6
+  resolution: "@backstage/plugin-auth@npm:0.1.6"
+  dependencies:
+    "@backstage/errors": "npm:^1.2.7"
+    "@backstage/frontend-plugin-api": "npm:^0.15.0"
+    "@backstage/theme": "npm:^0.7.2"
+    "@backstage/ui": "npm:^0.13.0"
+    "@remixicon/react": "npm:^4.6.0"
+    react-use: "npm:^17.2.4"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.2
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/ce1236ee5e628ef9bcd95c8a81ea3723c50e7312a06b642d248eceb747c5ef5e221219ceb2f68324da974e645123dd96c98b46437e99f1cb15905d704f198edb
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-catalog-backend-module-logs@npm:0.1.20":
   version: 0.1.20
   resolution: "@backstage/plugin-catalog-backend-module-logs@npm:0.1.20"
@@ -18900,6 +18922,7 @@ __metadata:
     "@backstage/integration-react": "npm:1.2.16"
     "@backstage/plugin-app": "npm:0.4.2"
     "@backstage/plugin-app-visualizer": "npm:0.2.1"
+    "@backstage/plugin-auth": "npm:0.1.6"
     "@backstage/plugin-auth-react": "npm:0.1.25"
     "@backstage/plugin-catalog": "npm:2.0.1"
     "@backstage/plugin-catalog-common": "npm:1.1.8"
