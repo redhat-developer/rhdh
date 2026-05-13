@@ -12,6 +12,8 @@ test.describe.serial("Bulk Import plugin", () => {
     () => process.env.JOB_NAME.includes("osd-gcp"),
     "skipping due to RHDHBUGS-555 on OSD Env",
   );
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2958
+  test.fixme();
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
