@@ -12353,9 +12353,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.2.1":
-  version: 7.2.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.2.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.3.4":
+  version: 7.3.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.3.4"
   dependencies:
     "@backstage/backend-defaults": "npm:^0.15.1"
     "@backstage/backend-plugin-api": "npm:^1.6.2"
@@ -12369,7 +12369,7 @@ __metadata:
     "@gitbeaker/rest": "npm:^43.4.0"
     "@octokit/auth-app": "npm:^7.2.2"
     "@octokit/rest": "npm:^20.0.2"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.2.1"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.3.4"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "npm:^3.2.0"
     ajv-formats: "npm:^3.0.1"
     eventsource-client: "npm:^1.2.0"
@@ -12381,22 +12381,22 @@ __metadata:
     luxon: "npm:^3.4.4"
     node-fetch: "npm:^2.6.7"
     openapi-backend: "npm:^5.10.6"
-  checksum: 10c0/9822e1e729f21eeccce90ad816bc0f576e66d78e6155d1452e62f0f3ad7091f3baab1344ab19978f995657f3053b8ce92c92edfc56de1334d4927c4c5c4814ad
+  checksum: 10c0/c7e5013f1d1aebda3a22d4d156a8ad718af17e69b8a8da6620dfe2cee7679ab562f73f24007d183bea4262ff2db4380b748080fc6cfce8f79e99f6ecac3cff95
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^7.2.1":
-  version: 7.2.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:7.2.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^7.3.4":
+  version: 7.3.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:7.3.4"
   peerDependencies:
-    "@backstage/plugin-permission-common": ^0.9.5
-  checksum: 10c0/4680a561dd8fa8f71ffcb5c3c20fcb54651441e78f0f3451aafa50f5d60ade207966aac9cef03372117f75bafa469cd37c9a1fc57c1e52fd63f95495ad98098d
+    "@backstage/plugin-permission-common": ^0.9.7
+  checksum: 10c0/e8b1ce115d759b8a1b1978c4975f07191523f350e749298d41bccb052f670e0eb0ffc0401e98036ac4dd766b4b2900531b1327a90080be3bf9f9a9a848314f66
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.2.1":
-  version: 7.2.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.2.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.3.4":
+  version: 7.3.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:7.3.4"
   dependencies:
     "@backstage/catalog-model": "npm:^1.7.6"
     "@backstage/core-compat-api": "npm:^0.5.7"
@@ -12411,7 +12411,7 @@ __metadata:
     "@mui/icons-material": "npm:^5.15.17"
     "@mui/material": "npm:^5.12.2"
     "@mui/styles": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.2.1"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "npm:^7.3.4"
     "@tanstack/react-query": "npm:^4.29.21"
     formik: "npm:^2.4.5"
     js-yaml: "npm:^4.1.0"
@@ -12423,7 +12423,7 @@ __metadata:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^18.0.2
     react-router-dom: ^6.0.0
-  checksum: 10c0/c38caf96b782ca117943a41c2702f783a1237ff52e319f86dcba2a8b7bdf0af61184164940341a1be2f8f69b48bb313d9ac772f2de55259a5ea7adde1efbcf86
+  checksum: 10c0/4e969f752b7d86834398f6927c96e36cd645342184bdedf813d8e3d1861d58136f46048d78404342c951bd1f0f7554c79e7dc6d8ed1b221d6c87ea020c266538
   languageName: node
   linkType: hard
 
@@ -30521,7 +30521,11 @@ __metadata:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
+<<<<<<< HEAD
     "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "npm:7.2.1"
+=======
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "npm:7.3.4"
+>>>>>>> 98035999 (updating to 7.3.4)
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
@@ -30534,7 +30538,11 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
+<<<<<<< HEAD
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "npm:7.2.1"
+=======
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": "npm:7.3.4"
+>>>>>>> 98035999 (updating to 7.3.4)
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
