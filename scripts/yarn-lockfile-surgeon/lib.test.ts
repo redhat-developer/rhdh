@@ -10,6 +10,9 @@ import {
   splitDescriptorKey,
   descriptorPackageName,
   extractSpecs,
+  lockfileDependencyNpmSelector,
+  qualifyBareNpmDependencyRange,
+  qualifyNpmDescriptorsInLockfile,
   buildDescriptorKey,
   buildLockEntry,
   bumpLockfile,
@@ -57,6 +60,82 @@ describe("descriptorPackageName", () => {
 
   it("returns null for empty string", () => {
     assert.equal(descriptorPackageName(""), null);
+  });
+});
+
+describe("qualifyBareNpmDependencyRange", () => {
+  it("prefixes bare semver ranges with npm:", () => {
+    assert.equal(qualifyBareNpmDependencyRange("^1.1.3"), "npm:^1.1.3");
+    assert.equal(qualifyBareNpmDependencyRange("1.5.0"), "npm:1.5.0");
+  });
+
+  it("leaves already-qualified and non-registry protocols unchanged", () => {
+    assert.equal(qualifyBareNpmDependencyRange("npm:^1.1.3"), "npm:^1.1.3");
+    assert.equal(qualifyBareNpmDependencyRange("workspace:*"), "workspace:*");
+    assert.equal(qualifyBareNpmDependencyRange("patch:foo@1.0.0#./p.patch"), "patch:foo@1.0.0#./p.patch");
+  });
+});
+
+describe("qualifyNpmDescriptorsInLockfile", () => {
+  it("mutates dependency maps in place", () => {
+    const lock = {
+      __metadata: { version: 6 },
+      "fast-xml-builder@npm:1.1.7": {
+        version: "1.1.7",
+        resolution: "fast-xml-builder@npm:1.1.7",
+        dependencies: { "path-expression-matcher": "^1.1.3" },
+        languageName: "node",
+        linkType: "hard",
+      },
+    } as Record<string, unknown>;
+
+    qualifyNpmDescriptorsInLockfile(lock);
+
+    const deps = (lock["fast-xml-builder@npm:1.1.7"] as Record<string, unknown>)
+      .dependencies as Record<string, string>;
+    assert.equal(deps["path-expression-matcher"], "npm:^1.1.3");
+  });
+
+  it("qualifies optionalDependencies but not peerDependencies", () => {
+    const lock = {
+      __metadata: { version: 6 },
+      "pkg@npm:1.0.0": {
+        version: "1.0.0",
+        resolution: "pkg@npm:1.0.0",
+        optionalDependencies: { "opt-dep": "^2.0.0" },
+        peerDependencies: { react: "^18.0.0" },
+        languageName: "node",
+        linkType: "hard",
+      },
+    } as Record<string, unknown>;
+
+    qualifyNpmDescriptorsInLockfile(lock);
+
+    const entry = lock["pkg@npm:1.0.0"] as Record<string, unknown>;
+    assert.equal(
+      (entry.optionalDependencies as Record<string, string>)["opt-dep"],
+      "npm:^2.0.0",
+    );
+    assert.equal(
+      (entry.peerDependencies as Record<string, string>)["react"],
+      "^18.0.0",
+    );
+  });
+});
+
+describe("lockfileDependencyNpmSelector", () => {
+  it("strips npm: prefix for semver satisfies / descriptor keys", () => {
+    assert.equal(lockfileDependencyNpmSelector("npm:^1.1.3"), "^1.1.3");
+    assert.equal(lockfileDependencyNpmSelector("npm:^1.5.0"), "^1.5.0");
+  });
+
+  it("returns bare semver unchanged", () => {
+    assert.equal(lockfileDependencyNpmSelector("^1.1.3"), "^1.1.3");
+  });
+
+  it("returns null for other protocols", () => {
+    assert.equal(lockfileDependencyNpmSelector("workspace:*"), null);
+    assert.equal(lockfileDependencyNpmSelector("portal:../foo"), null);
   });
 });
 
@@ -437,6 +516,118 @@ describe("bumpLockfile", () => {
     assert.ok(
       "@scope/shared@npm:^1.0.0" in result,
       "existing shared entry should be preserved",
+    );
+  });
+
+  it("aliases npm:-prefixed dependency ranges from existing lockfile entries", async () => {
+    const fetcher = makeFetcher(
+      {
+        "@scope/root@2.0.0": fakeVersion({
+          name: "@scope/root",
+          version: "2.0.0",
+          dependencies: { "path-expression-matcher": "^1.5.0" },
+        }),
+      },
+      {
+        "path-expression-matcher": {
+          "1.5.0": fakeVersion({
+            name: "path-expression-matcher",
+            version: "1.5.0",
+          }),
+        },
+      },
+    );
+
+    const lockfileContent = stringifySyml({
+      __metadata: { version: 6, cacheKey: "8" },
+      "@scope/root@npm:1.0.0": {
+        version: "1.0.0",
+        resolution: "@scope/root@npm:1.0.0",
+        checksum: "old",
+        languageName: "node",
+        linkType: "hard",
+      },
+      "fast-xml-parser@npm:5.7.1": {
+        version: "5.7.1",
+        resolution: "fast-xml-parser@npm:5.7.1",
+        dependencies: { "path-expression-matcher": "npm:^1.1.3" },
+        checksum: "fxp",
+        languageName: "node",
+        linkType: "hard",
+      },
+    });
+
+    const lockfilePath = join(tmpDir, "yarn.lock");
+    writeFileSync(lockfilePath, lockfileContent);
+
+    await bumpLockfile(
+      lockfilePath,
+      [structUtils.parseDescriptor("@scope/root@2.0.0")],
+      fetcher,
+    );
+
+    const result = parseSyml(readFileSync(lockfilePath, "utf-8"));
+
+    const pemKey = Object.keys(result).find(
+      (k) => k.startsWith("path-expression-matcher@npm:"),
+    );
+    assert.ok(pemKey, "path-expression-matcher entry should exist");
+    assert.ok(
+      pemKey!.includes("path-expression-matcher@npm:^1.1.3"),
+      "compound key should alias npm:^1.1.3 from another entry's dependencies",
+    );
+    assert.ok(
+      pemKey!.includes("path-expression-matcher@npm:^1.5.0"),
+      "compound key should include transitive ^1.5.0",
+    );
+    assert.equal(result[pemKey!].version, "1.5.0");
+  });
+
+  it("qualifies bare registry dependency ranges on all lockfile entries before write", async () => {
+    const fetcher = makeFetcher(
+      {
+        "@scope/pkg@2.0.0": fakeVersion({
+          name: "@scope/pkg",
+          version: "2.0.0",
+        }),
+      },
+      {},
+    );
+
+    const lockfileContent = stringifySyml({
+      __metadata: { version: 6, cacheKey: "8" },
+      "@scope/pkg@npm:1.0.0": {
+        version: "1.0.0",
+        resolution: "@scope/pkg@npm:1.0.0",
+        checksum: "old",
+        languageName: "node",
+        linkType: "hard",
+      },
+      "fast-xml-builder@npm:1.1.7": {
+        version: "1.1.7",
+        resolution: "fast-xml-builder@npm:1.1.7",
+        dependencies: { "path-expression-matcher": "^1.1.3" },
+        checksum: "fxb",
+        languageName: "node",
+        linkType: "hard",
+      },
+    });
+
+    const lockfilePath = join(tmpDir, "yarn.lock");
+    writeFileSync(lockfilePath, lockfileContent);
+
+    await bumpLockfile(
+      lockfilePath,
+      [structUtils.parseDescriptor("@scope/pkg@2.0.0")],
+      fetcher,
+    );
+
+    const result = parseSyml(readFileSync(lockfilePath, "utf-8"));
+    const fxb = result["fast-xml-builder@npm:1.1.7"] as Record<string, unknown>;
+    assert.ok(fxb, "untouched package entry should remain");
+    assert.equal(
+      (fxb.dependencies as Record<string, string>)["path-expression-matcher"],
+      "npm:^1.1.3",
     );
   });
 

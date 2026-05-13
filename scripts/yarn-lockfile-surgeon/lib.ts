@@ -46,6 +46,61 @@ export function extractSpecs(key: string): string[] {
 }
 
 /**
+ * Lockfile `dependencies` values are either bare semver (^1.0) or npm-prefixed
+ * (`npm:^1.0`). `semver.satisfies` only understands the bare selector; without
+ * stripping `npm:`, aliases like `npm:^1.1.3` are dropped from compound keys.
+ */
+export function lockfileDependencyNpmSelector(depRange: string): string | null {
+  const trimmed = depRange.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("npm:")) {
+    const selector = trimmed.slice("npm:".length).trim();
+    return selector || null;
+  }
+  // Other protocols (workspace:, patch:, portal:, file:, etc.)
+  if (/^[a-z]+:/i.test(trimmed)) return null;
+  return trimmed;
+}
+
+const LOCKFILE_DEP_FIELDS = ["dependencies", "optionalDependencies"] as const;
+
+/**
+ * Yarn Berry lockfiles should store registry ranges as `npm:^1.0`. Bare semver
+ * (`^1.1.3`) is invalid for Yarn's resolver — qualify when structUtils accepts
+ * the range as npm.
+ */
+export function qualifyBareNpmDependencyRange(value: string): string {
+  const t = value.trim();
+  if (!t) return value;
+  if (t.startsWith("npm:")) return value;
+  if (/^[a-z]+:/i.test(t)) return value;
+  try {
+    const r = structUtils.parseRange(`npm:${t}`);
+    if (r.protocol !== "npm:") return value;
+    return `npm:${t}`;
+  } catch {
+    return value;
+  }
+}
+
+/** Mutates lockfile entries in place: `dependencies` and `optionalDependencies` only (not `peerDependencies`). */
+export function qualifyNpmDescriptorsInLockfile(lock: Record<string, unknown>): void {
+  for (const [key, raw] of Object.entries(lock)) {
+    if (key === "__metadata") continue;
+    if (typeof raw !== "object" || raw === null) continue;
+    const entry = raw as Record<string, unknown>;
+    for (const field of LOCKFILE_DEP_FIELDS) {
+      const obj = entry[field];
+      if (typeof obj !== "object" || obj === null) continue;
+      const depMap = obj as Record<string, unknown>;
+      for (const [depName, v] of Object.entries(depMap)) {
+        if (typeof v === "string") depMap[depName] = qualifyBareNpmDependencyRange(v);
+      }
+    }
+  }
+}
+
+/**
  * Builds a compound lockfile descriptor key from a package name and a list of
  * semver specs. Mirrors the serialization logic in Yarn's `Project.ts`.
  */
@@ -196,13 +251,14 @@ export async function bumpLockfile(
     for (const [depName, depRange] of Object.entries(item.meta.dependencies)) {
       const existing = resolvedVersions.get(depName) ?? new Set();
       // Skip if any version already in the lockfile satisfies this range
-      if ([...existing].some((v) => satisfies(v, depRange))) continue;
+      const depSemverRange = lockfileDependencyNpmSelector(depRange) ?? depRange;
+      if ([...existing].some((v) => satisfies(v, depSemverRange))) continue;
       // Skip if a version we're already adding satisfies this range
-      if (newEntries.some((e) => e.name === depName && satisfies(e.version, depRange)))
+      if (newEntries.some((e) => e.name === depName && satisfies(e.version, depSemverRange)))
         continue;
 
       const allVersions = await registry.fetchAllVersions(depName);
-      const minVer = minSatisfying(Object.keys(allVersions), depRange);
+      const minVer = minSatisfying(Object.keys(allVersions), depSemverRange);
       if (!minVer) {
         console.warn(`  ⚠️  No version of ${depName} satisfies ${depRange}`);
         continue;
@@ -213,7 +269,7 @@ export async function bumpLockfile(
         name: depName,
         version: minVer,
         meta: allVersions[minVer],
-        specs: [depRange],
+        specs: [depSemverRange],
       };
       newEntries.push(entry);
       queue.push(entry);
@@ -250,8 +306,8 @@ export async function bumpLockfile(
 
     // Check all ranges declared anywhere in the lockfile for this package
     for (const range of allDeclaredRanges.get(entry.name) ?? []) {
-      if (satisfies(entry.version, range))
-        allSpecs.add(range);
+      const selector = lockfileDependencyNpmSelector(range);
+      if (selector && satisfies(entry.version, selector)) allSpecs.add(selector);
     }
 
     // Also check ranges from existing descriptor keys
@@ -272,7 +328,9 @@ export async function bumpLockfile(
     lock[key] = buildLockEntry(entry.name, entry.version, entry.meta);
   }
 
-  // Phase 4: Serialize using Yarn's own formatter
+  qualifyNpmDescriptorsInLockfile(lock);
+
+  // Phase 5: Serialize using Yarn's own formatter
   writeFileSync(lockfilePath, stringifySyml(lock));
 
   console.log("\n--- Summary ---");
