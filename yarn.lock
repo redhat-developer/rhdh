@@ -1497,13 +1497,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/helper-string-parser@npm:^7.25.9":
-  version: 7.25.9
-  resolution: "@babel/helper-string-parser@npm:7.25.9"
-  checksum: 6435ee0849e101681c1849868278b5aee82686ba2c1e27280e5e8aca6233af6810d39f8e4e693d2f2a44a3728a6ccfd66f72d71826a94105b86b731697cdfa99
-  languageName: node
-  linkType: hard
-
 "@babel/helper-string-parser@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/helper-string-parser@npm:7.27.1"
@@ -1511,14 +1504,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/helper-validator-identifier@npm:^7.24.7, @babel/helper-validator-identifier@npm:^7.25.9, @babel/helper-validator-identifier@npm:^7.27.1":
-  version: 7.27.1
-  resolution: "@babel/helper-validator-identifier@npm:7.27.1"
-  checksum: 3c7e8391e59d6c85baeefe9afb86432f2ab821c6232b00ea9082a51d3e7e95a2f3fb083d74dc1f49ac82cf238e1d2295dafcb001f7b0fab479f3f56af5eaaa47
-  languageName: node
-  linkType: hard
-
-"@babel/helper-validator-identifier@npm:^7.28.5":
+"@babel/helper-validator-identifier@npm:^7.24.7, @babel/helper-validator-identifier@npm:^7.25.9, @babel/helper-validator-identifier@npm:^7.27.1, @babel/helper-validator-identifier@npm:^7.28.5":
   version: 7.28.5
   resolution: "@babel/helper-validator-identifier@npm:7.28.5"
   checksum: 5a251a6848e9712aea0338f659a1a3bd334d26219d5511164544ca8ec20774f098c3a6661e9da65a0d085c745c00bb62c8fada38a62f08fa1f8053bc0aeb57e4
@@ -1566,18 +1552,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/parser@npm:^7.1.0, @babel/parser@npm:^7.14.7, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.23.9, @babel/parser@npm:^7.25.9, @babel/parser@npm:^7.26.2, @babel/parser@npm:^7.26.5":
-  version: 7.26.5
-  resolution: "@babel/parser@npm:7.26.5"
-  dependencies:
-    "@babel/types": ^7.26.5
-  bin:
-    parser: ./bin/babel-parser.js
-  checksum: 663aebf27c1dc04813e6c1d6e8e8fcb2954163ec297a95bdb3f1d0c2a0f04b504bddc09588fe4b176b43fad28c8a4b2914838a1edffdd426537a42f3ac644f1e
-  languageName: node
-  linkType: hard
-
-"@babel/parser@npm:^7.20.15":
+"@babel/parser@npm:^7.1.0, @babel/parser@npm:^7.14.7, @babel/parser@npm:^7.20.15, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.23.9, @babel/parser@npm:^7.25.9, @babel/parser@npm:^7.26.2, @babel/parser@npm:^7.26.5":
   version: 7.29.2
   resolution: "@babel/parser@npm:7.29.2"
   dependencies:
@@ -2714,17 +2689,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/types@npm:^7.0.0, @babel/types@npm:^7.20.0, @babel/types@npm:^7.20.7, @babel/types@npm:^7.23.4, @babel/types@npm:^7.24.7, @babel/types@npm:^7.25.9, @babel/types@npm:^7.26.0, @babel/types@npm:^7.26.5, @babel/types@npm:^7.3.3, @babel/types@npm:^7.4.4":
-  version: 7.26.5
-  resolution: "@babel/types@npm:7.26.5"
-  dependencies:
-    "@babel/helper-string-parser": ^7.25.9
-    "@babel/helper-validator-identifier": ^7.25.9
-  checksum: 65dc14aa32ace22655c5edadeb99df80776c09cd93c105feaf49cc0583f3116aff0581b7eab630888c39ba61151f251c1399ec982b93585b0d1d1bf4a45b54f9
-  languageName: node
-  linkType: hard
-
-"@babel/types@npm:^7.29.0":
+"@babel/types@npm:^7.0.0, @babel/types@npm:^7.20.0, @babel/types@npm:^7.20.7, @babel/types@npm:^7.23.4, @babel/types@npm:^7.24.7, @babel/types@npm:^7.25.9, @babel/types@npm:^7.26.0, @babel/types@npm:^7.26.5, @babel/types@npm:^7.29.0, @babel/types@npm:^7.3.3, @babel/types@npm:^7.4.4":
   version: 7.29.0
   resolution: "@babel/types@npm:7.29.0"
   dependencies:
@@ -7305,27 +7270,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grpc/grpc-js@npm:^1.7.1":
-  version: 1.13.2
-  resolution: "@grpc/grpc-js@npm:1.13.2"
+"@grpc/grpc-js@npm:^1.10.9, @grpc/grpc-js@npm:^1.7.1":
+  version: 1.14.3
+  resolution: "@grpc/grpc-js@npm:1.14.3"
   dependencies:
-    "@grpc/proto-loader": ^0.7.13
+    "@grpc/proto-loader": ^0.8.0
     "@js-sdsl/ordered-map": ^4.4.2
-  checksum: 059b1e1ceabd45035d795b75bf1fc341abe1c544cd19ee30617fe5db9cbbf36328329c3bbe44f1bf01e5811bf006e3c267577c25ed5ccca018398e1d64a469b2
+  checksum: 5deaf9d6571031d312b9cc412cf5528fb3e394da156ae6ce38fa08e3fb1cd9d38a8f3ed208d4cf497355ff523f6012748aed310ebce0087b3342023a7cc8e9ed
   languageName: node
   linkType: hard
 
-"@grpc/grpc-js@npm:~1.10.0":
-  version: 1.10.11
-  resolution: "@grpc/grpc-js@npm:1.10.11"
-  dependencies:
-    "@grpc/proto-loader": ^0.7.13
-    "@js-sdsl/ordered-map": ^4.4.2
-  checksum: 6e7e50b11a178c49a425452e20977df5a718469fbc9374246b83145a2ad74a9c5560d5afa32405faca326f0853dd86abc2550df5bff682b9831b529623ce3b68
-  languageName: node
-  linkType: hard
-
-"@grpc/proto-loader@npm:^0.7.0, @grpc/proto-loader@npm:^0.7.13":
+"@grpc/proto-loader@npm:^0.7.13":
   version: 0.7.13
   resolution: "@grpc/proto-loader@npm:0.7.13"
   dependencies:
@@ -7336,6 +7291,20 @@ __metadata:
   bin:
     proto-loader-gen-types: build/bin/proto-loader-gen-types.js
   checksum: 399c1b8a4627f93dc31660d9636ea6bf58be5675cc7581e3df56a249369e5be02c6cd0d642c5332b0d5673bc8621619bc06fb045aa3e8f57383737b5d35930dc
+  languageName: node
+  linkType: hard
+
+"@grpc/proto-loader@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@grpc/proto-loader@npm:0.8.0"
+  dependencies:
+    lodash.camelcase: ^4.3.0
+    long: ^5.0.0
+    protobufjs: ^7.5.3
+    yargs: ^17.7.2
+  bin:
+    proto-loader-gen-types: build/bin/proto-loader-gen-types.js
+  checksum: 97570e2e8c29a35b999fa929acad506765e6752d3219764825fecc0ab632492b1ac2e4dd4c0a96cc2e01754d99bfa838dff0729c6608a02f7b027fd19bc1d1e4
   languageName: node
   linkType: hard
 
@@ -11223,10 +11192,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/codegen@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@protobufjs/codegen@npm:2.0.4"
-  checksum: 59240c850b1d3d0b56d8f8098dd04787dcaec5c5bd8de186fa548de86b86076e1c50e80144b90335e705a044edf5bc8b0998548474c2a10a98c7e004a1547e4b
+"@protobufjs/codegen@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "@protobufjs/codegen@npm:2.0.5"
+  checksum: b5f1e43b4b9432247297083e395982054b8ff0e3a6de550bffe12de16a22bd6e900f7820a3348ecbac95cbf78bbb6b71e268f64fdbbeda1f354846965baa01ca
   languageName: node
   linkType: hard
 
@@ -11254,7 +11223,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/inquire@npm:^1.1.0":
+"@protobufjs/inquire@npm:1.1.0":
   version: 1.1.0
   resolution: "@protobufjs/inquire@npm:1.1.0"
   checksum: ca06f02eaf65ca36fb7498fc3492b7fc087bfcc85c702bac5b86fad34b692bdce4990e0ef444c1e2aea8c034227bd1f0484be02810d5d7e931c55445555646f4
@@ -11275,10 +11244,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/utf8@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/utf8@npm:1.1.0"
-  checksum: f9bf3163d13aaa3b6f5e6fbf37a116e094ea021c0e1f2a7ccd0e12a29e2ce08dafba4e8b36e13f8ed7397e1591610ce880ed1289af4d66cf4ace8a36a9557278
+"@protobufjs/utf8@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/utf8@npm:1.1.1"
+  checksum: 9352cf54a92219bd7eac9791c62f4d9abc27381a4b8d639e76ca33edb4813e6905c17ea1f894f4730ea1c6e99e69dac4484a661d6715193d88e90c1775df9fe9
   languageName: node
   linkType: hard
 
@@ -19351,16 +19320,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"brace-expansion@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "brace-expansion@npm:2.0.1"
-  dependencies:
-    balanced-match: ^1.0.0
-  checksum: a61e7cd2e8a8505e9f0036b3b6108ba5e926b4b55089eeb5550cd04a471fe216c96d4fe7e4c7f995c728c554ae20ddfc4244cad10aef255e72b62930afd233d1
-  languageName: node
-  linkType: hard
-
-"brace-expansion@npm:^2.0.2":
+"brace-expansion@npm:^2.0.1, brace-expansion@npm:^2.0.2":
   version: 2.1.0
   resolution: "brace-expansion@npm:2.1.0"
   dependencies:
@@ -23702,9 +23662,9 @@ __metadata:
   linkType: hard
 
 "fast-uri@npm:^3.0.1":
-  version: 3.0.3
-  resolution: "fast-uri@npm:3.0.3"
-  checksum: c52e6c86465f5c240e84a4485fb001088cc743d261a4b54b0050ce4758b1648bdbe53da1328ef9620149dca1435e3de64184f226d7c0a3656cb5837b3491e149
+  version: 3.1.2
+  resolution: "fast-uri@npm:3.1.2"
+  checksum: 73a6e1b04e6fcf7a09ed93316e72d643ef177d26969973784690708612141f2c2f74657120bab75bf5bbc26bfd535a32c90a8c3bc50aca50584cf01f98815afe
   languageName: node
   linkType: hard
 
@@ -24820,22 +24780,22 @@ __metadata:
   linkType: hard
 
 "google-gax@npm:^4.0.4":
-  version: 4.3.1
-  resolution: "google-gax@npm:4.3.1"
+  version: 4.6.1
+  resolution: "google-gax@npm:4.6.1"
   dependencies:
-    "@grpc/grpc-js": ~1.10.0
-    "@grpc/proto-loader": ^0.7.0
+    "@grpc/grpc-js": ^1.10.9
+    "@grpc/proto-loader": ^0.7.13
     "@types/long": ^4.0.0
     abort-controller: ^3.0.0
     duplexify: ^4.0.0
     google-auth-library: ^9.3.0
-    node-fetch: ^2.6.1
+    node-fetch: ^2.7.0
     object-hash: ^3.0.0
-    proto3-json-serializer: ^2.0.0
-    protobufjs: 7.2.6
+    proto3-json-serializer: ^2.0.2
+    protobufjs: ^7.3.2
     retry-request: ^7.0.0
     uuid: ^9.0.1
-  checksum: bc7e0da01f0494ae4b9fb2c5dd3a81089e7e18228ad26e6d985da7bb9e8df9f77c4c5cf794bd48bdd7b5930700ba17771f37e7ffdc5e0a749702f8f69697e825
+  checksum: b46479b3160b9a71f73c82ef100a54f1b8f40ac1e43d819eef307022cc17d67a575764eef94fe72f379cfd10f818ccc7b94c80eb15910d5560c0a1f77bf36728
   languageName: node
   linkType: hard
 
@@ -30274,7 +30234,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:2.7.0, node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.12, node-fetch@npm:^2.6.7, node-fetch@npm:^2.6.9, node-fetch@npm:^2.7.0":
+"node-fetch@npm:2.7.0, node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.12, node-fetch@npm:^2.6.7, node-fetch@npm:^2.6.9, node-fetch@npm:^2.7.0":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
@@ -32610,52 +32570,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"proto3-json-serializer@npm:^2.0.0":
-  version: 2.0.1
-  resolution: "proto3-json-serializer@npm:2.0.1"
+"proto3-json-serializer@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "proto3-json-serializer@npm:2.0.2"
   dependencies:
     protobufjs: ^7.2.5
-  checksum: dfdb30f1453af356224c60c7106f9211167f142c1310696a24beb7d69c498ad15e6e0cc64e5a9585d1a24787a0be59a0662b6e673727a715f36622dc3a31abf5
+  checksum: 21b8aa65be6dac2bb24920e5bdabef48b249bdf65b1498ae7e69ac4e70722275b083cd60a21d2b4be3ead9d768de2f6f5fb6b188bd177d51c824a539b5ba55cc
   languageName: node
   linkType: hard
 
-"protobufjs@npm:7.2.6":
-  version: 7.2.6
-  resolution: "protobufjs@npm:7.2.6"
+"protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.3.0, protobufjs@npm:^7.3.2, protobufjs@npm:^7.4.0, protobufjs@npm:^7.5.3":
+  version: 7.5.6
+  resolution: "protobufjs@npm:7.5.6"
   dependencies:
     "@protobufjs/aspromise": ^1.1.2
     "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
+    "@protobufjs/codegen": ^2.0.5
     "@protobufjs/eventemitter": ^1.1.0
     "@protobufjs/fetch": ^1.1.0
     "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
+    "@protobufjs/inquire": ^1.1.1
     "@protobufjs/path": ^1.1.2
     "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
+    "@protobufjs/utf8": ^1.1.1
     "@types/node": ">=13.7.0"
     long: ^5.0.0
-  checksum: 3c62e48f7d50017ac3b0dcd2a58e617cf858f9fba56a488bd48b9aa3482893a75540052dbcb3c12dfbaab42b1d04964611175faf06bdadcd33a4ebac982a511e
-  languageName: node
-  linkType: hard
-
-"protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.3.0, protobufjs@npm:^7.4.0":
-  version: 7.5.4
-  resolution: "protobufjs@npm:7.5.4"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.2
-    "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
-    "@protobufjs/eventemitter": ^1.1.0
-    "@protobufjs/fetch": ^1.1.0
-    "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
-    "@protobufjs/path": ^1.1.2
-    "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
-    "@types/node": ">=13.7.0"
-    long: ^5.0.0
-  checksum: 53bf83b9a726b05d43da35bb990dba7536759787dccea9a67b8f31be9df470ba17f1f1b982ca19956cfc7726f3ec7e0e883ca4ad93b5ec753cc025a637fc704f
+  checksum: 0fb2d0dcafd49c407519b2f8032437f5fcdcd9bcaa99aacfdc3f45fd1af36fc0385a0d773bf6da3e4d884e7f6513f38251deef725d1999a4866b7d43488f4dcc
   languageName: node
   linkType: hard
 
@@ -32742,21 +32682,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.10.1, qs@npm:^6.10.3, qs@npm:^6.11.0, qs@npm:^6.12.2, qs@npm:^6.12.3, qs@npm:^6.14.0, qs@npm:^6.9.4, qs@npm:~6.14.0":
-  version: 6.14.1
-  resolution: "qs@npm:6.14.1"
-  dependencies:
-    side-channel: ^1.1.0
-  checksum: 7fffab0344fd75bfb6b8c94b8ba17f3d3e823d25b615900f68b473c3a078e497de8eaa08f709eaaa170eedfcee50638a7159b98abef7d8c89c2ede79291522f2
-  languageName: node
-  linkType: hard
-
-"qs@npm:^6.12.1":
+"qs@npm:^6.10.1, qs@npm:^6.10.3, qs@npm:^6.11.0, qs@npm:^6.12.1, qs@npm:^6.12.2, qs@npm:^6.12.3, qs@npm:^6.14.0, qs@npm:^6.9.4":
   version: 6.15.1
   resolution: "qs@npm:6.15.1"
   dependencies:
     side-channel: ^1.1.0
   checksum: 777eb585b886ebf5c8e499a736c64505748169e6fa0ef1409f351986837f64aebb7b9b06bcf469e2b9b508d760515ed0d2089a7ae8334feea0ec0caebc08f9f6
+  languageName: node
+  linkType: hard
+
+"qs@npm:~6.14.0":
+  version: 6.14.1
+  resolution: "qs@npm:6.14.1"
+  dependencies:
+    side-channel: ^1.1.0
+  checksum: 7fffab0344fd75bfb6b8c94b8ba17f3d3e823d25b615900f68b473c3a078e497de8eaa08f709eaaa170eedfcee50638a7159b98abef7d8c89c2ede79291522f2
   languageName: node
   linkType: hard
 
@@ -34720,14 +34660,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sax@npm:>=0.6.0":
-  version: 1.3.0
-  resolution: "sax@npm:1.3.0"
-  checksum: 238ab3a9ba8c8f8aaf1c5ea9120386391f6ee0af52f1a6a40bbb6df78241dd05d782f2359d614ac6aae08c4c4125208b456548a6cf68625aa4fe178486e63ecd
-  languageName: node
-  linkType: hard
-
-"sax@npm:^1.5.0":
+"sax@npm:>=0.6.0, sax@npm:^1.5.0":
   version: 1.6.0
   resolution: "sax@npm:1.6.0"
   checksum: 83ae2a17f524bd35b1b7d1c867700b1fab41e4cbb4f7635b7e66398421e06ff2cd43ec651c151cb99c67c3681ec7d0493cb6a98fd2e7799ea15b5d0a4615f870

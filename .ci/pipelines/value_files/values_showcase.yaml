@@ -175,7 +175,7 @@ global:
         pluginConfig:
           quay:
             apiUrl: https://quay.io
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
         disabled: false
         pluginConfig:
           dynamicPlugins:
@@ -190,8 +190,6 @@ global:
                       if:
                         anyOf:
                           - isQuayAvailable
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton

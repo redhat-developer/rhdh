@@ -10349,10 +10349,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/codegen@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@protobufjs/codegen@npm:2.0.4"
-  checksum: 59240c850b1d3d0b56d8f8098dd04787dcaec5c5bd8de186fa548de86b86076e1c50e80144b90335e705a044edf5bc8b0998548474c2a10a98c7e004a1547e4b
+"@protobufjs/codegen@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "@protobufjs/codegen@npm:2.0.5"
+  checksum: b5f1e43b4b9432247297083e395982054b8ff0e3a6de550bffe12de16a22bd6e900f7820a3348ecbac95cbf78bbb6b71e268f64fdbbeda1f354846965baa01ca
   languageName: node
   linkType: hard
 
@@ -10380,7 +10380,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/inquire@npm:^1.1.0":
+"@protobufjs/inquire@npm:1.1.0":
   version: 1.1.0
   resolution: "@protobufjs/inquire@npm:1.1.0"
   checksum: ca06f02eaf65ca36fb7498fc3492b7fc087bfcc85c702bac5b86fad34b692bdce4990e0ef444c1e2aea8c034227bd1f0484be02810d5d7e931c55445555646f4
@@ -10401,10 +10401,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/utf8@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/utf8@npm:1.1.0"
-  checksum: f9bf3163d13aaa3b6f5e6fbf37a116e094ea021c0e1f2a7ccd0e12a29e2ce08dafba4e8b36e13f8ed7397e1591610ce880ed1289af4d66cf4ace8a36a9557278
+"@protobufjs/utf8@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/utf8@npm:1.1.1"
+  checksum: 9352cf54a92219bd7eac9791c62f4d9abc27381a4b8d639e76ca33edb4813e6905c17ea1f894f4730ea1c6e99e69dac4484a661d6715193d88e90c1775df9fe9
   languageName: node
   linkType: hard
 
@@ -16270,7 +16270,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.1.0, acorn@npm:^8.11.0, acorn@npm:^8.14.1, acorn@npm:^8.15.0, acorn@npm:^8.4.1, acorn@npm:^8.8.1, acorn@npm:^8.9.0":
+"acorn@npm:^8.1.0, acorn@npm:^8.11.0, acorn@npm:^8.15.0, acorn@npm:^8.4.1, acorn@npm:^8.8.1, acorn@npm:^8.9.0":
   version: 8.15.0
   resolution: "acorn@npm:8.15.0"
   bin:
@@ -22056,9 +22056,9 @@ __metadata:
   linkType: hard
 
 "fast-uri@npm:^3.0.1":
-  version: 3.1.0
-  resolution: "fast-uri@npm:3.1.0"
-  checksum: daab0efd3548cc53d0db38ecc764d125773f8bd70c34552ff21abdc6530f26fa4cb1771f944222ca5e61a0a1a85d01a104848ff88c61736de445d97bd616ea7e
+  version: 3.1.2
+  resolution: "fast-uri@npm:3.1.2"
+  checksum: 73a6e1b04e6fcf7a09ed93316e72d643ef177d26969973784690708612141f2c2f74657120bab75bf5bbc26bfd535a32c90a8c3bc50aca50584cf01f98815afe
   languageName: node
   linkType: hard
 
@@ -29946,22 +29946,22 @@ __metadata:
   linkType: hard
 
 "protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.3.2, protobufjs@npm:^7.5.3":
-  version: 7.5.4
-  resolution: "protobufjs@npm:7.5.4"
+  version: 7.5.6
+  resolution: "protobufjs@npm:7.5.6"
   dependencies:
     "@protobufjs/aspromise": ^1.1.2
     "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
+    "@protobufjs/codegen": ^2.0.5
     "@protobufjs/eventemitter": ^1.1.0
     "@protobufjs/fetch": ^1.1.0
     "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
+    "@protobufjs/inquire": ^1.1.1
     "@protobufjs/path": ^1.1.2
     "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
+    "@protobufjs/utf8": ^1.1.1
     "@types/node": ">=13.7.0"
     long: ^5.0.0
-  checksum: 53bf83b9a726b05d43da35bb990dba7536759787dccea9a67b8f31be9df470ba17f1f1b982ca19956cfc7726f3ec7e0e883ca4ad93b5ec753cc025a637fc704f
+  checksum: 0fb2d0dcafd49c407519b2f8032437f5fcdcd9bcaa99aacfdc3f45fd1af36fc0385a0d773bf6da3e4d884e7f6513f38251deef725d1999a4866b7d43488f4dcc
   languageName: node
   linkType: hard
 
@@ -35243,14 +35243,14 @@ __metadata:
   linkType: hard
 
 "vm2@npm:^3.10.0":
-  version: 3.10.2
-  resolution: "vm2@npm:3.10.2"
+  version: 3.11.2
+  resolution: "vm2@npm:3.11.2"
   dependencies:
-    acorn: ^8.14.1
+    acorn: ^8.15.0
     acorn-walk: ^8.3.4
   bin:
     vm2: bin/vm2
-  checksum: 4cac359fe9bc51756a981e3a72a39a7ff01bec149f0505186c8ff69825b4afd658f8dc904291944754989978f16edc5648da13c5f33a720d82625381e00c5aea
+  checksum: 8f2064b207d6d97d11be472b1b4365b19546d9a2fc9f3bbade4bb19f70779dd24c2a2cf4afde136bda7e1d2b1bf131fe47187c6417247609de5722dad6d33db6
   languageName: node
   linkType: hard
 
