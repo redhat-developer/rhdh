@@ -309,6 +309,7 @@ test.describe
     common = new Common(page);
     bulkimport = new BulkImport(page);
     catalogImport = new CatalogImport(page);
+    await common.logintoGithub(process.env.GH_USER2_ID!);
     await common.loginAsKeycloakUser(
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
@@ -318,6 +319,7 @@ test.describe
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
+    await common.checkAndClickOnGHloginPopup();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
     await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
       "Imported",

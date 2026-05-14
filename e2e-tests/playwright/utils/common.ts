@@ -61,7 +61,7 @@ export class Common {
     await this.uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
   }
 
-  private async logintoGithub(userid: string) {
+  async logintoGithub(userid: string) {
     await this.page.goto("https://github.com/login");
     await this.page.waitForSelector("#login_field");
     await this.page.fill("#login_field", userid);
@@ -192,12 +192,9 @@ export class Common {
 
   async clickOnGHloginPopup() {
     const isLoginRequiredVisible = await this.uiHelper.isTextVisible(
-      t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
+      t["core-components"][lang]["oauthRequestDialog.login"],
     );
     if (isLoginRequiredVisible) {
-      await this.uiHelper.clickButton(
-        t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
-      );
       await this.uiHelper.clickButton(
         t["core-components"][lang]["oauthRequestDialog.login"],
       );
