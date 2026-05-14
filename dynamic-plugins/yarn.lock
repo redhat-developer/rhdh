@@ -30521,11 +30521,7 @@ __metadata:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
-<<<<<<< HEAD
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "npm:7.2.1"
-=======
     "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "npm:7.3.4"
->>>>>>> 98035999 (updating to 7.3.4)
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
@@ -30538,11 +30534,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-<<<<<<< HEAD
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": "npm:7.2.1"
-=======
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "npm:7.3.4"
->>>>>>> 98035999 (updating to 7.3.4)
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
