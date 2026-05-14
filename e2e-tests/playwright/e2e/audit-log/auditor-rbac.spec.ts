@@ -1,5 +1,5 @@
-import { test, expect } from "@support/coverage/test";
-import { Common, setupBrowser } from "../../utils/common";
+import { test, expect, Page } from "@support/coverage/test";
+import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
 import {
   RBAC_API,
   ROLE_NAME,
@@ -25,6 +25,8 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
+  let page: Page;
+
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
       type: "component",
@@ -32,7 +34,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
-    const page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     await common.loginAsKeycloakUser();
     rbacApi = await RhdhRbacApi.buildRbacApi(page);
@@ -284,5 +286,9 @@ test.describe("Auditor check for RBAC Plugin", () => {
       "succeeded",
       ["policy.entity.read", USER_ENTITY_REF],
     );
+  });
+
+  test.afterAll(async ({}, testInfo) => {
+    await teardownBrowser(page, testInfo);
   });
 });
