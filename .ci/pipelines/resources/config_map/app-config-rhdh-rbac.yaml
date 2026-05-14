@@ -94,6 +94,12 @@ catalog:
     - type: url
       target: https://github.com/testetson22/greeting_54mjks/blob/main/templates/greeting/greeting_w_component.yaml
   providers:
+    github:
+      providerId:
+        organization: "${GITHUB_ORG}"
+        schedule:
+          frequency: { hours: 24 }
+          timeout: { minutes: 30 }
     keycloakOrg:
       default:
         baseUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth
