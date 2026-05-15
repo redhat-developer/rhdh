@@ -11,7 +11,7 @@
     "prettier:fix": "npx prettier --write **/*.{sh,md,yaml,yml}"
   },
   "devDependencies": {
-    "prettier": "3.8.1",
+    "prettier": "3.8.3",
     "prettier-plugin-sh": "0.18.0",
     "shellcheck": "4.1.0"
   },
