@@ -51,6 +51,7 @@ packages:
   - package: '@backstage/plugin-signals-backend' # generally-available
   - package: '@red-hat-developer-hub/backstage-plugin-bulk-import' # tech-preview
   - package: '@red-hat-developer-hub/backstage-plugin-bulk-import-backend' # tech-preview
+  - package: '@red-hat-developer-hub/backstage-plugin-homepage-backend' # tech-preview
   # Lightspeed plugins are enabled by default in the install methods (Helm chart, Operator)
   - package: '@red-hat-developer-hub/backstage-plugin-lightspeed' # generally-available
   - package: '@red-hat-developer-hub/backstage-plugin-lightspeed-backend' # generally-available
