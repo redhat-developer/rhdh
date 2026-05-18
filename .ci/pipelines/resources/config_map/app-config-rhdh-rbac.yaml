@@ -46,6 +46,12 @@ auth:
         signIn:
           resolvers:
             - resolver: emailLocalPartMatchingUserEntityName
+    github:
+      development:
+        clientSecret: ${GITHUB_OAUTH_APP_SECRET}
+        clientId: ${GITHUB_OAUTH_APP_ID}
+        callbackUrl: ${RHDH_BASE_URL}/api/auth/github/handler/frame
+        disableIdentityResolution: true
 signInPage: oidc
 proxy:
   skipInvalidProxies: true

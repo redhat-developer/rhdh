@@ -285,6 +285,8 @@ spec:
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
+  // Following tests should be checked and removed as for user rhdh-qe-2, the repo will not be displayed in the bulk import Added repositories after this change https://redhat.atlassian.net/browse/RHIDP-11709.
+  test.fixme();
   test.skip(
     () => process.env.JOB_NAME.includes("osd-gcp"),
     "skipping due to RHDHBUGS-555 on OSD Env",
@@ -297,12 +299,13 @@ test.describe
   const existingRepoFromAppConfig = "janus-test-3-bulk-import";
 
   const existingComponentDetails = {
-    name: "janus-test-2-bulk-import-test",
-    repoName: "janus-test-2-bulk-import-test",
-    url: "https://github.com/janus-test/janus-test-2-bulk-import-test/blob/main/catalog-info.yaml",
+    name: "test-rhdh-qe-2-team-owned",
+    repoName: "test-rhdh-qe-2-team-owned",
+    url: "https://github.com/rhdh-qe-2/test-rhdh-qe-2-team-owned/blob/main/catalog-info.yaml",
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.setTimeout(400_000);
     page = (await setupBrowser(browser, testInfo)).page;
 
     uiHelper = new UIhelper(page);
@@ -313,9 +316,54 @@ test.describe
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
     );
+    const ghLogin = await common.githubLoginFromSettingsPage(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+      process.env.GH_USER2_2FA_SECRET,
+    );
+    expect(ghLogin).toBe("Login successful");
+    await page.goto("/");
+    await common.waitForLoad();
+    await page.goto("/settings/auth-providers");
+    await uiHelper.verifyText("rhdh-qe-2");
+
+    // Wait until catalog has ingested the Component from app-config-rhdh-rbac.yaml
+    // (catalog.locations → janus-test/janus-test-3-bulk-import). No Catalog Import UI.
+    await expect(async () => {
+      await uiHelper.openSidebar("Catalog");
+      await common.waitForLoad();
+      await uiHelper.selectMuiBox("Kind", "Component");
+      await uiHelper.searchInputPlaceholder(existingRepoFromAppConfig);
+      await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
+        "other",
+        "unknown",
+      ]);
+    }).toPass({
+      intervals: [10_000, 20_000, 30_000],
+      timeout: 240_000,
+    });
+    await page.goto("/bulk-import");
+    await common.waitForLoad();
+    await expect(
+      page.getByRole("heading", {
+        name: "Sign-in to allow Red Hat Developer Hub access",
+      }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Log in" }).click();
+    await page.waitForTimeout(5000);
   });
 
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
+    test.setTimeout(200_000);
+    await expect(async () => {
+      await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
+      await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
+        "Imported",
+      ]);
+    }).toPass({
+      intervals: [5_000, 10_000, 15_000],
+      timeout: 90_000,
+    });
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
