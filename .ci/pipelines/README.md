@@ -64,16 +64,18 @@ Additionally, include the workflow: `generic-claim` for setup and cleanup.
 
 ## Debugging
 
-Any RHDH team member can use the [.ci/pipelines/ocp-cluster-claim-login.sh](ocp-cluster-claim-login.sh)
-script to log in to an ephemeral cluster claimed by a CI job for investigation.
+Any RHDH team member can use the
+[.ci/pipelines/ocp-cluster-claim-login.sh](ocp-cluster-claim-login.sh) script to log in to an
+ephemeral cluster claimed by a CI job for investigation.
 
 ### Prerequisites
 
 - [`vault`](https://developer.hashicorp.com/vault/downloads), `oc`, and `jq` CLIs installed
-- Access to `selfservice/rhdh-qe/ephemeral_cluster` in [vault.ci.openshift.org](https://vault.ci.openshift.org)
-  (request access in [#rhdh-e2e-tests](https://redhat-internal.slack.com/archives/rhdh-e2e-tests) if needed)
-- For **PR-triggered jobs**: add `[debug]` to your PR title to enable the HTPasswd identity provider,
-  then re-trigger the job with `/test e2e-ocp-helm`
+- Access to `selfservice/rhdh-qe/ephemeral_cluster` in
+  [vault.ci.openshift.org](https://vault.ci.openshift.org) (request access in
+  [#rhdh-e2e-tests](https://redhat-internal.slack.com/archives/rhdh-e2e-tests) if needed)
+- For **PR-triggered jobs**: add `[debug]` to your PR title to enable the HTPasswd identity
+  provider, then re-trigger the job with `/test e2e-ocp-helm`
 
 ### Steps:
 
@@ -84,7 +86,8 @@ script to log in to an ephemeral cluster claimed by a CI job for investigation.
 2. Provide the Prow log URL when prompted, for example:
    `https://prow.ci.openshift.org/view/gs/test-platform-results/logs/periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly/<BUILD_ID>`
 3. The script will:
-   - Authenticate to Vault via OIDC and fetch cluster credentials from `selfservice/rhdh-qe/ephemeral_cluster`.
+   - Authenticate to Vault via OIDC and fetch cluster credentials from
+     `selfservice/rhdh-qe/ephemeral_cluster`.
    - Log in directly to the ephemeral cluster API.
    - Prompt to open the OCP web console in the browser (password copied to clipboard).
 4. Note:
