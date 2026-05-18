@@ -11066,9 +11066,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.8.1":
-  version: 0.8.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.8.1"
+"@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.8.2":
+  version: 0.8.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.8.2"
   dependencies:
     "@backstage/core-components": "npm:^0.18.8"
     "@backstage/core-plugin-api": "npm:^1.12.4"
@@ -11080,7 +11080,7 @@ __metadata:
     react-use: "npm:^17.2.4"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/4d34227fff06dae050e63e037f3041be5af4ba10f60e9828e9b02d79496d9e979e8ba11b97fd1b7a8a5522169b1023d0b22d75c3d32c88968ad9a68c7b55be86
+  checksum: 10c0/1a61e10621e7b4747a861f4d4aa3815d38290a8ef03b04dade132f254ec21b6a01139358862d08462a8ebf8de3f66a92ead49869a602571676161800ca7c4ab7
   languageName: node
   linkType: hard
 
@@ -29177,7 +29177,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "npm:0.8.2"
-    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "npm:0.8.1"
+    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "npm:0.8.2"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
