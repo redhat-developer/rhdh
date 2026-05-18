@@ -21,9 +21,9 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-backend": "7.12.2",
-    "@backstage-community/plugin-rbac-node": "1.20.0",
-    "@backstage-community/plugin-scaffolder-backend-module-annotator": "2.12.0",
+    "@backstage-community/plugin-rbac-backend": "7.12.5",
+    "@backstage-community/plugin-rbac-node": "1.20.1",
+    "@backstage-community/plugin-scaffolder-backend-module-annotator": "2.16.1",
     "@backstage/backend-app-api": "1.6.0",
     "@backstage/backend-defaults": "0.16.0",
     "@backstage/backend-dynamic-feature-service": "0.8.0",
@@ -74,7 +74,7 @@
     "@opentelemetry/host-metrics": "0.38.3",
     "@opentelemetry/instrumentation-runtime-node": "0.30.0",
     "@opentelemetry/sdk-node": "0.218.0",
-    "@red-hat-developer-hub/backstage-plugin-translations-backend": "0.2.1",
+    "@red-hat-developer-hub/backstage-plugin-translations-backend": "0.3.1",
     "app": "workspace:*",
     "app-next": "workspace:*",
     "global-agent": "3.0.0",
