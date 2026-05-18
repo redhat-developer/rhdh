@@ -1,12 +1,23 @@
 {
-  "plugin.adr": {
+  "plugin.acr": {
+    "ja": {
+      "page.title": "Azure Container Registry リポジトリー: {{image}}",
+      "table.searchPlaceholder": "フィルター",
+      "table.labelRowsSelect": "行",
+      "table.columns.tag": "タグ",
+      "table.columns.created": "作成済み",
+      "table.columns.lastModified": "最終変更日",
+      "table.columns.manifest": "マニフェスト"
+    }
+  },
+  "adr": {
     "ja": {
       "contentHeaderTitle": "アーキテクチャー決定レコード",
       "failedToFetch": "ADR の取得に失敗しました",
       "notFound": "ADR が見つかりません"
     }
   },
-  "plugin.announcements-react": {
+  "announcements": {
     "ja": {
       "announcementForm.title": "タイトル",
       "announcementForm.excerpt": "抜粋",
@@ -22,6 +33,8 @@
       "announcementForm.tagsInput.create": "作成",
       "announcementForm.tagsInput.label": "タグ",
       "announcementForm.tagsLabel": "タグ",
+      "announcementForm.sendNotification": "通知の送信",
+      "announcementsPage.announcements": "お知らせ",
       "announcementsPage.newAnnouncement": "新しいお知らせ",
       "announcementsPage.genericNew": "新規",
       "announcementsPage.card.by": "By",
@@ -31,8 +44,18 @@
       "announcementsPage.card.occurred": "実施済み ",
       "announcementsPage.card.scheduled": "スケジュール済み ",
       "announcementsPage.card.today": "今日",
-      "announcementsPage.grid.announcementDeleted": "お知らせを削除しました。",
       "announcementsPage.contextMenu.admin": "アナウンスの管理",
+      "announcementsPage.filter.label": "フィルター:",
+      "announcementsPage.filter.category": "カテゴリー",
+      "announcementsPage.filter.categoryPlaceholder": "カテゴリーの選択",
+      "announcementsPage.filter.categorySearchPlaceholder": "カテゴリーの検索...",
+      "announcementsPage.filter.tags": "タグ",
+      "announcementsPage.filter.tagsPlaceholder": "タグの選択",
+      "announcementsPage.filter.tagsSearchPlaceholder": "タグの検索...",
+      "announcementsPage.filter.clear": "フィルターをクリア",
+      "announcementsPage.filter.noFilteredAnnouncementsFound": "選択したフィルターに一致するお知らせが見つかりません。",
+      "announcementsPage.errorLoadingAnnouncements": "お知らせの読み込み中にエラーが発生しました。",
+      "announcementsPage.noAnnouncementsFound": "お知らせが見つかりません。",
       "confirmDeleteDialog.title": "削除してもよろしいですか?",
       "confirmDeleteDialog.cancel": "キャンセル",
       "confirmDeleteDialog.delete": "削除",
@@ -53,6 +76,7 @@
       "categoriesForm.editCategory": "カテゴリーの編集",
       "categoriesForm.titleLabel": "タイトル",
       "categoriesForm.submit": "送信",
+      "categoriesForm.errors.alreadyExists": "この名前のカテゴリーはすでに存在します。",
       "categoriesTable.categoryDeleted": "カテゴリーが削除されました。",
       "categoriesTable.slug": "スラッグ",
       "categoriesTable.title": "タイトル",
@@ -87,6 +111,12 @@
       "editAnnouncementPage.updatedMessageWithNewCategory": "新しいカテゴリー",
       "editAnnouncementPage.notFoundMessage": "お知らせが見つかりません",
       "editAnnouncementPage.edit": "編集",
+      "viewAnnouncementPage.backToAnnouncements": "お知らせに戻る",
+      "viewAnnouncementPage.backToAdmin": "管理画面に戻る",
+      "viewAnnouncementPage.notFound": "お知らせが見つかりません",
+      "viewAnnouncementPage.tagsAriaLabel": "お知らせのタグ",
+      "viewAnnouncementPage.by": "By",
+      "viewAnnouncementPage.announcements": "お知らせ",
       "newAnnouncementBanner.markAsSeen": "既読としてマーク",
       "newCategoryDialog.createdMessage": "カテゴリーが作成されました。",
       "newCategoryDialog.newCategory": "新しいカテゴリー",
@@ -102,6 +132,7 @@
       "admin.announcementsContent.alertMessageWithNewCategory": "新しいカテゴリー",
       "admin.announcementsContent.cancelButton": "キャンセル",
       "admin.announcementsContent.createButton": "お知らせの作成",
+      "admin.announcementsContent.deletedMessage": "お知らせを削除しました。",
       "admin.announcementsContent.announcements": "お知らせ",
       "admin.announcementsContent.noAnnouncementsFound": "お知らせが見つかりません",
       "admin.announcementsContent.table.title": "タイトル",
@@ -137,10 +168,12 @@
       "admin.tagsContent.table.actions": "アクション",
       "admin.tagsContent.table.addTooltip": "追加",
       "admin.tagsContent.table.noTagsFound": "タグが見つかりません。",
+      "admin.tagsContent.errors.by": "By",
+      "admin.tagsContent.errors.announcements": "お知らせ",
       "admin.tagsContent.errors.alreadyExists": "この名前のタグはすでに存在します。"
     }
   },
-  "plugin.bookmarks": {
+  "bookmarks": {
     "ja": {
       "bookmarkViewer.newTab": "新しいタブで開く",
       "bookmarkViewer.navButton.next": "次へ",
@@ -153,19 +186,51 @@
       "entityBookmarksContent.notFound.description": "エンティティーのメタデータにブックマークを追加すると、ここに表示されます。"
     }
   },
-  "plugin.flux": {
+  "flux": {
     "ja": {
       "fluxContentCard.permissionAlert.title": "権限が必要",
       "fluxContentCard.permissionAlert.message": "Flux コンテンツが Kubernetes オブジェクトに対する認可を必要としています。ポータル管理者に連絡して、kubernetes.clusters.read および kubernetes.resources.read 権限を付与してもらうよう依頼してください。"
     }
   },
-  "plugin.linguist": {
+  "plugin.jfrog-artifactory": {
+    "ja": {
+      "page.title": "JFrog Artifactory リポジトリー: {{image}}",
+      "table.searchPlaceholder": "フィルター",
+      "table.labelRowsSelect": "行",
+      "table.columns.version": "バージョン",
+      "table.columns.repositories": "リポジトリー",
+      "table.columns.manifest": "マニフェスト",
+      "table.columns.modified": "更新済み",
+      "table.columns.size": "サイズ",
+      "table.emptyContent.message": "まだデータが追加されていません。",
+      "table.emptyContent.learnMore": "データの追加方法をご覧ください。",
+      "manifest.sha256": "sha256"
+    }
+  },
+  "linguist": {
     "ja": {
       "entityCard.title": "言語",
       "entityCard.noData": "現在、このエンティティーの言語データはありません。"
     }
   },
-  "plugin.npm": {
+  "plugin.nexus-repository-manager": {
+    "ja": {
+      "table.title": "Nexus Repository Manager: {{title}}",
+      "table.searchPlaceholder": "フィルター",
+      "table.labelRowsSelect": "行",
+      "table.columns.version": "バージョン",
+      "table.columns.artifact": "アーティファクト",
+      "table.columns.repositoryType": "リポジトリータイプ",
+      "table.columns.checksum": "チェックサム",
+      "table.columns.modified": "更新済み",
+      "table.columns.size": "サイズ",
+      "table.emptyValue": "該当なし",
+      "table.emptyContent.message": "まだデータが追加されていません。",
+      "table.emptyContent.linkText": "データの追加方法をご覧ください",
+      "entityContent.title": "ビルドアーティファクト"
+    }
+  },
+  "plugin.npm.translation-ref": {
     "ja": {
       "infoCard.title": "NPM パッケージ {{packageName}}",
       "infoCard.latestVersion": "最新バージョン",
@@ -194,13 +259,49 @@
       "versionHistoryCard.columns.published": "公開済み"
     }
   },
-  "plugin.sonarqube": {
+  "plugin.servicenow": {
+    "ja": {
+      "page.title": "ServiceNow チケット",
+      "page.titleWithCount": "ServiceNow チケット ({{count}})",
+      "table.searchPlaceholder": "検索",
+      "table.labelRowsSelect": "{{count}} 行",
+      "table.columns.incidentNumber": "インシデント番号",
+      "table.columns.description": "説明",
+      "table.columns.created": "作成済み",
+      "table.columns.priority": "優先度",
+      "table.columns.state": "状態",
+      "table.columns.actions": "アクション",
+      "table.emptyContent": "レコードが見つかりません",
+      "filter.state": "状態",
+      "filter.priority": "優先度",
+      "priority.critical": "重大",
+      "priority.high": "高",
+      "priority.moderate": "中程度",
+      "priority.low": "低",
+      "priority.planning": "計画中",
+      "incidentState.new": "新規",
+      "incidentState.inProgress": "進行中",
+      "incidentState.onHold": "保留中",
+      "incidentState.resolved": "解決済み",
+      "incidentState.closed": "クローズ済み",
+      "incidentState.cancelled": "キャンセル済み",
+      "errors.loadingIncidents": "インシデントの読み込み中にエラーが発生: {{error}}",
+      "actions.openInServicenow": "ServiceNow で開く"
+    }
+  },
+  "sonarqube": {
     "ja": {
       "title": "SonarQube ダッシュボード",
       "sonarQubeCard.title": "コード品質",
-      "sonarQubeCard.deepLinkTitle": "詳細の表示",
+      "sonarQubeCard.deepLinkTitle": "さらに表示",
       "sonarQubeCard.emptyState.title": "表示する情報がありません",
       "sonarQubeCard.emptyState.description": "キー '{{ projectTitle }}' を持つ SonarQube プロジェクトがありません。プロジェクトの存在と権限を確認してください。",
+      "sonarQubeCard.unauthorizedError.title": "未認証",
+      "sonarQubeCard.unauthorizedError.description": "SonarQube の認証トークンが不足しているか、無効です。SonarQube のトークン設定を確認してください。",
+      "sonarQubeCard.notFoundError.title": "SonarQube プロジェクトが見つかりません",
+      "sonarQubeCard.notFoundError.description": "sonarqube.org/project-key アノテーションが無効であるか、プロジェクトが SonarQube に存在しない可能性があります。アノテーションの値を確認してください。",
+      "sonarQubeCard.forbiddenError.title": "アクセス拒否",
+      "sonarQubeCard.forbiddenError.description": "このプロジェクトにアクセスするための十分な権限が SonarQube のトークンにありません。SonarQube でプロジェクトの権限を確認してください。",
       "sonarQubeCard.noSonarQubeError.hasAnnotation": "キー '{{project}}' を持つ SonarQube プロジェクトがありません",
       "sonarQubeCard.noSonarQubeError.noAnnotation": "SonarQube アノテーションが見つかりません",
       "sonarQubeCard.bugReportRatingCardTitle": "バグ",
