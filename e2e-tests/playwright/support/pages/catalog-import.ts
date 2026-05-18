@@ -1,6 +1,5 @@
 import { Page, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import { APIHelper } from "../../utils/api-helper";
 import { CATALOG_IMPORT_COMPONENTS } from "../page-objects/page-obj";
 import {
   getTranslations,
@@ -101,5 +100,3 @@ export class CatalogImport {
     await this.uiHelper.clickButton("Close");
   }
 }
-
-export class BackstageShowcase {}

@@ -2,10 +2,7 @@ import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser, teardownBrowser } from "../utils/common";
 import { RESOURCES } from "../support/test-data/resources";
-import {
-  BackstageShowcase,
-  CatalogImport,
-} from "../support/pages/catalog-import";
+import { CatalogImport } from "../support/pages/catalog-import";
 import { TEMPLATES } from "../support/test-data/templates";
 
 let page: Page;
@@ -16,7 +13,6 @@ test.describe.fixme("GitHub Happy path", async () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
-  let backstageShowcase: BackstageShowcase;
 
   const component =
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
@@ -31,7 +27,6 @@ test.describe.fixme("GitHub Happy path", async () => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
-    backstageShowcase = new BackstageShowcase();
     test.info().setTimeout(600 * 1000);
   });
 
