@@ -45,22 +45,6 @@ export function extractSpecs(key: string): string[] {
     .filter((s) => s !== null);
 }
 
-/**
- * Lockfile `dependencies` values are either bare semver (^1.0) or npm-prefixed
- * (`npm:^1.0`). `semver.satisfies` only understands the bare selector; without
- * stripping `npm:`, aliases like `npm:^1.1.3` are dropped from compound keys.
- */
-export function lockfileDependencyNpmSelector(depRange: string): string | null {
-  const trimmed = depRange.trim();
-  if (!trimmed) return null;
-  if (trimmed.startsWith("npm:")) {
-    const selector = trimmed.slice("npm:".length).trim();
-    return selector || null;
-  }
-  // Other protocols (workspace:, patch:, portal:, file:, etc.)
-  if (/^[a-z]+:/i.test(trimmed)) return null;
-  return trimmed;
-}
 
 const LOCKFILE_DEP_FIELDS = ["dependencies", "optionalDependencies"] as const;
 
@@ -249,16 +233,19 @@ export async function bumpLockfile(
     if (!item.meta.dependencies) continue;
 
     for (const [depName, depRange] of Object.entries(item.meta.dependencies)) {
-      const existing = resolvedVersions.get(depName) ?? new Set();
+      // Skip non-npm protocols (workspace:, patch:, portal:, etc.)
+      const { protocol, selector } = structUtils.parseRange(depRange);
+      if (protocol && protocol !== "npm:") continue;
+
       // Skip if any version already in the lockfile satisfies this range
-      const depSemverRange = lockfileDependencyNpmSelector(depRange) ?? depRange;
-      if ([...existing].some((v) => satisfies(v, depSemverRange))) continue;
+      const existing = resolvedVersions.get(depName) ?? new Set();
+      if ([...existing].some((v) => satisfies(v, selector))) continue;
       // Skip if a version we're already adding satisfies this range
-      if (newEntries.some((e) => e.name === depName && satisfies(e.version, depSemverRange)))
+      if (newEntries.some((e) => e.name === depName && satisfies(e.version, selector)))
         continue;
 
       const allVersions = await registry.fetchAllVersions(depName);
-      const minVer = minSatisfying(Object.keys(allVersions), depSemverRange);
+      const minVer = minSatisfying(Object.keys(allVersions), selector);
       if (!minVer) {
         console.warn(`  ⚠️  No version of ${depName} satisfies ${depRange}`);
         continue;
@@ -269,7 +256,7 @@ export async function bumpLockfile(
         name: depName,
         version: minVer,
         meta: allVersions[minVer],
-        specs: [depSemverRange],
+        specs: [selector],
       };
       newEntries.push(entry);
       queue.push(entry);
@@ -306,7 +293,9 @@ export async function bumpLockfile(
 
     // Check all ranges declared anywhere in the lockfile for this package
     for (const range of allDeclaredRanges.get(entry.name) ?? []) {
-      const selector = lockfileDependencyNpmSelector(range);
+      // Skip non-npm protocols (workspace:, patch:, portal:, etc.)
+      const { protocol, selector } = structUtils.parseRange(range);
+      if (protocol && protocol !== "npm:") continue;
       if (selector && satisfies(entry.version, selector)) allSpecs.add(selector);
     }
 
