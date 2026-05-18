@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "private": true,
   "engines": {
     "node": "24"
@@ -71,7 +71,8 @@
     "zod@^3.25.76": "3.25.76",
     "zod@^3.25.76 || ^4.0.0": "3.25.76",
     "zod@^3.25 || ^4.0": "3.25.76",
-    "infinispan": "0.13.0"
+    "infinispan": "0.13.0",
+    "@protobufjs/inquire": "1.1.0"
   },
   "jest": {
     "testTimeout": 20000

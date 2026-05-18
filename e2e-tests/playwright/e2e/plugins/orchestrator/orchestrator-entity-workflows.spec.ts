@@ -1,5 +1,5 @@
-import { Page, expect, test } from "@playwright/test";
-import { Common, setupBrowser } from "../../../utils/common";
+import { Page, expect, test } from "@support/coverage/test";
+import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Orchestrator } from "../../../support/pages/orchestrator";
 import { skipIfJobName } from "../../../utils/helper";
@@ -294,6 +294,10 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
         has: page.getByText("Greeting workflow"),
       });
       await expect(workflowsContent).toBeVisible();
+    });
+
+    test.afterAll(async ({}, testInfo) => {
+      await teardownBrowser(page, testInfo);
     });
   });
 });

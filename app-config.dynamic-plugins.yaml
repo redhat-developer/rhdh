@@ -60,6 +60,10 @@ dynamicPlugins:
               allOf:
                 - isJenkinsAvailable
     backstage.plugin-kubernetes:
+      translationResources:
+        - importName: kubernetesTranslations
+          module: Alpha
+          ref: kubernetesTranslationRef
       mountPoints:
         - mountPoint: entity.page.kubernetes/cards
           importName: EntityKubernetesContent
@@ -92,6 +96,10 @@ dynamicPlugins:
               allOf:
                 - isLighthouseAvailable
     backstage.plugin-notifications:
+      translationResources:
+      - importName: notificationsTranslations
+        module: Alpha
+        ref: notificationsTranslationRef
       dynamicRoutes:
         - importName: NotificationsPage
           menuItem:
@@ -99,6 +107,8 @@ dynamicPlugins:
               props:
                 titleCounterEnabled: true
                 webNotificationsEnabled: false
+                textKey: menuItem.notifications
+                text: Notifications
             importName: NotificationsSidebarItem
           path: /notifications
     backstage.plugin-signals: {}
@@ -276,6 +286,10 @@ dynamicPlugins:
           config:
             priority: 100
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+      translationResources:
+      - importName: homepageTranslations
+        ref: homepageTranslationRef
+        module: Alpha
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
@@ -526,6 +540,7 @@ dynamicPlugins:
           menuItem:
             icon: docs
             text: Docs
+            textKey: menuItem.docs
         - path: /docs/:namespace/:kind/:name/*
           importName: TechDocsReaderPage
       mountPoints:
@@ -584,18 +599,23 @@ dynamicPlugins:
           parent: admin
           icon: rbacIcon
     red-hat-developer-hub.backstage-plugin-extensions:
+      translationResources:
+        - importName: extensionsTranslations
+          ref: extensionsTranslationRef
+          module: Alpha
       appIcons:
-        - name: extensions
-          importName: ExtensionsIcon
+        - name: pluginsIcon
+          importName: PluginsIcon
       dynamicRoutes:
-        - path: /extensions/catalog
+        - path: /extensions
           importName: DynamicExtensionsPluginRouter
-      mountPoints:
-        - mountPoint: internal.plugins/tab
-          importName: DynamicExtensionsPluginContent
-          config:
-            path: extensions
-            title: Catalog
+          menuItem:
+            icon: pluginsIcon
+            text: Extensions
+            textKey: menuItem.extensions
+      menuItems:
+        extensions:
+          parent: default.admin
     red-hat-developer-hub.backstage-plugin-adoption-insights:
       appIcons:
         - name: adoptionInsightsIcon

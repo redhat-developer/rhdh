@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { Common, setupBrowser } from "../../utils/common";
+import { test, expect, Page } from "@support/coverage/test";
+import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
 import {
   RBAC_API,
   ROLE_NAME,
@@ -13,6 +13,10 @@ import {
   httpMethod,
 } from "./rbac-test-utils";
 import RhdhRbacApi from "../../support/api/rbac-api";
+
+const auditStatus = (ok: boolean): "succeeded" | "failed" =>
+  ok ? "succeeded" : "failed";
+
 let common: Common;
 let rbacApi: RhdhRbacApi;
 
@@ -21,6 +25,8 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
+  let page: Page;
+
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
       type: "component",
@@ -28,7 +34,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
-    const page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     await common.loginAsKeycloakUser();
     rbacApi = await RhdhRbacApi.buildRbacApi(page);
@@ -208,6 +214,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
       call: () => rbacApi.getConditions(),
       url: RBAC_API.condition.collection,
       meta: { queryType: "all", source: "rest" },
+      acceptedStatuses: [200],
     },
     {
       name: "by-query",
@@ -229,28 +236,25 @@ test.describe("Auditor check for RBAC Plugin", () => {
         queryType: "by-query",
         source: "rest",
       },
+      acceptedStatuses: [200],
     },
     {
       name: "by-id",
       call: () => rbacApi.getConditionById(1),
       url: RBAC_API.condition.item(1),
       meta: { id: "1", queryType: "by-id", source: "rest" },
+      // by-id may return 404 if no conditions exist (e.g.,
+      // empty conditional-policies.yaml). The audit log still records the
+      // event but with status "failed" instead of "succeeded".
+      acceptedStatuses: [200, 404],
     },
   ];
 
   for (const s of conditionRead) {
     test(`condition-read → ${s.name}`, async () => {
       const response = await s.call();
-      let status: "succeeded" | "failed";
-      if (s.name === "by-id" && response.status() === 404) {
-        // Condition by-id may return 404 if no conditions exist (e.g.,
-        // empty conditional-policies.yaml). The audit log still records the
-        // event but with status "failed" instead of "succeeded".
-        status = "failed";
-      } else {
-        expect(response.ok()).toBe(true);
-        status = "succeeded";
-      }
+      expect(s.acceptedStatuses).toContain(response.status());
+      const status = auditStatus(response.ok());
       await validateRbacLogEvent(
         "condition-read",
         USER_ENTITY_REF,
@@ -282,5 +286,9 @@ test.describe("Auditor check for RBAC Plugin", () => {
       "succeeded",
       ["policy.entity.read", USER_ENTITY_REF],
     );
+  });
+
+  test.afterAll(async ({}, testInfo) => {
+    await teardownBrowser(page, testInfo);
   });
 });

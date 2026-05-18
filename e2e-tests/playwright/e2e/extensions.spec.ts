@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
 import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 import { Extensions } from "../support/pages/extensions";
@@ -245,10 +245,10 @@ test.describe("Admin > Extensions", () => {
 
     test("Verify dev preview badge in extensions", async () => {
       await extensions.selectSupportTypeFilter("Dev preview (DP)");
-      await uiHelper.verifyHeading("Developer Lightspeed");
+      await uiHelper.verifyHeading("Konflux");
 
       await extensions.verifyPluginDetails({
-        pluginName: "Red Hat Developer Lightspeed for Red Hat Developer Hub",
+        pluginName: "Konflux",
         badgeLabel: "An early-stage, experimental plugin",
         badgeText: "Dev preview (DP)",
         headings: commonHeadings,
@@ -295,13 +295,11 @@ test.describe("Admin > Extensions", () => {
     test("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
-      const productionEnvAlert = page.getByRole("alert").first();
-      productionEnvAlert.getByText(
-        "Plugin installation is disabled in the production environment.",
-        {
-          exact: true,
-        },
-      );
+      const productionMessage =
+        "Plugin installation is disabled in the production environment.";
+      await expect(
+        page.getByRole("alert").filter({ hasText: productionMessage }),
+      ).toBeVisible();
       await extensions.searchExtensions("Topology");
       await extensions.waitForSearchResults("Topology");
       await extensions.clickReadMoreByPluginTitle(
@@ -413,18 +411,18 @@ test.describe("Admin > Extensions", () => {
       }
       await page
         .getByRole("button", {
-          name: new RegExp(`Rows per page: ${"5 rows"}`),
+          name: new RegExp(`rows 5 rows`),
         })
         .click();
       await page.getByRole("option", { name: "10", exact: true }).click();
       await page
         .getByRole("button", {
-          name: new RegExp(`Rows per page: ${"10 rows"}`),
+          name: new RegExp(`rows 10 rows`),
         })
         .scrollIntoViewIfNeeded();
       await expect(
         page.getByRole("button", {
-          name: new RegExp(`Rows per page: ${"10 rows"}`),
+          name: new RegExp(`rows 10 rows`),
         }),
       ).toBeVisible();
       await expect(
@@ -435,7 +433,7 @@ test.describe("Admin > Extensions", () => {
       ).toBeVisible();
     });
 
-    test("Topology package sidebar for CI", async ({ page }) => {
+    test("Global Header package sidebar for CI", async ({ page }) => {
       await page
         .getByRole("textbox", {
           name: "Search",
@@ -445,38 +443,40 @@ test.describe("Admin > Extensions", () => {
         .getByRole("textbox", {
           name: "Search",
         })
-        .fill("Topology");
+        .fill("Global Header");
       await expect(
-        page.getByRole("cell", { name: "backstage-community-plugin-topology" }),
+        page.getByRole("cell", {
+          name: "red-hat-developer-hub-backstage-plugin-global-header",
+        }),
       ).toBeVisible();
       await expect(
         page
-          .getByRole("row", { name: "Topology backstage-community" })
+          .getByRole("row", { name: "Global Header red-hat-developer-hub" })
           .getByRole("button")
           .first(),
       ).toBeVisible();
       await expect(
         page
           .getByRole("row", {
-            name: "Topology backstage-community-plugin-topology",
+            name: "Global Header red-hat-developer-hub-backstage-plugin-global-header",
           })
           .getByTestId("FileDownloadOutlinedIcon"),
       ).toBeVisible();
       await expect(
         page
           .getByRole("row", {
-            name: "Topology backstage-community-plugin-topology",
+            name: "Global Header red-hat-developer-hub-backstage-plugin-global-header",
           })
           .getByRole("checkbox"),
       ).toBeVisible();
       await page
         .getByRole("link", {
-          name: "Topology",
+          name: "Global Header",
         })
         .click();
       await expect(
         page.getByRole("heading", {
-          name: "Topology",
+          name: "Global Header",
         }),
       ).toBeVisible();
       await expect(
@@ -497,7 +497,7 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page
           .getByRole("cell", {
-            name: "To enable actions, add a catalog entity for this package",
+            name: "Package cannot be managed in the production environment",
           })
           .first(),
       ).toBeVisible();

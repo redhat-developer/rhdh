@@ -102,10 +102,6 @@ uninstall_kubernetes_resources() {
   # Deployments
   oc delete deployment backstage-app --namespace=${NAMESPACE}
 
-  # Pipelines to test Tekton plugin
-  oc delete pipeline hello-world-pipeline --namespace=${NAMESPACE}
-  oc delete pipelinerun hello-world-pipeline-run --namespace=${NAMESPACE}
-
   # Cluster Service Account
   oc delete serviceaccount rhdh-k8s-plugin --namespace=${NAMESPACE}
   oc delete secret rhdh-k8s-plugin-secret --namespace=${NAMESPACE}
@@ -115,10 +111,6 @@ uninstall_kubernetes_resources() {
   oc delete clusterrole rhdh-k8s-plugin-ocm --namespace=${NAMESPACE}
   oc delete clusterrolebinding rhdh-k8s-plugin
   oc delete clusterrolebinding rhdh-k8s-plugin-ocm
-
-  # Pipelines to test Tekton plugin
-  oc apply -f $PWD/resources/pipelines/hello-world-pipeline.yaml --namespace=${NAMESPACE}
-  oc apply -f $PWD/resources/pipelines/hello-world-pipeline-run.yaml --namespace=${NAMESPACE}
 
   # Upload Jobs and Cronjobs
   oc delete cronjob say-hello --namespace=${NAMESPACE}
@@ -161,11 +153,7 @@ deploy_serviceaccount_resources() {
 
   sed -i "s/K8S_CLUSTER_TOKEN:.*/K8S_CLUSTER_TOKEN: $TOKEN/g" $PWD/auth/rhdh-secrets.local.yaml
 }
-deploy_topology_tekton_resources() {
-  # Pipelines to test Tekton plugin
-  oc apply -f $PWD/resources/pipelines/hello-world-pipeline.yaml --namespace=${NAMESPACE}
-  oc apply -f $PWD/resources/pipelines/hello-world-pipeline-run.yaml --namespace=${NAMESPACE}
-
+deploy_topology_resources() {
   # Upload Jobs and Cronjobs
   oc apply -f $PWD/resources/jobs/cron-job.yaml --namespace=${NAMESPACE}
   oc apply -f $PWD/resources/jobs/pi-job.yaml --namespace=${NAMESPACE}
@@ -318,14 +306,14 @@ if [ -n "${KUBERNETES_RESOURCES}" ]; then
       deploy_serviceaccount_resources
       ;;
     topology-resources)
-      deploy_topology_tekton_resources
+      deploy_topology_resources
       ;;
     all)
       deploy_serviceaccount_resources
-      deploy_topology_tekton_resources
+      deploy_topology_resources
       ;;
     *)
-      echo "Invalid input for kubernetes resources, please provide either 'serviceaccount', 'topology-tekton-resources', or 'all'"
+      echo "Invalid input for kubernetes resources, please provide either 'serviceaccount', 'topology-resources', or 'all'"
       exit 1
     ;;
   esac

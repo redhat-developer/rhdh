@@ -1,5 +1,6 @@
 import {
   ReportIssue as ReportIssueBase,
+  ExpandableNavigation as ExpandableNavigationBase,
   techdocsModuleAddonsContribPlugin,
 } from "@backstage/plugin-techdocs-module-addons-contrib";
 
@@ -55,5 +56,28 @@ export const ReportIssue = techdocsModuleAddonsContribPlugin.provide(
     name: "ReportIssue",
     location: TechDocsAddonLocations.Content,
     component: ReportIssueWrapper,
+  }),
+);
+
+/**
+ * Automatically wrap the backstage ExpandableNavigation component with a (JSS)
+ * StylesProvider, the underlaying styling technique under MUI v4,
+ * for the same reasons as ReportIssue above.
+ */
+const ExpandableNavigationWrapper = () => {
+  return (
+    <div id="techdocs-expandable-navigation-wrapper">
+      <ShadowRootStylesProvider>
+        <ExpandableNavigationBase />
+      </ShadowRootStylesProvider>
+    </div>
+  );
+};
+
+export const ExpandableNavigation = techdocsModuleAddonsContribPlugin.provide(
+  createTechDocsAddonExtension<{}>({
+    name: "ExpandableNavigation",
+    location: TechDocsAddonLocations.PrimarySidebar,
+    component: ExpandableNavigationWrapper,
   }),
 );

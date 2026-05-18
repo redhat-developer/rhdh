@@ -13,6 +13,10 @@ import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
 import * as path from "path";
 import * as fs from "fs";
 import {
+  startCoverageForPage,
+  stopCoverageForPage,
+} from "../support/coverage/test";
+import {
   getTranslations,
   getCurrentLanguage,
 } from "../e2e/localization/locale";
@@ -613,6 +617,10 @@ export class Common {
 // instead of using the built-in { page } fixture. Video recording must be configured
 // here explicitly because the use.video option in playwright.config.ts only applies
 // to the built-in fixtures, not to manually created contexts.
+//
+// Coverage is started automatically so specs that bypass the { page } fixture
+// still participate in V8 JS coverage collection (RHIDP-13243).
+// Call teardownBrowser() in afterAll to flush coverage and close the page.
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   const context = await browser.newContext({
     // only record video when the test block is being retried
@@ -626,6 +634,17 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
     }),
   });
   const page = await context.newPage();
+  await startCoverageForPage(page);
 
   return { page, context };
+}
+
+// Flush V8 JS coverage collected during the test run and close the page.
+// Pair with setupBrowser() in afterAll to ensure coverage data is written.
+export async function teardownBrowser(
+  page: Page,
+  testInfo: TestInfo,
+): Promise<void> {
+  await stopCoverageForPage(page, testInfo);
+  await page.close();
 }

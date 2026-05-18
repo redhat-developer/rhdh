@@ -97,3 +97,14 @@ flag_management:
       paths:
         - scripts/install-dynamic-plugins/*.py
       carryforward: true
+    # Paths intentionally mirror the rhdh flag — both measure the same source
+    # from different test types. Isolation relies on --flag at upload time,
+    # not on paths. If an upload omits --flag, data lands under "default".
+    - name: rhdh-e2e-frontend
+      paths:
+        - plugins/*/src/**
+        - packages/app/src/**
+        - packages/backend/src/**
+        - packages/plugin-utils/src/**
+        - dynamic-plugins/_utils/src/**
+      carryforward: true

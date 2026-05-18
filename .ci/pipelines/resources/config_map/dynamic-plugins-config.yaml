@@ -206,20 +206,3 @@ dynamicPlugins:
           title: Test_i disabled
           priority: 20
           enabled: false
-    pataknight.backstage-plugin-rhdh-qe-theme:
-      appIcons:
-        - importName: LightIcon
-          name: lightIcon
-        - importName: DarkIcon
-          name: darkIcon
-      themes:
-        - icon: lightIcon
-          id: light-dynamic
-          importName: lightThemeProvider
-          title: Light Dynamic
-          variant: light
-        - icon: darkIcon
-          id: dark-dynamic
-          importName: darkThemeProvider
-          title: Dark Dynamic
-          variant: dark

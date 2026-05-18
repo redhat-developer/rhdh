@@ -57,7 +57,11 @@ main() {
   log::info "Log file: ${LOGFILE}"
   log::info "JOB_NAME : $JOB_NAME"
 
-  CHART_VERSION=$(helm::get_chart_version)
+  if [[ -z "${CHART_VERSION:-}" ]]; then
+    CHART_VERSION=$(helm::get_chart_version)
+  else
+    log::info "Using preset CHART_VERSION (pinned or from env): ${CHART_VERSION}"
+  fi
   export CHART_VERSION
 
   case "$JOB_NAME" in

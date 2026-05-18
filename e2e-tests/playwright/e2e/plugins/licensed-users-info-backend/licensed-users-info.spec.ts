@@ -7,7 +7,7 @@ import {
   APIRequestContext,
   APIResponse,
   request,
-} from "@playwright/test";
+} from "@support/coverage/test";
 import playwrightConfig from "../../../../playwright.config";
 
 test.describe("Test licensed users info backend plugin", async () => {
