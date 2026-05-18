@@ -5,6 +5,8 @@ import { structUtils, Manifest } from "@yarnpkg/core";
 import type { Descriptor } from "@yarnpkg/core";
 import type { AbbreviatedVersion } from "package-json";
 
+const NPM_PROTOCOL = "npm:";
+
 // ---------------------------------------------------------------------------
 // Lockfile descriptor helpers
 // ---------------------------------------------------------------------------
@@ -40,7 +42,7 @@ export function extractSpecs(key: string): string[] {
       const descriptor = structUtils.tryParseDescriptor(part);
       if (!descriptor) return null;
       const range = structUtils.parseRange(descriptor.range);
-      return range.protocol === "npm:" ? range.selector : null;
+      return range.protocol === NPM_PROTOCOL ? range.selector : null;
     })
     .filter((s) => s !== null);
 }
@@ -53,7 +55,7 @@ export function extractSpecs(key: string): string[] {
 export function buildDescriptorKey(name: string, specs: string[]): string {
   const ident = structUtils.parseIdent(name);
   return specs
-    .map((s) => structUtils.stringifyDescriptor(structUtils.makeDescriptor(ident, `npm:${s}`)))
+    .map((s) => structUtils.stringifyDescriptor(structUtils.makeDescriptor(ident, `${NPM_PROTOCOL}${s}`)))
     .sort()
     .join(`, `);
 }
@@ -69,7 +71,7 @@ export function buildLockEntry(
   meta: AbbreviatedVersion,
 ): Record<string, unknown> {
   const ident = structUtils.parseIdent(name);
-  const locator = structUtils.makeLocator(ident, `npm:${version}`);
+  const locator = structUtils.makeLocator(ident, `${NPM_PROTOCOL}${version}`);
 
   const manifest = new Manifest();
   manifest.load(meta as any);
@@ -91,7 +93,7 @@ export function buildLockEntry(
 function qualifyNpmRanges(deps: Record<string, string>): void {
   for (const [name, range] of Object.entries(deps)) {
     const { protocol } = structUtils.parseRange(range);
-    if (!protocol) deps[name] = `npm:${range}`;
+    if (!protocol) deps[name] = `${NPM_PROTOCOL}${range}`;
   }
 }
 
@@ -209,7 +211,7 @@ export async function bumpLockfile(
     for (const [depName, depRange] of Object.entries(item.meta.dependencies)) {
       // Skip non-npm protocols (workspace:, patch:, portal:, etc.)
       const { protocol, selector } = structUtils.parseRange(depRange);
-      if (protocol && protocol !== "npm:") continue;
+      if (protocol && protocol !== NPM_PROTOCOL) continue;
 
       // Skip if any version already in the lockfile satisfies this range
       const existing = resolvedVersions.get(depName) ?? new Set();
@@ -272,7 +274,7 @@ export async function bumpLockfile(
     for (const range of allDeclaredRanges.get(entry.name) ?? []) {
       // Skip non-npm protocols (workspace:, patch:, portal:, etc.)
       const { protocol, selector } = structUtils.parseRange(range);
-      if (protocol && protocol !== "npm:") continue;
+      if (protocol && protocol !== NPM_PROTOCOL) continue;
       if (selector && satisfies(entry.version, selector)) allSpecs.add(selector);
     }
 
