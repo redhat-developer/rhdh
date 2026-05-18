@@ -79,7 +79,6 @@ if ! oc login "$cluster_api" --username "$CLUSTER_ADMIN_USERNAME" --password "$C
   exit 1
 fi
 
-oc projects
 
 # ── Web console ───────────────────────────────────────────────────────────────
 
