@@ -19399,6 +19399,7 @@ __metadata:
     "@types/global-agent": "npm:2.1.3"
     app: "workspace:*"
     app-next: "workspace:*"
+    better-sqlite3: "npm:^12.0.0"
     global-agent: "npm:3.0.0"
     jose: "npm:5.10.0"
     prettier: "npm:3.8.1"
