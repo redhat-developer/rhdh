@@ -3259,13 +3259,6 @@ arches:
     name: systemd
     evr: 252-55.el9_7.9
     sourcerpm: systemd-252-55.el9_7.9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-libs-252-55.el9_7.9.aarch64.rpm
-    repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 644018
-    checksum: sha256:f5abff3969a56b8ad7b73a220c11170f1bf26cb3bcdd273f8b91ef5fe87ca171
-    name: systemd-libs
-    evr: 252-55.el9_7.9
-    sourcerpm: systemd-252-55.el9_7.9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-pam-252-55.el9_7.9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 262425
@@ -8446,13 +8439,6 @@ arches:
     size: 4396633
     checksum: sha256:cda660e51919a1fabc7f59badc12eaf66050e205970f89de8e0b495740292bb2
     name: systemd
-    evr: 252-55.el9_7.9
-    sourcerpm: systemd-252-55.el9_7.9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-55.el9_7.9.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 677183
-    checksum: sha256:2fbf0d1d67c21313269bf1904db7c146788b6c7520e5afcdfe273ab71ca34e67
-    name: systemd-libs
     evr: 252-55.el9_7.9
     sourcerpm: systemd-252-55.el9_7.9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-55.el9_7.9.x86_64.rpm
