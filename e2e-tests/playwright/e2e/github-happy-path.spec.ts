@@ -31,7 +31,7 @@ test.describe.fixme("GitHub Happy path", async () => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
-    backstageShowcase = new BackstageShowcase(page);
+    backstageShowcase = new BackstageShowcase();
     test.info().setTimeout(600 * 1000);
   });
 
