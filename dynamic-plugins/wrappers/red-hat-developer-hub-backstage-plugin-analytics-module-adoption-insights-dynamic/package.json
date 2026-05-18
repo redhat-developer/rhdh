@@ -42,7 +42,7 @@
     }
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "0.8.1",
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "0.8.2",
     "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "0.8.1"
   },
   "devDependencies": {
