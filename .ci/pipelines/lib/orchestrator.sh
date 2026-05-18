@@ -18,7 +18,7 @@ source "${DIR}/lib/log.sh"
 # Constants
 # ==============================================================================
 readonly ORCHESTRATOR_WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
-readonly ORCHESTRATOR_WORKFLOWS="greeting failswitch"
+readonly ORCHESTRATOR_WORKFLOWS="greeting failswitch sample-retry-test test-object-type-uiprops"
 readonly ORCHESTRATOR_DEMO_REPO="https://github.com/rhdhorchestrator/orchestrator-demo.git"
 readonly ORCHESTRATOR_TOKEN_PROPAGATION_IMAGE="${TOKEN_PROPAGATION_IMAGE:-quay.io/orchestrator/demo-token-propagation:latest}"
 
@@ -66,13 +66,15 @@ orchestrator::disable_plugins_in_values() {
 # Arguments:
 #   $1 - shallow: if "true", use --depth=1 for faster clone
 # Returns:
-#   Sets WORKFLOW_DIR, FAILSWITCH_MANIFESTS, GREETING_MANIFESTS variables
+#   Sets WORKFLOW_DIR, FAILSWITCH_MANIFESTS, GREETING_MANIFESTS, SAMPLE_RETRY_TEST_MANIFESTS, TEST_OBJECT_TYPE_UIPROPS_MANIFESTS variables
 _orchestrator::clone_workflows() {
   local shallow=${1:-false}
 
   WORKFLOW_DIR="${DIR}/serverless-workflows"
   FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
   GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
+  SAMPLE_RETRY_TEST_MANIFESTS="${WORKFLOW_DIR}/workflows/sample-retry-test/manifests/"
+  TEST_OBJECT_TYPE_UIPROPS_MANIFESTS="${WORKFLOW_DIR}/workflows/test-object-type-uiprops/manifests/"
 
   rm -rf "${WORKFLOW_DIR}"
   if [[ "$shallow" == "true" ]]; then
@@ -178,6 +180,8 @@ _orchestrator::apply_manifests() {
 
   oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
   oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
+  oc apply -f "${SAMPLE_RETRY_TEST_MANIFESTS}" -n "$namespace"
+  oc apply -f "${TEST_OBJECT_TYPE_UIPROPS_MANIFESTS}" -n "$namespace"
   return 0
 }
 
@@ -504,6 +508,8 @@ orchestrator::deploy_workflows() {
     case "$workflow" in
       greeting) workflow_manifests="${GREETING_MANIFESTS}" ;;
       failswitch) workflow_manifests="${FAILSWITCH_MANIFESTS}" ;;
+      sample-retry-test) workflow_manifests="${SAMPLE_RETRY_TEST_MANIFESTS}" ;;
+      test-object-type-uiprops) workflow_manifests="${TEST_OBJECT_TYPE_UIPROPS_MANIFESTS}" ;;
       *)
         log::error "Unknown workflow: $workflow"
         return 1

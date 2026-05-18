@@ -76,6 +76,16 @@ testing::run_tests() {
   Xvfb :99 &
   export DISPLAY=:99
 
+  # RHIDP-13243: V8 coverage collection for E2E tests (opt-in).
+  # Set COLLECT_COVERAGE=true in the job config to enable. When enabled, the
+  # coverage fixture wraps page.coverage.startJSCoverage/stopJSCoverage and
+  # the reporter merges raw JSON into lcov via monocart-coverage-reports.
+  export COLLECT_COVERAGE="${COLLECT_COVERAGE:-false}"
+
+  # Remove stale coverage artifacts so a previous project's lcov.info
+  # is never mistakenly uploaded for the current run.
+  rm -rf "${e2e_tests_dir}/coverage/e2e" "${e2e_tests_dir}/coverage/e2e-raw"
+
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
@@ -97,6 +107,38 @@ testing::run_tests() {
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
   common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}.html" || true
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/playwright-report/" || true
+
+  # RHIDP-13243: Save and upload E2E coverage report
+  if [[ -f "${e2e_tests_dir}/coverage/e2e/lcov.info" ]]; then
+    common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/coverage/e2e/" "coverage" || true
+    if [[ -n "${CODECOV_TOKEN:-}" ]]; then
+      log::info "Uploading E2E coverage to Codecov (flag: rhdh-e2e-frontend)..."
+      local codecov_bin="/tmp/codecov"
+      if [[ ! -x "$codecov_bin" ]]; then
+        curl -sL -o "$codecov_bin" https://cli.codecov.io/latest/linux/codecov
+        curl -sL -o "${codecov_bin}.SHA256SUM" https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+        if (cd /tmp && sha256sum --check --strict codecov.SHA256SUM); then
+          rm -f "${codecov_bin}.SHA256SUM"
+          chmod +x "$codecov_bin"
+        else
+          log::warn "Codecov CLI checksum verification failed — skipping upload"
+          rm -f "$codecov_bin" "${codecov_bin}.SHA256SUM"
+        fi
+      fi
+      if [[ -x "$codecov_bin" ]]; then
+        # --fail-on-error makes the CLI exit non-zero on upload issues so we
+        # can log it; the || ensures we never block the pipeline for coverage.
+        "$codecov_bin" upload-process \
+          --token "${CODECOV_TOKEN}" \
+          --file "${e2e_tests_dir}/coverage/e2e/lcov.info" \
+          --flag rhdh-e2e-frontend \
+          --slug redhat-developer/rhdh \
+          --fail-on-error || log::warn "Codecov E2E coverage upload failed (non-fatal)"
+      fi
+    else
+      log::info "CODECOV_TOKEN not set — skipping Codecov upload. Coverage report saved as artifact."
+    fi
+  fi
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   local test_passed="true"

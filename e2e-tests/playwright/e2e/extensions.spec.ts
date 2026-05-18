@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
 import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 import { Extensions } from "../support/pages/extensions";
@@ -295,13 +295,11 @@ test.describe("Admin > Extensions", () => {
     test("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
-      const productionEnvAlert = page.getByRole("alert").first();
-      productionEnvAlert.getByText(
-        "Plugin installation is disabled in the production environment.",
-        {
-          exact: true,
-        },
-      );
+      const productionMessage =
+        "Plugin installation is disabled in the production environment.";
+      await expect(
+        page.getByRole("alert").filter({ hasText: productionMessage }),
+      ).toBeVisible();
       await extensions.searchExtensions("Topology");
       await extensions.waitForSearchResults("Topology");
       await extensions.clickReadMoreByPluginTitle(

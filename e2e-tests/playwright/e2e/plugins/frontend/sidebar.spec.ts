@@ -1,6 +1,6 @@
-import { Page, test, expect } from "@playwright/test";
+import { Page, test, expect } from "@support/coverage/test";
 import { UIhelper } from "../../../utils/ui-helper";
-import { Common, setupBrowser } from "../../../utils/common";
+import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
 import { getTranslations, getCurrentLanguage } from "../../localization/locale";
 
 const t = getTranslations();
@@ -68,5 +68,9 @@ test.describe("Validate Sidebar Navigation Customization", () => {
     await expect(
       page.getByRole("link", { name: "Test_i disabled" }),
     ).toBeHidden();
+  });
+
+  test.afterAll(async ({}, testInfo) => {
+    await teardownBrowser(page, testInfo);
   });
 });

@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "@support/coverage/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { HomePage } from "../support/pages/home-page";

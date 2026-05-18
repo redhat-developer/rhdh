@@ -7,7 +7,7 @@
  * Tests are opt-in - they skip when SCHEMA_MODE_* environment variables are not set.
  */
 
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";

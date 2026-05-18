@@ -21,6 +21,10 @@ import {
   type Page,
   type TestInfo,
 } from "@playwright/test";
+// Re-export all Playwright types and values so specs can replace
+// `from "@playwright/test"` with this module. The locally-defined `test`
+// and `expect` below shadow the star re-exports.
+export * from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { COVERAGE_RAW_DIR } from "./paths";
