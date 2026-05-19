@@ -2825,13 +2825,13 @@ arches:
     name: libpkgconf
     evr: 1.7.3-10.el9
     sourcerpm: pkgconf-1.7.3-10.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libpng-1.6.37-12.el9_7.3.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libpng-1.6.37-12.el9_7.4.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 122928
-    checksum: sha256:7fc2812cbdf49957466da0bd80e3825a8937bdf0b85aee94651149b56a33bb23
+    size: 123236
+    checksum: sha256:0ca66242e17a3f88b74a80c9559e508c53794ad41bd1dbe563cc1ebbce78c8f8
     name: libpng
-    evr: 2:1.6.37-12.el9_7.3
-    sourcerpm: libpng-1.6.37-12.el9_7.3.src.rpm
+    evr: 2:1.6.37-12.el9_7.4
+    sourcerpm: libpng-1.6.37-12.el9_7.4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libpwquality-1.4.4-8.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 125712
@@ -4852,12 +4852,12 @@ arches:
     checksum: sha256:f1a40821328b6e3fd7264c78c18f8c2045e7a30a05ef9f8b2934d5ca15724ce3
     name: libpipeline
     evr: 1.5.3-4.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/l/libpng-1.6.37-12.el9_7.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/l/libpng-1.6.37-12.el9_7.4.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 1538697
-    checksum: sha256:a9f6893aab05b27ee097ef9ea68843db3c0e621081b39083ff6b1a3988137cd5
+    size: 1544722
+    checksum: sha256:6338d35e00a8cca5eaf71ad8ef8cba54c3750e1e6bbad9385420cebcc0231719
     name: libpng
-    evr: 2:1.6.37-12.el9_7.3
+    evr: 2:1.6.37-12.el9_7.4
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/l/libpwquality-1.4.4-8.el9.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 447225
@@ -8007,13 +8007,13 @@ arches:
     name: libpkgconf
     evr: 1.7.3-10.el9
     sourcerpm: pkgconf-1.7.3-10.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libpng-1.6.37-12.el9_7.3.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libpng-1.6.37-12.el9_7.4.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 124610
-    checksum: sha256:46809ed973fe057afdba595cd6672116ae4c73cadcac6d885e5710b9d1c56550
+    size: 125027
+    checksum: sha256:f48405877780569d000c7797b6ecbda96f6c34fa6dcf7f76ff02f41e99aae66c
     name: libpng
-    evr: 2:1.6.37-12.el9_7.3
-    sourcerpm: libpng-1.6.37-12.el9_7.3.src.rpm
+    evr: 2:1.6.37-12.el9_7.4
+    sourcerpm: libpng-1.6.37-12.el9_7.4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libpwquality-1.4.4-8.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 126104
@@ -10046,12 +10046,12 @@ arches:
     checksum: sha256:f1a40821328b6e3fd7264c78c18f8c2045e7a30a05ef9f8b2934d5ca15724ce3
     name: libpipeline
     evr: 1.5.3-4.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/l/libpng-1.6.37-12.el9_7.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/l/libpng-1.6.37-12.el9_7.4.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 1538697
-    checksum: sha256:a9f6893aab05b27ee097ef9ea68843db3c0e621081b39083ff6b1a3988137cd5
+    size: 1544722
+    checksum: sha256:6338d35e00a8cca5eaf71ad8ef8cba54c3750e1e6bbad9385420cebcc0231719
     name: libpng
-    evr: 2:1.6.37-12.el9_7.3
+    evr: 2:1.6.37-12.el9_7.4
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/l/libpwquality-1.4.4-8.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 447225
