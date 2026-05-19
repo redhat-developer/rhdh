@@ -1,13 +1,13 @@
 
-## RHDH next (pre-release, versions can change for final release)
+## RHDH 1.10 
 
 <!-- source
-https://github.com/redhat-developer/rhdh/blob/main/backstage.json
+https://github.com/redhat-developer/rhdh/blob/release-1.10/backstage.json
 -->
 
 Based on [Backstage 1.49.4](https://backstage.io/docs/releases/v1.49.0)
 
-To bootstrap Backstage app that is compatible with RHDH next, you can use:
+To bootstrap Backstage app that is compatible with RHDH 1.10, you can use:
 
 ```bash
 npx @backstage/create-app@0.8.1
@@ -28,9 +28,9 @@ npx @backstage/create-app@0.8.1
 
 
 If you want to check versions of other packages, you can check the 
-[`package.json`](https://github.com/redhat-developer/rhdh/blob/main/packages/app/package.json) in the
-[`app`](https://github.com/redhat-developer/rhdh/tree/main/packages/app) package 
-in the `main` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/main).
+[`package.json`](https://github.com/redhat-developer/rhdh/blob/release-1.10/packages/app/package.json) in the
+[`app`](https://github.com/redhat-developer/rhdh/tree/release-1.10/packages/app) package 
+in the `release-1.10` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/release-1.10).
 
 ### Backend packages
 
@@ -44,11 +44,11 @@ in the `main` branch of the [RHDH repository](https://github.com/redhat-develope
 | `@backstage/catalog-model` | `1.7.7` |
 | `@backstage/cli-node` | `0.3.0` |
 | `@backstage/config` | `1.3.6` |
-| `@backstage/config-loader` | `1.10.9` |
+| `@backstage/config-loader` | `undefined` |
 
 
 
 If you want to check versions of other packages, you can check the
-[`package.json`](https://github.com/redhat-developer/rhdh/blob/main/packages/backend/package.json) in the
-[`backend`](https://github.com/redhat-developer/rhdh/tree/main/packages/backend) package
-in the `main` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/main).
+[`package.json`](https://github.com/redhat-developer/rhdh/blob/release-1.10/packages/backend/package.json) in the
+[`backend`](https://github.com/redhat-developer/rhdh/tree/release-1.10/packages/backend) package
+in the `release-1.10` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/release-1.10).
