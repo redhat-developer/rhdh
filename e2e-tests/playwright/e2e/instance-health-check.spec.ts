@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
 
 test.describe("Application health check", () => {
   test.beforeAll(async () => {

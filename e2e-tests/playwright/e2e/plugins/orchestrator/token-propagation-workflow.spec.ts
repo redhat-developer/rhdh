@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "@support/coverage/test";
 import { Common } from "../../../utils/common";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import { skipIfJobName } from "../../../utils/helper";

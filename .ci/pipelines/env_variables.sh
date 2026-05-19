@@ -42,12 +42,14 @@ HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plug
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
+# TODO: Remove this pinned CHART_VERSION once https://redhat.atlassian.net/browse/RHDHBUGS-3030 is fixed.
+# Workaround: pin the Helm chart OCI tag for E2E. When unset, default below applies. Set CHART_VERSION=
+# (empty) before sourcing to resolve the latest -CI tag from Quay by branch instead.
+CHART_VERSION="${CHART_VERSION-1.10-114-CI}"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
-QUAY_NAMESPACE=$(cat /tmp/secrets/QUAY_NAMESPACE)
-QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN)
 
 # =============================================================================
 # Release and Namespace Configuration
@@ -90,28 +92,13 @@ QE_USER8_ID=$(cat /tmp/secrets/QE_USER8_ID)
 QE_USER8_PASS=$(cat /tmp/secrets/QE_USER8_PASS)
 QE_USER9_ID=$(cat /tmp/secrets/QE_USER9_ID)
 QE_USER9_PASS=$(cat /tmp/secrets/QE_USER9_PASS)
-JIRA_TOKEN=$(cat /tmp/secrets/jira_token)
-
 K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
-
-GITLAB_TOKEN=$(cat /tmp/secrets/GITLAB_TOKEN)
 
 RHDH_PR_OS_CLUSTER_URL=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_URL)
 RHDH_PR_OS_CLUSTER_TOKEN=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_TOKEN)
 ENCODED_CLUSTER_NAME=$(echo "my-cluster" | base64)
 K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
 K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
-KEYCLOAK_BASE_URL=$(cat /tmp/secrets/KEYCLOAK_BASE_URL)
-KEYCLOAK_BASE_URL_ENCODED=$(printf "%s" $KEYCLOAK_BASE_URL | base64 | tr -d '\n')
-KEYCLOAK_LOGIN_REALM="myrealm"
-KEYCLOAK_LOGIN_REALM_ENCODED=$(printf "%s" $KEYCLOAK_LOGIN_REALM | base64 | tr -d '\n')
-KEYCLOAK_REALM="myrealm"
-KEYCLOAK_REALM_ENCODED=$(printf "%s" $KEYCLOAK_REALM | base64 | tr -d '\n')
-KEYCLOAK_CLIENT_ID="myclient"
-KEYCLOAK_CLIENT_ID_ENCODED=$(printf "%s" $KEYCLOAK_CLIENT_ID | base64 | tr -d '\n')
-KEYCLOAK_CLIENT_SECRET=$(cat /tmp/secrets/KEYCLOAK_CLIENT_SECRET)
-KEYCLOAK_CLIENT_SECRET_ENCODED=$(printf "%s" $KEYCLOAK_CLIENT_SECRET | base64 | tr -d '\n')
-ACR_SECRET=$(cat /tmp/secrets/ACR_SECRET)
 GOOGLE_CLIENT_ID=$(cat /tmp/secrets/GOOGLE_CLIENT_ID)
 GOOGLE_CLIENT_SECRET=$(cat /tmp/secrets/GOOGLE_CLIENT_SECRET)
 GOOGLE_ACC_COOKIE=$(cat /tmp/secrets/GOOGLE_ACC_COOKIE)

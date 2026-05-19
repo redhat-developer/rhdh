@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "@support/coverage/test";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {

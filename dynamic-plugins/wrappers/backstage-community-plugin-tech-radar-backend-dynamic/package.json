@@ -32,7 +32,7 @@
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
     "lint:check": "backstage-cli package lint",
-    "test": "backstage-cli package test",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
     "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @backstage-community/plugin-tech-radar-backend",

@@ -22,7 +22,7 @@ source "${DIR}/lib/config.sh"
 source "${DIR}/lib/testing.sh"
 
 # Constants
-TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
+PIPELINES_OPERATOR_WEBHOOK="tekton-pipelines-webhook"
 
 # Override GitHub App env vars (showcase and RBAC) with prefixed versions for the same pair index.
 # Usage: override_github_app_env_with_prefix <PREFIX>
@@ -321,8 +321,11 @@ apply_yaml_files() {
   local rhdh_base_url=$3
   log::info "Applying YAML files to namespace ${project}"
 
-  oc config set-context --current --namespace="${project}"
+  # Create temporary directory for namespace-patched YAMLs (parallel-deployment safe)
+  local tmpdir
+  tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/apply-yaml-${project}-XXXXXX")
 
+  # Copy and patch YAML files that need namespace substitution
   local files=(
     "$dir/resources/service_account/service-account-rhdh.yaml"
     "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml"
@@ -330,7 +333,9 @@ apply_yaml_files() {
   )
 
   for file in "${files[@]}"; do
-    common::sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
+    local basename
+    basename=$(basename "$file")
+    sed "s/namespace:.*/namespace: ${project}/g" "$file" > "${tmpdir}/${basename}"
   done
 
   DH_TARGET_URL=$(common::base64_encode "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}")
@@ -338,11 +343,12 @@ apply_yaml_files() {
   RHDH_BASE_URL_HTTP=$(common::base64_encode "${rhdh_base_url/https/http}")
   export DH_TARGET_URL RHDH_BASE_URL RHDH_BASE_URL_HTTP
 
-  oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
+  # Apply YAMLs from tmpdir (patched) or original location (no patch needed)
+  oc apply -f "${tmpdir}/service-account-rhdh.yaml" --namespace="${project}"
   oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
 
-  oc apply -f "$dir/resources/cluster_role/cluster-role-k8s.yaml" --namespace="${project}"
-  oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml" --namespace="${project}"
+  oc apply -f "${tmpdir}/cluster-role-k8s.yaml" --namespace="${project}"
+  oc apply -f "${tmpdir}/cluster-role-binding-k8s.yaml" --namespace="${project}"
 
   envsubst < "${DIR}/auth/secrets-rhdh-secrets.yaml" | oc apply --namespace="${project}" -f -
 
@@ -358,31 +364,7 @@ apply_yaml_files() {
     "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
     "conditional-policies.yaml=$dir/resources/config_map/conditional-policies.yaml"
 
-  # configuration for testing global floating action button.
-  common::create_configmap_from_file "dynamic-global-floating-action-button-config" "$project" \
-    "dynamic-global-floating-action-button-config.yaml" "$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml"
-
-  # configuration for testing global header and header mount points.
-  common::create_configmap_from_file "dynamic-global-header-config" "$project" \
-    "dynamic-global-header-config.yaml" "$dir/resources/config_map/dynamic-global-header-config.yaml"
-
-  # Skip Tekton and Topology resources for K8s deployments (AKS/EKS/GKE)
-  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
-  if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
-    # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
-
-    # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
-    else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
-    fi
-  else
-    log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"
-  fi
+  rm -rf "${tmpdir}"
 }
 
 deploy_test_backstage_customization_provider() {
@@ -416,66 +398,6 @@ deploy_redis_cache() {
 install_olm() { operator::install_olm "$@"; }
 uninstall_olm() { operator::uninstall_olm "$@"; }
 
-# Installs the Red Hat OpenShift Pipelines operator if not already installed
-# Use waitfor_pipelines_operator to wait for the operator to be ready
-install_pipelines_operator() {
-  local display_name="Red Hat OpenShift Pipelines"
-  # Check if operator is already installed
-  if oc get csv -n "openshift-operators" | grep -q "${display_name}"; then
-    log::warn "Red Hat OpenShift Pipelines operator is already installed."
-  else
-    log::info "Red Hat OpenShift Pipelines operator is not installed. Installing..."
-    install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
-  fi
-  # Wait for Tekton Pipeline CRD to be registered before proceeding
-  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
-}
-
-waitfor_pipelines_operator() {
-  k8s_wait::deployment "openshift-operators" "pipelines"
-  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines"
-}
-
-# Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
-# Use waitfor_tekton_pipelines to wait for the operator to be ready
-install_tekton_pipelines() {
-  local display_name="tekton-pipelines-webhook"
-  if oc get pods -n "tekton-pipelines" | grep -q "${display_name}"; then
-    log::info "Tekton Pipelines are already installed."
-  else
-    log::info "Tekton Pipelines is not installed. Installing..."
-    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-  fi
-}
-
-waitfor_tekton_pipelines() {
-  local display_name="tekton-pipelines-webhook"
-  k8s_wait::deployment "tekton-pipelines" "${display_name}"
-  k8s_wait::endpoint "tekton-pipelines-webhook" "tekton-pipelines"
-  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
-}
-
-delete_tekton_pipelines() {
-  log::info "Checking for Tekton Pipelines installation..."
-  if ! kubectl get namespace tekton-pipelines &> /dev/null; then
-    log::info "Tekton Pipelines is not installed. Nothing to delete."
-    return 0
-  fi
-
-  log::info "Found Tekton Pipelines installation. Attempting to delete..."
-  kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
-
-  # Wait for namespace deletion with polling
-  log::info "Waiting for Tekton Pipelines namespace to be deleted..."
-  if common::poll_until \
-    "! kubectl get namespace tekton-pipelines" \
-    6 5 \
-    "Tekton Pipelines deleted successfully"; then
-    return 0
-  fi
-  log::warn "Timed out waiting for namespace deletion, continuing..."
-}
-
 # ==============================================================================
 # Cluster Setup Functions
 # These functions configure the cluster for different deployment types
@@ -508,7 +430,7 @@ cluster_setup_ocp_helm() {
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
   k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
+  k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
 
@@ -526,7 +448,7 @@ cluster_setup_ocp_operator() {
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
   k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
+  k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
   operator::install_serverless
@@ -535,18 +457,16 @@ cluster_setup_ocp_operator() {
 
 cluster_setup_k8s_operator() {
   operator::install_olm
-  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
-  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
-  # operator::install_tekton
+  # Install Tekton Pipelines for K8s deployments (AKS/EKS/GKE) for topology tests to work
+  operator::install_tekton
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 cluster_setup_k8s_helm() {
-  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
-  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
-  log::info "Skipping Tekton installation for K8s Helm deployment"
+  # Install Tekton Pipelines for K8s deployments (AKS/EKS/GKE) for topology tests to work
+  log::info "Installing Tekton Pipelines for K8s Helm deployment"
   # operator::install_olm
-  # operator::install_tekton
+  operator::install_tekton
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
@@ -564,7 +484,7 @@ base_deployment() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
-  namespace::configure ${NAME_SPACE}
+  namespace::configure "${NAME_SPACE}"
 
   deploy_redis_cache "${NAME_SPACE}"
 
@@ -654,13 +574,76 @@ rbac_deployment() {
   fi
 }
 
+# Run base_deployment and rbac_deployment in parallel.
+# Both target disjoint namespaces (NAME_SPACE vs NAME_SPACE_RBAC + NAME_SPACE_POSTGRES_DB)
+# so there is no resource conflict. Overlapping the two helm upgrades and their
+# internal readiness waits saves ~3-5 min of wall-clock time on CI.
+#
+# Args:
+#   $1 - base_fn: function name for the base deployment
+#   $2 - base_arg: artifacts_subdir passed to base_fn
+#   $3 - rbac_fn: function name for the RBAC deployment
+#   $4 - rbac_arg: artifacts_subdir passed to rbac_fn
+#
+# Returns:
+#   0 if both deployments succeed
+#   1 if either (or both) fail — failures are always reported individually
+#
+# Requires:
+#   NAME_SPACE and NAME_SPACE_RBAC must be different to avoid resource conflicts
+_run_parallel_deployments() {
+  local base_fn=$1
+  local base_arg=$2
+  local rbac_fn=$3
+  local rbac_arg=$4
+
+  # Validate that namespaces are disjoint to prevent race conditions
+  if [[ "${NAME_SPACE:-}" == "${NAME_SPACE_RBAC:-}" ]] || [[ -z "${NAME_SPACE:-}" ]] || [[ -z "${NAME_SPACE_RBAC:-}" ]]; then
+    log::error "NAME_SPACE ('${NAME_SPACE:-}') and NAME_SPACE_RBAC ('${NAME_SPACE_RBAC:-}') must be different and non-empty for parallel deployment"
+    return 1
+  fi
+
+  log::section "Starting parallel deployments: base + RBAC"
+  log::info "Base namespace: ${NAME_SPACE}, RBAC namespace: ${NAME_SPACE_RBAC}"
+
+  "${base_fn}" "${base_arg}" &
+  local base_pid=$!
+  log::info "Base deployment started in background (PID: ${base_pid})"
+
+  "${rbac_fn}" "${rbac_arg}" &
+  local rbac_pid=$!
+  log::info "RBAC deployment started in background (PID: ${rbac_pid})"
+
+  local base_rc=0 rbac_rc=0
+  wait "${base_pid}" || base_rc=$?
+  wait "${rbac_pid}" || rbac_rc=$?
+  log::section "Parallel deployments finished — evaluating results"
+
+  if [[ ${base_rc} -eq 0 ]]; then
+    log::success "Base deployment completed"
+  else
+    log::error "Base deployment failed (exit code: ${base_rc})"
+  fi
+  if [[ ${rbac_rc} -eq 0 ]]; then
+    log::success "RBAC deployment completed"
+  else
+    log::error "RBAC deployment failed (exit code: ${rbac_rc})"
+  fi
+
+  if [[ ${base_rc} -ne 0 || ${rbac_rc} -ne 0 ]]; then
+    return 1
+  fi
+  return 0
+}
+
 initiate_deployments() {
   local base_artifacts_subdir=$1
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  base_deployment "${base_artifacts_subdir}"
-  rbac_deployment "${rbac_artifacts_subdir}"
+  _run_parallel_deployments \
+    base_deployment "${base_artifacts_subdir}" \
+    rbac_deployment "${rbac_artifacts_subdir}"
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
@@ -668,7 +651,7 @@ base_deployment_osd_gcp() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
 
-  namespace::configure ${NAME_SPACE}
+  namespace::configure "${NAME_SPACE}"
 
   deploy_redis_cache "${NAME_SPACE}"
 
@@ -727,8 +710,9 @@ initiate_deployments_osd_gcp() {
   local rbac_artifacts_subdir=$2
 
   cd "${DIR}"
-  base_deployment_osd_gcp "${base_artifacts_subdir}"
-  rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
+  _run_parallel_deployments \
+    base_deployment_osd_gcp "${base_artifacts_subdir}" \
+    rbac_deployment_osd_gcp "${rbac_artifacts_subdir}"
 }
 
 # install base RHDH deployment before upgrade

@@ -120,12 +120,6 @@ export class RbacConstants {
         effect: "allow",
       },
       {
-        entityReference: "role:default/team_a",
-        permission: "scorecard.metric.read",
-        policy: "read",
-        effect: "allow",
-      },
-      {
         entityReference: "role:xyz/team_a",
         permission: "catalog-entity",
         policy: "read",

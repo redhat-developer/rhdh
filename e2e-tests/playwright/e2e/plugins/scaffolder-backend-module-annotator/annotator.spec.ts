@@ -1,6 +1,6 @@
-import { Page, test } from "@playwright/test";
+import { Page, test } from "@support/coverage/test";
 import { UIhelper } from "../../../utils/ui-helper";
-import { Common, setupBrowser } from "../../../utils/common";
+import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 import { APIHelper } from "../../../utils/api-helper";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
@@ -173,7 +173,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     );
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({}, testInfo) => {
     await APIHelper.githubRequest(
       "DELETE",
       GITHUB_API_ENDPOINTS.deleteRepo(
@@ -181,6 +181,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
         reactAppDetails.repo,
       ),
     );
-    await page.close();
+    await teardownBrowser(page, testInfo);
   });
 });

@@ -83,12 +83,15 @@ namespace::setup_image_pull_secret() {
 # ==============================================================================
 
 # Function: namespace::configure
-# Description: Deletes and recreates a namespace, then sets it as current context
+# Description: Deletes and recreates a namespace
 # Arguments:
 #   $1 - project: The namespace/project name
 # Returns:
 #   0 - Success
 #   Exits on failure
+# Notes:
+#   Does not set kubeconfig current context to support parallel deployments.
+#   All downstream oc/kubectl commands must use explicit --namespace flag.
 namespace::configure() {
   local project=$1
   log::warn "Deleting and recreating namespace: $project"
@@ -96,10 +99,6 @@ namespace::configure() {
 
   if ! oc create namespace "${project}"; then
     log::error "Error: Failed to create namespace ${project}" >&2
-    exit 1
-  fi
-  if ! oc config set-context --current --namespace="${project}"; then
-    log::error "Error: Failed to set context for namespace ${project}" >&2
     exit 1
   fi
 

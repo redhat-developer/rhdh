@@ -8,6 +8,7 @@ This directory contains the source of truth for AI assistant rules (Cursor, Clau
 .rulesync/
 ├── rules/           # Rule files (context-aware documentation)
 ├── commands/        # Command files (custom agent commands)
+├── skills/          # One folder per skill, each with SKILL.md
 └── README.md        # This file
 ```
 

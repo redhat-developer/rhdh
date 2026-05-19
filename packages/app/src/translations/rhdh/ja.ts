@@ -18,9 +18,8 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 import { rhdhTranslationRef } from './ref';
 
-export default createTranslationMessages({
+const rhdhTranslationJa = createTranslationMessages({
   ref: rhdhTranslationRef,
-  full: true,
   messages: {
     'menuItem.home': 'ホーム',
     'menuItem.myGroup_one': 'マイグループ',
@@ -109,6 +108,7 @@ export default createTranslationMessages({
     'app.errors.notFound.message': '該当するページが見つかりませんでした',
     'app.errors.notFound.additionalInfo':
       'お探しのページは削除されたか、名前が変更されたか、一時的に利用できない可能性があります。',
-    'app.table.createdAt': '作成日時',
   },
 });
+
+export default rhdhTranslationJa;

@@ -22,7 +22,7 @@
     "build": "backstage-cli package build",
     "lint:check": "backstage-cli package lint",
     "lint:fix": "backstage-cli package lint --fix",
-    "test": "backstage-cli package test",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack",
@@ -31,7 +31,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-common": "1.23.0",
+    "@backstage-community/plugin-rbac-common": "1.26.1",
     "@backstage/backend-defaults": "0.16.0",
     "@backstage/backend-plugin-api": "1.8.0",
     "@backstage/catalog-client": "1.14.0",

@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "@support/coverage/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { HomePage } from "../support/pages/home-page";
@@ -53,5 +53,23 @@ test.describe("Home page customization", () => {
   test("Verify that the Recently Visited card in the Home page renders without an error", async () => {
     await uiHelper.verifyTextinCard("Recently Visited", "Recently Visited");
     await homePage.verifyVisitedCardContent("Recently Visited");
+  });
+
+  test("Verify Customized Quick Access", async () => {
+    // Expanded by default
+    await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+    await homePage.verifyQuickAccess("CI/CD Tools", [
+      "ArgoCD",
+      "SonarQube",
+      "Quay.io",
+    ]);
+    await homePage.verifyQuickAccess("OpenShift Clusters", "OpenShift");
+    // Collapsed by default
+    await homePage.verifyQuickAccess("Monitoring Tools", "Grafana", true);
+    await homePage.verifyQuickAccess(
+      "Security Tools",
+      ["GitHub Security", "Keycloak"],
+      true,
+    );
   });
 });

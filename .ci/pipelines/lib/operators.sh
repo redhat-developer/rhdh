@@ -112,42 +112,19 @@ operator::install_pipelines() {
 # Install Tekton Pipelines (alternative to OpenShift Pipelines for Kubernetes)
 operator::install_tekton() {
   local display_name="tekton-pipelines-webhook"
+  local ns="tekton-pipelines"
 
-  if oc get pods -n "tekton-pipelines" | grep -q "${display_name}"; then
-    log::info "Tekton Pipelines are already installed."
-    return 0
+  if ! kubectl get namespace "${ns}" &> /dev/null; then
+    log::info "Tekton Pipelines is not installed. Installing..."
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+  else
+    log::info "Tekton Pipelines namespace exists; ensuring webhook is ready before continuing."
   fi
 
-  log::info "Tekton Pipelines is not installed. Installing..."
-  kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-
-  # Note: Calling script should wait for deployment:
-  # k8s_wait::deployment "tekton-pipelines" "${display_name}"
-  # k8s_wait::endpoint "tekton-pipelines-webhook" "tekton-pipelines"
-  return $?
-}
-
-# Delete Tekton Pipelines installation
-operator::delete_tekton() {
-  log::info "Checking for Tekton Pipelines installation..."
-
-  if ! kubectl get namespace tekton-pipelines &> /dev/null; then
-    log::info "Tekton Pipelines is not installed. Nothing to delete."
-    return 0
-  fi
-
-  log::info "Found Tekton Pipelines installation. Attempting to delete..."
-  kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
-
-  log::info "Waiting for Tekton Pipelines namespace to be deleted..."
-  timeout 30 bash -c '
-    while kubectl get namespace tekton-pipelines &> /dev/null; do
-      echo "Waiting for tekton-pipelines namespace deletion..."
-      sleep 5
-    done
-    echo "Tekton Pipelines deleted successfully."
-  ' || log::warn "Timed out waiting for namespace deletion, continuing..."
-
+  log::info "Waiting for Tekton Pipeline CRD and webhook (required before applying Pipeline manifests)..."
+  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
+  k8s_wait::deployment "${ns}" "${display_name}" 30 10 || return 1
+  k8s_wait::endpoint "${display_name}" "${ns}" 1800 10 || return 1
   return 0
 }
 

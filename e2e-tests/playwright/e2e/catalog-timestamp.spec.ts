@@ -1,6 +1,6 @@
-import { Page, expect, test } from "@playwright/test";
+import { Page, expect, test } from "@support/coverage/test";
 import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser } from "../utils/common";
+import { Common, setupBrowser, teardownBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
 import {
   getTranslations,
@@ -68,7 +68,7 @@ test.describe("Test timestamp column on Catalog", () => {
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
     // Clear search filter from previous test to show all components
     const clearButton = page.getByRole("button", { name: "clear search" });
-    if (await clearButton.isVisible()) {
+    if ((await clearButton.isVisible()) && (await clearButton.isEnabled())) {
       await clearButton.click();
     }
 
@@ -97,7 +97,7 @@ test.describe("Test timestamp column on Catalog", () => {
     await expect(createdAtCell).not.toBeEmpty();
   });
 
-  test.afterAll(async () => {
-    await page.close();
+  test.afterAll(async ({}, testInfo) => {
+    await teardownBrowser(page, testInfo);
   });
 });

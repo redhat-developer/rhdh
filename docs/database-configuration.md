@@ -13,7 +13,6 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
-      database: ${POSTGRES_DB}
 ```
 
 ## Plugin Division Mode: Schema
@@ -32,7 +31,6 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
-      database: ${POSTGRES_DB}
 ```
 
 **Note:** By default, RHDH automatically creates the required schemas. If your database user lacks `CREATE SCHEMA` privileges, add `ensureSchemaExists: false` to the database configuration and ensure all required schemas are created upfront by your database administrator.

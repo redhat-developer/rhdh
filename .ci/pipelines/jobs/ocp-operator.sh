@@ -90,28 +90,10 @@ run_operator_runtime_config_change_tests() {
   namespace::configure "${NAME_SPACE_RUNTIME}"
 
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  local postgres_ready=false
-
-  # Set up real external PostgreSQL (Crunchy) instead of placeholder secrets.
-  # Creates postgres-cred and postgres-crt secrets in NAME_SPACE_RUNTIME.
-  # IMPORTANT: Must be called AFTER namespace is created but BEFORE operator deployment.
-  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
-  if configure_external_postgres_db "${NAME_SPACE_RUNTIME}"; then
-    postgres_ready=true
-    # Add RHDH_RUNTIME_URL to postgres-cred (rds-app-config.yaml references it for baseUrl).
-    # configure_external_postgres_db creates postgres-cred with POSTGRES_* keys only.
-    local runtime_url_b64
-    runtime_url_b64=$(echo -n "${runtime_url}" | base64 -w0)
-    oc patch secret postgres-cred -n "${NAME_SPACE_RUNTIME}" \
-      --type=json \
-      -p "[{\"op\":\"add\",\"path\":\"/data/RHDH_RUNTIME_URL\",\"value\":\"${runtime_url_b64}\"}]"
-  else
-    log::warn "External PostgreSQL setup failed; falling back to placeholder secrets (schema-mode tests will skip)"
-    create_postgres_cred_secret "${NAME_SPACE_RUNTIME}" "tmp" "tmp" "RHDH_RUNTIME_URL=${runtime_url}"
-    oc apply -f "$DIR/resources/postgres-db/postgres-crt.yaml" -n "${NAME_SPACE_RUNTIME}"
-  fi
-
-  config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
+  create_postgres_cred_secret "${NAME_SPACE_RUNTIME}" "tmp" "tmp" "RHDH_RUNTIME_URL=${runtime_url}"
+  oc apply -f "$DIR/resources/postgres-db/postgres-crt.yaml" -n "${NAME_SPACE_RUNTIME}"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-runtime.yaml"
+  oc apply -f /tmp/configmap-dynamic-plugins-runtime.yaml -n "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml" "true"
 
   # Configure schema-mode environment variables (opt-in: tests skip if not configured).
