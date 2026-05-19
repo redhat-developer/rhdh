@@ -51,6 +51,9 @@ export class SchemaModeTestSetup {
   }
 
   private getSecretName(): string {
+    if (this.installMethod === "operator") {
+      return "postgres-cred";
+    }
     return `${this.releaseName}-postgresql`;
   }
 
@@ -127,8 +130,17 @@ export class SchemaModeTestSetup {
     );
     console.log(`Updated secret ${secretName} with schema-mode credentials`);
 
-    // 2. Ensure POSTGRES_* env vars are set in the deployment
-    await this.ensureDeploymentEnvVars(deploymentName, secretName);
+    // 2. Ensure POSTGRES_* env vars are set in the deployment.
+    // For operator: env vars are injected via extraEnvs.secrets in the Backstage CR,
+    // so we only update the secret (step 1). Patching the Deployment directly
+    // conflicts with operator reconciliation.
+    if (this.installMethod !== "operator") {
+      await this.ensureDeploymentEnvVars(deploymentName, secretName);
+    } else {
+      console.log(
+        "Skipping Deployment env var patching (operator injects env vars from secret via extraEnvs.secrets)",
+      );
+    }
 
     // 3. Update app-config ConfigMap for schema mode
     await this.updateAppConfigForSchemaMode();

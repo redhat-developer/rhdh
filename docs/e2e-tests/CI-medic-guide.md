@@ -395,7 +395,7 @@ Same as OCP nightly but deploys RHDH using the Operator instead of Helm. See [`o
 - Installs RHDH Operator and waits for `backstages.rhdh.redhat.com` CRD (300s timeout)
 - Uses Backstage CR (`rhdh-start.yaml`) instead of Helm release
 - Orchestrator workflows currently disabled (tracked in RHDHBUGS-2184)
-- Runtime config tests currently commented out (tracked in RHDHBUGS-2608)
+- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with external Crunchy PostgreSQL
 
 ### OCP PR Check (`ocp-pull`)
 
