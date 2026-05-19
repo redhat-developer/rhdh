@@ -44,7 +44,7 @@ in the `main` branch of the [RHDH repository](https://github.com/redhat-develope
 | `@backstage/catalog-model` | `1.7.7` |
 | `@backstage/cli-node` | `0.3.0` |
 | `@backstage/config` | `1.3.6` |
-| `@backstage/config-loader` | `1.10.9` |
+| `@backstage/config-loader` | `undefined` |
 
 
 
