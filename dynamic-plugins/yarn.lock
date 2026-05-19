@@ -11407,9 +11407,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.5":
-  version: 1.9.5
-  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.5"
+"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.6":
+  version: 1.9.6
+  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.9.6"
   dependencies:
     "@backstage-community/plugin-rbac-common": "npm:^1.19.0"
     "@backstage/core-components": "npm:^0.18.8"
@@ -11428,7 +11428,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/efe7cba3719dd306e0d9ebc837177e6cf06455fb2953cff8a9d6eb94e8f5ff891281b1f43515f012a70910cf0ff74522503b232c7587375340b75de856cc763e
+  checksum: 10c0/2e6b7469f4ef242cc22f2064be81dd2ad750bfaea8c7371258308741323b53e86c8b12b520d931d1d782c77bbe555d9a825940df5105f0082b72ed5a57a3199c
   languageName: node
   linkType: hard
 
@@ -29293,7 +29293,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-quickstart": "npm:1.9.5"
+    "@red-hat-developer-hub/backstage-plugin-quickstart": "npm:1.9.6"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
