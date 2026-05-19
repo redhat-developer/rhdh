@@ -38,7 +38,7 @@ in the `release-1.9` branch of the [RHDH repository](https://github.com/redhat-d
 | **Package**                    | **Version** |
 | ------------------------------ | ----------- |
 | `@backstage/backend-app-api` | `1.3.0` |
-| `@backstage/backend-defaults` | `0.13.1` |
+| `@backstage/backend-defaults` | `0.13.2` |
 | `@backstage/backend-dynamic-feature-service` | `0.7.6` |
 | `@backstage/backend-plugin-api` | `1.5.0` |
 | `@backstage/catalog-model` | `1.7.6` |
