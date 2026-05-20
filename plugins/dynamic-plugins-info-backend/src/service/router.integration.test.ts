@@ -40,19 +40,36 @@ const mockDynamicPluginsService = createServiceFactory({
   },
 });
 
+const startBackend = () =>
+  startTestBackend({
+    features: [
+      dynamicPluginsInfoPlugin,
+      mockDynamicPluginsService,
+      mockServices.rootConfig.factory(),
+    ],
+  });
+
 describe('dynamic-plugins-info backend (Layer 2 integration)', () => {
-  it('starts the real plugin and serves the loaded-plugins endpoint', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        dynamicPluginsInfoPlugin,
-        mockDynamicPluginsService,
-        mockServices.rootConfig.factory(),
-      ],
-    });
+  it('serves the loaded-plugins endpoint to a user and strips installer details', async () => {
+    const { server } = await startBackend();
 
     const response = await request(server)
       .get('/api/dynamic-plugins-info/loaded-plugins')
       .set('Authorization', mockCredentials.user.header());
+
+    expect(response.status).toEqual(200);
+    expect(response.body.length).toBeGreaterThan(0);
+    for (const plugin of response.body) {
+      expect(plugin).not.toHaveProperty('installer');
+    }
+  }, 30_000);
+
+  it('authorizes service principals to read the plugin list', async () => {
+    const { server } = await startBackend();
+
+    const response = await request(server)
+      .get('/api/dynamic-plugins-info/loaded-plugins')
+      .set('Authorization', mockCredentials.service.header());
 
     expect(response.status).toEqual(200);
     expect(response.body.length).toBeGreaterThan(0);

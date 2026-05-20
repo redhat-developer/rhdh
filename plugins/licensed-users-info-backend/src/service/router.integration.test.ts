@@ -34,6 +34,18 @@ const sqliteConfig = mockServices.rootConfig.factory({
   },
 });
 
+// Pure in-memory SQLite (no `directory`) trips the plugin's self-disable check.
+const inMemoryConfig = mockServices.rootConfig.factory({
+  data: {
+    backend: {
+      database: {
+        client: 'better-sqlite3',
+        connection: ':memory:',
+      },
+    },
+  },
+});
+
 describe('licensed-users-info backend (Layer 2 integration)', () => {
   it('starts the real plugin and serves the health endpoint', async () => {
     const { server } = await startTestBackend({
@@ -46,5 +58,17 @@ describe('licensed-users-info backend (Layer 2 integration)', () => {
 
     expect(response.status).toEqual(200);
     expect(response.body).toEqual({ status: 'ok' });
+  }, 30_000);
+
+  it('disables all routes under a pure in-memory SQLite database', async () => {
+    const { server } = await startTestBackend({
+      features: [licensedUsersInfoPlugin, inMemoryConfig],
+    });
+
+    const response = await request(server).get(
+      '/api/licensed-users-info/health',
+    );
+
+    expect(response.status).toEqual(404);
   }, 30_000);
 });
