@@ -97,7 +97,7 @@ testing::run_tests() {
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
-    yarn playwright test --project="${playwright_project}" "${grep_args[@]}"
+    yarn playwright test --project="${playwright_project}" ${grep_args[@]+"${grep_args[@]}"}
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local test_result=${PIPESTATUS[0]}

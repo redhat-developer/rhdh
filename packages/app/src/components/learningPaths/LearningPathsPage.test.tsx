@@ -29,7 +29,9 @@ const renderPage = () =>
   );
 
 describe('LearningPaths', () => {
-  afterEach(() => jest.resetAllMocks());
+  // clearAllMocks (not resetAllMocks) so the module-scoped searchApiMock keeps
+  // its resolved implementation across tests; only call history is cleared.
+  afterEach(() => jest.clearAllMocks());
 
   it('shows a progress indicator while loading', async () => {
     mockUseLearningPathData.mockReturnValue({

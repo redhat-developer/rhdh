@@ -37,4 +37,17 @@ describe('CustomSidebarItem', () => {
       '/docs',
     );
   });
+
+  it('injects global styling for built-in sidebar items', async () => {
+    await renderInTestApp(
+      <CustomSidebarItem icon={HomeIcon} to="/catalog" text="Catalog" />,
+    );
+
+    const injectedStyles = Array.from(document.head.querySelectorAll('style'));
+    expect(
+      injectedStyles.some(style =>
+        style.textContent?.includes('BackstageSidebarItem-selected'),
+      ),
+    ).toBe(true);
+  });
 });
