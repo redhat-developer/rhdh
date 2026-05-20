@@ -105,7 +105,27 @@ describe('oauth2ProxyUserHeaderMatchingUserEntityName', () => {
     );
   });
 
-  it('falls back to x-forwarded-preferred-username then x-forwarded-user', async () => {
+  it('prefers x-forwarded-preferred-username over x-forwarded-user', async () => {
+    delete process.env.OAUTH_USER_HEADER;
+    const ctx = buildContext();
+    const resolver =
+      rhdhSignInResolvers.oauth2ProxyUserHeaderMatchingUserEntityName();
+
+    await resolver(
+      buildProxyInfo({
+        'x-forwarded-preferred-username': 'preferred',
+        'x-forwarded-user': 'fallback',
+      }),
+      ctx,
+    );
+
+    expect(ctx.signInWithCatalogUser).toHaveBeenCalledWith(
+      { entityRef: { name: 'preferred' } },
+      { dangerousEntityRefFallback: undefined },
+    );
+  });
+
+  it('falls back to x-forwarded-user when preferred-username is absent', async () => {
     delete process.env.OAUTH_USER_HEADER;
     const ctx = buildContext();
     const resolver =

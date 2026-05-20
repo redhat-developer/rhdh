@@ -83,6 +83,15 @@ describe('createOidcSubClaimResolver', () => {
     ).rejects.toThrow(/mismatching 'sub' claim/);
   });
 
+  it('throws when the id token carries no sub claim', async () => {
+    decodeJwtMock.mockReturnValue({});
+    const resolver = createOidcSubClaimResolver(KEYCLOAK)();
+
+    await expect(
+      resolver(buildOidcInfo('user-123', 'id.token'), buildContext()),
+    ).rejects.toThrow(/mismatching 'sub' claim/);
+  });
+
   it('passes a dangerous entity ref fallback when explicitly allowed', async () => {
     decodeJwtMock.mockReturnValue({ sub: 'user-123' });
     const ctx = buildContext();
@@ -100,8 +109,8 @@ describe('createOidcSubClaimResolver', () => {
 });
 
 describe('trySignInResolvers', () => {
-  const info = {} as SignInInfo<unknown>;
-  const ctx = {} as AuthResolverContext;
+  const info = {} as unknown as SignInInfo<unknown>;
+  const ctx = {} as unknown as AuthResolverContext;
 
   it('returns the result of the first resolver that succeeds', async () => {
     const first: SignInResolver<unknown> = jest
@@ -126,17 +135,22 @@ describe('trySignInResolvers', () => {
     const result = await trySignInResolvers([failing, succeeding])(info, ctx);
 
     expect(result).toBe(signInResult);
-    expect(failing).toHaveBeenCalled();
-    expect(succeeding).toHaveBeenCalled();
+    expect(failing).toHaveBeenCalledTimes(1);
+    expect(succeeding).toHaveBeenCalledTimes(1);
   });
 
-  it('throws a descriptive error when every resolver fails', async () => {
-    const failing: SignInResolver<unknown> = jest
+  it('throws a descriptive error after attempting every resolver', async () => {
+    const first: SignInResolver<unknown> = jest
+      .fn()
+      .mockRejectedValue(new Error('no match'));
+    const second: SignInResolver<unknown> = jest
       .fn()
       .mockRejectedValue(new Error('no match'));
 
     await expect(
-      trySignInResolvers([failing, failing])(info, ctx),
+      trySignInResolvers([first, second])(info, ctx),
     ).rejects.toThrow(/unable to resolve user identity/);
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
   });
 });
