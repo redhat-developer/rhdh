@@ -193,4 +193,41 @@ describe('createRouter', () => {
       expect(warn).toHaveBeenCalledWith(tc.expectedWarning);
     }
   });
+
+  it('warns and skips a web plugin that has no matching package', async () => {
+    const warn = jest.fn();
+    const logger: LoggerService = {
+      error: jest.fn(),
+      warn,
+      info: jest.fn(),
+      debug: jest.fn(),
+      child: jest.fn(),
+    };
+
+    const pluginManager = {
+      availablePackages: [],
+      plugins: () => [
+        { name: 'orphan-plugin', version: '1.0.0', platform: 'web' },
+      ],
+    } as unknown as DynamicPluginManager;
+
+    router = await createRouter({
+      logger,
+      discovery: {
+        getBaseUrl: jest.fn(),
+        getExternalBaseUrl: jest.fn().mockReturnValue('http://localhost:3000'),
+      },
+      pluginManager,
+      config: mockServices.rootConfig(),
+    });
+
+    app.use('/scalprum', router);
+    const response = await request(app).get('/scalprum/plugins');
+
+    expect(response.status).toEqual(200);
+    expect(response.body).toEqual({});
+    expect(warn).toHaveBeenCalledWith(
+      'Could not find package for plugin orphan-plugin@1.0.0',
+    );
+  });
 });
