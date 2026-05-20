@@ -36,6 +36,17 @@ spec:
         - name: postgres-crt
           key: postgres-crt.pem
     extraEnvs:
+      envs:
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
+        - name: NODE_ENV
+          value: "production"
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+        - name: CATALOG_INDEX_IMAGE
+          value: "$CATALOG_INDEX_IMAGE"
+          containers:
+            - install-dynamic-plugins
       secrets:
         - name: postgres-cred
     route:

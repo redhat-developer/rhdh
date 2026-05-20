@@ -29,20 +29,15 @@ install_rhdh_operator() {
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
-  if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
+  if [[ "$RELEASE_VERSION" == "next" ]]; then
     log::info "Installing RHDH operator with '--next' flag"
     if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
   else
-    local operator_version="${RELEASE_BRANCH_NAME#release-}"
-    if [[ -z "$operator_version" ]]; then
-      log::error "Failed to extract operator version from RELEASE_BRANCH_NAME: '$RELEASE_BRANCH_NAME'"
-      return 1
-    fi
-    log::info "Installing RHDH operator with '-v $operator_version' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh; then
+    log::info "Installing RHDH operator with '-v $RELEASE_VERSION' flag"
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$RELEASE_VERSION" --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
