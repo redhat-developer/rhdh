@@ -21,7 +21,15 @@
 #   ./trigger-nightly-job.sh \
 #     --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \
 #     --image-repo rhdh/rhdh-hub-rhel9 \
-#     --tag 1.9-123
+#     --tag 1.9-227 \
+#     --catalog-index-tag 1.9 \
+#     --chart-version 1.9-227-CI
+#
+#   # Trigger GA verification (released images from registry.access.redhat.com):
+#   ./trigger-nightly-job.sh \
+#     --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \
+#     --image-registry registry.redhat.io --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9.4 \
+#     --catalog-index-registry registry.access.redhat.com --catalog-index-tag 1.9.4
 #
 #   # Trigger against a fork:
 #   ./trigger-nightly-job.sh \
@@ -57,6 +65,8 @@ TAG_NAME=""
 GITHUB_ORG_NAME=""
 GITHUB_REPOSITORY_NAME=""
 RELEASE_BRANCH_NAME=""
+CATALOG_INDEX_IMAGE=""
+CHART_VERSION=""
 SKIP_SEND_ALERT="true"
 DRY_RUN=false
 
@@ -72,10 +82,12 @@ Required:
 Optional overrides (passed as env var overrides to the job):
   -I, --image-registry IMAGE_REGISTRY  Override the image registry (default: quay.io).
   -q, --image-repo IMAGE_REPO  Override the image repository (e.g. rhdh/rhdh-hub-rhel9). Requires --tag to be set.
-  -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-123).
+  -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-227).
   -o, --org GITHUB_ORG_NAME    Override the GitHub org (default in job: redhat-developer).
   -r, --repo GITHUB_REPO_NAME  Override the GitHub repo name (default in job: rhdh).
   -b, --branch BRANCH          Override the branch name.
+  --catalog-index-image IMAGE  Override the catalog index image (default: quay.io/rhdh/plugin-catalog-index:<version>).
+  --chart-version VERSION      Override the Helm chart version (e.g. 1.9-227-CI).
   -S, --send-alerts            Send Slack alerts (default: alerts are skipped).
 
 Other:
@@ -86,8 +98,15 @@ Examples:
   # Basic trigger:
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly
 
-  # Trigger with custom image:
-  $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --image-registry quay.io --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9-123
+  # RC verification (productized image + matching catalog index + chart):
+  $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \\
+    --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9-227 \\
+    --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9 --chart-version 1.9-227-CI
+
+  # GA verification (released images from Red Hat registries):
+  $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \\
+    --image-registry registry.redhat.io --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9.4 \\
+    --catalog-index-image registry.access.redhat.com/rhdh/plugin-catalog-index:1.9.4
 
   # Trigger against a fork, with Slack alerts enabled:
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly --org my-org --repo my-fork --branch release-1.9 --send-alerts
@@ -160,6 +179,22 @@ parse_args() {
         RELEASE_BRANCH_NAME="$2"
         shift 2
         ;;
+      --catalog-index-image)
+        [[ $# -ge 2 ]] || {
+          log::error "--catalog-index-image requires an argument"
+          exit 1
+        }
+        CATALOG_INDEX_IMAGE="$2"
+        shift 2
+        ;;
+      --chart-version)
+        [[ $# -ge 2 ]] || {
+          log::error "--chart-version requires an argument"
+          exit 1
+        }
+        CHART_VERSION="$2"
+        shift 2
+        ;;
       -S | --send-alerts)
         SKIP_SEND_ALERT="false"
         shift
@@ -208,6 +243,8 @@ build_payload() {
   [[ -n "${GITHUB_ORG_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_GITHUB_ORG_NAME "${GITHUB_ORG_NAME}")
   [[ -n "${GITHUB_REPOSITORY_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_GITHUB_REPOSITORY_NAME "${GITHUB_REPOSITORY_NAME}")
   [[ -n "${RELEASE_BRANCH_NAME}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_RELEASE_BRANCH_NAME "${RELEASE_BRANCH_NAME}")
+  [[ -n "${CATALOG_INDEX_IMAGE}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_CATALOG_INDEX_IMAGE "${CATALOG_INDEX_IMAGE}")
+  [[ -n "${CHART_VERSION}" ]] && jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_CHART_VERSION "${CHART_VERSION}")
   jq_args+=(--arg MULTISTAGE_PARAM_OVERRIDE_SKIP_SEND_ALERT "${SKIP_SEND_ALERT}")
 
   jq -n --arg job "${JOB_NAME}" "${jq_args[@]}" \

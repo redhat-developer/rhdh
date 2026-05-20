@@ -18,6 +18,16 @@ REPO_NAME="${REPO_NAME:-rhdh}"
 PULL_NUMBER="${PULL_NUMBER:-}"
 BUILD_ID="${BUILD_ID:-unknown-build}"
 RELEASE_BRANCH_NAME="${RELEASE_BRANCH_NAME:-main}"
+
+# Canonical version stem derived from RELEASE_BRANCH_NAME.
+# 'release-1.10' -> '1.10', 'main' -> 'next'
+# Used as the default tag for branch-aware image references (e.g., catalog index).
+if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
+  RELEASE_VERSION="next"
+else
+  RELEASE_VERSION="${RELEASE_BRANCH_NAME#release-}"
+fi
+
 K8S_CLUSTER_TOKEN="${K8S_CLUSTER_TOKEN:-}"
 K8S_CLUSTER_URL="${K8S_CLUSTER_URL:-}"
 SHARED_DIR="${SHARED_DIR:-$DIR/shared_dir}"
@@ -46,6 +56,18 @@ K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n'
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
+
+# Catalog index image reference.
+# Defaults to quay.io/rhdh/plugin-catalog-index:<RELEASE_VERSION>.
+# Override via Gangway for RC (e.g., --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9-60) or
+# GA verification (e.g., --catalog-index-image registry.access.redhat.com/rhdh/plugin-catalog-index:1.9.4).
+CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-quay.io/rhdh/plugin-catalog-index:$RELEASE_VERSION}"
+# Derived components for Helm chart (requires separate registry/repository/tag)
+CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"
+_CI_WITHOUT_TAG="${CATALOG_INDEX_IMAGE%:*}"
+CATALOG_INDEX_REGISTRY="${_CI_WITHOUT_TAG%%/*}"
+CATALOG_INDEX_REPO="${_CI_WITHOUT_TAG#*/}"
+unset _CI_WITHOUT_TAG
 
 # =============================================================================
 # Release and Namespace Configuration
