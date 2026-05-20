@@ -113,6 +113,8 @@ run_operator_runtime_config_change_tests() {
   fi
 
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-runtime.yaml"
+  oc apply -f /tmp/configmap-dynamic-plugins-runtime.yaml -n "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml" "true"
 
   # Configure schema-mode environment variables (opt-in: tests skip if not configured).
