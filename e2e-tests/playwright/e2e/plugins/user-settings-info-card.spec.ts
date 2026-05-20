@@ -2,7 +2,7 @@ import { test, expect } from "@support/coverage/test";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
-test.describe("Test user settings info card", () => {
+test.describe("Test user settings info card @layer3-equivalent", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

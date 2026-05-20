@@ -8,7 +8,7 @@ const lang = getCurrentLanguage();
 
 let page: Page;
 
-test.describe("Validate Sidebar Navigation Customization", () => {
+test.describe("Validate Sidebar Navigation Customization @layer3-equivalent", () => {
   let uiHelper: UIhelper;
   let common: Common;
 

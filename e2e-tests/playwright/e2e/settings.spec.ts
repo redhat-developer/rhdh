@@ -8,7 +8,7 @@ const lang = getCurrentLanguage();
 
 let uiHelper: UIhelper;
 
-test.describe(`Settings page`, () => {
+test.describe(`Settings page @layer3-equivalent`, () => {
   test.beforeEach(async ({ page }) => {
     test.info().annotations.push({
       type: "component",

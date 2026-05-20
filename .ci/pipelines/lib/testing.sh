@@ -86,10 +86,18 @@ testing::run_tests() {
   # is never mistakenly uploaded for the current run.
   rm -rf "${e2e_tests_dir}/coverage/e2e" "${e2e_tests_dir}/coverage/e2e-raw"
 
+  # Optional tag filter: set PLAYWRIGHT_GREP (e.g. '@smoke' or '@layer3-equivalent')
+  # to run only the matching subset. Unset means run the whole project.
+  local grep_args=()
+  if [[ -n "${PLAYWRIGHT_GREP:-}" ]]; then
+    grep_args+=(--grep "${PLAYWRIGHT_GREP}")
+    log::info "Filtering tests by tag: ${PLAYWRIGHT_GREP}"
+  fi
+
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
-    yarn playwright test --project="${playwright_project}"
+    yarn playwright test --project="${playwright_project}" "${grep_args[@]}"
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local test_result=${PIPESTATUS[0]}
