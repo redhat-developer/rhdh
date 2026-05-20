@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-24
-FROM registry.access.redhat.com/ubi9/nodejs-24:9.7-1777855644@sha256:2de19f9aed8524187e52c146da60635a80adb06739f23519a5c8a16fda2850e5 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-24:9.7-1778648315@sha256:06a4942584cad8a566450b5775c9564a09802f07a5c3cf2c9ea440aa84cec357 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -241,7 +241,7 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:9.7-1777884007@sha256:5f89659f11c3cc51c78e9f762b8373097421b76ac20bbe0fac68fb42a2def08c AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:9.7-1778604972@sha256:db6b235ed5ff08db78a85979377ba4e5241d032b375c945b1b1746d7a7fd9e24 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
