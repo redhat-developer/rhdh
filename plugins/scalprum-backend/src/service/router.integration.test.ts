@@ -34,6 +34,10 @@ const dynamicPluginsServiceWith = (
   });
 
 describe('scalprum backend (Layer 2 integration)', () => {
+  // Created at describe scope so its afterAll cleanup is registered and the
+  // temporary directory does not leak across tests.
+  const mockDir = createMockDirectory();
+
   it('serves an empty plugin map unauthenticated when no frontend plugins are loaded', async () => {
     const { server } = await startTestBackend({
       features: [
@@ -50,7 +54,6 @@ describe('scalprum backend (Layer 2 integration)', () => {
   }, 30_000);
 
   it('lists a web plugin and serves its manifest as static content', async () => {
-    const mockDir = createMockDirectory();
     mockDir.setContent({
       'dist-scalprum': {
         'plugin-manifest.json': JSON.stringify({ name: 'scalprum-plugin' }),
