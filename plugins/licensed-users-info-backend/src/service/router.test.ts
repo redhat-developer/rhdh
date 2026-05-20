@@ -3,6 +3,7 @@ import { NotAllowedError } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import express from 'express';
+import { json2csv } from 'json-2-csv';
 import request from 'supertest';
 
 import { createRouter, permissionCheck, rowToResponse } from './router';
@@ -16,6 +17,13 @@ jest.mock('@backstage/backend-defaults/database', () => ({
     }),
   },
 }));
+
+// Keep the real CSV serializer by default; individual tests override it to
+// exercise the conversion-failure branch.
+jest.mock('json-2-csv', () => {
+  const actual = jest.requireActual('json-2-csv');
+  return { ...actual, json2csv: jest.fn(actual.json2csv) };
+});
 
 const mockGetQuantityRecordedActiveUsers = jest.fn();
 const mockGetListUsers = jest.fn();
@@ -140,6 +148,33 @@ describe('createRouter', () => {
       expect(response.text).toContain('user:default/jdoe');
     });
 
+    it('returns users without profile data when no catalog entity matches', async () => {
+      mockGetListUsers.mockResolvedValue([userRow]);
+      mockGetUserEntities.mockResolvedValue(new Map());
+
+      const response = await request(app).get('/users');
+
+      expect(response.status).toEqual(200);
+      expect(response.body[0]).toEqual({
+        userEntityRef: 'user:default/jdoe',
+        lastAuthTime: expect.any(String),
+      });
+    });
+
+    it('returns 500 when CSV conversion fails', async () => {
+      mockGetListUsers.mockResolvedValue([userRow]);
+      (json2csv as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('conversion failed');
+      });
+
+      const response = await request(app)
+        .get('/users')
+        .set('content-type', 'text/csv');
+
+      expect(response.status).toEqual(500);
+      expect(response.text).toContain('Error converting to CSV');
+    });
+
     it('returns 403 when the caller is not authorized', async () => {
       permissions.authorize.mockResolvedValue([
         { result: AuthorizeResult.DENY },
@@ -149,6 +184,31 @@ describe('createRouter', () => {
 
       expect(response.status).toEqual(403);
       expect(mockGetListUsers).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('SQLite in-memory database', () => {
+    it('disables the router and warns when SQLite has no on-disk directory', async () => {
+      const logger = mockServices.logger.mock();
+      const router = await createRouter({
+        logger,
+        config: mockServices.rootConfig({
+          data: { backend: { database: { client: 'better-sqlite3' } } },
+        }),
+        auth: mockServices.auth.mock(),
+        discovery: mockServices.discovery.mock(),
+        permissions,
+        httpAuth: mockServices.httpAuth.mock(),
+        lifecycle: mockServices.lifecycle.mock(),
+      });
+      const disabledApp = express().use(router);
+
+      const response = await request(disabledApp).get('/health');
+
+      expect(response.status).toEqual(404);
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('was disabled'),
+      );
     });
   });
 });
@@ -199,23 +259,23 @@ describe('rowToResponse', () => {
 describe('permissionCheck', () => {
   const credentials = mockCredentials.user();
 
-  it('resolves when the decision is ALLOW', async () => {
+  const permissionsReturning = (
+    result: AuthorizeResult.ALLOW | AuthorizeResult.DENY,
+  ) => {
     const permissions = mockServices.permissions.mock();
-    permissions.authorize.mockResolvedValue([
-      { result: AuthorizeResult.ALLOW },
-    ]);
+    permissions.authorize.mockResolvedValue([{ result }]);
+    return permissions;
+  };
 
+  it('resolves when the decision is ALLOW', async () => {
     await expect(
-      permissionCheck(permissions, credentials),
+      permissionCheck(permissionsReturning(AuthorizeResult.ALLOW), credentials),
     ).resolves.toBeUndefined();
   });
 
   it('throws NotAllowedError when the decision is DENY', async () => {
-    const permissions = mockServices.permissions.mock();
-    permissions.authorize.mockResolvedValue([{ result: AuthorizeResult.DENY }]);
-
-    await expect(permissionCheck(permissions, credentials)).rejects.toThrow(
-      NotAllowedError,
-    );
+    await expect(
+      permissionCheck(permissionsReturning(AuthorizeResult.DENY), credentials),
+    ).rejects.toThrow(NotAllowedError);
   });
 });

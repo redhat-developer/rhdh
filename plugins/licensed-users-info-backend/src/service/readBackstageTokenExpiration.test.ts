@@ -43,4 +43,18 @@ describe('readBackstageTokenExpiration', () => {
     });
     expect(readBackstageTokenExpiration(config)).toEqual(86400);
   });
+
+  it('returns the minimum boundary (600s) unchanged', () => {
+    const config = mockServices.rootConfig({
+      data: { auth: { backstageTokenExpiration: { seconds: 600 } } },
+    });
+    expect(readBackstageTokenExpiration(config)).toEqual(600);
+  });
+
+  it('returns the maximum boundary (86400s) unchanged', () => {
+    const config = mockServices.rootConfig({
+      data: { auth: { backstageTokenExpiration: { hours: 24 } } },
+    });
+    expect(readBackstageTokenExpiration(config)).toEqual(86400);
+  });
 });

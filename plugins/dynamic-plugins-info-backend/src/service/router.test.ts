@@ -1,4 +1,4 @@
-import { DynamicPluginManager } from '@backstage/backend-dynamic-feature-service';
+import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
 import { mockServices } from '@backstage/backend-test-utils';
 
 import express from 'express';
@@ -12,13 +12,14 @@ const buildApp = async (
   pluginList: unknown[],
   httpAuth = mockServices.httpAuth(),
 ) => {
-  // NOTE: the assertion is required to instantiate the manager without its
-  // runtime args and seed the private `_plugins` field directly from fixtures.
-  const pluginManager = new (DynamicPluginManager as any)();
-  pluginManager._plugins = pluginList;
+  // The router only consumes `pluginProvider.plugins()`, so a stub against
+  // that public method is enough and avoids coupling to the manager internals.
+  const pluginProvider = {
+    plugins: () => pluginList,
+  } as unknown as DynamicPluginProvider;
 
   const router = await createRouter({
-    pluginProvider: pluginManager,
+    pluginProvider,
     discovery: mockServices.discovery(),
     httpAuth,
     config: mockServices.rootConfig(),
@@ -61,6 +62,22 @@ describe('createRouter', () => {
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual([]);
+    });
+
+    it('returns front-end plugins unchanged (no installer stripping)', async () => {
+      const frontendPlugin = {
+        name: 'backstage-plugin-example',
+        version: '1.0.0',
+        platform: 'web',
+        role: 'frontend-plugin',
+      };
+
+      const app = await buildApp([frontendPlugin]);
+
+      const response = await request(app).get('/loaded-plugins');
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual([frontendPlugin]);
     });
 
     it('enforces authentication before returning the plugin list', async () => {
