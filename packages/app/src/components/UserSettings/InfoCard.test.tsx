@@ -145,4 +145,41 @@ describe('InfoCard', () => {
     expect(renderResult.getByText(/RHDH Version/)).toBeInTheDocument();
     expect(renderResult.getByText(/Backstage Version/)).toBeInTheDocument();
   });
+
+  // Mirrors e2e-tests/.../user-settings-info-card.spec.ts: asserts the card
+  // title and the "key: value" lines (collapsed shows the first two, expanding
+  // reveals the rest) — behavior the key-only assertions above did not cover.
+  it('renders the build info title and key/value lines, revealing the rest on expand', async () => {
+    const mockConfig = mockApis.config({
+      data: {
+        buildInfo: {
+          title: 'RHDH Build info',
+          card: {
+            'TechDocs builder': 'local',
+            'Authentication provider': 'Github',
+            RBAC: 'disabled',
+          },
+        },
+      },
+    });
+    const renderResult = await renderInTestApp(
+      <TestApiProvider apis={[[configApiRef, mockConfig]]}>
+        <InfoCard />
+      </TestApiProvider>,
+    );
+
+    expect(renderResult.getByText(/RHDH Build info/)).toBeInTheDocument();
+    expect(
+      renderResult.getByText(/TechDocs builder: local/),
+    ).toBeInTheDocument();
+    expect(
+      renderResult.getByText(/Authentication provider: Github/),
+    ).toBeInTheDocument();
+    // Collapsed view shows only the first two entries.
+    expect(renderResult.queryByText(/RBAC: disabled/)).not.toBeInTheDocument();
+
+    await userEvent.click(renderResult.getByText(/TechDocs builder: local/));
+
+    expect(renderResult.getByText(/RBAC: disabled/)).toBeInTheDocument();
+  });
 });
