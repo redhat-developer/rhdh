@@ -8,7 +8,7 @@ import { PropsWithChildren } from 'react';
 import { configApiRef } from '@backstage/core-plugin-api';
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
 
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { renderHook } from '@testing-library/react';
 
 import {
@@ -22,7 +22,9 @@ const makeWrapper = (
 ) => {
   const theme = createTheme(
     appBarBackgroundScheme
-      ? ({ palette: { rhdh: { general: { appBarBackgroundScheme } } } } as any)
+      ? ({
+          palette: { rhdh: { general: { appBarBackgroundScheme } } },
+        } as unknown as ThemeOptions)
       : {},
   );
   const configApi = mockApis.config({ data: brandingData });
