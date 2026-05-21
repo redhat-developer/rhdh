@@ -145,10 +145,28 @@ export class SchemaModeTestSetup {
     // 3. Update app-config ConfigMap for schema mode
     await this.updateAppConfigForSchemaMode();
 
-    // 4. Restart to apply changes
-    console.log("Restarting RHDH to apply schema mode configuration...");
-    await this.kubeClient.restartDeployment(deploymentName, this.namespace);
-    console.log("RHDH restart completed");
+    // 4. Restart to apply changes (retry up to 3 times for slow ephemeral volume PVC creation)
+    const maxRestartAttempts = 3;
+    for (let attempt = 1; attempt <= maxRestartAttempts; attempt++) {
+      try {
+        console.log(
+          `Restarting RHDH to apply schema mode configuration (attempt ${attempt}/${maxRestartAttempts})...`,
+        );
+        await this.kubeClient.restartDeployment(deploymentName, this.namespace);
+        console.log("RHDH restart completed");
+        break;
+      } catch (restartError) {
+        if (attempt === maxRestartAttempts) throw restartError;
+        const msg =
+          restartError instanceof Error
+            ? restartError.message
+            : String(restartError);
+        console.warn(
+          `Restart attempt ${attempt} failed (${msg}), retrying in 30s...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 30000));
+      }
+    }
   }
 
   private async ensureDeploymentEnvVars(
