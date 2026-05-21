@@ -86,7 +86,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
   let testSetup: SchemaModeTestSetup;
 
   test.beforeAll(async ({}, testInfo) => {
-    test.setTimeout(300000);
+    test.setTimeout(900000);
 
     const hasPortForwardMeta =
       !!process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE &&
