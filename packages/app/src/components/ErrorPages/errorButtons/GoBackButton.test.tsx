@@ -1,5 +1,3 @@
-import { MemoryRouter } from 'react-router-dom';
-
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 
@@ -7,6 +5,7 @@ import { GoBackButton } from './GoBackButton';
 
 const mockNavigate = jest.fn();
 
+// useNavigate is mocked, so no router context (MemoryRouter) is needed.
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
@@ -22,15 +21,15 @@ const setHistoryLength = (length: number) =>
     configurable: true,
   });
 
-const renderButton = () =>
-  render(
-    <MemoryRouter>
-      <GoBackButton />
-    </MemoryRouter>,
-  );
+const renderButton = () => render(<GoBackButton />);
 
 describe('GoBackButton', () => {
-  afterEach(() => jest.clearAllMocks());
+  const originalHistoryLength = window.history.length;
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    setHistoryLength(originalHistoryLength);
+  });
 
   it('navigates back when there is history to go back to', async () => {
     setHistoryLength(3);

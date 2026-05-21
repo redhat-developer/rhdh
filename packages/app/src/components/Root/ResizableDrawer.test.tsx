@@ -1,8 +1,24 @@
 import { renderInTestApp } from '@backstage/test-utils';
 
-import { screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 import { ResizableDrawer } from './ResizableDrawer';
+
+// The resize handle is an unlabelled styled div; locate it by structure and
+// assert it was found so a structural change fails loudly instead of silently
+// skipping the drag.
+const startDragFromHandle = () => {
+  const handle = document.querySelector(
+    '[class*="MuiBox-root"] > div:last-child',
+  );
+  expect(handle).not.toBeNull();
+  handle!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+};
+
+const findWindowHandler = (addSpy: jest.SpyInstance, event: string) =>
+  addSpy.mock.calls.find(([name]) => name === event)?.[1] as (
+    e: MouseEvent,
+  ) => void;
 
 describe('ResizableDrawer', () => {
   it('renders its children while open', async () => {
@@ -46,18 +62,13 @@ describe('ResizableDrawer', () => {
       </ResizableDrawer>,
     );
 
-    // Start a drag by flipping the internal resizing flag via the handle, then
-    // move the mouse. Width for a right-anchored drawer is innerWidth - clientX.
-    const handle = document.querySelector(
-      '[class*="MuiBox-root"] > div:last-child',
-    );
-    handle?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-
-    const moveHandler = addSpy.mock.calls.find(
-      ([event]) => event === 'mousemove',
-    )?.[1] as (e: MouseEvent) => void;
+    // Width for a right-anchored drawer is innerWidth - clientX.
+    startDragFromHandle();
     globalThis.innerWidth = 1000;
-    moveHandler(new MouseEvent('mousemove', { clientX: 400 }));
+    findWindowHandler(
+      addSpy,
+      'mousemove',
+    )(new MouseEvent('mousemove', { clientX: 400 }));
 
     expect(onWidthChange).toHaveBeenCalledWith(600);
 
@@ -80,23 +91,42 @@ describe('ResizableDrawer', () => {
       </ResizableDrawer>,
     );
 
-    const handle = document.querySelector(
-      '[class*="MuiBox-root"] > div:last-child',
-    );
-    handle?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-
-    const findHandler = (event: string) =>
-      addSpy.mock.calls.find(([name]) => name === event)?.[1] as (
-        e: MouseEvent,
-      ) => void;
+    startDragFromHandle();
 
     // Ending the drag should make subsequent moves no-ops.
-    findHandler('mouseup')(new MouseEvent('mouseup'));
+    findWindowHandler(addSpy, 'mouseup')(new MouseEvent('mouseup'));
     globalThis.innerWidth = 1000;
-    findHandler('mousemove')(new MouseEvent('mousemove', { clientX: 400 }));
+    findWindowHandler(
+      addSpy,
+      'mousemove',
+    )(new MouseEvent('mousemove', { clientX: 400 }));
 
     expect(onWidthChange).not.toHaveBeenCalled();
 
     addSpy.mockRestore();
+  });
+
+  it('re-clamps and reports when the external width drops below the minimum', () => {
+    const onWidthChange = jest.fn();
+    const drawer = (drawerWidth: number) => (
+      <ResizableDrawer
+        isDrawerOpen
+        isResizable
+        minWidth={400}
+        drawerWidth={drawerWidth}
+        onWidthChange={onWidthChange}
+      >
+        <div>drawer content</div>
+      </ResizableDrawer>
+    );
+
+    // Initial width (500) is already within range, so nothing is reported.
+    const { rerender } = render(drawer(500));
+    expect(onWidthChange).not.toHaveBeenCalled();
+
+    // Dropping the external width below the minimum re-clamps to 400 and
+    // reports the corrected width back to the parent.
+    rerender(drawer(100));
+    expect(onWidthChange).toHaveBeenCalledWith(400);
   });
 });

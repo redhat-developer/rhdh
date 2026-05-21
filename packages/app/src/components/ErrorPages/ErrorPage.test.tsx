@@ -21,6 +21,15 @@ const renderErrorPage = async (props: ErrorPageProps) =>
   );
 
 describe('ErrorPage', () => {
+  const originalHistoryLength = window.history.length;
+
+  afterEach(() => {
+    Object.defineProperty(window.history, 'length', {
+      value: originalHistoryLength,
+      configurable: true,
+    });
+  });
+
   it('renders the status, message and additional info', async () => {
     await renderErrorPage({
       status: '500',
