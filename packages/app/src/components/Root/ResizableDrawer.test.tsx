@@ -63,4 +63,40 @@ describe('ResizableDrawer', () => {
 
     addSpy.mockRestore();
   });
+
+  it('stops resizing after mouse up', async () => {
+    const onWidthChange = jest.fn();
+    const addSpy = jest.spyOn(globalThis, 'addEventListener');
+
+    await renderInTestApp(
+      <ResizableDrawer
+        isDrawerOpen
+        isResizable
+        minWidth={400}
+        maxWidth={800}
+        onWidthChange={onWidthChange}
+      >
+        <div>drawer content</div>
+      </ResizableDrawer>,
+    );
+
+    const handle = document.querySelector(
+      '[class*="MuiBox-root"] > div:last-child',
+    );
+    handle?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+    const findHandler = (event: string) =>
+      addSpy.mock.calls.find(([name]) => name === event)?.[1] as (
+        e: MouseEvent,
+      ) => void;
+
+    // Ending the drag should make subsequent moves no-ops.
+    findHandler('mouseup')(new MouseEvent('mouseup'));
+    globalThis.innerWidth = 1000;
+    findHandler('mousemove')(new MouseEvent('mousemove', { clientX: 400 }));
+
+    expect(onWidthChange).not.toHaveBeenCalled();
+
+    addSpy.mockRestore();
+  });
 });

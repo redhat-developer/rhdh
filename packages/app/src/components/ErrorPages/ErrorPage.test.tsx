@@ -58,4 +58,18 @@ describe('ErrorPage', () => {
       screen.queryByRole('button', { name: 'app.errors.goBack' }),
     ).not.toBeInTheDocument();
   });
+
+  it('offers the go-back action for 404 errors when there is history', async () => {
+    // GoBackButton only renders when there is meaningful history to go back to.
+    Object.defineProperty(window.history, 'length', {
+      value: 3,
+      configurable: true,
+    });
+
+    await renderErrorPage({ status: '404', statusMessage: 'Not Found' });
+
+    expect(
+      screen.getByRole('button', { name: 'app.errors.goBack' }),
+    ).toBeInTheDocument();
+  });
 });
