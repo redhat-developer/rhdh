@@ -247,28 +247,22 @@ export class UIhelper {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
     await this.clickLink(
-      // TODO: RHDHBUGS-2552 - Strings not getting translated
-      // "My profile",
-      "My profile",
+      t["plugin.global-header"][lang]["profile.myProfile"],
     );
   }
 
   async goToSettingsPage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
-    // TODO: RHDHBUGS-2552 - Strings not getting translated
-    // The profile dropdown renders Settings as a menuitem, not an <a> link
     const settingsItem = this.page.getByRole("menuitem", {
-      name: "Settings",
+      name: t["plugin.global-header"][lang]["profile.settings"],
     });
     await expect(settingsItem).toBeVisible();
     await settingsItem.click();
   }
 
   async goToSelfServicePage() {
-    await this.clickLink({
-      ariaLabel: "Self-service",
-    });
+    await this.clickLink(t["catalog"][lang]["indexPage.createButtonTitle"]);
     await this.verifyHeading(t["rhdh"][lang]["menuItem.selfService"]);
   }
 

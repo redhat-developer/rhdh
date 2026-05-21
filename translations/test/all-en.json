@@ -29,7 +29,8 @@
   },
   "catalog": {
     "en": {
-      "indexPage.title": "{{orgName}} Catalog"
+      "indexPage.title": "{{orgName}} Catalog",
+      "indexPage.createButtonTitle": "Self-service"
     }
   },
   "scaffolder": {
@@ -72,6 +73,12 @@
       "signIn.providers.oidc.message": "Sign in using OIDC",
       "app.search.title": "Search",
       "catalog.entityPage.overview.title": "Overview"
+    }
+  },
+  "plugin.global-header": {
+    "en": {
+      "profile.settings": "Settings",
+      "profile.myProfile": "My profile"
     }
   }
 }
