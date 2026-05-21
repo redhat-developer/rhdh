@@ -148,9 +148,7 @@ const loadTestConfig = async (dynamicPlugins: any) => {
 
 const consoleSpy = jest.spyOn(console, 'warn');
 
-// TODO: https://issues.redhat.com/browse/RHIDP-3611
-// eslint-disable-next-line jest/no-disabled-tests
-describe.skip('DynamicRoot', () => {
+describe('DynamicRoot', () => {
   beforeEach(() => {
     removeScalprum();
     mockInitializeRemotePlugins.mockImplementation(
@@ -168,7 +166,10 @@ describe.skip('DynamicRoot', () => {
                     fooPluginTarget: createPlugin({
                       id: 'fooPluginTarget',
                       externalRoutes: {
-                        barTarget: createExternalRouteRef({ id: 'bar' }),
+                        barTarget: createExternalRouteRef({
+                          id: 'bar',
+                          optional: true,
+                        }),
                       },
                     }),
                     fooPluginApi: createApiFactory({
@@ -178,6 +179,9 @@ describe.skip('DynamicRoot', () => {
                       deps: {},
                       factory: () => ({}),
                     }),
+                    fooPluginAnalyticsApi: {
+                      fromConfig: () => ({ captureEvent: () => {} }),
+                    },
                     FooComponent: Fragment,
                     isFooConditionTrue: () => true,
                     isFooConditionFalse: () => false,
@@ -795,7 +799,9 @@ describe.skip('DynamicRoot', () => {
         };
         createAppSpy.mock.calls[0][0]?.bindRoutes?.({ bind: bindFunc });
         expect(bindResult).toEqual({
-          externalRoutes: { barTarget: createExternalRouteRef({ id: 'bar' }) },
+          externalRoutes: {
+            barTarget: createExternalRouteRef({ id: 'bar', optional: true }),
+          },
           targetRoutes: { barTarget: createRouteRef({ id: 'bar' }) },
         });
         expect(
@@ -846,7 +852,9 @@ describe.skip('DynamicRoot', () => {
         };
         createAppSpy.mock.calls[0][0]?.bindRoutes?.({ bind: bindFunc });
         expect(bindResult).toEqual({
-          externalRoutes: { barTarget: createExternalRouteRef({ id: 'bar' }) },
+          externalRoutes: {
+            barTarget: createExternalRouteRef({ id: 'bar', optional: true }),
+          },
           targetRoutes: { barTarget: createRouteRef({ id: 'bar' }) },
         });
       });
@@ -908,7 +916,11 @@ describe.skip('DynamicRoot', () => {
         expect(rendered.getByTestId('isLoadingFinished')).toBeInTheDocument();
         expect(createAppSpy).toHaveBeenCalled();
 
-        const resolvedApis = [...(createAppSpy.mock.calls[0][0]?.apis ?? [])];
+        // DynamicRoot always injects a framework translation API; exclude it
+        // so these assertions measure only the dynamic/custom APIs.
+        const resolvedApis = [
+          ...(createAppSpy.mock.calls[0][0]?.apis ?? []),
+        ].filter(apiFactory => apiFactory.api.id !== 'core.translation');
         expect(resolvedApis.length).toEqual(1);
         expect(resolvedApis[0].api.id).toEqual('plugin.foo.service');
       });
@@ -936,7 +948,11 @@ describe.skip('DynamicRoot', () => {
         expect(rendered.getByTestId('isLoadingFinished')).toBeInTheDocument();
         expect(createAppSpy).toHaveBeenCalled();
 
-        const resolvedApis = [...(createAppSpy.mock.calls[0][0]?.apis ?? [])];
+        // DynamicRoot always injects a framework translation API; exclude it
+        // so these assertions measure only the dynamic/custom APIs.
+        const resolvedApis = [
+          ...(createAppSpy.mock.calls[0][0]?.apis ?? []),
+        ].filter(apiFactory => apiFactory.api.id !== 'core.translation');
         expect(resolvedApis.length).toEqual(0);
       });
     } finally {
@@ -963,7 +979,11 @@ describe.skip('DynamicRoot', () => {
         expect(rendered.getByTestId('isLoadingFinished')).toBeInTheDocument();
         expect(createAppSpy).toHaveBeenCalled();
 
-        const resolvedApis = [...(createAppSpy.mock.calls[0][0]?.apis ?? [])];
+        // DynamicRoot always injects a framework translation API; exclude it
+        // so these assertions measure only the dynamic/custom APIs.
+        const resolvedApis = [
+          ...(createAppSpy.mock.calls[0][0]?.apis ?? []),
+        ].filter(apiFactory => apiFactory.api.id !== 'core.translation');
         expect(resolvedApis.length).toEqual(0);
       });
     } finally {
@@ -990,9 +1010,15 @@ describe.skip('DynamicRoot', () => {
         expect(rendered.getByTestId('isLoadingFinished')).toBeInTheDocument();
         expect(createAppSpy).toHaveBeenCalled();
 
-        const resolvedApis = [...(createAppSpy.mock.calls[0][0]?.apis ?? [])];
+        // DynamicRoot always injects a framework translation API; exclude it
+        // so these assertions measure only the dynamic/custom APIs.
+        const resolvedApis = [
+          ...(createAppSpy.mock.calls[0][0]?.apis ?? []),
+        ].filter(apiFactory => apiFactory.api.id !== 'core.translation');
         expect(resolvedApis.length).toEqual(1);
-        expect(resolvedApis[0].api.id).toEqual('plugin.foo.service');
+        // Analytics extensions are wrapped into a MultipleAnalyticsApi
+        // registered under analyticsApiRef ('core.analytics').
+        expect(resolvedApis[0].api.id).toEqual('core.analytics');
       });
     } finally {
       createAppSpy.mockRestore();
