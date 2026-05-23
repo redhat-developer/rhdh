@@ -603,7 +603,17 @@ export class KubeClient {
             condition.type === "PodScheduled" &&
             condition.status === "False"
           ) {
-            return `Pod ${podName} cannot be scheduled: ${condition.reason} - ${condition.message}`;
+            const msg = condition.message || "";
+            const isTransientPvc =
+              msg.includes("ephemeral volume") ||
+              msg.includes("persistentvolumeclaim");
+            if (isTransientPvc) {
+              console.log(
+                `Pod ${podName} waiting for PVC creation (transient): ${condition.reason} - ${msg}`,
+              );
+              return null;
+            }
+            return `Pod ${podName} cannot be scheduled: ${condition.reason} - ${msg}`;
           }
           if (
             condition.type === "Ready" &&
