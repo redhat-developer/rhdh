@@ -15,6 +15,8 @@ source "$DIR"/playwright-projects.sh
 # shellcheck source=.ci/pipelines/lib/schema-mode-env.sh
 source "$DIR"/lib/schema-mode-env.sh
 
+export INSTALL_METHOD=operator
+
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
 
@@ -102,7 +104,7 @@ run_operator_runtime_config_change_tests() {
     # Add RHDH_RUNTIME_URL to postgres-cred (rds-app-config.yaml references it for baseUrl).
     # configure_external_postgres_db creates postgres-cred with POSTGRES_* keys only.
     local runtime_url_b64
-    runtime_url_b64=$(echo -n "${runtime_url}" | base64 -w0)
+    runtime_url_b64=$(common::base64_encode "${runtime_url}")
     oc patch secret postgres-cred -n "${NAME_SPACE_RUNTIME}" \
       --type=json \
       -p "[{\"op\":\"add\",\"path\":\"/data/RHDH_RUNTIME_URL\",\"value\":\"${runtime_url_b64}\"}]"
@@ -127,7 +129,6 @@ run_operator_runtime_config_change_tests() {
     fi
   fi
 
-  export INSTALL_METHOD=operator
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
