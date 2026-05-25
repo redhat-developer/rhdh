@@ -94,7 +94,11 @@ run_operator_runtime_config_change_tests() {
   config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-runtime.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-runtime.yaml -n "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml" "true"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
+    log::info "SKIP_TESTS=true, skipping test execution for namespace: ${NAME_SPACE_RUNTIME}"
+  else
+    testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  fi
 }
 
 handle_ocp_operator() {

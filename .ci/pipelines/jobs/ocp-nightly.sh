@@ -83,7 +83,11 @@ run_runtime_config_change_tests() {
 
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   # Run tests - allow failures since schema-mode tests are opt-in
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
+    log::info "SKIP_TESTS=true, skipping test execution for namespace: ${NAME_SPACE_RUNTIME}"
+  else
+    testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  fi
 }
 
 run_sanity_plugins_check() {

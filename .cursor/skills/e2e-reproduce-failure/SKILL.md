@@ -13,7 +13,7 @@ Use this skill after deploying RHDH (via `e2e-deploy-rhdh`) when you need to ver
 ## Prerequisites
 
 - RHDH deployed and accessible (BASE_URL set)
-- Environment configured via `source e2e-tests/local-test-setup.sh <showcase|rbac>`
+- Environment configured via `source e2e-tests/local-test-setup.sh <showcase|showcase-rbac>`
 - Node.js 22 and Yarn available
 - Playwright browsers installed (`cd e2e-tests && yarn install && yarn playwright install chromium`)
 
@@ -26,7 +26,7 @@ Use this skill after deploying RHDH (via `e2e-deploy-rhdh`) when you need to ver
 source e2e-tests/local-test-setup.sh showcase
 
 # For RBAC tests (showcase-rbac, showcase-rbac-k8s, showcase-operator-rbac)
-source e2e-tests/local-test-setup.sh rbac
+source e2e-tests/local-test-setup.sh showcase-rbac
 ```
 
 This exports all required environment variables: `BASE_URL`, `K8S_CLUSTER_URL`, `K8S_CLUSTER_TOKEN`, and all Vault secrets.
@@ -66,7 +66,7 @@ Generate the `.env` file by passing the `--env` flag to `local-test-setup.sh`:
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh <showcase|rbac> --env
+source local-test-setup.sh <showcase|showcase-rbac> --env
 ```
 
 To regenerate (e.g. after token expiry), re-run the command above.

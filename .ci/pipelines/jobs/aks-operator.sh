@@ -28,11 +28,21 @@ handle_aks_operator() {
 
   prepare_operator "3"
 
-  initiate_aks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
-  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  cleanup_aks_deployment "${NAME_SPACE}"
+  local deployment_type="${DEPLOYMENT_TYPE:-all}"
 
-  initiate_rbac_aks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
-  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  cleanup_aks_deployment "${NAME_SPACE_RBAC}"
+  if [[ "$deployment_type" == "all" || "$deployment_type" == "showcase" ]]; then
+    initiate_aks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
+    testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+    if [[ "$deployment_type" == "all" ]]; then
+      cleanup_aks_deployment "${NAME_SPACE}"
+    fi
+  fi
+
+  if [[ "$deployment_type" == "all" || "$deployment_type" == "showcase-rbac" ]]; then
+    initiate_rbac_aks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
+    testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+    if [[ "$deployment_type" == "all" ]]; then
+      cleanup_aks_deployment "${NAME_SPACE_RBAC}"
+    fi
+  fi
 }

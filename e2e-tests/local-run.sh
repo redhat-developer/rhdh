@@ -24,6 +24,8 @@ Options:
   -t, --tag TAG_NAME      Image tag (e.g., next, latest, 1.5)
   -p, --pr PR_NUMBER      PR number (sets repo to rhdh-community/rhdh, tag to pr-<number>)
   -s, --skip-tests        Deploy only, skip running tests
+  -d, --deployment TYPE   Deployment type for K8s jobs: showcase, showcase-rbac, or all (default: all)
+                          When used with --skip-tests, only the selected deployment stays alive
   -h, --help              Show this help message
 
 Examples:
@@ -44,6 +46,12 @@ Examples:
 
   # Run on GKE
   ./local-run.sh -j periodic-ci-gke-helm-nightly -r rhdh/rhdh-hub-rhel9 -t next -s
+
+  # Deploy only showcase on AKS (for local headed debugging)
+  ./local-run.sh -j periodic-ci-aks-helm-nightly -r rhdh/rhdh-hub-rhel9 -t next -s -d showcase
+
+  # Deploy only RBAC on EKS
+  ./local-run.sh -j periodic-ci-eks-helm-nightly -r rhdh/rhdh-hub-rhel9 -t next -s -d showcase-rbac
 
 EOF
   exit 0
@@ -76,6 +84,10 @@ while [[ $# -gt 0 ]]; do
     -s | --skip-tests)
       CLI_SKIP_TESTS="true"
       shift
+      ;;
+    -d | --deployment)
+      CLI_DEPLOYMENT_TYPE="$2"
+      shift 2
       ;;
     -h | --help)
       show_help
@@ -162,6 +174,7 @@ if [[ -n "$CLI_IMAGE_REPO" && -n "$CLI_TAG_NAME" ]]; then
   IMAGE_REPO="$CLI_IMAGE_REPO"
   TAG_NAME="$CLI_TAG_NAME"
   SKIP_TESTS="${CLI_SKIP_TESTS:-false}"
+  DEPLOYMENT_TYPE="${CLI_DEPLOYMENT_TYPE:-all}"
   log::info "Using CLI flags (non-interactive mode)"
   echo ""
 fi
@@ -173,9 +186,10 @@ if [[ "$CLI_MODE" == "false" && -f "$RUN_CONFIG_FILE" ]]; then
   echo "----------------------------------------"
   # shellcheck source=/dev/null
   source "$RUN_CONFIG_FILE"
-  echo "  JOB_NAME:   $JOB_NAME"
-  echo "  IMAGE:      ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
-  echo "  SKIP_TESTS: $SKIP_TESTS"
+  echo "  JOB_NAME:        $JOB_NAME"
+  echo "  IMAGE:           ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
+  echo "  SKIP_TESTS:      $SKIP_TESTS"
+  echo "  DEPLOYMENT_TYPE: ${DEPLOYMENT_TYPE:-all}"
   echo "----------------------------------------"
   echo ""
   read -r -p "Use previous configuration? [Y/n]: " use_prev_choice
@@ -299,6 +313,47 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   echo "Image: ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
   echo ""
 
+  # Deployment type selection (only for K8s jobs)
+  IS_K8S_JOB="false"
+  if [[ "$JOB_NAME" == *aks* || "$JOB_NAME" == *eks* || "$JOB_NAME" == *gke* ]]; then
+    IS_K8S_JOB="true"
+  fi
+
+  if [[ "$IS_K8S_JOB" == "true" ]]; then
+    if [[ "$SKIP_TESTS" == "true" ]]; then
+      echo "Which deployment? (K8s jobs share a single ingress, pick one)"
+      echo "  1) Showcase (default)"
+      echo "  2) Showcase RBAC"
+      echo ""
+      read -r -p "Enter choice [1]: " deployment_choice
+      deployment_choice=${deployment_choice:-1}
+
+      case "$deployment_choice" in
+        1) DEPLOYMENT_TYPE="showcase" ;;
+        2) DEPLOYMENT_TYPE="showcase-rbac" ;;
+        *) DEPLOYMENT_TYPE="showcase" ;;
+      esac
+    else
+      echo "Which deployment? (K8s jobs share a single ingress)"
+      echo "  1) Both - sequential (default)"
+      echo "  2) Showcase only"
+      echo "  3) Showcase RBAC only"
+      echo ""
+      read -r -p "Enter choice [1]: " deployment_choice
+      deployment_choice=${deployment_choice:-1}
+
+      case "$deployment_choice" in
+        1) DEPLOYMENT_TYPE="all" ;;
+        2) DEPLOYMENT_TYPE="showcase" ;;
+        3) DEPLOYMENT_TYPE="showcase-rbac" ;;
+        *) DEPLOYMENT_TYPE="all" ;;
+      esac
+    fi
+    echo ""
+  else
+    DEPLOYMENT_TYPE="all"
+  fi
+
   # Save configuration for next run
   mkdir -p "$(dirname "$RUN_CONFIG_FILE")"
   cat > "$RUN_CONFIG_FILE" << EOF
@@ -309,6 +364,7 @@ IMAGE_REGISTRY="$IMAGE_REGISTRY"
 IMAGE_REPO="$IMAGE_REPO"
 TAG_NAME="$TAG_NAME"
 SKIP_TESTS="$SKIP_TESTS"
+DEPLOYMENT_TYPE="$DEPLOYMENT_TYPE"
 EOF
   echo "Configuration saved to: $RUN_CONFIG_FILE"
   echo ""
@@ -347,10 +403,11 @@ else
 fi
 
 log::section "Configuration Summary"
-log::info "JOB_NAME:    $JOB_NAME"
-log::info "PLATFORM:    $CONTAINER_PLATFORM"
-log::info "IMAGE:       ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
-log::info "SKIP_TESTS:  $SKIP_TESTS"
+log::info "JOB_NAME:        $JOB_NAME"
+log::info "PLATFORM:        $CONTAINER_PLATFORM"
+log::info "IMAGE:           ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
+log::info "SKIP_TESTS:      $SKIP_TESTS"
+log::info "DEPLOYMENT_TYPE: ${DEPLOYMENT_TYPE:-all}"
 echo ""
 if [[ "$CLI_MODE" == "false" ]]; then
   read -r -p "Press Enter to continue or Ctrl+C to abort..."
@@ -448,6 +505,7 @@ podman run -v "$WORK_DIR":/tmp/rhdh \
   -e IMAGE_REPO="$IMAGE_REPO" \
   -e TAG_NAME="$TAG_NAME" \
   -e SKIP_TESTS="$SKIP_TESTS" \
+  -e DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-all}" \
   "$RUNNER_IMAGE" \
   /bin/bash /tmp/container-init.sh 2>&1 | tee "$CONTAINER_LOG"
 CONTAINER_EXIT_CODE=${PIPESTATUS[0]}
@@ -483,9 +541,19 @@ fi
 if [[ "$SKIP_TESTS" == "true" ]]; then
   log::section "Next Steps: Run Tests Locally (headed mode)"
   echo ""
-  log::info "1. Setup environment variables:"
-  echo "   source local-test-setup.sh           # For Showcase tests"
-  echo "   source local-test-setup.sh rbac      # For RBAC tests"
+  if [[ "${DEPLOYMENT_TYPE:-all}" == "showcase" ]]; then
+    log::info "Deployed: Showcase"
+    log::info "1. Setup environment variables:"
+    echo "   source local-test-setup.sh showcase"
+  elif [[ "${DEPLOYMENT_TYPE:-all}" == "showcase-rbac" ]]; then
+    log::info "Deployed: Showcase RBAC"
+    log::info "1. Setup environment variables:"
+    echo "   source local-test-setup.sh showcase-rbac"
+  else
+    log::info "1. Setup environment variables:"
+    echo "   source local-test-setup.sh           # For Showcase tests"
+    echo "   source local-test-setup.sh showcase-rbac  # For RBAC tests"
+  fi
   echo ""
   log::info "2. Install dependencies and run tests:"
   echo "   yarn install"

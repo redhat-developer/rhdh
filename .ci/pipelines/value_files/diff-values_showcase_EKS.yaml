@@ -7,10 +7,27 @@ route:
   enabled: false
 global:
   host: $EKS_INSTANCE_DOMAIN_NAME
+  # Disable the Lightspeed sidecar container and plugins for K8s E2E tests.
+  # The sidecar crashes in CI (sqlite3.OperationalError: attempt to write a readonly database),
+  # making the pod not ready and the ingress return 503.
+  # The backend plugin triggers a "Zip bomb detected" error in the init container.
+  lightspeed:
+    enabled: false
   dynamic:
     plugins:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
+
+      # Lightspeed plugins disabled for K8s - backend plugin causes "Zip bomb detected" init container crash
+      # Disable both the chart's registry.access entries and the catalog index's ghcr.io entries
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed-backend:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:bs_1.49.4__2.6.3
+        disabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed-backend:bs_1.49.4__2.6.3
+        disabled: true
 
       # Orchestrator tests ignored on showcase-k8s
       - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'

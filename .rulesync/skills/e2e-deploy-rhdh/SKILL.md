@@ -75,7 +75,7 @@ Vault authentication, cluster service account setup, RHDH deployment, and test e
 
 ```bash
 cd e2e-tests
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag> [-s]
+./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag> [-s] [-d TYPE]
 ```
 
 **Example — OCP job** (deploy-only with `-s`):
@@ -84,17 +84,24 @@ cd e2e-tests
 ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4-20-helm-nightly -r rhdh-community/rhdh -t next -s
 ```
 
-**Example — K8s job (AKS/EKS/GKE)** (full execution, no `-s`):
+**Example — K8s job** (deploy showcase only, skip tests):
 ```bash
 cd e2e-tests
-./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-eks-helm-nightly -r rhdh-community/rhdh -t next
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-eks-helm-nightly -r rhdh-community/rhdh -t next -s -d showcase
+```
+
+**Example — K8s job** (deploy showcase-rbac only, skip tests):
+```bash
+cd e2e-tests
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-aks-helm-nightly -r rhdh-community/rhdh -t next -s -d showcase-rbac
 ```
 
 **Parameters:**
 - `-j / --job`: The **full Prow CI job name** extracted from the Prow URL. The `openshift-ci-tests.sh` handler uses bash glob patterns (like `*ocp*helm*nightly*`) to match, so the full name works correctly. Example: `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4-20-helm-nightly`
 - `-r / --repo`: Image repository (**required** for CLI mode — without it the script enters interactive mode)
 - `-t / --tag`: Image tag (e.g., `1.9`, `next`)
-- `-s / --skip-tests`: Deploy only, skip test execution. **OCP jobs only** — K8s jobs (AKS, EKS, GKE) do not support this flag and require the full execution pipeline
+- `-s / --skip-tests`: Deploy only, skip test execution. Works for all job types (OCP and K8s)
+- `-d / --deployment TYPE`: Deployment type for K8s jobs: `showcase`, `showcase-rbac`, or `all` (default: `all`). K8s jobs share a single ingress, so only one deployment can be active at a time. When set to a single deployment, the namespace is preserved after deployment for local test re-runs
 
 **WARNING**: Do NOT use shortened job names like `nightly-ocp-helm` for `-j` — these do not match the glob patterns in `openshift-ci-tests.sh`.
 
@@ -102,15 +109,22 @@ cd e2e-tests
 
 Refer to the `e2e-fix-workflow` rule for the release branch to image repo/tag mapping table.
 
-### Deploy-Only Mode (OCP Jobs Only)
+### Deploy-Only Mode
 
-For OCP jobs, deploy without running tests so you can run specific tests manually:
+Deploy without running tests so you can run specific tests manually:
 
+**OCP jobs** — deploy both showcase and RBAC (they use separate namespaces/routes):
 ```bash
 ./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <tag> -s
 ```
 
-**Note**: K8s jobs (AKS, EKS, GKE) do not support deploy-only mode. They require the full execution pipeline — run without `-s`.
+**K8s jobs (AKS, EKS, GKE)** — deploy a single deployment type (they share a single ingress):
+```bash
+./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <tag> -s -d showcase
+./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <tag> -s -d showcase-rbac
+```
+
+When `-d` is set to a single deployment type, the namespace and DNS records are preserved after deployment, allowing multiple local test re-runs against the same instance.
 
 ### What local-run.sh Does
 
@@ -128,13 +142,13 @@ For OCP jobs, deploy without running tests so you can run specific tests manuall
 
 ### Post-Deployment: Setting Up for Manual Testing
 
-After `local-run.sh` completes (with `-s` for OCP jobs, or after full execution for K8s jobs), set up the environment for headed Playwright testing:
+After `local-run.sh` completes with `-s` (deploy-only), set up the environment for headed Playwright testing:
 
 ```bash
-# Source the test setup (choose 'showcase' or 'rbac')
+# Source the test setup (choose 'showcase' or 'showcase-rbac')
 source e2e-tests/local-test-setup.sh showcase
 # or
-source e2e-tests/local-test-setup.sh rbac
+source e2e-tests/local-test-setup.sh showcase-rbac
 ```
 
 This exports:

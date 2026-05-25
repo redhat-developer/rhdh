@@ -90,7 +90,7 @@ Use Jira MCP tools to read the ticket. Extract:
 
 Refer to the **e2e-fix-workflow** rule for all mapping tables: job name to release branch, job name to platform and deployment method, job name to Playwright projects, release branch to image repo/tag, and job name to `local-run.sh` `-j` parameter. Those tables are the single source of truth and should not be duplicated here.
 
-When parsing a job name, apply those mapping tables to derive: release branch, platform, deployment method, Playwright projects, and `local-run.sh` flags (`-j`, `-r`, `-t`).
+When parsing a job name, apply those mapping tables to derive: release branch, platform, deployment method, Playwright projects, and `local-run.sh` flags (`-j`, `-r`, `-t`, `-s`, `-d`).
 
 ## Fields Requiring Build Log Access
 
@@ -104,7 +104,7 @@ Not all output fields can be derived from the Prow URL alone. The following tabl
 | Platform | Job name pattern match | Yes |
 | Deployment method | Job name pattern match | Yes |
 | Playwright projects | Job name pattern match | Yes |
-| `local-run.sh` flags (`-j`, `-r`, `-t`) | Job name + release branch | Yes |
+| `local-run.sh` flags (`-j`, `-r`, `-t`, `-s`, `-d`) | Job name + release branch | Yes |
 | GCS artifacts URL | Constructed from URL | Yes |
 | Test name | Build log Playwright output | No — requires build log |
 | Spec file | Build log Playwright output | No — requires build log |
@@ -190,10 +190,10 @@ Flag breakdown:
 | -s   | (no value)         | Deploy only, skip running tests                  |
 ```
 
-**K8s jobs (AKS, EKS, GKE)** — do **not** use `-s`; full execution is required:
+**K8s jobs (AKS, EKS, GKE)** — use `-s -d <type>` for deploy-only mode:
 ```
 cd e2e-tests
-./local-run.sh -j <full-job-name> -r <image-repo> -t <image-tag>
+./local-run.sh -j <full-job-name> -r <image-repo> -t <image-tag> -s -d showcase
 
 Flag breakdown:
 | Flag | Value              | Reason                                           |
@@ -201,4 +201,6 @@ Flag breakdown:
 | -j   | <full-job-name>    | Full Prow job name (matches glob in CI script)   |
 | -r   | <image-repo>       | Image repo derived from release branch <branch>  |
 | -t   | <image-tag>        | Image tag derived from release branch <branch>   |
+| -s   | (no value)         | Deploy only, skip running tests                  |
+| -d   | showcase           | Deploy type: showcase or showcase-rbac (K8s only) |
 ```

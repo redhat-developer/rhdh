@@ -31,5 +31,9 @@ handle_auth_providers() {
   export LOGS_FOLDER
 
   log::info "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
-  testing::run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}" "${PW_PROJECT_SHOWCASE_AUTH_PROVIDERS}" "https://${K8S_CLUSTER_ROUTER_BASE}" || true
+  if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
+    log::info "SKIP_TESTS=true, skipping test execution for auth-providers"
+  else
+    testing::run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}" "${PW_PROJECT_SHOWCASE_AUTH_PROVIDERS}" "https://${K8S_CLUSTER_ROUTER_BASE}" || true
+  fi
 }
