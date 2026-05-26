@@ -15,24 +15,29 @@ import {
 } from './types.js';
 import { isPlainObject } from './util.js';
 
-const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+/**
+ * Reject `__proto__`, `constructor`, and `prototype` keys.
+ *
+ * Inlined string-literal comparisons (rather than a shared `Set.has()` call)
+ * because CodeQL's `js/prototype-polluting-function` analysis only treats
+ * this specific pattern as an exhaustive prototype-pollution sanitizer when
+ * looking at the call site — a `Set` lookup gets flagged as "not guarded".
+ */
+function isForbiddenKey(key: string): boolean {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
 
 /**
  * Safely assign `value` to `dst[key]` without touching the prototype chain.
  *
  * Two layers of defense:
- *   1. The `FORBIDDEN_KEYS` guard rejects `__proto__`, `constructor`, and
- *      `prototype` outright — even though `Object.defineProperty` would not
- *      pollute the prototype (it bypasses the `__proto__` setter and writes
- *      an own descriptor), CodeQL pattern-matches the assignment in
- *      isolation, so the explicit guard here is what makes the analyzer
- *      happy and gives us defense-in-depth against future callers.
+ *   1. Reject the three prototype-pollution keys outright.
  *   2. `Object.defineProperty` over `dst[key] = value` so that even if a
  *      forbidden key somehow slipped through, the prototype chain is still
- *      not mutated.
+ *      not mutated (`defineProperty` bypasses the `__proto__` setter).
  */
 function safeSet(dst: Record<string, unknown>, key: string, value: unknown): void {
-  if (FORBIDDEN_KEYS.has(key)) return;
+  if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
   Object.defineProperty(dst, key, {
     value,
     writable: true,
@@ -55,7 +60,7 @@ export function deepMerge<T extends Record<string, unknown>>(
   prefix = '',
 ): T {
   for (const [key, value] of Object.entries(src)) {
-    if (FORBIDDEN_KEYS.has(key)) continue;
+    if (isForbiddenKey(key)) continue;
     const dstRecord = dst as Record<string, unknown>;
     if (isPlainObject(value)) {
       const existing = dstRecord[key];
@@ -257,7 +262,7 @@ function copyPluginFields(src: Plugin, dst: Plugin, skip: ReadonlyArray<string>)
   Object.assign(
     dst,
     Object.fromEntries(
-      Object.entries(src).filter(([k]) => !skipSet.has(k) && !FORBIDDEN_KEYS.has(k)),
+      Object.entries(src).filter(([k]) => !skipSet.has(k) && !isForbiddenKey(k)),
     ),
   );
 }
