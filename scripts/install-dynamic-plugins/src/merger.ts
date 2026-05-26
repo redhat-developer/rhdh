@@ -290,6 +290,157 @@ export type IncludePluginList = readonly [file: string, plugins: readonly Plugin
 
 type EntryState = { disabled: boolean; level: number };
 
+type PreMergeState = {
+  perEntryState: Map<string, EntryState>;
+  pathlessRegistries: Map<string, string>;
+  definedPaths: Map<string, Map<string, string>>;
+};
+
+function entryKeyOf(registry: string, path: string | null): string {
+  return `${registry} ${path ?? ''}`;
+}
+
+function logInvalidOciFormat(pkg: string, sourceFile: string, disabled: boolean): void {
+  if (!disabled) {
+    throw new InstallException(
+      `oci package '${pkg}' is not in the expected format '${OCI_PROTO}<registry>:<tag>' ` +
+        `or '${OCI_PROTO}<registry>@<algo>:<digest>' (optionally followed by '!<path>') in ${sourceFile} ` +
+        `where <registry> may include a port (e.g. host:5000/path) ` +
+        `and <algo> is one of ${RECOGNIZED_ALGORITHMS.join(', ')}`,
+    );
+  }
+  log(
+    `WARNING: Skipping disabled OCI plugin with invalid format: '${pkg}' in ${sourceFile}. ` +
+      `Expected format: '${OCI_PROTO}<registry>:<tag>' or '${OCI_PROTO}<registry>@<algo>:<digest>' ` +
+      `(optionally followed by '!<path>') where <registry> may include a port (e.g. host:5000/path) ` +
+      `and <algo> is one of ${RECOGNIZED_ALGORITHMS.join(', ')}`,
+  );
+}
+
+/**
+ * Record the entry's disabled state at its level. Returns `false` when the
+ * entry is a duplicate at the same level (warning logged for disabled-dups,
+ * throws for enabled-dups) so the caller can skip recording its path/source.
+ */
+function recordEntryState(
+  state: PreMergeState,
+  registry: string,
+  path: string | null,
+  level: number,
+  disabled: boolean,
+  pkg: string,
+  sourceFile: string,
+): boolean {
+  const key = entryKeyOf(registry, path);
+  const existing = state.perEntryState.get(key);
+  if (!existing) {
+    state.perEntryState.set(key, { disabled, level });
+    return true;
+  }
+  if (existing.level === level) {
+    const pathSuffix = path ? `!${path}` : '';
+    if (!disabled) {
+      throw new InstallException(
+        `Duplicate OCI plugin configuration for ${registry}${pathSuffix} ` +
+          `found at the same level in ${sourceFile}: ${pkg}`,
+      );
+    }
+    log(
+      `WARNING: Skipping duplicate disabled OCI plugin configuration for ${registry}${pathSuffix} in ${sourceFile}`,
+    );
+    return false;
+  }
+  if (level > existing.level) state.perEntryState.set(key, { disabled, level });
+  return true;
+}
+
+function recordRegistryPath(
+  state: PreMergeState,
+  registry: string,
+  path: string | null,
+  sourceFile: string,
+): void {
+  if (!path) {
+    state.pathlessRegistries.set(registry, sourceFile);
+    return;
+  }
+  let bucket = state.definedPaths.get(registry);
+  if (!bucket) {
+    bucket = new Map<string, string>();
+    state.definedPaths.set(registry, bucket);
+  }
+  bucket.set(path, sourceFile);
+}
+
+function processOciEntry(
+  state: PreMergeState,
+  plugin: PluginSpec,
+  level: number,
+  sourceFile: string,
+): void {
+  const pkg = plugin.package;
+  if (typeof pkg !== 'string' || !pkg.startsWith(OCI_PROTO)) return;
+  const disabled = plugin.disabled === true;
+  const parsed = tryParseOciRegistryAndPath(pkg);
+  if (!parsed) {
+    logInvalidOciFormat(pkg, sourceFile, disabled);
+    return;
+  }
+  const { registry, path } = parsed;
+  if (!recordEntryState(state, registry, path, level, disabled, pkg, sourceFile)) return;
+  recordRegistryPath(state, registry, path, sourceFile);
+}
+
+function formatExplicitPaths(bucket: Map<string, string>): string {
+  return [...bucket.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([p, src]) => `${p} (in ${src})`)
+    .join('\n  - ');
+}
+
+function validateAmbiguousPathless(state: PreMergeState): void {
+  for (const [registry, pathlessSource] of state.pathlessRegistries) {
+    const bucket = state.definedPaths.get(registry);
+    if (!bucket || bucket.size <= 1) continue;
+    const formatted = formatExplicitPaths(bucket);
+    const pathlessState = state.perEntryState.get(entryKeyOf(registry, null));
+    if (pathlessState?.disabled) {
+      log(
+        `WARNING: Skipping disabled ambiguous path-less OCI reference for ${registry} in ${pathlessSource}: ` +
+          `multiple path-specific entries exist:\n  - ${formatted}\n` +
+          `Cannot use path-less syntax for multi-plugin images. ` +
+          `Please specify a !<plugin-path> suffix for the plugin`,
+      );
+      continue;
+    }
+    throw new InstallException(
+      `Ambiguous path-less OCI reference for ${registry} in ${pathlessSource}: ` +
+        `multiple path-specific entries exist:\n  - ${formatted}\n` +
+        `Cannot use path-less syntax for multi-plugin images. ` +
+        `Please specify a !<plugin-path> suffix for the plugin.`,
+    );
+  }
+}
+
+function effectiveRegistryDisabled(state: PreMergeState, registry: string): boolean {
+  const pathlessState = state.perEntryState.get(entryKeyOf(registry, null));
+  if (!pathlessState) return false;
+  const bucket = state.definedPaths.get(registry);
+  if (bucket?.size !== 1) return pathlessState.disabled;
+  const singlePath = bucket.keys().next().value as string;
+  const definedState = state.perEntryState.get(entryKeyOf(registry, singlePath));
+  if (definedState && definedState.level > pathlessState.level) return definedState.disabled;
+  return pathlessState.disabled;
+}
+
+function computeDisabledRegistries(state: PreMergeState): Set<string> {
+  const out = new Set<string>();
+  for (const registry of state.pathlessRegistries.keys()) {
+    if (effectiveRegistryDisabled(state, registry)) out.add(registry);
+  }
+  return out;
+}
+
 /**
  * Pre-merge pass that walks every OCI plugin entry from the included files
  * (level 0) and the main config (level 1) and returns the set of OCI
@@ -315,115 +466,18 @@ export function preMergeOciDisabledState(
   mainPlugins: ReadonlyArray<PluginSpec>,
   mainConfigFile: string,
 ): Set<string> {
-  const perEntryState = new Map<string, EntryState>();
-  const pathlessRegistries = new Map<string, string>();
-  const definedPaths = new Map<string, Map<string, string>>();
-
-  const keyOf = (registry: string, path: string | null): string =>
-    `${registry} ${path ?? ''}`;
-
-  const processEntry = (plugin: PluginSpec, level: number, sourceFile: string): void => {
-    const pkg = plugin.package;
-    if (typeof pkg !== 'string' || !pkg.startsWith(OCI_PROTO)) return;
-    const disabled = plugin.disabled === true;
-    const parsed = tryParseOciRegistryAndPath(pkg);
-    if (!parsed) {
-      if (disabled) {
-        log(
-          `WARNING: Skipping disabled OCI plugin with invalid format: '${pkg}' in ${sourceFile}. ` +
-            `Expected format: '${OCI_PROTO}<registry>:<tag>' or '${OCI_PROTO}<registry>@<algo>:<digest>' ` +
-            `(optionally followed by '!<path>') where <registry> may include a port (e.g. host:5000/path) ` +
-            `and <algo> is one of ${RECOGNIZED_ALGORITHMS.join(', ')}`,
-        );
-        return;
-      }
-      throw new InstallException(
-        `oci package '${pkg}' is not in the expected format '${OCI_PROTO}<registry>:<tag>' ` +
-          `or '${OCI_PROTO}<registry>@<algo>:<digest>' (optionally followed by '!<path>') in ${sourceFile} ` +
-          `where <registry> may include a port (e.g. host:5000/path) ` +
-          `and <algo> is one of ${RECOGNIZED_ALGORITHMS.join(', ')}`,
-      );
-    }
-    const { registry, path } = parsed;
-    const entryKey = keyOf(registry, path);
-    const existing = perEntryState.get(entryKey);
-    if (!existing) {
-      perEntryState.set(entryKey, { disabled, level });
-    } else if (existing.level === level) {
-      const pathSuffix = path ? `!${path}` : '';
-      if (disabled) {
-        log(
-          `WARNING: Skipping duplicate disabled OCI plugin configuration for ${registry}${pathSuffix} in ${sourceFile}`,
-        );
-        return;
-      }
-      throw new InstallException(
-        `Duplicate OCI plugin configuration for ${registry}${pathSuffix} ` +
-          `found at the same level in ${sourceFile}: ${pkg}`,
-      );
-    } else if (level > existing.level) {
-      perEntryState.set(entryKey, { disabled, level });
-    }
-
-    if (path) {
-      let bucket = definedPaths.get(registry);
-      if (!bucket) {
-        bucket = new Map<string, string>();
-        definedPaths.set(registry, bucket);
-      }
-      bucket.set(path, sourceFile);
-    } else {
-      pathlessRegistries.set(registry, sourceFile);
-    }
+  const state: PreMergeState = {
+    perEntryState: new Map(),
+    pathlessRegistries: new Map(),
+    definedPaths: new Map(),
   };
-
   for (const [file, plugins] of includePluginLists) {
-    for (const plugin of plugins) processEntry(plugin, 0, file);
+    for (const plugin of plugins) processOciEntry(state, plugin, 0, file);
   }
-  for (const plugin of mainPlugins) processEntry(plugin, 1, mainConfigFile);
+  for (const plugin of mainPlugins) processOciEntry(state, plugin, 1, mainConfigFile);
 
-  for (const [registry, pathlessSource] of pathlessRegistries) {
-    const bucket = definedPaths.get(registry);
-    if (!bucket || bucket.size <= 1) continue;
-    const formatted = [...bucket.entries()]
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([p, src]) => `${p} (in ${src})`)
-      .join('\n  - ');
-    const pathlessState = perEntryState.get(keyOf(registry, null));
-    if (pathlessState?.disabled) {
-      log(
-        `WARNING: Skipping disabled ambiguous path-less OCI reference for ${registry} in ${pathlessSource}: ` +
-          `multiple path-specific entries exist:\n  - ${formatted}\n` +
-          `Cannot use path-less syntax for multi-plugin images. ` +
-          `Please specify a !<plugin-path> suffix for the plugin`,
-      );
-      continue;
-    }
-    throw new InstallException(
-      `Ambiguous path-less OCI reference for ${registry} in ${pathlessSource}: ` +
-        `multiple path-specific entries exist:\n  - ${formatted}\n` +
-        `Cannot use path-less syntax for multi-plugin images. ` +
-        `Please specify a !<plugin-path> suffix for the plugin.`,
-    );
-  }
-
-  const disabledRegistries = new Set<string>();
-  for (const registry of pathlessRegistries.keys()) {
-    const pathlessState = perEntryState.get(keyOf(registry, null));
-    if (!pathlessState) continue;
-    let effectiveDisabled = pathlessState.disabled;
-    const bucket = definedPaths.get(registry);
-    if (bucket && bucket.size === 1) {
-      const singlePath = bucket.keys().next().value as string;
-      const definedState = perEntryState.get(keyOf(registry, singlePath));
-      if (definedState && definedState.level > pathlessState.level) {
-        effectiveDisabled = definedState.disabled;
-      }
-    }
-    if (effectiveDisabled) disabledRegistries.add(registry);
-  }
-
-  return disabledRegistries;
+  validateAmbiguousPathless(state);
+  return computeDisabledRegistries(state);
 }
 
 /**

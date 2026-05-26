@@ -222,12 +222,12 @@ export function parseExtraCatalogIndexImages(raw: string): Array<[name: string, 
     let name: string;
     let imageRef: string;
     const eq = entry.indexOf('=');
-    if (eq !== -1) {
-      name = entry.slice(0, eq).trim();
-      imageRef = entry.slice(eq + 1).trim();
-    } else {
+    if (eq === -1) {
       imageRef = entry;
       name = imageRefToSubdirectory(imageRef);
+    } else {
+      name = entry.slice(0, eq).trim();
+      imageRef = entry.slice(eq + 1).trim();
     }
     if (!imageRef) {
       log(`WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with empty image reference: '${entry}'`);

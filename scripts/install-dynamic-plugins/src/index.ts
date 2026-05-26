@@ -19,7 +19,6 @@ import { log } from './log.js';
 import {
   deepMerge,
   filterDisabledOciPlugins,
-  type IncludePluginList,
   mergePlugin,
   preMergeOciDisabledState,
 } from './merger.js';
@@ -200,23 +199,23 @@ async function loadAllPlugins(
     if (!Array.isArray(plugins)) {
       throw new InstallException(`${inc} must contain a 'plugins' list (got ${typeof plugins})`);
     }
-    includeLists.push([inc, plugins as PluginSpec[]]);
+    includeLists.push([inc, plugins]);
   }
-  const mainPlugins = (content.plugins ?? []) as PluginSpec[];
+  const mainPlugins = content.plugins ?? [];
 
   const disabledRegistries = preMergeOciDisabledState(
-    includeLists as ReadonlyArray<IncludePluginList>,
+    includeLists,
     mainPlugins,
     configFileAbs,
   );
 
   for (const [inc, plugins] of includeLists) {
     for (const plugin of filterDisabledOciPlugins(plugins, disabledRegistries)) {
-      await mergePlugin(plugin as Plugin, allPlugins, inc, /* level */ 0, imageCache);
+      await mergePlugin(plugin, allPlugins, inc, /* level */ 0, imageCache);
     }
   }
   for (const plugin of filterDisabledOciPlugins(mainPlugins, disabledRegistries)) {
-    await mergePlugin(plugin as Plugin, allPlugins, configFileAbs, /* level */ 1, imageCache);
+    await mergePlugin(plugin, allPlugins, configFileAbs, /* level */ 1, imageCache);
   }
 
   for (const p of Object.values(allPlugins)) {
