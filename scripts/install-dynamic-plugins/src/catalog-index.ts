@@ -151,6 +151,11 @@ export async function extractExtraCatalogIndex(
   parentDir: string,
   previouslyUsedBy: string | null,
 ): Promise<void> {
+  if (!isSafeSubdirectoryName(subdirectory)) {
+    throw new InstallException(
+      `Refusing to extract extra catalog index into unsafe subdirectory '${subdirectory}'`,
+    );
+  }
   log(`\n======= Extracting extra catalog index '${subdirectory}' from ${image}`);
   if (previouslyUsedBy) {
     log(
@@ -251,9 +256,8 @@ export function parseExtraCatalogIndexImages(raw: string): Array<[name: string, 
  * defensive check applied to plugin paths during tar extraction.
  */
 function isSafeSubdirectoryName(name: string): boolean {
-  if (!name) return false;
-  if (name === '.' || name === '..') return false;
-  return !/[/\\]/.test(name) && !name.split(/[/\\]/).includes('..');
+  if (!name || name === '.' || name === '..') return false;
+  return !/[/\\]/.test(name);
 }
 
 export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {

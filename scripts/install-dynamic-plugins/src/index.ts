@@ -1,4 +1,4 @@
-import { accessSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -28,8 +28,8 @@ import {
   CONFIG_HASH_FILE,
   DPDY_FILENAME,
   type DynamicPluginsConfig,
+  effectivePullPolicy,
   GLOBAL_CONFIG_FILENAME,
-  LATEST_TAG_MARKER,
   LOCK_FILENAME,
   OCI_PROTO,
   type Plugin,
@@ -42,12 +42,12 @@ import { fileExists, isPlainObject } from './util.js';
 const CONFIG_FILE = 'dynamic-plugins.yaml';
 
 async function main(): Promise<void> {
-  const argv = process.argv.slice(2);
-  if (argv.length < 1) {
+  const [rootArg] = process.argv.slice(2);
+  if (!rootArg) {
     process.stderr.write(`Usage: install-dynamic-plugins <dynamic-plugins-root>\n`);
     process.exit(1);
   }
-  const root = path.resolve(argv[0] as string);
+  const root = path.resolve(rootArg);
   const lockPath = path.join(root, LOCK_FILENAME);
   registerLockCleanup(lockPath);
   await fs.mkdir(root, { recursive: true });
@@ -291,7 +291,7 @@ function categorize(allPlugins: PluginMap): Categorized {
     }
     if (plugin.package.startsWith('./')) {
       const localPath = path.join(process.cwd(), plugin.package.slice(2));
-      if (existsSyncSafe(localPath)) npm.push(plugin);
+      if (existsSync(localPath)) npm.push(plugin);
       else skipped.push(plugin);
       continue;
     }
@@ -496,10 +496,7 @@ function definitelyNoOp(
 ): plugin is Plugin & { plugin_hash: string } {
   if (!plugin.plugin_hash || !installed.has(plugin.plugin_hash)) return false;
   if (plugin.forceDownload) return false;
-  const isLatest = plugin.package.includes(LATEST_TAG_MARKER);
-  const pullPolicy =
-    plugin.pullPolicy ?? (isLatest ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT);
-  return pullPolicy !== PullPolicy.ALWAYS;
+  return effectivePullPolicy(plugin) !== PullPolicy.ALWAYS;
 }
 
 async function cleanupRemoved(root: string, installed: Map<string, string>): Promise<void> {
@@ -528,15 +525,6 @@ async function readInstalledPluginHashes(root: string): Promise<Map<string, stri
     }
   }
   return installed;
-}
-
-function existsSyncSafe(filePath: string): boolean {
-  try {
-    accessSync(filePath);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 // Only run main() when invoked directly (CLI or esbuild's CJS bundle entry),

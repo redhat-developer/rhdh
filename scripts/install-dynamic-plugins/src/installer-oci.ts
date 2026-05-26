@@ -6,12 +6,27 @@ import { log } from './log.js';
 import { extractOciPlugin } from './tar-extract.js';
 import {
   CONFIG_HASH_FILE,
+  effectivePullPolicy,
   IMAGE_HASH_FILE,
-  LATEST_TAG_MARKER,
   type Plugin,
   PullPolicy,
 } from './types.js';
 import { fileExists, markAsFresh } from './util.js';
+
+/**
+ * Split an OCI package spec into `<image-part>!<plugin-path>`. Uses
+ * `indexOf` so plugin paths containing `!` (legal per the OCI grammar) are
+ * preserved on the right side instead of being silently truncated by
+ * `String#split`.
+ */
+function splitOciPackage(pkg: string): { imagePart: string; pluginPath: string } | null {
+  const bang = pkg.indexOf('!');
+  if (bang === -1) return null;
+  const imagePart = pkg.slice(0, bang);
+  const pluginPath = pkg.slice(bang + 1);
+  if (!imagePart || !pluginPath) return null;
+  return { imagePart, pluginPath };
+}
 
 export type OciInstallResult = {
   /** The installed plugin's directory name (relative to destination), or null when skipped. */
@@ -39,7 +54,7 @@ export async function installOciPlugin(
   }
   const pkg = plugin.package;
   const config: Record<string, unknown> = plugin.pluginConfig ?? {};
-  const pullPolicy = resolvePullPolicy(plugin, pkg);
+  const pullPolicy = effectivePullPolicy(plugin);
 
   if (await isAlreadyInstalled(pkg, hash, pullPolicy, destination, imageCache, installed)) {
     installed.delete(hash);
@@ -49,10 +64,11 @@ export async function installOciPlugin(
   if (!plugin.version) {
     throw new InstallException(`No version for ${pkg}`);
   }
-  const [imagePart, pluginPath] = pkg.split('!');
-  if (!pluginPath || !imagePart) {
+  const parts = splitOciPackage(pkg);
+  if (!parts) {
     throw new InstallException(`OCI package ${pkg} missing !plugin-path suffix`);
   }
+  const { imagePart, pluginPath } = parts;
 
   const tarball = await imageCache.getTarball(imagePart);
   await extractOciPlugin(tarball, pluginPath, destination);
@@ -64,11 +80,6 @@ export async function installOciPlugin(
 
   markAsFresh(installed, pluginPath);
   return { pluginPath, pluginConfig: config };
-}
-
-function resolvePullPolicy(plugin: Plugin, pkg: string): PullPolicy {
-  if (plugin.pullPolicy) return plugin.pullPolicy;
-  return pkg.includes(LATEST_TAG_MARKER) ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT;
 }
 
 /**
@@ -98,9 +109,9 @@ async function isAlreadyInstalled(
   if (!(await fileExists(digestFile))) return false;
 
   const localDigest = (await fs.readFile(digestFile, 'utf8')).trim();
-  const imagePart = pkg.split('!')[0];
-  if (!imagePart) return false;
-  const remoteDigest = await imageCache.getDigest(imagePart);
+  const parts = splitOciPackage(pkg);
+  if (!parts) return false;
+  const remoteDigest = await imageCache.getDigest(parts.imagePart);
   if (localDigest !== remoteDigest) return false;
 
   log(`\t==> ${pkg}: digest unchanged, skipping`);

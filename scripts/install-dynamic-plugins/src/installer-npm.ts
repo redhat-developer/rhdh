@@ -53,6 +53,11 @@ export async function installNpmPlugin(
 
   log('\t==> Running npm pack');
   const archiveName = await npmPack(actualPkg, destination);
+  if (!isSafeArchiveName(archiveName)) {
+    throw new InstallException(
+      `npm pack returned an unsafe filename for ${pkg}: '${archiveName}'`,
+    );
+  }
   const archive = path.join(destination, archiveName);
 
   if (verifyRemoteIntegrity) {
@@ -96,12 +101,28 @@ async function npmPack(actualPkg: string, destination: string): Promise<string> 
     throw new InstallException(`npm pack produced no archives for ${actualPkg}`);
   }
   const first = parsed[0];
-  if (
-    !first ||
-    typeof first !== 'object' ||
-    typeof (first as { filename?: unknown }).filename !== 'string'
-  ) {
+  if (!isNpmPackJsonEntry(first)) {
     throw new InstallException(`npm pack output missing 'filename' for ${actualPkg}`);
   }
-  return (first as { filename: string }).filename;
+  return first.filename;
+}
+
+function isNpmPackJsonEntry(value: unknown): value is { filename: string } {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    typeof (value as { filename?: unknown }).filename === 'string'
+  );
+}
+
+/**
+ * Reject any filename that would let `npm pack` escape `destination` once
+ * passed to `path.join` — directory separators, leading `..`, or empty.
+ * `npm pack` is expected to emit a flat `<name>-<version>.tgz`, so any
+ * non-flat name is treated as adversarial.
+ */
+function isSafeArchiveName(name: string): boolean {
+  if (!name || name === '.' || name === '..') return false;
+  if (name.startsWith('..')) return false;
+  return !/[/\\]/.test(name);
 }

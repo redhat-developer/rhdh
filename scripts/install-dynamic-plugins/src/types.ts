@@ -75,3 +75,14 @@ export function parseMaxEntrySize(raw: string | undefined = process.env.MAX_ENTR
 export const MAX_ENTRY_SIZE = parseMaxEntrySize();
 export const RECOGNIZED_ALGORITHMS = ['sha512', 'sha384', 'sha256'] as const;
 export type Algorithm = (typeof RECOGNIZED_ALGORITHMS)[number];
+
+/**
+ * Resolve the effective `pullPolicy` for an OCI plugin: an explicit policy
+ * wins, otherwise the convention is `Always` for `:latest!` images and
+ * `IfNotPresent` for everything else. Shared by the install pipeline and the
+ * "definitely no-op" pre-pass so the `:latest!` semantics live in one place.
+ */
+export function effectivePullPolicy(plugin: { pullPolicy?: PullPolicy; package: string }): PullPolicy {
+  if (plugin.pullPolicy) return plugin.pullPolicy;
+  return plugin.package.includes(LATEST_TAG_MARKER) ? PullPolicy.ALWAYS : PullPolicy.IF_NOT_PRESENT;
+}

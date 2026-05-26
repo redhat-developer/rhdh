@@ -59,25 +59,32 @@ export async function mapConcurrent<Item, T>(
   );
 }
 
+/** Conservative upper bound for parallel `skopeo` calls. */
+const MAX_OCI_WORKERS = 6;
+
+/**
+ * Lower cap for NPM installs because `npm pack` hits the public registry
+ * and shares a single CLI cache (`~/.npm/_cacache`) — excessive concurrency
+ * triggers throttling and cache contention without a wall-clock benefit.
+ */
+const MAX_NPM_WORKERS = 3;
+
 /**
  * Worker count selection, honouring `DYNAMIC_PLUGINS_WORKERS` env and cgroup
  * CPU limits (via `availableParallelism`). Conservative default for OpenShift
- * init containers: half of available CPUs, capped at 6.
+ * init containers: half of available CPUs, capped at `MAX_OCI_WORKERS`.
  */
 export function getWorkers(): number {
-  return resolveWorkers(process.env.DYNAMIC_PLUGINS_WORKERS, /* cap */ 6);
+  return resolveWorkers(process.env.DYNAMIC_PLUGINS_WORKERS, MAX_OCI_WORKERS);
 }
 
 /**
- * Worker count for concurrent NPM installs. Capped lower than OCI (default 3)
- * because `npm pack` hits the public NPM registry and shares a single CLI
- * cache (`~/.npm/_cacache`) — too much concurrency triggers throttling and
- * cache contention without a wall-clock benefit. Override via
+ * Worker count for concurrent NPM installs. Override via
  * `DYNAMIC_PLUGINS_NPM_WORKERS` (set to `1` to restore the original
  * sequential behaviour).
  */
 export function getNpmWorkers(): number {
-  return resolveWorkers(process.env.DYNAMIC_PLUGINS_NPM_WORKERS, /* cap */ 3);
+  return resolveWorkers(process.env.DYNAMIC_PLUGINS_NPM_WORKERS, MAX_NPM_WORKERS);
 }
 
 function resolveWorkers(rawEnv: string | undefined, cap: number): number {

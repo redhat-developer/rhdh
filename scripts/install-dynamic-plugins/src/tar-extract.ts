@@ -32,8 +32,10 @@ export async function extractOciPlugin(
   await fs.mkdir(destAbs, { recursive: true });
 
   // Boundary-safe path prefix — prevents `plugin-one` from matching sibling
-  // directories with the same prefix (e.g., `plugin-one-evil/`).
-  const pluginPathBoundary = pluginPath.endsWith('/') ? pluginPath : pluginPath + '/';
+  // directories with the same prefix (e.g., `plugin-one-evil/`). Uses POSIX
+  // semantics because `node-tar` always emits forward-slash entry paths
+  // regardless of host OS.
+  const pluginPathBoundary = pluginPath.endsWith('/') ? pluginPath : `${pluginPath}/`;
 
   // Errors thrown inside `tar` filter callbacks are sometimes swallowed by the
   // parser; capture them in a closure and re-throw after extraction completes.

@@ -259,12 +259,11 @@ function doMerge(
 
 function copyPluginFields(src: Plugin, dst: Plugin, skip: ReadonlyArray<string>): void {
   const skipSet = new Set<string>(skip);
-  Object.assign(
-    dst,
-    Object.fromEntries(
-      Object.entries(src).filter(([k]) => !skipSet.has(k) && !isForbiddenKey(k)),
-    ),
-  );
+  const dstRecord = dst as unknown as Record<string, unknown>;
+  for (const [k, v] of Object.entries(src)) {
+    if (skipSet.has(k) || isForbiddenKey(k)) continue;
+    safeSet(dstRecord, k, v);
+  }
 }
 
 function isEqual(a: unknown, b: unknown): boolean {
@@ -286,7 +285,7 @@ function isObjectEqual(a: Record<string, unknown>, b: Record<string, unknown>): 
   return keysA.every(k => isEqual(a[k], b[k]));
 }
 
-export type IncludePluginList = readonly [file: string, plugins: readonly PluginSpec[]];
+type IncludePluginList = readonly [file: string, plugins: readonly PluginSpec[]];
 
 type EntryState = { disabled: boolean; level: number };
 
@@ -427,7 +426,8 @@ function effectiveRegistryDisabled(state: PreMergeState, registry: string): bool
   if (!pathlessState) return false;
   const bucket = state.definedPaths.get(registry);
   if (bucket?.size !== 1) return pathlessState.disabled;
-  const singlePath = bucket.keys().next().value as string;
+  const [singlePath] = bucket.keys();
+  if (singlePath === undefined) return pathlessState.disabled;
   const definedState = state.perEntryState.get(entryKeyOf(registry, singlePath));
   if (definedState && definedState.level > pathlessState.level) return definedState.disabled;
   return pathlessState.disabled;

@@ -251,4 +251,17 @@ EOF
       warn.mockRestore();
     }
   });
+
+  it.each(['', '.', '..', 'foo/bar', 'foo\\bar'])(
+    'refuses to extract into unsafe subdirectory %p (defense in depth)',
+    async badName => {
+      const stage = await stageLayer('extensions', 'plugin.yaml', 'kind: Plugin\n');
+      const binPath = await makeFakeSkopeo(stage);
+      rmSync(stage, { recursive: true, force: true });
+      const skopeo = new Skopeo(binPath);
+      await expect(
+        extractExtraCatalogIndex(skopeo, 'quay.io/x:1', badName, join(workRoot, 'extra'), null),
+      ).rejects.toThrow(/unsafe subdirectory/);
+    },
+  );
 });

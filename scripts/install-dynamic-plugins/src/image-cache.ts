@@ -63,8 +63,15 @@ export class OciImageCache {
     const manifest = (await this.skopeo.inspectRaw(dockerUrl)) as OciManifest;
     const annotation = manifest.annotations?.['io.backstage.dynamic-packages'];
     if (!annotation) return [];
-    const decoded = Buffer.from(annotation, 'base64').toString('utf8');
-    const entries = JSON.parse(decoded) as unknown;
+    let entries: unknown;
+    try {
+      const decoded = Buffer.from(annotation, 'base64').toString('utf8');
+      entries = JSON.parse(decoded);
+    } catch (err) {
+      throw new InstallException(
+        `Could not decode 'io.backstage.dynamic-packages' annotation on ${image}: ${(err as Error).message}`,
+      );
+    }
     if (!Array.isArray(entries)) return [];
     const paths: string[] = [];
     for (const entry of entries) {
