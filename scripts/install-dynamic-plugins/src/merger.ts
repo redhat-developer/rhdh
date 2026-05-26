@@ -36,7 +36,7 @@ function isForbiddenKey(key: string): boolean {
  *      forbidden key somehow slipped through, the prototype chain is still
  *      not mutated (`defineProperty` bypasses the `__proto__` setter).
  */
-function safeSet(dst: Record<string, unknown>, key: string, value: unknown): void {
+function safeSet<T extends object>(dst: T, key: string, value: unknown): void {
   if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
   Object.defineProperty(dst, key, {
     value,
@@ -89,7 +89,7 @@ export async function mergePluginsFromFile(
   level: number,
   imageCache?: OciImageCache,
 ): Promise<void> {
-  const content = parseYaml(await fs.readFile(configFile, 'utf8')) as unknown;
+  const content = parseYaml(await fs.readFile(configFile, 'utf8'));
   if (!isPlainObject(content)) {
     throw new InstallException(`${configFile} must contain a mapping`);
   }
@@ -259,10 +259,9 @@ function doMerge(
 
 function copyPluginFields(src: Plugin, dst: Plugin, skip: ReadonlyArray<string>): void {
   const skipSet = new Set<string>(skip);
-  const dstRecord = dst as unknown as Record<string, unknown>;
   for (const [k, v] of Object.entries(src)) {
     if (skipSet.has(k) || isForbiddenKey(k)) continue;
-    safeSet(dstRecord, k, v);
+    safeSet(dst, k, v);
   }
 }
 
