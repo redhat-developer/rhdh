@@ -175,9 +175,13 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         working-directory: scripts/install-dynamic-plugins
         run: |
+          mkdir -p "$RUNNER_TEMP/test-results"
           npm ci --no-audit --no-fund
           npm run tsc
-          npm run test:coverage
+          npx vitest run --coverage \
+            --reporter=default \
+            --reporter=junit \
+            --outputFile.junit="$RUNNER_TEMP/test-results/install-dynamic-plugins.junit.xml"
 
       - name: Upload install-dynamic-plugins coverage to Codecov
         if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
