@@ -5,7 +5,7 @@ import * as tar from 'tar';
 import { InstallException } from '../src/errors';
 import { extractNpmPackage, extractOciPlugin } from '../src/tar-extract';
 
-const PAYLOAD_LIMIT = 20_000_000;
+const PAYLOAD_LIMIT = 40_000_000;
 
 async function makeTarball(
   archivePath: string,

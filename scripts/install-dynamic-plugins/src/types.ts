@@ -59,7 +59,7 @@ export const DPDY_FILENAME = 'dynamic-plugins.default.yaml';
 export const LOCK_FILENAME = 'install-dynamic-plugins.lock';
 export const GLOBAL_CONFIG_FILENAME = 'app-config.dynamic-plugins.yaml';
 
-const DEFAULT_MAX_ENTRY_SIZE = 20_000_000;
+const DEFAULT_MAX_ENTRY_SIZE = 40_000_000;
 
 /**
  * Parse the MAX_ENTRY_SIZE env var, falling back to the default when unset,

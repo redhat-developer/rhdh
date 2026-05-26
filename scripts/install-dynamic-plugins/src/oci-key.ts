@@ -3,7 +3,7 @@ import { log } from './log.js';
 import { type OciImageCache } from './image-cache.js';
 import { OCI_PROTO, RECOGNIZED_ALGORITHMS } from './types.js';
 
-const OCI_REGEX = new RegExp(
+export const OCI_REGEX = new RegExp(
   '^(' +
     escape(OCI_PROTO) +
     String.raw`[^\s/:@]+` + // registry host
@@ -104,6 +104,21 @@ async function autoDetectPluginPath(
   const resolved = paths[0] as string;
   log(`\n======= Auto-resolving OCI package ${fullImage} to use plugin path: ${resolved}`);
   return resolved;
+}
+
+/**
+ * Synchronous parse for the disable-pre-merge pass. Returns `null` when the
+ * package does not match the expected OCI grammar — callers decide how to
+ * react (warn-and-skip when the entry is disabled, throw when it is enabled).
+ * Mirrors the `match.group(1)` / `match.group(4)` access pattern used by
+ * `pre_merge_oci_disabled_state` in the Python implementation.
+ */
+export function tryParseOciRegistryAndPath(
+  pkg: string,
+): { registry: string; path: string | null } | null {
+  const m = OCI_REGEX.exec(pkg);
+  if (!m) return null;
+  return { registry: m[1] as string, path: m[4] ?? null };
 }
 
 function escape(s: string): string {

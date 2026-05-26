@@ -3,7 +3,12 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
-import { cleanupCatalogIndexTemp, extractCatalogIndex } from './catalog-index.js';
+import {
+  cleanupCatalogIndexTemp,
+  extractCatalogIndex,
+  extractExtraCatalogIndex,
+  parseExtraCatalogIndexImages,
+} from './catalog-index.js';
 import { getNpmWorkers, getWorkers, mapConcurrent, type Outcome } from './concurrency.js';
 import { InstallException } from './errors.js';
 import { OciImageCache } from './image-cache.js';
@@ -11,7 +16,13 @@ import { installNpmPlugin } from './installer-npm.js';
 import { installOciPlugin } from './installer-oci.js';
 import { createLock, registerLockCleanup, removeLock } from './lock-file.js';
 import { log } from './log.js';
-import { deepMerge, mergePlugin, mergePluginsFromFile } from './merger.js';
+import {
+  deepMerge,
+  filterDisabledOciPlugins,
+  type IncludePluginList,
+  mergePlugin,
+  preMergeOciDisabledState,
+} from './merger.js';
 import { computePluginHash } from './plugin-hash.js';
 import { Skopeo } from './skopeo.js';
 import {
@@ -24,6 +35,7 @@ import {
   OCI_PROTO,
   type Plugin,
   type PluginMap,
+  type PluginSpec,
   PullPolicy,
 } from './types.js';
 import { fileExists, isPlainObject } from './util.js';
@@ -65,7 +77,10 @@ async function runInstaller(root: string): Promise<number> {
   const globalConfigFile = path.join(root, GLOBAL_CONFIG_FILENAME);
   log(`======= Config file: ${configFileAbs}`);
 
-  const catalogDpdy = await maybeExtractCatalogIndex(skopeo, root);
+  const entitiesDir =
+    process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path.join(os.tmpdir(), 'extensions');
+  const catalogDpdy = await maybeExtractCatalogIndex(skopeo, root, entitiesDir);
+  await maybeExtractExtraCatalogIndexes(skopeo, entitiesDir);
   const content = await loadDynamicPluginsConfig(configFileAbs, globalConfigFile);
   if (!content) return 0;
 
@@ -99,12 +114,33 @@ async function runInstaller(root: string): Promise<number> {
 /** Optional `CATALOG_INDEX_IMAGE` extraction — returns the path to the
  * extracted `dynamic-plugins.default.yaml`, or `null` when the env var is
  * unset. */
-async function maybeExtractCatalogIndex(skopeo: Skopeo, root: string): Promise<string | null> {
+async function maybeExtractCatalogIndex(
+  skopeo: Skopeo,
+  root: string,
+  entitiesDir: string,
+): Promise<string | null> {
   const catalogImage = process.env.CATALOG_INDEX_IMAGE ?? '';
   if (!catalogImage) return null;
-  const entitiesDir =
-    process.env.CATALOG_ENTITIES_EXTRACT_DIR ?? path.join(os.tmpdir(), 'extensions');
   return extractCatalogIndex(skopeo, catalogImage, root, entitiesDir);
+}
+
+/**
+ * Optional `EXTRA_CATALOG_INDEX_IMAGES` extraction. Each entry is extracted
+ * into an isolated subdirectory under `<entitiesDir>/extra/` so multiple
+ * indexes can coexist without clobbering the primary index's
+ * `catalog-entities/`. Duplicate subdirectory names within the same env-var
+ * value emit an overwrite warning (handled by `extractExtraCatalogIndex`).
+ */
+async function maybeExtractExtraCatalogIndexes(skopeo: Skopeo, entitiesDir: string): Promise<void> {
+  const raw = process.env.EXTRA_CATALOG_INDEX_IMAGES ?? '';
+  if (!raw) return;
+  const extraParent = path.join(entitiesDir, 'extra');
+  const seen = new Map<string, string>();
+  for (const [name, imageRef] of parseExtraCatalogIndexImages(raw)) {
+    const prev = seen.get(name) ?? null;
+    seen.set(name, imageRef);
+    await extractExtraCatalogIndex(skopeo, imageRef, name, extraParent, prev);
+  }
 }
 
 /** Read and parse `dynamic-plugins.yaml`. Writes an empty global config and
@@ -130,7 +166,15 @@ async function loadDynamicPluginsConfig(
 }
 
 /** Resolve include paths, substitute the catalog-index placeholder, merge
- * everything into a single `PluginMap`, and compute change-detection hashes. */
+ * everything into a single `PluginMap`, and compute change-detection hashes.
+ *
+ * Two-phase to match the Python pre-merge OCI-disable pass: load every
+ * include file's plugin list into memory FIRST, compute the effectively
+ * disabled OCI registries, then filter those entries out of every list
+ * before merging. Without this pass an OCI plugin marked `disabled: true`
+ * at level 1 would still trigger a `skopeo` round-trip during the level-0
+ * merge — wasted work and a footgun in restricted-network init containers.
+ */
 async function loadAllPlugins(
   content: DynamicPluginsConfig,
   configFileAbs: string,
@@ -141,17 +185,38 @@ async function loadAllPlugins(
   const allPlugins: PluginMap = {};
   const includes = resolveIncludes(content.includes ?? [], configDir, catalogDpdy);
 
+  const includeLists: Array<[string, PluginSpec[]]> = [];
   for (const inc of includes) {
     if (!(await fileExists(inc))) {
       log(`WARNING: include file ${inc} not found, skipping`);
       continue;
     }
     log(`\n======= Including plugins from ${inc}`);
-    await mergePluginsFromFile(inc, allPlugins, /* level */ 0, imageCache);
+    const parsed = parseYaml(await fs.readFile(inc, 'utf8')) as DynamicPluginsConfig | null;
+    if (parsed && !isPlainObject(parsed)) {
+      throw new InstallException(`${inc} must contain a mapping`);
+    }
+    const plugins = parsed?.plugins ?? [];
+    if (!Array.isArray(plugins)) {
+      throw new InstallException(`${inc} must contain a 'plugins' list (got ${typeof plugins})`);
+    }
+    includeLists.push([inc, plugins as PluginSpec[]]);
   }
+  const mainPlugins = (content.plugins ?? []) as PluginSpec[];
 
-  for (const plugin of content.plugins ?? []) {
-    await mergePlugin(plugin, allPlugins, configFileAbs, /* level */ 1, imageCache);
+  const disabledRegistries = preMergeOciDisabledState(
+    includeLists as ReadonlyArray<IncludePluginList>,
+    mainPlugins,
+    configFileAbs,
+  );
+
+  for (const [inc, plugins] of includeLists) {
+    for (const plugin of filterDisabledOciPlugins(plugins, disabledRegistries)) {
+      await mergePlugin(plugin as Plugin, allPlugins, inc, /* level */ 0, imageCache);
+    }
+  }
+  for (const plugin of filterDisabledOciPlugins(mainPlugins, disabledRegistries)) {
+    await mergePlugin(plugin as Plugin, allPlugins, configFileAbs, /* level */ 1, imageCache);
   }
 
   for (const p of Object.values(allPlugins)) {

@@ -1,7 +1,7 @@
 import { parseMaxEntrySize } from '../src/types';
 
 describe('parseMaxEntrySize', () => {
-  const DEFAULT = 20_000_000;
+  const DEFAULT = 40_000_000;
 
   it('returns the default when unset', () => {
     expect(parseMaxEntrySize(undefined)).toBe(DEFAULT);
