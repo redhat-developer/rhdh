@@ -171,18 +171,32 @@ jobs:
           directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
 
-      - name: Run Python tests
+      - name: Test install-dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v --cov=scripts/install-dynamic-plugins --cov-report=lcov:coverage-install-dynamic-plugins.lcov
+        working-directory: scripts/install-dynamic-plugins
+        run: |
+          npm ci --no-audit --no-fund
+          npm run tsc
+          npm run test:coverage
 
       - name: Upload install-dynamic-plugins coverage to Codecov
         if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
-          files: coverage-install-dynamic-plugins.lcov
+          directory: scripts/install-dynamic-plugins/coverage
           flags: install-dynamic-plugins
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+
+      - name: Verify install-dynamic-plugins bundle is up to date
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: scripts/install-dynamic-plugins
+        run: |
+          npm run build
+          if ! git diff --quiet -- dist/install-dynamic-plugins.cjs; then
+            echo "ERROR: dist/install-dynamic-plugins.cjs is out of date — run 'npm run build' and commit the result." >&2
+            exit 1
+          fi
 
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}

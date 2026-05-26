@@ -1,8 +1,11 @@
-bin/
-lib/
-lib64/
-pyvenv.cfg
-# Python Caches
-**/__pycache__/
-**/.pytest_cache/
-**/.venv/
+node_modules/
+build/
+coverage/
+*.log
+.yarn/
+
+# Re-include the dist/ directory (root .gitignore excludes 'dist'). Only the
+# committed bundle should be tracked; anything else under dist/ stays ignored.
+!dist/
+dist/*
+!dist/install-dynamic-plugins.cjs
