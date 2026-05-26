@@ -74,6 +74,44 @@ describe('parseExtraCatalogIndexImages', () => {
       warn.mockRestore();
     }
   });
+
+  it('warns and skips entries whose explicit name is empty after trimming', () => {
+    const warn = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    try {
+      expect(parseExtraCatalogIndexImages('=quay.io/x:1,quay.io/y:2')).toEqual([
+        ['quay.io_y_2', 'quay.io/y:2'],
+      ]);
+      const out = warn.mock.calls.map(args => String(args[0])).join('\n');
+      expect(out).toMatch(/unsafe subdirectory name ''/);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it.each([
+    ['..', '..=quay.io/x:1'],
+    ['.', '.=quay.io/x:1'],
+    ['foo/bar', 'foo/bar=quay.io/x:1'],
+    ['..\\evil', '..\\evil=quay.io/x:1'],
+  ])('rejects path-traversing or separator-bearing subdirectory name %p', (_badName, entry) => {
+    const warn = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    try {
+      const result = parseExtraCatalogIndexImages(`${entry},quay.io/safe:1`);
+      expect(result).toEqual([['quay.io_safe_1', 'quay.io/safe:1']]);
+      const out = warn.mock.calls.map(args => String(args[0])).join('\n');
+      expect(out).toMatch(/unsafe subdirectory name/);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('accepts URL-encoded separators without URL-decoding (character-based check)', () => {
+    // %2F is the URL encoding of '/'. We intentionally do NOT decode it, so
+    // a name like '..%2Fetc' is accepted as a literal directory name.
+    expect(parseExtraCatalogIndexImages('..%2Fetc=quay.io/x:1')).toEqual([
+      ['..%2Fetc', 'quay.io/x:1'],
+    ]);
+  });
 });
 
 describe('extractExtraCatalogIndex', () => {

@@ -233,9 +233,27 @@ export function parseExtraCatalogIndexImages(raw: string): Array<[name: string, 
       log(`WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with empty image reference: '${entry}'`);
       continue;
     }
+    if (!isSafeSubdirectoryName(name)) {
+      log(
+        `WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with unsafe subdirectory name '${name}' in '${entry}'. ` +
+          `Names must be non-empty and must not contain '/', '\\\\', or '..'.`,
+      );
+      continue;
+    }
     out.push([name, imageRef]);
   }
   return out;
+}
+
+/**
+ * Reject subdirectory names that are empty or could escape `<parentDir>` once
+ * passed to `path.join` (path separators or `..` segments). Mirrors the
+ * defensive check applied to plugin paths during tar extraction.
+ */
+function isSafeSubdirectoryName(name: string): boolean {
+  if (!name) return false;
+  if (name === '.' || name === '..') return false;
+  return !/[/\\]/.test(name) && !name.split(/[/\\]/).includes('..');
 }
 
 export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
