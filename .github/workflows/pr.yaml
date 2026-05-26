@@ -145,6 +145,23 @@ jobs:
           ln -s ${{ runner.temp }}/jest-junit/node_modules/jest-junit node_modules/jest-junit
           mkdir -p ${{ runner.temp }}/test-results
 
+      # Runs before the monorepo test step so the JUnit report it writes
+      # ends up in $RUNNER_TEMP/test-results/ in time for the Codecov
+      # 'Upload test results' step below to pick it up alongside any
+      # jest-junit reports produced by 'yarn run test --affected'. When the
+      # PR only touches non-workspace files, 'yarn ... --affected' emits no
+      # reports and this one is what the upload finds.
+      - name: Test install-dynamic-plugins
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: scripts/install-dynamic-plugins
+        run: |
+          npm ci --no-audit --no-fund
+          npm run tsc
+          npx vitest run --coverage \
+            --reporter=default \
+            --reporter=junit \
+            --outputFile.junit="$RUNNER_TEMP/test-results/install-dynamic-plugins.junit.xml"
+
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         id: tests
@@ -170,18 +187,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
-
-      - name: Test install-dynamic-plugins
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        working-directory: scripts/install-dynamic-plugins
-        run: |
-          mkdir -p "$RUNNER_TEMP/test-results"
-          npm ci --no-audit --no-fund
-          npm run tsc
-          npx vitest run --coverage \
-            --reporter=default \
-            --reporter=junit \
-            --outputFile.junit="$RUNNER_TEMP/test-results/install-dynamic-plugins.junit.xml"
 
       - name: Upload install-dynamic-plugins coverage to Codecov
         if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
