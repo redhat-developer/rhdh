@@ -11196,9 +11196,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.13.1":
-  version: 1.13.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.13.1"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.13.4"
   dependencies:
     "@backstage/catalog-client": "npm:^1.14.0"
     "@backstage/catalog-model": "npm:^1.7.7"
@@ -11215,7 +11215,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styles": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-homepage-common": "npm:^0.1.1"
+    "@red-hat-developer-hub/backstage-plugin-homepage-common": "npm:^0.1.2"
     "@scalprum/react-core": "npm:0.11.1"
     react-grid-layout: "npm:1.5.3"
     react-use: "npm:17.6.0"
@@ -11223,7 +11223,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.3
-  checksum: 10c0/ab0dc31b761d6940c1f041e32868007924b5877d2e96e3776fa559e9a35f5995b154eda55de6898afa5f2bc374b28c2e60b8ca91bc3dd5b65a4849ef2d1761ce
+  checksum: 10c0/f2606f0b3f3e9244f6e859b92a72d9b0c151acf0c6ce8464eff9f671ea63e57e9f725192c91066d66bbdb1a3988c575694299ef167272e4a87f287a1a79c0fb0
   languageName: node
   linkType: hard
 
@@ -11384,12 +11384,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.1.1"
+"@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.1.2"
   dependencies:
     "@backstage/plugin-permission-common": "npm:^0.9.7"
-  checksum: 10c0/9263409401b1345831a838411a18616e82e24f8a1c3b096970b2bd889a86979d5ef75a20cffc52caa2489106711683d51825dd90e75d2b1a1b73bff01e8f7167
+  checksum: 10c0/7bfbfe12f31a823ae5a3ac4094cc1a5eb36b55b5dbc1678fe8b5db7749fae0f05c9b93eb3887e848ac876e67ddbeecd4ff1c5f148df6305011edab0f3e1c4d66
   languageName: node
   linkType: hard
 
@@ -29229,7 +29229,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "npm:1.13.1"
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "npm:1.13.4"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
