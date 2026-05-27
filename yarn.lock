@@ -13700,9 +13700,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.4":
-  version: 0.14.4
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.4"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.7":
+  version: 0.14.7
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.7"
   dependencies:
     "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/plugin-app-react": "npm:^0.2.1"
@@ -13714,7 +13714,7 @@ __metadata:
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/e6545be17b3f465092a3ae16e3a916b68307d1db5ca443b15bbcce7c9f5c0c0bc326d83ed8feb91e6ab4984f0f7f54c389ff7980b05b673ea37c80796b2258fa
+  checksum: 10c0/6b8f066fb2b4884478888574860127b235bb54ec1ae11599ac7423d0cc8a598a172b87d3e0df0756f50d338731de802fbfaaa452dd7796f5de49ff741122510b
   languageName: node
   linkType: hard
 
@@ -18732,7 +18732,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styled-engine": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:0.14.4"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:0.14.7"
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.3.1"
     "@red-hat-developer-hub/plugin-utils": "npm:1.0.0"
     "@scalprum/core": "npm:0.9.0"
