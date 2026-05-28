@@ -32,7 +32,7 @@ plugins:
     package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
 ```
 
-While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file, you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
+While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file (now delivered via the catalog index image; see [Using a Catalog Index Image](#using-a-catalog-index-image-for-default-plugin-configurations) below), you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
 
 Note: The plugin's default configuration typically references environment variables, and it is essential to ensure that these variables are set in the Helm chart values or the Operator configuration.
 
