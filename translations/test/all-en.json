@@ -65,6 +65,7 @@
       "menuItem.selfService": "Self-service",
       "menuItem.administration": "Administration",
       "menuItem.docs": "Docs",
+      "menuItem.userSettings": "Settings",
       "signIn.page.title": "Select a sign-in method",
       "signIn.providers.github.message": "Sign in using GitHub",
       "signIn.providers.gitlab.message": "Sign in using GitLab",
