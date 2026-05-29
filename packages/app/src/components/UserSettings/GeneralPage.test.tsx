@@ -5,12 +5,12 @@
  * the upstream user-settings cards; this asserts that composition.
  */
 import { configApiRef } from '@backstage/core-plugin-api';
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import {
   mockApis,
   renderInTestApp,
   TestApiProvider,
-} from '@backstage/test-utils';
+} from '@backstage/frontend-test-utils';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { screen } from '@testing-library/react';
 

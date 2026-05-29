@@ -187,9 +187,13 @@ npx playwright show-report .local-test/rhdh/.local-test/artifact_dir/showcase
 
 ### Test tags
 
-Specs can carry `@tag` markers in their `test.describe` title. Playwright's
-`--grep` / `--grep-invert` filters select tests by tag, letting CI or a local
-run target a subset.
+Specs declare `@tag` markers via Playwright's native
+[test tags](https://playwright.dev/docs/test-annotations#tag-tests) — the `tag`
+option on `test` / `test.describe` (e.g.
+`test.describe("Smoke test", { tag: "@smoke" }, () => { ... })`). This keeps the
+tag out of the test title, so names stay stable for historical reporting while
+Playwright's `--grep` / `--grep-invert` filters still select tests by tag,
+letting CI or a local run target a subset.
 
 | Tag                  | Meaning                                                                                   |
 | -------------------- | ----------------------------------------------------------------------------------------- |

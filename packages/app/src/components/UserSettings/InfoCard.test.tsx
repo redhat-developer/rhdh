@@ -3,7 +3,7 @@ import {
   mockApis,
   renderInTestApp,
   TestApiProvider,
-} from '@backstage/test-utils';
+} from '@backstage/frontend-test-utils';
 
 import { userEvent } from '@testing-library/user-event';
 

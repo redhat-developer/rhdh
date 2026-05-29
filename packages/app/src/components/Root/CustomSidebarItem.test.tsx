@@ -3,7 +3,7 @@
  * spec (net additive — the E2E spec is left in place). Covers that a custom
  * sidebar item renders its label and links to the configured target.
  */
-import { renderInTestApp } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
 
 import HomeIcon from '@mui/icons-material/Home';
 import { screen } from '@testing-library/react';

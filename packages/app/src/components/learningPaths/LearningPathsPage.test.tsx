@@ -3,8 +3,11 @@
  * e2e-tests/playwright/e2e/learning-path-page.spec.ts (net new — the E2E spec
  * is intentionally left in place).
  */
+import {
+  renderInTestApp,
+  TestApiProvider,
+} from '@backstage/frontend-test-utils';
 import { searchApiRef } from '@backstage/plugin-search-react';
-import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
 import { screen } from '@testing-library/react';
 
@@ -95,5 +98,17 @@ describe('LearningPaths', () => {
     expect(
       screen.getByText(/app\.learningPaths\.error\.title/),
     ).toBeInTheDocument();
+  });
+
+  it('shows the underlying error message when loading fails', async () => {
+    mockUseLearningPathData.mockReturnValue({
+      data: undefined,
+      error: new Error('Boom'),
+      isLoading: false,
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/Error: Boom/)).toBeInTheDocument();
   });
 });

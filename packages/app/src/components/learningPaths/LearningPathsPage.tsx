@@ -46,20 +46,20 @@ const LearningPathCards = () => {
     return <CircularProgress />;
   }
 
+  if (error) {
+    return (
+      <ErrorReport
+        title={t('app.learningPaths.error.title')}
+        errorText={error.toString()}
+      />
+    );
+  }
+
   if (!data) {
     return (
       <ErrorReport
         title={t('app.learningPaths.error.title')}
         errorText={t('app.learningPaths.error.unknownError')}
-      />
-    );
-  }
-
-  if (!isLoading && !data && error) {
-    return (
-      <ErrorReport
-        title={t('app.learningPaths.error.title')}
-        errorText={error.toString()}
       />
     );
   }

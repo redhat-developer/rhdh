@@ -6,7 +6,7 @@
 import { PropsWithChildren } from 'react';
 
 import { configApiRef } from '@backstage/core-plugin-api';
-import { mockApis, TestApiProvider } from '@backstage/test-utils';
+import { mockApis, TestApiProvider } from '@backstage/frontend-test-utils';
 
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { renderHook } from '@testing-library/react';
