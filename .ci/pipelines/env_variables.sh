@@ -70,6 +70,16 @@ if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
   unset _CI_WITHOUT_TAG
 fi
 
+# TEMPORARY (RHDH 1.10 RC validation): force the release-1.10 e2e jobs to deploy the
+# RHDH 1.10 RC image quay.io/rhdh/rhdh-hub-rhel9:1.10-132.
+# helm::get_image_params() (lib/helm.sh) injects IMAGE_REGISTRY/IMAGE_REPO/TAG_NAME via
+# `--set upstream.backstage.image.*`, which overrides the value files, so the image must be
+# forced here to take effect. Revert this block once RC testing is complete.
+IMAGE_REGISTRY="quay.io"
+IMAGE_REPO="rhdh/rhdh-hub-rhel9"
+QUAY_REPO="${IMAGE_REPO}"
+TAG_NAME="1.10-132"
+
 # =============================================================================
 # Release and Namespace Configuration
 # These can be overridden by CI environment or local configuration
