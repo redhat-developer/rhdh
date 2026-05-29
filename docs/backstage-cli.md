@@ -2,6 +2,7 @@
 
 The `@backstage/cli auth` command provides CLI-based authentication to a Backstage instance using OAuth2 with PKCE. This enables programmatic access to catalog entities, scaffolder actions, and other Backstage APIs without a browser session.
 
+**Requires RHDH 1.10 or later.**
 
 ## Prerequisites
 
