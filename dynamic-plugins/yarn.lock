@@ -3518,6 +3518,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/backend-plugin-api@npm:^1.7.0, @backstage/backend-plugin-api@npm:^1.9.1":
+  version: 1.9.1
+  resolution: "@backstage/backend-plugin-api@npm:1.9.1"
+  dependencies:
+    "@backstage/cli-common": ^0.2.2
+    "@backstage/config": ^1.3.8
+    "@backstage/errors": ^1.3.1
+    "@backstage/plugin-auth-node": ^0.7.1
+    "@backstage/plugin-permission-common": ^0.9.9
+    "@backstage/plugin-permission-node": ^0.11.0
+    "@backstage/types": ^1.2.2
+    "@types/express": ^4.17.6
+    "@types/json-schema": ^7.0.6
+    "@types/luxon": ^3.0.0
+    json-schema: ^0.4.0
+    knex: ^3.0.0
+    luxon: ^3.0.0
+    zod: ^3.25.76 || ^4.0.0
+  checksum: a8c64d336b000425500a6ad653ffe15dfde2fd1ff17da7f946c05c0ffa02ff76f02a44b8000e46ef0dafd9b609550f89ae1440b483156340e70aa473181f3d4e
+  languageName: node
+  linkType: hard
+
 "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.6.0#./.yarn/patches/@backstage-backend-plugin-api-npm-1.6.0-eaa7987a8e.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 1.6.0
   resolution: "@backstage/backend-plugin-api@patch:@backstage/backend-plugin-api@npm%3A1.6.0#./.yarn/patches/@backstage-backend-plugin-api-npm-1.6.0-eaa7987a8e.patch::version=1.6.0&hash=e8ef03&locator=dynamic-plugins-root%40workspace%3A."
@@ -3573,6 +3595,18 @@ __metadata:
     global-agent: ^3.0.0
     undici: ^7.2.3
   checksum: 8fba4579aa834a22786df220985a90ef68308c3be9a5ee89b416d69aec4e575551192eb4936175c858bb45418a3c9a6b269742c42798bc39cd00bcb051eabe67
+  languageName: node
+  linkType: hard
+
+"@backstage/cli-common@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "@backstage/cli-common@npm:0.2.2"
+  dependencies:
+    "@backstage/errors": ^1.3.1
+    cross-spawn: ^7.0.3
+    global-agent: ^3.0.0
+    undici: ^7.24.5
+  checksum: 049450570d7c83771546cb969f88b58a7ca575f8af32671e918d1ed42d29a3f0a361390fb3da67c5b01e9178753871380f867267b8eb86e4e5f0cb61813f956e
   languageName: node
   linkType: hard
 
@@ -3790,6 +3824,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/config@npm:^1.3.8":
+  version: 1.3.8
+  resolution: "@backstage/config@npm:1.3.8"
+  dependencies:
+    "@backstage/errors": ^1.3.1
+    "@backstage/types": ^1.2.2
+    ms: ^2.1.3
+  checksum: b272a891dc36d1b712e06e1c92f9b46218d1e36dfffe15049981552cea7f1f7b77cd84185c5bf508999893db0bc086d0755ee0d43ee1fa9c4ba64296fb8c832d
+  languageName: node
+  linkType: hard
+
 "@backstage/core-app-api@npm:^1.19.3":
   version: 1.19.3
   resolution: "@backstage/core-app-api@npm:1.19.3"
@@ -3961,6 +4006,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/errors@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "@backstage/errors@npm:1.3.1"
+  dependencies:
+    "@backstage/types": ^1.2.2
+    serialize-error: ^8.0.1
+  checksum: f2cbbe6ea37c5e976c78665f12cfc669cbb60b50e8c91c0ae78d01b3072c624d8ff950d1e1833bad5b712ca47ec7555ee8ff066968019004fc6f166ee367eda0
+  languageName: node
+  linkType: hard
+
 "@backstage/eslint-plugin@npm:^0.2.0":
   version: 0.2.0
   resolution: "@backstage/eslint-plugin@npm:0.2.0"
@@ -4120,7 +4175,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration@npm:^1.19.1":
+"@backstage/integration@npm:^1.19.1, @backstage/integration@npm:^1.20.0":
   version: 1.20.1
   resolution: "@backstage/integration@npm:1.20.1"
   dependencies:
@@ -4967,6 +5022,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-permission-common@npm:^0.9.6, @backstage/plugin-permission-common@npm:^0.9.9":
+  version: 0.9.9
+  resolution: "@backstage/plugin-permission-common@npm:0.9.9"
+  dependencies:
+    "@backstage/config": ^1.3.8
+    "@backstage/errors": ^1.3.1
+    "@backstage/types": ^1.2.2
+    cross-fetch: ^4.0.0
+    zod: ^3.25.76 || ^4.0.0
+    zod-to-json-schema: ^3.25.1
+  checksum: c9a66039394d32a1134877bf321e871bc90eb3a71760890aac3c90ceb47bd86468ab8e077e9a1cecb797d76a930dda8a0bf7e1627900c5e28e73a3f4c4023543
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-permission-node@npm:^0.10.6, @backstage/plugin-permission-node@npm:^0.10.7":
   version: 0.10.8
   resolution: "@backstage/plugin-permission-node@npm:0.10.8"
@@ -4982,6 +5051,23 @@ __metadata:
     zod: ^3.22.4
     zod-to-json-schema: ^3.25.1
   checksum: 2245d6eeb0908f9a8de7e0cc6a02d5cd1edb84f840b7cd8e3dae3f4d56293f8651f5903fd6d754f7a7041a54c7f11dcc4f47a6f2629039ca49a8ea69c4e60a9d
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-permission-node@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "@backstage/plugin-permission-node@npm:0.11.0"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.9.1
+    "@backstage/config": ^1.3.8
+    "@backstage/errors": ^1.3.1
+    "@backstage/plugin-permission-common": ^0.9.9
+    "@types/express": ^4.17.6
+    express: ^4.22.0
+    express-promise-router: ^4.1.0
+    zod: ^3.25.76 || ^4.0.0
+    zod-to-json-schema: ^3.25.1
+  checksum: 02a0375b9920ef07b1b66d4de532f0d11fba80d12febf30864db3d0bdacd58b8728bfac63c82a05b706dc3af8c734b17a0714a7514da965ddc7581c75d17af53
   languageName: node
   linkType: hard
 
@@ -5045,7 +5131,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-common@npm:^1.7.4, @backstage/plugin-scaffolder-common@npm:^1.7.5":
+"@backstage/plugin-scaffolder-common@npm:^1.7.4":
   version: 1.7.5
   resolution: "@backstage/plugin-scaffolder-common@npm:1.7.5"
   dependencies:
@@ -5064,16 +5150,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-node@npm:^0.12.0, @backstage/plugin-scaffolder-node@npm:^0.12.1, @backstage/plugin-scaffolder-node@npm:^0.12.2":
-  version: 0.12.3
-  resolution: "@backstage/plugin-scaffolder-node@npm:0.12.3"
+"@backstage/plugin-scaffolder-common@npm:^1.7.6":
+  version: 1.7.6
+  resolution: "@backstage/plugin-scaffolder-common@npm:1.7.6"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.6.1
     "@backstage/catalog-model": ^1.7.6
     "@backstage/errors": ^1.2.7
-    "@backstage/integration": ^1.19.2
-    "@backstage/plugin-permission-common": ^0.9.4
-    "@backstage/plugin-scaffolder-common": ^1.7.5
+    "@backstage/integration": ^1.20.0
+    "@backstage/plugin-permission-common": ^0.9.6
+    "@backstage/types": ^1.2.2
+    "@microsoft/fetch-event-source": ^2.0.1
+    "@types/json-schema": ^7.0.9
+    cross-fetch: ^4.0.0
+    json-schema: ^0.4.0
+    uri-template: ^2.0.0
+    zen-observable: ^0.10.0
+  checksum: 8e864e2f9ae3f64cdc0c16c4fde7d99bf5903a06ff4b8ca8bf957d2666dbc9b041bf17d9c2d078370d462dd858f5114d406f7dd99aab2827354550af6ae5c24a
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-scaffolder-node@npm:^0.12.0, @backstage/plugin-scaffolder-node@npm:^0.12.1, @backstage/plugin-scaffolder-node@npm:^0.12.2":
+  version: 0.12.5
+  resolution: "@backstage/plugin-scaffolder-node@npm:0.12.5"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.7.0
+    "@backstage/catalog-model": ^1.7.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/integration": ^1.20.0
+    "@backstage/plugin-permission-common": ^0.9.6
+    "@backstage/plugin-scaffolder-common": ^1.7.6
     "@backstage/types": ^1.2.2
     "@isomorphic-git/pgp-plugin": ^0.0.7
     concat-stream: ^2.0.0
@@ -5083,12 +5188,12 @@ __metadata:
     jsonschema: ^1.5.0
     lodash: ^4.17.21
     p-limit: ^3.1.0
-    tar: ^6.1.12
+    tar: ^7.5.6
     winston: ^3.2.1
     winston-transport: ^4.7.0
-    zod: ^3.22.4
+    zod: ^3.25.76
     zod-to-json-schema: ^3.25.1
-  checksum: 0466d81fc71f275c2f9fda0fce985378a1b2cfeb66afd4ebe166c5a0a886b9bd6554b95633d9339ebea0b11a3df063816913ebd4e68fba26e2f130c6c8fcd1e1
+  checksum: 0c7d73444681c7ee230eac9c9874b7993599634374a5d8faee50e041deabc990d430115a8090c960bbe7da60f8982315642070d1f8b7efa5b1a7488d9e1dc432
   languageName: node
   linkType: hard
 
@@ -33336,29 +33441,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^7.0.0, tar@npm:^7.5.2":
-  version: 7.5.4
-  resolution: "tar@npm:7.5.4"
+"tar@npm:^7.0.0, tar@npm:^7.4.3, tar@npm:^7.5.2, tar@npm:^7.5.6":
+  version: 7.5.15
+  resolution: "tar@npm:7.5.15"
   dependencies:
     "@isaacs/fs-minipass": ^4.0.0
     chownr: ^3.0.0
     minipass: ^7.1.2
     minizlib: ^3.1.0
     yallist: ^5.0.0
-  checksum: 81ac84a0df655890a4acd6d216a10a3b8f1d391949b2cba4fef4e9c5c77d10ee68188eef3c7a1f019f6e0cbbcdada091008359519c2ec824fa0a9c8fe2126a95
-  languageName: node
-  linkType: hard
-
-"tar@npm:^7.4.3":
-  version: 7.5.13
-  resolution: "tar@npm:7.5.13"
-  dependencies:
-    "@isaacs/fs-minipass": ^4.0.0
-    chownr: ^3.0.0
-    minipass: ^7.1.2
-    minizlib: ^3.1.0
-    yallist: ^5.0.0
-  checksum: adcc2a9179dab1b36ecb26575e698d2df8491a1df2cc83e2a0fdd8eaefd076da60dd2e20383a37760b5790bee34e9291aa2b2a9b3deef37ff03c1046219e5df7
+  checksum: b00ede0737f262691b18bd60aebdd15663c7cdabd40adce64dde0b69f65b7afb91cf31a4cae3bc184e2358aa14371fb0b56d6f7c0c0cc8b0238df1242c0e07ca
   languageName: node
   linkType: hard
 
@@ -34313,6 +34405,13 @@ __metadata:
   version: 7.24.7
   resolution: "undici@npm:7.24.7"
   checksum: d0ef3942cb5e1c5f84d8bab951d9b0f55203f3029bb601605366d4b137e4d554406a7a3fc97fbee652da7e1601322d7609b66abaa1435d4a8a11097425119989
+  languageName: node
+  linkType: hard
+
+"undici@npm:^7.24.5":
+  version: 7.26.0
+  resolution: "undici@npm:7.26.0"
+  checksum: a893ee0fd10f9572e10b350613eadc7bcecd1ee4c401710379dd30d7d05f04c3ee1be03d2ebd4134a8f579c2f9089dbbc044d9537e9bc64fdc5ccba32542095c
   languageName: node
   linkType: hard
 
@@ -36106,10 +36205,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.20.0, zod@npm:^3.22.4":
+"zod@npm:^3.20.0, zod@npm:^3.22.4, zod@npm:^3.25.76":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: c9a403a62b329188a5f6bd24d5d935d2bba345f7ab8151d1baa1505b5da9f227fb139354b043711490c798e91f3df75991395e40142e6510a4b16409f302b849
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.25.76 || ^4.0.0":
+  version: 4.4.3
+  resolution: "zod@npm:4.4.3"
+  checksum: bf236fdee7a5a5ec645eef5bfea3aad34e7df912931c2a23bc17e5b59882482751da42392916529da52ff9bc70f584797a5d496f1fb81f2d1a4c90fdd3922d2a
   languageName: node
   linkType: hard
 
