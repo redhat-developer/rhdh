@@ -276,15 +276,29 @@ ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
 # Install the dynamic-plugins installer from npm
-# (@red-hat-developer-hub/cli-module-install-dynamic-plugins, formerly scripts/install-dynamic-plugins/dist/install-dynamic-plugins.cjs)
-# and expose it through the same `install-dynamic-plugins.sh` wrapper path so the Helm chart and
-# Operator init-container spec keep working unchanged.
-RUN npm install --no-fund --no-audit --prefix /opt/app-root/src \
-      @red-hat-developer-hub/cli-module-install-dynamic-plugins@^0.1.0 \
+# (@red-hat-developer-hub/cli-module-install-dynamic-plugins, formerly
+# scripts/install-dynamic-plugins/dist/install-dynamic-plugins.cjs) into an
+# isolated directory so npm cannot reach into /opt/app-root/src — that path
+# is the yarn workspace root, and `npm install` there would honor `workspaces`
+# and reshuffle the production tree built by `yarn workspaces focus`.
+# An exact version is pinned so image builds stay reproducible; bumping it is
+# a deliberate change tracked in this Containerfile.
+# A smoke `--help` invocation runs immediately so a missing or moved CLI
+# entrypoint fails the build instead of the pod at runtime. The shim
+# delegates to npm's `.bin` symlink (not to the package's internal layout)
+# and lives at the original `/opt/app-root/src/install-dynamic-plugins.sh`
+# path so the Helm chart and Operator init-container spec keep working
+# unchanged.
+RUN INSTALLER_DIR=/opt/dynamic-plugins-installer \
+    && mkdir -p "$INSTALLER_DIR" \
+    && npm install --no-fund --no-audit --no-save --omit=dev \
+        --prefix "$INSTALLER_DIR" \
+        @red-hat-developer-hub/cli-module-install-dynamic-plugins@0.1.0 \
+    && "$INSTALLER_DIR/node_modules/.bin/install-dynamic-plugins" --help >/dev/null \
     && printf '%s\n' \
-      '#!/bin/sh' \
-      'exec node /opt/app-root/src/node_modules/@red-hat-developer-hub/cli-module-install-dynamic-plugins/bin/install-dynamic-plugins install "$1"' \
-      > /opt/app-root/src/install-dynamic-plugins.sh \
+        '#!/bin/sh' \
+        'exec /opt/dynamic-plugins-installer/node_modules/.bin/install-dynamic-plugins install "$1"' \
+        > /opt/app-root/src/install-dynamic-plugins.sh \
     && chmod a+rx /opt/app-root/src/install-dynamic-plugins.sh
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
