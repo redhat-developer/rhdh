@@ -121,6 +121,13 @@ main() {
       log::info "Calling helm upgrade"
       handle_ocp_helm_upgrade
       ;;
+    *ocp*helm*localization*nightly*)
+      log::info "Sourcing ocp-localization.sh"
+      # shellcheck source=.ci/pipelines/jobs/ocp-localization.sh
+      source "${DIR}/jobs/ocp-localization.sh"
+      log::info "Calling handle_ocp_localization"
+      handle_ocp_localization
+      ;;
     *ocp*helm*nightly*)
       log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ci/pipelines/jobs/ocp-nightly.sh
