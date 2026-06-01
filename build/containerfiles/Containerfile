@@ -297,7 +297,7 @@ RUN INSTALLER_DIR=/opt/dynamic-plugins-installer \
     && "$INSTALLER_DIR/node_modules/.bin/install-dynamic-plugins" --help >/dev/null \
     && printf '%s\n' \
         '#!/bin/sh' \
-        'exec /opt/dynamic-plugins-installer/node_modules/.bin/install-dynamic-plugins install "$1"' \
+        'exec /opt/dynamic-plugins-installer/node_modules/.bin/install-dynamic-plugins "$1"' \
         > /opt/app-root/src/install-dynamic-plugins.sh \
     && chmod a+rx /opt/app-root/src/install-dynamic-plugins.sh
 
