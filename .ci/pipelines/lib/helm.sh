@@ -228,9 +228,11 @@ helm::get_image_params() {
   # Add image tag
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
 
-  params+="--set global.catalogIndex.image.registry=${CATALOG_INDEX_REGISTRY} "
-  params+="--set global.catalogIndex.image.repository=${CATALOG_INDEX_REPO} "
-  params+="--set global.catalogIndex.image.tag=${CATALOG_INDEX_TAG} "
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    params+="--set global.catalogIndex.image.registry=${CATALOG_INDEX_REGISTRY} "
+    params+="--set global.catalogIndex.image.repository=${CATALOG_INDEX_REPO} "
+    params+="--set global.catalogIndex.image.tag=${CATALOG_INDEX_TAG} "
+  fi
 
   echo "${params}"
   return 0
