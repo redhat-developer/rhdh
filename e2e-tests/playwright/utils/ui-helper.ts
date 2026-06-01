@@ -257,7 +257,7 @@ export class UIhelper {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
     const settingsItem = this.page.getByRole("menuitem", {
-      name: t["rhdh"][lang]["menuItem.userSettings"],
+      name: t["plugin.global-header"][lang]["profile.settings"],
     });
     await expect(settingsItem).toBeVisible();
     await settingsItem.click();
@@ -267,7 +267,7 @@ export class UIhelper {
     await this.clickLink({
       ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
     });
-    await this.verifyHeading(t["rhdh"][lang]["menuItem.selfService"]);
+    await this.verifyHeading(t["scaffolder"][lang]["templateListPage.title"]);
   }
 
   async verifyLink(

@@ -34,6 +34,7 @@
   },
   "scaffolder": {
     "en": {
+      "templateListPage.title": "Self-service",
       "templateListPage.contentHeader.registerExistingButtonTitle": "Import an existing Git repository"
     }
   },
@@ -56,6 +57,11 @@
       "searchBar.title": "Search"
     }
   },
+  "plugin.global-header": {
+    "en": {
+      "profile.settings": "Settings"
+    }
+  },
   "rhdh": {
     "en": {
       "menuItem.home": "Home",
@@ -65,7 +71,6 @@
       "menuItem.selfService": "Self-service",
       "menuItem.administration": "Administration",
       "menuItem.docs": "Docs",
-      "menuItem.userSettings": "Settings",
       "signIn.page.title": "Select a sign-in method",
       "signIn.providers.github.message": "Sign in using GitHub",
       "signIn.providers.gitlab.message": "Sign in using GitLab",
