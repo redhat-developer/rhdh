@@ -275,10 +275,17 @@ ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
-# Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-# Bundled TypeScript .cjs (built from scripts/install-dynamic-plugins/src) replaces the previous Python implementation.
-COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/dist/install-dynamic-plugins.cjs $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh ./
-RUN chmod -R a+rx ./install-dynamic-plugins.*
+# Install the dynamic-plugins installer from npm
+# (@red-hat-developer-hub/cli-module-install-dynamic-plugins, formerly scripts/install-dynamic-plugins/dist/install-dynamic-plugins.cjs)
+# and expose it through the same `install-dynamic-plugins.sh` wrapper path so the Helm chart and
+# Operator init-container spec keep working unchanged.
+RUN npm install --no-fund --no-audit --prefix /opt/app-root/src \
+      @red-hat-developer-hub/cli-module-install-dynamic-plugins@^0.1.0 \
+    && printf '%s\n' \
+      '#!/bin/sh' \
+      'exec node /opt/app-root/src/node_modules/@red-hat-developer-hub/cli-module-install-dynamic-plugins/bin/install-dynamic-plugins install "$1"' \
+      > /opt/app-root/src/install-dynamic-plugins.sh \
+    && chmod a+rx /opt/app-root/src/install-dynamic-plugins.sh
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
