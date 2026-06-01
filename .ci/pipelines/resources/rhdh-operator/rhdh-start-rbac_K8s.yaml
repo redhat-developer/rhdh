@@ -43,10 +43,6 @@ spec:
           value: "0"
         - name: NODE_ENV
           value: "production"
-        - name: CATALOG_INDEX_IMAGE
-          value: "$CATALOG_INDEX_IMAGE"
-          containers:
-            - install-dynamic-plugins
       secrets:
         - name: rhdh-secrets
     extraFiles:

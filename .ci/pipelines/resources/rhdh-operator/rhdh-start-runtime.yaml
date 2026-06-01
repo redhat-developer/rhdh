@@ -43,10 +43,6 @@ spec:
           value: "production"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
-        - name: CATALOG_INDEX_IMAGE
-          value: "$CATALOG_INDEX_IMAGE"
-          containers:
-            - install-dynamic-plugins
       secrets:
         - name: postgres-cred
     route:

@@ -73,6 +73,10 @@ deploy_rhdh_operator() {
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
 
   rendered_yaml=$(envsubst < "$backstage_crd_path")
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    # Dynamically inject CATALOG_INDEX_IMAGE environment variable if specified
+    rendered_yaml=$(echo "$rendered_yaml" | yq eval '.spec.application.extraEnvs.envs += [{"name": "CATALOG_INDEX_IMAGE", "value": "'"$CATALOG_INDEX_IMAGE"'", "containers": ["install-dynamic-plugins"]}]' -)
+  fi
   log::info "Applying Backstage CR from: $backstage_crd_path"
   log::debug "$rendered_yaml"
   echo "$rendered_yaml" | oc apply -f - -n "$namespace"
