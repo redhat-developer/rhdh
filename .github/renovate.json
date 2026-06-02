@@ -7,38 +7,21 @@
     "group:allNonMajor",
     ":automergeBranch"
   ],
-  "ignorePresets":[
-    ":maintainLockFilesWeekly"
-  ],
-  "labels": [
-    "kind/dependency upgrade"
-  ],
-  "npm": {
-    "minimumReleaseAge": "3 day"
-  },
-  "pip_requirements": {
-    "fileMatch": [
-      "requirements.*\\.in"
-    ]
-  },
-  "major": {
-    "dependencyDashboardApproval": true
-  },  
+  "ignorePresets": [":maintainLockFilesWeekly"],
+  "labels": ["kind/dependency upgrade"],
+  "npm": {"minimumReleaseAge": "3 day"},
+  "pip_requirements": {"managerFilePatterns": ["/requirements.*\\.in/"]},
+  "major": {"dependencyDashboardApproval": true},
   "reviewers": ["team:rhdh-security"],
-  "packageRules": [    
-    {
-      "matchPackageNames": ["@protobufjs/inquire"],
-      "allowedVersions": "=1.1.0"
-    },
+  "packageRules": [
+    {"matchPackageNames": ["@protobufjs/inquire"], "allowedVersions": "=1.1.0"},
     {
       "description": "exclude rpm-lockfile updates",
       "matchFileNames": [".github/workflows/update-rpm-lockfile.yaml"],
       "enabled": false
     },
     {
-      "matchCategories": [
-        "python"
-      ],
+      "matchCategories": ["python"],
       "groupName": "python  ",
       "additionalBranchPrefix": "python ",
       "enabled": false,
@@ -46,229 +29,134 @@
     },
     {
       "description": "disable docker digest updates",
-      "matchCategories": [
-        "docker"
-      ],
-      "digest": {
-        "enabled": false
-      }
-    },   
+      "matchCategories": ["docker"],
+      "digest": {"enabled": false}
+    },
     {
-      "description": "Disable Dockerfile non-major updates", 
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],      
-      "matchFileNames": [
-        "build/containerfiles/Containerfile"
-      ],        
-      "additionalBranchPrefix": "dockerfile ",        
+      "description": "Disable Dockerfile non-major updates",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchFileNames": ["build/containerfiles/Containerfile"],
+      "additionalBranchPrefix": "dockerfile ",
       "groupName": "Dockerfile images (non-major) [skip-build]",
       "enabled": false
-    },  
+    },
     {
-      "description": "Test Dockerfile non-major updates", 
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],      
-      "matchFileNames": [
-        ".ci/images/**"
-      ],         
-      "additionalBranchPrefix": "test-dockerfile ",        
+      "description": "Test Dockerfile non-major updates",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchFileNames": [".ci/images/**"],
+      "additionalBranchPrefix": "test-dockerfile ",
       "groupName": "Test dockerfile images (non-major)",
       "automerge": false
-    },      
+    },
     {
-      "matchDepTypes": [
-        "devDependencies"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
       "matchCurrentVersion": "!/^0/",
       "groupName": "DevDependencies (non-major)",
       "automerge": false
     },
     {
-      "description": "Patch dependency updates", 
-      "matchDepTypes": [
-        "dependencies",
-        "peerDependencies"
-      ],
+      "description": "Patch dependency updates",
+      "matchDepTypes": ["dependencies", "peerDependencies"],
       "groupName": "Dependencies (patch)",
-      "matchUpdateTypes": [
-        "patch"
-      ]
+      "matchUpdateTypes": ["patch"]
     },
     {
-      "description": "Minor dependency updates", 
-      "matchDepTypes": [
-        "dependencies",
-        "peerDependencies"
-      ],
+      "description": "Minor dependency updates",
+      "matchDepTypes": ["dependencies", "peerDependencies"],
       "groupName": "Dependencies (minor)",
-      "matchUpdateTypes": [
-        "minor"
-      ]
-    },    
+      "matchUpdateTypes": ["minor"]
+    },
     {
-      "extends": [
-        "packages:test"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "extends": ["packages:test"],
+      "matchUpdateTypes": ["patch", "minor"],
       "matchCurrentVersion": "!/^0/",
       "groupName": "Test packages (non-major)",
       "automerge": false
     },
     {
-      "extends": [
-        "packages:linters"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "extends": ["packages:linters"],
+      "matchUpdateTypes": ["patch", "minor"],
       "matchCurrentVersion": "!/^0/",
       "groupName": "linters  (non-major)",
       "automerge": false
     },
     {
-      "extends": [
-        "monorepo:material-ui"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "extends": ["monorepo:material-ui"],
+      "matchUpdateTypes": ["patch", "minor"],
       "groupName": "material-ui (non-major)",
       "automerge": false
     },
     {
-      "extends": [
-        "monorepo:react"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "extends": ["monorepo:react"],
+      "matchUpdateTypes": ["patch", "minor"],
       "groupName": "react (non-major)",
       "automerge": false
     },
     {
-      "extends": [
-        "monorepo:emotion"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "extends": ["monorepo:emotion"],
+      "matchUpdateTypes": ["patch", "minor"],
       "groupName": "emotion (non-major)",
       "automerge": false
     },
     {
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "matchUpdateTypes": ["patch", "minor"],
       "groupName": "types (non-major)",
-      "matchPackageNames": [
-        "@types/{/,}**"
-      ]
+      "matchPackageNames": ["@types/{/,}**"]
     },
     {
-      "extends": [
-        "monorepo:opentelemetry-js"
-      ],
-      "matchUpdateTypes": [
-        "patch"
-      ],  
+      "extends": ["monorepo:opentelemetry-js"],
+      "matchUpdateTypes": ["patch"],
       "groupName": "opentelemetry-js (patch)",
-      "automerge": false      
+      "automerge": false
     },
-    { 
+    {
       "description": "opentelemetry-js: disable minor updates",
       "enabled": false,
-      "extends": [
-        "monorepo:opentelemetry-js"
-      ],
-      "matchUpdateTypes": [
-        "minor" 
-      ], 
+      "extends": ["monorepo:opentelemetry-js"],
+      "matchUpdateTypes": ["minor"],
       "groupName": "opentelemetry-js",
-      "automerge": false      
+      "automerge": false
     },
     {
-      "extends": [
-        "monorepo:opentelemetry-js-contrib"
-      ],
-      "matchUpdateTypes": [
-        "patch"
-      ],  
+      "extends": ["monorepo:opentelemetry-js-contrib"],
+      "matchUpdateTypes": ["patch"],
       "groupName": "opentelemetry-js-contrib (patch)",
-      "automerge": false      
+      "automerge": false
     },
-    { 
+    {
       "description": "opentelemetry-js-contrib: disable minor updates",
-      "enabled": false,      
-      "extends": [
-        "monorepo:opentelemetry-js-contrib"
-      ],
-      "matchUpdateTypes": [
-        "minor"
-      ], 
+      "enabled": false,
+      "extends": ["monorepo:opentelemetry-js-contrib"],
+      "matchUpdateTypes": ["minor"],
       "groupName": "opentelemetry-js-contrib",
-      "automerge": false      
-    },    
+      "automerge": false
+    },
     {
       "description": "disable minor updates for Winston",
-      "matchPackageNames": [
-        "winston"
-      ],
+      "matchPackageNames": ["winston"],
       "enabled": false,
-      "matchUpdateTypes": [
-        "minor"
-      ]
+      "matchUpdateTypes": ["minor"]
     },
     {
       "description": "disable minor updates for Zod",
-      "matchPackageNames": [
-        "zod"
-      ],
+      "matchPackageNames": ["zod"],
       "enabled": false,
-      "matchUpdateTypes": [
-        "minor"
-      ]
-    },    
+      "matchUpdateTypes": ["minor"]
+    },
     {
       "description": "react-router-dom: group all dependencies",
-      "matchPackageNames": [
-        "react-router-dom"
-      ],
-      "matchDepTypes": [
-        "dependencies",
-        "peerDependencies",
-        "devDependencies"
-      ],
+      "matchPackageNames": ["react-router-dom"],
+      "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
       "groupName": "all react-router-dom dependencies"
     },
     {
       "description": "Keep yarn updates separate",
-      "matchDepNames": [
-        "yarn"
-      ],
+      "matchDepNames": ["yarn"],
       "groupName": "yarn updates"
-    },    
+    },
     {
       "description": "ignore updates to all backstage updates and 3rd party plugins",
       "groupName": "Backstage packages",
@@ -287,28 +175,13 @@
     {
       "description": "patch and minor updates for the janus cli",
       "groupName": "janus cli updates",
-      "matchPackageNames": [
-        "@janus-idp/cli"
-      ],
-      "matchDepTypes": [
-        "dependencies",
-        "peerDependencies",
-        "devDependencies"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ]      
-    }
+      "matchPackageNames": ["@janus-idp/cli"],
+      "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"]
+  }
   ],
-  "ignorePaths": [
-    "**/dist-dynamic/**"
-  ],
-  "vulnerabilityAlerts": {
-    "enabled": true,
-    "addLabels": [
-      "kind/security"
-    ]
-  },
+  "ignorePaths": ["**/dist-dynamic/**"],
+  "vulnerabilityAlerts": {"enabled": true, "addLabels": ["kind/security"]},
   "osvVulnerabilityAlerts": false
+       
 }
