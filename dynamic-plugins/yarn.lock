@@ -10490,40 +10490,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.21.0":
-  version: 1.21.4
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.21.4"
-  dependencies:
-    "@backstage/catalog-model": "npm:^1.7.7"
-    "@backstage/core-components": "npm:^0.18.8"
-    "@backstage/core-plugin-api": "npm:^1.12.4"
-    "@backstage/frontend-plugin-api": "npm:^0.15.1"
-    "@backstage/plugin-app-react": "npm:^0.2.1"
-    "@backstage/plugin-catalog-react": "npm:^2.1.0"
-    "@backstage/plugin-notifications": "npm:^0.5.15"
-    "@backstage/plugin-notifications-common": "npm:^0.2.1"
-    "@backstage/plugin-search": "npm:^1.7.0"
-    "@backstage/plugin-search-backend": "npm:^2.1.0"
-    "@backstage/plugin-search-backend-module-catalog": "npm:^0.3.13"
-    "@backstage/plugin-search-backend-module-pg": "npm:^0.5.53"
-    "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.12"
-    "@backstage/plugin-search-common": "npm:^1.2.22"
-    "@backstage/plugin-search-react": "npm:^1.11.0"
-    "@backstage/plugin-signals-react": "npm:^0.0.20"
-    "@backstage/plugin-user-settings": "npm:^0.9.1"
-    "@backstage/theme": "npm:^0.7.2"
-    "@mui/icons-material": "npm:5.18.0"
-    "@mui/material": "npm:5.18.0"
-    "@mui/styled-engine": "npm:5.18.0"
-    "@scalprum/react-core": "npm:0.11.1"
-    react-use: "npm:^17.5.0"
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.0.0
-  checksum: 10c0/9d6c66441553102da1ab561a6063ed3b897714651183fb78f0b6c4fef9bf19c7366bab2bb4a3f8c560ae6a78b811628d18deed4d6827fa6296616161a401356d
-  languageName: node
-  linkType: hard
-
 "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.1.2":
   version: 0.1.2
   resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.1.2"
