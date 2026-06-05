@@ -5012,69 +5012,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-home-react@npm:^0.1.36":
-  version: 0.1.36
-  resolution: "@backstage/plugin-home-react@npm:0.1.36"
-  dependencies:
-    "@backstage/core-compat-api": "npm:^0.5.9"
-    "@backstage/core-components": "npm:^0.18.8"
-    "@backstage/core-plugin-api": "npm:^1.12.4"
-    "@backstage/frontend-plugin-api": "npm:^0.15.0"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
-    "@rjsf/utils": "npm:5.24.13"
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.30.2
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10c0/f603143065aa64b938222291a383c79c15f7c3256ec379dfd0ef8b4642395eef4340e83de7c2baa8eb032eb37634d88ccba42f6ac8ba81418ad2c58c9bd93450
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-home@npm:0.9.3":
-  version: 0.9.3
-  resolution: "@backstage/plugin-home@npm:0.9.3"
-  dependencies:
-    "@backstage/catalog-client": "npm:^1.14.0"
-    "@backstage/catalog-model": "npm:^1.7.7"
-    "@backstage/config": "npm:^1.3.6"
-    "@backstage/core-app-api": "npm:^1.19.6"
-    "@backstage/core-compat-api": "npm:^0.5.9"
-    "@backstage/core-components": "npm:^0.18.8"
-    "@backstage/core-plugin-api": "npm:^1.12.4"
-    "@backstage/frontend-plugin-api": "npm:^0.15.0"
-    "@backstage/plugin-catalog-react": "npm:^2.1.0"
-    "@backstage/plugin-home-react": "npm:^0.1.36"
-    "@backstage/theme": "npm:^0.7.2"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
-    "@material-ui/lab": "npm:4.0.0-alpha.61"
-    "@rjsf/core": "npm:5.24.13"
-    "@rjsf/material-ui": "npm:5.24.13"
-    "@rjsf/utils": "npm:5.24.13"
-    "@rjsf/validator-ajv8": "npm:5.24.13"
-    lodash: "npm:^4.17.21"
-    luxon: "npm:^3.4.3"
-    react-grid-layout: "npm:1.3.4"
-    react-resizable: "npm:^3.0.4"
-    react-use: "npm:^17.2.4"
-    zod: "npm:^3.25.76 || ^4.0.0"
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.30.2
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10c0/b73451bcde69e110a720a0f1950307f589ae323ad99efa55c6ae2f22fc6e74d5781db6f210f6bdf82e4ca45fc99c1f65c90b7ec38824548adeac279fe2b9cde2
-  languageName: node
-  linkType: hard
-
 "@backstage/plugin-org@npm:0.7.0":
   version: 0.7.0
   resolution: "@backstage/plugin-org@npm:0.7.0"
@@ -18679,7 +18616,6 @@ __metadata:
     "@backstage/plugin-catalog-import": "npm:0.13.11"
     "@backstage/plugin-catalog-react": "npm:2.1.1"
     "@backstage/plugin-catalog-unprocessed-entities": "npm:0.2.30"
-    "@backstage/plugin-home": "npm:0.9.3"
     "@backstage/plugin-permission-react": "npm:0.4.41"
     "@backstage/plugin-scaffolder": "npm:1.36.1"
     "@backstage/plugin-scaffolder-react": "npm:1.20.0"
@@ -20596,7 +20532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^1.0.2, clsx@npm:^1.0.4, clsx@npm:^1.1.1, clsx@npm:^1.2.1":
+"clsx@npm:^1.0.2, clsx@npm:^1.0.4, clsx@npm:^1.2.1":
   version: 1.2.1
   resolution: "clsx@npm:1.2.1"
   checksum: 10c0/34dead8bee24f5e96f6e7937d711978380647e936a22e76380290e35486afd8634966ce300fc4b74a32f3762c7d4c0303f442c3e259f4ce02374eb0c82834f27
@@ -29088,13 +29024,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.isequal@npm:^4.0.0":
-  version: 4.5.0
-  resolution: "lodash.isequal@npm:4.5.0"
-  checksum: 10c0/dfdb2356db19631a4b445d5f37868a095e2402292d59539a987f134a8778c62a2810c2452d11ae9e6dcac71fc9de40a6fedcb20e2952a15b431ad8b29e50e28f
-  languageName: node
-  linkType: hard
-
 "lodash.isinteger@npm:^4.0.4":
   version: 4.0.4
   resolution: "lodash.isinteger@npm:4.0.4"
@@ -29340,7 +29269,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:3.7.2, luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.4.3, luxon@npm:^3.5.0":
+"luxon@npm:3.7.2, luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.5.0":
   version: 3.7.2
   resolution: "luxon@npm:3.7.2"
   checksum: 10c0/ed8f0f637826c08c343a29dd478b00628be93bba6f068417b1d8896b61cb61c6deacbe1df1e057dbd9298334044afa150f9aaabbeb3181418ac8520acfdc2ae2
@@ -33918,7 +33847,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-draggable@npm:^4.0.0, react-draggable@npm:^4.5.0":
+"react-draggable@npm:^4.5.0":
   version: 4.5.0
   resolution: "react-draggable@npm:4.5.0"
   dependencies:
@@ -33975,22 +33904,6 @@ __metadata:
   peerDependencies:
     react: ">= 16.8.0"
   checksum: 10c0/02c6034c6aca5c68b4067d2cbfe0328b2461a0ef3b27735cf2711aca53308242cf0f31f888e6fc22e9ea34ae28c61a8d8acaddfd497f100c8e84f87b58530439
-  languageName: node
-  linkType: hard
-
-"react-grid-layout@npm:1.3.4":
-  version: 1.3.4
-  resolution: "react-grid-layout@npm:1.3.4"
-  dependencies:
-    clsx: "npm:^1.1.1"
-    lodash.isequal: "npm:^4.0.0"
-    prop-types: "npm:^15.8.1"
-    react-draggable: "npm:^4.0.0"
-    react-resizable: "npm:^3.0.4"
-  peerDependencies:
-    react: ">= 16.3.0"
-    react-dom: ">= 16.3.0"
-  checksum: 10c0/2c4a9ca1284cf6a618070aeccf8ffb8d2d91798452f7606395a4524bda27fad82ba9c818cb3e420d617fec8aed93c0caaae060c714d21a929c6f5c75727697b7
   languageName: node
   linkType: hard
 
@@ -34211,7 +34124,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resizable@npm:^3.0.4, react-resizable@npm:^3.0.5":
+"react-resizable@npm:^3.0.5":
   version: 3.1.3
   resolution: "react-resizable@npm:3.1.3"
   dependencies:
