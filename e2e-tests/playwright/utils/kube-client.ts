@@ -742,10 +742,15 @@ export class KubeClient {
             await this.logReplicaSetStatus(deploymentName, namespace);
             await this.logPodEvents(namespace, finalLabelSelector);
             await this.logPodConditions(namespace, finalLabelSelector);
+            // Extract the failing container name from the failure reason
+            // Format: "Pod <name> container <containerName> is in ..." or "... terminated ..."
+            const failingContainerMatch =
+              podFailureReason.match(/container (\S+)/);
+            const failingContainer = failingContainerMatch?.[1];
             await this.logPodContainerLogs(
               namespace,
               finalLabelSelector,
-              "backstage-backend",
+              failingContainer,
             );
             throw new Error(
               `Deployment ${deploymentName} failed to start: ${podFailureReason}`,
@@ -969,10 +974,13 @@ export class KubeClient {
         if (!podName) continue;
 
         // If container name specified, only get logs from that container
-        // Otherwise, get logs from all containers
+        // Otherwise, get logs from all containers (including init containers)
         const containers = containerName
           ? [{ name: containerName }]
-          : pod.spec?.containers || [];
+          : [
+              ...(pod.spec?.initContainers || []),
+              ...(pod.spec?.containers || []),
+            ];
 
         for (const container of containers) {
           const cn = container.name;
