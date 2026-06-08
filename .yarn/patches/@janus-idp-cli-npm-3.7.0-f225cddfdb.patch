@@ -1,0 +1,46 @@
+diff --git a/dist/lib/config.cjs.js b/dist/lib/config.cjs.js
+index caa4931fd0453130436fc09d03b898698a473bdd..2f4df886e9cdeb07e82f2b3314ee87b3d5f4f69b 100644
+--- a/dist/lib/config.cjs.js
++++ b/dist/lib/config.cjs.js
+@@ -6,6 +6,8 @@ var configLoader = require('@backstage/config-loader');
+ var getPackages = require('@manypkg/get-packages');
+ var paths = require('./paths.cjs.js');
+ var urls = require('./urls.cjs.js');
++var fs = require('fs');
++var nodePath = require('path');
+ 
+ async function loadCliConfig(options) {
+   const configTargets = [];
+@@ -33,10 +35,30 @@ async function loadCliConfig(options) {
+   } else {
+     localPackageNames = packages.map((p) => p.packageJson.name);
+   }
++  const dynamicPluginPackagePaths = [];
++  try {
++    const dynamicPluginsRootDir = paths.paths.resolveTargetRoot("dynamic-plugins-root");
++    if (fs.existsSync(dynamicPluginsRootDir)) {
++      const entries = fs.readdirSync(dynamicPluginsRootDir, { withFileTypes: true });
++      for (const entry of entries) {
++        if (entry.isDirectory()) {
++          const pkgJsonPath = nodePath.resolve(dynamicPluginsRootDir, entry.name, "package.json");
++          if (fs.existsSync(pkgJsonPath)) {
++            try {
++              const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
++              if (pkg.configSchema) {
++                dynamicPluginPackagePaths.push(pkgJsonPath);
++              }
++            } catch (_) {}
++          }
++        }
++      }
++    }
++  } catch (_) {}
++
+   const schema = await configLoader.loadConfigSchema({
+     dependencies: localPackageNames,
+-    // Include the package.json in the project root if it exists
+-    packagePaths: [paths.paths.resolveTargetRoot("package.json")],
++    packagePaths: [paths.paths.resolveTargetRoot("package.json"), ...dynamicPluginPackagePaths],
+     noUndeclaredProperties: options.strict
+   });
+   const { appConfigs } = await configLoader.loadConfig({
