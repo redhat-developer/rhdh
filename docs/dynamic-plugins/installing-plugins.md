@@ -8,7 +8,7 @@ For more information, see [Installing Dynamic Plugins with the Red Hat Developer
 Plugins are defined in the `plugins` array in the `dynamic-plugins.yaml` file. Each plugin is defined as an object with the following properties:
 
 - `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path. For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag to inherit the version from an included configuration. Additionally, when using single-plugin OCI images, the plugin path can also be omitted.
-- `disabled`: A boolean value that determines whether the plugin is enabled or disabled.
+- `enabled`: A boolean value that determines whether the plugin is enabled (`true`) or disabled (`false`). The legacy `disabled` field is still accepted for backward compatibility; when both are present, `enabled` takes precedence.
 - `integrity`: The integrity hash of the package. This is required for `tgz` archives and npm packages.
 - `pluginConfig`: The configuration for the plugin. For backend plugins this is optional and can be used to pass configuration to the plugin. For frontend plugins this is required, see [Frontend Plugin Wiring](frontend-plugin-wiring.md) for more information on how to configure bindings and routes. This is a fragment of the `app-config.yaml` file. Anything that is added to this object will be merged into a `app-config.dynamic-plugins.yaml` file whose config can be merged with the main `app-config.yaml` config when launching RHDH.
 
@@ -18,17 +18,17 @@ Note: Duplicate plugins found across config files in the `includes` field will t
 
 The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configured to work. The comprehensive list of these packages can be found in the [`default.packages.yaml`](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/default.packages.yaml) file.
 
-On application start, for each disabled package, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's will log something like:
+On application start, for each plugin that is not enabled, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's will log something like:
 
 ```console
 ======= Skipping disabled dynamic plugin oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment
 ```
 
-To activate this plugin, simply add a package with the same name and adjust the `disabled` field.
+To activate this plugin, simply add a package with the same name and set `enabled: true`.
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
 ```
 
@@ -67,11 +67,11 @@ The catalog index OCI image should contain the following at the root level:
 # Contents of dynamic-plugins.default.yaml in the OCI image
 plugins:
   - package: '@backstage/plugin-catalog'
-    disabled: true
+    enabled: false
     pluginConfig:
       # ... plugin configuration
   - package: oci://quay.io/example/plugin:v1.0!my-plugin
-    disabled: true
+    enabled: false
 ```
 
 ### Catalog Entities Extraction
@@ -133,7 +133,7 @@ When defining the plugin packaged as an OCI image, use the `oci://` prefix, foll
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:v0.0.1!backstage-plugin-myplugin
 ```
 
@@ -143,7 +143,7 @@ For integrity check one may use [image digests](https://github.com/opencontainer
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image@sha256:28036abec4dffc714394e4ee433f16a59493db8017795049c831be41c02eb5dc!backstage-plugin-myplugin
 ```
 
@@ -155,7 +155,7 @@ Explicit Path Usage:
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:v1.0.0!backstage-plugin-myplugin
 ```
 
@@ -163,7 +163,7 @@ Auto-detected Path Usage:
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:v1.0.0
 ```
 
@@ -180,7 +180,7 @@ For example, if we have an included dynamic plugin file (`dynamic-plugins.exampl
 ```yaml
 # dynamic-plugins.example.yaml
 plugins:
-  - disabled: true
+  - enabled: false
     package: oci://quay.io/example/image:v0.0.2!backstage-plugin-myplugin
 ```
 
@@ -191,13 +191,13 @@ and a `dynamic-plugins.yaml` file with the `{{inherit}}` tag using configuration
 includes:
 - dynamic-plugins.example.yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:{{inherit}}!backstage-plugin-myplugin
     pluginConfig:
       exampleName: "test"
 ```
 
-The resolved version would be `v0.0.2`, but the overridden `pluginConfig` and `disabled: false` would still apply.
+The resolved version would be `v0.0.2`, but the overridden `pluginConfig` and `enabled: true` would still apply.
 
 **General Notes:**
 
@@ -214,7 +214,7 @@ For example, we can have an example plugin that uses auto-detection that will re
 ```yaml
 # dynamic-plugins.example.yaml
 plugins:
-  - disabled: true
+  - enabled: false
     package: oci://quay.io/example/image:v0.0.2
 ```
 
@@ -225,7 +225,7 @@ Then we can just use `{{inherit}}` without a path, and we will inherit both the 
 includes:
 - dynamic-plugins.example.yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:{{inherit}}
     pluginConfig:
       exampleName: "test"
@@ -239,7 +239,7 @@ When defining the plugin packaged as a `tgz` archive, use the URL of the archive
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: https://example.com/backstage-plugin-myplugin-1.0.0.tgz
     integrity: sha512-9WlbgEdadJNeQxdn1973r5E4kNFvnT9GjLD627GWgrhCaxjCmxqdNW08cj+Bf47mwAtZMt1Ttyo+ZhDRDj9PoA==
 ```
@@ -250,7 +250,7 @@ When defining the plugin packaged as an npm package, use the package name and ve
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: @example/backstage-plugin-myplugin@1.0.0
     integrity: sha512-9WlbgEdadJNeQxdn1973r5E4kNFvnT9GjLD627GWgrhCaxjCmxqdNW08cj+Bf47mwAtZMt1Ttyo+ZhDRDj9PoA==
 ```

@@ -130,9 +130,9 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
 
     plugins:
       - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo
-        disabled: false
+        enabled: true
       - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo-backend-dynamic
-        disabled: false
+        enabled: true
     ```
 
     Push image to container registry.
@@ -152,7 +152,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
     ```yaml
     # frontend and backend plugins for the todo plugin
     - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo
-      disabled: false
+      enabled: true
       pluginConfig:
         dynamicPlugins:
           frontend:
@@ -165,7 +165,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
                   title: Todo
                   mountPoint: entity.page.todo
     - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo-backend-dynamic
-      disabled: false
+      enabled: true
     ```
 
 
