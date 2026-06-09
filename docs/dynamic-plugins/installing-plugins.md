@@ -16,8 +16,7 @@ Note: Duplicate plugins found across config files in the `includes` field will t
 
 ## Dynamic plugins included in the RHDH container image
 
-The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configued to work. The comprehensive list of these packages is at [`default.packages.yaml`](../../default.packages.yaml) file.
-
+The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configured to work. The comprehensive list of these packages can be found in the [`default.packages.yaml`](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/release-1.10/default.packages.yaml) file.
 On application start, for each disabled package, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's will log something like:
 
 ```console
@@ -32,7 +31,7 @@ plugins:
     package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
 ```
 
-While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file, you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
+While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file (now delivered via the catalog index image; see [Using a Catalog Index Image](#using-a-catalog-index-image-for-default-plugin-configurations) below), you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
 
 Note: The plugin's default configuration typically references environment variables, and it is essential to ensure that these variables are set in the Helm chart values or the Operator configuration.
 
