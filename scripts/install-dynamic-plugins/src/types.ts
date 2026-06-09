@@ -12,7 +12,7 @@ export type PullPolicy = (typeof PullPolicy)[keyof typeof PullPolicy];
 export type PluginSpec = {
   package: string;
   /**
-   * @deprecated Use `enabled` instead. Kept for backward compatibility.
+   * Recommended: Use `enabled` instead.
    * When both `enabled` and `disabled` are present, `enabled` takes precedence.
    */
   disabled?: boolean;
