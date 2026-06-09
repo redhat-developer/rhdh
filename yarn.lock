@@ -7300,7 +7300,7 @@ __metadata:
     "@types/supertest": 6.0.3
     express: 4.22.1
     express-promise-router: 4.1.1
-    json-2-csv: 5.5.10
+    json-2-csv: 5.5.11
     knex: 3.1.0
     luxon: 3.7.2
     msw: 1.3.5
@@ -21383,10 +21383,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deeks@npm:3.1.0":
-  version: 3.1.0
-  resolution: "deeks@npm:3.1.0"
-  checksum: d4b92aea7bee3a77adad0d84da67c8afe9693cc22c89bf10e01bc30eb0dd5e53a7958ce12f6f0b5f1cbb0f54f0a7aa603555725688fc0eb3a6ce80e6950be05a
+"deeks@npm:3.2.1":
+  version: 3.2.1
+  resolution: "deeks@npm:3.2.1"
+  checksum: 0670eee493568ac6080def2402d5f461c6e2b4ca6b00ff6ef3c4ce2d98aa871a47652ef7499a19dfc0822826c55b6a9bc5016365978adbfc1bbf486d61b0a7d5
   languageName: node
   linkType: hard
 
@@ -21730,10 +21730,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"doc-path@npm:4.1.1":
-  version: 4.1.1
-  resolution: "doc-path@npm:4.1.1"
-  checksum: 41e7d59cb460073e1bc1ede88117e885d3e2fc53218cdc176820660465ebda59330355d12605b96fb13b88754826b471bfec2ec832f145d2f561f53ec3066a0f
+"doc-path@npm:4.1.4":
+  version: 4.1.4
+  resolution: "doc-path@npm:4.1.4"
+  checksum: f9ea8d6cfb9554aea084c44dee8412571a3a2de49e2d576773a510727a0d78403e83d507a90ef465537cbb2d1e0a2f01e642021463240adcda3a6338bba03fa5
   languageName: node
   linkType: hard
 
@@ -27386,13 +27386,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-2-csv@npm:5.5.10":
-  version: 5.5.10
-  resolution: "json-2-csv@npm:5.5.10"
+"json-2-csv@npm:5.5.11":
+  version: 5.5.11
+  resolution: "json-2-csv@npm:5.5.11"
   dependencies:
-    deeks: 3.1.0
-    doc-path: 4.1.1
-  checksum: 68cef1f1161d10b20f68bc08cae2401a466be7710fbd01d67dcaff73312157a8e48cdc107c194b52a9759d81ae6f276a71fd3ff0afc27a2102f2fa9e6d7f2014
+    deeks: 3.2.1
+    doc-path: 4.1.4
+  checksum: 8b1fa9febfb7018db66b1013d8e56920448a39a80ed9637cf3381fc09f70f8076324603adb72fa2104e9e1e1e3733870488fa71d4a7de13e1308b6121f4df18a
   languageName: node
   linkType: hard
 
