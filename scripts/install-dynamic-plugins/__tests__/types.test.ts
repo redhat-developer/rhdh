@@ -1,4 +1,4 @@
-import { parseMaxEntrySize } from '../src/types';
+import { isPluginDisabled, parseMaxEntrySize } from '../src/types';
 
 describe('parseMaxEntrySize', () => {
   const DEFAULT = 40_000_000;
@@ -29,5 +29,53 @@ describe('parseMaxEntrySize', () => {
 
   it('falls back to the default for NaN', () => {
     expect(parseMaxEntrySize('NaN')).toBe(DEFAULT);
+  });
+});
+
+describe('isPluginDisabled', () => {
+  it('returns false when neither enabled nor disabled is set', () => {
+    expect(isPluginDisabled({ package: 'pkg@1.0' })).toBe(false);
+  });
+
+  it('returns false when enabled: true', () => {
+    expect(isPluginDisabled({ package: 'pkg@1.0', enabled: true })).toBe(false);
+  });
+
+  it('returns true when enabled: false', () => {
+    expect(isPluginDisabled({ package: 'pkg@1.0', enabled: false })).toBe(true);
+  });
+
+  it('returns true when disabled: true (backward compat)', () => {
+    expect(isPluginDisabled({ package: 'pkg@1.0', disabled: true })).toBe(true);
+  });
+
+  it('returns false when disabled: false (backward compat)', () => {
+    expect(isPluginDisabled({ package: 'pkg@1.0', disabled: false })).toBe(false);
+  });
+
+  it('enabled takes precedence over disabled when both set (enabled: true, disabled: true)', () => {
+    const warnings: string[] = [];
+    const result = isPluginDisabled(
+      { package: 'pkg@1.0', enabled: true, disabled: true },
+      msg => warnings.push(msg),
+    );
+    expect(result).toBe(false);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/both 'enabled' and 'disabled'/);
+  });
+
+  it('enabled takes precedence over disabled when both set (enabled: false, disabled: false)', () => {
+    const warnings: string[] = [];
+    const result = isPluginDisabled(
+      { package: 'pkg@1.0', enabled: false, disabled: false },
+      msg => warnings.push(msg),
+    );
+    expect(result).toBe(true);
+    expect(warnings).toHaveLength(1);
+  });
+
+  it('does not warn when no callback provided', () => {
+    // Should not throw even when both fields are set
+    expect(isPluginDisabled({ package: 'pkg@1.0', enabled: true, disabled: true })).toBe(false);
   });
 });

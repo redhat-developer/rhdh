@@ -171,4 +171,53 @@ describe('filterDisabledOciPlugins', () => {
     const out = filterDisabledOciPlugins(plugins, new Set(['oci://something/plugin']));
     expect(out).toHaveLength(2);
   });
+
+  it('removes invalid OCI entries that are marked enabled: false', () => {
+    const plugins: PluginSpec[] = [
+      { package: 'oci://bad spec', enabled: false },
+      { package: 'oci://also bad' },
+    ];
+    const out = filterDisabledOciPlugins(plugins, new Set());
+    expect(out.map(p => p.package)).toEqual(['oci://also bad']);
+  });
+});
+
+describe('preMergeOciDisabledState — enabled field', () => {
+  it('enabled: false in main disables the registry', () => {
+    const include: PluginSpec[] = [
+      { package: 'oci://registry.example.com/plugin:1.0', enabled: true },
+    ];
+    const main: PluginSpec[] = [
+      { package: 'oci://registry.example.com/plugin:{{inherit}}', enabled: false },
+    ];
+    const result = preMergeOciDisabledState([['include.yaml', include]], main, 'main.yaml');
+    expect(result.has('oci://registry.example.com/plugin')).toBe(true);
+  });
+
+  it('enabled: true in main re-enables a disabled include', () => {
+    const include: PluginSpec[] = [
+      { package: 'oci://registry.example.com/plugin:1.0', enabled: false },
+    ];
+    const main: PluginSpec[] = [
+      { package: 'oci://registry.example.com/plugin:{{inherit}}', enabled: true },
+    ];
+    const result = preMergeOciDisabledState([['include.yaml', include]], main, 'main.yaml');
+    expect(result.has('oci://registry.example.com/plugin')).toBe(false);
+  });
+
+  it('enabled takes precedence when both enabled and disabled are set', () => {
+    const warn = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    try {
+      const main: PluginSpec[] = [
+        { package: 'oci://registry.example.com/plugin:1.0', enabled: true, disabled: true },
+      ];
+      const result = preMergeOciDisabledState([], main, 'main.yaml');
+      // enabled: true should win even though disabled: true is also set
+      expect(result.has('oci://registry.example.com/plugin')).toBe(false);
+      const out = warn.mock.calls.map(args => String(args[0])).join('\n');
+      expect(out).toMatch(/both 'enabled' and 'disabled'/);
+    } finally {
+      warn.mockRestore();
+    }
+  });
 });

@@ -8,6 +8,7 @@ import {
   CONFIG_HASH_FILE,
   effectivePullPolicy,
   IMAGE_HASH_FILE,
+  isPluginDisabled,
   type Plugin,
   PullPolicy,
 } from './types.js';
@@ -45,7 +46,7 @@ export async function installOciPlugin(
   imageCache: OciImageCache,
   installed: Map<string, string>,
 ): Promise<OciInstallResult> {
-  if (plugin.disabled) {
+  if (isPluginDisabled(plugin, log)) {
     return { pluginPath: null, pluginConfig: {} };
   }
   const hash = plugin.plugin_hash;

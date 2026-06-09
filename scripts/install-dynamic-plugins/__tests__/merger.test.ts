@@ -56,6 +56,24 @@ describe('mergePlugin — NPM', () => {
     expect(all['pkg']?.last_modified_level).toBe(1);
   });
 
+  it('overrides using the enabled field', async () => {
+    const all: PluginMap = {};
+    await mergePlugin({ package: 'pkg@1.0.0', enabled: true }, all, 'inc.yaml', 0);
+    await mergePlugin({ package: 'pkg@2.0.0', enabled: false }, all, 'cfg.yaml', 1);
+    expect(all['pkg']?.package).toBe('pkg@2.0.0');
+    expect(all['pkg']?.enabled).toBe(false);
+    expect(all['pkg']?.last_modified_level).toBe(1);
+  });
+
+  it('handles enabled overriding disabled from a lower level', async () => {
+    const all: PluginMap = {};
+    await mergePlugin({ package: 'pkg@1.0.0', disabled: true }, all, 'inc.yaml', 0);
+    await mergePlugin({ package: 'pkg@2.0.0', enabled: true }, all, 'cfg.yaml', 1);
+    expect(all['pkg']?.package).toBe('pkg@2.0.0');
+    expect(all['pkg']?.enabled).toBe(true);
+    expect(all['pkg']?.last_modified_level).toBe(1);
+  });
+
   it('raises on duplicates within the same level', async () => {
     const all: PluginMap = {};
     await mergePlugin({ package: 'pkg@1.0.0' }, all, 'cfg.yaml', 0);

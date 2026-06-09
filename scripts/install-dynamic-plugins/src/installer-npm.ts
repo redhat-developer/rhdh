@@ -5,7 +5,7 @@ import { verifyIntegrity } from './integrity.js';
 import { log } from './log.js';
 import { run } from './run.js';
 import { extractNpmPackage } from './tar-extract.js';
-import { CONFIG_HASH_FILE, type Plugin } from './types.js';
+import { CONFIG_HASH_FILE, isPluginDisabled, type Plugin } from './types.js';
 import { markAsFresh } from './util.js';
 
 export type NpmInstallResult = {
@@ -30,7 +30,7 @@ export async function installNpmPlugin(
   skipIntegrity: boolean,
   installed: Map<string, string>,
 ): Promise<NpmInstallResult> {
-  if (plugin.disabled) {
+  if (isPluginDisabled(plugin, log)) {
     return { pluginPath: null, pluginConfig: {} };
   }
   const hash = plugin.plugin_hash;
