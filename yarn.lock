@@ -9241,13 +9241,13 @@ __metadata:
   linkType: hard
 
 "@octokit/plugin-paginate-rest@npm:^9.0.0":
-  version: 9.2.0
-  resolution: "@octokit/plugin-paginate-rest@npm:9.2.0"
+  version: 9.2.2
+  resolution: "@octokit/plugin-paginate-rest@npm:9.2.2"
   dependencies:
     "@octokit/types": ^12.6.0
   peerDependencies:
-    "@octokit/core": ">=5"
-  checksum: fbeb38d31dcf84a52b671f5a92815d7b31c7a70c8e57a546e0391f257fda6a2dc1f53b5cd6ddf6678d5bd08a8ba728487794560a37ee14f8c11317a7a01bc2a4
+    "@octokit/core": 5
+  checksum: ea2a3ebf6abc128a1996c5ff7148ebe755ee2ed001aa0c1d3088d67a9d78b093d84820e3ec73bfb165ca8774943a1158afdae4cf7b90b0a07f12ebbe1d8a428b
   languageName: node
   linkType: hard
 
