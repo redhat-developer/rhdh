@@ -15,6 +15,17 @@ interface KubeApiError {
 }
 
 /**
+ * Structured result from checkPodFailureStates() containing both
+ * a human-readable message and the failing container name (if applicable).
+ */
+interface PodFailureResult {
+  /** Human-readable description of the failure */
+  message: string;
+  /** The name of the failing container, if the failure is container-scoped */
+  containerName?: string;
+}
+
+/**
  * Type guard to check if an unknown error is a KubeApiError.
  */
 function isKubeApiError(error: unknown): error is KubeApiError {
@@ -569,7 +580,7 @@ export class KubeClient {
   async checkPodFailureStates(
     namespace: string,
     labelSelector: string,
-  ): Promise<string | null> {
+  ): Promise<PodFailureResult | null> {
     try {
       const response = await this.coreV1Api.listNamespacedPod(
         namespace,
@@ -593,7 +604,9 @@ export class KubeClient {
         if (phase === "Failed") {
           const reason = pod.status?.reason || "Unknown";
           const message = pod.status?.message || "";
-          return `Pod ${podName} is in Failed phase: ${reason} - ${message}`;
+          return {
+            message: `Pod ${podName} is in Failed phase: ${reason} - ${message}`,
+          };
         }
 
         // Check pod conditions for issues
@@ -613,7 +626,9 @@ export class KubeClient {
               );
               return null;
             }
-            return `Pod ${podName} cannot be scheduled: ${condition.reason} - ${msg}`;
+            return {
+              message: `Pod ${podName} cannot be scheduled: ${condition.reason} - ${msg}`,
+            };
           }
           if (
             condition.type === "Ready" &&
@@ -628,7 +643,9 @@ export class KubeClient {
               "PodHasNoResources",
             ];
             if (errorReasons.includes(condition.reason)) {
-              return `Pod ${podName} is not ready: ${condition.reason} - ${condition.message}`;
+              return {
+                message: `Pod ${podName} is not ready: ${condition.reason} - ${condition.message}`,
+              };
             }
           }
         }
@@ -659,7 +676,10 @@ export class KubeClient {
 
             if (failureStates.includes(reason)) {
               const message = waiting.message || "";
-              return `Pod ${podName} container ${containerName} is in ${reason} state: ${message}`;
+              return {
+                message: `Pod ${podName} container ${containerName} is in ${reason} state: ${message}`,
+                containerName,
+              };
             }
 
             // Check for other waiting states that might indicate issues
@@ -677,7 +697,10 @@ export class KubeClient {
             const reason = terminated.reason || "Error";
             const message = terminated.message || "";
             // Return error if container exited with non-zero code
-            return `Pod ${podName} container ${containerName} terminated with exit code ${terminated.exitCode}: ${reason} - ${message}`;
+            return {
+              message: `Pod ${podName} container ${containerName} terminated with exit code ${terminated.exitCode}: ${reason} - ${message}`,
+              containerName,
+            };
           }
         }
       }
@@ -730,30 +753,25 @@ export class KubeClient {
 
         // Check for pod failure states when expecting replicas > 0
         if (expectedReplicas > 0 && podSelector) {
-          const podFailureReason = await this.checkPodFailureStates(
+          const podFailure = await this.checkPodFailureStates(
             namespace,
             podSelector,
           );
-          if (podFailureReason) {
+          if (podFailure) {
             console.error(
-              `Pod failure detected: ${podFailureReason}. Logging events and pod logs...`,
+              `Pod failure detected: ${podFailure.message}. Logging events and pod logs...`,
             );
             await this.logDeploymentEvents(deploymentName, namespace);
             await this.logReplicaSetStatus(deploymentName, namespace);
             await this.logPodEvents(namespace, finalLabelSelector);
             await this.logPodConditions(namespace, finalLabelSelector);
-            // Extract the failing container name from the failure reason
-            // Format: "Pod <name> container <containerName> is in ..." or "... terminated ..."
-            const failingContainerMatch =
-              podFailureReason.match(/container (\S+)/);
-            const failingContainer = failingContainerMatch?.[1];
             await this.logPodContainerLogs(
               namespace,
               finalLabelSelector,
-              failingContainer,
+              podFailure.containerName,
             );
             throw new Error(
-              `Deployment ${deploymentName} failed to start: ${podFailureReason}`,
+              `Deployment ${deploymentName} failed to start: ${podFailure.message}`,
             );
           }
         }
