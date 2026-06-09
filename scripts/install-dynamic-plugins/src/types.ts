@@ -114,8 +114,21 @@ export function isPluginDisabled(
   plugin: { package: string; disabled?: boolean; enabled?: boolean },
   warn?: (msg: string) => void,
 ): boolean {
-  const hasEnabled = plugin.enabled !== undefined;
-  const hasDisabled = plugin.disabled !== undefined;
+  const hasEnabled = typeof plugin.enabled === 'boolean';
+  const hasDisabled = typeof plugin.disabled === 'boolean';
+
+  if (plugin.enabled !== undefined && !hasEnabled) {
+    warn?.(
+      `WARNING: Plugin ${plugin.package} has non-boolean 'enabled: ${String(plugin.enabled)}'. ` +
+        `Expected true or false; ignoring the field.`,
+    );
+  }
+  if (plugin.disabled !== undefined && !hasDisabled) {
+    warn?.(
+      `WARNING: Plugin ${plugin.package} has non-boolean 'disabled: ${String(plugin.disabled)}'. ` +
+        `Expected true or false; ignoring the field.`,
+    );
+  }
 
   if (hasEnabled && hasDisabled) {
     warn?.(
