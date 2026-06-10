@@ -12100,6 +12100,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-stately/overlays@npm:^3.0.0":
+  version: 3.7.1
+  resolution: "@react-stately/overlays@npm:3.7.1"
+  dependencies:
+    "@swc/helpers": "npm:^0.5.0"
+    react-stately: "npm:^3.46.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+    react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+  checksum: 10c0/1c1a5a09965be5bc82c3c962c1e3d72fe5259eab99e73fee01b8e91cc57f4b96a7f3dae5a55fe5fd4169cc59cf0bee65bde02ed87f6664c1bb0d3ea7138ad2ec
+  languageName: node
+  linkType: hard
+
 "@react-stately/table@npm:^3.11.8, @react-stately/table@npm:^3.16.0":
   version: 3.16.1
   resolution: "@react-stately/table@npm:3.16.1"
@@ -17284,6 +17297,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styled-engine": "npm:5.18.0"
+    "@react-stately/overlays": "npm:^3.0.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:0.14.7"
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.3.1"
     "@red-hat-developer-hub/plugin-utils": "npm:1.0.0"

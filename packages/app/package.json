@@ -46,6 +46,7 @@
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@mui/styled-engine": "5.18.0",
+    "@react-stately/overlays": "^3.0.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "0.14.7",
     "@red-hat-developer-hub/backstage-plugin-translations": "0.3.1",
     "@red-hat-developer-hub/plugin-utils": "1.0.0",
