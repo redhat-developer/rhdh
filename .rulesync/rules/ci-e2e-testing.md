@@ -481,7 +481,7 @@ brew install gnu-sed
 - [Cluster Login Script](.ci/pipelines/ocp-cluster-claim-login.sh)
 - [Test Reporting Script](.ci/pipelines/reporting.sh)
 - [Environment Variables](.ci/pipelines/env_variables.sh)
-- [Dynamic Plugin Installer](scripts/install-dynamic-plugins)
+- [Dynamic Plugin Installer](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/install-dynamic-plugins)
 
 ## Test Configuration Files (Config Maps)
 

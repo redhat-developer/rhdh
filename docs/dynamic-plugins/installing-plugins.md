@@ -76,7 +76,7 @@ plugins:
 
 ### Catalog Entities Extraction
 
-When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-entities/marketplace` directory, the [`install-dynamic-plugins`](../../scripts/install-dynamic-plugins) installer will automatically extract these catalog entities to a configurable location.
+When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-entities/marketplace` directory, the [`install-dynamic-plugins`](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/install-dynamic-plugins) installer will automatically extract these catalog entities to a configurable location.
 
 The extraction destination is governed by the `CATALOG_ENTITIES_EXTRACT_DIR` environment variable:
 

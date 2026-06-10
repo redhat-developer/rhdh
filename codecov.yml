@@ -93,10 +93,6 @@ flag_management:
         - packages/plugin-utils/src/**
         - dynamic-plugins/_utils/src/**
       carryforward: true
-    - name: install-dynamic-plugins
-      paths:
-        - scripts/install-dynamic-plugins/*.py
-      carryforward: true
     # Paths intentionally mirror the rhdh flag — both measure the same source
     # from different test types. Isolation relies on --flag at upload time,
     # not on paths. If an upload omits --flag, data lands under "default".

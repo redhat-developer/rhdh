@@ -145,23 +145,6 @@ jobs:
           ln -s ${{ runner.temp }}/jest-junit/node_modules/jest-junit node_modules/jest-junit
           mkdir -p ${{ runner.temp }}/test-results
 
-      # Runs before the monorepo test step so the JUnit report it writes
-      # ends up in $RUNNER_TEMP/test-results/ in time for the Codecov
-      # 'Upload test results' step below to pick it up alongside any
-      # jest-junit reports produced by 'yarn run test --affected'. When the
-      # PR only touches non-workspace files, 'yarn ... --affected' emits no
-      # reports and this one is what the upload finds.
-      - name: Test install-dynamic-plugins
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        working-directory: scripts/install-dynamic-plugins
-        run: |
-          npm ci --no-audit --no-fund
-          npm run tsc
-          npx vitest run --coverage \
-            --reporter=default \
-            --reporter=junit \
-            --outputFile.junit="$RUNNER_TEMP/test-results/install-dynamic-plugins.junit.xml"
-
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         id: tests
@@ -187,25 +170,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
-
-      - name: Upload install-dynamic-plugins coverage to Codecov
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
-        with:
-          directory: scripts/install-dynamic-plugins/coverage
-          flags: install-dynamic-plugins
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-
-      - name: Verify install-dynamic-plugins bundle is up to date
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        working-directory: scripts/install-dynamic-plugins
-        run: |
-          npm run build
-          if ! git diff --quiet -- dist/install-dynamic-plugins.cjs; then
-            echo "ERROR: dist/install-dynamic-plugins.cjs is out of date — run 'npm run build' and commit the result." >&2
-            exit 1
-          fi
 
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
