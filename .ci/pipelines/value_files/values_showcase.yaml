@@ -137,7 +137,7 @@ upstream:
       # Note: CI may still override these via --set upstream.backstage.image.* (IMAGE_REGISTRY/IMAGE_REPO/TAG_NAME).
       registry: quay.io
       repository: rhdh/rhdh-hub-rhel9
-      tag: "1.10-132"
+      tag: "1.10-135"
       pullPolicy: Always
 
     extraEnvVars:
