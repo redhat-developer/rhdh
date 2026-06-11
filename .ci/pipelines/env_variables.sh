@@ -78,7 +78,7 @@ fi
 IMAGE_REGISTRY="quay.io"
 IMAGE_REPO="rhdh/rhdh-hub-rhel9"
 QUAY_REPO="${IMAGE_REPO}"
-TAG_NAME="1.10-132"
+TAG_NAME="1.10-135"
 
 # =============================================================================
 # Release and Namespace Configuration
