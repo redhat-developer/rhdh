@@ -278,15 +278,17 @@ COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 # Install the dynamic-plugins installer through yarn instead of fetching the
 # vendored .cjs from this repo. The `@red-hat-developer-hub/cli-module-install-dynamic-plugins`
 # dependency is declared in the root `package.json` so the bin survives the
-# `yarn workspaces focus --all --production` step at line 208 (the earlier
-# `dynamic-plugins/node_modules/` is wiped at line 175 to keep only `dist/`).
-# Hermeto already prefetches yarn deps for the repo root (see
-# scripts/local-hermeto-build.sh:213), so this works in the hermetic Konflux
-# build with no infra change. A build-time `--help` invocation surfaces a
-# missing or renamed CLI entrypoint as a build failure instead of a pod-start
-# failure.
+# `=== YARN WORKSPACES FOCUS ===` production install (the earlier
+# `=== DELETE DYNAMIC PLUGINS/* ===` step wipes `dynamic-plugins/node_modules/`
+# to keep only `dist/`). Hermeto already prefetches yarn deps for the repo
+# root (the `{"type": "yarn", "path": "."}` entry in the fetch-deps call in
+# scripts/local-hermeto-build.sh), so this works in the hermetic Konflux
+# build with no infra change. The build-time `install --help` invocation
+# fails the build if either the bin disappears or the `install` subcommand
+# the shim hardcodes is renamed/removed, instead of letting that surface as
+# a pod-start failure.
 RUN INSTALLER_BIN=/opt/app-root/src/node_modules/.bin/cli-module-install-dynamic-plugins \
-    && "$INSTALLER_BIN" --help >/dev/null \
+    && "$INSTALLER_BIN" install --help >/dev/null \
     && printf '%s\n' \
         '#!/bin/sh' \
         "exec $INSTALLER_BIN install \"\$@\"" \

@@ -73,8 +73,6 @@ AUTHORS eol=lf
 ## These files are binary and should be left untouched
 #
 
-# Generated bundles — collapsed in GitHub diffs, excluded from language stats
-
 # (binary is a macro for -eol=lf -diff)
 *.png binary
 *.jpg binary

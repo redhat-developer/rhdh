@@ -1,8 +1,6 @@
 .yarn/cache
 .yarn/install-state.gz
 **/dist
-# Re-include the bundled install-dynamic-plugins entry point — copied by the
-# runtime stage of build/containerfiles/Containerfile.
 **/node_modules
 plugins
 !plugins/auth-backend-module-oidc-provider
