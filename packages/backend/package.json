@@ -75,6 +75,7 @@
     "@opentelemetry/instrumentation-runtime-node": "0.30.0",
     "@opentelemetry/sdk-node": "0.218.0",
     "@red-hat-developer-hub/backstage-plugin-translations-backend": "0.3.1",
+    "@red-hat-developer-hub/cli-module-install-dynamic-plugins": "0.2.0",
     "app": "workspace:*",
     "app-next": "workspace:*",
     "better-sqlite3": "12.6.2",
