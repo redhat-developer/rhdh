@@ -3680,18 +3680,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli-common@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "@backstage/cli-common@npm:0.2.2"
-  dependencies:
-    "@backstage/errors": "npm:^1.3.1"
-    cross-spawn: "npm:^7.0.3"
-    global-agent: "npm:^3.0.0"
-    undici: "npm:^7.24.5"
-  checksum: 10c0/b83af32489662c1af7009d4a4965e5251cbe7e6bd12e5e14f2951e25d953872cba5802d9e6b780d0c93be95cdd9712e3ababeb2e97e34632b5cda6729f92a46d
-  languageName: node
-  linkType: hard
-
 "@backstage/cli-defaults@npm:0.1.0, @backstage/cli-defaults@npm:^0.1.0":
   version: 0.1.0
   resolution: "@backstage/cli-defaults@npm:0.1.0"
@@ -4082,37 +4070,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli-node@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "@backstage/cli-node@npm:0.3.2"
-  dependencies:
-    "@backstage/cli-common": "npm:^0.2.2"
-    "@backstage/errors": "npm:^1.3.1"
-    "@backstage/types": "npm:^1.2.2"
-    "@manypkg/get-packages": "npm:^1.1.3"
-    "@yarnpkg/lockfile": "npm:^1.1.0"
-    "@yarnpkg/parsers": "npm:^3.0.0"
-    chalk: "npm:^4.0.0"
-    commander: "npm:^12.0.0"
-    fs-extra: "npm:^11.2.0"
-    keytar: "npm:^7.9.0"
-    pirates: "npm:^4.0.6"
-    proper-lockfile: "npm:^4.1.2"
-    semver: "npm:^7.5.3"
-    yaml: "npm:^2.0.0"
-    zod: "npm:^3.25.76 || ^4.0.0"
-  peerDependencies:
-    "@swc/core": ^1.15.6
-  dependenciesMeta:
-    keytar:
-      optional: true
-  peerDependenciesMeta:
-    "@swc/core":
-      optional: true
-  checksum: 10c0/bcbf7097edeaf7ab4415b499126ab2592b889f89e13d65ff6b53f790dd024a33f1b386a08cd13346e766660c3e9486cb65ff96a2ec8300059c3837fa972b7ae5
-  languageName: node
-  linkType: hard
-
 "@backstage/cli@npm:0.36.0":
   version: 0.36.0
   resolution: "@backstage/cli@npm:0.36.0"
@@ -4477,16 +4434,6 @@ __metadata:
     "@backstage/types": "npm:^1.2.2"
     serialize-error: "npm:^8.0.1"
   checksum: 10c0/e47f4a42d989858ab148359a410a82e295b5090c3da8d3a761997fd95d41786183c4113d8db13525964d497c2963e2d532c32f93548bb35bd30c1b514c34af19
-  languageName: node
-  linkType: hard
-
-"@backstage/errors@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "@backstage/errors@npm:1.3.1"
-  dependencies:
-    "@backstage/types": "npm:^1.2.2"
-    serialize-error: "npm:^8.0.1"
-  checksum: 10c0/b342551f5337f17bcc6d412868f6274509d657cc6037fbb5af96d42156c24c2419e72fd711136e42d05245bd4e5c5d8fe9cd54f89f260d9285a073c28cca0261
   languageName: node
   linkType: hard
 
@@ -11501,20 +11448,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/cli-module-install-dynamic-plugins@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@red-hat-developer-hub/cli-module-install-dynamic-plugins@npm:0.2.0"
-  dependencies:
-    "@backstage/cli-node": "npm:^0.3.2"
-    cleye: "npm:^2.6.0"
-    tar: "npm:^7.5.13"
-    yaml: "npm:^2.8.2"
-  bin:
-    cli-module-install-dynamic-plugins: bin/install-dynamic-plugins
-  checksum: 10c0/4a935c1a6b0c2df7a49bfc68891117f0c0b0b321622b332bf892fc57d524565f797ebf702fc5ce2403beb5babfb11f4417874cd046e27b6cff57e48603ffe748
-  languageName: node
-  linkType: hard
-
 "@redis/client@npm:^1.6.0":
   version: 1.6.1
   resolution: "@redis/client@npm:1.6.1"
@@ -17426,16 +17359,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cleye@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "cleye@npm:2.6.0"
-  dependencies:
-    terminal-columns: "npm:^2.0.0"
-    type-flag: "npm:^4.1.0"
-  checksum: 10c0/30bf1f11dec3ef191c79fecb94f4edf53507d60afb5aeb1736608c820315ef9b68451ac822475d313e17d8ab9ee79b614eb09a2fd7c5c3e7d8f4477a186793d7
-  languageName: node
-  linkType: hard
-
 "cli-cursor@npm:^3.1.0":
   version: 3.1.0
   resolution: "cli-cursor@npm:3.1.0"
@@ -19497,7 +19420,6 @@ __metadata:
   dependencies:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
-    "@red-hat-developer-hub/cli-module-install-dynamic-plugins": "npm:0.2.0"
     turbo: "npm:2.9.6"
   dependenciesMeta:
     keytar:
@@ -31465,19 +31387,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^7.5.13":
-  version: 7.5.16
-  resolution: "tar@npm:7.5.16"
-  dependencies:
-    "@isaacs/fs-minipass": "npm:^4.0.0"
-    chownr: "npm:^3.0.0"
-    minipass: "npm:^7.1.2"
-    minizlib: "npm:^3.1.0"
-    yallist: "npm:^5.0.0"
-  checksum: 10c0/4f37f3c4bd2ca2755fd736a5df1d573c1a868ec1b1e893346aeafa95ac510f9e2fd1469420bd866cc7904799e5bd4ac62b5d4f03fe27747d6e1e373b44505c5c
-  languageName: node
-  linkType: hard
-
 "tar@npm:^7.5.4, tar@npm:^7.5.6":
   version: 7.5.9
   resolution: "tar@npm:7.5.9"
@@ -33879,15 +33788,6 @@ __metadata:
   version: 1.10.2
   resolution: "yaml@npm:1.10.2"
   checksum: 10c0/5c28b9eb7adc46544f28d9a8d20c5b3cb1215a886609a2fd41f51628d8aaa5878ccd628b755dbcd29f6bb4921bd04ffbc6dcc370689bb96e594e2f9813d2605f
-  languageName: node
-  linkType: hard
-
-"yaml@npm:^2.8.2":
-  version: 2.9.0
-  resolution: "yaml@npm:2.9.0"
-  bin:
-    yaml: bin.mjs
-  checksum: 10c0/f340718df45e97a9551b9bf9dac61c80050bc464513b710debfb5067c380c8472e3b67809cffacb4ab5ffb5e66ef9310816c88b05f371cec60abfedd8c88e0a2
   languageName: node
   linkType: hard
 
