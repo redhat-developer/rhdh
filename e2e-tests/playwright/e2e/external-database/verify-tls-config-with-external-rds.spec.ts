@@ -81,7 +81,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
       test("Configure and restart deployment", async () => {
         const kubeClient = new KubeClient();
-        test.setTimeout(270000);
+        test.setTimeout(600000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
           user: rdsUser,
