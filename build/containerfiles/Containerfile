@@ -241,7 +241,7 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:1779831333@sha256:e76548c58c4a29907cef1e01cb6a4cab426eb071ffe28ac1f25dd58d14a89569 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:1781562225@sha256:1a1d2c37fd5d2962c70f9d5e5a743e099844140db7405d683522bc200b29e575 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
