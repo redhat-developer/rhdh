@@ -617,6 +617,9 @@ dynamicPlugins:
         extensions:
           parent: default.admin
     red-hat-developer-hub.backstage-plugin-adoption-insights:
+      translationResources:
+        - importName: adoptionInsightsTranslations
+          ref: adoptionInsightsTranslationRef
       appIcons:
         - name: adoptionInsightsIcon
           importName: AdoptionInsightsIcon
