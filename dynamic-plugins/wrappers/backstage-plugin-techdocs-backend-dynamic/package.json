@@ -50,7 +50,8 @@
     "typescript": "5.9.3"
   },
   "resolutions": {
-    "@protobufjs/inquire": "1.1.0"
+    "@protobufjs/inquire": "1.1.0",
+    "@backstage/plugin-techdocs-node": "1.14.4"
   },
   "files": [
     "dist",
