@@ -9979,14 +9979,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/host-metrics@npm:0.36.0":
-  version: 0.36.0
-  resolution: "@opentelemetry/host-metrics@npm:0.36.0"
+"@opentelemetry/host-metrics@npm:0.38.3":
+  version: 0.38.3
+  resolution: "@opentelemetry/host-metrics@npm:0.38.3"
   dependencies:
-    systeminformation: 5.23.8
+    systeminformation: ^5.31.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 066abb3d2b65d5e2871af2247b0ec31b48dff944b2a33d3f382a801c744fa7509697771b8713dc4b79b94f17dd1f8a0538908eafd4517b3885c145b22b694ea7
+  checksum: 51b48db613a7589191369aad382ae29dc297fac8cc6974bf77a30a91f237026db035896f976ad01a7139456600001793175089a0f2248942adf76d5124c69004
   languageName: node
   linkType: hard
 
@@ -18820,7 +18820,7 @@ __metadata:
     "@opentelemetry/api": 1.9.0
     "@opentelemetry/auto-instrumentations-node": 0.58.1
     "@opentelemetry/exporter-prometheus": 0.57.2
-    "@opentelemetry/host-metrics": 0.36.0
+    "@opentelemetry/host-metrics": 0.38.3
     "@opentelemetry/instrumentation-runtime-node": 0.14.0
     "@opentelemetry/sdk-metrics": 1.30.1
     "@opentelemetry/sdk-node": 0.57.2
@@ -36201,12 +36201,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"systeminformation@npm:5.23.8":
-  version: 5.23.8
-  resolution: "systeminformation@npm:5.23.8"
+"systeminformation@npm:^5.31.1":
+  version: 5.31.7
+  resolution: "systeminformation@npm:5.31.7"
   bin:
     systeminformation: lib/cli.js
-  checksum: 8fe1187467e0037900e900c00089d34b1ea6d9868ab1f8f0c949ef6f75c9dca4e1888e23df42356f700b291a4d93929db21c6dfcf08f437674d9fe8b10fb347c
+  checksum: f1a4d12a5b3d2404c3ea96819b79e11f32d1dea56c3d8f18fb88722472c9be5a957f47f17784ea7fe45f51ab8155c1127852731b21e400b1eb5b140762f84885
   conditions: (os=darwin | os=linux | os=win32 | os=freebsd | os=openbsd | os=netbsd | os=sunos | os=android)
   languageName: node
   linkType: hard
