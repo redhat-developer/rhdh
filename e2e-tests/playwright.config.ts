@@ -195,6 +195,7 @@ export default defineConfig({
         "**/playwright/e2e/home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/instance-health-check.spec.ts",
+        "**/playwright/e2e/plugin-sanity-check.spec.ts",
       ],
     },
     {

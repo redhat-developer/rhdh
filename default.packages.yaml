@@ -1,0 +1,11 @@
+# Mock default.packages.yaml for local e2e testing
+# The real file is injected during CI deployment
+packages:
+  enabled:
+    - package: "@backstage-community/plugin-rbac"
+    - package: "@backstage/plugin-kubernetes"
+    - package: "@janus-idp/backstage-plugin-3scale-backend"
+    - package: "@janus-idp/backstage-plugin-argocd"
+    - package: "@janus-idp/backstage-plugin-ocm"
+  disabled:
+    - package: "@backstage/plugin-example"
