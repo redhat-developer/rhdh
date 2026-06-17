@@ -3,6 +3,9 @@
   "version": "1.11.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "24"
+  },
   "scripts": {
     "showcase": "playwright test --project=showcase",
     "showcase-rbac": "playwright test --project=showcase-rbac",
@@ -10,6 +13,7 @@
     "showcase-rbac-k8s": "playwright test --project=showcase-rbac-k8s",
     "showcase-operator": "playwright test --project=showcase-operator",
     "showcase-operator-rbac": "playwright test --project=showcase-operator-rbac",
+    "showcase-runtime-db": "playwright test --project=showcase-runtime-db",
     "showcase-runtime": "playwright test --project=showcase-runtime",
     "showcase-upgrade": "playwright test --project=showcase-upgrade",
     "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
@@ -19,13 +23,39 @@
     "showcase-localization-fr": "LOCALE=fr playwright test --project=showcase-localization-fr",
     "showcase-localization-it": "LOCALE=it playwright test --project=showcase-localization-it",
     "showcase-localization-ja": "LOCALE=ja playwright test --project=showcase-localization-ja",
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
-    "test:list": "playwright test --list",
-    "fmt": "oxfmt .",
-    "fmt:check": "oxfmt --check .",
+    "lint:check": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . \"playwright/**/*.{ts,js}\" --fix",
     "postinstall": "playwright install chromium",
-    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always"
+    "tsc": "tsc",
+    "tsc:check": "tsc -p tsconfig.json",
+    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write ."
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.11.2",
+    "@backstage/backend-test-utils": "^1.11.4",
+    "@backstage/plugin-catalog-backend": "3.5.0",
+    "@backstage/plugin-scaffolder-backend": "3.3.0",
+    "@eslint/js": "9.39.4",
+    "@microsoft/microsoft-graph-types": "2.43.1",
+    "@playwright/test": "1.59.1",
+    "@red-hat-developer-hub/cli-module-install-dynamic-plugins": "^0.2.0",
+    "@types/node": "24.12.2",
+    "@types/pg": "8.20.0",
+    "@typescript-eslint/eslint-plugin": "8.59.4",
+    "@typescript-eslint/parser": "8.59.4",
+    "eslint": "9.39.4",
+    "eslint-plugin-check-file": "3.3.1",
+    "eslint-plugin-playwright": "2.10.4",
+    "ioredis": "5.10.1",
+    "monocart-coverage-reports": "2.12.11",
+    "otplib": "12.0.1",
+    "prettier": "3.8.3",
+    "prettier-plugin-sh": "0.18.1",
+    "shellcheck": "4.1.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.59.4"
   },
   "dependencies": {
     "@azure/arm-network": "34.2.0",
@@ -38,30 +68,9 @@
     "node-fetch": "2.7.0",
     "octokit": "4.1.4",
     "pg": "8.22.0",
-    "uuid": "14.0.1",
-    "winston": "3.14.2"
-  },
-  "devDependencies": {
-    "@axe-core/playwright": "4.12.1",
-    "@microsoft/microsoft-graph-types": "2.43.1",
-    "@playwright/test": "1.61.1",
-    "@types/js-yaml": "4.0.9",
-    "@types/node": "24.13.2",
-    "@types/node-fetch": "2.6.13",
-    "@types/pg": "8.20.0",
-    "eslint-plugin-check-file": "3.3.1",
-    "eslint-plugin-playwright": "2.10.4",
-    "ioredis": "5.11.1",
-    "monocart-coverage-reports": "2.12.12",
-    "otplib": "12.0.1",
-    "oxfmt": "0.56.0",
-    "oxlint": "1.71.0",
-    "oxlint-tsgolint": "0.23.0",
-    "shellcheck": "4.1.0",
-    "typescript": "6.0.3"
-  },
-  "engines": {
-    "node": "24"
+    "uuid": "14.0.0",
+    "winston": "3.14.2",
+    "yaml": "2.9.0"
   },
   "packageManager": "yarn@4.12.0"
 }
