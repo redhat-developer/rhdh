@@ -95,7 +95,7 @@ export function loadBackendPlugins(
     try {
       const entryPoint = resolveEntryPoint(plugin.path);
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const mod = require(entryPoint);
+      const mod = require(entryPoint) as { default?: any };
 
       if (!mod.default) {
         errors.push({ plugin, error: "No default export" });
