@@ -3,9 +3,11 @@ import { test, expect } from "@support/coverage/test";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import { UIhelper } from "../../utils/ui-helper";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 test.describe("Change app-config at e2e test runtime", () => {
-  test.beforeAll(() => {
+  test.beforeAll(async () => {
+    test.setTimeout(900000); // 15 minutes — includes deployment if needed
     test.info().annotations.push(
       {
         type: "component",
@@ -16,6 +18,11 @@ test.describe("Change app-config at e2e test runtime", () => {
         description: process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime",
       },
     );
+
+    // Deploy RHDH if not already running. This test runs first in the
+    // showcase-runtime project, so it handles the full deployment lifecycle.
+    // Subsequent specs reuse the existing deployment (workers: 1).
+    await ensureRuntimeDeployed();
   });
 
   test("Verify title change after ConfigMap modification", async ({ page }) => {

@@ -7,6 +7,7 @@ import {
   configurePostgresCertificate,
   configurePostgresCredentials,
   clearDatabase,
+  prepareForExternalDatabase,
 } from "../../utils/postgres-config";
 import { UIhelper } from "../../utils/ui-helper";
 
@@ -31,7 +32,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
     { name: "latest", host: process.env.AZURE_DB_4_HOST! },
   ];
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({}, testInfo) => {
     test.info().annotations.push(
       {
         type: "component",
@@ -43,20 +44,23 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
       },
     );
 
-    // Validate certificates are available
-    const azureCerts = readCertificateFile(process.env.AZURE_DB_CERTIFICATES_PATH);
-    if (azureCerts === undefined || azureCerts === null || azureCerts === "") {
-      throw new Error(
-        "AZURE_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
+    // Validate certificates are available — skip gracefully if not set
+    const azureCerts = readCertificateFile(
+      process.env.AZURE_DB_CERTIFICATES_PATH,
+    );
+    if (!azureCerts || !azureUser || !azurePassword) {
+      testInfo.skip(
+        true,
+        "Azure DB environment variables not configured (AZURE_DB_CERTIFICATES_PATH, AZURE_DB_USER, AZURE_DB_PASSWORD) — Azure DB tests are opt-in",
       );
-    }
-
-    // Validate required environment variables
-    if (!azureUser || !azurePassword) {
-      throw new Error("AZURE_DB_USER and AZURE_DB_PASSWORD environment variables must be set");
+      return;
     }
 
     const kubeClient = new KubeClient();
+
+    // Prepare the deployment for external database tests: patch the app-config
+    // to use env var placeholders and clean up any schema-mode env var patches
+    await prepareForExternalDatabase(kubeClient, namespace, deploymentName);
 
     // Create/update the postgres-crt secret with Azure certificates
     console.log("Configuring Azure Database for PostgreSQL TLS certificates...");

@@ -7,6 +7,7 @@ import {
   configurePostgresCertificate,
   configurePostgresCredentials,
   clearDatabase,
+  prepareForExternalDatabase,
 } from "../../utils/postgres-config";
 import { UIhelper } from "../../utils/ui-helper";
 
@@ -31,7 +32,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
     { name: "latest", host: process.env.RDS_4_HOST! },
   ];
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({}, testInfo) => {
     test.info().annotations.push(
       {
         type: "component",
@@ -43,20 +44,21 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       },
     );
 
-    // Validate certificates are available
+    // Validate certificates are available — skip gracefully if not set
     const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
-    if (rdsCerts === undefined || rdsCerts === null || rdsCerts === "") {
-      throw new Error(
-        "RDS_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
+    if (!rdsCerts || !rdsUser || !rdsPassword) {
+      testInfo.skip(
+        true,
+        "RDS environment variables not configured (RDS_DB_CERTIFICATES_PATH, RDS_USER, RDS_PASSWORD) — RDS tests are opt-in",
       );
-    }
-
-    // Validate required environment variables
-    if (!rdsUser || !rdsPassword) {
-      throw new Error("RDS_USER and RDS_PASSWORD environment variables must be set");
+      return;
     }
 
     const kubeClient = new KubeClient();
+
+    // Prepare the deployment for external database tests: patch the app-config
+    // to use env var placeholders and clean up any schema-mode env var patches
+    await prepareForExternalDatabase(kubeClient, namespace, deploymentName);
 
     // Create/update the postgres-crt secret with RDS certificates
     console.log("Configuring RDS TLS certificates...");

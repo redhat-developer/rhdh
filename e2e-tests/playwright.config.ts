@@ -172,20 +172,13 @@ export default defineConfig({
       testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
-      name: PW_PROJECT.SHOWCASE_RUNTIME_DB,
-      workers: 1,
-      testMatch: [
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
-      ],
-    },
-    {
       name: PW_PROJECT.SHOWCASE_RUNTIME,
       workers: 1,
-      dependencies: [PW_PROJECT.SHOWCASE_RUNTIME_DB],
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
       ],
     },
 

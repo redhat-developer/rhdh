@@ -92,8 +92,33 @@ const defaultConnectionOptions: Partial<ClientConfig> = {
   keepAliveInitialDelayMillis: 10000,
 };
 
-export function connectWithSslFallback(config: ClientConfig): Promise<Client> {
-  return connectWithRetry({ ...defaultConnectionOptions, ...config });
+export async function connectWithSslFallback(
+  config: ClientConfig,
+): Promise<Client> {
+  // Try SSL first (single attempt), fall back to non-SSL if the server doesn't support it.
+  const sslConfig = { ...defaultConnectionOptions, ...config };
+  const sslClient = new Client(sslConfig);
+  try {
+    await sslClient.connect();
+    return sslClient;
+  } catch (sslError) {
+    await sslClient.end().catch(() => {});
+    const sslMsg =
+      sslError instanceof Error ? sslError.message : String(sslError);
+    // Bitnami PostgreSQL sub-chart doesn't enable SSL by default
+    if (
+      sslMsg.includes("SSL") ||
+      sslMsg.includes("ssl") ||
+      sslMsg.includes("does not support")
+    ) {
+      console.log(
+        `SSL connection failed (${sslMsg}), falling back to non-SSL...`,
+      );
+      return connectWithRetry({ ...config, ssl: false });
+    }
+    // For non-SSL errors (e.g. ECONNREFUSED), retry with SSL (port-forward may not be ready)
+    return connectWithRetry(sslConfig);
+  }
 }
 
 export function getSchemaModeEnv(): SchemaModeEnv {
