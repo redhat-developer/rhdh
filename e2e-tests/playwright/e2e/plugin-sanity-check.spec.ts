@@ -22,6 +22,8 @@ import * as yaml from "yaml";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const DEFAULT_PACKAGES_PATH = join(__dirname, "../../../default.packages.yaml");
+
 type PackageEntry = {
   package: string;
 };
@@ -34,8 +36,8 @@ type DefaultPackagesConfig = {
 };
 
 test.describe("Plugin Sanity Check", { tag: "@sanity" }, () => {
-  test.beforeAll(async ({}, testInfo) => {
-    testInfo.annotations.push({
+  test.beforeAll(async () => {
+    test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
@@ -43,7 +45,7 @@ test.describe("Plugin Sanity Check", { tag: "@sanity" }, () => {
 
   test("All enabled packages can be resolved", async () => {
     // Read default.packages.yaml from rhdh repo root
-    const defaultPackagesPath = join(__dirname, "../../../default.packages.yaml");
+    const defaultPackagesPath = DEFAULT_PACKAGES_PATH;
     const yamlContent = readFileSync(defaultPackagesPath, "utf8");
     const config = yaml.parse(yamlContent) as DefaultPackagesConfig;
 
@@ -114,8 +116,7 @@ test.describe("Plugin Sanity Check", { tag: "@sanity" }, () => {
 
   test("Disabled packages list is parseable", async () => {
     // Verify disabled packages section is valid YAML
-    const defaultPackagesPath = join(__dirname, "../../../default.packages.yaml");
-    const yamlContent = readFileSync(defaultPackagesPath, "utf8");
+    const yamlContent = readFileSync(DEFAULT_PACKAGES_PATH, "utf8");
     const config = yaml.parse(yamlContent) as DefaultPackagesConfig;
 
     const disabledPackages = config.packages.disabled;

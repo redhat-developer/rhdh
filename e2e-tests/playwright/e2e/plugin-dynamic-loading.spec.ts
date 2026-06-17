@@ -62,7 +62,6 @@ test.describe("Plugin Dynamic Loading", () => {
     // Create temporary directories
     const tempDir = await mkdtemp(join(tmpdir(), "rhdh-plugin-test-"));
     const dynamicPluginsRoot = join(tempDir, "dynamic-plugins-root");
-    const manifestPath = join(dynamicPluginsRoot, "manifest.json");
 
     try {
       // Step 1: Create minimal dynamic-plugins.yaml to trigger catalog index extraction

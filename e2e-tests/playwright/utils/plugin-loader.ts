@@ -8,6 +8,7 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import type { JsonObject } from "@backstage/types";
+import type { BackendFeature } from "@backstage/backend-plugin-api";
 
 export type PluginRole = "backend" | "frontend";
 
@@ -95,7 +96,7 @@ export function loadBackendPlugins(
     try {
       const entryPoint = resolveEntryPoint(plugin.path);
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const mod = require(entryPoint) as { default?: any };
+      const mod = require(entryPoint) as { default?: BackendFeature };
 
       if (!mod.default) {
         errors.push({ plugin, error: "No default export" });
@@ -138,32 +139,34 @@ export function validateFrontendBundle(plugin: PluginEntry): string | null {
 }
 
 /**
+ * Minimal config overrides for plugins that validate config at startup
+ */
+const CONFIG_OVERRIDES: Record<string, JsonObject> = {
+  "backstage-community-plugin-jenkins-backend": {
+    jenkins: {
+      baseUrl: "http://localhost:8080",
+      username: "test",
+      apiKey: "test",
+    },
+  },
+  "backstage-community-plugin-quay-backend": {
+    quay: {
+      uiUrl: "https://quay.io",
+      apiUrl: "https://quay.io/api/v1",
+    },
+  },
+  "immobiliarelabs-backstage-plugin-gitlab-backend": {
+    integrations: {
+      gitlab: [{ host: "gitlab.com", token: "test" }],
+    },
+  },
+};
+
+/**
  * Build merged config for plugins that require specific config at startup
  */
 export function buildMergedConfig(plugins: LoadedPlugin[]): JsonObject {
   const merged: Record<string, any> = {};
-
-  // Minimal config overrides for plugins that validate config at startup
-  const CONFIG_OVERRIDES: Record<string, JsonObject> = {
-    "backstage-community-plugin-jenkins-backend": {
-      jenkins: {
-        baseUrl: "http://localhost:8080",
-        username: "test",
-        apiKey: "test",
-      },
-    },
-    "backstage-community-plugin-quay-backend": {
-      quay: {
-        uiUrl: "https://quay.io",
-        apiUrl: "https://quay.io/api/v1",
-      },
-    },
-    "immobiliarelabs-backstage-plugin-gitlab-backend": {
-      integrations: {
-        gitlab: [{ host: "gitlab.com", token: "test" }],
-      },
-    },
-  };
 
   for (const { plugin } of plugins) {
     const overrides = CONFIG_OVERRIDES[plugin.dirName];
