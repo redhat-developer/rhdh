@@ -22,16 +22,16 @@ import * as yaml from "yaml";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-interface PackageEntry {
+type PackageEntry = {
   package: string;
-}
+};
 
-interface DefaultPackagesConfig {
+type DefaultPackagesConfig = {
   packages: {
     enabled: PackageEntry[];
     disabled: PackageEntry[];
   };
-}
+};
 
 test.describe("Plugin Sanity Check", { tag: "@sanity" }, () => {
   test.beforeAll(async ({}, testInfo) => {
