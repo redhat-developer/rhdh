@@ -9979,14 +9979,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/host-metrics@npm:0.36.0":
-  version: 0.36.0
-  resolution: "@opentelemetry/host-metrics@npm:0.36.0"
+"@opentelemetry/host-metrics@npm:0.38.3":
+  version: 0.38.3
+  resolution: "@opentelemetry/host-metrics@npm:0.38.3"
   dependencies:
-    systeminformation: 5.23.8
+    systeminformation: ^5.31.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 066abb3d2b65d5e2871af2247b0ec31b48dff944b2a33d3f382a801c744fa7509697771b8713dc4b79b94f17dd1f8a0538908eafd4517b3885c145b22b694ea7
+  checksum: 51b48db613a7589191369aad382ae29dc297fac8cc6974bf77a30a91f237026db035896f976ad01a7139456600001793175089a0f2248942adf76d5124c69004
   languageName: node
   linkType: hard
 
@@ -18820,7 +18820,7 @@ __metadata:
     "@opentelemetry/api": 1.9.0
     "@opentelemetry/auto-instrumentations-node": 0.58.1
     "@opentelemetry/exporter-prometheus": 0.57.2
-    "@opentelemetry/host-metrics": 0.36.0
+    "@opentelemetry/host-metrics": 0.38.3
     "@opentelemetry/instrumentation-runtime-node": 0.14.0
     "@opentelemetry/sdk-metrics": 1.30.1
     "@opentelemetry/sdk-node": 0.57.2
@@ -25779,13 +25779,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ip-address@npm:^9.0.5":
-  version: 9.0.5
-  resolution: "ip-address@npm:9.0.5"
-  dependencies:
-    jsbn: 1.1.0
-    sprintf-js: ^1.1.3
-  checksum: aa15f12cfd0ef5e38349744e3654bae649a34c3b10c77a674a167e99925d1549486c5b14730eebce9fea26f6db9d5e42097b00aa4f9f612e68c79121c71652dc
+"ip-address@npm:^10.1.1":
+  version: 10.2.0
+  resolution: "ip-address@npm:10.2.0"
+  checksum: 3ffba04dc4cdaf81ed2ed6edc47eee1494bb97550ef73f1918ca28405d175c03efa416b8337e868123b08c2cc677e3a07c5ce03eda3b1aeb2741c149bd37ddf9
   languageName: node
   linkType: hard
 
@@ -27250,7 +27247,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsbn@npm:1.1.0, jsbn@npm:^1.1.0":
+"jsbn@npm:^1.1.0":
   version: 1.1.0
   resolution: "jsbn@npm:1.1.0"
   checksum: 944f924f2bd67ad533b3850eee47603eed0f6ae425fd1ee8c760f477e8c34a05f144c1bd4f5a5dd1963141dc79a2c55f89ccc5ab77d039e7077f3ad196b64965
@@ -35197,12 +35194,12 @@ __metadata:
   linkType: hard
 
 "socks@npm:^2.6.2, socks@npm:^2.8.3":
-  version: 2.8.3
-  resolution: "socks@npm:2.8.3"
+  version: 2.8.9
+  resolution: "socks@npm:2.8.9"
   dependencies:
-    ip-address: ^9.0.5
+    ip-address: ^10.1.1
     smart-buffer: ^4.2.0
-  checksum: 7a6b7f6eedf7482b9e4597d9a20e09505824208006ea8f2c49b71657427f3c137ca2ae662089baa73e1971c62322d535d9d0cf1c9235cf6f55e315c18203eadd
+  checksum: b573ed4cfb935624d3688e7065cd03fd72ca258156923c9ebb9d462e545cd78f296b64a0e36f911b16326c94aabe2bf94ff405f8afef27ac7bf80fa3c971c6f6
   languageName: node
   linkType: hard
 
@@ -35339,7 +35336,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sprintf-js@npm:^1.1.2, sprintf-js@npm:^1.1.3":
+"sprintf-js@npm:^1.1.2":
   version: 1.1.3
   resolution: "sprintf-js@npm:1.1.3"
   checksum: a3fdac7b49643875b70864a9d9b469d87a40dfeaf5d34d9d0c5b1cda5fd7d065531fcb43c76357d62254c57184a7b151954156563a4d6a747015cfb41021cad0
@@ -36201,12 +36198,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"systeminformation@npm:5.23.8":
-  version: 5.23.8
-  resolution: "systeminformation@npm:5.23.8"
+"systeminformation@npm:^5.31.1":
+  version: 5.31.7
+  resolution: "systeminformation@npm:5.31.7"
   bin:
     systeminformation: lib/cli.js
-  checksum: 8fe1187467e0037900e900c00089d34b1ea6d9868ab1f8f0c949ef6f75c9dca4e1888e23df42356f700b291a4d93929db21c6dfcf08f437674d9fe8b10fb347c
+  checksum: f1a4d12a5b3d2404c3ea96819b79e11f32d1dea56c3d8f18fb88722472c9be5a957f47f17784ea7fe45f51ab8155c1127852731b21e400b1eb5b140762f84885
   conditions: (os=darwin | os=linux | os=win32 | os=freebsd | os=openbsd | os=netbsd | os=sunos | os=android)
   languageName: node
   linkType: hard
@@ -38731,8 +38728,8 @@ __metadata:
   linkType: hard
 
 "ws@npm:*, ws@npm:^8.11.0, ws@npm:^8.13.0, ws@npm:^8.17.1, ws@npm:^8.18.0, ws@npm:^8.8.0":
-  version: 8.18.1
-  resolution: "ws@npm:8.18.1"
+  version: 8.21.0
+  resolution: "ws@npm:8.21.0"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -38741,7 +38738,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 4658357185d891bc45cc2d42a84f9e192d047e8476fb5cba25b604f7d75ca87ca0dd54cd0b2cc49aeee57c79045a741cb7d0b14501953ac60c790cd105c42f23
+  checksum: 83ff89ae011bc5c3c5605a45a0d50e12589143c7500ca4de83a8d43b3cd26e71f422cb3206fd1a9e6d541d666eeb66255c30d095d62d413b3c7afe5d2c5cb928
   languageName: node
   linkType: hard
 
