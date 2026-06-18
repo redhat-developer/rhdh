@@ -38,7 +38,7 @@ import { patchModuleResolution } from "../utils/module-resolution-patch";
 // Patch module resolution once before all tests
 patchModuleResolution(join(__dirname, "..", "..", "node_modules"));
 
-const CORE_FEATURES = [catalogPlugin, scaffolderPlugin];
+const coreFeatures = [catalogPlugin, scaffolderPlugin];
 
 test.describe("Plugin Dynamic Loading", () => {
   test.beforeAll(async () => {
@@ -120,8 +120,8 @@ test.describe("Plugin Dynamic Loading", () => {
       // Step 5: Build config and start test backend
       console.log("🚀 Starting test backend with loaded plugins...");
       const config = buildMergedConfig(loaded);
-      const features: any[] = [
-        ...CORE_FEATURES,
+      const features = [
+        ...coreFeatures,
         ...loaded.map((p) => p.feature),
         mockServices.rootConfig.factory({ data: config }),
       ];

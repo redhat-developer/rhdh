@@ -27,7 +27,7 @@ export type PluginManifest = {
 
 export type LoadedPlugin = {
   plugin: PluginEntry;
-  feature: any;
+  feature: BackendFeature;
 };
 
 export type PluginError = {
@@ -95,7 +95,7 @@ export function loadBackendPlugins(
   for (const plugin of plugins) {
     try {
       const entryPoint = resolveEntryPoint(plugin.path);
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- Dynamic loading of OCI plugins requires CommonJS require
       const mod = require(entryPoint) as { default?: BackendFeature };
 
       if (!mod.default) {
@@ -141,7 +141,7 @@ export function validateFrontendBundle(plugin: PluginEntry): string | null {
 /**
  * Minimal config overrides for plugins that validate config at startup
  */
-const CONFIG_OVERRIDES: Record<string, JsonObject> = {
+const configOverrides: Record<string, JsonObject> = {
   "backstage-community-plugin-jenkins-backend": {
     jenkins: {
       baseUrl: "http://localhost:8080",
@@ -166,10 +166,10 @@ const CONFIG_OVERRIDES: Record<string, JsonObject> = {
  * Build merged config for plugins that require specific config at startup
  */
 export function buildMergedConfig(plugins: LoadedPlugin[]): JsonObject {
-  const merged: Record<string, any> = {};
+  const merged: Record<string, unknown> = {};
 
   for (const { plugin } of plugins) {
-    const overrides = CONFIG_OVERRIDES[plugin.dirName];
+    const overrides = configOverrides[plugin.dirName];
     if (overrides) {
       Object.assign(merged, overrides);
     }

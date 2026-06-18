@@ -19,9 +19,12 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import * as yaml from "yaml";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention -- ESM compatibility requires __filename/__dirname
 const __filename = fileURLToPath(import.meta.url);
+// eslint-disable-next-line @typescript-eslint/naming-convention -- ESM compatibility requires __filename/__dirname
 const __dirname = dirname(__filename);
 
+// eslint-disable-next-line @typescript-eslint/naming-convention -- Constant name matches file path convention
 const DEFAULT_PACKAGES_PATH = join(__dirname, "../../../default.packages.yaml");
 
 type PackageEntry = {
