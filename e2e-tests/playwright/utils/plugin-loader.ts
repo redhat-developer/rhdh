@@ -44,7 +44,7 @@ export function loadManifest(extractDir: string): PluginManifest {
   if (!existsSync(manifestPath)) {
     throw new Error(
       `Plugin manifest not found at ${manifestPath}.\n` +
-        `Ensure install-dynamic-plugins has been run with CATALOG_INDEX_IMAGE set.`
+        `Ensure install-dynamic-plugins has been run with CATALOG_INDEX_IMAGE set.`,
     );
   }
 
@@ -79,16 +79,17 @@ export function resolveEntryPoint(pluginPath: string): string {
   }
 
   throw new Error(
-    `No entry point found in ${pluginPath}. Tried: ${candidates.join(", ")}`
+    `No entry point found in ${pluginPath}. Tried: ${candidates.join(", ")}`,
   );
 }
 
 /**
  * Load backend plugins and return loaded plugins and errors
  */
-export function loadBackendPlugins(
-  plugins: PluginEntry[]
-): { loaded: LoadedPlugin[]; errors: PluginError[] } {
+export function loadBackendPlugins(plugins: PluginEntry[]): {
+  loaded: LoadedPlugin[];
+  errors: PluginError[];
+} {
   const loaded: LoadedPlugin[] = [];
   const errors: PluginError[] = [];
 

@@ -106,7 +106,8 @@ test.describe("Plugin Sanity Check", { tag: "@sanity" }, () => {
 
         console.log(`✅ ${packageName}`);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
 
         results.push({
           package: packageName,

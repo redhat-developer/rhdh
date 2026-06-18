@@ -29,7 +29,7 @@ export function patchModuleResolution(extraNodeModulesPath: string): void {
   if (!nodeModule._nodeModulePaths) {
     console.warn(
       "Module._nodeModulePaths not available - module resolution patch skipped. " +
-        "Plugins may fail to load if peer dependencies cannot be resolved."
+        "Plugins may fail to load if peer dependencies cannot be resolved.",
     );
     return;
   }
