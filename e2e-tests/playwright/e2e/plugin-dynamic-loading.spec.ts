@@ -1,17 +1,26 @@
 /**
- * Plugin Dynamic Loading Test
+ * Plugin Dynamic Loading Test (Comprehensive Loading Validation)
  *
- * Validates that all dynamic plugins from the RHDH catalog index can be loaded
- * and that the RHDH backend starts successfully.
+ * This is a COMPREHENSIVE test that actually downloads and loads plugins from the
+ * catalog index, validating they work with a real Backstage backend. This is the
+ * "full validation" counterpart to plugin-sanity-check.spec.ts.
  *
  * Test Strategy:
- * 1. Use @red-hat-developer-hub/cli-module-install-dynamic-plugins to download plugins from catalog index
+ * 1. Download plugins from catalog index using @red-hat-developer-hub/cli-module-install-dynamic-plugins
  * 2. Load backend plugins and verify they have valid default exports
- * 3. Start test backend with @backstage/backend-test-utils
+ * 3. Start test backend with @backstage/backend-test-utils (validates plugins actually work)
  * 4. Validate frontend plugins have required bundle artifacts
  *
- * This provides comprehensive plugin validation without requiring a full cluster deployment.
  * Runtime: ~3 minutes for extraction + ~2 seconds for backend startup validation.
+ *
+ * IMPORTANT: This test provides comprehensive validation that complements
+ * plugin-sanity-check.spec.ts:
+ * - plugin-sanity-check.spec.ts: Fast format validation (~seconds)
+ * - This test: Full loading validation (~3 minutes)
+ *
+ * Both tests run in nightly CI and catch different types of issues:
+ * - Format/structure errors → caught by plugin-sanity-check.spec.ts
+ * - Loading/runtime errors → caught by this test
  *
  * Based on POC from PR #4523 but modernized to use @red-hat-developer-hub/cli-module-install-dynamic-plugins
  * instead of the Python script.

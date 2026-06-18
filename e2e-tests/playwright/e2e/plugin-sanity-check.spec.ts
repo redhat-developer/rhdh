@@ -1,16 +1,25 @@
 /**
- * Plugin Sanity Check
+ * Plugin Sanity Check (Lightweight Format Validation)
  *
- * Validates that all plugins listed in default.packages.yaml can be loaded
- * without errors. This provides a lightweight sanity check for plugin integrity
- * without requiring a full cluster deployment.
+ * This is a LIGHTWEIGHT test that validates the format and structure of
+ * default.packages.yaml without actually loading plugins. It runs quickly
+ * (~seconds) and catches basic configuration errors.
  *
  * Test Strategy:
  * 1. Read enabled packages from default.packages.yaml
- * 2. Attempt to import each package dynamically
- * 3. Report which plugins loaded successfully vs failed
+ * 2. Validate package name format (scoped packages starting with @)
+ * 3. Validate YAML structure is parseable
  *
- * This test runs in nightly CI to catch plugin loading issues early.
+ * IMPORTANT: This test does NOT actually load/resolve plugins. That would
+ * require a Backstage runtime and is expensive (~3 minutes). For comprehensive
+ * plugin loading validation, see plugin-dynamic-loading.spec.ts which:
+ * - Downloads plugins from catalog index
+ * - Loads plugins with startTestBackend
+ * - Validates plugins actually work
+ *
+ * Both tests are complementary:
+ * - This test: Fast format validation (runs on every nightly)
+ * - plugin-dynamic-loading.spec.ts: Full loading validation (runs on nightly)
  */
 
 import { test, expect } from "@support/coverage/test";
@@ -65,19 +74,30 @@ test.describe("Plugin Sanity Check", { tag: "@sanity" }, () => {
       const packageName = pkg.package;
 
       try {
-        // Attempt to resolve the package
-        // Note: We can't actually import dynamic plugins here as they require
-        // a Backstage runtime, but we can at least verify the package name format
-        // and that it's listed in package.json dependencies
+        // NOTE: This is intentionally a lightweight format check only.
+        // We do NOT attempt to resolve/download/load packages here because:
+        // 1. Would require downloading from OCI registry (~3 min)
+        // 2. Would require Backstage runtime to load plugins
+        // 3. Defeats the purpose of a fast sanity check
+        //
+        // For comprehensive plugin loading validation, see plugin-dynamic-loading.spec.ts
+        // which downloads plugins from catalog index and validates them with startTestBackend.
+        //
+        // This test catches:
+        // - Malformed package names in YAML
+        // - Invalid YAML structure
+        // - Missing required fields
+        //
+        // It does NOT catch:
+        // - Packages that don't exist in registry
+        // - Packages that fail to load
+        // - Runtime plugin errors
+        // (Those are covered by plugin-dynamic-loading.spec.ts)
 
         // Validate package name format
         if (!packageName.startsWith("@")) {
           throw new Error("Package name must be scoped (start with @)");
         }
-
-        // For now, just verify the package is properly formatted
-        // Future enhancement: Use @red-hat-developer-hub/cli-module-install-dynamic-plugins
-        // to actually download and verify the plugins load
 
         results.push({
           package: packageName,
