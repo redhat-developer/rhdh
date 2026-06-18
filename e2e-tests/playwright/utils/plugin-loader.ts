@@ -180,12 +180,17 @@ export function buildMergedConfig(plugins: LoadedPlugin[]): JsonObject {
 
 /**
  * Known plugin failures due to environmental constraints
+ *
+ * These plugins are skipped during testing because they cannot load in the test environment.
+ * Each entry includes the reason for exclusion to help determine if it can be re-enabled later.
  */
 export const KNOWN_FAILURES = new Set<string>([
   // Module resolution issue with @pagerduty/backstage-plugin-backend/package.json
   "pagerduty-backstage-plugin-backend",
+
   // Conflicts with backstage-community argocd (both register pluginId 'argocd')
   "roadiehq-backstage-plugin-argo-cd-backend",
+
   // Orchestrator plugins require @backstage-community/plugin-rbac-common peer dep
   "red-hat-developer-hub-backstage-plugin-orchestrator-backend",
   "red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki",

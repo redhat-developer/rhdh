@@ -67,6 +67,7 @@ test.describe("Plugin Dynamic Loading", () => {
       // Step 1: Create minimal dynamic-plugins.yaml to trigger catalog index extraction
       await mkdir(dynamicPluginsRoot, { recursive: true });
 
+      // Empty plugins list triggers catalog index extraction via CATALOG_INDEX_IMAGE env var
       const dynamicPluginsConfig = `plugins: []`;
       await writeFile(
         join(dynamicPluginsRoot, "dynamic-plugins.yaml"),
