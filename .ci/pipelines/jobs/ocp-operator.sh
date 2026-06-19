@@ -28,10 +28,6 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
-  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
-  # enable_orchestrator_plugins_op "${NAME_SPACE}"
-  # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
-  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE deployment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
@@ -41,49 +37,34 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
-  # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
-  # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
-  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE_RBAC deployment"
 }
 
-# OSD-GCP specific operator deployment that skips orchestrator workflows
 initiate_operator_deployments_osd_gcp() {
-  log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
+  log::info "Initiating Operator-backed deployments on OSD-GCP"
 
   namespace::configure "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
-  # Merge base values with OSD-GCP diff file before creating dynamic plugins config
-  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-  config::create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR}" "/tmp/configmap-dynamic-plugins.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
-  # Skip orchestrator plugins and workflows for OSD-GCP
-  log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
-
   namespace::configure "${NAME_SPACE_RBAC}"
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
-  # Merge RBAC values with OSD-GCP diff file before creating dynamic plugins config
-  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-  config::create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-
-  # Skip orchestrator plugins and workflows for OSD-GCP RBAC
-  log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP RBAC environment"
 }
 
 run_operator_runtime_config_change_tests() {
@@ -149,9 +130,8 @@ handle_ocp_operator() {
 
   prepare_operator
 
-  # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment (orchestrator disabled)"
+    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment"
     initiate_operator_deployments_osd_gcp
   else
     initiate_operator_deployments

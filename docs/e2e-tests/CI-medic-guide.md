@@ -290,7 +290,6 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 **What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) installs required operators and infrastructure (see [operators.sh](../../.ci/pipelines/lib/operators.sh)):
 - OpenShift Pipelines (Tekton) operator
 - Crunchy PostgreSQL operator
-- Orchestrator infrastructure (conditionally, see [orchestrator.sh](../../.ci/pipelines/lib/orchestrator.sh))
 
 **What can go wrong**:
 - Operator installation timeout (OperatorHub/Marketplace issues)
@@ -381,7 +380,7 @@ The most comprehensive nightly job. Runs on OpenShift using ephemeral cluster cl
 3. **Sanity plugins check** (`showcase-sanity-plugins`) -- validates plugin loading and basic functionality
 4. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
 
-**OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler but orchestrator is disabled and localization tests are skipped.
+**OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler but localization tests are skipped.
 
 ### OCP Operator (`ocp-operator`)
 
@@ -394,7 +393,6 @@ Same as OCP nightly but deploys RHDH using the Operator instead of Helm. See [`o
 **Key differences**:
 - Installs RHDH Operator and waits for `backstages.rhdh.redhat.com` CRD (300s timeout)
 - Uses Backstage CR (`rhdh-start.yaml`) instead of Helm release
-- Orchestrator workflows currently disabled (tracked in RHDHBUGS-2184)
 - Runtime config tests enabled, including `pluginDivisionMode: schema` tests with external Crunchy PostgreSQL
 
 ### OCP PR Check (`ocp-pull`)
@@ -407,7 +405,6 @@ Runs on every PR that modifies e2e test code. Smaller scope for faster feedback.
 
 **Key differences**:
 - No runtime, sanity plugin, or localization tests
-- No orchestrator infrastructure setup
 - Deploys test Backstage customization provider
 
 ### Auth Providers (`auth-providers`)
@@ -441,9 +438,8 @@ Tests upgrading RHDH from a previous version to the current one. See [`upgrade.s
 **Flow**:
 1. Dynamically determine the previous release version
 2. Deploy RHDH at the previous version
-3. Deploy orchestrator workflows on the previous version
-4. Upgrade to the current version
-5. Run upgrade-specific Playwright tests
+3. Upgrade to the current version
+4. Run upgrade-specific Playwright tests
 
 **Common failures**: Version detection issues, database migration failures during upgrade, backward compatibility problems.
 
