@@ -34,10 +34,6 @@ export class RbacConstants {
         name: "role:default/qe_rbac_admin",
       },
       {
-        memberReferences: ["user:default/rhdh-qe-2"],
-        name: "role:default/bulk_import",
-      },
-      {
         memberReferences: [
           "group:default/rhdh-qe-parent-team",
           "group:default/rhdh-qe-child-team",
@@ -173,24 +169,6 @@ export class RbacConstants {
         entityReference: "role:default/qe_rbac_admin",
         permission: "catalog.location.read",
         policy: "read",
-        effect: "allow",
-      },
-      {
-        entityReference: "role:default/bulk_import",
-        permission: "bulk.import",
-        policy: "use",
-        effect: "allow",
-      },
-      {
-        entityReference: "role:default/bulk_import",
-        permission: "catalog.location.create",
-        policy: "create",
-        effect: "allow",
-      },
-      {
-        entityReference: "role:default/bulk_import",
-        permission: "catalog.entity.create",
-        policy: "create",
         effect: "allow",
       },
       {

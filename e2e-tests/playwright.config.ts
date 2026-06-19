@@ -101,7 +101,6 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
@@ -114,7 +113,6 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
       ],
     },
     {
@@ -138,7 +136,6 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -154,10 +151,7 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_RBAC_K8S,
       ...k8sSpecificConfig,
       dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
+      testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR,
@@ -168,7 +162,6 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
@@ -182,10 +175,7 @@ export default defineConfig({
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR_RBAC,
       dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
+      testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_RUNTIME_DB,
