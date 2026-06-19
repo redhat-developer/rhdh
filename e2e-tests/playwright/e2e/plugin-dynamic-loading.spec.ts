@@ -31,7 +31,8 @@ import { startTestBackend, mockServices } from "@backstage/backend-test-utils";
 import catalogPlugin from "@backstage/plugin-catalog-backend";
 import scaffolderPlugin from "@backstage/plugin-scaffolder-backend";
 import { mkdtemp, rm, writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { tmpdir } from "os";
 import { execSync } from "child_process";
 import {
@@ -43,6 +44,11 @@ import {
   type PluginError,
 } from "../utils/plugin-loader";
 import { patchModuleResolution } from "../utils/module-resolution-patch";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention -- ESM compatibility requires __filename/__dirname
+const __filename = fileURLToPath(import.meta.url);
+// eslint-disable-next-line @typescript-eslint/naming-convention -- ESM compatibility requires __filename/__dirname
+const __dirname = dirname(__filename);
 
 // Patch module resolution once before all tests
 patchModuleResolution(join(__dirname, "..", "..", "node_modules"));
