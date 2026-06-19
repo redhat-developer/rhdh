@@ -25,9 +25,8 @@ handle_ocp_nightly() {
 
   cluster_setup_ocp_helm
 
-  # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" == *osd-gcp* ]]; then
-    log::info "Detected OSD-GCP job, using OSD-GCP specific deployment (orchestrator disabled)"
+    log::info "Detected OSD-GCP job, using OSD-GCP specific deployment"
     initiate_deployments_osd_gcp "${PW_PROJECT_SHOWCASE}" "${PW_PROJECT_SHOWCASE_RBAC}"
   else
     initiate_deployments "${PW_PROJECT_SHOWCASE}" "${PW_PROJECT_SHOWCASE_RBAC}"

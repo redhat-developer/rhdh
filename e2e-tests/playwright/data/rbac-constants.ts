@@ -53,10 +53,6 @@ export class RbacConstants {
         name: "role:default/catalog_reader",
       },
       {
-        memberReferences: ["user:default/rhdh-qe"],
-        name: "role:default/extension",
-      },
-      {
         memberReferences: ["user:default/rhdh-qe-7", "user:default/rhdh-qe-9"],
         name: "role:default/all_resource_reader",
       },
@@ -213,18 +209,6 @@ export class RbacConstants {
         entityReference: "role:default/catalog_reader",
         permission: "catalog.entity.read",
         policy: "read",
-        effect: "allow",
-      },
-      {
-        entityReference: "role:default/extension",
-        permission: "extension-plugin",
-        policy: "read",
-        effect: "allow",
-      },
-      {
-        entityReference: "role:default/extension",
-        permission: "extension-plugin",
-        policy: "create",
         effect: "allow",
       },
       {

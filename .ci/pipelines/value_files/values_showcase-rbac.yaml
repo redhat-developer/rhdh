@@ -67,58 +67,6 @@ global:
                   rbac:
                     parent: default.admin
                     icon: rbacIcon
-      # Enable orchestrator plugins - Official release
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-orchestrator:
-                appIcons:
-                  - importName: OrchestratorIcon
-                    name: orchestratorIcon
-                dynamicRoutes:
-                  - importName: OrchestratorPage
-                    menuItem:
-                      icon: orchestratorIcon
-                      text: Orchestrator
-                      textKey: menuItem.orchestrator
-                    path: /orchestrator
-                entityTabs:
-                  - path: /workflows
-                    title: Workflows
-                    titleKey: catalog.entityPage.workflows.title
-                    mountPoint: entity.page.workflows
-                mountPoints:
-                  - mountPoint: entity.page.workflows/cards
-                    importName: OrchestratorCatalogTab
-                    config:
-                      layout:
-                        gridColumn: "1 / -1"
-                      if:
-                        anyOf:
-                          - IsOrchestratorCatalogTabAvailable
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          orchestrator:
-            dataIndexService:
-              url: http://sonataflow-platform-data-index-service
-
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          orchestrator:
-            dataIndexService:
-              url: http://sonataflow-platform-data-index-service
-
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
-
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
 upstream:
@@ -213,8 +161,6 @@ upstream:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
         mountPath: /opt/app-root/src/dynamic-plugins-root
-      - name: extensions-catalog
-        mountPath: /extensions
       - name: temp
         mountPath: /tmp
 
@@ -258,8 +204,6 @@ upstream:
           secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
       - name: npmcacache
         emptyDir: {}
-      # -- Ephemeral volume used by the install-dynamic-plugins init container to extract catalog entities from the catalog index image.
-      # Mounted at the /extensions path in the backstage-backend main container for automatic discovery by the extension catalog backend providers.
       - name: extensions-catalog
         emptyDir: {}
       - name: temp
@@ -283,42 +227,3 @@ upstream:
     enabled: false
     auth:
       existingSecret: postgres-cred
-
-orchestrator:
-  plugins: [] # disable chart-based orchestrator plugins and define above for clarity (may need a new test config to cover helm chart plugins)
-  enabled: true
-  serverlessLogicOperator:
-    enabled: true
-  serverlessOperator:
-    enabled: true
-  sonataflowPlatform:
-    monitoring:
-      enabled: true
-    eventing:
-      broker:
-        name: ""
-        namespace: ""
-    resources:
-      requests:
-        memory: "64Mi"
-        cpu: "250m"
-      limits:
-        memory: "1Gi"
-        cpu: "500m"
-    # -- Secret name for the user-created secret to connect an external DB
-    externalDBsecretRef: "postgres-cred"
-
-    # -- Name for the user-configured external Database
-    externalDBName: "postgres"
-
-    # -- Host for the user-configured external Database
-    externalDBHost: "postgress-external-db-primary.postgress-external-db.svc.cluster.local"
-
-    # -- Port for the user-configured external Database
-    externalDBPort: "5432"
-
-    # -- Image for the init container used by the create-db job
-    initContainerImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547"
-
-    # -- Image for the container used by the create-db job
-    createDBJobImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547"

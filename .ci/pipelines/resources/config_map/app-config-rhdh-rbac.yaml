@@ -89,11 +89,6 @@ catalog:
         - allow: [User, Group]
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/e2e-test-resources/rbac-transitive-parent-ownership.yaml
-    # Orchestrator entity-workflow integration templates (RHIDP-11833 through RHIDP-11840)
-    - type: url
-      target: https://github.com/testetson22/greeting_54mjks/blob/main/templates/greeting/greeting.yaml
-    - type: url
-      target: https://github.com/testetson22/greeting_54mjks/blob/main/templates/greeting/greeting_w_component.yaml
   providers:
     keycloakOrg:
       default:
@@ -139,7 +134,6 @@ permission:
       - catalog
       - permission
       - scaffolder
-      - orchestrator
     admin:
       users:
         - name: user:default/rhdh-qe

@@ -10,8 +10,6 @@ source "${DIR}/lib/common.sh"
 source "${DIR}/lib/operators.sh"
 # shellcheck source=.ci/pipelines/lib/k8s-wait.sh
 source "${DIR}/lib/k8s-wait.sh"
-# shellcheck source=.ci/pipelines/lib/orchestrator.sh
-source "${DIR}/lib/orchestrator.sh"
 # shellcheck source=.ci/pipelines/lib/helm.sh
 source "${DIR}/lib/helm.sh"
 # shellcheck source=.ci/pipelines/lib/namespace.sh
@@ -156,16 +154,6 @@ save_all_pod_logs() {
 
   common::save_artifact "${artifacts_subdir}" "pod_logs/" "pod_logs" || true
   set -e
-}
-
-# ==============================================================================
-# Orchestrator Functions - Delegate to lib/orchestrator.sh
-# ==============================================================================
-should_skip_orchestrator() { orchestrator::should_skip; }
-
-disable_orchestrator_plugins_in_values() {
-  orchestrator::disable_plugins_in_values "$@"
-  return $?
 }
 
 # ==============================================================================
@@ -401,28 +389,7 @@ uninstall_olm() { operator::uninstall_olm "$@"; }
 # ==============================================================================
 # Cluster Setup Functions
 # These functions configure the cluster for different deployment types
-# Orchestrator functions are delegated to lib/orchestrator.sh
 # ==============================================================================
-
-install_orchestrator_infra_chart() {
-  orchestrator::install_infra_chart
-  return $?
-}
-
-deploy_orchestrator_workflows() {
-  orchestrator::deploy_workflows "$@"
-  return $?
-}
-
-deploy_orchestrator_workflows_operator() {
-  orchestrator::deploy_workflows_operator "$@"
-  return $?
-}
-
-enable_orchestrator_plugins_op() {
-  orchestrator::enable_plugins_operator "$@"
-  return $?
-}
 
 cluster_setup_ocp_helm() {
   operator::install_pipelines
@@ -433,13 +400,6 @@ cluster_setup_ocp_helm() {
   k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
-
-  # Skip orchestrator infra installation based on job type (see should_skip_orchestrator)
-  if should_skip_orchestrator; then
-    echo "Skipping orchestrator-infra installation on this job: ${JOB_NAME}"
-  else
-    install_orchestrator_infra_chart
-  fi
 }
 
 cluster_setup_ocp_operator() {
@@ -451,8 +411,6 @@ cluster_setup_ocp_operator() {
   k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
-  operator::install_serverless
-  operator::install_serverless_logic
 }
 
 cluster_setup_k8s_operator() {
@@ -492,28 +450,7 @@ base_deployment() {
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-
-  if should_skip_orchestrator; then
-    local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
-    helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
-    disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
-
-    common::save_artifact "${artifacts_subdir}" "${merged_pr_value_file}" || true
-    # shellcheck disable=SC2046
-    helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-      "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-      -f "${merged_pr_value_file}" \
-      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-      $(helm::get_image_params)
-  else
-    helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
-  fi
-
-  if should_skip_orchestrator; then
-    log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
-  else
-    deploy_orchestrator_workflows "${NAME_SPACE}"
-  fi
+  helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 }
 
 rbac_deployment() {
@@ -525,7 +462,6 @@ rbac_deployment() {
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Wait for PostgreSQL to be fully ready before deploying RBAC instance
-  # This ensures the sonataflow database creation job can connect immediately
   log::info "Waiting for external PostgreSQL to be ready..."
   if ! k8s_wait::deployment "${NAME_SPACE_POSTGRES_DB}" "postgress-external-db" 10 10; then
     log::error "PostgreSQL deployment failed to become ready"
@@ -536,42 +472,7 @@ rbac_deployment() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  if should_skip_orchestrator; then
-    local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
-    helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
-    disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
-
-    common::save_artifact "${artifacts_subdir}" "${merged_pr_rbac_value_file}" || true
-    # shellcheck disable=SC2046
-    helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
-      "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-      -f "${merged_pr_rbac_value_file}" \
-      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-      $(helm::get_image_params)
-  else
-    helm::install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
-  fi
-
-  # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  if should_skip_orchestrator; then
-    log::warn "Skipping sonataflow (orchestrator) external DB SSL workaround on PR job: ${JOB_NAME}"
-  else
-    # Wait for the sonataflow database creation job to complete with robust error handling
-    if ! k8s_wait::job "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
-      echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
-      return 1
-    fi
-    oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-      -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_POSTGRESQL_SSL_MODE","value":"allow"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
-    oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
-  fi
-
-  # initiate orchestrator workflows deployment
-  if should_skip_orchestrator; then
-    log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
-  else
-    deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
-  fi
+  helm::install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
 }
 
 # Run base_deployment and rbac_deployment in parallel.
@@ -646,7 +547,7 @@ initiate_deployments() {
     rbac_deployment "${rbac_artifacts_subdir}"
 }
 
-# OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
+# OSD-GCP specific deployment functions that merge diff files
 base_deployment_osd_gcp() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
   local artifacts_subdir=$1
@@ -659,21 +560,9 @@ base_deployment_osd_gcp() {
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
-  # Merge base values with OSD-GCP diff file
-  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-  common::save_artifact "${artifacts_subdir}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
-  # shellcheck disable=SC2046
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "/tmp/merged-values_showcase_OSD-GCP.yaml" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
-
-  # Skip orchestrator workflows deployment for OSD-GCP
-  log::warn "Skipping orchestrator workflows deployment on OSD-GCP environment"
+  helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 }
 
 rbac_deployment_osd_gcp() {
@@ -688,21 +577,9 @@ rbac_deployment_osd_gcp() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
-  # Merge RBAC values with OSD-GCP diff file
-  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-  common::save_artifact "${artifacts_subdir}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
 
-  # shellcheck disable=SC2046
-  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
-
-  # Skip orchestrator workflows deployment for OSD-GCP
-  log::warn "Skipping orchestrator workflows deployment on OSD-GCP RBAC environment"
+  helm::install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
 }
 
 initiate_deployments_osd_gcp() {
@@ -758,12 +635,11 @@ initiate_upgrade_deployments() {
   log::info "Initiating upgrade deployment"
   cd "${DIR}" || return 1
 
-  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_upgrade.yaml" "/tmp/merged_value_file.yaml"
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "/tmp/merged_value_file.yaml" \
+    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
     --set upstream.backstage.image.repository="${IMAGE_REPO}" \
