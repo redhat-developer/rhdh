@@ -9,16 +9,6 @@ global:
     plugins:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
-
-      # Orchestrator tests ignored on showcase-k8s
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
 upstream:
   backstage:
     extraEnvVarsSecrets:
@@ -70,4 +60,3 @@ upstream:
     enabled: true
     className: webapprouting.kubernetes.azure.com
     host: ""
-orchestrator: null
