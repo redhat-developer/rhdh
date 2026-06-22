@@ -81,6 +81,7 @@
     "better-sqlite3": "12.6.2",
     "global-agent": "3.0.0",
     "jose": "5.10.0",
+    "mongodb": "7.3.0",
     "undici": "7.28.0",
     "winston": "3.14.2",
     "zod": "3.25.76"
