@@ -60,6 +60,7 @@ export async function createRouter(
 
   const catalogClient = new CatalogClient({ discoveryApi: discovery });
 
+  // DatabaseManager returns Knex from a nested dependency copy; align types for yarn duplicates.
   const userInfoStore = new DatabaseUserInfoStore(authDB as unknown as Knex);
   const catalogEntityStore = new CatalogEntityStore(catalogClient, auth);
 

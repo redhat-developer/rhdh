@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 
 import { Entity } from '@backstage/catalog-model';
 import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
@@ -49,7 +49,7 @@ interface CustomEntityTagPickerProps {
  * Custom Entity Tag Picker with OR logic for multiple tag selections
  * Uses the same EntityAutocompletePicker as the original but with custom filter logic
  */
-const CustomEntityTagPicker: React.FC<CustomEntityTagPickerProps> = ({
+const CustomEntityTagPicker: FC<CustomEntityTagPickerProps> = ({
   showCounts = false,
   initialFilter = [],
 }) => {

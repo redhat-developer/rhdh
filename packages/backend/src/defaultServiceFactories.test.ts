@@ -38,6 +38,6 @@ describe('Default service factory list comparison', () => {
     // intentionally exclude the deprecated instanceMetadataServiceFactory and
     // alpha.core.tracing (RHDH uses custom OpenTelemetry via instrumentation.js)
     const expectedDifferences = ['alpha.core.tracing', 'core.instanceMetadata'];
-    expect(difference).toEqual(expectedDifferences);
+    expect(difference.sort()).toEqual(expectedDifferences.sort());
   });
 });
