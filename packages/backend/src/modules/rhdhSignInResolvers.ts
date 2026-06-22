@@ -2,15 +2,22 @@ import type { OAuth2ProxyResult } from '@backstage/plugin-auth-backend-module-oa
 import type { OidcAuthResult } from '@backstage/plugin-auth-backend-module-oidc-provider';
 import {
   AuthResolverContext,
-  createSignInResolverFactory,
   OAuthAuthenticatorResult,
   SignInInfo,
+  SignInResolverFactory,
 } from '@backstage/plugin-auth-node';
 
 import { decodeJwt } from 'jose';
-import { z } from 'zod/v3';
 
-import { createOidcSubClaimResolver, OidcProviderInfo } from './resolverUtils';
+import {
+  createOidcLdapUuidMatchingResolverFactory,
+  createOidcSubClaimResolver,
+  createOAuth2ProxySignInResolverFactory,
+  createSignInWithoutCatalogResolverFactory,
+  oidcLdapUuidMatchingOptionsSchema,
+  OidcProviderInfo,
+  signInWithoutCatalogOptionsSchema,
+} from './resolverUtils';
 
 const KEYCLOAK_INFO: OidcProviderInfo = {
   userIdKey: 'keycloak.org/id',
@@ -35,13 +42,9 @@ export namespace rhdhSignInResolvers {
    * as the entity name
    */
   export const preferredUsernameMatchingUserEntityName =
-    createSignInResolverFactory({
-      optionsSchema: z
-        .object({
-          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-        })
-        .optional(),
-      create(options) {
+    createSignInWithoutCatalogResolverFactory({
+      optionsSchema: signInWithoutCatalogOptionsSchema,
+      create(options = {}) {
         return async (
           info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
           ctx,
@@ -83,13 +86,9 @@ export namespace rhdhSignInResolvers {
    * 'x-forwarded-preferred-username' or 'x-forwarded-user'.
    */
   export const oauth2ProxyUserHeaderMatchingUserEntityName =
-    createSignInResolverFactory({
-      optionsSchema: z
-        .object({
-          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-        })
-        .optional(),
-      create(options) {
+    createOAuth2ProxySignInResolverFactory({
+      optionsSchema: signInWithoutCatalogOptionsSchema,
+      create(options = {}) {
         return async (
           info: SignInInfo<OAuth2ProxyResult>,
           ctx: AuthResolverContext,
@@ -116,14 +115,11 @@ export namespace rhdhSignInResolvers {
       },
     });
 
-  export const oidcLdapUuidMatchingAnnotation = createSignInResolverFactory({
-    optionsSchema: z
-      .object({
-        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-        ldapUuidKey: z.string().optional(),
-      })
-      .optional(),
-    create(options) {
+  export const oidcLdapUuidMatchingAnnotation: SignInResolverFactory<
+    OAuthAuthenticatorResult<OidcAuthResult>
+  > = createOidcLdapUuidMatchingResolverFactory({
+    optionsSchema: oidcLdapUuidMatchingOptionsSchema,
+    create(options = {}) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
         ctx: AuthResolverContext,

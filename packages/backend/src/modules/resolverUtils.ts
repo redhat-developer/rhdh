@@ -1,3 +1,4 @@
+import type { OAuth2ProxyResult } from '@backstage/plugin-auth-backend-module-oauth2-proxy-provider';
 import type { OidcAuthResult } from '@backstage/plugin-auth-backend-module-oidc-provider';
 import {
   AuthResolverContext,
@@ -5,6 +6,7 @@ import {
   OAuthAuthenticatorResult,
   SignInInfo,
   SignInResolver,
+  SignInResolverFactory,
 } from '@backstage/plugin-auth-node';
 
 import { decodeJwt } from 'jose';
@@ -15,20 +17,74 @@ export type OidcProviderInfo = {
   providerName: string;
 };
 
+export type SignInWithoutCatalogOptions = {
+  dangerouslyAllowSignInWithoutUserInCatalog?: boolean;
+};
+
+export type OidcLdapUuidMatchingOptions = SignInWithoutCatalogOptions & {
+  ldapUuidKey?: string;
+};
+
+/** Shared schema for optional sign-in resolver config. */
+export const signInWithoutCatalogOptionsSchema = z
+  .object({
+    dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+  })
+  .optional() as z.ZodType<SignInWithoutCatalogOptions | undefined>;
+
+/** Shared schema for LDAP UUID sign-in resolver config. */
+export const oidcLdapUuidMatchingOptionsSchema = z
+  .object({
+    dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+    ldapUuidKey: z.string().optional(),
+  })
+  .optional() as z.ZodType<OidcLdapUuidMatchingOptions | undefined>;
+
+/**
+ * Backstage 1.52+ `createSignInResolverFactory` triggers TS2589 when TypeScript
+ * infers nested zod schemas. Keep these typed factory wrappers (do not call the
+ * upstream helper directly with inline schemas).
+ */
+type SignInWithoutCatalogResolverFactory = SignInResolverFactory<
+  OAuthAuthenticatorResult<OidcAuthResult>
+>;
+
+export const createSignInWithoutCatalogResolverFactory =
+  createSignInResolverFactory as (options: {
+    optionsSchema: z.ZodTypeAny;
+    create(
+      options?: SignInWithoutCatalogOptions,
+    ): SignInResolver<OAuthAuthenticatorResult<OidcAuthResult>>;
+  }) => SignInWithoutCatalogResolverFactory;
+
+export const createOAuth2ProxySignInResolverFactory =
+  createSignInResolverFactory as (options: {
+    optionsSchema: z.ZodTypeAny;
+    create(
+      options?: SignInWithoutCatalogOptions,
+    ): SignInResolver<OAuth2ProxyResult>;
+  }) => SignInResolverFactory<OAuth2ProxyResult>;
+
+export const createOidcLdapUuidMatchingResolverFactory =
+  createSignInResolverFactory as (options: {
+    optionsSchema: z.ZodTypeAny;
+    create(
+      options?: OidcLdapUuidMatchingOptions,
+    ): SignInResolver<OAuthAuthenticatorResult<OidcAuthResult>>;
+  }) => SignInWithoutCatalogResolverFactory;
+
 /**
  * Creates an OIDC sign-in resolver that looks up the user using a specific annotation key.
  *
  * @param userIdKey - The annotation key to match the user's `sub` claim.
  * @param providerName - The name of the identity provider to report in error message if the `sub` claim is missing.
  */
-export const createOidcSubClaimResolver = (provider: OidcProviderInfo) =>
-  createSignInResolverFactory({
-    optionsSchema: z
-      .object({
-        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-      })
-      .optional(),
-    create(options) {
+export const createOidcSubClaimResolver = (
+  provider: OidcProviderInfo,
+): SignInWithoutCatalogResolverFactory =>
+  createSignInWithoutCatalogResolverFactory({
+    optionsSchema: signInWithoutCatalogOptionsSchema,
+    create(options = {}) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
         ctx: AuthResolverContext,
