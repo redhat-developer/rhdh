@@ -18833,7 +18833,7 @@ __metadata:
     jose: 5.10.0
     prettier: 3.7.4
     typescript: 5.9.3
-    undici: 6.26.0
+    undici: 6.27.0
     winston: 3.14.2
     zod: 3.25.76
   languageName: unknown
@@ -37534,10 +37534,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:6.26.0":
-  version: 6.26.0
-  resolution: "undici@npm:6.26.0"
-  checksum: 1204e412802afe171cf4ca299bdf99141c8633d673c352a06b0445d803697237c07c18dcddaeb6c0e37befcf1460f1621ab4221cfe51e5e09e1dfc6a37d9a665
+"undici@npm:6.27.0":
+  version: 6.27.0
+  resolution: "undici@npm:6.27.0"
+  checksum: 3c3c591d9cc70b72ed20ec19fcbab04f184827bcb05241a215f92a081e6e73cab506cd2b334e3beb359304c2e53b6e8722c31327124d9db8122bb06fed7be372
   languageName: node
   linkType: hard
 
