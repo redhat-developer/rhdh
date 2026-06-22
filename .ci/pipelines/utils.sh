@@ -1544,12 +1544,15 @@ deploy_orchestrator_workflows() {
   local release_name=$2
 
   local workflow_repo="https://github.com/rhdhorchestrator/serverless-workflows.git"
+  local workflow_repo_ref="${SERVERLESS_WORKFLOWS_REF:-daeeee8dec16beab6d96a81774ef500081a2c2b0}"
   local workflow_dir="${DIR}/serverless-workflows"
   local failswitch_manifests="${workflow_dir}/workflows/fail-switch/src/main/resources/manifests/"
   local greeting_manifests="${workflow_dir}/workflows/greeting/manifests/"
 
   rm -rf "${workflow_dir}"
   git clone "${workflow_repo}" "${workflow_dir}"
+  git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}"
+  git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}"
 
   if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
     local pqsl_secret_name="postgres-cred"
@@ -1627,12 +1630,15 @@ deploy_orchestrator_workflows_operator() {
   local namespace=$1
 
   local workflow_repo="https://github.com/rhdhorchestrator/serverless-workflows.git"
+  local workflow_repo_ref="${SERVERLESS_WORKFLOWS_REF:-daeeee8dec16beab6d96a81774ef500081a2c2b0}"
   local workflow_dir="${DIR}/serverless-workflows"
   local failswitch_manifests="${workflow_dir}/workflows/fail-switch/src/main/resources/manifests/"
   local greeting_manifests="${workflow_dir}/workflows/greeting/manifests/"
 
   rm -rf "${workflow_dir}"
   git clone --depth=1 "${workflow_repo}" "${workflow_dir}"
+  git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}"
+  git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}"
 
   # Wait for backstage and sonata flow pods to be ready before continuing
   wait_for_deployment $namespace backstage-psql 15
