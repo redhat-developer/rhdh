@@ -64,7 +64,7 @@
     "@backstage/frontend-test-utils": "0.5.1",
     "@backstage/test-utils": "1.7.16",
     "@janus-idp/cli": "patch:@janus-idp/cli@npm%3A3.7.0#~/.yarn/patches/@janus-idp-cli-npm-3.7.0-f225cddfdb.patch",
-    "@scalprum/react-test-utils": "0.2.11",
+    "@scalprum/react-test-utils": "0.3.0",
     "@testing-library/dom": "9.3.4",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "14.3.1",
