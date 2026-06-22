@@ -43,6 +43,9 @@
   },
   "dependencies": {
     "@mui/material": "5.18.0",
+    "@react-aria/interactions": "^3.28.1",
+    "@react-stately/layout": "^4.7.1",
+    "@react-stately/overlays": "^3.7.1",
     "@red-hat-developer-hub/backstage-plugin-extensions": "0.17.1"
   },
   "devDependencies": {
