@@ -18833,7 +18833,7 @@ __metadata:
     jose: 5.10.0
     prettier: 3.7.4
     typescript: 5.9.3
-    undici: 6.24.0
+    undici: 6.26.0
     winston: 3.14.2
     zod: 3.25.76
   languageName: unknown
@@ -37534,17 +37534,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:6.24.0":
-  version: 6.24.0
-  resolution: "undici@npm:6.24.0"
-  checksum: 271ae0d6dc2e9246a6e11227a0b0fbc6b1b94cc50331fc45973a6877ea04fcb75256902f1b866cf2734c0c5e1b19336f42e5d4ea57657a61ac083ccb704fc145
+"undici@npm:6.26.0":
+  version: 6.26.0
+  resolution: "undici@npm:6.26.0"
+  checksum: 1204e412802afe171cf4ca299bdf99141c8633d673c352a06b0445d803697237c07c18dcddaeb6c0e37befcf1460f1621ab4221cfe51e5e09e1dfc6a37d9a665
   languageName: node
   linkType: hard
 
 "undici@npm:^7.1.1, undici@npm:^7.13.0, undici@npm:^7.2.3":
-  version: 7.24.7
-  resolution: "undici@npm:7.24.7"
-  checksum: d0ef3942cb5e1c5f84d8bab951d9b0f55203f3029bb601605366d4b137e4d554406a7a3fc97fbee652da7e1601322d7609b66abaa1435d4a8a11097425119989
+  version: 7.28.0
+  resolution: "undici@npm:7.28.0"
+  checksum: 57c77c4ee75e166ef361ad238fcd88816fbc0d058aeadf4c0f689194bd17eb6d63ce25b89bd4f4d65a380ebbde784bf4886ec51acc9f8c826ecab01d8f63aaac
   languageName: node
   linkType: hard
 
