@@ -14,7 +14,6 @@
   "major": {"dependencyDashboardApproval": true},
   "reviewers": ["team:rhdh-security"],
   "packageRules": [
-    {"matchPackageNames": ["@protobufjs/inquire"], "allowedVersions": "=1.1.0"},
     {
       "description": "exclude rpm-lockfile updates",
       "matchFileNames": [".github/workflows/update-rpm-lockfile.yaml"],
