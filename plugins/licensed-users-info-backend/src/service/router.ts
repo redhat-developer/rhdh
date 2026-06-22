@@ -17,8 +17,8 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { policyEntityReadPermission } from '@backstage-community/plugin-rbac-common';
 import express from 'express';
 import Router from 'express-promise-router';
-import type { Knex } from 'knex';
 import { json2csv } from 'json-2-csv';
+import type { Knex } from 'knex';
 import { DateTime } from 'luxon';
 
 import {

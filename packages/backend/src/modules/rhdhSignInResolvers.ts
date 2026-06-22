@@ -10,9 +10,9 @@ import {
 import { decodeJwt } from 'jose';
 
 import {
+  createOAuth2ProxySignInResolverFactory,
   createOidcLdapUuidMatchingResolverFactory,
   createOidcSubClaimResolver,
-  createOAuth2ProxySignInResolverFactory,
   createSignInWithoutCatalogResolverFactory,
   oidcLdapUuidMatchingOptionsSchema,
   OidcProviderInfo,

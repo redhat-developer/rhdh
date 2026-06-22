@@ -1,4 +1,9 @@
-import { useEffect, type ComponentType, type CSSProperties, type FC } from 'react';
+import {
+  useEffect,
+  type ComponentType,
+  type CSSProperties,
+  type FC,
+} from 'react';
 
 import { SidebarItem } from '@backstage/core-components';
 
