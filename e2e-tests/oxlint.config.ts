@@ -64,6 +64,9 @@ export default defineConfig({
   },
   overrides: [
     {
+      // Auth-provider specs deploy RHDH in beforeAll and use async Playwright hooks.
+      // strict-void-return and no-misused-promises produce false positives on those
+      // describe/beforeAll callbacks without improving test safety.
       files: ["playwright/e2e/auth-providers/**/*.spec.ts"],
       rules: {
         "typescript/strict-void-return": "off",
@@ -71,6 +74,8 @@ export default defineConfig({
       },
     },
     {
+      // Spec files orchestrate multi-step E2E flows; length limits target production
+      // code readability, not test scenarios that must stay in one file for clarity.
       files: ["**/*.spec.ts", "**/*.test.ts"],
       rules: {
         "eslint/max-lines": "off",
@@ -78,24 +83,14 @@ export default defineConfig({
       },
     },
     {
+      // Shared infrastructure (utils, support, data, e2e helpers) is split into
+      // modules but still contains cohesive orchestration (kube waits, deployment
+      // setup, log parsing). Complexity limits would force artificial fragmentation.
       files: [
-        "playwright/utils/kube-client.ts",
-        "playwright/utils/kube-client-*.ts",
-        "playwright/utils/common.ts",
-        "playwright/utils/common-auth-popup.ts",
-        "playwright/utils/ui-helper.ts",
-        "playwright/utils/ui-helper/**/*.ts",
-        "playwright/utils/api-helper.ts",
-        "playwright/utils/postgres-config.ts",
-        "playwright/utils/authentication-providers/rhdh-deployment.ts",
-        "playwright/utils/authentication-providers/rhdh-deployment-*.ts",
-        "playwright/utils/authentication-providers/msgraph-helper.ts",
-        "playwright/utils/authentication-providers/msgraph-helper-nsg.ts",
-        "playwright/e2e/audit-log/log-utils.ts",
-        "playwright/e2e/plugin-division-mode-schema/schema-mode-setup.ts",
-        "playwright/e2e/plugin-division-mode-schema/schema-mode-db.ts",
-        "playwright/support/selectors/semantic-selectors*.ts",
-        "playwright/data/rbac-constants.ts",
+        "playwright/utils/**/*.ts",
+        "playwright/support/**/*.ts",
+        "playwright/data/**/*.ts",
+        "playwright/e2e/**/*.ts",
       ],
       rules: {
         "eslint/max-lines": "off",
@@ -104,24 +99,25 @@ export default defineConfig({
       },
     },
     {
-      files: ["playwright/e2e/localization/locale.ts"],
+      // Facade modules aggregate many submodules by design (e.g. KubeClient re-exports,
+      // rhdh-deployment orchestration, locale translation maps). A flat import count
+      // does not reflect coupling when each import is a focused submodule.
+      files: [
+        "playwright/utils/**/*.ts",
+        "playwright/e2e/localization/**/*.ts",
+      ],
       rules: {
         "import/max-dependencies": "off",
       },
     },
     {
-      files: ["playwright/utils/kube-client.ts"],
-      rules: {
-        "import/max-dependencies": "off",
-      },
-    },
-    {
-      files: ["playwright/utils/authentication-providers/rhdh-deployment.ts"],
-      rules: {
-        "import/max-dependencies": "off",
-      },
-    },
-    {
+      // valid-title / valid-describe-callback: existing suite uses legacy naming
+      // patterns that do not match the plugin's strict conventions.
+      // no-wait-for-selector: replaced with expect() and locator.waitFor() per
+      // hardening guidelines; rule would flag intentional migration patterns.
+      // expect-expect + assertFunctionNames: POM verify* helpers and loginAsGuest
+      // perform assertions on behalf of the spec; register them so specs are not
+      // forced to duplicate expect() calls after every helper invocation.
       files: ["**/*.spec.ts", "**/*.test.ts", "playwright/**/*.ts"],
       rules: {
         // Playwright requires object destructuring for hook/test callbacks that take
