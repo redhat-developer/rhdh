@@ -83,7 +83,6 @@ export default defineConfig({
     {
       name: PW_PROJECT.SMOKE_TEST,
       testMatch: "**/playwright/e2e/smoke-test.spec.ts",
-      retries: 10,
     },
     {
       name: PW_PROJECT.SHOWCASE,

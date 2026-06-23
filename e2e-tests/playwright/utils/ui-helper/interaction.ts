@@ -43,7 +43,7 @@ export async function clickBtnByTitleIfNotPressed(page: Page, title: string) {
 export async function clickByDataTestId(page: Page, dataTestId: string) {
   const element = page.getByTestId(dataTestId);
   await element.waitFor({ state: "visible" });
-  await element.dispatchEvent("click");
+  await element.click();
 }
 
 export async function clickDivByTitle(page: Page, title: string) {

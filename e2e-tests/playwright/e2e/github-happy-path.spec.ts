@@ -1,10 +1,9 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-
-import { BackstageShowcase, CatalogImport } from "../support/pages/catalog-import";
-import { RESOURCES } from "../support/test-data/resources";
-import { TEMPLATES } from "../support/test-data/templates";
-import { Common, setupBrowser, teardownBrowser } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
+import { Common, setupBrowser, teardownBrowser } from "../utils/common";
+import { RESOURCES } from "../support/test-data/resources";
+import { RhdhInstance, CatalogImport } from "../support/pages/catalog-import";
+import { TEMPLATES } from "../support/test-data/templates";
 
 type GithubPullRequest = { title: string; number: string };
 
@@ -36,11 +35,14 @@ function parseGithubPullRequests(data: unknown): GithubPullRequest[] {
   });
 }
 
-async function getShowcasePullRequests(
+async function getRhdhPullRequests(
   state: "open" | "closed" | "all",
   paginated = false,
 ): Promise<GithubPullRequest[]> {
-  const data: unknown = await BackstageShowcase.getShowcasePRs(state, paginated);
+  const data: unknown = await RhdhInstance.getRhdhPullRequests(
+    state,
+    paginated,
+  );
   return parseGithubPullRequests(data);
 }
 
@@ -52,9 +54,10 @@ test.describe.fixme("GitHub Happy path", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
-  let backstageShowcase: BackstageShowcase;
+  let rhdhInstance: RhdhInstance;
 
-  const component = "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
+  const component =
+    "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
@@ -66,12 +69,15 @@ test.describe.fixme("GitHub Happy path", () => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
-    backstageShowcase = new BackstageShowcase(page);
+    rhdhInstance = new RhdhInstance(page);
     test.info().setTimeout(600 * 1000);
   });
 
   test("Login as a Github user from Settings page.", async () => {
-    await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
+    await common.loginAsKeycloakUser(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+    );
     const ghLogin = await common.githubLoginFromSettingsPage(
       process.env.GH_USER2_ID!,
       process.env.GH_USER2_PASS!,
@@ -100,7 +106,9 @@ test.describe.fixme("GitHub Happy path", () => {
     await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
 
     await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
-    await uiHelper.verifyComponentInCatalog("Component", ["Red Hat Developer Hub"]);
+    await uiHelper.verifyComponentInCatalog("Component", [
+      "Red Hat Developer Hub",
+    ]);
 
     await uiHelper.selectMuiBox("Kind", "Resource");
     await uiHelper.verifyRowsInTable([
@@ -148,14 +156,14 @@ test.describe.fixme("GitHub Happy path", () => {
     await page.getByRole("button", { name: "20" }).click();
     await page.getByRole("option", { name: "10", exact: true }).click();
 
-    await backstageShowcase.verifyPRStatisticsRendered();
-    await backstageShowcase.verifyAboutCardIsDisplayed();
+    await rhdhInstance.verifyPRStatisticsRendered();
+    await rhdhInstance.verifyAboutCardIsDisplayed();
   });
 
   test("Verify that the Pull/Merge Requests tab renders the 5 most recently updated Open Pull Requests", async () => {
     await uiHelper.clickTab("Pull/Merge Requests");
-    const openPRs = await getShowcasePullRequests("open");
-    await backstageShowcase.verifyPRRows(openPRs, 0, 5);
+    const openPRs = await getRhdhPullRequests("open");
+    await rhdhInstance.verifyPRRows(openPRs, 0, 5);
   });
 
   test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async () => {
@@ -164,14 +172,14 @@ test.describe.fixme("GitHub Happy path", () => {
     await expect(closedButton).toBeVisible();
     await expect(closedButton).toBeEnabled();
     await closedButton.click();
-    const closedPRs = await getShowcasePullRequests("closed");
+    const closedPRs = await getRhdhPullRequests("closed");
     await common.waitForLoad();
-    await backstageShowcase.verifyPRRows(closedPRs, 0, 5);
+    await rhdhInstance.verifyPRRows(closedPRs, 0, 5);
   });
 
   test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
     console.log("Fetching all PRs from GitHub");
-    const allPRs = await getShowcasePullRequests("all", true);
+    const allPRs = await getRhdhPullRequests("all", true);
 
     console.log("Clicking on ALL button");
     // Use semantic selector and wait for button to be ready (no force needed)
@@ -179,24 +187,28 @@ test.describe.fixme("GitHub Happy path", () => {
     await expect(allButton).toBeVisible();
     await expect(allButton).toBeEnabled();
     await allButton.click();
-    await backstageShowcase.verifyPRRows(allPRs, 0, 5);
+    await rhdhInstance.verifyPRRows(allPRs, 0, 5);
 
     console.log("Clicking on Next Page button");
-    await backstageShowcase.clickNextPage();
-    await backstageShowcase.verifyPRRows(allPRs, 5, 10);
+    await rhdhInstance.clickNextPage();
+    await rhdhInstance.verifyPRRows(allPRs, 5, 10);
 
     // const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
     // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
     const lastPagePRs = 996;
 
     console.log("Clicking on Last Page button");
-    await backstageShowcase.clickLastPage();
-    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, 1000);
+    await rhdhInstance.clickLastPage();
+    await rhdhInstance.verifyPRRows(allPRs, lastPagePRs, 1000);
 
     console.log("Clicking on Previous Page button");
-    await backstageShowcase.clickPreviousPage();
+    await rhdhInstance.clickPreviousPage();
     await common.waitForLoad();
-    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs - 1);
+    await rhdhInstance.verifyPRRows(
+      allPRs,
+      lastPagePRs - 5,
+      lastPagePRs - 1,
+    );
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
@@ -204,17 +216,19 @@ test.describe.fixme("GitHub Happy path", () => {
     await uiHelper.clickLink("Red Hat Developer Hub");
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");
-    const allPRs = await getShowcasePullRequests("open");
-    await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
-    await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
-    await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
+    const allPRs = await getRhdhPullRequests("open");
+    await rhdhInstance.verifyPRRowsPerPage(5, allPRs);
+    await rhdhInstance.verifyPRRowsPerPage(10, allPRs);
+    await rhdhInstance.verifyPRRowsPerPage(20, allPRs);
   });
 
   // Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
   test.fixme("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
     await uiHelper.clickTab("Dependencies");
     for (const resource of RESOURCES) {
-      const resourceElement = page.locator(`#workspace:has-text("${resource}")`);
+      const resourceElement = page.locator(
+        `#workspace:has-text("${resource}")`,
+      );
       await resourceElement.scrollIntoViewIfNeeded();
       await expect(resourceElement).toBeVisible();
     }

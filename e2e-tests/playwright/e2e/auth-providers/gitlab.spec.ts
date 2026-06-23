@@ -2,7 +2,7 @@ import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 
 import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser } from "../../utils/common";
+import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 let page: Page;
 let context: BrowserContext;
@@ -201,6 +201,9 @@ test.describe("Configure GitLab Provider", async () => {
   });
 
   test.afterAll(async () => {
+    if (page !== undefined) {
+      await teardownBrowser(page, test.info());
+    }
     console.log("[TEST] Starting cleanup...");
 
     // Delete the dynamically created OAuth application

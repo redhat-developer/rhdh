@@ -1,9 +1,8 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser } from "../../utils/common";
-import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
+import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
+import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 let page: Page;
 let context: BrowserContext;
 
@@ -134,7 +133,9 @@ test.describe("Configure Github Provider", async () => {
 
   test.beforeEach(() => {
     test.info().setTimeout(600 * 1000);
-    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
+    console.log(
+      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
+    );
   });
 
   test("Login with Github default resolver", async () => {
@@ -177,7 +178,10 @@ test.describe("Configure Github Provider", async () => {
 
   test("Login with Github emailMatchingUserEntityProfileEmail resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await deployment.setGithubResolver("emailMatchingUserEntityProfileEmail", false);
+    await deployment.setGithubResolver(
+      "emailMatchingUserEntityProfileEmail",
+      false,
+    );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
     await deployment.waitForConfigReconciled();
@@ -193,13 +197,18 @@ test.describe("Configure Github Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+    await uiHelper.verifyAlertErrorMessage(
+      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
+    );
     await context.clearCookies();
   });
 
   test("Login with Github emailLocalPartMatchingUserEntityName resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await deployment.setGithubResolver("emailLocalPartMatchingUserEntityName", false);
+    await deployment.setGithubResolver(
+      "emailLocalPartMatchingUserEntityName",
+      false,
+    );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
     await deployment.waitForConfigReconciled();
@@ -218,12 +227,17 @@ test.describe("Configure Github Provider", async () => {
 
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+    await uiHelper.verifyAlertErrorMessage(
+      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
+    );
     await context.clearCookies();
   });
 
   test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty("auth.providers.github.production.sessionDuration", "3days");
+    deployment.setAppConfigProperty(
+      "auth.providers.github.production.sessionDuration",
+      "3days",
+    );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
     await deployment.waitForConfigReconciled();
@@ -242,7 +256,9 @@ test.describe("Configure Github Provider", async () => {
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find((cookie) => cookie.name === "github-refresh-token");
+    const authCookie = cookies.find(
+      (cookie) => cookie.name === "github-refresh-token",
+    );
     expect(authCookie).toBeDefined();
 
     // expected duration of 3 days in ms
@@ -265,18 +281,35 @@ test.describe("Configure Github Provider", async () => {
     test.setTimeout(300 * 1000);
 
     await expect
-      .poll(() => deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"]), {
-        timeout: 120_000,
-      })
+      .poll(
+        () =>
+          deployment.checkUserIsIngestedInCatalog([
+            "RHDH QE User 1",
+            "RHDH QE Admin",
+          ]),
+        { timeout: 120_000 },
+      )
       .toBe(true);
     expect(
-      await deployment.checkGroupIsIngestedInCatalog(["test_admins", "test_all", "test_users"]),
+      await deployment.checkGroupIsIngestedInCatalog([
+        "test_admins",
+        "test_all",
+        "test_users",
+      ]),
     ).toBe(true);
-    expect(await deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("rhdhqeauth1", "test_users")).toBe(true);
+    expect(
+      await deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins"),
+    ).toBe(true);
+    expect(
+      await deployment.checkUserIsInGroup("rhdhqeauth1", "test_users"),
+    ).toBe(true);
 
-    expect(await deployment.checkGroupIsChildOfGroup("test_users", "test_all")).toBe(true);
-    expect(await deployment.checkGroupIsChildOfGroup("test_admins", "test_all")).toBe(true);
+    expect(
+      await deployment.checkGroupIsChildOfGroup("test_users", "test_all"),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsChildOfGroup("test_admins", "test_all"),
+    ).toBe(true);
 
     expect(
       await deployment.checkUserHasAnnotation(
@@ -286,7 +319,11 @@ test.describe("Configure Github Provider", async () => {
       ),
     ).toBe(true);
     expect(
-      await deployment.checkUserHasAnnotation("rhdhqeauth1", "MY_CUSTOM_ANNOTATION", "rhdhqeauth1"),
+      await deployment.checkUserHasAnnotation(
+        "rhdhqeauth1",
+        "MY_CUSTOM_ANNOTATION",
+        "rhdhqeauth1",
+      ),
     ).toBe(true);
   });
 
@@ -318,6 +355,9 @@ test.describe("Configure Github Provider", async () => {
   });
 
   test.afterAll(async () => {
+    if (page !== undefined) {
+      await teardownBrowser(page, test.info());
+    }
     console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();
     console.log("[TEST] Cleanup completed");
