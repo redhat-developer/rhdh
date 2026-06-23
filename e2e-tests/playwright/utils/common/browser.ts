@@ -49,5 +49,9 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
 
 export async function teardownBrowser(page: Page, testInfo: TestInfo): Promise<void> {
   await stopCoverageForPage(page, testInfo);
-  await page.close();
+  const context = page.context();
+  if (!page.isClosed()) {
+    await page.close();
+  }
+  await context.close();
 }

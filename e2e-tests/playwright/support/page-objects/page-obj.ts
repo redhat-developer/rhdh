@@ -1,8 +1,10 @@
 /* oxlint-disable playwright/no-raw-locators -- Legacy CSS selector constants; prefer SemanticSelectors get*() methods */
 import { Page, Locator } from "@playwright/test";
-
-import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { SemanticSelectors } from "../selectors/semantic";
+import { SemanticSelectors } from "../selectors/semantic-selectors";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../../e2e/localization/locale";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -122,7 +124,8 @@ export const KUBERNETES_COMPONENTS = {
    * Get pod logs label/button
    * @example KUBERNETES_COMPONENTS.getPodLogsButton(page).click()
    */
-  getPodLogsButton: (page: Page): Locator => page.locator('label[aria-label="get logs"]'),
+  getPodLogsButton: (page: Page): Locator =>
+    page.locator('label[aria-label="get logs"]'),
 
   /**
    * Get error/notification snackbar
@@ -130,11 +133,14 @@ export const KUBERNETES_COMPONENTS = {
    * @example await expect(KUBERNETES_COMPONENTS.getNotification(page)).toContainText('Error')
    */
   getNotification: (page: Page, message?: string | RegExp): Locator =>
-    message === undefined ? SemanticSelectors.alert(page) : SemanticSelectors.alert(page, message),
+    message === undefined
+      ? SemanticSelectors.alert(page)
+      : SemanticSelectors.alert(page, message),
 };
 
 /**
  * BACKSTAGE_SHOWCASE_COMPONENTS - Table pagination selectors
+ * @deprecated Use RHDH_INSTANCE_TABLE from ./rhdh-instance-table instead
  */
 export const BACKSTAGE_SHOWCASE_COMPONENTS = {
   // Legacy selectors - maintained for backward compatibility
@@ -148,44 +154,21 @@ export const BACKSTAGE_SHOWCASE_COMPONENTS = {
   /** @deprecated Use pagination role-based selector */
   tablePageSelectBox: 'div[class*="MuiTablePagination-input"]',
 
-  // Semantic methods - preferred
-  /**
-   * Get next page button
-   * ✅ Already semantic, but wrapped for consistency
-   * @example BACKSTAGE_SHOWCASE_COMPONENTS.getNextPageButton(page).click()
-   */
-  getNextPageButton: (page: Page): Locator => page.getByRole("button", { name: "Next Page" }),
+  getNextPageButton: (page: Page): Locator =>
+    page.getByRole("button", { name: "Next Page" }),
 
-  /**
-   * Get previous page button
-   * @example BACKSTAGE_SHOWCASE_COMPONENTS.getPreviousPageButton(page).click()
-   */
   getPreviousPageButton: (page: Page): Locator =>
     page.getByRole("button", { name: "Previous Page" }),
 
-  /**
-   * Get last page button
-   * @example BACKSTAGE_SHOWCASE_COMPONENTS.getLastPageButton(page).click()
-   */
-  getLastPageButton: (page: Page): Locator => page.getByRole("button", { name: "Last Page" }),
+  getLastPageButton: (page: Page): Locator =>
+    page.getByRole("button", { name: "Last Page" }),
 
-  /**
-   * Get first page button
-   * @example BACKSTAGE_SHOWCASE_COMPONENTS.getFirstPageButton(page).click()
-   */
-  getFirstPageButton: (page: Page): Locator => page.getByRole("button", { name: "First Page" }),
+  getFirstPageButton: (page: Page): Locator =>
+    page.getByRole("button", { name: "First Page" }),
 
-  /**
-   * Get table rows
-   * ✅ Preferred over tableRows
-   * @example const rows = BACKSTAGE_SHOWCASE_COMPONENTS.getTableRows(page)
-   */
-  getTableRows: (page: Page): Locator => SemanticSelectors.table(page).locator("tbody tr"),
+  getTableRows: (page: Page): Locator =>
+    SemanticSelectors.table(page).locator("tbody tr"),
 
-  /**
-   * Get specific table row by content
-   * @example const row = BACKSTAGE_SHOWCASE_COMPONENTS.getTableRow(page, 'Guest User')
-   */
   getTableRow: (page: Page, text: string | RegExp): Locator =>
     SemanticSelectors.tableRow(page, text),
 };
@@ -203,7 +186,8 @@ export const SETTINGS_PAGE_COMPONENTS = {
    * Get user settings menu button
    * @example SETTINGS_PAGE_COMPONENTS.getUserSettingsMenu(page).click()
    */
-  getUserSettingsMenu: (page: Page): Locator => page.getByTestId("user-settings-menu"),
+  getUserSettingsMenu: (page: Page): Locator =>
+    page.getByTestId("user-settings-menu"),
 
   /**
    * Get sign out menu item
@@ -225,7 +209,8 @@ export const ROLES_PAGE_COMPONENTS = {
    * Get edit role button
    * @example ROLES_PAGE_COMPONENTS.getEditRoleButton(page, 'admin').click()
    */
-  getEditRoleButton: (page: Page, name: string): Locator => page.getByTestId(`edit-role-${name}`),
+  getEditRoleButton: (page: Page, name: string): Locator =>
+    page.getByTestId(`edit-role-${name}`),
 
   /**
    * Get delete role button
@@ -247,7 +232,8 @@ export const DELETE_ROLE_COMPONENTS = {
    * Get role name confirmation input
    * @example DELETE_ROLE_COMPONENTS.getRoleNameInput(page).fill('role-name')
    */
-  getRoleNameInput: (page: Page): Locator => page.locator('input[name="delete-role"]'),
+  getRoleNameInput: (page: Page): Locator =>
+    page.locator('input[name="delete-role"]'),
 };
 
 /**
@@ -262,11 +248,13 @@ export const ROLE_OVERVIEW_COMPONENTS_TEST_ID = {
    * Get update policies button
    * @example ROLE_OVERVIEW_COMPONENTS_TEST_ID.getUpdatePoliciesButton(page).click()
    */
-  getUpdatePoliciesButton: (page: Page): Locator => page.getByTestId("update-policies"),
+  getUpdatePoliciesButton: (page: Page): Locator =>
+    page.getByTestId("update-policies"),
 
   /**
    * Get update members button
    * @example ROLE_OVERVIEW_COMPONENTS_TEST_ID.getUpdateMembersButton(page).click()
    */
-  getUpdateMembersButton: (page: Page): Locator => page.getByTestId("update-members"),
+  getUpdateMembersButton: (page: Page): Locator =>
+    page.getByTestId("update-members"),
 };

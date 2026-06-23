@@ -85,4 +85,4 @@ export class CatalogImport {
   }
 }
 
-export { BackstageShowcase } from "./backstage-showcase";
+export { RhdhInstance } from "./rhdh-instance";

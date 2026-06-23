@@ -1,10 +1,10 @@
 import { Page, expect } from "@playwright/test";
-
-import { APIHelper } from "../../utils/api-helper";
 import { UIhelper } from "../../utils/ui-helper";
-import { BACKSTAGE_SHOWCASE_COMPONENTS } from "../page-objects/page-obj";
+import { APIHelper } from "../../utils/api-helper";
+import { RHDH_INSTANCE_TABLE } from "../page-objects/rhdh-instance-table";
 
-export class BackstageShowcase {
+/** Page object for RHDH instance catalog views (PR tables, entity cards). */
+export class RhdhInstance {
   private readonly page: Page;
   private uiHelper: UIhelper;
 
@@ -13,23 +13,29 @@ export class BackstageShowcase {
     this.uiHelper = new UIhelper(page);
   }
 
-  static getShowcasePRs(state: "open" | "closed" | "all", paginated = false) {
+  static getRhdhPullRequests(
+    state: "open" | "closed" | "all",
+    paginated = false,
+  ) {
     return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
   }
 
   async clickNextPage() {
-    await BACKSTAGE_SHOWCASE_COMPONENTS.getNextPageButton(this.page).click();
+    await RHDH_INSTANCE_TABLE.getNextPageButton(this.page).click();
   }
 
   async clickPreviousPage() {
-    await BACKSTAGE_SHOWCASE_COMPONENTS.getPreviousPageButton(this.page).click();
+    await RHDH_INSTANCE_TABLE.getPreviousPageButton(this.page).click();
   }
 
   async clickLastPage() {
-    await BACKSTAGE_SHOWCASE_COMPONENTS.getLastPageButton(this.page).click();
+    await RHDH_INSTANCE_TABLE.getLastPageButton(this.page).click();
   }
 
-  async verifyPRRowsPerPage(rows: number, allPRs: { title: string; number: string }[]) {
+  async verifyPRRowsPerPage(
+    rows: number,
+    allPRs: { title: string; number: string }[],
+  ) {
     await this.selectRowsPerPage(rows);
     await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
     await this.uiHelper.verifyLink(allPRs[rows].number, {
@@ -37,7 +43,7 @@ export class BackstageShowcase {
       notVisible: true,
     });
 
-    const tableRows = BACKSTAGE_SHOWCASE_COMPONENTS.getTableRows(this.page);
+    const tableRows = RHDH_INSTANCE_TABLE.getTableRows(this.page);
     await expect(tableRows).toHaveCount(rows);
   }
 
@@ -52,11 +58,16 @@ export class BackstageShowcase {
   }
 
   async verifyAboutCardIsDisplayed() {
-    const url = "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
+    const url =
+      "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
     await expect(this.page.locator(`a[href="${url}"]`)).toBeVisible();
   }
 
-  async verifyPRRows(allPRs: { title: string }[], startRow: number, lastRow: number) {
+  async verifyPRRows(
+    allPRs: { title: string }[],
+    startRow: number,
+    lastRow: number,
+  ) {
     for (let i = startRow; i < lastRow; i++) {
       await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
     }

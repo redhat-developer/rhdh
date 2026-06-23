@@ -51,9 +51,9 @@ export async function waitForSideBarVisible(page: Page) {
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  const navLink = page.locator(`nav a:has-text("${navBarText}")`).first();
-  await navLink.waitFor({ state: "visible", timeout: 15_000 });
-  await navLink.dispatchEvent("click");
+  const navLink = page.getByRole("link", { name: navBarText }).first();
+  await expect(navLink).toBeVisible({ timeout: 15_000 });
+  await navLink.click();
 }
 
 export async function openCatalogSidebar(page: Page, kind: string) {

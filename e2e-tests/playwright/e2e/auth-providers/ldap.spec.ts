@@ -2,7 +2,7 @@ import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser } from "../../utils/common";
+import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
 let page: Page;
@@ -260,6 +260,9 @@ test.describe("Configure LDAP Provider", () => {
   });
 
   test.afterAll(async () => {
+    if (page !== undefined) {
+      await teardownBrowser(page, test.info());
+    }
     console.log("[TEST] Starting cleanup...");
 
     // Clean up NSG rule
