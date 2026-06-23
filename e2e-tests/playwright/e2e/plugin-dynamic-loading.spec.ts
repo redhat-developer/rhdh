@@ -84,9 +84,15 @@ test.describe("Plugin Dynamic Loading", () => {
     "All plugins from catalog index load and backend starts",
     { tag: "@sanity" },
     async ({}, testInfo) => {
-      // Skip test if CATALOG_INDEX_IMAGE is not set (hermetic test environment)
-      // In CI, this env var is always set. Locally, developers must opt-in explicitly.
-      if (!process.env.CATALOG_INDEX_IMAGE && !process.env.CI) {
+      // In CI, CATALOG_INDEX_IMAGE must be set (fail-fast)
+      if (process.env.CI && !process.env.CATALOG_INDEX_IMAGE) {
+        throw new Error(
+          "CATALOG_INDEX_IMAGE environment variable must be set in CI",
+        );
+      }
+
+      // Skip test if CATALOG_INDEX_IMAGE is not set (local/hermetic environment)
+      if (!process.env.CATALOG_INDEX_IMAGE) {
         testInfo.skip(
           true,
           "CATALOG_INDEX_IMAGE not set - skipping external catalog download. " +
@@ -98,15 +104,8 @@ test.describe("Plugin Dynamic Loading", () => {
       // 5 minutes timeout: ~3 min plugin download + ~2s backend startup + 2 min buffer
       test.setTimeout(300_000);
 
-      // Get catalog index image from environment
-      // In CI, this must be set explicitly to ensure we test the correct catalog version
-      const catalogIndexImage = process.env.CATALOG_INDEX_IMAGE!;
-
-      if (process.env.CI && !catalogIndexImage) {
-        throw new Error(
-          "CATALOG_INDEX_IMAGE environment variable must be set in CI",
-        );
-      }
+      // Get catalog index image from environment (now guaranteed to exist)
+      const catalogIndexImage = process.env.CATALOG_INDEX_IMAGE;
 
       reportCatalogIndex(catalogIndexImage);
 
