@@ -33,6 +33,38 @@ export interface RuntimeDeployConfig {
   helm?: { chartUrl: string; chartVersion: string };
 }
 
+/** Typed Backstage CR used by runtime-deploy and schema-mode-setup. */
+export interface BackstageCR {
+  kind: "Backstage";
+  apiVersion: string;
+  metadata: { name: string; [key: string]: unknown };
+  spec: {
+    deployment?: { patch?: Record<string, unknown> };
+    application?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+}
+
+/** Shared app-config YAML structure used across runtime tests. */
+export interface AppConfigYaml {
+  app?: { title?: string; baseUrl?: string; [key: string]: unknown };
+  backend?: {
+    database?: {
+      client?: string;
+      pluginDivisionMode?: string;
+      ensureSchemaExists?: boolean;
+      connection?: Record<string, unknown>;
+      [key: string]: unknown;
+    };
+    auth?: Record<string, unknown>;
+    baseUrl?: string;
+    cors?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  auth?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 /**
  * Build a RuntimeDeployConfig from environment variables.
  */
@@ -81,6 +113,25 @@ export function parseCatalogIndexImage(imageRef: string): {
   repository: string;
   tag: string;
 } {
+  // Handle @sha256: digest references (e.g. quay.io/rhdh/image@sha256:abc123)
+  const atIdx = imageRef.indexOf("@");
+  if (atIdx !== -1) {
+    const digest = imageRef.slice(atIdx + 1);
+    const withoutDigest = imageRef.slice(0, atIdx);
+    const slashIdx = withoutDigest.indexOf("/");
+    if (slashIdx === -1) {
+      throw new Error(
+        `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
+      );
+    }
+    return {
+      registry: withoutDigest.slice(0, slashIdx),
+      repository: withoutDigest.slice(slashIdx + 1),
+      tag: digest,
+    };
+  }
+
+  // Handle tag references (e.g. quay.io/rhdh/image:1.10)
   const colonIdx = imageRef.lastIndexOf(":");
   if (colonIdx === -1) {
     throw new Error(
@@ -95,9 +146,11 @@ export function parseCatalogIndexImage(imageRef: string): {
       `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
     );
   }
-  const registry = withoutTag.slice(0, slashIdx);
-  const repository = withoutTag.slice(slashIdx + 1);
-  return { registry, repository, tag };
+  return {
+    registry: withoutTag.slice(0, slashIdx),
+    repository: withoutTag.slice(slashIdx + 1),
+    tag,
+  };
 }
 
 // ─── Helm values generation ──────────────────────────────────────────────────
@@ -318,9 +371,7 @@ export function generateDynamicPluginsYaml(): string {
  * spec.application for app-config, dynamic plugins, extra files, env vars,
  * and route configuration.
  */
-export function generateBackstageCR(
-  config: RuntimeDeployConfig,
-): Record<string, unknown> {
+export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
   const fullImage = `${config.image.registry}/${config.image.repository}:${config.image.tag}`;
 
   const envs: Array<Record<string, unknown>> = [

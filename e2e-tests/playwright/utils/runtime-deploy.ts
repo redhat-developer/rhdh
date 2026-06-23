@@ -39,6 +39,7 @@ import {
   generateDynamicPluginsYaml,
   generateBackstageCR,
 } from "./runtime-config";
+import { resolveInstallMethod, base64Encode, base64Decode } from "./helper";
 
 const execFileAsync = promisify(execFile);
 
@@ -46,19 +47,9 @@ const execFileAsync = promisify(execFile);
 let deployed = false;
 
 /**
- * Detect install method from environment.
- */
-function resolveInstallMethod(): "helm" | "operator" {
-  if (process.env.INSTALL_METHOD === "operator") return "operator";
-  if (process.env.INSTALL_METHOD === "helm") return "helm";
-  const job = process.env.JOB_NAME || "";
-  return job.includes("operator") ? "operator" : "helm";
-}
-
-/**
  * Run a shell command and return stdout. Throws on non-zero exit.
  */
-async function run(
+export async function run(
   cmd: string,
   args: string[],
   options?: { timeout?: number },
@@ -119,19 +110,17 @@ async function createPlaceholderSecrets(
   kubeClient: KubeClient,
   namespace: string,
 ): Promise<void> {
-  const encode = (s: string) => Buffer.from(s).toString("base64");
-
   // postgres-cred — placeholder overwritten by external DB tests
   await kubeClient.createOrUpdateSecret(
     {
       metadata: { name: "postgres-cred" },
       data: {
-        POSTGRES_PASSWORD: encode("tmp"),
-        POSTGRES_PORT: encode("5432"),
-        POSTGRES_USER: encode("janus-idp"),
-        POSTGRES_HOST: encode("tmp"),
-        PGSSLMODE: encode("disable"), // internal DB has no TLS
-        NODE_EXTRA_CA_CERTS: encode("/opt/app-root/src/postgres-crt.pem"),
+        POSTGRES_PASSWORD: base64Encode("tmp"),
+        POSTGRES_PORT: base64Encode("5432"),
+        POSTGRES_USER: base64Encode("janus-idp"),
+        POSTGRES_HOST: base64Encode("tmp"),
+        PGSSLMODE: base64Encode("disable"), // internal DB has no TLS
+        NODE_EXTRA_CA_CERTS: base64Encode("/opt/app-root/src/postgres-crt.pem"),
       },
     },
     namespace,
@@ -276,7 +265,7 @@ async function deployWithOperator(
     {
       metadata: { name: "rhdh-runtime-config" },
       data: {
-        RHDH_RUNTIME_URL: Buffer.from(runtimeUrl).toString("base64"),
+        RHDH_RUNTIME_URL: base64Encode(runtimeUrl),
       },
     },
     namespace,
@@ -428,7 +417,7 @@ async function configureSchemaMode(
       const data = result.body.data || {};
       for (const key of passwordKeys) {
         if (data[key]) {
-          adminPassword = Buffer.from(data[key], "base64").toString("utf-8");
+          adminPassword = base64Decode(data[key]);
           break;
         }
       }
@@ -554,7 +543,7 @@ export async function ensureRuntimeDeployed(): Promise<void> {
 /**
  * Discover the cluster router base from the OpenShift console route.
  */
-async function discoverRouterBase(): Promise<string> {
+export async function discoverRouterBase(): Promise<string> {
   try {
     const output = await run("oc", [
       "get",

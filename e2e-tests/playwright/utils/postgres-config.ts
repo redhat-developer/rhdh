@@ -13,9 +13,10 @@
 import { readFileSync, existsSync } from "fs";
 
 import { Client } from "pg";
-import * as yaml from "js-yaml";
 import * as k8s from "@kubernetes/client-node";
 import { KubeClient } from "./kube-client";
+import { base64Encode } from "./helper";
+import type { AppConfigYaml } from "./runtime-config";
 
 /**
  * Convert escaped newlines (\n) to actual newline characters.
@@ -50,7 +51,7 @@ export async function configurePostgresCertificate(
   namespace: string,
   pemContent: string,
 ): Promise<void> {
-  const certBase64 = Buffer.from(pemContent).toString("base64");
+  const certBase64 = base64Encode(pemContent);
   const secret = {
     apiVersion: "v1",
     kind: "Secret",
@@ -76,20 +77,20 @@ export async function configurePostgresCredentials(
   },
 ): Promise<void> {
   const data: Record<string, string> = {
-    POSTGRES_HOST: Buffer.from(credentials.host).toString("base64"),
-    POSTGRES_PORT: Buffer.from(credentials.port ?? "5432").toString("base64"),
-    PGSSLMODE: Buffer.from(credentials.sslMode ?? "require").toString("base64"),
-    NODE_EXTRA_CA_CERTS: Buffer.from("/opt/app-root/src/postgres-crt.pem").toString("base64"),
+    POSTGRES_HOST: base64Encode(credentials.host),
+    POSTGRES_PORT: base64Encode(credentials.port || "5432"),
+    PGSSLMODE: base64Encode(credentials.sslMode || "require"),
+    NODE_EXTRA_CA_CERTS: base64Encode("/opt/app-root/src/postgres-crt.pem"),
   };
 
-  if (credentials.user !== "") {
-    data.POSTGRES_USER = Buffer.from(credentials.user).toString("base64");
+  if (credentials.user) {
+    data.POSTGRES_USER = base64Encode(credentials.user);
   }
-  if (credentials.password !== "") {
-    data.POSTGRES_PASSWORD = Buffer.from(credentials.password).toString("base64");
+  if (credentials.password) {
+    data.POSTGRES_PASSWORD = base64Encode(credentials.password);
   }
-  if (credentials.database !== undefined && credentials.database !== "") {
-    data.POSTGRES_DB = Buffer.from(credentials.database).toString("base64");
+  if (credentials.database) {
+    data.POSTGRES_DB = base64Encode(credentials.database);
   }
 
   const secret = {
@@ -238,14 +239,6 @@ export async function clearDatabase(credentials: {
   }
 }
 
-interface AppConfigYaml {
-  backend?: {
-    database?: Record<string, unknown>;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
-
 /**
  * Prepare the RHDH deployment for external database tests.
  *
@@ -279,46 +272,20 @@ export async function prepareForExternalDatabase(
   await removeSchemaModePatchedEnvVars(kubeClient, deploymentName, namespace);
 
   // --- 2. Patch app-config ConfigMap to use external DB connection ---
-  const configMapName = await kubeClient.findAppConfigMap(namespace);
-  const configMapResponse = await kubeClient.getConfigMap(
-    configMapName,
-    namespace,
-  );
-  const configMap = configMapResponse.body;
-  const configKey = Object.keys(configMap.data || {}).find((key) =>
-    key.includes("app-config"),
-  );
-
-  if (!configKey || !configMap.data) {
-    throw new Error(
-      `No app-config data key found in ConfigMap '${configMapName}'`,
-    );
-  }
-
-  const appConfig = yaml.load(configMap.data[configKey]) as AppConfigYaml;
-
   console.log(
     "Patching app-config to use external database connection (env var placeholders)...",
   );
-  appConfig.backend = appConfig.backend || {};
-  appConfig.backend.database = {
-    connection: {
-      host: "${POSTGRES_HOST}",
-      port: "${POSTGRES_PORT}",
-      user: "${POSTGRES_USER}",
-      password: "${POSTGRES_PASSWORD}",
-    },
-  };
-
-  configMap.data[configKey] = yaml.dump(appConfig);
-  delete configMap.metadata?.creationTimestamp;
-  delete configMap.metadata?.resourceVersion;
-
-  await kubeClient.coreV1Api.replaceNamespacedConfigMap(
-    configMapName,
-    namespace,
-    configMap,
-  );
+  await kubeClient.patchAppConfig(namespace, (appConfig: AppConfigYaml) => {
+    appConfig.backend = appConfig.backend || {};
+    appConfig.backend.database = {
+      connection: {
+        host: "${POSTGRES_HOST}",
+        port: "${POSTGRES_PORT}",
+        user: "${POSTGRES_USER}",
+        password: "${POSTGRES_PASSWORD}",
+      },
+    };
+  });
   console.log("App-config patched for external database connection");
 
   // --- 3. Add POSTGRES_* env vars to the deployment via secretKeyRef ---
@@ -388,17 +355,7 @@ async function removeSchemaModePatchedEnvVars(
       path: `/spec/template/spec/containers/${backstageIdx}/env/${idx}`,
     }));
 
-  await kubeClient.appsApi.patchNamespacedDeployment(
-    deploymentName,
-    namespace,
-    patch,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    { headers: { "Content-Type": "application/json-patch+json" } },
-  );
+  await kubeClient.jsonPatchDeployment(deploymentName, namespace, patch);
   console.log("Schema-mode env var patches removed from deployment");
 }
 
@@ -448,7 +405,7 @@ async function ensurePostgresCredEnvVars(
     .filter((e: { name: string; idx: number }) => requiredVars.includes(e.name))
     .map((e: { name: string; idx: number }) => e.idx);
 
-  const patch: object[] = [];
+  const patch: Array<{ op: string; path: string; value?: unknown }> = [];
 
   if (indicesToRemove.length > 0) {
     console.log(
@@ -495,16 +452,6 @@ async function ensurePostgresCredEnvVars(
   console.log(
     `Adding ${envVarsToAdd.length} POSTGRES_* env vars from postgres-cred to deployment`,
   );
-  await kubeClient.appsApi.patchNamespacedDeployment(
-    deploymentName,
-    namespace,
-    patch,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    { headers: { "Content-Type": "application/json-patch+json" } },
-  );
+  await kubeClient.jsonPatchDeployment(deploymentName, namespace, patch);
   console.log("POSTGRES_* env vars added to deployment from postgres-cred");
 }

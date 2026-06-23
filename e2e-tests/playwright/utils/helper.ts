@@ -103,10 +103,31 @@ export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
 }
 
 /**
+ * Canonical install method detection. Checks INSTALL_METHOD env var first,
+ * falls back to JOB_NAME pattern matching.
+ */
+export function resolveInstallMethod(): "helm" | "operator" {
+  if (process.env.INSTALL_METHOD === "operator") return "operator";
+  if (process.env.INSTALL_METHOD === "helm") return "helm";
+  const job = process.env.JOB_NAME || "";
+  return job.includes("operator") ? "operator" : "helm";
+}
+
+/** Base64-encode a string. */
+export function base64Encode(value: string): string {
+  return Buffer.from(value).toString("base64");
+}
+
+/** Base64-decode a string. */
+export function base64Decode(value: string): string {
+  return Buffer.from(value, "base64").toString("utf-8");
+}
+
+/**
  * Returns whether the current job is an Operator deployment.
  */
 export function isOperatorDeployment(): boolean {
-  return process.env.JOB_NAME?.includes("operator") ?? false;
+  return resolveInstallMethod() === "operator";
 }
 
 /**
