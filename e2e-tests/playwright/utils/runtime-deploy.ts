@@ -30,7 +30,11 @@ import { promisify } from "util";
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
-import { KubeClient, getRhdhDeploymentName } from "./kube-client";
+import {
+  KubeClient,
+  getRhdhDeploymentName,
+  waitForBackstageCrd,
+} from "./kube-client";
 import {
   resolveConfig,
   generateHelmValuesYaml,
@@ -285,23 +289,7 @@ async function deployWithOperator(
   console.log("Created dynamic-plugins ConfigMap (no dynamic plugins)");
 
   // 4. Wait for Backstage CRD to be available
-  console.log("Waiting for Backstage CRD...");
-  const crdName = "backstages.rhdh.redhat.com";
-  for (let i = 0; i < 12; i++) {
-    try {
-      await kubeClient.customObjectsApi.getClusterCustomObject(
-        "apiextensions.k8s.io",
-        "v1",
-        "customresourcedefinitions",
-        crdName,
-      );
-      console.log("Backstage CRD is available");
-      break;
-    } catch {
-      if (i === 11) throw new Error(`CRD ${crdName} not available after 60s`);
-      await new Promise((r) => setTimeout(r, 5000));
-    }
-  }
+  await waitForBackstageCrd(kubeClient.customObjectsApi);
 
   // 5. Apply Backstage CR (generated from runtime-config.ts)
   const crObj = generateBackstageCR(config);
