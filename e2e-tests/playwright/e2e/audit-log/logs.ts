@@ -20,9 +20,11 @@ interface LogResponse {
   status: number;
 }
 
-export type EventStatus = "initiated" | "succeeded" | "failed";
+const EVENT_STATUSES = ["initiated", "succeeded", "failed"] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
 
-export type EventSeverityLevel = "low" | "medium" | "high" | "critical";
+const EVENT_SEVERITY_LEVELS = ["low", "medium", "high", "critical"] as const;
+export type EventSeverityLevel = (typeof EVENT_SEVERITY_LEVELS)[number];
 
 export class Log {
   actor: Actor;

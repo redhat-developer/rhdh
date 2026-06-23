@@ -50,12 +50,21 @@ const ja = {
   ...jaRhdhPlugins,
 };
 
-export type Locale = "de" | "en" | "es" | "fr" | "it" | "ja";
+const LOCALES = ["de", "en", "es", "fr", "it", "ja"] as const;
+export type Locale = (typeof LOCALES)[number];
 
-const LOCALES: readonly Locale[] = ["de", "en", "es", "fr", "it", "ja"];
+const NON_EN_LOCALE_BUNDLES = {
+  de,
+  es,
+  fr,
+  it,
+  ja,
+} as const;
+
+const LOCALE_SET = new Set<string>(LOCALES);
 
 function isLocale(lang: string): lang is Locale {
-  return (LOCALES as readonly string[]).includes(lang);
+  return LOCALE_SET.has(lang);
 }
 
 type TranslationFile = Record<string, Record<string, Record<string, string>>>;
@@ -78,14 +87,23 @@ function createMergedTranslations() {
 
   for (const namespace of allNamespaces) {
     const enKeys = (en as TranslationFile)[namespace]?.en || {};
-    merged[namespace] = {
+    const namespaceTranslations: Record<string, Record<string, string>> = {
       en: enKeys,
-      de: { ...enKeys, ...(de as TranslationFile)[namespace]?.de },
-      es: { ...enKeys, ...(es as TranslationFile)[namespace]?.es },
-      fr: { ...enKeys, ...(fr as TranslationFile)[namespace]?.fr },
-      it: { ...enKeys, ...(it as TranslationFile)[namespace]?.it },
-      ja: { ...enKeys, ...(ja as TranslationFile)[namespace]?.ja },
     };
+
+    for (const locale of LOCALES) {
+      if (locale === "en") {
+        continue;
+      }
+      namespaceTranslations[locale] = {
+        ...enKeys,
+        ...(NON_EN_LOCALE_BUNDLES[locale] as TranslationFile)[namespace]?.[
+          locale
+        ],
+      };
+    }
+
+    merged[namespace] = namespaceTranslations;
   }
 
   return merged;
