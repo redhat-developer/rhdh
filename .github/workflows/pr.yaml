@@ -164,18 +164,17 @@ jobs:
           directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
 
-      - name: Change directory to dynamic-plugins
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: cd ./dynamic-plugins
-
       - name: Install dynamic plugin dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: dynamic-plugins
         run: yarn install
 
       - name: Test the dynamic plugin wrappers
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: dynamic-plugins
         run: yarn test --continue --affected
 
       - name: Export the dynamic plugin wrappers
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: dynamic-plugins
         run: yarn export-dynamic --continue --affected
