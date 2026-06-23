@@ -14,7 +14,7 @@ let page: Page;
 
 test.describe("Test timestamp column on Catalog", () => {
   test.skip(
-    () => process.env.JOB_NAME.includes("osd-gcp"),
+    () => (process.env.JOB_NAME ?? "").includes("osd-gcp"),
     "skipping on OSD-GCP cluster due to RHDHBUGS-555",
   );
 

@@ -5,7 +5,8 @@ export class GetOrganizationResponse {
     enum OrganizationResponseAttributes {
       REPOS_URL = "repos_url",
     }
-    this.reposUrl = response[OrganizationResponseAttributes.REPOS_URL];
+    const data = response as Record<string, string>;
+    this.reposUrl = data[OrganizationResponseAttributes.REPOS_URL];
   }
 }
 

@@ -22,7 +22,7 @@ test.describe("Test licensed users info backend plugin", async () => {
 
   let apiToken: string;
 
-  const baseRHDHURL: string = playwrightConfig.use.baseURL;
+  const baseRHDHURL: string = playwrightConfig.use?.baseURL ?? "";
   const pluginAPIURL: string = "api/licensed-users-info/";
 
   test.beforeEach(async ({ page }) => {

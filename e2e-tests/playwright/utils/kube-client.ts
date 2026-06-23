@@ -95,14 +95,14 @@ export class KubeClient {
         clusters: [
           {
             name: "my-openshift-cluster",
-            server: process.env.K8S_CLUSTER_URL,
+            server: process.env.K8S_CLUSTER_URL ?? "",
             skipTLSVerify: true,
           },
         ],
         users: [
           {
             name: "ci-user",
-            token: process.env.K8S_CLUSTER_TOKEN,
+            token: process.env.K8S_CLUSTER_TOKEN ?? "",
           },
         ],
         contexts: [
@@ -136,7 +136,9 @@ export class KubeClient {
         namespace,
       );
     } catch (e) {
-      console.log(e.body?.message);
+      console.log(
+        isKubeApiError(e) ? e.body?.message : getKubeApiErrorMessage(e),
+      );
       throw e;
     }
   }
@@ -146,7 +148,9 @@ export class KubeClient {
       console.log(`Listing configmaps in namespace ${namespace}`);
       return await this.coreV1Api.listNamespacedConfigMap(namespace);
     } catch (e) {
-      console.error(e.body?.message);
+      console.error(
+        isKubeApiError(e) ? e.body?.message : getKubeApiErrorMessage(e),
+      );
       throw e;
     }
   }
@@ -209,7 +213,9 @@ export class KubeClient {
     try {
       return (await this.coreV1Api.readNamespace(name)).body;
     } catch (e) {
-      console.log(`Error getting namespace ${name}: ${e.body?.message}`);
+      console.log(
+        `Error getting namespace ${name}: ${getKubeApiErrorMessage(e)}`,
+      );
       throw e;
     }
   }
@@ -244,7 +250,9 @@ export class KubeClient {
         );
         return;
       } catch (error) {
-        const statusCode = error.response?.statusCode || error.statusCode;
+        const statusCode = isKubeApiError(error)
+          ? error.response?.statusCode || error.statusCode
+          : undefined;
         const isNotFound = statusCode === 404;
         const isRetryable =
           isNotFound || statusCode === 503 || statusCode === 429;
@@ -258,7 +266,7 @@ export class KubeClient {
         } else {
           console.error(
             `Failed to scale deployment ${deploymentName} after ${attempt} attempts:`,
-            error.body?.message || error.message,
+            getKubeApiErrorMessage(error),
           );
           throw error;
         }
@@ -271,7 +279,9 @@ export class KubeClient {
       console.log(`Getting secret ${secretName} from namespace ${namespace}`);
       return await this.coreV1Api.readNamespacedSecret(secretName, namespace);
     } catch (e) {
-      console.log(e.body.message);
+      console.log(
+        isKubeApiError(e) ? e.body?.message : getKubeApiErrorMessage(e),
+      );
       throw e;
     }
   }
@@ -320,7 +330,7 @@ export class KubeClient {
         await this.getConfigMap(configMapName, namespace);
         console.log(`Using provided ConfigMap name: ${configMapName}`);
       } catch (error) {
-        if (error.response?.statusCode === 404) {
+        if (isKubeApiError(error) && error.response?.statusCode === 404) {
           console.log(
             `ConfigMap ${configMapName} not found, searching for alternatives...`,
           );
@@ -377,6 +387,11 @@ export class KubeClient {
       }
 
       console.log(`Using data key: ${dataKey}`);
+      if (!configMap.data) {
+        throw new Error(
+          `ConfigMap '${actualConfigMapName}' has no data section`,
+        );
+      }
       const appConfigYaml = configMap.data[dataKey];
 
       if (!appConfigYaml) {
@@ -399,8 +414,10 @@ export class KubeClient {
 
       configMap.data[dataKey] = yaml.dump(appConfigObj);
 
-      delete configMap.metadata.creationTimestamp;
-      delete configMap.metadata.resourceVersion;
+      if (configMap.metadata) {
+        delete configMap.metadata.creationTimestamp;
+        delete configMap.metadata.resourceVersion;
+      }
 
       await this.coreV1Api.replaceNamespacedConfigMap(
         actualConfigMapName,
@@ -440,19 +457,23 @@ export class KubeClient {
         options,
       );
     } catch (e) {
-      console.log(e.statusCode, e.body.message);
+      console.log(getKubeApiErrorMessage(e));
       throw e;
     }
   }
 
   async createCongifmap(namespace: string, body: V1ConfigMap) {
     try {
+      const configMapName = body.metadata?.name;
+      if (!configMapName) {
+        throw new Error("ConfigMap metadata.name is required");
+      }
       console.log(
-        `Creating configmap ${body.metadata.name} in namespace ${namespace}`,
+        `Creating configmap ${configMapName} in namespace ${namespace}`,
       );
       return await this.coreV1Api.createNamespacedConfigMap(namespace, body);
     } catch (err) {
-      console.log(err.body.message);
+      console.log(getKubeApiErrorMessage(err));
       throw err;
     }
   }
@@ -495,7 +516,9 @@ export class KubeClient {
 
   async createNamespaceIfNotExists(namespace: string) {
     const nsList = await this.coreV1Api.listNamespace();
-    const ns = nsList.body.items.map((ns) => ns.metadata.name);
+    const ns = nsList.body.items
+      .map((item) => item.metadata?.name)
+      .filter((name): name is string => name !== undefined);
     if (ns.includes(namespace)) {
       console.log(`Delete and re-create namespace ${namespace}`);
       try {
@@ -514,9 +537,10 @@ export class KubeClient {
           name: namespace,
         },
       });
-      console.log(`Created namespace ${createNamespaceRes.body.metadata.name}`);
+      const createdName = createNamespaceRes.body.metadata?.name;
+      console.log(`Created namespace ${createdName ?? namespace}`);
     } catch (err) {
-      console.log(err.body.message);
+      console.log(getKubeApiErrorMessage(err));
       throw err;
     }
   }
@@ -524,11 +548,11 @@ export class KubeClient {
   async createSecret(secret: k8s.V1Secret, namespace: string) {
     try {
       console.log(
-        `Creating secret ${secret.metadata.name} in namespace ${namespace}`,
+        `Creating secret ${secret.metadata?.name ?? "unknown"} in namespace ${namespace}`,
       );
       await this.coreV1Api.createNamespacedSecret(namespace, secret);
     } catch (err) {
-      console.log(err.body.message);
+      console.log(getKubeApiErrorMessage(err));
       throw err;
     }
   }
@@ -797,7 +821,10 @@ export class KubeClient {
           `Error checking deployment status: ${getKubeApiErrorMessage(error)}`,
         );
         // If we threw an error about pod failure, re-throw it
-        if (error.message?.includes("failed to start")) {
+        if (
+          error instanceof Error &&
+          error.message.includes("failed to start")
+        ) {
           throw error;
         }
       }
@@ -1085,8 +1112,9 @@ export class KubeClient {
           const podName = involvedObject.name;
           // Match if it's in our pod list OR if it matches our deployment pattern
           return (
-            podNames.has(podName) ||
-            (podName && podName.includes("backstage-developer-hub"))
+            (podName !== undefined && podNames.has(podName)) ||
+            (podName !== undefined &&
+              podName.includes("backstage-developer-hub"))
           );
         })
         .sort((a, b) => {

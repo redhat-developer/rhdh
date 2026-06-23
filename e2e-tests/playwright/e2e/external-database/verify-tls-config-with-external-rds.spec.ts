@@ -10,23 +10,23 @@ import {
 
 interface RdsConfig {
   name: string;
-  host: string | undefined;
+  host: string;
 }
 
 test.describe("Verify TLS configuration with RDS PostgreSQL health check", () => {
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+  const namespace = process.env.NAME_SPACE_RUNTIME! || "showcase-runtime";
   const deploymentName = getRhdhDeploymentName();
 
   // RDS configuration from environment
-  const rdsUser = process.env.RDS_USER;
-  const rdsPassword = process.env.RDS_PASSWORD;
+  const rdsUser = process.env.RDS_USER!;
+  const rdsPassword = process.env.RDS_PASSWORD!;
 
   // Define all RDS configurations to test
   const rdsConfigurations: RdsConfig[] = [
-    { name: "latest-3", host: process.env.RDS_1_HOST },
-    { name: "latest-2", host: process.env.RDS_2_HOST },
-    { name: "latest-1", host: process.env.RDS_3_HOST },
-    { name: "latest", host: process.env.RDS_4_HOST },
+    { name: "latest-3", host: process.env.RDS_1_HOST! },
+    { name: "latest-2", host: process.env.RDS_2_HOST! },
+    { name: "latest-1", host: process.env.RDS_3_HOST! },
+    { name: "latest", host: process.env.RDS_4_HOST! },
   ];
 
   test.beforeAll(async () => {
@@ -42,7 +42,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
     );
 
     // Validate certificates are available
-    const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
+    const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH!);
     if (!rdsCerts) {
       throw new Error(
         "RDS_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
@@ -75,7 +75,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
           host: config.host,
           user: rdsUser,
           password: rdsPassword,
-          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
+          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH!,
         });
       });
 

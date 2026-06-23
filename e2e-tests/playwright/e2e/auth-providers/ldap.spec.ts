@@ -54,22 +54,22 @@ test.describe("Configure LDAP Provider", async () => {
     uiHelper = new UIhelper(page);
 
     // expect some expected variables
-    expect(process.env.DEFAULT_USER_PASSWORD).toBeDefined();
-    expect(process.env.DEFAULT_USER_PASSWORD_2).toBeDefined();
-    expect(process.env.RHBK_LDAP_REALM).toBeDefined();
-    expect(process.env.RHBK_LDAP_CLIENT_ID).toBeDefined();
-    expect(process.env.RHBK_LDAP_CLIENT_SECRET).toBeDefined();
-    expect(process.env.RHBK_LDAP_USER_BIND).toBeDefined();
-    expect(process.env.RHBK_LDAP_USER_PASSWORD).toBeDefined();
-    expect(process.env.RHBK_LDAP_TARGET).toBeDefined();
-    expect(process.env.RHBK_BASE_URL).toBeDefined();
-    expect(process.env.RHBK_REALM).toBeDefined();
-    expect(process.env.RHBK_CLIENT_ID).toBeDefined();
-    expect(process.env.RHBK_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_ARM_CLIENT_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_ARM_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_ARM_TENANT_ID).toBeDefined();
+    expect(process.env.DEFAULT_USER_PASSWORD!).toBeDefined();
+    expect(process.env.DEFAULT_USER_PASSWORD_2!).toBeDefined();
+    expect(process.env.RHBK_LDAP_REALM!).toBeDefined();
+    expect(process.env.RHBK_LDAP_CLIENT_ID!).toBeDefined();
+    expect(process.env.RHBK_LDAP_CLIENT_SECRET!).toBeDefined();
+    expect(process.env.RHBK_LDAP_USER_BIND!).toBeDefined();
+    expect(process.env.RHBK_LDAP_USER_PASSWORD!).toBeDefined();
+    expect(process.env.RHBK_LDAP_TARGET!).toBeDefined();
+    expect(process.env.RHBK_BASE_URL!).toBeDefined();
+    expect(process.env.RHBK_REALM!).toBeDefined();
+    expect(process.env.RHBK_CLIENT_ID!).toBeDefined();
+    expect(process.env.RHBK_CLIENT_SECRET!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_ARM_CLIENT_ID!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_ARM_CLIENT_SECRET!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_ARM_TENANT_ID!).toBeDefined();
 
     // clean old namespaces
     await deployment.deleteNamespaceIfExists();
@@ -91,39 +91,39 @@ test.describe("Configure LDAP Provider", async () => {
 
     await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     await deployment.addSecretData(
       "RHBK_LDAP_REALM",
-      process.env.RHBK_LDAP_REALM,
+      process.env.RHBK_LDAP_REALM!,
     );
     await deployment.addSecretData(
       "RHBK_LDAP_CLIENT_ID",
-      process.env.RHBK_LDAP_CLIENT_ID,
+      process.env.RHBK_LDAP_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "RHBK_LDAP_CLIENT_SECRET",
-      process.env.RHBK_LDAP_CLIENT_SECRET,
+      process.env.RHBK_LDAP_CLIENT_SECRET!,
     );
     await deployment.addSecretData(
       "LDAP_BIND_DN",
-      process.env.RHBK_LDAP_USER_BIND,
+      process.env.RHBK_LDAP_USER_BIND!,
     );
     await deployment.addSecretData(
       "LDAP_BIND_SECRET",
-      process.env.RHBK_LDAP_USER_PASSWORD,
+      process.env.RHBK_LDAP_USER_PASSWORD!,
     );
     await deployment.addSecretData(
       "LDAP_TARGET_URL",
-      process.env.RHBK_LDAP_TARGET,
+      process.env.RHBK_LDAP_TARGET!,
     );
     await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     await deployment.addSecretData(
       "LDAP_GROUPS_DN",
@@ -133,37 +133,37 @@ test.describe("Configure LDAP Provider", async () => {
       "LDAP_USERS_DN",
       "OU=Users,OU=RHDH Local,DC=rhdh,DC=test",
     );
-    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
-    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
+    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL!);
+    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM!);
     await deployment.addSecretData(
       "RHBK_CLIENT_ID",
-      process.env.RHBK_CLIENT_ID,
+      process.env.RHBK_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "RHBK_CLIENT_SECRET",
-      process.env.RHBK_CLIENT_SECRET,
+      process.env.RHBK_CLIENT_SECRET!,
     );
 
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!,
     );
 
     await deployment.addSecretData(
       "PINGFEDERATE_BASE_URL",
-      process.env.PINGFEDERATE_BASE_URL,
+      process.env.PINGFEDERATE_BASE_URL!,
     );
     await deployment.addSecretData(
       "PINGFEDERATE_CLIENT_ID",
-      process.env.PINGFEDERATE_CLIENT_ID,
+      process.env.PINGFEDERATE_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "PINGFEDERATE_CLIENT_SECRET",
-      process.env.PINGFEDERATE_CLIENT_SECRET,
+      process.env.PINGFEDERATE_CLIENT_SECRET!,
     );
 
     await deployment.createSecret();
@@ -219,7 +219,7 @@ test.describe("Configure LDAP Provider", async () => {
   test("Login with LDAP oidcLdapUuidMatchingAnnotation resolver", async () => {
     const login = await common.keycloakLogin(
       "user1@rhdh.test",
-      process.env.RHBK_LDAP_USER_PASSWORD,
+      process.env.RHBK_LDAP_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -292,7 +292,7 @@ test.describe("Configure LDAP Provider", async () => {
 
     const login = await common.pingFederateLogin(
       "user1",
-      process.env.RHBK_LDAP_USER_PASSWORD,
+      process.env.RHBK_LDAP_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -324,7 +324,7 @@ test.describe("Configure LDAP Provider", async () => {
 
     const login = await common.pingFederateLogin(
       "user1",
-      process.env.RHBK_LDAP_USER_PASSWORD,
+      process.env.RHBK_LDAP_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 

@@ -29,10 +29,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   const secretName = "rhdh-secrets";
 
   const keycloakHelper = new KeycloakHelper({
-    baseUrl: process.env.RHBK_BASE_URL,
-    realmName: process.env.RHBK_REALM,
-    clientId: process.env.RHBK_CLIENT_ID,
-    clientSecret: process.env.RHBK_CLIENT_SECRET,
+    baseUrl: process.env.RHBK_BASE_URL!,
+    realmName: process.env.RHBK_REALM!,
+    clientId: process.env.RHBK_CLIENT_ID!,
+    clientSecret: process.env.RHBK_CLIENT_SECRET!,
   });
 
   // set deployment instance
@@ -71,11 +71,11 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     console.log("[TEST] Keycloak helper initialized successfully");
 
     // expect some expected variables
-    expect(process.env.DEFAULT_USER_PASSWORD).toBeDefined();
-    expect(process.env.RHBK_BASE_URL).toBeDefined();
-    expect(process.env.RHBK_REALM).toBeDefined();
-    expect(process.env.RHBK_CLIENT_ID).toBeDefined();
-    expect(process.env.RHBK_CLIENT_SECRET).toBeDefined();
+    expect(process.env.DEFAULT_USER_PASSWORD!).toBeDefined();
+    expect(process.env.RHBK_BASE_URL!).toBeDefined();
+    expect(process.env.RHBK_REALM!).toBeDefined();
+    expect(process.env.RHBK_CLIENT_ID!).toBeDefined();
+    expect(process.env.RHBK_CLIENT_SECRET!).toBeDefined();
 
     // clean old namespaces
     await deployment.deleteNamespaceIfExists();
@@ -96,30 +96,30 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     }
     await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
-    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
-    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
+    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL!);
+    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM!);
     await deployment.addSecretData(
       "RHBK_CLIENT_ID",
-      process.env.RHBK_CLIENT_ID,
+      process.env.RHBK_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "RHBK_CLIENT_SECRET",
-      process.env.RHBK_CLIENT_SECRET,
+      process.env.RHBK_CLIENT_SECRET!,
     );
 
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!,
     );
 
     await deployment.createSecret();
@@ -149,7 +149,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   test("Login with OIDC default resolver", async () => {
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -182,7 +182,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -206,7 +206,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -230,7 +230,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -240,7 +240,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login2 = await common.keycloakLogin(
       "atena",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login2).toBe("Login successful");
 
@@ -266,7 +266,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -276,7 +276,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login2 = await common.keycloakLogin(
       "atena",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login2).toBe("Login successful");
     await uiHelper.goToSettingsPage();
@@ -299,7 +299,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "atena",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -323,7 +323,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -333,11 +333,12 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     const authCookie = cookies.find(
       (cookie) => cookie.name === "oidc-refresh-token",
     );
+    expect(authCookie).toBeDefined();
 
     const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
     const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
 
-    const actualDuration = authCookie.expires * 1000 - Date.now();
+    const actualDuration = authCookie!.expires * 1000 - Date.now();
 
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
@@ -407,7 +408,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
     const oidcLogin = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
 
     expect(oidcLogin).toBe("Login successful");
@@ -415,8 +416,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("Zeus Giove");
 
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
     // set up GitHub auth
     deployment.setAppConfigProperty("auth.providers.github", {
       production: {
@@ -443,8 +444,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const ghLogin = await common.githubLoginFromSettingsPage(
       "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
     );
     expect(ghLogin).toBe("Login successful");
     // Sign out for GitHub
@@ -477,7 +478,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 
@@ -519,7 +520,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     const login = await common.keycloakLogin(
       "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 

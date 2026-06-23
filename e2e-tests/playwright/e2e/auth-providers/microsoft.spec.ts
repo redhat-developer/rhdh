@@ -58,10 +58,10 @@ test.describe("Configure Microsoft Provider", async () => {
     uiHelper = new UIhelper(page);
 
     // expect some expected variables
-    expect(process.env.DEFAULT_USER_PASSWORD_2).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_AZURE_TENANT_ID).toBeDefined();
+    expect(process.env.DEFAULT_USER_PASSWORD_2!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!).toBeDefined();
 
     // clean old namespaces
     await deployment.deleteNamespaceIfExists();
@@ -82,35 +82,35 @@ test.describe("Configure Microsoft Provider", async () => {
     }
     await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_TENANT_ID",
-      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
+      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!,
     );
     await deployment.addSecretData(
       "MICROSOFT_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "MICROSOFT_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!,
     );
     await deployment.addSecretData(
       "MICROSOFT_TENANT_ID",
-      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
+      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!,
     );
 
     await deployment.createSecret();
@@ -122,9 +122,9 @@ test.describe("Configure Microsoft Provider", async () => {
     // update the Azure App Registration to include the current redirectUrl
     console.log("[TEST] Configuring Microsoft Azure App Registration...");
     const graphClient = new MSClient(
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
-      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!,
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!,
+      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!,
     );
 
     const redirectUrl = `${backstageUrl}/api/auth/microsoft/handler/frame`;
@@ -152,7 +152,7 @@ test.describe("Configure Microsoft Provider", async () => {
   test("Login with Microsoft default resolver", async () => {
     const login = await common.MicrosoftAzureLogin(
       "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login).toBe("Login successful");
 
@@ -179,7 +179,7 @@ test.describe("Configure Microsoft Provider", async () => {
 
     const login = await common.MicrosoftAzureLogin(
       "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login).toBe("Login successful");
 
@@ -190,7 +190,7 @@ test.describe("Configure Microsoft Provider", async () => {
 
     const login2 = await common.MicrosoftAzureLogin(
       "atena@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login2).toBe("Login successful");
     await uiHelper.verifyAlertErrorMessage(
@@ -215,7 +215,7 @@ test.describe("Configure Microsoft Provider", async () => {
 
     const login = await common.MicrosoftAzureLogin(
       "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login).toBe("Login successful");
 
@@ -242,7 +242,7 @@ test.describe("Configure Microsoft Provider", async () => {
 
     const login = await common.MicrosoftAzureLogin(
       "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login).toBe("Login successful");
 
@@ -253,7 +253,7 @@ test.describe("Configure Microsoft Provider", async () => {
 
     const login2 = await common.MicrosoftAzureLogin(
       "tyke@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login2).toBe("Login successful");
 
@@ -277,7 +277,7 @@ test.describe("Configure Microsoft Provider", async () => {
 
     const login = await common.MicrosoftAzureLogin(
       "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
+      process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login).toBe("Login successful");
 
@@ -287,11 +287,12 @@ test.describe("Configure Microsoft Provider", async () => {
     const authCookie = cookies.find(
       (cookie) => cookie.name === "microsoft-refresh-token",
     );
+    expect(authCookie).toBeDefined();
 
     const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
     const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
 
-    const actualDuration = authCookie.expires * 1000 - Date.now();
+    const actualDuration = authCookie!.expires * 1000 - Date.now();
 
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
@@ -386,9 +387,9 @@ test.describe("Configure Microsoft Provider", async () => {
     try {
       console.log("[TEST] Cleaning up Microsoft Azure App Registration...");
       const graphClient = new MSClient(
-        process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
-        process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
-        process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
+        process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!,
+        process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!,
+        process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!,
       );
 
       const redirectUrl = `${backstageUrl}/api/auth/microsoft/handler/frame`;

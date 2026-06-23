@@ -30,10 +30,9 @@ export class Catalog {
 
   async search(s: string) {
     await this.searchField.clear();
+    const baseURL = playwrightConfig.use?.baseURL ?? "";
     const searchResponse = this.page.waitForResponse(
-      new RegExp(
-        `${playwrightConfig.use.baseURL}/api/catalog/entities/by-query/*`,
-      ),
+      new RegExp(`${baseURL}/api/catalog/entities/by-query/*`),
     );
     await this.searchField.fill(s);
     await searchResponse;

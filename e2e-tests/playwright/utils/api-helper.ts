@@ -14,8 +14,8 @@ type FetchOptions = {
 
 export class APIHelper {
   private static githubAPIVersion = "2022-11-28";
-  private staticToken: string;
-  private baseUrl: string;
+  private staticToken = "";
+  private baseUrl = "";
   useStaticToken = false;
 
   static async githubRequest(
@@ -44,8 +44,8 @@ export class APIHelper {
   static async getGithubPaginatedRequest(
     url: string,
     pageNo = 1,
-    response = [],
-  ) {
+    response: unknown[] = [],
+  ): Promise<unknown[]> {
     const fullUrl = `${url}&page=${pageNo}`;
     const result = await this.githubRequest("GET", fullUrl);
     const body = await result.json();
@@ -215,7 +215,14 @@ export class APIHelper {
     body?: string | object,
   ): Promise<APIResponse> {
     const context = await request.newContext();
-    const options = {
+    const options: {
+      method: string;
+      headers: {
+        Accept: string;
+        Authorization: string;
+      };
+      data?: string | object;
+    } = {
       method: method,
       headers: {
         Accept: "application/json",
@@ -224,7 +231,7 @@ export class APIHelper {
     };
 
     if (body) {
-      options["data"] = body;
+      options.data = body;
     }
 
     const response = await context.fetch(url, options);

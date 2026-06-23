@@ -180,7 +180,7 @@ export class KeycloakHelper {
       }
 
       const sessions = await this.kcAdminClient.users.listSessions({
-        id: user.id,
+        id: user.id!,
       });
       console.log(
         `[KEYCLOAK] Found ${sessions.length} sessions for user ${username}`,
@@ -189,7 +189,7 @@ export class KeycloakHelper {
       for (const session of sessions) {
         await this.kcAdminClient.realms.removeSession({
           realm: this.config.realmName,
-          sessionId: session.id,
+          sessionId: session.id!,
         });
       }
 

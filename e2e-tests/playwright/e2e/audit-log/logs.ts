@@ -4,7 +4,7 @@ class Actor {
   actorId?: string;
 }
 
-export class LogRequest {
+export interface LogRequest {
   body?: object;
   method: string;
   params?: object;
@@ -16,7 +16,7 @@ export class LogRequest {
   url: string;
 }
 
-class LogResponse {
+interface LogResponse {
   status: number;
 }
 
@@ -60,6 +60,9 @@ export class Log {
     // Other properties without default values
     this.eventId = overrides.eventId || "";
     this.plugin = overrides.plugin || "";
+    this.severityLevel = overrides.severityLevel || "low";
+    this.service = overrides.service || "";
+    this.timestamp = overrides.timestamp || "";
     this.request = overrides.request;
     this.response = overrides.response;
     this.meta = overrides.meta;

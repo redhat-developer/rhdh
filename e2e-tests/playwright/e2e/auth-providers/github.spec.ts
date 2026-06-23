@@ -58,15 +58,15 @@ test.describe("Configure Github Provider", async () => {
 
     // expect some expected variables
 
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_USER_PASSWORD).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_USER_2FA).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ADMIN_2FA).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_APP_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_USER_2FA!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_APP_ID!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET!).toBeDefined();
 
     // clean old namespaces
     await deployment.deleteNamespaceIfExists();
@@ -87,27 +87,27 @@ test.describe("Configure Github Provider", async () => {
     }
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_NAME",
-      process.env.AUTH_PROVIDERS_GH_ORG_NAME,
+      process.env.AUTH_PROVIDERS_GH_ORG_NAME!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_APP_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_APP_ID,
+      process.env.AUTH_PROVIDERS_GH_ORG_APP_ID!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
-      process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY,
+      process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET,
+      process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET!,
     );
 
     await deployment.createSecret();
@@ -136,8 +136,8 @@ test.describe("Configure Github Provider", async () => {
   test("Login with Github default resolver", async () => {
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
     );
     expect(login).toBe("Login successful");
 
@@ -160,8 +160,8 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
     );
     expect(login).toBe("Login successful");
 
@@ -187,8 +187,8 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
     );
     expect(login).toBe("Login successful");
 
@@ -214,8 +214,8 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
     );
 
     // Login failed; caused by Error: Login failed, user profile does not contain an email
@@ -243,8 +243,8 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
     );
     expect(login).toBe("Login successful");
 
@@ -254,11 +254,12 @@ test.describe("Configure Github Provider", async () => {
     const authCookie = cookies.find(
       (cookie) => cookie.name === "github-refresh-token",
     );
+    expect(authCookie).toBeDefined();
 
     const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
     const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
 
-    const actualDuration = authCookie.expires * 1000 - Date.now();
+    const actualDuration = authCookie!.expires * 1000 - Date.now();
 
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
@@ -334,8 +335,8 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
     );
 
     expect(login).toBe("Login successful");

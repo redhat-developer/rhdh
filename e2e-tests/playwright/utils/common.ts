@@ -20,6 +20,7 @@ import {
   getTranslations,
   getCurrentLanguage,
 } from "../e2e/localization/locale";
+import { getErrorMessage } from "./errors";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -70,16 +71,16 @@ export class Common {
     await this.page.waitForSelector("#login_field");
     await this.page.fill("#login_field", userid);
 
-    switch (userid) {
-      case process.env.GH_USER_ID:
-        await this.page.fill("#password", process.env.GH_USER_PASS);
-        break;
-      case process.env.GH_USER2_ID:
-        await this.page.fill("#password", process.env.GH_USER2_PASS);
-        break;
-      default:
-        throw new Error("Invalid User ID");
+    const password =
+      userid === process.env.GH_USER_ID
+        ? process.env.GH_USER_PASS
+        : userid === process.env.GH_USER2_ID
+          ? process.env.GH_USER2_PASS
+          : undefined;
+    if (!password) {
+      throw new Error("Invalid User ID");
     }
+    await this.page.fill("#password", password);
 
     await this.page.click('[value="Sign in"]');
     await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
@@ -112,7 +113,7 @@ export class Common {
           await popup.locator("#kc-login").click({ timeout: 5000 });
         } catch (error) {
           // Popup likely closed - this is expected behavior
-          if (!error.message?.includes("Target closed")) {
+          if (!getErrorMessage(error).includes("Target closed")) {
             throw error;
           }
         }
@@ -122,8 +123,8 @@ export class Common {
   }
 
   async loginAsKeycloakUser(
-    userid: string = process.env.GH_USER_ID,
-    password: string = process.env.GH_USER_PASS,
+    userid: string = process.env.GH_USER_ID ?? "",
+    password: string = process.env.GH_USER_PASS ?? "",
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
@@ -132,7 +133,7 @@ export class Common {
     await this.uiHelper.waitForSideBarVisible();
   }
 
-  async loginAsGithubUser(userid: string = process.env.GH_USER_ID) {
+  async loginAsGithubUser(userid: string = process.env.GH_USER_ID ?? "") {
     const sessionFileName = `authState_${userid}.json`;
 
     // Check if a session file for this specific user already exists
@@ -216,10 +217,15 @@ export class Common {
   }
 
   getGitHub2FAOTP(userid: string): string {
-    const secrets: { [key: string]: string | undefined } = {
-      [process.env.GH_USER_ID]: process.env.GH_2FA_SECRET,
-      [process.env.GH_USER2_ID]: process.env.GH_USER2_2FA_SECRET,
-    };
+    const ghUserId = process.env.GH_USER_ID;
+    const ghUser2Id = process.env.GH_USER2_ID;
+    const secrets: Record<string, string | undefined> = {};
+    if (ghUserId) {
+      secrets[ghUserId] = process.env.GH_2FA_SECRET;
+    }
+    if (ghUser2Id) {
+      secrets[ghUser2Id] = process.env.GH_USER2_2FA_SECRET;
+    }
 
     const secret = secrets[userid];
     if (!secret) {
@@ -231,20 +237,22 @@ export class Common {
 
   getGoogle2FAOTP(): string {
     const secret = process.env.GOOGLE_2FA_SECRET;
+    if (!secret) {
+      throw new Error("GOOGLE_2FA_SECRET is not set");
+    }
     return authenticator.generate(secret);
   }
 
   async keycloakLogin(username: string, password: string) {
-    let popup: Page;
-    this.page.once("popup", (asyncnewPage) => {
-      popup = asyncnewPage;
-    });
-
     await this.page.goto("/");
     await this.page.waitForSelector(
       `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
     );
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
+    ]);
 
     // Wait for the popup to appear
     await expect(async () => {
@@ -422,7 +430,7 @@ export class Common {
       const authorizationByText = popup.locator('button:has-text("Authorize")');
 
       // Wait for button to appear with retry logic
-      let buttonToClick: Locator | null = null;
+      let buttonToClick: Locator | undefined;
       await expect(async () => {
         // Check data-testid first
         if (
@@ -450,6 +458,8 @@ export class Common {
         throw new Error("Failed to find authorization button");
       }
 
+      const authorizeButton = buttonToClick;
+
       // Click on document/body first to potentially dismiss any overlays (similar to GitHub flow)
       await popup
         .getByRole("document")
@@ -459,16 +469,16 @@ export class Common {
         });
 
       // Wait for button to be enabled and clickable
-      await buttonToClick.waitFor({ state: "visible", timeout: 5000 });
-      await expect(buttonToClick).toBeEnabled({ timeout: 10000 });
-      await buttonToClick.scrollIntoViewIfNeeded({ timeout: 5000 });
+      await authorizeButton.waitFor({ state: "visible", timeout: 5000 });
+      await expect(authorizeButton).toBeEnabled({ timeout: 10000 });
+      await authorizeButton.scrollIntoViewIfNeeded({ timeout: 5000 });
 
       try {
-        await buttonToClick.click({ timeout: 5000 });
+        await authorizeButton.click({ timeout: 5000 });
       } catch {
         // Force click fallback when overlay blocks the authorization button.
         // oxlint-disable-next-line playwright/no-force-option -- overlay dismissal is unreliable in CI
-        await buttonToClick.click({ force: true, timeout: 5000 });
+        await authorizeButton.click({ force: true, timeout: 5000 });
       }
 
       await popup.waitForEvent("close", { timeout: 20000 });
@@ -498,16 +508,15 @@ export class Common {
   }
 
   async MicrosoftAzureLogin(username: string, password: string) {
-    let popup: Page;
-    this.page.once("popup", (asyncnewPage) => {
-      popup = asyncnewPage;
-    });
-
     await this.page.goto("/");
     await this.page.waitForSelector(
       `p:has-text("${t["rhdh"][lang]["signIn.providers.microsoft.message"]}")`,
     );
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
+    ]);
 
     // Wait for the popup to appear
     await expect(async () => {
@@ -553,16 +562,15 @@ export class Common {
   }
 
   async pingFederateLogin(username: string, password: string) {
-    let popup: Page;
-    this.page.once("popup", (asyncnewPage) => {
-      popup = asyncnewPage;
-    });
-
     await this.page.goto("/");
     await this.page.waitForSelector(
       `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
     );
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
+    ]);
 
     // Wait for the popup to appear
     await expect(async () => {

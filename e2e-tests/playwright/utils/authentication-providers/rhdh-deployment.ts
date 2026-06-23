@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
 import stream from "stream";
 import { expect } from "@playwright/test";
+import { getErrorMessage, hasErrorResponse } from "../errors";
 import { ChildProcess, spawn } from "child_process";
 import { v4 as uuidv4 } from "uuid";
 import { APIHelper } from "../api-helper";
@@ -17,10 +18,10 @@ const syncedLogRegex =
   /(Committed \d+ (Keycloak|msgraph|GitHub|LDAP|GitLab) users? and \d+ (Keycloak|msgraph|GitHub|LDAP|GitLab) groups? in \d+(\.\d+)? seconds|Scanned \d+ users? and processed \d+ users?)/;
 
 class RHDHDeployment {
-  instanceName: string;
-  private kc: k8s.KubeConfig;
-  private k8sApi: k8s.CoreV1Api;
-  private appsV1Api: k8s.AppsV1Api;
+  instanceName!: string;
+  private kc!: k8s.KubeConfig;
+  private k8sApi!: k8s.CoreV1Api;
+  private appsV1Api!: k8s.AppsV1Api;
   private namespace: string;
   private appConfigMap: string;
   private rbacConfigMap: string;
@@ -100,7 +101,7 @@ class RHDHDeployment {
       await this.k8sApi.createNamespace(namespaceObj);
       return this;
     } catch (e) {
-      if (e.response?.statusCode === 409) {
+      if (hasErrorResponse(e) && e.response?.statusCode === 409) {
         return this;
       }
       throw e;
@@ -125,7 +126,7 @@ class RHDHDeployment {
           await this.k8sApi.readNamespace(this.namespace);
           await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (error) {
-          if (error.response?.statusCode === 404) {
+          if (hasErrorResponse(error) && error.response?.statusCode === 404) {
             return this;
           }
           throw error;
@@ -135,7 +136,7 @@ class RHDHDeployment {
         `Timeout waiting for namespace to be deleted after ${timeoutMs}ms`,
       );
     } catch (e) {
-      if (e.response?.statusCode === 404) {
+      if (hasErrorResponse(e) && e.response?.statusCode === 404) {
         return this;
       }
       throw e;
@@ -504,7 +505,7 @@ class RHDHDeployment {
             condition.reason !== "NewReplicaSetAvailable",
         );
 
-        const replicas = deployment.spec.replicas;
+        const replicas = deployment.spec?.replicas;
         const desiredReplicas = this.cr.spec.replicas
           ? this.cr.spec.replicas
           : 1;
@@ -542,7 +543,7 @@ class RHDHDeployment {
       } catch (error) {
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
-            `Timeout waiting for deployment to be ready: ${error.message}`,
+            `Timeout waiting for deployment to be ready: ${getErrorMessage(error)}`,
           );
         }
         await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -576,7 +577,7 @@ class RHDHDeployment {
       } catch (error) {
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
-            `Timeout waiting for namespace to be active: ${error.message}`,
+            `Timeout waiting for namespace to be active: ${getErrorMessage(error)}`,
           );
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -759,11 +760,11 @@ class RHDHDeployment {
         return;
       } catch (error) {
         console.log(
-          `Timeout waiting for Backstage CRD to be available: ${error.message}`,
+          `Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`,
         );
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
-            `Timeout waiting for Backstage CRD to be available: ${error.message}`,
+            `Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`,
           );
         }
         await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -814,7 +815,7 @@ class RHDHDeployment {
   }
 
   async killRunningProcess(): Promise<void> {
-    if (this.runningProcess) {
+    if (this.runningProcess?.pid) {
       const killed = process.kill(-this.runningProcess.pid);
       console.log("Local production server process killed?", killed);
 
@@ -886,7 +887,7 @@ class RHDHDeployment {
         const pod = activePods[0];
         podName = pod.metadata!.name!;
       } catch (error) {
-        throw new Error(`Error getting pod name: ${error.message}`);
+        throw new Error(`Error getting pod name: ${getErrorMessage(error)}`);
       }
     }
 
@@ -905,14 +906,14 @@ class RHDHDeployment {
       });
 
       logStream.on("error", (error) => {
-        throw new Error(`Error getting pod name: ${error.message}`);
+        throw new Error(`Error getting pod name: ${getErrorMessage(error)}`);
       });
 
       logStream.on("end", () => {
         console.log("Log stream ended.");
       });
 
-      await log.log(namespace, podName, "backstage-backend", logStream, {
+      await log.log(namespace, podName!, "backstage-backend", logStream, {
         follow: true,
         tailLines: 1,
         pretty: false,
@@ -930,9 +931,12 @@ class RHDHDeployment {
       }
       return found;
     } catch (error) {
-      console.log(`Error: ${error.body.message}`);
+      const message = hasErrorResponse(error)
+        ? error.body?.message
+        : getErrorMessage(error);
+      console.log(`Error: ${message}`);
       throw new Error(
-        `Timeout waiting for string "${searchString}" in logs after ${timeoutMs}ms. Error: ${error.body.message}`,
+        `Timeout waiting for string "${searchString}" in logs after ${timeoutMs}ms. Error: ${message}`,
       );
     }
   }
@@ -969,7 +973,7 @@ class RHDHDeployment {
     });
 
     logStream.on("error", (error) => {
-      throw new Error(`Error reading local logs: ${error.message}`);
+      throw new Error(`Error reading local logs: ${getErrorMessage(error)}`);
     });
 
     logStream.on("end", () => {
@@ -1607,8 +1611,8 @@ class RHDHDeployment {
       response && response.items ? response.items : [];
     expect(catalogUsers.length).toBeGreaterThan(0);
     const catalogUsersDisplayNames: string[] = catalogUsers
-      .filter((u) => u.spec.profile && u.spec.profile.displayName)
-      .map((u) => u.spec.profile.displayName);
+      .map((u) => u.spec.profile?.displayName)
+      .filter((name): name is string => name !== undefined);
     console.log(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
@@ -1627,8 +1631,8 @@ class RHDHDeployment {
       response && response.items ? response.items : [];
     expect(catalogGroups.length).toBeGreaterThan(0);
     const catalogGroupsDisplayNames: string[] = catalogGroups
-      .filter((u) => u.spec.profile && u.spec.profile.displayName)
-      .map((u) => u.spec.profile.displayName);
+      .map((u) => u.spec.profile?.displayName)
+      .filter((name): name is string => name !== undefined);
     console.log(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );

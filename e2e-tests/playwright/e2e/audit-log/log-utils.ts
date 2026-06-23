@@ -115,9 +115,14 @@ export class LogUtils {
    */
   private static compareValues(actual: unknown, expected: unknown) {
     if (typeof expected === "object" && expected !== null) {
-      Object.keys(expected).forEach((subKey) => {
-        const expectedSubValue = expected[subKey];
-        const actualSubValue = actual?.[subKey];
+      const expectedRecord = expected as Record<string, unknown>;
+      Object.keys(expectedRecord).forEach((subKey) => {
+        const expectedSubValue = expectedRecord[subKey];
+        const actualRecord =
+          typeof actual === "object" && actual !== null
+            ? (actual as Record<string, unknown>)
+            : undefined;
+        const actualSubValue = actualRecord?.[subKey];
         LogUtils.compareValues(actualSubValue, expectedSubValue);
       });
     } else if (typeof expected === "number") {
@@ -222,7 +227,7 @@ export class LogUtils {
       } catch (error) {
         console.error(
           `Error fetching logs on attempt ${attempt + 1}:`,
-          error.message,
+          error instanceof Error ? error.message : String(error),
         );
       }
 

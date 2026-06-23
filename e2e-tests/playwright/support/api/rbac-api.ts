@@ -9,15 +9,20 @@ import { Policy, Role } from "./rbac-api-structures";
 import { RhdhAuthApiHack } from "./rhdh-auth-api-hack";
 
 export default class RhdhRbacApi {
-  private readonly apiUrl = playwrightConfig.use.baseURL + "/api/permission/";
+  private readonly apiUrl: string;
   private readonly authHeader: {
     Accept: "application/json";
     Authorization: string;
   };
-  private myContext: APIRequestContext;
+  private myContext!: APIRequestContext;
   private readonly roleRegex = /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/;
 
   private constructor(private readonly token: string) {
+    const baseURL = playwrightConfig.use?.baseURL;
+    if (!baseURL) {
+      throw new Error("playwright.config use.baseURL is not defined");
+    }
+    this.apiUrl = baseURL + "/api/permission/";
     this.authHeader = {
       Accept: "application/json",
       Authorization: `Bearer ${this.token}`,

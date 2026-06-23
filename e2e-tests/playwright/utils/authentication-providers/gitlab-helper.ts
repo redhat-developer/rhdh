@@ -176,9 +176,9 @@ export class GitLabHelper {
       return apps.map((app: GitLabOAuthAppResponse) => ({
         id: app.id,
         application_id: app.application_id,
-        application_name: app.application_name,
+        application_name: app.application_name ?? app.name ?? "",
         secret: app.secret,
-        callback_url: app.callback_url,
+        callback_url: app.callback_url ?? app.redirect_uri ?? "",
         scopes: app.scopes || [],
       }));
     } catch (error) {

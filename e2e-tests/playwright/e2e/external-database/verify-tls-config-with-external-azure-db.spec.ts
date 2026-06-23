@@ -10,23 +10,23 @@ import {
 
 interface AzureDbConfig {
   name: string;
-  host: string | undefined;
+  host: string;
 }
 
 test.describe("Verify TLS configuration with Azure Database for PostgreSQL health check", () => {
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+  const namespace = process.env.NAME_SPACE_RUNTIME! || "showcase-runtime";
   const deploymentName = getRhdhDeploymentName();
 
   // Azure DB configuration from environment
-  const azureUser = process.env.AZURE_DB_USER;
-  const azurePassword = process.env.AZURE_DB_PASSWORD;
+  const azureUser = process.env.AZURE_DB_USER!;
+  const azurePassword = process.env.AZURE_DB_PASSWORD!;
 
   // Define all Azure DB configurations to test
   const azureConfigurations: AzureDbConfig[] = [
-    { name: "latest-3", host: process.env.AZURE_DB_1_HOST },
-    { name: "latest-2", host: process.env.AZURE_DB_2_HOST },
-    { name: "latest-1", host: process.env.AZURE_DB_3_HOST },
-    { name: "latest", host: process.env.AZURE_DB_4_HOST },
+    { name: "latest-3", host: process.env.AZURE_DB_1_HOST! },
+    { name: "latest-2", host: process.env.AZURE_DB_2_HOST! },
+    { name: "latest-1", host: process.env.AZURE_DB_3_HOST! },
+    { name: "latest", host: process.env.AZURE_DB_4_HOST! },
   ];
 
   test.beforeAll(async () => {
@@ -43,7 +43,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
 
     // Validate certificates are available
     const azureCerts = readCertificateFile(
-      process.env.AZURE_DB_CERTIFICATES_PATH,
+      process.env.AZURE_DB_CERTIFICATES_PATH!,
     );
     if (!azureCerts) {
       throw new Error(
@@ -79,7 +79,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
           host: config.host,
           user: azureUser,
           password: azurePassword,
-          certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH,
+          certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH!,
         });
       });
 

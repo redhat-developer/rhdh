@@ -8,6 +8,15 @@ import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users
 interface AuthResponse {
   access_token: string;
 }
+
+function requireBase64Env(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return Buffer.from(value, "base64").toString();
+}
+
 class Keycloak {
   private readonly baseURL: string;
   private readonly realm: string;
@@ -15,22 +24,10 @@ class Keycloak {
   private readonly clientSecret: string;
 
   constructor() {
-    this.baseURL = Buffer.from(
-      process.env.KEYCLOAK_AUTH_BASE_URL,
-      "base64",
-    ).toString();
-    this.realm = Buffer.from(
-      process.env.KEYCLOAK_AUTH_REALM,
-      "base64",
-    ).toString();
-    this.clientSecret = Buffer.from(
-      process.env.KEYCLOAK_AUTH_CLIENT_SECRET,
-      "base64",
-    ).toString();
-    this.clientId = Buffer.from(
-      process.env.KEYCLOAK_AUTH_CLIENTID,
-      "base64",
-    ).toString();
+    this.baseURL = requireBase64Env("KEYCLOAK_AUTH_BASE_URL");
+    this.realm = requireBase64Env("KEYCLOAK_AUTH_REALM");
+    this.clientSecret = requireBase64Env("KEYCLOAK_AUTH_CLIENT_SECRET");
+    this.clientId = requireBase64Env("KEYCLOAK_AUTH_CLIENTID");
   }
 
   async getAuthenticationToken(): Promise<string> {

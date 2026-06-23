@@ -59,10 +59,10 @@ test.describe("Configure GitLab Provider", async () => {
     uiHelper = new UIhelper(page);
 
     // expect some expected variables
-    expect(process.env.AUTH_PROVIDERS_GITLAB_HOST).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG).toBeDefined();
-    expect(process.env.DEFAULT_USER_PASSWORD).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_HOST!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG!).toBeDefined();
+    expect(process.env.DEFAULT_USER_PASSWORD!).toBeDefined();
 
     // Initialize GitLab helper and create OAuth application dynamically
     gitlabHelper = new GitLabHelper({
@@ -148,7 +148,7 @@ test.describe("Configure GitLab Provider", async () => {
   test("Login with GitLab default resolver", async () => {
     const login = await common.gitlabLogin(
       "user1",
-      process.env.DEFAULT_USER_PASSWORD,
+      process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login).toBe("Login successful");
 

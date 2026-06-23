@@ -37,21 +37,21 @@ test.describe.fixme("GitHub Happy path", async () => {
 
   test("Login as a Github user from Settings page.", async () => {
     await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
+      process.env.GH_USER2_ID!,
+      process.env.GH_USER2_PASS!,
     );
     const ghLogin = await common.githubLoginFromSettingsPage(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-      process.env.GH_USER2_2FA_SECRET,
+      process.env.GH_USER2_ID!,
+      process.env.GH_USER2_PASS!,
+      process.env.GH_USER2_2FA_SECRET!,
     );
     expect(ghLogin).toBe("Login successful");
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
     await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading(process.env.GH_USER2_ID);
-    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID!);
+    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID!}`);
   });
 
   test("Import an existing Git repository", async () => {

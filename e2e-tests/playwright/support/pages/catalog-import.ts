@@ -138,7 +138,10 @@ export class BackstageShowcase {
     await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableLastPage);
   }
 
-  async verifyPRRowsPerPage(rows, allPRs) {
+  async verifyPRRowsPerPage(
+    rows: number,
+    allPRs: { title: string; number: string }[],
+  ) {
     await this.selectRowsPerPage(rows);
     await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
     await this.uiHelper.verifyLink(allPRs[rows].number, {

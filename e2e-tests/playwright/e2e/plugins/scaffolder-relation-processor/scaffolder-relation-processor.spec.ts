@@ -9,7 +9,7 @@ let page: Page;
 
 test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test.skip(
-    () => process.env.JOB_NAME.includes("osd-gcp"),
+    () => (process.env.JOB_NAME ?? "").includes("osd-gcp"),
     "skipping due to RHDHBUGS-555 on OSD Env",
   );
 
