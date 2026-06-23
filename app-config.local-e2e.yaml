@@ -11,6 +11,10 @@
 # It enables guest sign-in (the auth backend rejects guest unless a provider is
 # configured) and pins the in-memory SQLite database so a single `run` is fully
 # self-contained. See docs/e2e-tests/local-e2e-harness.md.
+#
+# NOTE: test-only. This grants unauthenticated guest access
+# (dangerouslyAllowOutsideDevelopment) and must never be layered into a
+# production config.
 auth:
   environment: development
   providers:

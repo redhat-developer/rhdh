@@ -11,7 +11,8 @@ import { resolve } from "path";
  *
  *   # one-time: populate dynamic-plugins-root (production-faithful — full plugin set
  *   # and generated config, same source CI uses):
- *   CATALOG_INDEX_IMAGE=<quay.io/rhdh/plugin-catalog-index:TAG> \
+ *   # main -> :latest; release branches -> the matching :1.y tag
+ *   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:latest \
  *     npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install dynamic-plugins-root
  *   # (offline alternative, frontend plugins only, needs reconciled deps:
  *   #  yarn --cwd dynamic-plugins export-dynamic && \
@@ -22,15 +23,12 @@ import { resolve } from "path";
  * Both servers are started via `webServer` with the guest-auth overlay
  * `app-config.local-e2e.yaml` plus the dynamic-plugins UI config. An already-running
  * pair of servers is reused locally; in CI they are started fresh.
- *
- * `janus-cli` (legacy app dev server) lives in the repo-root node_modules/.bin, which
- * yarn does not surface for the `app` workspace, so the frontend webServer prepends it
- * to PATH explicitly.
  */
 
 const frontendUrl = "http://localhost:3000";
 const backendReadiness = "http://localhost:7007/.backstage/health/v1/readiness";
 const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
+const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
 
 const sharedConfigArgs =
   "--config ../../app-config.yaml " +
@@ -39,14 +37,13 @@ const sharedConfigArgs =
 
 export default defineConfig({
   testDir: "./playwright",
-  // Existing UI specs that do not require live external services (cluster, GitHub
-  // org, Quay, Tekton, Keycloak). Expand as more specs are validated off-cluster.
-  testMatch: [
-    "e2e/guest-signin-happy-path.spec.ts",
-    "e2e/settings.spec.ts",
-    "e2e/learning-path-page.spec.ts",
-    "e2e/home-page-customization.spec.ts",
-  ],
+  // Existing UI specs validated to run off-cluster via sidebar navigation.
+  // Pending (see docs/e2e-tests/local-e2e-harness.md "Known issues"):
+  //   - settings.spec.ts and guest-signin-happy-path.spec.ts navigate via the
+  //     top-right profile dropdown, which needs the global-header plugin mounted.
+  //   - home-page-customization.spec.ts needs that test's specific home config.
+  // Add them here once those are resolved.
+  testMatch: ["e2e/learning-path-page.spec.ts"],
   timeout: 90 * 1000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -82,7 +79,7 @@ export default defineConfig({
       cwd: "../packages/backend",
       env: {
         ...process.env,
-        PATH: `${repoRootBin}:${process.env.PATH}`,
+        PATH: pathWithRepoBin,
         NODE_OPTIONS: "--no-node-snapshot",
       },
       url: backendReadiness,
@@ -94,7 +91,7 @@ export default defineConfig({
     {
       command: `janus-cli package start ${sharedConfigArgs}`,
       cwd: "../packages/app",
-      env: { ...process.env, PATH: `${repoRootBin}:${process.env.PATH}` },
+      env: { ...process.env, PATH: pathWithRepoBin },
       url: frontendUrl,
       reuseExistingServer: !process.env.CI,
       timeout: 240 * 1000,

@@ -34,7 +34,8 @@ plugin config by default).
 Production-faithful — full plugin set and generated config, the same source CI uses:
 
 ```bash
-CATALOG_INDEX_IMAGE=<quay.io/rhdh/plugin-catalog-index:TAG> \
+# main branch -> :latest; release branches -> the matching :1.y tag
+CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:latest \
   npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install dynamic-plugins-root
 ```
 

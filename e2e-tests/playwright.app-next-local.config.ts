@@ -24,6 +24,7 @@ import { resolve } from "path";
 const frontendUrl = "http://localhost:3000";
 const backendReadiness = "http://localhost:7007/.backstage/health/v1/readiness";
 const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
+const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
 
 export default defineConfig({
   testDir: "./playwright/app-next-local",
@@ -69,7 +70,7 @@ export default defineConfig({
       cwd: "../packages/backend",
       env: {
         ...process.env,
-        PATH: `${repoRootBin}:${process.env.PATH}`,
+        PATH: pathWithRepoBin,
         NODE_OPTIONS: "--no-node-snapshot",
       },
       url: backendReadiness,
@@ -83,7 +84,7 @@ export default defineConfig({
         "backstage-cli package start --config ../../app-config.yaml " +
         "--config ../../app-config.local-e2e.yaml",
       cwd: "../packages/app-next",
-      env: { ...process.env, PATH: `${repoRootBin}:${process.env.PATH}` },
+      env: { ...process.env, PATH: pathWithRepoBin },
       url: frontendUrl,
       reuseExistingServer: !process.env.CI,
       timeout: 180 * 1000,
