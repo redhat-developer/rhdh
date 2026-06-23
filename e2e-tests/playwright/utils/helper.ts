@@ -10,6 +10,8 @@ import {
   type IsOpenShiftValue,
 } from "./constants";
 
+const execFileAsync = promisify(execFile);
+
 export async function downloadAndReadFile(
   page: Page,
   locator: Locator,
@@ -144,4 +146,120 @@ export function getBackstageDeploySelector(): string {
   return isOperatorDeployment()
     ? BACKSTAGE_DEPLOY_SELECTOR.OPERATOR
     : BACKSTAGE_DEPLOY_SELECTOR.HELM;
+}
+
+// ─── Shell command execution ─────────────────────────────────────────────────
+
+/**
+ * Run a shell command and return stdout. Throws on non-zero exit.
+ */
+export async function run(
+  cmd: string,
+  args: string[],
+  options?: { timeout?: number },
+): Promise<string> {
+  const timeout = options?.timeout ?? 300_000;
+  console.log(`  $ ${cmd} ${args.join(" ")}`);
+  const { stdout, stderr } = await execFileAsync(cmd, args, {
+    maxBuffer: 10 * 1024 * 1024,
+    timeout,
+  });
+  if (stderr) {
+    // Helm and oc print warnings to stderr that are not errors
+    for (const line of stderr.split("\n").filter(Boolean)) {
+      console.log(`  (stderr) ${line}`);
+    }
+  }
+  return stdout.trim();
+}
+
+// ─── OpenShift cluster discovery ─────────────────────────────────────────────
+
+/**
+ * Discover the cluster router base from the OpenShift console route.
+ * Falls back to K8S_CLUSTER_ROUTER_BASE env var if set.
+ */
+export async function discoverRouterBase(): Promise<string> {
+  try {
+    const output = await run("oc", [
+      "get",
+      "route",
+      "console",
+      "-n",
+      "openshift-console",
+      "-o",
+      "jsonpath={.spec.host}",
+    ]);
+    return output.replace(/^console-openshift-console\./, "");
+  } catch {
+    throw new Error(
+      "K8S_CLUSTER_ROUTER_BASE not set and could not discover from cluster",
+    );
+  }
+}
+
+// ─── Image reference utilities ───────────────────────────────────────────────
+
+/** Parsed image reference with registry, repository, and tag or digest. */
+export interface ImageRef {
+  registry: string;
+  repository: string;
+  /** Tag value (e.g. "1.10") or digest (e.g. "sha256:abc123"). */
+  tag: string;
+  /** ":" for tag references, "@" for digest references. */
+  separator: ":" | "@";
+}
+
+/** Reconstruct a full image reference from its parsed components. */
+export function imageRefToString(ref: ImageRef): string {
+  return `${ref.registry}/${ref.repository}${ref.separator}${ref.tag}`;
+}
+
+/**
+ * Decompose a full image reference into registry / repository / tag.
+ *
+ * Handles both tag references (quay.io/rhdh/image:1.10) and digest
+ * references (quay.io/rhdh/image@sha256:abc123).
+ */
+export function parseCatalogIndexImage(imageRef: string): ImageRef {
+  // Handle @sha256: digest references (e.g. quay.io/rhdh/image@sha256:abc123)
+  const atIdx = imageRef.indexOf("@");
+  if (atIdx !== -1) {
+    const digest = imageRef.slice(atIdx + 1);
+    const withoutDigest = imageRef.slice(0, atIdx);
+    const slashIdx = withoutDigest.indexOf("/");
+    if (slashIdx === -1) {
+      throw new Error(
+        `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
+      );
+    }
+    return {
+      registry: withoutDigest.slice(0, slashIdx),
+      repository: withoutDigest.slice(slashIdx + 1),
+      tag: digest,
+      separator: "@",
+    };
+  }
+
+  // Handle tag references (e.g. quay.io/rhdh/image:1.10)
+  const colonIdx = imageRef.lastIndexOf(":");
+  if (colonIdx === -1) {
+    throw new Error(
+      `Invalid CATALOG_INDEX_IMAGE (no tag separator ':'): ${imageRef}`,
+    );
+  }
+  const tag = imageRef.slice(colonIdx + 1);
+  const withoutTag = imageRef.slice(0, colonIdx);
+  const slashIdx = withoutTag.indexOf("/");
+  if (slashIdx === -1) {
+    throw new Error(
+      `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
+    );
+  }
+  return {
+    registry: withoutTag.slice(0, slashIdx),
+    repository: withoutTag.slice(slashIdx + 1),
+    tag,
+    separator: ":",
+  };
 }

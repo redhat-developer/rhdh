@@ -25,8 +25,6 @@
  *   SCHEMA_MODE_*         — schema-mode env vars for port-forwarding
  */
 
-import { execFile } from "child_process";
-import { promisify } from "util";
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
@@ -42,70 +40,18 @@ import {
   generateAppConfigYaml,
   generateDynamicPluginsYaml,
   generateBackstageCR,
-  imageRefToString,
 } from "./runtime-config";
-import { resolveInstallMethod, base64Encode, base64Decode } from "./helper";
-
-const execFileAsync = promisify(execFile);
+import {
+  resolveInstallMethod,
+  base64Encode,
+  base64Decode,
+  run,
+  discoverRouterBase,
+  imageRefToString,
+} from "./helper";
 
 /** Whether deploy has already run in this process */
 let deployed = false;
-
-/**
- * Run a shell command and return stdout. Throws on non-zero exit.
- */
-export async function run(
-  cmd: string,
-  args: string[],
-  options?: { timeout?: number },
-): Promise<string> {
-  const timeout = options?.timeout ?? 300_000;
-  console.log(`  $ ${cmd} ${args.join(" ")}`);
-  const { stdout, stderr } = await execFileAsync(cmd, args, {
-    maxBuffer: 10 * 1024 * 1024,
-    timeout,
-  });
-  if (stderr) {
-    // Helm and oc print warnings to stderr that are not errors
-    for (const line of stderr.split("\n").filter(Boolean)) {
-      console.log(`  (stderr) ${line}`);
-    }
-  }
-  return stdout.trim();
-}
-
-// ---------------------------------------------------------------------------
-// Namespace management
-// ---------------------------------------------------------------------------
-
-async function deleteNamespaceIfExists(
-  kubeClient: KubeClient,
-  namespace: string,
-): Promise<void> {
-  try {
-    const ns = await kubeClient.getNamespaceByName(namespace);
-    if (!ns) return;
-    console.log(`Deleting namespace ${namespace}...`);
-    await kubeClient.deleteNamespaceAndWait(namespace);
-    console.log(`Namespace ${namespace} deleted`);
-  } catch (err: unknown) {
-    const code = (err as { response?: { statusCode?: number } })?.response
-      ?.statusCode;
-    if (code === 404) return; // already gone
-    throw err;
-  }
-}
-
-async function createNamespace(
-  kubeClient: KubeClient,
-  namespace: string,
-): Promise<void> {
-  console.log(`Creating namespace ${namespace}...`);
-  await kubeClient.coreV1Api.createNamespace({
-    metadata: { name: namespace },
-  });
-  console.log(`Namespace ${namespace} created`);
-}
 
 // ---------------------------------------------------------------------------
 // Secrets
@@ -505,8 +451,8 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   }
 
   // Fresh deployment
-  await deleteNamespaceIfExists(kubeClient, namespace);
-  await createNamespace(kubeClient, namespace);
+  await kubeClient.deleteNamespaceIfExists(namespace);
+  await kubeClient.createNamespace(namespace);
   await createPlaceholderSecrets(kubeClient, namespace);
 
   let runtimeUrl: string;
@@ -527,26 +473,4 @@ export async function ensureRuntimeDeployed(): Promise<void> {
 
   deployed = true;
   console.log("\n=== Runtime deployment complete ===\n");
-}
-
-/**
- * Discover the cluster router base from the OpenShift console route.
- */
-export async function discoverRouterBase(): Promise<string> {
-  try {
-    const output = await run("oc", [
-      "get",
-      "route",
-      "console",
-      "-n",
-      "openshift-console",
-      "-o",
-      "jsonpath={.spec.host}",
-    ]);
-    return output.replace(/^console-openshift-console\./, "");
-  } catch {
-    throw new Error(
-      "K8S_CLUSTER_ROUTER_BASE not set and could not discover from cluster",
-    );
-  }
 }

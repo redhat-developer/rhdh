@@ -16,6 +16,15 @@
  */
 
 import * as yaml from "js-yaml";
+import {
+  type ImageRef,
+  imageRefToString,
+  parseCatalogIndexImage,
+} from "./helper";
+
+// Re-export image utilities so existing `import from "./runtime-config"`
+// callers continue to work without changes.
+export { type ImageRef, imageRefToString, parseCatalogIndexImage };
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -23,21 +32,6 @@ const appTitle = "Red Hat Developer Hub";
 const dynamicPluginsPvcSize = "5Gi";
 
 // ─── Resolved configuration ─────────────────────────────────────────────────
-
-/** Parsed image reference with registry, repository, and tag or digest. */
-export interface ImageRef {
-  registry: string;
-  repository: string;
-  /** Tag value (e.g. "1.10") or digest (e.g. "sha256:abc123"). */
-  tag: string;
-  /** ":" for tag references, "@" for digest references. */
-  separator: ":" | "@";
-}
-
-/** Reconstruct a full image reference from its parsed components. */
-export function imageRefToString(ref: ImageRef): string {
-  return `${ref.registry}/${ref.repository}${ref.separator}${ref.tag}`;
-}
 
 export interface RuntimeDeployConfig {
   releaseName: string;
@@ -112,58 +106,6 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
   }
 
   return config;
-}
-
-// ─── CATALOG_INDEX_IMAGE parsing ─────────────────────────────────────────────
-
-/**
- * Decompose a full image reference into registry / repository / tag.
- *
- * Mirrors the logic in `.ci/pipelines/env_variables.sh` that splits
- * the full image reference into CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO,
- * and CATALOG_INDEX_TAG.
- */
-export function parseCatalogIndexImage(imageRef: string): ImageRef {
-  // Handle @sha256: digest references (e.g. quay.io/rhdh/image@sha256:abc123)
-  const atIdx = imageRef.indexOf("@");
-  if (atIdx !== -1) {
-    const digest = imageRef.slice(atIdx + 1);
-    const withoutDigest = imageRef.slice(0, atIdx);
-    const slashIdx = withoutDigest.indexOf("/");
-    if (slashIdx === -1) {
-      throw new Error(
-        `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
-      );
-    }
-    return {
-      registry: withoutDigest.slice(0, slashIdx),
-      repository: withoutDigest.slice(slashIdx + 1),
-      tag: digest,
-      separator: "@",
-    };
-  }
-
-  // Handle tag references (e.g. quay.io/rhdh/image:1.10)
-  const colonIdx = imageRef.lastIndexOf(":");
-  if (colonIdx === -1) {
-    throw new Error(
-      `Invalid CATALOG_INDEX_IMAGE (no tag separator ':'): ${imageRef}`,
-    );
-  }
-  const tag = imageRef.slice(colonIdx + 1);
-  const withoutTag = imageRef.slice(0, colonIdx);
-  const slashIdx = withoutTag.indexOf("/");
-  if (slashIdx === -1) {
-    throw new Error(
-      `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
-    );
-  }
-  return {
-    registry: withoutTag.slice(0, slashIdx),
-    repository: withoutTag.slice(slashIdx + 1),
-    tag,
-    separator: ":",
-  };
 }
 
 // ─── Helm values generation ──────────────────────────────────────────────────
