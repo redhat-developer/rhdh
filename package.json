@@ -64,6 +64,8 @@
     }
   },
   "resolutions": {
+    "@scalprum/core": "0.9.3",
+    "@scalprum/react-core": "0.11.2",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "jest": {

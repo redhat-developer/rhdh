@@ -12018,27 +12018,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.9.2":
-  version: 0.9.2
-  resolution: "@scalprum/core@npm:0.9.2"
-  dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/a0ae59d8235f0d98e4cec780afcaa7ac1adcb4e82ba56a2de74c11f1df1edd9c6751ad55630949a9c584af2878549a0e1e7c21f35e257f2e540c281c35b0ca76
-  languageName: node
-  linkType: hard
-
-"@scalprum/core@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@scalprum/core@npm:0.10.0"
-  dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^8.0.0"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/de435f26695ab508773fa78b42288b144abe6d3ccc780163fa894ae8f7bba2b68f62a325b3f190db3609334e6a6f78e5c1a364e43820fdf3d879ac043a070775
-  languageName: node
-  linkType: hard
-
-"@scalprum/core@npm:^0.9.1":
+"@scalprum/core@npm:0.9.3":
   version: 0.9.3
   resolution: "@scalprum/core@npm:0.9.3"
   dependencies:
@@ -12059,20 +12039,6 @@ __metadata:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
   checksum: 10c0/b27209ff4276f8e12c8b5e956def2d4273fa8dee75a1b54a634a58e02682470d8d51bdbce0d55930a699d32383997e189735299f73a86160c00b720a266f3f2b
-  languageName: node
-  linkType: hard
-
-"@scalprum/react-core@npm:^0.12.0":
-  version: 0.12.0
-  resolution: "@scalprum/react-core@npm:0.12.0"
-  dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^8.0.0"
-    "@scalprum/core": "npm:^0.10.0"
-    lodash: "npm:^4.17.0"
-  peerDependencies:
-    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 10c0/bb1d9b8574f675f3d43be9168844e67eb33b9af729621904c2718c8ebedf7ed55d84624a3d7386536d9b450133d1c7f62b53ce458c13745f16a5fcb2cc5ed187
   languageName: node
   linkType: hard
 
@@ -16025,7 +15991,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:0.14.7"
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.3.1"
     "@red-hat-developer-hub/plugin-utils": "workspace:*"
-    "@scalprum/core": "npm:0.9.2"
+    "@scalprum/core": "npm:0.9.3"
     "@scalprum/react-core": "npm:0.11.2"
     "@scalprum/react-test-utils": "npm:0.3.0"
     "@testing-library/dom": "npm:9.3.4"
