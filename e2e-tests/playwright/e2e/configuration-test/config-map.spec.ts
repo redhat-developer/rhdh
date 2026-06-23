@@ -18,8 +18,6 @@ test.describe("Change app-config at e2e test runtime", () => {
   });
 
   test("Verify title change after ConfigMap modification", async ({ page }) => {
-    test.setTimeout(300000);
-
     const configMapName = "app-config-rhdh";
 
     const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";

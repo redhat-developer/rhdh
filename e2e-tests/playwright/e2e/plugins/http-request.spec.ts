@@ -35,7 +35,6 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
   });
 
   test("Create a software template using http-request plugin", async () => {
-    test.setTimeout(130000);
     await selfServicePage.open();
     await selfServicePage.verifyTemplatesHeading();
     await selfServicePage.clickImportGitRepository();

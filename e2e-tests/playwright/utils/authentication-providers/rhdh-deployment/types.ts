@@ -48,13 +48,7 @@ export interface RHDHDeploymentState {
   configReconcileBaselineGeneration: number | undefined;
 }
 
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolvePromise) => {
-    setTimeout(() => {
-      resolvePromise();
-    }, ms);
-  });
-}
+export { sleep } from "../poll-until";
 
 export function isRecord(value: unknown): value is YamlConfig {
   return typeof value === "object" && value !== null && !Array.isArray(value);

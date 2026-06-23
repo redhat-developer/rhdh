@@ -53,7 +53,6 @@ test.describe("Configure Github Provider", async () => {
       description: "authentication",
     });
 
-    test.info().setTimeout(600 * 1000);
     // load default configs from yaml files
     await deployment.loadAllConfigs();
 
@@ -139,7 +138,6 @@ test.describe("Configure Github Provider", async () => {
   });
 
   test.beforeEach(() => {
-    test.info().setTimeout(600 * 1000);
     console.log(
       `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
     );
@@ -285,8 +283,6 @@ test.describe("Configure Github Provider", async () => {
   });
 
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    test.setTimeout(300 * 1000);
-
     await expect
       .poll(
         () =>

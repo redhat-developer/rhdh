@@ -90,7 +90,6 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     rhdhInstance = new RhdhInstance(page);
-    test.info().setTimeout(600 * 1000);
   });
 
   test("Login as a Github user from Settings page.", async () => {
