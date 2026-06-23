@@ -30,7 +30,9 @@
     "tsc:check": "tsc -p tsconfig.json",
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
     "prettier:check": "prettier --ignore-unknown --check .",
-    "prettier:fix": "prettier --ignore-unknown --write ."
+    "prettier:fix": "prettier --ignore-unknown --write .",
+    "e2e:legacy-local": "playwright test --config=playwright.legacy-local.config.ts",
+    "e2e:app-next-local": "playwright test --config=playwright.app-next-local.config.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.2",
