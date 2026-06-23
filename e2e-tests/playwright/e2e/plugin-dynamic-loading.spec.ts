@@ -95,8 +95,26 @@ test.describe("Plugin Dynamic Loading", () => {
 
         console.log("📥 Downloading plugins from catalog index...");
 
-        // Step 2: Run install-dynamic-plugins to extract all plugins
+        // Step 2: Verify CLI package is available
+        console.log("🔍 Verifying install-dynamic-plugins CLI...");
+        try {
+          const cliVersion = execSync(
+            "npx @red-hat-developer-hub/cli-module-install-dynamic-plugins --version",
+            { encoding: "utf-8", stdio: "pipe" },
+          ).trim();
+          console.log(`✓ CLI version: ${cliVersion}`);
+        } catch (versionError) {
+          console.error("❌ CLI not available:", versionError.message);
+          throw new Error(
+            `CLI @red-hat-developer-hub/cli-module-install-dynamic-plugins not available`,
+          );
+        }
+
+        // Step 3: Run install-dynamic-plugins
         const installCmd = `npx @red-hat-developer-hub/cli-module-install-dynamic-plugins ${dynamicPluginsRoot}`;
+
+        console.log(`Command: ${installCmd}`);
+        console.log(`CATALOG_INDEX_IMAGE: ${catalogIndexImage}`);
 
         try {
           execSync(installCmd, {
@@ -104,21 +122,14 @@ test.describe("Plugin Dynamic Loading", () => {
               ...process.env,
               CATALOG_INDEX_IMAGE: catalogIndexImage,
             },
-            stdio: "inherit", // Show real-time output for debugging
+            stdio: "inherit",
           });
         } catch (error) {
           const exitCode = error.status || error.code || "unknown";
-          const stderr = error.stderr?.toString() || "";
-          const stdout = error.stdout?.toString() || "";
-
+          console.error(`\n❌ CLI failed with exit code: ${exitCode}`);
+          console.error("⚠️  Error output was printed above (stdio='inherit')");
           throw new Error(
-            `Failed to install plugins from catalog index.\n` +
-              `Command: ${installCmd}\n` +
-              `Exit code: ${exitCode}\n` +
-              `Image: ${catalogIndexImage}\n` +
-              `Stdout: ${stdout || "(empty)"}\n` +
-              `Stderr: ${stderr || "(empty)"}\n` +
-              `Error: ${error.message}`,
+            `install-dynamic-plugins failed (exit ${exitCode}). Check logs above for details.`,
           );
         }
 
