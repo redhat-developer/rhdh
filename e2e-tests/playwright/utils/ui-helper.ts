@@ -77,7 +77,7 @@ export class UIhelper {
     await expect(button).toBeVisible();
 
     if (options?.force) {
-      // eslint-disable-next-line playwright/no-force-option
+      // oxlint-disable-next-line playwright/no-force-option -- MUI overlay blocks native click in CI
       await button.click({ force: true });
     } else {
       await button.click();
@@ -141,7 +141,7 @@ export class UIhelper {
     });
 
     if (options.force) {
-      // eslint-disable-next-line playwright/no-force-option
+      // oxlint-disable-next-line playwright/no-force-option -- MUI overlay blocks native click in CI
       await buttonElement.click({ force: true });
     } else {
       await buttonElement.click();
@@ -369,7 +369,6 @@ export class UIhelper {
     );
     await expect(async () => {
       await this.clickByDataTestId("user-picker-all");
-      await this.page.waitForTimeout(1_500);
       await this.verifyHeading(new RegExp(`all ${kind}`, "i"));
     }).toPass({
       intervals: [3_000],

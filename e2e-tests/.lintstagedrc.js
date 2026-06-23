@@ -3,7 +3,6 @@
  */
 export default {
   "*.sh": "shellcheck --severity=warning --color=always",
-  "*": "yarn prettier:fix",
-  "*.{js,jsx,ts,tsx,mjs,cjs}": "yarn lint:fix",
-  "*.{ts,tsx}": () => "yarn tsc:check",
+  "*": "yarn oxfmt:fix",
+  "*.{js,jsx,ts,tsx,mjs,cjs}": "yarn oxlint:check",
 };

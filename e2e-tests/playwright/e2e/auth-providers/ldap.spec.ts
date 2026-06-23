@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
@@ -77,7 +75,7 @@ test.describe("Configure LDAP Provider", async () => {
     await deployment.deleteNamespaceIfExists();
 
     // create namespace and wait for it to be active
-    (await deployment.createNamespace()).waitForNamespaceActive();
+    await (await deployment.createNamespace()).waitForNamespaceActive();
 
     // create all base configmaps
     await deployment.createAllConfigs();
@@ -87,71 +85,83 @@ test.describe("Configure LDAP Provider", async () => {
 
     // set enviroment variables and create secret
     if (!process.env.ISRUNNINGLOCAL) {
-      deployment.addSecretData("BASE_URL", backstageUrl);
-      deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+      await deployment.addSecretData("BASE_URL", backstageUrl);
+      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
 
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
       process.env.DEFAULT_USER_PASSWORD,
     );
-    deployment.addSecretData("RHBK_LDAP_REALM", process.env.RHBK_LDAP_REALM);
-    deployment.addSecretData(
+    await deployment.addSecretData(
+      "RHBK_LDAP_REALM",
+      process.env.RHBK_LDAP_REALM,
+    );
+    await deployment.addSecretData(
       "RHBK_LDAP_CLIENT_ID",
       process.env.RHBK_LDAP_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "RHBK_LDAP_CLIENT_SECRET",
       process.env.RHBK_LDAP_CLIENT_SECRET,
     );
-    deployment.addSecretData("LDAP_BIND_DN", process.env.RHBK_LDAP_USER_BIND);
-    deployment.addSecretData(
+    await deployment.addSecretData(
+      "LDAP_BIND_DN",
+      process.env.RHBK_LDAP_USER_BIND,
+    );
+    await deployment.addSecretData(
       "LDAP_BIND_SECRET",
       process.env.RHBK_LDAP_USER_PASSWORD,
     );
-    deployment.addSecretData("LDAP_TARGET_URL", process.env.RHBK_LDAP_TARGET);
-    deployment.addSecretData(
+    await deployment.addSecretData(
+      "LDAP_TARGET_URL",
+      process.env.RHBK_LDAP_TARGET,
+    );
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
       process.env.DEFAULT_USER_PASSWORD,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
       process.env.DEFAULT_USER_PASSWORD_2,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "LDAP_GROUPS_DN",
       "OU=Groups,OU=RHDH Local,DC=rhdh,DC=test",
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "LDAP_USERS_DN",
       "OU=Users,OU=RHDH Local,DC=rhdh,DC=test",
     );
-    deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
-    deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
-    deployment.addSecretData("RHBK_CLIENT_ID", process.env.RHBK_CLIENT_ID);
-    deployment.addSecretData(
+    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
+    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
+    await deployment.addSecretData(
+      "RHBK_CLIENT_ID",
+      process.env.RHBK_CLIENT_ID,
+    );
+    await deployment.addSecretData(
       "RHBK_CLIENT_SECRET",
       process.env.RHBK_CLIENT_SECRET,
     );
 
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
     );
 
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "PINGFEDERATE_BASE_URL",
       process.env.PINGFEDERATE_BASE_URL,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "PINGFEDERATE_CLIENT_ID",
       process.env.PINGFEDERATE_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "PINGFEDERATE_CLIENT_SECRET",
       process.env.PINGFEDERATE_CLIENT_SECRET,
     );
@@ -273,7 +283,7 @@ test.describe("Configure LDAP Provider", async () => {
     await deployment.enablePingFederateOIDCLogin();
 
     await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -305,7 +315,7 @@ test.describe("Configure LDAP Provider", async () => {
     );
 
     await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 

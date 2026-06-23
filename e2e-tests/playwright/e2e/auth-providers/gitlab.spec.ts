@@ -159,16 +159,18 @@ test.describe("Configure GitLab Provider", async () => {
   });
 
   test(`Ingestion of GitLab users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    await page.waitForTimeout(5000);
-
-    expect(
-      await deployment.checkUserIsIngestedInCatalog([
-        "user1",
-        "user2",
-        "user3",
-        "Administrator",
-      ]),
-    ).toBe(true);
+    await expect
+      .poll(
+        async () =>
+          deployment.checkUserIsIngestedInCatalog([
+            "user1",
+            "user2",
+            "user3",
+            "Administrator",
+          ]),
+        { timeout: 120_000 },
+      )
+      .toBe(true);
     expect(
       await deployment.checkGroupIsIngestedInCatalog([
         "my-org",

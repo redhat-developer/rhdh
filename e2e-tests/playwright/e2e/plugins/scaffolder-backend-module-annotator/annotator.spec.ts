@@ -1,4 +1,4 @@
-import { Page, test } from "@support/coverage/test";
+import { Page, test, expect } from "@support/coverage/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
 import { CatalogImport } from "../../../support/pages/catalog-import";
@@ -109,7 +109,11 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     ]);
 
     await uiHelper.clickButton("Create");
-    await page.waitForTimeout(5000);
+    await expect(
+      page.getByRole("link", { name: "Open in catalog" }),
+    ).toBeVisible({
+      timeout: 30_000,
+    });
     await uiHelper.clickLink("Open in catalog");
   });
 

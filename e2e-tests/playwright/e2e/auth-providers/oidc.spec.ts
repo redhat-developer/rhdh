@@ -173,7 +173,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -197,8 +197,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -221,8 +221,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -257,8 +257,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       true,
     );
     await deployment.updateAllConfigs();
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -290,7 +290,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -314,8 +314,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       "3days",
     );
     await deployment.updateAllConfigs();
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -432,8 +432,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       "true",
     );
     await deployment.updateAllConfigs();
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -468,8 +468,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       5,
     );
     await deployment.updateAllConfigs();
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -486,7 +486,9 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
       60000,
     );
-    await page.waitForTimeout(5000);
+    await expect(page.getByText("Logging out due to inactivity")).toBeHidden({
+      timeout: 30000,
+    });
 
     await page.reload();
 
@@ -508,8 +510,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       5,
     );
     await deployment.updateAllConfigs();
+    await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable

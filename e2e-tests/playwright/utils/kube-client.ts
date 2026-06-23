@@ -385,7 +385,6 @@ export class KubeClient {
         );
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const appConfigObj = yaml.load(appConfigYaml) as any;
 
       if (!appConfigObj || !appConfigObj.app) {

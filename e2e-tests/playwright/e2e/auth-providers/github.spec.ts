@@ -152,7 +152,7 @@ test.describe("Configure Github Provider", async () => {
     await deployment.setGithubResolver("usernameMatchingUserEntityName", false);
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -179,7 +179,7 @@ test.describe("Configure Github Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -206,7 +206,7 @@ test.describe("Configure Github Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -235,7 +235,7 @@ test.describe("Configure Github Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -271,14 +271,17 @@ test.describe("Configure Github Provider", async () => {
 
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     test.setTimeout(300 * 1000);
-    await page.waitForTimeout(5000);
 
-    expect(
-      await deployment.checkUserIsIngestedInCatalog([
-        "RHDH QE User 1",
-        "RHDH QE Admin",
-      ]),
-    ).toBe(true);
+    await expect
+      .poll(
+        async () =>
+          deployment.checkUserIsIngestedInCatalog([
+            "RHDH QE User 1",
+            "RHDH QE Admin",
+          ]),
+        { timeout: 120_000 },
+      )
+      .toBe(true);
     expect(
       await deployment.checkGroupIsIngestedInCatalog([
         "test_admins",
@@ -323,7 +326,7 @@ test.describe("Configure Github Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable

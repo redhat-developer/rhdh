@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as k8s from "@kubernetes/client-node";
 import * as yaml from "yaml";
 import { promises as fs } from "fs";
@@ -35,6 +34,7 @@ class RHDHDeployment {
   private runningProcess: ChildProcess | null = null;
   private staticToken: string = "";
   private cr: any = {};
+  private configReconcileBaselineGeneration: number | undefined;
 
   constructor(
     namespace: string,
@@ -345,6 +345,60 @@ class RHDHDeployment {
       return this;
     }
     await this.k8sApi.deleteNamespacedSecret(this.secretName, this.namespace);
+    return this;
+  }
+
+  private async getDeploymentGeneration(): Promise<number> {
+    const labels = {
+      "app.kubernetes.io/name": "backstage",
+      "app.kubernetes.io/instance": this.instanceName,
+    };
+    const labelSelector = Object.entries(labels)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(",");
+
+    const deployments = await this.appsV1Api.listNamespacedDeployment(
+      this.namespace,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      labelSelector,
+    );
+
+    if (deployments.body.items.length === 0) {
+      throw new Error(`No deployment found with labels: ${labelSelector}`);
+    }
+
+    return deployments.body.items[0].metadata?.generation ?? 0;
+  }
+
+  async waitForConfigReconciled(
+    timeoutMs: number = 60000,
+  ): Promise<RHDHDeployment> {
+    if (this.isRunningLocal) {
+      return this;
+    }
+
+    const baseline =
+      this.configReconcileBaselineGeneration ??
+      (await this.getDeploymentGeneration());
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeoutMs) {
+      const currentGeneration = await this.getDeploymentGeneration();
+      if (currentGeneration > baseline) {
+        console.log(
+          `[INFO] Config reconciled - deployment generation ${baseline} -> ${currentGeneration}`,
+        );
+        return this;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    console.log(
+      `[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`,
+    );
     return this;
   }
 
@@ -1332,6 +1386,10 @@ class RHDHDeployment {
   }
 
   async updateAllConfigs(): Promise<RHDHDeployment> {
+    if (!this.isRunningLocal) {
+      this.configReconcileBaselineGeneration =
+        await this.getDeploymentGeneration();
+    }
     await this.updateAppConfig();
     await this.updateDynamicPluginsConfig();
     await this.updateRbacConfig();

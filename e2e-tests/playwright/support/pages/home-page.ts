@@ -38,7 +38,9 @@ export class HomePage {
 
     if (expand) {
       await sectionLocator.click();
-      await this.page.waitForTimeout(500);
+      await expect(
+        sectionLocator.locator('[class*="MuiAccordionDetails-root"]'),
+      ).toBeVisible();
     }
 
     for (const item of Array.isArray(items) ? items : [items]) {

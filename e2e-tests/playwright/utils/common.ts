@@ -93,11 +93,12 @@ export class Common {
         3000,
       ))
     ) {
-      await this.page.waitForTimeout(60000);
+      // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
+      await new Promise((resolve) => setTimeout(resolve, 60_000));
       await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
     }
 
-    await this.page.waitForTimeout(3_000);
+    await this.page.waitForLoadState("networkidle");
   }
 
   async logintoKeycloak(userid: string, password: string) {
@@ -168,16 +169,16 @@ export class Common {
       this.page.once("popup", async (popup) => {
         await popup.waitForLoadState();
 
-        // Check for popup closure for up to 10 seconds before proceeding
-        for (let attempts = 0; attempts < 10 && !popup.isClosed(); attempts++) {
-          await this.page.waitForTimeout(1000); // Using page here because if the popup closes automatically, it throws an error during the wait
-        }
+        const authorizeButton = popup.locator("button.js-oauth-authorize-btn");
+        await Promise.race([
+          popup.waitForEvent("close", { timeout: 10_000 }),
+          authorizeButton.waitFor({ state: "visible", timeout: 10_000 }),
+        ]).catch(() => {});
 
-        const locator = popup.locator("button.js-oauth-authorize-btn");
-        if (!popup.isClosed() && (await locator.isVisible())) {
+        if (!popup.isClosed() && (await authorizeButton.isVisible())) {
           await popup.locator("body").click();
-          await locator.waitFor();
-          await locator.click();
+          await authorizeButton.waitFor();
+          await authorizeButton.click();
         }
         resolve();
       });
@@ -461,14 +462,12 @@ export class Common {
       await buttonToClick.waitFor({ state: "visible", timeout: 5000 });
       await expect(buttonToClick).toBeEnabled({ timeout: 10000 });
       await buttonToClick.scrollIntoViewIfNeeded({ timeout: 5000 });
-      // Small delay to ensure any animations/transitions complete
-      await popup.waitForTimeout(1000);
 
       try {
         await buttonToClick.click({ timeout: 5000 });
       } catch {
-        // If regular click fails, try force click
-        // eslint-disable-next-line playwright/no-force-option
+        // Force click fallback when overlay blocks the authorization button.
+        // oxlint-disable-next-line playwright/no-force-option -- overlay dismissal is unreliable in CI
         await buttonToClick.click({ force: true, timeout: 5000 });
       }
 

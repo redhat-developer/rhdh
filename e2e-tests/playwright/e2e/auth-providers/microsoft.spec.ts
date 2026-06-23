@@ -171,7 +171,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -207,7 +207,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -234,7 +234,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -269,7 +269,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -303,17 +303,20 @@ test.describe("Configure Microsoft Provider", async () => {
 
   test(`Ingestion of Microsoft users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     test.setTimeout(300 * 1000);
-    await page.waitForTimeout(5000);
 
-    expect(
-      await deployment.checkUserIsIngestedInCatalog([
-        "TEST Admin",
-        "TEST Atena",
-        "TEST Elio",
-        "TEST Tyke",
-        "TEST Zeus",
-      ]),
-    ).toBe(true);
+    await expect
+      .poll(
+        async () =>
+          deployment.checkUserIsIngestedInCatalog([
+            "TEST Admin",
+            "TEST Atena",
+            "TEST Elio",
+            "TEST Tyke",
+            "TEST Zeus",
+          ]),
+        { timeout: 120_000 },
+      )
+      .toBe(true);
     expect(
       await deployment.checkGroupIsIngestedInCatalog([
         "TEST_admins",
