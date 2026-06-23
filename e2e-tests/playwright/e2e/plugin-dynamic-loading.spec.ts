@@ -83,21 +83,30 @@ test.describe("Plugin Dynamic Loading", () => {
   test(
     "All plugins from catalog index load and backend starts",
     { tag: "@sanity" },
-    async () => {
+    async ({}, testInfo) => {
+      // Skip test if CATALOG_INDEX_IMAGE is not set (hermetic test environment)
+      // In CI, this env var is always set. Locally, developers must opt-in explicitly.
+      if (!process.env.CATALOG_INDEX_IMAGE && !process.env.CI) {
+        testInfo.skip(
+          true,
+          "CATALOG_INDEX_IMAGE not set - skipping external catalog download. " +
+            "Set CATALOG_INDEX_IMAGE to run this test locally.",
+        );
+        return;
+      }
+
       // 5 minutes timeout: ~3 min plugin download + ~2s backend startup + 2 min buffer
       test.setTimeout(300_000);
 
       // Get catalog index image from environment
       // In CI, this must be set explicitly to ensure we test the correct catalog version
-      const catalogIndexImage =
-        process.env.CATALOG_INDEX_IMAGE ||
-        (process.env.CI
-          ? (() => {
-              throw new Error(
-                "CATALOG_INDEX_IMAGE environment variable must be set in CI",
-              );
-            })()
-          : "quay.io/rhdh/plugin-catalog-index:1.10");
+      const catalogIndexImage = process.env.CATALOG_INDEX_IMAGE!;
+
+      if (process.env.CI && !catalogIndexImage) {
+        throw new Error(
+          "CATALOG_INDEX_IMAGE environment variable must be set in CI",
+        );
+      }
 
       reportCatalogIndex(catalogIndexImage);
 
