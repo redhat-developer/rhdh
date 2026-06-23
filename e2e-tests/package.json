@@ -39,8 +39,7 @@
     "octokit": "4.1.4",
     "pg": "8.22.0",
     "uuid": "14.0.0",
-    "winston": "3.14.2",
-    "yaml": "2.9.0"
+    "winston": "3.14.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.3",
