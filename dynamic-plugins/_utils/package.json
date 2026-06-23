@@ -9,6 +9,8 @@
   "scripts": {
     "copy-dynamic-plugins": "node ./copy-plugins.js",
     "lint": "backstage-cli package lint",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
     "test": "backstage-cli package test --passWithNoTests --coverage"
   },
   "devDependencies": {

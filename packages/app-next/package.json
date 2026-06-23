@@ -19,6 +19,8 @@
     "build": "EXPERIMENTAL_MODULE_FEDERATION=true backstage-cli package build",
     "clean": "backstage-cli package clean",
     "lint": "backstage-cli package lint",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
     "start": "backstage-cli package start --config ../../app-config.yaml",
     "test": "backstage-cli package test --passWithNoTests --coverage"
   },
