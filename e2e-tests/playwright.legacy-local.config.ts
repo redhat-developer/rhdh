@@ -56,7 +56,10 @@ export default defineConfig({
     ["html", { open: "never", outputFolder: "playwright-report-legacy-local" }],
     [
       "junit",
-      { outputFile: process.env.JUNIT_RESULTS || "junit-results-legacy-local.xml" },
+      {
+        outputFile:
+          process.env.JUNIT_RESULTS || "junit-results-legacy-local.xml",
+      },
     ],
   ],
   use: {
