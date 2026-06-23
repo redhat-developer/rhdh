@@ -69,7 +69,7 @@
     "@internal/plugin-scalprum-backend": "*",
     "@opentelemetry/api": "1.9.1",
     "@opentelemetry/auto-instrumentations-node": "0.76.0",
-    "@opentelemetry/core": "2.0.0",
+    "@opentelemetry/core": "2.8.0",
     "@opentelemetry/exporter-prometheus": "0.218.0",
     "@opentelemetry/host-metrics": "0.38.3",
     "@opentelemetry/instrumentation-runtime-node": "0.30.0",
