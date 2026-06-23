@@ -18,7 +18,7 @@ export class RhdhAuthUiHack {
 
   async getApiToken(page: Page): Promise<string> {
     if (!this.token) {
-      const apiToken = await this._getApiToken(page);
+      const apiToken = await this.fetchApiTokenFromPage(page);
       if (!apiToken) {
         throw new Error("Failed to obtain API token from page request");
       }
@@ -27,7 +27,7 @@ export class RhdhAuthUiHack {
     return this.token;
   }
 
-  private async _getApiToken(page: Page): Promise<string | null> {
+  private async fetchApiTokenFromPage(page: Page): Promise<string | null> {
     const uiHelper = new UIhelper(page);
     const baseURL = playwrightConfig.use?.baseURL;
     if (!baseURL) {

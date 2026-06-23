@@ -10,7 +10,48 @@ import {
 } from "@support/coverage/test";
 import playwrightConfig from "../../../../playwright.config";
 
-test.describe("Test licensed users info backend plugin", async () => {
+interface HealthResponse {
+  status: string;
+}
+
+interface QuantityResponse {
+  quantity: string;
+}
+
+interface LicensedUser {
+  userEntityRef: string;
+  lastAuthTime: string;
+}
+
+function isHealthResponse(value: unknown): value is HealthResponse {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  return typeof Reflect.get(value, "status") === "string";
+}
+
+function isQuantityResponse(value: unknown): value is QuantityResponse {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  return typeof Reflect.get(value, "quantity") === "string";
+}
+
+function isLicensedUser(value: unknown): value is LicensedUser {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  return (
+    typeof Reflect.get(value, "userEntityRef") === "string" &&
+    typeof Reflect.get(value, "lastAuthTime") === "string"
+  );
+}
+
+function isLicensedUserArray(value: unknown): value is LicensedUser[] {
+  return Array.isArray(value) && value.every(isLicensedUser);
+}
+
+test.describe("Test licensed users info backend plugin", () => {
   let common: Common;
 
   test.beforeAll(async () => {
@@ -41,14 +82,16 @@ test.describe("Test licensed users info backend plugin", async () => {
     });
 
     const response: APIResponse = await requestContext.get("health");
-    const result = await response.json();
+    const result: unknown = await response.json();
 
     /*
       { status: 'ok' }
     */
 
-    expect(result).toHaveProperty("status");
-    expect(result.status).toBe("ok");
+    expect(isHealthResponse(result)).toBe(true);
+    if (isHealthResponse(result)) {
+      expect(result.status).toBe("ok");
+    }
   });
 
   test("Test plugin user quantity url", async () => {
@@ -61,14 +104,16 @@ test.describe("Test licensed users info backend plugin", async () => {
     });
 
     const response: APIResponse = await requestContext.get("users/quantity");
-    const result = await response.json();
+    const result: unknown = await response.json();
 
     /*
       { quantity: '1' }
     */
 
-    expect(result).toHaveProperty("quantity");
-    expect(Number(result.quantity)).toBeGreaterThan(0);
+    expect(isQuantityResponse(result)).toBe(true);
+    if (isQuantityResponse(result)) {
+      expect(Number(result.quantity)).toBeGreaterThan(0);
+    }
   });
 
   test("Test plugin users url", async () => {
@@ -81,7 +126,7 @@ test.describe("Test licensed users info backend plugin", async () => {
     });
 
     const response: APIResponse = await requestContext.get("users");
-    const result = await response.json();
+    const result: unknown = await response.json();
 
     /*
       [
@@ -92,11 +137,11 @@ test.describe("Test licensed users info backend plugin", async () => {
       ]
     */
 
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0]).toHaveProperty("userEntityRef");
-    expect(result[0]).toHaveProperty("lastAuthTime");
-    expect(result[0].userEntityRef).toContain("user:");
+    expect(isLicensedUserArray(result)).toBe(true);
+    if (isLicensedUserArray(result)) {
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0].userEntityRef).toContain("user:");
+    }
   });
 
   test("Test plugin users as a csv url", async () => {

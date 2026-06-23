@@ -46,7 +46,7 @@ export class CatalogImport {
    * @returns boolean indicating if the component is already registered
    */
   async isComponentAlreadyRegistered(): Promise<boolean> {
-    return await this.uiHelper.isBtnVisible(
+    return this.uiHelper.isBtnVisible(
       t["catalog-import"][lang]["stepReviewLocation.refresh"],
     );
   }
@@ -118,12 +118,7 @@ export class BackstageShowcase {
     state: "open" | "closed" | "all",
     paginated = false,
   ) {
-    return await APIHelper.getGitHubPRs(
-      "redhat-developer",
-      "rhdh",
-      state,
-      paginated,
-    );
+    return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
   }
 
   async clickNextPage() {

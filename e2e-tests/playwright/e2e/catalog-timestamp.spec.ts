@@ -97,7 +97,7 @@ test.describe("Test timestamp column on Catalog", () => {
     await expect(createdAtCell).not.toBeEmpty();
   });
 
-  test.afterAll(async ({}, testInfo) => {
+  test.afterAll(async (_fixtures, testInfo) => {
     await teardownBrowser(page, testInfo);
   });
 });

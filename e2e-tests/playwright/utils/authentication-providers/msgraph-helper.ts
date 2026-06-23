@@ -1,3 +1,4 @@
+// oxlint-disable-next-line import/no-unassigned-import -- fetch polyfill required by Graph SDK
 import "isomorphic-fetch";
 import { getErrorMessage, hasStatusCode } from "../errors";
 import { ClientSecretCredential } from "@azure/identity";
@@ -10,6 +11,33 @@ import {
   SecurityRulesGetResponse,
   type SecurityRule,
 } from "@azure/arm-network";
+
+interface AzureApplicationWeb {
+  redirectUris?: string[];
+}
+
+interface AzureApplicationResponse {
+  web?: AzureApplicationWeb;
+}
+
+interface IpifyResponse {
+  ip: string;
+}
+
+function isAzureApplicationResponse(
+  value: unknown,
+): value is AzureApplicationResponse {
+  return typeof value === "object" && value !== null;
+}
+
+function isIpifyResponse(value: unknown): value is IpifyResponse {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "ip" in value &&
+    typeof value.ip === "string"
+  );
+}
 
 export class MSClient {
   private clientSecretCredential: ClientSecretCredential | undefined;
@@ -89,6 +117,38 @@ export class MSClient {
     }
   }
 
+  private getAppClient(): Client {
+    this.ensureInitialized();
+    if (!this.appClient) {
+      throw new Error("Graph client not initialized");
+    }
+    return this.appClient;
+  }
+
+  /** Graph SDK requests return untyped data; narrow at call sites. */
+  private async graphGet<T>(
+    request: (client: Client) => Promise<unknown>,
+  ): Promise<T> {
+    const result: unknown = await request(this.getAppClient());
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Graph SDK has no typed responses
+    return result as T;
+  }
+
+  /** Graph SDK mutations return untyped data; narrow at call sites. */
+  private async graphMutate<T>(
+    request: (client: Client) => Promise<unknown>,
+  ): Promise<T> {
+    const result: unknown = await request(this.getAppClient());
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Graph SDK has no typed responses
+    return result as T;
+  }
+
+  private async graphDelete(
+    request: (client: Client) => Promise<unknown>,
+  ): Promise<void> {
+    await request(this.getAppClient());
+  }
+
   private ensureArmInitialized(): void {
     if (!this.armNetworkClient) {
       this.initializeArmNetworkClient();
@@ -108,30 +168,32 @@ export class MSClient {
   }
 
   async getGroupsAsync(): Promise<PageCollection> {
-    this.ensureInitialized();
     try {
-      return this.appClient
-        ?.api("/groups")
-        .select(["id", "displayName", "members", "owners"])
-        .get();
+      return await this.graphGet<PageCollection>((client) =>
+        client
+          .api("/groups")
+          .select(["id", "displayName", "members", "owners"])
+          .get(),
+      );
     } catch (e) {
       console.error("Failed to get groups:", e);
       throw e;
     }
   }
 
-  async getGroupByNameAsync(groupName: string): Promise<PageCollection> {
-    this.ensureInitialized();
+  async getGroupByNameAsync(groupName: string): Promise<PageCollection | null> {
     try {
-      return await this.appClient
-        ?.api("/groups")
-        .filter(`displayName eq '${groupName}'`)
-        .top(1)
-        .get();
+      return await this.graphGet<PageCollection>((client) =>
+        client
+          .api("/groups")
+          .filter(`displayName eq '${groupName}'`)
+          .top(1)
+          .get(),
+      );
     } catch (e) {
       if (hasStatusCode(e) && e.statusCode === 404) {
         console.log(`Group ${groupName} not found`);
-        return null as unknown as PageCollection;
+        return null;
       }
       console.error("Failed to get group:", e);
       throw e;
@@ -139,19 +201,20 @@ export class MSClient {
   }
 
   async getGroupMembersAsync(groupId: string): Promise<PageCollection> {
-    this.ensureInitialized();
     try {
-      return this.appClient
-        ?.api(`/groups/${groupId}/members`)
-        .select([
-          "displayName",
-          "id",
-          "mail",
-          "userPrincipalName",
-          "surname",
-          "firstname",
-        ])
-        .get();
+      return await this.graphGet<PageCollection>((client) =>
+        client
+          .api(`/groups/${groupId}/members`)
+          .select([
+            "displayName",
+            "id",
+            "mail",
+            "userPrincipalName",
+            "surname",
+            "firstname",
+          ])
+          .get(),
+      );
     } catch (e) {
       console.error("Failed to get group members:", e);
       throw e;
@@ -159,10 +222,11 @@ export class MSClient {
   }
 
   async createUserAsync(user: User): Promise<User> {
-    this.ensureInitialized();
     try {
       console.log(`Creating user ${user.userPrincipalName}`);
-      return await this.appClient?.api("/users").post(user);
+      return await this.graphMutate<User>((client) =>
+        client.api("/users").post(user),
+      );
     } catch (e) {
       console.error("Failed to create user:", e);
       throw e;
@@ -170,10 +234,11 @@ export class MSClient {
   }
 
   async createGroupAsync(group: Group): Promise<Group> {
-    this.ensureInitialized();
     try {
       console.log(`Creating group ${group.displayName}`);
-      return await this.appClient?.api("/groups").post(group);
+      return await this.graphMutate<Group>((client) =>
+        client.api("/groups").post(group),
+      );
     } catch (e) {
       console.error("Failed to create group:", e);
       throw e;
@@ -181,43 +246,42 @@ export class MSClient {
   }
 
   async getUsersAsync(): Promise<PageCollection> {
-    this.ensureInitialized();
     try {
-      return this.appClient
-        ?.api("/users")
-        .select([
-          "displayName",
-          "id",
-          "mail",
-          "userPrincipalName",
-          "surname",
-          "firstname",
-        ])
-        .top(25)
-        .orderby("userPrincipalName")
-        .get();
+      return await this.graphGet<PageCollection>((client) =>
+        client
+          .api("/users")
+          .select([
+            "displayName",
+            "id",
+            "mail",
+            "userPrincipalName",
+            "surname",
+            "firstname",
+          ])
+          .top(25)
+          .orderby("userPrincipalName")
+          .get(),
+      );
     } catch (e) {
       console.error("Failed to get users:", e);
       throw e;
     }
   }
 
-  async deleteUserByUpnAsync(upn: string): Promise<User> {
-    this.ensureInitialized();
+  async deleteUserByUpnAsync(upn: string): Promise<void> {
     try {
       console.log(`Deleting user ${upn}`);
-      return this.appClient?.api("/users/" + upn).delete();
+      await this.graphDelete((client) => client.api("/users/" + upn).delete());
     } catch (e) {
       console.error("Failed to delete user:", e);
       throw e;
     }
   }
 
-  async deleteGroupByIdAsync(id: string): Promise<User> {
-    this.ensureInitialized();
+  async deleteGroupByIdAsync(id: string): Promise<void> {
     try {
       console.log(`Deleting group ${id}`);
-      return this.appClient?.api("/groups/" + id).delete();
+      await this.graphDelete((client) => client.api("/groups/" + id).delete());
     } catch (e) {
       console.error("Failed to delete group:", e);
       throw e;
@@ -225,9 +289,10 @@ export class MSClient {
   }
 
   async getUserByUpnAsync(upn: string): Promise<User | null> {
-    this.ensureInitialized();
     try {
-      return await this.appClient?.api("/users/" + upn).get();
+      return await this.graphGet<User>((client) =>
+        client.api("/users/" + upn).get(),
+      );
     } catch (e) {
       if (hasStatusCode(e) && e.statusCode === 404) {
         console.log(`User ${upn} not found`);
@@ -238,8 +303,7 @@ export class MSClient {
     }
   }
 
-  async addUserToGroupAsync(user: User, group: Group): Promise<Group> {
-    this.ensureInitialized();
+  async addUserToGroupAsync(user: User, group: Group): Promise<void> {
     const userDirectoryObject = {
       "@odata.id":
         "https://graph.microsoft.com/v1.0/users/" + user.userPrincipalName,
@@ -248,32 +312,32 @@ export class MSClient {
       console.log(
         `Adding user ${user.userPrincipalName} to group ${group.displayName}`,
       );
-      return await this.appClient
-        ?.api("/groups/" + group.id + "/members/$ref")
-        .post(userDirectoryObject);
+      await this.graphMutate<void>((client) =>
+        client
+          .api("/groups/" + group.id + "/members/$ref")
+          .post(userDirectoryObject),
+      );
     } catch (e) {
       console.error("Failed to add user to group:", e);
       throw e;
     }
   }
 
-  async removeUserFromGroupAsync(user: User, group: Group): Promise<Group> {
-    this.ensureInitialized();
+  async removeUserFromGroupAsync(user: User, group: Group): Promise<void> {
     try {
       console.log(
         `Removing user ${user.userPrincipalName} from group ${group.displayName}`,
       );
-      return await this.appClient
-        ?.api(`/groups/${group.id}/members/${user.id}/$ref`)
-        .delete();
+      await this.graphDelete((client) =>
+        client.api(`/groups/${group.id}/members/${user.id}/$ref`).delete(),
+      );
     } catch (e) {
       console.error("Failed to remove user from group:", e);
       throw e;
     }
   }
 
-  async addGroupToGroupAsync(subject: Group, target: Group): Promise<Group> {
-    this.ensureInitialized();
+  async addGroupToGroupAsync(subject: Group, target: Group): Promise<void> {
     const userDirectoryObject = {
       "@odata.id": "https://graph.microsoft.com/v1.0/groups/" + subject.id,
     };
@@ -281,9 +345,11 @@ export class MSClient {
       console.log(
         `Adding group ${subject.displayName} to group ${target.displayName}`,
       );
-      return await this.appClient
-        ?.api("/groups/" + target.id + "/members/$ref")
-        .post(userDirectoryObject);
+      await this.graphMutate<void>((client) =>
+        client
+          .api("/groups/" + target.id + "/members/$ref")
+          .post(userDirectoryObject),
+      );
     } catch (e) {
       console.error("Failed to add group to group:", e);
       throw e;
@@ -291,12 +357,11 @@ export class MSClient {
   }
 
   async updateUserAsync(user: User, updatedUser: User): Promise<User> {
-    this.ensureInitialized();
     try {
       console.log(`Updating user ${user.userPrincipalName}`);
-      return await this.appClient
-        ?.api("/users/" + user.userPrincipalName)
-        .update(updatedUser);
+      return await this.graphMutate<User>((client) =>
+        client.api("/users/" + user.userPrincipalName).update(updatedUser),
+      );
     } catch (e) {
       console.error("Failed to update user:", e);
       throw e;
@@ -304,12 +369,11 @@ export class MSClient {
   }
 
   async updateGroupAsync(group: Group, updatedGroup: Group): Promise<Group> {
-    this.ensureInitialized();
     try {
       console.log(`Updating group ${group.displayName}`);
-      return await this.appClient
-        ?.api("/groups/" + group.id)
-        .update(updatedGroup);
+      return await this.graphMutate<Group>((client) =>
+        client.api("/groups/" + group.id).update(updatedGroup),
+      );
     } catch (e) {
       console.error("Failed to update group:", e);
       throw e;
@@ -317,13 +381,15 @@ export class MSClient {
   }
 
   async getAppRedirectUrlsAsync(): Promise<string[]> {
-    this.ensureInitialized();
     try {
       console.log(`[AZURE] Getting redirect URLs for app: ${this.clientId}`);
-      const app = await this.appClient
-        ?.api(`/applications(appId='{${this.clientId}}')`)
-        .get();
-      const redirectUrls = app?.web?.redirectUris || [];
+      const app = await this.graphGet<unknown>((client) =>
+        client.api(`/applications(appId='{${this.clientId}}')`).get(),
+      );
+      if (!isAzureApplicationResponse(app)) {
+        return [];
+      }
+      const redirectUrls = app.web?.redirectUris ?? [];
       console.log(`[AZURE] Found ${redirectUrls.length} redirect URLs`);
       return redirectUrls;
     } catch (e) {
@@ -333,7 +399,6 @@ export class MSClient {
   }
 
   async addAppRedirectUrlsAsync(redirectUrls: string[]): Promise<void> {
-    this.ensureInitialized();
     try {
       console.log(
         `[AZURE] Adding ${redirectUrls.length} redirect URLs to app: ${this.clientId}`,
@@ -344,13 +409,13 @@ export class MSClient {
       console.log(
         `[AZURE] Updating app with ${newUrls.length} total redirect URLs`,
       );
-      await this.appClient
-        ?.api(`/applications(appId='{${this.clientId}}')`)
-        .update({
+      await this.graphMutate<void>((client) =>
+        client.api(`/applications(appId='{${this.clientId}}')`).update({
           web: {
             redirectUris: newUrls,
           },
-        });
+        }),
+      );
       console.log(`[AZURE] Successfully added redirect URLs to app`);
     } catch (e) {
       console.error("[AZURE] Failed to add app redirect URLs:", e);
@@ -359,7 +424,6 @@ export class MSClient {
   }
 
   async removeAppRedirectUrlsAsync(redirectUrls: string[]): Promise<void> {
-    this.ensureInitialized();
     try {
       console.log(
         `[AZURE] Removing ${redirectUrls.length} redirect URLs from app: ${this.clientId}`,
@@ -370,13 +434,13 @@ export class MSClient {
       console.log(
         `[AZURE] Updating app with ${newUrls.length} remaining redirect URLs`,
       );
-      await this.appClient
-        ?.api(`/applications(appId='{${this.clientId}}')`)
-        .update({
+      await this.graphMutate<void>((client) =>
+        client.api(`/applications(appId='{${this.clientId}}')`).update({
           web: {
             redirectUris: newUrls,
           },
-        });
+        }),
+      );
       console.log(`[AZURE] Successfully removed redirect URLs from app`);
     } catch (e) {
       console.error("[AZURE] Failed to remove app redirect URLs:", e);
@@ -385,18 +449,17 @@ export class MSClient {
   }
 
   async updateAppRedirectUrlsAsync(redirectUrls: string[]): Promise<void> {
-    this.ensureInitialized();
     try {
       console.log(
         `[AZURE] Updating redirect URLs for app: ${this.clientId} with ${redirectUrls.length} URLs`,
       );
-      await this.appClient
-        ?.api(`/applications(appId='{${this.clientId}}')`)
-        .update({
+      await this.graphMutate<void>((client) =>
+        client.api(`/applications(appId='{${this.clientId}}')`).update({
           web: {
             redirectUris: redirectUrls,
           },
-        });
+        }),
+      );
       console.log(`[AZURE] Successfully updated redirect URLs for app`);
     } catch (e) {
       console.error("[AZURE] Failed to update app redirect URLs:", e);
@@ -448,7 +511,10 @@ export class MSClient {
         );
       }
 
-      const data = await response.json();
+      const data: unknown = await response.json();
+      if (!isIpifyResponse(data)) {
+        throw new Error("Invalid ipify response: missing ip field");
+      }
       const publicIp = data.ip;
 
       console.log(`Public IP address: ${publicIp}`);
@@ -506,7 +572,7 @@ export class MSClient {
 
       // Step 2: Generate unique rule name
       const timestamp = Date.now();
-      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const randomSuffix = Math.random().toString(36).slice(2, 8);
       const ruleName = `${baseRuleName}-${timestamp}-${randomSuffix}`;
       console.log(`[NSG] Generated unique rule name: ${ruleName}`);
 

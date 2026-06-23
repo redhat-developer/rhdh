@@ -16,11 +16,11 @@ export interface SchemaModeEnv {
 }
 
 function quoteIdent(name: string): string {
-  return '"' + String(name).replace(/"/g, '""') + '"';
+  return '"' + name.replaceAll(/"/g, '""') + '"';
 }
 
 function escapePasswordLiteral(value: string): string {
-  return String(value).replace(/'/g, "''");
+  return value.replaceAll(/'/g, "''");
 }
 
 export function normalizeDbHost(host: string): string {
@@ -77,7 +77,11 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
         }
 
         const delay = Math.min(2000 * attempt, 10000);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise<void>((resolve) => {
+          setTimeout(() => {
+            resolve();
+          }, delay);
+        });
       }
     }
   }
@@ -98,7 +102,7 @@ const defaultConnectionOptions: Partial<ClientConfig> = {
 export async function connectWithSslFallback(
   config: ClientConfig,
 ): Promise<Client> {
-  return await connectWithRetry({ ...defaultConnectionOptions, ...config });
+  return connectWithRetry({ ...defaultConnectionOptions, ...config });
 }
 
 export function getSchemaModeEnv(): SchemaModeEnv {
@@ -132,7 +136,7 @@ export function getSchemaModeEnv(): SchemaModeEnv {
 export async function connectAdminClient(
   config: Pick<SchemaModeEnv, "dbHost" | "dbAdminUser" | "dbAdminPassword">,
 ): Promise<Client> {
-  return await connectWithSslFallback({
+  return connectWithSslFallback({
     host: normalizeDbHost(config.dbHost),
     port: 5432,
     user: config.dbAdminUser,

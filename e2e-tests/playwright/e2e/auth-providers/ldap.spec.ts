@@ -3,38 +3,38 @@ import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
+
 let page: Page;
-let context: BrowserContext;
+let browserContext: BrowserContext;
+let nsgCleanup: (() => Promise<void>) | undefined;
 
 /* SUPPORTED RESOLVERS
 LDAP:
     [x] oidcLdapUuidMatchingAnnotation -> (Default)
 */
 
-test.describe("Configure LDAP Provider", async () => {
+const namespace = "albarbaro-test-namespace-ldap";
+const appConfigMap = "app-config-rhdh";
+const rbacConfigMap = "rbac-policy";
+const dynamicPluginsConfigMap = "dynamic-plugins";
+const secretName = "rhdh-secrets";
+
+const deployment = new RHDHDeployment(
+  namespace,
+  appConfigMap,
+  rbacConfigMap,
+  dynamicPluginsConfigMap,
+  secretName,
+);
+deployment.instanceName = "rhdh";
+
+const backstageUrl = await deployment.computeBackstageUrl();
+const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
+console.log(`Backstage BaseURL is: ${backstageUrl}`);
+
+test.describe("Configure LDAP Provider", () => {
   let common: Common;
   let uiHelper: UIhelper;
-
-  const namespace = "albarbaro-test-namespace-ldap";
-  const appConfigMap = "app-config-rhdh";
-  const rbacConfigMap = "rbac-policy";
-  const dynamicPluginsConfigMap = "dynamic-plugins";
-  const secretName = "rhdh-secrets";
-
-  // set deployment instance
-  const deployment: RHDHDeployment = new RHDHDeployment(
-    namespace,
-    appConfigMap,
-    rbacConfigMap,
-    dynamicPluginsConfigMap,
-    secretName,
-  );
-  deployment.instanceName = "rhdh";
-
-  // compute backstage baseurl
-  const backstageUrl = await deployment.computeBackstageUrl();
-  const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
-  console.log(`Backstage BaseURL is: ${backstageUrl}`);
 
   test.use({ baseURL: backstageUrl });
 
@@ -49,7 +49,8 @@ test.describe("Configure LDAP Provider", async () => {
     await deployment.loadAllConfigs();
 
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    ({ context: browserContext, page } = await setupBrowser(browser, testInfo));
+    void browserContext;
     common = new Common(page);
     uiHelper = new UIhelper(page);
 
@@ -179,7 +180,7 @@ test.describe("Configure LDAP Provider", async () => {
       process.env.AUTH_PROVIDERS_ARM_CLIENT_ID!,
       process.env.AUTH_PROVIDERS_ARM_CLIENT_SECRET!,
       process.env.AUTH_PROVIDERS_ARM_TENANT_ID!,
-      process.env.AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID!,
+      process.env.AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID,
     );
 
     // Allow public IP in NSG for E2E testing
@@ -195,7 +196,7 @@ test.describe("Configure LDAP Provider", async () => {
       );
 
       // Store cleanup function for afterAll
-      (test as any).nsgCleanup = nsgConfig.cleanup;
+      nsgCleanup = nsgConfig.cleanup;
     } catch (error) {
       console.error("[TEST] Failed to configure NSG access:", error);
       // Continue with test even if NSG configuration fails
@@ -338,8 +339,7 @@ test.describe("Configure LDAP Provider", async () => {
 
     // Clean up NSG rule
     try {
-      const nsgCleanup = (test as any).nsgCleanup;
-      if (nsgCleanup && typeof nsgCleanup === "function") {
+      if (nsgCleanup) {
         console.log("[TEST] Cleaning up NSG rule...");
         await nsgCleanup();
         console.log("[TEST] NSG cleanup completed");

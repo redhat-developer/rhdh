@@ -158,7 +158,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await uiHelper.verifyText("Provide some simple information");
   });
 
-  test.afterAll(async ({}, testInfo) => {
+  test.afterAll(async (_fixtures, testInfo) => {
     await APIHelper.githubRequest(
       "DELETE",
       GITHUB_API_ENDPOINTS.deleteRepo(

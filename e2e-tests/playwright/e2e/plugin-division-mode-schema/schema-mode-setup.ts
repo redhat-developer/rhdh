@@ -24,6 +24,14 @@ interface AppConfigYaml {
   [key: string]: unknown;
 }
 
+function parseAppConfigYaml(value: unknown): AppConfigYaml {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new TypeError("App config YAML must be an object");
+  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- js-yaml returns unknown; shape validated at use sites
+  return value as AppConfigYaml;
+}
+
 export class SchemaModeTestSetup {
   private namespace: string;
   private releaseName: string;
@@ -164,7 +172,11 @@ export class SchemaModeTestSetup {
         console.warn(
           `Restart attempt ${attempt} failed (${msg}), retrying in 30s...`,
         );
-        await new Promise((resolve) => setTimeout(resolve, 30000));
+        await new Promise<void>((resolve) => {
+          setTimeout(() => {
+            resolve();
+          }, 30000);
+        });
       }
     }
   }
@@ -272,7 +284,7 @@ export class SchemaModeTestSetup {
       );
     }
 
-    const appConfig = yaml.load(configMap.data[configKey]) as AppConfigYaml;
+    const appConfig = parseAppConfigYaml(yaml.load(configMap.data[configKey]));
     if (!appConfig.backend) appConfig.backend = {};
 
     const currentDbConfig = appConfig.backend.database;
@@ -371,12 +383,9 @@ export class SchemaModeTestSetup {
           `Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`,
         );
         return true;
-      } else {
-        console.warn(
-          `Database user "${this.env.dbUser}" has CREATEDB privilege`,
-        );
-        return false;
       }
+      console.warn(`Database user "${this.env.dbUser}" has CREATEDB privilege`);
+      return false;
     } finally {
       await adminClient.end();
     }

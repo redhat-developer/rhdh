@@ -1,4 +1,5 @@
-import { test } from "@support/coverage/test";
+import { test, expect } from "@support/coverage/test";
+import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
@@ -43,7 +44,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
 
     // Validate certificates are available
     const azureCerts = readCertificateFile(
-      process.env.AZURE_DB_CERTIFICATES_PATH!,
+      process.env.AZURE_DB_CERTIFICATES_PATH,
     );
     if (!azureCerts) {
       throw new Error(
@@ -91,12 +92,18 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
           user: azureUser,
           password: azurePassword,
         });
-        await kubeClient.restartDeployment(deploymentName, namespace);
+        const restarted = await kubeClient.restartDeployment(
+          deploymentName,
+          namespace,
+        );
+        expect(restarted).toBeDefined();
       });
 
       test("Verify successful DB connection", async ({ page }) => {
+        const uiHelper = new UIhelper(page);
         const common = new Common(page);
         await common.loginAsGuest();
+        await uiHelper.verifyHeading("Welcome back!");
       });
     });
   }

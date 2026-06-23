@@ -52,6 +52,12 @@ const ja = {
 
 export type Locale = "de" | "en" | "es" | "fr" | "it" | "ja";
 
+const LOCALES: readonly Locale[] = ["de", "en", "es", "fr", "it", "ja"];
+
+function isLocale(lang: string): lang is Locale {
+  return (LOCALES as readonly string[]).includes(lang);
+}
+
 type TranslationFile = Record<string, Record<string, Record<string, string>>>;
 
 /**
@@ -74,11 +80,11 @@ function createMergedTranslations() {
     const enKeys = (en as TranslationFile)[namespace]?.en || {};
     merged[namespace] = {
       en: enKeys,
-      de: { ...enKeys, ...((de as TranslationFile)[namespace]?.de || {}) },
-      es: { ...enKeys, ...((es as TranslationFile)[namespace]?.es || {}) },
-      fr: { ...enKeys, ...((fr as TranslationFile)[namespace]?.fr || {}) },
-      it: { ...enKeys, ...((it as TranslationFile)[namespace]?.it || {}) },
-      ja: { ...enKeys, ...((ja as TranslationFile)[namespace]?.ja || {}) },
+      de: { ...enKeys, ...(de as TranslationFile)[namespace]?.de },
+      es: { ...enKeys, ...(es as TranslationFile)[namespace]?.es },
+      fr: { ...enKeys, ...(fr as TranslationFile)[namespace]?.fr },
+      it: { ...enKeys, ...(it as TranslationFile)[namespace]?.it },
+      ja: { ...enKeys, ...(ja as TranslationFile)[namespace]?.ja },
     };
   }
 
@@ -89,7 +95,7 @@ const translations = createMergedTranslations();
 
 export function getCurrentLanguage(): Locale {
   const lang = process.env.LOCALE || "en";
-  return lang as Locale;
+  return isLocale(lang) ? lang : "en";
 }
 
 export function getTranslations() {

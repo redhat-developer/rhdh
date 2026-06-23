@@ -18,6 +18,21 @@ interface GitLabOAuthAppResponse {
   scopes?: string[];
 }
 
+function isGitLabOAuthAppResponse(
+  value: unknown,
+): value is GitLabOAuthAppResponse {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    typeof value.id === "number" &&
+    "application_id" in value &&
+    typeof value.application_id === "string" &&
+    "secret" in value &&
+    typeof value.secret === "string"
+  );
+}
+
 interface GitLabConfig {
   host: string;
   personalAccessToken: string;
@@ -72,14 +87,11 @@ export class GitLabHelper {
         );
       }
 
-      const app = await response.json();
+      const app: unknown = await response.json();
 
       // Validate required fields
-      if (!app.id || !app.application_id || !app.secret) {
-        // Log response without sensitive data
-        const safeApp = { ...app };
-        if (safeApp.secret) safeApp.secret = "***";
-        console.error("[GITLAB] Unexpected API response structure:", safeApp);
+      if (!isGitLabOAuthAppResponse(app)) {
+        console.error("[GITLAB] Unexpected API response structure:", app);
         throw new Error(
           "GitLab API response missing required fields (id, application_id, or secret)",
         );
@@ -171,9 +183,13 @@ export class GitLabHelper {
         );
       }
 
-      const apps = (await response.json()) as GitLabOAuthAppResponse[];
-      console.log(`[GITLAB] Found ${apps.length} OAuth applications`);
-      return apps.map((app: GitLabOAuthAppResponse) => ({
+      const apps: unknown = await response.json();
+      if (!Array.isArray(apps)) {
+        throw new TypeError("Expected array of OAuth applications");
+      }
+      const validatedApps = apps.filter(isGitLabOAuthAppResponse);
+      console.log(`[GITLAB] Found ${validatedApps.length} OAuth applications`);
+      return validatedApps.map((app) => ({
         id: app.id,
         application_id: app.application_id,
         application_name: app.application_name ?? app.name ?? "",

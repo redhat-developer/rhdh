@@ -3,6 +3,7 @@ import { authenticator } from "otplib";
 import {
   test,
   Browser,
+  Cookie,
   expect,
   Page,
   TestInfo,
@@ -24,6 +25,34 @@ import { getErrorMessage } from "./errors";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
+
+function parseAuthStateCookies(content: string): Cookie[] {
+  const parsed: unknown = JSON.parse(content);
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !("cookies" in parsed) ||
+    !Array.isArray(parsed.cookies)
+  ) {
+    throw new TypeError(
+      "Invalid auth state: expected object with cookies array",
+    );
+  }
+  const rawCookies: unknown[] = parsed.cookies;
+  const cookies = rawCookies.filter(
+    (cookie): cookie is Cookie =>
+      typeof cookie === "object" &&
+      cookie !== null &&
+      "name" in cookie &&
+      typeof cookie.name === "string" &&
+      "value" in cookie &&
+      typeof cookie.value === "string",
+  );
+  if (cookies.length !== rawCookies.length) {
+    throw new TypeError("Invalid auth state: cookies must have name and value");
+  }
+  return cookies;
+}
 
 export class Common {
   page: Page;
@@ -95,7 +124,9 @@ export class Common {
       ))
     ) {
       // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
-      await new Promise((resolve) => setTimeout(resolve, 60_000));
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 60_000);
+      });
       await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
     }
 
@@ -103,6 +134,7 @@ export class Common {
   }
 
   async logintoKeycloak(userid: string, password: string) {
+    /* oxlint-disable playwright/no-raw-locators -- Keycloak login popup (third-party) */
     await new Promise<void>((resolve) => {
       this.page.once("popup", async (popup) => {
         await popup.waitForLoadState();
@@ -120,6 +152,7 @@ export class Common {
         resolve();
       });
     });
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   async loginAsKeycloakUser(
@@ -139,9 +172,9 @@ export class Common {
     // Check if a session file for this specific user already exists
     if (fs.existsSync(sessionFileName)) {
       // Load and reuse existing authentication state
-      const cookies = JSON.parse(
+      const cookies = parseAuthStateCookies(
         fs.readFileSync(sessionFileName, "utf-8"),
-      ).cookies;
+      );
       await this.page.context().addCookies(cookies);
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
@@ -166,6 +199,7 @@ export class Common {
   }
 
   async checkAndReauthorizeGithubApp() {
+    /* oxlint-disable playwright/no-raw-locators -- GitHub OAuth authorize popup (third-party) */
     await new Promise<void>((resolve) => {
       this.page.once("popup", async (popup) => {
         await popup.waitForLoadState();
@@ -184,6 +218,7 @@ export class Common {
         resolve();
       });
     });
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   async checkAndClickOnGHloginPopup(force = false) {
@@ -271,6 +306,7 @@ export class Common {
       // Popup didn't close, proceed with login
     }
 
+    /* oxlint-disable playwright/no-raw-locators -- Keycloak OIDC login popup (third-party) */
     try {
       await popup.locator("#username").click();
       await popup.locator("#username").fill(username);
@@ -283,10 +319,10 @@ export class Common {
       if (await usernameError.isVisible()) {
         await popup.close();
         return "User does not exist";
-      } else {
-        throw e;
       }
+      throw e;
     }
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   private async handleGitHubPopupLogin(
@@ -311,6 +347,7 @@ export class Common {
       // Popup didn't close, proceed with login
     }
 
+    /* oxlint-disable playwright/no-raw-locators -- GitHub login popup (third-party) */
     try {
       await popup.locator("#login_field").click({ timeout: 5000 });
       await popup.locator("#login_field").fill(username, { timeout: 5000 });
@@ -335,10 +372,10 @@ export class Common {
       if (await authorization.isVisible()) {
         await authorization.click();
         return "Login successful";
-      } else {
-        throw e;
       }
+      throw e;
     }
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   async githubLogin(username: string, password: string, twofactor: string) {
@@ -401,6 +438,7 @@ export class Common {
       // Popup didn't close, proceed with login
     }
 
+    /* oxlint-disable playwright/no-raw-locators -- GitLab login popup (third-party) */
     try {
       await popup.locator("#user_login").click({ timeout: 5000 });
       await popup.locator("#user_login").fill(username, { timeout: 5000 });
@@ -491,6 +529,7 @@ export class Common {
       // Re-throw other errors
       throw e;
     }
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   async gitlabLogin(username: string, password: string) {
@@ -535,6 +574,7 @@ export class Common {
       // Popup didn't close, proceed with login
     }
 
+    /* oxlint-disable playwright/no-raw-locators -- Microsoft Azure login popup (third-party) */
     try {
       await popup.locator("[name=loginfmt]").click();
       await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
@@ -555,10 +595,10 @@ export class Common {
       const usernameError = popup.locator("id=usernameError");
       if (await usernameError.isVisible()) {
         return "User does not exist";
-      } else {
-        throw e;
       }
+      throw e;
     }
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   async pingFederateLogin(username: string, password: string) {
@@ -589,8 +629,8 @@ export class Common {
       // Popup didn't close, proceed with login
     }
 
+    /* oxlint-disable playwright/no-raw-locators -- PingFederate login popup (third-party) */
     try {
-      // Using raw locators for PingFederate login form (third-party page we don't control)
       // Fill in username
       await popup.locator("#username").click();
       await popup.locator("#username").fill(username, { timeout: 5000 });
@@ -613,10 +653,10 @@ export class Common {
       if (await errorElement.isVisible()) {
         await popup.close();
         return "Login failed - invalid credentials";
-      } else {
-        throw e;
       }
+      throw e;
     }
+    /* oxlint-enable playwright/no-raw-locators */
   }
 }
 

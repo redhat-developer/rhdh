@@ -9,6 +9,23 @@ interface AuthResponse {
   access_token: string;
 }
 
+function isAuthResponse(data: unknown): data is AuthResponse {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "access_token" in data &&
+    typeof Reflect.get(data, "access_token") === "string"
+  );
+}
+
+function isUserArray(data: unknown): data is User[] {
+  return Array.isArray(data);
+}
+
+function isGroupArray(data: unknown): data is Group[] {
+  return Array.isArray(data);
+}
+
 function requireBase64Env(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -45,7 +62,10 @@ class Keycloak {
     );
 
     if (response.status !== 200) throw new Error("Failed to authenticate");
-    const data = (await response.json()) as AuthResponse;
+    const data: unknown = await response.json();
+    if (!isAuthResponse(data)) {
+      throw new Error("Failed to authenticate: invalid token response");
+    }
     return data.access_token;
   }
 
@@ -64,7 +84,11 @@ class Keycloak {
       const errorText = await response.text();
       throw new Error(`Failed to get users: ${response.status} - ${errorText}`);
     }
-    return (await response.json()) as Promise<User[]>;
+    const data: unknown = await response.json();
+    if (!isUserArray(data)) {
+      throw new Error("Failed to get users: invalid response format");
+    }
+    return data;
   }
 
   async getGroupsOfUser(authToken: string, userId: string): Promise<Group[]> {
@@ -84,7 +108,11 @@ class Keycloak {
         `Failed to get groups of user: ${response.status} - ${errorText}`,
       );
     }
-    return (await response.json()) as Promise<Group[]>;
+    const data: unknown = await response.json();
+    if (!isGroupArray(data)) {
+      throw new Error("Failed to get groups of user: invalid response format");
+    }
+    return data;
   }
 
   async checkUserDetails(

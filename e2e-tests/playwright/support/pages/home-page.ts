@@ -1,3 +1,4 @@
+/* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
 import {
   HOME_PAGE_COMPONENTS,
   SEARCH_OBJECTS_COMPONENTS,

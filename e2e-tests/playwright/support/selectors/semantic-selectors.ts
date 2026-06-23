@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-extraneous-class -- grouped semantic locator helpers */
 import { Page, Locator } from "@playwright/test";
 
 /**

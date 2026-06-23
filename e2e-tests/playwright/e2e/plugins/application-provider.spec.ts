@@ -32,8 +32,7 @@ test.describe("Test ApplicationProvider", () => {
 
     // Find all card containers within main article that contain "Context one"
     const contextOneCards = page
-      .locator("main article")
-      .locator("> div > div") // Direct children that are card containers
+      .getByRole("article")
       .filter({ hasText: "Context one" });
 
     // Click increment on the first Context one card
@@ -52,8 +51,7 @@ test.describe("Test ApplicationProvider", () => {
 
     // Find all card containers that contain "Context two"
     const contextTwoCards = page
-      .locator("main article")
-      .locator("> div > div")
+      .getByRole("article")
       .filter({ hasText: "Context two" });
 
     // Click increment on the first Context two card

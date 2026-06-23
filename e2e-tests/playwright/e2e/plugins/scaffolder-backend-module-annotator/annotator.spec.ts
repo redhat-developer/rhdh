@@ -49,15 +49,19 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await common.loginAsGuest();
   });
 
-  test("Register the annotator template", async ({}, testInfo) => {
+  test("Register the annotator template", async (_args, testInfo) => {
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.verifyText("Name");
+    await expect(page.getByText("Name")).toBeVisible();
 
-    await runAccessibilityTests(page, testInfo);
+    await expect(
+      runAccessibilityTests(page, testInfo),
+    ).resolves.toBeUndefined();
 
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Import an existing Git repository");
-    await catalogImport.registerExistingComponent(template, false);
+    await expect(
+      catalogImport.registerExistingComponent(template, false),
+    ).resolves.toBeUndefined();
   });
 
   test("Scaffold a component using the annotator template", async () => {
@@ -121,45 +125,51 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.verifyRowInTableByUniqueText(
-      `${reactAppDetails.componentName}`,
-      ["website"],
-    );
-    await uiHelper.clickLink(`${reactAppDetails.componentName}`);
+    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, [
+      "website",
+    ]);
+    await uiHelper.clickLink(reactAppDetails.componentName);
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `labels:\n    custom: ${reactAppDetails.label}\n`,
     );
+    await expect(
+      page.getByRole("link", { name: reactAppDetails.componentName }),
+    ).toBeVisible();
   });
 
   test("Verify custom annotation is added to scaffolded component", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.verifyRowInTableByUniqueText(
-      `${reactAppDetails.componentName}`,
-      ["website"],
-    );
-    await uiHelper.clickLink(`${reactAppDetails.componentName}`);
+    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, [
+      "website",
+    ]);
+    await uiHelper.clickLink(reactAppDetails.componentName);
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `custom.io/annotation: ${reactAppDetails.annotation}`,
     );
+    await expect(
+      page.getByRole("link", { name: reactAppDetails.componentName }),
+    ).toBeVisible();
   });
 
   test("Verify template version annotation is added to scaffolded component", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.verifyRowInTableByUniqueText(
-      `${reactAppDetails.componentName}`,
-      ["website"],
-    );
-    await uiHelper.clickLink(`${reactAppDetails.componentName}`);
+    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, [
+      "website",
+    ]);
+    await uiHelper.clickLink(reactAppDetails.componentName);
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `backstage.io/template-version: 0.0.1`,
     );
+    await expect(
+      page.getByRole("link", { name: reactAppDetails.componentName }),
+    ).toBeVisible();
   });
 
   test("Verify template version annotation is present on the template", async () => {
@@ -175,9 +185,12 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await catalogImport.inspectEntityAndVerifyYaml(
       `backstage.io/template-version: 0.0.1`,
     );
+    await expect(
+      page.getByRole("link", { name: "Create React App Template" }),
+    ).toBeVisible();
   });
 
-  test.afterAll(async ({}, testInfo) => {
+  test.afterAll(async (_args, testInfo) => {
     await APIHelper.githubRequest(
       "DELETE",
       GITHUB_API_ENDPOINTS.deleteRepo(

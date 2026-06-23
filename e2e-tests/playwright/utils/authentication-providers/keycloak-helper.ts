@@ -1,6 +1,11 @@
 import KcAdminClient from "@keycloak/keycloak-admin-client";
-import UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
-import GroupRepresentation from "@keycloak/keycloak-admin-client/lib/defs/groupRepresentation";
+
+type UserRepresentation = NonNullable<
+  Parameters<KcAdminClient["users"]["create"]>[0]
+>;
+type GroupRepresentation = NonNullable<
+  Parameters<KcAdminClient["groups"]["create"]>[0]
+>;
 
 interface KeycloakConfig {
   baseUrl: string;
@@ -31,8 +36,8 @@ export class KeycloakHelper {
 
       // Refresh token every 58 minutes
       setInterval(
-        async () => {
-          await this.kcAdminClient.auth({
+        () => {
+          void this.kcAdminClient.auth({
             clientId: this.config.clientId,
             clientSecret: this.config.clientSecret,
             grantType: "client_credentials",

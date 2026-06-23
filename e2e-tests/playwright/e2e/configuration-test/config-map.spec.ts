@@ -61,6 +61,6 @@ test.describe("Change app-config at e2e test runtime", () => {
 });
 
 function generateDynamicTitle() {
-  const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+  const timestamp = new Date().toISOString().replaceAll(/[-:.]/g, "");
   return `New Title - ${timestamp}`;
 }

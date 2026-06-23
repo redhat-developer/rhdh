@@ -51,41 +51,37 @@ export class Roles {
   }
 }
 
-export class Response {
-  static async removeMetadataFromResponse(
-    response: APIResponse,
-  ): Promise<unknown[]> {
-    try {
-      const responseJson = await response.json();
+export async function removeMetadataFromResponse(
+  response: APIResponse,
+): Promise<unknown[]> {
+  try {
+    const responseJson: unknown = await response.json();
 
-      // Validate that the response is an array
-      if (!Array.isArray(responseJson)) {
-        console.warn(
-          `Expected an array but received: ${JSON.stringify(responseJson)}`,
-        );
-        return []; // Return an empty array as a fallback
-      }
-
-      // Clean metadata from the response
-      const responseClean = responseJson.map((item: { metadata: unknown }) => {
-        if (item.metadata) {
-          delete item.metadata;
-        }
-        return item;
-      });
-
-      return responseClean;
-    } catch (error) {
-      console.error("Error processing API response:", error);
-      throw new Error("Failed to process the API response");
+    if (!Array.isArray(responseJson)) {
+      console.warn(
+        `Expected an array but received: ${JSON.stringify(responseJson)}`,
+      );
+      return [];
     }
-  }
 
-  static async checkResponse(
-    response: APIResponse,
-    expected: Role[] | Policy[],
-  ) {
-    const cleanResponse = await this.removeMetadataFromResponse(response);
-    expect(cleanResponse).toEqual(expected);
+    return responseJson.map((item: unknown) => {
+      if (typeof item === "object" && item !== null && "metadata" in item) {
+        const record = { ...(item as Record<string, unknown>) };
+        delete record.metadata;
+        return record;
+      }
+      return item;
+    });
+  } catch (error) {
+    console.error("Error processing API response:", error);
+    throw new Error("Failed to process the API response", { cause: error });
   }
+}
+
+export async function checkRbacResponse(
+  response: APIResponse,
+  expected: Role[] | Policy[],
+) {
+  const cleanResponse = await removeMetadataFromResponse(response);
+  expect(cleanResponse).toEqual(expected);
 }

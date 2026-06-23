@@ -21,10 +21,9 @@ export async function downloadAndReadFile(
 
   if (filePath) {
     return fs.readFileSync(filePath, "utf-8");
-  } else {
-    console.error("Download failed or path is not available");
-    return undefined;
   }
+  console.error("Download failed or path is not available");
+  return undefined;
 }
 
 /**

@@ -11,7 +11,7 @@ export class Catalog {
   constructor(page: Page) {
     this.page = page;
     this.uiHelper = new UIhelper(page);
-    this.searchField = page.locator("#input-with-icon-adornment");
+    this.searchField = page.getByRole("searchbox").first();
   }
 
   async go() {

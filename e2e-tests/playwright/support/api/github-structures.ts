@@ -2,11 +2,22 @@ export class GetOrganizationResponse {
   reposUrl: string;
 
   constructor(response: unknown) {
-    enum OrganizationResponseAttributes {
-      REPOS_URL = "repos_url",
+    if (
+      typeof response !== "object" ||
+      response === null ||
+      !("repos_url" in response)
+    ) {
+      throw new Error("Invalid GitHub organization response");
     }
-    const data = response as Record<string, string>;
-    this.reposUrl = data[OrganizationResponseAttributes.REPOS_URL];
+
+    const reposUrl = (response as { repos_url: unknown }).repos_url;
+    if (typeof reposUrl !== "string") {
+      throw new Error(
+        "Invalid GitHub organization response: missing repos_url",
+      );
+    }
+
+    this.reposUrl = reposUrl;
   }
 }
 

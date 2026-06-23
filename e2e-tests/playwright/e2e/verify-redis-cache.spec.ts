@@ -4,6 +4,10 @@ import { Common } from "../utils/common";
 import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 
+function streamDataToString(data: Buffer | string): string {
+  return typeof data === "string" ? data : data.toString();
+}
+
 test.describe("Verify Redis Cache DB", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
@@ -35,15 +39,18 @@ test.describe("Verify Redis Cache DB", () => {
 
     console.log("Waiting for port-forward to be ready...");
     await new Promise<void>((resolve, reject) => {
-      portForward.stdout.on("data", (data) => {
-        if (data.toString().includes("Forwarding from 127.0.0.1:6379")) {
+      portForward.stdout.on("data", (data: Buffer | string) => {
+        if (
+          streamDataToString(data).includes("Forwarding from 127.0.0.1:6379")
+        ) {
           resolve();
         }
       });
 
-      portForward.stderr.on("data", (data) => {
-        console.error(`Port forwarding failed: ${data.toString()}`);
-        reject(new Error(`Port forwarding failed: ${data.toString()}`));
+      portForward.stderr.on("data", (data: Buffer | string) => {
+        const message = streamDataToString(data);
+        console.error(`Port forwarding failed: ${message}`);
+        reject(new Error(`Port forwarding failed: ${message}`));
       });
     });
   });
@@ -51,8 +58,8 @@ test.describe("Verify Redis Cache DB", () => {
   test("Open techdoc and verify the cache generated in redis db", async () => {
     test.setTimeout(120_000);
 
-    portForward.stdout.on("data", (data) => {
-      console.log(`Port-forward stdout: ${data.toString()}`);
+    portForward.stdout.on("data", (data: Buffer | string) => {
+      console.log(`Port-forward stdout: ${streamDataToString(data)}`);
     });
 
     await uiHelper.openSidebarButton("Favorites");

@@ -14,6 +14,10 @@ import { KubeClient } from "../../utils/kube-client";
 import { setPortForwardRestarter } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
+function streamDataToString(data: Buffer | string): string {
+  return typeof data === "string" ? data : data.toString();
+}
+
 function startPortForward(
   pfNamespace: string,
   pfResource: string,
@@ -32,15 +36,18 @@ function startPortForward(
       reject(new Error("Port-forward timeout after 30 seconds"));
     }, 30000);
 
-    proc.stdout.on("data", (data) => {
-      if (data.toString().includes("Forwarding from")) {
+    let ready = false;
+    proc.stdout.on("data", (data: Buffer | string) => {
+      if (ready) return;
+      if (streamDataToString(data).includes("Forwarding from")) {
+        ready = true;
         clearTimeout(timeout);
         resolve(proc);
       }
     });
 
-    proc.stderr.on("data", (data) => {
-      const msg = data.toString().trim();
+    proc.stderr.on("data", (data: Buffer | string) => {
+      const msg = streamDataToString(data).trim();
       if (msg) console.error(`Port-forward stderr: ${msg}`);
     });
 
@@ -57,35 +64,34 @@ function killPortForward(
   if (!proc || proc.exitCode !== null) return Promise.resolve();
 
   return new Promise<void>((resolve) => {
-    const forceKillTimeout = setTimeout(() => {
-      try {
-        proc.kill("SIGKILL");
-      } catch {
-        // already dead
-      }
-      resolve();
-    }, 5000);
-
     proc.once("close", () => {
-      clearTimeout(forceKillTimeout);
       resolve();
     });
 
     proc.kill("SIGTERM");
+
+    setTimeout(() => {
+      if (proc.exitCode === null) {
+        try {
+          proc.kill("SIGKILL");
+        } catch {
+          // already dead
+        }
+      }
+    }, 5000);
   });
 }
 
 test.describe("Verify pluginDivisionMode: schema", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const releaseName = process.env.RELEASE_NAME || "developer-hub";
-  const installMethod = (
-    process.env.INSTALL_METHOD === "operator" ? "operator" : "helm"
-  ) as "helm" | "operator";
+  const installMethod =
+    process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
 
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
   let testSetup: SchemaModeTestSetup;
 
-  test.beforeAll(async ({}, testInfo) => {
+  test.beforeAll(async (_args, testInfo) => {
     test.setTimeout(900000);
 
     const hasPortForwardMeta =
@@ -178,6 +184,8 @@ test.describe("Verify pluginDivisionMode: schema", () => {
 
     const common = new Common(page);
     await common.loginAsGuest();
+
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     console.log(
       "RHDH is accessible - plugins successfully created schemas in schema mode",

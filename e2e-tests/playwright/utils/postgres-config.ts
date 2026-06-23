@@ -19,7 +19,7 @@ import { KubeClient } from "./kube-client";
  * Environment variables from Vault often have literal \n instead of newlines.
  */
 function unescapeNewlines(value: string): string {
-  return value.replace(/\\n/g, "\n");
+  return value.replaceAll(/\\n/g, "\n");
 }
 
 /**
@@ -202,7 +202,11 @@ export async function clearDatabase(credentials: {
             console.log(
               `Retry ${attempt}/${maxRetries} for database ${db} after ${delay}ms (${errorMsg})`,
             );
-            await new Promise((resolve) => setTimeout(resolve, delay));
+            await new Promise<void>((resolve) => {
+              setTimeout(() => {
+                resolve();
+              }, delay);
+            });
           } else {
             console.warn(`Warning: Failed to drop database ${db}:`, errorMsg);
             break;
