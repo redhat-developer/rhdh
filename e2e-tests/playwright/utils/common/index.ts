@@ -1,6 +1,6 @@
 import * as fs from "fs";
 
-import { test, Page } from "@playwright/test";
+import { expect, test, Page } from "@playwright/test";
 import { authenticator } from "otplib";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
@@ -46,13 +46,15 @@ export class Common {
     });
 
     await this.uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.guestProvider.enter"]);
+    await this.uiHelper.clickButton(
+      t["core-components"][lang]["signIn.guestProvider.enter"],
+    );
     await this.uiHelper.waitForSideBarVisible();
   }
 
   async waitForLoad(timeout = 120000) {
     for (const selector of LOADING_INDICATOR_SELECTORS) {
-      await this.page.waitForSelector(selector, {
+      await this.page.locator(selector).waitFor({
         state: "hidden",
         timeout: timeout,
       });
@@ -67,7 +69,8 @@ export class Common {
 
   private async logintoGithub(userid: string) {
     await this.page.goto("https://github.com/login");
-    await this.page.waitForSelector("#login_field");
+    /* oxlint-disable playwright/no-raw-locators -- GitHub login page (third-party) */
+    await expect(this.page.locator("#login_field")).toBeVisible();
     await this.page.fill("#login_field", userid);
 
     const password =
@@ -88,7 +91,10 @@ export class Common {
       (await this.uiHelper.isTextVisible(
         "The two-factor code you entered has already been used",
       )) ||
-      (await this.uiHelper.isTextVisible("too many codes have been submitted", 3000))
+      (await this.uiHelper.isTextVisible(
+        "too many codes have been submitted",
+        3000,
+      ))
     ) {
       // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
       await new Promise<void>((resolve) => {
@@ -98,6 +104,7 @@ export class Common {
     }
 
     await this.page.waitForLoadState("networkidle");
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   async logintoKeycloak(userid: string, password: string) {
@@ -135,18 +142,24 @@ export class Common {
     const sessionFileName = `authState_${userid}.json`;
 
     if (fs.existsSync(sessionFileName)) {
-      const cookies = parseAuthStateCookies(fs.readFileSync(sessionFileName, "utf-8"));
+      const cookies = parseAuthStateCookies(
+        fs.readFileSync(sessionFileName, "utf-8"),
+      );
       await this.page.context().addCookies(cookies);
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
       await this.waitForLoad(12000);
-      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["signIn.title"],
+      );
       await this.checkAndReauthorizeGithubApp();
     } else {
       await this.logintoGithub(userid);
       await this.page.goto("/");
       await this.waitForLoad(240000);
-      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["signIn.title"],
+      );
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForSideBarVisible();
       await this.page.context().storageState({ path: sessionFileName });
@@ -195,11 +208,15 @@ export class Common {
       await this.uiHelper.clickButton(
         t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
       );
-      await this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]);
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["oauthRequestDialog.login"],
+      );
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
-      console.log('"Log in" button is not visible. Skipping login popup actions.');
+      console.log(
+        '"Log in" button is not visible. Skipping login popup actions.',
+      );
     }
   }
 
@@ -232,9 +249,11 @@ export class Common {
 
   async keycloakLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
-    );
+    await expect(
+      this.page.locator(
+        `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
+      ),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -246,9 +265,11 @@ export class Common {
 
   async githubLogin(username: string, password: string, twofactor: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.github.message"]}")`,
-    );
+    await expect(
+      this.page.locator(
+        `p:has-text("${t["rhdh"][lang]["signIn.providers.github.message"]}")`,
+      ),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -258,7 +279,11 @@ export class Common {
     return handleGitHubPopupLogin(popup, username, password, twofactor);
   }
 
-  async githubLoginFromSettingsPage(username: string, password: string, twofactor: string) {
+  async githubLoginFromSettingsPage(
+    username: string,
+    password: string,
+    twofactor: string,
+  ) {
     await this.page.goto("/settings/auth-providers");
 
     const [popup] = await Promise.all([
@@ -271,7 +296,9 @@ export class Common {
           ),
         )
         .click(),
-      this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]),
+      this.uiHelper.clickButton(
+        t["core-components"][lang]["oauthRequestDialog.login"],
+      ),
     ]);
 
     return handleGitHubPopupLogin(popup, username, password, twofactor);
@@ -279,9 +306,11 @@ export class Common {
 
   async gitlabLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.gitlab.message"]}")`,
-    );
+    await expect(
+      this.page.locator(
+        `p:has-text("${t["rhdh"][lang]["signIn.providers.gitlab.message"]}")`,
+      ),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -293,9 +322,11 @@ export class Common {
 
   async MicrosoftAzureLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.microsoft.message"]}")`,
-    );
+    await expect(
+      this.page.locator(
+        `p:has-text("${t["rhdh"][lang]["signIn.providers.microsoft.message"]}")`,
+      ),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -307,9 +338,11 @@ export class Common {
 
   async pingFederateLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
-    );
+    await expect(
+      this.page.locator(
+        `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
+      ),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),

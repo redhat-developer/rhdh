@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:stability": "playwright test --project=showcase --retries=0",
     "showcase": "playwright test --project=showcase",
     "showcase-rbac": "playwright test --project=showcase-rbac",
     "showcase-k8s": "playwright test --project=showcase-k8s",
@@ -49,7 +50,6 @@
     "@playwright/test": "1.59.1",
     "@types/js-yaml": "4.0.9",
     "@types/node": "24.13.2",
-    "@types/node-fetch": "2.6.13",
     "@types/pg": "8.20.0",
     "eslint-plugin-check-file": "3.3.1",
     "eslint-plugin-playwright": "2.10.4",

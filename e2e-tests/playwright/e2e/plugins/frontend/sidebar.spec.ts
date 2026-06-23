@@ -1,65 +1,86 @@
 import { Page, test, expect } from "@support/coverage/test";
-
-import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
+import { Common } from "../../../utils/common";
 import { getTranslations, getCurrentLanguage } from "../../localization/locale";
+import { SidebarPage } from "../../../support/pages/sidebar-page";
+import {
+  createManagedBrowserSession,
+  type ManagedBrowserSession,
+} from "../../../support/fixtures/managed-browser";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
 let page: Page;
+let browserSession: ManagedBrowserSession;
 
-test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equivalent" }, () => {
-  let uiHelper: UIhelper;
-  let common: Common;
+test.describe(
+  "Validate Sidebar Navigation Customization",
+  { tag: "@layer3-equivalent" },
+  () => {
+    let sidebarPage: SidebarPage;
+    let common: Common;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    test.info().annotations.push({
-      type: "component",
-      description: "plugins",
+    test.beforeAll(async ({ browser }, testInfo) => {
+      test.info().annotations.push({
+        type: "component",
+        description: "plugins",
+      });
+
+      browserSession = await createManagedBrowserSession(browser, testInfo);
+      page = browserSession.page;
+      sidebarPage = new SidebarPage(page);
+      common = new Common(page);
+
+      await common.loginAsGuest();
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
+    test("Verify menu order and navigate to Docs", async () => {
+      // Verify presence of 'References' menu and related items
+      const referencesMenu = sidebarPage.getSideBarMenuItem("References");
+      expect(referencesMenu).not.toBeNull();
+      expect(
+        referencesMenu.getByText(t["rhdh"][lang]["menuItem.apis"]),
+      ).not.toBeNull();
+      expect(
+        referencesMenu.getByText(t["rhdh"][lang]["menuItem.learningPaths"]),
+      ).not.toBeNull();
 
-    await common.loginAsGuest();
-  });
+      // Verify 'Favorites' menu and 'Docs' submenu item
+      const favoritesMenu = sidebarPage.getSideBarMenuItem("Favorites");
+      const docsMenuItem = favoritesMenu.getByText(
+        t["rhdh"][lang]["menuItem.docs"],
+      );
+      expect(docsMenuItem).not.toBeNull();
 
-  test("Verify menu order and navigate to Docs", async () => {
-    // Verify presence of 'References' menu and related items
-    const referencesMenu = uiHelper.getSideBarMenuItem("References");
-    expect(referencesMenu).not.toBeNull();
-    expect(referencesMenu.getByText(t["rhdh"][lang]["menuItem.apis"])).not.toBeNull();
-    expect(referencesMenu.getByText(t["rhdh"][lang]["menuItem.learningPaths"])).not.toBeNull();
+      // Open the 'Favorites' menu and navigate to 'Docs'
+      await sidebarPage.openSidebarButton("Favorites");
+      await sidebarPage.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
 
-    // Verify 'Favorites' menu and 'Docs' submenu item
-    const favoritesMenu = uiHelper.getSideBarMenuItem("Favorites");
-    const docsMenuItem = favoritesMenu.getByText(t["rhdh"][lang]["menuItem.docs"]);
-    expect(docsMenuItem).not.toBeNull();
+      // Verify if the Documentation page has loaded
+      await sidebarPage.verifyDocumentationHeading();
+      await sidebarPage.verifyText("Documentation available in", false);
 
-    // Open the 'Favorites' menu and navigate to 'Docs'
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
+      // Verify the presense/absense of the 'Test' buttons in the sidebar
+      await sidebarPage.verifyText("Test enabled");
+      await expect(
+        page.getByRole("link", { name: "Test disabled" }),
+      ).toBeHidden();
 
-    // Verify if the Documentation page has loaded
-    await uiHelper.verifyHeading("Documentation");
-    await uiHelper.verifyText("Documentation available in", false);
+      // Verify the presence/absense of nested 'Test' buttons in the sidebar
+      await sidebarPage.openSidebarButton("Test enabled");
+      await sidebarPage.verifyText("Test nested enabled");
+      await expect(
+        page.getByRole("link", { name: "Test nested disabled" }),
+      ).toBeHidden();
 
-    // Verify the presense/absense of the 'Test' buttons in the sidebar
-    await uiHelper.verifyText("Test enabled");
-    await expect(page.getByRole("link", { name: "Test disabled" })).toBeHidden();
+      await sidebarPage.verifyText("Test_i enabled");
+      await expect(
+        page.getByRole("link", { name: "Test_i disabled" }),
+      ).toBeHidden();
+    });
 
-    // Verify the presence/absense of nested 'Test' buttons in the sidebar
-    await uiHelper.openSidebarButton("Test enabled");
-    await uiHelper.verifyText("Test nested enabled");
-    await expect(page.getByRole("link", { name: "Test nested disabled" })).toBeHidden();
-
-    await uiHelper.verifyText("Test_i enabled");
-    await expect(page.getByRole("link", { name: "Test_i disabled" })).toBeHidden();
-  });
-
-  test.afterAll(async ({}, testInfo) => {
-    await teardownBrowser(page, testInfo);
-  });
-});
+    test.afterAll(async () => {
+      await browserSession.dispose();
+    });
+  },
+);

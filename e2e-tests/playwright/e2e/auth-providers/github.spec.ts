@@ -1,10 +1,15 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
+import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  createManagedBrowserSession,
+  type ManagedBrowserSession,
+} from "../../support/fixtures/managed-browser";
 let page: Page;
 let context: BrowserContext;
+let browserSession: ManagedBrowserSession;
 
 /* SUPORTED RESOLVERS
 GITHUB:
@@ -17,7 +22,7 @@ GITHUB:
 // oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure Github Provider", async () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let settingsPage: SettingsPage;
 
   const namespace = "albarbaro-test-namespace-github";
   const appConfigMap = "app-config-rhdh";
@@ -53,9 +58,11 @@ test.describe("Configure Github Provider", async () => {
     await deployment.loadAllConfigs();
 
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    browserSession = await createManagedBrowserSession(browser, testInfo);
+    context = browserSession.context;
+    page = browserSession.page;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    settingsPage = new SettingsPage(page);
 
     // expect some expected variables
 
@@ -146,8 +153,8 @@ test.describe("Configure Github Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("RHDH QE Admin");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("RHDH QE Admin");
     await common.signOut();
     await context.clearCookies();
   });
@@ -170,8 +177,8 @@ test.describe("Configure Github Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("RHDH QE Admin");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("RHDH QE Admin");
     await common.signOut();
     await context.clearCookies();
   });
@@ -197,7 +204,7 @@ test.describe("Configure Github Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
+    await settingsPage.verifySignInError(
       NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
     );
     await context.clearCookies();
@@ -227,7 +234,7 @@ test.describe("Configure Github Provider", async () => {
 
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
+    await settingsPage.verifySignInError(
       NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
     );
     await context.clearCookies();
@@ -271,8 +278,8 @@ test.describe("Configure Github Provider", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("RHDH QE Admin");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("RHDH QE Admin");
     await common.signOut();
     await context.clearCookies();
   });
@@ -348,15 +355,15 @@ test.describe("Configure Github Provider", async () => {
 
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
+    await settingsPage.verifySignInError(
       /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/u,
     );
     await context.clearCookies();
   });
 
   test.afterAll(async () => {
-    if (page !== undefined) {
-      await teardownBrowser(page, test.info());
+    if (browserSession !== undefined) {
+      await browserSession.dispose();
     }
     console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();

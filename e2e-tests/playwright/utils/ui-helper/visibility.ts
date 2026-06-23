@@ -7,11 +7,8 @@ async function isElementVisible(
   force = false,
 ): Promise<boolean> {
   try {
-    await page.waitForSelector(locator, {
-      state: "visible",
-      timeout,
-    });
     const button = page.locator(locator).first();
+    await button.waitFor({ state: "visible", timeout });
     return await button.isVisible();
   } catch (error) {
     if (force) throw error;

@@ -1,9 +1,15 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser, teardownBrowser } from "../utils/common";
+import { Common } from "../utils/common";
 import { RESOURCES } from "../support/test-data/resources";
 import { RhdhInstance, CatalogImport } from "../support/pages/catalog-import";
 import { TEMPLATES } from "../support/test-data/templates";
+import { SettingsPage } from "../support/pages/settings-page";
+import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
+import { SelfServicePage } from "../support/pages/self-service-page";
+import {
+  createManagedBrowserSession,
+  type ManagedBrowserSession,
+} from "../support/fixtures/managed-browser";
 
 type GithubPullRequest = { title: string; number: string };
 
@@ -48,16 +54,26 @@ async function getRhdhPullRequests(
 
 let page: Page;
 let browserContext: BrowserContext;
+let browserSession: ManagedBrowserSession;
 
 // Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
-test.describe.fixme("GitHub Happy path", () => {
+test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let settingsPage: SettingsPage;
+  let catalogBrowsePage: CatalogBrowsePage;
+  let selfServicePage: SelfServicePage;
   let catalogImport: CatalogImport;
   let rhdhInstance: RhdhInstance;
 
   const component =
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
+
+  test.beforeEach(() => {
+    test.skip(
+      true,
+      "RHDHBUGS-2099: GitHub happy path blocked pending catalog entity updates",
+    );
+  });
 
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
@@ -65,8 +81,12 @@ test.describe.fixme("GitHub Happy path", () => {
       description: "core",
     });
 
-    ({ page, context: browserContext } = await setupBrowser(browser, testInfo));
-    uiHelper = new UIhelper(page);
+    browserSession = await createManagedBrowserSession(browser, testInfo);
+    page = browserSession.page;
+    browserContext = browserSession.context;
+    settingsPage = new SettingsPage(page);
+    catalogBrowsePage = new CatalogBrowsePage(page);
+    selfServicePage = new SelfServicePage(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     rhdhInstance = new RhdhInstance(page);
@@ -87,57 +107,69 @@ test.describe.fixme("GitHub Happy path", () => {
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading(process.env.GH_USER2_ID!);
-    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID!}`);
+    await settingsPage.open();
+    await expect(
+      page.getByRole("heading", { name: process.env.GH_USER2_ID! }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: `User Entity: ${process.env.GH_USER2_ID!}`,
+      }),
+    ).toBeVisible();
   });
 
   test("Import an existing Git repository", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickButton("Self-service");
-    await uiHelper.clickButton("Import an existing Git repository");
+    await catalogBrowsePage.openCatalogSidebar();
+    await catalogBrowsePage.selectKind("Component");
+    await catalogBrowsePage.importGitRepositoryFromCatalog();
     await catalogImport.registerExistingComponent(component);
   });
 
   test("Verify that the following components were ingested into the Catalog", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Group");
-    await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
+    await catalogBrowsePage.openCatalogSidebar();
+    await catalogBrowsePage.selectKind("Group");
+    await catalogBrowsePage.verifyComponentsInCatalog("Group", [
+      "Janus-IDP Authors",
+    ]);
 
-    await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
-    await uiHelper.verifyComponentInCatalog("Component", [
+    await catalogBrowsePage.verifyComponentsInCatalog("API", ["Petstore"]);
+    await catalogBrowsePage.verifyComponentsInCatalog("Component", [
       "Red Hat Developer Hub",
     ]);
 
-    await uiHelper.selectMuiBox("Kind", "Resource");
-    await uiHelper.verifyRowsInTable([
+    await catalogBrowsePage.selectKind("Resource");
+    await catalogBrowsePage.verifyTableRows([
       "ArgoCD",
-      "GitHub Showcase repository",
+      "RHDH GitHub catalog",
       "KeyCloak",
       "PostgreSQL cluster",
       "S3 Object bucket storage",
     ]);
 
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "User");
-    await uiHelper.searchInputPlaceholder("rhdh");
-    await uiHelper.verifyRowsInTable(["rhdh-qe rhdh-qe"]);
+    await catalogBrowsePage.openCatalogSidebar();
+    await catalogBrowsePage.selectKind("User");
+    await catalogBrowsePage.searchCatalog("rhdh");
+    await catalogBrowsePage.verifyTableRows(["rhdh-qe rhdh-qe"]);
+    await expect(
+      page.getByRole("cell", { name: "rhdh-qe rhdh-qe" }),
+    ).toBeVisible();
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
-    await uiHelper.goToSelfServicePage();
-    await uiHelper.verifyHeading("Templates");
+    await selfServicePage.open();
+    await selfServicePage.verifyTemplatesHeading();
 
     for (const template of TEMPLATES) {
-      await uiHelper.waitForTitle(template, 4);
-      await uiHelper.verifyHeading(template);
+      await selfServicePage.waitForTemplateTitle(template, 4);
+      await expect(
+        page.getByRole("heading", { name: template, exact: true }),
+      ).toBeVisible();
     }
   });
 
   test("Click login on the login popup and verify that Overview tab renders", async () => {
-    await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.clickLink("Red Hat Developer Hub");
+    await catalogBrowsePage.openCatalogSidebar("Component");
+    await catalogBrowsePage.openEntityLink("Red Hat Developer Hub");
 
     const expectedPath = "/catalog/default/component/red-hat-developer-hub";
     // Wait for the expected path in the URL
@@ -150,7 +182,7 @@ test.describe.fixme("GitHub Happy path", () => {
     expect(page.url()).toContain(expectedPath);
 
     await common.clickOnGHloginPopup();
-    await uiHelper.verifyLink("About RHDH", { exact: false });
+    await catalogBrowsePage.verifyLink("About RHDH", { exact: false });
 
     // Workaround for RHDHBUGS-2091: Change the size to 10 to avoid information not being displayed
     await page.getByRole("button", { name: "20" }).click();
@@ -161,7 +193,7 @@ test.describe.fixme("GitHub Happy path", () => {
   });
 
   test("Verify that the Pull/Merge Requests tab renders the 5 most recently updated Open Pull Requests", async () => {
-    await uiHelper.clickTab("Pull/Merge Requests");
+    await catalogBrowsePage.clickTab("Pull/Merge Requests");
     const openPRs = await getRhdhPullRequests("open");
     await rhdhInstance.verifyPRRows(openPRs, 0, 5);
   });
@@ -212,19 +244,18 @@ test.describe.fixme("GitHub Happy path", () => {
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
-    await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.clickLink("Red Hat Developer Hub");
+    await catalogBrowsePage.openCatalogSidebar("Component");
+    await catalogBrowsePage.openEntityLink("Red Hat Developer Hub");
     await common.clickOnGHloginPopup();
-    await uiHelper.clickTab("Pull/Merge Requests");
+    await catalogBrowsePage.clickTab("Pull/Merge Requests");
     const allPRs = await getRhdhPullRequests("open");
     await rhdhInstance.verifyPRRowsPerPage(5, allPRs);
     await rhdhInstance.verifyPRRowsPerPage(10, allPRs);
     await rhdhInstance.verifyPRRowsPerPage(20, allPRs);
   });
 
-  // Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
-  test.fixme("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
-    await uiHelper.clickTab("Dependencies");
+  test("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
+    await catalogBrowsePage.openDependenciesTab();
     for (const resource of RESOURCES) {
       const resourceElement = page.locator(
         `#workspace:has-text("${resource}")`,
@@ -234,15 +265,14 @@ test.describe.fixme("GitHub Happy path", () => {
     }
   });
 
-  // Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
-  test.fixme("Sign out and verify that you return back to the Sign in page", async () => {
-    await uiHelper.goToSettingsPage();
+  test("Sign out and verify that you return back to the Sign in page", async () => {
+    await settingsPage.open();
     await common.signOut();
     await browserContext.clearCookies();
     await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
   });
 
-  test.afterAll(async ({}, testInfo) => {
-    await teardownBrowser(page, testInfo);
+  test.afterAll(async () => {
+    await browserSession.dispose();
   });
 });

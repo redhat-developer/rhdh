@@ -1,6 +1,6 @@
 import { test } from "@support/coverage/test";
-
 import { Common } from "../../utils/common";
+import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
   readCertificateFile,
@@ -8,7 +8,6 @@ import {
   configurePostgresCredentials,
   clearDatabase,
 } from "../../utils/postgres-config";
-import { UIhelper } from "../../utils/ui-helper";
 
 interface RdsConfig {
   name: string;
@@ -53,7 +52,9 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
     // Validate required environment variables
     if (!rdsUser || !rdsPassword) {
-      throw new Error("RDS_USER and RDS_PASSWORD environment variables must be set");
+      throw new Error(
+        "RDS_USER and RDS_PASSWORD environment variables must be set",
+      );
     }
 
     const kubeClient = new KubeClient();
@@ -91,10 +92,10 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       });
 
       test("Verify successful DB connection", async ({ page }) => {
-        const uiHelper = new UIhelper(page);
+        const rhdhHomePage = new RhdhHomePage(page);
         const common = new Common(page);
         await common.loginAsGuest();
-        await uiHelper.verifyHeading("Welcome back!");
+        await rhdhHomePage.verifyWelcomeHeading();
       });
     });
   }

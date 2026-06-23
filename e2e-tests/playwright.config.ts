@@ -34,6 +34,7 @@ const k8sSpecificConfig = {
 };
 
 export default defineConfig({
+  globalSetup: "./playwright/global-setup.ts",
   timeout: 90 * 1000,
   testDir: "./playwright",
   /* Fail the build on CI if you accidentally left test.only in the source code. */

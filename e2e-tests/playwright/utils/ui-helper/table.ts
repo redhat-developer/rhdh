@@ -84,7 +84,14 @@ export async function clickOnButtonInTableByUniqueText(
 }
 
 export async function verifyTableHeadingAndRows(page: Page, texts: string[]) {
-  await page.waitForSelector("table tbody tr", { state: "visible" });
+  await expect(
+    page
+      .getByRole("table")
+      .getByRole("rowgroup")
+      .last()
+      .getByRole("row")
+      .first(),
+  ).toBeVisible();
   for (const column of texts) {
     const columnSelector = `table th:has-text("${column}")`;
     const columnCount = await page.locator(columnSelector).count();
