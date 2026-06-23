@@ -28,7 +28,10 @@ export const KNOWN_FAILURES = new Set<string>([
 ]);
 
 /**
- * Minimal config overrides for plugins that validate config at startup
+ * Minimal config overrides for plugins that validate config at startup.
+ *
+ * These are DUMMY VALUES for test purposes only - plugins won't actually connect
+ * to real services. They exist solely to satisfy config validation during backend startup.
  */
 const configOverrides: Record<string, JsonObject> = {
   "backstage-community-plugin-jenkins-backend": {

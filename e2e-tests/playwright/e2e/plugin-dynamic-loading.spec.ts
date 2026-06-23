@@ -66,7 +66,8 @@ const __filename = fileURLToPath(import.meta.url);
 // eslint-disable-next-line @typescript-eslint/naming-convention -- ESM compatibility requires __filename/__dirname
 const __dirname = dirname(__filename);
 
-// Patch module resolution once before all tests
+// Patch module resolution once before all tests.
+// NOTE: Safe because showcase-sanity-plugins runs serially (no parallel workers).
 patchModuleResolution(join(__dirname, "..", "..", "node_modules"));
 
 const coreFeatures = [catalogPlugin, scaffolderPlugin];
@@ -83,12 +84,20 @@ test.describe("Plugin Dynamic Loading", () => {
     "All plugins from catalog index load and backend starts",
     { tag: "@sanity" },
     async () => {
-      test.setTimeout(300_000); // 5 minutes timeout for download + test
+      // 5 minutes timeout: ~3 min plugin download + ~2s backend startup + 2 min buffer
+      test.setTimeout(300_000);
 
       // Get catalog index image from environment
+      // In CI, this must be set explicitly to ensure we test the correct catalog version
       const catalogIndexImage =
         process.env.CATALOG_INDEX_IMAGE ||
-        "quay.io/rhdh/plugin-catalog-index:1.10";
+        (process.env.CI
+          ? (() => {
+              throw new Error(
+                "CATALOG_INDEX_IMAGE environment variable must be set in CI",
+              );
+            })()
+          : "quay.io/rhdh/plugin-catalog-index:1.10");
 
       reportCatalogIndex(catalogIndexImage);
 

@@ -59,7 +59,9 @@ export function resolveEntryPoint(pluginPath: string): string {
   }
 
   throw new Error(
-    `No entry point found in ${pluginPath}. Tried: ${candidates.join(", ")}`,
+    `No entry point found in ${pluginPath}.\n` +
+      `Tried: ${candidates.join(", ")}\n` +
+      `package.json main: ${pkg.main || "(not set)"}`,
   );
 }
 
@@ -98,6 +100,10 @@ export function loadBackendPlugins(plugins: PluginEntry[]): {
 
 /**
  * Validate that a frontend plugin has required bundle artifacts
+ *
+ * Frontend plugins use either:
+ * - Modern: dist-scalprum/ with plugin-manifest.json
+ * - Legacy: dist/remoteEntry.js (no manifest needed)
  */
 export function validateFrontendBundle(plugin: PluginEntry): string | null {
   const has = (rel: string) => existsSync(join(plugin.path, rel));
@@ -106,14 +112,14 @@ export function validateFrontendBundle(plugin: PluginEntry): string | null {
     return "missing package.json";
   }
 
-  // Frontend plugins should have either dist-scalprum or dist/remoteEntry.js
+  // Must have at least one bundle format
   if (!has("dist-scalprum") && !has("dist/remoteEntry.js")) {
-    return "missing dist-scalprum/ and dist/remoteEntry.js";
+    return "missing both dist-scalprum/ and dist/remoteEntry.js - needs at least one";
   }
 
-  // If dist-scalprum exists, it should have plugin-manifest.json
+  // Modern dist-scalprum format requires plugin-manifest.json
   if (has("dist-scalprum") && !has("dist-scalprum/plugin-manifest.json")) {
-    return "missing dist-scalprum/plugin-manifest.json";
+    return "dist-scalprum/ found but missing plugin-manifest.json";
   }
 
   return null;
