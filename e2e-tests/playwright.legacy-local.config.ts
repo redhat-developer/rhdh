@@ -30,24 +30,27 @@ const backendReadiness = "http://localhost:7007/.backstage/health/v1/readiness";
 const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
 const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
 
-const sharedConfigArgs =
-  "--config ../../app-config.yaml " +
-  "--config ../../app-config.dynamic-plugins.yaml " +
-  "--config ../../app-config.local-e2e.yaml";
+const sharedConfigArgs = [
+  "--config ../../app-config.yaml",
+  "--config ../../app-config.dynamic-plugins.yaml",
+  "--config ../../app-config.local-e2e.yaml",
+].join(" ");
 
 export default defineConfig({
   testDir: "./playwright",
-  // Existing UI specs validated to run off-cluster via sidebar navigation.
-  // Pending (see docs/e2e-tests/local-e2e-harness.md "Known issues"):
-  //   - settings.spec.ts and guest-signin-happy-path.spec.ts navigate via the
-  //     top-right profile dropdown, which needs the global-header plugin mounted.
-  //   - home-page-customization.spec.ts needs that test's specific home config.
-  // Add them here once those are resolved.
-  testMatch: ["e2e/learning-path-page.spec.ts"],
+  // Fails fast if dynamic-plugins-root has not been populated.
+  globalSetup: "./playwright/support/local-harness-global-setup.ts",
+  // Runs only what is verified green off-cluster so far: the guest-signin home-page
+  // test (Quick Access from the dynamic home-page plugin). `grep` scopes to that test
+  // because its two siblings — and several other UI specs — navigate via the top-right
+  // profile dropdown (needs the global-header plugin) or need per-spec config. See
+  // docs/e2e-tests/local-e2e-harness.md "Known issues". Widen as specs are validated.
+  testMatch: ["e2e/guest-signin-happy-path.spec.ts"],
+  grep: /Homepage renders with Search Bar/,
   timeout: 90 * 1000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: 1,
+  workers: 1, // serial: a single shared backend + dev server
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: "playwright-report-legacy-local" }],
@@ -72,7 +75,8 @@ export default defineConfig({
   },
   // backstage-cli / janus-cli live in the repo-root node_modules/.bin, which yarn does
   // not surface for these workspaces, so both CLIs are invoked directly with the root
-  // .bin prepended to PATH and run from their package directory.
+  // .bin prepended to PATH and run from their package directory. The backend command
+  // mirrors packages/backend's `start` script (--require instrumentation) — keep in sync.
   webServer: [
     {
       command: `backstage-cli package start --require ./src/instrumentation.js ${sharedConfigArgs}`,

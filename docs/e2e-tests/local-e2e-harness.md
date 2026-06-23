@@ -46,8 +46,12 @@ yarn --cwd e2e-tests e2e:legacy-local
 
 Playwright (`playwright.legacy-local.config.ts`) boots the backend and the legacy app
 dev server with `app-config.yaml` + `app-config.dynamic-plugins.yaml` +
-`app-config.local-e2e.yaml`, then runs the UI specs in `testMatch` that do not require
-live external services.
+`app-config.local-e2e.yaml`. A `globalSetup` first fails fast with the populate command
+if `dynamic-plugins-root` is empty.
+
+By default the run is scoped (via `grep`) to the one test verified green off-cluster so
+far — the `guest-signin-happy-path` home-page test. Widen `testMatch`/`grep` as more
+specs are validated (see "Known issues").
 
 ### Verified
 
