@@ -7,27 +7,18 @@ backend dynamic-plugin loader from RHIDP-13508.
 ## Goal
 
 Run real Playwright E2E against RHDH **without** an OpenShift/Kubernetes cluster or
-container images — a single `run` that boots the backend and a frontend dev server
-in-process and drives a browser against them.
+container images — a single `run` that boots the backend and the legacy frontend dev
+server in-process and drives a browser against them.
 
-Two harnesses are provided:
+The harness targets the legacy frontend (`packages/app`, Tier B): it is what RHDH ships
+today, and **the existing Playwright specs already target it**, so they run unmodified.
+Dynamic frontend plugins load through Scalprum exactly as in-cluster (the legacy
+`scalprum-backend` serves the plugin config by default).
 
-| Harness | Target | Command | Status |
-|---------|--------|---------|--------|
-| **Legacy (Tier B)** | `packages/app` (Scalprum) + dynamic plugins | `yarn --cwd e2e-tests e2e:legacy-local` | Production-faithful; runs the **existing** specs |
-| **app-next** | `packages/app-next` (new frontend system) | `yarn --cwd e2e-tests e2e:app-next-local` | Forward-looking; core app only (see limits) |
-
-Both layer the guest-auth + in-memory-SQLite overlay `app-config.local-e2e.yaml` on
-top of `app-config.yaml`. Guest sign-in must be configured explicitly — the auth
-backend otherwise rejects guest with _"you must … configure the auth backend to
-support guest sign in."_
-
-## Legacy harness (Tier B) — recommended
-
-This is the production-faithful target: it is what RHDH ships today, and **the existing
-Playwright specs already target it**, so they run unmodified. Dynamic frontend plugins
-load through Scalprum exactly as in-cluster (the legacy `scalprum-backend` serves the
-plugin config by default).
+The guest-auth + in-memory-SQLite overlay `app-config.local-e2e.yaml` is layered on top
+of `app-config.yaml`. Guest sign-in must be configured explicitly — the auth backend
+otherwise rejects guest with _"you must … configure the auth backend to support guest
+sign in."_
 
 ### 1. Populate `dynamic-plugins-root` (one-time)
 
@@ -65,20 +56,15 @@ With plugins populated, the legacy app renders the full production RHDH UI off-c
 `guest-signin-happy-path` **home-page test passes unmodified** — confirming a dynamic
 frontend plugin renders with no cluster.
 
-## app-next harness
+## Why the legacy app, not app-next
 
-`playwright.app-next-local.config.ts` + `playwright/app-next-local/guest-identity.spec.ts`.
-Boots the backend + app-next dev server with guest auth. Cold start ~17–20s (warm
-rspack cache); ~3s reusing servers; stable; clean teardown.
-
-**Limit — dynamic frontend plugins do not load on app-next yet.** app-next uses
-`dynamicFrontendFeaturesLoader()` → `GET <backend>/<pluginId>/remotes`, served by
-`dynamicPluginsFrontendServiceRef`, which the RHDH backend no-ops unless
-`ENABLE_STANDARD_MODULE_FEDERATION=true` — and even then returns 404 because RHDH's
-exported dynamic frontend plugins do not contain standard Module Federation assets by
-default (see `packages/backend/src/index.ts`). app-next also has no Home page. So
-app-next currently covers core/statically-registered plugin UIs (e.g. user-settings)
-only; the legacy harness is the way to exercise dynamic plugins off-cluster today.
+The harness targets the legacy app because **dynamic frontend plugins do not load on
+`packages/app-next` yet**: app-next's `dynamicFrontendFeaturesLoader()` fetches Module
+Federation remotes from the backend, but that endpoint is no-op'd unless
+`ENABLE_STANDARD_MODULE_FEDERATION=true`, and even then RHDH's exported dynamic frontend
+plugins do not contain standard MF assets (see `packages/backend/src/index.ts`). Until
+that lands upstream, app-next can only exercise core/static plugin UIs. An app-next
+harness is tracked as a follow-up (RHIDP-13501 / spike RHIDP-15075).
 
 ## vs. rhdh-local
 

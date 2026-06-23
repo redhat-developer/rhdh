@@ -1,12 +1,9 @@
-# Config overlay shared by the cluster-free local E2E harnesses (legacy `packages/app`
-# and new `packages/app-next`).
+# Config overlay for the cluster-free local E2E harness (legacy `packages/app`, Tier B).
 #
-# Layered on top of app-config.yaml (and, for the legacy Tier B harness, on top of
-# app-config.dynamic-plugins.yaml) to run Playwright E2E without an
-# OpenShift/Kubernetes cluster or container images:
+# Layered on top of app-config.yaml and app-config.dynamic-plugins.yaml to run
+# Playwright E2E without an OpenShift/Kubernetes cluster or container images:
 #
-#   yarn --cwd e2e-tests e2e:legacy-local     # legacy app + dynamic plugins (Tier B)
-#   yarn --cwd e2e-tests e2e:app-next-local   # new frontend system
+#   yarn --cwd e2e-tests e2e:legacy-local
 #
 # It enables guest sign-in (the auth backend rejects guest unless a provider is
 # configured) and pins the in-memory SQLite database so a single `run` is fully
