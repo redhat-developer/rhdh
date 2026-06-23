@@ -111,7 +111,7 @@ test.describe("Plugin Dynamic Loading", () => {
         }
 
         // Step 3: Run install-dynamic-plugins
-        const installCmd = `npx @red-hat-developer-hub/cli-module-install-dynamic-plugins ${dynamicPluginsRoot}`;
+        const installCmd = `npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install ${dynamicPluginsRoot}`;
 
         console.log(`Command: ${installCmd}`);
         console.log(`CATALOG_INDEX_IMAGE: ${catalogIndexImage}`);
