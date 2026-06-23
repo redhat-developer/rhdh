@@ -39,10 +39,26 @@ import {
   loadManifest,
   loadBackendPlugins,
   validateFrontendBundle,
-  buildMergedConfig,
-  KNOWN_FAILURES,
-  type PluginError,
 } from "../utils/plugin-loader";
+import { buildMergedConfig, KNOWN_FAILURES } from "../utils/plugin-config";
+import type { PluginError } from "../utils/plugin-types";
+import {
+  reportCatalogIndex,
+  reportDownloadStarted,
+  reportDownloadCompleted,
+  reportCliVerification,
+  reportCliCommand,
+  reportCliFailure,
+  reportManifestLoaded,
+  reportBackendLoadingStarted,
+  reportLoadErrors,
+  reportBackendStartupStarted,
+  reportBackendSuccess,
+  reportStartupFailure,
+  reportFrontendValidationStarted,
+  reportFrontendValidation,
+  reportSummary,
+} from "../utils/plugin-reporter";
 import { patchModuleResolution } from "../utils/module-resolution-patch";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention -- ESM compatibility requires __filename/__dirname
@@ -74,9 +90,7 @@ test.describe("Plugin Dynamic Loading", () => {
         process.env.CATALOG_INDEX_IMAGE ||
         "quay.io/rhdh/plugin-catalog-index:1.10";
 
-      console.log(
-        `\n📦 Testing plugins from catalog index: ${catalogIndexImage}\n`,
-      );
+      reportCatalogIndex(catalogIndexImage);
 
       // Create temporary directories
       const tempDir = await mkdtemp(join(tmpdir(), "rhdh-plugin-test-"));
@@ -93,16 +107,15 @@ test.describe("Plugin Dynamic Loading", () => {
           dynamicPluginsConfig,
         );
 
-        console.log("📥 Downloading plugins from catalog index...");
+        reportDownloadStarted();
 
         // Step 2: Verify CLI package is available
-        console.log("🔍 Verifying install-dynamic-plugins CLI...");
         try {
           const cliVersion = execSync(
             "npx @red-hat-developer-hub/cli-module-install-dynamic-plugins --version",
             { encoding: "utf-8", stdio: "pipe" },
           ).trim();
-          console.log(`✓ CLI version: ${cliVersion}`);
+          reportCliVerification(cliVersion);
         } catch (versionError) {
           console.error("❌ CLI not available:", versionError.message);
           throw new Error(
@@ -113,8 +126,7 @@ test.describe("Plugin Dynamic Loading", () => {
         // Step 3: Run install-dynamic-plugins
         const installCmd = `npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install ${dynamicPluginsRoot}`;
 
-        console.log(`Command: ${installCmd}`);
-        console.log(`CATALOG_INDEX_IMAGE: ${catalogIndexImage}`);
+        reportCliCommand(installCmd, catalogIndexImage);
 
         try {
           execSync(installCmd, {
@@ -126,20 +138,17 @@ test.describe("Plugin Dynamic Loading", () => {
           });
         } catch (error) {
           const exitCode = error.status || error.code || "unknown";
-          console.error(`\n❌ CLI failed with exit code: ${exitCode}`);
-          console.error("⚠️  Error output was printed above (stdio='inherit')");
+          reportCliFailure(exitCode);
           throw new Error(
             `install-dynamic-plugins failed (exit ${exitCode}). Check logs above for details.`,
           );
         }
 
-        console.log("✅ Plugins downloaded successfully\n");
+        reportDownloadCompleted();
 
-        // Step 3: Load manifest
+        // Step 4: Load manifest
         const manifest = loadManifest(dynamicPluginsRoot);
-        console.log(
-          `📋 Manifest loaded: ${manifest.backend.length} backend, ${manifest.frontend.length} frontend plugins\n`,
-        );
+        reportManifestLoaded(manifest.backend.length, manifest.frontend.length);
 
         // Filter out known failures
         const backendPlugins = manifest.backend.filter(
@@ -149,25 +158,16 @@ test.describe("Plugin Dynamic Loading", () => {
           (p) => !KNOWN_FAILURES.has(p.dirName),
         );
 
-        // Step 4: Load backend plugins
-        console.log(`🔌 Loading ${backendPlugins.length} backend plugins...`);
+        // Step 5: Load backend plugins
+        reportBackendLoadingStarted(backendPlugins.length);
         const { loaded, errors: loadErrors } =
           loadBackendPlugins(backendPlugins);
 
-        if (loadErrors.length > 0) {
-          console.log(`\n⚠️  Load errors (${loadErrors.length}):`);
-          loadErrors.forEach((e) => {
-            console.log(`   - ${e.plugin.name}: ${e.error}`);
-          });
-        }
-
+        reportLoadErrors(loadErrors);
         expect(loaded.length).toBeGreaterThan(0);
-        console.log(
-          `✅ ${loaded.length} backend plugins loaded successfully\n`,
-        );
 
-        // Step 5: Build config and start test backend
-        console.log("🚀 Starting test backend with loaded plugins...");
+        // Step 6: Build config and start test backend
+        reportBackendStartupStarted();
         const config = buildMergedConfig(loaded);
         const features = [
           ...coreFeatures,
@@ -181,19 +181,12 @@ test.describe("Plugin Dynamic Loading", () => {
             features,
           });
 
-          console.log("✅ Backend started successfully with all plugins!\n");
+          reportBackendSuccess(loaded);
 
           // Stop backend
           await backend.stop();
         } catch (err) {
-          console.error("\n❌ Backend startup failed:");
-          console.error(err);
-          console.error("\nLoaded plugins:");
-          loaded.forEach((p) => {
-            console.error(`  - ${p.plugin.name} (${p.plugin.version})`);
-          });
-          console.error("\nMerged config:");
-          console.error(JSON.stringify(config, null, 2));
+          reportStartupFailure(err, loaded, config);
           throw err;
         }
 
@@ -207,10 +200,8 @@ test.describe("Plugin Dynamic Loading", () => {
           );
         }
 
-        // Step 6: Validate frontend plugins
-        console.log(
-          `🎨 Validating ${frontendPlugins.length} frontend plugins...`,
-        );
+        // Step 7: Validate frontend plugins
+        reportFrontendValidationStarted(frontendPlugins.length);
         const frontendErrors: PluginError[] = [];
         const validFrontend: { name: string; version: string }[] = [];
 
@@ -223,35 +214,20 @@ test.describe("Plugin Dynamic Loading", () => {
           }
         }
 
-        if (frontendErrors.length > 0) {
-          console.log(
-            `\n⚠️  Frontend validation errors (${frontendErrors.length}):`,
-          );
-          frontendErrors.forEach((e) => {
-            console.log(`   - ${e.plugin.name}: ${e.error}`);
-          });
-        }
-
-        console.log(`✅ ${validFrontend.length} frontend plugins validated\n`);
+        reportFrontendValidation(
+          frontendPlugins.length,
+          frontendErrors,
+          validFrontend,
+        );
 
         expect(frontendErrors).toEqual([]);
 
-        // Step 7: Report summary
-        const total = manifest.backend.length + manifest.frontend.length;
-        const skipped = KNOWN_FAILURES.size;
-        const tested = total - skipped;
-        const succeeded = loaded.length + validFrontend.length;
+        // Step 8: Report summary
+        reportSummary(manifest, loaded.length, validFrontend.length);
 
-        console.log("📊 Summary:");
-        console.log(`   Total plugins: ${total}`);
-        console.log(`   Known failures (skipped): ${skipped}`);
-        console.log(`   Tested: ${tested}`);
-        console.log(`   Succeeded: ${succeeded}`);
-        console.log(
-          `   Success rate: ${((succeeded / tested) * 100).toFixed(1)}%\n`,
-        );
-
-        expect(total).toBeGreaterThan(0);
+        expect(
+          manifest.backend.length + manifest.frontend.length,
+        ).toBeGreaterThan(0);
       } finally {
         // Cleanup
         await rm(tempDir, { recursive: true, force: true });
