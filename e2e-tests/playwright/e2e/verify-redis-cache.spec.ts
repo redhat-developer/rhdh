@@ -56,8 +56,6 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
-    test.setTimeout(120_000);
-
     portForward.stdout.on("data", (data: Buffer | string) => {
       console.log(`Port-forward stdout: ${streamDataToString(data)}`);
     });

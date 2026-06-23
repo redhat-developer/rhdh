@@ -87,6 +87,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE,
+      timeout: 180 * 1000,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/seed.spec.ts",
@@ -110,6 +111,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
+      timeout: 600 * 1000,
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
         // temporarily disable github-happy-path
@@ -173,6 +175,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_RUNTIME_DB,
+      timeout: 600 * 1000,
       workers: 1,
       testMatch: [
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
@@ -181,6 +184,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_RUNTIME,
+      timeout: 900 * 1000,
       workers: 1,
       dependencies: [PW_PROJECT.SHOWCASE_RUNTIME_DB],
       testMatch: [

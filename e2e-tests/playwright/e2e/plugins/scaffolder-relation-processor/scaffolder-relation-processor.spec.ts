@@ -69,7 +69,6 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test("Scaffold a component to test relation processing", async () => {
-    test.setTimeout(130000);
     await scaffolderFlowPage.openSelfServiceFromCatalog();
     await scaffolderFlowPage.fillCreateReactAppTemplateForm(reactAppDetails);
 

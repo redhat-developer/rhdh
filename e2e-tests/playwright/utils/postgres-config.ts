@@ -15,6 +15,7 @@ import { readFileSync, existsSync } from "fs";
 import { Client } from "pg";
 
 import { KubeClient } from "./kube-client";
+import { sleep } from "./poll-until";
 
 /**
  * Convert escaped newlines (\n) to actual newline characters.
@@ -148,11 +149,7 @@ async function dropDatabaseWithRetry(
       console.log(
         `Retry ${attempt}/${maxRetries} for database ${db} after ${delay}ms (${errorMsg})`,
       );
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, delay);
-      });
+      await sleep(delay);
     }
   }
   return false;

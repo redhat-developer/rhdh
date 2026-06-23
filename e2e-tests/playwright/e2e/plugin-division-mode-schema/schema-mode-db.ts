@@ -5,6 +5,7 @@
 import { expect } from "@playwright/test";
 import { Client } from "pg";
 import type { ClientConfig } from "pg";
+import { sleep } from "../../utils/poll-until";
 
 export interface SchemaModeEnv {
   dbHost: string;
@@ -73,11 +74,7 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
         }
 
         const delay = Math.min(2000 * attempt, 10000);
-        await new Promise<void>((resolve) => {
-          setTimeout(() => {
-            resolve();
-          }, delay);
-        });
+        await sleep(delay);
       }
     }
   }

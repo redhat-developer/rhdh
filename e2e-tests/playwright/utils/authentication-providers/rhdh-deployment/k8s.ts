@@ -6,7 +6,8 @@ import * as k8s from "@kubernetes/client-node";
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
-import { hasErrorResponse } from "../../errors";
+import { hasErrorResponse } from "../errors";
+import { sleep } from "../poll-until";
 import {
   BackstageCr,
   currentDirName,
@@ -15,8 +16,8 @@ import {
   isRecord,
   RHDHDeploymentState,
   rootDirName,
-} from "./types";
-import { ensureBackstageCRIsAvailable, waitForDeploymentReady } from "./wait";
+} from "./rhdh-deployment-types";
+import { ensureBackstageCRIsAvailable, waitForDeploymentReady } from "./rhdh-deployment-wait";
 
 export async function readYamlToJson(filePath: string): Promise<unknown> {
   const fileContent = await fs.readFile(filePath, "utf8");
@@ -359,14 +360,13 @@ export async function killRunningProcess(
   console.log("Local production server process killed?", killed);
 
   await new Promise<void>((resolvePromise) => {
-    state.runningProcess?.on("exit", () => {
-      setTimeout(() => {
-        console.log("Process termination timeout reached after 5 seconds.");
-        state.runningProcess = null;
-        resolvePromise();
-      }, 5000);
+    state.runningProcess?.once("exit", () => {
+      resolvePromise();
     });
   });
+  await sleep(5000);
+  console.log("Process termination buffer elapsed.");
+  state.runningProcess = null;
 
   const baseUrl = await getBackstageUrl();
   try {

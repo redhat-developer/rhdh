@@ -1,19 +1,28 @@
 import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
-
-import { hasStatusCode } from "../errors";
-import { findAppConfigMapName, updateConfigMapTitleImpl } from "./configmap";
-import { restartDeploymentImpl } from "./deployment/restart";
-import { getDeploymentPodSelectorImpl, scaleDeploymentImpl } from "./deployment/scale";
-import { waitForDeploymentReadyImpl } from "./deployment/wait";
-import { logDeploymentEventsImpl, logPodEventsImpl } from "./diagnostics/events";
+import { hasStatusCode } from "./errors";
+import {
+  findAppConfigMapName,
+  updateConfigMapTitleImpl,
+} from "./kube-client-configmap";
+import {
+  logDeploymentEventsImpl,
+  logPodEventsImpl,
+} from "./kube-client-diagnostics-events";
 import {
   logPodConditionsForDeploymentImpl,
   logPodContainerLogsImpl,
   logPodConditionsImpl,
-} from "./diagnostics/pods";
-import { logReplicaSetStatusImpl } from "./diagnostics/replicasets";
-import { execPodCommandImpl } from "./exec";
+} from "./kube-client-diagnostics-pods";
+import { logReplicaSetStatusImpl } from "./kube-client-diagnostics-replicasets";
+import { restartDeploymentImpl } from "./kube-client-deployment-restart";
+import { waitForPodsTerminatedImpl } from "./kube-client-deployment-pods";
+import {
+  getDeploymentPodSelectorImpl,
+  scaleDeploymentImpl,
+} from "./kube-client-deployment-scale";
+import { waitForDeploymentReadyImpl } from "./kube-client-deployment-wait";
+import { execPodCommandImpl } from "./kube-client-exec";
 import {
   formatKubeErrorLog,
   getErrorStatusCode,
@@ -21,8 +30,8 @@ import {
   getRhdhDeploymentName,
   PodFailureResult,
   rejectAsError,
-} from "./helpers";
-import { checkPodFailureStatesImpl } from "./pod-failure";
+} from "./kube-client-helpers";
+import { checkPodFailureStatesImpl } from "./kube-client-pod-failure";
 
 export { getRhdhDeploymentName };
 export type { PodFailureResult };
@@ -64,15 +73,22 @@ export class KubeClient {
       this.coreV1Api = this.kc.makeApiClient(k8s.CoreV1Api);
       this.customObjectsApi = this.kc.makeApiClient(k8s.CustomObjectsApi);
     } catch (e) {
-      console.log(`Error initializing KubeClient: ${getKubeApiErrorMessage(e)}`);
+      console.log(
+        `Error initializing KubeClient: ${getKubeApiErrorMessage(e)}`,
+      );
       throw e;
     }
   }
 
   async getConfigMap(configmapName: string, namespace: string) {
     try {
-      console.log(`Getting configmap ${configmapName} from namespace ${namespace}`);
-      return await this.coreV1Api.readNamespacedConfigMap(configmapName, namespace);
+      console.log(
+        `Getting configmap ${configmapName} from namespace ${namespace}`,
+      );
+      return await this.coreV1Api.readNamespacedConfigMap(
+        configmapName,
+        namespace,
+      );
     } catch (e) {
       console.log(formatKubeErrorLog(e));
       throw e;
@@ -90,14 +106,20 @@ export class KubeClient {
   }
 
   findAppConfigMap(namespace: string): Promise<string> {
-    return findAppConfigMapName(this.coreV1Api, (ns) => this.listConfigMaps(ns), namespace);
+    return findAppConfigMapName(
+      this.coreV1Api,
+      (ns) => this.listConfigMaps(ns),
+      namespace,
+    );
   }
 
   async getNamespaceByName(name: string): Promise<k8s.V1Namespace | null> {
     try {
       return (await this.coreV1Api.readNamespace(name)).body;
     } catch (e) {
-      console.log(`Error getting namespace ${name}: ${getKubeApiErrorMessage(e)}`);
+      console.log(
+        `Error getting namespace ${name}: ${getKubeApiErrorMessage(e)}`,
+      );
       throw e;
     }
   }
@@ -108,7 +130,13 @@ export class KubeClient {
     replicas: number,
     maxRetries: number = 3,
   ) {
-    return scaleDeploymentImpl(this.appsApi, deploymentName, namespace, replicas, maxRetries);
+    return scaleDeploymentImpl(
+      this.appsApi,
+      deploymentName,
+      namespace,
+      replicas,
+      maxRetries,
+    );
   }
 
   async getSecret(secretName: string, namespace: string) {
@@ -121,7 +149,11 @@ export class KubeClient {
     }
   }
 
-  async updateConfigMap(configmapName: string, namespace: string, patch: object) {
+  async updateConfigMap(
+    configmapName: string,
+    namespace: string,
+    patch: object,
+  ) {
     try {
       console.log("updateConfigMap called");
       console.log("Namespace: ", namespace);
@@ -129,7 +161,9 @@ export class KubeClient {
       const options = {
         headers: { "Content-type": k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH },
       };
-      console.log(`Updating configmap ${configmapName} in namespace ${namespace}`);
+      console.log(
+        `Updating configmap ${configmapName} in namespace ${namespace}`,
+      );
       await this.coreV1Api.patchNamespacedConfigMap(
         configmapName,
         namespace,
@@ -147,7 +181,11 @@ export class KubeClient {
     }
   }
 
-  updateConfigMapTitle(configMapName: string, namespace: string, newTitle: string) {
+  updateConfigMapTitle(
+    configMapName: string,
+    namespace: string,
+    newTitle: string,
+  ) {
     return updateConfigMapTitleImpl(
       this.coreV1Api,
       (name, ns) => this.getConfigMap(name, ns),
@@ -189,7 +227,9 @@ export class KubeClient {
       if (configMapName === undefined || configMapName === "") {
         throw new Error("ConfigMap metadata.name is required");
       }
-      console.log(`Creating configmap ${configMapName} in namespace ${namespace}`);
+      console.log(
+        `Creating configmap ${configMapName} in namespace ${namespace}`,
+      );
       return await this.coreV1Api.createNamespacedConfigMap(namespace, body);
     } catch (err) {
       console.log(getKubeApiErrorMessage(err));
@@ -241,7 +281,9 @@ export class KubeClient {
       try {
         await this.deleteNamespaceAndWait(namespace);
       } catch (err) {
-        console.log(`Error deleting namespace ${namespace}: ${getKubeApiErrorMessage(err)}`);
+        console.log(
+          `Error deleting namespace ${namespace}: ${getKubeApiErrorMessage(err)}`,
+        );
         throw err;
       }
     }
@@ -272,14 +314,20 @@ export class KubeClient {
     }
   }
 
-  async createOrUpdateSecret(secret: k8s.V1Secret, namespace: string): Promise<void> {
+  async createOrUpdateSecret(
+    secret: k8s.V1Secret,
+    namespace: string,
+  ): Promise<void> {
     const secretName = secret.metadata?.name;
     if (secretName === undefined || secretName === "") {
       throw new Error("Secret metadata.name is required");
     }
 
     try {
-      const existing = await this.coreV1Api.readNamespacedSecret(secretName, namespace);
+      const existing = await this.coreV1Api.readNamespacedSecret(
+        secretName,
+        namespace,
+      );
       const body = existing.body;
       body.data = { ...body.data, ...secret.data };
       await this.coreV1Api.replaceNamespacedSecret(secretName, namespace, body);
@@ -287,7 +335,9 @@ export class KubeClient {
     } catch (err: unknown) {
       const statusCode = getErrorStatusCode(err);
       if (statusCode === 404) {
-        console.log(`Secret ${secretName} not found, creating in namespace ${namespace}`);
+        console.log(
+          `Secret ${secretName} not found, creating in namespace ${namespace}`,
+        );
         await this.createSecret(secret, namespace);
         console.log(`Secret ${secretName} created in namespace ${namespace}`);
       } else {
@@ -336,7 +386,9 @@ export class KubeClient {
   restartDeployment(deploymentName: string, namespace: string) {
     return restartDeploymentImpl(
       (name, ns, replicas) => this.scaleDeployment(name, ns, replicas),
-      (name, ns, replicas, t) => this.waitForDeploymentReady(name, ns, replicas, t),
+      (name, ns, replicas, t) =>
+        this.waitForDeploymentReady(name, ns, replicas, t),
+      (name, ns) => this.waitForPodsTerminated(name, ns),
       (name, ns) => this.logPodConditionsForDeployment(name, ns),
       (name, ns) => this.logDeploymentEvents(name, ns),
       deploymentName,
@@ -344,8 +396,24 @@ export class KubeClient {
     );
   }
 
-  private getDeploymentPodSelector(deploymentName: string, namespace: string): Promise<string> {
-    return getDeploymentPodSelectorImpl(this.appsApi, deploymentName, namespace);
+  waitForPodsTerminated(deploymentName: string, namespace: string) {
+    return waitForPodsTerminatedImpl(
+      this.coreV1Api,
+      (name, ns) => this.getDeploymentPodSelector(name, ns),
+      deploymentName,
+      namespace,
+    );
+  }
+
+  private getDeploymentPodSelector(
+    deploymentName: string,
+    namespace: string,
+  ): Promise<string> {
+    return getDeploymentPodSelectorImpl(
+      this.appsApi,
+      deploymentName,
+      namespace,
+    );
   }
 
   logPodConditionsForDeployment(deploymentName: string, namespace: string) {
@@ -361,8 +429,17 @@ export class KubeClient {
     return logPodConditionsImpl(this.coreV1Api, namespace, labelSelector);
   }
 
-  logPodContainerLogs(namespace: string, labelSelector?: string, containerName?: string) {
-    return logPodContainerLogsImpl(this.coreV1Api, namespace, labelSelector, containerName);
+  logPodContainerLogs(
+    namespace: string,
+    labelSelector?: string,
+    containerName?: string,
+  ) {
+    return logPodContainerLogsImpl(
+      this.coreV1Api,
+      namespace,
+      labelSelector,
+      containerName,
+    );
   }
 
   logPodEvents(namespace: string, labelSelector?: string) {
@@ -374,10 +451,18 @@ export class KubeClient {
   }
 
   logReplicaSetStatus(deploymentName: string, namespace: string) {
-    return logReplicaSetStatusImpl(this.coreV1Api, this.appsApi, deploymentName, namespace);
+    return logReplicaSetStatusImpl(
+      this.coreV1Api,
+      this.appsApi,
+      deploymentName,
+      namespace,
+    );
   }
 
-  async getServiceByLabel(namespace: string, labelSelector: string): Promise<k8s.V1Service[]> {
+  async getServiceByLabel(
+    namespace: string,
+    labelSelector: string,
+  ): Promise<k8s.V1Service[]> {
     try {
       const response = await this.coreV1Api.listNamespacedService(
         namespace,
@@ -403,6 +488,13 @@ export class KubeClient {
     command: string[],
     timeout: number = 60000,
   ): Promise<{ stdout: string; stderr: string }> {
-    return execPodCommandImpl(this.kc, podName, namespace, containerName, command, timeout);
+    return execPodCommandImpl(
+      this.kc,
+      podName,
+      namespace,
+      containerName,
+      command,
+      timeout,
+    );
   }
 }

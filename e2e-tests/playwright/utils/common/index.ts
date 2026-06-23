@@ -1,12 +1,13 @@
 import * as fs from "fs";
 
-import { expect, test, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { authenticator } from "otplib";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
 import { SETTINGS_PAGE_COMPONENTS } from "../../support/page-objects/page-obj";
 import { getErrorMessage } from "../errors";
 import { UIhelper } from "../ui-helper";
+import { waitForNextTotpWindow, waitForRhdhReady } from "../wait-for-rhdh-ready";
 import {
   handleGitHubPopupLogin,
   handleGitlabPopupLogin,
@@ -36,9 +37,14 @@ export class Common {
     this.uiHelper = new UIhelper(page);
   }
 
+  private async waitForAppReady(timeout = 120_000): Promise<void> {
+    await waitForRhdhReady(this.page.request, timeout);
+    await this.waitForLoad(timeout);
+  }
+
   async loginAsGuest() {
     await this.page.goto("/");
-    await this.waitForLoad(240000);
+    await this.waitForAppReady();
     // RHIDP-2043: Remove dialog handler after dynamic Guest Authentication Provider plugin is created
     this.page.on("dialog", async (dialog) => {
       console.log(`Dialog message: ${dialog.message()}`);
@@ -86,7 +92,6 @@ export class Common {
 
     await this.page.click('[value="Sign in"]');
     await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
-    test.setTimeout(130000);
     if (
       (await this.uiHelper.isTextVisible(
         "The two-factor code you entered has already been used",
@@ -96,14 +101,11 @@ export class Common {
         3000,
       ))
     ) {
-      // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 60_000);
-      });
+      await waitForNextTotpWindow();
       await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
     }
 
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
     /* oxlint-enable playwright/no-raw-locators */
   }
 
@@ -132,7 +134,7 @@ export class Common {
     password: string = process.env.GH_USER_PASS ?? "",
   ) {
     await this.page.goto("/");
-    await this.waitForLoad(240000);
+    await this.waitForAppReady();
     await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
     await this.logintoKeycloak(userid, password);
     await this.uiHelper.waitForSideBarVisible();
@@ -148,7 +150,7 @@ export class Common {
       await this.page.context().addCookies(cookies);
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
-      await this.waitForLoad(12000);
+      await this.waitForAppReady(30_000);
       await this.uiHelper.clickButton(
         t["core-components"][lang]["signIn.title"],
       );
@@ -156,7 +158,7 @@ export class Common {
     } else {
       await this.logintoGithub(userid);
       await this.page.goto("/");
-      await this.waitForLoad(240000);
+      await this.waitForAppReady();
       await this.uiHelper.clickButton(
         t["core-components"][lang]["signIn.title"],
       );

@@ -63,7 +63,6 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       description: "authentication",
     });
 
-    test.info().setTimeout(600 * 1000);
     // load default configs from yaml files
     await deployment.loadAllConfigs();
     // setup playwright helpers
@@ -152,7 +151,6 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test.beforeEach(() => {
-    test.info().setTimeout(600 * 1000);
     console.log(
       `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
     );

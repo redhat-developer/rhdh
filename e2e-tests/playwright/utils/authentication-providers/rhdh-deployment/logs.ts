@@ -1,9 +1,8 @@
-import stream from "stream";
-
 import * as k8s from "@kubernetes/client-node";
-
-import { getErrorMessage, hasErrorResponse } from "../../errors";
-import { RHDHDeploymentState, sleep, syncedLogRegex } from "./types";
+import stream from "stream";
+import { getErrorMessage, hasErrorResponse } from "../errors";
+import { pollUntil } from "../poll-until";
+import { RHDHDeploymentState, syncedLogRegex } from "./rhdh-deployment-types";
 
 async function resolvePodName(
   state: RHDHDeploymentState,
@@ -65,7 +64,6 @@ async function streamPodLogsUntilMatch(
   timeoutMs: number,
 ): Promise<boolean> {
   console.log(`Reading logs for pod ${podName}`);
-  const startTime = Date.now();
   let found = false;
   const log = new k8s.Log(state.kc);
   const logStream = new stream.PassThrough();
@@ -93,17 +91,15 @@ async function streamPodLogsUntilMatch(
     timestamps: false,
   });
 
-  while (Date.now() - startTime < timeoutMs) {
-    if (found) {
-      break;
-    }
-    await sleep(1000);
-  }
-  if (found) {
-    logStream.end();
-    logStream.removeAllListeners();
-  }
-  return found;
+  await pollUntil(() => Promise.resolve(found), {
+    timeoutMs,
+    intervalMs: 500,
+    label: `Log pattern ${searchString} in pod ${podName}`,
+  });
+
+  logStream.end();
+  logStream.removeAllListeners();
+  return true;
 }
 
 export async function followPodLogs(
@@ -116,9 +112,16 @@ export async function followPodLogs(
   const resolvedPodName = await resolvePodName(state, podName, podLabels);
 
   try {
-    return await streamPodLogsUntilMatch(state, resolvedPodName, searchString, timeoutMs);
+    return await streamPodLogsUntilMatch(
+      state,
+      resolvedPodName,
+      searchString,
+      timeoutMs,
+    );
   } catch (error) {
-    const message = hasErrorResponse(error) ? error.body?.message : getErrorMessage(error);
+    const message = hasErrorResponse(error)
+      ? error.body?.message
+      : getErrorMessage(error);
     console.log(`Error: ${message}`);
     throw new Error(
       `Timeout waiting for string "${searchString}" in logs after ${timeoutMs}ms. Error: ${message}`,
@@ -169,15 +172,13 @@ export async function followLocalLogs(
     console.log("Local log stream ended.");
   });
 
-  const startTime = Date.now();
-  while (Date.now() - startTime < timeoutMs) {
-    if (found) {
-      break;
-    }
-    await sleep(1000);
-  }
+  await pollUntil(() => Promise.resolve(found), {
+    timeoutMs,
+    intervalMs: 500,
+    label: `Log pattern ${searchString} in local process output`,
+  });
 
-  return found;
+  return true;
 }
 
 export function followLogs(
@@ -201,5 +202,4 @@ export async function waitForSynced(state: RHDHDeploymentState): Promise<void> {
   const synced = await followLogs(state, syncedLogRegex, 120000);
   const { expect } = await import("@playwright/test");
   expect(synced).toBe(true);
-  await sleep(2000);
 }

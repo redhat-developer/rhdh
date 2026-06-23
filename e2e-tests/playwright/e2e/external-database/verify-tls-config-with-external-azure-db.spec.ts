@@ -71,7 +71,6 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
   for (const config of azureConfigurations) {
     test.describe.serial(`Azure DB ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async () => {
-        test.setTimeout(180000);
         test.info().annotations.push({
           type: "database",
           description: config.host?.split(".")[0] || "unknown",
@@ -86,7 +85,6 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
 
       test("Configure and restart deployment", async () => {
         const kubeClient = new KubeClient();
-        test.setTimeout(600000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
           user: azureUser,

@@ -70,7 +70,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   });
 
   test("Scaffold a component using the annotator template", async () => {
-    test.setTimeout(130000);
     await scaffolderFlowPage.openSelfServiceFromCatalog();
     await scaffolderFlowPage.verifySelfServiceHeading();
     await scaffolderFlowPage.fillCreateReactAppTemplateForm(reactAppDetails);
