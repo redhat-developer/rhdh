@@ -6804,7 +6804,7 @@ __metadata:
     express: "npm:4.22.2"
     express-promise-router: "npm:4.1.1"
     json-2-csv: "npm:5.5.10"
-    knex: "npm:3.1.0"
+    knex: "npm:3.2.10"
     luxon: "npm:3.7.2"
     msw: "npm:1.3.5"
     node-fetch: "npm:2.7.0"
@@ -15991,8 +15991,8 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:0.14.7"
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.3.1"
     "@red-hat-developer-hub/plugin-utils": "workspace:*"
-    "@scalprum/core": "npm:0.9.3"
-    "@scalprum/react-core": "npm:0.11.2"
+    "@scalprum/core": "npm:0.10.0"
+    "@scalprum/react-core": "npm:0.13.0"
     "@scalprum/react-test-utils": "npm:0.3.0"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
@@ -16657,7 +16657,7 @@ __metadata:
     "@types/global-agent": "npm:2.1.3"
     app: "workspace:*"
     app-next: "workspace:*"
-    better-sqlite3: "npm:12.6.2"
+    better-sqlite3: "npm:12.11.1"
     global-agent: "npm:3.0.0"
     jose: "npm:5.10.0"
     mongodb: "npm:7.3.0"
@@ -16848,18 +16848,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:12.6.2":
-  version: 12.6.2
-  resolution: "better-sqlite3@npm:12.6.2"
-  dependencies:
-    bindings: "npm:^1.5.0"
-    node-gyp: "npm:latest"
-    prebuild-install: "npm:^7.1.1"
-  checksum: 10c0/a58fb3f7a7f5469ba0b8de0855aa67396ff34f951a6975746e4b21987f530be6a34427d1d4bd5958cf48c67ed7ba1df038ae163d2ee9d944237f6b8112f6640d
-  languageName: node
-  linkType: hard
-
-"better-sqlite3@npm:^12.0.0":
+"better-sqlite3@npm:12.11.1, better-sqlite3@npm:^12.0.0":
   version: 12.11.1
   resolution: "better-sqlite3@npm:12.11.1"
   dependencies:
@@ -26016,7 +26005,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3, knex@npm:^3.0.0":
+"knex@npm:3, knex@npm:3.2.10, knex@npm:^3.0.0":
   version: 3.2.10
   resolution: "knex@npm:3.2.10"
   dependencies:
@@ -26056,45 +26045,6 @@ __metadata:
   bin:
     knex: bin/cli.js
   checksum: 10c0/b2dbb6a01f520a5775e6885ae09d9e35f998e1d0eea9aa283e5125d563ebade39b69d9e362368384415195f3db9cb3ac415b97875532e2ad3099d0f9685a6a37
-  languageName: node
-  linkType: hard
-
-"knex@npm:3.1.0":
-  version: 3.1.0
-  resolution: "knex@npm:3.1.0"
-  dependencies:
-    colorette: "npm:2.0.19"
-    commander: "npm:^10.0.0"
-    debug: "npm:4.3.4"
-    escalade: "npm:^3.1.1"
-    esm: "npm:^3.2.25"
-    get-package-type: "npm:^0.1.0"
-    getopts: "npm:2.3.0"
-    interpret: "npm:^2.2.0"
-    lodash: "npm:^4.17.21"
-    pg-connection-string: "npm:2.6.2"
-    rechoir: "npm:^0.8.0"
-    resolve-from: "npm:^5.0.0"
-    tarn: "npm:^3.0.2"
-    tildify: "npm:2.0.0"
-  peerDependenciesMeta:
-    better-sqlite3:
-      optional: true
-    mysql:
-      optional: true
-    mysql2:
-      optional: true
-    pg:
-      optional: true
-    pg-native:
-      optional: true
-    sqlite3:
-      optional: true
-    tedious:
-      optional: true
-  bin:
-    knex: bin/cli.js
-  checksum: 10c0/d8a1f99fad143c6057e94759b2ae700ae661a0b0b2385f643011962ef501dcc7b32cfdb5bda66ef81283ca56f13630f47691c579ce66ad0e8128e209533c3785
   languageName: node
   linkType: hard
 
