@@ -70,11 +70,20 @@ export class UIhelper {
       force: false,
     },
   ) {
-    const selector = `${UI_HELPER_ELEMENTS.MuiButtonLabel}`;
-    const button = this.page
-      .locator(selector)
+    const roleButton = this.page
+      .getByRole("button", { name: label, exact: options.exact })
+      .first();
+    const legacyButton = this.page
+      .locator(UI_HELPER_ELEMENTS.MuiButtonLabel)
       .getByText(label, { exact: options.exact })
       .first();
+
+    let button = roleButton;
+    try {
+      await roleButton.waitFor({ state: "visible", timeout: 2000 });
+    } catch {
+      button = legacyButton;
+    }
 
     if (options?.force) {
       // eslint-disable-next-line playwright/no-force-option
