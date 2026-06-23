@@ -259,7 +259,7 @@ async function deployWithOperator(
 
   // 1. Create app-config ConfigMap (generated from runtime-config.ts)
   const appConfigYaml = generateAppConfigYaml(runtimeUrl);
-  await kubeClient.coreV1Api.createNamespacedConfigMap(namespace, {
+  await kubeClient.createConfigMap(namespace, {
     metadata: { name: "app-config-rhdh" },
     data: { "app-config-rhdh.yaml": appConfigYaml },
   });
@@ -282,7 +282,7 @@ async function deployWithOperator(
   // connectivity). An empty plugins list gives us a clean RHDH with only
   // built-in plugins — no external config needed.
   const dpYaml = generateDynamicPluginsYaml();
-  await kubeClient.coreV1Api.createNamespacedConfigMap(namespace, {
+  await kubeClient.createConfigMap(namespace, {
     metadata: { name: "dynamic-plugins" },
     data: { "dynamic-plugins.yaml": dpYaml },
   });
