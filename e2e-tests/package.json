@@ -23,11 +23,14 @@
     "showcase-localization-fr": "LOCALE=fr playwright test --project=showcase-localization-fr",
     "showcase-localization-it": "LOCALE=it playwright test --project=showcase-localization-it",
     "showcase-localization-ja": "LOCALE=ja playwright test --project=showcase-localization-ja",
-    "oxlint:check": "oxlint --type-aware --type-check .",
-    "oxfmt:check": "oxfmt --check .",
-    "oxfmt:fix": "oxfmt --write .",
+    "lint:check": "oxlint --type-aware --type-check .",
+    "lint:fix": "oxlint --type-aware --fix .",
     "postinstall": "playwright install chromium",
-    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always"
+    "tsc": "oxlint --type-aware --type-check .",
+    "tsc:check": "oxlint --type-aware --type-check .",
+    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
+    "prettier:check": "oxfmt --check .",
+    "prettier:fix": "oxfmt ."
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.2",
