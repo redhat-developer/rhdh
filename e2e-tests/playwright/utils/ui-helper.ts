@@ -70,11 +70,11 @@ export class UIhelper {
       force: false,
     },
   ) {
-    const selector = `${UI_HELPER_ELEMENTS.MuiButtonLabel}`;
     const button = this.page
-      .locator(selector)
-      .getByText(label, { exact: options.exact })
+      .getByRole("button", { name: label, exact: options.exact })
       .first();
+
+    await expect(button).toBeVisible();
 
     if (options?.force) {
       // eslint-disable-next-line playwright/no-force-option
@@ -289,7 +289,7 @@ export class UIhelper {
         .getByText(arg, { exact: options.exact })
         .first();
 
-      notVisibleCheck = options?.notVisible;
+      notVisibleCheck = options?.notVisible ?? false;
     } else {
       linkLocator = this.page.locator(`div[aria-label="${arg.label}"] a`);
       notVisibleCheck = false;
@@ -449,8 +449,9 @@ export class UIhelper {
     try {
       await elementLocator.scrollIntoViewIfNeeded();
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.warn(
-        `Warning: Could not scroll element into view. Error: ${error.message}`,
+        `Warning: Could not scroll element into view. Error: ${message}`,
       );
     }
     await expect(elementLocator).toBeVisible();
@@ -506,7 +507,8 @@ export class UIhelper {
         `Verification failed: Partial text "${partialText}" not found in any elements matching selector "${selector}".`,
       );
     } catch (error) {
-      console.error(error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(message);
       throw error;
     }
   }

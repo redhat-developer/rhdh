@@ -2,7 +2,8 @@
   "extends": ["//"],
   "tasks": {
     "tsc": {
-      "outputs": ["../../dist-types/packages/backend/**"]
+      "outputs": ["../../dist-types/packages/backend/**"],
+      "env": ["NODE_OPTIONS=--max-old-space-size=8192"]
     }
   }
 }
