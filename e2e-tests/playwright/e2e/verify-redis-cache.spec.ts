@@ -1,10 +1,8 @@
-import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
-
 import { expect, test } from "@support/coverage/test";
-import Redis from "ioredis";
-
 import { Common } from "../utils/common";
-import { UIhelper } from "../utils/ui-helper";
+import Redis from "ioredis";
+import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
+import { TechDocsPage } from "../support/pages/techdocs-page";
 
 function streamDataToString(data: Buffer | string): string {
   return typeof data === "string" ? data : data.toString();
@@ -20,12 +18,12 @@ test.describe("Verify Redis Cache DB", () => {
 
   test.describe.configure({ mode: "serial" });
   let common: Common;
-  let uiHelper: UIhelper;
+  let techDocsPage: TechDocsPage;
   let portForward: ChildProcessWithoutNullStreams;
   let redis: Redis;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    techDocsPage = new TechDocsPage(page);
     common = new Common(page);
     await common.loginAsGuest();
 
@@ -42,7 +40,9 @@ test.describe("Verify Redis Cache DB", () => {
     console.log("Waiting for port-forward to be ready...");
     await new Promise<void>((resolve, reject) => {
       portForward.stdout.on("data", (data: Buffer | string) => {
-        if (streamDataToString(data).includes("Forwarding from 127.0.0.1:6379")) {
+        if (
+          streamDataToString(data).includes("Forwarding from 127.0.0.1:6379")
+        ) {
           resolve();
         }
       });
@@ -62,13 +62,11 @@ test.describe("Verify Redis Cache DB", () => {
       console.log(`Port-forward stdout: ${streamDataToString(data)}`);
     });
 
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar("Docs");
-    await uiHelper.clickLink("Red Hat Developer Hub");
+    await techDocsPage.openDocFromFavorites("Red Hat Developer Hub");
 
     // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
     await expect(async () => {
-      await uiHelper.verifyHeading("rhdh");
+      await techDocsPage.verifyDocHeading("rhdh");
     }).toPass({
       intervals: [3_000],
       timeout: 60_000,
@@ -80,7 +78,9 @@ test.describe("Verify Redis Cache DB", () => {
     );
     console.log("Verifying Redis keys...");
     await expect(async () => {
-      const keys = (await redis.keys("*")).filter((k) => k.includes("techdocs"));
+      const keys = (await redis.keys("*")).filter((k) =>
+        k.includes("techdocs"),
+      );
       expect(keys).toContainEqual(expect.stringContaining("techdocs"));
       const key = keys[0];
       console.log(`Verifying key format: ${key}`);
@@ -98,6 +98,8 @@ test.describe("Verify Redis Cache DB", () => {
     console.log("Killing port-forward process with ID:", portForward.pid);
     portForward.kill("SIGKILL");
     console.log("Killing remaining port-forward process.");
-    exec(`ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`);
+    exec(
+      `ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`,
+    );
   });
 });

@@ -139,41 +139,6 @@ export const KUBERNETES_COMPONENTS = {
 };
 
 /**
- * BACKSTAGE_SHOWCASE_COMPONENTS - Table pagination selectors
- * @deprecated Use RHDH_INSTANCE_TABLE from ./rhdh-instance-table instead
- */
-export const BACKSTAGE_SHOWCASE_COMPONENTS = {
-  // Legacy selectors - maintained for backward compatibility
-  /** ✅ These are already semantic - using aria-label */
-  tableNextPage: 'button[aria-label="Next Page"]',
-  tablePreviousPage: 'button[aria-label="Previous Page"]',
-  tableLastPage: 'button[aria-label="Last Page"]',
-  tableFirstPage: 'button[aria-label="First Page"]',
-  /** @deprecated Use getTableRows() method */
-  tableRows: 'table[class*="MuiTable-root-"] tbody tr',
-  /** @deprecated Use pagination role-based selector */
-  tablePageSelectBox: 'div[class*="MuiTablePagination-input"]',
-
-  getNextPageButton: (page: Page): Locator =>
-    page.getByRole("button", { name: "Next Page" }),
-
-  getPreviousPageButton: (page: Page): Locator =>
-    page.getByRole("button", { name: "Previous Page" }),
-
-  getLastPageButton: (page: Page): Locator =>
-    page.getByRole("button", { name: "Last Page" }),
-
-  getFirstPageButton: (page: Page): Locator =>
-    page.getByRole("button", { name: "First Page" }),
-
-  getTableRows: (page: Page): Locator =>
-    SemanticSelectors.table(page).locator("tbody tr"),
-
-  getTableRow: (page: Page, text: string | RegExp): Locator =>
-    SemanticSelectors.tableRow(page, text),
-};
-
-/**
  * SETTINGS_PAGE_COMPONENTS - Settings page selectors
  */
 export const SETTINGS_PAGE_COMPONENTS = {

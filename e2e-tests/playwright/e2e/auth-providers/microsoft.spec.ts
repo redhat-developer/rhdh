@@ -1,11 +1,16 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
+import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  createManagedBrowserSession,
+  type ManagedBrowserSession,
+} from "../../support/fixtures/managed-browser";
 let page: Page;
 let context: BrowserContext;
+let browserSession: ManagedBrowserSession;
 
 /* SUPPORTED RESOLVERS
 MICOROSFT:
@@ -18,7 +23,7 @@ MICOROSFT:
 // oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure Microsoft Provider", async () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let settingsPage: SettingsPage;
 
   const namespace = "albarbaro-test-namespace-msgraph";
   const appConfigMap = "app-config-rhdh";
@@ -54,9 +59,11 @@ test.describe("Configure Microsoft Provider", async () => {
     await deployment.loadAllConfigs();
 
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    browserSession = await createManagedBrowserSession(browser, testInfo);
+    context = browserSession.context;
+    page = browserSession.page;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    settingsPage = new SettingsPage(page);
 
     // expect some expected variables
     expect(process.env.DEFAULT_USER_PASSWORD_2!).toBeDefined();
@@ -161,8 +168,8 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("TEST Zeus");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
   });
@@ -188,8 +195,8 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("TEST Zeus");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
 
@@ -198,7 +205,7 @@ test.describe("Configure Microsoft Provider", async () => {
       process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login2).toBe("Login successful");
-    await uiHelper.verifyAlertErrorMessage(
+    await settingsPage.verifySignInError(
       NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
     );
     await context.clearCookies();
@@ -224,8 +231,8 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("TEST Zeus");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
   });
@@ -251,8 +258,8 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("TEST Zeus");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
 
@@ -262,7 +269,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login2).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
+    await settingsPage.verifySignInError(
       NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
     );
   });
@@ -304,8 +311,8 @@ test.describe("Configure Microsoft Provider", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("TEST Zeus");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("TEST Zeus");
     await common.signOut();
   });
 
@@ -387,8 +394,8 @@ test.describe("Configure Microsoft Provider", async () => {
   });
 
   test.afterAll(async () => {
-    if (page !== undefined) {
-      await teardownBrowser(page, test.info());
+    if (browserSession !== undefined) {
+      await browserSession.dispose();
     }
     console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();

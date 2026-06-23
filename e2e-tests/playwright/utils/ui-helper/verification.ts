@@ -1,5 +1,4 @@
 import { expect, Locator, Page } from "@playwright/test";
-
 import { getErrorMessage } from "../errors";
 import { DEFAULT_VERIFY_LINK_OPTIONS } from "./defaults";
 
@@ -44,7 +43,11 @@ export async function verifyTextVisible(
   await expect(locator).toBeVisible({ timeout });
 }
 
-export async function verifyLinkVisible(page: Page, text: string, timeout = 10000): Promise<void> {
+export async function verifyLinkVisible(
+  page: Page,
+  text: string,
+  timeout = 10000,
+): Promise<void> {
   const locator = page.locator(`a:has-text("${text}")`);
   await expect(locator).toBeVisible({ timeout });
 }
@@ -69,7 +72,7 @@ export async function verifyRowsInTable(
 }
 
 export async function waitForTextDisappear(page: Page, text: string) {
-  await page.waitForSelector(`text=${text}`, { state: "detached" });
+  await page.getByText(text).waitFor({ state: "detached" });
 }
 
 async function verifyTextInLocator(
@@ -89,13 +92,21 @@ async function verifyTextInLocator(
   try {
     await elementLocator.scrollIntoViewIfNeeded();
   } catch (error) {
-    console.warn(`Warning: Could not scroll element into view. Error: ${getErrorMessage(error)}`);
+    console.warn(
+      `Warning: Could not scroll element into view. Error: ${getErrorMessage(error)}`,
+    );
   }
   await expect(elementLocator).toBeVisible();
 }
 
-export async function verifyTextInSelector(page: Page, selector: string, expectedText: string) {
-  const elementLocator = page.locator(selector).getByText(expectedText, { exact: true });
+export async function verifyTextInSelector(
+  page: Page,
+  selector: string,
+  expectedText: string,
+) {
+  const elementLocator = page
+    .locator(selector)
+    .getByText(expectedText, { exact: true });
 
   try {
     await elementLocator.waitFor({ state: "visible" });
@@ -109,7 +120,9 @@ export async function verifyTextInSelector(page: Page, selector: string, expecte
         `Expected text "${expectedText}" not found. Actual content: "${actualText}".`,
       );
     }
-    console.log(`Text "${expectedText}" verified successfully in selector: ${selector}`);
+    console.log(
+      `Text "${expectedText}" verified successfully in selector: ${selector}`,
+    );
   } catch (error) {
     const allTextContent = await page.locator(selector).allTextContents();
     console.error(
@@ -131,7 +144,9 @@ export async function verifyPartialTextInSelector(
     for (let i = 0; i < count; i++) {
       const textContent = await elements.nth(i).textContent();
       if (textContent !== null && textContent.includes(partialText)) {
-        console.log(`Found partial text: ${partialText} in element: ${textContent}`);
+        console.log(
+          `Found partial text: ${partialText} in element: ${textContent}`,
+        );
         return;
       }
     }
@@ -151,15 +166,25 @@ export async function verifyColumnHeading(
   exact: boolean = true,
 ) {
   for (const rowText of rowTexts) {
-    const rowLocator = page.getByRole("columnheader").getByText(rowText, { exact }).first();
+    const rowLocator = page
+      .getByRole("columnheader")
+      .getByText(rowText, { exact })
+      .first();
     await rowLocator.waitFor({ state: "visible" });
     await rowLocator.scrollIntoViewIfNeeded();
     await expect(rowLocator).toBeVisible();
   }
 }
 
-export async function verifyHeading(page: Page, heading: string | RegExp, timeout: number = 20000) {
-  const headingLocator = page.getByRole("heading").filter({ hasText: heading }).first();
+export async function verifyHeading(
+  page: Page,
+  heading: string | RegExp,
+  timeout: number = 20000,
+) {
+  const headingLocator = page
+    .getByRole("heading")
+    .filter({ hasText: heading })
+    .first();
 
   await headingLocator.waitFor({ state: "visible", timeout });
   await expect(headingLocator).toBeVisible();
@@ -171,11 +196,18 @@ export async function verifyParagraph(page: Page, paragraph: string) {
   await expect(headingLocator).toBeVisible();
 }
 
-export async function waitForTitle(page: Page, text: string, level: number = 1) {
-  await page.waitForSelector(`h${level}:has-text("${text}")`);
+export async function waitForTitle(
+  page: Page,
+  text: string,
+  level: number = 1,
+) {
+  await expect(page.locator(`h${level}:has-text("${text}")`)).toBeVisible();
 }
 
-export async function verifyAlertErrorMessage(page: Page, message: string | RegExp) {
+export async function verifyAlertErrorMessage(
+  page: Page,
+  message: string | RegExp,
+) {
   const alert = page.getByRole("alert");
   await alert.waitFor();
   await expect(alert).toHaveText(message);

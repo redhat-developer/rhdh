@@ -1,11 +1,15 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-
-import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
+import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
+import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  createManagedBrowserSession,
+  type ManagedBrowserSession,
+} from "../../support/fixtures/managed-browser";
 let page: Page;
 let context: BrowserContext;
+let browserSession: ManagedBrowserSession;
 
 /* SUPORTED RESOLVERS
 GITLAB:
@@ -18,7 +22,7 @@ GITLAB:
 // oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure GitLab Provider", async () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let settingsPage: SettingsPage;
   let gitlabHelper: GitLabHelper;
   let oauthAppId: number | null = null;
 
@@ -56,9 +60,11 @@ test.describe("Configure GitLab Provider", async () => {
     await deployment.loadAllConfigs();
 
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    browserSession = await createManagedBrowserSession(browser, testInfo);
+    context = browserSession.context;
+    page = browserSession.page;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    settingsPage = new SettingsPage(page);
 
     // expect some expected variables
     expect(process.env.AUTH_PROVIDERS_GITLAB_HOST!).toBeDefined();
@@ -83,7 +89,9 @@ test.describe("Configure GitLab Provider", async () => {
       true,
     );
     oauthAppId = oauthApp.id;
-    console.log(`[TEST] GitLab OAuth application created - ID: ${oauthApp.application_id}`);
+    console.log(
+      `[TEST] GitLab OAuth application created - ID: ${oauthApp.application_id}`,
+    );
 
     // clean old namespaces
     await deployment.deleteNamespaceIfExists();
@@ -114,8 +122,14 @@ test.describe("Configure GitLab Provider", async () => {
       "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
       process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG!,
     );
-    await deployment.addSecretData("AUTH_PROVIDERS_GITLAB_CLIENT_ID", oauthApp.application_id);
-    await deployment.addSecretData("AUTH_PROVIDERS_GITLAB_CLIENT_SECRET", oauthApp.secret);
+    await deployment.addSecretData(
+      "AUTH_PROVIDERS_GITLAB_CLIENT_ID",
+      oauthApp.application_id,
+    );
+    await deployment.addSecretData(
+      "AUTH_PROVIDERS_GITLAB_CLIENT_SECRET",
+      oauthApp.secret,
+    );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GITLAB_TOKEN",
       process.env.AUTH_PROVIDERS_GITLAB_TOKEN!,
@@ -139,15 +153,20 @@ test.describe("Configure GitLab Provider", async () => {
 
   test.beforeEach(() => {
     test.info().setTimeout(60 * 1000);
-    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
+    console.log(
+      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
+    );
   });
 
   test("Login with GitLab default resolver", async () => {
-    const login = await common.gitlabLogin("user1", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.gitlabLogin(
+      "user1",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("user1");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("user1");
     await common.signOut();
     await context.clearCookies();
   });
@@ -155,7 +174,13 @@ test.describe("Configure GitLab Provider", async () => {
   test(`Ingestion of GitLab users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     await expect
       .poll(
-        () => deployment.checkUserIsIngestedInCatalog(["user1", "user2", "user3", "Administrator"]),
+        () =>
+          deployment.checkUserIsIngestedInCatalog([
+            "user1",
+            "user2",
+            "user3",
+            "Administrator",
+          ]),
         { timeout: 120_000 },
       )
       .toBe(true);
@@ -176,33 +201,61 @@ test.describe("Configure GitLab Provider", async () => {
 
     expect(await deployment.checkUserIsInGroup("root", "group1")).toBe(true);
 
-    expect(await deployment.checkUserIsInGroup("user1", "group1-nested")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user2", "group1-nested")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("root", "group1-nested")).toBe(true);
-
-    expect(await deployment.checkUserIsInGroup("user3", "group1-nested-nested_2")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("root", "group1-nested-nested_2")).toBe(true);
-
-    expect(await deployment.checkGroupIsChildOfGroup("group1", "my-org")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("my-org", "group1")).toBe(true);
-
-    expect(await deployment.checkGroupIsChildOfGroup("all", "my-org")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("my-org", "all")).toBe(true);
-
-    expect(await deployment.checkGroupIsChildOfGroup("group1-nested", "group1")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("group1", "group1-nested")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user1", "group1-nested")).toBe(
+      true,
+    );
+    expect(await deployment.checkUserIsInGroup("user2", "group1-nested")).toBe(
+      true,
+    );
+    expect(await deployment.checkUserIsInGroup("root", "group1-nested")).toBe(
+      true,
+    );
 
     expect(
-      await deployment.checkGroupIsChildOfGroup("group1-nested-nested_2", "group1-nested"),
+      await deployment.checkUserIsInGroup("user3", "group1-nested-nested_2"),
     ).toBe(true);
     expect(
-      await deployment.checkGroupIsParentOfGroup("group1-nested", "group1-nested-nested_2"),
+      await deployment.checkUserIsInGroup("root", "group1-nested-nested_2"),
+    ).toBe(true);
+
+    expect(await deployment.checkGroupIsChildOfGroup("group1", "my-org")).toBe(
+      true,
+    );
+    expect(await deployment.checkGroupIsParentOfGroup("my-org", "group1")).toBe(
+      true,
+    );
+
+    expect(await deployment.checkGroupIsChildOfGroup("all", "my-org")).toBe(
+      true,
+    );
+    expect(await deployment.checkGroupIsParentOfGroup("my-org", "all")).toBe(
+      true,
+    );
+
+    expect(
+      await deployment.checkGroupIsChildOfGroup("group1-nested", "group1"),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup("group1", "group1-nested"),
+    ).toBe(true);
+
+    expect(
+      await deployment.checkGroupIsChildOfGroup(
+        "group1-nested-nested_2",
+        "group1-nested",
+      ),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup(
+        "group1-nested",
+        "group1-nested-nested_2",
+      ),
     ).toBe(true);
   });
 
   test.afterAll(async () => {
-    if (page !== undefined) {
-      await teardownBrowser(page, test.info());
+    if (browserSession !== undefined) {
+      await browserSession.dispose();
     }
     console.log("[TEST] Starting cleanup...");
 
@@ -212,7 +265,10 @@ test.describe("Configure GitLab Provider", async () => {
         await gitlabHelper.deleteOAuthApplication(oauthAppId);
         console.log("[TEST] GitLab OAuth application deleted successfully");
       } catch (error) {
-        console.error("[TEST] Failed to delete GitLab OAuth application:", error);
+        console.error(
+          "[TEST] Failed to delete GitLab OAuth application:",
+          error,
+        );
       }
     }
 

@@ -1,11 +1,16 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
+import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  createManagedBrowserSession,
+  type ManagedBrowserSession,
+} from "../../support/fixtures/managed-browser";
 let page: Page;
 let context: BrowserContext;
+let browserSession: ManagedBrowserSession;
 
 /* SUPPORTED RESOLVERS
 OIDC:
@@ -21,7 +26,7 @@ OIDC:
 // oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure OIDC provider (using RHBK)", async () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let settingsPage: SettingsPage;
 
   const namespace = "albarbaro-test-namespace-oidc";
   const appConfigMap = "app-config-rhdh";
@@ -62,9 +67,11 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // load default configs from yaml files
     await deployment.loadAllConfigs();
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    browserSession = await createManagedBrowserSession(browser, testInfo);
+    context = browserSession.context;
+    page = browserSession.page;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    settingsPage = new SettingsPage(page);
 
     // initialize keycloak helper
     console.log("[TEST] Initializing Keycloak helper...");
@@ -158,15 +165,12 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
 
-    await uiHelper.hideQuickstartIfVisible();
+    await settingsPage.hideQuickstartIfVisible();
 
-    // Click "Show more" button to display metadata info
-    await page.getByTitle("Show more").click();
-    // Verify Metadata text is present
-    await uiHelper.verifyText("RHDH Metadata");
+    await settingsPage.verifyRhdhMetadata(page);
 
     await common.signOut();
   });
@@ -191,8 +195,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
@@ -215,8 +219,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
@@ -239,8 +243,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
 
     const login2 = await common.keycloakLogin(
@@ -249,7 +253,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login2).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
+    await settingsPage.verifySignInError(
       NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
     );
     await keycloakHelper.initialize();
@@ -275,8 +279,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
 
     const login2 = await common.keycloakLogin(
@@ -284,8 +288,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       process.env.DEFAULT_USER_PASSWORD!,
     );
     expect(login2).toBe("Login successful");
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Atena Minerva");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Atena Minerva");
     await common.signOut();
   });
 
@@ -308,8 +312,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Atena Minerva");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Atena Minerva");
     await common.signOut();
   });
 
@@ -350,8 +354,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
@@ -403,7 +407,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
-    await uiHelper.goToPageUrl("/", "Select a sign-in method");
+    await settingsPage.goToPageUrl("/", "Select a sign-in method");
     // Scope to the main content area to get only sign-in method card headers
     const signInMethodsContainer = page.getByRole("main");
     const singInMethods = await signInMethodsContainer
@@ -420,8 +424,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     expect(oidcLogin).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
 
     expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
@@ -447,7 +451,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    await uiHelper.hideQuickstartIfVisible();
+    await settingsPage.hideQuickstartIfVisible();
 
     const ghLogin = await common.githubLoginFromSettingsPage(
       "rhdhqeauth1",
@@ -459,8 +463,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await page.getByTitle("Sign out from GitHub").click();
 
     // Sign out for OIDC
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
     await context.clearCookies();
   });
@@ -487,7 +491,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyTextVisible(
+    await settingsPage.verifyTextVisible(
       "Logging out due to inactivity",
       false,
       60000,
@@ -527,16 +531,18 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.clickButtonByText("Don't log me out", { timeout: 60000 });
+    await settingsPage.clickButtonByText("Don't log me out", {
+      timeout: 60000,
+    });
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
   test.afterAll(async () => {
-    if (page !== undefined) {
-      await teardownBrowser(page, test.info());
+    if (browserSession !== undefined) {
+      await browserSession.dispose();
     }
     console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();

@@ -1,10 +1,10 @@
 import { test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { waitForRhdhReady } from "../utils/wait-for-rhdh-ready";
+import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 
 test.describe("Smoke test", { tag: "@smoke" }, () => {
-  let uiHelper: UIhelper;
+  let rhdhHomePage: RhdhHomePage;
   let common: Common;
 
   test.beforeAll(() => {
@@ -16,12 +16,12 @@ test.describe("Smoke test", { tag: "@smoke" }, () => {
 
   test.beforeEach(async ({ page, request }) => {
     await waitForRhdhReady(request);
-    uiHelper = new UIhelper(page);
+    rhdhHomePage = new RhdhHomePage(page);
     common = new Common(page);
     await common.loginAsGuest();
   });
 
   test("Verify the RHDH instance homepage renders", async () => {
-    await uiHelper.verifyHeading("Welcome back!");
+    await rhdhHomePage.verifyWelcomeHeading();
   });
 });

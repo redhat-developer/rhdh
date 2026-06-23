@@ -1,8 +1,8 @@
 import { test } from "@support/coverage/test";
-
-import { CatalogImport } from "../../support/pages/catalog-import";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { CatalogImport } from "../../support/pages/catalog-import";
+import { SelfServicePage } from "../../support/pages/self-service-page";
+import { ScaffolderFlowPage } from "../../support/pages/scaffolder-flow-page";
 
 // https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request
 // Pre-req: Enable roadiehq-scaffolder-backend-module-http-request-dynamic plugin
@@ -12,10 +12,12 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
     () => (process.env.JOB_NAME ?? "").includes("osd-gcp"),
     "skipping due to RHDHBUGS-555 on OSD Env",
   );
-  let uiHelper: UIhelper;
+  let selfServicePage: SelfServicePage;
+  let scaffolderFlowPage: ScaffolderFlowPage;
   let common: Common;
   let catalogImport: CatalogImport;
-  const template = "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
+  const template =
+    "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
 
   test.beforeAll(() => {
     test.info().annotations.push({
@@ -25,7 +27,8 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
   });
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    selfServicePage = new SelfServicePage(page);
+    scaffolderFlowPage = new ScaffolderFlowPage(page);
     common = new Common(page);
     await common.loginAsGuest();
     catalogImport = new CatalogImport(page);
@@ -33,20 +36,11 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
 
   test("Create a software template using http-request plugin", async () => {
     test.setTimeout(130000);
-    await uiHelper.goToSelfServicePage();
-    await uiHelper.verifyHeading("Templates");
-    await uiHelper.clickButton("Import an existing Git repository");
+    await selfServicePage.open();
+    await selfServicePage.verifyTemplatesHeading();
+    await selfServicePage.clickImportGitRepository();
     await catalogImport.registerExistingComponent(template, false);
 
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Template");
-    await uiHelper.searchInputPlaceholder("Test HTTP Request");
-    await uiHelper.clickLink("Test HTTP Request");
-    await uiHelper.verifyHeading("Test HTTP Request");
-    await uiHelper.clickLink("Launch Template");
-    await uiHelper.verifyHeading("Self-service");
-    await uiHelper.clickButton("Create");
-    //Checking for Http Status 200
-    await uiHelper.verifyText("200", false);
+    await scaffolderFlowPage.runHttpRequestTemplateFlow();
   });
 });

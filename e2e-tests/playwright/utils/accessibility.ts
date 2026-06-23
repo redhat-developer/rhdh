@@ -18,4 +18,19 @@ export async function runAccessibilityTests(
     body: JSON.stringify(accessibilityScanResults.violations, null, 2),
     contentType: "application/json",
   });
+
+  const criticalOrSeriousViolations =
+    accessibilityScanResults.violations.filter(
+      (violation) =>
+        violation.impact === "critical" || violation.impact === "serious",
+    );
+
+  if (criticalOrSeriousViolations.length > 0) {
+    const summary = criticalOrSeriousViolations
+      .map((violation) => `${violation.id} (${violation.impact})`)
+      .join(", ");
+    throw new Error(
+      `Accessibility scan found ${criticalOrSeriousViolations.length} critical/serious violation(s): ${summary}`,
+    );
+  }
 }

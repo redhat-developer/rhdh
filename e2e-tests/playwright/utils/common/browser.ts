@@ -31,15 +31,15 @@ export function parseAuthStateCookies(content: string): Cookie[] {
 }
 
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
+  const videoDir = `test-results/${path
+    .parse(testInfo.file)
+    .name.replace(".spec", "")}/${testInfo.titlePath[1] ?? "suite"}`;
+
   const context = await browser.newContext({
-    ...(testInfo.retry > 0 && {
-      recordVideo: {
-        dir: `test-results/${path
-          .parse(testInfo.file)
-          .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
-        size: { width: 1280, height: 720 },
-      },
-    }),
+    recordVideo: {
+      dir: videoDir,
+      size: { width: 1280, height: 720 },
+    },
   });
   const page = await context.newPage();
   await startCoverageForPage(page);
