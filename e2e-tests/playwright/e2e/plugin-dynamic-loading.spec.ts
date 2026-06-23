@@ -98,13 +98,29 @@ test.describe("Plugin Dynamic Loading", () => {
         // Step 2: Run install-dynamic-plugins to extract all plugins
         const installCmd = `npx @red-hat-developer-hub/cli-module-install-dynamic-plugins ${dynamicPluginsRoot}`;
 
-        execSync(installCmd, {
-          env: {
-            ...process.env,
-            CATALOG_INDEX_IMAGE: catalogIndexImage,
-          },
-          stdio: "pipe",
-        });
+        try {
+          execSync(installCmd, {
+            env: {
+              ...process.env,
+              CATALOG_INDEX_IMAGE: catalogIndexImage,
+            },
+            stdio: "inherit", // Show real-time output for debugging
+          });
+        } catch (error) {
+          const exitCode = error.status || error.code || "unknown";
+          const stderr = error.stderr?.toString() || "";
+          const stdout = error.stdout?.toString() || "";
+
+          throw new Error(
+            `Failed to install plugins from catalog index.\n` +
+              `Command: ${installCmd}\n` +
+              `Exit code: ${exitCode}\n` +
+              `Image: ${catalogIndexImage}\n` +
+              `Stdout: ${stdout || "(empty)"}\n` +
+              `Stderr: ${stderr || "(empty)"}\n` +
+              `Error: ${error.message}`,
+          );
+        }
 
         console.log("✅ Plugins downloaded successfully\n");
 
