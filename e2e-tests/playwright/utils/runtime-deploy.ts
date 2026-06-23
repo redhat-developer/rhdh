@@ -38,6 +38,7 @@ import {
   generateAppConfigYaml,
   generateDynamicPluginsYaml,
   generateBackstageCR,
+  imageRefToString,
 } from "./runtime-config";
 import { resolveInstallMethod, base64Encode, base64Decode } from "./helper";
 
@@ -481,7 +482,7 @@ export async function ensureRuntimeDeployed(): Promise<void> {
       `  routerBase:   ${routerBase}\n` +
       `  image:        ${config.image.registry}/${config.image.repository}:${config.image.tag}\n` +
       (config.catalogIndex
-        ? `  catalogIndex: ${config.catalogIndex.registry}/${config.catalogIndex.repository}:${config.catalogIndex.tag}\n`
+        ? `  catalogIndex: ${imageRefToString(config.catalogIndex)}\n`
         : `  catalogIndex: (chart/operator default)\n`),
   );
 

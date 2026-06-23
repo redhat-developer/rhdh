@@ -313,9 +313,16 @@ async function removeSchemaModePatchedEnvVars(
   const backstageIdx = containers.findIndex(
     (c) => c.name === "backstage-backend",
   );
-  const backstageContainer = containers[backstageIdx];
 
-  if (!backstageContainer?.env) {
+  if (backstageIdx === -1) {
+    console.warn(
+      "backstage-backend container not found, skipping schema-mode env var removal",
+    );
+    return;
+  }
+
+  const backstageContainer = containers[backstageIdx];
+  if (!backstageContainer.env) {
     return;
   }
 

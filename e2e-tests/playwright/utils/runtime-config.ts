@@ -24,12 +24,27 @@ const dynamicPluginsPvcSize = "5Gi";
 
 // ─── Resolved configuration ─────────────────────────────────────────────────
 
+/** Parsed image reference with registry, repository, and tag or digest. */
+export interface ImageRef {
+  registry: string;
+  repository: string;
+  /** Tag value (e.g. "1.10") or digest (e.g. "sha256:abc123"). */
+  tag: string;
+  /** ":" for tag references, "@" for digest references. */
+  separator: ":" | "@";
+}
+
+/** Reconstruct a full image reference from its parsed components. */
+export function imageRefToString(ref: ImageRef): string {
+  return `${ref.registry}/${ref.repository}${ref.separator}${ref.tag}`;
+}
+
 export interface RuntimeDeployConfig {
   releaseName: string;
   namespace: string;
   routerBase: string;
   image: { registry: string; repository: string; tag: string };
-  catalogIndex?: { registry: string; repository: string; tag: string };
+  catalogIndex?: ImageRef;
   helm?: { chartUrl: string; chartVersion: string };
 }
 
@@ -108,11 +123,7 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  * the full image reference into CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO,
  * and CATALOG_INDEX_TAG.
  */
-export function parseCatalogIndexImage(imageRef: string): {
-  registry: string;
-  repository: string;
-  tag: string;
-} {
+export function parseCatalogIndexImage(imageRef: string): ImageRef {
   // Handle @sha256: digest references (e.g. quay.io/rhdh/image@sha256:abc123)
   const atIdx = imageRef.indexOf("@");
   if (atIdx !== -1) {
@@ -128,6 +139,7 @@ export function parseCatalogIndexImage(imageRef: string): {
       registry: withoutDigest.slice(0, slashIdx),
       repository: withoutDigest.slice(slashIdx + 1),
       tag: digest,
+      separator: "@",
     };
   }
 
@@ -150,6 +162,7 @@ export function parseCatalogIndexImage(imageRef: string): {
     registry: withoutTag.slice(0, slashIdx),
     repository: withoutTag.slice(slashIdx + 1),
     tag,
+    separator: ":",
   };
 }
 
@@ -385,7 +398,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
   // The `containers` field targets only the install-dynamic-plugins init
   // container so the env var doesn't leak into the main backstage-backend.
   if (config.catalogIndex) {
-    const fullRef = `${config.catalogIndex.registry}/${config.catalogIndex.repository}:${config.catalogIndex.tag}`;
+    const fullRef = imageRefToString(config.catalogIndex);
     envs.push({
       name: "CATALOG_INDEX_IMAGE",
       value: fullRef,
