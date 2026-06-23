@@ -1,10 +1,13 @@
-import { execFile, exec } from "child_process";
-
-import { type JsonObject } from "@backstage/types";
 import { expect } from "@playwright/test";
-
+import { execFile, exec } from "child_process";
+import { type JsonObject } from "@backstage/types";
+import {
+  Log,
+  type LogRequest,
+  type EventStatus,
+  type EventSeverityLevel,
+} from "./logs";
 import { getBackstageDeploySelector } from "../../utils/helper";
-import { Log, type LogRequest, type EventStatus, type EventSeverityLevel } from "./logs";
 
 function formatError(error: unknown): string {
   if (error instanceof Error) {
@@ -106,7 +109,7 @@ export const LogUtils = {
     return new Promise((resolve, reject) => {
       execFile(command, args, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
-          reject(`Error: ${error.message}`);
+          reject(new Error(error.message));
           return;
         }
         if (stderr) {
@@ -135,7 +138,10 @@ export const LogUtils = {
         console.log(`Command executed successfully on attempt ${attempt + 1}`);
         return output;
       } catch (error) {
-        console.error(`Error executing command on attempt ${attempt + 1}:`, error);
+        console.error(
+          `Error executing command on attempt ${attempt + 1}:`,
+          error,
+        );
         attempt++;
       }
     }
@@ -152,7 +158,7 @@ export const LogUtils = {
     return new Promise((resolve, reject) => {
       exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
-          reject(`Error: ${error.message}`);
+          reject(new Error(error.message));
           return;
         }
         if (stderr) {
@@ -175,9 +181,10 @@ export const LogUtils = {
       return await LogUtils.executeCommand("oc", args);
     } catch (error) {
       console.error("Error listing pods:", error);
-      throw new Error(`Failed to list pods in namespace "${namespace}": ${formatError(error)}`, {
-        cause: error,
-      });
+      throw new Error(
+        `Failed to list pods in namespace "${namespace}": ${formatError(error)}`,
+        { cause: error },
+      );
     }
   },
 
@@ -203,7 +210,7 @@ export const LogUtils = {
    */
   async getPodLogsWithGrep(
     filterWords: string[] = [],
-    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
+    namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
     maxRetries: number = 4,
     retryDelay: number = 2000,
   ): Promise<string> {
@@ -219,10 +226,14 @@ export const LogUtils = {
     let attempt = 0;
     while (attempt <= maxRetries) {
       try {
-        console.log(`Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`);
+        console.log(
+          `Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`,
+        );
         const output = await LogUtils.executeShellCommand(grepCommand);
 
-        const logLines = output.split("\n").filter((line) => line.trim() !== "");
+        const logLines = output
+          .split("\n")
+          .filter((line) => line.trim() !== "");
         if (logLines.length > 0) {
           console.log("Matching log line found:", logLines[0]);
           return logLines[0];
@@ -232,7 +243,10 @@ export const LogUtils = {
           `No matching logs found for filter ${JSON.stringify(filterWords)} on attempt ${attempt + 1}. Retrying...`,
         );
       } catch (error) {
-        console.error(`Error fetching logs on attempt ${attempt + 1}:`, formatError(error));
+        console.error(
+          `Error fetching logs on attempt ${attempt + 1}:`,
+          formatError(error),
+        );
       }
 
       attempt++;
@@ -253,11 +267,13 @@ export const LogUtils = {
    * Logs in to OpenShift using a token and server URL.
    */
   async loginToOpenShift(): Promise<void> {
-    const token = process.env.K8S_CLUSTER_TOKEN || "";
-    const server = process.env.K8S_CLUSTER_URL || "";
+    const token = process.env.K8S_CLUSTER_TOKEN ?? "";
+    const server = process.env.K8S_CLUSTER_URL ?? "";
 
-    if (!token || !server) {
-      throw new Error("Environment variables K8S_CLUSTER_TOKEN and K8S_CLUSTER_URL must be set.");
+    if (token === "" || server === "") {
+      throw new Error(
+        "Environment variables K8S_CLUSTER_TOKEN and K8S_CLUSTER_URL must be set.",
+      );
     }
 
     const command = "oc";
@@ -290,22 +306,32 @@ export const LogUtils = {
     plugin: string = "catalog",
     severityLevel: EventSeverityLevel = "medium",
     filterWords: string[] = [],
-    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
+    namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
   ): Promise<void> {
     const filterWordsAll = [eventId, status, ...filterWords];
-    if (request?.method) filterWordsAll.push(request.method);
-    if (request?.url) filterWordsAll.push(request.url);
+    if (request?.method !== undefined && request.method !== "") {
+      filterWordsAll.push(request.method);
+    }
+    if (request?.url !== undefined && request.url !== "") {
+      filterWordsAll.push(request.url);
+    }
     try {
-      const actualLog = await LogUtils.getPodLogsWithGrep(filterWordsAll, namespace);
+      const actualLog = await LogUtils.getPodLogsWithGrep(
+        filterWordsAll,
+        namespace,
+      );
 
       let parsedLog: Log;
       try {
         parsedLog = parseLogFromJson(actualLog);
       } catch (parseError) {
         console.error("Failed to parse log JSON. Log content:", actualLog);
-        throw new Error(`Invalid JSON received for log: ${formatError(parseError)}`, {
-          cause: parseError,
-        });
+        throw new Error(
+          `Invalid JSON received for log: ${formatError(parseError)}`,
+          {
+            cause: parseError,
+          },
+        );
       }
 
       const expectedLog: Partial<Log> = {

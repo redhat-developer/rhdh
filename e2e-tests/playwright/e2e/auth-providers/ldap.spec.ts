@@ -1,9 +1,8 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-
-import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
+import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 
 let page: Page;
 let browserContext: BrowserContext;
@@ -86,26 +85,69 @@ test.describe("Configure LDAP Provider", () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
       await deployment.addSecretData("BASE_URL", backstageUrl);
       await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
 
-    await deployment.addSecretData("DEFAULT_USER_PASSWORD", process.env.DEFAULT_USER_PASSWORD!);
-    await deployment.addSecretData("RHBK_LDAP_REALM", process.env.RHBK_LDAP_REALM!);
-    await deployment.addSecretData("RHBK_LDAP_CLIENT_ID", process.env.RHBK_LDAP_CLIENT_ID!);
-    await deployment.addSecretData("RHBK_LDAP_CLIENT_SECRET", process.env.RHBK_LDAP_CLIENT_SECRET!);
-    await deployment.addSecretData("LDAP_BIND_DN", process.env.RHBK_LDAP_USER_BIND!);
-    await deployment.addSecretData("LDAP_BIND_SECRET", process.env.RHBK_LDAP_USER_PASSWORD!);
-    await deployment.addSecretData("LDAP_TARGET_URL", process.env.RHBK_LDAP_TARGET!);
-    await deployment.addSecretData("DEFAULT_USER_PASSWORD", process.env.DEFAULT_USER_PASSWORD!);
-    await deployment.addSecretData("DEFAULT_USER_PASSWORD_2", process.env.DEFAULT_USER_PASSWORD_2!);
-    await deployment.addSecretData("LDAP_GROUPS_DN", "OU=Groups,OU=RHDH Local,DC=rhdh,DC=test");
-    await deployment.addSecretData("LDAP_USERS_DN", "OU=Users,OU=RHDH Local,DC=rhdh,DC=test");
+    await deployment.addSecretData(
+      "DEFAULT_USER_PASSWORD",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
+    await deployment.addSecretData(
+      "RHBK_LDAP_REALM",
+      process.env.RHBK_LDAP_REALM!,
+    );
+    await deployment.addSecretData(
+      "RHBK_LDAP_CLIENT_ID",
+      process.env.RHBK_LDAP_CLIENT_ID!,
+    );
+    await deployment.addSecretData(
+      "RHBK_LDAP_CLIENT_SECRET",
+      process.env.RHBK_LDAP_CLIENT_SECRET!,
+    );
+    await deployment.addSecretData(
+      "LDAP_BIND_DN",
+      process.env.RHBK_LDAP_USER_BIND!,
+    );
+    await deployment.addSecretData(
+      "LDAP_BIND_SECRET",
+      process.env.RHBK_LDAP_USER_PASSWORD!,
+    );
+    await deployment.addSecretData(
+      "LDAP_TARGET_URL",
+      process.env.RHBK_LDAP_TARGET!,
+    );
+    await deployment.addSecretData(
+      "DEFAULT_USER_PASSWORD",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
+    await deployment.addSecretData(
+      "DEFAULT_USER_PASSWORD_2",
+      process.env.DEFAULT_USER_PASSWORD_2!,
+    );
+    await deployment.addSecretData(
+      "LDAP_GROUPS_DN",
+      "OU=Groups,OU=RHDH Local,DC=rhdh,DC=test",
+    );
+    await deployment.addSecretData(
+      "LDAP_USERS_DN",
+      "OU=Users,OU=RHDH Local,DC=rhdh,DC=test",
+    );
     await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL!);
     await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM!);
-    await deployment.addSecretData("RHBK_CLIENT_ID", process.env.RHBK_CLIENT_ID!);
-    await deployment.addSecretData("RHBK_CLIENT_SECRET", process.env.RHBK_CLIENT_SECRET!);
+    await deployment.addSecretData(
+      "RHBK_CLIENT_ID",
+      process.env.RHBK_CLIENT_ID!,
+    );
+    await deployment.addSecretData(
+      "RHBK_CLIENT_SECRET",
+      process.env.RHBK_CLIENT_SECRET!,
+    );
 
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
@@ -116,8 +158,14 @@ test.describe("Configure LDAP Provider", () => {
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!,
     );
 
-    await deployment.addSecretData("PINGFEDERATE_BASE_URL", process.env.PINGFEDERATE_BASE_URL!);
-    await deployment.addSecretData("PINGFEDERATE_CLIENT_ID", process.env.PINGFEDERATE_CLIENT_ID!);
+    await deployment.addSecretData(
+      "PINGFEDERATE_BASE_URL",
+      process.env.PINGFEDERATE_BASE_URL!,
+    );
+    await deployment.addSecretData(
+      "PINGFEDERATE_CLIENT_ID",
+      process.env.PINGFEDERATE_CLIENT_ID!,
+    );
     await deployment.addSecretData(
       "PINGFEDERATE_CLIENT_SECRET",
       process.env.PINGFEDERATE_CLIENT_SECRET!,
@@ -147,7 +195,9 @@ test.describe("Configure LDAP Provider", () => {
         "AllowE2EJobs",
       );
       console.log(`[TEST] NSG access configured successfully`);
-      console.log(`[TEST] Rule created: ${nsgConfig.ruleName} for IP: ${nsgConfig.publicIp}`);
+      console.log(
+        `[TEST] Rule created: ${nsgConfig.ruleName} for IP: ${nsgConfig.publicIp}`,
+      );
 
       // Store cleanup function for afterAll
       nsgCleanup = nsgConfig.cleanup;
@@ -164,9 +214,11 @@ test.describe("Configure LDAP Provider", () => {
     await deployment.waitForSynced();
   });
 
-  test.beforeEach(async () => {
+  test.beforeEach(() => {
     test.info().setTimeout(600 * 1000);
-    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
+    console.log(
+      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
+    );
   });
 
   test("Login with LDAP oidcLdapUuidMatchingAnnotation resolver", async () => {
@@ -183,7 +235,12 @@ test.describe("Configure LDAP Provider", () => {
 
   test(`Ingestion of LDAP users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     expect(
-      await deployment.checkUserIsIngestedInCatalog(["User 1", "User 2", "User 3", "RHDH Admin"]),
+      await deployment.checkUserIsIngestedInCatalog([
+        "User 1",
+        "User 2",
+        "User 3",
+        "RHDH Admin",
+      ]),
     ).toBe(true);
 
     expect(
@@ -196,16 +253,34 @@ test.describe("Configure LDAP Provider", () => {
         "SubAdmins",
       ]),
     ).toBe(true);
-    expect(await deployment.checkUserIsInGroup("rhdh-admin", "Admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user1", "All_Users")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user2", "All_Users")).toBe(true);
-
-    expect(await deployment.checkGroupIsChildOfGroup("testsubgroup", "testgroup")).toBe(true);
-    expect(await deployment.checkGroupIsChildOfGroup("testsubsubgroup", "testsubgroup")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("testgroup", "testsubgroup")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("testsubgroup", "testsubsubgroup")).toBe(
+    expect(await deployment.checkUserIsInGroup("rhdh-admin", "Admins")).toBe(
       true,
     );
+    expect(await deployment.checkUserIsInGroup("user1", "All_Users")).toBe(
+      true,
+    );
+    expect(await deployment.checkUserIsInGroup("user2", "All_Users")).toBe(
+      true,
+    );
+
+    expect(
+      await deployment.checkGroupIsChildOfGroup("testsubgroup", "testgroup"),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsChildOfGroup(
+        "testsubsubgroup",
+        "testsubgroup",
+      ),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup("testgroup", "testsubgroup"),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup(
+        "testsubgroup",
+        "testsubsubgroup",
+      ),
+    ).toBe(true);
   });
 
   test("Login with PingFederate OIDC (with LDAP catalog)", async () => {
@@ -220,7 +295,10 @@ test.describe("Configure LDAP Provider", () => {
     // Wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.pingFederateLogin("user1", process.env.RHBK_LDAP_USER_PASSWORD!);
+    const login = await common.pingFederateLogin(
+      "user1",
+      process.env.RHBK_LDAP_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();
@@ -231,12 +309,16 @@ test.describe("Configure LDAP Provider", () => {
   test("Login with PingFederate OIDC (with LDAP catalog) with sub as ldap_uuid", async () => {
     await deployment.enablePingFederateOIDCLogin();
 
-    deployment.setAppConfigProperty("auth.providers.oidc.production.signIn.resolvers", [
-      {
-        resolver: "oidcLdapUuidMatchingAnnotation",
-        ldapUuidKey: "sub", // match sub claim as required by OIDC spec
-      },
-    ]);
+    deployment.setAppConfigProperty(
+      "auth.providers.oidc.production.signIn.resolvers",
+      [
+        {
+          resolver: "oidcLdapUuidMatchingAnnotation",
+          // match sub claim as required by OIDC spec
+          ldapUuidKey: "sub",
+        },
+      ],
+    );
 
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
@@ -246,7 +328,10 @@ test.describe("Configure LDAP Provider", () => {
     // Wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.pingFederateLogin("user1", process.env.RHBK_LDAP_USER_PASSWORD!);
+    const login = await common.pingFederateLogin(
+      "user1",
+      process.env.RHBK_LDAP_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();

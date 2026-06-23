@@ -7,7 +7,7 @@ test.describe("Smoke test", { tag: "@smoke" }, () => {
   let uiHelper: UIhelper;
   let common: Common;
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",

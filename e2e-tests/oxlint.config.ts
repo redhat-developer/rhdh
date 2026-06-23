@@ -5,6 +5,7 @@ export default defineConfig({
   categories: {
     correctness: "error",
     suspicious: "error",
+    pedantic: "error",
   },
   options: {
     typeAware: true,
@@ -17,6 +18,7 @@ export default defineConfig({
     "test-results/**",
     "coverage/**",
     ".local-test/**",
+    "scripts/**",
   ],
   rules: {
     "typescript/no-floating-promises": "error",
@@ -26,6 +28,7 @@ export default defineConfig({
     "typescript/no-unsafe-call": "error",
     "typescript/no-unsafe-return": "error",
     "typescript/strict-void-return": "error",
+    "typescript/prefer-readonly-parameter-types": "off",
     "check-file/filename-naming-convention": [
       "error",
       {
@@ -64,6 +67,58 @@ export default defineConfig({
       files: ["playwright/e2e/auth-providers/**/*.spec.ts"],
       rules: {
         "typescript/strict-void-return": "off",
+        "typescript/no-misused-promises": "off",
+      },
+    },
+    {
+      files: ["**/*.spec.ts", "**/*.test.ts"],
+      rules: {
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+      },
+    },
+    {
+      files: [
+        "playwright/utils/kube-client.ts",
+        "playwright/utils/kube-client-*.ts",
+        "playwright/utils/common.ts",
+        "playwright/utils/common-auth-popup.ts",
+        "playwright/utils/ui-helper.ts",
+        "playwright/utils/ui-helper/**/*.ts",
+        "playwright/utils/api-helper.ts",
+        "playwright/utils/postgres-config.ts",
+        "playwright/utils/authentication-providers/rhdh-deployment.ts",
+        "playwright/utils/authentication-providers/rhdh-deployment-*.ts",
+        "playwright/utils/authentication-providers/msgraph-helper.ts",
+        "playwright/utils/authentication-providers/msgraph-helper-nsg.ts",
+        "playwright/e2e/audit-log/log-utils.ts",
+        "playwright/e2e/plugin-division-mode-schema/schema-mode-setup.ts",
+        "playwright/e2e/plugin-division-mode-schema/schema-mode-db.ts",
+        "playwright/support/selectors/semantic-selectors*.ts",
+        "playwright/data/rbac-constants.ts",
+      ],
+      rules: {
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+        "eslint/max-depth": "off",
+      },
+    },
+    {
+      files: ["playwright/e2e/localization/locale.ts"],
+      rules: {
+        "import/max-dependencies": "off",
+      },
+    },
+    {
+      files: ["playwright/utils/kube-client.ts"],
+      rules: {
+        "import/max-dependencies": "off",
+      },
+    },
+    {
+      files: ["playwright/utils/authentication-providers/rhdh-deployment.ts"],
+      rules: {
+        "import/max-dependencies": "off",
       },
     },
     {

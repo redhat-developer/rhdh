@@ -7,10 +7,8 @@
  * Tests are opt-in - they skip when SCHEMA_MODE_* environment variables are not set.
  */
 
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-
 import { test, expect } from "@support/coverage/test";
-
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import { setPortForwardRestarter } from "./schema-mode-db";
@@ -25,7 +23,13 @@ function startPortForward(
   pfResource: string,
 ): Promise<ChildProcessWithoutNullStreams> {
   return new Promise<ChildProcessWithoutNullStreams>((resolve, reject) => {
-    const proc = spawn("oc", ["port-forward", "-n", pfNamespace, pfResource, "5432:5432"]);
+    const proc = spawn("oc", [
+      "port-forward",
+      "-n",
+      pfNamespace,
+      pfResource,
+      "5432:5432",
+    ]);
 
     const timeout = setTimeout(() => {
       proc.kill("SIGTERM");
@@ -54,7 +58,9 @@ function startPortForward(
   });
 }
 
-function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Promise<void> {
+function killPortForward(
+  proc: ChildProcessWithoutNullStreams | undefined,
+): Promise<void> {
   if (!proc || proc.exitCode !== null) return Promise.resolve();
 
   return new Promise<void>((resolve) => {
@@ -77,9 +83,10 @@ function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Prom
 }
 
 test.describe("Verify pluginDivisionMode: schema", () => {
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME || "developer-hub";
-  const installMethod = process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
+  const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
+  const releaseName = process.env.RELEASE_NAME ?? "developer-hub";
+  const installMethod =
+    process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
 
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
   let testSetup: SchemaModeTestSetup;
@@ -87,14 +94,24 @@ test.describe("Verify pluginDivisionMode: schema", () => {
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
 
+    const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
+    const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
+    const dbHost = process.env.SCHEMA_MODE_DB_HOST;
+    const adminPassword = process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD;
+    const dbPassword = process.env.SCHEMA_MODE_DB_PASSWORD;
+
     const hasPortForwardMeta =
-      !!process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE &&
-      !!process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
-    const hasDirectHost = !!process.env.SCHEMA_MODE_DB_HOST;
+      pfNamespace !== undefined &&
+      pfNamespace !== "" &&
+      pfResource !== undefined &&
+      pfResource !== "";
+    const hasDirectHost = dbHost !== undefined && dbHost !== "";
 
     if (
-      !process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD ||
-      !process.env.SCHEMA_MODE_DB_PASSWORD ||
+      adminPassword === undefined ||
+      adminPassword === "" ||
+      dbPassword === undefined ||
+      dbPassword === "" ||
       (!hasPortForwardMeta && !hasDirectHost)
     ) {
       testInfo.skip(
@@ -110,10 +127,9 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     );
 
     if (hasPortForwardMeta) {
-      const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE!;
-      const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE!;
-
-      console.log(`Starting port-forward: ${pfResource} in ${pfNamespace} -> localhost:5432`);
+      console.log(
+        `Starting port-forward: ${pfResource} in ${pfNamespace} -> localhost:5432`,
+      );
 
       portForwardProcess = await startPortForward(pfNamespace, pfResource);
       console.log("Port-forward established");
@@ -144,11 +160,14 @@ test.describe("Verify pluginDivisionMode: schema", () => {
   });
 
   test("Verify database user has restricted permissions", async () => {
-    const hasRestrictedPerms = await testSetup.verifyRestrictedDatabasePermissions();
+    const hasRestrictedPerms =
+      await testSetup.verifyRestrictedDatabasePermissions();
     expect(hasRestrictedPerms).toBe(true);
   });
 
-  test("Verify RHDH is accessible with schema mode", async ({ page }, testInfo) => {
+  test("Verify RHDH is accessible with schema mode", async ({
+    page,
+  }, testInfo) => {
     const kubeClient = new KubeClient();
     const deploymentName = testSetup.getDeploymentName();
 
@@ -160,7 +179,10 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       const readyReplicas = deployment.body.status?.readyReplicas ?? 0;
 
       if (readyReplicas < 1) {
-        testInfo.skip(true, "Deployment is not ready (cluster capacity or PVC issue)");
+        testInfo.skip(
+          true,
+          "Deployment is not ready (cluster capacity or PVC issue)",
+        );
         return;
       }
     } catch (error) {
@@ -172,6 +194,8 @@ test.describe("Verify pluginDivisionMode: schema", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+    console.log(
+      "RHDH is accessible - plugins successfully created schemas in schema mode",
+    );
   });
 });

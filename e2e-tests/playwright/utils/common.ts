@@ -1,44 +1,31 @@
-import * as fs from "fs";
-import * as path from "path";
-
-import { test, Browser, Cookie, expect, Page, TestInfo, Locator } from "@playwright/test";
-import { authenticator } from "otplib";
-
-import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale";
-import { startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
-import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
-import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
-import { getErrorMessage } from "./errors";
 import { UIhelper } from "./ui-helper";
+import { authenticator } from "otplib";
+import { test, Page } from "@playwright/test";
+import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
+import * as fs from "fs";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../e2e/localization/locale";
+import { getErrorMessage } from "./errors";
+import { parseAuthStateCookies } from "./common-browser";
+import {
+  handleGitHubPopupLogin,
+  handleGitlabPopupLogin,
+  handleKeycloakPopupLogin,
+  handleMicrosoftAzurePopupLogin,
+  handlePingFederatePopupLogin,
+} from "./common-auth-popup";
+
+export { setupBrowser, teardownBrowser } from "./common-browser";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-function parseAuthStateCookies(content: string): Cookie[] {
-  const parsed: unknown = JSON.parse(content);
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    !("cookies" in parsed) ||
-    !Array.isArray(parsed.cookies)
-  ) {
-    throw new TypeError("Invalid auth state: expected object with cookies array");
-  }
-  const rawCookies: unknown[] = parsed.cookies;
-  const cookies = rawCookies.filter(
-    (cookie): cookie is Cookie =>
-      typeof cookie === "object" &&
-      cookie !== null &&
-      "name" in cookie &&
-      typeof cookie.name === "string" &&
-      "value" in cookie &&
-      typeof cookie.value === "string",
-  );
-  if (cookies.length !== rawCookies.length) {
-    throw new TypeError("Invalid auth state: cookies must have name and value");
-  }
-  return cookies;
-}
+const LOADING_INDICATOR_SELECTORS = [
+  'div[class*="MuiLinearProgress-root"]',
+  '[class*="MuiCircularProgress-root"]',
+] as const;
 
 export class Common {
   page: Page;
@@ -53,20 +40,22 @@ export class Common {
   async loginAsGuest() {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    // TODO - Remove it after https://issues.redhat.com/browse/RHIDP-2043. A Dynamic plugin for Guest Authentication Provider needs to be created
+    // RHIDP-2043: Remove dialog handler after dynamic Guest Authentication Provider plugin is created
     this.page.on("dialog", async (dialog) => {
       console.log(`Dialog message: ${dialog.message()}`);
       await dialog.accept();
     });
 
     await this.uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.guestProvider.enter"]);
+    await this.uiHelper.clickButton(
+      t["core-components"][lang]["signIn.guestProvider.enter"],
+    );
     await this.uiHelper.waitForSideBarVisible();
   }
 
   async waitForLoad(timeout = 120000) {
-    for (const item of Object.values(WAIT_OBJECTS)) {
-      await this.page.waitForSelector(item, {
+    for (const selector of LOADING_INDICATOR_SELECTORS) {
+      await this.page.waitForSelector(selector, {
         state: "hidden",
         timeout: timeout,
       });
@@ -90,7 +79,7 @@ export class Common {
         : userid === process.env.GH_USER2_ID
           ? process.env.GH_USER2_PASS
           : undefined;
-    if (!password) {
+    if (password === undefined || password === "") {
       throw new Error("Invalid User ID");
     }
     await this.page.fill("#password", password);
@@ -102,7 +91,10 @@ export class Common {
       (await this.uiHelper.isTextVisible(
         "The two-factor code you entered has already been used",
       )) ||
-      (await this.uiHelper.isTextVisible("too many codes have been submitted", 3000))
+      (await this.uiHelper.isTextVisible(
+        "too many codes have been submitted",
+        3000,
+      ))
     ) {
       // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
       await new Promise<void>((resolve) => {
@@ -121,11 +113,9 @@ export class Common {
         await popup.waitForLoadState();
         await popup.locator("#username").fill(userid);
         await popup.locator("#password").fill(password);
-        // Handle popup close during navigation (popup may close before navigation completes)
         try {
           await popup.locator("#kc-login").click({ timeout: 5000 });
         } catch (error) {
-          // Popup likely closed - this is expected behavior
           if (!getErrorMessage(error).includes("Target closed")) {
             throw error;
           }
@@ -150,22 +140,25 @@ export class Common {
   async loginAsGithubUser(userid: string = process.env.GH_USER_ID ?? "") {
     const sessionFileName = `authState_${userid}.json`;
 
-    // Check if a session file for this specific user already exists
     if (fs.existsSync(sessionFileName)) {
-      // Load and reuse existing authentication state
-      const cookies = parseAuthStateCookies(fs.readFileSync(sessionFileName, "utf-8"));
+      const cookies = parseAuthStateCookies(
+        fs.readFileSync(sessionFileName, "utf-8"),
+      );
       await this.page.context().addCookies(cookies);
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
       await this.waitForLoad(12000);
-      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["signIn.title"],
+      );
       await this.checkAndReauthorizeGithubApp();
     } else {
-      // Perform login if no session file exists, then save the state
       await this.logintoGithub(userid);
       await this.page.goto("/");
       await this.waitForLoad(240000);
-      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["signIn.title"],
+      );
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForSideBarVisible();
       await this.page.context().storageState({ path: sessionFileName });
@@ -214,11 +207,15 @@ export class Common {
       await this.uiHelper.clickButton(
         t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
       );
-      await this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]);
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["oauthRequestDialog.login"],
+      );
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
-      console.log('"Log in" button is not visible. Skipping login popup actions.');
+      console.log(
+        '"Log in" button is not visible. Skipping login popup actions.',
+      );
     }
   }
 
@@ -226,15 +223,15 @@ export class Common {
     const ghUserId = process.env.GH_USER_ID;
     const ghUser2Id = process.env.GH_USER2_ID;
     const secrets: Record<string, string | undefined> = {};
-    if (ghUserId) {
+    if (ghUserId !== undefined && ghUserId !== "") {
       secrets[ghUserId] = process.env.GH_2FA_SECRET;
     }
-    if (ghUser2Id) {
+    if (ghUser2Id !== undefined && ghUser2Id !== "") {
       secrets[ghUser2Id] = process.env.GH_USER2_2FA_SECRET;
     }
 
     const secret = secrets[userid];
-    if (!secret) {
+    if (secret === undefined || secret === "") {
       throw new Error("Invalid User ID");
     }
 
@@ -243,7 +240,7 @@ export class Common {
 
   getGoogle2FAOTP(): string {
     const secret = process.env.GOOGLE_2FA_SECRET;
-    if (!secret) {
+    if (secret === undefined || secret === "") {
       throw new Error("GOOGLE_2FA_SECRET is not set");
     }
     return authenticator.generate(secret);
@@ -260,93 +257,7 @@ export class Common {
       this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
     ]);
 
-    // Wait for the popup to appear
-    await expect(async () => {
-      await popup.waitForLoadState("domcontentloaded");
-      expect(popup).toBeTruthy();
-    }).toPass({
-      intervals: [5_000, 10_000],
-      timeout: 20 * 1000,
-    });
-
-    // Check if popup closes automatically (already logged in)
-    try {
-      await popup.waitForEvent("close", { timeout: 5000 });
-      return "Already logged in";
-    } catch {
-      // Popup didn't close, proceed with login
-    }
-
-    /* oxlint-disable playwright/no-raw-locators -- Keycloak OIDC login popup (third-party) */
-    try {
-      await popup.locator("#username").click();
-      await popup.locator("#username").fill(username);
-      await popup.locator("#password").fill(password);
-      await popup.locator("[name=login]").click({ timeout: 5000 });
-      await popup.waitForEvent("close", { timeout: 2000 });
-      return "Login successful";
-    } catch (e) {
-      const usernameError = popup.locator("id=input-error");
-      if (await usernameError.isVisible()) {
-        await popup.close();
-        return "User does not exist";
-      }
-      throw e;
-    }
-    /* oxlint-enable playwright/no-raw-locators */
-  }
-
-  private async handleGitHubPopupLogin(
-    popup: Page,
-    username: string,
-    password: string,
-    twofactor: string,
-  ): Promise<string> {
-    await expect(async () => {
-      await popup.waitForLoadState("domcontentloaded");
-      expect(popup).toBeTruthy();
-    }).toPass({
-      intervals: [5_000, 10_000],
-      timeout: 20 * 1000,
-    });
-
-    // Check if popup closes automatically
-    try {
-      await popup.waitForEvent("close", { timeout: 5000 });
-      return "Already logged in";
-    } catch {
-      // Popup didn't close, proceed with login
-    }
-
-    /* oxlint-disable playwright/no-raw-locators -- GitHub login popup (third-party) */
-    try {
-      await popup.locator("#login_field").click({ timeout: 5000 });
-      await popup.locator("#login_field").fill(username, { timeout: 5000 });
-      const cookieLocator = popup.locator("#wcpConsentBannerCtrl");
-      if (await cookieLocator.isVisible()) {
-        await popup.click('button:has-text("Reject")', { timeout: 5000 });
-      }
-      await popup.locator("#password").click({ timeout: 5000 });
-      await popup.locator("#password").fill(password, { timeout: 5000 });
-      await popup
-        .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
-        .first()
-        .click({ timeout: 5000 });
-      const twofactorcode = authenticator.generate(twofactor);
-      await popup.locator("#app_totp").click({ timeout: 5000 });
-      await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
-
-      await popup.waitForEvent("close", { timeout: 20000 });
-      return "Login successful";
-    } catch (e) {
-      const authorization = popup.locator("button.js-oauth-authorize-btn");
-      if (await authorization.isVisible()) {
-        await authorization.click();
-        return "Login successful";
-      }
-      throw e;
-    }
-    /* oxlint-enable playwright/no-raw-locators */
+    return handleKeycloakPopupLogin(popup, username, password);
   }
 
   async githubLogin(username: string, password: string, twofactor: string) {
@@ -360,10 +271,14 @@ export class Common {
       this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
     ]);
 
-    return this.handleGitHubPopupLogin(popup, username, password, twofactor);
+    return handleGitHubPopupLogin(popup, username, password, twofactor);
   }
 
-  async githubLoginFromSettingsPage(username: string, password: string, twofactor: string) {
+  async githubLoginFromSettingsPage(
+    username: string,
+    password: string,
+    twofactor: string,
+  ) {
     await this.page.goto("/settings/auth-providers");
 
     const [popup] = await Promise.all([
@@ -376,117 +291,12 @@ export class Common {
           ),
         )
         .click(),
-      this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]),
+      this.uiHelper.clickButton(
+        t["core-components"][lang]["oauthRequestDialog.login"],
+      ),
     ]);
 
-    return this.handleGitHubPopupLogin(popup, username, password, twofactor);
-  }
-
-  private async handleGitlabPopupLogin(
-    popup: Page,
-    username: string,
-    password: string,
-  ): Promise<string> {
-    await expect(async () => {
-      await popup.waitForLoadState("domcontentloaded");
-      expect(popup).toBeTruthy();
-    }).toPass({
-      intervals: [5_000, 10_000],
-      timeout: 20 * 1000,
-    });
-
-    // Check if popup closes automatically
-    try {
-      await popup.waitForEvent("close", { timeout: 5000 });
-      return "Already logged in";
-    } catch {
-      // Popup didn't close, proceed with login
-    }
-
-    /* oxlint-disable playwright/no-raw-locators -- GitLab login popup (third-party) */
-    try {
-      await popup.locator("#user_login").click({ timeout: 5000 });
-      await popup.locator("#user_login").fill(username, { timeout: 5000 });
-      await popup.locator("#user_password").click({ timeout: 5000 });
-      await popup.locator("#user_password").fill(password, { timeout: 5000 });
-      await popup.getByTestId("sign-in-button").click({ timeout: 5000 });
-
-      // Wait for navigation after sign-in (either to 2FA, authorization, or close)
-      await popup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => {
-        // Continue if load state check fails
-      });
-
-      // Handle 2FA if present
-      const twoFactorInput = popup.locator("#user_otp_attempt");
-      if (await twoFactorInput.isVisible({ timeout: 5000 })) {
-        // If 2FA is required, we'll need to handle it
-        // For now, we'll wait for the popup to close or authorization
-        await popup.waitForEvent("close", { timeout: 20000 });
-        return "Login successful";
-      }
-
-      // Wait for authorization button to appear and click it
-      // Try data-testid first, then fallback to text-based selector
-      const authorization = popup.getByTestId("authorize-button");
-      const authorizationByText = popup.locator('button:has-text("Authorize")');
-
-      // Wait for button to appear with retry logic
-      let buttonToClick: Locator | undefined;
-      await expect(async () => {
-        // Check data-testid first
-        if (await authorization.isVisible({ timeout: 2000 }).catch(() => false)) {
-          buttonToClick = authorization;
-          return true;
-        }
-        // Fallback to text-based selector
-        if (await authorizationByText.isVisible({ timeout: 2000 }).catch(() => false)) {
-          buttonToClick = authorizationByText;
-          return true;
-        }
-        throw new Error("Authorization button not found");
-      }).toPass({
-        intervals: [1000, 2000],
-        timeout: 15000,
-      });
-
-      if (!buttonToClick) {
-        throw new Error("Failed to find authorization button");
-      }
-
-      const authorizeButton = buttonToClick;
-
-      // Click on document/body first to potentially dismiss any overlays (similar to GitHub flow)
-      await popup
-        .getByRole("document")
-        .click({ timeout: 1000 })
-        .catch(() => {
-          // Ignore if document click fails
-        });
-
-      // Wait for button to be enabled and clickable
-      await authorizeButton.waitFor({ state: "visible", timeout: 5000 });
-      await expect(authorizeButton).toBeEnabled({ timeout: 10000 });
-      await authorizeButton.scrollIntoViewIfNeeded({ timeout: 5000 });
-
-      try {
-        await authorizeButton.click({ timeout: 5000 });
-      } catch {
-        // Force click fallback when overlay blocks the authorization button.
-        // oxlint-disable-next-line playwright/no-force-option -- overlay dismissal is unreliable in CI
-        await authorizeButton.click({ force: true, timeout: 5000 });
-      }
-
-      await popup.waitForEvent("close", { timeout: 20000 });
-      return "Login successful";
-    } catch (e) {
-      // If popup close timeout, check if popup is already closed
-      if (popup.isClosed()) {
-        return "Login successful";
-      }
-      // Re-throw other errors
-      throw e;
-    }
-    /* oxlint-enable playwright/no-raw-locators */
+    return handleGitHubPopupLogin(popup, username, password, twofactor);
   }
 
   async gitlabLogin(username: string, password: string) {
@@ -500,7 +310,7 @@ export class Common {
       this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
     ]);
 
-    return this.handleGitlabPopupLogin(popup, username, password);
+    return handleGitlabPopupLogin(popup, username, password);
   }
 
   async MicrosoftAzureLogin(username: string, password: string) {
@@ -514,42 +324,7 @@ export class Common {
       this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
     ]);
 
-    // Wait for the popup to appear
-    await expect(async () => {
-      await popup.waitForLoadState("domcontentloaded");
-      expect(popup).toBeTruthy();
-    }).toPass({
-      intervals: [5_000, 10_000],
-      timeout: 20 * 1000,
-    });
-
-    // Check if popup closes automatically (already logged in)
-    try {
-      await popup.waitForEvent("close", { timeout: 5000 });
-      return "Already logged in";
-    } catch {
-      // Popup didn't close, proceed with login
-    }
-
-    /* oxlint-disable playwright/no-raw-locators -- Microsoft Azure login popup (third-party) */
-    try {
-      await popup.locator("[name=loginfmt]").click();
-      await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
-      await popup.locator('[type=submit]:has-text("Next")').click({ timeout: 5000 });
-
-      await popup.locator("[name=passwd]").click();
-      await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
-      await popup.locator('[type=submit]:has-text("Sign in")').click({ timeout: 5000 });
-      await popup.locator('[type=button]:has-text("No")').click({ timeout: 15000 });
-      return "Login successful";
-    } catch (e) {
-      const usernameError = popup.locator("id=usernameError");
-      if (await usernameError.isVisible()) {
-        return "User does not exist";
-      }
-      throw e;
-    }
-    /* oxlint-enable playwright/no-raw-locators */
+    return handleMicrosoftAzurePopupLogin(popup, username, password);
   }
 
   async pingFederateLogin(username: string, password: string) {
@@ -563,83 +338,6 @@ export class Common {
       this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
     ]);
 
-    // Wait for the popup to appear
-    await expect(async () => {
-      await popup.waitForLoadState("domcontentloaded");
-      expect(popup).toBeTruthy();
-    }).toPass({
-      intervals: [5_000, 10_000],
-      timeout: 20 * 1000,
-    });
-
-    // Check if popup closes automatically (already logged in)
-    try {
-      await popup.waitForEvent("close", { timeout: 5000 });
-      return "Already logged in";
-    } catch {
-      // Popup didn't close, proceed with login
-    }
-
-    /* oxlint-disable playwright/no-raw-locators -- PingFederate login popup (third-party) */
-    try {
-      // Fill in username
-      await popup.locator("#username").click();
-      await popup.locator("#username").fill(username, { timeout: 5000 });
-
-      // Fill in password
-      await popup.locator("#password").click();
-      await popup.locator("#password").fill(password, { timeout: 5000 });
-
-      // Click sign in/login button (PingFederate uses id="signOnButton")
-      await popup.locator("#signOnButton").click({ timeout: 5000 });
-
-      // Click "Allow" button for scope authorization/consent
-      await popup.locator("#allowButton").click({ timeout: 10000 });
-
-      await popup.waitForEvent("close", { timeout: 2000 });
-      return "Login successful";
-    } catch (e) {
-      // Check for login error indicators
-      const errorElement = popup.locator(".ping-error, .error, [role=alert]");
-      if (await errorElement.isVisible()) {
-        await popup.close();
-        return "Login failed - invalid credentials";
-      }
-      throw e;
-    }
-    /* oxlint-enable playwright/no-raw-locators */
+    return handlePingFederatePopupLogin(popup, username, password);
   }
-}
-
-// Creates an isolated browser context for tests that share a page via beforeAll
-// instead of using the built-in { page } fixture. Video recording must be configured
-// here explicitly because the use.video option in playwright.config.ts only applies
-// to the built-in fixtures, not to manually created contexts.
-//
-// Coverage is started automatically so specs that bypass the { page } fixture
-// still participate in V8 JS coverage collection (RHIDP-13243).
-// Call teardownBrowser() in afterAll to flush coverage and close the page.
-export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
-  const context = await browser.newContext({
-    // only record video when the test block is being retried
-    ...(testInfo.retry > 0 && {
-      recordVideo: {
-        dir: `test-results/${path
-          .parse(testInfo.file)
-          .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
-        size: { width: 1280, height: 720 },
-      },
-    }),
-  });
-  const page = await context.newPage();
-  await startCoverageForPage(page);
-
-  return { page, context };
-}
-
-// Flush V8 JS coverage collected during the test run and close the page.
-// Pair with setupBrowser() in afterAll to ensure coverage data is written.
-export async function teardownBrowser(page: Page, testInfo: TestInfo): Promise<void> {
-  await stopCoverageForPage(page, testInfo);
-  await page.close();
 }

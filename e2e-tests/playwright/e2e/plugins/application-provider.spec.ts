@@ -4,7 +4,7 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Test ApplicationProvider", () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",

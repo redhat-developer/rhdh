@@ -17,7 +17,7 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
   let catalogImport: CatalogImport;
   const template = "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",

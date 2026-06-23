@@ -10,7 +10,7 @@ test.describe("Home page customization", () => {
   let uiHelper: UIhelper;
   let homePage: HomePage;
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",

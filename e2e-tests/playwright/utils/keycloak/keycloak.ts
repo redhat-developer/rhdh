@@ -29,7 +29,7 @@ function isGroupArray(data: unknown): data is Group[] {
 
 function requireBase64Env(name: string): string {
   const value = process.env[name];
-  if (!value) {
+  if (value === undefined || value === "") {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return Buffer.from(value, "base64").toString();

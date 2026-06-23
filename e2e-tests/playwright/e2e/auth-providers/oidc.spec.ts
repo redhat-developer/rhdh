@@ -1,10 +1,9 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-
-import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
-import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 import { UIhelper } from "../../utils/ui-helper";
+import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
+import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 let page: Page;
 let context: BrowserContext;
 
@@ -19,6 +18,7 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
+// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure OIDC provider (using RHBK)", async () => {
   let common: Common;
   let uiHelper: UIhelper;
@@ -91,16 +91,32 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
       await deployment.addSecretData("BASE_URL", backstageUrl);
       await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
-    await deployment.addSecretData("DEFAULT_USER_PASSWORD", process.env.DEFAULT_USER_PASSWORD!);
-    await deployment.addSecretData("DEFAULT_USER_PASSWORD_2", process.env.DEFAULT_USER_PASSWORD_2!);
+    await deployment.addSecretData(
+      "DEFAULT_USER_PASSWORD",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
+    await deployment.addSecretData(
+      "DEFAULT_USER_PASSWORD_2",
+      process.env.DEFAULT_USER_PASSWORD_2!,
+    );
     await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL!);
     await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM!);
-    await deployment.addSecretData("RHBK_CLIENT_ID", process.env.RHBK_CLIENT_ID!);
-    await deployment.addSecretData("RHBK_CLIENT_SECRET", process.env.RHBK_CLIENT_SECRET!);
+    await deployment.addSecretData(
+      "RHBK_CLIENT_ID",
+      process.env.RHBK_CLIENT_ID!,
+    );
+    await deployment.addSecretData(
+      "RHBK_CLIENT_SECRET",
+      process.env.RHBK_CLIENT_SECRET!,
+    );
 
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
@@ -128,13 +144,18 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await deployment.waitForSynced();
   });
 
-  test.beforeEach(async () => {
+  test.beforeEach(() => {
     test.info().setTimeout(600 * 1000);
-    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
+    console.log(
+      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
+    );
   });
 
   test("Login with OIDC default resolver", async () => {
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();
@@ -152,7 +173,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test("Login with OIDC oidcSubClaimMatchingKeycloakUserId resolver", async () => {
     await deployment.enableOIDCLoginWithIngestion();
-    await deployment.setOIDCResolver("oidcSubClaimMatchingKeycloakUserId", false);
+    await deployment.setOIDCResolver(
+      "oidcSubClaimMatchingKeycloakUserId",
+      false,
+    );
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -161,7 +185,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();
@@ -170,7 +197,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test("Login with OIDC emailMatchingUserEntityProfileEmail resolver", async () => {
-    await deployment.setOIDCResolver("emailMatchingUserEntityProfileEmail", false);
+    await deployment.setOIDCResolver(
+      "emailMatchingUserEntityProfileEmail",
+      false,
+    );
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -179,7 +209,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();
@@ -188,7 +221,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName resolver", async () => {
-    await deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", false);
+    await deployment.setOIDCResolver(
+      "emailLocalPartMatchingUserEntityName",
+      false,
+    );
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -197,23 +233,34 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
 
-    const login2 = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
+    const login2 = await common.keycloakLogin(
+      "atena",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login2).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+    await uiHelper.verifyAlertErrorMessage(
+      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
+    );
     await keycloakHelper.initialize();
     await keycloakHelper.clearUserSessions("atena");
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName with dangerouslyAllowSignInWithoutUserInCatalog resolver", async () => {
-    await deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", true);
+    await deployment.setOIDCResolver(
+      "emailLocalPartMatchingUserEntityName",
+      true,
+    );
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -222,14 +269,20 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
 
-    const login2 = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
+    const login2 = await common.keycloakLogin(
+      "atena",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login2).toBe("Login successful");
     await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("Atena Minerva");
@@ -237,7 +290,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test("Login with OIDC preferredUsernameMatchingUserEntityName resolver", async () => {
-    await deployment.setOIDCResolver("preferredUsernameMatchingUserEntityName", false);
+    await deployment.setOIDCResolver(
+      "preferredUsernameMatchingUserEntityName",
+      false,
+    );
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -246,7 +302,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "atena",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.goToSettingsPage();
@@ -255,7 +314,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty("auth.providers.oidc.production.sessionDuration", "3days");
+    deployment.setAppConfigProperty(
+      "auth.providers.oidc.production.sessionDuration",
+      "3days",
+    );
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -264,17 +326,24 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
+    const authCookie = cookies.find(
+      (cookie) => cookie.name === "oidc-refresh-token",
+    );
     expect(authCookie).toBeDefined();
 
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+    // expected duration of 3 days in ms
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    // allow for 3 minutes tolerance
+    const tolerance = 3 * 60 * 1000;
 
     const actualDuration = authCookie!.expires * 1000 - Date.now();
 
@@ -296,25 +365,41 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
         "Zeus Giove",
       ]),
     ).toBe(true);
-    expect(await deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"])).toBe(
-      true,
-    );
+    expect(
+      await deployment.checkGroupIsIngestedInCatalog([
+        "admins",
+        "goddesses",
+        "gods",
+      ]),
+    ).toBe(true);
     expect(await deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
     expect(await deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("atena", "goddesses")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("atena", "goddesses")).toBe(
+      true,
+    );
     expect(await deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
     expect(await deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
     expect(await deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
 
     expect(await deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
-    expect(await deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(true);
+    expect(await deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(
+      true,
+    );
+    expect(await deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(
+      true,
+    );
+    expect(await deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(
+      true,
+    );
   });
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
-    expect(await deployment.checkUserIsIngestedInCatalog(["Invalid Username"])).toBe(true);
-    expect(await deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"])).toBe(true);
+    expect(
+      await deployment.checkUserIsIngestedInCatalog(["Invalid Username"]),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"]),
+    ).toBe(true);
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
@@ -328,7 +413,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
-    const oidcLogin = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const oidcLogin = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
 
     expect(oidcLogin).toBe("Login successful");
 
@@ -342,7 +430,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       production: {
         clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
         clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
-        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+        callbackUrl:
+          "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
       },
     });
 
@@ -378,11 +467,12 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test(`Enable autologout and user is logged out after inactivity`, async () => {
     deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+    // minimum allowed value is 0.5 minutes
+    deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
     deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5, // minimum allowed value is 0.5 minutes
+      "auth.autologout.promptBeforeIdleSeconds",
+      5,
     );
-    deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -391,10 +481,17 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyTextVisible("Logging out due to inactivity", false, 60000);
+    await uiHelper.verifyTextVisible(
+      "Logging out due to inactivity",
+      false,
+      60000,
+    );
     await expect(page.getByText("Logging out due to inactivity")).toBeHidden({
       timeout: 30000,
     });
@@ -402,17 +499,20 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
+    const authCookie = cookies.find(
+      (cookie) => cookie.name === "oidc-refresh-token",
+    );
     expect(authCookie).toBeUndefined();
   });
 
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
     deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+    // minimum allowed value is 0.5 minutes
+    deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
     deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5, // minimum allowed value is 0.5 minutes
+      "auth.autologout.promptBeforeIdleSeconds",
+      5,
     );
-    deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
     await deployment.restartLocalDeployment();
@@ -421,7 +521,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
 
-    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD!,
+    );
     expect(login).toBe("Login successful");
 
     await uiHelper.clickButtonByText("Don't log me out", { timeout: 60000 });

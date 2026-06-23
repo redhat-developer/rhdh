@@ -43,13 +43,13 @@ function isLicensedUser(value: unknown): value is LicensedUser {
 }
 
 function isLicensedUserArray(value: unknown): value is LicensedUser[] {
-  return Array.isArray(value) && value.every(isLicensedUser);
+  return Array.isArray(value) && value.every((item) => isLicensedUser(item));
 }
 
 test.describe("Test licensed users info backend plugin", () => {
   let common: Common;
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",

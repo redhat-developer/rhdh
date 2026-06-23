@@ -1,5 +1,5 @@
 import { test, expect } from "@support/coverage/test";
-
+import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
@@ -8,7 +8,6 @@ import {
   configurePostgresCredentials,
   clearDatabase,
 } from "../../utils/postgres-config";
-import { UIhelper } from "../../utils/ui-helper";
 
 interface RdsConfig {
   name: string;
@@ -45,7 +44,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
     // Validate certificates are available
     const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
-    if (!rdsCerts) {
+    if (rdsCerts === undefined || rdsCerts === null || rdsCerts === "") {
       throw new Error(
         "RDS_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
       );
@@ -53,7 +52,9 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
     // Validate required environment variables
     if (!rdsUser || !rdsPassword) {
-      throw new Error("RDS_USER and RDS_PASSWORD environment variables must be set");
+      throw new Error(
+        "RDS_USER and RDS_PASSWORD environment variables must be set",
+      );
     }
 
     const kubeClient = new KubeClient();
@@ -87,8 +88,9 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
           user: rdsUser,
           password: rdsPassword,
         });
-        const restarted = await kubeClient.restartDeployment(deploymentName, namespace);
-        expect(restarted).toBeDefined();
+        await expect(
+          kubeClient.restartDeployment(deploymentName, namespace),
+        ).resolves.toBeUndefined();
       });
 
       test("Verify successful DB connection", async ({ page }) => {

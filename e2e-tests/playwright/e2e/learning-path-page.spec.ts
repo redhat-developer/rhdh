@@ -5,7 +5,7 @@ import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 
 test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",

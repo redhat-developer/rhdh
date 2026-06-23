@@ -1,10 +1,9 @@
 import { expect, Page, test } from "@support/coverage/test";
-
-import { CatalogImport } from "../../../support/pages/catalog-import";
-import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
-import { APIHelper } from "../../../utils/api-helper";
-import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
+import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
+import { CatalogImport } from "../../../support/pages/catalog-import";
+import { APIHelper } from "../../../utils/api-helper";
+import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 
 let page: Page;
 
@@ -29,7 +28,10 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     label: "test-label",
     annotation: "test-annotation",
     repo: `test-relation-${Date.now()}`,
-    repoOwner: Buffer.from(process.env.GITHUB_ORG || "amFudXMtcWU=", "base64").toString("utf8"), // Default repoOwner janus-qe
+    repoOwner: Buffer.from(
+      process.env.GITHUB_ORG ?? "amFudXMtcWU=",
+      "base64",
+    ).toString("utf8"),
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
@@ -70,10 +72,16 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await uiHelper.clickButton("Choose");
 
     await uiHelper.fillTextInputByLabel("Name", reactAppDetails.componentName);
-    await uiHelper.fillTextInputByLabel("Description", reactAppDetails.description);
+    await uiHelper.fillTextInputByLabel(
+      "Description",
+      reactAppDetails.description,
+    );
     await uiHelper.fillTextInputByLabel("Owner", reactAppDetails.owner);
     await uiHelper.fillTextInputByLabel("Label", reactAppDetails.label);
-    await uiHelper.fillTextInputByLabel("Annotation", reactAppDetails.annotation);
+    await uiHelper.fillTextInputByLabel(
+      "Annotation",
+      reactAppDetails.annotation,
+    );
     await uiHelper.clickButton("Next");
 
     await uiHelper.fillTextInputByLabel("Owner", reactAppDetails.repoOwner);
@@ -83,7 +91,9 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
     await uiHelper.clickButton("Create");
     // Wait for the scaffolder task to complete and the link to appear
-    await expect(page.getByRole("link", { name: "Open in catalog" })).toBeVisible({
+    await expect(
+      page.getByRole("link", { name: "Open in catalog" }),
+    ).toBeVisible({
       timeout: 60000,
     });
     await uiHelper.clickLink("Open in catalog");
@@ -117,9 +127,15 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     const labelSelector = 'g[data-testid="label"]';
     const nodeSelector = 'g[data-testid="node"]';
 
-    await uiHelper.verifyTextInSelector(labelSelector, "scaffolderOf / scaffoldedFrom");
+    await uiHelper.verifyTextInSelector(
+      labelSelector,
+      "scaffolderOf / scaffoldedFrom",
+    );
 
-    await uiHelper.verifyPartialTextInSelector(nodeSelector, reactAppDetails.componentPartialName);
+    await uiHelper.verifyPartialTextInSelector(
+      nodeSelector,
+      reactAppDetails.componentPartialName,
+    );
   });
 
   test("Verify scaffolderOf relation on the template", async () => {
@@ -127,7 +143,9 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await uiHelper.selectMuiBox("Kind", "Template");
 
     await uiHelper.searchInputPlaceholder("Create React App Template\n");
-    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", ["website"]);
+    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", [
+      "website",
+    ]);
     await uiHelper.clickLink("Create React App Template");
 
     // Verify the scaffolderOf relation in the YAML view
@@ -143,7 +161,10 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test.afterAll(async ({}, testInfo) => {
     await APIHelper.githubRequest(
       "DELETE",
-      GITHUB_API_ENDPOINTS.deleteRepo(reactAppDetails.repoOwner, reactAppDetails.repo),
+      GITHUB_API_ENDPOINTS.deleteRepo(
+        reactAppDetails.repoOwner,
+        reactAppDetails.repo,
+      ),
     );
     await teardownBrowser(page, testInfo);
   });

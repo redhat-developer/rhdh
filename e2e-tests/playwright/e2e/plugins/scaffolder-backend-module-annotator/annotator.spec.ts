@@ -1,11 +1,10 @@
 import { Page, test, expect } from "@support/coverage/test";
-
-import { CatalogImport } from "../../../support/pages/catalog-import";
-import { runAccessibilityTests } from "../../../utils/accessibility";
-import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
-import { APIHelper } from "../../../utils/api-helper";
-import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
+import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
+import { CatalogImport } from "../../../support/pages/catalog-import";
+import { APIHelper } from "../../../utils/api-helper";
+import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
+import { runAccessibilityTests } from "../../../utils/accessibility";
 
 let page: Page;
 
@@ -29,7 +28,10 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     label: "some-label",
     annotation: "some-annotation",
     repo: `test-annotator-${Date.now()}`,
-    repoOwner: Buffer.from(process.env.GITHUB_ORG || "amFudXMtcWU=", "base64").toString("utf8"), // Default repoOwner janus-qe
+    repoOwner: Buffer.from(
+      process.env.GITHUB_ORG ?? "amFudXMtcWU=",
+      "base64",
+    ).toString("utf8"),
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
@@ -70,10 +72,16 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.clickButton("Choose");
 
     await uiHelper.fillTextInputByLabel("Name", reactAppDetails.componentName);
-    await uiHelper.fillTextInputByLabel("Description", reactAppDetails.description);
+    await uiHelper.fillTextInputByLabel(
+      "Description",
+      reactAppDetails.description,
+    );
     await uiHelper.fillTextInputByLabel("Owner", reactAppDetails.owner);
     await uiHelper.fillTextInputByLabel("Label", reactAppDetails.label);
-    await uiHelper.fillTextInputByLabel("Annotation", reactAppDetails.annotation);
+    await uiHelper.fillTextInputByLabel(
+      "Annotation",
+      reactAppDetails.annotation,
+    );
     await uiHelper.clickButton("Next");
 
     await uiHelper.fillTextInputByLabel("Owner", reactAppDetails.repoOwner);
@@ -81,17 +89,29 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.pressTab();
     await uiHelper.clickButton("Review");
 
-    await uiHelper.verifyRowInTableByUniqueText("Owner", [`group:${reactAppDetails.owner}`]);
-    await uiHelper.verifyRowInTableByUniqueText("Name", [reactAppDetails.componentName]);
-    await uiHelper.verifyRowInTableByUniqueText("Description", [reactAppDetails.description]);
-    await uiHelper.verifyRowInTableByUniqueText("Label", [reactAppDetails.label]);
-    await uiHelper.verifyRowInTableByUniqueText("Annotation", [reactAppDetails.annotation]);
+    await uiHelper.verifyRowInTableByUniqueText("Owner", [
+      `group:${reactAppDetails.owner}`,
+    ]);
+    await uiHelper.verifyRowInTableByUniqueText("Name", [
+      reactAppDetails.componentName,
+    ]);
+    await uiHelper.verifyRowInTableByUniqueText("Description", [
+      reactAppDetails.description,
+    ]);
+    await uiHelper.verifyRowInTableByUniqueText("Label", [
+      reactAppDetails.label,
+    ]);
+    await uiHelper.verifyRowInTableByUniqueText("Annotation", [
+      reactAppDetails.annotation,
+    ]);
     await uiHelper.verifyRowInTableByUniqueText("Repository Location", [
       `github.com?owner=${reactAppDetails.repoOwner}&repo=${reactAppDetails.repo}`,
     ]);
 
     await uiHelper.clickButton("Create");
-    await expect(page.getByRole("link", { name: "Open in catalog" })).toBeVisible({
+    await expect(
+      page.getByRole("link", { name: "Open in catalog" }),
+    ).toBeVisible({
       timeout: 30_000,
     });
     await uiHelper.clickLink("Open in catalog");
@@ -101,7 +121,9 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, ["website"]);
+    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, [
+      "website",
+    ]);
     await uiHelper.clickLink(reactAppDetails.componentName);
 
     await catalogImport.inspectEntityAndVerifyYaml(
@@ -113,7 +135,9 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, ["website"]);
+    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, [
+      "website",
+    ]);
     await uiHelper.clickLink(reactAppDetails.componentName);
 
     await catalogImport.inspectEntityAndVerifyYaml(
@@ -125,10 +149,14 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, ["website"]);
+    await uiHelper.verifyRowInTableByUniqueText(reactAppDetails.componentName, [
+      "website",
+    ]);
     await uiHelper.clickLink(reactAppDetails.componentName);
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.inspectEntityAndVerifyYaml(
+      `backstage.io/template-version: 0.0.1`,
+    );
   });
 
   test("Verify template version annotation is present on the template", async () => {
@@ -136,16 +164,23 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.selectMuiBox("Kind", "Template");
 
     await uiHelper.searchInputPlaceholder("Create React App Template\n");
-    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", ["website"]);
+    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", [
+      "website",
+    ]);
     await uiHelper.clickLink("Create React App Template");
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.inspectEntityAndVerifyYaml(
+      `backstage.io/template-version: 0.0.1`,
+    );
   });
 
   test.afterAll(async ({}, testInfo) => {
     await APIHelper.githubRequest(
       "DELETE",
-      GITHUB_API_ENDPOINTS.deleteRepo(reactAppDetails.repoOwner, reactAppDetails.repo),
+      GITHUB_API_ENDPOINTS.deleteRepo(
+        reactAppDetails.repoOwner,
+        reactAppDetails.repo,
+      ),
     );
     await teardownBrowser(page, testInfo);
   });

@@ -11,9 +11,7 @@
  */
 
 import { readFileSync, existsSync } from "fs";
-
 import { Client } from "pg";
-
 import { KubeClient } from "./kube-client";
 
 /**
@@ -21,7 +19,7 @@ import { KubeClient } from "./kube-client";
  * Environment variables from Vault often have literal \n instead of newlines.
  */
 function unescapeNewlines(value: string): string {
-  return value.replaceAll(/\\n/g, "\n");
+  return value.replaceAll("\\n", "\n");
 }
 
 /**
@@ -29,8 +27,10 @@ function unescapeNewlines(value: string): string {
  * @param filePath - Path to the certificate file
  * @returns Certificate content with escaped newlines converted, or null if file doesn't exist
  */
-export function readCertificateFile(filePath: string | undefined): string | null {
-  if (!filePath) {
+export function readCertificateFile(
+  filePath: string | undefined,
+): string | null {
+  if (filePath === undefined || filePath === "") {
     return null;
   }
   if (!existsSync(filePath)) {
@@ -76,18 +76,22 @@ export async function configurePostgresCredentials(
 ): Promise<void> {
   const data: Record<string, string> = {
     POSTGRES_HOST: Buffer.from(credentials.host).toString("base64"),
-    POSTGRES_PORT: Buffer.from(credentials.port || "5432").toString("base64"),
-    PGSSLMODE: Buffer.from(credentials.sslMode || "require").toString("base64"),
-    NODE_EXTRA_CA_CERTS: Buffer.from("/opt/app-root/src/postgres-crt.pem").toString("base64"),
+    POSTGRES_PORT: Buffer.from(credentials.port ?? "5432").toString("base64"),
+    PGSSLMODE: Buffer.from(credentials.sslMode ?? "require").toString("base64"),
+    NODE_EXTRA_CA_CERTS: Buffer.from(
+      "/opt/app-root/src/postgres-crt.pem",
+    ).toString("base64"),
   };
 
-  if (credentials.user) {
+  if (credentials.user !== "") {
     data.POSTGRES_USER = Buffer.from(credentials.user).toString("base64");
   }
-  if (credentials.password) {
-    data.POSTGRES_PASSWORD = Buffer.from(credentials.password).toString("base64");
+  if (credentials.password !== "") {
+    data.POSTGRES_PASSWORD = Buffer.from(credentials.password).toString(
+      "base64",
+    );
   }
-  if (credentials.database) {
+  if (credentials.database !== undefined && credentials.database !== "") {
     data.POSTGRES_DB = Buffer.from(credentials.database).toString("base64");
   }
 
@@ -100,16 +104,89 @@ export async function configurePostgresCredentials(
   await kubeClient.createOrUpdateSecret(secret, namespace);
 }
 
+const SYSTEM_DATABASES = [
+  "postgres",
+  "template0",
+  "template1",
+  "rdsadmin",
+  "azure_maintenance",
+  "azure_sys",
+];
+
+function buildSslConfig(
+  certificatePath: string | undefined,
+): { ca: string } | boolean {
+  if (certificatePath === undefined || certificatePath === "") {
+    return true;
+  }
+  const certContent = readCertificateFile(certificatePath);
+  if (certContent === null) {
+    return true;
+  }
+  return { ca: certContent };
+}
+
+function isRetryableDropError(errorMsg: string): boolean {
+  return (
+    errorMsg.includes("being accessed by other users") ||
+    errorMsg.includes("in use") ||
+    errorMsg.includes("timeout")
+  );
+}
+
+async function dropDatabaseWithRetry(
+  client: Client,
+  db: string,
+  maxRetries: number,
+): Promise<boolean> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await client.query(`DROP DATABASE IF EXISTS "${db}" WITH (FORCE)`);
+      return true;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const canRetry = isRetryableDropError(errorMsg) && attempt < maxRetries;
+      if (!canRetry) {
+        console.warn(`Warning: Failed to drop database ${db}:`, errorMsg);
+        return false;
+      }
+      const delay = attempt * 1000;
+      console.log(
+        `Retry ${attempt}/${maxRetries} for database ${db} after ${delay}ms (${errorMsg})`,
+      );
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, delay);
+      });
+    }
+  }
+  return false;
+}
+
+async function dropUserDatabases(
+  client: Client,
+  databases: string[],
+): Promise<{ succeeded: string[]; failed: string[] }> {
+  const succeeded: string[] = [];
+  const failed: string[] = [];
+  const maxRetries = 3;
+
+  for (const db of databases) {
+    const success = await dropDatabaseWithRetry(client, db, maxRetries);
+    if (success) {
+      succeeded.push(db);
+    } else {
+      failed.push(db);
+    }
+  }
+
+  return { succeeded, failed };
+}
+
 /**
  * Clear all non-system databases from a PostgreSQL instance.
  * Used to clean up after external database tests.
- *
- * @param credentials - Database connection credentials
- * @param credentials.host - PostgreSQL host
- * @param credentials.port - PostgreSQL port (default: "5432")
- * @param credentials.user - PostgreSQL user
- * @param credentials.password - PostgreSQL password
- * @param certificatePath - Optional path to TLS certificate file
  */
 export async function clearDatabase(credentials: {
   host: string;
@@ -120,34 +197,13 @@ export async function clearDatabase(credentials: {
 }): Promise<void> {
   console.log("Starting database cleanup process...");
 
-  // System databases that should never be dropped (includes cloud provider managed databases)
-  const systemDatabases = [
-    "postgres",
-    "template0",
-    "template1",
-    // AWS RDS system databases
-    "rdsadmin",
-    // Azure Database for PostgreSQL system databases
-    "azure_maintenance",
-    "azure_sys",
-  ];
-
-  // Read certificate if path is provided
-  let ssl: { ca: string } | boolean = true;
-  if (credentials.certificatePath) {
-    const certContent = readCertificateFile(credentials.certificatePath);
-    if (certContent) {
-      ssl = { ca: certContent };
-    }
-  }
-
   const client = new Client({
     host: credentials.host,
-    port: parseInt(credentials.port || "5432"),
+    port: Math.trunc(Number(credentials.port ?? "5432")),
     user: credentials.user,
     password: credentials.password,
     database: "postgres",
-    ssl,
+    ssl: buildSslConfig(credentials.certificatePath),
     connectionTimeoutMillis: 30 * 1000,
     query_timeout: 120 * 1000,
   });
@@ -155,14 +211,13 @@ export async function clearDatabase(credentials: {
   try {
     await client.connect();
 
-    // Get list of databases
     const result = await client.query<{ datname: string }>(
       "SELECT datname FROM pg_database WHERE datistemplate = false",
     );
 
     const databases = result.rows
       .map((row) => row.datname)
-      .filter((db) => !systemDatabases.includes(db));
+      .filter((db) => !SYSTEM_DATABASES.includes(db));
 
     if (databases.length === 0) {
       console.log("No databases found to drop");
@@ -171,52 +226,11 @@ export async function clearDatabase(credentials: {
 
     console.log(`Found databases to drop: ${databases.join(", ")}`);
 
-    const succeeded: string[] = [];
-    const failed: string[] = [];
+    const { succeeded, failed } = await dropUserDatabases(client, databases);
 
-    // Execute drops sequentially
-    for (const db of databases) {
-      let success = false;
-      const maxRetries = 3;
-
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          // WITH (FORCE) atomically terminates connections and drops the database
-          await client.query(`DROP DATABASE IF EXISTS "${db}" WITH (FORCE)`);
-          success = true;
-          break;
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          const isRetryable =
-            errorMsg.includes("being accessed by other users") ||
-            errorMsg.includes("in use") ||
-            errorMsg.includes("timeout");
-
-          if (isRetryable && attempt < maxRetries) {
-            const delay = attempt * 1000; // 1s, 2s, 3s
-            console.log(
-              `Retry ${attempt}/${maxRetries} for database ${db} after ${delay}ms (${errorMsg})`,
-            );
-            await new Promise<void>((resolve) => {
-              setTimeout(() => {
-                resolve();
-              }, delay);
-            });
-          } else {
-            console.warn(`Warning: Failed to drop database ${db}:`, errorMsg);
-            break;
-          }
-        }
-      }
-
-      if (success) {
-        succeeded.push(db);
-      } else {
-        failed.push(db);
-      }
-    }
-
-    console.log(`Database cleanup completed: ${succeeded.length} dropped, ${failed.length} failed`);
+    console.log(
+      `Database cleanup completed: ${succeeded.length} dropped, ${failed.length} failed`,
+    );
     if (succeeded.length > 0) {
       console.log(`Successfully dropped: ${succeeded.join(", ")}`);
     }
@@ -224,7 +238,10 @@ export async function clearDatabase(credentials: {
       console.log(`Failed to drop: ${failed.join(", ")}`);
     }
   } catch (error) {
-    console.error("Failed to connect to database or retrieve database list:", error);
+    console.error(
+      "Failed to connect to database or retrieve database list:",
+      error,
+    );
     throw error;
   } finally {
     await client.end();

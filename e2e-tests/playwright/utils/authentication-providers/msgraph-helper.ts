@@ -1,17 +1,19 @@
 // oxlint-disable-next-line import/no-unassigned-import -- fetch polyfill required by Graph SDK
 import "isomorphic-fetch";
-import {
-  NetworkManagementClient,
-  NetworkSecurityGroupsGetResponse,
-  SecurityRulesGetResponse,
-  type SecurityRule,
-} from "@azure/arm-network";
+import { hasStatusCode } from "../errors";
 import { ClientSecretCredential } from "@azure/identity";
 import { Client, PageCollection } from "@microsoft/microsoft-graph-client";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials/index.js";
 import { User, Group } from "@microsoft/microsoft-graph-types";
-
-import { getErrorMessage, hasStatusCode } from "../errors";
+import {
+  NetworkManagementClient,
+  SecurityRulesGetResponse,
+} from "@azure/arm-network";
+import {
+  allowPublicIpInNsg,
+  getNetworkSecurityGroup,
+  getNetworkSecurityGroupRule,
+} from "./msgraph-helper-nsg";
 
 interface AzureApplicationWeb {
   redirectUris?: string[];
@@ -25,13 +27,18 @@ interface IpifyResponse {
   ip: string;
 }
 
-function isAzureApplicationResponse(value: unknown): value is AzureApplicationResponse {
+function isAzureApplicationResponse(
+  value: unknown,
+): value is AzureApplicationResponse {
   return typeof value === "object" && value !== null;
 }
 
 function isIpifyResponse(value: unknown): value is IpifyResponse {
   return (
-    typeof value === "object" && value !== null && "ip" in value && typeof value.ip === "string"
+    typeof value === "object" &&
+    value !== null &&
+    "ip" in value &&
+    typeof value.ip === "string"
   );
 }
 
@@ -44,7 +51,12 @@ export class MSClient {
   private readonly clientSecret: string;
   private readonly subscriptionId?: string;
 
-  constructor(clientId: string, clientSecret: string, tenantId: string, subscriptionId?: string) {
+  constructor(
+    clientId: string,
+    clientSecret: string,
+    tenantId: string,
+    subscriptionId?: string,
+  ) {
     if (!clientId || !tenantId || !clientSecret) {
       console.error("Missing required credentials");
       throw new Error("Client ID, Tenant ID, and Client Secret are required");
@@ -57,18 +69,19 @@ export class MSClient {
   }
 
   private initializeGraphForAppOnlyAuth(): void {
-    if (!this.clientSecretCredential) {
-      this.clientSecretCredential = new ClientSecretCredential(
-        this.tenantId,
-        this.clientId,
-        this.clientSecret,
-      );
-    }
+    this.clientSecretCredential ??= new ClientSecretCredential(
+      this.tenantId,
+      this.clientId,
+      this.clientSecret,
+    );
 
-    if (!this.appClient) {
-      const authProvider = new TokenCredentialAuthenticationProvider(this.clientSecretCredential, {
-        scopes: ["https://graph.microsoft.com/.default"],
-      });
+    if (this.appClient === undefined) {
+      const authProvider = new TokenCredentialAuthenticationProvider(
+        this.clientSecretCredential,
+        {
+          scopes: ["https://graph.microsoft.com/.default"],
+        },
+      );
 
       this.appClient = Client.initWithMiddleware({
         authProvider: authProvider,
@@ -77,26 +90,22 @@ export class MSClient {
   }
 
   private initializeArmNetworkClient(): void {
-    if (!this.subscriptionId) {
+    if (this.subscriptionId === undefined || this.subscriptionId === "") {
       throw new Error(
         "Subscription ID is required for ARM operations. Please provide it in the constructor.",
       );
     }
 
-    if (!this.clientSecretCredential) {
-      this.clientSecretCredential = new ClientSecretCredential(
-        this.tenantId,
-        this.clientId,
-        this.clientSecret,
-      );
-    }
+    this.clientSecretCredential ??= new ClientSecretCredential(
+      this.tenantId,
+      this.clientId,
+      this.clientSecret,
+    );
 
-    if (!this.armNetworkClient) {
-      this.armNetworkClient = new NetworkManagementClient(
-        this.clientSecretCredential,
-        this.subscriptionId,
-      );
-    }
+    this.armNetworkClient ??= new NetworkManagementClient(
+      this.clientSecretCredential,
+      this.subscriptionId,
+    );
   }
 
   private ensureInitialized(): void {
@@ -114,20 +123,26 @@ export class MSClient {
   }
 
   /** Graph SDK requests return untyped data; narrow at call sites. */
-  private async graphGet<T>(request: (client: Client) => Promise<unknown>): Promise<T> {
+  private async graphGet<T>(
+    request: (client: Client) => Promise<unknown>,
+  ): Promise<T> {
     const result: unknown = await request(this.getAppClient());
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Graph SDK has no typed responses
     return result as T;
   }
 
   /** Graph SDK mutations return untyped data; narrow at call sites. */
-  private async graphMutate<T>(request: (client: Client) => Promise<unknown>): Promise<T> {
+  private async graphMutate<T>(
+    request: (client: Client) => Promise<unknown>,
+  ): Promise<T> {
     const result: unknown = await request(this.getAppClient());
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Graph SDK has no typed responses
     return result as T;
   }
 
-  private async graphDelete(request: (client: Client) => Promise<unknown>): Promise<void> {
+  private async graphDelete(
+    request: (client: Client) => Promise<unknown>,
+  ): Promise<void> {
     await request(this.getAppClient());
   }
 
@@ -152,7 +167,10 @@ export class MSClient {
   async getGroupsAsync(): Promise<PageCollection> {
     try {
       return await this.graphGet<PageCollection>((client) =>
-        client.api("/groups").select(["id", "displayName", "members", "owners"]).get(),
+        client
+          .api("/groups")
+          .select(["id", "displayName", "members", "owners"])
+          .get(),
       );
     } catch (e) {
       console.error("Failed to get groups:", e);
@@ -163,7 +181,11 @@ export class MSClient {
   async getGroupByNameAsync(groupName: string): Promise<PageCollection | null> {
     try {
       return await this.graphGet<PageCollection>((client) =>
-        client.api("/groups").filter(`displayName eq '${groupName}'`).top(1).get(),
+        client
+          .api("/groups")
+          .filter(`displayName eq '${groupName}'`)
+          .top(1)
+          .get(),
       );
     } catch (e) {
       if (hasStatusCode(e) && e.statusCode === 404) {
@@ -180,7 +202,14 @@ export class MSClient {
       return await this.graphGet<PageCollection>((client) =>
         client
           .api(`/groups/${groupId}/members`)
-          .select(["displayName", "id", "mail", "userPrincipalName", "surname", "firstname"])
+          .select([
+            "displayName",
+            "id",
+            "mail",
+            "userPrincipalName",
+            "surname",
+            "firstname",
+          ])
           .get(),
       );
     } catch (e) {
@@ -192,7 +221,9 @@ export class MSClient {
   async createUserAsync(user: User): Promise<User> {
     try {
       console.log(`Creating user ${user.userPrincipalName}`);
-      return await this.graphMutate<User>((client) => client.api("/users").post(user));
+      return await this.graphMutate<User>((client) =>
+        client.api("/users").post(user),
+      );
     } catch (e) {
       console.error("Failed to create user:", e);
       throw e;
@@ -202,7 +233,9 @@ export class MSClient {
   async createGroupAsync(group: Group): Promise<Group> {
     try {
       console.log(`Creating group ${group.displayName}`);
-      return await this.graphMutate<Group>((client) => client.api("/groups").post(group));
+      return await this.graphMutate<Group>((client) =>
+        client.api("/groups").post(group),
+      );
     } catch (e) {
       console.error("Failed to create group:", e);
       throw e;
@@ -214,7 +247,14 @@ export class MSClient {
       return await this.graphGet<PageCollection>((client) =>
         client
           .api("/users")
-          .select(["displayName", "id", "mail", "userPrincipalName", "surname", "firstname"])
+          .select([
+            "displayName",
+            "id",
+            "mail",
+            "userPrincipalName",
+            "surname",
+            "firstname",
+          ])
           .top(25)
           .orderby("userPrincipalName")
           .get(),
@@ -247,7 +287,9 @@ export class MSClient {
 
   async getUserByUpnAsync(upn: string): Promise<User | null> {
     try {
-      return await this.graphGet<User>((client) => client.api("/users/" + upn).get());
+      return await this.graphGet<User>((client) =>
+        client.api("/users/" + upn).get(),
+      );
     } catch (e) {
       if (hasStatusCode(e) && e.statusCode === 404) {
         console.log(`User ${upn} not found`);
@@ -260,12 +302,17 @@ export class MSClient {
 
   async addUserToGroupAsync(user: User, group: Group): Promise<void> {
     const userDirectoryObject = {
-      "@odata.id": "https://graph.microsoft.com/v1.0/users/" + user.userPrincipalName,
+      "@odata.id":
+        "https://graph.microsoft.com/v1.0/users/" + user.userPrincipalName,
     };
     try {
-      console.log(`Adding user ${user.userPrincipalName} to group ${group.displayName}`);
+      console.log(
+        `Adding user ${user.userPrincipalName} to group ${group.displayName}`,
+      );
       await this.graphMutate<void>((client) =>
-        client.api("/groups/" + group.id + "/members/$ref").post(userDirectoryObject),
+        client
+          .api("/groups/" + group.id + "/members/$ref")
+          .post(userDirectoryObject),
       );
     } catch (e) {
       console.error("Failed to add user to group:", e);
@@ -275,7 +322,9 @@ export class MSClient {
 
   async removeUserFromGroupAsync(user: User, group: Group): Promise<void> {
     try {
-      console.log(`Removing user ${user.userPrincipalName} from group ${group.displayName}`);
+      console.log(
+        `Removing user ${user.userPrincipalName} from group ${group.displayName}`,
+      );
       await this.graphDelete((client) =>
         client.api(`/groups/${group.id}/members/${user.id}/$ref`).delete(),
       );
@@ -290,9 +339,13 @@ export class MSClient {
       "@odata.id": "https://graph.microsoft.com/v1.0/groups/" + subject.id,
     };
     try {
-      console.log(`Adding group ${subject.displayName} to group ${target.displayName}`);
+      console.log(
+        `Adding group ${subject.displayName} to group ${target.displayName}`,
+      );
       await this.graphMutate<void>((client) =>
-        client.api("/groups/" + target.id + "/members/$ref").post(userDirectoryObject),
+        client
+          .api("/groups/" + target.id + "/members/$ref")
+          .post(userDirectoryObject),
       );
     } catch (e) {
       console.error("Failed to add group to group:", e);
@@ -344,11 +397,15 @@ export class MSClient {
 
   async addAppRedirectUrlsAsync(redirectUrls: string[]): Promise<void> {
     try {
-      console.log(`[AZURE] Adding ${redirectUrls.length} redirect URLs to app: ${this.clientId}`);
+      console.log(
+        `[AZURE] Adding ${redirectUrls.length} redirect URLs to app: ${this.clientId}`,
+      );
       const currentUrls = await this.getAppRedirectUrlsAsync();
       const newUrls = [...new Set([...currentUrls, ...redirectUrls])];
 
-      console.log(`[AZURE] Updating app with ${newUrls.length} total redirect URLs`);
+      console.log(
+        `[AZURE] Updating app with ${newUrls.length} total redirect URLs`,
+      );
       await this.graphMutate<void>((client) =>
         client.api(`/applications(appId='{${this.clientId}}')`).update({
           web: {
@@ -371,7 +428,9 @@ export class MSClient {
       const currentUrls = await this.getAppRedirectUrlsAsync();
       const newUrls = currentUrls.filter((url) => !redirectUrls.includes(url));
 
-      console.log(`[AZURE] Updating app with ${newUrls.length} remaining redirect URLs`);
+      console.log(
+        `[AZURE] Updating app with ${newUrls.length} remaining redirect URLs`,
+      );
       await this.graphMutate<void>((client) =>
         client.api(`/applications(appId='{${this.clientId}}')`).update({
           web: {
@@ -409,31 +468,21 @@ export class MSClient {
     return user.replace("@", "_");
   }
 
-  async getNetworkSecurityGroupRuleAsync(
+  getNetworkSecurityGroupRuleAsync(
     resourceGroupName: string,
     nsgName: string,
     ruleName: string,
   ): Promise<SecurityRulesGetResponse | null> {
     this.ensureArmInitialized();
-    try {
-      console.log(
-        `Getting network security group rule ${ruleName} from NSG ${nsgName} in resource group ${resourceGroupName}`,
-      );
-
-      const rule = await this.armNetworkClient?.securityRules.get(
-        resourceGroupName,
-        nsgName,
-        ruleName,
-      );
-      return rule ?? null;
-    } catch (e) {
-      if (hasStatusCode(e) && e.statusCode === 404) {
-        console.log(`Network security group rule ${ruleName} not found in NSG ${nsgName}`);
-        return null;
-      }
-      console.error("Failed to get network security group rule:", e);
-      throw e;
+    if (this.armNetworkClient === undefined) {
+      throw new Error("ARM network client not initialized");
     }
+    return getNetworkSecurityGroupRule(
+      this.armNetworkClient,
+      resourceGroupName,
+      nsgName,
+      ruleName,
+    );
   }
 
   async getPublicIpAsync(): Promise<string> {
@@ -442,7 +491,9 @@ export class MSClient {
       const response = await fetch("https://api.ipify.org?format=json");
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch public IP: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch public IP: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data: unknown = await response.json();
@@ -459,31 +510,19 @@ export class MSClient {
     }
   }
 
-  async getNetworkSecurityGroupAsync(
-    resourceGroupName: string,
-    nsgName: string,
-  ): Promise<NetworkSecurityGroupsGetResponse> {
+  getNetworkSecurityGroupAsync(resourceGroupName: string, nsgName: string) {
     this.ensureArmInitialized();
-    try {
-      console.log(
-        `Getting network security group ${nsgName} from resource group ${resourceGroupName}`,
-      );
-
-      const nsg = await this.armNetworkClient?.networkSecurityGroups.get(
-        resourceGroupName,
-        nsgName,
-      );
-      if (!nsg) {
-        throw new Error(`Network security group ${nsgName} not found in ${resourceGroupName}`);
-      }
-      return nsg;
-    } catch (e) {
-      console.error("Failed to get network security group:", e);
-      throw e;
+    if (this.armNetworkClient === undefined) {
+      throw new Error("ARM network client not initialized");
     }
+    return getNetworkSecurityGroup(
+      this.armNetworkClient,
+      resourceGroupName,
+      nsgName,
+    );
   }
 
-  async allowPublicIpInNSG(
+  allowPublicIpInNSG(
     resourceGroupName: string,
     nsgName: string,
     baseRuleName: string = "AllowE2EJobs",
@@ -495,147 +534,15 @@ export class MSClient {
     cleanup: () => Promise<void>;
   }> {
     this.ensureArmInitialized();
-
-    try {
-      // Step 1: Get public IP (for logging purposes only)
-      console.log("[NSG] Getting current public IP address...");
-      const publicIp = await this.getPublicIpAsync();
-      console.log(`[NSG] Public IP obtained: ${publicIp}`);
-
-      // Step 2: Generate unique rule name
-      const timestamp = Date.now();
-      const randomSuffix = Math.random().toString(36).slice(2, 8);
-      const ruleName = `${baseRuleName}-${timestamp}-${randomSuffix}`;
-      console.log(`[NSG] Generated unique rule name: ${ruleName}`);
-
-      // Step 3: Verify NSG exists
-      console.log(`[NSG] Verifying NSG exists: ${nsgName} in resource group: ${resourceGroupName}`);
-      const nsg = await this.getNetworkSecurityGroupAsync(resourceGroupName, nsgName);
-      console.log(`[NSG] NSG verified: ${nsg.name} (ID: ${nsg.id})`);
-
-      // Step 4: Get existing rule to use as template
-      console.log(`[NSG] Getting existing rule as template: ${baseRuleName}`);
-      const templateRule = await this.getNetworkSecurityGroupRuleAsync(
-        resourceGroupName,
-        nsgName,
-        baseRuleName,
-      );
-
-      if (!templateRule) {
-        throw new Error(`Template rule ${baseRuleName} not found in NSG ${nsgName}`);
-      }
-      console.log(
-        `[NSG] Template rule found: ${templateRule.name} (Priority: ${templateRule.priority})`,
-      );
-
-      // Step 5: Create new rule with wildcard IP (*)
-      // Find an available priority to avoid conflicts
-      const existingRules = this.armNetworkClient?.securityRules.list(resourceGroupName, nsgName);
-      const existingPriorities = new Set();
-
-      if (existingRules) {
-        for await (const rule of existingRules) {
-          existingPriorities.add(rule.priority);
-        }
-      }
-
-      // Find the first available priority starting from 100
-      let availablePriority = 200;
-      while (existingPriorities.has(availablePriority)) {
-        availablePriority++;
-      }
-
-      console.log(
-        `[NSG] Template rule priority: ${templateRule.priority}, Using available priority: ${availablePriority}`,
-      );
-
-      const newRule: SecurityRule = {
-        protocol: templateRule.protocol,
-        sourcePortRange: templateRule.sourcePortRange,
-        destinationPortRange: templateRule.destinationPortRange,
-        sourceAddressPrefix: "*",
-        destinationAddressPrefix: templateRule.destinationAddressPrefix,
-        access: templateRule.access,
-        priority: availablePriority,
-        direction: templateRule.direction,
-        description: `Temporary E2E test rule allowing all IPs - Created at ${new Date().toISOString()}`,
-      };
-
-      console.log(`[NSG] Creating new rule: ${ruleName} with wildcard IP (*)`);
-      console.log(
-        `[NSG] Rule details: Priority=${newRule.priority}, Protocol=${newRule.protocol}, Access=${newRule.access}`,
-      );
-
-      if (!this.armNetworkClient) {
-        throw new Error("ARM network client not initialized");
-      }
-      const rulePoller = await this.armNetworkClient.securityRules.beginCreateOrUpdate(
-        resourceGroupName,
-        nsgName,
-        ruleName,
-        newRule,
-      );
-
-      console.log(`[NSG] Waiting for rule creation to complete...`);
-      const createdRule = await rulePoller.pollUntilDone();
-
-      console.log(`[NSG] Rule created successfully: ${ruleName}`);
-      console.log(`[NSG] Rule ID: ${createdRule.id}`);
-
-      // Step 6: Create cleanup function
-      const cleanup = async (): Promise<void> => {
-        try {
-          console.log(`[NSG] Starting cleanup for rule: ${ruleName}`);
-          console.log(`[NSG] Verifying rule exists before deletion...`);
-
-          const existingRule = await this.getNetworkSecurityGroupRuleAsync(
-            resourceGroupName,
-            nsgName,
-            ruleName,
-          );
-          if (!existingRule) {
-            console.log(
-              `[NSG] Rule ${ruleName} not found during cleanup - may have been already deleted`,
-            );
-            return;
-          }
-
-          console.log(`[NSG] Deleting rule: ${ruleName}`);
-          if (!this.armNetworkClient) {
-            throw new Error("ARM network client not initialized");
-          }
-          const deletePoller = await this.armNetworkClient.securityRules.beginDelete(
-            resourceGroupName,
-            nsgName,
-            ruleName,
-          );
-          console.log(`[NSG] Waiting for rule deletion to complete...`);
-          await deletePoller.pollUntilDone();
-          console.log(`[NSG] Rule deleted successfully: ${ruleName}`);
-        } catch (error) {
-          console.error(`[NSG] Failed to cleanup rule ${ruleName}:`, error);
-          console.error(`[NSG] Cleanup error details:`, {
-            message: getErrorMessage(error),
-            statusCode: hasStatusCode(error) ? error.statusCode : undefined,
-          });
-          // Don't throw - cleanup failures shouldn't break tests
-        }
-      };
-
-      return {
-        publicIp,
-        ruleName,
-        resourceGroupName,
-        nsgName,
-        cleanup,
-      };
-    } catch (error) {
-      console.error(`[NSG] Failed to allow public IP in NSG:`, error);
-      console.error(`[NSG] Error details:`, {
-        message: getErrorMessage(error),
-        statusCode: hasStatusCode(error) ? error.statusCode : undefined,
-      });
-      throw error;
+    if (this.armNetworkClient === undefined) {
+      throw new Error("ARM network client not initialized");
     }
+    return allowPublicIpInNsg(
+      this.armNetworkClient,
+      () => this.getPublicIpAsync(),
+      resourceGroupName,
+      nsgName,
+      baseRuleName,
+    );
   }
 }
