@@ -1,7 +1,7 @@
 import { Page, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { APIHelper } from "../../utils/api-helper";
-import { RHDH_INSTANCE_TABLE } from "../page-objects/rhdh-instance-table";
+import { RHDH_INSTANCE_TABLE } from "../selectors/rhdh-instance-table";
 
 /** Page object for RHDH instance catalog views (PR tables, entity cards). */
 export class RhdhInstance {

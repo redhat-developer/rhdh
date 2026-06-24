@@ -1,6 +1,5 @@
 import { Locator, Page } from "@playwright/test";
-
-import { SEARCH_OBJECTS_COMPONENTS } from "../../support/page-objects/page-obj";
+import { SEARCH_OBJECTS_COMPONENTS } from "../../support/selectors/page-selectors";
 import * as interaction from "./interaction";
 import * as misc from "./misc";
 import * as navigation from "./navigation";
@@ -28,11 +27,17 @@ export class UIhelper {
   }
 
   searchInputPlaceholder(searchText: string) {
-    return this.page.fill(SEARCH_OBJECTS_COMPONENTS.placeholderSearch, searchText);
+    return this.page.fill(
+      SEARCH_OBJECTS_COMPONENTS.placeholderSearch,
+      searchText,
+    );
   }
 
   searchInputAriaLabel(searchText: string) {
-    return this.page.fill(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch, searchText);
+    return this.page.fill(
+      SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch,
+      searchText,
+    );
   }
 
   pressTab() {
@@ -47,7 +52,10 @@ export class UIhelper {
     return interaction.uncheckCheckbox(this.page, text);
   }
 
-  clickButton(label: string | RegExp, options?: { exact?: boolean; force?: boolean }) {
+  clickButton(
+    label: string | RegExp,
+    options?: { exact?: boolean; force?: boolean },
+  ) {
     return interaction.clickButton(this.page, label, options);
   }
 
@@ -114,7 +122,10 @@ export class UIhelper {
     return navigation.goToSelfServicePage(this.page);
   }
 
-  verifyLink(arg: string | { label: string }, options?: { exact?: boolean; notVisible?: boolean }) {
+  verifyLink(
+    arg: string | { label: string },
+    options?: { exact?: boolean; notVisible?: boolean },
+  ) {
     return verification.verifyLink(this.page, arg, options);
   }
 
@@ -166,7 +177,11 @@ export class UIhelper {
     return verification.waitForTextDisappear(this.page, text);
   }
 
-  verifyText(text: string | RegExp, exact: boolean = true, timeout: number = 5000) {
+  verifyText(
+    text: string | RegExp,
+    exact: boolean = true,
+    timeout: number = 5000,
+  ) {
     return verification.verifyText(this.page, text, exact, timeout);
   }
 
@@ -175,7 +190,11 @@ export class UIhelper {
   }
 
   verifyPartialTextInSelector(selector: string, partialText: string) {
-    return verification.verifyPartialTextInSelector(this.page, selector, partialText);
+    return verification.verifyPartialTextInSelector(
+      this.page,
+      selector,
+      partialText,
+    );
   }
 
   verifyColumnHeading(rowTexts: string[] | RegExp[], exact: boolean = true) {
@@ -222,8 +241,15 @@ export class UIhelper {
     return table.verifyButtonURL(this.page, label, url, options);
   }
 
-  verifyRowInTableByUniqueText(uniqueRowText: string, cellTexts: string[] | RegExp[]) {
-    return table.verifyRowInTableByUniqueText(this.page, uniqueRowText, cellTexts);
+  verifyRowInTableByUniqueText(
+    uniqueRowText: string,
+    cellTexts: string[] | RegExp[],
+  ) {
+    return table.verifyRowInTableByUniqueText(
+      this.page,
+      uniqueRowText,
+      cellTexts,
+    );
   }
 
   clickOnLinkInTableByUniqueText(
@@ -231,11 +257,23 @@ export class UIhelper {
     linkText: string | RegExp,
     exact: boolean = true,
   ) {
-    return table.clickOnLinkInTableByUniqueText(this.page, uniqueRowText, linkText, exact);
+    return table.clickOnLinkInTableByUniqueText(
+      this.page,
+      uniqueRowText,
+      linkText,
+      exact,
+    );
   }
 
-  clickOnButtonInTableByUniqueText(uniqueRowText: string, textOrLabel: string | RegExp) {
-    return table.clickOnButtonInTableByUniqueText(this.page, uniqueRowText, textOrLabel);
+  clickOnButtonInTableByUniqueText(
+    uniqueRowText: string,
+    textOrLabel: string | RegExp,
+  ) {
+    return table.clickOnButtonInTableByUniqueText(
+      this.page,
+      uniqueRowText,
+      textOrLabel,
+    );
   }
 
   verifyLinkinCard(cardHeading: string, linkText: string, exact = true) {
@@ -292,8 +330,17 @@ export class UIhelper {
     return misc.clickUnregisterButtonForDisplayedEntity(this.page, buttonName);
   }
 
-  verifyPluginRow(text: string, expectedEnabled: string, expectedPreinstalled: string) {
-    return table.verifyPluginRow(this.page, text, expectedEnabled, expectedPreinstalled);
+  verifyPluginRow(
+    text: string,
+    expectedEnabled: string,
+    expectedPreinstalled: string,
+  ) {
+    return table.verifyPluginRow(
+      this.page,
+      text,
+      expectedEnabled,
+      expectedPreinstalled,
+    );
   }
 
   verifyTextInTooltip(text: string | RegExp) {

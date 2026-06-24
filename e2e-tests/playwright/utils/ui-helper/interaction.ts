@@ -1,8 +1,10 @@
 import { expect, Locator, Page } from "@playwright/test";
-
-import { getCardByText } from "../../support/page-objects/ui-locators";
+import { getCardByText } from "../../support/selectors/ui-locators";
 import { getErrorMessage } from "../errors";
-import { DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS, DEFAULT_CLICK_BUTTON_OPTIONS } from "./defaults";
+import {
+  DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS,
+  DEFAULT_CLICK_BUTTON_OPTIONS,
+} from "./defaults";
 
 export function getGlobalHeader(page: Page): Locator {
   return page.getByRole("navigation").filter({
@@ -65,7 +67,9 @@ export async function clickButtonByText(
     ...DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS,
     ...options,
   };
-  const buttonElement = page.getByRole("button").getByText(buttonText, { exact });
+  const buttonElement = page
+    .getByRole("button")
+    .getByText(buttonText, { exact });
 
   await buttonElement.waitFor({
     state: "visible",
@@ -84,7 +88,11 @@ export async function clickButtonByLabel(page: Page, label: string | RegExp) {
   await page.getByRole("button", { name: label }).first().click();
 }
 
-export async function fillTextInputByLabel(page: Page, label: string, text: string) {
+export async function fillTextInputByLabel(
+  page: Page,
+  label: string,
+  text: string,
+) {
   await page.getByLabel(label).fill(text);
 }
 
@@ -140,7 +148,9 @@ export async function clickLink(
   } else if ("href" in options) {
     linkLocator = page.locator(`a[href="${options.href}"]`).first();
   } else {
-    linkLocator = page.locator(`div[aria-label='${options.ariaLabel}'] a`).first();
+    linkLocator = page
+      .locator(`div[aria-label='${options.ariaLabel}'] a`)
+      .first();
   }
 
   await linkLocator.waitFor({ state: "visible" });
@@ -159,8 +169,16 @@ export async function clickById(page: Page, id: string) {
   await locator.click();
 }
 
-export async function clickBtnInCard(page: Page, cardText: string, btnText: string, exact = true) {
+export async function clickBtnInCard(
+  page: Page,
+  cardText: string,
+  btnText: string,
+  exact = true,
+) {
   const cardLocator = getCardByText(page, cardText).first();
   await cardLocator.scrollIntoViewIfNeeded();
-  await cardLocator.getByRole("button", { name: btnText, exact }).first().click();
+  await cardLocator
+    .getByRole("button", { name: btnText, exact })
+    .first()
+    .click();
 }

@@ -4,7 +4,7 @@ import { expect, Page } from "@playwright/test";
 import { authenticator } from "otplib";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { SETTINGS_PAGE_COMPONENTS } from "../../support/page-objects/page-obj";
+import { SETTINGS_PAGE_COMPONENTS } from "../../support/selectors/page-selectors";
 import { getErrorMessage } from "../errors";
 import { UIhelper } from "../ui-helper";
 import { waitForNextTotpWindow, waitForRhdhReady } from "../wait-for-rhdh-ready";

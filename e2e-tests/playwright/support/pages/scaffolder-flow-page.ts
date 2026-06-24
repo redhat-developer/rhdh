@@ -1,5 +1,9 @@
 import { expect, Page } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import * as interaction from "../../utils/ui-helper/interaction";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as table from "../../utils/ui-helper/table";
+import * as verification from "../../utils/ui-helper/verification";
+import { SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
 
 export type ReactAppTemplateDetails = {
   componentName: string;
@@ -14,90 +18,150 @@ export type ReactAppTemplateDetails = {
 /** Scaffolder and self-service template flows. */
 export class ScaffolderFlowPage {
   private readonly page: Page;
-  private readonly ui: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.ui = new UIhelper(page);
+  }
+
+  private async fillSearch(query: string): Promise<void> {
+    await this.page.fill(SEARCH_OBJECTS_COMPONENTS.placeholderSearch, query);
   }
 
   async openImportGitRepository(): Promise<void> {
-    await this.ui.openSidebar("Catalog");
-    await this.ui.clickButton("Self-service");
-    await this.ui.clickButton("Import an existing Git repository");
+    await navigation.openSidebar(this.page, "Catalog");
+    await interaction.clickButton(this.page, "Self-service");
+    await interaction.clickButton(
+      this.page,
+      "Import an existing Git repository",
+    );
   }
 
   async openSelfServiceFromCatalog(): Promise<void> {
-    await this.ui.openSidebar("Catalog");
-    await this.ui.clickButton("Self-service");
+    await navigation.openSidebar(this.page, "Catalog");
+    await interaction.clickButton(this.page, "Self-service");
   }
 
   async verifySelfServiceHeading(): Promise<void> {
-    await this.ui.verifyHeading("Self-service");
+    await verification.verifyHeading(this.page, "Self-service");
   }
 
   async clickImportGitRepository(): Promise<void> {
-    await this.ui.clickButton("Import an existing Git repository");
+    await interaction.clickButton(
+      this.page,
+      "Import an existing Git repository",
+    );
   }
 
   async runCreateReactAppTemplate(
     details: ReactAppTemplateDetails,
   ): Promise<void> {
-    await this.ui.openSidebar("Catalog");
-    await this.ui.clickButton("Self-service");
-    await this.ui.verifyHeading("Self-service");
-    await this.ui.searchInputPlaceholder("Create React App Template");
-    await this.ui.verifyText("Create React App Template");
-    await this.ui.waitForTextDisappear("Add ArgoCD to an existing project");
-    await this.ui.clickButton("Choose");
+    await navigation.openSidebar(this.page, "Catalog");
+    await interaction.clickButton(this.page, "Self-service");
+    await verification.verifyHeading(this.page, "Self-service");
+    await this.fillSearch("Create React App Template");
+    await verification.verifyText(this.page, "Create React App Template");
+    await verification.waitForTextDisappear(
+      this.page,
+      "Add ArgoCD to an existing project",
+    );
+    await interaction.clickButton(this.page, "Choose");
 
-    await this.ui.fillTextInputByLabel("Name", details.componentName);
-    await this.ui.fillTextInputByLabel("Description", details.description);
-    await this.ui.fillTextInputByLabel("Owner", details.owner);
-    await this.ui.fillTextInputByLabel("Label", details.label);
-    await this.ui.fillTextInputByLabel("Annotation", details.annotation);
-    await this.ui.clickButton("Next");
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Name",
+      details.componentName,
+    );
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Description",
+      details.description,
+    );
+    await interaction.fillTextInputByLabel(this.page, "Owner", details.owner);
+    await interaction.fillTextInputByLabel(this.page, "Label", details.label);
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Annotation",
+      details.annotation,
+    );
+    await interaction.clickButton(this.page, "Next");
 
-    await this.ui.fillTextInputByLabel("Owner", details.repoOwner);
-    await this.ui.fillTextInputByLabel("Repository", details.repo);
-    await this.ui.pressTab();
-    await this.ui.clickButton("Review");
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Owner",
+      details.repoOwner,
+    );
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Repository",
+      details.repo,
+    );
+    await interaction.pressTab(this.page);
+    await interaction.clickButton(this.page, "Review");
   }
 
   async fillCreateReactAppTemplateForm(
     details: ReactAppTemplateDetails,
   ): Promise<void> {
-    await this.ui.searchInputPlaceholder("Create React App Template");
-    await this.ui.verifyText("Create React App Template");
-    await this.ui.waitForTextDisappear("Add ArgoCD to an existing project");
-    await this.ui.clickButton("Choose");
+    await this.fillSearch("Create React App Template");
+    await verification.verifyText(this.page, "Create React App Template");
+    await verification.waitForTextDisappear(
+      this.page,
+      "Add ArgoCD to an existing project",
+    );
+    await interaction.clickButton(this.page, "Choose");
 
-    await this.ui.fillTextInputByLabel("Name", details.componentName);
-    await this.ui.fillTextInputByLabel("Description", details.description);
-    await this.ui.fillTextInputByLabel("Owner", details.owner);
-    await this.ui.fillTextInputByLabel("Label", details.label);
-    await this.ui.fillTextInputByLabel("Annotation", details.annotation);
-    await this.ui.clickButton("Next");
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Name",
+      details.componentName,
+    );
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Description",
+      details.description,
+    );
+    await interaction.fillTextInputByLabel(this.page, "Owner", details.owner);
+    await interaction.fillTextInputByLabel(this.page, "Label", details.label);
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Annotation",
+      details.annotation,
+    );
+    await interaction.clickButton(this.page, "Next");
 
-    await this.ui.fillTextInputByLabel("Owner", details.repoOwner);
-    await this.ui.fillTextInputByLabel("Repository", details.repo);
-    await this.ui.pressTab();
-    await this.ui.clickButton("Review");
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Owner",
+      details.repoOwner,
+    );
+    await interaction.fillTextInputByLabel(
+      this.page,
+      "Repository",
+      details.repo,
+    );
+    await interaction.pressTab(this.page);
+    await interaction.clickButton(this.page, "Review");
   }
 
   async verifyCreateReactAppReviewTable(
     details: ReactAppTemplateDetails,
   ): Promise<void> {
-    await this.ui.verifyRowInTableByUniqueText("Owner", [details.owner]);
-    await this.ui.verifyRowInTableByUniqueText("Name", [details.componentName]);
-    await this.ui.verifyRowInTableByUniqueText("Description", [
+    await table.verifyRowInTableByUniqueText(this.page, "Owner", [
+      details.owner,
+    ]);
+    await table.verifyRowInTableByUniqueText(this.page, "Name", [
+      details.componentName,
+    ]);
+    await table.verifyRowInTableByUniqueText(this.page, "Description", [
       details.description,
     ]);
-    await this.ui.verifyRowInTableByUniqueText("Label", [details.label]);
-    await this.ui.verifyRowInTableByUniqueText("Annotation", [
+    await table.verifyRowInTableByUniqueText(this.page, "Label", [
+      details.label,
+    ]);
+    await table.verifyRowInTableByUniqueText(this.page, "Annotation", [
       details.annotation,
     ]);
-    await this.ui.verifyRowInTableByUniqueText("Repository Location", [
+    await table.verifyRowInTableByUniqueText(this.page, "Repository Location", [
       `${details.repoOwner}/${details.repo}`,
     ]);
   }
@@ -105,33 +169,37 @@ export class ScaffolderFlowPage {
   async verifyCreateReactAppReviewTableWithGroupOwner(
     details: ReactAppTemplateDetails,
   ): Promise<void> {
-    await this.ui.verifyRowInTableByUniqueText("Owner", [
+    await table.verifyRowInTableByUniqueText(this.page, "Owner", [
       `group:${details.owner}`,
     ]);
-    await this.ui.verifyRowInTableByUniqueText("Name", [details.componentName]);
-    await this.ui.verifyRowInTableByUniqueText("Description", [
+    await table.verifyRowInTableByUniqueText(this.page, "Name", [
+      details.componentName,
+    ]);
+    await table.verifyRowInTableByUniqueText(this.page, "Description", [
       details.description,
     ]);
-    await this.ui.verifyRowInTableByUniqueText("Label", [details.label]);
-    await this.ui.verifyRowInTableByUniqueText("Annotation", [
+    await table.verifyRowInTableByUniqueText(this.page, "Label", [
+      details.label,
+    ]);
+    await table.verifyRowInTableByUniqueText(this.page, "Annotation", [
       details.annotation,
     ]);
-    await this.ui.verifyRowInTableByUniqueText("Repository Location", [
+    await table.verifyRowInTableByUniqueText(this.page, "Repository Location", [
       `github.com?owner=${details.repoOwner}&repo=${details.repo}`,
     ]);
   }
 
   async createAndOpenInCatalog(): Promise<void> {
-    await this.ui.clickButton("Create");
-    await this.ui.clickLink("Open in catalog");
+    await interaction.clickButton(this.page, "Create");
+    await interaction.clickLink(this.page, "Open in catalog");
   }
 
   async clickCreate(): Promise<void> {
-    await this.ui.clickButton("Create");
+    await interaction.clickButton(this.page, "Create");
   }
 
   async clickOpenInCatalog(): Promise<void> {
-    await this.ui.clickLink("Open in catalog");
+    await interaction.clickLink(this.page, "Open in catalog");
   }
 
   async waitForOpenInCatalogLink(timeout = 60_000): Promise<void> {
@@ -151,27 +219,29 @@ export class ScaffolderFlowPage {
     templateName: string,
     kindColumn = templateName,
   ): Promise<void> {
-    await this.ui.openSidebar("Catalog");
-    await this.ui.selectMuiBox("Kind", "Template");
-    await this.ui.searchInputPlaceholder(`${templateName}\n`);
-    await this.ui.verifyRowInTableByUniqueText(templateName, [kindColumn]);
-    await this.ui.clickLink(templateName);
+    await navigation.openSidebar(this.page, "Catalog");
+    await navigation.selectMuiBox(this.page, "Kind", "Template");
+    await this.fillSearch(`${templateName}\n`);
+    await table.verifyRowInTableByUniqueText(this.page, templateName, [
+      kindColumn,
+    ]);
+    await interaction.clickLink(this.page, templateName);
   }
 
   async launchTemplateAndVerifyIntro(): Promise<void> {
-    await this.ui.clickLink("Launch Template");
-    await this.ui.verifyText("Provide some simple information");
+    await interaction.clickLink(this.page, "Launch Template");
+    await verification.verifyText(this.page, "Provide some simple information");
   }
 
   async openComponentInCatalog(
     componentName: string,
     kindColumn: string | string[] = "website",
   ): Promise<void> {
-    await this.ui.openCatalogSidebar("Component");
-    await this.ui.searchInputPlaceholder(componentName);
+    await navigation.openCatalogSidebar(this.page, "Component");
+    await this.fillSearch(componentName);
     const columns = Array.isArray(kindColumn) ? kindColumn : [kindColumn];
-    await this.ui.verifyRowInTableByUniqueText(componentName, columns);
-    await this.ui.clickLink(componentName);
+    await table.verifyRowInTableByUniqueText(this.page, componentName, columns);
+    await interaction.clickLink(this.page, componentName);
   }
 
   async verifyDependencyGraphLabels(
@@ -180,19 +250,27 @@ export class ScaffolderFlowPage {
     relationLabel: string,
     nodePartialText: string,
   ): Promise<void> {
-    await this.ui.verifyTextInSelector(labelSelector, relationLabel);
-    await this.ui.verifyPartialTextInSelector(nodeSelector, nodePartialText);
+    await verification.verifyTextInSelector(
+      this.page,
+      labelSelector,
+      relationLabel,
+    );
+    await verification.verifyPartialTextInSelector(
+      this.page,
+      nodeSelector,
+      nodePartialText,
+    );
   }
 
   async runHttpRequestTemplateFlow(): Promise<void> {
-    await this.ui.openSidebar("Catalog");
-    await this.ui.selectMuiBox("Kind", "Template");
-    await this.ui.searchInputPlaceholder("Test HTTP Request");
-    await this.ui.clickLink("Test HTTP Request");
-    await this.ui.verifyHeading("Test HTTP Request");
-    await this.ui.clickLink("Launch Template");
-    await this.ui.verifyHeading("Self-service");
-    await this.ui.clickButton("Create");
-    await this.ui.verifyText("200", false);
+    await navigation.openSidebar(this.page, "Catalog");
+    await navigation.selectMuiBox(this.page, "Kind", "Template");
+    await this.fillSearch("Test HTTP Request");
+    await interaction.clickLink(this.page, "Test HTTP Request");
+    await verification.verifyHeading(this.page, "Test HTTP Request");
+    await interaction.clickLink(this.page, "Launch Template");
+    await verification.verifyHeading(this.page, "Self-service");
+    await interaction.clickButton(this.page, "Create");
+    await verification.verifyText(this.page, "200", false);
   }
 }
