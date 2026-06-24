@@ -1,5 +1,8 @@
 import { expect, Page } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import * as interaction from "../../utils/ui-helper/interaction";
+import * as misc from "../../utils/ui-helper/misc";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as verification from "../../utils/ui-helper/verification";
 import {
   getCurrentLanguage,
   getTranslations,
@@ -8,27 +11,25 @@ import {
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-/** Settings and profile interactions (POM wrapper over UIhelper). */
+/** Settings and profile interactions. */
 export class SettingsPage {
   private readonly page: Page;
-  private readonly ui: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.ui = new UIhelper(page);
   }
 
   async open(): Promise<void> {
-    await this.ui.goToSettingsPage();
+    await navigation.goToSettingsPage(this.page);
   }
 
   async verifyProfileHeading(name: string): Promise<void> {
-    await this.ui.verifyHeading(name);
+    await verification.verifyHeading(this.page, name);
   }
 
   async verifyGithubUserProfile(userId: string): Promise<void> {
-    await this.ui.verifyHeading(userId);
-    await this.ui.verifyHeading(`User Entity: ${userId}`);
+    await verification.verifyHeading(this.page, userId);
+    await verification.verifyHeading(this.page, `User Entity: ${userId}`);
   }
 
   async verifySignInButtonVisible(): Promise<void> {
@@ -39,27 +40,30 @@ export class SettingsPage {
 
   async verifyGuestProfile(): Promise<void> {
     await this.verifyProfileHeading("Guest");
-    await this.ui.verifyHeading("User Entity: guest");
+    await verification.verifyHeading(this.page, "User Entity: guest");
   }
 
   async verifySignInPageTitle(): Promise<void> {
-    await this.ui.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
+    await verification.verifyHeading(
+      this.page,
+      t["rhdh"][lang]["signIn.page.title"],
+    );
   }
 
   async verifySignInError(message: string | RegExp): Promise<void> {
-    await this.ui.verifyAlertErrorMessage(message);
+    await verification.verifyAlertErrorMessage(this.page, message);
   }
 
   async hideQuickstartIfVisible(): Promise<void> {
-    await this.ui.hideQuickstartIfVisible();
+    await misc.hideQuickstartIfVisible(this.page);
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
-    await this.ui.verifyText(text, exact);
+    await verification.verifyText(this.page, text, exact);
   }
 
   async goToPageUrl(url: string, heading?: string): Promise<void> {
-    await this.ui.goToPageUrl(url, heading);
+    await navigation.goToPageUrl(this.page, url, heading);
   }
 
   async verifyTextVisible(
@@ -67,41 +71,43 @@ export class SettingsPage {
     exact = false,
     timeout = 10000,
   ): Promise<void> {
-    await this.ui.verifyTextVisible(text, exact, timeout);
+    await verification.verifyTextVisible(this.page, text, exact, timeout);
   }
 
   async clickButtonByText(
     buttonText: string | RegExp,
     options?: { exact?: boolean; timeout?: number; force?: boolean },
   ): Promise<void> {
-    await this.ui.clickButtonByText(buttonText, options);
+    await interaction.clickButtonByText(this.page, buttonText, options);
   }
 
   async uncheckCheckbox(label: string): Promise<void> {
-    await this.ui.uncheckCheckbox(label);
+    await interaction.uncheckCheckbox(this.page, label);
   }
 
   async checkCheckbox(label: string): Promise<void> {
-    await this.ui.checkCheckbox(label);
+    await interaction.checkCheckbox(this.page, label);
   }
 
   async verifyLocalizedUserSettingsLabels(
     locale: keyof (typeof t)["user-settings"],
   ): Promise<void> {
     const labels = t["user-settings"][locale];
-    await this.ui.verifyText(labels["profileCard.title"]);
-    await this.ui.verifyText(labels["appearanceCard.title"]);
-    await this.ui.verifyText(labels["themeToggle.title"]);
-    await this.ui.verifyText(labels["signOutMenu.title"]);
-    await this.ui.verifyText(labels["identityCard.title"]);
-    await this.ui.verifyText(
+    await verification.verifyText(this.page, labels["profileCard.title"]);
+    await verification.verifyText(this.page, labels["appearanceCard.title"]);
+    await verification.verifyText(this.page, labels["themeToggle.title"]);
+    await verification.verifyText(this.page, labels["signOutMenu.title"]);
+    await verification.verifyText(this.page, labels["identityCard.title"]);
+    await verification.verifyText(
+      this.page,
       `${labels["identityCard.userEntity"]}: Guest User`,
     );
-    await this.ui.verifyText(
+    await verification.verifyText(
+      this.page,
       `${labels["identityCard.ownershipEntities"]}: ownershipEntities`,
     );
-    await this.ui.verifyText(labels["pinToggle.title"]);
-    await this.ui.verifyText(labels["pinToggle.description"]);
+    await verification.verifyText(this.page, labels["pinToggle.title"]);
+    await verification.verifyText(this.page, labels["pinToggle.description"]);
   }
 
   async verifyLocalizedUserSettingsLabelsWithOwnership(
@@ -109,30 +115,38 @@ export class SettingsPage {
     ownershipEntities: string,
   ): Promise<void> {
     const labels = t["user-settings"][locale];
-    await this.ui.verifyText(labels["profileCard.title"]);
-    await this.ui.verifyText(labels["appearanceCard.title"]);
-    await this.ui.verifyText(labels["themeToggle.title"]);
-    await this.ui.verifyText(labels["identityCard.title"]);
-    await this.ui.verifyText(
+    await verification.verifyText(this.page, labels["profileCard.title"]);
+    await verification.verifyText(this.page, labels["appearanceCard.title"]);
+    await verification.verifyText(this.page, labels["themeToggle.title"]);
+    await verification.verifyText(this.page, labels["identityCard.title"]);
+    await verification.verifyText(
+      this.page,
       `${labels["identityCard.userEntity"]}: Guest User`,
     );
-    await this.ui.verifyText(
+    await verification.verifyText(
+      this.page,
       `${labels["identityCard.ownershipEntities"]}: ${ownershipEntities}`,
     );
-    await this.ui.verifyText(labels["pinToggle.title"]);
-    await this.ui.verifyText(labels["pinToggle.description"]);
+    await verification.verifyText(this.page, labels["pinToggle.title"]);
+    await verification.verifyText(this.page, labels["pinToggle.description"]);
   }
 
   async togglePinSidebar(
     locale: keyof (typeof t)["user-settings"],
   ): Promise<void> {
     const labels = t["user-settings"][locale];
-    await this.ui.uncheckCheckbox(labels["pinToggle.ariaLabelTitle"]);
-    await this.ui.checkCheckbox(labels["pinToggle.ariaLabelTitle"]);
+    await interaction.uncheckCheckbox(
+      this.page,
+      labels["pinToggle.ariaLabelTitle"],
+    );
+    await interaction.checkCheckbox(
+      this.page,
+      labels["pinToggle.ariaLabelTitle"],
+    );
   }
 
   async verifyRhdhMetadata(page: Page): Promise<void> {
     await page.getByTitle("Show more").click();
-    await this.ui.verifyText("RHDH Metadata");
+    await verification.verifyText(this.page, "RHDH Metadata");
   }
 }

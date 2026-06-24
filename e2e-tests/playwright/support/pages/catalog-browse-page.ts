@@ -1,123 +1,139 @@
 import { expect, Page } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import * as interaction from "../../utils/ui-helper/interaction";
+import * as misc from "../../utils/ui-helper/misc";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as table from "../../utils/ui-helper/table";
+import * as verification from "../../utils/ui-helper/verification";
+import { SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
 
 /** Catalog browse and entity list interactions. */
 export class CatalogBrowsePage {
   private readonly page: Page;
-  private readonly ui: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.ui = new UIhelper(page);
+  }
+
+  private async fillSearch(query: string): Promise<void> {
+    await this.page.fill(SEARCH_OBJECTS_COMPONENTS.placeholderSearch, query);
   }
 
   async openCatalogSidebar(kind?: string): Promise<void> {
     if (kind !== undefined) {
-      await this.ui.openCatalogSidebar(kind);
+      await navigation.openCatalogSidebar(this.page, kind);
       return;
     }
-    await this.ui.openSidebar("Catalog");
+    await navigation.openSidebar(this.page, "Catalog");
   }
 
   async openSidebar(label: string): Promise<void> {
-    await this.ui.openSidebar(label);
+    await navigation.openSidebar(this.page, label);
   }
 
   async selectKind(kind: string): Promise<void> {
-    await this.ui.selectMuiBox("Kind", kind);
+    await navigation.selectMuiBox(this.page, "Kind", kind);
   }
 
   async verifyComponentsInCatalog(
     kind: string,
     names: string[],
   ): Promise<void> {
-    await this.ui.verifyComponentInCatalog(kind, names);
+    await misc.verifyComponentInCatalog(this.page, kind, names);
   }
 
   async verifyTableRows(rows: string[]): Promise<void> {
-    await this.ui.verifyRowsInTable(rows);
+    await verification.verifyRowsInTable(this.page, rows);
   }
 
   async searchCatalog(query: string): Promise<void> {
-    await this.ui.searchInputPlaceholder(query);
+    await this.fillSearch(query);
   }
 
   async verifyRowByUniqueText(
     text: string,
     columns: string[] | RegExp[],
   ): Promise<void> {
-    await this.ui.verifyRowInTableByUniqueText(text, columns);
+    await table.verifyRowInTableByUniqueText(this.page, text, columns);
   }
 
   async openEntityLink(name: string): Promise<void> {
-    await this.ui.clickLink(name);
+    await interaction.clickLink(this.page, name);
   }
 
   async openDependenciesTab(): Promise<void> {
-    await this.ui.clickTab("Dependencies");
+    await interaction.clickTab(this.page, "Dependencies");
   }
 
   async clickButton(label: string): Promise<void> {
-    await this.ui.clickButton(label);
+    await interaction.clickButton(this.page, label);
   }
 
   async verifyHeading(heading: string | RegExp): Promise<void> {
-    await this.ui.verifyHeading(heading);
+    await verification.verifyHeading(this.page, heading);
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
-    await this.ui.verifyText(text, exact);
+    await verification.verifyText(this.page, text, exact);
   }
 
   async verifyColumnHeading(headings: string[], exact = true): Promise<void> {
-    await this.ui.verifyColumnHeading(headings, exact);
+    await verification.verifyColumnHeading(this.page, headings, exact);
   }
 
   async clickTab(tabName: string): Promise<void> {
-    await this.ui.clickTab(tabName);
+    await interaction.clickTab(this.page, tabName);
   }
 
   async verifyLink(
     label: string,
     options?: { exact?: boolean; notVisible?: boolean },
   ): Promise<void> {
-    await this.ui.verifyLink(label, options);
+    await verification.verifyLink(this.page, label, options);
   }
 
   async clickByDataTestId(dataTestId: string): Promise<void> {
-    await this.ui.clickByDataTestId(dataTestId);
+    await interaction.clickByDataTestId(this.page, dataTestId);
   }
 
   async openSelfServiceFromCatalog(): Promise<void> {
-    await this.ui.openSidebar("Catalog");
-    await this.ui.clickButton("Self-service");
+    await navigation.openSidebar(this.page, "Catalog");
+    await interaction.clickButton(this.page, "Self-service");
   }
 
   async importGitRepositoryFromCatalog(): Promise<void> {
     await this.openSelfServiceFromCatalog();
-    await this.ui.clickButton("Import an existing Git repository");
+    await interaction.clickButton(
+      this.page,
+      "Import an existing Git repository",
+    );
   }
 
   async verifyTextInSelector(
     selector: string,
     expectedText: string,
   ): Promise<void> {
-    await this.ui.verifyTextInSelector(selector, expectedText);
+    await verification.verifyTextInSelector(this.page, selector, expectedText);
   }
 
   async verifyPartialTextInSelector(
     selector: string,
     partialText: string,
   ): Promise<void> {
-    await this.ui.verifyPartialTextInSelector(selector, partialText);
+    await verification.verifyPartialTextInSelector(
+      this.page,
+      selector,
+      partialText,
+    );
   }
 
   async openTemplateFromCatalog(templateName: string): Promise<void> {
-    await this.ui.openSidebar("Catalog");
-    await this.ui.selectMuiBox("Kind", "Template");
-    await this.ui.searchInputPlaceholder(`${templateName}\n`);
-    await this.ui.verifyRowInTableByUniqueText(templateName, [templateName]);
-    await this.ui.clickLink(templateName);
+    await navigation.openSidebar(this.page, "Catalog");
+    await navigation.selectMuiBox(this.page, "Kind", "Template");
+    await this.fillSearch(`${templateName}\n`);
+    await table.verifyRowInTableByUniqueText(this.page, templateName, [
+      templateName,
+    ]);
+    await interaction.clickLink(this.page, templateName);
   }
 
   async clearSearchIfVisible(): Promise<void> {

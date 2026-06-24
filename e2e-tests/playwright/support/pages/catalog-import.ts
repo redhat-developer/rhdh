@@ -1,8 +1,10 @@
 import { Page, expect } from "@playwright/test";
-
-import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
 import { UIhelper } from "../../utils/ui-helper";
-import { CATALOG_IMPORT_COMPONENTS } from "../page-objects/page-obj";
+import { CATALOG_IMPORT_COMPONENTS } from "../selectors/page-selectors";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../../e2e/localization/locale";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -40,7 +42,9 @@ export class CatalogImport {
    * @returns boolean indicating if the component is already registered
    */
   isComponentAlreadyRegistered(): Promise<boolean> {
-    return this.uiHelper.isBtnVisible(t["catalog-import"][lang]["stepReviewLocation.refresh"]);
+    return this.uiHelper.isBtnVisible(
+      t["catalog-import"][lang]["stepReviewLocation.refresh"],
+    );
   }
 
   /**
@@ -50,21 +54,31 @@ export class CatalogImport {
    * @param url - The component URL to register
    * @param clickViewComponent - Whether to click "View Component" after import
    */
-  async registerExistingComponent(url: string, clickViewComponent: boolean = true) {
+  async registerExistingComponent(
+    url: string,
+    clickViewComponent: boolean = true,
+  ) {
     await this.analyzeAndWait(url);
-    const isComponentAlreadyRegistered = await this.isComponentAlreadyRegistered();
+    const isComponentAlreadyRegistered =
+      await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
-      await this.uiHelper.clickButton(t["catalog-import"][lang]["stepReviewLocation.refresh"]);
+      await this.uiHelper.clickButton(
+        t["catalog-import"][lang]["stepReviewLocation.refresh"],
+      );
       expect(
         await this.uiHelper.isBtnVisible(
           t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
         ),
       ).toBeTruthy();
     } else {
-      await this.uiHelper.clickButton(t["catalog-import"][lang]["stepReviewLocation.import"]);
+      await this.uiHelper.clickButton(
+        t["catalog-import"][lang]["stepReviewLocation.import"],
+      );
       if (clickViewComponent) {
         await this.uiHelper.clickButton(
-          t["catalog-import"][lang]["stepFinishImportLocation.locations.viewButtonText"],
+          t["catalog-import"][lang][
+            "stepFinishImportLocation.locations.viewButtonText"
+          ],
         );
       }
     }
@@ -73,7 +87,9 @@ export class CatalogImport {
 
   async analyzeComponent(url: string) {
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await this.uiHelper.clickButton(t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"]);
+    await this.uiHelper.clickButton(
+      t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
+    );
   }
 
   async inspectEntityAndVerifyYaml(text: string) {

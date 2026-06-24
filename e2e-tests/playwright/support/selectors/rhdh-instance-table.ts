@@ -1,9 +1,7 @@
 import { Page } from "@playwright/test";
-import { SemanticSelectors } from "../selectors/semantic-selectors";
+import { SemanticSelectors } from "./semantic-selectors";
 
-/**
- * Table pagination helpers for RHDH instance catalog entity pages.
- */
+/** Table pagination helpers for RHDH instance catalog entity pages. */
 export const RHDH_INSTANCE_TABLE = {
   getNextPageButton: (page: Page) =>
     page.getByRole("button", { name: "Next Page" }),
