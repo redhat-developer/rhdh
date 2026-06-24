@@ -378,6 +378,11 @@ install_subscription() {
   package=$4          # Package name of the operator
   source_name=$5      # Name of the source catalog
   source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
+  starting_csv=$7     # Optional starting CSV to pin subscription install
+  starting_csv_line=""
+  if [[ -n "$starting_csv" ]]; then
+    starting_csv_line="  startingCSV: $starting_csv"
+  fi
   # Apply the subscription manifest
   oc apply -f - << EOD
 apiVersion: operators.coreos.com/v1alpha1
@@ -391,6 +396,7 @@ spec:
   name: $package
   source: $source_name
   sourceNamespace: $source_namespace
+$starting_csv_line
 EOD
 }
 
@@ -494,7 +500,7 @@ waitfor_crunchy_postgres_k8s_operator() {
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
 # Use waitfor_serverless_logic_ocp_operator to wait for the operator to be ready
 install_serverless_logic_ocp_operator() {
-  install_subscription logic-operator-rhel8 openshift-operators alpha logic-operator-rhel8 redhat-operators openshift-marketplace
+  install_subscription logic-operator openshift-operators stable logic-operator redhat-operators openshift-marketplace logic-operator.v1.37.2
 }
 
 waitfor_serverless_logic_ocp_operator() {
