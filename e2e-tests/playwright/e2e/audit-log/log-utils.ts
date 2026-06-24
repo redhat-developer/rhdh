@@ -47,7 +47,7 @@ function compareValues(actual: unknown, expected: unknown): void {
   }
 }
 
-function validateLog(actual: Log, expected: Partial<Log>): void {
+function validateLog(actual: Record<string, unknown>, expected: Partial<Log>): void {
   for (const [key, expectedValue] of Object.entries(expected)) {
     if (expectedValue === undefined) {
       continue;
@@ -56,47 +56,17 @@ function validateLog(actual: Log, expected: Partial<Log>): void {
   }
 }
 
-function getLogProperty(log: Log, key: string): unknown {
-  switch (key) {
-    case "actor":
-      return log.actor;
-    case "eventId":
-      return log.eventId;
-    case "isAuditEvent":
-      return log.isAuditEvent;
-    case "severityLevel":
-      return log.severityLevel;
-    case "plugin":
-      return log.plugin;
-    case "request":
-      return log.request;
-    case "response":
-      return log.response;
-    case "service":
-      return log.service;
-    case "status":
-      return log.status;
-    case "timestamp":
-      return log.timestamp;
-    case "meta":
-      return log.meta;
-    case "message":
-      return log.message;
-    case "name":
-      return log.name;
-    case "stack":
-      return log.stack;
-    default:
-      return undefined;
-  }
+function getLogProperty(log: Record<string, unknown>, key: string): unknown {
+  return log[key];
 }
 
-function parseLogFromJson(text: string): Log {
+/** Parse audit log JSON without applying Log constructor defaults. */
+function parseLogFromJson(text: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(text);
   if (!isRecord(parsed)) {
     throw new TypeError("Audit log JSON must be an object");
   }
-  return new Log(parsed as Partial<Log>);
+  return parsed;
 }
 
 export const LogUtils = {
@@ -301,7 +271,7 @@ export const LogUtils = {
     try {
       const actualLog = await LogUtils.getPodLogsWithGrep(filterWordsAll, namespace);
 
-      let parsedLog: Log;
+      let parsedLog: Record<string, unknown>;
       try {
         parsedLog = parseLogFromJson(actualLog);
       } catch (parseError) {
