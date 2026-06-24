@@ -60,6 +60,15 @@ With plugins populated, the legacy app renders the full production RHDH UI off-c
 `guest-signin-happy-path` **home-page test passes unmodified** — confirming a dynamic
 frontend plugin renders with no cluster.
 
+## CI
+
+`.github/workflows/e2e-cluster-free.yaml` runs this harness on GitHub Actions in a
+cluster-free phase: it installs deps + skopeo, populates `dynamic-plugins-root` from the
+public catalog index via the `install-dynamic-plugins` CLI (the same mechanism the
+nightly sanity check uses), then runs `yarn e2e:legacy-local`. No cluster or container
+image is built. It triggers on `e2e-tests/**` and `app-config*.yaml` changes; the scope
+can widen to `packages/app/**` / `packages/backend/**` once it is proven stable.
+
 ## Why the legacy app, not app-next
 
 The harness targets the legacy app because **dynamic frontend plugins do not load on
