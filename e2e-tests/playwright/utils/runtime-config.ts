@@ -18,6 +18,7 @@
 import * as yaml from "js-yaml";
 import {
   type ImageRef,
+  buildImageRef,
   imageRefToString,
   parseCatalogIndexImage,
 } from "./helper";
@@ -25,7 +26,12 @@ import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
 // Re-export image utilities so existing `import from "./runtime-config"`
 // callers continue to work without changes.
-export { type ImageRef, imageRefToString, parseCatalogIndexImage };
+export {
+  type ImageRef,
+  buildImageRef,
+  imageRefToString,
+  parseCatalogIndexImage,
+};
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -92,12 +98,7 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
     releaseName,
     namespace,
     routerBase,
-    image: {
-      registry: imageRegistry,
-      repository: imageRepo,
-      tag: imageTag,
-      separator: imageTag.startsWith("sha256:") ? "@" : ":",
-    },
+    image: buildImageRef(imageRegistry, imageRepo, imageTag),
   };
 
   // CATALOG_INDEX_IMAGE opt-in override

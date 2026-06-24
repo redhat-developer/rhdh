@@ -216,6 +216,24 @@ export function imageRefToString(ref: ImageRef): string {
 }
 
 /**
+ * Build an ImageRef from individual registry, repository, and tag/digest values.
+ * Detects digest references (tag starting with "sha256:") and sets the
+ * separator accordingly.
+ */
+export function buildImageRef(
+  registry: string,
+  repository: string,
+  tag: string,
+): ImageRef {
+  return {
+    registry,
+    repository,
+    tag,
+    separator: tag.startsWith("sha256:") ? "@" : ":",
+  };
+}
+
+/**
  * Decompose a full image reference into registry / repository / tag.
  *
  * Handles both tag references (quay.io/rhdh/image:1.10) and digest
