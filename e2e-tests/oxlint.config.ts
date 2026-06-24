@@ -158,6 +158,7 @@ export default defineConfig({
               "verifyTextInSelector",
               "verifyPartialTextInSelector",
               "loginAsGuest",
+              "restartDeployment",
               "waitForTitle",
             ],
           },

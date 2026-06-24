@@ -51,10 +51,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
   test("Register the template for scaffolder relation processor", async () => {
     await uiHelper.openSidebar("Catalog");
-    // Wait for the Catalog page table to fully load before proceeding
-    await expect(page.getByText("Name", { exact: true }).first()).toBeVisible({
-      timeout: 20000,
-    });
+    await uiHelper.verifyText("Name");
 
     await uiHelper.clickButton("Self-service");
     await uiHelper.verifyHeading("Self-service");

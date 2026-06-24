@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
@@ -88,9 +88,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
           user: rdsUser,
           password: rdsPassword,
         });
-        await expect(
-          kubeClient.restartDeployment(deploymentName, namespace),
-        ).resolves.toBeUndefined();
+        await kubeClient.restartDeployment(deploymentName, namespace);
       });
 
       test("Verify successful DB connection", async ({ page }) => {
