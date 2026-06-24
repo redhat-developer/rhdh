@@ -1553,7 +1553,8 @@ get_previous_release_value_file() {
   fi
 }
 
-readonly SERVERLESS_WORKFLOWS_DEFAULT_REF="daeeee8dec16beab6d96a81774ef500081a2c2b0"
+: "${SERVERLESS_WORKFLOWS_DEFAULT_REF:=daeeee8dec16beab6d96a81774ef500081a2c2b0}"
+readonly SERVERLESS_WORKFLOWS_DEFAULT_REF
 
 checkout_serverless_workflows_ref() {
   local workflow_dir=$1
