@@ -84,19 +84,15 @@ test.describe("Plugin Dynamic Loading", () => {
     "All plugins from catalog index load and backend starts",
     { tag: "@sanity" },
     async ({}, testInfo) => {
-      // In CI, CATALOG_INDEX_IMAGE must be set (fail-fast)
-      if (process.env.CI && !process.env.CATALOG_INDEX_IMAGE) {
-        throw new Error(
-          "CATALOG_INDEX_IMAGE environment variable must be set in CI",
-        );
-      }
-
-      // Skip test if CATALOG_INDEX_IMAGE is not set (local/hermetic environment)
+      // Skip test if CATALOG_INDEX_IMAGE is not set
+      // This test requires the catalog index to download plugins from.
+      // In nightly CI (showcase-sanity-plugins), this env var is always set.
+      // In PR checks (showcase), this test is excluded via testIgnore.
       if (!process.env.CATALOG_INDEX_IMAGE) {
         testInfo.skip(
           true,
           "CATALOG_INDEX_IMAGE not set - skipping external catalog download. " +
-            "Set CATALOG_INDEX_IMAGE to run this test locally.",
+            "This test only runs in nightly jobs where CATALOG_INDEX_IMAGE is configured.",
         );
         return;
       }
