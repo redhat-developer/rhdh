@@ -1,8 +1,9 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../utils/common";
+
 import { HomePage } from "../support/pages/home-page";
-import { runAccessibilityTests } from "../utils/accessibility";
 import { RhdhHomePage } from "../support/pages/rhdh-home-page";
+import { runAccessibilityTests } from "../utils/accessibility";
+import { Common } from "../utils/common";
 
 test.describe("Home page customization", () => {
   let common: Common;
@@ -28,10 +29,7 @@ test.describe("Home page customization", () => {
 
     await runAccessibilityTests(page, testInfo);
 
-    await rhdhHomePage.verifyTextInCard(
-      "Your Starred Entities",
-      "Your Starred Entities",
-    );
+    await rhdhHomePage.verifyTextInCard("Your Starred Entities", "Your Starred Entities");
     await rhdhHomePage.verifyHeading("Placeholder tests");
     await rhdhHomePage.verifyDivHasText("Home page customization test 1");
     await rhdhHomePage.verifyDivHasText("Home page customization test 2");
@@ -58,18 +56,10 @@ test.describe("Home page customization", () => {
   test("Verify Customized Quick Access", async () => {
     // Expanded by default
     await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
-    await homePage.verifyQuickAccess("CI/CD Tools", [
-      "ArgoCD",
-      "SonarQube",
-      "Quay.io",
-    ]);
+    await homePage.verifyQuickAccess("CI/CD Tools", ["ArgoCD", "SonarQube", "Quay.io"]);
     await homePage.verifyQuickAccess("OpenShift Clusters", "OpenShift");
     // Collapsed by default
     await homePage.verifyQuickAccess("Monitoring Tools", "Grafana", true);
-    await homePage.verifyQuickAccess(
-      "Security Tools",
-      ["GitHub Security", "Keycloak"],
-      true,
-    );
+    await homePage.verifyQuickAccess("Security Tools", ["GitHub Security", "Keycloak"], true);
   });
 });

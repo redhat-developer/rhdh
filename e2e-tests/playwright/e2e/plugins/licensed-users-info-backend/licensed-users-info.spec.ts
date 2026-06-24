@@ -1,14 +1,9 @@
-import { Common } from "../../../utils/common";
-import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
-import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
-import {
-  test,
-  expect,
-  APIRequestContext,
-  APIResponse,
-  request,
-} from "@support/coverage/test";
+import { test, expect, APIRequestContext, APIResponse, request } from "@support/coverage/test";
+
 import playwrightConfig from "../../../../playwright.config";
+import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
+import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
+import { Common } from "../../../utils/common";
 
 interface HealthResponse {
   status: string;
@@ -160,9 +155,7 @@ test.describe("Test licensed users info backend plugin", () => {
     expect(response.headers()["content-type"]).toContain("text/csv");
 
     // 'content-disposition': 'attachment; filename="data.csv"',
-    expect(response.headers()["content-disposition"]).toBe(
-      'attachment; filename="data.csv"',
-    );
+    expect(response.headers()["content-disposition"]).toBe('attachment; filename="data.csv"');
 
     const result = await response.text();
     /*
@@ -173,9 +166,7 @@ test.describe("Test licensed users info backend plugin", () => {
     const csvHeaders = splitText[0];
     const csvData = splitText[1];
 
-    expect(csvHeaders).toContain(
-      "userEntityRef,displayName,email,lastAuthTime",
-    );
+    expect(csvHeaders).toContain("userEntityRef,displayName,email,lastAuthTime");
     expect(csvData).toContain("user:");
   });
 });

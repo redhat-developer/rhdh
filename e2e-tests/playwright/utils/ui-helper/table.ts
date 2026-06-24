@@ -1,11 +1,9 @@
 import { expect, Locator, Page } from "@playwright/test";
+
 import { getTableCell, getTableRow } from "../../support/selectors/ui-locators";
 import { DEFAULT_VERIFY_BUTTON_URL_OPTIONS } from "./defaults";
 
-export async function verifyCellsInTable(
-  page: Page,
-  texts: (string | RegExp)[],
-) {
+export async function verifyCellsInTable(page: Page, texts: (string | RegExp)[]) {
   for (const text of texts) {
     const cellLocator = getTableCell(page, text);
     const count = await cellLocator.count();
@@ -55,9 +53,7 @@ export async function verifyRowInTableByUniqueText(
   const row = getTableRow(page, uniqueRowText);
   await row.waitFor();
   for (const cellText of cellTexts) {
-    await expect(
-      row.getByRole("cell").filter({ hasText: cellText }).first(),
-    ).toBeVisible();
+    await expect(row.getByRole("cell").filter({ hasText: cellText }).first()).toBeVisible();
   }
 }
 
@@ -89,12 +85,7 @@ export async function clickOnButtonInTableByUniqueText(
 
 export async function verifyTableHeadingAndRows(page: Page, texts: string[]) {
   await expect(
-    page
-      .getByRole("table")
-      .getByRole("rowgroup")
-      .last()
-      .getByRole("row")
-      .first(),
+    page.getByRole("table").getByRole("rowgroup").last().getByRole("row").first(),
   ).toBeVisible();
   for (const column of texts) {
     const columnSelector = `table th:has-text("${column}")`;
@@ -132,7 +123,5 @@ export async function verifyPluginRow(
 }
 
 export async function waitForLoginBtnDisappear(page: Page) {
-  await page
-    .getByRole("button", { name: "Log in" })
-    .waitFor({ state: "detached" });
+  await page.getByRole("button", { name: "Log in" }).waitFor({ state: "detached" });
 }

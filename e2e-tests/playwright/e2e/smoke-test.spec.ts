@@ -1,7 +1,8 @@
 import { test } from "@support/coverage/test";
+
+import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 import { Common } from "../utils/common";
 import { waitForRhdhReady } from "../utils/wait-for-rhdh-ready";
-import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 
 test.describe("Smoke test", { tag: "@smoke" }, () => {
   let rhdhHomePage: RhdhHomePage;

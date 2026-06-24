@@ -1,4 +1,5 @@
 import { expect, Page } from "@playwright/test";
+
 import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as table from "../../utils/ui-helper/table";
@@ -30,10 +31,7 @@ export class ScaffolderFlowPage {
   async openImportGitRepository(): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
     await interaction.clickButton(this.page, "Self-service");
-    await interaction.clickButton(
-      this.page,
-      "Import an existing Git repository",
-    );
+    await interaction.clickButton(this.page, "Import an existing Git repository");
   }
 
   async openSelfServiceFromCatalog(): Promise<void> {
@@ -46,121 +44,56 @@ export class ScaffolderFlowPage {
   }
 
   async clickImportGitRepository(): Promise<void> {
-    await interaction.clickButton(
-      this.page,
-      "Import an existing Git repository",
-    );
+    await interaction.clickButton(this.page, "Import an existing Git repository");
   }
 
-  async runCreateReactAppTemplate(
-    details: ReactAppTemplateDetails,
-  ): Promise<void> {
+  async runCreateReactAppTemplate(details: ReactAppTemplateDetails): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
     await interaction.clickButton(this.page, "Self-service");
     await verification.verifyHeading(this.page, "Self-service");
     await this.fillSearch("Create React App Template");
     await verification.verifyText(this.page, "Create React App Template");
-    await verification.waitForTextDisappear(
-      this.page,
-      "Add ArgoCD to an existing project",
-    );
+    await verification.waitForTextDisappear(this.page, "Add ArgoCD to an existing project");
     await interaction.clickButton(this.page, "Choose");
 
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Name",
-      details.componentName,
-    );
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Description",
-      details.description,
-    );
+    await interaction.fillTextInputByLabel(this.page, "Name", details.componentName);
+    await interaction.fillTextInputByLabel(this.page, "Description", details.description);
     await interaction.fillTextInputByLabel(this.page, "Owner", details.owner);
     await interaction.fillTextInputByLabel(this.page, "Label", details.label);
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Annotation",
-      details.annotation,
-    );
+    await interaction.fillTextInputByLabel(this.page, "Annotation", details.annotation);
     await interaction.clickButton(this.page, "Next");
 
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Owner",
-      details.repoOwner,
-    );
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Repository",
-      details.repo,
-    );
+    await interaction.fillTextInputByLabel(this.page, "Owner", details.repoOwner);
+    await interaction.fillTextInputByLabel(this.page, "Repository", details.repo);
     await interaction.pressTab(this.page);
     await interaction.clickButton(this.page, "Review");
   }
 
-  async fillCreateReactAppTemplateForm(
-    details: ReactAppTemplateDetails,
-  ): Promise<void> {
+  async fillCreateReactAppTemplateForm(details: ReactAppTemplateDetails): Promise<void> {
     await this.fillSearch("Create React App Template");
     await verification.verifyText(this.page, "Create React App Template");
-    await verification.waitForTextDisappear(
-      this.page,
-      "Add ArgoCD to an existing project",
-    );
+    await verification.waitForTextDisappear(this.page, "Add ArgoCD to an existing project");
     await interaction.clickButton(this.page, "Choose");
 
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Name",
-      details.componentName,
-    );
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Description",
-      details.description,
-    );
+    await interaction.fillTextInputByLabel(this.page, "Name", details.componentName);
+    await interaction.fillTextInputByLabel(this.page, "Description", details.description);
     await interaction.fillTextInputByLabel(this.page, "Owner", details.owner);
     await interaction.fillTextInputByLabel(this.page, "Label", details.label);
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Annotation",
-      details.annotation,
-    );
+    await interaction.fillTextInputByLabel(this.page, "Annotation", details.annotation);
     await interaction.clickButton(this.page, "Next");
 
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Owner",
-      details.repoOwner,
-    );
-    await interaction.fillTextInputByLabel(
-      this.page,
-      "Repository",
-      details.repo,
-    );
+    await interaction.fillTextInputByLabel(this.page, "Owner", details.repoOwner);
+    await interaction.fillTextInputByLabel(this.page, "Repository", details.repo);
     await interaction.pressTab(this.page);
     await interaction.clickButton(this.page, "Review");
   }
 
-  async verifyCreateReactAppReviewTable(
-    details: ReactAppTemplateDetails,
-  ): Promise<void> {
-    await table.verifyRowInTableByUniqueText(this.page, "Owner", [
-      details.owner,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Name", [
-      details.componentName,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Description", [
-      details.description,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Label", [
-      details.label,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Annotation", [
-      details.annotation,
-    ]);
+  async verifyCreateReactAppReviewTable(details: ReactAppTemplateDetails): Promise<void> {
+    await table.verifyRowInTableByUniqueText(this.page, "Owner", [details.owner]);
+    await table.verifyRowInTableByUniqueText(this.page, "Name", [details.componentName]);
+    await table.verifyRowInTableByUniqueText(this.page, "Description", [details.description]);
+    await table.verifyRowInTableByUniqueText(this.page, "Label", [details.label]);
+    await table.verifyRowInTableByUniqueText(this.page, "Annotation", [details.annotation]);
     await table.verifyRowInTableByUniqueText(this.page, "Repository Location", [
       `${details.repoOwner}/${details.repo}`,
     ]);
@@ -169,21 +102,11 @@ export class ScaffolderFlowPage {
   async verifyCreateReactAppReviewTableWithGroupOwner(
     details: ReactAppTemplateDetails,
   ): Promise<void> {
-    await table.verifyRowInTableByUniqueText(this.page, "Owner", [
-      `group:${details.owner}`,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Name", [
-      details.componentName,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Description", [
-      details.description,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Label", [
-      details.label,
-    ]);
-    await table.verifyRowInTableByUniqueText(this.page, "Annotation", [
-      details.annotation,
-    ]);
+    await table.verifyRowInTableByUniqueText(this.page, "Owner", [`group:${details.owner}`]);
+    await table.verifyRowInTableByUniqueText(this.page, "Name", [details.componentName]);
+    await table.verifyRowInTableByUniqueText(this.page, "Description", [details.description]);
+    await table.verifyRowInTableByUniqueText(this.page, "Label", [details.label]);
+    await table.verifyRowInTableByUniqueText(this.page, "Annotation", [details.annotation]);
     await table.verifyRowInTableByUniqueText(this.page, "Repository Location", [
       `github.com?owner=${details.repoOwner}&repo=${details.repo}`,
     ]);
@@ -203,28 +126,18 @@ export class ScaffolderFlowPage {
   }
 
   async waitForOpenInCatalogLink(timeout = 60_000): Promise<void> {
-    await expect(
-      this.page.getByRole("link", { name: "Open in catalog" }),
-    ).toBeVisible({ timeout });
+    await expect(this.page.getByRole("link", { name: "Open in catalog" })).toBeVisible({ timeout });
   }
 
-  async verifyComponentNameVisible(
-    name: string,
-    timeout = 20_000,
-  ): Promise<void> {
+  async verifyComponentNameVisible(name: string, timeout = 20_000): Promise<void> {
     await expect(this.page.getByText(name)).toBeVisible({ timeout });
   }
 
-  async openTemplateFromCatalog(
-    templateName: string,
-    kindColumn = templateName,
-  ): Promise<void> {
+  async openTemplateFromCatalog(templateName: string, kindColumn = templateName): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
     await navigation.selectMuiBox(this.page, "Kind", "Template");
     await this.fillSearch(`${templateName}\n`);
-    await table.verifyRowInTableByUniqueText(this.page, templateName, [
-      kindColumn,
-    ]);
+    await table.verifyRowInTableByUniqueText(this.page, templateName, [kindColumn]);
     await interaction.clickLink(this.page, templateName);
   }
 
@@ -250,16 +163,8 @@ export class ScaffolderFlowPage {
     relationLabel: string,
     nodePartialText: string,
   ): Promise<void> {
-    await verification.verifyTextInSelector(
-      this.page,
-      labelSelector,
-      relationLabel,
-    );
-    await verification.verifyPartialTextInSelector(
-      this.page,
-      nodeSelector,
-      nodePartialText,
-    );
+    await verification.verifyTextInSelector(this.page, labelSelector, relationLabel);
+    await verification.verifyPartialTextInSelector(this.page, nodeSelector, nodePartialText);
   }
 
   async runHttpRequestTemplateFlow(): Promise<void> {

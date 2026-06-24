@@ -4,6 +4,7 @@
  */
 
 import * as yaml from "js-yaml";
+
 import { KubeClient } from "../../utils/kube-client";
 import { sleep } from "../../utils/poll-until";
 import {
@@ -40,11 +41,7 @@ export class SchemaModeTestSetup {
   private env: ReturnType<typeof getSchemaModeEnv>;
   private kubeClient: KubeClient;
 
-  constructor(
-    namespace: string,
-    releaseName: string,
-    installMethod: "helm" | "operator",
-  ) {
+  constructor(namespace: string, releaseName: string, installMethod: "helm" | "operator") {
     this.namespace = namespace;
     this.releaseName = releaseName;
     this.installMethod = installMethod;
@@ -91,11 +88,7 @@ export class SchemaModeTestSetup {
   private resolveRhdhPostgresHost(): string {
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
 
-    if (
-      pfNamespace !== undefined &&
-      pfNamespace !== "" &&
-      pfNamespace !== this.namespace
-    ) {
+    if (pfNamespace !== undefined && pfNamespace !== "" && pfNamespace !== this.namespace) {
       return `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`;
     }
 
@@ -127,12 +120,8 @@ export class SchemaModeTestSetup {
         metadata: { name: secretName },
         data: {
           password: Buffer.from(this.env.dbPassword).toString("base64"),
-          "postgres-password": Buffer.from(this.env.dbPassword).toString(
-            "base64",
-          ),
-          POSTGRES_PASSWORD: Buffer.from(this.env.dbPassword).toString(
-            "base64",
-          ),
+          "postgres-password": Buffer.from(this.env.dbPassword).toString("base64"),
+          POSTGRES_PASSWORD: Buffer.from(this.env.dbPassword).toString("base64"),
           POSTGRES_DB: Buffer.from(this.env.dbName).toString("base64"),
           POSTGRES_USER: Buffer.from(this.env.dbUser).toString("base64"),
           POSTGRES_HOST: Buffer.from(rhdhPostgresHost).toString("base64"),
@@ -170,33 +159,21 @@ export class SchemaModeTestSetup {
         break;
       } catch (restartError) {
         if (attempt === maxRestartAttempts) throw restartError;
-        const msg =
-          restartError instanceof Error
-            ? restartError.message
-            : String(restartError);
-        console.warn(
-          `Restart attempt ${attempt} failed (${msg}), retrying in 30s...`,
-        );
+        const msg = restartError instanceof Error ? restartError.message : String(restartError);
+        console.warn(`Restart attempt ${attempt} failed (${msg}), retrying in 30s...`);
         await sleep(30_000);
       }
     }
   }
 
-  private async ensureDeploymentEnvVars(
-    deploymentName: string,
-    secretName: string,
-  ): Promise<void> {
+  private async ensureDeploymentEnvVars(deploymentName: string, secretName: string): Promise<void> {
     const deployment = await this.kubeClient.appsApi.readNamespacedDeployment(
       deploymentName,
       this.namespace,
     );
     const containers = deployment.body.spec?.template?.spec?.containers ?? [];
-    const backstageContainer = containers.find(
-      (c) => c.name === "backstage-backend",
-    );
-    const backstageIdx = containers.findIndex(
-      (c) => c.name === "backstage-backend",
-    );
+    const backstageContainer = containers.find((c) => c.name === "backstage-backend");
+    const backstageIdx = containers.findIndex((c) => c.name === "backstage-backend");
 
     if (backstageContainer === undefined) {
       console.warn("backstage-backend container not found in deployment");
@@ -209,9 +186,7 @@ export class SchemaModeTestSetup {
         "POSTGRES_USER",
         "POSTGRES_PASSWORD",
       ];
-      const missingVars = requiredVars.filter(
-        (v) => !existingEnv.some((e) => e.name === v),
-      );
+      const missingVars = requiredVars.filter((v) => !existingEnv.some((e) => e.name === v));
 
       if (missingVars.length === 0) {
         console.log("POSTGRES_* env vars already present in deployment");
@@ -221,10 +196,7 @@ export class SchemaModeTestSetup {
       console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
       const patch: { op: string; path: string; value?: unknown }[] = [];
 
-      if (
-        backstageContainer.env === undefined ||
-        backstageContainer.env.length === 0
-      ) {
+      if (backstageContainer.env === undefined || backstageContainer.env.length === 0) {
         patch.push({
           op: "add",
           path: `/spec/template/spec/containers/${backstageIdx}/env`,
@@ -261,16 +233,11 @@ export class SchemaModeTestSetup {
   }
 
   private async updateAppConfigForSchemaMode(): Promise<void> {
-    const configMapName = await this.kubeClient.findAppConfigMap(
-      this.namespace,
-    );
+    const configMapName = await this.kubeClient.findAppConfigMap(this.namespace);
     let configMapResponse;
 
     try {
-      configMapResponse = await this.kubeClient.getConfigMap(
-        configMapName,
-        this.namespace,
-      );
+      configMapResponse = await this.kubeClient.getConfigMap(configMapName, this.namespace);
     } catch {
       throw new Error(
         `ConfigMap '${configMapName}' not found in namespace '${this.namespace}'. ` +
@@ -279,18 +246,10 @@ export class SchemaModeTestSetup {
     }
 
     const configMap = configMapResponse.body;
-    const configKey = Object.keys(configMap.data ?? {}).find((key) =>
-      key.includes("app-config"),
-    );
+    const configKey = Object.keys(configMap.data ?? {}).find((key) => key.includes("app-config"));
 
-    if (
-      configKey === undefined ||
-      configKey === "" ||
-      configMap.data === undefined
-    ) {
-      throw new Error(
-        `Could not find app-config key in ConfigMap ${configMapName}`,
-      );
+    if (configKey === undefined || configKey === "" || configMap.data === undefined) {
+      throw new Error(`Could not find app-config key in ConfigMap ${configMapName}`);
     }
 
     const appConfig = parseAppConfigYaml(yaml.load(configMap.data[configKey]));
@@ -337,21 +296,17 @@ export class SchemaModeTestSetup {
     const routeNames =
       this.installMethod === "operator"
         ? [`backstage-${this.releaseName}`, `${this.releaseName}-developer-hub`]
-        : [
-            `${this.releaseName}-developer-hub`,
-            `backstage-${this.releaseName}`,
-          ];
+        : [`${this.releaseName}-developer-hub`, `backstage-${this.releaseName}`];
 
     for (const routeName of routeNames) {
       try {
-        const route =
-          (await this.kubeClient.customObjectsApi.getNamespacedCustomObject(
-            "route.openshift.io",
-            "v1",
-            this.namespace,
-            "routes",
-            routeName,
-          )) as { body?: { spec?: { host?: string } } };
+        const route = (await this.kubeClient.customObjectsApi.getNamespacedCustomObject(
+          "route.openshift.io",
+          "v1",
+          this.namespace,
+          "routes",
+          routeName,
+        )) as { body?: { spec?: { host?: string } } };
 
         const routeHost = route.body?.spec?.host;
         if (routeHost !== undefined && routeHost !== "") {
@@ -389,9 +344,7 @@ export class SchemaModeTestSetup {
 
       const hasCreateDb = result.rows[0].rolcreatedb;
       if (!hasCreateDb) {
-        console.log(
-          `Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`,
-        );
+        console.log(`Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`);
         return true;
       }
       console.warn(`Database user "${this.env.dbUser}" has CREATEDB privilege`);

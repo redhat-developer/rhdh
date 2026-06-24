@@ -1,6 +1,7 @@
 import { Page, expect } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+
 import { APIHelper } from "../../utils/api-helper";
+import { UIhelper } from "../../utils/ui-helper";
 import { RHDH_INSTANCE_TABLE } from "../selectors/rhdh-instance-table";
 
 /** Page object for RHDH instance catalog views (PR tables, entity cards). */
@@ -13,10 +14,7 @@ export class RhdhInstance {
     this.uiHelper = new UIhelper(page);
   }
 
-  static getRhdhPullRequests(
-    state: "open" | "closed" | "all",
-    paginated = false,
-  ) {
+  static getRhdhPullRequests(state: "open" | "closed" | "all", paginated = false) {
     return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
   }
 
@@ -32,10 +30,7 @@ export class RhdhInstance {
     await RHDH_INSTANCE_TABLE.getLastPageButton(this.page).click();
   }
 
-  async verifyPRRowsPerPage(
-    rows: number,
-    allPRs: { title: string; number: string }[],
-  ) {
+  async verifyPRRowsPerPage(rows: number, allPRs: { title: string; number: string }[]) {
     await this.selectRowsPerPage(rows);
     await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
     await this.uiHelper.verifyLink(allPRs[rows].number, {
@@ -58,16 +53,11 @@ export class RhdhInstance {
   }
 
   async verifyAboutCardIsDisplayed() {
-    const url =
-      "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
+    const url = "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
     await expect(this.page.locator(`a[href="${url}"]`)).toBeVisible();
   }
 
-  async verifyPRRows(
-    allPRs: { title: string }[],
-    startRow: number,
-    lastRow: number,
-  ) {
+  async verifyPRRows(allPRs: { title: string }[], startRow: number, lastRow: number) {
     for (let i = startRow; i < lastRow; i++) {
       await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
     }
@@ -84,9 +74,7 @@ export class RhdhInstance {
   /** Workaround for RHDHBUGS-2091: smaller page size avoids missing PR stats. */
   async setPullRequestPageSize(size: number): Promise<void> {
     await this.page.getByRole("button", { name: "20" }).click();
-    await this.page
-      .getByRole("option", { name: String(size), exact: true })
-      .click();
+    await this.page.getByRole("option", { name: String(size), exact: true }).click();
   }
 
   async clickPullRequestFilter(name: string): Promise<void> {

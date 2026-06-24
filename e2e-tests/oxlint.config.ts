@@ -83,15 +83,7 @@ const playwrightAssertFunctions = [
 ];
 
 export default defineConfig({
-  plugins: [
-    "eslint",
-    "typescript",
-    "unicorn",
-    "oxc",
-    "import",
-    "node",
-    "promise",
-  ],
+  plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "node", "promise"],
   categories: {
     correctness: "error",
     suspicious: "error",
@@ -164,10 +156,7 @@ export default defineConfig({
       },
     },
     {
-      files: [
-        "playwright/utils/**/*.ts",
-        "playwright/e2e/localization/**/*.ts",
-      ],
+      files: ["playwright/utils/**/*.ts", "playwright/e2e/localization/**/*.ts"],
       rules: {
         "import/max-dependencies": "off",
       },

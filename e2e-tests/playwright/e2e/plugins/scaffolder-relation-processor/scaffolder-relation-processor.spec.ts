@@ -1,10 +1,11 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../../../utils/common";
-import { CatalogImport } from "../../../support/pages/catalog-import";
-import { APIHelper } from "../../../utils/api-helper";
-import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
-import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page";
+
 import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
+import { CatalogImport } from "../../../support/pages/catalog-import";
+import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page";
+import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
+import { APIHelper } from "../../../utils/api-helper";
+import { Common } from "../../../utils/common";
 
 test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test.skip(
@@ -28,10 +29,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     label: "test-label",
     annotation: "test-annotation",
     repo: `test-relation-${Date.now()}`,
-    repoOwner: Buffer.from(
-      process.env.GITHUB_ORG ?? "amFudXMtcWU=",
-      "base64",
-    ).toString("utf8"),
+    repoOwner: Buffer.from(process.env.GITHUB_ORG ?? "amFudXMtcWU=", "base64").toString("utf8"),
   };
 
   test.beforeAll(async ({ rhdhPage }) => {
@@ -65,9 +63,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await scaffolderFlowPage.clickCreate();
     await scaffolderFlowPage.waitForOpenInCatalogLink();
     await scaffolderFlowPage.clickOpenInCatalog();
-    await scaffolderFlowPage.verifyComponentNameVisible(
-      reactAppDetails.componentName,
-    );
+    await scaffolderFlowPage.verifyComponentNameVisible(reactAppDetails.componentName);
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
@@ -86,9 +82,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
     await catalogBrowsePage.openCatalogSidebar("Component");
     await catalogBrowsePage.searchCatalog("test-relation-\n");
-    await catalogBrowsePage.openEntityLinkByHref(
-      "/catalog/default/component/test-relation-",
-    );
+    await catalogBrowsePage.openEntityLinkByHref("/catalog/default/component/test-relation-");
 
     await catalogBrowsePage.openDependenciesTab();
 
@@ -101,10 +95,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test("Verify scaffolderOf relation on the template", async () => {
-    await scaffolderFlowPage.openTemplateFromCatalog(
-      "Create React App Template",
-      "website",
-    );
+    await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `- type: scaffolderOf\n    targetRef: component:default/${reactAppDetails.componentName}\n`,
@@ -116,10 +107,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test.afterAll(async () => {
     await APIHelper.githubRequest(
       "DELETE",
-      GITHUB_API_ENDPOINTS.deleteRepo(
-        reactAppDetails.repoOwner,
-        reactAppDetails.repo,
-      ),
+      GITHUB_API_ENDPOINTS.deleteRepo(reactAppDetails.repoOwner, reactAppDetails.repo),
     );
   });
 });

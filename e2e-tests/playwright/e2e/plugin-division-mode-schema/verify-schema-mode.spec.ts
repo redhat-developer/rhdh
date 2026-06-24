@@ -11,8 +11,8 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 
 import { test, expect } from "@support/coverage/test";
 
-import { Common } from "../../utils/common";
 import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
+import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import { setPortForwardRestarter } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";

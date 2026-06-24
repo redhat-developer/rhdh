@@ -19,11 +19,9 @@ export async function runAccessibilityTests(
     contentType: "application/json",
   });
 
-  const criticalOrSeriousViolations =
-    accessibilityScanResults.violations.filter(
-      (violation) =>
-        violation.impact === "critical" || violation.impact === "serious",
-    );
+  const criticalOrSeriousViolations = accessibilityScanResults.violations.filter(
+    (violation) => violation.impact === "critical" || violation.impact === "serious",
+  );
 
   if (criticalOrSeriousViolations.length > 0) {
     const summary = criticalOrSeriousViolations

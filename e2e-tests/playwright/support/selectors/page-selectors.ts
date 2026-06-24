@@ -1,10 +1,8 @@
 /* oxlint-disable playwright/no-raw-locators -- Legacy CSS selector constants; prefer SemanticSelectors get*() methods */
 import { Page, Locator } from "@playwright/test";
-import { SemanticSelectors } from "./semantic-selectors";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../../e2e/localization/locale";
+
+import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
+import { SemanticSelectors } from "./semantic";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -72,13 +70,10 @@ export const KUBERNETES_COMPONENTS = {
   getStatus: (page: Page, status: string): Locator =>
     page.locator(`span[aria-label="Status ${status}"]`),
 
-  getPodLogsButton: (page: Page): Locator =>
-    page.locator('label[aria-label="get logs"]'),
+  getPodLogsButton: (page: Page): Locator => page.locator('label[aria-label="get logs"]'),
 
   getNotification: (page: Page, message?: string | RegExp): Locator =>
-    message === undefined
-      ? SemanticSelectors.alert(page)
-      : SemanticSelectors.alert(page, message),
+    message === undefined ? SemanticSelectors.alert(page) : SemanticSelectors.alert(page, message),
 };
 
 /** Settings page selectors. */
@@ -86,8 +81,7 @@ export const SETTINGS_PAGE_COMPONENTS = {
   userSettingsMenu: 'button[data-testid="user-settings-menu"]',
   signOut: 'li[data-testid="sign-out"]',
 
-  getUserSettingsMenu: (page: Page): Locator =>
-    page.getByTestId("user-settings-menu"),
+  getUserSettingsMenu: (page: Page): Locator => page.getByTestId("user-settings-menu"),
 
   getSignOut: (page: Page): Locator => page.getByTestId("sign-out"),
 };
@@ -97,8 +91,7 @@ export const ROLES_PAGE_COMPONENTS = {
   editRole: (name: string) => `button[data-testid="edit-role-${name}"]`,
   deleteRole: (name: string) => `button[data-testid="delete-role-${name}"]`,
 
-  getEditRoleButton: (page: Page, name: string): Locator =>
-    page.getByTestId(`edit-role-${name}`),
+  getEditRoleButton: (page: Page, name: string): Locator => page.getByTestId(`edit-role-${name}`),
 
   getDeleteRoleButton: (page: Page, name: string): Locator =>
     page.getByTestId(`delete-role-${name}`),
@@ -108,8 +101,7 @@ export const ROLES_PAGE_COMPONENTS = {
 export const DELETE_ROLE_COMPONENTS = {
   roleName: 'input[name="delete-role"]',
 
-  getRoleNameInput: (page: Page): Locator =>
-    page.locator('input[name="delete-role"]'),
+  getRoleNameInput: (page: Page): Locator => page.locator('input[name="delete-role"]'),
 };
 
 /** Role overview test IDs. */
@@ -117,9 +109,7 @@ export const ROLE_OVERVIEW_COMPONENTS_TEST_ID = {
   updatePolicies: "update-policies",
   updateMembers: "update-members",
 
-  getUpdatePoliciesButton: (page: Page): Locator =>
-    page.getByTestId("update-policies"),
+  getUpdatePoliciesButton: (page: Page): Locator => page.getByTestId("update-policies"),
 
-  getUpdateMembersButton: (page: Page): Locator =>
-    page.getByTestId("update-members"),
+  getUpdateMembersButton: (page: Page): Locator => page.getByTestId("update-members"),
 };

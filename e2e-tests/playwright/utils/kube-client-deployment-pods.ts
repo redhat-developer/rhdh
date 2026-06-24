@@ -1,20 +1,15 @@
 import * as k8s from "@kubernetes/client-node";
+
 import { pollUntil } from "./poll-until";
 
 export async function waitForPodsTerminatedImpl(
   coreV1Api: k8s.CoreV1Api,
-  getDeploymentPodSelector: (
-    deploymentName: string,
-    namespace: string,
-  ) => Promise<string>,
+  getDeploymentPodSelector: (deploymentName: string, namespace: string) => Promise<string>,
   deploymentName: string,
   namespace: string,
   timeoutMs = 120_000,
 ): Promise<void> {
-  const labelSelector = await getDeploymentPodSelector(
-    deploymentName,
-    namespace,
-  );
+  const labelSelector = await getDeploymentPodSelector(deploymentName, namespace);
 
   await pollUntil(
     async () => {
@@ -33,9 +28,7 @@ export async function waitForPodsTerminatedImpl(
         console.log(`All pods for ${deploymentName} terminated.`);
         return true;
       }
-      console.log(
-        `Waiting for ${activePods.length} pod(s) for ${deploymentName} to terminate...`,
-      );
+      console.log(`Waiting for ${activePods.length} pod(s) for ${deploymentName} to terminate...`);
       return false;
     },
     {

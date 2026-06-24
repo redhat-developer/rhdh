@@ -1,9 +1,10 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
+
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
-import { Common } from "../../utils/common";
-import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
-import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 import { SettingsPage } from "../../support/pages/settings-page";
+import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
+import { Common } from "../../utils/common";
+import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPPORTED RESOLVERS
 MICOROSFT:
@@ -13,9 +14,7 @@ MICOROSFT:
     [-] emailLocalPartMatchingUserEntityName
 */
 
-const harness = await AuthProviderHarness.create(
-  "albarbaro-test-namespace-msgraph",
-);
+const harness = await AuthProviderHarness.create("albarbaro-test-namespace-msgraph");
 
 test.describe("Configure Microsoft Provider", () => {
   test.use({ baseURL: harness.backstageUrl });
@@ -70,17 +69,13 @@ test.describe("Configure Microsoft Provider", () => {
     const redirectUrl = `${harness.backstageUrl}/api/auth/microsoft/handler/frame`;
     console.log(`[TEST] Adding redirect URL: ${redirectUrl}`);
     await graphClient.addAppRedirectUrlsAsync([redirectUrl]);
-    console.log(
-      "[TEST] Microsoft Azure App Registration configured successfully",
-    );
+    console.log("[TEST] Microsoft Azure App Registration configured successfully");
 
     await harness.deployAndWait();
   });
 
   test.beforeEach(() => {
-    console.log(
-      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
-    );
+    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
 
   test("Login with Microsoft default resolver", async () => {
@@ -99,10 +94,7 @@ test.describe("Configure Microsoft Provider", () => {
   test("Login with Microsoft emailMatchingUserEntityAnnotation resolver", async () => {
     //Looks up the user by matching their Microsoft email to the email entity annotation.
     //User atena has no email attribute set
-    await harness.deployment.setMicrosoftResolver(
-      "emailMatchingUserEntityAnnotation",
-      false,
-    );
+    await harness.deployment.setMicrosoftResolver("emailMatchingUserEntityAnnotation", false);
     await harness.reconcileAfterConfigChange();
 
     const login = await common.MicrosoftAzureLogin(
@@ -121,18 +113,13 @@ test.describe("Configure Microsoft Provider", () => {
       process.env.DEFAULT_USER_PASSWORD_2!,
     );
     expect(login2).toBe("Login successful");
-    await settingsPage.verifySignInError(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
+    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await context.clearCookies();
   });
 
   test("Login with Microsoft emailMatchingUserEntityProfileEmail resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setMicrosoftResolver(
-      "emailMatchingUserEntityProfileEmail",
-      false,
-    );
+    await harness.deployment.setMicrosoftResolver("emailMatchingUserEntityProfileEmail", false);
     await harness.reconcileAfterConfigChange();
 
     const login = await common.MicrosoftAzureLogin(
@@ -150,10 +137,7 @@ test.describe("Configure Microsoft Provider", () => {
   // NOTE: entity name is "name": "zeus_rhdhtesting.onmicrosoft.com", email is "email": "zeus@rhdhtesting.onmicrosoft.com" not resolving?
   test.fixme("Login with Microsoft emailLocalPartMatchingUserEntityName resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setMicrosoftResolver(
-      "emailLocalPartMatchingUserEntityName",
-      false,
-    );
+    await harness.deployment.setMicrosoftResolver("emailLocalPartMatchingUserEntityName", false);
     await harness.reconcileAfterConfigChange();
 
     const login = await common.MicrosoftAzureLogin(
@@ -173,9 +157,7 @@ test.describe("Configure Microsoft Provider", () => {
     );
     expect(login2).toBe("Login successful");
 
-    await settingsPage.verifySignInError(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
+    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
   });
 
   test(`Set Micrisoft sessionDuration and confirm in auth cookie duration has been set`, async () => {
@@ -194,9 +176,7 @@ test.describe("Configure Microsoft Provider", () => {
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "microsoft-refresh-token",
-    );
+    const authCookie = cookies.find((cookie) => cookie.name === "microsoft-refresh-token");
     expect(authCookie).toBeDefined();
 
     // expected duration of 3 days in ms
@@ -261,44 +241,22 @@ test.describe("Configure Microsoft Provider", () => {
       ),
     ).toBe(true);
     expect(
-      await harness.deployment.checkUserIsInGroup(
-        "elio_rhdhtesting.onmicrosoft.com",
-        "TEST_gods",
-      ),
+      await harness.deployment.checkUserIsInGroup("elio_rhdhtesting.onmicrosoft.com", "TEST_gods"),
     ).toBe(true);
     expect(
-      await harness.deployment.checkUserIsInGroup(
-        "zeus_rhdhtesting.onmicrosoft.com",
-        "TEST_gods",
-      ),
+      await harness.deployment.checkUserIsInGroup("zeus_rhdhtesting.onmicrosoft.com", "TEST_gods"),
     ).toBe(true);
 
     //expect(await harness.deployment.checkUserIsInGroup('zeus', 'all')).toBe(true);
     //expect(await harness.deployment.checkUserIsInGroup('tyke', 'all')).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup(
-        "test_gods",
-        "test_all",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup(
-        "test_goddesses",
-        "test_all",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup(
-        "test_all",
-        "test_gods",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup(
-        "test_all",
-        "test_goddesses",
-      ),
-    ).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("test_gods", "test_all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("test_goddesses", "test_all")).toBe(
+      true,
+    );
+    expect(await harness.deployment.checkGroupIsParentOfGroup("test_all", "test_gods")).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("test_all", "test_goddesses")).toBe(
+      true,
+    );
   });
 
   test.afterAll(async () => {
@@ -315,10 +273,7 @@ test.describe("Configure Microsoft Provider", () => {
       await graphClient.removeAppRedirectUrlsAsync([redirectUrl]);
       console.log("[TEST] Microsoft Azure App Registration cleanup completed");
     } catch (error) {
-      console.error(
-        "[TEST] Failed to cleanup Microsoft Azure App Registration:",
-        error,
-      );
+      console.error("[TEST] Failed to cleanup Microsoft Azure App Registration:", error);
       // Don't fail the test cleanup if Azure cleanup fails
     }
 

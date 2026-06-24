@@ -1,12 +1,13 @@
-import { test, expect } from "@support/coverage/test";
-import { Common } from "../utils/common";
-import { RESOURCES } from "../support/test-data/resources";
-import { RhdhInstance, CatalogImport } from "../support/pages/catalog-import";
-import { TEMPLATES } from "../support/test-data/templates";
-import { SettingsPage } from "../support/pages/settings-page";
-import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
-import { SelfServicePage } from "../support/pages/self-service-page";
 import type { BrowserContext } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
+
+import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
+import { RhdhInstance, CatalogImport } from "../support/pages/catalog-import";
+import { SelfServicePage } from "../support/pages/self-service-page";
+import { SettingsPage } from "../support/pages/settings-page";
+import { RESOURCES } from "../support/test-data/resources";
+import { TEMPLATES } from "../support/test-data/templates";
+import { Common } from "../utils/common";
 
 type GithubPullRequest = { title: string; number: string };
 
@@ -42,10 +43,7 @@ async function getRhdhPullRequests(
   state: "open" | "closed" | "all",
   paginated = false,
 ): Promise<GithubPullRequest[]> {
-  const data: unknown = await RhdhInstance.getRhdhPullRequests(
-    state,
-    paginated,
-  );
+  const data: unknown = await RhdhInstance.getRhdhPullRequests(state, paginated);
   return parseGithubPullRequests(data);
 }
 
@@ -59,14 +57,10 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   let rhdhInstance: RhdhInstance;
   let browserContext: BrowserContext;
 
-  const component =
-    "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
+  const component = "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeEach(() => {
-    test.skip(
-      true,
-      "RHDHBUGS-2099: GitHub happy path blocked pending catalog entity updates",
-    );
+    test.skip(true, "RHDHBUGS-2099: GitHub happy path blocked pending catalog entity updates");
   });
 
   test.beforeAll(({ rhdhPage, rhdhContext }) => {
@@ -85,10 +79,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   });
 
   test("Login as a Github user from Settings page.", async () => {
-    await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-    );
+    await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
     const ghLogin = await common.githubLoginFromSettingsPage(
       process.env.GH_USER2_ID!,
       process.env.GH_USER2_PASS!,
@@ -112,14 +103,10 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   test("Verify that the following components were ingested into the Catalog", async () => {
     await catalogBrowsePage.openCatalogSidebar();
     await catalogBrowsePage.selectKind("Group");
-    await catalogBrowsePage.verifyComponentsInCatalog("Group", [
-      "Janus-IDP Authors",
-    ]);
+    await catalogBrowsePage.verifyComponentsInCatalog("Group", ["Janus-IDP Authors"]);
 
     await catalogBrowsePage.verifyComponentsInCatalog("API", ["Petstore"]);
-    await catalogBrowsePage.verifyComponentsInCatalog("Component", [
-      "Red Hat Developer Hub",
-    ]);
+    await catalogBrowsePage.verifyComponentsInCatalog("Component", ["Red Hat Developer Hub"]);
 
     await catalogBrowsePage.selectKind("Resource");
     await catalogBrowsePage.verifyTableRows([

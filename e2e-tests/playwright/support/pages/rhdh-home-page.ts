@@ -1,4 +1,5 @@
 import { expect, Page } from "@playwright/test";
+
 import { UIhelper } from "../../utils/ui-helper";
 
 /** RHDH instance home page interactions. */
@@ -19,11 +20,7 @@ export class RhdhHomePage {
     await this.ui.openSidebar("Home");
   }
 
-  async verifyTextInCard(
-    cardHeading: string,
-    text: string | RegExp,
-    exact = true,
-  ): Promise<void> {
+  async verifyTextInCard(cardHeading: string, text: string | RegExp, exact = true): Promise<void> {
     await this.ui.verifyTextinCard(cardHeading, text, exact);
   }
 

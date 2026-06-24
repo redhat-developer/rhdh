@@ -1,8 +1,9 @@
 import { test } from "@support/coverage/test";
+
 import { HomePage } from "../support/pages/home-page";
-import { Common } from "../utils/common";
 import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 import { SettingsPage } from "../support/pages/settings-page";
+import { Common } from "../utils/common";
 
 test.describe("Guest Signing Happy path", () => {
   test.beforeAll(() => {

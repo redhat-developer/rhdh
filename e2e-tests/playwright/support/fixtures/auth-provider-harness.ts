@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 
 const DEFAULT_CONFIG_MAPS = {
@@ -24,10 +25,7 @@ export class AuthProviderHarness {
     this.backstageBackendUrl = backstageBackendUrl;
   }
 
-  static async create(
-    namespace: string,
-    instanceName = "rhdh",
-  ): Promise<AuthProviderHarness> {
+  static async create(namespace: string, instanceName = "rhdh"): Promise<AuthProviderHarness> {
     const deployment = new RHDHDeployment(
       namespace,
       DEFAULT_CONFIG_MAPS.appConfigMap,
@@ -39,11 +37,7 @@ export class AuthProviderHarness {
     const backstageUrl = await deployment.computeBackstageUrl();
     const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
     console.log(`Backstage BaseURL is: ${backstageUrl}`);
-    return new AuthProviderHarness(
-      deployment,
-      backstageUrl,
-      backstageBackendUrl,
-    );
+    return new AuthProviderHarness(deployment, backstageUrl, backstageBackendUrl);
   }
 
   expectEnvVars(envVarNames: string[]): void {
@@ -67,10 +61,7 @@ export class AuthProviderHarness {
       process.env.ISRUNNINGLOCAL === "false"
     ) {
       await this.deployment.addSecretData("BASE_URL", this.backstageUrl);
-      await this.deployment.addSecretData(
-        "BASE_BACKEND_URL",
-        this.backstageBackendUrl,
-      );
+      await this.deployment.addSecretData("BASE_BACKEND_URL", this.backstageBackendUrl);
     }
   }
 

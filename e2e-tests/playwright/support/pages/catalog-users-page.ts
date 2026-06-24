@@ -1,7 +1,6 @@
 import { Page, Locator } from "@playwright/test";
 
-export const CATALOG_USERS_BASE_URL =
-  "/catalog?filters%5Bkind%5D=user&filters%5Buser";
+export const CATALOG_USERS_BASE_URL = "/catalog?filters%5Bkind%5D=user&filters%5Buser";
 
 /** Catalog users list and entity page interactions. */
 export class CatalogUsersPage {

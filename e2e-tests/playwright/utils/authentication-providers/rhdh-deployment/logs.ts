@@ -1,5 +1,7 @@
-import * as k8s from "@kubernetes/client-node";
 import stream from "stream";
+
+import * as k8s from "@kubernetes/client-node";
+
 import { getErrorMessage, hasErrorResponse } from "../errors";
 import { pollUntil } from "../poll-until";
 import { RHDHDeploymentState, syncedLogRegex } from "./rhdh-deployment-types";
@@ -112,16 +114,9 @@ export async function followPodLogs(
   const resolvedPodName = await resolvePodName(state, podName, podLabels);
 
   try {
-    return await streamPodLogsUntilMatch(
-      state,
-      resolvedPodName,
-      searchString,
-      timeoutMs,
-    );
+    return await streamPodLogsUntilMatch(state, resolvedPodName, searchString, timeoutMs);
   } catch (error) {
-    const message = hasErrorResponse(error)
-      ? error.body?.message
-      : getErrorMessage(error);
+    const message = hasErrorResponse(error) ? error.body?.message : getErrorMessage(error);
     console.log(`Error: ${message}`);
     throw new Error(
       `Timeout waiting for string "${searchString}" in logs after ${timeoutMs}ms. Error: ${message}`,

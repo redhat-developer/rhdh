@@ -74,7 +74,6 @@ export async function waitForNextTotpWindow(bufferMs = 1000): Promise<void> {
   const now = Date.now();
   const windowMs = 30_000;
   const msIntoWindow = now % windowMs;
-  const waitMs =
-    msIntoWindow === 0 ? bufferMs : windowMs - msIntoWindow + bufferMs;
+  const waitMs = msIntoWindow === 0 ? bufferMs : windowMs - msIntoWindow + bufferMs;
   await sleep(waitMs);
 }

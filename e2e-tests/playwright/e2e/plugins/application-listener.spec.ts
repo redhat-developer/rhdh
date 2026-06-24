@@ -1,6 +1,7 @@
 import { expect, test } from "@support/coverage/test";
-import { Common } from "../../utils/common";
+
 import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
+import { Common } from "../../utils/common";
 
 test.describe("Test ApplicationListener", () => {
   test.beforeAll(() => {
@@ -18,9 +19,7 @@ test.describe("Test ApplicationListener", () => {
     await common.loginAsGuest();
   });
 
-  test("Verify that the LocationListener logs the current location", async ({
-    page,
-  }) => {
+  test("Verify that the LocationListener logs the current location", async ({ page }) => {
     const logs: string[] = [];
 
     page.on("console", (msg) => {

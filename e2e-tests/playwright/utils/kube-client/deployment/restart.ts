@@ -1,25 +1,15 @@
 import { getKubeApiErrorMessage } from "./kube-client-helpers";
 
 async function scaleDeploymentDown(
-  scaleDeployment: (
-    deploymentName: string,
-    namespace: string,
-    replicas: number,
-  ) => Promise<void>,
+  scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,
   waitForDeploymentReady: (
     deploymentName: string,
     namespace: string,
     expectedReplicas: number,
     timeout?: number,
   ) => Promise<void>,
-  waitForPodsTerminated: (
-    deploymentName: string,
-    namespace: string,
-  ) => Promise<void>,
-  logPodConditionsForDeployment: (
-    deploymentName: string,
-    namespace: string,
-  ) => Promise<void>,
+  waitForPodsTerminated: (deploymentName: string, namespace: string) => Promise<void>,
+  logPodConditionsForDeployment: (deploymentName: string, namespace: string) => Promise<void>,
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
@@ -33,11 +23,7 @@ async function scaleDeploymentDown(
 }
 
 async function scaleDeploymentUp(
-  scaleDeployment: (
-    deploymentName: string,
-    namespace: string,
-    replicas: number,
-  ) => Promise<void>,
+  scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,
   waitForDeploymentReady: (
     deploymentName: string,
     namespace: string,
@@ -53,36 +39,21 @@ async function scaleDeploymentUp(
 }
 
 export async function restartDeploymentImpl(
-  scaleDeployment: (
-    deploymentName: string,
-    namespace: string,
-    replicas: number,
-  ) => Promise<void>,
+  scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,
   waitForDeploymentReady: (
     deploymentName: string,
     namespace: string,
     expectedReplicas: number,
     timeout?: number,
   ) => Promise<void>,
-  waitForPodsTerminated: (
-    deploymentName: string,
-    namespace: string,
-  ) => Promise<void>,
-  logPodConditionsForDeployment: (
-    deploymentName: string,
-    namespace: string,
-  ) => Promise<void>,
-  logDeploymentEvents: (
-    deploymentName: string,
-    namespace: string,
-  ) => Promise<void>,
+  waitForPodsTerminated: (deploymentName: string, namespace: string) => Promise<void>,
+  logPodConditionsForDeployment: (deploymentName: string, namespace: string) => Promise<void>,
+  logDeploymentEvents: (deploymentName: string, namespace: string) => Promise<void>,
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
   try {
-    console.log(
-      `Starting deployment restart for ${deploymentName} in namespace ${namespace}`,
-    );
+    console.log(`Starting deployment restart for ${deploymentName} in namespace ${namespace}`);
     await scaleDeploymentDown(
       scaleDeployment,
       waitForDeploymentReady,
@@ -91,15 +62,8 @@ export async function restartDeploymentImpl(
       deploymentName,
       namespace,
     );
-    await scaleDeploymentUp(
-      scaleDeployment,
-      waitForDeploymentReady,
-      deploymentName,
-      namespace,
-    );
-    console.log(
-      `Restart of deployment ${deploymentName} completed successfully.`,
-    );
+    await scaleDeploymentUp(scaleDeployment, waitForDeploymentReady, deploymentName, namespace);
+    console.log(`Restart of deployment ${deploymentName} completed successfully.`);
   } catch (error) {
     console.error(
       `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}': ${getKubeApiErrorMessage(error)}`,

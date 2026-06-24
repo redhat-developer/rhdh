@@ -47,9 +47,9 @@ export async function goToSelfServicePage(page: Page) {
 }
 
 export async function waitForSideBarVisible(page: Page) {
-  await expect(
-    page.getByRole("navigation").getByRole("link").first(),
-  ).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("navigation").getByRole("link").first()).toBeVisible({
+    timeout: 10_000,
+  });
 }
 
 export async function openSidebar(page: Page, navBarText: string) {

@@ -1,19 +1,16 @@
 import { expect, Page } from "@playwright/test";
+
+import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import * as interaction from "../../utils/ui-helper/interaction";
 import * as misc from "../../utils/ui-helper/misc";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
 import { SETTINGS_PAGE_COMPONENTS } from "../selectors/page-selectors";
-import {
-  getCurrentLanguage,
-  getTranslations,
-} from "../../e2e/localization/locale";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-const LANGUAGE_OPTIONS_PATTERN =
-  /English|Deutsch|Español|Français|Italiano|日本語/u;
+const LANGUAGE_OPTIONS_PATTERN = /English|Deutsch|Español|Français|Italiano|日本語/u;
 
 /** Settings and profile interactions. */
 export class SettingsPage {
@@ -37,9 +34,7 @@ export class SettingsPage {
   }
 
   async verifySignInButtonVisible(): Promise<void> {
-    await expect(
-      this.page.getByRole("button", { name: "Sign In" }),
-    ).toBeVisible();
+    await expect(this.page.getByRole("button", { name: "Sign In" })).toBeVisible();
   }
 
   async verifyGuestProfile(): Promise<void> {
@@ -48,10 +43,7 @@ export class SettingsPage {
   }
 
   async verifySignInPageTitle(): Promise<void> {
-    await verification.verifyHeading(
-      this.page,
-      t["rhdh"][lang]["signIn.page.title"],
-    );
+    await verification.verifyHeading(this.page, t["rhdh"][lang]["signIn.page.title"]);
   }
 
   async verifySignInError(message: string | RegExp): Promise<void> {
@@ -70,11 +62,7 @@ export class SettingsPage {
     await navigation.goToPageUrl(this.page, url, heading);
   }
 
-  async verifyTextVisible(
-    text: string,
-    exact = false,
-    timeout = 10000,
-  ): Promise<void> {
+  async verifyTextVisible(text: string, exact = false, timeout = 10000): Promise<void> {
     await verification.verifyTextVisible(this.page, text, exact, timeout);
   }
 
@@ -102,10 +90,7 @@ export class SettingsPage {
     await verification.verifyText(this.page, labels["themeToggle.title"]);
     await verification.verifyText(this.page, labels["signOutMenu.title"]);
     await verification.verifyText(this.page, labels["identityCard.title"]);
-    await verification.verifyText(
-      this.page,
-      `${labels["identityCard.userEntity"]}: Guest User`,
-    );
+    await verification.verifyText(this.page, `${labels["identityCard.userEntity"]}: Guest User`);
     await verification.verifyText(
       this.page,
       `${labels["identityCard.ownershipEntities"]}: ownershipEntities`,
@@ -123,10 +108,7 @@ export class SettingsPage {
     await verification.verifyText(this.page, labels["appearanceCard.title"]);
     await verification.verifyText(this.page, labels["themeToggle.title"]);
     await verification.verifyText(this.page, labels["identityCard.title"]);
-    await verification.verifyText(
-      this.page,
-      `${labels["identityCard.userEntity"]}: Guest User`,
-    );
+    await verification.verifyText(this.page, `${labels["identityCard.userEntity"]}: Guest User`);
     await verification.verifyText(
       this.page,
       `${labels["identityCard.ownershipEntities"]}: ${ownershipEntities}`,
@@ -135,23 +117,13 @@ export class SettingsPage {
     await verification.verifyText(this.page, labels["pinToggle.description"]);
   }
 
-  async togglePinSidebar(
-    locale: keyof (typeof t)["user-settings"],
-  ): Promise<void> {
+  async togglePinSidebar(locale: keyof (typeof t)["user-settings"]): Promise<void> {
     const labels = t["user-settings"][locale];
-    await interaction.uncheckCheckbox(
-      this.page,
-      labels["pinToggle.ariaLabelTitle"],
-    );
-    await interaction.checkCheckbox(
-      this.page,
-      labels["pinToggle.ariaLabelTitle"],
-    );
+    await interaction.uncheckCheckbox(this.page, labels["pinToggle.ariaLabelTitle"]);
+    await interaction.checkCheckbox(this.page, labels["pinToggle.ariaLabelTitle"]);
   }
 
-  async verifyLanguageToggleList(
-    locale: keyof (typeof t)["user-settings"],
-  ): Promise<void> {
+  async verifyLanguageToggleList(locale: keyof (typeof t)["user-settings"]): Promise<void> {
     const labels = t["user-settings"][locale];
     await expect(this.page.getByRole("list").first()).toMatchAriaSnapshot(`
     - listitem:
@@ -161,9 +133,7 @@ export class SettingsPage {
   }
 
   async verifyLanguageSelectShowsOptions(): Promise<void> {
-    await expect(this.page.getByTestId("select")).toContainText(
-      LANGUAGE_OPTIONS_PATTERN,
-    );
+    await expect(this.page.getByTestId("select")).toContainText(LANGUAGE_OPTIONS_PATTERN);
   }
 
   async openLanguageSelect(): Promise<void> {
@@ -198,9 +168,7 @@ export class SettingsPage {
   }
 
   async verifySignOutMenuLabel(text: string): Promise<void> {
-    await expect(SETTINGS_PAGE_COMPONENTS.getSignOut(this.page)).toContainText(
-      text,
-    );
+    await expect(SETTINGS_PAGE_COMPONENTS.getSignOut(this.page)).toContainText(text);
   }
 
   async closeUserSettingsMenu(): Promise<void> {
@@ -237,9 +205,7 @@ export class SettingsPage {
   }
 
   async verifyInactivityLogoutMessageHidden(timeout = 30_000): Promise<void> {
-    await expect(
-      this.page.getByText("Logging out due to inactivity"),
-    ).toBeHidden({ timeout });
+    await expect(this.page.getByText("Logging out due to inactivity")).toBeHidden({ timeout });
   }
 
   async verifyRhdhMetadata(): Promise<void> {

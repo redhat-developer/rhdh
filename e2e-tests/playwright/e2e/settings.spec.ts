@@ -1,6 +1,7 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../utils/common";
+
 import { SettingsPage } from "../support/pages/settings-page";
+import { Common } from "../utils/common";
 import { getTranslations, getCurrentLanguage } from "./localization/locale";
 
 const t = getTranslations();
@@ -30,25 +31,14 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.selectLanguage("Français");
     await settingsPage.verifySelectedLanguage("Français");
 
-    await settingsPage.verifyLocalizedUserSettingsLabelsWithOwnership(
-      "fr",
-      "Guest User, team-a",
-    );
+    await settingsPage.verifyLocalizedUserSettingsLabelsWithOwnership("fr", "Guest User, team-a");
     await settingsPage.openUserSettingsMenu();
-    await settingsPage.verifySignOutMenuLabel(
-      t["user-settings"]["fr"]["signOutMenu.title"],
-    );
+    await settingsPage.verifySignOutMenuLabel(t["user-settings"]["fr"]["signOutMenu.title"]);
     await settingsPage.closeUserSettingsMenu();
 
-    await settingsPage.uncheckCheckbox(
-      t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"],
-    );
-    await settingsPage.verifySidebarMenuItemHidden(
-      t["rhdh"]["fr"]["menuItem.apis"],
-    );
-    await settingsPage.checkCheckbox(
-      t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"],
-    );
+    await settingsPage.uncheckCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
+    await settingsPage.verifySidebarMenuItemHidden(t["rhdh"]["fr"]["menuItem.apis"]);
+    await settingsPage.checkCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
     await settingsPage.verifyText(t["rhdh"]["fr"]["menuItem.home"]);
   });
 });

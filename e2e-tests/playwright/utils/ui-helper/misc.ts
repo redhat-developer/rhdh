@@ -1,18 +1,11 @@
 import { expect, Page } from "@playwright/test";
-import { getCardByHeading } from "../../support/selectors/ui-locators";
+
 import { getCurrentLanguage } from "../../e2e/localization/locale";
-import {
-  clickButtonByLabel,
-  clickByDataTestId,
-  clickLink,
-} from "./interaction";
+import { getCardByHeading } from "../../support/selectors/ui-locators";
+import { clickButtonByLabel, clickByDataTestId, clickLink } from "./interaction";
 import { openSidebar, selectMuiBox } from "./navigation";
-import {
-  verifyAlertErrorMessage,
-  verifyHeading,
-  verifyRowsInTable,
-} from "./verification";
 import { verifyCellsInTable } from "./table";
+import { verifyAlertErrorMessage, verifyHeading, verifyRowsInTable } from "./verification";
 
 export async function verifyLinkinCard(
   page: Page,
@@ -34,9 +27,7 @@ export async function verifyTextinCard(
   text: string | RegExp,
   exact = true,
 ) {
-  const locator = getCardByHeading(page, cardHeading)
-    .getByText(text, { exact })
-    .first();
+  const locator = getCardByHeading(page, cardHeading).getByText(text, { exact }).first();
   await locator.scrollIntoViewIfNeeded();
   await expect(locator).toBeVisible();
 }
@@ -59,19 +50,13 @@ export function toRgb(color: string): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-export async function checkCssColor(
-  page: Page,
-  selector: string,
-  expectedColor: string,
-) {
+export async function checkCssColor(page: Page, selector: string, expectedColor: string) {
   const elements = page.locator(selector);
   const count = await elements.count();
   const expectedRgbColor = toRgb(expectedColor);
 
   for (let i = 0; i < count; i++) {
-    const color = await elements
-      .nth(i)
-      .evaluate((el) => window.getComputedStyle(el).color);
+    const color = await elements.nth(i).evaluate((el) => window.getComputedStyle(el).color);
     expect(color).toBe(expectedRgbColor);
   }
 }
@@ -115,10 +100,7 @@ export async function openQuickstartIfHidden(page: Page): Promise<void> {
   await expect(quickstartHideButton).toBeVisible();
 }
 
-export async function verifyLocationRefreshButtonIsEnabled(
-  page: Page,
-  locationName: string,
-) {
+export async function verifyLocationRefreshButtonIsEnabled(page: Page, locationName: string) {
   await expect(async () => {
     await page.goto("/");
     await openSidebar(page, "Catalog");
@@ -178,11 +160,7 @@ export async function clickUnregisterButtonForDisplayedEntity(
   await deleteButton.click();
 }
 
-export async function verifyComponentInCatalog(
-  page: Page,
-  kind: string,
-  expectedRows: string[],
-) {
+export async function verifyComponentInCatalog(page: Page, kind: string, expectedRows: string[]) {
   await openSidebar(page, "Catalog");
   await selectMuiBox(page, "Kind", kind);
   await verifyRowsInTable(page, expectedRows);
