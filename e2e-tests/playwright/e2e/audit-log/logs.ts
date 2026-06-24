@@ -68,5 +68,8 @@ export class Log {
     this.request = overrides.request;
     this.response = overrides.response;
     this.meta = overrides.meta;
+    this.message = overrides.message;
+    this.name = overrides.name;
+    this.stack = overrides.stack;
   }
 }

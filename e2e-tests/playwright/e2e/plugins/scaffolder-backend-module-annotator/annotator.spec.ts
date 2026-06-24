@@ -51,7 +51,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
 
   test("Register the annotator template", async ({}, testInfo) => {
     await uiHelper.openSidebar("Catalog");
-    await expect(page.getByText("Name")).toBeVisible();
+    await uiHelper.verifyText("Name");
 
     await expect(
       runAccessibilityTests(page, testInfo),

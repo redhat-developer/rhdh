@@ -36,7 +36,11 @@ test.describe("Test ApplicationProvider", () => {
       .filter({ hasText: "Context one" });
 
     // Click increment on the first Context one card
-    await contextOneCards.first().getByRole("button", { name: "+" }).click();
+    await contextOneCards
+      .first()
+      .getByRole("button", { name: "+" })
+      .first()
+      .click();
 
     // Verify both Context one cards show count of 1 (shared state)
     await expect(
@@ -55,7 +59,11 @@ test.describe("Test ApplicationProvider", () => {
       .filter({ hasText: "Context two" });
 
     // Click increment on the first Context two card
-    await contextTwoCards.first().getByRole("button", { name: "+" }).click();
+    await contextTwoCards
+      .first()
+      .getByRole("button", { name: "+" })
+      .first()
+      .click();
 
     // Verify both Context two cards show count of 1 (shared state)
     await expect(
