@@ -1,14 +1,9 @@
 import { Page, expect } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+
+import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
 import { APIHelper } from "../../utils/api-helper";
-import {
-  BACKSTAGE_SHOWCASE_COMPONENTS,
-  CATALOG_IMPORT_COMPONENTS,
-} from "../page-objects/page-obj";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../../e2e/localization/locale";
+import { UIhelper } from "../../utils/ui-helper";
+import { BACKSTAGE_SHOWCASE_COMPONENTS, CATALOG_IMPORT_COMPONENTS } from "../page-objects/page-obj";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -46,9 +41,7 @@ export class CatalogImport {
    * @returns boolean indicating if the component is already registered
    */
   async isComponentAlreadyRegistered(): Promise<boolean> {
-    return await this.uiHelper.isBtnVisible(
-      t["catalog-import"][lang]["stepReviewLocation.refresh"],
-    );
+    return this.uiHelper.isBtnVisible(t["catalog-import"][lang]["stepReviewLocation.refresh"]);
   }
 
   /**
@@ -58,31 +51,21 @@ export class CatalogImport {
    * @param url - The component URL to register
    * @param clickViewComponent - Whether to click "View Component" after import
    */
-  async registerExistingComponent(
-    url: string,
-    clickViewComponent: boolean = true,
-  ) {
+  async registerExistingComponent(url: string, clickViewComponent: boolean = true) {
     await this.analyzeAndWait(url);
-    const isComponentAlreadyRegistered =
-      await this.isComponentAlreadyRegistered();
+    const isComponentAlreadyRegistered = await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
-      await this.uiHelper.clickButton(
-        t["catalog-import"][lang]["stepReviewLocation.refresh"],
-      );
+      await this.uiHelper.clickButton(t["catalog-import"][lang]["stepReviewLocation.refresh"]);
       expect(
         await this.uiHelper.isBtnVisible(
           t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
         ),
       ).toBeTruthy();
     } else {
-      await this.uiHelper.clickButton(
-        t["catalog-import"][lang]["stepReviewLocation.import"],
-      );
+      await this.uiHelper.clickButton(t["catalog-import"][lang]["stepReviewLocation.import"]);
       if (clickViewComponent) {
         await this.uiHelper.clickButton(
-          t["catalog-import"][lang][
-            "stepFinishImportLocation.locations.viewButtonText"
-          ],
+          t["catalog-import"][lang]["stepFinishImportLocation.locations.viewButtonText"],
         );
       }
     }
@@ -91,9 +74,7 @@ export class CatalogImport {
 
   async analyzeComponent(url: string) {
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await this.uiHelper.clickButton(
-      t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
-    );
+    await this.uiHelper.clickButton(t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"]);
   }
 
   async inspectEntityAndVerifyYaml(text: string) {
@@ -114,16 +95,8 @@ export class BackstageShowcase {
     this.uiHelper = new UIhelper(page);
   }
 
-  static async getShowcasePRs(
-    state: "open" | "closed" | "all",
-    paginated = false,
-  ) {
-    return await APIHelper.getGitHubPRs(
-      "redhat-developer",
-      "rhdh",
-      state,
-      paginated,
-    );
+  static async getShowcasePRs(state: "open" | "closed" | "all", paginated = false) {
+    return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
   }
 
   async clickNextPage() {
@@ -138,7 +111,7 @@ export class BackstageShowcase {
     await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableLastPage);
   }
 
-  async verifyPRRowsPerPage(rows, allPRs) {
+  async verifyPRRowsPerPage(rows: number, allPRs: { title: string; number: string }[]) {
     await this.selectRowsPerPage(rows);
     await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
     await this.uiHelper.verifyLink(allPRs[rows].number, {
@@ -146,9 +119,7 @@ export class BackstageShowcase {
       notVisible: true,
     });
 
-    const tableRows = this.page.locator(
-      BACKSTAGE_SHOWCASE_COMPONENTS.tableRows,
-    );
+    const tableRows = this.page.locator(BACKSTAGE_SHOWCASE_COMPONENTS.tableRows);
     await expect(tableRows).toHaveCount(rows);
   }
 
@@ -163,21 +134,14 @@ export class BackstageShowcase {
   }
 
   async verifyAboutCardIsDisplayed() {
-    const url =
-      "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
-    const isLinkVisible = await this.page
-      .locator(`a[href="${url}"]`)
-      .isVisible();
+    const url = "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
+    const isLinkVisible = await this.page.locator(`a[href="${url}"]`).isVisible();
     if (!isLinkVisible) {
       throw new Error("About card is not displayed");
     }
   }
 
-  async verifyPRRows(
-    allPRs: { title: string }[],
-    startRow: number,
-    lastRow: number,
-  ) {
+  async verifyPRRows(allPRs: { title: string }[], startRow: number, lastRow: number) {
     for (let i = startRow; i < lastRow; i++) {
       await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
     }

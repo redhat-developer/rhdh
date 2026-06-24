@@ -1,7 +1,12 @@
 import { test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
+
 import { HomePage } from "../support/pages/home-page";
 import { Common } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
+import { getTranslations, getCurrentLanguage } from "./localization/locale";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 test.describe("Guest Signing Happy path", () => {
   test.beforeAll(async () => {
@@ -37,5 +42,6 @@ test.describe("Guest Signing Happy path", () => {
   test("Sign Out and Verify that you return to the Sign-in page", async () => {
     await uiHelper.goToSettingsPage();
     await common.signOut();
+    await uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
   });
 });

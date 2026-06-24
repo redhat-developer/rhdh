@@ -3,6 +3,7 @@
  * --------------------------------------------------------------------------*/
 
 import { type JsonObject } from "@backstage/types";
+
 import { LogUtils } from "./log-utils";
 import { EventStatus, LogRequest } from "./logs";
 
@@ -37,10 +38,7 @@ export function buildNotAllowedError(
   entityRef?: string,
 ): string {
   // Backend verbs differ from our logical action names:
-  const backendVerb: Record<
-    "create" | "update" | "delete",
-    "add" | "edit" | "delete"
-  > = {
+  const backendVerb: Record<"create" | "update" | "delete", "add" | "edit" | "delete"> = {
     create: "add",
     update: "edit",
     delete: "delete",

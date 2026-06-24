@@ -1,5 +1,6 @@
-import { request, APIResponse, expect } from "@playwright/test";
 import { GroupEntity, UserEntity } from "@backstage/catalog-model";
+import { request, APIResponse, expect } from "@playwright/test";
+
 import { GITHUB_API_ENDPOINTS } from "./api-endpoints";
 
 type FetchOptions = {
@@ -12,10 +13,88 @@ type FetchOptions = {
   data?: string | object;
 };
 
+interface GitHubPullRequestFile {
+  filename: string;
+  raw_url: string;
+}
+
+interface GuestTokenResponse {
+  backstageIdentity: {
+    token: string;
+  };
+}
+
+interface EntityMetadataResponse {
+  metadata?: {
+    uid?: string;
+  };
+}
+
+interface CatalogLocationEntry {
+  data?: {
+    target?: string;
+    id?: string;
+  };
+}
+
+function isGitHubPullRequestFile(value: unknown): value is GitHubPullRequestFile {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "filename" in value &&
+    typeof value.filename === "string" &&
+    "raw_url" in value &&
+    typeof value.raw_url === "string"
+  );
+}
+
+function isGuestTokenResponse(value: unknown): value is GuestTokenResponse {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "backstageIdentity" in value &&
+    typeof value.backstageIdentity === "object" &&
+    value.backstageIdentity !== null &&
+    "token" in value.backstageIdentity &&
+    typeof value.backstageIdentity.token === "string"
+  );
+}
+
+function isEntityMetadataResponse(value: unknown): value is EntityMetadataResponse {
+  return typeof value === "object" && value !== null;
+}
+
+function isCatalogLocationEntry(value: unknown): value is CatalogLocationEntry {
+  return typeof value === "object" && value !== null;
+}
+
+function isUserEntity(value: unknown): value is UserEntity {
+  return isEntityMetadataResponse(value) && "kind" in value && value.kind === "User";
+}
+
+function isGroupEntity(value: unknown): value is GroupEntity {
+  return isEntityMetadataResponse(value) && "kind" in value && value.kind === "Group";
+}
+
+async function parseJsonResponse(response: APIResponse): Promise<unknown> {
+  return response.json();
+}
+
+function toUnknownArray(value: unknown): unknown[] {
+  if (!Array.isArray(value)) {
+    throw new TypeError(`Expected array but got ${typeof value}: ${JSON.stringify(value)}`);
+  }
+  const items: unknown[] = [];
+  for (const item of value) {
+    items.push(item);
+  }
+  return items;
+}
+
 export class APIHelper {
   private static githubAPIVersion = "2022-11-28";
-  private staticToken: string;
-  private baseUrl: string;
+  private staticToken = "";
+  private baseUrl = "";
   useStaticToken = false;
 
   static async githubRequest(
@@ -44,35 +123,26 @@ export class APIHelper {
   static async getGithubPaginatedRequest(
     url: string,
     pageNo = 1,
-    response = [],
-  ) {
+    response: unknown[] = [],
+  ): Promise<unknown[]> {
     const fullUrl = `${url}&page=${pageNo}`;
     const result = await this.githubRequest("GET", fullUrl);
-    const body = await result.json();
+    const body: unknown = await result.json();
+    const pageItems = toUnknownArray(body);
 
-    if (!Array.isArray(body)) {
-      throw new Error(
-        `Expected array but got ${typeof body}: ${JSON.stringify(body)}`,
-      );
-    }
-
-    if (body.length === 0) {
+    if (pageItems.length === 0) {
       return response;
     }
 
-    response = [...response, ...body];
+    response = response.concat(pageItems);
     return await this.getGithubPaginatedRequest(url, pageNo + 1, response);
   }
 
   static async createGitHubRepo(owner: string, repoName: string) {
-    const response = await APIHelper.githubRequest(
-      "POST",
-      GITHUB_API_ENDPOINTS.createRepo(owner),
-      {
-        name: repoName,
-        private: false,
-      },
-    );
+    const response = await APIHelper.githubRequest("POST", GITHUB_API_ENDPOINTS.createRepo(owner), {
+      name: repoName,
+      private: false,
+    });
     expect(response.status() === 201 || response.ok()).toBeTruthy();
   }
 
@@ -117,9 +187,9 @@ export class APIHelper {
   }
 
   static async initCommit(owner: string, repo: string, branch = "main") {
-    const content = Buffer.from(
-      "This is the initial commit for the repository.",
-    ).toString("base64");
+    const content = Buffer.from("This is the initial commit for the repository.").toString(
+      "base64",
+    );
     const response = await APIHelper.githubRequest(
       "PUT",
       `${GITHUB_API_ENDPOINTS.contents(owner, repo)}/initial-commit.md`,
@@ -133,21 +203,11 @@ export class APIHelper {
   }
 
   static async deleteGitHubRepo(owner: string, repoName: string) {
-    await APIHelper.githubRequest(
-      "DELETE",
-      GITHUB_API_ENDPOINTS.deleteRepo(owner, repoName),
-    );
+    await APIHelper.githubRequest("DELETE", GITHUB_API_ENDPOINTS.deleteRepo(owner, repoName));
   }
 
-  static async mergeGitHubPR(
-    owner: string,
-    repoName: string,
-    pullNumber: number,
-  ) {
-    await APIHelper.githubRequest(
-      "PUT",
-      GITHUB_API_ENDPOINTS.mergePR(owner, repoName, pullNumber),
-    );
+  static async mergeGitHubPR(owner: string, repoName: string, pullNumber: number) {
+    await APIHelper.githubRequest("PUT", GITHUB_API_ENDPOINTS.mergePR(owner, repoName, pullNumber));
   }
 
   static async getGitHubPRs(
@@ -158,10 +218,10 @@ export class APIHelper {
   ) {
     const url = GITHUB_API_ENDPOINTS.pull(owner, repoName, state);
     if (paginated) {
-      return await APIHelper.getGithubPaginatedRequest(url);
+      return APIHelper.getGithubPaginatedRequest(url);
     }
     const response = await APIHelper.githubRequest("GET", url);
-    return response.json();
+    return parseJsonResponse(response);
   }
 
   static async getfileContentFromPR(
@@ -174,12 +234,20 @@ export class APIHelper {
       "GET",
       GITHUB_API_ENDPOINTS.pull_files(owner, repoName, pr),
     );
-    const fileRawUrl = (await response.json()).find(
-      (file: { filename: string }) => file.filename === filename,
-    ).raw_url;
-    const rawFileContent = await (
-      await APIHelper.githubRequest("GET", fileRawUrl)
-    ).text();
+    const files: unknown = await parseJsonResponse(response);
+    if (!Array.isArray(files)) {
+      throw new TypeError(
+        `Expected PR files array but got ${typeof files}: ${JSON.stringify(files)}`,
+      );
+    }
+    const file = files.find(
+      (entry): entry is GitHubPullRequestFile =>
+        isGitHubPullRequestFile(entry) && entry.filename === filename,
+    );
+    if (!file) {
+      throw new Error(`File ${filename} not found in PR ${pr}`);
+    }
+    const rawFileContent = await (await APIHelper.githubRequest("GET", file.raw_url)).text();
     return rawFileContent;
   }
 
@@ -187,7 +255,10 @@ export class APIHelper {
     const context = await request.newContext();
     const response = await context.post("/api/auth/guest/refresh");
     expect(response.status()).toBe(200);
-    const data = await response.json();
+    const data: unknown = await parseJsonResponse(response);
+    if (!isGuestTokenResponse(data)) {
+      throw new Error("Guest token not found in response body");
+    }
     return data.backstageIdentity.token;
   }
 
@@ -215,128 +286,102 @@ export class APIHelper {
     body?: string | object,
   ): Promise<APIResponse> {
     const context = await request.newContext();
-    const options = {
+    const options: {
+      method: string;
+      headers: {
+        Accept: string;
+        Authorization: string;
+      };
+      data?: string | object;
+    } = {
       method: method,
       headers: {
         Accept: "application/json",
-        Authorization: `${staticToken}`,
+        Authorization: staticToken,
       },
     };
 
     if (body) {
-      options["data"] = body;
+      options.data = body;
     }
 
     const response = await context.fetch(url, options);
     return response;
   }
 
-  async getAllCatalogUsersFromAPI() {
+  async getAllCatalogUsersFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Duser`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
-    return response.json();
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
+    return parseJsonResponse(response);
   }
 
-  async getAllCatalogLocationsFromAPI() {
+  async getAllCatalogLocationsFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dlocation`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
-    return response.json();
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
+    return parseJsonResponse(response);
   }
 
-  async getAllCatalogGroupsFromAPI() {
+  async getAllCatalogGroupsFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dgroup`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
-    return response.json();
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
+    return parseJsonResponse(response);
   }
 
-  async getGroupEntityFromAPI(group: string) {
+  async getGroupEntityFromAPI(group: string): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
-    return response.json();
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
+    return parseJsonResponse(response);
   }
 
-  async getCatalogUserFromAPI(user: string) {
+  async getCatalogUserFromAPI(user: string): Promise<UserEntity> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/user/default/${user}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
-    return response.json();
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
+    const body: unknown = await parseJsonResponse(response);
+    if (!isUserEntity(body)) {
+      throw new TypeError(`Invalid catalog user response for ${user}`);
+    }
+    return body;
   }
 
-  async deleteUserEntityFromAPI(user: string) {
-    const r: UserEntity = await this.getCatalogUserFromAPI(user);
-    if (!r.metadata || !r.metadata.uid) {
-      return;
+  async deleteUserEntityFromAPI(user: string): Promise<string | undefined> {
+    const r = await this.getCatalogUserFromAPI(user);
+    if (!r.metadata?.uid) {
+      return undefined;
     }
     const url = `${this.baseUrl}/api/catalog/entities/by-uid/${r.metadata.uid}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "DELETE",
-      url,
-      token,
-    );
-    return response.statusText;
+    const response = await APIHelper.APIRequestWithStaticToken("DELETE", url, token);
+    return response.statusText();
   }
 
-  async getCatalogGroupFromAPI(group: string) {
+  async getCatalogGroupFromAPI(group: string): Promise<GroupEntity> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
-    return response.json();
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
+    const body: unknown = await parseJsonResponse(response);
+    if (!isGroupEntity(body)) {
+      throw new TypeError(`Invalid catalog group response for ${group}`);
+    }
+    return body;
   }
 
-  async deleteGroupEntityFromAPI(group: string) {
-    const r: GroupEntity = await this.getCatalogGroupFromAPI(group);
+  async deleteGroupEntityFromAPI(group: string): Promise<string> {
+    const r = await this.getCatalogGroupFromAPI(group);
     const url = `${this.baseUrl}/api/catalog/entities/by-uid/${r.metadata.uid}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "DELETE",
-      url,
-      token,
-    );
-    return response.statusText;
+    const response = await APIHelper.APIRequestWithStaticToken("DELETE", url, token);
+    return response.statusText();
   }
 
-  async scheduleEntityRefreshFromAPI(
-    entity: string,
-    kind: string,
-    token: string,
-  ) {
+  async scheduleEntityRefreshFromAPI(entity: string, kind: string, token: string) {
     const url = `${this.baseUrl}/api/catalog/refresh`;
     const reqBody = { entityRef: `${kind}:default/${entity}` };
-    const responseRefresh = await APIHelper.APIRequestWithStaticToken(
-      "POST",
-      url,
-      token,
-      reqBody,
-    );
+    const responseRefresh = await APIHelper.APIRequestWithStaticToken("POST", url, token, reqBody);
     return responseRefresh.status();
   }
 
@@ -354,8 +399,11 @@ export class APIHelper {
     if (response.status() !== 200) {
       return undefined;
     }
-    const data = await response.json();
-    return data?.metadata?.uid;
+    const data: unknown = await parseJsonResponse(response);
+    if (!isEntityMetadataResponse(data)) {
+      return undefined;
+    }
+    return data.metadata?.uid;
   }
 
   /**
@@ -388,8 +436,11 @@ export class APIHelper {
     const context = await request.newContext();
     const response = await context.get(url);
     if (response.status() === 200) {
-      const data = await response.json();
-      return data?.metadata?.uid;
+      const data: unknown = await parseJsonResponse(response);
+      if (!isEntityMetadataResponse(data)) {
+        return undefined;
+      }
+      return data.metadata?.uid;
     }
     if (response.status() === 404) {
       return undefined;
@@ -439,9 +490,7 @@ export class APIHelper {
    * @param target - The target URL of the location to search for.
    * @returns The ID string if found, otherwise undefined.
    */
-  static async getLocationIdByTarget(
-    target: string,
-  ): Promise<string | undefined> {
+  static async getLocationIdByTarget(target: string): Promise<string | undefined> {
     const baseUrl = process.env.BASE_URL;
     const url = `${baseUrl}/api/catalog/locations`;
     const context = await request.newContext();
@@ -449,10 +498,13 @@ export class APIHelper {
     if (response.status() !== 200) {
       return undefined;
     }
-    const data = await response.json();
-    // data is expected to be an array of objects with a 'data' property
-    const location = (Array.isArray(data) ? data : []).find(
-      (entry) => entry?.data?.target === target,
+    const data: unknown = await parseJsonResponse(response);
+    if (!Array.isArray(data)) {
+      return undefined;
+    }
+    const location = data.find(
+      (entry): entry is CatalogLocationEntry =>
+        isCatalogLocationEntry(entry) && entry.data?.target === target,
     );
     return location?.data?.id;
   }

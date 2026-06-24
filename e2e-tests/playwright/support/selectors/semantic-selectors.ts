@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-extraneous-class -- grouped semantic locator helpers */
 import { Page, Locator } from "@playwright/test";
 
 /**
@@ -66,9 +67,7 @@ export class SemanticSelectors {
    * await expect(SemanticSelectors.tableCell(page, 'Active')).toBeVisible();
    */
   static tableCell(page: Page, text?: string | RegExp): Locator {
-    return text
-      ? page.getByRole("cell", { name: text })
-      : page.getByRole("cell");
+    return text ? page.getByRole("cell", { name: text }) : page.getByRole("cell");
   }
 
   /**
@@ -110,11 +109,7 @@ export class SemanticSelectors {
    * await expect(SemanticSelectors.heading(page, 'RBAC', 1)).toBeVisible();
    * await expect(SemanticSelectors.heading(page, /settings/i)).toBeVisible();
    */
-  static heading(
-    page: Page,
-    name: string | RegExp,
-    level?: 1 | 2 | 3 | 4 | 5 | 6,
-  ): Locator {
+  static heading(page: Page, name: string | RegExp, level?: 1 | 2 | 3 | 4 | 5 | 6): Locator {
     return page.getByRole("heading", { name, level });
   }
 
@@ -195,9 +190,7 @@ export class SemanticSelectors {
    * await nav.getByRole('link', { name: 'Home' }).click();
    */
   static navigation(page: Page, name?: string | RegExp): Locator {
-    return name
-      ? page.getByRole("navigation", { name })
-      : page.getByRole("navigation");
+    return name ? page.getByRole("navigation", { name }) : page.getByRole("navigation");
   }
 
   /**
@@ -386,9 +379,7 @@ export class SemanticSelectors {
       | "listitem",
     name?: string | RegExp,
   ): Locator {
-    return name
-      ? container.getByRole(role, { name })
-      : container.getByRole(role);
+    return name ? container.getByRole(role, { name }) : container.getByRole(role);
   }
 }
 
@@ -403,11 +394,7 @@ export class SemanticSelectors {
  * const createdAtCell = findTableCell(page, 'timestamp-test', 7);
  * await expect(createdAtCell).toHaveText(/\d{1,2}\/\d{1,2}\/\d{4}/);
  */
-export function findTableCell(
-  page: Page,
-  rowText: string | RegExp,
-  cellIndex: number,
-): Locator {
+export function findTableCell(page: Page, rowText: string | RegExp, cellIndex: number): Locator {
   const row = SemanticSelectors.tableRow(page, rowText);
   return row.getByRole("cell").nth(cellIndex);
 }
@@ -429,9 +416,7 @@ export async function findTableCellByColumn(
   columnName: string | RegExp,
 ): Promise<Locator> {
   const header = SemanticSelectors.tableHeader(page, columnName);
-  const columnIndex = await header.evaluate(
-    (th: HTMLTableCellElement) => th.cellIndex,
-  );
+  const columnIndex = await header.evaluate((th: HTMLTableCellElement) => th.cellIndex);
   return findTableCell(page, rowText, columnIndex);
 }
 
@@ -467,9 +452,7 @@ export class WaitStrategies {
     await page.waitForResponse((response) => {
       const url = response.url();
       const matchesUrl =
-        typeof urlPattern === "string"
-          ? url.includes(urlPattern)
-          : urlPattern.test(url);
+        typeof urlPattern === "string" ? url.includes(urlPattern) : urlPattern.test(url);
       return matchesUrl && response.status() === statusCode;
     });
   }

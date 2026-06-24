@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-extraneous-class -- grouped static page-object helpers */
 import { Page, Locator } from "@playwright/test";
 
 export class CatalogUsersPO {

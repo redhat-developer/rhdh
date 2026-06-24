@@ -59,14 +59,11 @@ export const IS_OPENSHIFT_VALUES = {
   FALSE: "false",
 } as const;
 
-export type JobNamePattern =
-  (typeof JOB_NAME_PATTERNS)[keyof typeof JOB_NAME_PATTERNS];
+export type JobNamePattern = (typeof JOB_NAME_PATTERNS)[keyof typeof JOB_NAME_PATTERNS];
 export type JobNameRegexPattern =
   (typeof JOB_NAME_REGEX_PATTERNS)[keyof typeof JOB_NAME_REGEX_PATTERNS];
-export type JobTypePattern =
-  (typeof JOB_TYPE_PATTERNS)[keyof typeof JOB_TYPE_PATTERNS];
-export type IsOpenShiftValue =
-  (typeof IS_OPENSHIFT_VALUES)[keyof typeof IS_OPENSHIFT_VALUES];
+export type JobTypePattern = (typeof JOB_TYPE_PATTERNS)[keyof typeof JOB_TYPE_PATTERNS];
+export type IsOpenShiftValue = (typeof IS_OPENSHIFT_VALUES)[keyof typeof IS_OPENSHIFT_VALUES];
 
 /**
  * Kubernetes deployment-level label selectors for backstage.

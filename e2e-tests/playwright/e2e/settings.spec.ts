@@ -1,4 +1,5 @@
 import { test, expect } from "@support/coverage/test";
+
 import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 import { getTranslations, getCurrentLanguage } from "./localization/locale";
@@ -60,25 +61,16 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await page.keyboard.press(`Escape`);
 
     await uiHelper.verifyText(t["user-settings"]["fr"]["identityCard.title"]);
+    await uiHelper.verifyText(t["user-settings"]["fr"]["identityCard.userEntity"] + ": Guest User");
     await uiHelper.verifyText(
-      t["user-settings"]["fr"]["identityCard.userEntity"] + ": Guest User",
-    );
-    await uiHelper.verifyText(
-      t["user-settings"]["fr"]["identityCard.ownershipEntities"] +
-        ": Guest User, team-a",
+      t["user-settings"]["fr"]["identityCard.ownershipEntities"] + ": Guest User, team-a",
     );
 
     await uiHelper.verifyText(t["user-settings"]["fr"]["pinToggle.title"]);
-    await uiHelper.verifyText(
-      t["user-settings"]["fr"]["pinToggle.description"],
-    );
-    await uiHelper.uncheckCheckbox(
-      t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"],
-    );
+    await uiHelper.verifyText(t["user-settings"]["fr"]["pinToggle.description"]);
+    await uiHelper.uncheckCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
     await expect(page.getByText(t["rhdh"]["fr"]["menuItem.apis"])).toBeHidden();
-    await uiHelper.checkCheckbox(
-      t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"],
-    );
+    await uiHelper.checkCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
     await uiHelper.verifyText(t["rhdh"]["fr"]["menuItem.home"]);
   });
 });

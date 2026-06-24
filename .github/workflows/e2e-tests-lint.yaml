@@ -13,7 +13,7 @@ on:
 
 jobs:
   lint:
-    name: TSC, ESLint, ShellCheck and Prettier
+    name: Oxlint, Oxfmt, and ShellCheck
     runs-on: ubuntu-latest
 
     steps:
@@ -33,18 +33,18 @@ jobs:
         working-directory: ./e2e-tests
         run: yarn install --mode=skip-build
 
-      - name: Run TypeScript Compiler check
+      - name: Run Oxlint
         working-directory: ./e2e-tests
-        run: yarn tsc:check
+        run: yarn lint
 
-      - name: Run ESLint check
+      - name: Verify Playwright test collection
         working-directory: ./e2e-tests
-        run: yarn lint:check
+        run: yarn test:list
 
       - name: Run ShellCheck
         working-directory: ./e2e-tests
         run: yarn shellcheck
 
-      - name: Run Prettier check
+      - name: Run Oxfmt check
         working-directory: ./e2e-tests
-        run: yarn prettier:check
+        run: yarn fmt:check

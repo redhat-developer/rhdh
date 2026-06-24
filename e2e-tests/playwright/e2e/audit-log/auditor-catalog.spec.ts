@@ -1,11 +1,11 @@
 import { test } from "@support/coverage/test";
+
+import { CatalogImport } from "../../support/pages/catalog-import";
+import { APIHelper } from "../../utils/api-helper";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
-import { CatalogImport } from "../../support/pages/catalog-import";
-import { APIHelper } from "../../utils/api-helper";
-const template =
-  "https://github.com/janus-qe/sample-service/blob/main/demo_template.yaml";
+const template = "https://github.com/janus-qe/sample-service/blob/main/demo_template.yaml";
 const entityName = "hello-world-2";
 const namespace = "default";
 

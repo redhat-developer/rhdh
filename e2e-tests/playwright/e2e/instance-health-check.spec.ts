@@ -13,7 +13,7 @@ test.describe("Application health check", () => {
 
     const response = await request.get(healthCheckEndpoint);
 
-    const responseBody = await response.json();
+    const responseBody: unknown = await response.json();
 
     expect(response.status()).toBe(200);
 

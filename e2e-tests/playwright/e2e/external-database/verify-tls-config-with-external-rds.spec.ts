@@ -1,4 +1,5 @@
-import { test } from "@support/coverage/test";
+import { test, expect } from "@support/coverage/test";
+
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
@@ -7,26 +8,27 @@ import {
   configurePostgresCredentials,
   clearDatabase,
 } from "../../utils/postgres-config";
+import { UIhelper } from "../../utils/ui-helper";
 
 interface RdsConfig {
   name: string;
-  host: string | undefined;
+  host: string;
 }
 
 test.describe("Verify TLS configuration with RDS PostgreSQL health check", () => {
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+  const namespace = process.env.NAME_SPACE_RUNTIME! || "showcase-runtime";
   const deploymentName = getRhdhDeploymentName();
 
   // RDS configuration from environment
-  const rdsUser = process.env.RDS_USER;
-  const rdsPassword = process.env.RDS_PASSWORD;
+  const rdsUser = process.env.RDS_USER!;
+  const rdsPassword = process.env.RDS_PASSWORD!;
 
   // Define all RDS configurations to test
   const rdsConfigurations: RdsConfig[] = [
-    { name: "latest-3", host: process.env.RDS_1_HOST },
-    { name: "latest-2", host: process.env.RDS_2_HOST },
-    { name: "latest-1", host: process.env.RDS_3_HOST },
-    { name: "latest", host: process.env.RDS_4_HOST },
+    { name: "latest-3", host: process.env.RDS_1_HOST! },
+    { name: "latest-2", host: process.env.RDS_2_HOST! },
+    { name: "latest-1", host: process.env.RDS_3_HOST! },
+    { name: "latest", host: process.env.RDS_4_HOST! },
   ];
 
   test.beforeAll(async () => {
@@ -51,9 +53,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
     // Validate required environment variables
     if (!rdsUser || !rdsPassword) {
-      throw new Error(
-        "RDS_USER and RDS_PASSWORD environment variables must be set",
-      );
+      throw new Error("RDS_USER and RDS_PASSWORD environment variables must be set");
     }
 
     const kubeClient = new KubeClient();
@@ -75,7 +75,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
           host: config.host,
           user: rdsUser,
           password: rdsPassword,
-          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
+          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH!,
         });
       });
 
@@ -87,12 +87,15 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
           user: rdsUser,
           password: rdsPassword,
         });
-        await kubeClient.restartDeployment(deploymentName, namespace);
+        const restarted = await kubeClient.restartDeployment(deploymentName, namespace);
+        expect(restarted).toBeDefined();
       });
 
       test("Verify successful DB connection", async ({ page }) => {
+        const uiHelper = new UIhelper(page);
         const common = new Common(page);
         await common.loginAsGuest();
+        await uiHelper.verifyHeading("Welcome back!");
       });
     });
   }

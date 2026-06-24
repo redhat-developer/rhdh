@@ -1,17 +1,13 @@
+import * as stream from "stream";
+
 import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
-import * as stream from "stream";
 
-/**
- * Interface representing the structure of Kubernetes API errors.
- * Used for type-safe error handling without exposing sensitive data.
- */
-interface KubeApiError {
-  body?: { message?: string; reason?: string; code?: number };
-  statusCode?: number;
-  message?: string;
-  response?: { statusCode?: number; statusMessage?: string };
+import { getErrorMessage, hasErrorResponse, hasStatusCode } from "./errors";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -25,11 +21,51 @@ interface PodFailureResult {
   containerName?: string;
 }
 
-/**
- * Type guard to check if an unknown error is a KubeApiError.
- */
-function isKubeApiError(error: unknown): error is KubeApiError {
-  return error !== null && typeof error === "object";
+function getErrorStatusCode(error: unknown): number | undefined {
+  if (hasErrorResponse(error) && error.response?.statusCode !== undefined) {
+    return error.response.statusCode;
+  }
+  if (hasStatusCode(error)) {
+    return error.statusCode;
+  }
+  return undefined;
+}
+
+function getEventSortTimestamp(event: k8s.CoreV1Event): number {
+  if (event.firstTimestamp) {
+    return typeof event.firstTimestamp === "string"
+      ? new Date(event.firstTimestamp).getTime()
+      : event.firstTimestamp.getTime();
+  }
+  if (event.eventTime) {
+    return typeof event.eventTime === "string"
+      ? new Date(event.eventTime).getTime()
+      : event.eventTime.getTime();
+  }
+  return 0;
+}
+
+function formatEventTimestamp(event: k8s.CoreV1Event): string {
+  if (event.firstTimestamp) {
+    return typeof event.firstTimestamp === "string"
+      ? new Date(event.firstTimestamp).toISOString()
+      : event.firstTimestamp.toISOString();
+  }
+  if (event.eventTime) {
+    return typeof event.eventTime === "string"
+      ? new Date(event.eventTime).toISOString()
+      : event.eventTime.toISOString();
+  }
+  return "unknown";
+}
+
+function formatContainerStartedAt(startedAt: Date | string | undefined): string {
+  if (!startedAt) {
+    return "unknown";
+  }
+  return typeof startedAt === "string"
+    ? new Date(startedAt).toISOString()
+    : startedAt.toISOString();
 }
 
 /**
@@ -38,34 +74,36 @@ function isKubeApiError(error: unknown): error is KubeApiError {
  * the Authorization header with the bearer token. This function extracts only safe information.
  */
 function getKubeApiErrorMessage(error: unknown): string {
-  if (isKubeApiError(error)) {
-    const err = error;
-
-    // Kubernetes API errors have a body with message, reason, and code
-    if (err.body?.message) {
-      const parts = [err.body.message];
-      if (err.body.reason) parts.push(`reason: ${err.body.reason}`);
-      if (err.body.code) parts.push(`code: ${err.body.code}`);
+  if (hasErrorResponse(error)) {
+    const body: unknown = error.body;
+    if (isRecord(body) && typeof body.message === "string") {
+      const parts = [body.message];
+      if (typeof body.reason === "string") {
+        parts.push(`reason: ${body.reason}`);
+      }
+      if (typeof body.code === "number") {
+        parts.push(`code: ${String(body.code)}`);
+      }
       return parts.join(", ");
     }
 
-    // Fallback to statusCode and statusMessage from response
-    if (err.response?.statusCode) {
-      return `HTTP ${err.response.statusCode}: ${err.response.statusMessage || "Unknown error"}`;
-    }
-
-    // Fallback to statusCode on error object
-    if (err.statusCode) {
-      return `HTTP ${err.statusCode}`;
-    }
-
-    // Fallback to error message (safe as it doesn't contain request details)
-    if (err.message) {
-      return err.message;
+    const response: unknown = error.response;
+    if (isRecord(response) && typeof response.statusCode === "number") {
+      const statusMessage =
+        typeof response.statusMessage === "string" ? response.statusMessage : "Unknown error";
+      return `HTTP ${String(response.statusCode)}: ${statusMessage}`;
     }
   }
 
-  return "Unknown Kubernetes API error";
+  if (hasStatusCode(error)) {
+    return `HTTP ${String(error.statusCode)}`;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return getErrorMessage(error) || "Unknown Kubernetes API error";
 }
 
 /**
@@ -95,14 +133,14 @@ export class KubeClient {
         clusters: [
           {
             name: "my-openshift-cluster",
-            server: process.env.K8S_CLUSTER_URL,
+            server: process.env.K8S_CLUSTER_URL ?? "",
             skipTLSVerify: true,
           },
         ],
         users: [
           {
             name: "ci-user",
-            token: process.env.K8S_CLUSTER_TOKEN,
+            token: process.env.K8S_CLUSTER_TOKEN ?? "",
           },
         ],
         contexts: [
@@ -119,24 +157,19 @@ export class KubeClient {
       this.coreV1Api = this.kc.makeApiClient(k8s.CoreV1Api);
       this.customObjectsApi = this.kc.makeApiClient(k8s.CustomObjectsApi);
     } catch (e) {
-      console.log(
-        `Error initializing KubeClient: ${getKubeApiErrorMessage(e)}`,
-      );
+      console.log(`Error initializing KubeClient: ${getKubeApiErrorMessage(e)}`);
       throw e;
     }
   }
 
   async getConfigMap(configmapName: string, namespace: string) {
     try {
-      console.log(
-        `Getting configmap ${configmapName} from namespace ${namespace}`,
-      );
-      return await this.coreV1Api.readNamespacedConfigMap(
-        configmapName,
-        namespace,
-      );
+      console.log(`Getting configmap ${configmapName} from namespace ${namespace}`);
+      return await this.coreV1Api.readNamespacedConfigMap(configmapName, namespace);
     } catch (e) {
-      console.log(e.body?.message);
+      console.log(
+        hasErrorResponse(e) && e.body?.message ? e.body.message : getKubeApiErrorMessage(e),
+      );
       throw e;
     }
   }
@@ -146,7 +179,9 @@ export class KubeClient {
       console.log(`Listing configmaps in namespace ${namespace}`);
       return await this.coreV1Api.listNamespacedConfigMap(namespace);
     } catch (e) {
-      console.error(e.body?.message);
+      console.error(
+        hasErrorResponse(e) && e.body?.message ? e.body.message : getKubeApiErrorMessage(e),
+      );
       throw e;
     }
   }
@@ -164,9 +199,7 @@ export class KubeClient {
       const configMapsResponse = await this.listConfigMaps(namespace);
       const configMaps = configMapsResponse.body.items;
 
-      console.log(
-        `Found ${configMaps.length} ConfigMaps in namespace ${namespace}`,
-      );
+      console.log(`Found ${configMaps.length} ConfigMaps in namespace ${namespace}`);
       configMaps.forEach((cm) => {
         console.log(`ConfigMap: ${cm.metadata?.name}`);
       });
@@ -183,24 +216,16 @@ export class KubeClient {
       for (const cm of configMaps) {
         if (
           cm.data &&
-          Object.keys(cm.data).some(
-            (key) => key.includes("app-config") && key.endsWith(".yaml"),
-          )
+          Object.keys(cm.data).some((key) => key.includes("app-config") && key.endsWith(".yaml"))
         ) {
-          console.log(
-            `Found ConfigMap with app-config data: ${cm.metadata?.name}`,
-          );
+          console.log(`Found ConfigMap with app-config data: ${cm.metadata?.name}`);
           return cm.metadata?.name || "";
         }
       }
 
-      throw new Error(
-        `No suitable app-config ConfigMap found in namespace ${namespace}`,
-      );
+      throw new Error(`No suitable app-config ConfigMap found in namespace ${namespace}`);
     } catch (error) {
-      console.error(
-        `Error finding app config ConfigMap: ${getKubeApiErrorMessage(error)}`,
-      );
+      console.error(`Error finding app config ConfigMap: ${getKubeApiErrorMessage(error)}`);
       throw error;
     }
   }
@@ -209,7 +234,7 @@ export class KubeClient {
     try {
       return (await this.coreV1Api.readNamespace(name)).body;
     } catch (e) {
-      console.log(`Error getting namespace ${name}: ${e.body?.message}`);
+      console.log(`Error getting namespace ${name}: ${getKubeApiErrorMessage(e)}`);
       throw e;
     }
   }
@@ -239,26 +264,27 @@ export class KubeClient {
             },
           },
         );
-        console.log(
-          `Deployment ${deploymentName} scaled to ${replicas} replicas.`,
-        );
+        console.log(`Deployment ${deploymentName} scaled to ${replicas} replicas.`);
         return;
       } catch (error) {
-        const statusCode = error.response?.statusCode || error.statusCode;
+        const statusCode = getErrorStatusCode(error);
         const isNotFound = statusCode === 404;
-        const isRetryable =
-          isNotFound || statusCode === 503 || statusCode === 429;
+        const isRetryable = isNotFound || statusCode === 503 || statusCode === 429;
 
         if (isRetryable && attempt < maxRetries) {
           const delay = attempt * 2000; // 2s, 4s, 6s, 8s...
           console.log(
             `Deployment ${deploymentName} not ready (${statusCode}). Retry ${attempt}/${maxRetries} after ${delay}ms...`,
           );
-          await new Promise((resolve) => setTimeout(resolve, delay));
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, delay);
+          });
         } else {
           console.error(
             `Failed to scale deployment ${deploymentName} after ${attempt} attempts:`,
-            error.body?.message || error.message,
+            getKubeApiErrorMessage(error),
           );
           throw error;
         }
@@ -271,16 +297,14 @@ export class KubeClient {
       console.log(`Getting secret ${secretName} from namespace ${namespace}`);
       return await this.coreV1Api.readNamespacedSecret(secretName, namespace);
     } catch (e) {
-      console.log(e.body.message);
+      console.log(
+        hasErrorResponse(e) && e.body?.message ? e.body.message : getKubeApiErrorMessage(e),
+      );
       throw e;
     }
   }
 
-  async updateConfigMap(
-    configmapName: string,
-    namespace: string,
-    patch: object,
-  ) {
+  async updateConfigMap(configmapName: string, namespace: string, patch: object) {
     try {
       console.log("updateConfigMap called");
       console.log("Namespace: ", namespace);
@@ -288,9 +312,7 @@ export class KubeClient {
       const options = {
         headers: { "Content-type": k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH },
       };
-      console.log(
-        `Updating configmap ${configmapName} in namespace ${namespace}`,
-      );
+      console.log(`Updating configmap ${configmapName} in namespace ${namespace}`);
       await this.coreV1Api.patchNamespacedConfigMap(
         configmapName,
         namespace,
@@ -308,11 +330,7 @@ export class KubeClient {
     }
   }
 
-  async updateConfigMapTitle(
-    configMapName: string,
-    namespace: string,
-    newTitle: string,
-  ) {
+  async updateConfigMapTitle(configMapName: string, namespace: string, newTitle: string) {
     try {
       // If the provided configMapName doesn't exist, try to find the correct one dynamically
       let actualConfigMapName = configMapName;
@@ -320,26 +338,19 @@ export class KubeClient {
         await this.getConfigMap(configMapName, namespace);
         console.log(`Using provided ConfigMap name: ${configMapName}`);
       } catch (error) {
-        if (error.response?.statusCode === 404) {
-          console.log(
-            `ConfigMap ${configMapName} not found, searching for alternatives...`,
-          );
+        if (hasErrorResponse(error) && error.response?.statusCode === 404) {
+          console.log(`ConfigMap ${configMapName} not found, searching for alternatives...`);
           actualConfigMapName = await this.findAppConfigMap(namespace);
         } else {
           throw error;
         }
       }
 
-      const configMapResponse = await this.getConfigMap(
-        actualConfigMapName,
-        namespace,
-      );
+      const configMapResponse = await this.getConfigMap(actualConfigMapName, namespace);
       const configMap = configMapResponse.body;
 
       console.log(`Using ConfigMap: ${actualConfigMapName}`);
-      console.log(
-        `Available data keys: ${Object.keys(configMap.data || {}).join(", ")}`,
-      );
+      console.log(`Available data keys: ${Object.keys(configMap.data || {}).join(", ")}`);
 
       // Find the correct data key dynamically
       let dataKey: string | undefined;
@@ -360,9 +371,7 @@ export class KubeClient {
 
       // If none of the patterns match, look for any .yaml file containing app-config
       if (!dataKey) {
-        dataKey = dataKeys.find(
-          (key) => key.endsWith(".yaml") && key.includes("app-config"),
-        );
+        dataKey = dataKeys.find((key) => key.endsWith(".yaml") && key.includes("app-config"));
       }
 
       // Last resort: use any .yaml file
@@ -377,47 +386,44 @@ export class KubeClient {
       }
 
       console.log(`Using data key: ${dataKey}`);
+      if (!configMap.data) {
+        throw new Error(`ConfigMap '${actualConfigMapName}' has no data section`);
+      }
       const appConfigYaml = configMap.data[dataKey];
 
       if (!appConfigYaml) {
-        throw new Error(
-          `Data key '${dataKey}' is empty in ConfigMap '${actualConfigMapName}'`,
-        );
+        throw new Error(`Data key '${dataKey}' is empty in ConfigMap '${actualConfigMapName}'`);
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const appConfigObj = yaml.load(appConfigYaml) as any;
-
-      if (!appConfigObj || !appConfigObj.app) {
+      const parsedConfig: unknown = yaml.load(appConfigYaml);
+      if (!isRecord(parsedConfig) || !isRecord(parsedConfig.app)) {
         throw new Error(
           `Invalid app-config structure in ConfigMap '${actualConfigMapName}'. Expected 'app' section not found.`,
         );
       }
 
-      console.log(`Current title: ${appConfigObj.app.title}`);
-      appConfigObj.app.title = newTitle;
+      const appSection = parsedConfig.app;
+      const currentTitle = typeof appSection.title === "string" ? appSection.title : undefined;
+      console.log(`Current title: ${currentTitle ?? "(none)"}`);
+      appSection.title = newTitle;
       console.log(`New title: ${newTitle}`);
 
-      configMap.data[dataKey] = yaml.dump(appConfigObj);
+      configMap.data[dataKey] = yaml.dump(parsedConfig);
 
-      delete configMap.metadata.creationTimestamp;
-      delete configMap.metadata.resourceVersion;
+      if (configMap.metadata) {
+        delete configMap.metadata.creationTimestamp;
+        delete configMap.metadata.resourceVersion;
+      }
 
-      await this.coreV1Api.replaceNamespacedConfigMap(
-        actualConfigMapName,
-        namespace,
-        configMap,
-      );
+      await this.coreV1Api.replaceNamespacedConfigMap(actualConfigMapName, namespace, configMap);
       console.log(
         `ConfigMap '${actualConfigMapName}' updated successfully with new title: '${newTitle}'`,
       );
     } catch (error) {
-      console.error(
-        `Error updating ConfigMap: ${getKubeApiErrorMessage(error)}`,
-      );
-      throw new Error(
-        `Failed to update ConfigMap: ${getKubeApiErrorMessage(error)}`,
-      );
+      console.error(`Error updating ConfigMap: ${getKubeApiErrorMessage(error)}`);
+      throw new Error(`Failed to update ConfigMap: ${getKubeApiErrorMessage(error)}`, {
+        cause: error,
+      });
     }
   }
 
@@ -441,19 +447,21 @@ export class KubeClient {
         options,
       );
     } catch (e) {
-      console.log(e.statusCode, e.body.message);
+      console.log(getKubeApiErrorMessage(e));
       throw e;
     }
   }
 
   async createCongifmap(namespace: string, body: V1ConfigMap) {
     try {
-      console.log(
-        `Creating configmap ${body.metadata.name} in namespace ${namespace}`,
-      );
+      const configMapName = body.metadata?.name;
+      if (!configMapName) {
+        throw new Error("ConfigMap metadata.name is required");
+      }
+      console.log(`Creating configmap ${configMapName} in namespace ${namespace}`);
       return await this.coreV1Api.createNamespacedConfigMap(namespace, body);
     } catch (err) {
-      console.log(err.body.message);
+      console.log(getKubeApiErrorMessage(err));
       throw err;
     }
   }
@@ -474,14 +482,13 @@ export class KubeClient {
               resolve();
             }
           },
-          (err) => {
-            if (err && err.statusCode === 404) {
+          (err: unknown) => {
+            if (hasStatusCode(err) && err.statusCode === 404) {
               // Namespace was already deleted or does not exist
               console.log(`Namespace '${namespace}' is already deleted.`);
               resolve();
             } else {
               reject(err);
-              throw err;
             }
           },
         );
@@ -496,15 +503,15 @@ export class KubeClient {
 
   async createNamespaceIfNotExists(namespace: string) {
     const nsList = await this.coreV1Api.listNamespace();
-    const ns = nsList.body.items.map((ns) => ns.metadata.name);
+    const ns = nsList.body.items
+      .map((item) => item.metadata?.name)
+      .filter((name): name is string => name !== undefined);
     if (ns.includes(namespace)) {
       console.log(`Delete and re-create namespace ${namespace}`);
       try {
         await this.deleteNamespaceAndWait(namespace);
       } catch (err) {
-        console.log(
-          `Error deleting namespace ${namespace}: ${getKubeApiErrorMessage(err)}`,
-        );
+        console.log(`Error deleting namespace ${namespace}: ${getKubeApiErrorMessage(err)}`);
         throw err;
       }
     }
@@ -515,9 +522,10 @@ export class KubeClient {
           name: namespace,
         },
       });
-      console.log(`Created namespace ${createNamespaceRes.body.metadata.name}`);
+      const createdName = createNamespaceRes.body.metadata?.name;
+      console.log(`Created namespace ${createdName ?? namespace}`);
     } catch (err) {
-      console.log(err.body.message);
+      console.log(getKubeApiErrorMessage(err));
       throw err;
     }
   }
@@ -525,11 +533,11 @@ export class KubeClient {
   async createSecret(secret: k8s.V1Secret, namespace: string) {
     try {
       console.log(
-        `Creating secret ${secret.metadata.name} in namespace ${namespace}`,
+        `Creating secret ${secret.metadata?.name ?? "unknown"} in namespace ${namespace}`,
       );
       await this.coreV1Api.createNamespacedSecret(namespace, secret);
     } catch (err) {
-      console.log(err.body.message);
+      console.log(getKubeApiErrorMessage(err));
       throw err;
     }
   }
@@ -538,33 +546,24 @@ export class KubeClient {
    * Create or update a Kubernetes secret (upsert pattern).
    * Tries to update the secret first; if it doesn't exist, creates it.
    */
-  async createOrUpdateSecret(
-    secret: k8s.V1Secret,
-    namespace: string,
-  ): Promise<void> {
+  async createOrUpdateSecret(secret: k8s.V1Secret, namespace: string): Promise<void> {
     const secretName = secret.metadata?.name;
     if (!secretName) {
       throw new Error("Secret metadata.name is required");
     }
 
     try {
-      const existing = await this.coreV1Api.readNamespacedSecret(
-        secretName,
-        namespace,
-      );
+      const existing = await this.coreV1Api.readNamespacedSecret(secretName, namespace);
       const body = existing.body;
       // Merge new keys into existing data to preserve keys not in the update
       // (e.g., RHDH_RUNTIME_URL when updating only DB credentials)
-      body.data = { ...(body.data ?? {}), ...(secret.data ?? {}) };
+      body.data = { ...body.data, ...secret.data };
       await this.coreV1Api.replaceNamespacedSecret(secretName, namespace, body);
       console.log(`Secret ${secretName} updated in namespace ${namespace}`);
     } catch (err: unknown) {
-      const statusCode = (err as { response?: { statusCode?: number } })
-        ?.response?.statusCode;
+      const statusCode = getErrorStatusCode(err);
       if (statusCode === 404) {
-        console.log(
-          `Secret ${secretName} not found, creating in namespace ${namespace}`,
-        );
+        console.log(`Secret ${secretName} not found, creating in namespace ${namespace}`);
         await this.createSecret(secret, namespace);
         console.log(`Secret ${secretName} created in namespace ${namespace}`);
       } else {
@@ -612,14 +611,10 @@ export class KubeClient {
         // Check pod conditions for issues
         const conditions = pod.status?.conditions || [];
         for (const condition of conditions) {
-          if (
-            condition.type === "PodScheduled" &&
-            condition.status === "False"
-          ) {
+          if (condition.type === "PodScheduled" && condition.status === "False") {
             const msg = condition.message || "";
             const isTransientPvc =
-              msg.includes("ephemeral volume") ||
-              msg.includes("persistentvolumeclaim");
+              msg.includes("ephemeral volume") || msg.includes("persistentvolumeclaim");
             if (isTransientPvc) {
               console.log(
                 `Pod ${podName} waiting for PVC creation (transient): ${condition.reason} - ${msg}`,
@@ -637,11 +632,7 @@ export class KubeClient {
             condition.reason !== "ContainersNotReady"
           ) {
             // Only report if it's a specific error reason, not just "not ready yet"
-            const errorReasons = [
-              "Unhealthy",
-              "ReadinessGatesNotReady",
-              "PodHasNoResources",
-            ];
+            const errorReasons = ["Unhealthy", "ReadinessGatesNotReady", "PodHasNoResources"];
             if (errorReasons.includes(condition.reason)) {
               return {
                 message: `Pod ${podName} is not ready: ${condition.reason} - ${condition.message}`,
@@ -707,9 +698,7 @@ export class KubeClient {
 
       return null; // No failure states detected
     } catch (error) {
-      console.error(
-        `Error checking pod failure states: ${getKubeApiErrorMessage(error)}`,
-      );
+      console.error(`Error checking pod failure states: ${getKubeApiErrorMessage(error)}`);
       return null; // Don't fail the check if we can't retrieve pod info
     }
   }
@@ -724,18 +713,12 @@ export class KubeClient {
   ) {
     const endTime = Date.now() + timeout;
 
-    const podSelector = await this.getDeploymentPodSelector(
-      deploymentName,
-      namespace,
-    );
+    const podSelector = await this.getDeploymentPodSelector(deploymentName, namespace);
     const finalLabelSelector = labelSelector ?? podSelector;
 
     while (Date.now() < endTime) {
       try {
-        const response = await this.appsApi.readNamespacedDeployment(
-          deploymentName,
-          namespace,
-        );
+        const response = await this.appsApi.readNamespacedDeployment(deploymentName, namespace);
         const availableReplicas = response.body.status?.availableReplicas || 0;
         const readyReplicas = response.body.status?.readyReplicas || 0;
         const updatedReplicas = response.body.status?.updatedReplicas || 0;
@@ -746,17 +729,11 @@ export class KubeClient {
         console.log(`Ready replicas: ${readyReplicas}`);
         console.log(`Updated replicas: ${updatedReplicas}`);
         console.log(`Desired replicas: ${replicas}`);
-        console.log(
-          "Deployment conditions:",
-          JSON.stringify(conditions, null, 2),
-        );
+        console.log("Deployment conditions:", JSON.stringify(conditions, null, 2));
 
         // Check for pod failure states when expecting replicas > 0
         if (expectedReplicas > 0 && podSelector) {
-          const podFailure = await this.checkPodFailureStates(
-            namespace,
-            podSelector,
-          );
+          const podFailure = await this.checkPodFailureStates(namespace, podSelector);
           if (podFailure) {
             console.error(
               `Pod failure detected: ${podFailure.message}. Logging events and pod logs...`,
@@ -765,14 +742,8 @@ export class KubeClient {
             await this.logReplicaSetStatus(deploymentName, namespace);
             await this.logPodEvents(namespace, finalLabelSelector);
             await this.logPodConditions(namespace, finalLabelSelector);
-            await this.logPodContainerLogs(
-              namespace,
-              finalLabelSelector,
-              podFailure.containerName,
-            );
-            throw new Error(
-              `Deployment ${deploymentName} failed to start: ${podFailure.message}`,
-            );
+            await this.logPodContainerLogs(namespace, finalLabelSelector, podFailure.containerName);
+            throw new Error(`Deployment ${deploymentName} failed to start: ${podFailure.message}`);
           }
         }
 
@@ -781,9 +752,7 @@ export class KubeClient {
 
         // Check if the expected replicas match
         if (availableReplicas === expectedReplicas) {
-          console.log(
-            `Deployment ${deploymentName} is ready with ${availableReplicas} replicas.`,
-          );
+          console.log(`Deployment ${deploymentName} is ready with ${availableReplicas} replicas.`);
           return;
         }
 
@@ -794,22 +763,22 @@ export class KubeClient {
           );
         }
       } catch (error) {
-        console.error(
-          `Error checking deployment status: ${getKubeApiErrorMessage(error)}`,
-        );
+        console.error(`Error checking deployment status: ${getKubeApiErrorMessage(error)}`);
         // If we threw an error about pod failure, re-throw it
-        if (error.message?.includes("failed to start")) {
+        if (error instanceof Error && error.message.includes("failed to start")) {
           throw error;
         }
       }
 
-      await new Promise((resolve) => setTimeout(resolve, checkInterval));
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, checkInterval);
+      });
     }
 
     // On timeout, collect final diagnostics
-    console.error(
-      `Timeout waiting for deployment ${deploymentName}. Collecting diagnostics...`,
-    );
+    console.error(`Timeout waiting for deployment ${deploymentName}. Collecting diagnostics...`);
     await this.logDeploymentEvents(deploymentName, namespace);
     await this.logReplicaSetStatus(deploymentName, namespace);
     await this.logPodEvents(namespace, finalLabelSelector);
@@ -821,9 +790,7 @@ export class KubeClient {
 
   async restartDeployment(deploymentName: string, namespace: string) {
     try {
-      console.log(
-        `Starting deployment restart for ${deploymentName} in namespace ${namespace}`,
-      );
+      console.log(`Starting deployment restart for ${deploymentName} in namespace ${namespace}`);
 
       // Scale down deployment to 0 replicas
       console.log(`Scaling down deployment ${deploymentName} to 0 replicas.`);
@@ -834,7 +801,11 @@ export class KubeClient {
 
       // Wait a bit for pods to be fully terminated
       console.log("Waiting for pods to be fully terminated...");
-      await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 seconds
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 10000);
+      }); // 10 seconds
 
       // Scale up deployment to 1 replica
       console.log(`Scaling up deployment ${deploymentName} to 1 replica.`);
@@ -842,9 +813,7 @@ export class KubeClient {
 
       await this.waitForDeploymentReady(deploymentName, namespace, 1, 600000); // 10 minutes for scale up
 
-      console.log(
-        `Restart of deployment ${deploymentName} completed successfully.`,
-      );
+      console.log(`Restart of deployment ${deploymentName} completed successfully.`);
     } catch (error) {
       console.error(
         `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}': ${getKubeApiErrorMessage(error)}`,
@@ -853,6 +822,7 @@ export class KubeClient {
       await this.logDeploymentEvents(deploymentName, namespace);
       throw new Error(
         `Failed to restart deployment '${deploymentName}' in namespace '${namespace}': ${getKubeApiErrorMessage(error)}`,
+        { cause: error },
       );
     }
   }
@@ -864,10 +834,7 @@ export class KubeClient {
     deploymentName: string,
     namespace: string,
   ): Promise<string> {
-    const response = await this.appsApi.readNamespacedDeployment(
-      deploymentName,
-      namespace,
-    );
+    const response = await this.appsApi.readNamespacedDeployment(deploymentName, namespace);
     const matchLabels = response.body.spec?.selector?.matchLabels || {};
     const entries = Object.entries(matchLabels);
     if (entries.length === 0) {
@@ -882,15 +849,9 @@ export class KubeClient {
    * Logs pod conditions for pods belonging to a specific deployment.
    * Resolves the pod selector from the deployment's matchLabels.
    */
-  async logPodConditionsForDeployment(
-    deploymentName: string,
-    namespace: string,
-  ) {
+  async logPodConditionsForDeployment(deploymentName: string, namespace: string) {
     try {
-      const selector = await this.getDeploymentPodSelector(
-        deploymentName,
-        namespace,
-      );
+      const selector = await this.getDeploymentPodSelector(deploymentName, namespace);
       await this.logPodConditions(namespace, selector);
     } catch (error) {
       console.warn(
@@ -918,10 +879,7 @@ export class KubeClient {
         const podName = pod.metadata?.name || "unknown";
         const phase = pod.status?.phase;
         console.log(`Pod: ${podName} (Phase: ${phase})`);
-        console.log(
-          "Conditions:",
-          JSON.stringify(pod.status?.conditions, null, 2),
-        );
+        console.log("Conditions:", JSON.stringify(pod.status?.conditions, null, 2));
 
         // Log container statuses
         const containerStatuses = [
@@ -938,12 +896,10 @@ export class KubeClient {
             const terminated = containerStatus.state?.terminated;
 
             if (waiting) {
-              console.log(
-                `  ${containerName}: Waiting - ${waiting.reason}: ${waiting.message}`,
-              );
+              console.log(`  ${containerName}: Waiting - ${waiting.reason}: ${waiting.message}`);
             } else if (running) {
               console.log(
-                `  ${containerName}: Running (started: ${running.startedAt})`,
+                `  ${containerName}: Running (started: ${formatContainerStartedAt(running.startedAt)})`,
               );
             } else if (terminated) {
               console.log(
@@ -963,11 +919,7 @@ export class KubeClient {
     }
   }
 
-  async logPodContainerLogs(
-    namespace: string,
-    labelSelector?: string,
-    containerName?: string,
-  ) {
+  async logPodContainerLogs(namespace: string, labelSelector?: string, containerName?: string) {
     const selector =
       labelSelector ||
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
@@ -995,17 +947,12 @@ export class KubeClient {
         // Otherwise, get logs from all containers (including init containers)
         const containers = containerName
           ? [{ name: containerName }]
-          : [
-              ...(pod.spec?.initContainers || []),
-              ...(pod.spec?.containers || []),
-            ];
+          : [...(pod.spec?.initContainers || []), ...(pod.spec?.containers || [])];
 
         for (const container of containers) {
           const cn = container.name;
           try {
-            console.log(
-              `\n=== Pod ${podName} - Container ${cn} Logs (last 100 lines) ===`,
-            );
+            console.log(`\n=== Pod ${podName} - Container ${cn} Logs (last 100 lines) ===`);
             const logs = await this.coreV1Api.readNamespacedPodLog(
               podName,
               namespace,
@@ -1028,16 +975,12 @@ export class KubeClient {
           } catch (logError) {
             const errorMsg = getKubeApiErrorMessage(logError);
             // Log error but don't try to get previous container logs (API doesn't support it easily)
-            console.warn(
-              `Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`,
-            );
+            console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
           }
         }
       }
     } catch (error) {
-      console.error(
-        `Error retrieving pod logs: ${getKubeApiErrorMessage(error)}`,
-      );
+      console.error(`Error retrieving pod logs: ${getKubeApiErrorMessage(error)}`);
     }
   }
 
@@ -1061,8 +1004,7 @@ export class KubeClient {
       const allPodsResponse = await this.coreV1Api.listNamespacedPod(namespace);
 
       // Get all events in the namespace
-      const eventsResponse =
-        await this.coreV1Api.listNamespacedEvent(namespace);
+      const eventsResponse = await this.coreV1Api.listNamespacedEvent(namespace);
 
       // Get pod names from both responses
       const podNames = new Set<string>();
@@ -1070,71 +1012,35 @@ export class KubeClient {
         if (pod.metadata?.name) podNames.add(pod.metadata.name);
       });
       allPodsResponse.body.items.forEach((pod) => {
-        if (
-          pod.metadata?.name &&
-          pod.metadata.name.includes("backstage-developer-hub")
-        ) {
+        if (pod.metadata?.name && pod.metadata.name.includes("backstage-developer-hub")) {
           podNames.add(pod.metadata.name);
         }
       });
 
       // Filter events related to pods (check by name pattern too)
-      const podEvents = eventsResponse.body.items
+      const podEvents = [...eventsResponse.body.items]
         .filter((event) => {
           const involvedObject = event.involvedObject;
           if (involvedObject?.kind !== "Pod") return false;
           const podName = involvedObject.name;
           // Match if it's in our pod list OR if it matches our deployment pattern
           return (
-            podNames.has(podName) ||
-            (podName && podName.includes("backstage-developer-hub"))
+            (podName !== undefined && podNames.has(podName)) ||
+            (podName !== undefined && podName.includes("backstage-developer-hub"))
           );
         })
-        .sort((a, b) => {
-          // Handle both Date objects and string timestamps
-          const getTimestamp = (event: {
-            firstTimestamp?: string | Date;
-            eventTime?: string | { getTime?: () => number };
-          }): number => {
-            if (event.firstTimestamp) {
-              return typeof event.firstTimestamp === "string"
-                ? new Date(event.firstTimestamp).getTime()
-                : event.firstTimestamp.getTime();
-            }
-            if (event.eventTime) {
-              return typeof event.eventTime === "string"
-                ? new Date(event.eventTime).getTime()
-                : event.eventTime?.getTime
-                  ? event.eventTime.getTime()
-                  : 0;
-            }
-            return 0;
-          };
-          const aTime = getTimestamp(a);
-          const bTime = getTimestamp(b);
-          return bTime - aTime; // Most recent first
-        })
+        // oxlint-disable-next-line unicorn/no-array-sort -- es2022 lib has no Array#toSorted
+        .sort(
+          (a: k8s.CoreV1Event, b: k8s.CoreV1Event) =>
+            getEventSortTimestamp(b) - getEventSortTimestamp(a),
+        )
         .slice(0, 30); // Limit to last 30 events
 
       if (podEvents.length > 0) {
         console.log(`Recent pod events (last ${podEvents.length}):`);
         for (const event of podEvents) {
           const podName = event.involvedObject?.name || "unknown";
-          // Handle both Date objects and string timestamps
-          let timestamp = "unknown";
-          if (event.firstTimestamp) {
-            timestamp =
-              typeof event.firstTimestamp === "string"
-                ? new Date(event.firstTimestamp).toISOString()
-                : event.firstTimestamp.toISOString();
-          } else if (event.eventTime) {
-            timestamp =
-              typeof event.eventTime === "string"
-                ? new Date(event.eventTime).toISOString()
-                : event.eventTime?.toISOString
-                  ? event.eventTime.toISOString()
-                  : String(event.eventTime);
-          }
+          const timestamp = formatEventTimestamp(event);
           console.log(
             `  [${timestamp}] Pod ${podName}: [${event.type}] ${event.reason}: ${event.message}`,
           );
@@ -1216,10 +1122,7 @@ export class KubeClient {
   async logReplicaSetStatus(deploymentName: string, namespace: string) {
     try {
       // Get the deployment to find associated ReplicaSets
-      const deployment = await this.appsApi.readNamespacedDeployment(
-        deploymentName,
-        namespace,
-      );
+      const deployment = await this.appsApi.readNamespacedDeployment(deploymentName, namespace);
 
       // List ReplicaSets with the deployment's labels
       const labelSelector = deployment.body.spec?.selector?.matchLabels;
@@ -1246,11 +1149,14 @@ export class KubeClient {
       );
 
       // Sort by creation timestamp (newest first)
-      const sortedReplicaSets = rsResponse.body.items.sort((a, b) => {
-        const aTime = a.metadata?.creationTimestamp?.getTime() || 0;
-        const bTime = b.metadata?.creationTimestamp?.getTime() || 0;
-        return bTime - aTime;
-      });
+      // oxlint-disable-next-line unicorn/no-array-sort -- es2022 lib has no Array#toSorted
+      const sortedReplicaSets = [...rsResponse.body.items].sort(
+        (a: k8s.V1ReplicaSet, b: k8s.V1ReplicaSet) => {
+          const aTime = a.metadata?.creationTimestamp?.getTime() ?? 0;
+          const bTime = b.metadata?.creationTimestamp?.getTime() ?? 0;
+          return bTime - aTime;
+        },
+      );
 
       for (const rs of sortedReplicaSets) {
         const rsName = rs.metadata?.name || "unknown";
@@ -1282,9 +1188,7 @@ export class KubeClient {
             console.log(`    Events for ReplicaSet ${rsName}:`);
             rsEvents.body.items.slice(0, 10).forEach((event) => {
               // Limit to last 10 events
-              console.log(
-                `      [${event.type}] ${event.reason}: ${event.message}`,
-              );
+              console.log(`      [${event.type}] ${event.reason}: ${event.message}`);
             });
           } else {
             console.log(`    No events found for ReplicaSet ${rsName}`);
@@ -1302,10 +1206,7 @@ export class KubeClient {
     }
   }
 
-  async getServiceByLabel(
-    namespace: string,
-    labelSelector: string,
-  ): Promise<k8s.V1Service[]> {
+  async getServiceByLabel(namespace: string, labelSelector: string): Promise<k8s.V1Service[]> {
     try {
       const response = await this.coreV1Api.listNamespacedService(
         namespace,
@@ -1383,6 +1284,7 @@ export class KubeClient {
     } catch (error) {
       throw new Error(
         `Failed to execute command in pod ${podName}: ${getKubeApiErrorMessage(error)}`,
+        { cause: error },
       );
     }
   }

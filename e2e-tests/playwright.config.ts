@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import type { ReporterDescription } from "@playwright/test";
+
 import { PW_PROJECT } from "./playwright/projects";
 
 process.env.JOB_NAME = process.env.JOB_NAME || "";
@@ -10,21 +11,13 @@ const args = process.argv;
 
 if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_DE))) {
   process.env.LOCALE = "de";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_ES))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_ES))) {
   process.env.LOCALE = "es";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
   process.env.LOCALE = "fr";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))) {
   process.env.LOCALE = "it";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))) {
   process.env.LOCALE = "ja";
 } else if (!process.env.LOCALE) {
   process.env.LOCALE = "en";
@@ -56,9 +49,7 @@ export default defineConfig({
     ["list"],
     ["junit", { outputFile: process.env.JUNIT_RESULTS || "junit-results.xml" }],
     ...(process.env.COLLECT_COVERAGE === "true"
-      ? ([
-          ["./playwright/support/coverage/reporter.ts"],
-        ] satisfies ReporterDescription[])
+      ? ([["./playwright/support/coverage/reporter.ts"]] satisfies ReporterDescription[])
       : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

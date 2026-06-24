@@ -1,13 +1,40 @@
-import fetch from "node-fetch";
-import User from "./user";
-import Group from "./group";
 import { expect, Page } from "@playwright/test";
-import { UIhelper } from "../ui-helper";
+import fetch from "node-fetch";
+
 import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users-obj";
+import { UIhelper } from "../ui-helper";
+import Group from "./group";
+import User from "./user";
 
 interface AuthResponse {
   access_token: string;
 }
+
+function isAuthResponse(data: unknown): data is AuthResponse {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "access_token" in data &&
+    typeof Reflect.get(data, "access_token") === "string"
+  );
+}
+
+function isUserArray(data: unknown): data is User[] {
+  return Array.isArray(data);
+}
+
+function isGroupArray(data: unknown): data is Group[] {
+  return Array.isArray(data);
+}
+
+function requireBase64Env(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return Buffer.from(value, "base64").toString();
+}
+
 class Keycloak {
   private readonly baseURL: string;
   private readonly realm: string;
@@ -15,22 +42,10 @@ class Keycloak {
   private readonly clientSecret: string;
 
   constructor() {
-    this.baseURL = Buffer.from(
-      process.env.KEYCLOAK_AUTH_BASE_URL,
-      "base64",
-    ).toString();
-    this.realm = Buffer.from(
-      process.env.KEYCLOAK_AUTH_REALM,
-      "base64",
-    ).toString();
-    this.clientSecret = Buffer.from(
-      process.env.KEYCLOAK_AUTH_CLIENT_SECRET,
-      "base64",
-    ).toString();
-    this.clientId = Buffer.from(
-      process.env.KEYCLOAK_AUTH_CLIENTID,
-      "base64",
-    ).toString();
+    this.baseURL = requireBase64Env("KEYCLOAK_AUTH_BASE_URL");
+    this.realm = requireBase64Env("KEYCLOAK_AUTH_REALM");
+    this.clientSecret = requireBase64Env("KEYCLOAK_AUTH_CLIENT_SECRET");
+    this.clientId = requireBase64Env("KEYCLOAK_AUTH_CLIENTID");
   }
 
   async getAuthenticationToken(): Promise<string> {
@@ -48,26 +63,30 @@ class Keycloak {
     );
 
     if (response.status !== 200) throw new Error("Failed to authenticate");
-    const data = (await response.json()) as AuthResponse;
+    const data: unknown = await response.json();
+    if (!isAuthResponse(data)) {
+      throw new Error("Failed to authenticate: invalid token response");
+    }
     return data.access_token;
   }
 
   async getUsers(authToken: string): Promise<User[]> {
-    const response = await fetch(
-      `${this.baseURL}/auth/admin/realms/${this.realm}/users`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+    const response = await fetch(`${this.baseURL}/auth/admin/realms/${this.realm}/users`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
       },
-    );
+    });
 
     if (response.status !== 200) {
       const errorText = await response.text();
       throw new Error(`Failed to get users: ${response.status} - ${errorText}`);
     }
-    return (await response.json()) as Promise<User[]>;
+    const data: unknown = await response.json();
+    if (!isUserArray(data)) {
+      throw new Error("Failed to get users: invalid response format");
+    }
+    return data;
   }
 
   async getGroupsOfUser(authToken: string, userId: string): Promise<Group[]> {
@@ -83,11 +102,13 @@ class Keycloak {
 
     if (response.status !== 200) {
       const errorText = await response.text();
-      throw new Error(
-        `Failed to get groups of user: ${response.status} - ${errorText}`,
-      );
+      throw new Error(`Failed to get groups of user: ${response.status} - ${errorText}`);
     }
-    return (await response.json()) as Promise<Group[]>;
+    const data: unknown = await response.json();
+    if (!isGroupArray(data)) {
+      throw new Error("Failed to get groups of user: invalid response format");
+    }
+    return data;
   }
 
   async checkUserDetails(
@@ -100,9 +121,7 @@ class Keycloak {
     await CatalogUsersPO.visitUserPage(page, keycloakUser.username);
     const emailLink = CatalogUsersPO.getEmailLink(page);
     await expect(emailLink).toBeVisible();
-    await uiHelper.verifyDivHasText(
-      `${keycloakUser.firstName} ${keycloakUser.lastName}`,
-    );
+    await uiHelper.verifyDivHasText(`${keycloakUser.firstName} ${keycloakUser.lastName}`);
 
     const groups = await keycloak.getGroupsOfUser(token, keycloakUser.id);
     for (const group of groups) {

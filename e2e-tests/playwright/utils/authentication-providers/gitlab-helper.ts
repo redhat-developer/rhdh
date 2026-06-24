@@ -18,6 +18,19 @@ interface GitLabOAuthAppResponse {
   scopes?: string[];
 }
 
+function isGitLabOAuthAppResponse(value: unknown): value is GitLabOAuthAppResponse {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    typeof value.id === "number" &&
+    "application_id" in value &&
+    typeof value.application_id === "string" &&
+    "secret" in value &&
+    typeof value.secret === "string"
+  );
+}
+
 interface GitLabConfig {
   host: string;
   personalAccessToken: string;
@@ -72,22 +85,17 @@ export class GitLabHelper {
         );
       }
 
-      const app = await response.json();
+      const app: unknown = await response.json();
 
       // Validate required fields
-      if (!app.id || !app.application_id || !app.secret) {
-        // Log response without sensitive data
-        const safeApp = { ...app };
-        if (safeApp.secret) safeApp.secret = "***";
-        console.error("[GITLAB] Unexpected API response structure:", safeApp);
+      if (!isGitLabOAuthAppResponse(app)) {
+        console.error("[GITLAB] Unexpected API response structure:", app);
         throw new Error(
           "GitLab API response missing required fields (id, application_id, or secret)",
         );
       }
 
-      console.log(
-        `[GITLAB] OAuth application created successfully with ID: ${app.id}`,
-      );
+      console.log(`[GITLAB] OAuth application created successfully with ID: ${app.id}`);
       console.log(
         `[GITLAB] Application ID: ${app.application_id}, Secret: ${app.secret ? "***" : "not provided"}`,
       );
@@ -98,8 +106,7 @@ export class GitLabHelper {
         application_name: app.application_name || app.name || name,
         secret: app.secret,
         callback_url: app.callback_url || app.redirect_uri || redirectUri,
-        scopes:
-          app.scopes || (typeof scopes === "string" ? scopes.split(" ") : []),
+        scopes: app.scopes || (typeof scopes === "string" ? scopes.split(" ") : []),
       };
     } catch (error) {
       console.error("[GITLAB] Failed to create OAuth application:", error);
@@ -114,15 +121,12 @@ export class GitLabHelper {
   async deleteOAuthApplication(applicationId: number): Promise<void> {
     try {
       console.log(`[GITLAB] Deleting OAuth application: ${applicationId}`);
-      const response = await fetch(
-        `${this.apiBaseUrl}/applications/${applicationId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "PRIVATE-TOKEN": this.config.personalAccessToken,
-          },
+      const response = await fetch(`${this.apiBaseUrl}/applications/${applicationId}`, {
+        method: "DELETE",
+        headers: {
+          "PRIVATE-TOKEN": this.config.personalAccessToken,
         },
-      );
+      });
 
       if (!response.ok) {
         // 404 is acceptable if the app was already deleted
@@ -138,14 +142,9 @@ export class GitLabHelper {
         );
       }
 
-      console.log(
-        `[GITLAB] OAuth application ${applicationId} deleted successfully`,
-      );
+      console.log(`[GITLAB] OAuth application ${applicationId} deleted successfully`);
     } catch (error) {
-      console.error(
-        `[GITLAB] Failed to delete OAuth application ${applicationId}:`,
-        error,
-      );
+      console.error(`[GITLAB] Failed to delete OAuth application ${applicationId}:`, error);
       throw error;
     }
   }
@@ -171,14 +170,18 @@ export class GitLabHelper {
         );
       }
 
-      const apps = (await response.json()) as GitLabOAuthAppResponse[];
-      console.log(`[GITLAB] Found ${apps.length} OAuth applications`);
-      return apps.map((app: GitLabOAuthAppResponse) => ({
+      const apps: unknown = await response.json();
+      if (!Array.isArray(apps)) {
+        throw new TypeError("Expected array of OAuth applications");
+      }
+      const validatedApps = apps.filter(isGitLabOAuthAppResponse);
+      console.log(`[GITLAB] Found ${validatedApps.length} OAuth applications`);
+      return validatedApps.map((app) => ({
         id: app.id,
         application_id: app.application_id,
-        application_name: app.application_name,
+        application_name: app.application_name ?? app.name ?? "",
         secret: app.secret,
-        callback_url: app.callback_url,
+        callback_url: app.callback_url ?? app.redirect_uri ?? "",
         scopes: app.scopes || [],
       }));
     } catch (error) {

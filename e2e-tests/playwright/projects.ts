@@ -34,5 +34,4 @@ export const PW_PROJECT = projectsJson as {
 };
 
 // Type for project names
-export type PlaywrightProjectName =
-  (typeof PW_PROJECT)[keyof typeof PW_PROJECT];
+export type PlaywrightProjectName = (typeof PW_PROJECT)[keyof typeof PW_PROJECT];
