@@ -18,6 +18,28 @@ import { base64Encode } from "./helper";
 import type { AppConfigYaml } from "./runtime-config";
 
 /**
+ * Core POSTGRES_* env var keys used by both schema-mode and external-DB tests
+ * to configure the database connection from a Secret.
+ */
+export const POSTGRES_ENV_KEYS = [
+  "POSTGRES_HOST",
+  "POSTGRES_PORT",
+  "POSTGRES_DB",
+  "POSTGRES_USER",
+  "POSTGRES_PASSWORD",
+] as const;
+
+/**
+ * Extended key list for external database tests — includes TLS/SSL vars
+ * on top of the core POSTGRES_ENV_KEYS.
+ */
+const POSTGRES_CRED_ENV_KEYS = [
+  ...POSTGRES_ENV_KEYS,
+  "PGSSLMODE",
+  "NODE_EXTRA_CA_CERTS",
+] as const;
+
+/**
  * Convert escaped newlines (\n) to actual newline characters.
  * Environment variables from Vault often have literal \n instead of newlines.
  */
@@ -304,20 +326,12 @@ async function removeSchemaModePatchedEnvVars(
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
-  const schemaModeVars = [
-    "POSTGRES_HOST",
-    "POSTGRES_PORT",
-    "POSTGRES_DB",
-    "POSTGRES_USER",
-    "POSTGRES_PASSWORD",
-  ];
-
   const removed = await kubeClient.removeContainerEnvVars(
     deploymentName,
     namespace,
     BACKSTAGE_BACKEND_CONTAINER,
     (envVar) =>
-      schemaModeVars.includes(envVar.name) &&
+      (POSTGRES_ENV_KEYS as readonly string[]).includes(envVar.name) &&
       (envVar.valueFrom?.secretKeyRef?.name?.endsWith("-postgresql") ?? false),
   );
 
@@ -342,24 +356,15 @@ async function ensurePostgresCredEnvVars(
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
-  const keys = [
-    "POSTGRES_HOST",
-    "POSTGRES_PORT",
-    "POSTGRES_USER",
-    "POSTGRES_PASSWORD",
-    "PGSSLMODE",
-    "NODE_EXTRA_CA_CERTS",
-  ];
-
   console.log(
-    `Adding ${keys.length} POSTGRES_* env vars from postgres-cred to deployment`,
+    `Adding ${POSTGRES_CRED_ENV_KEYS.length} POSTGRES_* env vars from postgres-cred to deployment`,
   );
   await kubeClient.addContainerEnvVarsFromSecret(
     deploymentName,
     namespace,
     BACKSTAGE_BACKEND_CONTAINER,
     "postgres-cred",
-    keys,
+    [...POSTGRES_CRED_ENV_KEYS],
   );
   console.log("POSTGRES_* env vars added to deployment from postgres-cred");
 }

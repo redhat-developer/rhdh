@@ -9,6 +9,7 @@ import {
   BACKSTAGE_BACKEND_CONTAINER,
 } from "../../utils/kube-client";
 import { base64Encode } from "../../utils/helper";
+import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
 import type { AppConfigYaml } from "../../utils/runtime-config";
 import {
   getSchemaModeEnv,
@@ -183,14 +184,9 @@ export class SchemaModeTestSetup {
       console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
     } else {
       const existingEnv = backstageContainer.env ?? [];
-      const requiredVars = [
-        "POSTGRES_HOST",
-        "POSTGRES_PORT",
-        "POSTGRES_DB",
-        "POSTGRES_USER",
-        "POSTGRES_PASSWORD",
-      ];
-      const missingVars = requiredVars.filter((v) => !existingEnv.some((e) => e.name === v));
+      const missingVars = ([...POSTGRES_ENV_KEYS] as string[]).filter(
+        (v) => !existingEnv.some((e) => e.name === v),
+      );
 
       if (missingVars.length === 0) {
         console.log("POSTGRES_* env vars already present in deployment");
