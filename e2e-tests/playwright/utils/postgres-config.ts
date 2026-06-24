@@ -33,7 +33,7 @@ export const POSTGRES_ENV_KEYS = [
  * Extended key list for external database tests — includes TLS/SSL vars
  * on top of the core POSTGRES_ENV_KEYS.
  */
-const POSTGRES_CRED_ENV_KEYS = [
+const postgresCredEnvKeys = [
   ...POSTGRES_ENV_KEYS,
   "PGSSLMODE",
   "NODE_EXTRA_CA_CERTS",
@@ -357,14 +357,14 @@ async function ensurePostgresCredEnvVars(
   namespace: string,
 ): Promise<void> {
   console.log(
-    `Adding ${POSTGRES_CRED_ENV_KEYS.length} POSTGRES_* env vars from postgres-cred to deployment`,
+    `Adding ${postgresCredEnvKeys.length} POSTGRES_* env vars from postgres-cred to deployment`,
   );
   await kubeClient.addContainerEnvVarsFromSecret(
     deploymentName,
     namespace,
     BACKSTAGE_BACKEND_CONTAINER,
     "postgres-cred",
-    [...POSTGRES_CRED_ENV_KEYS],
+    [...postgresCredEnvKeys],
   );
   console.log("POSTGRES_* env vars added to deployment from postgres-cred");
 }
