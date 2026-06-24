@@ -30,11 +30,17 @@ export const POSTGRES_ENV_KEYS = [
 ] as const;
 
 /**
- * Extended key list for external database tests — includes TLS/SSL vars
- * on top of the core POSTGRES_ENV_KEYS.
+ * Env var keys injected into the deployment by external database tests.
+ * Does NOT include POSTGRES_DB — external DB tests don't set it in the
+ * postgres-cred secret (Backstage auto-creates per-plugin databases).
+ * Schema-mode tests manage their own env vars separately via
+ * configureSchemaMode() / schema-mode-setup.ts.
  */
 const postgresCredEnvKeys = [
-  ...POSTGRES_ENV_KEYS,
+  "POSTGRES_HOST",
+  "POSTGRES_PORT",
+  "POSTGRES_USER",
+  "POSTGRES_PASSWORD",
   "PGSSLMODE",
   "NODE_EXTRA_CA_CERTS",
 ] as const;
