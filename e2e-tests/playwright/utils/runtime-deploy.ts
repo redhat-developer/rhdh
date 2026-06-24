@@ -21,7 +21,7 @@
  *
  * Environment variables exported after deployment:
  *   BASE_URL              — RHDH route URL (set only if not already set)
- *   SCHEMA_MODE_*         — schema-mode env vars for port-forwarding
+ *   SCHEMA_MODE_*         — schema-mode env vars (via configureSchemaMode in schema-mode-db.ts)
  */
 
 import * as os from "os";
@@ -44,11 +44,11 @@ import {
 import {
   resolveInstallMethod,
   base64Encode,
-  base64Decode,
   run,
   discoverRouterBase,
   imageRefToString,
 } from "./helper";
+import { configureSchemaMode } from "../e2e/plugin-division-mode-schema/schema-mode-db";
 
 /**
  * Whether deploy has already run in this process.
@@ -292,106 +292,6 @@ async function deployWithOperator(
   console.log("Operator deployment ready");
 
   return runtimeUrl;
-}
-
-// ---------------------------------------------------------------------------
-// Schema-mode environment
-// ---------------------------------------------------------------------------
-
-/**
- * Discover PostgreSQL service and admin password in the runtime namespace
- * and set SCHEMA_MODE_* environment variables for schema-mode tests.
- */
-async function configureSchemaMode(
-  kubeClient: KubeClient,
-  namespace: string,
-  releaseName: string,
-  installMethod: "helm" | "operator",
-): Promise<void> {
-  // Find PostgreSQL service
-  const svcCandidates =
-    installMethod === "operator"
-      ? [`backstage-psql-${releaseName}`, `${releaseName}-postgresql`]
-      : [`${releaseName}-postgresql`, `backstage-psql-${releaseName}`];
-
-  let svcName: string | undefined;
-  for (const candidate of svcCandidates) {
-    try {
-      await kubeClient.coreV1Api.readNamespacedService(candidate, namespace);
-      svcName = candidate;
-      break;
-    } catch {
-      // not found, try next
-    }
-  }
-
-  if (!svcName) {
-    console.warn(
-      "No PostgreSQL service found in namespace — schema-mode tests will skip",
-    );
-    return;
-  }
-
-  // Find admin password
-  const secretCandidates =
-    installMethod === "operator"
-      ? [
-          `backstage-psql-secret-${releaseName}`,
-          `${releaseName}-postgresql`,
-          "postgres-cred",
-        ]
-      : [
-          `${releaseName}-postgresql`,
-          `backstage-psql-secret-${releaseName}`,
-          "postgres-cred",
-        ];
-
-  const passwordKeys = [
-    "postgres-password",
-    "POSTGRESQL_ADMIN_PASSWORD",
-    "POSTGRES_PASSWORD",
-  ];
-
-  let adminPassword: string | undefined;
-  for (const sec of secretCandidates) {
-    try {
-      const result = await kubeClient.coreV1Api.readNamespacedSecret(
-        sec,
-        namespace,
-      );
-      const data = result.body.data || {};
-      for (const key of passwordKeys) {
-        if (data[key]) {
-          adminPassword = base64Decode(data[key]);
-          break;
-        }
-      }
-      if (adminPassword) break;
-    } catch {
-      // not found, try next
-    }
-  }
-
-  if (!adminPassword) {
-    console.warn(
-      "Could not resolve PostgreSQL admin password — schema-mode tests will skip",
-    );
-    return;
-  }
-
-  // Export schema-mode env vars
-  process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE = namespace;
-  process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE = `svc/${svcName}`;
-  process.env.SCHEMA_MODE_DB_ADMIN_USER = "postgres";
-  process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD = adminPassword;
-  process.env.SCHEMA_MODE_DB_PASSWORD =
-    process.env.SCHEMA_MODE_DB_PASSWORD || "test_password_123";
-  process.env.SCHEMA_MODE_DB_USER =
-    process.env.SCHEMA_MODE_DB_USER || "bn_backstage";
-
-  console.log(
-    `Schema-mode env configured: port-forward svc/${svcName} in ${namespace}`,
-  );
 }
 
 // ---------------------------------------------------------------------------
