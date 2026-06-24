@@ -15,11 +15,7 @@ export async function waitForRhdhReady(
           return false;
         }
         const body: unknown = await response.json();
-        return (
-          typeof body === "object" &&
-          body !== null &&
-          Reflect.get(body, "status") === "ok"
-        );
+        return typeof body === "object" && body !== null && Reflect.get(body, "status") === "ok";
       },
       { timeout: timeoutMs, intervals: [2_000] },
     )

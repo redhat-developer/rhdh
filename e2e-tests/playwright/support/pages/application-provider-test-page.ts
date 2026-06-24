@@ -1,4 +1,5 @@
 import { expect, Page } from "@playwright/test";
+
 import { UIhelper } from "../../utils/ui-helper";
 
 /** Application provider plugin test page interactions. */
@@ -41,22 +42,12 @@ export class ApplicationProviderTestPage {
   }
 
   async incrementFirstCardCounter(contextLabel: string): Promise<void> {
-    await this.contextCards(contextLabel)
-      .first()
-      .getByRole("button", { name: "+" })
-      .click();
+    await this.contextCards(contextLabel).first().getByRole("button", { name: "+" }).click();
   }
 
-  async verifySharedCardCount(
-    contextLabel: string,
-    count: string,
-  ): Promise<void> {
+  async verifySharedCardCount(contextLabel: string, count: string): Promise<void> {
     const cards = this.contextCards(contextLabel);
-    await expect(
-      cards.first().getByRole("heading", { name: count }),
-    ).toBeVisible();
-    await expect(
-      cards.last().getByRole("heading", { name: count }),
-    ).toBeVisible();
+    await expect(cards.first().getByRole("heading", { name: count })).toBeVisible();
+    await expect(cards.last().getByRole("heading", { name: count })).toBeVisible();
   }
 }

@@ -1,6 +1,7 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../../utils/common";
+
 import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
+import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
   readCertificateFile,
@@ -52,9 +53,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
     // Validate required environment variables
     if (!rdsUser || !rdsPassword) {
-      throw new Error(
-        "RDS_USER and RDS_PASSWORD environment variables must be set",
-      );
+      throw new Error("RDS_USER and RDS_PASSWORD environment variables must be set");
     }
 
     const kubeClient = new KubeClient();

@@ -1,9 +1,7 @@
 import { expect, Page } from "@playwright/test";
+
+import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import { UIhelper } from "../../utils/ui-helper";
-import {
-  getCurrentLanguage,
-  getTranslations,
-} from "../../e2e/localization/locale";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -52,10 +50,7 @@ export class SidebarPage {
     await expect(this.page.getByRole("link", { name })).toBeHidden();
   }
 
-  async verifyMenuItemInSection(
-    section: string,
-    itemText: string,
-  ): Promise<void> {
+  async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
     const sectionMenu = this.getSideBarMenuItem(section);
     await expect(sectionMenu.getByText(itemText)).toBeVisible();
   }

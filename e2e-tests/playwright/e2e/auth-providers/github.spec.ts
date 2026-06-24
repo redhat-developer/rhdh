@@ -1,8 +1,9 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
+
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { SettingsPage } from "../../support/pages/settings-page";
 import { Common } from "../../utils/common";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
-import { SettingsPage } from "../../support/pages/settings-page";
 
 /* SUPORTED RESOLVERS
 GITHUB:
@@ -12,9 +13,7 @@ GITHUB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-const harness = await AuthProviderHarness.create(
-  "albarbaro-test-namespace-github",
-);
+const harness = await AuthProviderHarness.create("albarbaro-test-namespace-github");
 
 test.describe("Configure Github Provider", () => {
   test.use({ baseURL: harness.backstageUrl });
@@ -51,13 +50,11 @@ test.describe("Configure Github Provider", () => {
     await harness.addBaseUrlSecretsIfRemote();
     await harness.addSecretsFromEnv({
       AUTH_PROVIDERS_GH_ORG_NAME: "AUTH_PROVIDERS_GH_ORG_NAME",
-      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET:
-        "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET: "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
       AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
       AUTH_PROVIDERS_GH_ORG_APP_ID: "AUTH_PROVIDERS_GH_ORG_APP_ID",
       AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY: "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
-      AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET:
-        "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
+      AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET: "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
     });
     await harness.createSecret();
 
@@ -70,9 +67,7 @@ test.describe("Configure Github Provider", () => {
   });
 
   test.beforeEach(() => {
-    console.log(
-      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
-    );
+    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
 
   test("Login with Github default resolver", async () => {
@@ -91,10 +86,7 @@ test.describe("Configure Github Provider", () => {
 
   test("Login with Github usernameMatchingUserEntityName resolver", async () => {
     //A github sign-in resolver that looks up the user using their github username as the entity name.
-    await harness.deployment.setGithubResolver(
-      "usernameMatchingUserEntityName",
-      false,
-    );
+    await harness.deployment.setGithubResolver("usernameMatchingUserEntityName", false);
     await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
@@ -112,10 +104,7 @@ test.describe("Configure Github Provider", () => {
 
   test("Login with Github emailMatchingUserEntityProfileEmail resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setGithubResolver(
-      "emailMatchingUserEntityProfileEmail",
-      false,
-    );
+    await harness.deployment.setGithubResolver("emailMatchingUserEntityProfileEmail", false);
     await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
@@ -125,18 +114,13 @@ test.describe("Configure Github Provider", () => {
     );
     expect(login).toBe("Login successful");
 
-    await settingsPage.verifySignInError(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
+    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await context.clearCookies();
   });
 
   test("Login with Github emailLocalPartMatchingUserEntityName resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setGithubResolver(
-      "emailLocalPartMatchingUserEntityName",
-      false,
-    );
+    await harness.deployment.setGithubResolver("emailLocalPartMatchingUserEntityName", false);
     await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
@@ -149,9 +133,7 @@ test.describe("Configure Github Provider", () => {
 
     expect(login).toBe("Login successful");
 
-    await settingsPage.verifySignInError(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
+    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await context.clearCookies();
   });
 
@@ -172,9 +154,7 @@ test.describe("Configure Github Provider", () => {
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "github-refresh-token",
-    );
+    const authCookie = cookies.find((cookie) => cookie.name === "github-refresh-token");
     expect(authCookie).toBeDefined();
 
     // expected duration of 3 days in ms
@@ -196,11 +176,7 @@ test.describe("Configure Github Provider", () => {
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     await expect
       .poll(
-        () =>
-          harness.deployment.checkUserIsIngestedInCatalog([
-            "RHDH QE User 1",
-            "RHDH QE Admin",
-          ]),
+        () => harness.deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"]),
         { timeout: 120_000 },
       )
       .toBe(true);
@@ -211,28 +187,13 @@ test.describe("Configure Github Provider", () => {
         "test_users",
       ]),
     ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup(
-        "rhdhqeauthadmin",
-        "test_admins",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup("rhdhqeauth1", "test_users"),
-    ).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins")).toBe(
+      true,
+    );
+    expect(await harness.deployment.checkUserIsInGroup("rhdhqeauth1", "test_users")).toBe(true);
 
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup(
-        "test_users",
-        "test_all",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup(
-        "test_admins",
-        "test_all",
-      ),
-    ).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("test_users", "test_all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("test_admins", "test_all")).toBe(true);
 
     expect(
       await harness.deployment.checkUserHasAnnotation(

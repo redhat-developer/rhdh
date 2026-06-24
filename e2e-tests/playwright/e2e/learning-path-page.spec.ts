@@ -1,7 +1,8 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../utils/common";
-import { runAccessibilityTests } from "../utils/accessibility";
+
 import { SidebarPage } from "../support/pages/sidebar-page";
+import { runAccessibilityTests } from "../utils/accessibility";
+import { Common } from "../utils/common";
 
 test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
   test.beforeAll(() => {

@@ -1,9 +1,10 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
+
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
-import { Common } from "../../utils/common";
-import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
-import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 import { SettingsPage } from "../../support/pages/settings-page";
+import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
+import { Common } from "../../utils/common";
+import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPPORTED RESOLVERS
 OIDC:
@@ -16,9 +17,7 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
-const harness = await AuthProviderHarness.create(
-  "albarbaro-test-namespace-oidc",
-);
+const harness = await AuthProviderHarness.create("albarbaro-test-namespace-oidc");
 
 const keycloakHelper = new KeycloakHelper({
   baseUrl: process.env.RHBK_BASE_URL!,
@@ -68,8 +67,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
       RHBK_CLIENT_ID: "RHBK_CLIENT_ID",
       RHBK_CLIENT_SECRET: "RHBK_CLIENT_SECRET",
       AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET:
-        "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET: "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
     });
     await harness.createSecret();
 
@@ -82,16 +80,11 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test.beforeEach(() => {
-    console.log(
-      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
-    );
+    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
 
   test("Login with OIDC default resolver", async () => {
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();
@@ -106,16 +99,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
 
   test("Login with OIDC oidcSubClaimMatchingKeycloakUserId resolver", async () => {
     await harness.deployment.enableOIDCLoginWithIngestion();
-    await harness.deployment.setOIDCResolver(
-      "oidcSubClaimMatchingKeycloakUserId",
-      false,
-    );
+    await harness.deployment.setOIDCResolver("oidcSubClaimMatchingKeycloakUserId", false);
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();
@@ -124,16 +111,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test("Login with OIDC emailMatchingUserEntityProfileEmail resolver", async () => {
-    await harness.deployment.setOIDCResolver(
-      "emailMatchingUserEntityProfileEmail",
-      false,
-    );
+    await harness.deployment.setOIDCResolver("emailMatchingUserEntityProfileEmail", false);
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();
@@ -142,56 +123,36 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName resolver", async () => {
-    await harness.deployment.setOIDCResolver(
-      "emailLocalPartMatchingUserEntityName",
-      false,
-    );
+    await harness.deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", false);
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();
     await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
 
-    const login2 = await common.keycloakLogin(
-      "atena",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login2 = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
     expect(login2).toBe("Login successful");
 
-    await settingsPage.verifySignInError(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
+    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await keycloakHelper.initialize();
     await keycloakHelper.clearUserSessions("atena");
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName with dangerouslyAllowSignInWithoutUserInCatalog resolver", async () => {
-    await harness.deployment.setOIDCResolver(
-      "emailLocalPartMatchingUserEntityName",
-      true,
-    );
+    await harness.deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", true);
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();
     await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
 
-    const login2 = await common.keycloakLogin(
-      "atena",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login2 = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
     expect(login2).toBe("Login successful");
     await settingsPage.open();
     await settingsPage.verifyProfileHeading("Atena Minerva");
@@ -199,16 +160,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test("Login with OIDC preferredUsernameMatchingUserEntityName resolver", async () => {
-    await harness.deployment.setOIDCResolver(
-      "preferredUsernameMatchingUserEntityName",
-      false,
-    );
+    await harness.deployment.setOIDCResolver("preferredUsernameMatchingUserEntityName", false);
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "atena",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();
@@ -223,18 +178,13 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     );
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "oidc-refresh-token",
-    );
+    const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
     expect(authCookie).toBeDefined();
 
     // expected duration of 3 days in ms
@@ -263,56 +213,26 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
       ]),
     ).toBe(true);
     expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog([
-        "admins",
-        "goddesses",
-        "gods",
-      ]),
+      await harness.deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"]),
     ).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("admin", "admins")).toBe(
-      true,
-    );
-    expect(await harness.deployment.checkUserIsInGroup("zeus", "admins")).toBe(
-      true,
-    );
-    expect(
-      await harness.deployment.checkUserIsInGroup("atena", "goddesses"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup("tyke", "goddesses"),
-    ).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("elio", "gods")).toBe(
-      true,
-    );
-    expect(await harness.deployment.checkUserIsInGroup("zeus", "gods")).toBe(
-      true,
-    );
+    expect(await harness.deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("atena", "goddesses")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
 
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup("gods", "all"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup("goddesses", "all"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup("all", "gods"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup("all", "goddesses"),
-    ).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(true);
   });
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
-    expect(
-      await harness.deployment.checkUserIsIngestedInCatalog([
-        "Invalid Username",
-      ]),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog([
-        "invalid@groupname",
-      ]),
-    ).toBe(true);
+    expect(await harness.deployment.checkUserIsIngestedInCatalog(["Invalid Username"])).toBe(true);
+    expect(await harness.deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"])).toBe(
+      true,
+    );
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
@@ -321,10 +241,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
-    const oidcLogin = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const oidcLogin = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
 
     expect(oidcLogin).toBe("Login successful");
 
@@ -338,8 +255,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
       production: {
         clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
         clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
       },
     });
 
@@ -370,55 +286,31 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Enable autologout and user is logged out after inactivity`, async () => {
     harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
     // minimum allowed value is 0.5 minutes
-    harness.deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5,
-    );
-    harness.deployment.setAppConfigProperty(
-      "auth.autologout.promptBeforeIdleSeconds",
-      5,
-    );
+    harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
+    harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await settingsPage.verifyTextVisible(
-      "Logging out due to inactivity",
-      false,
-      60000,
-    );
+    await settingsPage.verifyTextVisible("Logging out due to inactivity", false, 60000);
     await settingsPage.verifyInactivityLogoutMessageHidden();
 
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "oidc-refresh-token",
-    );
+    const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
     expect(authCookie).toBeUndefined();
   });
 
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
     harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
     // minimum allowed value is 0.5 minutes
-    harness.deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5,
-    );
-    harness.deployment.setAppConfigProperty(
-      "auth.autologout.promptBeforeIdleSeconds",
-      5,
-    );
+    harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
+    harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD!,
-    );
+    const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.clickButtonByText("Don't log me out", {

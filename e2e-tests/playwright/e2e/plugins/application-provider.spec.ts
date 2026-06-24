@@ -1,6 +1,7 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../../utils/common";
+
 import { ApplicationProviderTestPage } from "../../support/pages/application-provider-test-page";
+import { Common } from "../../utils/common";
 
 test.describe("Test ApplicationProvider", () => {
   test.beforeAll(() => {

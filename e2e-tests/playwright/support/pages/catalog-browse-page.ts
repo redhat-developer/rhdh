@@ -1,4 +1,5 @@
 import { expect, Page } from "@playwright/test";
+
 import * as interaction from "../../utils/ui-helper/interaction";
 import * as misc from "../../utils/ui-helper/misc";
 import * as navigation from "../../utils/ui-helper/navigation";
@@ -34,10 +35,7 @@ export class CatalogBrowsePage {
     await navigation.selectMuiBox(this.page, "Kind", kind);
   }
 
-  async verifyComponentsInCatalog(
-    kind: string,
-    names: string[],
-  ): Promise<void> {
+  async verifyComponentsInCatalog(kind: string, names: string[]): Promise<void> {
     await misc.verifyComponentInCatalog(this.page, kind, names);
   }
 
@@ -49,10 +47,7 @@ export class CatalogBrowsePage {
     await this.fillSearch(query);
   }
 
-  async verifyRowByUniqueText(
-    text: string,
-    columns: string[] | RegExp[],
-  ): Promise<void> {
+  async verifyRowByUniqueText(text: string, columns: string[] | RegExp[]): Promise<void> {
     await table.verifyRowInTableByUniqueText(this.page, text, columns);
   }
 
@@ -102,37 +97,22 @@ export class CatalogBrowsePage {
 
   async importGitRepositoryFromCatalog(): Promise<void> {
     await this.openSelfServiceFromCatalog();
-    await interaction.clickButton(
-      this.page,
-      "Import an existing Git repository",
-    );
+    await interaction.clickButton(this.page, "Import an existing Git repository");
   }
 
-  async verifyTextInSelector(
-    selector: string,
-    expectedText: string,
-  ): Promise<void> {
+  async verifyTextInSelector(selector: string, expectedText: string): Promise<void> {
     await verification.verifyTextInSelector(this.page, selector, expectedText);
   }
 
-  async verifyPartialTextInSelector(
-    selector: string,
-    partialText: string,
-  ): Promise<void> {
-    await verification.verifyPartialTextInSelector(
-      this.page,
-      selector,
-      partialText,
-    );
+  async verifyPartialTextInSelector(selector: string, partialText: string): Promise<void> {
+    await verification.verifyPartialTextInSelector(this.page, selector, partialText);
   }
 
   async openTemplateFromCatalog(templateName: string): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
     await navigation.selectMuiBox(this.page, "Kind", "Template");
     await this.fillSearch(`${templateName}\n`);
-    await table.verifyRowInTableByUniqueText(this.page, templateName, [
-      templateName,
-    ]);
+    await table.verifyRowInTableByUniqueText(this.page, templateName, [templateName]);
     await interaction.clickLink(this.page, templateName);
   }
 
@@ -181,9 +161,7 @@ export class CatalogBrowsePage {
   }
 
   async verifyDependencyResource(resource: string): Promise<void> {
-    const resourceElement = this.page.locator(
-      `#workspace:has-text("${resource}")`,
-    );
+    const resourceElement = this.page.locator(`#workspace:has-text("${resource}")`);
     await resourceElement.scrollIntoViewIfNeeded();
     await expect(resourceElement).toBeVisible();
   }

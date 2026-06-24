@@ -1,17 +1,16 @@
 import { test, expect } from "@support/coverage/test";
+
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
-import { Common } from "../../utils/common";
-import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import { SettingsPage } from "../../support/pages/settings-page";
+import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
+import { Common } from "../../utils/common";
 
 /* SUPPORTED RESOLVERS
 LDAP:
     [x] oidcLdapUuidMatchingAnnotation -> (Default)
 */
 
-const harness = await AuthProviderHarness.create(
-  "albarbaro-test-namespace-ldap",
-);
+const harness = await AuthProviderHarness.create("albarbaro-test-namespace-ldap");
 
 let nsgCleanup: (() => Promise<void>) | undefined;
 
@@ -65,8 +64,7 @@ test.describe("Configure LDAP Provider", () => {
       RHBK_CLIENT_ID: "RHBK_CLIENT_ID",
       RHBK_CLIENT_SECRET: "RHBK_CLIENT_SECRET",
       AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET:
-        "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET: "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
       PINGFEDERATE_BASE_URL: "PINGFEDERATE_BASE_URL",
       PINGFEDERATE_CLIENT_ID: "PINGFEDERATE_CLIENT_ID",
       PINGFEDERATE_CLIENT_SECRET: "PINGFEDERATE_CLIENT_SECRET",
@@ -105,9 +103,7 @@ test.describe("Configure LDAP Provider", () => {
         "AllowE2EJobs",
       );
       console.log(`[TEST] NSG access configured successfully`);
-      console.log(
-        `[TEST] Rule created: ${nsgConfig.ruleName} for IP: ${nsgConfig.publicIp}`,
-      );
+      console.log(`[TEST] Rule created: ${nsgConfig.ruleName} for IP: ${nsgConfig.publicIp}`);
 
       // Store cleanup function for afterAll
       nsgCleanup = nsgConfig.cleanup;
@@ -120,9 +116,7 @@ test.describe("Configure LDAP Provider", () => {
   });
 
   test.beforeEach(() => {
-    console.log(
-      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
-    );
+    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
 
   test("Login with LDAP oidcLdapUuidMatchingAnnotation resolver", async () => {
@@ -157,39 +151,21 @@ test.describe("Configure LDAP Provider", () => {
         "SubAdmins",
       ]),
     ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup("rhdh-admin", "Admins"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup("user1", "All_Users"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup("user2", "All_Users"),
-    ).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("rhdh-admin", "Admins")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("user1", "All_Users")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("user2", "All_Users")).toBe(true);
 
+    expect(await harness.deployment.checkGroupIsChildOfGroup("testsubgroup", "testgroup")).toBe(
+      true,
+    );
     expect(
-      await harness.deployment.checkGroupIsChildOfGroup(
-        "testsubgroup",
-        "testgroup",
-      ),
+      await harness.deployment.checkGroupIsChildOfGroup("testsubsubgroup", "testsubgroup"),
     ).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("testgroup", "testsubgroup")).toBe(
+      true,
+    );
     expect(
-      await harness.deployment.checkGroupIsChildOfGroup(
-        "testsubsubgroup",
-        "testsubgroup",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup(
-        "testgroup",
-        "testsubgroup",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup(
-        "testsubgroup",
-        "testsubsubgroup",
-      ),
+      await harness.deployment.checkGroupIsParentOfGroup("testsubgroup", "testsubsubgroup"),
     ).toBe(true);
   });
 
@@ -198,10 +174,7 @@ test.describe("Configure LDAP Provider", () => {
     await harness.deployment.enablePingFederateOIDCLogin();
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.pingFederateLogin(
-      "user1",
-      process.env.RHBK_LDAP_USER_PASSWORD!,
-    );
+    const login = await common.pingFederateLogin("user1", process.env.RHBK_LDAP_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();
@@ -212,23 +185,17 @@ test.describe("Configure LDAP Provider", () => {
   test("Login with PingFederate OIDC (with LDAP catalog) with sub as ldap_uuid", async () => {
     await harness.deployment.enablePingFederateOIDCLogin();
 
-    harness.deployment.setAppConfigProperty(
-      "auth.providers.oidc.production.signIn.resolvers",
-      [
-        {
-          resolver: "oidcLdapUuidMatchingAnnotation",
-          // match sub claim as required by OIDC spec
-          ldapUuidKey: "sub",
-        },
-      ],
-    );
+    harness.deployment.setAppConfigProperty("auth.providers.oidc.production.signIn.resolvers", [
+      {
+        resolver: "oidcLdapUuidMatchingAnnotation",
+        // match sub claim as required by OIDC spec
+        ldapUuidKey: "sub",
+      },
+    ]);
 
     await harness.reconcileAfterConfigChange();
 
-    const login = await common.pingFederateLogin(
-      "user1",
-      process.env.RHBK_LDAP_USER_PASSWORD!,
-    );
+    const login = await common.pingFederateLogin("user1", process.env.RHBK_LDAP_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
     await settingsPage.open();

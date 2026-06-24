@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
   pollForValue,
   pollUntil,
@@ -64,9 +65,7 @@ describe("pollUntil", () => {
       intervalMs: 500,
     });
 
-    const rejection = expect(promise).rejects.toThrow(
-      /Condition not met within 1000ms/u,
-    );
+    const rejection = expect(promise).rejects.toThrow(/Condition not met within 1000ms/u);
     await vi.advanceTimersByTimeAsync(500);
     await vi.advanceTimersByTimeAsync(500);
     await rejection;
@@ -86,9 +85,9 @@ describe("pollUntil", () => {
   });
 
   it("propagates errors from the condition", async () => {
-    await expect(
-      pollUntil(() => Promise.reject(new Error("condition failed"))),
-    ).rejects.toThrow(/condition failed/u);
+    await expect(pollUntil(() => Promise.reject(new Error("condition failed")))).rejects.toThrow(
+      /condition failed/u,
+    );
   });
 });
 
@@ -144,9 +143,7 @@ describe("pollUntilStable", () => {
       stableChecks: 5,
     });
 
-    const rejection = expect(promise).rejects.toThrow(
-      /Condition not met within 1000ms/u,
-    );
+    const rejection = expect(promise).rejects.toThrow(/Condition not met within 1000ms/u);
     await vi.advanceTimersByTimeAsync(500);
     await vi.advanceTimersByTimeAsync(500);
     await rejection;

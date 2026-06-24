@@ -1,12 +1,10 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../utils/common";
-import { CatalogImport } from "../support/pages/catalog-import";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../e2e/localization/locale";
+
+import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale";
 import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
+import { CatalogImport } from "../support/pages/catalog-import";
 import { SelfServicePage } from "../support/pages/self-service-page";
+import { Common } from "../utils/common";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -50,9 +48,7 @@ test.describe("Test timestamp column on Catalog", () => {
   test("Import an existing Git repository and verify `Created At` column and value in the Catalog Page", async () => {
     await selfServicePage.open();
     await selfServicePage.clickImportGitRepositoryLocalized(
-      t["scaffolder"][lang][
-        "templateListPage.contentHeader.registerExistingButtonTitle"
-      ],
+      t["scaffolder"][lang]["templateListPage.contentHeader.registerExistingButtonTitle"],
     );
     await catalogImport.registerExistingComponent(component);
     await catalogBrowsePage.openCatalogSidebar("Component");

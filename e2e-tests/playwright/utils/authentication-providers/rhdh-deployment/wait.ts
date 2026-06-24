@@ -1,4 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
+
 import { getErrorMessage, hasErrorResponse } from "../errors";
 import { pollUntil, pollUntilStable } from "../poll-until";
 import { BackstageCr, RHDHDeploymentState } from "./rhdh-deployment-types";
@@ -19,9 +20,7 @@ function buildLabelSelector(instanceName: string): string {
     .join(",");
 }
 
-export async function getDeploymentGeneration(
-  state: RHDHDeploymentState,
-): Promise<number> {
+export async function getDeploymentGeneration(state: RHDHDeploymentState): Promise<number> {
   const labelSelector = buildLabelSelector(state.instanceName);
 
   const deployments = await state.appsV1Api.listNamespacedDeployment(
@@ -49,25 +48,17 @@ export async function waitForConfigReconciled(
   }
 
   const baseline =
-    state.configReconcileBaselineGeneration ??
-    (await getDeploymentGeneration(state));
+    state.configReconcileBaselineGeneration ?? (await getDeploymentGeneration(state));
 
   try {
-    await pollUntil(
-      async () => (await getDeploymentGeneration(state)) > baseline,
-      {
-        timeoutMs,
-        intervalMs: POLL_INTERVAL_MS,
-        label: `Config reconcile (generation > ${baseline})`,
-      },
-    );
-    console.log(
-      `[INFO] Config reconciled - deployment generation > ${baseline}`,
-    );
+    await pollUntil(async () => (await getDeploymentGeneration(state)) > baseline, {
+      timeoutMs,
+      intervalMs: POLL_INTERVAL_MS,
+      label: `Config reconcile (generation > ${baseline})`,
+    });
+    console.log(`[INFO] Config reconciled - deployment generation > ${baseline}`);
   } catch {
-    console.log(
-      `[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`,
-    );
+    console.log(`[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`);
   }
 }
 
@@ -78,23 +69,17 @@ function hasRolloutStarted(
   isProgressing: boolean,
 ): boolean {
   return (
-    currentGeneration > initialGeneration ||
-    observedGeneration < currentGeneration ||
-    isProgressing
+    currentGeneration > initialGeneration || observedGeneration < currentGeneration || isProgressing
   );
 }
 
-function isDeploymentReady(
-  deployment: k8s.V1Deployment,
-  cr: BackstageCr,
-): boolean {
+function isDeploymentReady(deployment: k8s.V1Deployment, cr: BackstageCr): boolean {
   const conditions = deployment.status?.conditions ?? [];
   const currentGeneration = deployment.metadata?.generation ?? 0;
   const observedGeneration = deployment.status?.observedGeneration ?? 0;
 
   const isAvailable = conditions.some(
-    (condition) =>
-      condition.type === "Available" && condition.status === "True",
+    (condition) => condition.type === "Available" && condition.status === "True",
   );
 
   const isProgressingWithRollout = conditions.some(
@@ -158,16 +143,13 @@ async function waitForRolloutStart(
 
         if (initialGeneration === 0) {
           initialGeneration = deployment.metadata?.generation ?? 0;
-          console.log(
-            `[INFO] Initial deployment generation: ${initialGeneration}`,
-          );
+          console.log(`[INFO] Initial deployment generation: ${initialGeneration}`);
         }
 
         const currentGeneration = deployment.metadata?.generation ?? 0;
         const observedGeneration = deployment.status?.observedGeneration ?? 0;
         const isProgressing = (deployment.status?.conditions ?? []).some(
-          (condition) =>
-            condition.type === "Progressing" && condition.status === "True",
+          (condition) => condition.type === "Progressing" && condition.status === "True",
         );
 
         return hasRolloutStarted(
@@ -208,9 +190,7 @@ async function pollDeploymentReady(
         const deployment = await getLabeledDeployment(state, labelSelector);
         return isDeploymentReady(deployment, state.cr);
       } catch (error) {
-        console.log(
-          `[INFO] Deployment readiness check failed: ${getErrorMessage(error)}`,
-        );
+        console.log(`[INFO] Deployment readiness check failed: ${getErrorMessage(error)}`);
         return false;
       }
     },

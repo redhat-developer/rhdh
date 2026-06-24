@@ -5,6 +5,7 @@
 import { expect } from "@playwright/test";
 import { Client } from "pg";
 import type { ClientConfig } from "pg";
+
 import { sleep } from "../../utils/poll-until";
 
 export interface SchemaModeEnv {

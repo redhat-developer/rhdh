@@ -1,7 +1,8 @@
 import { test, expect } from "@support/coverage/test";
-import { Common } from "../../utils/common";
-import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
+
 import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
+import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
+import { Common } from "../../utils/common";
 
 test.describe("Verify TLS configuration with external Crunchy Postgres DB", () => {
   test.beforeAll(() => {
@@ -21,10 +22,7 @@ test.describe("Verify TLS configuration with external Crunchy Postgres DB", () =
     const rhdhHomePage = new RhdhHomePage(page);
     const catalogBrowsePage = new CatalogBrowsePage(page);
     const common = new Common(page);
-    await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-    );
+    await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
     await rhdhHomePage.verifyWelcomeHeading();
     await page.getByLabel("Catalog").first().click();
     await catalogBrowsePage.selectKind("Component");
