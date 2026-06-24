@@ -378,7 +378,7 @@ install_subscription() {
   package=$4          # Package name of the operator
   source_name=$5      # Name of the source catalog
   source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
-  starting_csv=$7     # Optional starting CSV to pin subscription install
+  starting_csv=${7:-} # Optional starting CSV to pin subscription install
   starting_csv_line=""
   if [[ -n "$starting_csv" ]]; then
     starting_csv_line="  startingCSV: $starting_csv"
