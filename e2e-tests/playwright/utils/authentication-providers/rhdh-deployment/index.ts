@@ -372,7 +372,7 @@ class RHDHDeployment implements RHDHDeploymentState {
       const response = await fetch(baseUrl, { method: "HEAD" });
       return response.status === 200;
     } catch (error: unknown) {
-      const { getErrorMessage } = await import("../errors");
+      const { getErrorMessage } = await import("../../errors");
       console.log(`Error: ${getErrorMessage(error)}`);
       return false;
     }

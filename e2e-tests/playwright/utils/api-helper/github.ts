@@ -1,6 +1,6 @@
 import { request, type APIResponse, expect } from "@playwright/test";
 
-import { GITHUB_API_ENDPOINTS } from "./api-endpoints";
+import { GITHUB_API_ENDPOINTS } from "../api-endpoints";
 import {
   type GitHubPullRequestFile,
   isGitHubPullRequestFile,

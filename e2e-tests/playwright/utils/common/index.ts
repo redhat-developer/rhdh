@@ -3,9 +3,9 @@ import * as fs from "fs";
 import { test, Page } from "@playwright/test";
 import { authenticator } from "otplib";
 
-import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale";
+import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
+import { SETTINGS_PAGE_COMPONENTS } from "../../support/page-objects/page-obj";
 import { getErrorMessage } from "../errors";
-import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import { UIhelper } from "../ui-helper";
 import {
   handleGitHubPopupLogin,

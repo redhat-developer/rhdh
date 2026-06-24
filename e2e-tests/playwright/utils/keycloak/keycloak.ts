@@ -1,5 +1,4 @@
 import { expect, Page } from "@playwright/test";
-import fetch from "node-fetch";
 
 import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users-obj";
 import { UIhelper } from "../ui-helper";

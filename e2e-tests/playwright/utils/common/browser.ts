@@ -2,7 +2,7 @@ import * as path from "path";
 
 import { type Browser, type Cookie, type Page, type TestInfo } from "@playwright/test";
 
-import { startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
+import { startCoverageForPage, stopCoverageForPage } from "../../support/coverage/test";
 
 export function parseAuthStateCookies(content: string): Cookie[] {
   const parsed: unknown = JSON.parse(content);
