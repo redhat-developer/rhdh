@@ -1,10 +1,6 @@
 import { Page, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import { APIHelper } from "../../utils/api-helper";
-import {
-  BACKSTAGE_SHOWCASE_COMPONENTS,
-  CATALOG_IMPORT_COMPONENTS,
-} from "../page-objects/page-obj";
+import { CATALOG_IMPORT_COMPONENTS } from "../page-objects/page-obj";
 import {
   getTranslations,
   getCurrentLanguage,
@@ -102,84 +98,5 @@ export class CatalogImport {
     await this.uiHelper.clickTab("Raw YAML");
     await expect(this.page.getByTestId("code-snippet")).toContainText(text);
     await this.uiHelper.clickButton("Close");
-  }
-}
-
-export class BackstageShowcase {
-  private readonly page: Page;
-  private uiHelper: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.uiHelper = new UIhelper(page);
-  }
-
-  static async getShowcasePRs(
-    state: "open" | "closed" | "all",
-    paginated = false,
-  ) {
-    return await APIHelper.getGitHubPRs(
-      "redhat-developer",
-      "rhdh",
-      state,
-      paginated,
-    );
-  }
-
-  async clickNextPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableNextPage);
-  }
-
-  async clickPreviousPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tablePreviousPage);
-  }
-
-  async clickLastPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableLastPage);
-  }
-
-  async verifyPRRowsPerPage(rows, allPRs) {
-    await this.selectRowsPerPage(rows);
-    await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
-    await this.uiHelper.verifyLink(allPRs[rows].number, {
-      exact: false,
-      notVisible: true,
-    });
-
-    const tableRows = this.page.locator(
-      BACKSTAGE_SHOWCASE_COMPONENTS.tableRows,
-    );
-    await expect(tableRows).toHaveCount(rows);
-  }
-
-  async selectRowsPerPage(rows: number) {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tablePageSelectBox);
-    await this.page.click(`ul[role="listbox"] li[data-value="${rows}"]`);
-  }
-
-  async verifyPRStatisticsRendered() {
-    const regex = /Average Size Of PR\d+ lines/;
-    await this.uiHelper.verifyText(regex);
-  }
-
-  async verifyAboutCardIsDisplayed() {
-    const url =
-      "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
-    const isLinkVisible = await this.page
-      .locator(`a[href="${url}"]`)
-      .isVisible();
-    if (!isLinkVisible) {
-      throw new Error("About card is not displayed");
-    }
-  }
-
-  async verifyPRRows(
-    allPRs: { title: string }[],
-    startRow: number,
-    lastRow: number,
-  ) {
-    for (let i = startRow; i < lastRow; i++) {
-      await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
-    }
   }
 }
