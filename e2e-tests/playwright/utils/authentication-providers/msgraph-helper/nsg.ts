@@ -5,7 +5,7 @@ import {
   SecurityRulesGetResponse,
 } from "@azure/arm-network";
 
-import { getErrorMessage, hasStatusCode } from "../errors";
+import { getErrorMessage, hasStatusCode } from "../../errors";
 
 export async function getNetworkSecurityGroupRule(
   armNetworkClient: NetworkManagementClient,

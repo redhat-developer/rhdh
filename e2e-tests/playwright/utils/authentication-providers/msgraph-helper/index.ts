@@ -6,12 +6,8 @@ import { Client, PageCollection } from "@microsoft/microsoft-graph-client";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials/index.js";
 import { User, Group } from "@microsoft/microsoft-graph-types";
 
-import { hasStatusCode } from "../errors";
-import {
-  allowPublicIpInNsg,
-  getNetworkSecurityGroup,
-  getNetworkSecurityGroupRule,
-} from "./msgraph-helper-nsg";
+import { hasStatusCode } from "../../errors";
+import { allowPublicIpInNsg, getNetworkSecurityGroup, getNetworkSecurityGroupRule } from "./nsg";
 
 interface AzureApplicationWeb {
   redirectUris?: string[];
