@@ -1,5 +1,10 @@
 # Frontend Plugin Wiring
 
+> **Legacy configuration reference.** This document describes RHDH dynamic plugin frontend wiring for the **current** app shell. If you are moving to the Backstage new frontend system, use:
+>
+> - **Operators / platform admins** (YAML customization only) → [Migrating Config to the New Frontend System](migrating-config-to-new-frontend-system.md)
+> - **Plugin authors** (plugin code and `/alpha` exports) → [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md)
+
 Compared to the backend plugins, where mount points are defined in code and consumed by the backend plugin manager, frontend plugins require additional configuration in the `app-config.yaml`. A plugin missing this configuration will not be loaded into the application and will not be displayed.
 
 Similarly to traditional Backstage instances, there are various kinds of functionality a dynamic frontend plugin can offer:

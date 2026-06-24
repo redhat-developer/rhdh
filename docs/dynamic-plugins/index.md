@@ -21,6 +21,10 @@ More details about publishing dynamic plugins is in the [Packaging Dynamic Plugi
 
 [Frontend Plugin Wiring](frontend-plugin-wiring.md)
 
+[Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md)
+
+[Migrating Config to the New Frontend System](migrating-config-to-new-frontend-system.md)
+
 [Local configuration (for development only)](local.md)
 
 [Version Compatibility Matrix](versions.md)
