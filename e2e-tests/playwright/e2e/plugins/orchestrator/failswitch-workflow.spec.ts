@@ -4,6 +4,8 @@ import { Common } from "../../../utils/common";
 import { Orchestrator } from "../../../support/pages/orchestrator";
 import { LogUtils } from "../../audit-log/log-utils";
 
+type EnvEntry = { name: string; value: string };
+
 test.describe("Orchestrator failswitch workflow tests", () => {
   let uiHelper: UIhelper;
   let common: Common;
@@ -148,8 +150,37 @@ async function getHttpbinValue(ns: string): Promise<string | undefined> {
 }
 
 async function patchHttpbin(ns: string, value: string): Promise<void> {
-  const patch = `{"spec":{"podTemplate":{"container":{"env":[{"name":"HTTPBIN","value":"${value}"}]}}}}`;
-  console.log("patching HTTPBIN in sontaflow resource to ", value);
+  let existing: EnvEntry[] = [];
+  try {
+    const raw = (
+      await LogUtils.executeCommand("oc", [
+        "-n",
+        ns,
+        "get",
+        "sonataflow",
+        "failswitch",
+        "-o",
+        "jsonpath={.spec.podTemplate.container.env}",
+      ])
+    ).trim();
+    if (raw && raw !== "null") {
+      existing = JSON.parse(raw) as EnvEntry[];
+    }
+  } catch {
+    // best effort read of current env list
+  }
+
+  const idx = existing.findIndex((entry) => entry.name === "HTTPBIN");
+  if (idx >= 0) {
+    existing[idx] = { name: "HTTPBIN", value };
+  } else {
+    existing.push({ name: "HTTPBIN", value });
+  }
+
+  const patch = JSON.stringify({
+    spec: { podTemplate: { container: { env: existing } } },
+  });
+  console.log("patching HTTPBIN in sonataflow resource to", value);
   const args = [
     "-n",
     ns,
@@ -166,28 +197,23 @@ async function patchHttpbin(ns: string, value: string): Promise<void> {
 
 async function restartAndWait(ns: string): Promise<void> {
   console.log("restarting deployment failswitch");
-  const restartArgs = [
+  await LogUtils.executeCommand("oc", [
     "-n",
     ns,
     "rollout",
     "restart",
     "deployment",
     "failswitch",
-  ];
-  await LogUtils.executeCommand("oc", restartArgs);
-
-  console.log("waiting for pods to be ready");
-  const waitArgs = [
+  ]);
+  await LogUtils.executeCommand("oc", [
     "-n",
     ns,
-    "wait",
-    "--for=condition=ready",
-    "pod",
-    "-l",
-    "app.kubernetes.io/name=failswitch",
-    "--timeout=5s",
-  ];
-  await LogUtils.executeCommandWithRetries("oc", waitArgs, 5);
+    "rollout",
+    "status",
+    "deployment",
+    "failswitch",
+    "--timeout=60s",
+  ]);
 }
 
 async function cleanupAfterTest(

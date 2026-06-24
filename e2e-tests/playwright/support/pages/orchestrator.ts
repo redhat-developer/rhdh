@@ -310,8 +310,7 @@ export class Orchestrator {
         this.page.getByTestId("info-card-subheader").getByRole("img"),
       ).toBeVisible();
       // Verify workflow is running message is visible with timestamp
-      // Note: Following line is blocked in main branch due to bug RHDHBUGS-2220. TODO: Uncomment this once the bug is fixed.
-      // await expect(this.page.getByText(/workflow is running\.?\s*Started at\s+\d{1,2}\/\d{1,2}\/\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+(AM|PM)/i)).toBeVisible();
+      await expect(this.page.getByText(/workflow is running\.?\s*Started at\s+\d{1,2}\/\d{1,2}\/\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+(AM|PM)/i)).toBeVisible();
     }
     if (status === "Failed") {
       await expect(
@@ -327,18 +326,35 @@ export class Orchestrator {
       ).toBeVisible();
     }
     if (status === "Completed") {
-      await expect(
-        this.page
-          .locator("b")
-          .filter({ hasText: "Completed" })
-          .getByTestId("CheckCircleOutlinedIcon"),
-      ).toBeVisible();
-      await expect(
-        this.page.getByText(
-          /Run completed at\s+\d{1,2}\/\d{1,2}\/\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+(AM|PM)/,
-        ),
-      ).toBeVisible();
-      await expect(this.page.getByTestId("SuccessOutlinedIcon")).toBeVisible();
+      const completedStatusIcon = this.page
+        .locator("b")
+        .filter({ hasText: "Completed" })
+        .getByTestId("CheckCircleOutlinedIcon");
+      const completionTimestamp = this.page.getByText(
+        /Run completed at\s+\d{1,2}\/\d{1,2}\/\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+(AM|PM)/,
+      );
+      const summarySuccessIcon = this.page.getByTestId("SuccessOutlinedIcon");
+
+      await expect
+        .poll(
+          async () => {
+            const completedVisible = await completedStatusIcon
+              .isVisible()
+              .catch(() => false);
+            const timestampVisible = await completionTimestamp
+              .isVisible()
+              .catch(() => false);
+            const successVisible = await summarySuccessIcon
+              .isVisible()
+              .catch(() => false);
+            return completedVisible && timestampVisible && successVisible;
+          },
+          {
+            timeout: 30_000,
+            message: "Completed status details did not stabilize",
+          },
+        )
+        .toBeTruthy();
     }
   }
 
