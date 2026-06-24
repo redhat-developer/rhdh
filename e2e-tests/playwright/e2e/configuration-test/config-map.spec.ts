@@ -28,16 +28,24 @@ test.describe("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000);
 
-    const configMapName = "app-config-rhdh";
-
-    const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
+    const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
     const deploymentName = getRhdhDeploymentName();
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
     try {
-      console.log(`Updating ConfigMap '${configMapName}' with new title.`);
-      await kubeUtils.updateConfigMapTitle(configMapName, namespace, dynamicTitle);
+      console.log("Updating app-config ConfigMap with new title.");
+      await kubeUtils.patchAppConfig(namespace, (appConfig) => {
+        if (!appConfig.app) {
+          throw new Error(
+            "Invalid app-config structure: expected 'app' section not found.",
+          );
+        }
+        const app = appConfig.app as Record<string, unknown>;
+        console.log(`Current title: ${app.title}`);
+        app.title = dynamicTitle;
+        console.log(`New title: ${dynamicTitle}`);
+      });
 
       console.log(`Restarting deployment '${deploymentName}' to apply ConfigMap changes.`);
       await kubeUtils.restartDeployment(deploymentName, namespace);
