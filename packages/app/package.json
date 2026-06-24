@@ -34,7 +34,7 @@
     "@backstage/plugin-catalog-react": "2.1.1",
     "@backstage/plugin-org": "0.7.0",
     "@backstage/plugin-permission-react": "0.4.41",
-    "@backstage/plugin-scaffolder": "1.36.1",
+    "@backstage/plugin-scaffolder": "patch:@backstage/plugin-scaffolder@npm%3A1.36.1#~/.yarn/patches/@backstage-plugin-scaffolder-npm-1.36.1.patch",
     "@backstage/plugin-scaffolder-react": "1.20.0",
     "@backstage/plugin-search": "1.7.0",
     "@backstage/plugin-search-react": "1.11.0",

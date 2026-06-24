@@ -1,0 +1,24 @@
+diff --git a/dist/components/fields/RepoBranchPicker/RepoBranchPicker.esm.js b/dist/components/fields/RepoBranchPicker/RepoBranchPicker.esm.js
+--- a/dist/components/fields/RepoBranchPicker/RepoBranchPicker.esm.js
++++ b/dist/components/fields/RepoBranchPicker/RepoBranchPicker.esm.js
+@@ -78,6 +78,8 @@
+   const renderRepoBranchPicker = () => {
+     switch (hostType) {
+       case "bitbucket":
++      case "bitbucketCloud":
++      case "bitbucketServer":
+         return /* @__PURE__ */ jsx(
+           BitbucketRepoBranchPicker,
+           {
+diff --git a/dist/components/fields/RepoUrlPicker/RepoUrlPicker.esm.js b/dist/components/fields/RepoUrlPicker/RepoUrlPicker.esm.js
+--- a/dist/components/fields/RepoUrlPicker/RepoUrlPicker.esm.js
++++ b/dist/components/fields/RepoUrlPicker/RepoUrlPicker.esm.js
+@@ -166,7 +166,7 @@
+         accessToken: uiSchema?.["ui:options"]?.requestUserCredentials?.secretsKey && secrets[uiSchema["ui:options"].requestUserCredentials.secretsKey]
+       }
+     ),
+-    hostType === "bitbucket" && /* @__PURE__ */ jsx(
++    (hostType === "bitbucket" || hostType === "bitbucketCloud" || hostType === "bitbucketServer") && /* @__PURE__ */ jsx(
+       BitbucketRepoPicker,
+       {
+         allowedOwners,
