@@ -11,7 +11,6 @@
  * app-config, dynamic-plugins ConfigMaps, and the Backstage CR.
  *
  * Environment variables consumed:
- *   K8S_CLUSTER_URL, K8S_CLUSTER_TOKEN  — cluster access
  *   RELEASE_NAME          — Helm release / CR name (default: "rhdh")
  *   NAME_SPACE_RUNTIME    — target namespace (default: "showcase-runtime")
  *   INSTALL_METHOD         — "helm" or "operator" (default: from JOB_NAME)
@@ -425,7 +424,7 @@ export async function ensureRuntimeDeployed(): Promise<void> {
       `  namespace:    ${namespace}\n` +
       `  releaseName:  ${releaseName}\n` +
       `  routerBase:   ${routerBase}\n` +
-      `  image:        ${config.image.registry}/${config.image.repository}:${config.image.tag}\n` +
+      `  image:        ${imageRefToString(config.image)}\n` +
       (config.catalogIndex
         ? `  catalogIndex: ${imageRefToString(config.catalogIndex)}\n`
         : `  catalogIndex: (chart/operator default)\n`),
