@@ -51,4 +51,22 @@ export class SidebarPage {
   async verifyLinkHidden(name: string): Promise<void> {
     await expect(this.page.getByRole("link", { name })).toBeHidden();
   }
+
+  async verifyMenuItemInSection(
+    section: string,
+    itemText: string,
+  ): Promise<void> {
+    const sectionMenu = this.getSideBarMenuItem(section);
+    await expect(sectionMenu.getByText(itemText)).toBeVisible();
+  }
+
+  async verifyLearningPathLinksOpenInNewTab(): Promise<void> {
+    const learningPathLinks = this.page.getByRole("main").getByRole("link");
+
+    for (const learningPathLink of await learningPathLinks.all()) {
+      await expect(learningPathLink).toBeVisible();
+      await expect(learningPathLink).toHaveAttribute("target", "_blank");
+      await expect(learningPathLink).not.toHaveAttribute("href", "");
+    }
+  }
 }

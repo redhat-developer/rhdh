@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 import { Common } from "../../../utils/common";
 import { getTranslations, getCurrentLanguage } from "../../localization/locale";
 import { SidebarPage } from "../../../support/pages/sidebar-page";
@@ -26,20 +26,18 @@ test.describe(
     });
 
     test("Verify menu order and navigate to Docs", async () => {
-      const referencesMenu = sidebarPage.getSideBarMenuItem("References");
-      expect(referencesMenu).not.toBeNull();
-      expect(
-        referencesMenu.getByText(t["rhdh"][lang]["menuItem.apis"]),
-      ).not.toBeNull();
-      expect(
-        referencesMenu.getByText(t["rhdh"][lang]["menuItem.learningPaths"]),
-      ).not.toBeNull();
-
-      const favoritesMenu = sidebarPage.getSideBarMenuItem("Favorites");
-      const docsMenuItem = favoritesMenu.getByText(
+      await sidebarPage.verifyMenuItemInSection(
+        "References",
+        t["rhdh"][lang]["menuItem.apis"],
+      );
+      await sidebarPage.verifyMenuItemInSection(
+        "References",
+        t["rhdh"][lang]["menuItem.learningPaths"],
+      );
+      await sidebarPage.verifyMenuItemInSection(
+        "Favorites",
         t["rhdh"][lang]["menuItem.docs"],
       );
-      expect(docsMenuItem).not.toBeNull();
 
       await sidebarPage.openSidebarButton("Favorites");
       await sidebarPage.openSidebar(t["rhdh"][lang]["menuItem.docs"]);

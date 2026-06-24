@@ -12,6 +12,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { test, expect } from "@support/coverage/test";
 
 import { Common } from "../../utils/common";
+import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
 import { KubeClient } from "../../utils/kube-client";
 import { setPortForwardRestarter } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
@@ -177,7 +178,8 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     const common = new Common(page);
     await common.loginAsGuest();
 
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    const rhdhHomePage = new RhdhHomePage(page);
+    await rhdhHomePage.verifyMainHeadingVisible();
 
     console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
   });

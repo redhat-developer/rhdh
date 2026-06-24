@@ -1,6 +1,7 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 import { Common } from "../../utils/common";
 import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
+import { SettingsPage } from "../../support/pages/settings-page";
 
 test.describe(
   "Test user settings info card",
@@ -14,36 +15,29 @@ test.describe(
     });
 
     let rhdhHomePage: RhdhHomePage;
+    let settingsPage: SettingsPage;
 
     test.beforeEach(async ({ page }) => {
       const common = new Common(page);
       await common.loginAsGuest();
 
       rhdhHomePage = new RhdhHomePage(page);
+      settingsPage = new SettingsPage(page);
     });
 
-    test("Check if customized build info is rendered", async ({ page }) => {
+    test("Check if customized build info is rendered", async () => {
       await rhdhHomePage.openHomeSidebar();
-      await page.getByText("Guest").click();
-      await page.getByRole("menuitem", { name: "Settings" }).click();
+      await settingsPage.openFromProfile("Guest");
 
-      // Verify card header is visible
-      await expect(page.getByText("RHDH Build info")).toBeVisible();
+      await settingsPage.verifyBuildInfoCardVisible();
+      await settingsPage.verifyBuildInfoText("TechDocs builder: local");
+      await settingsPage.verifyBuildInfoText("Authentication provider: Github");
 
-      // Verify initial card content using text content
-      await expect(page.getByText("TechDocs builder: local")).toBeVisible();
-      await expect(
-        page.getByText("Authentication provider: Github"),
-      ).toBeVisible();
+      await settingsPage.expandShowMoreSection();
 
-      await page.getByTitle("Show more").click();
-
-      // Verify expanded card content shows RBAC status
-      await expect(page.getByText("TechDocs builder: local")).toBeVisible();
-      await expect(
-        page.getByText("Authentication provider: Github"),
-      ).toBeVisible();
-      await expect(page.getByText("RBAC: disabled")).toBeVisible();
+      await settingsPage.verifyBuildInfoText("TechDocs builder: local");
+      await settingsPage.verifyBuildInfoText("Authentication provider: Github");
+      await settingsPage.verifyBuildInfoText("RBAC: disabled");
     });
   },
 );
