@@ -1,11 +1,13 @@
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 
 /** RHDH instance home page interactions. */
 export class RhdhHomePage {
+  private readonly page: Page;
   private readonly ui: UIhelper;
 
   constructor(page: Page) {
+    this.page = page;
     this.ui = new UIhelper(page);
   }
 
@@ -35,5 +37,9 @@ export class RhdhHomePage {
 
   async clickButton(label: string): Promise<void> {
     await this.ui.clickButton(label);
+  }
+
+  async verifyMainHeadingVisible(): Promise<void> {
+    await expect(this.page.getByRole("heading", { level: 1 })).toBeVisible();
   }
 }

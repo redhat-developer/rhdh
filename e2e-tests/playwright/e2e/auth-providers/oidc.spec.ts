@@ -99,7 +99,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
 
     await settingsPage.hideQuickstartIfVisible();
 
-    await settingsPage.verifyRhdhMetadata(page);
+    await settingsPage.verifyRhdhMetadata();
 
     await common.signOut();
   });
@@ -317,12 +317,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
     await settingsPage.goToPageUrl("/", "Select a sign-in method");
-    // Scope to the main content area to get only sign-in method card headers
-    const signInMethodsContainer = page.getByRole("main");
-    const singInMethods = await signInMethodsContainer
-      .getByRole("heading", { level: 6 })
-      .allInnerTexts();
-    expect(singInMethods).not.toContain("Guest");
+    await settingsPage.verifyGuestSignInMethodNotListed();
   });
 
   test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
@@ -396,9 +391,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
       false,
       60000,
     );
-    await expect(page.getByText("Logging out due to inactivity")).toBeHidden({
-      timeout: 30000,
-    });
+    await settingsPage.verifyInactivityLogoutMessageHidden();
 
     await page.reload();
 

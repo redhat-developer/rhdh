@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 import { Common } from "../utils/common";
 import { SettingsPage } from "../support/pages/settings-page";
 import { getTranslations, getCurrentLanguage } from "./localization/locale";
@@ -21,49 +21,31 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
   });
 
   // Run tests only for the selected language
-  test(`Verify settings page`, async ({ page }) => {
+  test(`Verify settings page`, async () => {
     await settingsPage.hideQuickstartIfVisible();
-    await expect(page.getByRole("list").first()).toMatchAriaSnapshot(`
-    - listitem:
-      - text: ${t["user-settings"][lang]["languageToggle.title"]}
-      - paragraph: ${t["user-settings"][lang]["languageToggle.description"]}
-    `);
-
-    await expect(page.getByTestId("select")).toContainText(
-      /English|Deutsch|Español|Français|Italiano|日本語/u,
-    );
-    await page
-      .getByTestId("select")
-      .getByRole("button", {
-        name: /English|Deutsch|Español|Français|Italiano|日本語/u,
-      })
-      .click();
-    await expect(page.getByRole("listbox")).toMatchAriaSnapshot(`
-    - listbox:
-      - option "English"
-      - option "Deutsch"
-      - option "Español"
-      - option "Français"
-      - option "Italiano"
-      - option "日本語"
-    `);
-    await page.getByRole("option", { name: "Français" }).click();
-    await expect(page.getByTestId("select")).toContainText("Français");
+    await settingsPage.verifyLanguageToggleList(lang);
+    await settingsPage.verifyLanguageSelectShowsOptions();
+    await settingsPage.openLanguageSelect();
+    await settingsPage.verifyLanguageOptionsList();
+    await settingsPage.selectLanguage("Français");
+    await settingsPage.verifySelectedLanguage("Français");
 
     await settingsPage.verifyLocalizedUserSettingsLabelsWithOwnership(
       "fr",
       "Guest User, team-a",
     );
-    await page.getByTestId("user-settings-menu").click();
-    await expect(page.getByTestId("sign-out")).toContainText(
+    await settingsPage.openUserSettingsMenu();
+    await settingsPage.verifySignOutMenuLabel(
       t["user-settings"]["fr"]["signOutMenu.title"],
     );
-    await page.keyboard.press(`Escape`);
+    await settingsPage.closeUserSettingsMenu();
 
     await settingsPage.uncheckCheckbox(
       t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"],
     );
-    await expect(page.getByText(t["rhdh"]["fr"]["menuItem.apis"])).toBeHidden();
+    await settingsPage.verifySidebarMenuItemHidden(
+      t["rhdh"]["fr"]["menuItem.apis"],
+    );
     await settingsPage.checkCheckbox(
       t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"],
     );
