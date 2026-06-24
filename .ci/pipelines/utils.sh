@@ -500,11 +500,19 @@ waitfor_crunchy_postgres_k8s_operator() {
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
 # Use waitfor_serverless_logic_ocp_operator to wait for the operator to be ready
 install_serverless_logic_ocp_operator() {
+  log::info "Installing Serverless Logic Operator from channel stable with startingCSV logic-operator.v1.37.2"
   install_subscription logic-operator openshift-operators stable logic-operator redhat-operators openshift-marketplace logic-operator.v1.37.2
 }
 
 waitfor_serverless_logic_ocp_operator() {
   check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
+  local osl_csv_info
+  osl_csv_info=$(oc get csv -n openshift-operators -l operators.coreos.com/logic-operator.openshift-operators -o jsonpath='{.items[0].metadata.name} {.items[0].spec.version}' 2> /dev/null || true)
+  if [[ -n "${osl_csv_info}" ]]; then
+    log::info "Installed OSL CSV/version: ${osl_csv_info}"
+  else
+    log::warn "Unable to determine installed OSL CSV/version from openshift-operators namespace"
+  fi
 }
 
 # Installs the OpenShift Serverless Operator (Knative) from OpenShift Marketplace
@@ -1557,8 +1565,10 @@ deploy_orchestrator_workflows() {
 
   rm -rf "${workflow_dir}"
   git clone "${workflow_repo}" "${workflow_dir}"
+  log::info "Using serverless-workflows ref: ${workflow_repo_ref}"
   git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}"
   git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}"
+  log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
 
   if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
     local pqsl_secret_name="postgres-cred"
@@ -1643,8 +1653,10 @@ deploy_orchestrator_workflows_operator() {
 
   rm -rf "${workflow_dir}"
   git clone --depth=1 "${workflow_repo}" "${workflow_dir}"
+  log::info "Using serverless-workflows ref: ${workflow_repo_ref}"
   git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}"
   git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}"
+  log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
 
   # Wait for backstage and sonata flow pods to be ready before continuing
   wait_for_deployment $namespace backstage-psql 15
