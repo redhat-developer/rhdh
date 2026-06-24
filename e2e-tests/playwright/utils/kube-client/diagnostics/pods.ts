@@ -5,7 +5,7 @@ import {
   formatContainerStartedAt,
   getKubeApiErrorMessage,
   podNameOrUnknown,
-} from "./kube-client-helpers";
+} from "../helpers";
 
 function logWaitingContainerStatus(
   containerName: string,

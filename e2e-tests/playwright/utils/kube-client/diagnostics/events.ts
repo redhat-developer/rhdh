@@ -6,7 +6,7 @@ import {
   getEventSortTimestamp,
   getKubeApiErrorMessage,
   podNameOrUnknown,
-} from "./kube-client-helpers";
+} from "../helpers";
 
 const BACKSTAGE_POD_NAME_FRAGMENT = "backstage-developer-hub";
 

@@ -1,14 +1,9 @@
 import { type GroupEntity, type UserEntity } from "@backstage/catalog-model";
 import { request, type APIResponse, expect } from "@playwright/test";
 
-import * as catalogApi from "./api-helper-catalog";
-import * as githubApi from "./api-helper-github";
-import {
-  isGuestTokenResponse,
-  isGroupEntity,
-  isUserEntity,
-  parseJsonResponse,
-} from "./api-helper-guards";
+import * as catalogApi from "./catalog";
+import * as githubApi from "./github";
+import { isGuestTokenResponse, isGroupEntity, isUserEntity, parseJsonResponse } from "./guards";
 
 export class APIHelper {
   private staticToken = "";

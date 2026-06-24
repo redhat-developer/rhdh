@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
-import { RHDHDeploymentState } from "./rhdh-deployment-types";
+import { RHDHDeploymentState } from "./types";
 
 export interface AuthConfigActions {
   setDynamicPluginEnabled(pluginName: string, enabled: boolean): void;

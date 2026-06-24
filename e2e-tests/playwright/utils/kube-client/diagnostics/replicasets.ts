@@ -1,6 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getKubeApiErrorMessage, podNameOrUnknown } from "./kube-client-helpers";
+import { getKubeApiErrorMessage, podNameOrUnknown } from "../helpers";
 
 function sortReplicaSetsByCreation(replicaSets: k8s.V1ReplicaSet[]): k8s.V1ReplicaSet[] {
   // oxlint-disable-next-line unicorn/no-array-sort -- es2022 lib has no Array#toSorted

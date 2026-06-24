@@ -2,8 +2,8 @@ import stream from "stream";
 
 import * as k8s from "@kubernetes/client-node";
 
-import { getErrorMessage, hasErrorResponse } from "../errors";
-import { RHDHDeploymentState, sleep, syncedLogRegex } from "./rhdh-deployment-types";
+import { getErrorMessage, hasErrorResponse } from "../../errors";
+import { RHDHDeploymentState, sleep, syncedLogRegex } from "./types";
 
 async function resolvePodName(
   state: RHDHDeploymentState,

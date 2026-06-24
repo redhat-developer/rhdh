@@ -2,7 +2,7 @@ import * as stream from "stream";
 
 import * as k8s from "@kubernetes/client-node";
 
-import { getKubeApiErrorMessage } from "./kube-client-helpers";
+import { getKubeApiErrorMessage } from "./helpers";
 
 function createOutputCaptureStreams(): {
   capture: { stdout: string; stderr: string };

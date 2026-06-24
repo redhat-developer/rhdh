@@ -1,5 +1,5 @@
-import { semanticSelectorsAccessibility } from "./semantic-selectors-accessibility";
-import { semanticSelectorsStructure } from "./semantic-selectors-structure";
+import { semanticSelectorsAccessibility } from "./accessibility";
+import { semanticSelectorsStructure } from "./structure";
 
 /**
  * Semantic Selectors - Playwright Best Practices
@@ -21,5 +21,5 @@ export const SemanticSelectors = {
   ...semanticSelectorsStructure,
 };
 
-export { findTableCell, findTableCellByColumn } from "./semantic-selectors-table-helpers";
+export { findTableCell, findTableCellByColumn } from "./table-helpers";
 export { WaitStrategies } from "./wait-strategies";

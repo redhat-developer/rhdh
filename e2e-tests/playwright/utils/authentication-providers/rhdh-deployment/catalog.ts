@@ -1,13 +1,13 @@
 import { GroupEntity } from "@backstage/catalog-model";
 
-import { APIHelper } from "../api-helper";
+import { APIHelper } from "../../api-helper";
 import {
   getCatalogGroups,
   getCatalogUsers,
   isGroupEntity,
   isUserEntity,
   RHDHDeploymentState,
-} from "./rhdh-deployment-types";
+} from "./types";
 
 export function parseGroupMemberFromEntity(group: GroupEntity): string[] {
   if (group.relations === undefined) {

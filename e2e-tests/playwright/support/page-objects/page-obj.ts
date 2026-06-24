@@ -2,7 +2,7 @@
 import { Page, Locator } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { SemanticSelectors } from "../selectors/semantic-selectors";
+import { SemanticSelectors } from "../selectors/semantic";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();

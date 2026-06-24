@@ -17,7 +17,7 @@ import {
   setGitlabResolver as setGitlabResolverImpl,
   setMicrosoftResolver as setMicrosoftResolverImpl,
   setOIDCResolver as setOIDCResolverImpl,
-} from "./rhdh-deployment-auth";
+} from "./auth";
 import {
   checkGroupIsChildOfGroup,
   checkGroupIsIngestedInCatalog,
@@ -28,7 +28,7 @@ import {
   parseGroupChildrenFromEntity,
   parseGroupMemberFromEntity,
   parseGroupParentFromEntity,
-} from "./rhdh-deployment-catalog";
+} from "./catalog";
 import {
   applyCustomResource,
   computeBackstageBackendUrl as computeBackstageBackendUrlImpl,
@@ -51,13 +51,13 @@ import {
   updateDynamicPluginsConfig as updateDynamicPluginsConfigImpl,
   updateRbacConfig as updateRbacConfigImpl,
   updateSecret as updateSecretImpl,
-} from "./rhdh-deployment-k8s";
+} from "./k8s";
 import {
   followLocalLogs as followLocalLogsImpl,
   followLogs as followLogsImpl,
   followPodLogs as followPodLogsImpl,
   waitForSynced as waitForSyncedImpl,
-} from "./rhdh-deployment-logs";
+} from "./logs";
 import {
   BackstageCr,
   DynamicPluginsConfig,
@@ -66,14 +66,14 @@ import {
   RHDHDeploymentState,
   shouldUseKubernetesClient,
   YamlConfig,
-} from "./rhdh-deployment-types";
+} from "./types";
 import {
   deleteNamespaceIfExists as deleteNamespaceIfExistsImpl,
   getDeploymentGeneration as getDeploymentGenerationImpl,
   waitForConfigReconciled as waitForConfigReconciledImpl,
   waitForDeploymentReady as waitForDeploymentReadyImpl,
   waitForNamespaceActive as waitForNamespaceActiveImpl,
-} from "./rhdh-deployment-wait";
+} from "./wait";
 
 class RHDHDeployment implements RHDHDeploymentState {
   instanceName = "";

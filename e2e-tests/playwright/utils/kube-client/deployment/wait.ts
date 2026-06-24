@@ -1,6 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getKubeApiErrorMessage, PodFailureResult, sleep } from "./kube-client-helpers";
+import { getKubeApiErrorMessage, PodFailureResult, sleep } from "../helpers";
 
 export interface DeploymentDiagnostics {
   logDeploymentEvents: (deploymentName: string, namespace: string) => Promise<void>;

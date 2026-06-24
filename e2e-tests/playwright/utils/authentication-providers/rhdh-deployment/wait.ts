@@ -1,7 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getErrorMessage, hasErrorResponse } from "../errors";
-import { BackstageCr, RHDHDeploymentState, sleep } from "./rhdh-deployment-types";
+import { getErrorMessage, hasErrorResponse } from "../../errors";
+import { BackstageCr, RHDHDeploymentState, sleep } from "./types";
 
 const BACKSTAGE_LABELS = {
   "app.kubernetes.io/name": "backstage",

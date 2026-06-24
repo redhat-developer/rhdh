@@ -1,6 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getKubeApiErrorMessage, PodFailureResult, podNameOrUnknown } from "./kube-client-helpers";
+import { getKubeApiErrorMessage, PodFailureResult, podNameOrUnknown } from "./helpers";
 
 const POD_READY_ERROR_REASONS = [
   "Unhealthy",

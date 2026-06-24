@@ -6,7 +6,7 @@ import {
   isGitHubPullRequestFile,
   parseJsonResponse,
   toUnknownArray,
-} from "./api-helper-guards";
+} from "./guards";
 
 type FetchOptions = {
   method: string;

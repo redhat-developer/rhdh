@@ -2,7 +2,7 @@ import * as k8s from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
 
 import { hasErrorResponse } from "./errors";
-import { APP_CONFIG_NAMES, getKubeApiErrorMessage, isRecord } from "./kube-client-helpers";
+import { APP_CONFIG_NAMES, getKubeApiErrorMessage, isRecord } from "./helpers";
 
 function hasAppConfigDataKey(data: Record<string, string>): boolean {
   return Object.keys(data).some((key) => key.includes("app-config") && key.endsWith(".yaml"));

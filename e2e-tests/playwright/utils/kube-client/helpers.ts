@@ -1,6 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getErrorMessage, hasErrorResponse, hasStatusCode } from "./errors";
+import { getErrorMessage, hasErrorResponse, hasStatusCode } from "../errors";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

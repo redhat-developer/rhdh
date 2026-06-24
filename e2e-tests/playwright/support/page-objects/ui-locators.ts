@@ -1,7 +1,7 @@
 /* oxlint-disable playwright/no-raw-locators -- legacy card/table region selectors pending SemanticSelectors migration */
 import { Locator, Page } from "@playwright/test";
 
-import { SemanticSelectors } from "../selectors/semantic-selectors";
+import { SemanticSelectors } from "../selectors/semantic";
 
 export function getCardByHeading(page: Page, heading: string | RegExp): Locator {
   return page

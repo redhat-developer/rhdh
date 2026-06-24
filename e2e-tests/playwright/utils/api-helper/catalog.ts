@@ -5,7 +5,7 @@ import {
   isCatalogLocationEntry,
   isEntityMetadataResponse,
   parseJsonResponse,
-} from "./api-helper-guards";
+} from "./guards";
 
 export async function getEntityUidByName(name: string): Promise<string | undefined> {
   const baseUrl = process.env.BASE_URL;

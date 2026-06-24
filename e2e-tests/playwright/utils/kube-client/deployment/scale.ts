@@ -1,6 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getErrorStatusCode, getKubeApiErrorMessage, sleep } from "./kube-client-helpers";
+import { getErrorStatusCode, getKubeApiErrorMessage, sleep } from "../helpers";
 
 export async function getDeploymentPodSelectorImpl(
   appsApi: k8s.AppsV1Api,
