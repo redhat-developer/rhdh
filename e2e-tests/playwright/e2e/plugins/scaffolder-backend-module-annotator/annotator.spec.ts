@@ -53,15 +53,11 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.verifyText("Name");
 
-    await expect(
-      runAccessibilityTests(page, testInfo),
-    ).resolves.toBeUndefined();
+    await runAccessibilityTests(page, testInfo);
 
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Import an existing Git repository");
-    await expect(
-      catalogImport.registerExistingComponent(template, false),
-    ).resolves.toBeUndefined();
+    await catalogImport.registerExistingComponent(template, false);
   });
 
   test("Scaffold a component using the annotator template", async () => {

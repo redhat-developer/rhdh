@@ -30,17 +30,15 @@ test.describe("Test ApplicationProvider", () => {
     // Verify Context one cards are visible
     await uiHelper.verifyTextinCard("Context one", "Context one");
 
-    // Find all card containers within main article that contain "Context one"
+    // Find card containers within main article that contain "Context one"
     const contextOneCards = page
+      .getByRole("main")
       .getByRole("article")
+      .locator("> div > div")
       .filter({ hasText: "Context one" });
 
     // Click increment on the first Context one card
-    await contextOneCards
-      .first()
-      .getByRole("button", { name: "+" })
-      .first()
-      .click();
+    await contextOneCards.first().getByRole("button", { name: "+" }).click();
 
     // Verify both Context one cards show count of 1 (shared state)
     await expect(
@@ -53,17 +51,15 @@ test.describe("Test ApplicationProvider", () => {
     // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
 
-    // Find all card containers that contain "Context two"
+    // Find card containers that contain "Context two"
     const contextTwoCards = page
+      .getByRole("main")
       .getByRole("article")
+      .locator("> div > div")
       .filter({ hasText: "Context two" });
 
     // Click increment on the first Context two card
-    await contextTwoCards
-      .first()
-      .getByRole("button", { name: "+" })
-      .first()
-      .click();
+    await contextTwoCards.first().getByRole("button", { name: "+" }).click();
 
     // Verify both Context two cards show count of 1 (shared state)
     await expect(
