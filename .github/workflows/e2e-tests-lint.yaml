@@ -41,6 +41,10 @@ jobs:
         working-directory: ./e2e-tests
         run: yarn test:list
 
+      - name: Run unit tests
+        working-directory: ./e2e-tests
+        run: yarn test:unit
+
       - name: Run ShellCheck
         working-directory: ./e2e-tests
         run: yarn shellcheck

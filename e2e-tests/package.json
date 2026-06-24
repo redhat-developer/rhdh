@@ -24,6 +24,7 @@
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "test:list": "playwright test --list",
+    "test:unit": "vitest run",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "postinstall": "playwright install chromium",
@@ -60,7 +61,8 @@
     "oxlint": "1.71.0",
     "oxlint-tsgolint": "0.23.0",
     "shellcheck": "4.1.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "^4.1.9"
   },
   "engines": {
     "node": "24"
