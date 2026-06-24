@@ -5,7 +5,7 @@ import {
   pollUntilStable,
   sleep,
   waitForNextTotpWindow,
-} from "./poll-until";
+} from "../playwright/utils/poll-until";
 
 describe("sleep", () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe("sleep", () => {
   it("resolves after the requested delay", async () => {
     const promise = sleep(250);
     await vi.advanceTimersByTimeAsync(250);
-    await promise;
+    await expect(promise).resolves.toBeUndefined();
   });
 });
 
@@ -124,7 +124,7 @@ describe("pollUntilStable", () => {
     const promise = pollUntilStable(
       () => {
         calls += 1;
-        return Promise.resolve(results[index++] ?? false);
+        return Promise.resolve(results[index++]);
       },
       { timeoutMs: 5000, intervalMs: 500, stableChecks: 2 },
     );
@@ -163,11 +163,12 @@ describe("pollForValue", () => {
   });
 
   it("returns the first non-null value", async () => {
+    const responses: Array<string | null> = [null, "ready"];
     let calls = 0;
     const promise = pollForValue(
       () => {
         calls += 1;
-        return Promise.resolve(calls >= 2 ? "ready" : null);
+        return Promise.resolve(responses[calls - 1] ?? null);
       },
       { timeoutMs: 5000, intervalMs: 500 },
     );
@@ -180,18 +181,12 @@ describe("pollForValue", () => {
   });
 
   it("keeps polling while the function returns null or undefined", async () => {
+    const responses: Array<number | null | undefined> = [null, undefined, 42];
     let calls = 0;
     const promise = pollForValue(
-      (): Promise<number | null | undefined> => {
+      () => {
         calls += 1;
-        if (calls === 1) {
-          return Promise.resolve(null);
-        }
-        if (calls === 2) {
-          const unset: undefined = undefined;
-          return Promise.resolve(unset);
-        }
-        return Promise.resolve(42);
+        return Promise.resolve(responses[calls - 1] ?? null);
       },
       { timeoutMs: 5000, intervalMs: 500 },
     );
@@ -232,7 +227,7 @@ describe("waitForNextTotpWindow", () => {
 
     const promise = waitForNextTotpWindow(1000);
     await vi.advanceTimersByTimeAsync(1000);
-    await promise;
+    await expect(promise).resolves.toBeUndefined();
   });
 
   it("waits until the next window plus buffer mid-window", async () => {
@@ -240,7 +235,7 @@ describe("waitForNextTotpWindow", () => {
 
     const promise = waitForNextTotpWindow(1000);
     await vi.advanceTimersByTimeAsync(16_000);
-    await promise;
+    await expect(promise).resolves.toBeUndefined();
   });
 
   it("uses a custom buffer", async () => {
@@ -248,6 +243,6 @@ describe("waitForNextTotpWindow", () => {
 
     const promise = waitForNextTotpWindow(250);
     await vi.advanceTimersByTimeAsync(250);
-    await promise;
+    await expect(promise).resolves.toBeUndefined();
   });
 });

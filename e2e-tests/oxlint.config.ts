@@ -1,7 +1,16 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "node", "promise"],
+  plugins: [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "node",
+    "promise",
+    "vitest",
+  ],
   categories: {
     correctness: "error",
     suspicious: "error",
@@ -44,23 +53,6 @@ export default defineConfig({
         "**": "KEBAB_CASE",
       },
     ],
-    "playwright/no-wait-for-timeout": "error",
-    "playwright/no-force-option": "error",
-    "playwright/expect-expect": "error",
-    "playwright/valid-expect": "error",
-    "playwright/prefer-native-locators": "error",
-    "playwright/no-raw-locators": [
-      "error",
-      {
-        allowed: [],
-      },
-    ],
-    "playwright/no-skipped-test": [
-      "error",
-      {
-        allowConditional: true,
-      },
-    ],
   },
   overrides: [
     {
@@ -74,8 +66,8 @@ export default defineConfig({
       },
     },
     {
-      // Spec files orchestrate multi-step E2E flows; length limits target production
-      // code readability, not test scenarios that must stay in one file for clarity.
+      // Spec and unit files orchestrate multi-step flows; length limits target
+      // production code readability, not test scenarios.
       files: ["**/*.spec.ts", "**/*.test.ts"],
       rules: {
         "eslint/max-lines": "off",
@@ -102,21 +94,34 @@ export default defineConfig({
       // Facade modules aggregate many submodules by design (e.g. KubeClient re-exports,
       // rhdh-deployment orchestration, locale translation maps). A flat import count
       // does not reflect coupling when each import is a focused submodule.
-      files: ["playwright/utils/**/*.ts", "playwright/e2e/localization/**/*.ts"],
+      files: [
+        "playwright/utils/**/*.ts",
+        "playwright/e2e/localization/**/*.ts",
+      ],
       rules: {
         "import/max-dependencies": "off",
       },
     },
     {
-      // valid-title / valid-describe-callback: existing suite uses legacy naming
-      // patterns that do not match the plugin's strict conventions.
-      // no-wait-for-selector: replaced with expect() and locator.waitFor() per
-      // hardening guidelines; rule would flag intentional migration patterns.
-      // expect-expect + assertFunctionNames: POM verify* helpers and loginAsGuest
-      // perform assertions on behalf of the spec; register them so specs are not
-      // forced to duplicate expect() calls after every helper invocation.
-      files: ["**/*.spec.ts", "**/*.test.ts", "playwright/**/*.ts"],
+      // Playwright E2E specs only (*.spec.ts under playwright/e2e).
+      files: ["**/*.spec.ts"],
       rules: {
+        "playwright/no-wait-for-timeout": "error",
+        "playwright/no-force-option": "error",
+        "playwright/valid-expect": "error",
+        "playwright/prefer-native-locators": "error",
+        "playwright/no-raw-locators": [
+          "error",
+          {
+            allowed: [],
+          },
+        ],
+        "playwright/no-skipped-test": [
+          "error",
+          {
+            allowConditional: true,
+          },
+        ],
         // Playwright requires object destructuring for hook/test callbacks that take
         // testInfo as a second argument (e.g. async ({}, testInfo) =>). Oxlint's
         // no-empty-pattern rejects {}; disable it here so lint and runtime agree.
@@ -210,6 +215,27 @@ export default defineConfig({
             ],
           },
         ],
+      },
+    },
+    {
+      // Vitest plugin is enabled repo-wide but rules apply only to unit tests.
+      files: ["**/*.spec.ts"],
+      rules: {
+        "vitest/expect-expect": "off",
+        "vitest/valid-expect": "off",
+        "vitest/no-conditional-in-test": "off",
+        "vitest/no-conditional-tests": "off",
+      },
+    },
+    {
+      // Vitest unit tests (*.test.ts). E2E uses *.spec.ts + Playwright rules above.
+      files: ["**/*.test.ts"],
+      rules: {
+        "vitest/valid-expect": "off",
+        "vitest/expect-expect": "error",
+        "vitest/no-conditional-in-test": "off",
+        "vitest/no-conditional-tests": "off",
+        "eslint/no-empty-pattern": "off",
       },
     },
   ],

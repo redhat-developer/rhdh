@@ -36,7 +36,7 @@ const k8sSpecificConfig = {
 export default defineConfig({
   globalSetup: "./playwright/global-setup.ts",
   timeout: 90 * 1000,
-  testDir: "./playwright",
+  testDir: "./playwright/e2e",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: process.env.CI !== undefined && process.env.CI !== "",
   /* Retry on CI only */
