@@ -11,7 +11,9 @@
  */
 
 import { readFileSync, existsSync } from "fs";
+
 import { Client } from "pg";
+
 import { KubeClient } from "./kube-client";
 
 /**
@@ -27,9 +29,7 @@ function unescapeNewlines(value: string): string {
  * @param filePath - Path to the certificate file
  * @returns Certificate content with escaped newlines converted, or null if file doesn't exist
  */
-export function readCertificateFile(
-  filePath: string | undefined,
-): string | null {
+export function readCertificateFile(filePath: string | undefined): string | null {
   if (!filePath) {
     return null;
   }
@@ -78,18 +78,14 @@ export async function configurePostgresCredentials(
     POSTGRES_HOST: Buffer.from(credentials.host).toString("base64"),
     POSTGRES_PORT: Buffer.from(credentials.port || "5432").toString("base64"),
     PGSSLMODE: Buffer.from(credentials.sslMode || "require").toString("base64"),
-    NODE_EXTRA_CA_CERTS: Buffer.from(
-      "/opt/app-root/src/postgres-crt.pem",
-    ).toString("base64"),
+    NODE_EXTRA_CA_CERTS: Buffer.from("/opt/app-root/src/postgres-crt.pem").toString("base64"),
   };
 
   if (credentials.user) {
     data.POSTGRES_USER = Buffer.from(credentials.user).toString("base64");
   }
   if (credentials.password) {
-    data.POSTGRES_PASSWORD = Buffer.from(credentials.password).toString(
-      "base64",
-    );
+    data.POSTGRES_PASSWORD = Buffer.from(credentials.password).toString("base64");
   }
   if (credentials.database) {
     data.POSTGRES_DB = Buffer.from(credentials.database).toString("base64");
@@ -190,8 +186,7 @@ export async function clearDatabase(credentials: {
           success = true;
           break;
         } catch (error) {
-          const errorMsg =
-            error instanceof Error ? error.message : String(error);
+          const errorMsg = error instanceof Error ? error.message : String(error);
           const isRetryable =
             errorMsg.includes("being accessed by other users") ||
             errorMsg.includes("in use") ||
@@ -221,9 +216,7 @@ export async function clearDatabase(credentials: {
       }
     }
 
-    console.log(
-      `Database cleanup completed: ${succeeded.length} dropped, ${failed.length} failed`,
-    );
+    console.log(`Database cleanup completed: ${succeeded.length} dropped, ${failed.length} failed`);
     if (succeeded.length > 0) {
       console.log(`Successfully dropped: ${succeeded.join(", ")}`);
     }
@@ -231,10 +224,7 @@ export async function clearDatabase(credentials: {
       console.log(`Failed to drop: ${failed.join(", ")}`);
     }
   } catch (error) {
-    console.error(
-      "Failed to connect to database or retrieve database list:",
-      error,
-    );
+    console.error("Failed to connect to database or retrieve database list:", error);
     throw error;
   } finally {
     await client.end();

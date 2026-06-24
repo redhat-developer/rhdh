@@ -1,6 +1,7 @@
 import { expect, test } from "@support/coverage/test";
-import { UIhelper } from "../../utils/ui-helper";
+
 import { Common } from "../../utils/common";
+import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Test ApplicationProvider", () => {
   test.beforeAll(async () => {
@@ -42,12 +43,8 @@ test.describe("Test ApplicationProvider", () => {
     await contextOneCards.first().getByRole("button", { name: "+" }).click();
 
     // Verify both Context one cards show count of 1 (shared state)
-    await expect(
-      contextOneCards.first().getByRole("heading", { name: "1" }),
-    ).toBeVisible();
-    await expect(
-      contextOneCards.last().getByRole("heading", { name: "1" }),
-    ).toBeVisible();
+    await expect(contextOneCards.first().getByRole("heading", { name: "1" })).toBeVisible();
+    await expect(contextOneCards.last().getByRole("heading", { name: "1" })).toBeVisible();
 
     // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
@@ -64,11 +61,7 @@ test.describe("Test ApplicationProvider", () => {
     await contextTwoCards.first().getByRole("button", { name: "+" }).click();
 
     // Verify both Context two cards show count of 1 (shared state)
-    await expect(
-      contextTwoCards.first().getByRole("heading", { name: "1" }),
-    ).toBeVisible();
-    await expect(
-      contextTwoCards.last().getByRole("heading", { name: "1" }),
-    ).toBeVisible();
+    await expect(contextTwoCards.first().getByRole("heading", { name: "1" })).toBeVisible();
+    await expect(contextTwoCards.last().getByRole("heading", { name: "1" })).toBeVisible();
   });
 });

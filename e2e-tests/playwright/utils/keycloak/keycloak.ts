@@ -1,9 +1,10 @@
-import fetch from "node-fetch";
-import User from "./user";
-import Group from "./group";
 import { expect, Page } from "@playwright/test";
-import { UIhelper } from "../ui-helper";
+import fetch from "node-fetch";
+
 import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users-obj";
+import { UIhelper } from "../ui-helper";
+import Group from "./group";
+import User from "./user";
 
 interface AuthResponse {
   access_token: string;
@@ -70,15 +71,12 @@ class Keycloak {
   }
 
   async getUsers(authToken: string): Promise<User[]> {
-    const response = await fetch(
-      `${this.baseURL}/auth/admin/realms/${this.realm}/users`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+    const response = await fetch(`${this.baseURL}/auth/admin/realms/${this.realm}/users`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
       },
-    );
+    });
 
     if (response.status !== 200) {
       const errorText = await response.text();
@@ -104,9 +102,7 @@ class Keycloak {
 
     if (response.status !== 200) {
       const errorText = await response.text();
-      throw new Error(
-        `Failed to get groups of user: ${response.status} - ${errorText}`,
-      );
+      throw new Error(`Failed to get groups of user: ${response.status} - ${errorText}`);
     }
     const data: unknown = await response.json();
     if (!isGroupArray(data)) {
@@ -125,9 +121,7 @@ class Keycloak {
     await CatalogUsersPO.visitUserPage(page, keycloakUser.username);
     const emailLink = CatalogUsersPO.getEmailLink(page);
     await expect(emailLink).toBeVisible();
-    await uiHelper.verifyDivHasText(
-      `${keycloakUser.firstName} ${keycloakUser.lastName}`,
-    );
+    await uiHelper.verifyDivHasText(`${keycloakUser.firstName} ${keycloakUser.lastName}`);
 
     const groups = await keycloak.getGroupsOfUser(token, keycloakUser.id);
     for (const group of groups) {

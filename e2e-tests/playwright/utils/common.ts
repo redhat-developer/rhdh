@@ -1,27 +1,15 @@
-import { UIhelper } from "./ui-helper";
-import { authenticator } from "otplib";
-import {
-  test,
-  Browser,
-  Cookie,
-  expect,
-  Page,
-  TestInfo,
-  Locator,
-} from "@playwright/test";
-import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
-import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
-import * as path from "path";
 import * as fs from "fs";
-import {
-  startCoverageForPage,
-  stopCoverageForPage,
-} from "../support/coverage/test";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../e2e/localization/locale";
+import * as path from "path";
+
+import { test, Browser, Cookie, expect, Page, TestInfo, Locator } from "@playwright/test";
+import { authenticator } from "otplib";
+
+import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale";
+import { startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
+import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
+import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import { getErrorMessage } from "./errors";
+import { UIhelper } from "./ui-helper";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -34,9 +22,7 @@ function parseAuthStateCookies(content: string): Cookie[] {
     !("cookies" in parsed) ||
     !Array.isArray(parsed.cookies)
   ) {
-    throw new TypeError(
-      "Invalid auth state: expected object with cookies array",
-    );
+    throw new TypeError("Invalid auth state: expected object with cookies array");
   }
   const rawCookies: unknown[] = parsed.cookies;
   const cookies = rawCookies.filter(
@@ -74,9 +60,7 @@ export class Common {
     });
 
     await this.uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
-    await this.uiHelper.clickButton(
-      t["core-components"][lang]["signIn.guestProvider.enter"],
-    );
+    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.guestProvider.enter"]);
     await this.uiHelper.waitForSideBarVisible();
   }
 
@@ -118,10 +102,7 @@ export class Common {
       (await this.uiHelper.isTextVisible(
         "The two-factor code you entered has already been used",
       )) ||
-      (await this.uiHelper.isTextVisible(
-        "too many codes have been submitted",
-        3000,
-      ))
+      (await this.uiHelper.isTextVisible("too many codes have been submitted", 3000))
     ) {
       // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
       await new Promise<void>((resolve) => {
@@ -172,25 +153,19 @@ export class Common {
     // Check if a session file for this specific user already exists
     if (fs.existsSync(sessionFileName)) {
       // Load and reuse existing authentication state
-      const cookies = parseAuthStateCookies(
-        fs.readFileSync(sessionFileName, "utf-8"),
-      );
+      const cookies = parseAuthStateCookies(fs.readFileSync(sessionFileName, "utf-8"));
       await this.page.context().addCookies(cookies);
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
       await this.waitForLoad(12000);
-      await this.uiHelper.clickButton(
-        t["core-components"][lang]["signIn.title"],
-      );
+      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
       await this.checkAndReauthorizeGithubApp();
     } else {
       // Perform login if no session file exists, then save the state
       await this.logintoGithub(userid);
       await this.page.goto("/");
       await this.waitForLoad(240000);
-      await this.uiHelper.clickButton(
-        t["core-components"][lang]["signIn.title"],
-      );
+      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForSideBarVisible();
       await this.page.context().storageState({ path: sessionFileName });
@@ -239,15 +214,11 @@ export class Common {
       await this.uiHelper.clickButton(
         t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
       );
-      await this.uiHelper.clickButton(
-        t["core-components"][lang]["oauthRequestDialog.login"],
-      );
+      await this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]);
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
-      console.log(
-        '"Log in" button is not visible. Skipping login popup actions.',
-      );
+      console.log('"Log in" button is not visible. Skipping login popup actions.');
     }
   }
 
@@ -392,11 +363,7 @@ export class Common {
     return this.handleGitHubPopupLogin(popup, username, password, twofactor);
   }
 
-  async githubLoginFromSettingsPage(
-    username: string,
-    password: string,
-    twofactor: string,
-  ) {
+  async githubLoginFromSettingsPage(username: string, password: string, twofactor: string) {
     await this.page.goto("/settings/auth-providers");
 
     const [popup] = await Promise.all([
@@ -409,9 +376,7 @@ export class Common {
           ),
         )
         .click(),
-      this.uiHelper.clickButton(
-        t["core-components"][lang]["oauthRequestDialog.login"],
-      ),
+      this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]),
     ]);
 
     return this.handleGitHubPopupLogin(popup, username, password, twofactor);
@@ -447,11 +412,9 @@ export class Common {
       await popup.getByTestId("sign-in-button").click({ timeout: 5000 });
 
       // Wait for navigation after sign-in (either to 2FA, authorization, or close)
-      await popup
-        .waitForLoadState("domcontentloaded", { timeout: 10000 })
-        .catch(() => {
-          // Continue if load state check fails
-        });
+      await popup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => {
+        // Continue if load state check fails
+      });
 
       // Handle 2FA if present
       const twoFactorInput = popup.locator("#user_otp_attempt");
@@ -471,18 +434,12 @@ export class Common {
       let buttonToClick: Locator | undefined;
       await expect(async () => {
         // Check data-testid first
-        if (
-          await authorization.isVisible({ timeout: 2000 }).catch(() => false)
-        ) {
+        if (await authorization.isVisible({ timeout: 2000 }).catch(() => false)) {
           buttonToClick = authorization;
           return true;
         }
         // Fallback to text-based selector
-        if (
-          await authorizationByText
-            .isVisible({ timeout: 2000 })
-            .catch(() => false)
-        ) {
+        if (await authorizationByText.isVisible({ timeout: 2000 }).catch(() => false)) {
           buttonToClick = authorizationByText;
           return true;
         }
@@ -578,18 +535,12 @@ export class Common {
     try {
       await popup.locator("[name=loginfmt]").click();
       await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
-      await popup
-        .locator('[type=submit]:has-text("Next")')
-        .click({ timeout: 5000 });
+      await popup.locator('[type=submit]:has-text("Next")').click({ timeout: 5000 });
 
       await popup.locator("[name=passwd]").click();
       await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
-      await popup
-        .locator('[type=submit]:has-text("Sign in")')
-        .click({ timeout: 5000 });
-      await popup
-        .locator('[type=button]:has-text("No")')
-        .click({ timeout: 15000 });
+      await popup.locator('[type=submit]:has-text("Sign in")').click({ timeout: 5000 });
+      await popup.locator('[type=button]:has-text("No")').click({ timeout: 15000 });
       return "Login successful";
     } catch (e) {
       const usernameError = popup.locator("id=usernameError");
@@ -688,10 +639,7 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
 
 // Flush V8 JS coverage collected during the test run and close the page.
 // Pair with setupBrowser() in afterAll to ensure coverage data is written.
-export async function teardownBrowser(
-  page: Page,
-  testInfo: TestInfo,
-): Promise<void> {
+export async function teardownBrowser(page: Page, testInfo: TestInfo): Promise<void> {
   await stopCoverageForPage(page, testInfo);
   await page.close();
 }

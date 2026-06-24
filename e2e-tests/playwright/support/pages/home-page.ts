@@ -1,10 +1,8 @@
-/* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
-import {
-  HOME_PAGE_COMPONENTS,
-  SEARCH_OBJECTS_COMPONENTS,
-} from "../page-objects/page-obj";
-import { UIhelper } from "../../utils/ui-helper";
 import { Page, expect } from "@playwright/test";
+
+import { UIhelper } from "../../utils/ui-helper";
+/* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
+import { HOME_PAGE_COMPONENTS, SEARCH_OBJECTS_COMPONENTS } from "../page-objects/page-obj";
 
 export class HomePage {
   private page: Page;
@@ -15,20 +13,14 @@ export class HomePage {
     this.uiHelper = new UIhelper(page);
   }
   async verifyQuickSearchBar(text: string) {
-    const searchBar = this.page.locator(
-      SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch,
-    );
+    const searchBar = this.page.locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch);
     await searchBar.waitFor();
     await searchBar.fill("");
     await searchBar.type(text + "\n"); // '\n' simulates pressing the Enter key
     await this.uiHelper.verifyLink(text);
   }
 
-  async verifyQuickAccess(
-    section: string,
-    items: string | string[],
-    expand = false,
-  ) {
+  async verifyQuickAccess(section: string, items: string | string[], expand = false) {
     await this.page.waitForSelector(HOME_PAGE_COMPONENTS.MuiAccordion, {
       state: "visible",
     });
@@ -39,9 +31,7 @@ export class HomePage {
 
     if (expand) {
       await sectionLocator.click();
-      await expect(
-        sectionLocator.locator('[class*="MuiAccordionDetails-root"]'),
-      ).toBeVisible();
+      await expect(sectionLocator.locator('[class*="MuiAccordionDetails-root"]')).toBeVisible();
     }
 
     for (const item of Array.isArray(items) ? items : [items]) {

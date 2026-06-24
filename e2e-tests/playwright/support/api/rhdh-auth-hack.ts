@@ -1,6 +1,7 @@
 import { Page } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+
 import playwrightConfig from "../../../playwright.config";
+import { UIhelper } from "../../utils/ui-helper";
 
 //https://redhatquickcourses.github.io/devhub-admin/devhub-admin/1/chapter2/rbac.html#_lab_rbac_rest_api
 export class RhdhAuthUiHack {
@@ -36,8 +37,7 @@ export class RhdhAuthUiHack {
 
     const requestPromise = page.waitForRequest(
       (request) =>
-        request.url() === `${baseURL}/api/search/query?term=` &&
-        request.method() === "GET",
+        request.url() === `${baseURL}/api/search/query?term=` && request.method() === "GET",
       { timeout: 15000 },
     );
     await uiHelper.openSidebar("Home");

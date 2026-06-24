@@ -33,10 +33,7 @@ export function getExpectedRoles(): Role[] {
       name: "role:default/qe_rbac_admin",
     },
     {
-      memberReferences: [
-        "group:default/rhdh-qe-parent-team",
-        "group:default/rhdh-qe-child-team",
-      ],
+      memberReferences: ["group:default/rhdh-qe-parent-team", "group:default/rhdh-qe-child-team"],
       name: "role:default/transitive-owner",
     },
     {

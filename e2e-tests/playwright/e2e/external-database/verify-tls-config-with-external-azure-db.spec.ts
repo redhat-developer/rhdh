@@ -1,5 +1,5 @@
 import { test, expect } from "@support/coverage/test";
-import { UIhelper } from "../../utils/ui-helper";
+
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
@@ -8,6 +8,7 @@ import {
   configurePostgresCredentials,
   clearDatabase,
 } from "../../utils/postgres-config";
+import { UIhelper } from "../../utils/ui-helper";
 
 interface AzureDbConfig {
   name: string;
@@ -43,9 +44,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
     );
 
     // Validate certificates are available
-    const azureCerts = readCertificateFile(
-      process.env.AZURE_DB_CERTIFICATES_PATH,
-    );
+    const azureCerts = readCertificateFile(process.env.AZURE_DB_CERTIFICATES_PATH);
     if (!azureCerts) {
       throw new Error(
         "AZURE_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
@@ -54,17 +53,13 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
 
     // Validate required environment variables
     if (!azureUser || !azurePassword) {
-      throw new Error(
-        "AZURE_DB_USER and AZURE_DB_PASSWORD environment variables must be set",
-      );
+      throw new Error("AZURE_DB_USER and AZURE_DB_PASSWORD environment variables must be set");
     }
 
     const kubeClient = new KubeClient();
 
     // Create/update the postgres-crt secret with Azure certificates
-    console.log(
-      "Configuring Azure Database for PostgreSQL TLS certificates...",
-    );
+    console.log("Configuring Azure Database for PostgreSQL TLS certificates...");
     await configurePostgresCertificate(kubeClient, namespace, azureCerts);
   });
 
@@ -92,10 +87,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
           user: azureUser,
           password: azurePassword,
         });
-        const restarted = await kubeClient.restartDeployment(
-          deploymentName,
-          namespace,
-        );
+        const restarted = await kubeClient.restartDeployment(deploymentName, namespace);
         expect(restarted).toBeDefined();
       });
 

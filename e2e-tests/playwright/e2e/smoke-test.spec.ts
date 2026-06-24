@@ -1,6 +1,7 @@
 import { test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
+
 import { Common } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
 
 test.describe("Smoke test", { tag: "@smoke" }, () => {
   let uiHelper: UIhelper;

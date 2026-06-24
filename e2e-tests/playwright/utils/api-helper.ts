@@ -1,5 +1,6 @@
-import { request, APIResponse, expect } from "@playwright/test";
 import { GroupEntity, UserEntity } from "@backstage/catalog-model";
+import { request, APIResponse, expect } from "@playwright/test";
+
 import { GITHUB_API_ENDPOINTS } from "./api-endpoints";
 
 type FetchOptions = {
@@ -36,9 +37,7 @@ interface CatalogLocationEntry {
   };
 }
 
-function isGitHubPullRequestFile(
-  value: unknown,
-): value is GitHubPullRequestFile {
+function isGitHubPullRequestFile(value: unknown): value is GitHubPullRequestFile {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -61,9 +60,7 @@ function isGuestTokenResponse(value: unknown): value is GuestTokenResponse {
   );
 }
 
-function isEntityMetadataResponse(
-  value: unknown,
-): value is EntityMetadataResponse {
+function isEntityMetadataResponse(value: unknown): value is EntityMetadataResponse {
   return typeof value === "object" && value !== null;
 }
 
@@ -72,15 +69,11 @@ function isCatalogLocationEntry(value: unknown): value is CatalogLocationEntry {
 }
 
 function isUserEntity(value: unknown): value is UserEntity {
-  return (
-    isEntityMetadataResponse(value) && "kind" in value && value.kind === "User"
-  );
+  return isEntityMetadataResponse(value) && "kind" in value && value.kind === "User";
 }
 
 function isGroupEntity(value: unknown): value is GroupEntity {
-  return (
-    isEntityMetadataResponse(value) && "kind" in value && value.kind === "Group"
-  );
+  return isEntityMetadataResponse(value) && "kind" in value && value.kind === "Group";
 }
 
 async function parseJsonResponse(response: APIResponse): Promise<unknown> {
@@ -89,9 +82,7 @@ async function parseJsonResponse(response: APIResponse): Promise<unknown> {
 
 function toUnknownArray(value: unknown): unknown[] {
   if (!Array.isArray(value)) {
-    throw new TypeError(
-      `Expected array but got ${typeof value}: ${JSON.stringify(value)}`,
-    );
+    throw new TypeError(`Expected array but got ${typeof value}: ${JSON.stringify(value)}`);
   }
   const items: unknown[] = [];
   for (const item of value) {
@@ -148,14 +139,10 @@ export class APIHelper {
   }
 
   static async createGitHubRepo(owner: string, repoName: string) {
-    const response = await APIHelper.githubRequest(
-      "POST",
-      GITHUB_API_ENDPOINTS.createRepo(owner),
-      {
-        name: repoName,
-        private: false,
-      },
-    );
+    const response = await APIHelper.githubRequest("POST", GITHUB_API_ENDPOINTS.createRepo(owner), {
+      name: repoName,
+      private: false,
+    });
     expect(response.status() === 201 || response.ok()).toBeTruthy();
   }
 
@@ -200,9 +187,9 @@ export class APIHelper {
   }
 
   static async initCommit(owner: string, repo: string, branch = "main") {
-    const content = Buffer.from(
-      "This is the initial commit for the repository.",
-    ).toString("base64");
+    const content = Buffer.from("This is the initial commit for the repository.").toString(
+      "base64",
+    );
     const response = await APIHelper.githubRequest(
       "PUT",
       `${GITHUB_API_ENDPOINTS.contents(owner, repo)}/initial-commit.md`,
@@ -216,21 +203,11 @@ export class APIHelper {
   }
 
   static async deleteGitHubRepo(owner: string, repoName: string) {
-    await APIHelper.githubRequest(
-      "DELETE",
-      GITHUB_API_ENDPOINTS.deleteRepo(owner, repoName),
-    );
+    await APIHelper.githubRequest("DELETE", GITHUB_API_ENDPOINTS.deleteRepo(owner, repoName));
   }
 
-  static async mergeGitHubPR(
-    owner: string,
-    repoName: string,
-    pullNumber: number,
-  ) {
-    await APIHelper.githubRequest(
-      "PUT",
-      GITHUB_API_ENDPOINTS.mergePR(owner, repoName, pullNumber),
-    );
+  static async mergeGitHubPR(owner: string, repoName: string, pullNumber: number) {
+    await APIHelper.githubRequest("PUT", GITHUB_API_ENDPOINTS.mergePR(owner, repoName, pullNumber));
   }
 
   static async getGitHubPRs(
@@ -270,9 +247,7 @@ export class APIHelper {
     if (!file) {
       throw new Error(`File ${filename} not found in PR ${pr}`);
     }
-    const rawFileContent = await (
-      await APIHelper.githubRequest("GET", file.raw_url)
-    ).text();
+    const rawFileContent = await (await APIHelper.githubRequest("GET", file.raw_url)).text();
     return rawFileContent;
   }
 
@@ -337,55 +312,35 @@ export class APIHelper {
   async getAllCatalogUsersFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Duser`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
     return parseJsonResponse(response);
   }
 
   async getAllCatalogLocationsFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dlocation`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
     return parseJsonResponse(response);
   }
 
   async getAllCatalogGroupsFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dgroup`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
     return parseJsonResponse(response);
   }
 
   async getGroupEntityFromAPI(group: string): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
     return parseJsonResponse(response);
   }
 
   async getCatalogUserFromAPI(user: string): Promise<UserEntity> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/user/default/${user}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
     const body: unknown = await parseJsonResponse(response);
     if (!isUserEntity(body)) {
       throw new TypeError(`Invalid catalog user response for ${user}`);
@@ -400,22 +355,14 @@ export class APIHelper {
     }
     const url = `${this.baseUrl}/api/catalog/entities/by-uid/${r.metadata.uid}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "DELETE",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("DELETE", url, token);
     return response.statusText();
   }
 
   async getCatalogGroupFromAPI(group: string): Promise<GroupEntity> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, token);
     const body: unknown = await parseJsonResponse(response);
     if (!isGroupEntity(body)) {
       throw new TypeError(`Invalid catalog group response for ${group}`);
@@ -427,27 +374,14 @@ export class APIHelper {
     const r = await this.getCatalogGroupFromAPI(group);
     const url = `${this.baseUrl}/api/catalog/entities/by-uid/${r.metadata.uid}`;
     const token = this.useStaticToken ? this.staticToken : "";
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "DELETE",
-      url,
-      token,
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("DELETE", url, token);
     return response.statusText();
   }
 
-  async scheduleEntityRefreshFromAPI(
-    entity: string,
-    kind: string,
-    token: string,
-  ) {
+  async scheduleEntityRefreshFromAPI(entity: string, kind: string, token: string) {
     const url = `${this.baseUrl}/api/catalog/refresh`;
     const reqBody = { entityRef: `${kind}:default/${entity}` };
-    const responseRefresh = await APIHelper.APIRequestWithStaticToken(
-      "POST",
-      url,
-      token,
-      reqBody,
-    );
+    const responseRefresh = await APIHelper.APIRequestWithStaticToken("POST", url, token, reqBody);
     return responseRefresh.status();
   }
 
@@ -556,9 +490,7 @@ export class APIHelper {
    * @param target - The target URL of the location to search for.
    * @returns The ID string if found, otherwise undefined.
    */
-  static async getLocationIdByTarget(
-    target: string,
-  ): Promise<string | undefined> {
+  static async getLocationIdByTarget(target: string): Promise<string | undefined> {
     const baseUrl = process.env.BASE_URL;
     const url = `${baseUrl}/api/catalog/locations`;
     const context = await request.newContext();

@@ -1,7 +1,8 @@
 import { test } from "@support/coverage/test";
-import { UIhelper } from "../../utils/ui-helper";
-import { Common } from "../../utils/common";
+
 import { CatalogImport } from "../../support/pages/catalog-import";
+import { Common } from "../../utils/common";
+import { UIhelper } from "../../utils/ui-helper";
 
 // https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request
 // Pre-req: Enable roadiehq-scaffolder-backend-module-http-request-dynamic plugin
@@ -14,8 +15,7 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
-  const template =
-    "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
+  const template = "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
 
   test.beforeAll(async () => {
     test.info().annotations.push({

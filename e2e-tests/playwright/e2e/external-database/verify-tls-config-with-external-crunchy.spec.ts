@@ -1,6 +1,7 @@
 import { test, expect } from "@support/coverage/test";
-import { UIhelper } from "../../utils/ui-helper";
+
 import { Common } from "../../utils/common";
+import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Verify TLS configuration with external Crunchy Postgres DB", () => {
   test.beforeAll(async () => {
@@ -19,10 +20,7 @@ test.describe("Verify TLS configuration with external Crunchy Postgres DB", () =
   test("Verify successful DB connection", async ({ page }) => {
     const uiHelper = new UIhelper(page);
     const common = new Common(page);
-    await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-    );
+    await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
     await uiHelper.verifyHeading("Welcome back!");
     await page.getByLabel("Catalog").first().click();
     await uiHelper.selectMuiBox("Kind", "Component");

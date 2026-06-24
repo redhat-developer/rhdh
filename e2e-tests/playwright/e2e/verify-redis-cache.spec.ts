@@ -1,8 +1,10 @@
-import { expect, test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common } from "../utils/common";
-import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
+
+import { expect, test } from "@support/coverage/test";
+import Redis from "ioredis";
+
+import { Common } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
 
 function streamDataToString(data: Buffer | string): string {
   return typeof data === "string" ? data : data.toString();
@@ -40,9 +42,7 @@ test.describe("Verify Redis Cache DB", () => {
     console.log("Waiting for port-forward to be ready...");
     await new Promise<void>((resolve, reject) => {
       portForward.stdout.on("data", (data: Buffer | string) => {
-        if (
-          streamDataToString(data).includes("Forwarding from 127.0.0.1:6379")
-        ) {
+        if (streamDataToString(data).includes("Forwarding from 127.0.0.1:6379")) {
           resolve();
         }
       });
@@ -80,9 +80,7 @@ test.describe("Verify Redis Cache DB", () => {
     );
     console.log("Verifying Redis keys...");
     await expect(async () => {
-      const keys = (await redis.keys("*")).filter((k) =>
-        k.includes("techdocs"),
-      );
+      const keys = (await redis.keys("*")).filter((k) => k.includes("techdocs"));
       expect(keys).toContainEqual(expect.stringContaining("techdocs"));
       const key = keys[0];
       console.log(`Verifying key format: ${key}`);
@@ -100,8 +98,6 @@ test.describe("Verify Redis Cache DB", () => {
     console.log("Killing port-forward process with ID:", portForward.pid);
     portForward.kill("SIGKILL");
     console.log("Killing remaining port-forward process.");
-    exec(
-      `ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`,
-    );
+    exec(`ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`);
   });
 });

@@ -1,12 +1,10 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser, teardownBrowser } from "../utils/common";
+
+import { BackstageShowcase, CatalogImport } from "../support/pages/catalog-import";
 import { RESOURCES } from "../support/test-data/resources";
-import {
-  BackstageShowcase,
-  CatalogImport,
-} from "../support/pages/catalog-import";
 import { TEMPLATES } from "../support/test-data/templates";
+import { Common, setupBrowser, teardownBrowser } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
 
 type GithubPullRequest = { title: string; number: string };
 
@@ -42,10 +40,7 @@ async function getShowcasePullRequests(
   state: "open" | "closed" | "all",
   paginated = false,
 ): Promise<GithubPullRequest[]> {
-  const data: unknown = await BackstageShowcase.getShowcasePRs(
-    state,
-    paginated,
-  );
+  const data: unknown = await BackstageShowcase.getShowcasePRs(state, paginated);
   return parseGithubPullRequests(data);
 }
 
@@ -59,8 +54,7 @@ test.describe.fixme("GitHub Happy path", () => {
   let catalogImport: CatalogImport;
   let backstageShowcase: BackstageShowcase;
 
-  const component =
-    "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
+  const component = "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
@@ -77,10 +71,7 @@ test.describe.fixme("GitHub Happy path", () => {
   });
 
   test("Login as a Github user from Settings page.", async () => {
-    await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-    );
+    await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
     const ghLogin = await common.githubLoginFromSettingsPage(
       process.env.GH_USER2_ID!,
       process.env.GH_USER2_PASS!,
@@ -109,9 +100,7 @@ test.describe.fixme("GitHub Happy path", () => {
     await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
 
     await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
-    await uiHelper.verifyComponentInCatalog("Component", [
-      "Red Hat Developer Hub",
-    ]);
+    await uiHelper.verifyComponentInCatalog("Component", ["Red Hat Developer Hub"]);
 
     await uiHelper.selectMuiBox("Kind", "Resource");
     await uiHelper.verifyRowsInTable([
@@ -205,11 +194,7 @@ test.describe.fixme("GitHub Happy path", () => {
     console.log("Clicking on Previous Page button");
     await backstageShowcase.clickPreviousPage();
     await common.waitForLoad();
-    await backstageShowcase.verifyPRRows(
-      allPRs,
-      lastPagePRs - 5,
-      lastPagePRs - 1,
-    );
+    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs - 1);
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
@@ -227,9 +212,7 @@ test.describe.fixme("GitHub Happy path", () => {
   test.fixme("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
     await uiHelper.clickTab("Dependencies");
     for (const resource of RESOURCES) {
-      const resourceElement = page.locator(
-        `#workspace:has-text("${resource}")`,
-      );
+      const resourceElement = page.locator(`#workspace:has-text("${resource}")`);
       await resourceElement.scrollIntoViewIfNeeded();
       await expect(resourceElement).toBeVisible();
     }

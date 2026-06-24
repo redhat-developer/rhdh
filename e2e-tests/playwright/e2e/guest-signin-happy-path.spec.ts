@@ -1,7 +1,8 @@
 import { test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
+
 import { HomePage } from "../support/pages/home-page";
 import { Common } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
 import { getTranslations, getCurrentLanguage } from "./localization/locale";
 
 const t = getTranslations();

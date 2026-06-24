@@ -1,7 +1,8 @@
 import { expect, test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common } from "../utils/common";
+
 import { runAccessibilityTests } from "../utils/accessibility";
+import { Common } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
 
 test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
   test.beforeAll(async () => {

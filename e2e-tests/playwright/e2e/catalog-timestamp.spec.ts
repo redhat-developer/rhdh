@@ -1,11 +1,9 @@
 import { Page, expect, test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser, teardownBrowser } from "../utils/common";
+
+import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale";
 import { CatalogImport } from "../support/pages/catalog-import";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../e2e/localization/locale";
+import { Common, setupBrowser, teardownBrowser } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -51,9 +49,7 @@ test.describe("Test timestamp column on Catalog", () => {
   test("Import an existing Git repository and verify `Created At` column and value in the Catalog Page", async () => {
     await uiHelper.goToSelfServicePage();
     await uiHelper.clickButton(
-      t["scaffolder"][lang][
-        "templateListPage.contentHeader.registerExistingButtonTitle"
-      ],
+      t["scaffolder"][lang]["templateListPage.contentHeader.registerExistingButtonTitle"],
     );
     await catalogImport.registerExistingComponent(component);
     await uiHelper.openCatalogSidebar("Component");
@@ -73,9 +69,7 @@ test.describe("Test timestamp column on Catalog", () => {
     }
 
     // Wait for the table to have data rows
-    await expect(
-      page.getByRole("row").filter({ has: page.getByRole("cell") }),
-    ).not.toHaveCount(0);
+    await expect(page.getByRole("row").filter({ has: page.getByRole("cell") })).not.toHaveCount(0);
 
     // Get the first data row's "Created At" cell using semantic selectors
     const firstRow = page

@@ -3,9 +3,6 @@
   "version": "1.11.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": "24"
-  },
   "scripts": {
     "showcase": "playwright test --project=showcase",
     "showcase-rbac": "playwright test --project=showcase-rbac",
@@ -31,6 +28,21 @@
     "postinstall": "playwright install chromium",
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always"
   },
+  "dependencies": {
+    "@azure/arm-network": "34.2.0",
+    "@azure/identity": "4.13.1",
+    "@keycloak/keycloak-admin-client": "25.0.6",
+    "@kubernetes/client-node": "0.22.3",
+    "@microsoft/microsoft-graph-client": "3.0.7",
+    "isomorphic-fetch": "3.0.0",
+    "js-yaml": "4.2.0",
+    "node-fetch": "2.7.0",
+    "octokit": "4.1.4",
+    "pg": "8.22.0",
+    "uuid": "14.0.0",
+    "winston": "3.14.2",
+    "yaml": "2.9.0"
+  },
   "devDependencies": {
     "@axe-core/playwright": "4.11.2",
     "@microsoft/microsoft-graph-types": "2.43.1",
@@ -50,20 +62,8 @@
     "shellcheck": "4.1.0",
     "typescript": "6.0.3"
   },
-  "dependencies": {
-    "@azure/arm-network": "34.2.0",
-    "@azure/identity": "4.13.1",
-    "@keycloak/keycloak-admin-client": "25.0.6",
-    "@kubernetes/client-node": "0.22.3",
-    "@microsoft/microsoft-graph-client": "3.0.7",
-    "isomorphic-fetch": "3.0.0",
-    "js-yaml": "4.2.0",
-    "node-fetch": "2.7.0",
-    "octokit": "4.1.4",
-    "pg": "8.22.0",
-    "uuid": "14.0.0",
-    "winston": "3.14.2",
-    "yaml": "2.9.0"
+  "engines": {
+    "node": "24"
   },
   "packageManager": "yarn@4.12.0"
 }

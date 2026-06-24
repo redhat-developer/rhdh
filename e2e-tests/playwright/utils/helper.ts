@@ -1,5 +1,7 @@
-import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
+
+import { type Page, type Locator } from "@playwright/test";
+
 import {
   BACKSTAGE_DEPLOY_SELECTOR,
   type JobNamePattern,
@@ -12,10 +14,7 @@ export async function downloadAndReadFile(
   page: Page,
   locator: Locator,
 ): Promise<string | undefined> {
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    locator.click(),
-  ]);
+  const [download] = await Promise.all([page.waitForEvent("download"), locator.click()]);
 
   const filePath = await download.path();
 
@@ -57,9 +56,7 @@ export function skipIfJobName(jobNamePattern: JobNamePattern): boolean {
  *
  * @see https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh
  */
-export function skipIfJobNameRegex(
-  jobNameRegexPattern: JobNameRegexPattern,
-): boolean {
+export function skipIfJobNameRegex(jobNameRegexPattern: JobNameRegexPattern): boolean {
   const jobName = process.env.JOB_NAME;
   if (!jobName) {
     return false;

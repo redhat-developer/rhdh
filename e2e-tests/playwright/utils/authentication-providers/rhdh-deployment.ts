@@ -1,14 +1,16 @@
-import * as k8s from "@kubernetes/client-node";
-import * as yaml from "yaml";
+import { ChildProcess, spawn } from "child_process";
 import { promises as fs } from "fs";
 import { join, resolve as resolvePath } from "path";
 import stream from "stream";
-import { expect } from "@playwright/test";
-import { getErrorMessage, hasErrorResponse } from "../errors";
-import { ChildProcess, spawn } from "child_process";
-import { v4 as uuidv4 } from "uuid";
-import { APIHelper } from "../api-helper";
+
 import { GroupEntity, UserEntity } from "@backstage/catalog-model";
+import * as k8s from "@kubernetes/client-node";
+import { expect } from "@playwright/test";
+import { v4 as uuidv4 } from "uuid";
+import * as yaml from "yaml";
+
+import { APIHelper } from "../api-helper";
+import { getErrorMessage, hasErrorResponse } from "../errors";
 
 type YamlConfig = Record<string, unknown>;
 
@@ -64,9 +66,7 @@ function isDynamicPluginsConfig(value: unknown): value is DynamicPluginsConfig {
   return (
     plugins === undefined ||
     (Array.isArray(plugins) &&
-      plugins.every(
-        (plugin) => isRecord(plugin) && typeof plugin.package === "string",
-      ))
+      plugins.every((plugin) => isRecord(plugin) && typeof plugin.package === "string"))
   );
 }
 
@@ -193,9 +193,7 @@ class RHDHDeployment {
     }
   }
 
-  async deleteNamespaceIfExists(
-    timeoutMs: number = 60000,
-  ): Promise<RHDHDeployment> {
+  async deleteNamespaceIfExists(timeoutMs: number = 60000): Promise<RHDHDeployment> {
     // Skip namespace deletion if running locally
     if (this.isRunningLocal) {
       console.log("Skipping namespace deletion as isRunningLocal is true.");
@@ -217,9 +215,7 @@ class RHDHDeployment {
           throw error;
         }
       }
-      throw new Error(
-        `Timeout waiting for namespace to be deleted after ${timeoutMs}ms`,
-      );
+      throw new Error(`Timeout waiting for namespace to be deleted after ${timeoutMs}ms`);
     } catch (e) {
       if (hasErrorResponse(e) && e.response?.statusCode === 404) {
         return this;
@@ -228,11 +224,7 @@ class RHDHDeployment {
     }
   }
 
-  setConfigProperty(
-    config: Record<string, unknown>,
-    path: string,
-    value: unknown,
-  ): RHDHDeployment {
+  setConfigProperty(config: Record<string, unknown>, path: string, value: unknown): RHDHDeployment {
     const parts = path.split(".");
     let current: Record<string, unknown> = config;
 
@@ -275,10 +267,7 @@ class RHDHDeployment {
     return this.getConfig(this.appConfig);
   }
 
-  setDynamicPluginsConfigProperty(
-    path: string,
-    value: unknown,
-  ): RHDHDeployment {
+  setDynamicPluginsConfigProperty(path: string, value: unknown): RHDHDeployment {
     return this.setConfigProperty(this.dynamicPluginsConfig, path, value);
   }
 
@@ -321,10 +310,7 @@ class RHDHDeployment {
     return yaml.parse(fileContent);
   }
 
-  async createConfigMap(
-    name: string,
-    data: Record<string, string>,
-  ): Promise<RHDHDeployment> {
+  async createConfigMap(name: string, data: Record<string, string>): Promise<RHDHDeployment> {
     const configMap: k8s.V1ConfigMap = {
       apiVersion: "v1",
       kind: "ConfigMap",
@@ -338,10 +324,7 @@ class RHDHDeployment {
     return this;
   }
 
-  async updateConfigMap(
-    name: string,
-    data: Record<string, string>,
-  ): Promise<RHDHDeployment> {
+  async updateConfigMap(name: string, data: Record<string, string>): Promise<RHDHDeployment> {
     if (this.isRunningLocal) {
       console.log("Skipping configmap update as isRunningLocal is true.");
       return this;
@@ -402,10 +385,7 @@ class RHDHDeployment {
   }
 
   async deleteConfigMap(): Promise<RHDHDeployment> {
-    await this.k8sApi.deleteNamespacedConfigMap(
-      this.appConfigMap,
-      this.namespace,
-    );
+    await this.k8sApi.deleteNamespacedConfigMap(this.appConfigMap, this.namespace);
     return this;
   }
 
@@ -441,11 +421,7 @@ class RHDHDeployment {
       },
       data: this.secretData,
     };
-    await this.k8sApi.replaceNamespacedSecret(
-      this.secretName,
-      this.namespace,
-      secret,
-    );
+    await this.k8sApi.replaceNamespacedSecret(this.secretName, this.namespace, secret);
     return this;
   }
 
@@ -483,16 +459,13 @@ class RHDHDeployment {
     return deployments.body.items[0].metadata?.generation ?? 0;
   }
 
-  async waitForConfigReconciled(
-    timeoutMs: number = 60000,
-  ): Promise<RHDHDeployment> {
+  async waitForConfigReconciled(timeoutMs: number = 60000): Promise<RHDHDeployment> {
     if (this.isRunningLocal) {
       return this;
     }
 
     const baseline =
-      this.configReconcileBaselineGeneration ??
-      (await this.getDeploymentGeneration());
+      this.configReconcileBaselineGeneration ?? (await this.getDeploymentGeneration());
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeoutMs) {
@@ -506,15 +479,11 @@ class RHDHDeployment {
       await sleep(1000);
     }
 
-    console.log(
-      `[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`,
-    );
+    console.log(`[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`);
     return this;
   }
 
-  async waitForDeploymentReady(
-    timeoutMs: number = 600000,
-  ): Promise<RHDHDeployment> {
+  async waitForDeploymentReady(timeoutMs: number = 600000): Promise<RHDHDeployment> {
     if (this.isRunningLocal) {
       console.log("Skipping deployment ready check as isRunningLocal is true.");
       return this;
@@ -554,17 +523,14 @@ class RHDHDeployment {
         // Capture initial generation on first check
         if (initialGeneration === undefined) {
           initialGeneration = deployment.metadata?.generation || 0;
-          console.log(
-            `[INFO] Initial deployment generation: ${initialGeneration}`,
-          );
+          console.log(`[INFO] Initial deployment generation: ${initialGeneration}`);
         }
 
         // Check if rollout has started (generation changed or progressing condition indicates rollout)
         const currentGeneration = deployment.metadata?.generation || 0;
         const observedGeneration = deployment.status?.observedGeneration || 0;
         const isProgressing = conditions.some(
-          (condition) =>
-            condition.type === "Progressing" && condition.status === "True",
+          (condition) => condition.type === "Progressing" && condition.status === "True",
         );
 
         // Rollout has started if:
@@ -603,8 +569,7 @@ class RHDHDeployment {
         }
 
         const isAvailable = conditions.some(
-          (condition) =>
-            condition.type === "Available" && condition.status === "True",
+          (condition) => condition.type === "Available" && condition.status === "True",
         );
 
         const isProgressingWithRollout = conditions.some(
@@ -615,9 +580,7 @@ class RHDHDeployment {
         );
 
         const replicas = deployment.spec?.replicas;
-        const desiredReplicas = this.cr.spec.replicas
-          ? this.cr.spec.replicas
-          : 1;
+        const desiredReplicas = this.cr.spec.replicas ? this.cr.spec.replicas : 1;
 
         // Check replica counts to ensure rollout has completed
         const availableReplicas = deployment.status?.availableReplicas || 0;
@@ -651,23 +614,18 @@ class RHDHDeployment {
         await sleep(5000);
       } catch (error) {
         if (Date.now() - startTime >= timeoutMs) {
-          throw new Error(
-            `Timeout waiting for deployment to be ready: ${getErrorMessage(error)}`,
-            { cause: error },
-          );
+          throw new Error(`Timeout waiting for deployment to be ready: ${getErrorMessage(error)}`, {
+            cause: error,
+          });
         }
         await sleep(5000);
       }
     }
 
-    throw new Error(
-      `Timeout waiting for deployment to be ready after ${timeoutMs}ms`,
-    );
+    throw new Error(`Timeout waiting for deployment to be ready after ${timeoutMs}ms`);
   }
 
-  async waitForNamespaceActive(
-    timeoutMs: number = 30000,
-  ): Promise<RHDHDeployment> {
+  async waitForNamespaceActive(timeoutMs: number = 30000): Promise<RHDHDeployment> {
     const startTime = Date.now();
     if (this.isRunningLocal) {
       console.log("Skipping namespace active check as isRunningLocal is true.");
@@ -686,18 +644,15 @@ class RHDHDeployment {
         await sleep(1000);
       } catch (error) {
         if (Date.now() - startTime >= timeoutMs) {
-          throw new Error(
-            `Timeout waiting for namespace to be active: ${getErrorMessage(error)}`,
-            { cause: error },
-          );
+          throw new Error(`Timeout waiting for namespace to be active: ${getErrorMessage(error)}`, {
+            cause: error,
+          });
         }
         await sleep(1000);
       }
     }
 
-    throw new Error(
-      `Timeout waiting for namespace to be active after ${timeoutMs}ms`,
-    );
+    throw new Error(`Timeout waiting for namespace to be active after ${timeoutMs}ms`);
   }
 
   async loadRbacConfig(): Promise<RHDHDeployment> {
@@ -745,11 +700,7 @@ class RHDHDeployment {
   }
 
   async loadDynamicPluginsConfig(): Promise<RHDHDeployment> {
-    const configPath = join(
-      currentDirName,
-      "yamls",
-      "dynamic-plugins-config.yaml",
-    );
+    const configPath = join(currentDirName, "yamls", "dynamic-plugins-config.yaml");
     const yamlContent = await fs.readFile(configPath, "utf8");
     const configData: unknown = yaml.parse(yamlContent);
 
@@ -762,21 +713,10 @@ class RHDHDeployment {
 
   async createDynamicPluginsConfig(): Promise<RHDHDeployment> {
     if (this.isRunningLocal) {
-      const dynamicPluginsConfigPath = join(
-        currentDirName,
-        "dynamic-plugins.test.yaml",
-      ); // Path to the local file
-      const dynamicPluginsConfigYaml = yaml.stringify(
-        this.dynamicPluginsConfig,
-      ); // Stringify the dynamic plugins config
-      await fs.writeFile(
-        dynamicPluginsConfigPath,
-        dynamicPluginsConfigYaml,
-        "utf8",
-      ); // Write the stringified YAML to the local file
-      console.log(
-        `Dynamic plugins config written to ${dynamicPluginsConfigPath}`,
-      );
+      const dynamicPluginsConfigPath = join(currentDirName, "dynamic-plugins.test.yaml"); // Path to the local file
+      const dynamicPluginsConfigYaml = yaml.stringify(this.dynamicPluginsConfig); // Stringify the dynamic plugins config
+      await fs.writeFile(dynamicPluginsConfigPath, dynamicPluginsConfigYaml, "utf8"); // Write the stringified YAML to the local file
+      console.log(`Dynamic plugins config written to ${dynamicPluginsConfigPath}`);
       this.setAppConfigProperty(
         "dynamicPlugins.rootDirectory",
         rootDirName + "/dynamic-plugins-root",
@@ -793,21 +733,10 @@ class RHDHDeployment {
 
   async updateDynamicPluginsConfig(): Promise<RHDHDeployment> {
     if (this.isRunningLocal) {
-      const dynamicPluginsConfigPath = join(
-        currentDirName,
-        "dynamic-plugins.test.yaml",
-      ); // Path to the local file
-      const dynamicPluginsConfigYaml = yaml.stringify(
-        this.dynamicPluginsConfig,
-      ); // Stringify the dynamic plugins config
-      await fs.writeFile(
-        dynamicPluginsConfigPath,
-        dynamicPluginsConfigYaml,
-        "utf8",
-      ); // Write the stringified YAML to the local file
-      console.log(
-        `Dynamic plugins config updated in ${dynamicPluginsConfigPath}`,
-      );
+      const dynamicPluginsConfigPath = join(currentDirName, "dynamic-plugins.test.yaml"); // Path to the local file
+      const dynamicPluginsConfigYaml = yaml.stringify(this.dynamicPluginsConfig); // Stringify the dynamic plugins config
+      await fs.writeFile(dynamicPluginsConfigPath, dynamicPluginsConfigYaml, "utf8"); // Write the stringified YAML to the local file
+      console.log(`Dynamic plugins config updated in ${dynamicPluginsConfigPath}`);
       console.log(
         `Dynamic plugins config in ${dynamicPluginsConfigPath} has no effect on local deployment. Make sure to update the app-config.test.yaml file to use the dynamic-plugins-root directory and your plugin are already copied there.`,
       );
@@ -874,9 +803,7 @@ class RHDHDeployment {
         );
         return;
       } catch (error) {
-        console.log(
-          `Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`,
-        );
+        console.log(`Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`);
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
             `Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`,
@@ -886,9 +813,7 @@ class RHDHDeployment {
         await sleep(5000);
       }
     }
-    throw new Error(
-      `Timeout waiting for Backstage CRD to be available after ${timeoutMs}ms`,
-    );
+    throw new Error(`Timeout waiting for Backstage CRD to be available after ${timeoutMs}ms`);
   }
 
   async createBackstageDeployment(): Promise<RHDHDeployment> {
@@ -914,9 +839,7 @@ class RHDHDeployment {
           },
         );
         this.runningProcess.unref();
-        console.log(
-          `Local production server started with PID: ${this.runningProcess.pid}`,
-        );
+        console.log(`Local production server started with PID: ${this.runningProcess.pid}`);
         return this;
       }
       await this.ensureBackstageCRIsAvailable(60000);
@@ -951,9 +874,7 @@ class RHDHDeployment {
       try {
         const response = await fetch(baseUrl, { method: "HEAD" });
         if (response.status === 200) {
-          throw new Error(
-            "Homepage is still accessible after process termination",
-          );
+          throw new Error("Homepage is still accessible after process termination");
         }
       } catch (error) {
         // Expected error - connection refused
@@ -1053,9 +974,7 @@ class RHDHDeployment {
       }
       return found;
     } catch (error) {
-      const message = hasErrorResponse(error)
-        ? error.body?.message
-        : getErrorMessage(error);
+      const message = hasErrorResponse(error) ? error.body?.message : getErrorMessage(error);
       console.log(`Error: ${message}`);
       throw new Error(
         `Timeout waiting for string "${searchString}" in logs after ${timeoutMs}ms. Error: ${message}`,
@@ -1064,10 +983,7 @@ class RHDHDeployment {
     }
   }
 
-  async followLocalLogs(
-    searchString: RegExp,
-    timeoutMs: number = 30000,
-  ): Promise<boolean> {
+  async followLocalLogs(searchString: RegExp, timeoutMs: number = 30000): Promise<boolean> {
     if (!this.isRunningLocal) {
       throw new Error("Not running in local mode. Cannot follow local logs.");
     }
@@ -1116,10 +1032,7 @@ class RHDHDeployment {
     return found;
   }
 
-  async followLogs(
-    searchString: RegExp,
-    timeoutMs: number = 300000,
-  ): Promise<boolean> {
+  async followLogs(searchString: RegExp, timeoutMs: number = 300000): Promise<boolean> {
     if (this.isRunningLocal) {
       return this.followLocalLogs(searchString, timeoutMs);
     }
@@ -1201,18 +1114,11 @@ class RHDHDeployment {
 
   // New method to enable or disable a dynamic plugin
 
-  setDynamicPluginEnabled(
-    pluginName: string,
-    enabled: boolean,
-  ): RHDHDeployment {
-    const plugin = this.dynamicPluginsConfig.plugins.find(
-      (p) => p.package === pluginName,
-    );
+  setDynamicPluginEnabled(pluginName: string, enabled: boolean): RHDHDeployment {
+    const plugin = this.dynamicPluginsConfig.plugins.find((p) => p.package === pluginName);
     if (plugin) {
       plugin.disabled = !enabled;
-      console.log(
-        `Plugin ${pluginName} has been ${enabled ? "enabled" : "disabled"}.`,
-      );
+      console.log(`Plugin ${pluginName} has been ${enabled ? "enabled" : "disabled"}.`);
     } else {
       this.dynamicPluginsConfig.plugins = [
         ...this.dynamicPluginsConfig.plugins,
@@ -1273,8 +1179,7 @@ class RHDHDeployment {
         clientId: "${RHBK_CLIENT_ID}",
         clientSecret: "${RHBK_CLIENT_SECRET}",
         prompt: "auto",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
+        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
       },
     });
     this.setAppConfigProperty("auth.environment", "production");
@@ -1294,13 +1199,11 @@ class RHDHDeployment {
     // Enable the PingFederate OIDC login provider
     this.setAppConfigProperty("auth.providers.oidc", {
       production: {
-        metadataUrl:
-          "${PINGFEDERATE_BASE_URL}/.well-known/openid-configuration",
+        metadataUrl: "${PINGFEDERATE_BASE_URL}/.well-known/openid-configuration",
         clientId: "${PINGFEDERATE_CLIENT_ID}",
         clientSecret: "${PINGFEDERATE_CLIENT_SECRET}",
         prompt: "auto",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
+        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
       },
     });
     this.setAppConfigProperty("auth.environment", "production");
@@ -1344,8 +1247,7 @@ class RHDHDeployment {
             {
               dn: "${LDAP_GROUPS_DN}",
               options: {
-                filter:
-                  "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))", // filter only security groups
+                filter: "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))", // filter only security groups
                 scope: "sub",
               },
             },
@@ -1365,8 +1267,7 @@ class RHDHDeployment {
         clientId: "${RHBK_LDAP_CLIENT_ID}",
         clientSecret: "${RHBK_LDAP_CLIENT_SECRET}",
         prompt: "auto",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
+        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
       },
     });
     this.setAppConfigProperty("auth.environment", "production");
@@ -1419,8 +1320,7 @@ class RHDHDeployment {
         clientSecret: "${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}",
         prompt: "auto",
         tenantId: "${AUTH_PROVIDERS_AZURE_TENANT_ID}",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/microsoft/handler/frame",
+        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/microsoft/handler/frame",
       },
     });
     this.setAppConfigProperty("auth.environment", "production");
@@ -1497,8 +1397,7 @@ class RHDHDeployment {
       production: {
         clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
         clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
       },
     });
 
@@ -1517,8 +1416,7 @@ class RHDHDeployment {
 
   async updateAllConfigs(): Promise<RHDHDeployment> {
     if (!this.isRunningLocal) {
-      this.configReconcileBaselineGeneration =
-        await this.getDeploymentGeneration();
+      this.configReconcileBaselineGeneration = await this.getDeploymentGeneration();
     }
     await this.updateAppConfig();
     await this.updateDynamicPluginsConfig();
@@ -1552,16 +1450,12 @@ class RHDHDeployment {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
   ): Promise<RHDHDeployment> {
-    this.setAppConfigProperty(
-      "auth.providers.oidc.production.signIn.resolvers",
-      [
-        {
-          resolver: resolver,
-          dangerouslyAllowSignInWithoutUserInCatalog:
-            dangerouslyAllowSignInWithoutUserInCatalog,
-        },
-      ],
-    );
+    this.setAppConfigProperty("auth.providers.oidc.production.signIn.resolvers", [
+      {
+        resolver: resolver,
+        dangerouslyAllowSignInWithoutUserInCatalog: dangerouslyAllowSignInWithoutUserInCatalog,
+      },
+    ]);
     return this;
   }
 
@@ -1569,16 +1463,12 @@ class RHDHDeployment {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
   ): Promise<RHDHDeployment> {
-    this.setAppConfigProperty(
-      "auth.providers.microsoft.production.signIn.resolvers",
-      [
-        {
-          resolver: resolver,
-          dangerouslyAllowSignInWithoutUserInCatalog:
-            dangerouslyAllowSignInWithoutUserInCatalog,
-        },
-      ],
-    );
+    this.setAppConfigProperty("auth.providers.microsoft.production.signIn.resolvers", [
+      {
+        resolver: resolver,
+        dangerouslyAllowSignInWithoutUserInCatalog: dangerouslyAllowSignInWithoutUserInCatalog,
+      },
+    ]);
     return this;
   }
 
@@ -1586,16 +1476,12 @@ class RHDHDeployment {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
   ): Promise<RHDHDeployment> {
-    this.setAppConfigProperty(
-      "auth.providers.github.production.signIn.resolvers",
-      [
-        {
-          resolver: resolver,
-          dangerouslyAllowSignInWithoutUserInCatalog:
-            dangerouslyAllowSignInWithoutUserInCatalog,
-        },
-      ],
-    );
+    this.setAppConfigProperty("auth.providers.github.production.signIn.resolvers", [
+      {
+        resolver: resolver,
+        dangerouslyAllowSignInWithoutUserInCatalog: dangerouslyAllowSignInWithoutUserInCatalog,
+      },
+    ]);
     return this;
   }
 
@@ -1654,8 +1540,7 @@ class RHDHDeployment {
         audience: "https://${AUTH_PROVIDERS_GITLAB_HOST}",
         clientId: "${AUTH_PROVIDERS_GITLAB_CLIENT_ID}",
         clientSecret: "${AUTH_PROVIDERS_GITLAB_CLIENT_SECRET}",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/gitlab/handler/frame",
+        callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/gitlab/handler/frame",
       },
     });
 
@@ -1669,16 +1554,12 @@ class RHDHDeployment {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
   ): Promise<RHDHDeployment> {
-    this.setAppConfigProperty(
-      "auth.providers.gitlab.production.signIn.resolvers",
-      [
-        {
-          resolver: resolver,
-          dangerouslyAllowSignInWithoutUserInCatalog:
-            dangerouslyAllowSignInWithoutUserInCatalog,
-        },
-      ],
-    );
+    this.setAppConfigProperty("auth.providers.gitlab.production.signIn.resolvers", [
+      {
+        resolver: resolver,
+        dangerouslyAllowSignInWithoutUserInCatalog: dangerouslyAllowSignInWithoutUserInCatalog,
+      },
+    ]);
     return this;
   }
 
@@ -1729,9 +1610,7 @@ class RHDHDeployment {
     console.log(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
-    const hasAllElems = users.every((elem) =>
-      catalogUsersDisplayNames.includes(elem),
-    );
+    const hasAllElems = users.every((elem) => catalogUsersDisplayNames.includes(elem));
     return hasAllElems;
   }
 
@@ -1748,9 +1627,7 @@ class RHDHDeployment {
     console.log(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );
-    const hasAllElems = groups.every((elem) =>
-      catalogGroupsDisplayNames.includes(elem),
-    );
+    const hasAllElems = groups.every((elem) => catalogGroupsDisplayNames.includes(elem));
     return hasAllElems;
   }
 
@@ -1763,16 +1640,11 @@ class RHDHDeployment {
       throw new Error(`Invalid group entity for ${group}`);
     }
     const members = this.parseGroupMemberFromEntity(entity);
-    console.log(
-      `Checking group ${group} (${JSON.stringify(members)}) contains user ${user}`,
-    );
+    console.log(`Checking group ${group} (${JSON.stringify(members)}) contains user ${user}`);
     return members.includes(user);
   }
 
-  async checkGroupIsParentOfGroup(
-    parent: string,
-    child: string,
-  ): Promise<boolean> {
+  async checkGroupIsParentOfGroup(parent: string, child: string): Promise<boolean> {
     const api = new APIHelper();
     await api.UseStaticToken(this.staticToken);
     await api.UseBaseUrl(await this.computeBackstageBackendUrl());
@@ -1787,10 +1659,7 @@ class RHDHDeployment {
     return children.includes(child);
   }
 
-  async checkGroupIsChildOfGroup(
-    child: string,
-    parent: string,
-  ): Promise<boolean> {
+  async checkGroupIsChildOfGroup(child: string, parent: string): Promise<boolean> {
     const api = new APIHelper();
     await api.UseStaticToken(this.staticToken);
     await api.UseBaseUrl(await this.computeBackstageBackendUrl());
