@@ -235,11 +235,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     console.log("Clicking on Previous Page button");
     await rhdhInstance.clickPreviousPage();
     await common.waitForLoad();
-    await rhdhInstance.verifyPRRows(
-      allPRs,
-      lastPagePRs - 5,
-      lastPagePRs - 1,
-    );
+    await rhdhInstance.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs - 1);
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
