@@ -21,11 +21,16 @@ export class HomePage {
   }
 
   async verifyQuickAccess(section: string, items: string | string[], expand = false) {
-    const sectionLocator = HOME_PAGE_COMPONENTS.getAccordion(this.page, section);
-    await expect(sectionLocator).toBeVisible();
+    const accordionButton = HOME_PAGE_COMPONENTS.getAccordion(this.page, section);
+    await expect(accordionButton).toBeVisible();
+
+    const sectionLocator = this.page
+      /* oxlint-disable-next-line typescript/no-deprecated -- accordion items live outside the summary button node */
+      .locator(HOME_PAGE_COMPONENTS.MuiAccordion)
+      .filter({ has: accordionButton });
 
     if (expand) {
-      await sectionLocator.click();
+      await accordionButton.click();
       await expect(sectionLocator.locator('[class*="MuiAccordionDetails-root"]')).toBeVisible();
     }
 
@@ -39,7 +44,10 @@ export class HomePage {
   }
 
   async verifyVisitedCardContent(section: string) {
-    const sectionLocator = HOME_PAGE_COMPONENTS.getCard(this.page, section);
+    const sectionLocator = this.page
+      /* oxlint-disable-next-line typescript/no-deprecated -- visited cards use MuiCard-root, not region/article roles */
+      .locator(HOME_PAGE_COMPONENTS.MuiCard)
+      .filter({ hasText: section });
     await expect(sectionLocator).toBeVisible();
 
     const itemLocator = sectionLocator.locator(`li[class*="MuiListItem-root"]`);
