@@ -40,6 +40,7 @@ import {
   generateAppConfigYaml,
   generateDynamicPluginsYaml,
   generateBackstageCR,
+  BACKSTAGE_CR_API_VERSION,
 } from "./runtime-config";
 import {
   resolveInstallMethod,
@@ -50,7 +51,12 @@ import {
   imageRefToString,
 } from "./helper";
 
-/** Whether deploy has already run in this process */
+/**
+ * Whether deploy has already run in this process.
+ * Safe as a bare boolean because the showcase-runtime project runs with
+ * `workers: 1` (see playwright.config.ts) — there is exactly one namespace
+ * and one releaseName per process lifetime.
+ */
 let deployed = false;
 
 // ---------------------------------------------------------------------------
@@ -201,6 +207,11 @@ async function deployWithOperator(
   config: ReturnType<typeof resolveConfig>,
 ): Promise<string> {
   const { namespace, releaseName, routerBase } = config;
+  // The operator creates a route named backstage-<release> whose host is
+  // backstage-<release>-<namespace>.<routerBase> — this matches the CR's
+  // spec.application.route.enabled naming convention. Unlike Helm (where
+  // the chart can customise the route name), the operator's naming is
+  // deterministic, so a computed URL is sufficient here.
   const runtimeUrl = `https://backstage-${releaseName}-${namespace}.${routerBase}`;
 
   // 1. Create app-config ConfigMap (generated from runtime-config.ts)
@@ -239,7 +250,7 @@ async function deployWithOperator(
 
   // 5. Apply Backstage CR (generated from runtime-config.ts)
   const crObj = generateBackstageCR(config);
-  const apiVersion = (crObj.apiVersion as string) || "rhdh.redhat.com/v1alpha5";
+  const apiVersion = (crObj.apiVersion as string) || BACKSTAGE_CR_API_VERSION;
   const [group, version] = apiVersion.split("/");
   await kubeClient.customObjectsApi.createNamespacedCustomObject(
     group,

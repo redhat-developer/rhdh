@@ -31,6 +31,9 @@ export { type ImageRef, imageRefToString, parseCatalogIndexImage };
 const appTitle = "Red Hat Developer Hub";
 const dynamicPluginsPvcSize = "5Gi";
 
+/** Backstage CRD API version — update when the CRD version bumps. */
+export const BACKSTAGE_CR_API_VERSION = "rhdh.redhat.com/v1alpha5";
+
 // ─── Resolved configuration ─────────────────────────────────────────────────
 
 export interface RuntimeDeployConfig {
@@ -350,7 +353,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
 
   return {
     kind: "Backstage",
-    apiVersion: "rhdh.redhat.com/v1alpha5",
+    apiVersion: BACKSTAGE_CR_API_VERSION,
     metadata: { name: config.releaseName },
     spec: {
       deployment: {
