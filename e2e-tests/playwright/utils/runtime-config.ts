@@ -40,7 +40,7 @@ export interface RuntimeDeployConfig {
   releaseName: string;
   namespace: string;
   routerBase: string;
-  image: { registry: string; repository: string; tag: string };
+  image: ImageRef;
   catalogIndex?: ImageRef;
   helm?: { chartUrl: string; chartVersion: string };
 }
@@ -91,7 +91,12 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
     releaseName,
     namespace,
     routerBase,
-    image: { registry: imageRegistry, repository: imageRepo, tag: imageTag },
+    image: {
+      registry: imageRegistry,
+      repository: imageRepo,
+      tag: imageTag,
+      separator: imageTag.startsWith("sha256:") ? "@" : ":",
+    },
   };
 
   // CATALOG_INDEX_IMAGE opt-in override
@@ -330,7 +335,7 @@ export function generateDynamicPluginsYaml(): string {
  * and route configuration.
  */
 export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
-  const fullImage = `${config.image.registry}/${config.image.repository}:${config.image.tag}`;
+  const fullImage = imageRefToString(config.image);
 
   const envs: Array<Record<string, unknown>> = [
     { name: "NODE_OPTIONS", value: "--no-node-snapshot" },
