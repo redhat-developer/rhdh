@@ -6,7 +6,7 @@ import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
 test.describe("Orchestrator Workflow Runs tests", () => {
-  // skipping orchestrator tests on Operator deployment for 1.9
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
   test.fixme(() => skipIfJobName(JOB_NAME_PATTERNS.OPERATOR));
 
   let uiHelper: UIhelper;

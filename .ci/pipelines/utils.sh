@@ -500,8 +500,9 @@ waitfor_crunchy_postgres_k8s_operator() {
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
 # Use waitfor_serverless_logic_ocp_operator to wait for the operator to be ready
 install_serverless_logic_ocp_operator() {
-  log::info "Installing Serverless Logic Operator from channel stable with startingCSV logic-operator.v1.37.2"
-  install_subscription logic-operator openshift-operators stable logic-operator redhat-operators openshift-marketplace logic-operator.v1.37.2
+  local osl_starting_csv="${OSL_STARTING_CSV:-logic-operator.v1.37.2}"
+  log::info "Installing Serverless Logic Operator from channel stable with startingCSV ${osl_starting_csv}"
+  install_subscription logic-operator openshift-operators stable logic-operator redhat-operators openshift-marketplace "${osl_starting_csv}"
 }
 
 waitfor_serverless_logic_ocp_operator() {
@@ -1552,23 +1553,36 @@ get_previous_release_value_file() {
   fi
 }
 
+readonly SERVERLESS_WORKFLOWS_DEFAULT_REF="daeeee8dec16beab6d96a81774ef500081a2c2b0"
+
+checkout_serverless_workflows_ref() {
+  local workflow_dir=$1
+  local workflow_repo_ref="${SERVERLESS_WORKFLOWS_REF:-${SERVERLESS_WORKFLOWS_DEFAULT_REF}}"
+  log::info "Using serverless-workflows ref: ${workflow_repo_ref}"
+  git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}" || {
+    log::error "Failed to fetch serverless-workflows ref: ${workflow_repo_ref}"
+    return 1
+  }
+  git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}" || {
+    log::error "Failed to checkout serverless-workflows ref: ${workflow_repo_ref}"
+    return 1
+  }
+  log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
+}
+
 # Helper function to deploy workflows for orchestrator testing
 deploy_orchestrator_workflows() {
   local namespace=$1
   local release_name=$2
 
   local workflow_repo="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local workflow_repo_ref="${SERVERLESS_WORKFLOWS_REF:-daeeee8dec16beab6d96a81774ef500081a2c2b0}"
   local workflow_dir="${DIR}/serverless-workflows"
   local failswitch_manifests="${workflow_dir}/workflows/fail-switch/src/main/resources/manifests/"
   local greeting_manifests="${workflow_dir}/workflows/greeting/manifests/"
 
   rm -rf "${workflow_dir}"
-  git clone "${workflow_repo}" "${workflow_dir}"
-  log::info "Using serverless-workflows ref: ${workflow_repo_ref}"
-  git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}"
-  git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}"
-  log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
+  git clone --depth=1 "${workflow_repo}" "${workflow_dir}"
+  checkout_serverless_workflows_ref "${workflow_dir}" || return 1
 
   if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
     local pqsl_secret_name="postgres-cred"
@@ -1646,17 +1660,13 @@ deploy_orchestrator_workflows_operator() {
   local namespace=$1
 
   local workflow_repo="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local workflow_repo_ref="${SERVERLESS_WORKFLOWS_REF:-daeeee8dec16beab6d96a81774ef500081a2c2b0}"
   local workflow_dir="${DIR}/serverless-workflows"
   local failswitch_manifests="${workflow_dir}/workflows/fail-switch/src/main/resources/manifests/"
   local greeting_manifests="${workflow_dir}/workflows/greeting/manifests/"
 
   rm -rf "${workflow_dir}"
   git clone --depth=1 "${workflow_repo}" "${workflow_dir}"
-  log::info "Using serverless-workflows ref: ${workflow_repo_ref}"
-  git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}"
-  git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}"
-  log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
+  checkout_serverless_workflows_ref "${workflow_dir}" || return 1
 
   # Wait for backstage and sonata flow pods to be ready before continuing
   wait_for_deployment $namespace backstage-psql 15

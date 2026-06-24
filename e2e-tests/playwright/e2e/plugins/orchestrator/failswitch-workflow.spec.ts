@@ -151,6 +151,7 @@ async function getHttpbinValue(ns: string): Promise<string | undefined> {
 
 async function patchHttpbin(ns: string, value: string): Promise<void> {
   let existing: EnvEntry[] = [];
+  let envReadFailed = false;
   try {
     const raw = (
       await LogUtils.executeCommand("oc", [
@@ -164,10 +165,25 @@ async function patchHttpbin(ns: string, value: string): Promise<void> {
       ])
     ).trim();
     if (raw && raw !== "null") {
-      existing = JSON.parse(raw) as EnvEntry[];
+      const parsed = JSON.parse(raw) as unknown;
+      if (Array.isArray(parsed)) {
+        existing = parsed as EnvEntry[];
+      } else {
+        envReadFailed = true;
+        console.warn(
+          `[failswitch] Expected env array from sonataflow spec, got ${typeof parsed}; skipping HTTPBIN patch to avoid env clobber`,
+        );
+      }
     }
-  } catch {
-    // best effort read of current env list
+  } catch (err) {
+    envReadFailed = true;
+    console.warn(
+      `[failswitch] Failed to read existing env before HTTPBIN patch; skipping patch to avoid env clobber: ${String(err)}`,
+    );
+  }
+
+  if (envReadFailed) {
+    return;
   }
 
   const idx = existing.findIndex((entry) => entry.name === "HTTPBIN");
@@ -205,6 +221,7 @@ async function restartAndWait(ns: string): Promise<void> {
     "deployment",
     "failswitch",
   ]);
+  // 60s gives the restarted deployment enough time to reconcile in CI and avoids flaky 5s pod-ready polling loops.
   await LogUtils.executeCommand("oc", [
     "-n",
     ns,
