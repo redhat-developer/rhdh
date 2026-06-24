@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import {
   getCurrentLanguage,
@@ -10,9 +10,11 @@ const lang = getCurrentLanguage();
 
 /** Settings and profile interactions (POM wrapper over UIhelper). */
 export class SettingsPage {
+  private readonly page: Page;
   private readonly ui: UIhelper;
 
   constructor(page: Page) {
+    this.page = page;
     this.ui = new UIhelper(page);
   }
 
@@ -22,6 +24,17 @@ export class SettingsPage {
 
   async verifyProfileHeading(name: string): Promise<void> {
     await this.ui.verifyHeading(name);
+  }
+
+  async verifyGithubUserProfile(userId: string): Promise<void> {
+    await this.ui.verifyHeading(userId);
+    await this.ui.verifyHeading(`User Entity: ${userId}`);
+  }
+
+  async verifySignInButtonVisible(): Promise<void> {
+    await expect(
+      this.page.getByRole("button", { name: "Sign In" }),
+    ).toBeVisible();
   }
 
   async verifyGuestProfile(): Promise<void> {

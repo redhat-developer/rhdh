@@ -1,4 +1,4 @@
-import { Page, test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 import { Common } from "../../../utils/common";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 import { APIHelper } from "../../../utils/api-helper";
@@ -6,13 +6,6 @@ import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 import { runAccessibilityTests } from "../../../utils/accessibility";
 import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page";
 import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
-import {
-  createManagedBrowserSession,
-  type ManagedBrowserSession,
-} from "../../../support/fixtures/managed-browser";
-
-let page: Page;
-let browserSession: ManagedBrowserSession;
 
 test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   test.skip(
@@ -41,28 +34,25 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     ).toString("utf8"),
   };
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    browserSession = await createManagedBrowserSession(browser, testInfo);
-    page = browserSession.page;
-
-    common = new Common(page);
-    scaffolderFlowPage = new ScaffolderFlowPage(page);
-    catalogBrowsePage = new CatalogBrowsePage(page);
-    catalogImport = new CatalogImport(page);
+    common = new Common(rhdhPage);
+    scaffolderFlowPage = new ScaffolderFlowPage(rhdhPage);
+    catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
+    catalogImport = new CatalogImport(rhdhPage);
 
     await common.loginAsGuest();
   });
 
-  test("Register the annotator template", async ({}, testInfo) => {
+  test("Register the annotator template", async ({ rhdhPage }, testInfo) => {
     await catalogBrowsePage.openCatalogSidebar();
     await catalogBrowsePage.verifyText("Name");
 
-    await runAccessibilityTests(page, testInfo);
+    await runAccessibilityTests(rhdhPage, testInfo);
 
     await scaffolderFlowPage.openSelfServiceFromCatalog();
     await scaffolderFlowPage.clickImportGitRepository();
@@ -79,11 +69,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     );
 
     await scaffolderFlowPage.clickCreate();
-    await expect(
-      page.getByRole("link", { name: "Open in catalog" }),
-    ).toBeVisible({
-      timeout: 30_000,
-    });
+    await scaffolderFlowPage.waitForOpenInCatalogLink(30_000);
     await scaffolderFlowPage.clickOpenInCatalog();
   });
 
@@ -136,6 +122,5 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
         reactAppDetails.repo,
       ),
     );
-    await browserSession.dispose();
   });
 });

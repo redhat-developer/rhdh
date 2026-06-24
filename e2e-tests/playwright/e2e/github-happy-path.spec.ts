@@ -1,4 +1,4 @@
-import { test, expect, Page, BrowserContext } from "@support/coverage/test";
+import { test, expect } from "@support/coverage/test";
 import { Common } from "../utils/common";
 import { RESOURCES } from "../support/test-data/resources";
 import { RhdhInstance, CatalogImport } from "../support/pages/catalog-import";
@@ -6,10 +6,7 @@ import { TEMPLATES } from "../support/test-data/templates";
 import { SettingsPage } from "../support/pages/settings-page";
 import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
 import { SelfServicePage } from "../support/pages/self-service-page";
-import {
-  createManagedBrowserSession,
-  type ManagedBrowserSession,
-} from "../support/fixtures/managed-browser";
+import type { BrowserContext } from "@playwright/test";
 
 type GithubPullRequest = { title: string; number: string };
 
@@ -52,10 +49,6 @@ async function getRhdhPullRequests(
   return parseGithubPullRequests(data);
 }
 
-let page: Page;
-let browserContext: BrowserContext;
-let browserSession: ManagedBrowserSession;
-
 // Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
 test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   let common: Common;
@@ -64,6 +57,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   let selfServicePage: SelfServicePage;
   let catalogImport: CatalogImport;
   let rhdhInstance: RhdhInstance;
+  let browserContext: BrowserContext;
 
   const component =
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
@@ -75,21 +69,19 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     );
   });
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(({ rhdhPage, rhdhContext }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
 
-    browserSession = await createManagedBrowserSession(browser, testInfo);
-    page = browserSession.page;
-    browserContext = browserSession.context;
-    settingsPage = new SettingsPage(page);
-    catalogBrowsePage = new CatalogBrowsePage(page);
-    selfServicePage = new SelfServicePage(page);
-    common = new Common(page);
-    catalogImport = new CatalogImport(page);
-    rhdhInstance = new RhdhInstance(page);
+    browserContext = rhdhContext;
+    settingsPage = new SettingsPage(rhdhPage);
+    catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
+    selfServicePage = new SelfServicePage(rhdhPage);
+    common = new Common(rhdhPage);
+    catalogImport = new CatalogImport(rhdhPage);
+    rhdhInstance = new RhdhInstance(rhdhPage);
   });
 
   test("Login as a Github user from Settings page.", async () => {
@@ -107,14 +99,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
     await settingsPage.open();
-    await expect(
-      page.getByRole("heading", { name: process.env.GH_USER2_ID! }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", {
-        name: `User Entity: ${process.env.GH_USER2_ID!}`,
-      }),
-    ).toBeVisible();
+    await settingsPage.verifyGithubUserProfile(process.env.GH_USER2_ID!);
   });
 
   test("Import an existing Git repository", async () => {
@@ -149,9 +134,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     await catalogBrowsePage.selectKind("User");
     await catalogBrowsePage.searchCatalog("rhdh");
     await catalogBrowsePage.verifyTableRows(["rhdh-qe rhdh-qe"]);
-    await expect(
-      page.getByRole("cell", { name: "rhdh-qe rhdh-qe" }),
-    ).toBeVisible();
+    await catalogBrowsePage.verifyTableCell("rhdh-qe rhdh-qe");
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
@@ -160,9 +143,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
 
     for (const template of TEMPLATES) {
       await selfServicePage.waitForTemplateTitle(template, 4);
-      await expect(
-        page.getByRole("heading", { name: template, exact: true }),
-      ).toBeVisible();
+      await selfServicePage.verifyTemplateHeading(template);
     }
   });
 
@@ -171,22 +152,11 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     await catalogBrowsePage.openEntityLink("Red Hat Developer Hub");
 
     const expectedPath = "/catalog/default/component/red-hat-developer-hub";
-    // Wait for the expected path in the URL
-    // Wait until the DOM is loaded
-    await page.waitForURL(`**${expectedPath}`, {
-      waitUntil: "domcontentloaded",
-      timeout: 20000,
-    });
-    // Optionally, verify that the current URL contains the expected path
-    expect(page.url()).toContain(expectedPath);
+    await rhdhInstance.waitForEntityPath(expectedPath);
 
     await common.clickOnGHloginPopup();
     await catalogBrowsePage.verifyLink("About RHDH", { exact: false });
-
-    // Workaround for RHDHBUGS-2091: Change the size to 10 to avoid information not being displayed
-    await page.getByRole("button", { name: "20" }).click();
-    await page.getByRole("option", { name: "10", exact: true }).click();
-
+    await rhdhInstance.setPullRequestPageSize(10);
     await rhdhInstance.verifyPRStatisticsRendered();
     await rhdhInstance.verifyAboutCardIsDisplayed();
   });
@@ -198,11 +168,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   });
 
   test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async () => {
-    // Use semantic selector and wait for button to be ready (no force needed)
-    const closedButton = page.getByRole("button", { name: "CLOSED" });
-    await expect(closedButton).toBeVisible();
-    await expect(closedButton).toBeEnabled();
-    await closedButton.click();
+    await rhdhInstance.clickPullRequestFilter("CLOSED");
     const closedPRs = await getRhdhPullRequests("closed");
     await common.waitForLoad();
     await rhdhInstance.verifyPRRows(closedPRs, 0, 5);
@@ -213,19 +179,13 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     const allPRs = await getRhdhPullRequests("all", true);
 
     console.log("Clicking on ALL button");
-    // Use semantic selector and wait for button to be ready (no force needed)
-    const allButton = page.getByRole("button", { name: "ALL" });
-    await expect(allButton).toBeVisible();
-    await expect(allButton).toBeEnabled();
-    await allButton.click();
+    await rhdhInstance.clickPullRequestFilter("ALL");
     await rhdhInstance.verifyPRRows(allPRs, 0, 5);
 
     console.log("Clicking on Next Page button");
     await rhdhInstance.clickNextPage();
     await rhdhInstance.verifyPRRows(allPRs, 5, 10);
 
-    // const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
-    // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
     const lastPagePRs = 996;
 
     console.log("Clicking on Last Page button");
@@ -252,11 +212,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   test("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
     await catalogBrowsePage.openDependenciesTab();
     for (const resource of RESOURCES) {
-      const resourceElement = page.locator(
-        `#workspace:has-text("${resource}")`,
-      );
-      await resourceElement.scrollIntoViewIfNeeded();
-      await expect(resourceElement).toBeVisible();
+      await catalogBrowsePage.verifyDependencyResource(resource);
     }
   });
 
@@ -264,10 +220,6 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     await settingsPage.open();
     await common.signOut();
     await browserContext.clearCookies();
-    await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
-  });
-
-  test.afterAll(async () => {
-    await browserSession.dispose();
+    await settingsPage.verifySignInButtonVisible();
   });
 });

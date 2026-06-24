@@ -1,15 +1,8 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
+import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { Common } from "../../utils/common";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 import { SettingsPage } from "../../support/pages/settings-page";
-import {
-  createManagedBrowserSession,
-  type ManagedBrowserSession,
-} from "../../support/fixtures/managed-browser";
-let page: Page;
-let context: BrowserContext;
-let browserSession: ManagedBrowserSession;
 
 /* SUPORTED RESOLVERS
 GITHUB:
@@ -19,122 +12,61 @@ GITHUB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
-test.describe("Configure Github Provider", async () => {
+const harness = await AuthProviderHarness.create(
+  "albarbaro-test-namespace-github",
+);
+
+test.describe("Configure Github Provider", () => {
+  test.use({ baseURL: harness.backstageUrl });
+
   let common: Common;
   let settingsPage: SettingsPage;
+  let page: Page;
+  let context: BrowserContext;
 
-  const namespace = "albarbaro-test-namespace-github";
-  const appConfigMap = "app-config-rhdh";
-  const rbacConfigMap = "rbac-policy";
-  const dynamicPluginsConfigMap = "dynamic-plugins";
-  const secretName = "rhdh-secrets";
-
-  // set deployment instance
-  const deployment: RHDHDeployment = new RHDHDeployment(
-    namespace,
-    appConfigMap,
-    rbacConfigMap,
-    dynamicPluginsConfigMap,
-    secretName,
-  );
-  deployment.instanceName = "rhdh";
-
-  // compute backstage baseurl
-  const backstageUrl = await deployment.computeBackstageUrl();
-  const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
-  console.log(`Backstage BaseURL is: ${backstageUrl}`);
-
-  test.use({ baseURL: backstageUrl });
-
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage, rhdhContext }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
     });
 
-    // load default configs from yaml files
-    await deployment.loadAllConfigs();
+    page = rhdhPage;
+    context = rhdhContext;
+    common = new Common(rhdhPage);
+    settingsPage = new SettingsPage(rhdhPage);
 
-    // setup playwright helpers
-    browserSession = await createManagedBrowserSession(browser, testInfo);
-    context = browserSession.context;
-    page = browserSession.page;
-    common = new Common(page);
-    settingsPage = new SettingsPage(page);
-
-    // expect some expected variables
-
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_USER_2FA!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_APP_ID!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET!).toBeDefined();
-
-    // clean old namespaces
-    await deployment.deleteNamespaceIfExists();
-
-    // create namespace and wait for it to be active
-    await (await deployment.createNamespace()).waitForNamespaceActive();
-
-    // create all base configmaps
-    await deployment.createAllConfigs();
-
-    // generate static token
-    await deployment.generateStaticToken();
-
-    // set enviroment variables and create secret
-    if (
-      process.env.ISRUNNINGLOCAL === undefined ||
-      process.env.ISRUNNINGLOCAL === "" ||
-      process.env.ISRUNNINGLOCAL === "false"
-    ) {
-      await deployment.addSecretData("BASE_URL", backstageUrl);
-      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
-    }
-    await deployment.addSecretData(
+    harness.expectEnvVars([
       "AUTH_PROVIDERS_GH_ORG_NAME",
-      process.env.AUTH_PROVIDERS_GH_ORG_NAME!,
-    );
-    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!,
-    );
-    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!,
-    );
-    await deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_USER_PASSWORD",
+      "AUTH_PROVIDERS_GH_USER_2FA",
+      "AUTH_PROVIDERS_GH_ADMIN_2FA",
       "AUTH_PROVIDERS_GH_ORG_APP_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_APP_ID!,
-    );
-    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
-      process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY!,
-    );
-    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET!,
-    );
+    ]);
 
-    await deployment.createSecret();
+    await harness.loadConfigsAndProvisionNamespace();
+    await harness.addBaseUrlSecretsIfRemote();
+    await harness.addSecretsFromEnv({
+      AUTH_PROVIDERS_GH_ORG_NAME: "AUTH_PROVIDERS_GH_ORG_NAME",
+      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET:
+        "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+      AUTH_PROVIDERS_GH_ORG_APP_ID: "AUTH_PROVIDERS_GH_ORG_APP_ID",
+      AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY: "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
+      AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET:
+        "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
+    });
+    await harness.createSecret();
 
-    // enable github login with ingestion
     console.log("[TEST] Enabling GitHub login with ingestion...");
-    await deployment.enableGithubLoginWithIngestion();
-    await deployment.updateAllConfigs();
+    await harness.deployment.enableGithubLoginWithIngestion();
+    await harness.deployment.updateAllConfigs();
     console.log("[TEST] GitHub login with ingestion enabled successfully");
 
-    // create backstage deployment and wait for it to be ready
-    await deployment.createBackstageDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployAndWait();
   });
 
   test.beforeEach(() => {
@@ -159,14 +91,11 @@ test.describe("Configure Github Provider", async () => {
 
   test("Login with Github usernameMatchingUserEntityName resolver", async () => {
     //A github sign-in resolver that looks up the user using their github username as the entity name.
-    await deployment.setGithubResolver("usernameMatchingUserEntityName", false);
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForConfigReconciled();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployment.setGithubResolver(
+      "usernameMatchingUserEntityName",
+      false,
+    );
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
@@ -183,17 +112,11 @@ test.describe("Configure Github Provider", async () => {
 
   test("Login with Github emailMatchingUserEntityProfileEmail resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await deployment.setGithubResolver(
+    await harness.deployment.setGithubResolver(
       "emailMatchingUserEntityProfileEmail",
       false,
     );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForConfigReconciled();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
@@ -210,17 +133,11 @@ test.describe("Configure Github Provider", async () => {
 
   test("Login with Github emailLocalPartMatchingUserEntityName resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await deployment.setGithubResolver(
+    await harness.deployment.setGithubResolver(
       "emailLocalPartMatchingUserEntityName",
       false,
     );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForConfigReconciled();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
@@ -239,17 +156,11 @@ test.describe("Configure Github Provider", async () => {
   });
 
   test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty(
+    harness.deployment.setAppConfigProperty(
       "auth.providers.github.production.sessionDuration",
       "3days",
     );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForConfigReconciled();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
@@ -286,7 +197,7 @@ test.describe("Configure Github Provider", async () => {
     await expect
       .poll(
         () =>
-          deployment.checkUserIsIngestedInCatalog([
+          harness.deployment.checkUserIsIngestedInCatalog([
             "RHDH QE User 1",
             "RHDH QE Admin",
           ]),
@@ -294,35 +205,44 @@ test.describe("Configure Github Provider", async () => {
       )
       .toBe(true);
     expect(
-      await deployment.checkGroupIsIngestedInCatalog([
+      await harness.deployment.checkGroupIsIngestedInCatalog([
         "test_admins",
         "test_all",
         "test_users",
       ]),
     ).toBe(true);
     expect(
-      await deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins"),
+      await harness.deployment.checkUserIsInGroup(
+        "rhdhqeauthadmin",
+        "test_admins",
+      ),
     ).toBe(true);
     expect(
-      await deployment.checkUserIsInGroup("rhdhqeauth1", "test_users"),
-    ).toBe(true);
-
-    expect(
-      await deployment.checkGroupIsChildOfGroup("test_users", "test_all"),
-    ).toBe(true);
-    expect(
-      await deployment.checkGroupIsChildOfGroup("test_admins", "test_all"),
+      await harness.deployment.checkUserIsInGroup("rhdhqeauth1", "test_users"),
     ).toBe(true);
 
     expect(
-      await deployment.checkUserHasAnnotation(
+      await harness.deployment.checkGroupIsChildOfGroup(
+        "test_users",
+        "test_all",
+      ),
+    ).toBe(true);
+    expect(
+      await harness.deployment.checkGroupIsChildOfGroup(
+        "test_admins",
+        "test_all",
+      ),
+    ).toBe(true);
+
+    expect(
+      await harness.deployment.checkUserHasAnnotation(
         "rhdhqeauthadmin",
         "MY_CUSTOM_ANNOTATION",
         "rhdhqeauthadmin",
       ),
     ).toBe(true);
     expect(
-      await deployment.checkUserHasAnnotation(
+      await harness.deployment.checkUserHasAnnotation(
         "rhdhqeauth1",
         "MY_CUSTOM_ANNOTATION",
         "rhdhqeauth1",
@@ -331,17 +251,11 @@ test.describe("Configure Github Provider", async () => {
   });
 
   test("Login with Github as only auth provider with disableIdentityResolution should fail", async () => {
-    deployment.setAppConfigProperty(
+    harness.deployment.setAppConfigProperty(
       "auth.providers.github.production.disableIdentityResolution",
       "true",
     );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForConfigReconciled();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
@@ -358,11 +272,6 @@ test.describe("Configure Github Provider", async () => {
   });
 
   test.afterAll(async () => {
-    if (browserSession !== undefined) {
-      await browserSession.dispose();
-    }
-    console.log("[TEST] Starting cleanup...");
-    await deployment.killRunningProcess();
-    console.log("[TEST] Cleanup completed");
+    await harness.cleanup();
   });
 });

@@ -72,4 +72,27 @@ export class RhdhInstance {
       await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
     }
   }
+
+  async waitForEntityPath(path: string): Promise<void> {
+    await this.page.waitForURL(`**${path}`, {
+      waitUntil: "domcontentloaded",
+      timeout: 20_000,
+    });
+    expect(this.page.url()).toContain(path);
+  }
+
+  /** Workaround for RHDHBUGS-2091: smaller page size avoids missing PR stats. */
+  async setPullRequestPageSize(size: number): Promise<void> {
+    await this.page.getByRole("button", { name: "20" }).click();
+    await this.page
+      .getByRole("option", { name: String(size), exact: true })
+      .click();
+  }
+
+  async clickPullRequestFilter(name: string): Promise<void> {
+    const button = this.page.getByRole("button", { name });
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
+    await button.click();
+  }
 }
