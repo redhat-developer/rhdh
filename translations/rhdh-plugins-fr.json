@@ -793,23 +793,6 @@
       "badges.addedByAdmin": "Extensions ajoutées par l'administrateur"
     }
   },
-  "plugin.global-floating-action-button": {
-    "fr": {
-      "fab.create.label": "Créer",
-      "fab.create.tooltip": "Créer une entité",
-      "fab.docs.label": "Docs",
-      "fab.docs.tooltip": "Documentation",
-      "fab.apis.label": "APIs",
-      "fab.apis.tooltip": "Documentation de l'API",
-      "fab.github.label": "GitHub",
-      "fab.github.tooltip": "Référentiel GitHub",
-      "fab.bulkImport.label": "Importation en vrac",
-      "fab.bulkImport.tooltip": "Enregistrez plusieurs référentiels en masse",
-      "fab.quay.label": "Quay",
-      "fab.quay.tooltip": "Registre des conteneurs de Quay",
-      "fab.menu.tooltip": "Menu"
-    }
-  },
   "plugin.global-header": {
     "fr": {
       "help.tooltip": "Aide",
