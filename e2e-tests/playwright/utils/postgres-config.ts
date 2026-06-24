@@ -13,7 +13,7 @@
 import { readFileSync, existsSync } from "fs";
 
 import { Client } from "pg";
-import { KubeClient } from "./kube-client";
+import { KubeClient, BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 import { base64Encode } from "./helper";
 import type { AppConfigYaml } from "./runtime-config";
 
@@ -315,7 +315,7 @@ async function removeSchemaModePatchedEnvVars(
   const removed = await kubeClient.removeContainerEnvVars(
     deploymentName,
     namespace,
-    "backstage-backend",
+    BACKSTAGE_BACKEND_CONTAINER,
     (envVar) =>
       schemaModeVars.includes(envVar.name) &&
       (envVar.valueFrom?.secretKeyRef?.name?.endsWith("-postgresql") ?? false),
@@ -357,7 +357,7 @@ async function ensurePostgresCredEnvVars(
   await kubeClient.addContainerEnvVarsFromSecret(
     deploymentName,
     namespace,
-    "backstage-backend",
+    BACKSTAGE_BACKEND_CONTAINER,
     "postgres-cred",
     keys,
   );

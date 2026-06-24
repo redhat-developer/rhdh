@@ -3,7 +3,11 @@
  * Handles database setup and RHDH configuration for both Helm and Operator deployments.
  */
 
-import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
+import {
+  KubeClient,
+  getRhdhDeploymentName,
+  BACKSTAGE_BACKEND_CONTAINER,
+} from "../../utils/kube-client";
 import { base64Encode } from "../../utils/helper";
 import type { AppConfigYaml } from "../../utils/runtime-config";
 import {
@@ -172,11 +176,11 @@ export class SchemaModeTestSetup {
       this.namespace,
     );
     const containers = deployment.body.spec?.template?.spec?.containers ?? [];
-    const backstageContainer = containers.find((c) => c.name === "backstage-backend");
-    const backstageIdx = containers.findIndex((c) => c.name === "backstage-backend");
+    const backstageContainer = containers.find((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
+    const backstageIdx = containers.findIndex((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
 
     if (backstageContainer === undefined) {
-      console.warn("backstage-backend container not found in deployment");
+      console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
     } else {
       const existingEnv = backstageContainer.env ?? [];
       const requiredVars = [

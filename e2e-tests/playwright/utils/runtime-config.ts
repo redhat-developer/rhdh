@@ -21,6 +21,7 @@ import {
   imageRefToString,
   parseCatalogIndexImage,
 } from "./helper";
+import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
 // Re-export image utilities so existing `import from "./runtime-config"`
 // callers continue to work without changes.
@@ -366,7 +367,9 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
           spec: {
             template: {
               spec: {
-                containers: [{ name: "backstage-backend", image: fullImage }],
+                containers: [
+                  { name: BACKSTAGE_BACKEND_CONTAINER, image: fullImage },
+                ],
                 initContainers: [
                   { name: "install-dynamic-plugins", image: fullImage },
                 ],
