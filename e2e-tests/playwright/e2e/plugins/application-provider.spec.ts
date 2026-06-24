@@ -31,6 +31,7 @@ test.describe("Test ApplicationProvider", () => {
     await uiHelper.verifyTextinCard("Context one", "Context one");
 
     // Find card containers within main article that contain "Context one"
+    /* oxlint-disable playwright/no-raw-locators -- per-card containers are nested divs inside one article */
     const contextOneCards = page
       .getByRole("main")
       .getByRole("article")
@@ -57,6 +58,7 @@ test.describe("Test ApplicationProvider", () => {
       .getByRole("article")
       .locator("> div > div")
       .filter({ hasText: "Context two" });
+    /* oxlint-enable playwright/no-raw-locators */
 
     // Click increment on the first Context two card
     await contextTwoCards.first().getByRole("button", { name: "+" }).click();

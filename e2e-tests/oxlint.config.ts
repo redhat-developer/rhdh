@@ -69,14 +69,6 @@ export default defineConfig({
   },
   overrides: [
     {
-      // Application-provider cards are nested divs inside one article; role-based
-      // locators alone match multiple counters/buttons (strict mode failures in CI).
-      files: ["playwright/e2e/plugins/application-provider.spec.ts"],
-      rules: {
-        "playwright/no-raw-locators": "off",
-      },
-    },
-    {
       files: ["playwright/e2e/auth-providers/**/*.spec.ts"],
       rules: {
         "typescript/strict-void-return": "off",
