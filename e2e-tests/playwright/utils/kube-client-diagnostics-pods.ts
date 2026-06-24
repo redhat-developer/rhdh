@@ -1,4 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
+
 import {
   DEFAULT_BACKSTAGE_LABEL_SELECTOR,
   formatContainerStartedAt,
@@ -10,9 +11,7 @@ function logWaitingContainerStatus(
   containerName: string,
   waiting: k8s.V1ContainerStateWaiting,
 ): void {
-  console.log(
-    `  ${containerName}: Waiting - ${waiting.reason}: ${waiting.message}`,
-  );
+  console.log(`  ${containerName}: Waiting - ${waiting.reason}: ${waiting.message}`);
 }
 
 function logRunningContainerStatus(
@@ -36,9 +35,7 @@ function logTerminatedContainerStatus(
   }
 }
 
-function logSingleContainerStatus(
-  containerStatus: k8s.V1ContainerStatus,
-): void {
+function logSingleContainerStatus(containerStatus: k8s.V1ContainerStatus): void {
   const containerName = containerStatus.name;
   const waiting = containerStatus.state?.waiting;
   const running = containerStatus.state?.running;
@@ -96,10 +93,7 @@ export async function logPodConditionsImpl(
       const podName = podNameOrUnknown(pod.metadata?.name);
       const phase = pod.status?.phase;
       console.log(`Pod: ${podName} (Phase: ${phase})`);
-      console.log(
-        "Conditions:",
-        JSON.stringify(pod.status?.conditions, null, 2),
-      );
+      console.log("Conditions:", JSON.stringify(pod.status?.conditions, null, 2));
       logPodContainerStatuses(pod);
     }
   } catch (error) {
@@ -115,9 +109,7 @@ async function readContainerLogs(
   namespace: string,
   containerName: string,
 ): Promise<void> {
-  console.log(
-    `\n=== Pod ${podName} - Container ${containerName} Logs (last 100 lines) ===`,
-  );
+  console.log(`\n=== Pod ${podName} - Container ${containerName} Logs (last 100 lines) ===`);
   const logs = await coreV1Api.readNamespacedPodLog(
     podName,
     namespace,
@@ -143,10 +135,7 @@ async function readContainerLogs(
   console.log("(No logs available)");
 }
 
-function resolvePodContainers(
-  pod: k8s.V1Pod,
-  containerName?: string,
-): Array<{ name: string }> {
+function resolvePodContainers(pod: k8s.V1Pod, containerName?: string): Array<{ name: string }> {
   if (containerName !== undefined && containerName !== "") {
     return [{ name: containerName }];
   }
@@ -190,25 +179,18 @@ export async function logPodContainerLogsImpl(
           await readContainerLogs(coreV1Api, podName, namespace, cn);
         } catch (logError) {
           const errorMsg = getKubeApiErrorMessage(logError);
-          console.warn(
-            `Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`,
-          );
+          console.warn(`Could not retrieve logs for pod ${podName} container ${cn}: ${errorMsg}`);
         }
       }
     }
   } catch (error) {
-    console.error(
-      `Error retrieving pod logs: ${getKubeApiErrorMessage(error)}`,
-    );
+    console.error(`Error retrieving pod logs: ${getKubeApiErrorMessage(error)}`);
   }
 }
 
 export async function logPodConditionsForDeploymentImpl(
   logPodConditions: (namespace: string, labelSelector: string) => Promise<void>,
-  getDeploymentPodSelector: (
-    deploymentName: string,
-    namespace: string,
-  ) => Promise<string>,
+  getDeploymentPodSelector: (deploymentName: string, namespace: string) => Promise<string>,
   deploymentName: string,
   namespace: string,
 ): Promise<void> {

@@ -1,4 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
+
 import { getErrorMessage, hasErrorResponse, hasStatusCode } from "./errors";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -79,9 +80,7 @@ export function formatEventTimestamp(event: k8s.CoreV1Event): string {
   return "unknown";
 }
 
-export function formatContainerStartedAt(
-  startedAt: Date | string | undefined,
-): string {
+export function formatContainerStartedAt(startedAt: Date | string | undefined): string {
   if (startedAt === undefined || startedAt === "") {
     return "unknown";
   }
@@ -110,9 +109,7 @@ export function getKubeApiErrorMessage(error: unknown): string {
     const response: unknown = error.response;
     if (isRecord(response) && typeof response.statusCode === "number") {
       const statusMessage =
-        typeof response.statusMessage === "string"
-          ? response.statusMessage
-          : "Unknown error";
+        typeof response.statusMessage === "string" ? response.statusMessage : "Unknown error";
       return `HTTP ${String(response.statusCode)}: ${statusMessage}`;
     }
   }
@@ -144,10 +141,7 @@ export function getRhdhDeploymentName(): string {
   return `${releaseName}-developer-hub`;
 }
 
-export function rejectAsError(
-  reject: (reason: Error) => void,
-  err: unknown,
-): void {
+export function rejectAsError(reject: (reason: Error) => void, err: unknown): void {
   reject(err instanceof Error ? err : new Error(getErrorMessage(err)));
 }
 

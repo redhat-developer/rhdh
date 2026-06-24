@@ -1,7 +1,9 @@
-import * as k8s from "@kubernetes/client-node";
 import { ChildProcess } from "child_process";
+
+import * as k8s from "@kubernetes/client-node";
 import { expect } from "@playwright/test";
 import { v4 as uuidv4 } from "uuid";
+
 import {
   enableGithubLoginWithIngestion,
   enableGitlabLoginWithIngestion,
@@ -153,11 +155,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     return this;
   }
 
-  setConfigProperty(
-    config: Record<string, unknown>,
-    path: string,
-    value: unknown,
-  ): RHDHDeployment {
+  setConfigProperty(config: Record<string, unknown>, path: string, value: unknown): RHDHDeployment {
     const parts = path.split(".");
     let current: Record<string, unknown> = config;
 
@@ -199,10 +197,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     return this.getConfig(this.appConfig);
   }
 
-  setDynamicPluginsConfigProperty(
-    path: string,
-    value: unknown,
-  ): RHDHDeployment {
+  setDynamicPluginsConfigProperty(path: string, value: unknown): RHDHDeployment {
     return this.setConfigProperty(this.dynamicPluginsConfig, path, value);
   }
 
@@ -388,10 +383,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     expect(isReachable).toBe(true);
   }
 
-  setDynamicPluginEnabled(
-    pluginName: string,
-    enabled: boolean,
-  ): RHDHDeployment {
+  setDynamicPluginEnabled(pluginName: string, enabled: boolean): RHDHDeployment {
     setDynamicPluginEnabledImpl(this, pluginName, enabled);
     return this;
   }
@@ -434,8 +426,7 @@ class RHDHDeployment implements RHDHDeploymentState {
 
   async updateAllConfigs(): Promise<RHDHDeployment> {
     if (!this.isRunningLocal) {
-      this.configReconcileBaselineGeneration =
-        await this.getDeploymentGeneration();
+      this.configReconcileBaselineGeneration = await this.getDeploymentGeneration();
     }
     await this.updateAppConfig();
     await this.updateDynamicPluginsConfig();
@@ -466,11 +457,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog = false,
   ): Promise<RHDHDeployment> {
-    setOIDCResolverImpl(
-      this,
-      resolver,
-      dangerouslyAllowSignInWithoutUserInCatalog,
-    );
+    setOIDCResolverImpl(this, resolver, dangerouslyAllowSignInWithoutUserInCatalog);
     return Promise.resolve(this);
   }
 
@@ -478,11 +465,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog = false,
   ): Promise<RHDHDeployment> {
-    setMicrosoftResolverImpl(
-      this,
-      resolver,
-      dangerouslyAllowSignInWithoutUserInCatalog,
-    );
+    setMicrosoftResolverImpl(this, resolver, dangerouslyAllowSignInWithoutUserInCatalog);
     return Promise.resolve(this);
   }
 
@@ -490,11 +473,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog = false,
   ): Promise<RHDHDeployment> {
-    setGithubResolverImpl(
-      this,
-      resolver,
-      dangerouslyAllowSignInWithoutUserInCatalog,
-    );
+    setGithubResolverImpl(this, resolver, dangerouslyAllowSignInWithoutUserInCatalog);
     return Promise.resolve(this);
   }
 
@@ -507,11 +486,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     resolver: string,
     dangerouslyAllowSignInWithoutUserInCatalog = false,
   ): Promise<RHDHDeployment> {
-    setGitlabResolverImpl(
-      this,
-      resolver,
-      dangerouslyAllowSignInWithoutUserInCatalog,
-    );
+    setGitlabResolverImpl(this, resolver, dangerouslyAllowSignInWithoutUserInCatalog);
     return Promise.resolve(this);
   }
 
@@ -525,33 +500,23 @@ class RHDHDeployment implements RHDHDeploymentState {
   parseGroupParentFromEntity = parseGroupParentFromEntity;
 
   checkUserIsIngestedInCatalog(users: string[]): Promise<boolean> {
-    return checkUserIsIngestedInCatalog(this, users, () =>
-      this.computeBackstageBackendUrl(),
-    );
+    return checkUserIsIngestedInCatalog(this, users, () => this.computeBackstageBackendUrl());
   }
 
   checkGroupIsIngestedInCatalog(groups: string[]): Promise<boolean> {
-    return checkGroupIsIngestedInCatalog(this, groups, () =>
-      this.computeBackstageBackendUrl(),
-    );
+    return checkGroupIsIngestedInCatalog(this, groups, () => this.computeBackstageBackendUrl());
   }
 
   checkUserIsInGroup(user: string, group: string): Promise<boolean> {
-    return checkUserIsInGroup(this, user, group, () =>
-      this.computeBackstageBackendUrl(),
-    );
+    return checkUserIsInGroup(this, user, group, () => this.computeBackstageBackendUrl());
   }
 
   checkGroupIsParentOfGroup(parent: string, child: string): Promise<boolean> {
-    return checkGroupIsParentOfGroup(this, parent, child, () =>
-      this.computeBackstageBackendUrl(),
-    );
+    return checkGroupIsParentOfGroup(this, parent, child, () => this.computeBackstageBackendUrl());
   }
 
   checkGroupIsChildOfGroup(child: string, parent: string): Promise<boolean> {
-    return checkGroupIsChildOfGroup(this, child, parent, () =>
-      this.computeBackstageBackendUrl(),
-    );
+    return checkGroupIsChildOfGroup(this, child, parent, () => this.computeBackstageBackendUrl());
   }
 
   checkUserHasAnnotation(
@@ -559,12 +524,8 @@ class RHDHDeployment implements RHDHDeploymentState {
     annotationKey: string,
     expectedValue: string,
   ): Promise<boolean> {
-    return checkUserHasAnnotation(
-      this,
-      user,
-      annotationKey,
-      expectedValue,
-      () => this.computeBackstageBackendUrl(),
+    return checkUserHasAnnotation(this, user, annotationKey, expectedValue, () =>
+      this.computeBackstageBackendUrl(),
     );
   }
 }

@@ -1,14 +1,10 @@
-import { UIhelper } from "./ui-helper";
-import { authenticator } from "otplib";
-import { test, Page } from "@playwright/test";
-import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import * as fs from "fs";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../e2e/localization/locale";
-import { getErrorMessage } from "./errors";
-import { parseAuthStateCookies } from "./common-browser";
+
+import { test, Page } from "@playwright/test";
+import { authenticator } from "otplib";
+
+import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale";
+import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import {
   handleGitHubPopupLogin,
   handleGitlabPopupLogin,
@@ -16,6 +12,9 @@ import {
   handleMicrosoftAzurePopupLogin,
   handlePingFederatePopupLogin,
 } from "./common-auth-popup";
+import { parseAuthStateCookies } from "./common-browser";
+import { getErrorMessage } from "./errors";
+import { UIhelper } from "./ui-helper";
 
 export { setupBrowser, teardownBrowser } from "./common-browser";
 
@@ -47,9 +46,7 @@ export class Common {
     });
 
     await this.uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
-    await this.uiHelper.clickButton(
-      t["core-components"][lang]["signIn.guestProvider.enter"],
-    );
+    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.guestProvider.enter"]);
     await this.uiHelper.waitForSideBarVisible();
   }
 
@@ -91,10 +88,7 @@ export class Common {
       (await this.uiHelper.isTextVisible(
         "The two-factor code you entered has already been used",
       )) ||
-      (await this.uiHelper.isTextVisible(
-        "too many codes have been submitted",
-        3000,
-      ))
+      (await this.uiHelper.isTextVisible("too many codes have been submitted", 3000))
     ) {
       // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
       await new Promise<void>((resolve) => {
@@ -141,24 +135,18 @@ export class Common {
     const sessionFileName = `authState_${userid}.json`;
 
     if (fs.existsSync(sessionFileName)) {
-      const cookies = parseAuthStateCookies(
-        fs.readFileSync(sessionFileName, "utf-8"),
-      );
+      const cookies = parseAuthStateCookies(fs.readFileSync(sessionFileName, "utf-8"));
       await this.page.context().addCookies(cookies);
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
       await this.waitForLoad(12000);
-      await this.uiHelper.clickButton(
-        t["core-components"][lang]["signIn.title"],
-      );
+      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
       await this.checkAndReauthorizeGithubApp();
     } else {
       await this.logintoGithub(userid);
       await this.page.goto("/");
       await this.waitForLoad(240000);
-      await this.uiHelper.clickButton(
-        t["core-components"][lang]["signIn.title"],
-      );
+      await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForSideBarVisible();
       await this.page.context().storageState({ path: sessionFileName });
@@ -207,15 +195,11 @@ export class Common {
       await this.uiHelper.clickButton(
         t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
       );
-      await this.uiHelper.clickButton(
-        t["core-components"][lang]["oauthRequestDialog.login"],
-      );
+      await this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]);
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
-      console.log(
-        '"Log in" button is not visible. Skipping login popup actions.',
-      );
+      console.log('"Log in" button is not visible. Skipping login popup actions.');
     }
   }
 
@@ -274,11 +258,7 @@ export class Common {
     return handleGitHubPopupLogin(popup, username, password, twofactor);
   }
 
-  async githubLoginFromSettingsPage(
-    username: string,
-    password: string,
-    twofactor: string,
-  ) {
+  async githubLoginFromSettingsPage(username: string, password: string, twofactor: string) {
     await this.page.goto("/settings/auth-providers");
 
     const [popup] = await Promise.all([
@@ -291,9 +271,7 @@ export class Common {
           ),
         )
         .click(),
-      this.uiHelper.clickButton(
-        t["core-components"][lang]["oauthRequestDialog.login"],
-      ),
+      this.uiHelper.clickButton(t["core-components"][lang]["oauthRequestDialog.login"]),
     ]);
 
     return handleGitHubPopupLogin(popup, username, password, twofactor);

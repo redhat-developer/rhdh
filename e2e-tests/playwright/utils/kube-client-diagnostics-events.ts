@@ -1,4 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
+
 import {
   DEFAULT_BACKSTAGE_LABEL_SELECTOR,
   formatEventTimestamp,
@@ -22,21 +23,14 @@ function collectPodNames(
   });
   allPodsResponse.body.items.forEach((pod) => {
     const name = pod.metadata?.name;
-    if (
-      name !== undefined &&
-      name !== "" &&
-      name.includes(BACKSTAGE_POD_NAME_FRAGMENT)
-    ) {
+    if (name !== undefined && name !== "" && name.includes(BACKSTAGE_POD_NAME_FRAGMENT)) {
       podNames.add(name);
     }
   });
   return podNames;
 }
 
-function isRelevantPodEvent(
-  event: k8s.CoreV1Event,
-  podNames: Set<string>,
-): boolean {
+function isRelevantPodEvent(event: k8s.CoreV1Event, podNames: Set<string>): boolean {
   const involvedObject = event.involvedObject;
   if (involvedObject?.kind !== "Pod") {
     return false;
@@ -53,9 +47,7 @@ function isRelevantPodEvent(
 function logPodEvent(event: k8s.CoreV1Event): void {
   const podName = podNameOrUnknown(event.involvedObject?.name);
   const timestamp = formatEventTimestamp(event);
-  console.log(
-    `  [${timestamp}] Pod ${podName}: [${event.type}] ${event.reason}: ${event.message}`,
-  );
+  console.log(`  [${timestamp}] Pod ${podName}: [${event.type}] ${event.reason}: ${event.message}`);
 }
 
 async function logExistingPodLogs(
@@ -92,9 +84,7 @@ async function logExistingPodLogs(
         });
       }
     } catch (logError) {
-      console.log(
-        `  Could not get logs from ${podName}: ${getKubeApiErrorMessage(logError)}`,
-      );
+      console.log(`  Could not get logs from ${podName}: ${getKubeApiErrorMessage(logError)}`);
     }
   }
 }
@@ -139,11 +129,7 @@ export async function logPodEventsImpl(
   const selector = labelSelector ?? DEFAULT_BACKSTAGE_LABEL_SELECTOR;
 
   try {
-    const { podsResponse, podEvents } = await fetchPodEventContext(
-      coreV1Api,
-      namespace,
-      selector,
-    );
+    const { podsResponse, podEvents } = await fetchPodEventContext(coreV1Api, namespace, selector);
 
     if (podEvents.length > 0) {
       console.log(`Recent pod events (last ${podEvents.length}):`);

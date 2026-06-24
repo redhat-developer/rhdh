@@ -1,4 +1,5 @@
 import { request } from "@playwright/test";
+
 import {
   type CatalogLocationEntry,
   isCatalogLocationEntry,
@@ -6,9 +7,7 @@ import {
   parseJsonResponse,
 } from "./api-helper-guards";
 
-export async function getEntityUidByName(
-  name: string,
-): Promise<string | undefined> {
+export async function getEntityUidByName(name: string): Promise<string | undefined> {
   const baseUrl = process.env.BASE_URL;
   const url = `${baseUrl}/api/catalog/entities/by-name/template/default/${name}`;
   const context = await request.newContext();
@@ -76,9 +75,7 @@ export async function registerLocation(target: string): Promise<number> {
   return response.status();
 }
 
-export async function getLocationIdByTarget(
-  target: string,
-): Promise<string | undefined> {
+export async function getLocationIdByTarget(target: string): Promise<string | undefined> {
   const baseUrl = process.env.BASE_URL;
   const url = `${baseUrl}/api/catalog/locations`;
   const context = await request.newContext();

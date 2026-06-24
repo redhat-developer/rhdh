@@ -13,9 +13,7 @@ export const WaitStrategies = {
     await page.waitForResponse((response) => {
       const url = response.url();
       const matchesUrl =
-        typeof urlPattern === "string"
-          ? url.includes(urlPattern)
-          : urlPattern.test(url);
+        typeof urlPattern === "string" ? url.includes(urlPattern) : urlPattern.test(url);
       return matchesUrl && response.status() === statusCode;
     });
   },

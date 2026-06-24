@@ -1,5 +1,5 @@
-import { authenticator } from "otplib";
 import { expect, type Locator, type Page } from "@playwright/test";
+import { authenticator } from "otplib";
 
 export async function waitForAuthPopupReady(popup: Page): Promise<void> {
   await expect(async () => {
@@ -75,9 +75,7 @@ async function findGitlabAuthorizeButton(popup: Page): Promise<Locator> {
       buttonToClick = authorization;
       return true;
     }
-    if (
-      await authorizationByText.isVisible({ timeout: 2000 }).catch(() => false)
-    ) {
+    if (await authorizationByText.isVisible({ timeout: 2000 }).catch(() => false)) {
       buttonToClick = authorizationByText;
       return true;
     }
@@ -93,10 +91,7 @@ async function findGitlabAuthorizeButton(popup: Page): Promise<Locator> {
   return buttonToClick;
 }
 
-async function clickGitlabAuthorizeButton(
-  popup: Page,
-  authorizeButton: Locator,
-): Promise<void> {
+async function clickGitlabAuthorizeButton(popup: Page, authorizeButton: Locator): Promise<void> {
   await popup
     .getByRole("document")
     .click({ timeout: 1000 })
@@ -133,9 +128,7 @@ export async function handleGitlabPopupLogin(
     await popup.locator("#user_password").fill(password, { timeout: 5000 });
     await popup.getByTestId("sign-in-button").click({ timeout: 5000 });
 
-    await popup
-      .waitForLoadState("domcontentloaded", { timeout: 10000 })
-      .catch(() => {});
+    await popup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => {});
 
     const twoFactorInput = popup.locator("#user_otp_attempt");
     if (await twoFactorInput.isVisible({ timeout: 5000 })) {
@@ -166,18 +159,12 @@ async function fillMicrosoftCredentials(
   try {
     await popup.locator("[name=loginfmt]").click();
     await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
-    await popup
-      .locator('[type=submit]:has-text("Next")')
-      .click({ timeout: 5000 });
+    await popup.locator('[type=submit]:has-text("Next")').click({ timeout: 5000 });
 
     await popup.locator("[name=passwd]").click();
     await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
-    await popup
-      .locator('[type=submit]:has-text("Sign in")')
-      .click({ timeout: 5000 });
-    await popup
-      .locator('[type=button]:has-text("No")')
-      .click({ timeout: 15000 });
+    await popup.locator('[type=submit]:has-text("Sign in")').click({ timeout: 5000 });
+    await popup.locator('[type=button]:has-text("No")').click({ timeout: 15000 });
     return "Login successful";
   } catch (e) {
     const usernameError = popup.locator("id=usernameError");

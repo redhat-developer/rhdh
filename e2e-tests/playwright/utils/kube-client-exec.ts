@@ -1,5 +1,7 @@
 import * as stream from "stream";
+
 import * as k8s from "@kubernetes/client-node";
+
 import { getKubeApiErrorMessage } from "./kube-client-helpers";
 
 function createOutputCaptureStreams(): {
@@ -30,9 +32,7 @@ function createOutputCaptureStreams(): {
 
 function buildExecFailureMessage(status: k8s.V1Status, stderr: string): string {
   const statusMessage =
-    status.message !== undefined && status.message !== ""
-      ? status.message
-      : undefined;
+    status.message !== undefined && status.message !== "" ? status.message : undefined;
   const stderrMessage = stderr === "" ? "unknown error" : stderr;
   return statusMessage ?? stderrMessage;
 }

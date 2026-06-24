@@ -1,20 +1,14 @@
-import { JANUS_ORG } from "../../utils/constants";
-import { APIHelper } from "../../utils/api-helper";
 import { GITHUB_API_ENDPOINTS } from "../../utils/api-endpoints";
+import { APIHelper } from "../../utils/api-helper";
+import { JANUS_ORG } from "../../utils/constants";
 
 // https://docs.github.com/en/rest?apiVersion=2022-11-28
 export default class GithubApi {
   public getReposFromOrg(org = JANUS_ORG) {
-    return APIHelper.getGithubPaginatedRequest(
-      GITHUB_API_ENDPOINTS.orgRepos(org),
-    );
+    return APIHelper.getGithubPaginatedRequest(GITHUB_API_ENDPOINTS.orgRepos(org));
   }
 
-  public async fileExistsInRepo(
-    owner: string,
-    repo: string,
-    file: string,
-  ): Promise<boolean> {
+  public async fileExistsInRepo(owner: string, repo: string, file: string): Promise<boolean> {
     const resp = await APIHelper.githubRequest(
       "GET",
       `${GITHUB_API_ENDPOINTS.contents(owner, repo)}/${file}`,

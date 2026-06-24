@@ -1,4 +1,5 @@
 import { GroupEntity } from "@backstage/catalog-model";
+
 import { APIHelper } from "../api-helper";
 import {
   getCatalogGroups,
@@ -21,18 +22,14 @@ export function parseGroupChildrenFromEntity(group: GroupEntity): string[] {
   if (group.relations === undefined) {
     return [];
   }
-  return group.relations
-    .filter((r) => r.type === "parentOf")
-    .map((r) => r.targetRef.split("/")[1]);
+  return group.relations.filter((r) => r.type === "parentOf").map((r) => r.targetRef.split("/")[1]);
 }
 
 export function parseGroupParentFromEntity(group: GroupEntity): string[] {
   if (group.relations === undefined) {
     return [];
   }
-  return group.relations
-    .filter((r) => r.type === "childOf")
-    .map((r) => r.targetRef.split("/")[1]);
+  return group.relations.filter((r) => r.type === "childOf").map((r) => r.targetRef.split("/")[1]);
 }
 
 async function createCatalogApi(
@@ -95,9 +92,7 @@ export async function checkUserIsInGroup(
     throw new Error(`Invalid group entity for ${group}`);
   }
   const members = parseGroupMemberFromEntity(entity);
-  console.log(
-    `Checking group ${group} (${JSON.stringify(members)}) contains user ${user}`,
-  );
+  console.log(`Checking group ${group} (${JSON.stringify(members)}) contains user ${user}`);
   return members.includes(user);
 }
 
@@ -131,9 +126,7 @@ export async function checkGroupIsChildOfGroup(
     throw new Error(`Invalid group entity for ${child}`);
   }
   const parents = parseGroupParentFromEntity(entity);
-  console.log(
-    `Checking parents of ${child} (${JSON.stringify(parents)}) contain group ${parent}`,
-  );
+  console.log(`Checking parents of ${child} (${JSON.stringify(parents)}) contain group ${parent}`);
   return parents.includes(parent);
 }
 

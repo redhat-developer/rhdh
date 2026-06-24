@@ -1,9 +1,5 @@
-import {
-  APIRequestContext,
-  APIResponse,
-  Page,
-  request,
-} from "@playwright/test";
+import { APIRequestContext, APIResponse, Page, request } from "@playwright/test";
+
 import playwrightConfig from "../../../playwright.config";
 import { Policy, Role } from "./rbac-api-structures";
 import { RhdhAuthApiHack } from "./rhdh-auth-api-hack";
@@ -46,11 +42,7 @@ export default class RhdhRbacApi {
     return this.myContext.get(`roles/role/${role}`);
   }
 
-  public updateRole(
-    role: string,
-    oldRole: Role,
-    newRole: Role,
-  ): Promise<APIResponse> {
+  public updateRole(role: string, oldRole: Role, newRole: Role): Promise<APIResponse> {
     this.checkRoleFormat(role);
     return this.myContext.put(`roles/role/${role}`, {
       data: { oldRole, newRole },
@@ -125,9 +117,7 @@ export default class RhdhRbacApi {
 
   private checkRoleFormat(role: string) {
     if (!this.roleRegex.test(role)) {
-      throw new Error(
-        "roles passed to the Rbac api must have format like: default/admin",
-      );
+      throw new Error("roles passed to the Rbac api must have format like: default/admin");
     }
   }
 

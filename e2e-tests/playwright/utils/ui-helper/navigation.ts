@@ -1,15 +1,8 @@
 import { expect, Page } from "@playwright/test";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../../e2e/localization/locale";
+
+import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
 import { getErrorMessage } from "../errors";
-import {
-  clickButtonByText,
-  clickByDataTestId,
-  clickLink,
-  getGlobalHeader,
-} from "./interaction";
+import { clickButtonByText, clickByDataTestId, clickLink, getGlobalHeader } from "./interaction";
 import { verifyHeading } from "./verification";
 
 const t = getTranslations();
@@ -65,11 +58,7 @@ export async function openSidebar(page: Page, navBarText: string) {
 
 export async function openCatalogSidebar(page: Page, kind: string) {
   await openSidebar(page, t["rhdh"][lang]["menuItem.catalog"]);
-  await selectMuiBox(
-    page,
-    t["catalog-react"][lang]["entityKindPicker.title"],
-    kind,
-  );
+  await selectMuiBox(page, t["catalog-react"][lang]["entityKindPicker.title"], kind);
   await expect(async () => {
     await clickByDataTestId(page, "user-picker-all");
     await verifyHeading(page, new RegExp(`all ${kind}`, "iu"));
@@ -85,12 +74,7 @@ export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
   await navLink.click();
 }
 
-export async function selectMuiBox(
-  page: Page,
-  label: string,
-  value: string,
-  notVisible?: boolean,
-) {
+export async function selectMuiBox(page: Page, label: string, value: string, notVisible?: boolean) {
   // Wait for any overlaying dialogs to close before interacting
   await page
     .getByRole("dialog")

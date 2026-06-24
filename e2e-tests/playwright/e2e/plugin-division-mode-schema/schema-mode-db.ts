@@ -29,9 +29,7 @@ export function normalizeDbHost(host: string): string {
 
 let portForwardRestarter: (() => Promise<void>) | null = null;
 
-export function setPortForwardRestarter(
-  fn: (() => Promise<void>) | null,
-): void {
+export function setPortForwardRestarter(fn: (() => Promise<void>) | null): void {
   portForwardRestarter = fn;
 }
 
@@ -71,9 +69,7 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
             );
           }
         } else {
-          console.warn(
-            `Connection attempt ${attempt}/${maxRetries} failed, retrying...`,
-          );
+          console.warn(`Connection attempt ${attempt}/${maxRetries} failed, retrying...`);
         }
 
         const delay = Math.min(2000 * attempt, 10000);
@@ -86,11 +82,8 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
     }
   }
 
-  const errorMsg =
-    lastError instanceof Error ? lastError.message : String(lastError);
-  throw new Error(
-    `Failed to connect after ${maxRetries} attempts: ${errorMsg}`,
-  );
+  const errorMsg = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`Failed to connect after ${maxRetries} attempts: ${errorMsg}`);
 }
 
 const defaultConnectionOptions: Partial<ClientConfig> = {
@@ -108,18 +101,12 @@ export function getSchemaModeEnv(): SchemaModeEnv {
   const dbAdminPassword = process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD;
   const dbPassword = process.env.SCHEMA_MODE_DB_PASSWORD;
 
-  expect(
-    dbHost,
-    "SCHEMA_MODE_DB_HOST must be set for schema-mode tests",
-  ).toBeTruthy();
+  expect(dbHost, "SCHEMA_MODE_DB_HOST must be set for schema-mode tests").toBeTruthy();
   expect(
     dbAdminPassword,
     "SCHEMA_MODE_DB_ADMIN_PASSWORD must be set for schema-mode tests",
   ).toBeTruthy();
-  expect(
-    dbPassword,
-    "SCHEMA_MODE_DB_PASSWORD must be set for schema-mode tests",
-  ).toBeTruthy();
+  expect(dbPassword, "SCHEMA_MODE_DB_PASSWORD must be set for schema-mode tests").toBeTruthy();
 
   return {
     dbHost: dbHost!,
@@ -144,9 +131,7 @@ export function connectAdminClient(
   });
 }
 
-export async function cleanupOldPluginDatabases(
-  adminClient: Client,
-): Promise<void> {
+export async function cleanupOldPluginDatabases(adminClient: Client): Promise<void> {
   const oldDbsResult = await adminClient.query<{ datname: string }>(`
     SELECT datname FROM pg_database
     WHERE datistemplate = false
@@ -158,9 +143,7 @@ export async function cleanupOldPluginDatabases(
     return;
   }
 
-  console.log(
-    `Found ${oldDbsResult.rows.length} old plugin databases, cleaning up...`,
-  );
+  console.log(`Found ${oldDbsResult.rows.length} old plugin databases, cleaning up...`);
 
   for (const db of oldDbsResult.rows) {
     try {
@@ -171,9 +154,7 @@ export async function cleanupOldPluginDatabases(
         [db.datname],
       );
 
-      await adminClient.query(
-        `DROP DATABASE IF EXISTS ${quoteIdent(db.datname)}`,
-      );
+      await adminClient.query(`DROP DATABASE IF EXISTS ${quoteIdent(db.datname)}`);
       console.log(`  Dropped: ${db.datname}`);
     } catch (err) {
       console.warn(
@@ -187,15 +168,12 @@ export async function setupSchemaModeDatabase(
   adminClient: Client,
   config: SchemaModeEnv,
 ): Promise<void> {
-  const { dbHost, dbAdminUser, dbAdminPassword, dbName, dbUser, dbPassword } =
-    config;
+  const { dbHost, dbAdminUser, dbAdminPassword, dbName, dbUser, dbPassword } = config;
 
   if (dbName === "postgres") {
     console.log(`✓ Using default postgres database`);
   } else {
-    await adminClient
-      .query(`CREATE DATABASE ${quoteIdent(dbName)}`)
-      .catch(() => {});
+    await adminClient.query(`CREATE DATABASE ${quoteIdent(dbName)}`).catch(() => {});
     console.log(`✓ Created/verified test database: ${dbName}`);
   }
 
@@ -250,15 +228,9 @@ export async function setupSchemaModeDatabase(
   });
 
   try {
-    await dbClient.query(
-      `GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
-    );
-    await dbClient.query(
-      `GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
-    );
-    await dbClient.query(
-      `GRANT CREATE ON SCHEMA public TO ${quoteIdent(dbUser)}`,
-    );
+    await dbClient.query(`GRANT CREATE ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`);
+    await dbClient.query(`GRANT USAGE ON SCHEMA public TO ${quoteIdent(dbUser)}`);
+    await dbClient.query(`GRANT CREATE ON SCHEMA public TO ${quoteIdent(dbUser)}`);
     await dbClient.query(
       `GRANT ALL PRIVILEGES ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
     );

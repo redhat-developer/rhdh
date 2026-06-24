@@ -19,10 +19,7 @@ async function isElementVisible(
   }
 }
 
-export function isBtnVisibleByTitle(
-  page: Page,
-  text: string,
-): Promise<boolean> {
+export function isBtnVisibleByTitle(page: Page, text: string): Promise<boolean> {
   const locator = `BUTTON[title="${text}"]`;
   return isElementVisible(page, locator);
 }
@@ -32,11 +29,7 @@ export function isBtnVisible(page: Page, text: string): Promise<boolean> {
   return isElementVisible(page, locator);
 }
 
-export function isTextVisible(
-  page: Page,
-  text: string,
-  timeout = 10000,
-): Promise<boolean> {
+export function isTextVisible(page: Page, text: string, timeout = 10000): Promise<boolean> {
   const locator = `:has-text("${text}")`;
   return isElementVisible(page, locator, timeout);
 }

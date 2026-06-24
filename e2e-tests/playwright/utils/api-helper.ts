@@ -1,13 +1,14 @@
-import { request, type APIResponse, expect } from "@playwright/test";
 import { type GroupEntity, type UserEntity } from "@backstage/catalog-model";
+import { request, type APIResponse, expect } from "@playwright/test";
+
+import * as catalogApi from "./api-helper-catalog";
+import * as githubApi from "./api-helper-github";
 import {
   isGuestTokenResponse,
   isGroupEntity,
   isUserEntity,
   parseJsonResponse,
 } from "./api-helper-guards";
-import * as catalogApi from "./api-helper-catalog";
-import * as githubApi from "./api-helper-github";
 
 export class APIHelper {
   private staticToken = "";
@@ -96,51 +97,31 @@ export class APIHelper {
 
   async getAllCatalogUsersFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Duser`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
     return parseJsonResponse(response);
   }
 
   async getAllCatalogLocationsFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dlocation`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
     return parseJsonResponse(response);
   }
 
   async getAllCatalogGroupsFromAPI(): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dgroup`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
     return parseJsonResponse(response);
   }
 
   async getGroupEntityFromAPI(group: string): Promise<unknown> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
     return parseJsonResponse(response);
   }
 
   async getCatalogUserFromAPI(user: string): Promise<UserEntity> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/user/default/${user}`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
     const body: unknown = await parseJsonResponse(response);
     if (!isUserEntity(body)) {
       throw new TypeError(`Invalid catalog user response for ${user}`);
@@ -155,21 +136,13 @@ export class APIHelper {
       return undefined;
     }
     const url = `${this.baseUrl}/api/catalog/entities/by-uid/${uid}`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "DELETE",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("DELETE", url, this.getAuthToken());
     return response.statusText();
   }
 
   async getCatalogGroupFromAPI(group: string): Promise<GroupEntity> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "GET",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
     const body: unknown = await parseJsonResponse(response);
     if (!isGroupEntity(body)) {
       throw new TypeError(`Invalid catalog group response for ${group}`);
@@ -180,27 +153,14 @@ export class APIHelper {
   async deleteGroupEntityFromAPI(group: string): Promise<string> {
     const r = await this.getCatalogGroupFromAPI(group);
     const url = `${this.baseUrl}/api/catalog/entities/by-uid/${r.metadata.uid}`;
-    const response = await APIHelper.APIRequestWithStaticToken(
-      "DELETE",
-      url,
-      this.getAuthToken(),
-    );
+    const response = await APIHelper.APIRequestWithStaticToken("DELETE", url, this.getAuthToken());
     return response.statusText();
   }
 
-  async scheduleEntityRefreshFromAPI(
-    entity: string,
-    kind: string,
-    token: string,
-  ) {
+  async scheduleEntityRefreshFromAPI(entity: string, kind: string, token: string) {
     const url = `${this.baseUrl}/api/catalog/refresh`;
     const reqBody = { entityRef: `${kind}:default/${entity}` };
-    const responseRefresh = await APIHelper.APIRequestWithStaticToken(
-      "POST",
-      url,
-      token,
-      reqBody,
-    );
+    const responseRefresh = await APIHelper.APIRequestWithStaticToken("POST", url, token, reqBody);
     return responseRefresh.status();
   }
 }

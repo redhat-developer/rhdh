@@ -1,7 +1,8 @@
-import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 import { ChildProcess } from "child_process";
-import * as k8s from "@kubernetes/client-node";
 import { resolve as resolvePath } from "path";
+
+import { GroupEntity, UserEntity } from "@backstage/catalog-model";
+import * as k8s from "@kubernetes/client-node";
 
 export type YamlConfig = Record<string, unknown>;
 
@@ -70,9 +71,7 @@ export function isBackstageCr(value: unknown): value is BackstageCr {
   );
 }
 
-export function isDynamicPluginsConfig(
-  value: unknown,
-): value is DynamicPluginsConfig {
+export function isDynamicPluginsConfig(value: unknown): value is DynamicPluginsConfig {
   if (!isRecord(value)) {
     return false;
   }
@@ -80,9 +79,7 @@ export function isDynamicPluginsConfig(
   return (
     plugins === undefined ||
     (Array.isArray(plugins) &&
-      plugins.every(
-        (plugin) => isRecord(plugin) && typeof plugin.package === "string",
-      ))
+      plugins.every((plugin) => isRecord(plugin) && typeof plugin.package === "string"))
   );
 }
 

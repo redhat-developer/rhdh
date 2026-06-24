@@ -1,4 +1,5 @@
 import { APIResponse, Page, expect } from "@playwright/test";
+
 import { UIhelper } from "../../utils/ui-helper";
 import { Policy, Role } from "../api/rbac-api-structures";
 
@@ -26,19 +27,14 @@ export class Roles {
   }
 
   static getPermissionPoliciesListCellsIdentifier() {
-    const policies =
-      /^(?:(Read|Create|Update|Delete)(?:, (?:Read|Create|Update|Delete))*|Use)$/u;
+    const policies = /^(?:(Read|Create|Update|Delete)(?:, (?:Read|Create|Update|Delete))*|Use)$/u;
     return [policies];
   }
 
   //Depending on the version of the Backstage, it can be 'Permission Policies' or 'Accessible Plugins'
   // Accepts either term
   static getRolesListColumnsText() {
-    return [
-      /^Name$/u,
-      /^Users and groups$/u,
-      /Permission Policies|Accessible plugins/u,
-    ];
+    return [/^Name$/u, /^Users and groups$/u, /Permission Policies|Accessible plugins/u];
   }
 
   static getUsersAndGroupsListColumnsText() {
@@ -50,16 +46,12 @@ export class Roles {
   }
 }
 
-export async function removeMetadataFromResponse(
-  response: APIResponse,
-): Promise<unknown[]> {
+export async function removeMetadataFromResponse(response: APIResponse): Promise<unknown[]> {
   try {
     const responseJson: unknown = await response.json();
 
     if (!Array.isArray(responseJson)) {
-      console.warn(
-        `Expected an array but received: ${JSON.stringify(responseJson)}`,
-      );
+      console.warn(`Expected an array but received: ${JSON.stringify(responseJson)}`);
       return [];
     }
 
@@ -77,10 +69,7 @@ export async function removeMetadataFromResponse(
   }
 }
 
-export async function checkRbacResponse(
-  response: APIResponse,
-  expected: Role[] | Policy[],
-) {
+export async function checkRbacResponse(response: APIResponse, expected: Role[] | Policy[]) {
   const cleanResponse = await removeMetadataFromResponse(response);
   expect(cleanResponse).toEqual(expected);
 }

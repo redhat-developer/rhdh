@@ -1,10 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
+
 import { getErrorMessage, hasErrorResponse } from "../errors";
-import {
-  BackstageCr,
-  RHDHDeploymentState,
-  sleep,
-} from "./rhdh-deployment-types";
+import { BackstageCr, RHDHDeploymentState, sleep } from "./rhdh-deployment-types";
 
 const BACKSTAGE_LABELS = {
   "app.kubernetes.io/name": "backstage",
@@ -20,9 +17,7 @@ function buildLabelSelector(instanceName: string): string {
     .join(",");
 }
 
-export async function getDeploymentGeneration(
-  state: RHDHDeploymentState,
-): Promise<number> {
+export async function getDeploymentGeneration(state: RHDHDeploymentState): Promise<number> {
   const labelSelector = buildLabelSelector(state.instanceName);
 
   const deployments = await state.appsV1Api.listNamespacedDeployment(
@@ -50,8 +45,7 @@ export async function waitForConfigReconciled(
   }
 
   const baseline =
-    state.configReconcileBaselineGeneration ??
-    (await getDeploymentGeneration(state));
+    state.configReconcileBaselineGeneration ?? (await getDeploymentGeneration(state));
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeoutMs) {
@@ -65,9 +59,7 @@ export async function waitForConfigReconciled(
     await sleep(1000);
   }
 
-  console.log(
-    `[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`,
-  );
+  console.log(`[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`);
 }
 
 function hasRolloutStarted(
@@ -77,23 +69,17 @@ function hasRolloutStarted(
   isProgressing: boolean,
 ): boolean {
   return (
-    currentGeneration > initialGeneration ||
-    observedGeneration < currentGeneration ||
-    isProgressing
+    currentGeneration > initialGeneration || observedGeneration < currentGeneration || isProgressing
   );
 }
 
-function isDeploymentReady(
-  deployment: k8s.V1Deployment,
-  cr: BackstageCr,
-): boolean {
+function isDeploymentReady(deployment: k8s.V1Deployment, cr: BackstageCr): boolean {
   const conditions = deployment.status?.conditions ?? [];
   const currentGeneration = deployment.metadata?.generation ?? 0;
   const observedGeneration = deployment.status?.observedGeneration ?? 0;
 
   const isAvailable = conditions.some(
-    (condition) =>
-      condition.type === "Available" && condition.status === "True",
+    (condition) => condition.type === "Available" && condition.status === "True",
   );
 
   const isProgressingWithRollout = conditions.some(
@@ -157,17 +143,11 @@ async function waitForRolloutStart(
     const currentGeneration = deployment.metadata?.generation ?? 0;
     const observedGeneration = deployment.status?.observedGeneration ?? 0;
     const isProgressing = conditions.some(
-      (condition) =>
-        condition.type === "Progressing" && condition.status === "True",
+      (condition) => condition.type === "Progressing" && condition.status === "True",
     );
 
     if (
-      hasRolloutStarted(
-        initialGeneration,
-        currentGeneration,
-        observedGeneration,
-        isProgressing,
-      )
+      hasRolloutStarted(initialGeneration, currentGeneration, observedGeneration, isProgressing)
     ) {
       rolloutStarted = true;
       console.log(
@@ -243,18 +223,15 @@ async function pollDeploymentReady(
       await sleep(5000);
     } catch (error) {
       if (Date.now() - startTime >= timeoutMs) {
-        throw new Error(
-          `Timeout waiting for deployment to be ready: ${getErrorMessage(error)}`,
-          { cause: error },
-        );
+        throw new Error(`Timeout waiting for deployment to be ready: ${getErrorMessage(error)}`, {
+          cause: error,
+        });
       }
       await sleep(5000);
     }
   }
 
-  throw new Error(
-    `Timeout waiting for deployment to be ready after ${timeoutMs}ms`,
-  );
+  throw new Error(`Timeout waiting for deployment to be ready after ${timeoutMs}ms`);
 }
 
 export async function waitForDeploymentReady(
@@ -293,18 +270,15 @@ export async function waitForNamespaceActive(
       await sleep(1000);
     } catch (error) {
       if (Date.now() - startTime >= timeoutMs) {
-        throw new Error(
-          `Timeout waiting for namespace to be active: ${getErrorMessage(error)}`,
-          { cause: error },
-        );
+        throw new Error(`Timeout waiting for namespace to be active: ${getErrorMessage(error)}`, {
+          cause: error,
+        });
       }
       await sleep(1000);
     }
   }
 
-  throw new Error(
-    `Timeout waiting for namespace to be active after ${timeoutMs}ms`,
-  );
+  throw new Error(`Timeout waiting for namespace to be active after ${timeoutMs}ms`);
 }
 
 export async function ensureBackstageCRIsAvailable(
@@ -328,9 +302,7 @@ export async function ensureBackstageCRIsAvailable(
       );
       return;
     } catch (error) {
-      console.log(
-        `Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`,
-      );
+      console.log(`Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`);
       if (Date.now() - startTime >= timeoutMs) {
         throw new Error(
           `Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`,
@@ -340,9 +312,7 @@ export async function ensureBackstageCRIsAvailable(
       await sleep(5000);
     }
   }
-  throw new Error(
-    `Timeout waiting for Backstage CRD to be available after ${timeoutMs}ms`,
-  );
+  throw new Error(`Timeout waiting for Backstage CRD to be available after ${timeoutMs}ms`);
 }
 
 export async function deleteNamespaceIfExists(
@@ -369,9 +339,7 @@ export async function deleteNamespaceIfExists(
         throw error;
       }
     }
-    throw new Error(
-      `Timeout waiting for namespace to be deleted after ${timeoutMs}ms`,
-    );
+    throw new Error(`Timeout waiting for namespace to be deleted after ${timeoutMs}ms`);
   } catch (e) {
     if (hasErrorResponse(e) && e.response?.statusCode === 404) {
       return;

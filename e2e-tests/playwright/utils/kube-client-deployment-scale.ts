@@ -1,19 +1,13 @@
 import * as k8s from "@kubernetes/client-node";
-import {
-  getErrorStatusCode,
-  getKubeApiErrorMessage,
-  sleep,
-} from "./kube-client-helpers";
+
+import { getErrorStatusCode, getKubeApiErrorMessage, sleep } from "./kube-client-helpers";
 
 export async function getDeploymentPodSelectorImpl(
   appsApi: k8s.AppsV1Api,
   deploymentName: string,
   namespace: string,
 ): Promise<string> {
-  const response = await appsApi.readNamespacedDeployment(
-    deploymentName,
-    namespace,
-  );
+  const response = await appsApi.readNamespacedDeployment(deploymentName, namespace);
   const matchLabels = response.body.spec?.selector?.matchLabels ?? {};
   const entries = Object.entries(matchLabels);
   if (entries.length === 0) {
@@ -55,8 +49,7 @@ async function handleScaleRetry(
   deploymentName: string,
 ): Promise<boolean> {
   const statusCode = getErrorStatusCode(error);
-  const isRetryable =
-    statusCode === 404 || statusCode === 503 || statusCode === 429;
+  const isRetryable = statusCode === 404 || statusCode === 503 || statusCode === 429;
 
   if (isRetryable && attempt < maxRetries) {
     const delay = attempt * 2000;
@@ -84,17 +77,10 @@ export async function scaleDeploymentImpl(
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       await patchDeploymentScale(appsApi, deploymentName, namespace, replicas);
-      console.log(
-        `Deployment ${deploymentName} scaled to ${replicas} replicas.`,
-      );
+      console.log(`Deployment ${deploymentName} scaled to ${replicas} replicas.`);
       return;
     } catch (error) {
-      const shouldRetry = await handleScaleRetry(
-        error,
-        attempt,
-        maxRetries,
-        deploymentName,
-      );
+      const shouldRetry = await handleScaleRetry(error, attempt, maxRetries, deploymentName);
       if (!shouldRetry) {
         return;
       }

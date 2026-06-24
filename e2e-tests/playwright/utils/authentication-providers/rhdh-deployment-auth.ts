@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
+
 import { RHDHDeploymentState } from "./rhdh-deployment-types";
 
 export interface AuthConfigActions {
@@ -7,8 +8,7 @@ export interface AuthConfigActions {
   setAppConfigProperty(path: string, value: unknown): void;
 }
 
-const OIDC_CALLBACK_URL =
-  "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame";
+const OIDC_CALLBACK_URL = "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame";
 
 export function enableOIDCLoginWithIngestion(actions: AuthConfigActions): void {
   console.log("Enabling OIDC login with ingestion...");
@@ -101,8 +101,7 @@ export function enableLDAPLoginWithIngestion(actions: AuthConfigActions): void {
           {
             dn: "${LDAP_GROUPS_DN}",
             options: {
-              filter:
-                "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))",
+              filter: "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))",
               scope: "sub",
             },
           },
@@ -128,9 +127,7 @@ export function enableLDAPLoginWithIngestion(actions: AuthConfigActions): void {
   actions.setAppConfigProperty("signInPage", "oidc");
 }
 
-export function enableMicrosoftLoginWithIngestion(
-  actions: AuthConfigActions,
-): void {
+export function enableMicrosoftLoginWithIngestion(actions: AuthConfigActions): void {
   console.log("Enabling Microsoft login with ingestion...");
   expect(process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID).toBeDefined();
   expect(process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET).toBeDefined();
@@ -170,8 +167,7 @@ export function enableMicrosoftLoginWithIngestion(
       clientSecret: "${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}",
       prompt: "auto",
       tenantId: "${AUTH_PROVIDERS_AZURE_TENANT_ID}",
-      callbackUrl:
-        "${BASE_URL:-http://localhost:7007}/api/auth/microsoft/handler/frame",
+      callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/microsoft/handler/frame",
     },
   });
   actions.setAppConfigProperty("auth.environment", "production");
@@ -237,8 +233,7 @@ export function enableGithubLoginWithIngestion(
     production: {
       clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
       clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
-      callbackUrl:
-        "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+      callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
     },
   });
 
@@ -246,9 +241,7 @@ export function enableGithubLoginWithIngestion(
   actions.setAppConfigProperty("signInPage", "github");
 }
 
-export function enableGitlabLoginWithIngestion(
-  actions: AuthConfigActions,
-): void {
+export function enableGitlabLoginWithIngestion(actions: AuthConfigActions): void {
   console.log("Enabling GitLab login with ingestion...");
   expect(process.env.AUTH_PROVIDERS_GITLAB_HOST).toBeDefined();
   expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN).toBeDefined();
@@ -291,8 +284,7 @@ export function enableGitlabLoginWithIngestion(
       audience: "https://${AUTH_PROVIDERS_GITLAB_HOST}",
       clientId: "${AUTH_PROVIDERS_GITLAB_CLIENT_ID}",
       clientSecret: "${AUTH_PROVIDERS_GITLAB_CLIENT_SECRET}",
-      callbackUrl:
-        "${BASE_URL:-http://localhost:7007}/api/auth/gitlab/handler/frame",
+      callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/gitlab/handler/frame",
     },
   });
 
@@ -305,15 +297,12 @@ export function setOIDCResolver(
   resolver: string,
   dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
 ): void {
-  actions.setAppConfigProperty(
-    "auth.providers.oidc.production.signIn.resolvers",
-    [
-      {
-        resolver,
-        dangerouslyAllowSignInWithoutUserInCatalog,
-      },
-    ],
-  );
+  actions.setAppConfigProperty("auth.providers.oidc.production.signIn.resolvers", [
+    {
+      resolver,
+      dangerouslyAllowSignInWithoutUserInCatalog,
+    },
+  ]);
 }
 
 export function setMicrosoftResolver(
@@ -321,15 +310,12 @@ export function setMicrosoftResolver(
   resolver: string,
   dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
 ): void {
-  actions.setAppConfigProperty(
-    "auth.providers.microsoft.production.signIn.resolvers",
-    [
-      {
-        resolver,
-        dangerouslyAllowSignInWithoutUserInCatalog,
-      },
-    ],
-  );
+  actions.setAppConfigProperty("auth.providers.microsoft.production.signIn.resolvers", [
+    {
+      resolver,
+      dangerouslyAllowSignInWithoutUserInCatalog,
+    },
+  ]);
 }
 
 export function setGithubResolver(
@@ -337,15 +323,12 @@ export function setGithubResolver(
   resolver: string,
   dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
 ): void {
-  actions.setAppConfigProperty(
-    "auth.providers.github.production.signIn.resolvers",
-    [
-      {
-        resolver,
-        dangerouslyAllowSignInWithoutUserInCatalog,
-      },
-    ],
-  );
+  actions.setAppConfigProperty("auth.providers.github.production.signIn.resolvers", [
+    {
+      resolver,
+      dangerouslyAllowSignInWithoutUserInCatalog,
+    },
+  ]);
 }
 
 export function setGitlabResolver(
@@ -353,15 +336,12 @@ export function setGitlabResolver(
   resolver: string,
   dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
 ): void {
-  actions.setAppConfigProperty(
-    "auth.providers.gitlab.production.signIn.resolvers",
-    [
-      {
-        resolver,
-        dangerouslyAllowSignInWithoutUserInCatalog,
-      },
-    ],
-  );
+  actions.setAppConfigProperty("auth.providers.gitlab.production.signIn.resolvers", [
+    {
+      resolver,
+      dangerouslyAllowSignInWithoutUserInCatalog,
+    },
+  ]);
 }
 
 export function setDynamicPluginEnabled(
@@ -369,9 +349,7 @@ export function setDynamicPluginEnabled(
   pluginName: string,
   enabled: boolean,
 ): void {
-  const plugin = state.dynamicPluginsConfig.plugins.find(
-    (p) => p.package === pluginName,
-  );
+  const plugin = state.dynamicPluginsConfig.plugins.find((p) => p.package === pluginName);
   if (plugin === undefined) {
     state.dynamicPluginsConfig.plugins = [
       ...state.dynamicPluginsConfig.plugins,
@@ -386,9 +364,7 @@ export function setDynamicPluginEnabled(
     return;
   }
   plugin.disabled = !enabled;
-  console.log(
-    `Plugin ${pluginName} has been ${enabled ? "enabled" : "disabled"}.`,
-  );
+  console.log(`Plugin ${pluginName} has been ${enabled ? "enabled" : "disabled"}.`);
 }
 
 export function printDynamicPluginsConfig(state: RHDHDeploymentState): void {

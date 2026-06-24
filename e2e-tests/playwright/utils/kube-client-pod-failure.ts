@@ -1,9 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
-import {
-  getKubeApiErrorMessage,
-  PodFailureResult,
-  podNameOrUnknown,
-} from "./kube-client-helpers";
+
+import { getKubeApiErrorMessage, PodFailureResult, podNameOrUnknown } from "./kube-client-helpers";
 
 const POD_READY_ERROR_REASONS = [
   "Unhealthy",
@@ -23,10 +20,7 @@ const CONTAINER_FAILURE_STATES = [
 ] as const;
 
 function isTransientPvcSchedulingMessage(message: string): boolean {
-  return (
-    message.includes("ephemeral volume") ||
-    message.includes("persistentvolumeclaim")
-  );
+  return message.includes("ephemeral volume") || message.includes("persistentvolumeclaim");
 }
 
 function checkFailedPodPhase(pod: k8s.V1Pod): PodFailureResult | null {
@@ -65,11 +59,7 @@ function checkPodReadyCondition(
   condition: k8s.V1PodCondition,
 ): PodFailureResult | null {
   const reason = condition.reason;
-  if (
-    reason === undefined ||
-    reason === "" ||
-    reason === "ContainersNotReady"
-  ) {
+  if (reason === undefined || reason === "" || reason === "ContainersNotReady") {
     return null;
   }
 
@@ -121,14 +111,8 @@ function checkWaitingContainerState(
     };
   }
 
-  if (
-    reason === "ContainerCreating" &&
-    waiting.message !== undefined &&
-    waiting.message !== ""
-  ) {
-    console.log(
-      `Pod ${podName} container ${containerName} is being created: ${waiting.message}`,
-    );
+  if (reason === "ContainerCreating" && waiting.message !== undefined && waiting.message !== "") {
+    console.log(`Pod ${podName} container ${containerName} is being created: ${waiting.message}`);
   }
 
   return null;
@@ -162,11 +146,7 @@ function checkContainerStatuses(pod: k8s.V1Pod): PodFailureResult | null {
   for (const containerStatus of containerStatuses) {
     const waiting = containerStatus.state?.waiting;
     if (waiting !== undefined) {
-      const waitingResult = checkWaitingContainerState(
-        pod,
-        containerStatus,
-        waiting,
-      );
+      const waitingResult = checkWaitingContainerState(pod, containerStatus, waiting);
       if (waitingResult !== null) {
         return waitingResult;
       }
@@ -174,11 +154,7 @@ function checkContainerStatuses(pod: k8s.V1Pod): PodFailureResult | null {
 
     const terminated = containerStatus.state?.terminated;
     if (terminated !== undefined) {
-      const terminatedResult = checkTerminatedContainerState(
-        pod,
-        containerStatus,
-        terminated,
-      );
+      const terminatedResult = checkTerminatedContainerState(pod, containerStatus, terminated);
       if (terminatedResult !== null) {
         return terminatedResult;
       }
@@ -189,11 +165,7 @@ function checkContainerStatuses(pod: k8s.V1Pod): PodFailureResult | null {
 }
 
 function checkSinglePodFailure(pod: k8s.V1Pod): PodFailureResult | null {
-  return (
-    checkFailedPodPhase(pod) ??
-    checkPodConditions(pod) ??
-    checkContainerStatuses(pod)
-  );
+  return checkFailedPodPhase(pod) ?? checkPodConditions(pod) ?? checkContainerStatuses(pod);
 }
 
 export async function checkPodFailureStatesImpl(
@@ -225,9 +197,7 @@ export async function checkPodFailureStatesImpl(
 
     return null;
   } catch (error) {
-    console.error(
-      `Error checking pod failure states: ${getKubeApiErrorMessage(error)}`,
-    );
+    console.error(`Error checking pod failure states: ${getKubeApiErrorMessage(error)}`);
     return null;
   }
 }

@@ -1,14 +1,8 @@
-import {
-  type Browser,
-  type Cookie,
-  type Page,
-  type TestInfo,
-} from "@playwright/test";
 import * as path from "path";
-import {
-  startCoverageForPage,
-  stopCoverageForPage,
-} from "../support/coverage/test";
+
+import { type Browser, type Cookie, type Page, type TestInfo } from "@playwright/test";
+
+import { startCoverageForPage, stopCoverageForPage } from "../support/coverage/test";
 
 export function parseAuthStateCookies(content: string): Cookie[] {
   const parsed: unknown = JSON.parse(content);
@@ -18,9 +12,7 @@ export function parseAuthStateCookies(content: string): Cookie[] {
     !("cookies" in parsed) ||
     !Array.isArray(parsed.cookies)
   ) {
-    throw new TypeError(
-      "Invalid auth state: expected object with cookies array",
-    );
+    throw new TypeError("Invalid auth state: expected object with cookies array");
   }
   const rawCookies: unknown[] = parsed.cookies;
   const cookies = rawCookies.filter(
@@ -55,10 +47,7 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   return { page, context };
 }
 
-export async function teardownBrowser(
-  page: Page,
-  testInfo: TestInfo,
-): Promise<void> {
+export async function teardownBrowser(page: Page, testInfo: TestInfo): Promise<void> {
   await stopCoverageForPage(page, testInfo);
   await page.close();
 }

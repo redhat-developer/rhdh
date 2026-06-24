@@ -1,12 +1,8 @@
 import * as k8s from "@kubernetes/client-node";
-import {
-  getKubeApiErrorMessage,
-  podNameOrUnknown,
-} from "./kube-client-helpers";
 
-function sortReplicaSetsByCreation(
-  replicaSets: k8s.V1ReplicaSet[],
-): k8s.V1ReplicaSet[] {
+import { getKubeApiErrorMessage, podNameOrUnknown } from "./kube-client-helpers";
+
+function sortReplicaSetsByCreation(replicaSets: k8s.V1ReplicaSet[]): k8s.V1ReplicaSet[] {
   // oxlint-disable-next-line unicorn/no-array-sort -- es2022 lib has no Array#toSorted
   return [...replicaSets].sort((a: k8s.V1ReplicaSet, b: k8s.V1ReplicaSet) => {
     const aTime = a.metadata?.creationTimestamp?.getTime() ?? 0;
@@ -69,10 +65,7 @@ export async function logReplicaSetStatusImpl(
   namespace: string,
 ): Promise<void> {
   try {
-    const deployment = await appsApi.readNamespacedDeployment(
-      deploymentName,
-      namespace,
-    );
+    const deployment = await appsApi.readNamespacedDeployment(deploymentName, namespace);
 
     const labelSelector = deployment.body.spec?.selector?.matchLabels;
     if (labelSelector === undefined) {

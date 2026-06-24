@@ -21,8 +21,5 @@ export const SemanticSelectors = {
   ...semanticSelectorsStructure,
 };
 
-export {
-  findTableCell,
-  findTableCellByColumn,
-} from "./semantic-selectors-table-helpers";
+export { findTableCell, findTableCellByColumn } from "./semantic-selectors-table-helpers";
 export { WaitStrategies } from "./wait-strategies";

@@ -32,11 +32,7 @@ export const semanticSelectorsAccessibility = {
     return rows.filter({ hasText: text });
   },
 
-  heading(
-    page: Page,
-    name: string | RegExp,
-    level?: 1 | 2 | 3 | 4 | 5 | 6,
-  ): Locator {
+  heading(page: Page, name: string | RegExp, level?: 1 | 2 | 3 | 4 | 5 | 6): Locator {
     return page.getByRole("heading", { name, level });
   },
 

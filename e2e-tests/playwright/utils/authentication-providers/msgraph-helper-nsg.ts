@@ -4,6 +4,7 @@ import {
   SecurityRule,
   SecurityRulesGetResponse,
 } from "@azure/arm-network";
+
 import { getErrorMessage, hasStatusCode } from "../errors";
 
 export async function getNetworkSecurityGroupRule(
@@ -17,17 +18,11 @@ export async function getNetworkSecurityGroupRule(
       `Getting network security group rule ${ruleName} from NSG ${nsgName} in resource group ${resourceGroupName}`,
     );
 
-    const rule = await armNetworkClient.securityRules.get(
-      resourceGroupName,
-      nsgName,
-      ruleName,
-    );
+    const rule = await armNetworkClient.securityRules.get(resourceGroupName, nsgName, ruleName);
     return rule ?? null;
   } catch (e) {
     if (hasStatusCode(e) && e.statusCode === 404) {
-      console.log(
-        `Network security group rule ${ruleName} not found in NSG ${nsgName}`,
-      );
+      console.log(`Network security group rule ${ruleName} not found in NSG ${nsgName}`);
       return null;
     }
     console.error("Failed to get network security group rule:", e);
@@ -45,14 +40,9 @@ export async function getNetworkSecurityGroup(
       `Getting network security group ${nsgName} from resource group ${resourceGroupName}`,
     );
 
-    const nsg = await armNetworkClient.networkSecurityGroups.get(
-      resourceGroupName,
-      nsgName,
-    );
+    const nsg = await armNetworkClient.networkSecurityGroups.get(resourceGroupName, nsgName);
     if (nsg === undefined) {
-      throw new Error(
-        `Network security group ${nsgName} not found in ${resourceGroupName}`,
-      );
+      throw new Error(`Network security group ${nsgName} not found in ${resourceGroupName}`);
     }
     return nsg;
   } catch (e) {
@@ -66,10 +56,7 @@ async function findAvailablePriority(
   resourceGroupName: string,
   nsgName: string,
 ): Promise<number> {
-  const existingRules = armNetworkClient.securityRules.list(
-    resourceGroupName,
-    nsgName,
-  );
+  const existingRules = armNetworkClient.securityRules.list(resourceGroupName, nsgName);
   const existingPriorities = new Set<number>();
 
   for await (const rule of existingRules) {
@@ -165,14 +152,8 @@ async function resolveTemplateRule(
   nsgName: string,
   baseRuleName: string,
 ): Promise<SecurityRulesGetResponse> {
-  console.log(
-    `[NSG] Verifying NSG exists: ${nsgName} in resource group: ${resourceGroupName}`,
-  );
-  const nsg = await getNetworkSecurityGroup(
-    armNetworkClient,
-    resourceGroupName,
-    nsgName,
-  );
+  console.log(`[NSG] Verifying NSG exists: ${nsgName} in resource group: ${resourceGroupName}`);
+  const nsg = await getNetworkSecurityGroup(armNetworkClient, resourceGroupName, nsgName);
   console.log(`[NSG] NSG verified: ${nsg.name} (ID: ${nsg.id})`);
 
   console.log(`[NSG] Getting existing rule as template: ${baseRuleName}`);
@@ -184,9 +165,7 @@ async function resolveTemplateRule(
   );
 
   if (templateRule === null) {
-    throw new Error(
-      `Template rule ${baseRuleName} not found in NSG ${nsgName}`,
-    );
+    throw new Error(`Template rule ${baseRuleName} not found in NSG ${nsgName}`);
   }
   console.log(
     `[NSG] Template rule found: ${templateRule.name} (Priority: ${templateRule.priority})`,
@@ -271,12 +250,7 @@ export async function allowPublicIpInNsg(
       ruleName,
       resourceGroupName,
       nsgName,
-      cleanup: createNsgRuleCleanup(
-        armNetworkClient,
-        resourceGroupName,
-        nsgName,
-        ruleName,
-      ),
+      cleanup: createNsgRuleCleanup(armNetworkClient, resourceGroupName, nsgName, ruleName),
     };
   } catch (error) {
     logNsgFailure(error);

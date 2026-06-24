@@ -1,6 +1,7 @@
 import { Page, expect } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+
 import { APIHelper } from "../../utils/api-helper";
+import { UIhelper } from "../../utils/ui-helper";
 import { BACKSTAGE_SHOWCASE_COMPONENTS } from "../page-objects/page-obj";
 
 export class BackstageShowcase {
@@ -21,19 +22,14 @@ export class BackstageShowcase {
   }
 
   async clickPreviousPage() {
-    await BACKSTAGE_SHOWCASE_COMPONENTS.getPreviousPageButton(
-      this.page,
-    ).click();
+    await BACKSTAGE_SHOWCASE_COMPONENTS.getPreviousPageButton(this.page).click();
   }
 
   async clickLastPage() {
     await BACKSTAGE_SHOWCASE_COMPONENTS.getLastPageButton(this.page).click();
   }
 
-  async verifyPRRowsPerPage(
-    rows: number,
-    allPRs: { title: string; number: string }[],
-  ) {
+  async verifyPRRowsPerPage(rows: number, allPRs: { title: string; number: string }[]) {
     await this.selectRowsPerPage(rows);
     await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
     await this.uiHelper.verifyLink(allPRs[rows].number, {
@@ -56,16 +52,11 @@ export class BackstageShowcase {
   }
 
   async verifyAboutCardIsDisplayed() {
-    const url =
-      "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
+    const url = "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
     await expect(this.page.locator(`a[href="${url}"]`)).toBeVisible();
   }
 
-  async verifyPRRows(
-    allPRs: { title: string }[],
-    startRow: number,
-    lastRow: number,
-  ) {
+  async verifyPRRows(allPRs: { title: string }[], startRow: number, lastRow: number) {
     for (let i = startRow; i < lastRow; i++) {
       await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
     }

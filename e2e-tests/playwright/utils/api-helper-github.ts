@@ -1,4 +1,5 @@
 import { request, type APIResponse, expect } from "@playwright/test";
+
 import { GITHUB_API_ENDPOINTS } from "./api-endpoints";
 import {
   type GitHubPullRequestFile,
@@ -63,14 +64,10 @@ async function getGithubPaginatedRequest(
 export { getGithubPaginatedRequest };
 
 export async function createGitHubRepo(owner: string, repoName: string) {
-  const response = await githubRequest(
-    "POST",
-    GITHUB_API_ENDPOINTS.createRepo(owner),
-    {
-      name: repoName,
-      private: false,
-    },
-  );
+  const response = await githubRequest("POST", GITHUB_API_ENDPOINTS.createRepo(owner), {
+    name: repoName,
+    private: false,
+  });
   expect(response.status() === 201 || response.ok()).toBeTruthy();
 }
 
@@ -102,19 +99,11 @@ export async function createGitHubRepoWithFile(
   fileContent: string,
 ) {
   await createGitHubRepo(owner, repoName);
-  await createFileInRepo(
-    owner,
-    repoName,
-    filename,
-    fileContent,
-    `Add ${filename} file`,
-  );
+  await createFileInRepo(owner, repoName, filename, fileContent, `Add ${filename} file`);
 }
 
 export async function initCommit(owner: string, repo: string, branch = "main") {
-  const content = Buffer.from(
-    "This is the initial commit for the repository.",
-  ).toString("base64");
+  const content = Buffer.from("This is the initial commit for the repository.").toString("base64");
   const response = await githubRequest(
     "PUT",
     `${GITHUB_API_ENDPOINTS.contents(owner, repo)}/initial-commit.md`,
@@ -128,21 +117,11 @@ export async function initCommit(owner: string, repo: string, branch = "main") {
 }
 
 export async function deleteGitHubRepo(owner: string, repoName: string) {
-  await githubRequest(
-    "DELETE",
-    GITHUB_API_ENDPOINTS.deleteRepo(owner, repoName),
-  );
+  await githubRequest("DELETE", GITHUB_API_ENDPOINTS.deleteRepo(owner, repoName));
 }
 
-export async function mergeGitHubPR(
-  owner: string,
-  repoName: string,
-  pullNumber: number,
-) {
-  await githubRequest(
-    "PUT",
-    GITHUB_API_ENDPOINTS.mergePR(owner, repoName, pullNumber),
-  );
+export async function mergeGitHubPR(owner: string, repoName: string, pullNumber: number) {
+  await githubRequest("PUT", GITHUB_API_ENDPOINTS.mergePR(owner, repoName, pullNumber));
 }
 
 export async function getGitHubPRs(
@@ -165,10 +144,7 @@ export async function getfileContentFromPR(
   pr: number,
   filename: string,
 ): Promise<string> {
-  const response = await githubRequest(
-    "GET",
-    GITHUB_API_ENDPOINTS.pull_files(owner, repoName, pr),
-  );
+  const response = await githubRequest("GET", GITHUB_API_ENDPOINTS.pull_files(owner, repoName, pr));
   const files: unknown = await parseJsonResponse(response);
   if (!Array.isArray(files)) {
     throw new TypeError(
@@ -182,8 +158,6 @@ export async function getfileContentFromPR(
   if (file === undefined) {
     throw new Error(`File ${filename} not found in PR ${pr}`);
   }
-  const rawFileContent = await (
-    await githubRequest("GET", file.raw_url)
-  ).text();
+  const rawFileContent = await (await githubRequest("GET", file.raw_url)).text();
   return rawFileContent;
 }

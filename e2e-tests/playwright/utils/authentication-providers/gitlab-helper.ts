@@ -18,9 +18,7 @@ interface GitLabOAuthAppResponse {
   scopes?: string[];
 }
 
-function isGitLabOAuthAppResponse(
-  value: unknown,
-): value is GitLabOAuthAppResponse {
+function isGitLabOAuthAppResponse(value: unknown): value is GitLabOAuthAppResponse {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -98,8 +96,7 @@ export class GitLabHelper {
       application_name: app.application_name ?? app.name ?? name,
       secret: app.secret,
       callback_url: app.callback_url ?? app.redirect_uri ?? redirectUri,
-      scopes:
-        app.scopes ?? (typeof scopes === "string" ? scopes.split(" ") : []),
+      scopes: app.scopes ?? (typeof scopes === "string" ? scopes.split(" ") : []),
     };
   }
 
@@ -120,16 +117,9 @@ export class GitLabHelper {
     try {
       console.log(`[GITLAB] Creating OAuth application: ${name}`);
       console.log(`[GITLAB] Scopes: ${scopes}, Trusted: ${trusted}`);
-      const app = await this.postOAuthApplication(
-        name,
-        redirectUri,
-        scopes,
-        trusted,
-      );
+      const app = await this.postOAuthApplication(name, redirectUri, scopes, trusted);
 
-      console.log(
-        `[GITLAB] OAuth application created successfully with ID: ${app.id}`,
-      );
+      console.log(`[GITLAB] OAuth application created successfully with ID: ${app.id}`);
       console.log(
         `[GITLAB] Application ID: ${app.application_id}, Secret: ${app.secret ? "***" : "not provided"}`,
       );
@@ -148,15 +138,12 @@ export class GitLabHelper {
   async deleteOAuthApplication(applicationId: number): Promise<void> {
     try {
       console.log(`[GITLAB] Deleting OAuth application: ${applicationId}`);
-      const response = await fetch(
-        `${this.apiBaseUrl}/applications/${applicationId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "PRIVATE-TOKEN": this.config.personalAccessToken,
-          },
+      const response = await fetch(`${this.apiBaseUrl}/applications/${applicationId}`, {
+        method: "DELETE",
+        headers: {
+          "PRIVATE-TOKEN": this.config.personalAccessToken,
         },
-      );
+      });
 
       if (!response.ok) {
         // 404 is acceptable if the app was already deleted
@@ -172,14 +159,9 @@ export class GitLabHelper {
         );
       }
 
-      console.log(
-        `[GITLAB] OAuth application ${applicationId} deleted successfully`,
-      );
+      console.log(`[GITLAB] OAuth application ${applicationId} deleted successfully`);
     } catch (error) {
-      console.error(
-        `[GITLAB] Failed to delete OAuth application ${applicationId}:`,
-        error,
-      );
+      console.error(`[GITLAB] Failed to delete OAuth application ${applicationId}:`, error);
       throw error;
     }
   }

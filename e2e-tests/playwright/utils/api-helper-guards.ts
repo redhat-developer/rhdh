@@ -1,5 +1,5 @@
-import { type APIResponse } from "@playwright/test";
 import { type GroupEntity, type UserEntity } from "@backstage/catalog-model";
+import { type APIResponse } from "@playwright/test";
 
 interface GitHubPullRequestFile {
   filename: string;
@@ -25,9 +25,7 @@ interface CatalogLocationEntry {
   };
 }
 
-export function isGitHubPullRequestFile(
-  value: unknown,
-): value is GitHubPullRequestFile {
+export function isGitHubPullRequestFile(value: unknown): value is GitHubPullRequestFile {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -38,9 +36,7 @@ export function isGitHubPullRequestFile(
   );
 }
 
-export function isGuestTokenResponse(
-  value: unknown,
-): value is GuestTokenResponse {
+export function isGuestTokenResponse(value: unknown): value is GuestTokenResponse {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -52,28 +48,20 @@ export function isGuestTokenResponse(
   );
 }
 
-export function isEntityMetadataResponse(
-  value: unknown,
-): value is EntityMetadataResponse {
+export function isEntityMetadataResponse(value: unknown): value is EntityMetadataResponse {
   return typeof value === "object" && value !== null;
 }
 
-export function isCatalogLocationEntry(
-  value: unknown,
-): value is CatalogLocationEntry {
+export function isCatalogLocationEntry(value: unknown): value is CatalogLocationEntry {
   return typeof value === "object" && value !== null;
 }
 
 export function isUserEntity(value: unknown): value is UserEntity {
-  return (
-    isEntityMetadataResponse(value) && "kind" in value && value.kind === "User"
-  );
+  return isEntityMetadataResponse(value) && "kind" in value && value.kind === "User";
 }
 
 export function isGroupEntity(value: unknown): value is GroupEntity {
-  return (
-    isEntityMetadataResponse(value) && "kind" in value && value.kind === "Group"
-  );
+  return isEntityMetadataResponse(value) && "kind" in value && value.kind === "Group";
 }
 
 export function parseJsonResponse(response: APIResponse): Promise<unknown> {
@@ -82,9 +70,7 @@ export function parseJsonResponse(response: APIResponse): Promise<unknown> {
 
 export function toUnknownArray(value: unknown): unknown[] {
   if (!Array.isArray(value)) {
-    throw new TypeError(
-      `Expected array but got ${typeof value}: ${JSON.stringify(value)}`,
-    );
+    throw new TypeError(`Expected array but got ${typeof value}: ${JSON.stringify(value)}`);
   }
   const items: unknown[] = [];
   for (const item of value) {

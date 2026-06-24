@@ -1,9 +1,11 @@
-import * as k8s from "@kubernetes/client-node";
-import * as yaml from "yaml";
+import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import { join, resolve as resolvePath } from "path";
+
+import * as k8s from "@kubernetes/client-node";
 import { expect } from "@playwright/test";
-import { spawn } from "child_process";
+import * as yaml from "yaml";
+
 import { hasErrorResponse } from "../errors";
 import {
   BackstageCr,
@@ -14,19 +16,14 @@ import {
   RHDHDeploymentState,
   rootDirName,
 } from "./rhdh-deployment-types";
-import {
-  ensureBackstageCRIsAvailable,
-  waitForDeploymentReady,
-} from "./rhdh-deployment-wait";
+import { ensureBackstageCRIsAvailable, waitForDeploymentReady } from "./rhdh-deployment-wait";
 
 export async function readYamlToJson(filePath: string): Promise<unknown> {
   const fileContent = await fs.readFile(filePath, "utf8");
   return yaml.parse(fileContent);
 }
 
-export async function createNamespace(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function createNamespace(state: RHDHDeploymentState): Promise<void> {
   if (state.isRunningLocal) {
     console.log("Skipping namespace creation as isRunningLocal is true.");
     return;
@@ -91,9 +88,7 @@ async function updateConfigMap(
   );
 }
 
-export async function loadBaseConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function loadBaseConfig(state: RHDHDeploymentState): Promise<void> {
   const configPath = join(currentDirName, "yamls", "configmap.yaml");
   const yamlContent = await fs.readFile(configPath, "utf8");
   const configData: unknown = yaml.parse(yamlContent);
@@ -103,9 +98,7 @@ export async function loadBaseConfig(
   }
 }
 
-export async function createAppConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function createAppConfig(state: RHDHDeploymentState): Promise<void> {
   if (state.isRunningLocal) {
     const appConfigPath = join(currentDirName, "app-config.test.yaml");
     const appConfigYaml = yaml.stringify(state.appConfig);
@@ -119,9 +112,7 @@ export async function createAppConfig(
   });
 }
 
-export async function updateAppConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function updateAppConfig(state: RHDHDeploymentState): Promise<void> {
   if (state.isRunningLocal) {
     const appConfigPath = join(currentDirName, "app-config.test.yaml");
     const appConfigYaml = yaml.stringify(state.appConfig);
@@ -135,13 +126,8 @@ export async function updateAppConfig(
   });
 }
 
-export async function deleteConfigMap(
-  state: RHDHDeploymentState,
-): Promise<void> {
-  await state.k8sApi.deleteNamespacedConfigMap(
-    state.appConfigMap,
-    state.namespace,
-  );
+export async function deleteConfigMap(state: RHDHDeploymentState): Promise<void> {
+  await state.k8sApi.deleteNamespacedConfigMap(state.appConfigMap, state.namespace);
 }
 
 export async function createSecret(state: RHDHDeploymentState): Promise<void> {
@@ -175,11 +161,7 @@ export async function updateSecret(state: RHDHDeploymentState): Promise<void> {
     },
     data: state.secretData,
   };
-  await state.k8sApi.replaceNamespacedSecret(
-    state.secretName,
-    state.namespace,
-    secret,
-  );
+  await state.k8sApi.replaceNamespacedSecret(state.secretName, state.namespace, secret);
 }
 
 export async function deleteSecret(state: RHDHDeploymentState): Promise<void> {
@@ -190,16 +172,12 @@ export async function deleteSecret(state: RHDHDeploymentState): Promise<void> {
   await state.k8sApi.deleteNamespacedSecret(state.secretName, state.namespace);
 }
 
-export async function loadRbacConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function loadRbacConfig(state: RHDHDeploymentState): Promise<void> {
   const configPath = join(currentDirName, "yamls", "rbac-policy.csv");
   state.rbacConfig = await fs.readFile(configPath, "utf8");
 }
 
-export async function createRbacConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function createRbacConfig(state: RHDHDeploymentState): Promise<void> {
   if (state.isRunningLocal) {
     const rbacConfigPath = join(currentDirName, "rbac.test.csv");
     await fs.writeFile(rbacConfigPath, state.rbacConfig, "utf8");
@@ -212,9 +190,7 @@ export async function createRbacConfig(
   });
 }
 
-export async function updateRbacConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function updateRbacConfig(state: RHDHDeploymentState): Promise<void> {
   if (state.isRunningLocal) {
     const rbacConfigPath = join(currentDirName, "rbac.test.csv");
     await fs.writeFile(rbacConfigPath, state.rbacConfig, "utf8");
@@ -227,14 +203,8 @@ export async function updateRbacConfig(
   });
 }
 
-export async function loadDynamicPluginsConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
-  const configPath = join(
-    currentDirName,
-    "yamls",
-    "dynamic-plugins-config.yaml",
-  );
+export async function loadDynamicPluginsConfig(state: RHDHDeploymentState): Promise<void> {
+  const configPath = join(currentDirName, "yamls", "dynamic-plugins-config.yaml");
   const yamlContent = await fs.readFile(configPath, "utf8");
   const configData: unknown = yaml.parse(yamlContent);
 
@@ -249,23 +219,11 @@ export async function createDynamicPluginsConfig(
   updateAppConfigFn: (state: RHDHDeploymentState) => Promise<void>,
 ): Promise<void> {
   if (state.isRunningLocal) {
-    const dynamicPluginsConfigPath = join(
-      currentDirName,
-      "dynamic-plugins.test.yaml",
-    );
+    const dynamicPluginsConfigPath = join(currentDirName, "dynamic-plugins.test.yaml");
     const dynamicPluginsConfigYaml = yaml.stringify(state.dynamicPluginsConfig);
-    await fs.writeFile(
-      dynamicPluginsConfigPath,
-      dynamicPluginsConfigYaml,
-      "utf8",
-    );
-    console.log(
-      `Dynamic plugins config written to ${dynamicPluginsConfigPath}`,
-    );
-    setAppConfigProperty(
-      "dynamicPlugins.rootDirectory",
-      rootDirName + "/dynamic-plugins-root",
-    );
+    await fs.writeFile(dynamicPluginsConfigPath, dynamicPluginsConfigYaml, "utf8");
+    console.log(`Dynamic plugins config written to ${dynamicPluginsConfigPath}`);
+    setAppConfigProperty("dynamicPlugins.rootDirectory", rootDirName + "/dynamic-plugins-root");
     await updateAppConfigFn(state);
     return;
   }
@@ -275,23 +233,12 @@ export async function createDynamicPluginsConfig(
   });
 }
 
-export async function updateDynamicPluginsConfig(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function updateDynamicPluginsConfig(state: RHDHDeploymentState): Promise<void> {
   if (state.isRunningLocal) {
-    const dynamicPluginsConfigPath = join(
-      currentDirName,
-      "dynamic-plugins.test.yaml",
-    );
+    const dynamicPluginsConfigPath = join(currentDirName, "dynamic-plugins.test.yaml");
     const dynamicPluginsConfigYaml = yaml.stringify(state.dynamicPluginsConfig);
-    await fs.writeFile(
-      dynamicPluginsConfigPath,
-      dynamicPluginsConfigYaml,
-      "utf8",
-    );
-    console.log(
-      `Dynamic plugins config updated in ${dynamicPluginsConfigPath}`,
-    );
+    await fs.writeFile(dynamicPluginsConfigPath, dynamicPluginsConfigYaml, "utf8");
+    console.log(`Dynamic plugins config updated in ${dynamicPluginsConfigPath}`);
     console.log(
       "Dynamic plugins config in dynamic-plugins.test.yaml has no effect on local deployment. Make sure to update the app-config.test.yaml file to use the dynamic-plugins-root directory and your plugin are already copied there.",
     );
@@ -303,17 +250,14 @@ export async function updateDynamicPluginsConfig(
   });
 }
 
-export async function loadBackstageCR(
-  state: RHDHDeploymentState,
-): Promise<BackstageCr> {
+export async function loadBackstageCR(state: RHDHDeploymentState): Promise<BackstageCr> {
   const configPath = join(currentDirName, "yamls", "backstage.yaml");
   const parsed: unknown = await readYamlToJson(configPath);
   if (!isBackstageCr(parsed)) {
     throw new Error("Invalid Backstage CR config");
   }
   const imageRegistry = process.env.IMAGE_REGISTRY ?? "quay.io";
-  const imageRepo =
-    process.env.IMAGE_REPO ?? process.env.QUAY_REPO ?? undefined;
+  const imageRepo = process.env.IMAGE_REPO ?? process.env.QUAY_REPO ?? undefined;
   const tagName = process.env.TAG_NAME;
   expect(imageRepo, "IMAGE_REPO or QUAY_REPO must be set").toBeTruthy();
   expect(tagName, "TAG_NAME must be set").toBeTruthy();
@@ -382,14 +326,10 @@ function startLocalBackstageProcess(state: RHDHDeploymentState): void {
     },
   );
   state.runningProcess.unref();
-  console.log(
-    `Local production server started with PID: ${state.runningProcess.pid}`,
-  );
+  console.log(`Local production server started with PID: ${state.runningProcess.pid}`);
 }
 
-export async function createBackstageDeployment(
-  state: RHDHDeploymentState,
-): Promise<void> {
+export async function createBackstageDeployment(state: RHDHDeploymentState): Promise<void> {
   try {
     if (state.isRunningLocal) {
       startLocalBackstageProcess(state);

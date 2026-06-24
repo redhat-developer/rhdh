@@ -102,10 +102,7 @@ export default defineConfig({
       // Facade modules aggregate many submodules by design (e.g. KubeClient re-exports,
       // rhdh-deployment orchestration, locale translation maps). A flat import count
       // does not reflect coupling when each import is a focused submodule.
-      files: [
-        "playwright/utils/**/*.ts",
-        "playwright/e2e/localization/**/*.ts",
-      ],
+      files: ["playwright/utils/**/*.ts", "playwright/e2e/localization/**/*.ts"],
       rules: {
         "import/max-dependencies": "off",
       },

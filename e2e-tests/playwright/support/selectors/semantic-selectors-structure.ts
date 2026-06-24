@@ -2,9 +2,7 @@ import { Locator, Page } from "@playwright/test";
 
 export const semanticSelectorsStructure = {
   dialog(page: Page, name?: string | RegExp): Locator {
-    return name === undefined
-      ? page.getByRole("dialog")
-      : page.getByRole("dialog", { name });
+    return name === undefined ? page.getByRole("dialog") : page.getByRole("dialog", { name });
   },
 
   navigation(page: Page, name?: string | RegExp): Locator {
@@ -30,9 +28,7 @@ export const semanticSelectorsStructure = {
   },
 
   list(page: Page, name?: string | RegExp): Locator {
-    return name === undefined
-      ? page.getByRole("list")
-      : page.getByRole("list", { name });
+    return name === undefined ? page.getByRole("list") : page.getByRole("list", { name });
   },
 
   listItem(page: Page, text?: string | RegExp): Locator {
@@ -45,15 +41,11 @@ export const semanticSelectorsStructure = {
   },
 
   region(page: Page, name?: string | RegExp): Locator {
-    return name === undefined
-      ? page.getByRole("region")
-      : page.getByRole("region", { name });
+    return name === undefined ? page.getByRole("region") : page.getByRole("region", { name });
   },
 
   alert(page: Page, name?: string | RegExp): Locator {
-    return name === undefined
-      ? page.getByRole("alert")
-      : page.getByRole("alert", { name });
+    return name === undefined ? page.getByRole("alert") : page.getByRole("alert", { name });
   },
 
   testId(page: Page, testId: string): Locator {
@@ -83,8 +75,6 @@ export const semanticSelectorsStructure = {
       | "listitem",
     name?: string | RegExp,
   ): Locator {
-    return name === undefined
-      ? container.getByRole(role)
-      : container.getByRole(role, { name });
+    return name === undefined ? container.getByRole(role) : container.getByRole(role, { name });
   },
 };
