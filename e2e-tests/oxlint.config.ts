@@ -77,6 +77,10 @@ export default defineConfig({
     {
       files: ["**/*.spec.ts", "**/*.test.ts", "playwright/**/*.ts"],
       rules: {
+        // Playwright requires object destructuring for hook/test callbacks that take
+        // testInfo as a second argument (e.g. async ({}, testInfo) =>). Oxlint's
+        // no-empty-pattern rejects {}; disable it here so lint and runtime agree.
+        "eslint/no-empty-pattern": "off",
         "playwright/valid-title": "off",
         "playwright/valid-describe-callback": "off",
         "playwright/no-wait-for-selector": "off",

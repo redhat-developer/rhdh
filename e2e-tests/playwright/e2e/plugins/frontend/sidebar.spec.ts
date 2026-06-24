@@ -73,7 +73,7 @@ test.describe(
       ).toBeHidden();
     });
 
-    test.afterAll(async (_fixtures, testInfo) => {
+    test.afterAll(async ({}, testInfo) => {
       await teardownBrowser(page, testInfo);
     });
   },

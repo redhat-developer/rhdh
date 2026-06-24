@@ -91,7 +91,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
   let testSetup: SchemaModeTestSetup;
 
-  test.beforeAll(async (_args, testInfo) => {
+  test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
 
     const hasPortForwardMeta =

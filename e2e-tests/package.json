@@ -25,6 +25,7 @@
     "showcase-localization-ja": "LOCALE=ja playwright test --project=showcase-localization-ja",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
+    "test:list": "playwright test --list",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "postinstall": "playwright install chromium",

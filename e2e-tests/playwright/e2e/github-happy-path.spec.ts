@@ -271,7 +271,7 @@ test.describe.fixme("GitHub Happy path", () => {
     await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
   });
 
-  test.afterAll(async (_args, testInfo) => {
+  test.afterAll(async ({}, testInfo) => {
     await teardownBrowser(page, testInfo);
   });
 });

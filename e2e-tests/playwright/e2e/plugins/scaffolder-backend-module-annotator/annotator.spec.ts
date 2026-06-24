@@ -49,7 +49,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await common.loginAsGuest();
   });
 
-  test("Register the annotator template", async (_args, testInfo) => {
+  test("Register the annotator template", async ({}, testInfo) => {
     await uiHelper.openSidebar("Catalog");
     await expect(page.getByText("Name")).toBeVisible();
 
@@ -190,7 +190,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     ).toBeVisible();
   });
 
-  test.afterAll(async (_args, testInfo) => {
+  test.afterAll(async ({}, testInfo) => {
     await APIHelper.githubRequest(
       "DELETE",
       GITHUB_API_ENDPOINTS.deleteRepo(

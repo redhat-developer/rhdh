@@ -300,7 +300,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     ).resolves.toBeUndefined();
   });
 
-  test.afterAll(async (_args, testInfo) => {
+  test.afterAll(async ({}, testInfo) => {
     await teardownBrowser(page, testInfo);
   });
 });
