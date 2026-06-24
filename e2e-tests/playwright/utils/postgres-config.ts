@@ -13,7 +13,6 @@
 import { readFileSync, existsSync } from "fs";
 
 import { Client } from "pg";
-import * as k8s from "@kubernetes/client-node";
 import { KubeClient } from "./kube-client";
 import { base64Encode } from "./helper";
 import type { AppConfigYaml } from "./runtime-config";
@@ -305,28 +304,6 @@ async function removeSchemaModePatchedEnvVars(
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
-  const response = await kubeClient.appsApi.readNamespacedDeployment(
-    deploymentName,
-    namespace,
-  );
-  const containers = response.body.spec?.template?.spec?.containers || [];
-  const backstageIdx = containers.findIndex(
-    (c) => c.name === "backstage-backend",
-  );
-
-  if (backstageIdx === -1) {
-    console.warn(
-      "backstage-backend container not found, skipping schema-mode env var removal",
-    );
-    return;
-  }
-
-  const backstageContainer = containers[backstageIdx];
-  if (!backstageContainer.env) {
-    return;
-  }
-
-  // Find env vars that reference a *-postgresql secret (added by schema-mode)
   const schemaModeVars = [
     "POSTGRES_HOST",
     "POSTGRES_PORT",
@@ -334,36 +311,23 @@ async function removeSchemaModePatchedEnvVars(
     "POSTGRES_USER",
     "POSTGRES_PASSWORD",
   ];
-  const indicesToRemove: number[] = [];
 
-  backstageContainer.env.forEach((envVar: k8s.V1EnvVar, idx: number) => {
-    if (
+  const removed = await kubeClient.removeContainerEnvVars(
+    deploymentName,
+    namespace,
+    "backstage-backend",
+    (envVar) =>
       schemaModeVars.includes(envVar.name) &&
-      envVar.valueFrom?.secretKeyRef?.name?.endsWith("-postgresql")
-    ) {
-      indicesToRemove.push(idx);
-    }
-  });
-
-  if (indicesToRemove.length === 0) {
-    console.log("No schema-mode env var patches found on deployment");
-    return;
-  }
-
-  console.log(
-    `Removing ${indicesToRemove.length} schema-mode env var patches from deployment...`,
+      (envVar.valueFrom?.secretKeyRef?.name?.endsWith("-postgresql") ?? false),
   );
 
-  // Build JSON patch to remove indices in reverse order (so indices stay valid)
-  const patch = indicesToRemove
-    .sort((a, b) => b - a)
-    .map((idx) => ({
-      op: "remove" as const,
-      path: `/spec/template/spec/containers/${backstageIdx}/env/${idx}`,
-    }));
-
-  await kubeClient.jsonPatchDeployment(deploymentName, namespace, patch);
-  console.log("Schema-mode env var patches removed from deployment");
+  if (removed > 0) {
+    console.log(
+      `Removed ${removed} schema-mode env var patches from deployment`,
+    );
+  } else {
+    console.log("No schema-mode env var patches found on deployment");
+  }
 }
 
 /**
@@ -378,26 +342,7 @@ async function ensurePostgresCredEnvVars(
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
-  const response = await kubeClient.appsApi.readNamespacedDeployment(
-    deploymentName,
-    namespace,
-  );
-  const containers = response.body.spec?.template?.spec?.containers || [];
-  const backstageIdx = containers.findIndex(
-    (c) => c.name === "backstage-backend",
-  );
-
-  if (backstageIdx === -1) {
-    console.warn(
-      "backstage-backend container not found, skipping env var injection",
-    );
-    return;
-  }
-
-  const backstageContainer = containers[backstageIdx];
-  const existingEnv = backstageContainer.env || [];
-
-  const requiredVars = [
+  const keys = [
     "POSTGRES_HOST",
     "POSTGRES_PORT",
     "POSTGRES_USER",
@@ -406,59 +351,15 @@ async function ensurePostgresCredEnvVars(
     "NODE_EXTRA_CA_CERTS",
   ];
 
-  // Remove existing env vars that we need to replace (in reverse index order)
-  const indicesToRemove = existingEnv
-    .map((e: k8s.V1EnvVar, idx: number) => ({ name: e.name, idx }))
-    .filter((e: { name: string; idx: number }) => requiredVars.includes(e.name))
-    .map((e: { name: string; idx: number }) => e.idx);
-
-  const patch: Array<{ op: string; path: string; value?: unknown }> = [];
-
-  if (indicesToRemove.length > 0) {
-    console.log(
-      `Removing ${indicesToRemove.length} existing POSTGRES_* env vars from deployment`,
-    );
-    // Remove in reverse order so indices stay valid
-    for (const idx of indicesToRemove.sort((a: number, b: number) => b - a)) {
-      patch.push({
-        op: "remove",
-        path: `/spec/template/spec/containers/${backstageIdx}/env/${idx}`,
-      });
-    }
-  }
-
-  // Add env vars from postgres-cred secret
-  const envVarsToAdd = [
-    { name: "POSTGRES_HOST", key: "POSTGRES_HOST" },
-    { name: "POSTGRES_PORT", key: "POSTGRES_PORT" },
-    { name: "POSTGRES_USER", key: "POSTGRES_USER" },
-    { name: "POSTGRES_PASSWORD", key: "POSTGRES_PASSWORD" },
-    { name: "PGSSLMODE", key: "PGSSLMODE" },
-    {
-      name: "NODE_EXTRA_CA_CERTS",
-      key: "NODE_EXTRA_CA_CERTS",
-    },
-  ];
-
-  for (const envVar of envVarsToAdd) {
-    patch.push({
-      op: "add",
-      path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
-      value: {
-        name: envVar.name,
-        valueFrom: {
-          secretKeyRef: {
-            name: "postgres-cred",
-            key: envVar.key,
-          },
-        },
-      },
-    });
-  }
-
   console.log(
-    `Adding ${envVarsToAdd.length} POSTGRES_* env vars from postgres-cred to deployment`,
+    `Adding ${keys.length} POSTGRES_* env vars from postgres-cred to deployment`,
   );
-  await kubeClient.jsonPatchDeployment(deploymentName, namespace, patch);
+  await kubeClient.addContainerEnvVarsFromSecret(
+    deploymentName,
+    namespace,
+    "backstage-backend",
+    "postgres-cred",
+    keys,
+  );
   console.log("POSTGRES_* env vars added to deployment from postgres-cred");
 }

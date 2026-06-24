@@ -69,27 +69,38 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
 
   for (const config of azureConfigurations) {
     test.describe.serial(`Azure DB ${config.name} PostgreSQL version`, () => {
-      test.beforeAll(async () => {
+      test.beforeAll(async ({}, testInfo) => {
         test.setTimeout(180000);
+        if (!config.host) {
+          testInfo.skip(
+            true,
+            `AZURE_DB_*_HOST not set for ${config.name} — skipping`,
+          );
+          return;
+        }
         test.info().annotations.push({
           type: "database",
-          description: config.host?.split(".")[0] || "unknown",
+          description: config.host.split(".")[0] || "unknown",
         });
         await clearDatabase({
           host: config.host,
-          user: azureUser,
-          password: azurePassword,
-          certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH!,
+          user: azureUser!,
+          password: azurePassword!,
+          certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH,
         });
       });
 
-      test("Configure and restart deployment", async () => {
+      test("Configure and restart deployment", async ({}, testInfo) => {
+        if (!config.host) {
+          testInfo.skip(true, `AZURE_DB_*_HOST not set for ${config.name}`);
+          return;
+        }
         const kubeClient = new KubeClient();
         test.setTimeout(600000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          user: azureUser,
-          password: azurePassword,
+          user: azureUser!,
+          password: azurePassword!,
         });
         await kubeClient.restartDeployment(deploymentName, namespace);
       });

@@ -67,27 +67,38 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
   for (const config of rdsConfigurations) {
     test.describe.serial(`RDS ${config.name} PostgreSQL version`, () => {
-      test.beforeAll(async () => {
+      test.beforeAll(async ({}, testInfo) => {
         test.setTimeout(135000);
+        if (!config.host) {
+          testInfo.skip(
+            true,
+            `RDS_*_HOST not set for ${config.name} — skipping`,
+          );
+          return;
+        }
         test.info().annotations.push({
           type: "database",
-          description: config.host?.split(".")[0] || "unknown",
+          description: config.host.split(".")[0] || "unknown",
         });
         await clearDatabase({
           host: config.host,
-          user: rdsUser,
-          password: rdsPassword,
-          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH!,
+          user: rdsUser!,
+          password: rdsPassword!,
+          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
         });
       });
 
-      test("Configure and restart deployment", async () => {
+      test("Configure and restart deployment", async ({}, testInfo) => {
+        if (!config.host) {
+          testInfo.skip(true, `RDS_*_HOST not set for ${config.name}`);
+          return;
+        }
         const kubeClient = new KubeClient();
         test.setTimeout(600000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          user: rdsUser,
-          password: rdsPassword,
+          user: rdsUser!,
+          password: rdsPassword!,
         });
         await kubeClient.restartDeployment(deploymentName, namespace);
       });

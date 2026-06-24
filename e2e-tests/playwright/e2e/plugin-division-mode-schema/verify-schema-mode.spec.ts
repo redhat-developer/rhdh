@@ -79,7 +79,7 @@ function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Prom
 
 test.describe("Verify pluginDivisionMode: schema", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME || "developer-hub";
+  const releaseName = process.env.RELEASE_NAME || "rhdh";
   const installMethod = resolveInstallMethod();
 
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
