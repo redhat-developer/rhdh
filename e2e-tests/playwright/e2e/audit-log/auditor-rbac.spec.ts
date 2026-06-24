@@ -1,9 +1,5 @@
-import { test, expect, Page } from "@support/coverage/test";
+import { test, expect } from "@support/coverage/test";
 import { Common } from "../../utils/common";
-import {
-  createManagedBrowserSession,
-  type ManagedBrowserSession,
-} from "../../support/fixtures/managed-browser";
 import {
   RBAC_API,
   ROLE_NAME,
@@ -29,21 +25,16 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
-  let page: Page;
-  let browserSession: ManagedBrowserSession;
-
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "audit-log",
     });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
-    browserSession = await createManagedBrowserSession(browser, testInfo);
-    page = browserSession.page;
-    common = new Common(page);
+    common = new Common(rhdhPage);
     await common.loginAsKeycloakUser();
-    rbacApi = await RhdhRbacApi.buildRbacApi(page);
+    rbacApi = await RhdhRbacApi.buildRbacApi(rhdhPage);
   });
 
   /* --------------------------------------------------------------------- */
@@ -292,9 +283,5 @@ test.describe("Auditor check for RBAC Plugin", () => {
       "succeeded",
       ["policy.entity.read", USER_ENTITY_REF],
     );
-  });
-
-  test.afterAll(async () => {
-    await browserSession.dispose();
   });
 });

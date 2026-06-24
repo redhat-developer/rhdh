@@ -1,9 +1,14 @@
-import { test, expect, APIRequestContext, APIResponse, request } from "@support/coverage/test";
-
-import playwrightConfig from "../../../../playwright.config";
-import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
-import { CatalogUsersPO } from "../../../support/page-objects/catalog/catalog-users-obj";
 import { Common } from "../../../utils/common";
+import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
+import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
+import {
+  test,
+  expect,
+  APIRequestContext,
+  APIResponse,
+  request,
+} from "@support/coverage/test";
+import playwrightConfig from "../../../../playwright.config";
 
 interface HealthResponse {
   status: string;
@@ -48,6 +53,7 @@ function isLicensedUserArray(value: unknown): value is LicensedUser[] {
 
 test.describe("Test licensed users info backend plugin", () => {
   let common: Common;
+  let catalogBrowsePage: CatalogBrowsePage;
 
   test.beforeAll(() => {
     test.info().annotations.push({
@@ -63,10 +69,10 @@ test.describe("Test licensed users info backend plugin", () => {
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
+    catalogBrowsePage = new CatalogBrowsePage(page);
     await common.loginAsGuest();
-    await CatalogUsersPO.visitBaseURL(page);
+    await catalogBrowsePage.openLicensedUsersCatalog();
 
-    // Get the api token
     const hacker: RhdhAuthUiHack = RhdhAuthUiHack.getInstance();
     apiToken = await hacker.getApiToken(page);
   });
@@ -154,7 +160,9 @@ test.describe("Test licensed users info backend plugin", () => {
     expect(response.headers()["content-type"]).toContain("text/csv");
 
     // 'content-disposition': 'attachment; filename="data.csv"',
-    expect(response.headers()["content-disposition"]).toBe('attachment; filename="data.csv"');
+    expect(response.headers()["content-disposition"]).toBe(
+      'attachment; filename="data.csv"',
+    );
 
     const result = await response.text();
     /*
@@ -165,7 +173,9 @@ test.describe("Test licensed users info backend plugin", () => {
     const csvHeaders = splitText[0];
     const csvData = splitText[1];
 
-    expect(csvHeaders).toContain("userEntityRef,displayName,email,lastAuthTime");
+    expect(csvHeaders).toContain(
+      "userEntityRef,displayName,email,lastAuthTime",
+    );
     expect(csvData).toContain("user:");
   });
 });

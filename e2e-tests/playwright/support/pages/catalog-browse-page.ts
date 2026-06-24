@@ -1,11 +1,13 @@
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 
 /** Catalog browse and entity list interactions. */
 export class CatalogBrowsePage {
+  private readonly page: Page;
   private readonly ui: UIhelper;
 
   constructor(page: Page) {
+    this.page = page;
     this.ui = new UIhelper(page);
   }
 
@@ -116,5 +118,57 @@ export class CatalogBrowsePage {
     await this.ui.searchInputPlaceholder(`${templateName}\n`);
     await this.ui.verifyRowInTableByUniqueText(templateName, [templateName]);
     await this.ui.clickLink(templateName);
+  }
+
+  async clearSearchIfVisible(): Promise<void> {
+    const clearButton = this.page.getByRole("button", { name: "clear search" });
+    if (await clearButton.isVisible()) {
+      await expect(clearButton).toBeEnabled();
+      await clearButton.click();
+    }
+  }
+
+  async sortCreatedAtDescending(): Promise<void> {
+    await expect(
+      this.page.getByRole("row").filter({ has: this.page.getByRole("cell") }),
+    ).not.toHaveCount(0);
+
+    const column = this.page.getByRole("columnheader", {
+      name: "Created At",
+      exact: true,
+    });
+    await column.click();
+    await column.click();
+  }
+
+  async verifyFirstRowCreatedAtNotEmpty(): Promise<void> {
+    const firstRow = this.page
+      .getByRole("row")
+      .filter({ has: this.page.getByRole("cell") })
+      .first();
+    const createdAtCell = firstRow.getByRole("cell").nth(7);
+    await expect(createdAtCell).not.toBeEmpty();
+  }
+
+  async openEntityLinkByHref(hrefFragment: string): Promise<void> {
+    const link = this.page.locator(`a[href*="${hrefFragment}"]`).first();
+    await expect(link).toBeVisible();
+    await link.click();
+  }
+
+  async verifyTableCell(text: string): Promise<void> {
+    await expect(this.page.getByRole("cell", { name: text })).toBeVisible();
+  }
+
+  async openLicensedUsersCatalog(): Promise<void> {
+    await this.page.goto("/catalog?filters%5Bkind%5D=user&filters%5Buser");
+  }
+
+  async verifyDependencyResource(resource: string): Promise<void> {
+    const resourceElement = this.page.locator(
+      `#workspace:has-text("${resource}")`,
+    );
+    await resourceElement.scrollIntoViewIfNeeded();
+    await expect(resourceElement).toBeVisible();
   }
 }

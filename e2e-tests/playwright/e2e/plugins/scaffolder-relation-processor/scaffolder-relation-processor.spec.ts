@@ -1,17 +1,10 @@
-import { expect, Page, test } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 import { Common } from "../../../utils/common";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 import { APIHelper } from "../../../utils/api-helper";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page";
 import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
-import {
-  createManagedBrowserSession,
-  type ManagedBrowserSession,
-} from "../../../support/fixtures/managed-browser";
-
-let page: Page;
-let browserSession: ManagedBrowserSession;
 
 test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test.skip(
@@ -41,19 +34,16 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     ).toString("utf8"),
   };
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    browserSession = await createManagedBrowserSession(browser, testInfo);
-    page = browserSession.page;
-
-    common = new Common(page);
-    scaffolderFlowPage = new ScaffolderFlowPage(page);
-    catalogBrowsePage = new CatalogBrowsePage(page);
-    catalogImport = new CatalogImport(page);
+    common = new Common(rhdhPage);
+    scaffolderFlowPage = new ScaffolderFlowPage(rhdhPage);
+    catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
+    catalogImport = new CatalogImport(rhdhPage);
 
     await common.loginAsGuest();
   });
@@ -73,21 +63,14 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await scaffolderFlowPage.fillCreateReactAppTemplateForm(reactAppDetails);
 
     await scaffolderFlowPage.clickCreate();
-    // Wait for the scaffolder task to complete and the link to appear
-    await expect(
-      page.getByRole("link", { name: "Open in catalog" }),
-    ).toBeVisible({
-      timeout: 60000,
-    });
+    await scaffolderFlowPage.waitForOpenInCatalogLink();
     await scaffolderFlowPage.clickOpenInCatalog();
-    // Ensure the entity page has loaded
-    await expect(page.getByText(reactAppDetails.componentName)).toBeVisible({
-      timeout: 20000,
-    });
+    await scaffolderFlowPage.verifyComponentNameVisible(
+      reactAppDetails.componentName,
+    );
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
-    // Verify the scaffoldedFrom relation in the YAML view of the entity
     await catalogImport.inspectEntityAndVerifyYaml(
       `relations:
         - type: ownedBy
@@ -103,7 +86,9 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
     await catalogBrowsePage.openCatalogSidebar("Component");
     await catalogBrowsePage.searchCatalog("test-relation-\n");
-    await clickOnRelationTestComponent();
+    await catalogBrowsePage.openEntityLinkByHref(
+      "/catalog/default/component/test-relation-",
+    );
 
     await catalogBrowsePage.openDependenciesTab();
 
@@ -121,12 +106,10 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
       "website",
     );
 
-    // Verify the scaffolderOf relation in the YAML view
     await catalogImport.inspectEntityAndVerifyYaml(
       `- type: scaffolderOf\n    targetRef: component:default/${reactAppDetails.componentName}\n`,
     );
 
-    // Verify the template is still functional
     await scaffolderFlowPage.launchTemplateAndVerifyIntro();
   });
 
@@ -138,14 +121,5 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
         reactAppDetails.repo,
       ),
     );
-    await browserSession.dispose();
   });
-
-  async function clickOnRelationTestComponent() {
-    const selector = 'a[href*="/catalog/default/component/test-relation-"]';
-    await page.locator(selector).first().waitFor({ state: "visible" });
-    const link = page.locator(selector).first();
-    await expect(link).toBeVisible();
-    await link.click();
-  }
 });

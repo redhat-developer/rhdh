@@ -41,6 +41,10 @@ export class SelfServicePage {
     await this.ui.searchInputPlaceholder(name);
   }
 
+  async verifyTemplateHeading(template: string): Promise<void> {
+    await this.ui.verifyHeading(template);
+  }
+
   async verifyText(text: string, exact = true): Promise<void> {
     await this.ui.verifyText(text, exact);
   }

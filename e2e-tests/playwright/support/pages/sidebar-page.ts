@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import {
   getCurrentLanguage,
@@ -10,9 +10,11 @@ const lang = getCurrentLanguage();
 
 /** Sidebar navigation on the RHDH instance. */
 export class SidebarPage {
+  private readonly page: Page;
   private readonly ui: UIhelper;
 
   constructor(page: Page) {
+    this.page = page;
     this.ui = new UIhelper(page);
   }
 
@@ -44,5 +46,9 @@ export class SidebarPage {
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
     await this.ui.verifyText(text, exact);
+  }
+
+  async verifyLinkHidden(name: string): Promise<void> {
+    await expect(this.page.getByRole("link", { name })).toBeHidden();
   }
 }

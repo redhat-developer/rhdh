@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 
 export type ReactAppTemplateDetails = {
@@ -13,9 +13,11 @@ export type ReactAppTemplateDetails = {
 
 /** Scaffolder and self-service template flows. */
 export class ScaffolderFlowPage {
+  private readonly page: Page;
   private readonly ui: UIhelper;
 
   constructor(page: Page) {
+    this.page = page;
     this.ui = new UIhelper(page);
   }
 
@@ -130,6 +132,19 @@ export class ScaffolderFlowPage {
 
   async clickOpenInCatalog(): Promise<void> {
     await this.ui.clickLink("Open in catalog");
+  }
+
+  async waitForOpenInCatalogLink(timeout = 60_000): Promise<void> {
+    await expect(
+      this.page.getByRole("link", { name: "Open in catalog" }),
+    ).toBeVisible({ timeout });
+  }
+
+  async verifyComponentNameVisible(
+    name: string,
+    timeout = 20_000,
+  ): Promise<void> {
+    await expect(this.page.getByText(name)).toBeVisible({ timeout });
   }
 
   async openTemplateFromCatalog(

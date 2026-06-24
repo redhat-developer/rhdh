@@ -1,0 +1,106 @@
+import { expect } from "@playwright/test";
+import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
+
+const DEFAULT_CONFIG_MAPS = {
+  appConfigMap: "app-config-rhdh",
+  rbacConfigMap: "rbac-policy",
+  dynamicPluginsConfigMap: "dynamic-plugins",
+  secretName: "rhdh-secrets",
+} as const;
+
+/** Shared K8s + RHDH deployment orchestration for auth-provider E2E specs. */
+export class AuthProviderHarness {
+  readonly deployment: RHDHDeployment;
+  readonly backstageUrl: string;
+  readonly backstageBackendUrl: string;
+
+  private constructor(
+    deployment: RHDHDeployment,
+    backstageUrl: string,
+    backstageBackendUrl: string,
+  ) {
+    this.deployment = deployment;
+    this.backstageUrl = backstageUrl;
+    this.backstageBackendUrl = backstageBackendUrl;
+  }
+
+  static async create(
+    namespace: string,
+    instanceName = "rhdh",
+  ): Promise<AuthProviderHarness> {
+    const deployment = new RHDHDeployment(
+      namespace,
+      DEFAULT_CONFIG_MAPS.appConfigMap,
+      DEFAULT_CONFIG_MAPS.rbacConfigMap,
+      DEFAULT_CONFIG_MAPS.dynamicPluginsConfigMap,
+      DEFAULT_CONFIG_MAPS.secretName,
+    );
+    deployment.instanceName = instanceName;
+    const backstageUrl = await deployment.computeBackstageUrl();
+    const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
+    console.log(`Backstage BaseURL is: ${backstageUrl}`);
+    return new AuthProviderHarness(
+      deployment,
+      backstageUrl,
+      backstageBackendUrl,
+    );
+  }
+
+  expectEnvVars(envVarNames: string[]): void {
+    for (const name of envVarNames) {
+      expect(process.env[name]).toBeDefined();
+    }
+  }
+
+  async loadConfigsAndProvisionNamespace(): Promise<void> {
+    await this.deployment.loadAllConfigs();
+    await this.deployment.deleteNamespaceIfExists();
+    await (await this.deployment.createNamespace()).waitForNamespaceActive();
+    await this.deployment.createAllConfigs();
+    await this.deployment.generateStaticToken();
+  }
+
+  async addBaseUrlSecretsIfRemote(): Promise<void> {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
+      await this.deployment.addSecretData("BASE_URL", this.backstageUrl);
+      await this.deployment.addSecretData(
+        "BASE_BACKEND_URL",
+        this.backstageBackendUrl,
+      );
+    }
+  }
+
+  async addSecretsFromEnv(entries: Record<string, string>): Promise<void> {
+    for (const [secretKey, envVar] of Object.entries(entries)) {
+      await this.deployment.addSecretData(secretKey, process.env[envVar]!);
+    }
+  }
+
+  async createSecret(): Promise<void> {
+    await this.deployment.createSecret();
+  }
+
+  async deployAndWait(): Promise<void> {
+    await this.deployment.createBackstageDeployment();
+    await this.deployment.waitForDeploymentReady();
+    await this.deployment.waitForSynced();
+  }
+
+  async reconcileAfterConfigChange(): Promise<void> {
+    await this.deployment.updateAllConfigs();
+    await this.deployment.restartLocalDeployment();
+    await this.deployment.waitForConfigReconciled();
+    await this.deployment.waitForDeploymentReady();
+    await this.deployment.waitForSynced();
+  }
+
+  async cleanup(): Promise<void> {
+    console.log("[TEST] Starting cleanup...");
+    await this.deployment.killRunningProcess();
+    console.log("[TEST] Cleanup completed");
+  }
+}

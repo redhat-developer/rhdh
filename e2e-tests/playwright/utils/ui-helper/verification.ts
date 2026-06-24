@@ -72,7 +72,7 @@ export async function verifyRowsInTable(
 }
 
 export async function waitForTextDisappear(page: Page, text: string) {
-  await page.getByText(text).waitFor({ state: "detached" });
+  await expect(page.getByText(text)).toBeHidden();
 }
 
 async function verifyTextInLocator(

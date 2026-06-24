@@ -64,9 +64,8 @@ export default defineConfig({
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
     // Note: this video config only applies to tests using the built-in { page } fixture.
-    // Tests that create their own context via setupBrowser() in playwright/utils/common.ts
-    // must configure recordVideo explicitly because manually created contexts don't
-    // inherit these recording options.
+    // Tests that share one browser context across a describe block should use
+    // the worker-scoped rhdhPage / rhdhContext fixtures from @support/coverage/test.
     video: {
       mode: "retain-on-failure",
       size: { width: 1280, height: 720 },

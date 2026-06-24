@@ -9,6 +9,10 @@
 // Usage in a spec using the built-in { page } fixture:
 //   import { test, expect } from "@support/coverage/test";
 //
+// For serial specs that share one browser context across a describe block,
+// use the worker-scoped fixtures instead of manual beforeAll setup:
+//   test.beforeAll(async ({ rhdhPage, rhdhContext }) => { ... });
+//
 // For specs that create their own context/page via browser.newContext(),
 // import the helpers directly and call them around the test body:
 //   import { startCoverageForPage, stopCoverageForPage } from "@support/coverage/test";
@@ -18,9 +22,11 @@
 import {
   test as baseTest,
   expect as baseExpect,
+  type BrowserContext,
   type Page,
   type TestInfo,
 } from "@playwright/test";
+import { setupBrowser, teardownBrowser } from "../../utils/common-browser";
 // Re-export all Playwright types and values so specs can replace
 // `from "@playwright/test"` with this module. The locally-defined `test`
 // and `expect` below shadow the star re-exports.
@@ -117,14 +123,37 @@ export async function stopCoverageForPage(
 // with the idiomatic `import { test, expect } from "..."` pattern. The project
 // naming rule requires UPPER_CASE for exported const, but shadowing the
 // Playwright convention would force every consumer to alias — worse DX.
+type RhdhBrowserWorkerFixtures = {
+  rhdhContext: BrowserContext;
+  rhdhPage: Page;
+};
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const test = baseTest.extend<NonNullable<unknown>>({
-  page: async ({ page }, use, testInfo) => {
-    await startCoverageForPage(page);
-    await use(page);
-    await stopCoverageForPage(page, testInfo);
+export const test = baseTest.extend<NonNullable<unknown>, RhdhBrowserWorkerFixtures>(
+  {
+    page: async ({ page }, use, testInfo) => {
+      await startCoverageForPage(page);
+      await use(page);
+      await stopCoverageForPage(page, testInfo);
+    },
+    rhdhContext: [
+      async ({ browser }, use, testInfo) => {
+        const { page, context } = await setupBrowser(browser, testInfo);
+        await use(context);
+        await teardownBrowser(page, testInfo);
+      },
+      { scope: "worker" },
+    ],
+    rhdhPage: [
+      async ({ rhdhContext }, use) => {
+        const existingPage = rhdhContext.pages()[0];
+        const page = existingPage ?? (await rhdhContext.newPage());
+        await use(page);
+      },
+      { scope: "worker" },
+    ],
   },
-});
+);
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const expect = baseExpect;

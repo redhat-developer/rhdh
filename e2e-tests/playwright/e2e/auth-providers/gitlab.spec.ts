@@ -1,15 +1,8 @@
-import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
+import { test, expect, BrowserContext } from "@support/coverage/test";
+import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { Common } from "../../utils/common";
 import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
 import { SettingsPage } from "../../support/pages/settings-page";
-import {
-  createManagedBrowserSession,
-  type ManagedBrowserSession,
-} from "../../support/fixtures/managed-browser";
-let page: Page;
-let context: BrowserContext;
-let browserSession: ManagedBrowserSession;
 
 /* SUPORTED RESOLVERS
 GITLAB:
@@ -19,65 +12,44 @@ GITLAB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
-test.describe("Configure GitLab Provider", async () => {
+const harness = await AuthProviderHarness.create(
+  "albarbaro-test-namespace-gitlab",
+);
+
+test.describe("Configure GitLab Provider", () => {
+  test.use({ baseURL: harness.backstageUrl });
+
   let common: Common;
   let settingsPage: SettingsPage;
+  let context: BrowserContext;
   let gitlabHelper: GitLabHelper;
   let oauthAppId: number | null = null;
 
-  const namespace = "albarbaro-test-namespace-gitlab";
-  const appConfigMap = "app-config-rhdh";
-  const rbacConfigMap = "rbac-policy";
-  const dynamicPluginsConfigMap = "dynamic-plugins";
-  const secretName = "rhdh-secrets";
-
-  // set deployment instance
-  const deployment: RHDHDeployment = new RHDHDeployment(
-    namespace,
-    appConfigMap,
-    rbacConfigMap,
-    dynamicPluginsConfigMap,
-    secretName,
-  );
-  deployment.instanceName = "rhdh";
-
-  // compute backstage baseurl
-  const backstageUrl = await deployment.computeBackstageUrl();
-  const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
-  console.log(`Backstage BaseURL is: ${backstageUrl}`);
-
-  test.use({ baseURL: backstageUrl });
-
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage, rhdhContext }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
     });
 
-    // load default configs from yaml files
-    await deployment.loadAllConfigs();
+    context = rhdhContext;
+    common = new Common(rhdhPage);
+    settingsPage = new SettingsPage(rhdhPage);
 
-    // setup playwright helpers
-    browserSession = await createManagedBrowserSession(browser, testInfo);
-    context = browserSession.context;
-    page = browserSession.page;
-    common = new Common(page);
-    settingsPage = new SettingsPage(page);
+    harness.expectEnvVars([
+      "AUTH_PROVIDERS_GITLAB_HOST",
+      "AUTH_PROVIDERS_GITLAB_TOKEN",
+      "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
+      "DEFAULT_USER_PASSWORD",
+    ]);
 
-    // expect some expected variables
-    expect(process.env.AUTH_PROVIDERS_GITLAB_HOST!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN!).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG!).toBeDefined();
-    expect(process.env.DEFAULT_USER_PASSWORD!).toBeDefined();
+    await harness.loadConfigsAndProvisionNamespace();
 
-    // Initialize GitLab helper and create OAuth application dynamically
     gitlabHelper = new GitLabHelper({
       host: process.env.AUTH_PROVIDERS_GITLAB_HOST!,
       personalAccessToken: process.env.AUTH_PROVIDERS_GITLAB_TOKEN!,
     });
 
-    const callbackUrl = `${backstageBackendUrl}/api/auth/gitlab/handler/frame`;
+    const callbackUrl = `${harness.backstageBackendUrl}/api/auth/gitlab/handler/frame`;
     const oauthAppName = `rhdh-test-${Date.now()}`;
     console.log(`[TEST] Creating GitLab OAuth application: ${oauthAppName}`);
     const oauthApp = await gitlabHelper.createOAuthApplication(
@@ -92,62 +64,28 @@ test.describe("Configure GitLab Provider", async () => {
       `[TEST] GitLab OAuth application created - ID: ${oauthApp.application_id}`,
     );
 
-    // clean old namespaces
-    await deployment.deleteNamespaceIfExists();
-
-    // create namespace and wait for it to be active
-    await (await deployment.createNamespace()).waitForNamespaceActive();
-
-    // create all base configmaps
-    await deployment.createAllConfigs();
-
-    // generate static token
-    await deployment.generateStaticToken();
-
-    // set enviroment variables and create secret
-    if (
-      process.env.ISRUNNINGLOCAL === undefined ||
-      process.env.ISRUNNINGLOCAL === "" ||
-      process.env.ISRUNNINGLOCAL === "false"
-    ) {
-      await deployment.addSecretData("BASE_URL", backstageUrl);
-      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
-    }
-    await deployment.addSecretData(
-      "AUTH_PROVIDERS_GITLAB_HOST",
-      process.env.AUTH_PROVIDERS_GITLAB_HOST!,
-    );
-    await deployment.addSecretData(
-      "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
-      process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG!,
-    );
-    await deployment.addSecretData(
+    await harness.addBaseUrlSecretsIfRemote();
+    await harness.addSecretsFromEnv({
+      AUTH_PROVIDERS_GITLAB_HOST: "AUTH_PROVIDERS_GITLAB_HOST",
+      AUTH_PROVIDERS_GITLAB_PARENT_ORG: "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
+      AUTH_PROVIDERS_GITLAB_TOKEN: "AUTH_PROVIDERS_GITLAB_TOKEN",
+    });
+    await harness.deployment.addSecretData(
       "AUTH_PROVIDERS_GITLAB_CLIENT_ID",
       oauthApp.application_id,
     );
-    await deployment.addSecretData(
+    await harness.deployment.addSecretData(
       "AUTH_PROVIDERS_GITLAB_CLIENT_SECRET",
       oauthApp.secret,
     );
-    await deployment.addSecretData(
-      "AUTH_PROVIDERS_GITLAB_TOKEN",
-      process.env.AUTH_PROVIDERS_GITLAB_TOKEN!,
-    );
+    await harness.createSecret();
 
-    await deployment.createSecret();
-
-    // enable gitlab login with ingestion
     console.log("[TEST] Enabling GitLab login with ingestion...");
-    await deployment.enableGitlabLoginWithIngestion();
-    await deployment.updateAllConfigs();
+    await harness.deployment.enableGitlabLoginWithIngestion();
+    await harness.deployment.updateAllConfigs();
     console.log("[TEST] GitLab login with ingestion enabled successfully");
 
-    // create backstage deployment and wait for it to be ready
-    await deployment.createBackstageDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployAndWait();
   });
 
   test.beforeEach(() => {
@@ -173,7 +111,7 @@ test.describe("Configure GitLab Provider", async () => {
     await expect
       .poll(
         () =>
-          deployment.checkUserIsIngestedInCatalog([
+          harness.deployment.checkUserIsIngestedInCatalog([
             "user1",
             "user2",
             "user3",
@@ -183,7 +121,7 @@ test.describe("Configure GitLab Provider", async () => {
       )
       .toBe(true);
     expect(
-      await deployment.checkGroupIsIngestedInCatalog([
+      await harness.deployment.checkGroupIsIngestedInCatalog([
         "my-org",
         "group1",
         "all",
@@ -192,59 +130,81 @@ test.describe("Configure GitLab Provider", async () => {
       ]),
     ).toBe(true);
 
-    expect(await deployment.checkUserIsInGroup("user1", "all")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user2", "all")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user3", "all")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("root", "all")).toBe(true);
-
-    expect(await deployment.checkUserIsInGroup("root", "group1")).toBe(true);
-
-    expect(await deployment.checkUserIsInGroup("user1", "group1-nested")).toBe(
+    expect(await harness.deployment.checkUserIsInGroup("user1", "all")).toBe(
       true,
     );
-    expect(await deployment.checkUserIsInGroup("user2", "group1-nested")).toBe(
+    expect(await harness.deployment.checkUserIsInGroup("user2", "all")).toBe(
       true,
     );
-    expect(await deployment.checkUserIsInGroup("root", "group1-nested")).toBe(
+    expect(await harness.deployment.checkUserIsInGroup("user3", "all")).toBe(
+      true,
+    );
+    expect(await harness.deployment.checkUserIsInGroup("root", "all")).toBe(
+      true,
+    );
+
+    expect(await harness.deployment.checkUserIsInGroup("root", "group1")).toBe(
       true,
     );
 
     expect(
-      await deployment.checkUserIsInGroup("user3", "group1-nested-nested_2"),
+      await harness.deployment.checkUserIsInGroup("user1", "group1-nested"),
     ).toBe(true);
     expect(
-      await deployment.checkUserIsInGroup("root", "group1-nested-nested_2"),
-    ).toBe(true);
-
-    expect(await deployment.checkGroupIsChildOfGroup("group1", "my-org")).toBe(
-      true,
-    );
-    expect(await deployment.checkGroupIsParentOfGroup("my-org", "group1")).toBe(
-      true,
-    );
-
-    expect(await deployment.checkGroupIsChildOfGroup("all", "my-org")).toBe(
-      true,
-    );
-    expect(await deployment.checkGroupIsParentOfGroup("my-org", "all")).toBe(
-      true,
-    );
-
-    expect(
-      await deployment.checkGroupIsChildOfGroup("group1-nested", "group1"),
+      await harness.deployment.checkUserIsInGroup("user2", "group1-nested"),
     ).toBe(true);
     expect(
-      await deployment.checkGroupIsParentOfGroup("group1", "group1-nested"),
+      await harness.deployment.checkUserIsInGroup("root", "group1-nested"),
     ).toBe(true);
 
     expect(
-      await deployment.checkGroupIsChildOfGroup(
+      await harness.deployment.checkUserIsInGroup(
+        "user3",
+        "group1-nested-nested_2",
+      ),
+    ).toBe(true);
+    expect(
+      await harness.deployment.checkUserIsInGroup(
+        "root",
+        "group1-nested-nested_2",
+      ),
+    ).toBe(true);
+
+    expect(
+      await harness.deployment.checkGroupIsChildOfGroup("group1", "my-org"),
+    ).toBe(true);
+    expect(
+      await harness.deployment.checkGroupIsParentOfGroup("my-org", "group1"),
+    ).toBe(true);
+
+    expect(
+      await harness.deployment.checkGroupIsChildOfGroup("all", "my-org"),
+    ).toBe(true);
+    expect(
+      await harness.deployment.checkGroupIsParentOfGroup("my-org", "all"),
+    ).toBe(true);
+
+    expect(
+      await harness.deployment.checkGroupIsChildOfGroup(
+        "group1-nested",
+        "group1",
+      ),
+    ).toBe(true);
+    expect(
+      await harness.deployment.checkGroupIsParentOfGroup(
+        "group1",
+        "group1-nested",
+      ),
+    ).toBe(true);
+
+    expect(
+      await harness.deployment.checkGroupIsChildOfGroup(
         "group1-nested-nested_2",
         "group1-nested",
       ),
     ).toBe(true);
     expect(
-      await deployment.checkGroupIsParentOfGroup(
+      await harness.deployment.checkGroupIsParentOfGroup(
         "group1-nested",
         "group1-nested-nested_2",
       ),
@@ -252,12 +212,6 @@ test.describe("Configure GitLab Provider", async () => {
   });
 
   test.afterAll(async () => {
-    if (browserSession !== undefined) {
-      await browserSession.dispose();
-    }
-    console.log("[TEST] Starting cleanup...");
-
-    // Delete the dynamically created OAuth application
     if (oauthAppId !== null) {
       try {
         await gitlabHelper.deleteOAuthApplication(oauthAppId);
@@ -270,7 +224,6 @@ test.describe("Configure GitLab Provider", async () => {
       }
     }
 
-    await deployment.killRunningProcess();
-    console.log("[TEST] Cleanup completed");
+    await harness.cleanup();
   });
 });
