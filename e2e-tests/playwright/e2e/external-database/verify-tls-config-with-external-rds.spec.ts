@@ -9,6 +9,7 @@ import {
   clearDatabase,
   prepareForExternalDatabase,
 } from "../../utils/postgres-config";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 import { UIhelper } from "../../utils/ui-helper";
 
 interface RdsConfig {
@@ -43,6 +44,9 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
         description: namespace,
       },
     );
+
+    // Ensure the runtime RHDH instance is deployed (idempotent — no-op if already running)
+    await ensureRuntimeDeployed();
 
     // Validate certificates are available — skip gracefully if not set
     const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);

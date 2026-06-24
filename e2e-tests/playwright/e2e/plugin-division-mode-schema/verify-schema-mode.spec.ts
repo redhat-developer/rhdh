@@ -14,6 +14,7 @@ import { test, expect } from "@support/coverage/test";
 import { Common } from "../../utils/common";
 import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 import { setPortForwardRestarter } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
@@ -87,6 +88,10 @@ test.describe("Verify pluginDivisionMode: schema", () => {
 
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
+
+    // Ensure the runtime RHDH instance is deployed (idempotent — no-op if already running).
+    // Also sets SCHEMA_MODE_* env vars via configureSchemaMode().
+    await ensureRuntimeDeployed();
 
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
     const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;

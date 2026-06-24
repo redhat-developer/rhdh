@@ -9,6 +9,7 @@ import {
   clearDatabase,
   prepareForExternalDatabase,
 } from "../../utils/postgres-config";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 import { UIhelper } from "../../utils/ui-helper";
 
 interface AzureDbConfig {
@@ -43,6 +44,9 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
         description: namespace,
       },
     );
+
+    // Ensure the runtime RHDH instance is deployed (idempotent — no-op if already running)
+    await ensureRuntimeDeployed();
 
     // Validate certificates are available — skip gracefully if not set
     const azureCerts = readCertificateFile(
