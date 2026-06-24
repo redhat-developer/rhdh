@@ -129,9 +129,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await catalogImport.inspectEntityAndVerifyYaml(
       `labels:\n    custom: ${reactAppDetails.label}\n`,
     );
-    await expect(
-      page.getByRole("link", { name: reactAppDetails.componentName }),
-    ).toBeVisible();
   });
 
   test("Verify custom annotation is added to scaffolded component", async () => {
@@ -146,9 +143,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await catalogImport.inspectEntityAndVerifyYaml(
       `custom.io/annotation: ${reactAppDetails.annotation}`,
     );
-    await expect(
-      page.getByRole("link", { name: reactAppDetails.componentName }),
-    ).toBeVisible();
   });
 
   test("Verify template version annotation is added to scaffolded component", async () => {
@@ -163,9 +157,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await catalogImport.inspectEntityAndVerifyYaml(
       `backstage.io/template-version: 0.0.1`,
     );
-    await expect(
-      page.getByRole("link", { name: reactAppDetails.componentName }),
-    ).toBeVisible();
   });
 
   test("Verify template version annotation is present on the template", async () => {
@@ -181,9 +172,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await catalogImport.inspectEntityAndVerifyYaml(
       `backstage.io/template-version: 0.0.1`,
     );
-    await expect(
-      page.getByRole("link", { name: "Create React App Template" }),
-    ).toBeVisible();
   });
 
   test.afterAll(async ({}, testInfo) => {

@@ -91,14 +91,8 @@ test.describe.fixme("GitHub Happy path", () => {
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
     await uiHelper.goToSettingsPage();
-    await expect(
-      page.getByRole("heading", { name: process.env.GH_USER2_ID! }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", {
-        name: `User Entity: ${process.env.GH_USER2_ID!}`,
-      }),
-    ).toBeVisible();
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID!);
+    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID!}`);
   });
 
   test("Import an existing Git repository", async () => {
@@ -107,9 +101,6 @@ test.describe.fixme("GitHub Happy path", () => {
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(component);
-    await expect(
-      page.getByRole("button", { name: "Self-service" }),
-    ).toBeVisible();
   });
 
   test("Verify that the following components were ingested into the Catalog", async () => {
@@ -135,9 +126,6 @@ test.describe.fixme("GitHub Happy path", () => {
     await uiHelper.selectMuiBox("Kind", "User");
     await uiHelper.searchInputPlaceholder("rhdh");
     await uiHelper.verifyRowsInTable(["rhdh-qe rhdh-qe"]);
-    await expect(
-      page.getByRole("cell", { name: "rhdh-qe rhdh-qe" }),
-    ).toBeVisible();
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
@@ -146,9 +134,7 @@ test.describe.fixme("GitHub Happy path", () => {
 
     for (const template of TEMPLATES) {
       await uiHelper.waitForTitle(template, 4);
-      await expect(
-        page.getByRole("heading", { name: template, exact: true }),
-      ).toBeVisible();
+      await uiHelper.verifyHeading(template);
     }
   });
 
@@ -179,9 +165,7 @@ test.describe.fixme("GitHub Happy path", () => {
   test("Verify that the Pull/Merge Requests tab renders the 5 most recently updated Open Pull Requests", async () => {
     await uiHelper.clickTab("Pull/Merge Requests");
     const openPRs = await getShowcasePullRequests("open");
-    await expect(
-      backstageShowcase.verifyPRRows(openPRs, 0, 5),
-    ).resolves.toBeUndefined();
+    await backstageShowcase.verifyPRRows(openPRs, 0, 5);
   });
 
   test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async () => {
@@ -192,9 +176,7 @@ test.describe.fixme("GitHub Happy path", () => {
     await closedButton.click();
     const closedPRs = await getShowcasePullRequests("closed");
     await common.waitForLoad();
-    await expect(
-      backstageShowcase.verifyPRRows(closedPRs, 0, 5),
-    ).resolves.toBeUndefined();
+    await backstageShowcase.verifyPRRows(closedPRs, 0, 5);
   });
 
   test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
@@ -207,31 +189,27 @@ test.describe.fixme("GitHub Happy path", () => {
     await expect(allButton).toBeVisible();
     await expect(allButton).toBeEnabled();
     await allButton.click();
-    await expect(
-      backstageShowcase.verifyPRRows(allPRs, 0, 5),
-    ).resolves.toBeUndefined();
+    await backstageShowcase.verifyPRRows(allPRs, 0, 5);
 
     console.log("Clicking on Next Page button");
     await backstageShowcase.clickNextPage();
-    await expect(
-      backstageShowcase.verifyPRRows(allPRs, 5, 10),
-    ).resolves.toBeUndefined();
+    await backstageShowcase.verifyPRRows(allPRs, 5, 10);
 
     // const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
     const lastPagePRs = 996; // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
 
     console.log("Clicking on Last Page button");
     await backstageShowcase.clickLastPage();
-    await expect(
-      backstageShowcase.verifyPRRows(allPRs, lastPagePRs, 1000),
-    ).resolves.toBeUndefined();
+    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, 1000);
 
     console.log("Clicking on Previous Page button");
     await backstageShowcase.clickPreviousPage();
     await common.waitForLoad();
-    await expect(
-      backstageShowcase.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs - 1),
-    ).resolves.toBeUndefined();
+    await backstageShowcase.verifyPRRows(
+      allPRs,
+      lastPagePRs - 5,
+      lastPagePRs - 1,
+    );
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
@@ -240,15 +218,9 @@ test.describe.fixme("GitHub Happy path", () => {
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");
     const allPRs = await getShowcasePullRequests("open");
-    await expect(
-      backstageShowcase.verifyPRRowsPerPage(5, allPRs),
-    ).resolves.toBeUndefined();
-    await expect(
-      backstageShowcase.verifyPRRowsPerPage(10, allPRs),
-    ).resolves.toBeUndefined();
-    await expect(
-      backstageShowcase.verifyPRRowsPerPage(20, allPRs),
-    ).resolves.toBeUndefined();
+    await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
+    await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
+    await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
   });
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099

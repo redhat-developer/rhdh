@@ -61,14 +61,12 @@ test.describe("Auditor check for RBAC Plugin", () => {
   for (const s of roleRead) {
     test(`role-read → ${s.name}`, async () => {
       await s.call();
-      await expect(
-        validateRbacLogEvent(
-          "role-read",
-          USER_ENTITY_REF,
-          { method: "GET", url: s.url },
-          s.meta,
-        ),
-      ).resolves.toBeUndefined();
+      await validateRbacLogEvent(
+        "role-read",
+        USER_ENTITY_REF,
+        { method: "GET", url: s.url },
+        s.meta,
+      );
     });
   }
 
@@ -99,16 +97,14 @@ test.describe("Auditor check for RBAC Plugin", () => {
   for (const s of roleWrite) {
     test(`role-write → ${s.name}`, async () => {
       await s.call();
-      await expect(
-        validateRbacLogEvent(
-          "role-write",
-          USER_ENTITY_REF,
-          { method: httpMethod(s.action), url: s.url },
-          { actionType: s.action, source: "rest" },
-          buildNotAllowedError(s.action, "role"),
-          "failed",
-        ),
-      ).resolves.toBeUndefined();
+      await validateRbacLogEvent(
+        "role-write",
+        USER_ENTITY_REF,
+        { method: httpMethod(s.action), url: s.url },
+        { actionType: s.action, source: "rest" },
+        buildNotAllowedError(s.action, "role"),
+        "failed",
+      );
     });
   }
 
@@ -153,14 +149,12 @@ test.describe("Auditor check for RBAC Plugin", () => {
   for (const s of policyRead) {
     test(`policy-read → ${s.name}`, async () => {
       await s.call();
-      await expect(
-        validateRbacLogEvent(
-          "policy-read",
-          USER_ENTITY_REF,
-          { method: "GET", url: s.url },
-          s.meta,
-        ),
-      ).resolves.toBeUndefined();
+      await validateRbacLogEvent(
+        "policy-read",
+        USER_ENTITY_REF,
+        { method: "GET", url: s.url },
+        s.meta,
+      );
     });
   }
 
@@ -196,20 +190,18 @@ test.describe("Auditor check for RBAC Plugin", () => {
   for (const s of policyWrite) {
     test(`policy-write → ${s.name}`, async () => {
       await s.call();
-      await expect(
-        validateRbacLogEvent(
-          "policy-write",
-          USER_ENTITY_REF,
-          { method: httpMethod(s.action), url: s.url },
-          { actionType: s.action, source: "rest" },
-          buildNotAllowedError(
-            s.action,
-            "policy",
-            `${ROLE_NAME},policy-entity,read,allow`,
-          ),
-          "failed",
+      await validateRbacLogEvent(
+        "policy-write",
+        USER_ENTITY_REF,
+        { method: httpMethod(s.action), url: s.url },
+        { actionType: s.action, source: "rest" },
+        buildNotAllowedError(
+          s.action,
+          "policy",
+          `${ROLE_NAME},policy-entity,read,allow`,
         ),
-      ).resolves.toBeUndefined();
+        "failed",
+      );
     });
   }
 
@@ -263,16 +255,14 @@ test.describe("Auditor check for RBAC Plugin", () => {
       const response = await s.call();
       expect(s.acceptedStatuses).toContain(response.status());
       const status = auditStatus(response.ok());
-      await expect(
-        validateRbacLogEvent(
-          "condition-read",
-          USER_ENTITY_REF,
-          { method: "GET", url: s.url },
-          s.meta,
-          undefined,
-          status,
-        ),
-      ).resolves.toBeUndefined();
+      await validateRbacLogEvent(
+        "condition-read",
+        USER_ENTITY_REF,
+        { method: "GET", url: s.url },
+        s.meta,
+        undefined,
+        status,
+      );
     });
   }
 
@@ -281,23 +271,21 @@ test.describe("Auditor check for RBAC Plugin", () => {
   /* --------------------------------------------------------------------- */
   test("permission-evaluation", async () => {
     await rbacApi.getRoles();
-    await expect(
-      validateRbacLogEvent(
-        "permission-evaluation",
-        PLUGIN_ACTOR_ID,
-        undefined,
-        {
-          action: "read",
-          permissionName: "policy.entity.read",
-          resourceType: "policy-entity",
-          result: "ALLOW",
-          userEntityRef: USER_ENTITY_REF,
-        },
-        undefined,
-        "succeeded",
-        ["policy.entity.read", USER_ENTITY_REF],
-      ),
-    ).resolves.toBeUndefined();
+    await validateRbacLogEvent(
+      "permission-evaluation",
+      PLUGIN_ACTOR_ID,
+      undefined,
+      {
+        action: "read",
+        permissionName: "policy.entity.read",
+        resourceType: "policy-entity",
+        result: "ALLOW",
+        userEntityRef: USER_ENTITY_REF,
+      },
+      undefined,
+      "succeeded",
+      ["policy.entity.read", USER_ENTITY_REF],
+    );
   });
 
   test.afterAll(async ({}, testInfo) => {
