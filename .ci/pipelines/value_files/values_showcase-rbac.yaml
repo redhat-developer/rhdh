@@ -9,17 +9,17 @@ global:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
     includes:
-      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
+      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are not enabled by default.
       # This file ONLY works with the `rhdh-community/rhdh` container image.
       - "dynamic-plugins.default.yaml"
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
     # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
-    # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
+    # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `enabled` flag to enable/disable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
-        disabled: false
+        enabled: true
         pluginConfig:
           catalog:
             providers:
@@ -35,11 +35,11 @@ global:
                     initialDelay:
                       seconds: 15
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.49.4__3.7.0"
-        disabled: false
+        enabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
-        disabled: false
+        enabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-        disabled: false
+        enabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:

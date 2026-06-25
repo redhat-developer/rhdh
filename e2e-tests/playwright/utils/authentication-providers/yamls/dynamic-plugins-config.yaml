@@ -1,11 +1,11 @@
 plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
-    disabled: true
+    enabled: false
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
-    disabled: true
+    enabled: false
   - package: oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.3.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer
-    disabled: true
+    enabled: false
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
-    disabled: true
+    enabled: false
   - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-    disabled: true
+    enabled: false
