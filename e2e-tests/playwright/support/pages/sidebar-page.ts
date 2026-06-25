@@ -1,49 +1,44 @@
 import { expect, Page } from "@playwright/test";
 
 import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
-import { UIhelper } from "../../utils/ui-helper";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as verification from "../../utils/ui-helper/verification";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
 /** Sidebar navigation on the RHDH instance. */
 export class SidebarPage {
-  private readonly page: Page;
-  private readonly ui: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.ui = new UIhelper(page);
-  }
+  constructor(private readonly page: Page) {}
 
   getSideBarMenuItem(name: string) {
-    return this.ui.getSideBarMenuItem(name);
+    return this.page.getByTestId("login-button").getByText(name);
   }
 
   async openSidebar(label: string): Promise<void> {
-    await this.ui.openSidebar(label);
+    await navigation.openSidebar(this.page, label);
   }
 
   async openSidebarButton(label: string): Promise<void> {
-    await this.ui.openSidebarButton(label);
+    await navigation.openSidebarButton(this.page, label);
   }
 
   async openReferencesLearningPaths(): Promise<void> {
-    await this.ui.openSidebarButton("References");
-    await this.ui.openSidebar("Learning Paths");
+    await this.openSidebarButton("References");
+    await this.openSidebar("Learning Paths");
   }
 
   async openFavoritesDocs(): Promise<void> {
-    await this.ui.openSidebarButton("Favorites");
-    await this.ui.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
+    await this.openSidebarButton("Favorites");
+    await this.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
   }
 
   async verifyDocumentationHeading(): Promise<void> {
-    await this.ui.verifyHeading("Documentation");
+    await verification.verifyHeading(this.page, "Documentation");
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
-    await this.ui.verifyText(text, exact);
+    await verification.verifyText(this.page, text, exact);
   }
 
   async verifyLinkHidden(name: string): Promise<void> {
@@ -51,7 +46,7 @@ export class SidebarPage {
   }
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    await this.ui.openSidebarButton(section);
+    await this.openSidebarButton(section);
     await expect(this.page.locator(`nav a:has-text("${itemText}")`).first()).toBeVisible();
   }
 

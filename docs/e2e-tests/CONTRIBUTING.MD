@@ -54,6 +54,11 @@ These principles are valid for new contributions. Some parts of the codebase may
 
    We follow Playwright best practices, including the use of fixtures. Adhering to these practices ensures that our tests are reliable, efficient, and maintainable. Please refer to the [Playwright Best Practices](https://playwright.dev/docs/best-practices) and [Fixtures](https://playwright.dev/docs/test-fixtures) documentation for guidance.
 
+   - Prefer the shared fixtures from `@support/coverage/test` instead of re-implementing login/setup in each spec:
+     - Use `guestPage` for ordinary specs that need a fresh guest login per test.
+     - Use `rhdhGuestPage` only when a describe block intentionally shares one browser context/page across tests.
+   - If you use `rhdhPage`, `rhdhGuestPage`, `rhdhContext`, or other worker-scoped fixtures across multiple tests in one file, make the suite serial so state sharing is explicit.
+
 3. **Avoid Using `uiHelper` in Spec Files**
 
    - The `uiHelper` utility should not be used directly in spec files. The reason for that is that some methods in this class are too generic and sometimes it is difficult to point what they are intended. Idellay, they shall be called from inside a POM that states what thay are looking for.
@@ -61,7 +66,12 @@ These principles are valid for new contributions. Some parts of the codebase may
    - When working with tests that directly use `uiHelper` in spec files, refactor them to move `uiHelper` usage into POM classes.
    - This ensures that all UI interactions are encapsulated within page objects, promoting cleaner and more maintainable test code.
 
-4. **Use External Sources for Validation**
+4. **Blocked Flows**
+
+   - If a flow is blocked by a known product issue, keep it out of the default `*.spec.ts` Playwright discovery path until it can run deterministically again.
+   - Preserve the Jira or bug reference in the filename comments and/or documentation so the test can be restored once the blocker is fixed.
+
+5. **Use External Sources for Validation**
 
    - **Avoid Hardcoded Data in Tests**
 

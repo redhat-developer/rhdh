@@ -3,14 +3,10 @@
  * Handles database setup and RHDH configuration for both Helm and Operator deployments.
  */
 
-import { base64Encode } from "../../utils/helper";
-import {
-  KubeClient,
-  getRhdhDeploymentName,
-  BACKSTAGE_BACKEND_CONTAINER,
-} from "../../utils/kube-client";
-import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
-import type { AppConfigYaml } from "../../utils/runtime-config";
+import * as yaml from "js-yaml";
+
+import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
+import { KubeClient } from "../../utils/kube-client";
 import {
   getSchemaModeEnv,
   connectAdminClient,
@@ -18,12 +14,33 @@ import {
   setupSchemaModeDatabase,
 } from "./schema-mode-db";
 
+interface AppConfigYaml {
+  backend?: {
+    database?: {
+      client?: string;
+      pluginDivisionMode?: string;
+      ensureSchemaExists?: boolean;
+      connection?: Record<string, unknown>;
+    };
+  };
+  [key: string]: unknown;
+}
+
+function parseAppConfigYaml(value: unknown): AppConfigYaml {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new TypeError("App config YAML must be an object");
+  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- js-yaml returns unknown; shape validated at use sites
+  return value as AppConfigYaml;
+}
+
 export class SchemaModeTestSetup {
   private namespace: string;
   private releaseName: string;
   private installMethod: "helm" | "operator";
   private env: ReturnType<typeof getSchemaModeEnv>;
   private kubeClient: KubeClient;
+  private runtimeHarness: RuntimeHarness;
 
   constructor(namespace: string, releaseName: string, installMethod: "helm" | "operator") {
     this.namespace = namespace;
@@ -31,15 +48,19 @@ export class SchemaModeTestSetup {
     this.installMethod = installMethod;
     this.env = getSchemaModeEnv();
     this.kubeClient = new KubeClient();
+    this.runtimeHarness = new RuntimeHarness(namespace, this.getDeploymentName(), this.kubeClient);
   }
 
   getDeploymentName(): string {
-    return getRhdhDeploymentName();
+    if (this.installMethod === "operator") {
+      return `backstage-${this.releaseName}`;
+    }
+    return `${this.releaseName}-developer-hub`;
   }
 
   private getSecretName(): string {
     if (this.installMethod === "operator") {
-      return `backstage-psql-secret-${this.releaseName}`;
+      return "postgres-cred";
     }
     return `${this.releaseName}-postgresql`;
   }
@@ -62,94 +83,61 @@ export class SchemaModeTestSetup {
   }
 
   /**
-   * Resolve the PostgreSQL host that RHDH pods should use (in-cluster DNS)
-   * and whether the target is the Helm sub-chart's internal PostgreSQL.
+   * Resolve the PostgreSQL host that RHDH pods should use (in-cluster DNS).
    * The test runner connects via localhost port-forward, but pods need the
    * cluster-internal address.
    */
-  private resolveRhdhPostgresHost(): { host: string; isInternal: boolean } {
+  private resolveRhdhPostgresHost(): string {
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
 
     if (pfNamespace !== undefined && pfNamespace !== "" && pfNamespace !== this.namespace) {
-      return {
-        host: `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`,
-        isInternal: false,
-      };
+      return `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`;
     }
 
     if (this.env.dbHost === "localhost" || this.env.dbHost === "127.0.0.1") {
-      const host =
-        this.installMethod === "operator"
-          ? `backstage-psql-${this.releaseName}`
-          : `${this.releaseName}-postgresql`;
-      return { host, isInternal: true };
+      return `${this.releaseName}-postgresql`;
     }
 
-    return { host: this.env.dbHost, isInternal: false };
+    return this.env.dbHost;
   }
 
   /**
    * Configure RHDH for schema mode:
    * 1. Update the Secret with schema-mode test user credentials
-   * 2. Patch the Deployment to inject POSTGRES_* env vars from the Secret (Helm only)
+   * 2. Patch the Deployment to inject POSTGRES_* env vars from the Secret
    * 3. Update the app-config ConfigMap for schema mode
-   * 4. Restart the deployment (with retry for operator reconciliation)
+   * 4. Restart the deployment
    */
   async configureRHDH(): Promise<void> {
-    console.log(`Configuring RHDH for schema mode (${this.installMethod})...`);
+    console.log("Configuring RHDH for schema mode...");
 
     const deploymentName = this.getDeploymentName();
     const secretName = this.getSecretName();
-    const { host: rhdhPostgresHost, isInternal } = this.resolveRhdhPostgresHost();
+    const rhdhPostgresHost = this.resolveRhdhPostgresHost();
     console.log(`RHDH pods will connect to PostgreSQL at: ${rhdhPostgresHost}`);
 
-    // 1. Update secret with schema-mode credentials.
-    //    For operator: the operator injects env vars from the managed secret
-    //    via envFrom, so we must preserve keys the PostgreSQL image needs
-    //    (POSTGRESQL_ADMIN_PASSWORD) while adding/overriding POSTGRES_* keys.
-    const secretData: Record<string, string> = {
-      password: base64Encode(this.env.dbPassword),
-      "postgres-password": base64Encode(this.env.dbPassword),
-      POSTGRES_PASSWORD: base64Encode(this.env.dbPassword),
-      POSTGRES_DB: base64Encode(this.env.dbName),
-      POSTGRES_USER: base64Encode(this.env.dbUser),
-      POSTGRES_HOST: base64Encode(rhdhPostgresHost),
-      POSTGRES_PORT: base64Encode("5432"),
-    };
-
-    if (this.installMethod === "operator") {
-      // Preserve POSTGRESQL_ADMIN_PASSWORD — the operator-managed PostgreSQL
-      // image reads this on startup (set_passwords.sh). Without it the
-      // StatefulSet pod fails to start.
-      try {
-        const existing = await this.kubeClient.coreV1Api.readNamespacedSecret(
-          secretName,
-          this.namespace,
-        );
-        const existingData = existing.body.data ?? {};
-        if (existingData.POSTGRESQL_ADMIN_PASSWORD) {
-          secretData.POSTGRESQL_ADMIN_PASSWORD = existingData.POSTGRESQL_ADMIN_PASSWORD;
-        }
-      } catch {
-        console.warn(
-          `Could not read existing secret ${secretName}; POSTGRESQL_ADMIN_PASSWORD may be lost`,
-        );
-      }
-    }
-
+    // 1. Update secret with schema-mode credentials
     await this.kubeClient.createOrUpdateSecret(
       {
         metadata: { name: secretName },
-        data: secretData,
+        data: {
+          password: Buffer.from(this.env.dbPassword).toString("base64"),
+          "postgres-password": Buffer.from(this.env.dbPassword).toString("base64"),
+          POSTGRES_PASSWORD: Buffer.from(this.env.dbPassword).toString("base64"),
+          POSTGRES_DB: Buffer.from(this.env.dbName).toString("base64"),
+          POSTGRES_USER: Buffer.from(this.env.dbUser).toString("base64"),
+          POSTGRES_HOST: Buffer.from(rhdhPostgresHost).toString("base64"),
+          POSTGRES_PORT: Buffer.from("5432").toString("base64"),
+        },
       },
       this.namespace,
     );
     console.log(`Updated secret ${secretName} with schema-mode credentials`);
 
-    // 2. Ensure POSTGRES_* env vars are set in the deployment (Helm only).
-    //    Operator deployments inject env vars from the managed secret via
-    //    envFrom in the StatefulSet/Deployment spec. Patching the Deployment
-    //    directly would be reverted by operator reconciliation.
+    // 2. Ensure POSTGRES_* env vars are set in the deployment.
+    // For operator: env vars are injected via extraEnvs.secrets in the Backstage CR,
+    // so we only update the secret (step 1). Patching the Deployment directly
+    // conflicts with operator reconciliation.
     if (this.installMethod === "operator") {
       console.log(
         "Skipping Deployment env var patching (operator injects env vars from secret via extraEnvs.secrets)",
@@ -159,10 +147,11 @@ export class SchemaModeTestSetup {
     }
 
     // 3. Update app-config ConfigMap for schema mode
-    await this.updateAppConfigForSchemaMode(isInternal);
+    await this.updateAppConfigForSchemaMode();
 
-    // 4. Restart to apply changes (with retry for operator reconciliation)
-    await this.kubeClient.restartDeploymentWithRetry(deploymentName, this.namespace);
+    console.log("Restarting RHDH to apply schema mode configuration...");
+    await this.runtimeHarness.restartDeploymentWithRetry(120_000, 15_000);
+    console.log("RHDH restart completed");
   }
 
   private async ensureDeploymentEnvVars(deploymentName: string, secretName: string): Promise<void> {
@@ -171,16 +160,21 @@ export class SchemaModeTestSetup {
       this.namespace,
     );
     const containers = deployment.body.spec?.template?.spec?.containers ?? [];
-    const backstageContainer = containers.find((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
-    const backstageIdx = containers.findIndex((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
+    const backstageContainer = containers.find((c) => c.name === "backstage-backend");
+    const backstageIdx = containers.findIndex((c) => c.name === "backstage-backend");
 
     if (backstageContainer === undefined) {
-      console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
+      console.warn("backstage-backend container not found in deployment");
     } else {
       const existingEnv = backstageContainer.env ?? [];
-      const missingVars = ([...POSTGRES_ENV_KEYS] as string[]).filter(
-        (v) => !existingEnv.some((e) => e.name === v),
-      );
+      const requiredVars = [
+        "POSTGRES_HOST",
+        "POSTGRES_PORT",
+        "POSTGRES_DB",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+      ];
+      const missingVars = requiredVars.filter((v) => !existingEnv.some((e) => e.name === v));
 
       if (missingVars.length === 0) {
         console.log("POSTGRES_* env vars already present in deployment");
@@ -211,48 +205,78 @@ export class SchemaModeTestSetup {
         });
       }
 
-      await this.kubeClient.jsonPatchDeployment(deploymentName, this.namespace, patch);
+      await this.kubeClient.appsApi.patchNamespacedDeployment(
+        deploymentName,
+        this.namespace,
+        patch,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { headers: { "Content-Type": "application/json-patch+json" } },
+      );
       console.log("Added env vars to deployment");
     }
   }
 
-  private async updateAppConfigForSchemaMode(isInternalDb: boolean): Promise<void> {
-    await this.kubeClient.patchAppConfig(this.namespace, (appConfig: AppConfigYaml) => {
-      appConfig.backend ??= {};
+  private async updateAppConfigForSchemaMode(): Promise<void> {
+    const configMapName = await this.kubeClient.findAppConfigMap(this.namespace);
+    let configMapResponse;
 
-      const currentDbConfig = appConfig.backend.database;
-      const isAlreadyConfigured =
-        currentDbConfig?.pluginDivisionMode === "schema" &&
-        currentDbConfig?.ensureSchemaExists === true;
+    try {
+      configMapResponse = await this.kubeClient.getConfigMap(configMapName, this.namespace);
+    } catch {
+      throw new Error(
+        `ConfigMap '${configMapName}' not found in namespace '${this.namespace}'. ` +
+          `Ensure RHDH is deployed before running schema mode tests.`,
+      );
+    }
 
-      if (isAlreadyConfigured) {
-        console.log("App-config already configured for schema mode");
-        return;
-      }
+    const configMap = configMapResponse.body;
+    const configKey = Object.keys(configMap.data ?? {}).find((key) => key.includes("app-config"));
 
-      console.log("Updating app-config for schema mode...");
-      const connection: Record<string, unknown> = {
+    if (configKey === undefined || configKey === "" || configMap.data === undefined) {
+      throw new Error(`Could not find app-config key in ConfigMap ${configMapName}`);
+    }
+
+    const appConfig = parseAppConfigYaml(yaml.load(configMap.data[configKey]));
+    appConfig.backend ??= {};
+
+    const currentDbConfig = appConfig.backend.database;
+    const isAlreadyConfigured =
+      currentDbConfig?.pluginDivisionMode === "schema" &&
+      currentDbConfig?.ensureSchemaExists === true;
+
+    if (isAlreadyConfigured) {
+      console.log("App-config already configured for schema mode");
+      return;
+    }
+
+    console.log("Updating app-config for schema mode...");
+    appConfig.backend.database = {
+      client: "pg",
+      pluginDivisionMode: "schema",
+      ensureSchemaExists: true,
+      connection: {
         host: "${POSTGRES_HOST}",
         port: "${POSTGRES_PORT}",
         user: "${POSTGRES_USER}",
         password: "${POSTGRES_PASSWORD}",
         database: "${POSTGRES_DB}",
-      };
+        ssl: { rejectUnauthorized: false },
+      },
+    };
 
-      if (isInternalDb) {
-        console.log("Using non-SSL connection for internal PostgreSQL");
-      } else {
-        connection.ssl = { rejectUnauthorized: false };
-        console.log("Using SSL connection for external PostgreSQL");
-      }
+    configMap.data[configKey] = yaml.dump(appConfig);
+    delete configMap.metadata?.creationTimestamp;
+    delete configMap.metadata?.resourceVersion;
 
-      appConfig.backend.database = {
-        client: "pg",
-        pluginDivisionMode: "schema",
-        ensureSchemaExists: true,
-        connection,
-      };
-    });
+    await this.kubeClient.coreV1Api.replaceNamespacedConfigMap(
+      configMapName,
+      this.namespace,
+      configMap,
+    );
     console.log("App-config updated for schema mode");
   }
 

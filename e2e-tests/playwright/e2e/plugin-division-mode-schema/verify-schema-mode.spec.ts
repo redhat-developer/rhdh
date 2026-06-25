@@ -7,91 +7,25 @@
  * Tests are opt-in - they skip when SCHEMA_MODE_* environment variables are not set.
  */
 
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-
 import { test, expect } from "@support/coverage/test";
 
-import { Common } from "../../utils/common";
-import { resolveInstallMethod } from "../../utils/helper";
+import { signInAsGuest } from "../../support/auth/guest-auth";
+import { HomePage } from "../../support/pages/home-page";
 import { KubeClient } from "../../utils/kube-client";
-import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
+import { PortForwardSession } from "../../utils/port-forward";
 import { setPortForwardRestarter } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
-function streamDataToString(data: Buffer | string): string {
-  return typeof data === "string" ? data : data.toString();
-}
-
-function startPortForward(
-  pfNamespace: string,
-  pfResource: string,
-): Promise<ChildProcessWithoutNullStreams> {
-  return new Promise<ChildProcessWithoutNullStreams>((resolve, reject) => {
-    const proc = spawn("oc", ["port-forward", "-n", pfNamespace, pfResource, "5432:5432"]);
-
-    const timeout = setTimeout(() => {
-      proc.kill("SIGTERM");
-      reject(new Error("Port-forward timeout after 30 seconds"));
-    }, 30000);
-
-    let ready = false;
-    proc.stdout.on("data", (data: Buffer | string) => {
-      if (ready) return;
-      if (streamDataToString(data).includes("Forwarding from")) {
-        ready = true;
-        clearTimeout(timeout);
-        resolve(proc);
-      }
-    });
-
-    proc.stderr.on("data", (data: Buffer | string) => {
-      const msg = streamDataToString(data).trim();
-      if (msg) console.error(`Port-forward stderr: ${msg}`);
-    });
-
-    proc.on("error", (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-  });
-}
-
-function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Promise<void> {
-  if (!proc || proc.exitCode !== null) return Promise.resolve();
-
-  return new Promise<void>((resolve) => {
-    proc.once("close", () => {
-      resolve();
-    });
-
-    proc.kill("SIGTERM");
-
-    setTimeout(() => {
-      if (proc.exitCode === null) {
-        try {
-          proc.kill("SIGKILL");
-        } catch {
-          // already dead
-        }
-      }
-    }, 5000);
-  });
-}
-
 test.describe("Verify pluginDivisionMode: schema", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
-  const installMethod = resolveInstallMethod();
+  const releaseName = process.env.RELEASE_NAME ?? "developer-hub";
+  const installMethod = process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
 
-  let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
+  let portForwardSession: PortForwardSession | null = null;
   let testSetup: SchemaModeTestSetup;
 
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
-
-    // Ensure the runtime RHDH instance is deployed (idempotent — no-op if already running).
-    // Also sets SCHEMA_MODE_* env vars via configureSchemaMode().
-    await ensureRuntimeDeployed();
 
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
     const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
@@ -128,14 +62,23 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     if (hasPortForwardMeta) {
       console.log(`Starting port-forward: ${pfResource} in ${pfNamespace} -> localhost:5432`);
 
-      portForwardProcess = await startPortForward(pfNamespace, pfResource);
+      portForwardSession = new PortForwardSession(
+        {
+          command: "oc",
+          args: ["port-forward", "-n", pfNamespace, pfResource, "5432:5432"],
+        },
+        {
+          readyPattern: /Forwarding from/u,
+          readyTimeoutMs: 30_000,
+        },
+      );
+      await portForwardSession.start();
       console.log("Port-forward established");
       process.env.SCHEMA_MODE_DB_HOST = "localhost";
 
       setPortForwardRestarter(async () => {
-        await killPortForward(portForwardProcess);
         console.log("Restarting port-forward...");
-        portForwardProcess = await startPortForward(pfNamespace, pfResource);
+        await portForwardSession?.restart();
         console.log("Port-forward re-established");
       });
     }
@@ -153,7 +96,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
 
   test.afterAll(async () => {
     setPortForwardRestarter(null);
-    await killPortForward(portForwardProcess);
+    await portForwardSession?.stop();
   });
 
   test("Verify database user has restricted permissions", async () => {
@@ -180,18 +123,11 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       console.warn("Could not check deployment readiness:", error);
     }
 
-    const common = new Common(page);
-    try {
-      await common.loginAsGuest();
+    await signInAsGuest(page);
 
-      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    const homePage = new HomePage(page);
+    await homePage.verifyMainHeadingVisible();
 
-      console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
-    } finally {
-      // Navigate away from RHDH to close WebSocket connections before
-      // Playwright tears down the page — prevents a long hang during
-      // context/trace cleanup.
-      await page.goto("about:blank").catch(() => {});
-    }
+    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
   });
 });

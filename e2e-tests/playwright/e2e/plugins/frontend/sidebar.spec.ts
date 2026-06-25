@@ -1,7 +1,6 @@
 import { test } from "@support/coverage/test";
 
 import { SidebarPage } from "../../../support/pages/sidebar-page";
-import { Common } from "../../../utils/common";
 import { getTranslations, getCurrentLanguage } from "../../localization/locale";
 
 const t = getTranslations();
@@ -9,18 +8,14 @@ const lang = getCurrentLanguage();
 
 test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equivalent" }, () => {
   let sidebarPage: SidebarPage;
-  let common: Common;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeAll(({ rhdhGuestPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    sidebarPage = new SidebarPage(page);
-    common = new Common(page);
-
-    await common.loginAsGuest();
+    sidebarPage = new SidebarPage(rhdhGuestPage);
   });
 
   // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
@@ -32,7 +27,8 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
     );
     await sidebarPage.verifyMenuItemInSection("Favorites", t["rhdh"][lang]["menuItem.docs"]);
 
-    await sidebarPage.openFavoritesDocs();
+    await sidebarPage.openSidebarButton("Favorites");
+    await sidebarPage.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
 
     await sidebarPage.verifyDocumentationHeading();
     await sidebarPage.verifyText("Documentation available in", false);

@@ -1,52 +1,51 @@
 import { Page } from "@playwright/test";
 
-import { UIhelper } from "../../utils/ui-helper";
+import * as interaction from "../../utils/ui-helper/interaction";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as verification from "../../utils/ui-helper/verification";
+import { SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
 
 /** Self-service / scaffolder template list interactions. */
 export class SelfServicePage {
-  private readonly ui: UIhelper;
-
-  constructor(page: Page) {
-    this.ui = new UIhelper(page);
-  }
+  constructor(private readonly page: Page) {}
 
   async open(): Promise<void> {
-    await this.ui.goToSelfServicePage();
+    await navigation.goToSelfServicePage(this.page);
   }
 
   async verifyTemplatesHeading(): Promise<void> {
-    await this.ui.verifyHeading("Templates");
+    await verification.verifyHeading(this.page, "Templates");
   }
 
   async clickImportGitRepository(): Promise<void> {
-    await this.ui.clickButton("Import an existing Git repository");
+    await interaction.clickButton(this.page, "Import an existing Git repository");
   }
 
   async clickImportGitRepositoryLocalized(buttonTitle: string): Promise<void> {
-    await this.ui.clickButton(buttonTitle);
+    await interaction.clickButton(this.page, buttonTitle);
   }
 
   async waitForTemplateTitle(template: string, level = 4): Promise<void> {
-    await this.ui.waitForTitle(template, level);
+    await verification.waitForTitle(this.page, template, level);
   }
 
   async verifyHeading(heading: string): Promise<void> {
-    await this.ui.verifyHeading(heading);
+    await verification.verifyHeading(this.page, heading);
   }
 
   async clickButton(label: string): Promise<void> {
-    await this.ui.clickButton(label);
+    await interaction.clickButton(this.page, label);
   }
 
   async searchTemplate(name: string): Promise<void> {
-    await this.ui.searchInputPlaceholder(name);
+    await this.page.fill(SEARCH_OBJECTS_COMPONENTS.placeholderSearch, name);
   }
 
   async verifyTemplateHeading(template: string): Promise<void> {
-    await this.ui.verifyHeading(template);
+    await verification.verifyHeading(this.page, template);
   }
 
   async verifyText(text: string, exact = true): Promise<void> {
-    await this.ui.verifyText(text, exact);
+    await verification.verifyText(this.page, text, exact);
   }
 }

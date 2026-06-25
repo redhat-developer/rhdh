@@ -1,13 +1,9 @@
 import { test } from "@support/coverage/test";
 
 import { HomePage } from "../support/pages/home-page";
-import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 import { runAccessibilityTests } from "../utils/accessibility";
-import { Common } from "../utils/common";
 
 test.describe("Home page customization", () => {
-  let common: Common;
-  let rhdhHomePage: RhdhHomePage;
   let homePage: HomePage;
 
   test.beforeAll(() => {
@@ -17,11 +13,8 @@ test.describe("Home page customization", () => {
     });
   });
 
-  test.beforeEach(async ({ page }) => {
-    rhdhHomePage = new RhdhHomePage(page);
-    common = new Common(page);
-    homePage = new HomePage(page);
-    await common.loginAsGuest();
+  test.beforeEach(({ guestPage }) => {
+    homePage = new HomePage(guestPage);
   });
 
   // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
@@ -29,22 +22,22 @@ test.describe("Home page customization", () => {
     "Verify that home page is customized",
     { tag: "@cluster-free" },
     async ({ page }, testInfo) => {
-      await rhdhHomePage.verifyTextInCard("Quick Access", "Quick Access");
+      await homePage.verifyTextInCard("Quick Access", "Quick Access");
 
       await runAccessibilityTests(page, testInfo);
 
-      await rhdhHomePage.verifyTextInCard("Your Starred Entities", "Your Starred Entities");
-      await rhdhHomePage.verifyHeading("Placeholder tests");
-      await rhdhHomePage.verifyDivHasText("Home page customization test 1");
-      await rhdhHomePage.verifyDivHasText("Home page customization test 2");
-      await rhdhHomePage.verifyDivHasText("Home page customization test 3");
-      await rhdhHomePage.verifyHeading("Markdown tests");
-      await rhdhHomePage.verifyTextInCard("Company links", "Company links");
-      await rhdhHomePage.verifyHeading("Important company links");
-      await rhdhHomePage.verifyHeading("RHDH");
-      await rhdhHomePage.verifyTextInCard("Featured Docs", "Featured Docs");
-      await rhdhHomePage.verifyTextInCard("Random Joke", "Random Joke");
-      await rhdhHomePage.clickButton("Reroll");
+      await homePage.verifyTextInCard("Your Starred Entities", "Your Starred Entities");
+      await homePage.verifyHeading("Placeholder tests");
+      await homePage.verifyDivHasText("Home page customization test 1");
+      await homePage.verifyDivHasText("Home page customization test 2");
+      await homePage.verifyDivHasText("Home page customization test 3");
+      await homePage.verifyHeading("Markdown tests");
+      await homePage.verifyTextInCard("Company links", "Company links");
+      await homePage.verifyHeading("Important company links");
+      await homePage.verifyHeading("RHDH");
+      await homePage.verifyTextInCard("Featured Docs", "Featured Docs");
+      await homePage.verifyTextInCard("Random Joke", "Random Joke");
+      await homePage.clickButton("Reroll");
     },
   );
 
@@ -52,7 +45,7 @@ test.describe("Home page customization", () => {
     "Verify that the Top Visited card in the Home page renders without an error",
     { tag: "@cluster-free" },
     async () => {
-      await rhdhHomePage.verifyTextInCard("Top Visited", "Top Visited");
+      await homePage.verifyTextInCard("Top Visited", "Top Visited");
       await homePage.verifyVisitedCardContent("Top Visited");
     },
   );
@@ -61,7 +54,7 @@ test.describe("Home page customization", () => {
     "Verify that the Recently Visited card in the Home page renders without an error",
     { tag: "@cluster-free" },
     async () => {
-      await rhdhHomePage.verifyTextInCard("Recently Visited", "Recently Visited");
+      await homePage.verifyTextInCard("Recently Visited", "Recently Visited");
       await homePage.verifyVisitedCardContent("Recently Visited");
     },
   );
