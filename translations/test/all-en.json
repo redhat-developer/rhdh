@@ -34,6 +34,7 @@
   },
   "scaffolder": {
     "en": {
+      "templateListPage.title": "Self-service",
       "templateListPage.contentHeader.registerExistingButtonTitle": "Import an existing Git repository"
     }
   },
@@ -54,6 +55,11 @@
   "search-react": {
     "en": {
       "searchBar.title": "Search"
+    }
+  },
+  "plugin.global-header": {
+    "en": {
+      "profile.settings": "Settings"
     }
   },
   "rhdh": {

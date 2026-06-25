@@ -206,5 +206,3 @@ global:
                       seconds: 15
                     timeout:
                       minutes: 15
-orchestrator:
-  enabled: true

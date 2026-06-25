@@ -16,10 +16,6 @@ p, role:default/qe_rbac_admin, catalog.entity.create, create, allow
 p, role:default/qe_rbac_admin, catalog.location.create, create, allow
 p, role:default/qe_rbac_admin, catalog.location.read, read, allow
 
-p, role:default/bulk_import, bulk.import, use, allow
-p, role:default/bulk_import, catalog.location.create, create, allow
-p, role:default/bulk_import, catalog.entity.create, create, allow
-g, user:default/rhdh-qe-2, role:default/bulk_import
 
 g, group:default/rhdh-qe-parent-team, role:default/transitive-owner
 g, group:default/rhdh-qe-child-team, role:default/transitive-owner
@@ -28,9 +24,6 @@ g, user:default/rhdh-qe-5, role:default/catalog_reader
 g, user:default/rhdh-qe-6, role:default/catalog_reader
 p, role:default/catalog_reader, catalog.entity.read, read, allow
 
-g, user:default/rhdh-qe, role:default/extension
-p, role:default/extension, extension-plugin, read, allow
-p, role:default/extension, extension-plugin, create, allow
 
 p, role:default/all_resource_reader, catalog-entity, read, allow
 p, role:default/all_resource_reader, catalog-entity, create, allow
@@ -46,34 +39,3 @@ g, user:default/rhdh-qe-8, role:default/owned_resource_reader
 g, user:default/rhdh-qe-9, role:default/all_resource_reader
 g, user:default/rhdh-qe-9, role:default/conditional_denier
 
-#######################################################################
-# Orchestrator Entity-Workflow RBAC (RHIDP-11839, RHIDP-11840)
-#######################################################################
-
-# catalogSuperuser: full catalog + scaffolder + orchestrator.workflow
-p, role:default/catalogSuperuser, catalog-entity, read, allow
-p, role:default/catalogSuperuser, catalog.entity.create, create, allow
-p, role:default/catalogSuperuser, catalog.entity.delete, delete, allow
-p, role:default/catalogSuperuser, catalog.entity.refresh, update, allow
-p, role:default/catalogSuperuser, catalog.location.read, read, allow
-p, role:default/catalogSuperuser, catalog.location.create, create, allow
-p, role:default/catalogSuperuser, catalog.location.delete, delete, allow
-p, role:default/catalogSuperuser, orchestrator.workflow, read, allow
-p, role:default/catalogSuperuser, orchestrator.workflow.use, update, allow
-p, role:default/catalogSuperuser, scaffolder.action.execute, use, allow
-p, role:default/catalogSuperuser, scaffolder.task.create, create, allow
-p, role:default/catalogSuperuser, scaffolder.task.read, read, allow
-g, user:default/catalog-user, role:default/catalogSuperuser
-
-# catalogSuperuserNoWorkflow: catalog + scaffolder, NO orchestrator
-p, role:default/catalogSuperuserNoWorkflow, catalog-entity, read, allow
-p, role:default/catalogSuperuserNoWorkflow, catalog.entity.create, create, allow
-p, role:default/catalogSuperuserNoWorkflow, catalog.entity.delete, delete, allow
-p, role:default/catalogSuperuserNoWorkflow, catalog.entity.refresh, update, allow
-p, role:default/catalogSuperuserNoWorkflow, catalog.location.read, read, allow
-p, role:default/catalogSuperuserNoWorkflow, catalog.location.create, create, allow
-p, role:default/catalogSuperuserNoWorkflow, catalog.location.delete, delete, allow
-p, role:default/catalogSuperuserNoWorkflow, scaffolder.action.execute, use, allow
-p, role:default/catalogSuperuserNoWorkflow, scaffolder.task.create, create, allow
-p, role:default/catalogSuperuserNoWorkflow, scaffolder.task.read, read, allow
-g, user:default/catalog-user-no-workflow, role:default/catalogSuperuserNoWorkflow

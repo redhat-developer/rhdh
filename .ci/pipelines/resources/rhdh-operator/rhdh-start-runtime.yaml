@@ -36,6 +36,13 @@ spec:
         - name: postgres-crt
           key: postgres-crt.pem
     extraEnvs:
+      envs:
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
+        - name: NODE_ENV
+          value: "production"
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
       secrets:
         - name: postgres-cred
     route:

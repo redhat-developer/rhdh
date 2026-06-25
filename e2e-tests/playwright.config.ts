@@ -5,18 +5,6 @@ import { PW_PROJECT } from "./playwright/projects";
 process.env.JOB_NAME = process.env.JOB_NAME || "";
 process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
 
-const isPrOcpHelmJob =
-  process.env.JOB_NAME.includes("pull") &&
-  process.env.JOB_NAME.includes("e2e-ocp-helm") &&
-  !process.env.JOB_NAME.includes("e2e-ocp-helm-nightly");
-
-const isOsdGcpJob = process.env.JOB_NAME.includes("osd-gcp");
-
-const isNonOpenShiftJob = process.env.IS_OPENSHIFT === "false";
-
-const shouldSkipOrchestratorTests =
-  isPrOcpHelmJob || isOsdGcpJob || isNonOpenShiftJob;
-
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
@@ -113,14 +101,10 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
-        ...(shouldSkipOrchestratorTests
-          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
-          : []),
       ],
     },
     {
@@ -129,12 +113,6 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
-      testIgnore: [
-        ...(shouldSkipOrchestratorTests
-          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
-          : []),
       ],
     },
     {
@@ -158,7 +136,6 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -168,18 +145,13 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
-        "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts",
       ],
     },
     {
       name: PW_PROJECT.SHOWCASE_RBAC_K8S,
       ...k8sSpecificConfig,
       dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
-      testIgnore: ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"],
+      testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR,
@@ -190,7 +162,6 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
@@ -199,21 +170,12 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
-        "**/playwright/e2e/plugins/orchestrator/token-propagation-workflow.spec.ts",
       ],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR_RBAC,
       dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
-      testIgnore: [
-        ...(shouldSkipOrchestratorTests
-          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
-          : []),
-      ],
+      testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_RUNTIME_DB,

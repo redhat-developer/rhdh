@@ -111,8 +111,22 @@ testing::run_tests() {
   if [[ "${test_result}" -eq 0 ]]; then
     failed_tests="0"
   elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
-    failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    failed_tests="${failed_tests:-some}"
+    # JUnit XML distinguishes "failures" (assertion failures) from "errors"
+    # (exceptions/timeouts). Playwright reports TimeoutError, crash, and
+    # similar issues as errors, not failures. Sum both from the root
+    # <testsuites> element so the Slack notification reflects the real count.
+    local _junit_failures _junit_errors
+    _junit_failures=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    _junit_errors=$(grep -oP 'errors="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    _junit_failures="${_junit_failures:-0}"
+    _junit_errors="${_junit_errors:-0}"
+    failed_tests=$((_junit_failures + _junit_errors))
+    if [[ "${failed_tests}" -eq 0 ]]; then
+      # Playwright exited non-zero but JUnit reports 0 failures and 0 errors —
+      # the process likely crashed or timed out globally. Report "some" so the
+      # Slack alert doesn't misleadingly say "0 tests failed".
+      failed_tests="some"
+    fi
     echo "Number of failed tests: ${failed_tests}"
   else
     echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
