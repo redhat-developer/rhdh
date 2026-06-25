@@ -30,10 +30,17 @@ export function parseAuthStateCookies(content: string): Cookie[] {
   return cookies;
 }
 
+function resolveVideoDir(testInfo: TestInfo): string {
+  const specStem =
+    typeof testInfo.file === "string" && testInfo.file !== ""
+      ? path.parse(testInfo.file).name.replace(/\.spec$/u, "")
+      : `worker-${testInfo.workerIndex}`;
+  const suiteName = testInfo.titlePath[1] ?? testInfo.titlePath[0] ?? "suite";
+  return `test-results/${specStem}/${suiteName}`;
+}
+
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
-  const videoDir = `test-results/${path
-    .parse(testInfo.file)
-    .name.replace(".spec", "")}/${testInfo.titlePath[1] ?? "suite"}`;
+  const videoDir = resolveVideoDir(testInfo);
 
   const context = await browser.newContext({
     recordVideo: {
