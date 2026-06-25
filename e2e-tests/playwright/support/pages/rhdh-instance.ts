@@ -1,18 +1,12 @@
 import { Page, expect } from "@playwright/test";
 
 import { APIHelper } from "../../utils/api-helper";
-import { UIhelper } from "../../utils/ui-helper";
+import * as verification from "../../utils/ui-helper/verification";
 import { RHDH_INSTANCE_TABLE } from "../selectors/rhdh-instance-table";
 
 /** Page object for RHDH instance catalog views (PR tables, entity cards). */
 export class RhdhInstance {
-  private readonly page: Page;
-  private uiHelper: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.uiHelper = new UIhelper(page);
-  }
+  constructor(private readonly page: Page) {}
 
   static getRhdhPullRequests(state: "open" | "closed" | "all", paginated = false) {
     return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
@@ -32,11 +26,8 @@ export class RhdhInstance {
 
   async verifyPRRowsPerPage(rows: number, allPRs: { title: string; number: string }[]) {
     await this.selectRowsPerPage(rows);
-    await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
-    await this.uiHelper.verifyLink(allPRs[rows].number, {
-      exact: false,
-      notVisible: true,
-    });
+    await verification.verifyText(this.page, allPRs[rows - 1].title, false);
+    await verification.verifyLink(this.page, allPRs[rows].number, { exact: false, notVisible: true });
 
     const tableRows = RHDH_INSTANCE_TABLE.getTableRows(this.page);
     await expect(tableRows).toHaveCount(rows);
@@ -49,7 +40,7 @@ export class RhdhInstance {
 
   async verifyPRStatisticsRendered() {
     const regex = /Average Size Of PR\d+ lines/u;
-    await this.uiHelper.verifyText(regex);
+    await verification.verifyText(this.page, regex);
   }
 
   async verifyAboutCardIsDisplayed() {
@@ -59,7 +50,7 @@ export class RhdhInstance {
 
   async verifyPRRows(allPRs: { title: string }[], startRow: number, lastRow: number) {
     for (let i = startRow; i < lastRow; i++) {
-      await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
+      await verification.verifyRowsInTable(this.page, [allPRs[i].title], false);
     }
   }
 

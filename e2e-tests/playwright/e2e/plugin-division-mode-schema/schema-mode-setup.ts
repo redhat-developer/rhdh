@@ -5,8 +5,8 @@
 
 import * as yaml from "js-yaml";
 
+import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { KubeClient } from "../../utils/kube-client";
-import { sleep } from "../../utils/poll-until";
 import {
   getSchemaModeEnv,
   connectAdminClient,
@@ -40,6 +40,7 @@ export class SchemaModeTestSetup {
   private installMethod: "helm" | "operator";
   private env: ReturnType<typeof getSchemaModeEnv>;
   private kubeClient: KubeClient;
+  private runtimeHarness: RuntimeHarness;
 
   constructor(namespace: string, releaseName: string, installMethod: "helm" | "operator") {
     this.namespace = namespace;
@@ -47,6 +48,7 @@ export class SchemaModeTestSetup {
     this.installMethod = installMethod;
     this.env = getSchemaModeEnv();
     this.kubeClient = new KubeClient();
+    this.runtimeHarness = new RuntimeHarness(namespace, this.getDeploymentName(), this.kubeClient);
   }
 
   getDeploymentName(): string {
@@ -147,23 +149,9 @@ export class SchemaModeTestSetup {
     // 3. Update app-config ConfigMap for schema mode
     await this.updateAppConfigForSchemaMode();
 
-    // 4. Restart to apply changes (retry up to 3 times for slow ephemeral volume PVC creation)
-    const maxRestartAttempts = 3;
-    for (let attempt = 1; attempt <= maxRestartAttempts; attempt++) {
-      try {
-        console.log(
-          `Restarting RHDH to apply schema mode configuration (attempt ${attempt}/${maxRestartAttempts})...`,
-        );
-        await this.kubeClient.restartDeployment(deploymentName, this.namespace);
-        console.log("RHDH restart completed");
-        break;
-      } catch (restartError) {
-        if (attempt === maxRestartAttempts) throw restartError;
-        const msg = restartError instanceof Error ? restartError.message : String(restartError);
-        console.warn(`Restart attempt ${attempt} failed (${msg}), retrying in 30s...`);
-        await sleep(30_000);
-      }
-    }
+    console.log("Restarting RHDH to apply schema mode configuration...");
+    await this.runtimeHarness.restartDeploymentWithRetry(120_000, 15_000);
+    console.log("RHDH restart completed");
   }
 
   private async ensureDeploymentEnvVars(deploymentName: string, secretName: string): Promise<void> {

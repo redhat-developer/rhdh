@@ -1,7 +1,6 @@
 import { test } from "@support/coverage/test";
 
 import { SidebarPage } from "../../../support/pages/sidebar-page";
-import { Common } from "../../../utils/common";
 import { getTranslations, getCurrentLanguage } from "../../localization/locale";
 
 const t = getTranslations();
@@ -9,18 +8,14 @@ const lang = getCurrentLanguage();
 
 test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equivalent" }, () => {
   let sidebarPage: SidebarPage;
-  let common: Common;
 
-  test.beforeAll(async ({ rhdhPage }) => {
+  test.beforeAll(({ rhdhGuestPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    sidebarPage = new SidebarPage(rhdhPage);
-    common = new Common(rhdhPage);
-
-    await common.loginAsGuest();
+    sidebarPage = new SidebarPage(rhdhGuestPage);
   });
 
   test("Verify menu order and navigate to Docs", async () => {

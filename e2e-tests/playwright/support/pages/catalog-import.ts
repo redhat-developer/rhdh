@@ -1,20 +1,14 @@
 import { Page, expect } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { UIhelper } from "../../utils/ui-helper";
+import * as interaction from "../../utils/ui-helper/interaction";
 import { CATALOG_IMPORT_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
 export class CatalogImport {
-  private page: Page;
-  private uiHelper: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.uiHelper = new UIhelper(page);
-  }
+  constructor(private readonly page: Page) {}
 
   /**
    * Fills the component URL input and clicks the "Analyze" button.
@@ -25,9 +19,7 @@ export class CatalogImport {
   private async analyzeAndWait(url: string): Promise<void> {
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
     await expect(
-      await this.uiHelper.clickButton(
-        t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
-      ),
+      await interaction.clickButton(this.page, t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"]),
     ).not.toBeVisible({
       timeout: 25_000,
     });
@@ -40,7 +32,9 @@ export class CatalogImport {
    * @returns boolean indicating if the component is already registered
    */
   isComponentAlreadyRegistered(): Promise<boolean> {
-    return this.uiHelper.isBtnVisible(t["catalog-import"][lang]["stepReviewLocation.refresh"]);
+    return this.page
+      .getByRole("button", { name: t["catalog-import"][lang]["stepReviewLocation.refresh"] })
+      .isVisible();
   }
 
   /**
@@ -54,16 +48,17 @@ export class CatalogImport {
     await this.analyzeAndWait(url);
     const isComponentAlreadyRegistered = await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
-      await this.uiHelper.clickButton(t["catalog-import"][lang]["stepReviewLocation.refresh"]);
+      await interaction.clickButton(this.page, t["catalog-import"][lang]["stepReviewLocation.refresh"]);
       expect(
-        await this.uiHelper.isBtnVisible(
-          t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
-        ),
+        await this.page
+          .getByRole("button", { name: t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"] })
+          .isVisible(),
       ).toBeTruthy();
     } else {
-      await this.uiHelper.clickButton(t["catalog-import"][lang]["stepReviewLocation.import"]);
+      await interaction.clickButton(this.page, t["catalog-import"][lang]["stepReviewLocation.import"]);
       if (clickViewComponent) {
-        await this.uiHelper.clickButton(
+        await interaction.clickButton(
+          this.page,
           t["catalog-import"][lang]["stepFinishImportLocation.locations.viewButtonText"],
         );
       }
@@ -73,15 +68,15 @@ export class CatalogImport {
 
   async analyzeComponent(url: string) {
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await this.uiHelper.clickButton(t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"]);
+    await interaction.clickButton(this.page, t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"]);
   }
 
   async inspectEntityAndVerifyYaml(text: string) {
     await this.page.getByTitle("More").click();
     await this.page.getByRole("menuitem").getByText("Inspect entity").click();
-    await this.uiHelper.clickTab("Raw YAML");
+    await interaction.clickTab(this.page, "Raw YAML");
     await expect(this.page.getByTestId("code-snippet")).toContainText(text);
-    await this.uiHelper.clickButton("Close");
+    await interaction.clickButton(this.page, "Close");
   }
 }
 

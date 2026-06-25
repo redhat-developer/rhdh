@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 
+import { findTableCellByColumn } from "../../support/selectors/semantic/table-helpers";
 import { getTableCell, getTableRow } from "../../support/selectors/ui-locators";
 import { DEFAULT_VERIFY_BUTTON_URL_OPTIONS } from "./defaults";
 
@@ -110,13 +111,8 @@ export async function verifyPluginRow(
   expectedEnabled: string,
   expectedPreinstalled: string,
 ) {
-  const rowSelector = `tr:has(td:text-is("${text}"))`;
-  const row = page.locator(rowSelector);
-
-  // Index 2 for "Enabled"
-  const enabledColumn = row.getByRole("cell").nth(2);
-  // Index 3 for "Preinstalled"
-  const preinstalledColumn = row.getByRole("cell").nth(3);
+  const enabledColumn = await findTableCellByColumn(page, text, "Enabled");
+  const preinstalledColumn = await findTableCellByColumn(page, text, "Preinstalled");
 
   await expect(enabledColumn).toHaveText(expectedEnabled);
   await expect(preinstalledColumn).toHaveText(expectedPreinstalled);

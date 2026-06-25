@@ -3,19 +3,19 @@ import { test } from "@support/coverage/test";
 import { CatalogImport } from "../../support/pages/catalog-import";
 import { ScaffolderFlowPage } from "../../support/pages/scaffolder-flow-page";
 import { SelfServicePage } from "../../support/pages/self-service-page";
-import { Common } from "../../utils/common";
+import { JOB_NAME_PATTERNS } from "../../utils/constants";
+import { skipIfJobName } from "../../utils/helper";
 
 // https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request
 // Pre-req: Enable roadiehq-scaffolder-backend-module-http-request-dynamic plugin
 // Pre-req: Enable janus-idp-backstage-plugin-quay plugin
 test.describe("Testing scaffolder-backend-module-http-request to invoke an external request", () => {
   test.skip(
-    () => (process.env.JOB_NAME ?? "").includes("osd-gcp"),
+    () => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP),
     "skipping due to RHDHBUGS-555 on OSD Env",
   );
   let selfServicePage: SelfServicePage;
   let scaffolderFlowPage: ScaffolderFlowPage;
-  let common: Common;
   let catalogImport: CatalogImport;
   const template = "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
 
@@ -26,12 +26,10 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
     });
   });
 
-  test.beforeEach(async ({ page }) => {
-    selfServicePage = new SelfServicePage(page);
-    scaffolderFlowPage = new ScaffolderFlowPage(page);
-    common = new Common(page);
-    await common.loginAsGuest();
-    catalogImport = new CatalogImport(page);
+  test.beforeEach(({ guestPage }) => {
+    selfServicePage = new SelfServicePage(guestPage);
+    scaffolderFlowPage = new ScaffolderFlowPage(guestPage);
+    catalogImport = new CatalogImport(guestPage);
   });
 
   test("Create a software template using http-request plugin", async () => {
