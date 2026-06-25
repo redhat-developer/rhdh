@@ -26,7 +26,7 @@ import {
   type Page,
   type TestInfo,
 } from "@playwright/test";
-import { setupBrowser, teardownBrowser } from "../../utils/common-browser";
+import { setupBrowser, teardownBrowser } from "../../utils/common/browser";
 // Re-export all Playwright types and values so specs can replace
 // `from "@playwright/test"` with this module. The locally-defined `test`
 // and `expect` below shadow the star re-exports.

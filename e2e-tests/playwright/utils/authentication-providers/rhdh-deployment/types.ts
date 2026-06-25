@@ -48,7 +48,7 @@ export interface RHDHDeploymentState {
   configReconcileBaselineGeneration: number | undefined;
 }
 
-export { sleep } from "../poll-until";
+export { sleep } from "../../poll-until";
 
 export function isRecord(value: unknown): value is YamlConfig {
   return typeof value === "object" && value !== null && !Array.isArray(value);

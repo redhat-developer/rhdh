@@ -1,8 +1,8 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getErrorMessage, hasErrorResponse } from "../errors";
-import { pollUntil, pollUntilStable } from "../poll-until";
-import { BackstageCr, RHDHDeploymentState } from "./rhdh-deployment-types";
+import { getErrorMessage, hasErrorResponse } from "../../errors";
+import { pollUntil, pollUntilStable } from "../../poll-until";
+import { BackstageCr, RHDHDeploymentState } from "./types";
 
 const BACKSTAGE_LABELS = {
   "app.kubernetes.io/name": "backstage",
