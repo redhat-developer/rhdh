@@ -49,10 +49,8 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
     await ensureRuntimeDeployed();
 
     // Validate certificates are available — skip gracefully if not set
-    const azureCerts = readCertificateFile(
-      process.env.AZURE_DB_CERTIFICATES_PATH,
-    );
-    if (!azureCerts || !azureUser || !azurePassword) {
+    const azureCerts = readCertificateFile(process.env.AZURE_DB_CERTIFICATES_PATH);
+    if (azureCerts === null || azureCerts === undefined || !azureUser || !azurePassword) {
       testInfo.skip(
         true,
         "Azure DB environment variables not configured (AZURE_DB_CERTIFICATES_PATH, AZURE_DB_USER, AZURE_DB_PASSWORD) — Azure DB tests are opt-in",
@@ -76,10 +74,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
       test.beforeAll(async ({}, testInfo) => {
         test.setTimeout(180000);
         if (!config.host) {
-          testInfo.skip(
-            true,
-            `AZURE_DB_*_HOST not set for ${config.name} — skipping`,
-          );
+          testInfo.skip(true, `AZURE_DB_*_HOST not set for ${config.name} — skipping`);
           return;
         }
         test.info().annotations.push({
@@ -88,8 +83,8 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
         });
         await clearDatabase({
           host: config.host,
-          user: azureUser!,
-          password: azurePassword!,
+          user: azureUser,
+          password: azurePassword,
           certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH,
         });
       });
@@ -103,8 +98,8 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
         test.setTimeout(600000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          user: azureUser!,
-          password: azurePassword!,
+          user: azureUser,
+          password: azurePassword,
         });
         await kubeClient.restartDeployment(deploymentName, namespace);
       });

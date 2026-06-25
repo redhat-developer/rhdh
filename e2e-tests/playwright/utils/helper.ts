@@ -1,3 +1,4 @@
+import { execFile as execFileCb } from "child_process";
 import fs from "fs";
 
 import { type Page, type Locator } from "@playwright/test";
@@ -10,7 +11,22 @@ import {
   type IsOpenShiftValue,
 } from "./constants";
 
-const execFileAsync = promisify(execFile);
+function execFileAsync(
+  cmd: string,
+  args: string[],
+  options: { maxBuffer?: number; timeout?: number },
+): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    execFileCb(cmd, args, options, (error, stdout, stderr) => {
+      if (error !== null) {
+        const err = error instanceof Error ? error : new Error(`execFile failed: ${cmd}`);
+        reject(err);
+        return;
+      }
+      resolve({ stdout, stderr });
+    });
+  });
+}
 
 export async function downloadAndReadFile(
   page: Page,
@@ -111,7 +127,7 @@ export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
 export function resolveInstallMethod(): "helm" | "operator" {
   if (process.env.INSTALL_METHOD === "operator") return "operator";
   if (process.env.INSTALL_METHOD === "helm") return "helm";
-  const job = process.env.JOB_NAME || "";
+  const job = process.env.JOB_NAME ?? "";
   return job.includes("operator") ? "operator" : "helm";
 }
 
@@ -190,11 +206,9 @@ export async function discoverRouterBase(): Promise<string> {
       "-o",
       "jsonpath={.spec.host}",
     ]);
-    return output.replace(/^console-openshift-console\./, "");
+    return output.replace(/^console-openshift-console\./u, "");
   } catch {
-    throw new Error(
-      "K8S_CLUSTER_ROUTER_BASE not set and could not discover from cluster",
-    );
+    throw new Error("K8S_CLUSTER_ROUTER_BASE not set and could not discover from cluster");
   }
 }
 
@@ -220,11 +234,7 @@ export function imageRefToString(ref: ImageRef): string {
  * Detects digest references (tag starting with "sha256:") and sets the
  * separator accordingly.
  */
-export function buildImageRef(
-  registry: string,
-  repository: string,
-  tag: string,
-): ImageRef {
+export function buildImageRef(registry: string, repository: string, tag: string): ImageRef {
   return {
     registry,
     repository,
@@ -247,9 +257,7 @@ export function parseCatalogIndexImage(imageRef: string): ImageRef {
     const withoutDigest = imageRef.slice(0, atIdx);
     const slashIdx = withoutDigest.indexOf("/");
     if (slashIdx === -1) {
-      throw new Error(
-        `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
-      );
+      throw new Error(`Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`);
     }
     return {
       registry: withoutDigest.slice(0, slashIdx),
@@ -262,17 +270,13 @@ export function parseCatalogIndexImage(imageRef: string): ImageRef {
   // Handle tag references (e.g. quay.io/rhdh/image:1.10)
   const colonIdx = imageRef.lastIndexOf(":");
   if (colonIdx === -1) {
-    throw new Error(
-      `Invalid CATALOG_INDEX_IMAGE (no tag separator ':'): ${imageRef}`,
-    );
+    throw new Error(`Invalid CATALOG_INDEX_IMAGE (no tag separator ':'): ${imageRef}`);
   }
   const tag = imageRef.slice(colonIdx + 1);
   const withoutTag = imageRef.slice(0, colonIdx);
   const slashIdx = withoutTag.indexOf("/");
   if (slashIdx === -1) {
-    throw new Error(
-      `Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`,
-    );
+    throw new Error(`Invalid CATALOG_INDEX_IMAGE (no registry separator '/'): ${imageRef}`);
   }
   return {
     registry: withoutTag.slice(0, slashIdx),

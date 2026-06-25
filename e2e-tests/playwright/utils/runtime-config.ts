@@ -16,22 +16,13 @@
  */
 
 import * as yaml from "js-yaml";
-import {
-  type ImageRef,
-  buildImageRef,
-  imageRefToString,
-  parseCatalogIndexImage,
-} from "./helper";
+
+import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
 // Re-export image utilities so existing `import from "./runtime-config"`
 // callers continue to work without changes.
-export {
-  type ImageRef,
-  buildImageRef,
-  imageRefToString,
-  parseCatalogIndexImage,
-};
+export { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage };
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -88,11 +79,11 @@ export interface AppConfigYaml {
  * Build a RuntimeDeployConfig from environment variables.
  */
 export function resolveConfig(routerBase: string): RuntimeDeployConfig {
-  const releaseName = process.env.RELEASE_NAME || "rhdh";
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const imageRegistry = process.env.IMAGE_REGISTRY || "quay.io";
-  const imageRepo = process.env.IMAGE_REPO || "rhdh-community/rhdh";
-  const imageTag = process.env.TAG_NAME || "next";
+  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
+  const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
+  const imageRegistry = process.env.IMAGE_REGISTRY ?? "quay.io";
+  const imageRepo = process.env.IMAGE_REPO ?? "rhdh-community/rhdh";
+  const imageTag = process.env.TAG_NAME ?? "next";
 
   const config: RuntimeDeployConfig = {
     releaseName,
@@ -102,16 +93,14 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
   };
 
   // CATALOG_INDEX_IMAGE opt-in override
-  if (process.env.CATALOG_INDEX_IMAGE) {
-    config.catalogIndex = parseCatalogIndexImage(
-      process.env.CATALOG_INDEX_IMAGE,
-    );
+  if (process.env.CATALOG_INDEX_IMAGE !== undefined && process.env.CATALOG_INDEX_IMAGE !== "") {
+    config.catalogIndex = parseCatalogIndexImage(process.env.CATALOG_INDEX_IMAGE);
   }
 
   // Helm-specific
-  const chartUrl = process.env.HELM_CHART_URL || "oci://quay.io/rhdh/chart";
+  const chartUrl = process.env.HELM_CHART_URL ?? "oci://quay.io/rhdh/chart";
   const chartVersion = process.env.CHART_VERSION;
-  if (chartVersion) {
+  if (chartVersion !== undefined && chartVersion !== "") {
     config.helm = { chartUrl, chartVersion };
   }
 
@@ -136,14 +125,14 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  * because Helm replaces arrays entirely — we add postgres-crt and change
  * dynamic-plugins-root from ephemeral to PVC.
  */
+const tpl = (expr: string) => `{{ ${expr} }}`;
+
 export function generateHelmValuesYaml(): string {
   // Build the YAML as a plain object, then dump.
   // Helm template expressions are embedded as literal strings — Helm's
   // template engine evaluates them at render time regardless of whether
   // values come from a file or stdin.
-  const tpl = (expr: string) => `{{ ${expr} }}`;
-  const printfRelease = (suffix: string) =>
-    tpl(`printf "%s-${suffix}" .Release.Name`);
+  const printfRelease = (suffix: string) => tpl(`printf "%s-${suffix}" .Release.Name`);
 
   const values = {
     global: {
@@ -321,10 +310,7 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
  * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.dump(
-    { includes: [] as string[], plugins: [] as unknown[] },
-    { lineWidth: -1 },
-  );
+  return yaml.dump({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: -1 });
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────
@@ -368,12 +354,8 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
           spec: {
             template: {
               spec: {
-                containers: [
-                  { name: BACKSTAGE_BACKEND_CONTAINER, image: fullImage },
-                ],
-                initContainers: [
-                  { name: "install-dynamic-plugins", image: fullImage },
-                ],
+                containers: [{ name: BACKSTAGE_BACKEND_CONTAINER, image: fullImage }],
+                initContainers: [{ name: "install-dynamic-plugins", image: fullImage }],
                 volumes: [
                   {
                     name: "dynamic-plugins-root",

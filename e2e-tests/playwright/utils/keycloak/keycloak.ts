@@ -1,8 +1,8 @@
 import { expect, Page } from "@playwright/test";
 
 import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users-obj";
-import { UIhelper } from "../ui-helper";
 import { base64Decode } from "../helper";
+import { UIhelper } from "../ui-helper";
 import Group from "./group";
 import User from "./user";
 
@@ -34,10 +34,10 @@ class Keycloak {
   private readonly clientSecret: string;
 
   constructor() {
-    this.baseURL = base64Decode(process.env.KEYCLOAK_AUTH_BASE_URL);
-    this.realm = base64Decode(process.env.KEYCLOAK_AUTH_REALM);
-    this.clientSecret = base64Decode(process.env.KEYCLOAK_AUTH_CLIENT_SECRET);
-    this.clientId = base64Decode(process.env.KEYCLOAK_AUTH_CLIENTID);
+    this.baseURL = base64Decode(process.env.KEYCLOAK_AUTH_BASE_URL!);
+    this.realm = base64Decode(process.env.KEYCLOAK_AUTH_REALM!);
+    this.clientSecret = base64Decode(process.env.KEYCLOAK_AUTH_CLIENT_SECRET!);
+    this.clientId = base64Decode(process.env.KEYCLOAK_AUTH_CLIENTID!);
   }
 
   async getAuthenticationToken(): Promise<string> {

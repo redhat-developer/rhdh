@@ -50,7 +50,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
     // Validate certificates are available — skip gracefully if not set
     const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
-    if (!rdsCerts || !rdsUser || !rdsPassword) {
+    if (rdsCerts === null || rdsCerts === undefined || !rdsUser || !rdsPassword) {
       testInfo.skip(
         true,
         "RDS environment variables not configured (RDS_DB_CERTIFICATES_PATH, RDS_USER, RDS_PASSWORD) — RDS tests are opt-in",
@@ -74,10 +74,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       test.beforeAll(async ({}, testInfo) => {
         test.setTimeout(135000);
         if (!config.host) {
-          testInfo.skip(
-            true,
-            `RDS_*_HOST not set for ${config.name} — skipping`,
-          );
+          testInfo.skip(true, `RDS_*_HOST not set for ${config.name} — skipping`);
           return;
         }
         test.info().annotations.push({
@@ -86,8 +83,8 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
         });
         await clearDatabase({
           host: config.host,
-          user: rdsUser!,
-          password: rdsPassword!,
+          user: rdsUser,
+          password: rdsPassword,
           certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
         });
       });
@@ -101,8 +98,8 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
         test.setTimeout(600000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          user: rdsUser!,
-          password: rdsPassword!,
+          user: rdsUser,
+          password: rdsPassword,
         });
         await kubeClient.restartDeployment(deploymentName, namespace);
       });

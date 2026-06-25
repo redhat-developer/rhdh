@@ -30,7 +30,8 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     label: "some-label",
     annotation: "some-annotation",
     repo: `test-annotator-${Date.now()}`,
-    repoOwner: base64Decode(process.env.GITHUB_ORG || "amFudXMtcWU="), // Default repoOwner janus-qe
+    // Default repoOwner janus-qe
+    repoOwner: base64Decode(process.env.GITHUB_ORG ?? "amFudXMtcWU="),
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {

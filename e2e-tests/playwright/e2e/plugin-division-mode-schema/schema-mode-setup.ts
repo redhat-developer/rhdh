@@ -3,12 +3,12 @@
  * Handles database setup and RHDH configuration for both Helm and Operator deployments.
  */
 
+import { base64Encode } from "../../utils/helper";
 import {
   KubeClient,
   getRhdhDeploymentName,
   BACKSTAGE_BACKEND_CONTAINER,
 } from "../../utils/kube-client";
-import { base64Encode } from "../../utils/helper";
 import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
 import type { AppConfigYaml } from "../../utils/runtime-config";
 import {
@@ -17,7 +17,6 @@ import {
   cleanupOldPluginDatabases,
   setupSchemaModeDatabase,
 } from "./schema-mode-db";
-
 
 export class SchemaModeTestSetup {
   private namespace: string;
@@ -71,7 +70,7 @@ export class SchemaModeTestSetup {
   private resolveRhdhPostgresHost(): { host: string; isInternal: boolean } {
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
 
-    if (pfNamespace && pfNamespace !== this.namespace) {
+    if (pfNamespace !== undefined && pfNamespace !== "" && pfNamespace !== this.namespace) {
       return {
         host: `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`,
         isInternal: false,
@@ -101,8 +100,7 @@ export class SchemaModeTestSetup {
 
     const deploymentName = this.getDeploymentName();
     const secretName = this.getSecretName();
-    const { host: rhdhPostgresHost, isInternal } =
-      this.resolveRhdhPostgresHost();
+    const { host: rhdhPostgresHost, isInternal } = this.resolveRhdhPostgresHost();
     console.log(`RHDH pods will connect to PostgreSQL at: ${rhdhPostgresHost}`);
 
     // 1. Update secret with schema-mode credentials.
@@ -128,10 +126,9 @@ export class SchemaModeTestSetup {
           secretName,
           this.namespace,
         );
-        const existingData = existing.body.data || {};
+        const existingData = existing.body.data ?? {};
         if (existingData.POSTGRESQL_ADMIN_PASSWORD) {
-          secretData.POSTGRESQL_ADMIN_PASSWORD =
-            existingData.POSTGRESQL_ADMIN_PASSWORD;
+          secretData.POSTGRESQL_ADMIN_PASSWORD = existingData.POSTGRESQL_ADMIN_PASSWORD;
         }
       } catch {
         console.warn(
@@ -153,22 +150,19 @@ export class SchemaModeTestSetup {
     //    Operator deployments inject env vars from the managed secret via
     //    envFrom in the StatefulSet/Deployment spec. Patching the Deployment
     //    directly would be reverted by operator reconciliation.
-    if (this.installMethod !== "operator") {
-      await this.ensureDeploymentEnvVars(deploymentName, secretName);
-    } else {
+    if (this.installMethod === "operator") {
       console.log(
         "Skipping Deployment env var patching (operator injects env vars from secret via extraEnvs.secrets)",
       );
+    } else {
+      await this.ensureDeploymentEnvVars(deploymentName, secretName);
     }
 
     // 3. Update app-config ConfigMap for schema mode
     await this.updateAppConfigForSchemaMode(isInternal);
 
     // 4. Restart to apply changes (with retry for operator reconciliation)
-    await this.kubeClient.restartDeploymentWithRetry(
-      deploymentName,
-      this.namespace,
-    );
+    await this.kubeClient.restartDeploymentWithRetry(deploymentName, this.namespace);
   }
 
   private async ensureDeploymentEnvVars(deploymentName: string, secretName: string): Promise<void> {
@@ -217,57 +211,48 @@ export class SchemaModeTestSetup {
         });
       }
 
-      await this.kubeClient.jsonPatchDeployment(
-        deploymentName,
-        this.namespace,
-        patch,
-      );
+      await this.kubeClient.jsonPatchDeployment(deploymentName, this.namespace, patch);
       console.log("Added env vars to deployment");
     }
   }
 
-  private async updateAppConfigForSchemaMode(
-    isInternalDb: boolean,
-  ): Promise<void> {
-    await this.kubeClient.patchAppConfig(
-      this.namespace,
-      (appConfig: AppConfigYaml) => {
-        if (!appConfig.backend) appConfig.backend = {};
+  private async updateAppConfigForSchemaMode(isInternalDb: boolean): Promise<void> {
+    await this.kubeClient.patchAppConfig(this.namespace, (appConfig: AppConfigYaml) => {
+      appConfig.backend ??= {};
 
-        const currentDbConfig = appConfig.backend.database;
-        const isAlreadyConfigured =
-          currentDbConfig?.pluginDivisionMode === "schema" &&
-          currentDbConfig?.ensureSchemaExists === true;
+      const currentDbConfig = appConfig.backend.database;
+      const isAlreadyConfigured =
+        currentDbConfig?.pluginDivisionMode === "schema" &&
+        currentDbConfig?.ensureSchemaExists === true;
 
-        if (isAlreadyConfigured) {
-          console.log("App-config already configured for schema mode");
-          return;
-        }
+      if (isAlreadyConfigured) {
+        console.log("App-config already configured for schema mode");
+        return;
+      }
 
-        console.log("Updating app-config for schema mode...");
-        const connection: Record<string, unknown> = {
-          host: "${POSTGRES_HOST}",
-          port: "${POSTGRES_PORT}",
-          user: "${POSTGRES_USER}",
-          password: "${POSTGRES_PASSWORD}",
-          database: "${POSTGRES_DB}",
-        };
+      console.log("Updating app-config for schema mode...");
+      const connection: Record<string, unknown> = {
+        host: "${POSTGRES_HOST}",
+        port: "${POSTGRES_PORT}",
+        user: "${POSTGRES_USER}",
+        password: "${POSTGRES_PASSWORD}",
+        database: "${POSTGRES_DB}",
+      };
 
-        if (isInternalDb) {
-          console.log("Using non-SSL connection for internal PostgreSQL");
-        } else {
-          connection.ssl = { rejectUnauthorized: false };
-          console.log("Using SSL connection for external PostgreSQL");
-        }
+      if (isInternalDb) {
+        console.log("Using non-SSL connection for internal PostgreSQL");
+      } else {
+        connection.ssl = { rejectUnauthorized: false };
+        console.log("Using SSL connection for external PostgreSQL");
+      }
 
-        appConfig.backend.database = {
-          client: "pg",
-          pluginDivisionMode: "schema",
-          ensureSchemaExists: true,
-          connection,
-        };
-      },
-    );
+      appConfig.backend.database = {
+        client: "pg",
+        pluginDivisionMode: "schema",
+        ensureSchemaExists: true,
+        connection,
+      };
+    });
     console.log("App-config updated for schema mode");
   }
 

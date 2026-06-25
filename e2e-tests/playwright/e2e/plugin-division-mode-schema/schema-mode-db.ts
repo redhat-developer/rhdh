@@ -5,8 +5,9 @@
 import { expect } from "@playwright/test";
 import { Client } from "pg";
 import type { ClientConfig } from "pg";
-import { KubeClient } from "../../utils/kube-client";
+
 import { base64Decode } from "../../utils/helper";
+import { KubeClient } from "../../utils/kube-client";
 
 /** Default schema-mode test database user (overridable via SCHEMA_MODE_DB_USER). */
 export const SCHEMA_MODE_DEFAULT_DB_USER = "bn_backstage";
@@ -99,9 +100,7 @@ const defaultConnectionOptions: Partial<ClientConfig> = {
   keepAliveInitialDelayMillis: 10000,
 };
 
-export async function connectWithSslFallback(
-  config: ClientConfig,
-): Promise<Client> {
+export async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
   // Try SSL first (single attempt), fall back to non-SSL if the server doesn't support it.
   const sslConfig = { ...defaultConnectionOptions, ...config };
   const sslClient = new Client(sslConfig);
@@ -110,17 +109,10 @@ export async function connectWithSslFallback(
     return sslClient;
   } catch (sslError) {
     await sslClient.end().catch(() => {});
-    const sslMsg =
-      sslError instanceof Error ? sslError.message : String(sslError);
+    const sslMsg = sslError instanceof Error ? sslError.message : String(sslError);
     // Bitnami PostgreSQL sub-chart doesn't enable SSL by default
-    if (
-      sslMsg.includes("SSL") ||
-      sslMsg.includes("ssl") ||
-      sslMsg.includes("does not support")
-    ) {
-      console.log(
-        `SSL connection failed (${sslMsg}), falling back to non-SSL...`,
-      );
+    if (sslMsg.includes("SSL") || sslMsg.includes("ssl") || sslMsg.includes("does not support")) {
+      console.log(`SSL connection failed (${sslMsg}), falling back to non-SSL...`);
       return connectWithRetry({ ...config, ssl: false });
     }
     // For non-SSL errors (e.g. ECONNREFUSED), retry with SSL (port-forward may not be ready)
@@ -321,57 +313,38 @@ export async function configureSchemaMode(
     }
   }
 
-  if (!svcName) {
-    console.warn(
-      "No PostgreSQL service found in namespace — schema-mode tests will skip",
-    );
+  if (svcName === undefined || svcName === "") {
+    console.warn("No PostgreSQL service found in namespace — schema-mode tests will skip");
     return;
   }
 
   // Find admin password
   const secretCandidates =
     installMethod === "operator"
-      ? [
-          `backstage-psql-secret-${releaseName}`,
-          `${releaseName}-postgresql`,
-          "postgres-cred",
-        ]
-      : [
-          `${releaseName}-postgresql`,
-          `backstage-psql-secret-${releaseName}`,
-          "postgres-cred",
-        ];
+      ? [`backstage-psql-secret-${releaseName}`, `${releaseName}-postgresql`, "postgres-cred"]
+      : [`${releaseName}-postgresql`, `backstage-psql-secret-${releaseName}`, "postgres-cred"];
 
-  const passwordKeys = [
-    "postgres-password",
-    "POSTGRESQL_ADMIN_PASSWORD",
-    "POSTGRES_PASSWORD",
-  ];
+  const passwordKeys = ["postgres-password", "POSTGRESQL_ADMIN_PASSWORD", "POSTGRES_PASSWORD"];
 
   let adminPassword: string | undefined;
   for (const sec of secretCandidates) {
     try {
-      const result = await kubeClient.coreV1Api.readNamespacedSecret(
-        sec,
-        namespace,
-      );
-      const data = result.body.data || {};
+      const result = await kubeClient.coreV1Api.readNamespacedSecret(sec, namespace);
+      const data = result.body.data ?? {};
       for (const key of passwordKeys) {
         if (data[key]) {
           adminPassword = base64Decode(data[key]);
           break;
         }
       }
-      if (adminPassword) break;
+      if (adminPassword !== undefined && adminPassword !== "") break;
     } catch {
       // not found, try next
     }
   }
 
-  if (!adminPassword) {
-    console.warn(
-      "Could not resolve PostgreSQL admin password — schema-mode tests will skip",
-    );
+  if (adminPassword === undefined || adminPassword === "") {
+    console.warn("Could not resolve PostgreSQL admin password — schema-mode tests will skip");
     return;
   }
 
@@ -381,11 +354,8 @@ export async function configureSchemaMode(
   process.env.SCHEMA_MODE_DB_ADMIN_USER = "postgres";
   process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD = adminPassword;
   process.env.SCHEMA_MODE_DB_PASSWORD =
-    process.env.SCHEMA_MODE_DB_PASSWORD || SCHEMA_MODE_DEFAULT_DB_PASSWORD;
-  process.env.SCHEMA_MODE_DB_USER =
-    process.env.SCHEMA_MODE_DB_USER || SCHEMA_MODE_DEFAULT_DB_USER;
+    process.env.SCHEMA_MODE_DB_PASSWORD ?? SCHEMA_MODE_DEFAULT_DB_PASSWORD;
+  process.env.SCHEMA_MODE_DB_USER = process.env.SCHEMA_MODE_DB_USER ?? SCHEMA_MODE_DEFAULT_DB_USER;
 
-  console.log(
-    `Schema-mode env configured: port-forward svc/${svcName} in ${namespace}`,
-  );
+  console.log(`Schema-mode env configured: port-forward svc/${svcName} in ${namespace}`);
 }

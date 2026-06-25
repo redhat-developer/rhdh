@@ -24,11 +24,21 @@
  *   SCHEMA_MODE_*         — schema-mode env vars (via configureSchemaMode in schema-mode-db.ts)
  */
 
+import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import * as fs from "fs";
+
+import { configureSchemaMode } from "../e2e/plugin-division-mode-schema/schema-mode-db";
+import {
+  resolveInstallMethod,
+  base64Encode,
+  run,
+  discoverRouterBase,
+  imageRefToString,
+} from "./helper";
 import {
   KubeClient,
+  getErrorStatusCode,
   getRhdhDeploymentName,
   waitForBackstageCrd,
 } from "./kube-client";
@@ -41,14 +51,6 @@ import {
   generateBackstageCR,
   BACKSTAGE_CR_API_VERSION,
 } from "./runtime-config";
-import {
-  resolveInstallMethod,
-  base64Encode,
-  run,
-  discoverRouterBase,
-  imageRefToString,
-} from "./helper";
-import { configureSchemaMode } from "../e2e/plugin-division-mode-schema/schema-mode-db";
 
 /**
  * Whether deploy has already run in this process.
@@ -62,10 +64,7 @@ let deployed = false;
 // Secrets
 // ---------------------------------------------------------------------------
 
-async function createPlaceholderSecrets(
-  kubeClient: KubeClient,
-  namespace: string,
-): Promise<void> {
+async function createPlaceholderSecrets(kubeClient: KubeClient, namespace: string): Promise<void> {
   // postgres-cred — placeholder overwritten by external DB tests
   await kubeClient.createOrUpdateSecret(
     {
@@ -75,7 +74,8 @@ async function createPlaceholderSecrets(
         POSTGRES_PORT: base64Encode("5432"),
         POSTGRES_USER: base64Encode("janus-idp"),
         POSTGRES_HOST: base64Encode("tmp"),
-        PGSSLMODE: base64Encode("disable"), // internal DB has no TLS
+        // internal DB has no TLS
+        PGSSLMODE: base64Encode("disable"),
         NODE_EXTRA_CA_CERTS: base64Encode("/opt/app-root/src/postgres-crt.pem"),
       },
     },
@@ -104,9 +104,7 @@ async function deployWithHelm(
   config: ReturnType<typeof resolveConfig>,
 ): Promise<string> {
   if (!config.helm) {
-    throw new Error(
-      "CHART_VERSION environment variable is required for Helm deployment",
-    );
+    throw new Error("CHART_VERSION environment variable is required for Helm deployment");
   }
 
   const { namespace, releaseName } = config;
@@ -116,21 +114,16 @@ async function deployWithHelm(
   // deployment restarts (config-map and schema-mode tests both restart RHDH).
   const pvcName = `${releaseName}-dynamic-plugins-root`;
   try {
-    await kubeClient.coreV1Api.createNamespacedPersistentVolumeClaim(
-      namespace,
-      {
-        metadata: { name: pvcName },
-        spec: {
-          accessModes: ["ReadWriteOnce"],
-          resources: { requests: { storage: "5Gi" } },
-        },
+    await kubeClient.coreV1Api.createNamespacedPersistentVolumeClaim(namespace, {
+      metadata: { name: pvcName },
+      spec: {
+        accessModes: ["ReadWriteOnce"],
+        resources: { requests: { storage: "5Gi" } },
       },
-    );
+    });
     console.log(`PVC ${pvcName} created`);
   } catch (err: unknown) {
-    const code = (err as { response?: { statusCode?: number } })?.response
-      ?.statusCode;
-    if (code === 409) {
+    if (getErrorStatusCode(err) === 409) {
       console.log(`PVC ${pvcName} already exists`);
     } else {
       throw err;
@@ -139,10 +132,7 @@ async function deployWithHelm(
 
   // Generate values YAML and write to a temp file
   const valuesYaml = generateHelmValuesYaml();
-  const tmpValuesFile = path.join(
-    os.tmpdir(),
-    `rhdh-runtime-values-${Date.now()}.yaml`,
-  );
+  const tmpValuesFile = path.join(os.tmpdir(), `rhdh-runtime-values-${Date.now()}.yaml`);
   fs.writeFileSync(tmpValuesFile, valuesYaml, "utf-8");
   console.log(`Generated Helm values written to ${tmpValuesFile}`);
 
@@ -190,7 +180,7 @@ async function deployWithHelm(
       routeName,
     );
     const host = (route.body as { spec?: { host?: string } })?.spec?.host;
-    if (host) return `https://${host}`;
+    if (host !== undefined && host !== "") return `https://${host}`;
   } catch {
     // fall through to computed URL
   }
@@ -249,7 +239,7 @@ async function deployWithOperator(
 
   // 5. Apply Backstage CR (generated from runtime-config.ts)
   const crObj = generateBackstageCR(config);
-  const apiVersion = (crObj.apiVersion as string) || BACKSTAGE_CR_API_VERSION;
+  const apiVersion = crObj.apiVersion || BACKSTAGE_CR_API_VERSION;
   const [group, version] = apiVersion.split("/");
   await kubeClient.customObjectsApi.createNamespacedCustomObject(
     group,
@@ -258,37 +248,29 @@ async function deployWithOperator(
     "backstages",
     crObj,
   );
-  console.log(
-    `Applied Backstage CR '${(crObj.metadata as { name: string }).name}'`,
-  );
+  console.log(`Applied Backstage CR '${(crObj.metadata as { name: string }).name}'`);
 
   // 6. Wait for the operator to create the deployment
   console.log("Waiting for operator to create the deployment...");
   const deploymentName = `backstage-${releaseName}`;
   for (let i = 0; i < 60; i++) {
     try {
-      await kubeClient.appsApi.readNamespacedDeployment(
-        deploymentName,
-        namespace,
-      );
+      await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
       console.log(`Deployment ${deploymentName} found`);
       break;
     } catch {
       if (i === 59)
-        throw new Error(
-          `Operator did not create deployment ${deploymentName} after 5 minutes`,
-        );
-      await new Promise((r) => setTimeout(r, 5000));
+        throw new Error(`Operator did not create deployment ${deploymentName} after 5 minutes`);
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 5000);
+      });
     }
   }
 
   // 7. Wait for deployment readiness
-  await kubeClient.waitForDeploymentReady(
-    deploymentName,
-    namespace,
-    1,
-    600_000,
-  );
+  await kubeClient.waitForDeploymentReady(deploymentName, namespace, 1, 600_000);
   console.log("Operator deployment ready");
 
   return runtimeUrl;
@@ -313,8 +295,7 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   }
 
   const installMethod = resolveInstallMethod();
-  const routerBase =
-    process.env.K8S_CLUSTER_ROUTER_BASE || (await discoverRouterBase());
+  const routerBase = process.env.K8S_CLUSTER_ROUTER_BASE ?? (await discoverRouterBase());
 
   const config = resolveConfig(routerBase);
   const { namespace, releaseName } = config;
@@ -335,10 +316,7 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   // Check if deployment already exists and is ready
   const deploymentName = getRhdhDeploymentName();
   try {
-    const dep = await kubeClient.appsApi.readNamespacedDeployment(
-      deploymentName,
-      namespace,
-    );
+    const dep = await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
     const ready = dep.body.status?.readyReplicas ?? 0;
     if (ready >= 1) {
       console.log(
@@ -346,13 +324,11 @@ export async function ensureRuntimeDeployed(): Promise<void> {
       );
       deployed = true;
       // Still configure schema-mode env if not already set
-      if (!process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD) {
-        await configureSchemaMode(
-          kubeClient,
-          namespace,
-          releaseName,
-          installMethod,
-        );
+      if (
+        process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD === undefined ||
+        process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD === ""
+      ) {
+        await configureSchemaMode(kubeClient, namespace, releaseName, installMethod);
       }
       return;
     }
@@ -373,7 +349,7 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   }
 
   // Set BASE_URL if not already set
-  if (!process.env.BASE_URL) {
+  if (process.env.BASE_URL === undefined || process.env.BASE_URL === "") {
     process.env.BASE_URL = runtimeUrl;
     console.log(`BASE_URL set to ${runtimeUrl}`);
   }

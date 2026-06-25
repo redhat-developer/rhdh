@@ -1,5 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
+import * as yaml from "js-yaml";
 
 import { hasStatusCode } from "../errors";
 import { findAppConfigMapName, updateConfigMapTitleImpl } from "./configmap";
@@ -15,17 +16,44 @@ import {
 import { logReplicaSetStatusImpl } from "./diagnostics/replicasets";
 import { execPodCommandImpl } from "./exec";
 import {
+  BACKSTAGE_BACKEND_CONTAINER,
   formatKubeErrorLog,
   getErrorStatusCode,
   getKubeApiErrorMessage,
   getRhdhDeploymentName,
+  isRecord,
   PodFailureResult,
   rejectAsError,
 } from "./helpers";
 import { checkPodFailureStatesImpl } from "./pod-failure";
 
-export { getRhdhDeploymentName };
+export { BACKSTAGE_BACKEND_CONTAINER, getErrorStatusCode, getRhdhDeploymentName, isRecord };
 export type { PodFailureResult };
+
+export async function waitForBackstageCrd(
+  customObjectsApi: k8s.CustomObjectsApi,
+  timeoutMs: number = 60000,
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      await customObjectsApi.getClusterCustomObject(
+        "apiextensions.k8s.io",
+        "v1",
+        "customresourcedefinitions",
+        "backstages.rhdh.redhat.com",
+      );
+      return;
+    } catch {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 5000);
+      });
+    }
+  }
+  throw new Error(`Backstage CRD not available after ${timeoutMs}ms`);
+}
 
 export class KubeClient {
   coreV1Api: k8s.CoreV1Api;
@@ -404,5 +432,209 @@ export class KubeClient {
     timeout: number = 60000,
   ): Promise<{ stdout: string; stderr: string }> {
     return execPodCommandImpl(this.kc, podName, namespace, containerName, command, timeout);
+  }
+
+  createConfigMap(namespace: string, body: V1ConfigMap) {
+    return this.createCongifmap(namespace, body);
+  }
+
+  async deleteNamespaceIfExists(namespace: string): Promise<void> {
+    try {
+      await this.coreV1Api.readNamespace(namespace);
+      console.log(`Namespace ${namespace} exists, deleting...`);
+      await this.deleteNamespaceAndWait(namespace);
+    } catch (err: unknown) {
+      const statusCode = getErrorStatusCode(err);
+      if (statusCode === 404) {
+        console.log(`Namespace ${namespace} does not exist`);
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  async createNamespace(namespace: string): Promise<void> {
+    try {
+      const res = await this.coreV1Api.createNamespace({
+        metadata: { name: namespace },
+      });
+      const createdName = res.body.metadata?.name;
+      console.log(`Created namespace ${createdName ?? namespace}`);
+    } catch (err: unknown) {
+      const statusCode = getErrorStatusCode(err);
+      if (statusCode === 409) {
+        console.log(`Namespace ${namespace} already exists`);
+        return;
+      }
+      console.log(getKubeApiErrorMessage(err));
+      throw err;
+    }
+  }
+
+  async patchAppConfig(
+    namespace: string,
+    patchFn: (appConfig: Record<string, unknown>) => void,
+  ): Promise<void> {
+    const configMapName = await this.findAppConfigMap(namespace);
+    const response = await this.getConfigMap(configMapName, namespace);
+    const configMap = response.body;
+    const configKey = Object.keys(configMap.data ?? {}).find((key) => key.includes("app-config"));
+
+    if (configKey === undefined || configKey === "" || !configMap.data) {
+      throw new Error(`No app-config data key found in ConfigMap '${configMapName}'`);
+    }
+
+    const parsed: unknown = yaml.load(configMap.data[configKey]);
+    if (!isRecord(parsed)) {
+      throw new Error(`Invalid YAML structure in ConfigMap key '${configKey}'`);
+    }
+    const appConfig = parsed;
+    const before = configMap.data[configKey];
+
+    patchFn(appConfig);
+
+    const after = yaml.dump(appConfig);
+    if (before === after) {
+      console.log("patchAppConfig: no changes needed");
+      return;
+    }
+
+    configMap.data[configKey] = after;
+    delete configMap.metadata?.creationTimestamp;
+    delete configMap.metadata?.resourceVersion;
+    await this.coreV1Api.replaceNamespacedConfigMap(configMapName, namespace, configMap);
+    console.log("patchAppConfig: ConfigMap updated");
+  }
+
+  async jsonPatchDeployment(
+    deploymentName: string,
+    namespace: string,
+    patch: object[],
+  ): Promise<void> {
+    await this.appsApi.patchNamespacedDeployment(
+      deploymentName,
+      namespace,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { headers: { "Content-Type": "application/json-patch+json" } },
+    );
+  }
+
+  async restartDeploymentWithRetry(
+    deploymentName: string,
+    namespace: string,
+    maxAttempts: number = 3,
+  ): Promise<void> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        console.log(`Restarting deployment (attempt ${attempt}/${maxAttempts})...`);
+        await this.restartDeployment(deploymentName, namespace);
+        console.log("Deployment restart completed");
+        return;
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        if (attempt < maxAttempts) {
+          console.warn(
+            `Restart attempt ${attempt}/${maxAttempts} failed: ${msg}. Retrying in 30s...`,
+          );
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 30000);
+          });
+        } else {
+          throw new Error(`Deployment restart failed after ${maxAttempts} attempts: ${msg}`, {
+            cause: error,
+          });
+        }
+      }
+    }
+  }
+
+  async removeContainerEnvVars(
+    deploymentName: string,
+    namespace: string,
+    containerName: string,
+    filterFn: (envVar: k8s.V1EnvVar) => boolean,
+  ): Promise<number> {
+    const response = await this.appsApi.readNamespacedDeployment(deploymentName, namespace);
+    const containers = response.body.spec?.template?.spec?.containers ?? [];
+    const containerIdx = containers.findIndex((c) => c.name === containerName);
+    if (containerIdx === -1) return 0;
+
+    const env = containers[containerIdx].env ?? [];
+    const indicesToRemove = env
+      .map((e, idx) => ({ e, idx }))
+      .filter(({ e }) => filterFn(e))
+      .map(({ idx }) => idx);
+
+    if (indicesToRemove.length === 0) return 0;
+
+    // toSorted requires ES2023 lib; spread creates a copy to avoid mutation
+    const sorted = [...indicesToRemove];
+    // oxlint-disable-next-line unicorn/no-array-sort
+    sorted.sort((a: number, b: number) => b - a);
+    const patch = sorted.map((idx: number) => ({
+      op: "remove" as const,
+      path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,
+    }));
+
+    await this.jsonPatchDeployment(deploymentName, namespace, patch);
+    return indicesToRemove.length;
+  }
+
+  async addContainerEnvVarsFromSecret(
+    deploymentName: string,
+    namespace: string,
+    containerName: string,
+    secretName: string,
+    envVarNames: string[],
+  ): Promise<void> {
+    const response = await this.appsApi.readNamespacedDeployment(deploymentName, namespace);
+    const containers = response.body.spec?.template?.spec?.containers ?? [];
+    const containerIdx = containers.findIndex((c) => c.name === containerName);
+    if (containerIdx === -1) {
+      console.warn(`Container ${containerName} not found in deployment ${deploymentName}`);
+      return;
+    }
+
+    const existingEnv = containers[containerIdx].env ?? [];
+    const patch: Array<{ op: string; path: string; value?: unknown }> = [];
+
+    // Remove existing env vars with the same names (reverse order)
+    const indicesToRemove = existingEnv
+      .map((e, idx) => ({ name: e.name, idx }))
+      .filter((e) => envVarNames.includes(e.name))
+      .map((e) => e.idx);
+
+    if (indicesToRemove.length > 0) {
+      // oxlint-disable-next-line unicorn/no-array-sort -- toSorted requires ES2023 lib; spread creates a copy
+      for (const idx of [...indicesToRemove].sort((a: number, b: number) => b - a)) {
+        patch.push({
+          op: "remove",
+          path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,
+        });
+      }
+    }
+
+    // Add fresh env vars from the secret
+    for (const name of envVarNames) {
+      patch.push({
+        op: "add",
+        path: `/spec/template/spec/containers/${containerIdx}/env/-`,
+        value: {
+          name,
+          valueFrom: {
+            secretKeyRef: { name: secretName, key: name },
+          },
+        },
+      });
+    }
+
+    await this.jsonPatchDeployment(deploymentName, namespace, patch);
   }
 }

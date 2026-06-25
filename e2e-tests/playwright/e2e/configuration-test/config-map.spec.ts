@@ -1,13 +1,14 @@
 import { test, expect } from "@support/coverage/test";
 
 import { Common } from "../../utils/common";
-import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
-import { UIhelper } from "../../utils/ui-helper";
+import { KubeClient, getRhdhDeploymentName, isRecord } from "../../utils/kube-client";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
+import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Change app-config at e2e test runtime", () => {
   test.beforeAll(async () => {
-    test.setTimeout(900000); // 15 minutes — includes deployment if needed
+    // 15 minutes — includes deployment if needed
+    test.setTimeout(900000);
     test.info().annotations.push(
       {
         type: "component",
@@ -28,22 +29,19 @@ test.describe("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000);
 
-    const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+    const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
     const deploymentName = getRhdhDeploymentName();
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
     try {
       console.log("Updating app-config ConfigMap with new title.");
-      await kubeUtils.patchAppConfig(namespace, (appConfig) => {
-        if (!appConfig.app) {
-          throw new Error(
-            "Invalid app-config structure: expected 'app' section not found.",
-          );
+      await kubeUtils.patchAppConfig(namespace, (appConfig: Record<string, unknown>) => {
+        if (!isRecord(appConfig.app)) {
+          throw new Error("Invalid app-config structure: expected 'app' section not found.");
         }
-        const app = appConfig.app as Record<string, unknown>;
-        console.log(`Current title: ${app.title}`);
-        app.title = dynamicTitle;
+        console.log(`Current title: ${String(appConfig.app.title)}`);
+        appConfig.app.title = dynamicTitle;
         console.log(`New title: ${dynamicTitle}`);
       });
 

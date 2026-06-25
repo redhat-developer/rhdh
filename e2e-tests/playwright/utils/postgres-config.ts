@@ -13,8 +13,9 @@
 import { readFileSync, existsSync } from "fs";
 
 import { Client } from "pg";
-import { KubeClient, BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
+
 import { base64Encode } from "./helper";
+import { KubeClient, BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 import type { AppConfigYaml } from "./runtime-config";
 
 /**
@@ -105,8 +106,8 @@ export async function configurePostgresCredentials(
 ): Promise<void> {
   const data: Record<string, string> = {
     POSTGRES_HOST: base64Encode(credentials.host),
-    POSTGRES_PORT: base64Encode(credentials.port || "5432"),
-    PGSSLMODE: base64Encode(credentials.sslMode || "require"),
+    POSTGRES_PORT: base64Encode(credentials.port ?? "5432"),
+    PGSSLMODE: base64Encode(credentials.sslMode ?? "require"),
     NODE_EXTRA_CA_CERTS: base64Encode("/opt/app-root/src/postgres-crt.pem"),
   };
 
@@ -116,7 +117,7 @@ export async function configurePostgresCredentials(
   if (credentials.password) {
     data.POSTGRES_PASSWORD = base64Encode(credentials.password);
   }
-  if (credentials.database) {
+  if (credentials.database !== undefined && credentials.database !== "") {
     data.POSTGRES_DB = base64Encode(credentials.database);
   }
 
@@ -299,11 +300,9 @@ export async function prepareForExternalDatabase(
   await removeSchemaModePatchedEnvVars(kubeClient, deploymentName, namespace);
 
   // --- 2. Patch app-config ConfigMap to use external DB connection ---
-  console.log(
-    "Patching app-config to use external database connection (env var placeholders)...",
-  );
+  console.log("Patching app-config to use external database connection (env var placeholders)...");
   await kubeClient.patchAppConfig(namespace, (appConfig: AppConfigYaml) => {
-    appConfig.backend = appConfig.backend || {};
+    appConfig.backend ??= {};
     appConfig.backend.database = {
       connection: {
         host: "${POSTGRES_HOST}",
@@ -342,9 +341,7 @@ async function removeSchemaModePatchedEnvVars(
   );
 
   if (removed > 0) {
-    console.log(
-      `Removed ${removed} schema-mode env var patches from deployment`,
-    );
+    console.log(`Removed ${removed} schema-mode env var patches from deployment`);
   } else {
     console.log("No schema-mode env var patches found on deployment");
   }
