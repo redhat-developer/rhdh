@@ -13708,44 +13708,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turbo/darwin-64@npm:2.9.6":
-  version: 2.9.6
-  resolution: "@turbo/darwin-64@npm:2.9.6"
+"@turbo/darwin-64@npm:2.9.18":
+  version: 2.9.18
+  resolution: "@turbo/darwin-64@npm:2.9.18"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/darwin-arm64@npm:2.9.6":
-  version: 2.9.6
-  resolution: "@turbo/darwin-arm64@npm:2.9.6"
+"@turbo/darwin-arm64@npm:2.9.18":
+  version: 2.9.18
+  resolution: "@turbo/darwin-arm64@npm:2.9.18"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/linux-64@npm:2.9.6":
-  version: 2.9.6
-  resolution: "@turbo/linux-64@npm:2.9.6"
+"@turbo/linux-64@npm:2.9.18":
+  version: 2.9.18
+  resolution: "@turbo/linux-64@npm:2.9.18"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/linux-arm64@npm:2.9.6":
-  version: 2.9.6
-  resolution: "@turbo/linux-arm64@npm:2.9.6"
+"@turbo/linux-arm64@npm:2.9.18":
+  version: 2.9.18
+  resolution: "@turbo/linux-arm64@npm:2.9.18"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/windows-64@npm:2.9.6":
-  version: 2.9.6
-  resolution: "@turbo/windows-64@npm:2.9.6"
+"@turbo/windows-64@npm:2.9.18":
+  version: 2.9.18
+  resolution: "@turbo/windows-64@npm:2.9.18"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/windows-arm64@npm:2.9.6":
-  version: 2.9.6
-  resolution: "@turbo/windows-arm64@npm:2.9.6"
+"@turbo/windows-arm64@npm:2.9.18":
+  version: 2.9.18
+  resolution: "@turbo/windows-arm64@npm:2.9.18"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -32630,8 +32630,8 @@ __metadata:
     lint-staged: "npm:15.5.2"
     node-gyp: "npm:10.3.1"
     rulesync: "npm:7.30.0"
-    sherif: "npm:1.11.1"
-    turbo: "npm:2.9.6"
+    sherif: "npm:1.12.0"
+    turbo: "npm:2.9.18"
   dependenciesMeta:
     keytar:
       built: false
@@ -33192,74 +33192,74 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sherif-darwin-arm64@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-darwin-arm64@npm:1.11.1"
+"sherif-darwin-arm64@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-darwin-arm64@npm:1.12.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-darwin-x64@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-darwin-x64@npm:1.11.1"
+"sherif-darwin-x64@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-darwin-x64@npm:1.12.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64-musl@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-linux-arm64-musl@npm:1.11.1"
+"sherif-linux-arm64-musl@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-linux-arm64-musl@npm:1.12.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-linux-arm64@npm:1.11.1"
+"sherif-linux-arm64@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-linux-arm64@npm:1.12.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64-musl@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-linux-x64-musl@npm:1.11.1"
+"sherif-linux-x64-musl@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-linux-x64-musl@npm:1.12.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-linux-x64@npm:1.11.1"
+"sherif-linux-x64@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-linux-x64@npm:1.12.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-windows-arm64@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-windows-arm64@npm:1.11.1"
+"sherif-windows-arm64@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-windows-arm64@npm:1.12.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-windows-x64@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif-windows-x64@npm:1.11.1"
+"sherif-windows-x64@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif-windows-x64@npm:1.12.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif@npm:1.11.1":
-  version: 1.11.1
-  resolution: "sherif@npm:1.11.1"
+"sherif@npm:1.12.0":
+  version: 1.12.0
+  resolution: "sherif@npm:1.12.0"
   dependencies:
-    sherif-darwin-arm64: "npm:1.11.1"
-    sherif-darwin-x64: "npm:1.11.1"
-    sherif-linux-arm64: "npm:1.11.1"
-    sherif-linux-arm64-musl: "npm:1.11.1"
-    sherif-linux-x64: "npm:1.11.1"
-    sherif-linux-x64-musl: "npm:1.11.1"
-    sherif-windows-arm64: "npm:1.11.1"
-    sherif-windows-x64: "npm:1.11.1"
+    sherif-darwin-arm64: "npm:1.12.0"
+    sherif-darwin-x64: "npm:1.12.0"
+    sherif-linux-arm64: "npm:1.12.0"
+    sherif-linux-arm64-musl: "npm:1.12.0"
+    sherif-linux-x64: "npm:1.12.0"
+    sherif-linux-x64-musl: "npm:1.12.0"
+    sherif-windows-arm64: "npm:1.12.0"
+    sherif-windows-x64: "npm:1.12.0"
   dependenciesMeta:
     sherif-darwin-arm64:
       optional: true
@@ -33279,7 +33279,7 @@ __metadata:
       optional: true
   bin:
     sherif: index.js
-  checksum: 10c0/a35e625240cb98ad0bc654d23c1a98557aa6832435d0e9fa30983377db7d009e70eb9e8594a85ba98df725d7a97baea7eb809a17afde53c270999ed25b8a6bc4
+  checksum: 10c0/05827508a7878ef8ddcba6433a9a58451b16f95d8016bf1670570b0a6aa4a60803796f694dc18dcf0d7db303e3e3662533aaf5e73f4e21dcc6a000717033bbca
   languageName: node
   linkType: hard
 
@@ -35325,16 +35325,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo@npm:2.9.6":
-  version: 2.9.6
-  resolution: "turbo@npm:2.9.6"
+"turbo@npm:2.9.18":
+  version: 2.9.18
+  resolution: "turbo@npm:2.9.18"
   dependencies:
-    "@turbo/darwin-64": "npm:2.9.6"
-    "@turbo/darwin-arm64": "npm:2.9.6"
-    "@turbo/linux-64": "npm:2.9.6"
-    "@turbo/linux-arm64": "npm:2.9.6"
-    "@turbo/windows-64": "npm:2.9.6"
-    "@turbo/windows-arm64": "npm:2.9.6"
+    "@turbo/darwin-64": "npm:2.9.18"
+    "@turbo/darwin-arm64": "npm:2.9.18"
+    "@turbo/linux-64": "npm:2.9.18"
+    "@turbo/linux-arm64": "npm:2.9.18"
+    "@turbo/windows-64": "npm:2.9.18"
+    "@turbo/windows-arm64": "npm:2.9.18"
   dependenciesMeta:
     "@turbo/darwin-64":
       optional: true
@@ -35350,7 +35350,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10c0/8f06bc9f4fa8caa446b72276ba0ab69dbcaf46ffbf536926f5d2759cc5d180f027a4065286ce03d6788306b5404d7a320d8354670cabd459c599fcdca83e4611
+  checksum: 10c0/e9fd8565dc49d62d878a0eff4542316bce0dc8d255df0f78372bed8c6f118378b33d760030927bc9d68bb911ecc4a5f79faf840a9c71675c34e5efa4dea343fa
   languageName: node
   linkType: hard
 
