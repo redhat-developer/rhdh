@@ -6,17 +6,17 @@ import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page"
 import { runAccessibilityTests } from "../../../utils/accessibility";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 import { APIHelper } from "../../../utils/api-helper";
-import { Common } from "../../../utils/common";
+import { JOB_NAME_PATTERNS } from "../../../utils/constants";
+import { skipIfJobName } from "../../../utils/helper";
 
 test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   test.skip(
-    () => (process.env.JOB_NAME ?? "").includes("osd-gcp"),
+    () => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP),
     "skipping due to RHDHBUGS-555 on OSD Env",
   );
 
   let scaffolderFlowPage: ScaffolderFlowPage;
   let catalogBrowsePage: CatalogBrowsePage;
-  let common: Common;
   let catalogImport: CatalogImport;
 
   const template =
@@ -32,18 +32,15 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     repoOwner: Buffer.from(process.env.GITHUB_ORG ?? "amFudXMtcWU=", "base64").toString("utf8"),
   };
 
-  test.beforeAll(async ({ rhdhPage }) => {
+  test.beforeAll(({ rhdhGuestPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    common = new Common(rhdhPage);
-    scaffolderFlowPage = new ScaffolderFlowPage(rhdhPage);
-    catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
-    catalogImport = new CatalogImport(rhdhPage);
-
-    await common.loginAsGuest();
+    scaffolderFlowPage = new ScaffolderFlowPage(rhdhGuestPage);
+    catalogBrowsePage = new CatalogBrowsePage(rhdhGuestPage);
+    catalogImport = new CatalogImport(rhdhGuestPage);
   });
 
   test("Register the annotator template", async ({ rhdhPage }, testInfo) => {

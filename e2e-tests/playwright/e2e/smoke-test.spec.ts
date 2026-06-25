@@ -1,12 +1,9 @@
 import { test } from "@support/coverage/test";
 
-import { RhdhHomePage } from "../support/pages/rhdh-home-page";
-import { Common } from "../utils/common";
-import { waitForRhdhReady } from "../utils/wait-for-rhdh-ready";
+import { HomePage } from "../support/pages/home-page";
 
 test.describe("Smoke test", { tag: "@smoke" }, () => {
-  let rhdhHomePage: RhdhHomePage;
-  let common: Common;
+  let homePage: HomePage;
 
   test.beforeAll(() => {
     test.info().annotations.push({
@@ -15,14 +12,11 @@ test.describe("Smoke test", { tag: "@smoke" }, () => {
     });
   });
 
-  test.beforeEach(async ({ page, request }) => {
-    await waitForRhdhReady(request);
-    rhdhHomePage = new RhdhHomePage(page);
-    common = new Common(page);
-    await common.loginAsGuest();
+  test.beforeEach(({ guestPage }) => {
+    homePage = new HomePage(guestPage);
   });
 
   test("Verify the RHDH instance homepage renders", async () => {
-    await rhdhHomePage.verifyWelcomeHeading();
+    await homePage.verifyWelcomeHeading();
   });
 });

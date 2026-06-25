@@ -5,6 +5,7 @@ import * as misc from "../../utils/ui-helper/misc";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as table from "../../utils/ui-helper/table";
 import * as verification from "../../utils/ui-helper/verification";
+import { findTableCellByColumn } from "../selectors/semantic/table-helpers";
 import { SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
 
 /** Catalog browse and entity list interactions. */
@@ -142,7 +143,11 @@ export class CatalogBrowsePage {
       .getByRole("row")
       .filter({ has: this.page.getByRole("cell") })
       .first();
-    const createdAtCell = firstRow.getByRole("cell").nth(7);
+    const rowText = await firstRow.textContent();
+    if (rowText === null || rowText === "") {
+      throw new Error("Expected the first catalog row to have text content");
+    }
+    const createdAtCell = await findTableCellByColumn(this.page, rowText, "Created At");
     await expect(createdAtCell).not.toBeEmpty();
   }
 

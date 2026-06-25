@@ -1,14 +1,9 @@
-import { test } from "@support/coverage/test";
+import { expect, test } from "@support/coverage/test";
 
-import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
-import { Common } from "../../utils/common";
-import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
-import {
-  readCertificateFile,
-  configurePostgresCertificate,
-  configurePostgresCredentials,
-  clearDatabase,
-} from "../../utils/postgres-config";
+import { signInAsGuest } from "../../support/auth/guest-auth";
+import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
+import { HomePage } from "../../support/pages/home-page";
+import { clearDatabase, readCertificateFile } from "../../utils/postgres-config";
 
 interface RdsConfig {
   name: string;
@@ -17,7 +12,7 @@ interface RdsConfig {
 
 test.describe("Verify TLS configuration with RDS PostgreSQL health check", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME! || "showcase-runtime";
-  const deploymentName = getRhdhDeploymentName();
+  const runtimeHarness = new RuntimeHarness(namespace);
 
   // RDS configuration from environment
   const rdsUser = process.env.RDS_USER!;
@@ -56,11 +51,9 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       throw new Error("RDS_USER and RDS_PASSWORD environment variables must be set");
     }
 
-    const kubeClient = new KubeClient();
-
     // Create/update the postgres-crt secret with RDS certificates
     console.log("Configuring RDS TLS certificates...");
-    await configurePostgresCertificate(kubeClient, namespace, rdsCerts);
+    await runtimeHarness.configurePostgresCertificate(rdsCerts);
   });
 
   for (const config of rdsConfigurations) {
@@ -79,20 +72,20 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       });
 
       test("Configure and restart deployment", async () => {
-        const kubeClient = new KubeClient();
-        await configurePostgresCredentials(kubeClient, namespace, {
-          host: config.host,
-          user: rdsUser,
-          password: rdsPassword,
+        await runtimeHarness.configureExternalPostgres({
+          credentials: {
+            host: config.host,
+            user: rdsUser,
+            password: rdsPassword,
+          },
         });
-        await kubeClient.restartDeployment(deploymentName, namespace);
+        expect(config.host).toBeTruthy();
       });
 
       test("Verify successful DB connection", async ({ page }) => {
-        const rhdhHomePage = new RhdhHomePage(page);
-        const common = new Common(page);
-        await common.loginAsGuest();
-        await rhdhHomePage.verifyWelcomeHeading();
+        const homePage = new HomePage(page);
+        await signInAsGuest(page);
+        await homePage.verifyWelcomeHeading();
       });
     });
   }

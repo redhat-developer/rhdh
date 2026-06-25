@@ -1,7 +1,6 @@
 import { test } from "@support/coverage/test";
 
 import { SettingsPage } from "../support/pages/settings-page";
-import { Common } from "../utils/common";
 import { getTranslations, getCurrentLanguage } from "./localization/locale";
 
 const t = getTranslations();
@@ -10,14 +9,12 @@ const lang = getCurrentLanguage();
 let settingsPage: SettingsPage;
 
 test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ guestPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
-    const common = new Common(page);
-    settingsPage = new SettingsPage(page);
-    await common.loginAsGuest();
+    settingsPage = new SettingsPage(guestPage);
     await settingsPage.open();
   });
 

@@ -171,6 +171,11 @@ export class SettingsPage {
     await expect(SETTINGS_PAGE_COMPONENTS.getSignOut(this.page)).toContainText(text);
   }
 
+  async signOut(): Promise<void> {
+    await this.openUserSettingsMenu();
+    await SETTINGS_PAGE_COMPONENTS.getSignOut(this.page).click();
+  }
+
   async closeUserSettingsMenu(): Promise<void> {
     await this.page.keyboard.press("Escape");
   }

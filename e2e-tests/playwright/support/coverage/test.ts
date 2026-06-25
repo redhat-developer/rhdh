@@ -26,6 +26,8 @@ import {
   type Page,
   type TestInfo,
 } from "@playwright/test";
+import { AuthProviderSession } from "../auth/provider-auth";
+import { signInAsGuest } from "../auth/guest-auth";
 import { setupBrowser, teardownBrowser } from "../../utils/common/browser";
 // Re-export all Playwright types and values so specs can replace
 // `from "@playwright/test"` with this module. The locally-defined `test`
@@ -126,15 +128,29 @@ export async function stopCoverageForPage(
 type RhdhBrowserWorkerFixtures = {
   rhdhContext: BrowserContext;
   rhdhPage: Page;
+  rhdhGuestPage: Page;
+  rhdhAuthSession: AuthProviderSession;
+};
+
+type RhdhPerTestFixtures = {
+  guestPage: Page;
+  authSession: AuthProviderSession;
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const test = baseTest.extend<NonNullable<unknown>, RhdhBrowserWorkerFixtures>(
+export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtures>(
   {
     page: async ({ page }, use, testInfo) => {
       await startCoverageForPage(page);
       await use(page);
       await stopCoverageForPage(page, testInfo);
+    },
+    guestPage: async ({ page }, use) => {
+      await signInAsGuest(page);
+      await use(page);
+    },
+    authSession: async ({ page }, use) => {
+      await use(new AuthProviderSession(page));
     },
     rhdhContext: [
       async ({ browser }, use, testInfo) => {
@@ -149,6 +165,19 @@ export const test = baseTest.extend<NonNullable<unknown>, RhdhBrowserWorkerFixtu
         const existingPage = rhdhContext.pages()[0];
         const page = existingPage ?? (await rhdhContext.newPage());
         await use(page);
+      },
+      { scope: "worker" },
+    ],
+    rhdhGuestPage: [
+      async ({ rhdhPage }, use) => {
+        await signInAsGuest(rhdhPage);
+        await use(rhdhPage);
+      },
+      { scope: "worker" },
+    ],
+    rhdhAuthSession: [
+      async ({ rhdhPage }, use) => {
+        await use(new AuthProviderSession(rhdhPage));
       },
       { scope: "worker" },
     ],

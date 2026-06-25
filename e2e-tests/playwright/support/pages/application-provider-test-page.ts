@@ -1,34 +1,30 @@
 import { expect, Page } from "@playwright/test";
 
-import { UIhelper } from "../../utils/ui-helper";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as verification from "../../utils/ui-helper/verification";
 
 /** Application provider plugin test page interactions. */
 export class ApplicationProviderTestPage {
-  private readonly page: Page;
-  private readonly ui: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.ui = new UIhelper(page);
-  }
+  constructor(private readonly page: Page) {}
 
   async open(): Promise<void> {
-    await this.ui.goToPageUrl("/application-provider-test-page");
+    await navigation.goToPageUrl(this.page, "/application-provider-test-page");
   }
 
   async verifyTestPageContent(): Promise<void> {
-    await this.ui.verifyText("application/provider TestPage");
-    await this.ui.verifyText(
+    await verification.verifyText(this.page, "application/provider TestPage");
+    await verification.verifyText(
+      this.page,
       "This card will work only if you register the TestProviderOne and TestProviderTwo correctly.",
     );
   }
 
   async verifyContextOneCard(): Promise<void> {
-    await this.ui.verifyTextinCard("Context one", "Context one");
+    await expect(this.contextCards("Context one").first()).toBeVisible();
   }
 
   async verifyContextTwoCard(): Promise<void> {
-    await this.ui.verifyTextinCard("Context two", "Context two");
+    await expect(this.contextCards("Context two").first()).toBeVisible();
   }
 
   private contextCards(contextLabel: string) {
