@@ -5,6 +5,7 @@ export default defineConfig({
   categories: {
     correctness: "error",
     suspicious: "error",
+    pedantic: "error",
   },
   options: {
     typeAware: true,
@@ -17,6 +18,7 @@ export default defineConfig({
     "test-results/**",
     "coverage/**",
     ".local-test/**",
+    "scripts/**",
   ],
   rules: {
     "typescript/no-floating-promises": "error",
@@ -26,6 +28,7 @@ export default defineConfig({
     "typescript/no-unsafe-call": "error",
     "typescript/no-unsafe-return": "error",
     "typescript/strict-void-return": "error",
+    "typescript/prefer-readonly-parameter-types": "off",
     "check-file/filename-naming-convention": [
       "error",
       {
@@ -61,12 +64,57 @@ export default defineConfig({
   },
   overrides: [
     {
+      // Auth-provider specs deploy RHDH in beforeAll and use async Playwright hooks.
+      // strict-void-return and no-misused-promises produce false positives on those
+      // describe/beforeAll callbacks without improving test safety.
       files: ["playwright/e2e/auth-providers/**/*.spec.ts"],
       rules: {
         "typescript/strict-void-return": "off",
+        "typescript/no-misused-promises": "off",
       },
     },
     {
+      // Spec files orchestrate multi-step E2E flows; length limits target production
+      // code readability, not test scenarios that must stay in one file for clarity.
+      files: ["**/*.spec.ts", "**/*.test.ts"],
+      rules: {
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+      },
+    },
+    {
+      // Shared infrastructure (utils, support, data, e2e helpers) is split into
+      // modules but still contains cohesive orchestration (kube waits, deployment
+      // setup, log parsing). Complexity limits would force artificial fragmentation.
+      files: [
+        "playwright/utils/**/*.ts",
+        "playwright/support/**/*.ts",
+        "playwright/data/**/*.ts",
+        "playwright/e2e/**/*.ts",
+      ],
+      rules: {
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+        "eslint/max-depth": "off",
+      },
+    },
+    {
+      // Facade modules aggregate many submodules by design (e.g. KubeClient re-exports,
+      // rhdh-deployment orchestration, locale translation maps). A flat import count
+      // does not reflect coupling when each import is a focused submodule.
+      files: ["playwright/utils/**/*.ts", "playwright/e2e/localization/**/*.ts"],
+      rules: {
+        "import/max-dependencies": "off",
+      },
+    },
+    {
+      // valid-title / valid-describe-callback: existing suite uses legacy naming
+      // patterns that do not match the plugin's strict conventions.
+      // no-wait-for-selector: replaced with expect() and locator.waitFor() per
+      // hardening guidelines; rule would flag intentional migration patterns.
+      // expect-expect + assertFunctionNames: POM verify* helpers and loginAsGuest
+      // perform assertions on behalf of the spec; register them so specs are not
+      // forced to duplicate expect() calls after every helper invocation.
       files: ["**/*.spec.ts", "**/*.test.ts", "playwright/**/*.ts"],
       rules: {
         // Playwright requires object destructuring for hook/test callbacks that take
@@ -107,6 +155,7 @@ export default defineConfig({
               "verifyTextInSelector",
               "verifyPartialTextInSelector",
               "loginAsGuest",
+              "restartDeployment",
               "waitForTitle",
             ],
           },

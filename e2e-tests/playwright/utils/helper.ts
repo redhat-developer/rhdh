@@ -58,7 +58,7 @@ export function skipIfJobName(jobNamePattern: JobNamePattern): boolean {
  */
 export function skipIfJobNameRegex(jobNameRegexPattern: JobNameRegexPattern): boolean {
   const jobName = process.env.JOB_NAME;
-  if (!jobName) {
+  if (jobName === undefined || jobName === "") {
     return false;
   }
   return jobNameRegexPattern.test(jobName);

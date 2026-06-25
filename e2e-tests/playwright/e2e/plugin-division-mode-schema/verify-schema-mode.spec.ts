@@ -77,8 +77,8 @@ function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Prom
 }
 
 test.describe("Verify pluginDivisionMode: schema", () => {
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME || "developer-hub";
+  const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
+  const releaseName = process.env.RELEASE_NAME ?? "developer-hub";
   const installMethod = process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
 
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
@@ -87,14 +87,24 @@ test.describe("Verify pluginDivisionMode: schema", () => {
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
 
+    const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
+    const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
+    const dbHost = process.env.SCHEMA_MODE_DB_HOST;
+    const adminPassword = process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD;
+    const dbPassword = process.env.SCHEMA_MODE_DB_PASSWORD;
+
     const hasPortForwardMeta =
-      !!process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE &&
-      !!process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
-    const hasDirectHost = !!process.env.SCHEMA_MODE_DB_HOST;
+      pfNamespace !== undefined &&
+      pfNamespace !== "" &&
+      pfResource !== undefined &&
+      pfResource !== "";
+    const hasDirectHost = dbHost !== undefined && dbHost !== "";
 
     if (
-      !process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD ||
-      !process.env.SCHEMA_MODE_DB_PASSWORD ||
+      adminPassword === undefined ||
+      adminPassword === "" ||
+      dbPassword === undefined ||
+      dbPassword === "" ||
       (!hasPortForwardMeta && !hasDirectHost)
     ) {
       testInfo.skip(
@@ -110,9 +120,6 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     );
 
     if (hasPortForwardMeta) {
-      const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE!;
-      const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE!;
-
       console.log(`Starting port-forward: ${pfResource} in ${pfNamespace} -> localhost:5432`);
 
       portForwardProcess = await startPortForward(pfNamespace, pfResource);

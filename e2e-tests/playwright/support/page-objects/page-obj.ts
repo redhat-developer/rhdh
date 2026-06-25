@@ -2,7 +2,7 @@
 import { Page, Locator } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { SemanticSelectors } from "../selectors/semantic-selectors";
+import { SemanticSelectors } from "../selectors/semantic";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -99,7 +99,7 @@ export const KUBERNETES_COMPONENTS = {
    * @example KUBERNETES_COMPONENTS.getClusterAccordion(page, 'production').click()
    */
   getClusterAccordion: (page: Page, clusterName?: string | RegExp): Locator => {
-    if (clusterName) {
+    if (clusterName !== undefined) {
       return page
         .getByRole("button", { name: clusterName, expanded: false })
         .or(page.getByRole("button", { name: clusterName, expanded: true }));
@@ -130,7 +130,7 @@ export const KUBERNETES_COMPONENTS = {
    * @example await expect(KUBERNETES_COMPONENTS.getNotification(page)).toContainText('Error')
    */
   getNotification: (page: Page, message?: string | RegExp): Locator =>
-    message ? SemanticSelectors.alert(page, message) : SemanticSelectors.alert(page),
+    message === undefined ? SemanticSelectors.alert(page) : SemanticSelectors.alert(page, message),
 };
 
 /**

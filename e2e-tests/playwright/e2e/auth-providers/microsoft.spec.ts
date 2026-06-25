@@ -16,6 +16,7 @@ MICOROSFT:
     [-] emailLocalPartMatchingUserEntityName
 */
 
+// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure Microsoft Provider", async () => {
   let common: Common;
   let uiHelper: UIhelper;
@@ -77,7 +78,11 @@ test.describe("Configure Microsoft Provider", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
       await deployment.addSecretData("BASE_URL", backstageUrl);
       await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
@@ -135,7 +140,7 @@ test.describe("Configure Microsoft Provider", async () => {
     await deployment.waitForSynced();
   });
 
-  test.beforeEach(async () => {
+  test.beforeEach(() => {
     test.info().setTimeout(600 * 1000);
     console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
@@ -208,7 +213,7 @@ test.describe("Configure Microsoft Provider", async () => {
     await context.clearCookies();
   });
 
-  //TODO: entiny name is "name": "zeus_rhdhtesting.onmicrosoft.com", email is "email": "zeus@rhdhtesting.onmicrosoft.com" not resolving?
+  // NOTE: entity name is "name": "zeus_rhdhtesting.onmicrosoft.com", email is "email": "zeus@rhdhtesting.onmicrosoft.com" not resolving?
   test.fixme("Login with Microsoft emailLocalPartMatchingUserEntityName resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
     await deployment.setMicrosoftResolver("emailLocalPartMatchingUserEntityName", false);
@@ -262,8 +267,10 @@ test.describe("Configure Microsoft Provider", async () => {
     const authCookie = cookies.find((cookie) => cookie.name === "microsoft-refresh-token");
     expect(authCookie).toBeDefined();
 
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+    // expected duration of 3 days in ms
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    // allow for 3 minutes tolerance
+    const tolerance = 3 * 60 * 1000;
 
     const actualDuration = authCookie!.expires * 1000 - Date.now();
 
@@ -280,7 +287,7 @@ test.describe("Configure Microsoft Provider", async () => {
 
     await expect
       .poll(
-        async () =>
+        () =>
           deployment.checkUserIsIngestedInCatalog([
             "TEST Admin",
             "TEST Atena",

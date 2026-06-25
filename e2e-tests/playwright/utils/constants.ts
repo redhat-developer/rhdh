@@ -4,7 +4,7 @@ export const JANUS_QE_ORG = "janus-qe";
 export const SHOWCASE_REPO = `${JANUS_ORG}/backstage-showcase`;
 export const CATALOG_FILE = "catalog-info.yaml";
 export const NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE =
-  /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver./;
+  /Login failed;u caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver./u;
 
 /**
  * CI/CD Environment variable patterns used for conditional test execution
@@ -37,7 +37,7 @@ export const JOB_NAME_REGEX_PATTERNS = {
    * Matches OCP version patterns like "ocp-v4.15-*", "ocp-v4.16-*", etc.
    * Example: "periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4.15-helm-nightly"
    */
-  OCP_VERSION: /ocp-v\d+-\d+/,
+  OCP_VERSION: /ocp-v\d+-\d+/u,
 } as const;
 
 /**

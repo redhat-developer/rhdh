@@ -8,7 +8,7 @@ export class GetOrganizationResponse {
 
     const reposUrl = (response as { repos_url: unknown }).repos_url;
     if (typeof reposUrl !== "string") {
-      throw new Error("Invalid GitHub organization response: missing repos_url");
+      throw new TypeError("Invalid GitHub organization response: missing repos_url");
     }
 
     this.reposUrl = reposUrl;

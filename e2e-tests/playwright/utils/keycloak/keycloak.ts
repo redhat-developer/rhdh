@@ -1,5 +1,4 @@
 import { expect, Page } from "@playwright/test";
-import fetch from "node-fetch";
 
 import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users-obj";
 import { UIhelper } from "../ui-helper";
@@ -29,7 +28,7 @@ function isGroupArray(data: unknown): data is Group[] {
 
 function requireBase64Env(name: string): string {
   const value = process.env[name];
-  if (!value) {
+  if (value === undefined || value === "") {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return Buffer.from(value, "base64").toString();

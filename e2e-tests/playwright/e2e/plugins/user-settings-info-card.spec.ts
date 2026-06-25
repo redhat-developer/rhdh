@@ -4,7 +4,7 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Test user settings info card", { tag: "@layer3-equivalent" }, () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",

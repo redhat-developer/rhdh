@@ -86,7 +86,11 @@ test.describe("Configure LDAP Provider", () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
       await deployment.addSecretData("BASE_URL", backstageUrl);
       await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
@@ -164,7 +168,7 @@ test.describe("Configure LDAP Provider", () => {
     await deployment.waitForSynced();
   });
 
-  test.beforeEach(async () => {
+  test.beforeEach(() => {
     test.info().setTimeout(600 * 1000);
     console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
@@ -234,7 +238,8 @@ test.describe("Configure LDAP Provider", () => {
     deployment.setAppConfigProperty("auth.providers.oidc.production.signIn.resolvers", [
       {
         resolver: "oidcLdapUuidMatchingAnnotation",
-        ldapUuidKey: "sub", // match sub claim as required by OIDC spec
+        // match sub claim as required by OIDC spec
+        ldapUuidKey: "sub",
       },
     ]);
 

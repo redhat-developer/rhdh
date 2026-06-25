@@ -19,6 +19,7 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
+// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure OIDC provider (using RHBK)", async () => {
   let common: Common;
   let uiHelper: UIhelper;
@@ -91,7 +92,11 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
       await deployment.addSecretData("BASE_URL", backstageUrl);
       await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
@@ -128,7 +133,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await deployment.waitForSynced();
   });
 
-  test.beforeEach(async () => {
+  test.beforeEach(() => {
     test.info().setTimeout(600 * 1000);
     console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
@@ -273,8 +278,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
     expect(authCookie).toBeDefined();
 
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+    // expected duration of 3 days in ms
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    // allow for 3 minutes tolerance
+    const tolerance = 3 * 60 * 1000;
 
     const actualDuration = authCookie!.expires * 1000 - Date.now();
 
@@ -378,10 +385,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test(`Enable autologout and user is logged out after inactivity`, async () => {
     deployment.setAppConfigProperty("auth.autologout.enabled", "true");
-    deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5, // minimum allowed value is 0.5 minutes
-    );
+    // minimum allowed value is 0.5 minutes
+    deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
     deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();
@@ -408,10 +413,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
     deployment.setAppConfigProperty("auth.autologout.enabled", "true");
-    deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5, // minimum allowed value is 0.5 minutes
-    );
+    // minimum allowed value is 0.5 minutes
+    deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
     deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
     await deployment.updateAllConfigs();
     await deployment.waitForConfigReconciled();

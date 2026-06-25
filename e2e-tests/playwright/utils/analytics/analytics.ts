@@ -13,7 +13,7 @@ export class Analytics {
       expect(response.status()).toBe(200);
       const body: unknown = await response.json();
       if (!Array.isArray(body)) {
-        throw new Error("Expected loaded plugins response to be an array");
+        throw new TypeError("Expected loaded plugins response to be an array");
       }
       plugins = body.filter(
         (item): item is { name: string } =>

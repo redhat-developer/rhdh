@@ -5,7 +5,7 @@ import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Change app-config at e2e test runtime", () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push(
       {
         type: "component",
@@ -13,18 +13,17 @@ test.describe("Change app-config at e2e test runtime", () => {
       },
       {
         type: "namespace",
-        description: process.env.NAME_SPACE_RUNTIME || "showcase-runtime",
+        description: process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime",
       },
     );
   });
 
   test("Verify title change after ConfigMap modification", async ({ page }) => {
-    test.setTimeout(300000); // Increasing to 5 minutes
+    test.setTimeout(300000);
 
-    // Start with a common name, but let KubeClient find the actual ConfigMap
     const configMapName = "app-config-rhdh";
 
-    const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+    const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
     const deploymentName = getRhdhDeploymentName();
 
     const kubeUtils = new KubeClient();
@@ -53,6 +52,6 @@ test.describe("Change app-config at e2e test runtime", () => {
 });
 
 function generateDynamicTitle() {
-  const timestamp = new Date().toISOString().replaceAll(/[-:.]/g, "");
+  const timestamp = new Date().toISOString().replaceAll(/[-:.]/gu, "");
   return `New Title - ${timestamp}`;
 }

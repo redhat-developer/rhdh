@@ -9,19 +9,18 @@ const template = "https://github.com/janus-qe/sample-service/blob/main/demo_temp
 const entityName = "hello-world-2";
 const namespace = "default";
 
-// Ensures the entity exists in the catalog (registers if needed)
 async function ensureEntityExists() {
   const uid = await APIHelper.getTemplateEntityUidByName(entityName, namespace);
-  if (!uid) {
+  if (uid === undefined || uid === "") {
     await APIHelper.registerLocation(template);
+    return false;
   }
-  return !!uid;
+  return true;
 }
 
-// Ensures the entity does not exist in the catalog (deletes if needed)
 async function ensureEntityDoesNotExist() {
   const id = await APIHelper.getLocationIdByTarget(template);
-  if (id) {
+  if (id !== undefined && id !== "") {
     await APIHelper.deleteEntityLocationById(id);
   }
 }
@@ -31,7 +30,7 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
   let common: Common;
   let catalogImport: CatalogImport;
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "audit-log",
@@ -47,20 +46,18 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
   });
 
   test("Should fetch logs for entity-mutate event and validate log structure and values", async () => {
-    // Ensure the entity exists
     await ensureEntityExists();
     await uiHelper.clickButton("Import an existing Git repository");
-    // Register as existing (should trigger entity-mutate)
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
       "entity-mutate",
       "user:development/guest",
       { method: "POST", url: "/api/catalog/refresh" },
-      undefined, // meta
-      undefined, // error
-      "succeeded", // status
-      "catalog", // plugin
-      "medium", // severityLevel
+      undefined,
+      undefined,
+      "succeeded",
+      "catalog",
+      "medium",
       ["entity-mutate", "POST", "/api/catalog/refresh"],
     );
   });
@@ -68,17 +65,16 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for location-mutate event and validate log structure and values", async () => {
     await ensureEntityDoesNotExist();
     await uiHelper.clickButton("Import an existing Git repository");
-    // Register as new (should trigger location-mutate)
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
       "location-mutate",
       "user:development/guest",
       { method: "POST", url: "/api/catalog/locations" },
-      undefined, // meta
-      undefined, // error
-      "succeeded", // status
-      "catalog", // plugin
-      "medium", // severityLevel
+      undefined,
+      undefined,
+      "succeeded",
+      "catalog",
+      "medium",
       ["location-mutate", "POST", "/api/catalog/locations"],
     );
   });

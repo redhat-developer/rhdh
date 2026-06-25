@@ -33,13 +33,13 @@ export class Catalog {
     await this.searchField.clear();
     const baseURL = playwrightConfig.use?.baseURL ?? "";
     const searchResponse = this.page.waitForResponse(
-      new RegExp(`${baseURL}/api/catalog/entities/by-query/*`),
+      new RegExp(`${baseURL}/api/catalog/entities/by-query/*`, "u"),
     );
     await this.searchField.fill(s);
     await searchResponse;
   }
 
-  async tableRow(content: string) {
+  tableRow(content: string) {
     return this.page.locator(`tr >> a >> text="${content}"`);
   }
 }

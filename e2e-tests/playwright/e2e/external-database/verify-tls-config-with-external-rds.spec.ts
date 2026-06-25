@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
@@ -45,7 +45,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
     // Validate certificates are available
     const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
-    if (!rdsCerts) {
+    if (rdsCerts === undefined || rdsCerts === null || rdsCerts === "") {
       throw new Error(
         "RDS_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
       );
@@ -87,8 +87,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
           user: rdsUser,
           password: rdsPassword,
         });
-        const restarted = await kubeClient.restartDeployment(deploymentName, namespace);
-        expect(restarted).toBeDefined();
+        await kubeClient.restartDeployment(deploymentName, namespace);
       });
 
       test("Verify successful DB connection", async ({ page }) => {

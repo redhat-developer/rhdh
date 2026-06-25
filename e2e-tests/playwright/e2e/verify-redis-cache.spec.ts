@@ -11,7 +11,7 @@ function streamDataToString(data: Buffer | string): string {
 }
 
 test.describe("Verify Redis Cache DB", () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",
@@ -84,7 +84,7 @@ test.describe("Verify Redis Cache DB", () => {
       expect(keys).toContainEqual(expect.stringContaining("techdocs"));
       const key = keys[0];
       console.log(`Verifying key format: ${key}`);
-      expect(key).toMatch(/(?:techdocs):(?:[A-Za-z0-9+/]+={0,2})$/gm);
+      expect(key).toMatch(/(?:techdocs):(?:[A-Za-z0-9+/]+={0,2})$/gmu);
     }).toPass({
       intervals: [3_000],
       timeout: 60_000,

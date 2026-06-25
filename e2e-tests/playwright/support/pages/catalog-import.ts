@@ -1,9 +1,8 @@
 import { Page, expect } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { APIHelper } from "../../utils/api-helper";
 import { UIhelper } from "../../utils/ui-helper";
-import { BACKSTAGE_SHOWCASE_COMPONENTS, CATALOG_IMPORT_COMPONENTS } from "../page-objects/page-obj";
+import { CATALOG_IMPORT_COMPONENTS } from "../page-objects/page-obj";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -40,7 +39,7 @@ export class CatalogImport {
    *
    * @returns boolean indicating if the component is already registered
    */
-  async isComponentAlreadyRegistered(): Promise<boolean> {
+  isComponentAlreadyRegistered(): Promise<boolean> {
     return this.uiHelper.isBtnVisible(t["catalog-import"][lang]["stepReviewLocation.refresh"]);
   }
 
@@ -86,64 +85,4 @@ export class CatalogImport {
   }
 }
 
-export class BackstageShowcase {
-  private readonly page: Page;
-  private uiHelper: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.uiHelper = new UIhelper(page);
-  }
-
-  static async getShowcasePRs(state: "open" | "closed" | "all", paginated = false) {
-    return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
-  }
-
-  async clickNextPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableNextPage);
-  }
-
-  async clickPreviousPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tablePreviousPage);
-  }
-
-  async clickLastPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableLastPage);
-  }
-
-  async verifyPRRowsPerPage(rows: number, allPRs: { title: string; number: string }[]) {
-    await this.selectRowsPerPage(rows);
-    await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
-    await this.uiHelper.verifyLink(allPRs[rows].number, {
-      exact: false,
-      notVisible: true,
-    });
-
-    const tableRows = this.page.locator(BACKSTAGE_SHOWCASE_COMPONENTS.tableRows);
-    await expect(tableRows).toHaveCount(rows);
-  }
-
-  async selectRowsPerPage(rows: number) {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tablePageSelectBox);
-    await this.page.click(`ul[role="listbox"] li[data-value="${rows}"]`);
-  }
-
-  async verifyPRStatisticsRendered() {
-    const regex = /Average Size Of PR\d+ lines/;
-    await this.uiHelper.verifyText(regex);
-  }
-
-  async verifyAboutCardIsDisplayed() {
-    const url = "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
-    const isLinkVisible = await this.page.locator(`a[href="${url}"]`).isVisible();
-    if (!isLinkVisible) {
-      throw new Error("About card is not displayed");
-    }
-  }
-
-  async verifyPRRows(allPRs: { title: string }[], startRow: number, lastRow: number) {
-    for (let i = startRow; i < lastRow; i++) {
-      await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
-    }
-  }
-}
+export { BackstageShowcase } from "./backstage-showcase";

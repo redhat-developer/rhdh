@@ -106,7 +106,7 @@ export const LogUtils = {
     return new Promise((resolve, reject) => {
       execFile(command, args, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
-          reject(`Error: ${error.message}`);
+          reject(new Error(error.message));
           return;
         }
         if (stderr) {
@@ -152,7 +152,7 @@ export const LogUtils = {
     return new Promise((resolve, reject) => {
       exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
-          reject(`Error: ${error.message}`);
+          reject(new Error(error.message));
           return;
         }
         if (stderr) {
@@ -203,7 +203,7 @@ export const LogUtils = {
    */
   async getPodLogsWithGrep(
     filterWords: string[] = [],
-    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
+    namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
     maxRetries: number = 4,
     retryDelay: number = 2000,
   ): Promise<string> {
@@ -253,10 +253,10 @@ export const LogUtils = {
    * Logs in to OpenShift using a token and server URL.
    */
   async loginToOpenShift(): Promise<void> {
-    const token = process.env.K8S_CLUSTER_TOKEN || "";
-    const server = process.env.K8S_CLUSTER_URL || "";
+    const token = process.env.K8S_CLUSTER_TOKEN ?? "";
+    const server = process.env.K8S_CLUSTER_URL ?? "";
 
-    if (!token || !server) {
+    if (token === "" || server === "") {
       throw new Error("Environment variables K8S_CLUSTER_TOKEN and K8S_CLUSTER_URL must be set.");
     }
 
@@ -290,11 +290,15 @@ export const LogUtils = {
     plugin: string = "catalog",
     severityLevel: EventSeverityLevel = "medium",
     filterWords: string[] = [],
-    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
+    namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
   ): Promise<void> {
     const filterWordsAll = [eventId, status, ...filterWords];
-    if (request?.method) filterWordsAll.push(request.method);
-    if (request?.url) filterWordsAll.push(request.url);
+    if (request?.method !== undefined && request.method !== "") {
+      filterWordsAll.push(request.method);
+    }
+    if (request?.url !== undefined && request.url !== "") {
+      filterWordsAll.push(request.url);
+    }
     try {
       const actualLog = await LogUtils.getPodLogsWithGrep(filterWordsAll, namespace);
 

@@ -81,7 +81,7 @@ function createMergedTranslations() {
   const merged: Record<string, Record<string, Record<string, string>>> = {};
 
   for (const namespace of allNamespaces) {
-    const enKeys = (en as TranslationFile)[namespace]?.en || {};
+    const enKeys = (en as TranslationFile)[namespace]?.en ?? {};
     const namespaceTranslations: Record<string, Record<string, string>> = {
       en: enKeys,
     };
@@ -105,7 +105,7 @@ function createMergedTranslations() {
 const translations = createMergedTranslations();
 
 export function getCurrentLanguage(): Locale {
-  const lang = process.env.LOCALE || "en";
+  const lang = process.env.LOCALE ?? "en";
   return isLocale(lang) ? lang : "en";
 }
 

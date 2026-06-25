@@ -16,11 +16,11 @@ export interface SchemaModeEnv {
 }
 
 function quoteIdent(name: string): string {
-  return '"' + name.replaceAll(/"/g, '""') + '"';
+  return '"' + name.replaceAll('"', '""') + '"';
 }
 
 function escapePasswordLiteral(value: string): string {
-  return value.replaceAll(/'/g, "''");
+  return value.replaceAll("'", "''");
 }
 
 export function normalizeDbHost(host: string): string {
@@ -92,7 +92,7 @@ const defaultConnectionOptions: Partial<ClientConfig> = {
   keepAliveInitialDelayMillis: 10000,
 };
 
-export async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
+export function connectWithSslFallback(config: ClientConfig): Promise<Client> {
   return connectWithRetry({ ...defaultConnectionOptions, ...config });
 }
 
@@ -110,15 +110,15 @@ export function getSchemaModeEnv(): SchemaModeEnv {
 
   return {
     dbHost: dbHost!,
-    dbAdminUser: process.env.SCHEMA_MODE_DB_ADMIN_USER || "postgres",
+    dbAdminUser: process.env.SCHEMA_MODE_DB_ADMIN_USER ?? "postgres",
     dbAdminPassword: dbAdminPassword!,
-    dbName: process.env.SCHEMA_MODE_DB_NAME || "postgres",
-    dbUser: process.env.SCHEMA_MODE_DB_USER || "backstage_schema_user",
+    dbName: process.env.SCHEMA_MODE_DB_NAME ?? "postgres",
+    dbUser: process.env.SCHEMA_MODE_DB_USER ?? "backstage_schema_user",
     dbPassword: dbPassword!,
   };
 }
 
-export async function connectAdminClient(
+export function connectAdminClient(
   config: Pick<SchemaModeEnv, "dbHost" | "dbAdminUser" | "dbAdminPassword">,
 ): Promise<Client> {
   return connectWithSslFallback({
@@ -170,11 +170,11 @@ export async function setupSchemaModeDatabase(
 ): Promise<void> {
   const { dbHost, dbAdminUser, dbAdminPassword, dbName, dbUser, dbPassword } = config;
 
-  if (dbName !== "postgres") {
+  if (dbName === "postgres") {
+    console.log(`✓ Using default postgres database`);
+  } else {
     await adminClient.query(`CREATE DATABASE ${quoteIdent(dbName)}`).catch(() => {});
     console.log(`✓ Created/verified test database: ${dbName}`);
-  } else {
-    console.log(`✓ Using default postgres database`);
   }
 
   await adminClient

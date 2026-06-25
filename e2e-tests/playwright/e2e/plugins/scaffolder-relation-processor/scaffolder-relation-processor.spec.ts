@@ -29,7 +29,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     label: "test-label",
     annotation: "test-annotation",
     repo: `test-relation-${Date.now()}`,
-    repoOwner: Buffer.from(process.env.GITHUB_ORG || "amFudXMtcWU=", "base64").toString("utf8"), // Default repoOwner janus-qe
+    repoOwner: Buffer.from(process.env.GITHUB_ORG ?? "amFudXMtcWU=", "base64").toString("utf8"),
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
@@ -49,10 +49,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
   test("Register the template for scaffolder relation processor", async () => {
     await uiHelper.openSidebar("Catalog");
-    // Wait for the Catalog page table to fully load before proceeding
-    await expect(page.getByText("Name", { exact: true }).first()).toBeVisible({
-      timeout: 20000,
-    });
+    await uiHelper.verifyText("Name");
 
     await uiHelper.clickButton("Self-service");
     await uiHelper.verifyHeading("Self-service");

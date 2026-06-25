@@ -31,12 +31,12 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     `);
 
     await expect(page.getByTestId("select")).toContainText(
-      /English|Deutsch|Español|Français|Italiano|日本語/,
+      /English|Deutsch|Español|Français|Italiano|日本語/u,
     );
     await page
       .getByTestId("select")
       .getByRole("button", {
-        name: /English|Deutsch|Español|Français|Italiano|日本語/,
+        name: /English|Deutsch|Español|Français|Italiano|日本語/u,
       })
       .click();
     await expect(page.getByRole("listbox")).toMatchAriaSnapshot(`

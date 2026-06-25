@@ -57,7 +57,7 @@ test.describe("Test timestamp column on Catalog", () => {
     await uiHelper.verifyText("timestamp-test-created");
     await uiHelper.verifyColumnHeading(["Created At"], true);
     await uiHelper.verifyRowInTableByUniqueText("timestamp-test-created", [
-      /^\d{1,2}\/\d{1,2}\/\d{1,4}, \d:\d{1,2}:\d{1,2} (AM|PM)$/g,
+      /^\d{1,2}\/\d{1,2}\/\d{1,4}, \d:\d{1,2}:\d{1,2} (AM|PM)$/u,
     ]);
   });
 
@@ -76,7 +76,7 @@ test.describe("Test timestamp column on Catalog", () => {
       .getByRole("row")
       .filter({ has: page.getByRole("cell") })
       .first();
-    const createdAtCell = firstRow.getByRole("cell").nth(7); // 0-indexed, 8th column = index 7
+    const createdAtCell = firstRow.getByRole("cell").nth(7);
 
     const column = page.getByRole("columnheader", {
       name: "Created At",

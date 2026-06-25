@@ -47,7 +47,7 @@ async function getShowcasePullRequests(
 let page: Page;
 let browserContext: BrowserContext;
 
-// TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
+// Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
 test.describe.fixme("GitHub Happy path", () => {
   let common: Common;
   let uiHelper: UIhelper;
@@ -133,8 +133,9 @@ test.describe.fixme("GitHub Happy path", () => {
 
     const expectedPath = "/catalog/default/component/red-hat-developer-hub";
     // Wait for the expected path in the URL
+    // Wait until the DOM is loaded
     await page.waitForURL(`**${expectedPath}`, {
-      waitUntil: "domcontentloaded", // Wait until the DOM is loaded
+      waitUntil: "domcontentloaded",
       timeout: 20000,
     });
     // Optionally, verify that the current URL contains the expected path
@@ -185,7 +186,8 @@ test.describe.fixme("GitHub Happy path", () => {
     await backstageShowcase.verifyPRRows(allPRs, 5, 10);
 
     // const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
-    const lastPagePRs = 996; // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
+    // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
+    const lastPagePRs = 996;
 
     console.log("Clicking on Last Page button");
     await backstageShowcase.clickLastPage();
@@ -208,7 +210,7 @@ test.describe.fixme("GitHub Happy path", () => {
     await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
+  // Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
   test.fixme("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
     await uiHelper.clickTab("Dependencies");
     for (const resource of RESOURCES) {
@@ -218,7 +220,7 @@ test.describe.fixme("GitHub Happy path", () => {
     }
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
+  // Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
   test.fixme("Sign out and verify that you return back to the Sign in page", async () => {
     await uiHelper.goToSettingsPage();
     await common.signOut();

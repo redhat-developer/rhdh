@@ -87,7 +87,7 @@ export class SchemaModeTestSetup {
   private resolveRhdhPostgresHost(): string {
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
 
-    if (pfNamespace && pfNamespace !== this.namespace) {
+    if (pfNamespace !== undefined && pfNamespace !== "" && pfNamespace !== this.namespace) {
       return `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`;
     }
 
@@ -135,12 +135,12 @@ export class SchemaModeTestSetup {
     // For operator: env vars are injected via extraEnvs.secrets in the Backstage CR,
     // so we only update the secret (step 1). Patching the Deployment directly
     // conflicts with operator reconciliation.
-    if (this.installMethod !== "operator") {
-      await this.ensureDeploymentEnvVars(deploymentName, secretName);
-    } else {
+    if (this.installMethod === "operator") {
       console.log(
         "Skipping Deployment env var patching (operator injects env vars from secret via extraEnvs.secrets)",
       );
+    } else {
+      await this.ensureDeploymentEnvVars(deploymentName, secretName);
     }
 
     // 3. Update app-config ConfigMap for schema mode
@@ -174,66 +174,65 @@ export class SchemaModeTestSetup {
       deploymentName,
       this.namespace,
     );
-    const containers = deployment.body.spec?.template?.spec?.containers || [];
+    const containers = deployment.body.spec?.template?.spec?.containers ?? [];
+    const backstageContainer = containers.find((c) => c.name === "backstage-backend");
     const backstageIdx = containers.findIndex((c) => c.name === "backstage-backend");
-    const backstageContainer = containers[backstageIdx];
 
-    if (!backstageContainer) {
+    if (backstageContainer === undefined) {
       console.warn("backstage-backend container not found in deployment");
-      return;
-    }
+    } else {
+      const existingEnv = backstageContainer.env ?? [];
+      const requiredVars = [
+        "POSTGRES_HOST",
+        "POSTGRES_PORT",
+        "POSTGRES_DB",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+      ];
+      const missingVars = requiredVars.filter((v) => !existingEnv.some((e) => e.name === v));
 
-    const existingEnv = backstageContainer.env || [];
-    const requiredVars = [
-      "POSTGRES_HOST",
-      "POSTGRES_PORT",
-      "POSTGRES_DB",
-      "POSTGRES_USER",
-      "POSTGRES_PASSWORD",
-    ];
-    const missingVars = requiredVars.filter((v) => !existingEnv.some((e) => e.name === v));
+      if (missingVars.length === 0) {
+        console.log("POSTGRES_* env vars already present in deployment");
+        return;
+      }
 
-    if (missingVars.length === 0) {
-      console.log("POSTGRES_* env vars already present in deployment");
-      return;
-    }
+      console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
+      const patch: { op: string; path: string; value?: unknown }[] = [];
 
-    console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
-    const patch: { op: string; path: string; value?: unknown }[] = [];
+      if (backstageContainer.env === undefined || backstageContainer.env.length === 0) {
+        patch.push({
+          op: "add",
+          path: `/spec/template/spec/containers/${backstageIdx}/env`,
+          value: [],
+        });
+      }
 
-    if (!backstageContainer.env || backstageContainer.env.length === 0) {
-      patch.push({
-        op: "add",
-        path: `/spec/template/spec/containers/${backstageIdx}/env`,
-        value: [],
-      });
-    }
-
-    for (const varName of missingVars) {
-      patch.push({
-        op: "add",
-        path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
-        value: {
-          name: varName,
-          valueFrom: {
-            secretKeyRef: { name: secretName, key: varName },
+      for (const varName of missingVars) {
+        patch.push({
+          op: "add",
+          path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
+          value: {
+            name: varName,
+            valueFrom: {
+              secretKeyRef: { name: secretName, key: varName },
+            },
           },
-        },
-      });
-    }
+        });
+      }
 
-    await this.kubeClient.appsApi.patchNamespacedDeployment(
-      deploymentName,
-      this.namespace,
-      patch,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      { headers: { "Content-Type": "application/json-patch+json" } },
-    );
-    console.log("Added env vars to deployment");
+      await this.kubeClient.appsApi.patchNamespacedDeployment(
+        deploymentName,
+        this.namespace,
+        patch,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { headers: { "Content-Type": "application/json-patch+json" } },
+      );
+      console.log("Added env vars to deployment");
+    }
   }
 
   private async updateAppConfigForSchemaMode(): Promise<void> {
@@ -250,14 +249,14 @@ export class SchemaModeTestSetup {
     }
 
     const configMap = configMapResponse.body;
-    const configKey = Object.keys(configMap.data || {}).find((key) => key.includes("app-config"));
+    const configKey = Object.keys(configMap.data ?? {}).find((key) => key.includes("app-config"));
 
-    if (!configKey || !configMap.data) {
+    if (configKey === undefined || configKey === "" || configMap.data === undefined) {
       throw new Error(`Could not find app-config key in ConfigMap ${configMapName}`);
     }
 
     const appConfig = parseAppConfigYaml(yaml.load(configMap.data[configKey]));
-    if (!appConfig.backend) appConfig.backend = {};
+    appConfig.backend ??= {};
 
     const currentDbConfig = appConfig.backend.database;
     const isAlreadyConfigured =
@@ -312,8 +311,9 @@ export class SchemaModeTestSetup {
           routeName,
         )) as { body?: { spec?: { host?: string } } };
 
-        if (route?.body?.spec?.host) {
-          const url = `https://${route.body.spec.host}`;
+        const routeHost = route.body?.spec?.host;
+        if (routeHost !== undefined && routeHost !== "") {
+          const url = `https://${routeHost}`;
           console.log(`Found RHDH URL: ${url}`);
           return url;
         }

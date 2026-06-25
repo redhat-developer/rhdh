@@ -15,6 +15,7 @@ GITLAB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
+// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure GitLab Provider", async () => {
   let common: Common;
   let uiHelper: UIhelper;
@@ -78,7 +79,8 @@ test.describe("Configure GitLab Provider", async () => {
       oauthAppName,
       callbackUrl,
       "api read_user write_repository sudo",
-      true, // trusted = true to skip UI confirmation
+      // trusted = true to skip UI confirmation
+      true,
     );
     oauthAppId = oauthApp.id;
     console.log(`[TEST] GitLab OAuth application created - ID: ${oauthApp.application_id}`);
@@ -96,7 +98,11 @@ test.describe("Configure GitLab Provider", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
       await deployment.addSecretData("BASE_URL", backstageUrl);
       await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
@@ -131,7 +137,7 @@ test.describe("Configure GitLab Provider", async () => {
     await deployment.waitForSynced();
   });
 
-  test.beforeEach(async () => {
+  test.beforeEach(() => {
     test.info().setTimeout(60 * 1000);
     console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
@@ -149,8 +155,7 @@ test.describe("Configure GitLab Provider", async () => {
   test(`Ingestion of GitLab users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     await expect
       .poll(
-        async () =>
-          deployment.checkUserIsIngestedInCatalog(["user1", "user2", "user3", "Administrator"]),
+        () => deployment.checkUserIsIngestedInCatalog(["user1", "user2", "user3", "Administrator"]),
         { timeout: 120_000 },
       )
       .toBe(true);
@@ -199,7 +204,7 @@ test.describe("Configure GitLab Provider", async () => {
     console.log("[TEST] Starting cleanup...");
 
     // Delete the dynamically created OAuth application
-    if (oauthAppId !== null && gitlabHelper) {
+    if (oauthAppId !== null) {
       try {
         await gitlabHelper.deleteOAuthApplication(oauthAppId);
         console.log("[TEST] GitLab OAuth application deleted successfully");

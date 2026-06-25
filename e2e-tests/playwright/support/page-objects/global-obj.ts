@@ -1,7 +1,7 @@
 /* oxlint-disable playwright/no-raw-locators -- Legacy CSS selector constants; prefer SemanticSelectors get*() methods */
 import { Page, Locator } from "@playwright/test";
 
-import { SemanticSelectors } from "../selectors/semantic-selectors";
+import { SemanticSelectors } from "../selectors/semantic";
 
 /**
  * WAIT_OBJECTS - Loading indicators

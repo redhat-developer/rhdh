@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
@@ -45,7 +45,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
 
     // Validate certificates are available
     const azureCerts = readCertificateFile(process.env.AZURE_DB_CERTIFICATES_PATH);
-    if (!azureCerts) {
+    if (azureCerts === undefined || azureCerts === null || azureCerts === "") {
       throw new Error(
         "AZURE_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
       );
@@ -87,8 +87,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
           user: azureUser,
           password: azurePassword,
         });
-        const restarted = await kubeClient.restartDeployment(deploymentName, namespace);
-        expect(restarted).toBeDefined();
+        await kubeClient.restartDeployment(deploymentName, namespace);
       });
 
       test("Verify successful DB connection", async ({ page }) => {

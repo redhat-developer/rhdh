@@ -13,24 +13,24 @@ export class HomePage {
     this.uiHelper = new UIhelper(page);
   }
   async verifyQuickSearchBar(text: string) {
-    const searchBar = this.page.locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch);
+    const searchBar = SEARCH_OBJECTS_COMPONENTS.getSearchInput(this.page);
     await searchBar.waitFor();
     await searchBar.fill("");
-    await searchBar.type(text + "\n"); // '\n' simulates pressing the Enter key
+    await searchBar.pressSequentially(`${text}\n`);
     await this.uiHelper.verifyLink(text);
   }
 
   async verifyQuickAccess(section: string, items: string | string[], expand = false) {
-    await this.page.waitForSelector(HOME_PAGE_COMPONENTS.MuiAccordion, {
-      state: "visible",
-    });
+    const accordionButton = HOME_PAGE_COMPONENTS.getAccordion(this.page, section);
+    await expect(accordionButton).toBeVisible();
 
     const sectionLocator = this.page
+      /* oxlint-disable-next-line typescript/no-deprecated -- accordion items live outside the summary button node */
       .locator(HOME_PAGE_COMPONENTS.MuiAccordion)
-      .filter({ hasText: section });
+      .filter({ has: accordionButton });
 
     if (expand) {
-      await sectionLocator.click();
+      await accordionButton.click();
       await expect(sectionLocator.locator('[class*="MuiAccordionDetails-root"]')).toBeVisible();
     }
 
@@ -44,13 +44,11 @@ export class HomePage {
   }
 
   async verifyVisitedCardContent(section: string) {
-    await this.page.waitForSelector(HOME_PAGE_COMPONENTS.MuiCard, {
-      state: "visible",
-    });
-
     const sectionLocator = this.page
+      /* oxlint-disable-next-line typescript/no-deprecated -- visited cards use MuiCard-root, not region/article roles */
       .locator(HOME_PAGE_COMPONENTS.MuiCard)
       .filter({ hasText: section });
+    await expect(sectionLocator).toBeVisible();
 
     const itemLocator = sectionLocator.locator(`li[class*="MuiListItem-root"]`);
     expect(await itemLocator.count()).toBeGreaterThanOrEqual(0);

@@ -4,7 +4,7 @@ import { JANUS_ORG } from "../../utils/constants";
 
 // https://docs.github.com/en/rest?apiVersion=2022-11-28
 export default class GithubApi {
-  public async getReposFromOrg(org = JANUS_ORG) {
+  public getReposFromOrg(org = JANUS_ORG) {
     return APIHelper.getGithubPaginatedRequest(GITHUB_API_ENDPOINTS.orgRepos(org));
   }
 
@@ -15,7 +15,7 @@ export default class GithubApi {
     );
     const status = resp.status();
     if (status === 403) {
-      throw Error("You don't have permissions to see this path");
+      throw new Error("You don't have permissions to see this path");
     }
     return [200, 302, 304].includes(status);
   }

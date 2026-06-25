@@ -4,7 +4,7 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Verify TLS configuration with external Crunchy Postgres DB", () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push(
       {
         type: "component",
@@ -12,7 +12,7 @@ test.describe("Verify TLS configuration with external Crunchy Postgres DB", () =
       },
       {
         type: "namespace",
-        description: process.env.NAME_SPACE_RBAC || "showcase-rbac",
+        description: process.env.NAME_SPACE_RBAC ?? "showcase-rbac",
       },
     );
   });

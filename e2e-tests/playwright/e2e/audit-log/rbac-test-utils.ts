@@ -80,6 +80,8 @@ export function httpMethod(
       return "PUT";
     case "delete":
       return "DELETE";
+    case "read":
+      return "GET";
     default:
       return "GET";
   }
@@ -102,8 +104,8 @@ export async function validateRbacLogEvent(
     meta,
     error,
     status,
-    "permission", // plugin name
-    "medium", // expected severity
+    "permission",
+    "medium",
     filterWords,
     process.env.NAME_SPACE_RBAC,
   );

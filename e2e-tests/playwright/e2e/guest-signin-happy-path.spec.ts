@@ -9,7 +9,7 @@ const t = getTranslations();
 const lang = getCurrentLanguage();
 
 test.describe("Guest Signing Happy path", () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
