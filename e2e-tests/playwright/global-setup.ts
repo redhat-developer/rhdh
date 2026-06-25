@@ -12,7 +12,10 @@ export default async function globalSetup(): Promise<void> {
     return;
   }
 
-  const request = await playwrightRequest.newContext({ baseURL });
+  const request = await playwrightRequest.newContext({
+    baseURL,
+    ignoreHTTPSErrors: true,
+  });
   try {
     await waitForRhdhReady(request);
   } finally {
