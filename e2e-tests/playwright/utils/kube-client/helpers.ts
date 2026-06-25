@@ -145,7 +145,7 @@ export function rejectAsError(reject: (reason: Error) => void, err: unknown): vo
   reject(err instanceof Error ? err : new Error(getErrorMessage(err)));
 }
 
-export { sleep, pollUntil } from "./poll-until";
+export { sleep, pollUntil } from "../poll-until";
 
 export function podNameOrUnknown(name: string | undefined): string {
   return name !== undefined && name !== "" ? name : "unknown";

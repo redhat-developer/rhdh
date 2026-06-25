@@ -1,20 +1,20 @@
 import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
 
-import { hasStatusCode } from "./errors";
-import { findAppConfigMapName, updateConfigMapTitleImpl } from "./kube-client-configmap";
-import { waitForPodsTerminatedImpl } from "./kube-client-deployment-pods";
-import { restartDeploymentImpl } from "./kube-client-deployment-restart";
-import { getDeploymentPodSelectorImpl, scaleDeploymentImpl } from "./kube-client-deployment-scale";
-import { waitForDeploymentReadyImpl } from "./kube-client-deployment-wait";
-import { logDeploymentEventsImpl, logPodEventsImpl } from "./kube-client-diagnostics-events";
+import { hasStatusCode } from "../errors";
+import { waitForPodsTerminatedImpl } from "../kube-client-deployment-pods";
+import { findAppConfigMapName, updateConfigMapTitleImpl } from "./configmap";
+import { restartDeploymentImpl } from "./deployment/restart";
+import { getDeploymentPodSelectorImpl, scaleDeploymentImpl } from "./deployment/scale";
+import { waitForDeploymentReadyImpl } from "./deployment/wait";
+import { logDeploymentEventsImpl, logPodEventsImpl } from "./diagnostics/events";
 import {
   logPodConditionsForDeploymentImpl,
   logPodContainerLogsImpl,
   logPodConditionsImpl,
-} from "./kube-client-diagnostics-pods";
-import { logReplicaSetStatusImpl } from "./kube-client-diagnostics-replicasets";
-import { execPodCommandImpl } from "./kube-client-exec";
+} from "./diagnostics/pods";
+import { logReplicaSetStatusImpl } from "./diagnostics/replicasets";
+import { execPodCommandImpl } from "./exec";
 import {
   formatKubeErrorLog,
   getErrorStatusCode,
@@ -22,8 +22,8 @@ import {
   getRhdhDeploymentName,
   PodFailureResult,
   rejectAsError,
-} from "./kube-client-helpers";
-import { checkPodFailureStatesImpl } from "./kube-client-pod-failure";
+} from "./helpers";
+import { checkPodFailureStatesImpl } from "./pod-failure";
 
 export { getRhdhDeploymentName };
 export type { PodFailureResult };

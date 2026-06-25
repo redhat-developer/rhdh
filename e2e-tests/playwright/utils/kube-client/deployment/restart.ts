@@ -1,4 +1,4 @@
-import { getKubeApiErrorMessage } from "./kube-client-helpers";
+import { getKubeApiErrorMessage } from "../helpers";
 
 async function scaleDeploymentDown(
   scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,

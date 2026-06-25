@@ -6,8 +6,8 @@ import * as k8s from "@kubernetes/client-node";
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
-import { hasErrorResponse } from "../errors";
-import { sleep } from "../poll-until";
+import { hasErrorResponse } from "../../errors";
+import { sleep } from "../../poll-until";
 import {
   BackstageCr,
   currentDirName,
@@ -16,8 +16,8 @@ import {
   isRecord,
   RHDHDeploymentState,
   rootDirName,
-} from "./rhdh-deployment-types";
-import { ensureBackstageCRIsAvailable, waitForDeploymentReady } from "./rhdh-deployment-wait";
+} from "./types";
+import { ensureBackstageCRIsAvailable, waitForDeploymentReady } from "./wait";
 
 export async function readYamlToJson(filePath: string): Promise<unknown> {
   const fileContent = await fs.readFile(filePath, "utf8");
