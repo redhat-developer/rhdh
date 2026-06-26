@@ -1,7 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse, hasStatusCode } from "../errors";
-import { resolveInstallMethod } from "../helper";
+import { getReleaseName, resolveInstallMethod } from "../helper";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -135,10 +135,7 @@ export function getKubeApiErrorMessage(error: unknown): string {
  * then falls back to JOB_NAME pattern matching.
  */
 export function getRhdhDeploymentName(): string {
-  const releaseName =
-    process.env.RELEASE_NAME !== undefined && process.env.RELEASE_NAME !== ""
-      ? process.env.RELEASE_NAME
-      : "rhdh";
+  const releaseName = getReleaseName();
   return resolveInstallMethod() === "operator"
     ? `backstage-${releaseName}`
     : `${releaseName}-developer-hub`;
