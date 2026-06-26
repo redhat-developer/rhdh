@@ -128,6 +128,20 @@ main() {
       log::info "Calling handle_ocp_localization"
       handle_ocp_localization
       ;;
+    *ocp*disconnected*helm*nightly*)
+      log::info "Sourcing ocp-disconnected-helm.sh"
+      # shellcheck source=.ci/pipelines/jobs/ocp-disconnected-helm.sh
+      source "${DIR}/jobs/ocp-disconnected-helm.sh"
+      log::info "Calling handle_ocp_disconnected_helm"
+      handle_ocp_disconnected_helm
+      ;;
+    *ocp*disconnected*operator*nightly*)
+      log::info "Sourcing ocp-disconnected-operator.sh"
+      # shellcheck source=.ci/pipelines/jobs/ocp-disconnected-operator.sh
+      source "${DIR}/jobs/ocp-disconnected-operator.sh"
+      log::info "Calling handle_ocp_disconnected_operator"
+      handle_ocp_disconnected_operator
+      ;;
     *ocp*helm*nightly*)
       log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ci/pipelines/jobs/ocp-nightly.sh
