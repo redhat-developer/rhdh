@@ -35,7 +35,7 @@ function resolveVideoDir(testInfo: TestInfo): string {
     typeof testInfo.file === "string" && testInfo.file !== ""
       ? path.parse(testInfo.file).name.replace(/\.spec$/u, "")
       : `worker-${testInfo.workerIndex}`;
-  const suiteName = testInfo.titlePath[1] ?? testInfo.titlePath[0] ?? "suite";
+  const suiteName = testInfo.titlePath?.[1] ?? testInfo.titlePath?.[0] ?? "suite";
   return `test-results/${specStem}/${suiteName}`;
 }
 

@@ -7,6 +7,7 @@ import { runAccessibilityTests } from "../../../utils/accessibility";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 import { APIHelper } from "../../../utils/api-helper";
 import { Common } from "../../../utils/common";
+import { base64Decode } from "../../../utils/helper";
 
 test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   test.skip(
@@ -29,7 +30,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     label: "some-label",
     annotation: "some-annotation",
     repo: `test-annotator-${Date.now()}`,
-    repoOwner: Buffer.from(process.env.GITHUB_ORG ?? "amFudXMtcWU=", "base64").toString("utf8"),
+    repoOwner: base64Decode(process.env.GITHUB_ORG ?? "amFudXMtcWU="),
   };
 
   test.beforeAll(async ({ rhdhPage }) => {
@@ -62,7 +63,9 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await scaffolderFlowPage.verifySelfServiceHeading();
     await scaffolderFlowPage.fillCreateReactAppTemplateForm(reactAppDetails);
 
-    await scaffolderFlowPage.verifyCreateReactAppReviewTableWithGroupOwner(reactAppDetails);
+    await scaffolderFlowPage.verifyCreateReactAppReviewTableWithGroupOwner(
+      reactAppDetails,
+    );
 
     await scaffolderFlowPage.clickCreate();
     await scaffolderFlowPage.waitForOpenInCatalogLink(30_000);
@@ -70,7 +73,9 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   });
 
   test("Verify custom label is added to scaffolded component", async () => {
-    await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
+    await scaffolderFlowPage.openComponentInCatalog(
+      reactAppDetails.componentName,
+    );
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `labels:\n    custom: ${reactAppDetails.label}\n`,
@@ -78,7 +83,9 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   });
 
   test("Verify custom annotation is added to scaffolded component", async () => {
-    await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
+    await scaffolderFlowPage.openComponentInCatalog(
+      reactAppDetails.componentName,
+    );
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `custom.io/annotation: ${reactAppDetails.annotation}`,
@@ -86,21 +93,33 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   });
 
   test("Verify template version annotation is added to scaffolded component", async () => {
-    await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
+    await scaffolderFlowPage.openComponentInCatalog(
+      reactAppDetails.componentName,
+    );
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.inspectEntityAndVerifyYaml(
+      `backstage.io/template-version: 0.0.1`,
+    );
   });
 
   test("Verify template version annotation is present on the template", async () => {
-    await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
+    await scaffolderFlowPage.openTemplateFromCatalog(
+      "Create React App Template",
+      "website",
+    );
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.inspectEntityAndVerifyYaml(
+      `backstage.io/template-version: 0.0.1`,
+    );
   });
 
   test.afterAll(async () => {
     await APIHelper.githubRequest(
       "DELETE",
-      GITHUB_API_ENDPOINTS.deleteRepo(reactAppDetails.repoOwner, reactAppDetails.repo),
+      GITHUB_API_ENDPOINTS.deleteRepo(
+        reactAppDetails.repoOwner,
+        reactAppDetails.repo,
+      ),
     );
   });
 });

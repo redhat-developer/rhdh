@@ -4,6 +4,7 @@ import { type JsonObject } from "@backstage/types";
 import { expect } from "@playwright/test";
 
 import { getBackstageDeploySelector } from "../../utils/helper";
+import { BACKSTAGE_BACKEND_CONTAINER } from "../../utils/kube-client";
 import { sleep } from "../../utils/poll-until";
 import { Log, type LogRequest, type EventStatus, type EventSeverityLevel } from "./logs";
 
@@ -182,7 +183,7 @@ export const LogUtils = {
     const tailNumber = 500;
 
     const deployTarget = `$(oc get deploy -n ${namespace} -l ${deploySelector} -o name)`;
-    let grepCommand = `oc logs ${deployTarget} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
+    let grepCommand = `oc logs ${deployTarget} --tail=${tailNumber} -c ${BACKSTAGE_BACKEND_CONTAINER} -n ${namespace}`;
     for (const word of filterWords) {
       grepCommand += ` | grep '${word}'`;
     }

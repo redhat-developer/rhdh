@@ -1,6 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse, hasStatusCode } from "../errors";
+import { resolveInstallMethod } from "../helper";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -16,6 +17,8 @@ export interface PodFailureResult {
   /** The name of the failing container, if the failure is container-scoped */
   containerName?: string;
 }
+
+export const BACKSTAGE_BACKEND_CONTAINER = "backstage-backend";
 
 export const APP_CONFIG_NAMES = [
   "app-config-rhdh",
@@ -128,17 +131,17 @@ export function getKubeApiErrorMessage(error: unknown): string {
 
 /**
  * Returns the RHDH deployment name based on the install method.
+ * Uses resolveInstallMethod() which checks INSTALL_METHOD env var first,
+ * then falls back to JOB_NAME pattern matching.
  */
 export function getRhdhDeploymentName(): string {
   const releaseName =
     process.env.RELEASE_NAME !== undefined && process.env.RELEASE_NAME !== ""
       ? process.env.RELEASE_NAME
       : "rhdh";
-  const job = process.env.JOB_NAME ?? "";
-  if (job.includes("operator")) {
-    return `backstage-${releaseName}`;
-  }
-  return `${releaseName}-developer-hub`;
+  return resolveInstallMethod() === "operator"
+    ? `backstage-${releaseName}`
+    : `${releaseName}-developer-hub`;
 }
 
 export function rejectAsError(reject: (reason: Error) => void, err: unknown): void {
