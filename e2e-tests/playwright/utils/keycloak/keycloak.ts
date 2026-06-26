@@ -1,6 +1,7 @@
 import { expect, Page } from "@playwright/test";
 
 import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users-obj";
+import { base64Decode } from "../helper";
 import { UIhelper } from "../ui-helper";
 import Group from "./group";
 import User from "./user";
@@ -26,14 +27,6 @@ function isGroupArray(data: unknown): data is Group[] {
   return Array.isArray(data);
 }
 
-function requireBase64Env(name: string): string {
-  const value = process.env[name];
-  if (value === undefined || value === "") {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return Buffer.from(value, "base64").toString();
-}
-
 class Keycloak {
   private readonly baseURL: string;
   private readonly realm: string;
@@ -41,10 +34,10 @@ class Keycloak {
   private readonly clientSecret: string;
 
   constructor() {
-    this.baseURL = requireBase64Env("KEYCLOAK_AUTH_BASE_URL");
-    this.realm = requireBase64Env("KEYCLOAK_AUTH_REALM");
-    this.clientSecret = requireBase64Env("KEYCLOAK_AUTH_CLIENT_SECRET");
-    this.clientId = requireBase64Env("KEYCLOAK_AUTH_CLIENTID");
+    this.baseURL = base64Decode(process.env.KEYCLOAK_AUTH_BASE_URL!);
+    this.realm = base64Decode(process.env.KEYCLOAK_AUTH_REALM!);
+    this.clientSecret = base64Decode(process.env.KEYCLOAK_AUTH_CLIENT_SECRET!);
+    this.clientId = base64Decode(process.env.KEYCLOAK_AUTH_CLIENTID!);
   }
 
   async getAuthenticationToken(): Promise<string> {

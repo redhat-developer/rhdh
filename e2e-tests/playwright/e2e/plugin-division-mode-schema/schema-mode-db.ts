@@ -6,6 +6,14 @@ import { expect } from "@playwright/test";
 import { Client } from "pg";
 import type { ClientConfig } from "pg";
 
+import { base64Decode } from "../../utils/helper";
+import { KubeClient } from "../../utils/kube-client";
+
+/** Default schema-mode test database user (overridable via SCHEMA_MODE_DB_USER). */
+export const SCHEMA_MODE_DEFAULT_DB_USER = "bn_backstage";
+/** Default schema-mode test database password (overridable via SCHEMA_MODE_DB_PASSWORD). */
+export const SCHEMA_MODE_DEFAULT_DB_PASSWORD = "test_password_123";
+
 export interface SchemaModeEnv {
   dbHost: string;
   dbAdminUser: string;
@@ -92,8 +100,24 @@ const defaultConnectionOptions: Partial<ClientConfig> = {
   keepAliveInitialDelayMillis: 10000,
 };
 
-export function connectWithSslFallback(config: ClientConfig): Promise<Client> {
-  return connectWithRetry({ ...defaultConnectionOptions, ...config });
+export async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
+  // Try SSL first (single attempt), fall back to non-SSL if the server doesn't support it.
+  const sslConfig = { ...defaultConnectionOptions, ...config };
+  const sslClient = new Client(sslConfig);
+  try {
+    await sslClient.connect();
+    return sslClient;
+  } catch (sslError) {
+    await sslClient.end().catch(() => {});
+    const sslMsg = sslError instanceof Error ? sslError.message : String(sslError);
+    // Bitnami PostgreSQL sub-chart doesn't enable SSL by default
+    if (sslMsg.includes("SSL") || sslMsg.includes("ssl") || sslMsg.includes("does not support")) {
+      console.log(`SSL connection failed (${sslMsg}), falling back to non-SSL...`);
+      return connectWithRetry({ ...config, ssl: false });
+    }
+    // For non-SSL errors (e.g. ECONNREFUSED), retry with SSL (port-forward may not be ready)
+    return connectWithRetry(sslConfig);
+  }
 }
 
 export function getSchemaModeEnv(): SchemaModeEnv {
@@ -256,4 +280,82 @@ export async function setupSchemaModeDatabase(
   } finally {
     await testClient.end();
   }
+}
+
+/**
+ * Discover PostgreSQL service and admin password in the runtime namespace
+ * and set SCHEMA_MODE_* environment variables for schema-mode tests.
+ *
+ * Called by ensureRuntimeDeployed() after the deployment is ready.
+ * Fails gracefully (returns without setting env vars) if no PostgreSQL
+ * service or admin password is found — schema-mode tests will skip.
+ */
+export async function configureSchemaMode(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+  installMethod: "helm" | "operator",
+): Promise<void> {
+  // Find PostgreSQL service
+  const svcCandidates =
+    installMethod === "operator"
+      ? [`backstage-psql-${releaseName}`, `${releaseName}-postgresql`]
+      : [`${releaseName}-postgresql`, `backstage-psql-${releaseName}`];
+
+  let svcName: string | undefined;
+  for (const candidate of svcCandidates) {
+    try {
+      await kubeClient.coreV1Api.readNamespacedService(candidate, namespace);
+      svcName = candidate;
+      break;
+    } catch {
+      // not found, try next
+    }
+  }
+
+  if (svcName === undefined || svcName === "") {
+    console.warn("No PostgreSQL service found in namespace — schema-mode tests will skip");
+    return;
+  }
+
+  // Find admin password
+  const secretCandidates =
+    installMethod === "operator"
+      ? [`backstage-psql-secret-${releaseName}`, `${releaseName}-postgresql`, "postgres-cred"]
+      : [`${releaseName}-postgresql`, `backstage-psql-secret-${releaseName}`, "postgres-cred"];
+
+  const passwordKeys = ["postgres-password", "POSTGRESQL_ADMIN_PASSWORD", "POSTGRES_PASSWORD"];
+
+  let adminPassword: string | undefined;
+  for (const sec of secretCandidates) {
+    try {
+      const result = await kubeClient.coreV1Api.readNamespacedSecret(sec, namespace);
+      const data = result.body.data ?? {};
+      for (const key of passwordKeys) {
+        if (data[key]) {
+          adminPassword = base64Decode(data[key]);
+          break;
+        }
+      }
+      if (adminPassword !== undefined && adminPassword !== "") break;
+    } catch {
+      // not found, try next
+    }
+  }
+
+  if (adminPassword === undefined || adminPassword === "") {
+    console.warn("Could not resolve PostgreSQL admin password — schema-mode tests will skip");
+    return;
+  }
+
+  // Export schema-mode env vars
+  process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE = namespace;
+  process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE = `svc/${svcName}`;
+  process.env.SCHEMA_MODE_DB_ADMIN_USER = "postgres";
+  process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD = adminPassword;
+  process.env.SCHEMA_MODE_DB_PASSWORD =
+    process.env.SCHEMA_MODE_DB_PASSWORD ?? SCHEMA_MODE_DEFAULT_DB_PASSWORD;
+  process.env.SCHEMA_MODE_DB_USER = process.env.SCHEMA_MODE_DB_USER ?? SCHEMA_MODE_DEFAULT_DB_USER;
+
+  console.log(`Schema-mode env configured: port-forward svc/${svcName} in ${namespace}`);
 }

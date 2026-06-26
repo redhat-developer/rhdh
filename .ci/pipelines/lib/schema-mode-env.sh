@@ -24,12 +24,14 @@ configure_schema_mode_runtime_env() {
   local forward_via_pod=0
   local rhdh_psql_svc_name="redhat-developer-hub-postgresql"
 
-  local -a helm_svc_candidates=(
+  # Service candidates: Helm sub-chart pattern first, then operator pattern
+  local -a svc_candidates=(
     "${release_name}-postgresql"
     "${rhdh_psql_svc_name}"
+    "backstage-psql-${release_name}"
   )
   local hsvc
-  for hsvc in "${helm_svc_candidates[@]}"; do
+  for hsvc in "${svc_candidates[@]}"; do
     if oc get svc "${hsvc}" -n "${runtime_namespace}" &> /dev/null; then
       postgres_service="${hsvc}"
       forward_namespace="${runtime_namespace}"
@@ -38,9 +40,11 @@ configure_schema_mode_runtime_env() {
   done
 
   if [[ -n "${postgres_service}" ]]; then
+    # Secret candidates: Helm pattern first, then operator pattern
     local -a secret_candidates=(
       "${release_name}-postgresql"
       "${rhdh_psql_svc_name}"
+      "backstage-psql-secret-${release_name}"
       "postgres-cred"
     )
     local sec
@@ -49,6 +53,9 @@ configure_schema_mode_runtime_env() {
         continue
       fi
       admin_password=$(oc get secret "${sec}" -n "${runtime_namespace}" -o jsonpath='{.data.postgres-password}' 2> /dev/null | base64 -d || true)
+      if [[ -z "${admin_password}" ]]; then
+        admin_password=$(oc get secret "${sec}" -n "${runtime_namespace}" -o jsonpath='{.data.POSTGRESQL_ADMIN_PASSWORD}' 2> /dev/null | base64 -d || true)
+      fi
       if [[ -z "${admin_password}" ]]; then
         admin_password=$(oc get secret "${sec}" -n "${runtime_namespace}" -o jsonpath='{.data.POSTGRES_PASSWORD}' 2> /dev/null | base64 -d || true)
       fi

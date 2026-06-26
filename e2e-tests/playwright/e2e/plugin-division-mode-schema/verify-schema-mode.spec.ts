@@ -12,7 +12,9 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { test, expect } from "@support/coverage/test";
 
 import { Common } from "../../utils/common";
+import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 import { setPortForwardRestarter } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
@@ -78,14 +80,18 @@ function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Prom
 
 test.describe("Verify pluginDivisionMode: schema", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME ?? "developer-hub";
-  const installMethod = process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
+  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
+  const installMethod = resolveInstallMethod();
 
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
   let testSetup: SchemaModeTestSetup;
 
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
+
+    // Ensure the runtime RHDH instance is deployed (idempotent — no-op if already running).
+    // Also sets SCHEMA_MODE_* env vars via configureSchemaMode().
+    await ensureRuntimeDeployed();
 
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
     const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
@@ -175,10 +181,17 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     }
 
     const common = new Common(page);
-    await common.loginAsGuest();
+    try {
+      await common.loginAsGuest();
 
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+      console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+    } finally {
+      // Navigate away from RHDH to close WebSocket connections before
+      // Playwright tears down the page — prevents a long hang during
+      // context/trace cleanup.
+      await page.goto("about:blank").catch(() => {});
+    }
   });
 });

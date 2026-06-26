@@ -172,20 +172,18 @@ export default defineConfig({
       testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
-      name: PW_PROJECT.SHOWCASE_RUNTIME_DB,
-      workers: 1,
-      testMatch: [
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
-      ],
-    },
-    {
       name: PW_PROJECT.SHOWCASE_RUNTIME,
       workers: 1,
-      dependencies: [PW_PROJECT.SHOWCASE_RUNTIME_DB],
+      // Runtime tests restart the RHDH deployment (ConfigMap changes,
+      // external DB reconfiguration, schema-mode setup). Each restart
+      // takes ~60-90 s on a typical cluster, so the default 90 s global
+      // timeout is insufficient. 10 minutes gives comfortable headroom.
+      timeout: 10 * 60 * 1000,
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
       ],
     },
 

@@ -103,7 +103,7 @@ function checkWaitingContainerState(
   const containerName = containerStatus.name;
   const reason = waiting.reason ?? "";
 
-  if (!(CONTAINER_FAILURE_STATES as readonly string[]).includes(reason)) {
+  if ((CONTAINER_FAILURE_STATES as readonly string[]).includes(reason)) {
     const message = waiting.message ?? "";
     return {
       message: `Pod ${podName} container ${containerName} is in ${reason} state: ${message}`,

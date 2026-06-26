@@ -7,7 +7,9 @@ import {
   configurePostgresCertificate,
   configurePostgresCredentials,
   clearDatabase,
+  prepareForExternalDatabase,
 } from "../../utils/postgres-config";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 import { UIhelper } from "../../utils/ui-helper";
 
 interface RdsConfig {
@@ -31,7 +33,7 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
     { name: "latest", host: process.env.RDS_4_HOST! },
   ];
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({}, testInfo) => {
     test.info().annotations.push(
       {
         type: "component",
@@ -43,20 +45,24 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       },
     );
 
-    // Validate certificates are available
-    const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
-    if (rdsCerts === undefined || rdsCerts === null || rdsCerts === "") {
-      throw new Error(
-        "RDS_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
-      );
-    }
+    // Ensure the runtime RHDH instance is deployed (idempotent — no-op if already running)
+    await ensureRuntimeDeployed();
 
-    // Validate required environment variables
-    if (!rdsUser || !rdsPassword) {
-      throw new Error("RDS_USER and RDS_PASSWORD environment variables must be set");
+    // Validate certificates are available — skip gracefully if not set
+    const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
+    if (rdsCerts === null || rdsCerts === undefined || !rdsUser || !rdsPassword) {
+      testInfo.skip(
+        true,
+        "RDS environment variables not configured (RDS_DB_CERTIFICATES_PATH, RDS_USER, RDS_PASSWORD) — RDS tests are opt-in",
+      );
+      return;
     }
 
     const kubeClient = new KubeClient();
+
+    // Prepare the deployment for external database tests: patch the app-config
+    // to use env var placeholders and clean up any schema-mode env var patches
+    await prepareForExternalDatabase(kubeClient, namespace, deploymentName);
 
     // Create/update the postgres-crt secret with RDS certificates
     console.log("Configuring RDS TLS certificates...");
@@ -65,21 +71,29 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
   for (const config of rdsConfigurations) {
     test.describe.serial(`RDS ${config.name} PostgreSQL version`, () => {
-      test.beforeAll(async () => {
+      test.beforeAll(async ({}, testInfo) => {
         test.setTimeout(135000);
+        if (!config.host) {
+          testInfo.skip(true, `RDS_*_HOST not set for ${config.name} — skipping`);
+          return;
+        }
         test.info().annotations.push({
           type: "database",
-          description: config.host?.split(".")[0] || "unknown",
+          description: config.host.split(".")[0] || "unknown",
         });
         await clearDatabase({
           host: config.host,
           user: rdsUser,
           password: rdsPassword,
-          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH!,
+          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
         });
       });
 
-      test("Configure and restart deployment", async () => {
+      test("Configure and restart deployment", async ({}, testInfo) => {
+        if (!config.host) {
+          testInfo.skip(true, `RDS_*_HOST not set for ${config.name}`);
+          return;
+        }
         const kubeClient = new KubeClient();
         test.setTimeout(600000);
         await configurePostgresCredentials(kubeClient, namespace, {
@@ -91,10 +105,14 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       });
 
       test("Verify successful DB connection", async ({ page }) => {
-        const uiHelper = new UIhelper(page);
-        const common = new Common(page);
-        await common.loginAsGuest();
-        await uiHelper.verifyHeading("Welcome back!");
+        try {
+          const uiHelper = new UIhelper(page);
+          const common = new Common(page);
+          await common.loginAsGuest();
+          await uiHelper.verifyHeading("Welcome back!");
+        } finally {
+          await page.goto("about:blank").catch(() => {});
+        }
       });
     });
   }

@@ -260,7 +260,7 @@ configure_external_postgres_db() {
   fi
 
   # Create postgres-crt secret for Backstage deployment (Helm/Operator)
-  # This secret is referenced by rhdh-start-runtime.yaml and values-showcase-postgres.yaml
+  # This secret is referenced by RBAC deployment values and operator CRs
   if ! oc create secret generic postgres-crt \
     --from-file=postgres-crt.pem=postgres-ca \
     --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
@@ -433,7 +433,7 @@ cluster_setup_k8s_helm() {
 # Functions: base_deployment, rbac_deployment, initiate_deployments,
 #            base_deployment_osd_gcp, rbac_deployment_osd_gcp, initiate_deployments_osd_gcp,
 #            initiate_upgrade_base_deployments, initiate_upgrade_deployments,
-#            initiate_runtime_deployment, initiate_sanity_plugin_checks_deployment,
+#            initiate_sanity_plugin_checks_deployment,
 #            apply_yaml_files, deploy_test_backstage_customization_provider,
 #            deploy_redis_cache, configure_external_postgres_db
 # ==============================================================================
@@ -648,22 +648,6 @@ initiate_upgrade_deployments() {
 
   oc get pods -n "${namespace}"
   save_all_pod_logs "$namespace"
-}
-
-initiate_runtime_deployment() {
-  local release_name=$1
-  local namespace=$2
-  namespace::configure "${namespace}"
-  helm::uninstall "${namespace}" "${release_name}"
-
-  oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
-
-  # shellcheck disable=SC2046
-  helm upgrade -i "${release_name}" -n "${namespace}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
 }
 
 initiate_sanity_plugin_checks_deployment() {

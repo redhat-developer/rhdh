@@ -7,7 +7,6 @@
   "SHOWCASE_RBAC_K8S": "showcase-rbac-k8s",
   "SHOWCASE_OPERATOR": "showcase-operator",
   "SHOWCASE_OPERATOR_RBAC": "showcase-operator-rbac",
-  "SHOWCASE_RUNTIME_DB": "showcase-runtime-db",
   "SHOWCASE_RUNTIME": "showcase-runtime",
   "SHOWCASE_AUTH_PROVIDERS": "showcase-auth-providers",
   "SHOWCASE_SANITY_PLUGINS": "showcase-sanity-plugins",

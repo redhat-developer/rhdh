@@ -68,48 +68,15 @@ initiate_operator_deployments_osd_gcp() {
 }
 
 run_operator_runtime_config_change_tests() {
-  # Deploy `showcase-runtime` to run tests that require configuration changes at runtime.
-  # Uses enableLocalDb=false with external Crunchy PostgreSQL for both runtime and schema-mode tests.
-  namespace::configure "${NAME_SPACE_RUNTIME}"
-
+  # Runtime tests handle their own deployment via TypeScript (runtime-deploy.ts).
+  # The first test file (config-map.spec.ts) calls ensureRuntimeDeployed() which:
+  #   - Creates the namespace
+  #   - Deploys RHDH via the operator with internal PostgreSQL
+  #   - Configures schema-mode env vars for port-forwarding
+  # Subsequent test files reuse the existing deployment (workers: 1).
+  #
+  # INSTALL_METHOD=operator is already exported in handle_ocp_operator().
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  local postgres_ready
-  postgres_ready=false
-
-  # Set up real external PostgreSQL (Crunchy) instead of placeholder secrets.
-  # Creates postgres-cred and postgres-crt secrets in NAME_SPACE_RUNTIME.
-  # IMPORTANT: Must be called AFTER namespace is created but BEFORE operator deployment.
-  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
-  if configure_external_postgres_db "${NAME_SPACE_RUNTIME}"; then
-    postgres_ready=true
-    # Add RHDH_RUNTIME_URL to postgres-cred (rds-app-config.yaml references it for baseUrl).
-    # configure_external_postgres_db creates postgres-cred with POSTGRES_* keys only.
-    local runtime_url_b64
-    runtime_url_b64=$(common::base64_encode "${runtime_url}")
-    oc patch secret postgres-cred -n "${NAME_SPACE_RUNTIME}" \
-      --type=json \
-      -p "[{\"op\":\"add\",\"path\":\"/data/RHDH_RUNTIME_URL\",\"value\":\"${runtime_url_b64}\"}]"
-  else
-    log::warn "External PostgreSQL setup failed; falling back to placeholder secrets (schema-mode tests will skip)"
-    create_postgres_cred_secret "${NAME_SPACE_RUNTIME}" "tmp" "tmp" "RHDH_RUNTIME_URL=${runtime_url}"
-    oc apply -f "$DIR/resources/postgres-db/postgres-crt.yaml" -n "${NAME_SPACE_RUNTIME}"
-  fi
-
-  config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
-  config::create_dynamic_plugins_config "${DIR}/resources/postgres-db/values-showcase-postgres.yaml" "/tmp/configmap-dynamic-plugins-runtime.yaml"
-  oc apply -f /tmp/configmap-dynamic-plugins-runtime.yaml -n "${NAME_SPACE_RUNTIME}"
-  deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml" "true"
-
-  # Configure schema-mode environment variables (opt-in: tests skip if not configured).
-  # Only attempt if external PostgreSQL was set up successfully.
-  if [[ "${postgres_ready}" == "true" ]]; then
-    if configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" operator; then
-      log::info "Schema-mode environment configured successfully; schema-mode tests will run"
-    else
-      log::warn "Schema-mode environment not configured; schema-mode tests will skip (this is expected if PostgreSQL is not available)"
-    fi
-  fi
-
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 

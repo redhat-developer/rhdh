@@ -5,6 +5,7 @@ import { runAccessibilityTests } from "../../../utils/accessibility";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 import { APIHelper } from "../../../utils/api-helper";
 import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
+import { base64Decode } from "../../../utils/helper";
 import { UIhelper } from "../../../utils/ui-helper";
 
 let page: Page;
@@ -29,7 +30,8 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     label: "some-label",
     annotation: "some-annotation",
     repo: `test-annotator-${Date.now()}`,
-    repoOwner: Buffer.from(process.env.GITHUB_ORG ?? "amFudXMtcWU=", "base64").toString("utf8"),
+    // Default repoOwner janus-qe
+    repoOwner: base64Decode(process.env.GITHUB_ORG ?? "amFudXMtcWU="),
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
