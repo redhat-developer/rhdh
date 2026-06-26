@@ -26,6 +26,13 @@ test.describe("Change app-config at e2e test runtime", () => {
     await ensureRuntimeDeployed();
   });
 
+  // Navigate away from RHDH to close WebSocket connections before
+  // Playwright tears down the page — prevents a long hang during
+  // context/trace cleanup.
+  test.afterEach(async ({ page }) => {
+    await page.goto("about:blank").catch(() => {});
+  });
+
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000);
 
@@ -60,11 +67,6 @@ test.describe("Change app-config at e2e test runtime", () => {
     } catch (error) {
       console.log(`Test failed during ConfigMap update or deployment restart:`, error);
       throw error;
-    } finally {
-      // Navigate away from RHDH to close WebSocket connections before
-      // Playwright tears down the page — prevents a long hang during
-      // context/trace cleanup.
-      await page.goto("about:blank").catch(() => {});
     }
   });
 });
