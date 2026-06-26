@@ -65,9 +65,7 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
     await prepareForExternalDatabase(kubeClient, namespace, deploymentName);
 
     // Create/update the postgres-crt secret with Azure certificates
-    console.log(
-      "Configuring Azure Database for PostgreSQL TLS certificates...",
-    );
+    console.log("Configuring Azure Database for PostgreSQL TLS certificates...");
     await configurePostgresCertificate(kubeClient, namespace, azureCerts);
   });
 

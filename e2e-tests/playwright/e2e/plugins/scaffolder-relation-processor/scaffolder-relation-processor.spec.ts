@@ -64,9 +64,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await scaffolderFlowPage.clickCreate();
     await scaffolderFlowPage.waitForOpenInCatalogLink();
     await scaffolderFlowPage.clickOpenInCatalog();
-    await scaffolderFlowPage.verifyComponentNameVisible(
-      reactAppDetails.componentName,
-    );
+    await scaffolderFlowPage.verifyComponentNameVisible(reactAppDetails.componentName);
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
@@ -85,9 +83,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
     await catalogBrowsePage.openCatalogSidebar("Component");
     await catalogBrowsePage.searchCatalog("test-relation-\n");
-    await catalogBrowsePage.openEntityLinkByHref(
-      "/catalog/default/component/test-relation-",
-    );
+    await catalogBrowsePage.openEntityLinkByHref("/catalog/default/component/test-relation-");
 
     await catalogBrowsePage.openDependenciesTab();
 
@@ -100,10 +96,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test("Verify scaffolderOf relation on the template", async () => {
-    await scaffolderFlowPage.openTemplateFromCatalog(
-      "Create React App Template",
-      "website",
-    );
+    await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `- type: scaffolderOf\n    targetRef: component:default/${reactAppDetails.componentName}\n`,
@@ -115,10 +108,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test.afterAll(async () => {
     await APIHelper.githubRequest(
       "DELETE",
-      GITHUB_API_ENDPOINTS.deleteRepo(
-        reactAppDetails.repoOwner,
-        reactAppDetails.repo,
-      ),
+      GITHUB_API_ENDPOINTS.deleteRepo(reactAppDetails.repoOwner, reactAppDetails.repo),
     );
   });
 });

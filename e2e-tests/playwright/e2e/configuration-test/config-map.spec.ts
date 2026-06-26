@@ -45,9 +45,7 @@ test.describe("Change app-config at e2e test runtime", () => {
         console.log(`New title: ${dynamicTitle}`);
       });
 
-      console.log(
-        `Restarting deployment '${deploymentName}' to apply ConfigMap changes.`,
-      );
+      console.log(`Restarting deployment '${deploymentName}' to apply ConfigMap changes.`);
       await kubeUtils.restartDeployment(deploymentName, namespace);
 
       const common = new Common(page);
@@ -60,10 +58,7 @@ test.describe("Change app-config at e2e test runtime", () => {
       expect(await page.title()).toContain(dynamicTitle);
       console.log("Title successfully verified in the UI.");
     } catch (error) {
-      console.log(
-        `Test failed during ConfigMap update or deployment restart:`,
-        error,
-      );
+      console.log(`Test failed during ConfigMap update or deployment restart:`, error);
       throw error;
     } finally {
       // Navigate away from RHDH to close WebSocket connections before
