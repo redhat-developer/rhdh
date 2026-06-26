@@ -97,10 +97,7 @@ async function resolveVisibleSidebarLinkInSection(
   return resolveVisibleSidebarLink(page, linkName);
 }
 
-async function activateSidebarLink(
-  page: Page,
-  resolveLink: () => Promise<Locator>,
-): Promise<void> {
+async function activateSidebarLink(page: Page, resolveLink: () => Promise<Locator>): Promise<void> {
   try {
     await expect(async () => {
       const link = await resolveLink();
