@@ -31,8 +31,7 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
     );
     await sidebarPage.verifyMenuItemInSection("Favorites", t["rhdh"][lang]["menuItem.docs"]);
 
-    await sidebarPage.openSidebarButton("Favorites");
-    await sidebarPage.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
+    await sidebarPage.openFavoritesDocs();
 
     await sidebarPage.verifyDocumentationHeading();
     await sidebarPage.verifyText("Documentation available in", false);

@@ -53,9 +53,11 @@ export async function waitForSideBarVisible(page: Page) {
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  const navLink = page.getByRole("link", { name: navBarText }).first();
+  const navLink = page.locator("nav").getByRole("link", { name: navBarText });
   await expect(navLink).toBeVisible({ timeout: 15_000 });
-  await navLink.click();
+  await navLink.scrollIntoViewIfNeeded();
+  // oxlint-disable-next-line playwright/no-force-option -- nested links sit under expandable section headers that intercept clicks in CI
+  await navLink.click({ force: true, timeout: 15_000 });
 }
 
 export async function openCatalogSidebar(page: Page, kind: string) {
