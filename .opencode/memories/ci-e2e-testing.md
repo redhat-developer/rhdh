@@ -119,7 +119,7 @@ test.beforeAll(async ({ }, testInfo) => {
 7. **Localization Tests** (`playwright/e2e/localization/`)
    - Verify UI displays correctly translated strings
    - Supports **German (de)**, **Spanish (es)**, **French (fr)**, **Italian (it)**, and **Japanese (ja)**
-   - Runs as part of OCP nightly job (skipped for OSD-GCP)
+   - Runs in a dedicated `e2e-ocp-helm-localization-nightly` nightly job
    - Uses `showcase-localization-de`, `showcase-localization-es`, `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja` Playwright projects
    - Translation files located in `translations/` directory
    - Test helper: `e2e-tests/playwright/e2e/localization/locale.ts`
@@ -339,6 +339,7 @@ The main script dispatches to job-specific handlers in `.ci/pipelines/jobs/`:
 - `handle_eks_helm` / `handle_eks_operator`: EKS Helm/Operator deployment
 - `handle_gke_helm` / `handle_gke_operator`: GKE Helm/Operator deployment
 - `handle_ocp_nightly`: OCP Helm nightly tests (also handles OSD-GCP Helm)
+- `handle_ocp_localization`: OCP Helm localization nightly tests
 - `handle_ocp_operator`: OCP Operator nightly tests (also handles OSD-GCP Operator)
 - `handle_ocp_pull`: OCP PR checks
 - `handle_auth_providers`: Auth provider tests
