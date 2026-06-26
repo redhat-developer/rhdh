@@ -12,7 +12,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { test, expect } from "@support/coverage/test";
 
 import { Common } from "../../utils/common";
-import { resolveInstallMethod } from "../../utils/helper";
+import { getReleaseName, resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 import { setPortForwardRestarter } from "./schema-mode-db";
@@ -80,7 +80,7 @@ function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Prom
 
 test.describe("Verify pluginDivisionMode: schema", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
+  const releaseName = getReleaseName();
   const installMethod = resolveInstallMethod();
 
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
