@@ -20,8 +20,9 @@ export class UIhelper {
   }
 
   getSideBarMenuItem(sectionName: string): Locator {
-    return navigation.getSidebarNav(this.page).filter({
-      has: this.page.locator(`button[aria-label="${sectionName}"]`),
+    const sidebar = navigation.getSidebarNav(this.page);
+    return sidebar.filter({
+      has: sidebar.getByRole("button", { name: sectionName, exact: true }),
     });
   }
 
@@ -154,6 +155,10 @@ export class UIhelper {
 
   openSidebarButton(navBarButtonLabel: string) {
     return navigation.openSidebarButton(this.page, navBarButtonLabel);
+  }
+
+  openSidebarLinkInSection(sectionName: string, linkName: string) {
+    return navigation.openSidebarLinkInSection(this.page, sectionName, linkName);
   }
 
   selectMuiBox(label: string, value: string, notVisible?: boolean) {

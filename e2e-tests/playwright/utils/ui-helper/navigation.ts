@@ -8,9 +8,69 @@ import { verifyHeading } from "./verification";
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-/** Root sidebar `<nav>` that contains expandable section buttons. */
+/** Left nav excluding the global header bar (profile menu uses a separate navigation). */
 export function getSidebarNav(page: Page): Locator {
-  return page.locator("nav").filter({ has: page.locator("button[aria-label]") }).first();
+  return page
+    .getByRole("navigation")
+    .filter({ hasNot: page.getByTestId("KeyboardArrowDownOutlinedIcon") })
+    .first();
+}
+
+function sidebarLinks(page: Page, linkName: string): Locator {
+  return getSidebarNav(page).getByRole("link", { name: linkName, exact: true });
+}
+
+async function resolveVisibleSidebarLink(page: Page, linkName: string): Promise<Locator> {
+  const candidates = sidebarLinks(page, linkName);
+  await expect(candidates.first()).toBeAttached({ timeout: 15_000 });
+
+  const count = await candidates.count();
+  for (let index = 0; index < count; index++) {
+    const candidate = candidates.nth(index);
+    if (await candidate.isVisible()) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`Sidebar link "${linkName}" is not visible`);
+}
+
+async function expandSidebarSection(page: Page, sectionLabel: string): Promise<void> {
+  const sectionButton = getSidebarNav(page).getByRole("button", {
+    name: sectionLabel,
+    exact: true,
+  });
+  await expect(sectionButton).toBeVisible();
+
+  const expanded = await sectionButton.getAttribute("aria-expanded");
+  if (expanded === "true") {
+    return;
+  }
+  if (expanded === "false") {
+    await sectionButton.click();
+    await expect(sectionButton).toHaveAttribute("aria-expanded", "true");
+    return;
+  }
+  await sectionButton.click();
+}
+
+async function clickSidebarLink(page: Page, linkName: string): Promise<void> {
+  const link = await resolveVisibleSidebarLink(page, linkName);
+  await link.scrollIntoViewIfNeeded();
+  await expect(link).toBeEnabled();
+  await link.click({ timeout: 15_000 });
+}
+
+export async function expectSidebarLinkVisible(
+  page: Page,
+  linkName: string,
+  sectionName?: string,
+): Promise<void> {
+  if (sectionName !== undefined && sectionName !== "") {
+    await expandSidebarSection(page, sectionName);
+  }
+  const link = await resolveVisibleSidebarLink(page, linkName);
+  await expect(link).toBeVisible();
 }
 
 export async function openProfileDropdown(page: Page) {
@@ -52,22 +112,22 @@ export async function goToSelfServicePage(page: Page) {
 }
 
 export async function waitForSideBarVisible(page: Page) {
-  await expect(page.getByRole("navigation").getByRole("link").first()).toBeVisible({
+  await expect(getSidebarNav(page).getByRole("link").first()).toBeVisible({
     timeout: 10_000,
   });
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  const navLink = getSidebarNav(page).getByRole("link", { name: navBarText }).first();
-  await expect(navLink).toBeVisible({ timeout: 15_000 });
-  const href = await navLink.getAttribute("href");
-  if (href !== null && href !== "") {
-    await page.goto(href);
-    return;
-  }
-  await navLink.scrollIntoViewIfNeeded();
-  // oxlint-disable-next-line playwright/no-force-option -- nested links sit under expandable section headers that intercept clicks in CI
-  await navLink.click({ force: true, timeout: 15_000 });
+  await clickSidebarLink(page, navBarText);
+}
+
+export async function openSidebarLinkInSection(
+  page: Page,
+  sectionName: string,
+  linkName: string,
+): Promise<void> {
+  await expandSidebarSection(page, sectionName);
+  await clickSidebarLink(page, linkName);
 }
 
 export async function openCatalogSidebar(page: Page, kind: string) {
@@ -83,13 +143,7 @@ export async function openCatalogSidebar(page: Page, kind: string) {
 }
 
 export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
-  const navLink = getSidebarNav(page).locator(`button[aria-label="${navBarButtonLabel}"]`);
-  await navLink.waitFor({ state: "visible" });
-
-  const expanded = await navLink.getAttribute("aria-expanded");
-  if (expanded !== "true") {
-    await navLink.click();
-  }
+  await expandSidebarSection(page, navBarButtonLabel);
 }
 
 export async function selectMuiBox(page: Page, label: string, value: string, notVisible?: boolean) {

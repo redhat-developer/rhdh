@@ -2,7 +2,7 @@ import { expect, Page } from "@playwright/test";
 
 import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import { UIhelper } from "../../utils/ui-helper";
-import { getSidebarNav } from "../../utils/ui-helper/navigation";
+import { expectSidebarLinkVisible } from "../../utils/ui-helper/navigation";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -30,13 +30,11 @@ export class SidebarPage {
   }
 
   async openReferencesLearningPaths(): Promise<void> {
-    await this.openSidebarButton("References");
-    await this.openSidebar("Learning Paths");
+    await this.ui.openSidebarLinkInSection("References", "Learning Paths");
   }
 
   async openFavoritesDocs(): Promise<void> {
-    await this.openSidebarButton("Favorites");
-    await this.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
+    await this.ui.openSidebarLinkInSection("Favorites", t["rhdh"][lang]["menuItem.docs"]);
   }
 
   async verifyDocumentationHeading(): Promise<void> {
@@ -52,8 +50,7 @@ export class SidebarPage {
   }
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    await this.openSidebarButton(section);
-    await expect(getSidebarNav(this.page).getByRole("link", { name: itemText }).first()).toBeVisible();
+    await expectSidebarLinkVisible(this.page, itemText, section);
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {

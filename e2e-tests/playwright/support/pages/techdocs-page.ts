@@ -14,8 +14,7 @@ export class TechDocsPage {
   }
 
   async openDocFromFavorites(docName: string): Promise<void> {
-    await this.sidebar.openSidebarButton("Favorites");
-    await this.sidebar.openSidebar("Docs");
+    await this.sidebar.openFavoritesDocs();
     await this.ui.clickLink(docName);
   }
 
