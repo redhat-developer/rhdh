@@ -11,14 +11,14 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
   let sidebarPage: SidebarPage;
   let common: Common;
 
-  test.beforeAll(async ({ rhdhPage }) => {
+  test.beforeEach(async ({ page }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    sidebarPage = new SidebarPage(rhdhPage);
-    common = new Common(rhdhPage);
+    sidebarPage = new SidebarPage(page);
+    common = new Common(page);
 
     await common.loginAsGuest();
   });
