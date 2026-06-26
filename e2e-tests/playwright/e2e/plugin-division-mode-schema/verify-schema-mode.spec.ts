@@ -181,10 +181,17 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     }
 
     const common = new Common(page);
-    await common.loginAsGuest();
+    try {
+      await common.loginAsGuest();
 
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+      console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+    } finally {
+      // Navigate away from RHDH to close WebSocket connections before
+      // Playwright tears down the page — prevents a long hang during
+      // context/trace cleanup.
+      await page.goto("about:blank").catch(() => {});
+    }
   });
 });

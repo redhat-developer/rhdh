@@ -60,6 +60,11 @@ test.describe("Change app-config at e2e test runtime", () => {
     } catch (error) {
       console.log(`Test failed during ConfigMap update or deployment restart:`, error);
       throw error;
+    } finally {
+      // Navigate away from RHDH to close WebSocket connections before
+      // Playwright tears down the page — prevents a long hang during
+      // context/trace cleanup.
+      await page.goto("about:blank").catch(() => {});
     }
   });
 });

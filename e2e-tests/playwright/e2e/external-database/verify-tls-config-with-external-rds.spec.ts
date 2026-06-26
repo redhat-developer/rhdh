@@ -105,10 +105,14 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       });
 
       test("Verify successful DB connection", async ({ page }) => {
-        const uiHelper = new UIhelper(page);
-        const common = new Common(page);
-        await common.loginAsGuest();
-        await uiHelper.verifyHeading("Welcome back!");
+        try {
+          const uiHelper = new UIhelper(page);
+          const common = new Common(page);
+          await common.loginAsGuest();
+          await uiHelper.verifyHeading("Welcome back!");
+        } finally {
+          await page.goto("about:blank").catch(() => {});
+        }
       });
     });
   }
