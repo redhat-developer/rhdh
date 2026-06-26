@@ -20,7 +20,7 @@ export class UIhelper {
   }
 
   getSideBarMenuItem(sectionName: string): Locator {
-    return this.page.locator("nav").filter({
+    return navigation.getSidebarNav(this.page).filter({
       has: this.page.locator(`button[aria-label="${sectionName}"]`),
     });
   }

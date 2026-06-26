@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
 import { getErrorMessage } from "../errors";
@@ -7,6 +7,11 @@ import { verifyHeading } from "./verification";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
+
+/** Root sidebar `<nav>` that contains expandable section buttons. */
+export function getSidebarNav(page: Page): Locator {
+  return page.locator("nav").filter({ has: page.locator("button[aria-label]") }).first();
+}
 
 export async function openProfileDropdown(page: Page) {
   const header = getGlobalHeader(page);
@@ -53,8 +58,13 @@ export async function waitForSideBarVisible(page: Page) {
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  const navLink = page.locator("nav").getByRole("link", { name: navBarText });
+  const navLink = getSidebarNav(page).getByRole("link", { name: navBarText }).first();
   await expect(navLink).toBeVisible({ timeout: 15_000 });
+  const href = await navLink.getAttribute("href");
+  if (href !== null && href !== "") {
+    await page.goto(href);
+    return;
+  }
   await navLink.scrollIntoViewIfNeeded();
   // oxlint-disable-next-line playwright/no-force-option -- nested links sit under expandable section headers that intercept clicks in CI
   await navLink.click({ force: true, timeout: 15_000 });
@@ -73,7 +83,7 @@ export async function openCatalogSidebar(page: Page, kind: string) {
 }
 
 export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
-  const navLink = page.locator(`nav button[aria-label="${navBarButtonLabel}"]`);
+  const navLink = getSidebarNav(page).locator(`button[aria-label="${navBarButtonLabel}"]`);
   await navLink.waitFor({ state: "visible" });
 
   const expanded = await navLink.getAttribute("aria-expanded");

@@ -2,6 +2,7 @@ import { expect, Page } from "@playwright/test";
 
 import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import { UIhelper } from "../../utils/ui-helper";
+import { getSidebarNav } from "../../utils/ui-helper/navigation";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -52,7 +53,7 @@ export class SidebarPage {
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
     await this.openSidebarButton(section);
-    await expect(this.page.locator("nav").getByRole("link", { name: itemText })).toBeVisible();
+    await expect(getSidebarNav(this.page).getByRole("link", { name: itemText }).first()).toBeVisible();
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {
