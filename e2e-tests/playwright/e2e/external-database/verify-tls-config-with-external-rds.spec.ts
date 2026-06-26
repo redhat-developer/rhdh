@@ -89,6 +89,10 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
         });
       });
 
+      test.afterEach(async ({ page }) => {
+        await page.goto("about:blank").catch(() => {});
+      });
+
       test("Configure and restart deployment", async ({}, testInfo) => {
         if (!config.host) {
           testInfo.skip(true, `RDS_*_HOST not set for ${config.name}`);
@@ -105,14 +109,10 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       });
 
       test("Verify successful DB connection", async ({ page }) => {
-        try {
-          const uiHelper = new UIhelper(page);
-          const common = new Common(page);
-          await common.loginAsGuest();
-          await uiHelper.verifyHeading("Welcome back!");
-        } finally {
-          await page.goto("about:blank").catch(() => {});
-        }
+        const uiHelper = new UIhelper(page);
+        const common = new Common(page);
+        await common.loginAsGuest();
+        await uiHelper.verifyHeading("Welcome back!");
       });
     });
   }

@@ -156,6 +156,10 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     await killPortForward(portForwardProcess);
   });
 
+  test.afterEach(async ({ page }) => {
+    await page.goto("about:blank").catch(() => {});
+  });
+
   test("Verify database user has restricted permissions", async () => {
     const hasRestrictedPerms = await testSetup.verifyRestrictedDatabasePermissions();
     expect(hasRestrictedPerms).toBe(true);
@@ -181,17 +185,10 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     }
 
     const common = new Common(page);
-    try {
-      await common.loginAsGuest();
+    await common.loginAsGuest();
 
-      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-      console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
-    } finally {
-      // Navigate away from RHDH to close WebSocket connections before
-      // Playwright tears down the page — prevents a long hang during
-      // context/trace cleanup.
-      await page.goto("about:blank").catch(() => {});
-    }
+    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
   });
 });
