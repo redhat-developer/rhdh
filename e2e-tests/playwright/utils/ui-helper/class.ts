@@ -19,8 +19,10 @@ export class UIhelper {
     return misc.verifyComponentInCatalog(this.page, kind, expectedRows);
   }
 
-  getSideBarMenuItem(menuItem: string): Locator {
-    return this.page.getByTestId("login-button").getByText(menuItem);
+  getSideBarMenuItem(sectionName: string): Locator {
+    return this.page.locator("nav").filter({
+      has: this.page.locator(`button[aria-label="${sectionName}"]`),
+    });
   }
 
   fillTextInputByLabel(label: string, text: string) {

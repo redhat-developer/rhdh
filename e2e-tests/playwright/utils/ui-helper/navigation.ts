@@ -73,7 +73,11 @@ export async function openCatalogSidebar(page: Page, kind: string) {
 export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
   const navLink = page.locator(`nav button[aria-label="${navBarButtonLabel}"]`);
   await navLink.waitFor({ state: "visible" });
-  await navLink.click();
+
+  const expanded = await navLink.getAttribute("aria-expanded");
+  if (expanded !== "true") {
+    await navLink.click();
+  }
 }
 
 export async function selectMuiBox(page: Page, label: string, value: string, notVisible?: boolean) {

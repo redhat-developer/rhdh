@@ -51,8 +51,8 @@ export class SidebarPage {
   }
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    const sectionMenu = this.getSideBarMenuItem(section);
-    await expect(sectionMenu.getByText(itemText)).toBeVisible();
+    await this.openSidebarButton(section);
+    await expect(this.page.locator("nav").getByRole("link", { name: itemText })).toBeVisible();
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {
