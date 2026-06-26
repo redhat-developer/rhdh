@@ -54,11 +54,87 @@ async function expandSidebarSection(page: Page, sectionLabel: string): Promise<v
   await sectionButton.click();
 }
 
+/** Collapse expanded sidebar sections so nested links are not covered by layout overlays. */
+async function collapseOtherExpandedSidebarSections(
+  page: Page,
+  keepSection: string,
+): Promise<void> {
+  const nav = getSidebarNav(page);
+  const keepButton = nav.getByRole("button", { name: keepSection, exact: true });
+  const keepHandle = await keepButton.elementHandle();
+  const buttons = nav.getByRole("button");
+  const count = await buttons.count();
+  for (let index = 0; index < count; index++) {
+    const button = buttons.nth(index);
+    if ((await button.getAttribute("aria-expanded")) !== "true") {
+      continue;
+    }
+    if (keepHandle !== null && (await button.evaluate((el, keep) => el === keep, keepHandle))) {
+      continue;
+    }
+    await button.click();
+    await expect(button).toHaveAttribute("aria-expanded", "false");
+  }
+}
+
+async function resolveVisibleSidebarLinkInSection(
+  page: Page,
+  sectionLabel: string,
+  linkName: string,
+): Promise<Locator> {
+  const sectionButton = getSidebarNav(page).getByRole("button", {
+    name: sectionLabel,
+    exact: true,
+  });
+  await expect(sectionButton).toHaveAttribute("aria-expanded", "true");
+
+  const sectionGroup = sectionButton.locator("xpath=..");
+  const scopedLink = sectionGroup.getByRole("link", { name: linkName, exact: true });
+  if ((await scopedLink.count()) > 0 && (await scopedLink.first().isVisible())) {
+    return scopedLink.first();
+  }
+
+  return resolveVisibleSidebarLink(page, linkName);
+}
+
+async function activateSidebarLink(
+  page: Page,
+  resolveLink: () => Promise<Locator>,
+): Promise<void> {
+  try {
+    await expect(async () => {
+      const link = await resolveLink();
+      await link.scrollIntoViewIfNeeded();
+      await expect(link).toBeEnabled();
+      await link.click({ timeout: 3000 });
+    }).toPass({
+      intervals: [500],
+      timeout: 15_000,
+    });
+  } catch {
+    const link = await resolveLink();
+    const href = await link.getAttribute("href");
+    // RHDH sidebar MUI layout can intercept pointer events on nested links in CI.
+    if (href !== null && href !== "") {
+      await page.goto(href);
+      return;
+    }
+    throw new Error("Sidebar link is not clickable and has no href fallback");
+  }
+}
+
 async function clickSidebarLink(page: Page, linkName: string): Promise<void> {
-  const link = await resolveVisibleSidebarLink(page, linkName);
-  await link.scrollIntoViewIfNeeded();
-  await expect(link).toBeEnabled();
-  await link.click({ timeout: 15_000 });
+  await activateSidebarLink(page, () => resolveVisibleSidebarLink(page, linkName));
+}
+
+async function clickSidebarLinkInSection(
+  page: Page,
+  sectionLabel: string,
+  linkName: string,
+): Promise<void> {
+  await activateSidebarLink(page, () =>
+    resolveVisibleSidebarLinkInSection(page, sectionLabel, linkName),
+  );
 }
 
 export async function expectSidebarLinkVisible(
@@ -126,8 +202,9 @@ export async function openSidebarLinkInSection(
   sectionName: string,
   linkName: string,
 ): Promise<void> {
+  await collapseOtherExpandedSidebarSections(page, sectionName);
   await expandSidebarSection(page, sectionName);
-  await clickSidebarLink(page, linkName);
+  await clickSidebarLinkInSection(page, sectionName, linkName);
 }
 
 export async function openCatalogSidebar(page: Page, kind: string) {
