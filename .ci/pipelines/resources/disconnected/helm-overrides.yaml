@@ -1,0 +1,52 @@
+# Helm values override for disconnected deployments.
+# Adds the registries.conf ConfigMap volume + mount to the
+# install-dynamic-plugins init container.
+#
+# Using a separate -f file avoids the Helm "array clobber" pitfall:
+# --set on initContainers[]/extraVolumes[] replaces the entire array,
+# losing the chart defaults. The -f merge keeps chart-default volumes
+# intact and only adds the ConfigMap volume + mount.
+upstream:
+  backstage:
+    extraVolumes:
+      - name: dynamic-plugins-root
+        emptyDir: {}
+      - name: dynamic-plugins
+        configMap:
+          defaultMode: 420
+          name: dynamic-plugins
+          optional: true
+      - name: dynamic-plugins-npmrc
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: dynamic-plugins-npmrc
+      - name: rhdh-plugin-mirror-conf
+        configMap:
+          name: rhdh-plugin-mirror-conf
+    initContainers:
+      - name: install-dynamic-plugins
+        command:
+          - ./install-dynamic-plugins.sh
+          - /dynamic-plugins-root
+        env:
+          - name: NPM_CONFIG_USERCONFIG
+            value: /opt/app-root/src/.npmrc.dynamic-plugins
+        image: null
+        imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /dynamic-plugins-root
+            name: dynamic-plugins-root
+          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
+            name: dynamic-plugins
+            readOnly: true
+            subPath: dynamic-plugins.yaml
+          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
+            name: dynamic-plugins-npmrc
+            readOnly: true
+            subPath: .npmrc
+          - mountPath: /etc/containers/registries.conf.d/rhdh-registries.conf
+            name: rhdh-plugin-mirror-conf
+            readOnly: true
+            subPath: rhdh-registries.conf
+        workingDir: /opt/app-root/src
