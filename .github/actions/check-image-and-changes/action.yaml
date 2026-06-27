@@ -41,11 +41,9 @@ runs:
         echo "Changed files:"
         echo "$CHANGED_FILES"
 
-        # Check for [skip-build] on PR commits only. Without --first-parent, merge
-        # refs pull in main chore commits like "update rpms.lock.yaml [skip-build]".
-        # Match subject-line tags only (not body text or mid-subject mentions).
+        # Check for [skip-build] tag in commit messages
         SKIP_BUILD_TAG=false
-        if git log --first-parent --format=%s "$BASE_COMMIT"..HEAD | grep -qE '\[skip-build\](\s*\[skip-e2e\])?(\s*\(#\d+\))?$'; then
+        if git log --format=%B "$BASE_COMMIT"..HEAD | grep -qF "[skip-build]"; then
           echo "Found [skip-build] tag in commit messages."
           SKIP_BUILD_TAG=true
         fi
