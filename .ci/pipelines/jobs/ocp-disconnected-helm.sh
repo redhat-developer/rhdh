@@ -76,7 +76,7 @@ handle_ocp_disconnected_helm() {
   local helm_values
   helm_values=$(helm show values "${CHART_LOCAL_TGZ}" 2> /dev/null || true)
 
-  export PG_REGISTRY PG_REPO PG_TAG
+  export PG_REGISTRY PG_REPO PG_TAG PG_SEPARATOR
   PG_REGISTRY=$(echo "${helm_values}" | yq '.upstream.postgresql.image.registry' || true)
   PG_REPO=$(echo "${helm_values}" | yq '.upstream.postgresql.image.repository' || true)
   PG_TAG=$(echo "${helm_values}" | yq '.upstream.postgresql.image.tag' || true)
@@ -84,7 +84,17 @@ handle_ocp_disconnected_helm() {
   PG_REPO="${PG_REPO:-rhel9/postgresql-15}"
   PG_TAG="${PG_TAG:-latest}"
 
-  log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}:${PG_TAG}"
+  # The chart encodes digest refs as repository: "repo@sha256" + tag: "<hash>".
+  # Normalize: extract the digest qualifier into PG_SEPARATOR so that:
+  #   - PG_REPO is always a clean path (usable in IDMS source/mirror fields)
+  #   - Full ref is ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}
+  PG_SEPARATOR=":"
+  if [[ "${PG_REPO}" == *"@"* ]]; then
+    PG_SEPARATOR="@${PG_REPO##*@}:" # e.g., "@sha256:"
+    PG_REPO="${PG_REPO%@*}"         # e.g., "rhel9/postgresql-15"
+  fi
+
+  log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"
 
   echo "${helm_values}" > "${ARTIFACT_DIR}/disconnected-helm-chart-values.yaml" 2> /dev/null || true
 
