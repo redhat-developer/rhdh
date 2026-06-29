@@ -32,7 +32,7 @@ upstream:
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
-        image: null
+        image: "${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /dynamic-plugins-root
