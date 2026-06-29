@@ -33,11 +33,16 @@ handle_ocp_disconnected_operator() {
   # mirroring operator/operand images and installing the operator CatalogSource.
   log::section "Operator Mirroring and Installation"
 
-  disconnected::fetch_script "prepare-restricted-environment.sh" "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" \
-    || {
-      log::error "Failed to fetch prepare-restricted-environment.sh — aborting"
-      return 1
-    }
+  # TODO: revert to disconnected::fetch_script once redhat-developer/rhdh-operator#3109 merges.
+  # The upstream script has a bug where INSTALL_YQ=0 triggers the yq install
+  # path because [[ 0 ]] is truthy in bash. Use the fixed version from the PR.
+  local _prepare_url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/pull/3109/head/.rhdh/scripts/prepare-restricted-environment.sh"
+  log::info "Fetching prepare-restricted-environment.sh (fixed: rhdh-operator#3109)..."
+  if ! curl -fL --max-time 30 -o "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${_prepare_url}"; then
+    log::error "Failed to download prepare-restricted-environment.sh — aborting"
+    return 1
+  fi
+  chmod +x "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
 
   local prepare_args=(
     --to-registry "${MIRROR_REGISTRY_URL}"
