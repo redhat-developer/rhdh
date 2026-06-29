@@ -9,7 +9,7 @@ ENV CI=1 \
     _MITSHM=0 \
     NODE_PATH=/usr/local/lib/node_modules \
     HELM_VERSION="v3.17.2" \
-    OC_VERSION="4.19.17" \
+    OC_VERSION="4.22.3" \
     OCM_VERSION="0.1.76" \
     GO_VERSION="1.19" \
     GO_SHA256="464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6" \
@@ -57,6 +57,9 @@ RUN curl -fsSL -o /tmp/helm.tar.gz "https://get.helm.sh/helm-${HELM_VERSION}-lin
     tar -xzvf /tmp/helm.tar.gz -C /tmp && mv /tmp/linux-amd64/helm /usr/local/bin/helm && \
     curl -fsSL -o /tmp/openshift-client-linux.tar.gz "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OC_VERSION}/openshift-client-linux-${OC_VERSION}.tar.gz" && \
     tar -xzvf /tmp/openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl && \
+    curl -fsSL -o /tmp/oc-mirror.tar.gz "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OC_VERSION}/oc-mirror.tar.gz" && \
+    tar -xzvf /tmp/oc-mirror.tar.gz -C /usr/local/bin oc-mirror && \
+    chmod +x /usr/local/bin/oc-mirror && \
     curl -Lo /usr/local/bin/ocm "https://github.com/openshift-online/ocm-cli/releases/download/v${OCM_VERSION}/ocm-linux-amd64" && \
     chmod +x /usr/local/bin/ocm && \
     curl -fsSL "https://github.com/mikefarah/yq/releases/download/v4.43.1/yq_linux_amd64.tar.gz" | tar -xz && \
@@ -79,9 +82,10 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip && \
     ./aws/install
 
-# Install skopeo
+# Install skopeo and podman
 RUN apt-get update -y && \
-    apt-get install -y skopeo
+    apt-get install -y --no-install-recommends skopeo podman && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install PostgreSQL CLI (psql only)
 RUN apt-get update && \
