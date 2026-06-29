@@ -148,8 +148,9 @@ EOF
 
   # PG image: CI charts may use quay.io/fedora/postgresql-15 instead of
   # registry.redhat.io/rhel9/postgresql-15. Add it if not from registry.redhat.io.
+  # PG_SEPARATOR accounts for digest (@sha256:) vs tag (:) encoding.
   if [[ "${PG_REGISTRY:-registry.redhat.io}" != "registry.redhat.io" ]]; then
-    additional_images+=("${PG_REGISTRY}/${PG_REPO}:${PG_TAG}")
+    additional_images+=("${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}")
   fi
 
   if [[ ${#additional_images[@]} -gt 0 ]]; then
@@ -263,7 +264,8 @@ disconnected::patch_idms() {
     log::info "Added IDMS entry: ${source} → ${mirror}"
   done
 
-  # Add mirror entry for PG image if not already present
+  # Add mirror entry for PG image if not already present.
+  # PG_REPO is already cleaned of @sha256 by the caller (via PG_SEPARATOR).
   if [[ -n "${PG_REGISTRY:-}" && -n "${PG_REPO:-}" ]]; then
     local pg_source="${PG_REGISTRY}/${PG_REPO}"
     local pg_mirror="${MIRROR_REGISTRY_URL}/${PG_REPO}"
