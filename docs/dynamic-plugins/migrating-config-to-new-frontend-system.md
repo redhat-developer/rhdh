@@ -661,14 +661,14 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 - **Replicate `mountPoints[].config.layout`** grid column positioning — use card `type: info|content` or ask the plugin vendor to adjust the component layout.
 - **Add a new entity tab** without a plugin that exports `entity-content:*`.
 - **Add cards to General settings** until upstream exposes extension inputs on `sub-page:user-settings/general`.
-- **Use RHDH-only mount points** (application drawers, some global header slots) until equivalent NFS extensions exist.
+- **Use RHDH-only mount points** (some global header slots) until equivalent NFS extensions exist. Application drawers have `AppDrawerContentBlueprint` — see the [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer).
 
 ## RHDH-specific gaps
 
 | Feature | Status on new frontend system |
 | --- | --- |
 | Nested sidebar menu groups (`menuItems.parent`) | No direct equivalent — flat nav from pages |
-| Application drawer mount points | RHDH-specific — pending NFS design |
+| Application drawer mount points | `AppDrawerContentBlueprint` available — requires plugin update (see [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer)) |
 | `global.header/help` and similar header slots | Migrating in RHDH global-header plugins |
 | `mountPoints[].config.layout` (MUI grid) | Not configurable via YAML |
 | Legacy `staticJSXContent` pattern | Requires a plugin update |
