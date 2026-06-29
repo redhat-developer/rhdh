@@ -36,20 +36,21 @@ handle_ocp_disconnected_operator() {
 
   if ! command -v podman &> /dev/null; then
     log::info "Installing podman (required by prepare-restricted-environment.sh)..."
-    apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq podman > /dev/null 2>&1
+    apt-get update -qq 2>&1
+    apt-get install -y -qq podman 2>&1
+    hash -r
+    if ! command -v podman &> /dev/null; then
+      log::error "Failed to install podman. Add podman to the rhdh-e2e-runner Dockerfile."
+      return 1
+    fi
     log::success "podman installed: $(podman --version)"
   fi
 
-  # TODO: revert to disconnected::fetch_script once redhat-developer/rhdh-operator#3109 merges.
-  # The upstream script has a bug where INSTALL_YQ=0 triggers the yq install
-  # path because [[ 0 ]] is truthy in bash. Use the fixed version from the PR.
-  local _prepare_url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/pull/3109/head/.rhdh/scripts/prepare-restricted-environment.sh"
-  log::info "Fetching prepare-restricted-environment.sh (fixed: rhdh-operator#3109)..."
-  if ! curl -fL --max-time 30 -o "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${_prepare_url}"; then
-    log::error "Failed to download prepare-restricted-environment.sh — aborting"
-    return 1
-  fi
-  chmod +x "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
+  disconnected::fetch_script "prepare-restricted-environment.sh" "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" \
+    || {
+      log::error "Failed to fetch prepare-restricted-environment.sh — aborting"
+      return 1
+    }
 
   local prepare_args=(
     --to-registry "${MIRROR_REGISTRY_URL}"
