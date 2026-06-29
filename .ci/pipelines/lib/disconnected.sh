@@ -163,6 +163,8 @@ EOF
 
   log::info "ImageSetConfiguration written to ${output_path}"
   log::debug "$(cat "${output_path}")"
+
+  cp "${output_path}" "${ARTIFACT_DIR}/disconnected-imageset-config.yaml" 2> /dev/null || true
 }
 
 # Run oc-mirror to mirror images to the disconnected mirror registry.
@@ -176,6 +178,13 @@ disconnected::run_oc_mirror() {
 
   mkdir -p "${workspace_dir}"
 
+  # oc-mirror panics when REGISTRY_AUTH_FILE is set because the
+  # distribution/distribution library interprets it as a storage driver
+  # config, not an auth file path. oc-mirror reads auth exclusively from
+  # ${XDG_RUNTIME_DIR}/containers/auth.json (set up by setup_auth).
+  local saved_registry_auth_file="${REGISTRY_AUTH_FILE:-}"
+  unset REGISTRY_AUTH_FILE
+
   log::info "Running oc-mirror --v2 → ${MIRROR_REGISTRY_URL}"
   if ! "${OC_MIRROR_BIN}" \
     -c "${imageset_config}" \
@@ -183,8 +192,15 @@ disconnected::run_oc_mirror() {
     --dest-tls-verify=false \
     --v2 \
     --workspace "file://${workspace_dir}"; then
+    # Restore before returning
+    [[ -n "${saved_registry_auth_file}" ]] && export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
     log::error "oc-mirror failed"
     return 1
+  fi
+
+  # Restore REGISTRY_AUTH_FILE for subsequent skopeo/mirror-plugins.sh calls
+  if [[ -n "${saved_registry_auth_file}" ]]; then
+    export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
   fi
 
   local result_dir="${workspace_dir}/working-dir"
@@ -212,6 +228,10 @@ disconnected::run_oc_mirror() {
   log::info "IDMS: ${OC_MIRROR_IDMS_FILE}"
   [[ -n "${OC_MIRROR_ITMS_FILE}" ]] && log::info "ITMS: ${OC_MIRROR_ITMS_FILE}"
   [[ -n "${OC_MIRROR_CHART_PATH}" ]] && log::info "Chart: ${OC_MIRROR_CHART_PATH}"
+
+  # Save artifacts for debugging
+  cp "${OC_MIRROR_IDMS_FILE}" "${ARTIFACT_DIR}/disconnected-idms-generated.yaml" 2> /dev/null || true
+  [[ -n "${OC_MIRROR_ITMS_FILE}" ]] && cp "${OC_MIRROR_ITMS_FILE}" "${ARTIFACT_DIR}/disconnected-itms-generated.yaml" 2> /dev/null || true
 }
 
 # Patch the oc-mirror-generated IDMS to ensure both quay.io and
@@ -258,6 +278,8 @@ disconnected::patch_idms() {
 
   log::debug "Patched IDMS:"
   log::debug "$(cat "${idms_file}")"
+
+  cp "${idms_file}" "${ARTIFACT_DIR}/disconnected-idms-patched.yaml" 2> /dev/null || true
 }
 
 # Fetch an external script from the rhdh-operator repository.

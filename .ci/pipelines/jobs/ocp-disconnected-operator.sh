@@ -103,6 +103,9 @@ handle_ocp_disconnected_operator() {
   }
   log::success "ConfigMap rhdh-plugin-mirror-conf created in ${NAME_SPACE}"
 
+  envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
+    > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
+
   # --- Section E: Backstage CR Deployment ---
   log::section "Backstage CR Deployment"
 
@@ -120,6 +123,8 @@ handle_ocp_disconnected_operator() {
 
   local cr_temp="${DISCONNECTED_TMPDIR}/backstage-cr-disconnected.yaml"
   echo "$rendered_cr" > "${cr_temp}"
+
+  cp "${cr_temp}" "${ARTIFACT_DIR}/disconnected-backstage-cr.yaml" 2> /dev/null || true
 
   deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}"
   log::success "Backstage CR deployed in ${NAME_SPACE}"
