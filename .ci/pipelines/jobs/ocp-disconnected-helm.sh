@@ -86,6 +86,8 @@ handle_ocp_disconnected_helm() {
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}:${PG_TAG}"
 
+  echo "${helm_values}" > "${ARTIFACT_DIR}/disconnected-helm-chart-values.yaml" 2> /dev/null || true
+
   # --- Section D: Build ImageSetConfiguration ---
   log::section "Image Mirroring"
 
@@ -151,6 +153,9 @@ handle_ocp_disconnected_helm() {
   }
   log::success "ConfigMap rhdh-plugin-mirror-conf created in ${NAME_SPACE}"
 
+  envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
+    > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
+
   # --- Section I: Helm deployment from mirrored chart ---
   log::section "Helm Deployment"
 
@@ -185,6 +190,8 @@ handle_ocp_disconnected_helm() {
   }
 
   log::success "RHDH deployed via Helm with mirrored images"
+
+  printf '%s\n' "${helm_set_flags[@]}" > "${ARTIFACT_DIR}/disconnected-helm-set-flags.txt" 2> /dev/null || true
 
   # --- Section J: Smoke test ---
   log::section "Smoke Test"
