@@ -145,6 +145,8 @@ jobs:
       - name: Load and prepare image
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         id: prepare
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
         run: |
           # Check if artifacts exist
           if [ ! -f "./rhdh-podman-artifacts/image.tar" ]; then
@@ -155,22 +157,34 @@ jobs:
           
           # Load the image from tar file (contains all tags)
           podman load -i ./rhdh-podman-artifacts/image.tar
-          
+
           # Read metadata
           TAGS_LIST=$(cat ./rhdh-podman-artifacts/tags.txt)
-                    
+
           echo "Loaded images:"
           podman images
-          
+
           echo "Full tags from metadata:"
           printf '%s\n' "$TAGS_LIST"
-          
+        
+          # SECURITY: tags.txt is produced by the untrusted pull_request job (the
+          # fork author controls ./.github/actions/docker-build). Reject anything
+          # that is not exactly quay.io/rhdh-community/rhdh:pr-<this PR number>[-suffix]
+          # so a poisoned artifact cannot overwrite :next / :latest / :release-* tags.
+          ALLOWED_RE="^quay\.io/rhdh-community/rhdh:pr-${PR_NUMBER}(-[A-Za-z0-9._-]+)?$"
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            if ! [[ "$tag" =~ $ALLOWED_RE ]]; then
+              echo "::error::Refusing to push disallowed tag from untrusted artifact: $tag"
+              exit 1
+            fi
+          done <<< "$TAGS_LIST"
+
           # SECURITY: Use a random delimiter to prevent output injection from artifact poisoning
           DELIMITER=$(openssl rand -hex 16)
           echo "tags<<$DELIMITER" >> $GITHUB_OUTPUT
           printf '%s\n' "$TAGS_LIST" >> $GITHUB_OUTPUT
           echo "$DELIMITER" >> $GITHUB_OUTPUT
-
       - name: Push Images
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
