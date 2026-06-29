@@ -31,7 +31,14 @@ handle_ocp_disconnected_operator() {
   # --- Section A: Operator Mirroring + Installation ---
   # Uses prepare-restricted-environment.sh from rhdh-operator, which handles
   # mirroring operator/operand images and installing the operator CatalogSource.
+  # Requires podman for building custom operator index images.
   log::section "Operator Mirroring and Installation"
+
+  if ! command -v podman &> /dev/null; then
+    log::info "Installing podman (required by prepare-restricted-environment.sh)..."
+    apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq podman > /dev/null 2>&1
+    log::success "podman installed: $(podman --version)"
+  fi
 
   # TODO: revert to disconnected::fetch_script once redhat-developer/rhdh-operator#3109 merges.
   # The upstream script has a bug where INSTALL_YQ=0 triggers the yq install
