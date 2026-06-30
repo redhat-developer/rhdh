@@ -36,11 +36,15 @@ handle_ocp_disconnected_operator() {
 
   if ! command -v podman &> /dev/null; then
     log::info "Installing podman (required by prepare-restricted-environment.sh)..."
-    apt-get update -qq 2>&1
-    apt-get install -y -qq podman 2>&1
+    if ! apt-get update 2>&1; then
+      log::warn "apt-get update failed — continuing anyway"
+    fi
+    if ! apt-get install -y podman 2>&1; then
+      log::error "apt-get install podman failed"
+    fi
     hash -r
     if ! command -v podman &> /dev/null; then
-      log::error "Failed to install podman. Add podman to the rhdh-e2e-runner Dockerfile."
+      log::error "podman not available after install. Add podman to the rhdh-e2e-runner Dockerfile."
       return 1
     fi
     log::success "podman installed: $(podman --version)"
