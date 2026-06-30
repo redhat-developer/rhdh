@@ -90,7 +90,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "aws
 
 # Install skopeo and podman
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends skopeo podman
+    apt-get install -y --no-install-recommends skopeo podman && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install PostgreSQL CLI (psql only)
 RUN apt-get update && \
