@@ -23,6 +23,8 @@ Options:
   -r, --repo IMAGE_REPO   Image repository (e.g., rhdh/rhdh-hub-rhel9)
   -t, --tag TAG_NAME      Image tag (e.g., next, latest, 1.5)
   -p, --pr PR_NUMBER      PR number (sets repo to rhdh-community/rhdh, tag to pr-<number>)
+  -i, --runner-image IMG  Override the e2e runner container image
+                          (default: quay.io/rhdh-community/rhdh-e2e-runner:main)
   -s, --skip-tests        Deploy only, skip running tests
   -h, --help              Show this help message
 
@@ -44,6 +46,9 @@ Examples:
 
   # Run on GKE
   ./local-run.sh -j periodic-ci-gke-helm-nightly -r rhdh/rhdh-hub-rhel9 -t next -s
+
+  # Use a locally built runner image
+  ./local-run.sh --runner-image localhost/rhdh-e2e-runner:test
 
 EOF
   exit 0
@@ -71,6 +76,10 @@ while [[ $# -gt 0 ]]; do
     -p | --pr)
       CLI_IMAGE_REPO="rhdh-community/rhdh"
       CLI_TAG_NAME="pr-$2"
+      shift 2
+      ;;
+    -i | --runner-image)
+      RUNNER_IMAGE="$2"
       shift 2
       ;;
     -s | --skip-tests)
@@ -359,7 +368,12 @@ fi
 
 # Pull runner image first (can take a while)
 log::section "Pulling runner container image"
-podman pull "$RUNNER_IMAGE"
+# Skip pull for local images (localhost/ prefix)
+if [[ "$RUNNER_IMAGE" != localhost/* ]]; then
+  podman pull "$RUNNER_IMAGE"
+else
+  log::info "Using local image: $RUNNER_IMAGE (skipping pull)"
+fi
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
