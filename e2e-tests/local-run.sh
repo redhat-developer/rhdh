@@ -359,7 +359,7 @@ fi
 
 # Pull runner image first (can take a while)
 log::section "Pulling runner container image"
-podman pull "$RUNNER_IMAGE" --platform=linux/amd64
+podman pull "$RUNNER_IMAGE"
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
