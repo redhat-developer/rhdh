@@ -114,13 +114,8 @@ test.describe("Plugin Dynamic Loading", () => {
         // The CLI will automatically use dynamic-plugins.default.yaml from the catalog index
         await mkdir(dynamicPluginsRoot, { recursive: true });
 
-        // Create dynamic-plugins.yaml that enables all plugins from catalog index
-        const dynamicPluginsConfig = `includePackages:
-  - '*'`;
-        await writeFile(
-          join(dynamicPluginsRoot, "dynamic-plugins.yaml"),
-          dynamicPluginsConfig,
-        );
+        // Do NOT create dynamic-plugins.yaml - let the CLI use the extracted
+        // dynamic-plugins.default.yaml which has the full plugin list and generates manifest.json
 
         reportDownloadStarted();
 
