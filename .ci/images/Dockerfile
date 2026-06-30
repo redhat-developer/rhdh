@@ -85,7 +85,8 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
 # Install AWS CLI (uname -m returns x86_64 on amd64, aarch64 on arm64 — matching AWS URL naming)
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
-    ./aws/install
+    ./aws/install && \
+    rm -rf awscliv2.zip aws/
 
 # Install skopeo and podman
 RUN apt-get update -y && \
