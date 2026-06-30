@@ -366,9 +366,16 @@ if [[ "$CLI_MODE" == "false" ]]; then
   echo ""
 fi
 
-# Pull runner image first (can take a while)
+# Pull runner image (always attempt; fall back to local copy if pull fails)
 log::section "Pulling runner container image"
-podman pull "$RUNNER_IMAGE"
+if ! podman pull "$RUNNER_IMAGE" 2>/dev/null; then
+  if podman image exists "$RUNNER_IMAGE" 2>/dev/null; then
+    log::info "Pull failed but image exists locally: $RUNNER_IMAGE"
+  else
+    log::error "Failed to pull image and no local copy: $RUNNER_IMAGE"
+    exit 1
+  fi
+fi
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
