@@ -1,5 +1,6 @@
-import { defineConfig, devices } from "@playwright/test";
 import { resolve } from "path";
+
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Cluster-free local E2E harness for the legacy frontend (`packages/app`) — Tier B.
@@ -29,6 +30,7 @@ const frontendUrl = "http://localhost:3000";
 const backendReadiness = "http://localhost:7007/.backstage/health/v1/readiness";
 const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
 const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
+const isCI = process.env.CI !== undefined && process.env.CI !== "";
 
 const sharedConfigArgs = [
   "--config ../../app-config.yaml",
@@ -46,19 +48,19 @@ export default defineConfig({
   // profile dropdown (needs the global-header plugin) or need per-spec config. See
   // docs/e2e-tests/local-e2e-harness.md "Known issues". Widen as specs are validated.
   testMatch: ["e2e/guest-signin-happy-path.spec.ts"],
-  grep: /Homepage renders with Search Bar/,
+  grep: /Homepage renders with Search Bar/u,
   timeout: 90 * 1000,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
-  workers: 1, // serial: a single shared backend + dev server
+  forbidOnly: isCI,
+  retries: isCI ? 1 : 0,
+  // serial: a single shared backend + dev server
+  workers: 1,
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: "playwright-report-legacy-local" }],
     [
       "junit",
       {
-        outputFile:
-          process.env.JUNIT_RESULTS || "junit-results-legacy-local.xml",
+        outputFile: process.env.JUNIT_RESULTS ?? "junit-results-legacy-local.xml",
       },
     ],
   ],
@@ -90,7 +92,7 @@ export default defineConfig({
         NODE_OPTIONS: "--no-node-snapshot",
       },
       url: backendReadiness,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: !isCI,
       timeout: 180 * 1000,
       stdout: "pipe",
       stderr: "pipe",
@@ -100,7 +102,7 @@ export default defineConfig({
       cwd: "../packages/app",
       env: { ...process.env, PATH: pathWithRepoBin },
       url: frontendUrl,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: !isCI,
       timeout: 240 * 1000,
       stdout: "pipe",
       stderr: "pipe",

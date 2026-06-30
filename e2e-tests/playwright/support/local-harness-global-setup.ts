@@ -14,9 +14,7 @@ export default function requireDynamicPluginsPopulated(): void {
 
   let pluginCount = 0;
   try {
-    pluginCount = readdirSync(root).filter(
-      (entry) => entry !== ".gitkeep",
-    ).length;
+    pluginCount = readdirSync(root).filter((entry) => entry !== ".gitkeep").length;
   } catch {
     // root missing — treated as empty below.
   }
