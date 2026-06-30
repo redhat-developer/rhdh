@@ -126,7 +126,7 @@ jobs:
 
   merge:
     name: Create multi-arch manifest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build-image
     permissions:
       contents: read
