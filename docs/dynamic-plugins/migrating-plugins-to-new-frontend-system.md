@@ -45,6 +45,41 @@ The biggest mindset shift: in RHDH dynamic wiring, adopters declare *what compon
 
 4. **Check the [version matrix](versions.md)** when re-exporting dynamic plugin packages with the RHDH CLI.
 
+## API breaking changes
+
+If you previously migrated against an early alpha of the new frontend system, update your code for these changes:
+
+### Blueprint param renames (v1.42.0+)
+
+| Blueprint | Old param | New param |
+| --- | --- | --- |
+| `PageBlueprint` | `defaultPath` | `path` |
+| `EntityContentBlueprint` | `defaultPath` | `path` |
+| `EntityContentBlueprint` | `defaultTitle` | `title` |
+| `EntityContentBlueprint` | `defaultGroup` | `group` |
+| `AppRootWrapperBlueprint` | `Component` (uppercase) | `component` (lowercase) |
+
+### `makeWithOverrides` config schema (v1.42.0+)
+
+The `config: { schema: {...} }` callback is deprecated. Use `configSchema` with a direct `zod/v4` import:
+
+```tsx
+// Old
+EntityContentBlueprint.makeWithOverrides({
+  config: { schema: { filter: z => z.string().optional() } },
+  ...
+});
+
+// New
+import { z } from 'zod/v4';
+EntityContentBlueprint.makeWithOverrides({
+  configSchema: { filter: z.string().optional() },
+  ...
+});
+```
+
+---
+
 ## Migration strategy
 
 We recommend a three-phase approach:
@@ -67,6 +102,24 @@ For each item in your `dynamicPlugins.frontend.<package>` config, implement the 
 2. Set `app.packages: all` (or include your package explicitly).
 3. Use `app.extensions` only for adopter-specific overrides (titles, filters, ordering).
 4. Run the app and verify routes, entity tabs, APIs, and cross-plugin links.
+
+#### Dev app setup
+
+Add a new frontend system dev app alongside the existing legacy dev app:
+
+```tsx
+// dev/nfs.tsx
+import ReactDOM from 'react-dom/client';
+import { createApp } from '@backstage/frontend-defaults';
+import myPlugin from '../src/alpha';
+
+const app = createApp({ features: [myPlugin] });
+ReactDOM.createRoot(document.getElementById('root')!).render(app.createRoot());
+```
+
+```json
+"start:nfs": "backstage-cli package start --entrypoint dev/nfs"
+```
 
 ---
 
@@ -626,12 +679,32 @@ const myPluginWrapper = PluginWrapperBlueprint.make({
 
 **RHDH wiring:** Uses `application/provider`, `application/internal/drawer-state`, and `application/internal/drawer-content` mount points with RHDH-coordinated drawer management.
 
-**Status:** This is an **RHDH-specific** integration pattern. There is no direct equivalent in the upstream new frontend system today. Options:
+**New approach — plugin code:**
 
-1. Keep using RHDH dynamic plugin wiring for drawer plugins until RHDH provides a new-frontend-system drawer blueprint.
-2. Reimplement drawer UX with `AppRootElementBlueprint` / layout overrides if targeting a standard Backstage app.
+RHDH provides `AppDrawerContentBlueprint` from `@red-hat-developer-hub/backstage-plugin-app-react/alpha`:
 
-See the note in [Frontend Plugin Wiring — Adding application drawers](frontend-plugin-wiring.md#adding-application-drawers).
+```tsx
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+
+const myDrawer = AppDrawerContentBlueprint.make({
+  name: 'my-drawer',
+  params: {
+    id: MY_DRAWER_ID,
+    element: <DrawerContent />,
+    resizable: true,
+    defaultWidth: 400,
+  },
+});
+```
+
+Register in your plugin's `extensions` array.
+
+> **Init logic:** Drawer content mounts/unmounts with the drawer. Persistent initialization (auto-open triggers, event listeners) must go in a separate `AppRootElementBlueprint` via `createFrontendModule({ pluginId: 'app' })`.
+
+**Notes:**
+
+- `AppDrawerContentBlueprint` is RHDH-specific — not available in upstream Backstage.
+- See [lightspeed #2721](https://github.com/redhat-developer/rhdh-plugins/pull/2721) and [quickstart #2842](https://github.com/redhat-developer/rhdh-plugins/pull/2842) for real migration examples.
 
 ---
 
@@ -705,8 +778,11 @@ translationResources:
 
 **New approach — plugin code:**
 
+> **Important:** Translations target the `app` plugin, not your plugin. Wrap `TranslationBlueprint` in `createFrontendModule({ pluginId: 'app' })` and export the module separately. Placing translations in your plugin's own `extensions` array will silently fail.
+
 ```tsx
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { myTranslationRef } from './translation';
 
 const myTranslations = TranslationBlueprint.make({
@@ -714,7 +790,36 @@ const myTranslations = TranslationBlueprint.make({
     resource: myTranslationRef,
   },
 });
+
+export const myTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [myTranslations],
+});
 ```
+
+Export the module as a named export alongside the default plugin export in `src/alpha.tsx`.
+
+#### Auto-discovery via separate entry point
+
+Modules targeting `pluginId: 'app'` are not auto-discovered by `app.packages: all` because they are not part of `createFrontendPlugin`. To make them auto-discoverable without explicit code changes in the consuming app, re-export the module as a **default export** from a separate file and add it as its own entry point in `package.json`:
+
+```tsx
+// src/myTranslationsModuleExport.ts
+export { myTranslationsModule as default } from './index';
+```
+
+```json
+{
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.tsx",
+    "./my-translations-module": "./src/myTranslationsModuleExport.ts",
+    "./package.json": "./package.json"
+  }
+}
+```
+
+Module federation treats each entry point as a separate remote. This lets the Backstage app load the module automatically without adding it to the `features` array. This pattern works for any `createFrontendModule` that targets a different plugin (init logic, translations, etc.). See the [quickstart plugin](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/quickstart/plugins/quickstart) for a real example.
 
 **Adopter configuration:** Override messages via additional `TranslationBlueprint` extensions or JSON translation resources attached to the app.
 
@@ -1045,12 +1150,82 @@ Use this checklist before declaring migration complete:
 
 ---
 
+## Common migration gotchas
+
+### `ApiBlueprint.make` requires a `defineParams` wrapper
+
+`ApiBlueprint.make` expects a callback wrapping `createApiFactory(...)`. Passing a plain params object will not work:
+
+```tsx
+// Wrong
+ApiBlueprint.make({
+  params: { api: myApiRef, deps: {...}, factory: (...) => ... },
+});
+
+// Correct
+ApiBlueprint.make({
+  params: defineParams => defineParams(
+    createApiFactory({ api: myApiRef, deps: {...}, factory: (...) => ... })
+  ),
+});
+```
+
+### Double headers in pages
+
+Legacy page components include `PageWithHeader` or `Page` + `Header`. In the new frontend system, the framework provides the header via `PageLayout`. Using both produces double headers. Create an NFS variant without the page shell:
+
+```tsx
+export function MyPage() {
+  return <PageWithHeader title="My Plugin" themeId="tool"><Content><MyPageContent /></Content></PageWithHeader>;
+}
+
+// NFS variant — content only
+export function NfsMyPage() {
+  return <Content><MyPageContent /></Content>;
+}
+```
+
+```tsx
+loader: () => import('./components/MyPage').then(m => <m.NfsMyPage />)
+```
+
+### Plugin must be the default export
+
+The new frontend system discovers plugins via default imports. A named export will not be picked up:
+
+```tsx
+// Wrong
+export const myPlugin = createFrontendPlugin({ pluginId: 'my-plugin', ... });
+
+// Correct
+export default createFrontendPlugin({ pluginId: 'my-plugin', ... });
+```
+
+---
+
+## Reference migration PRs
+
+Real-world migration PRs from the `rhdh-plugins` repository:
+
+| Plugin | PR | What to learn | Complexity |
+| --- | --- | --- | --- |
+| adoption-insights | [#2309](https://github.com/redhat-developer/rhdh-plugins/pull/2309) | Simple page plugin | Low |
+| bulk-import | [#2247](https://github.com/redhat-developer/rhdh-plugins/pull/2247) | Permission-based access | Low-Medium |
+| scorecard | [#2487](https://github.com/redhat-developer/rhdh-plugins/pull/2487) | EntityContent + HomePageWidget | Medium |
+| orchestrator | [#2526](https://github.com/redhat-developer/rhdh-plugins/pull/2526) | Multiple routes/pages | Medium |
+| lightspeed | [#2721](https://github.com/redhat-developer/rhdh-plugins/pull/2721) | Drawer + FAB (RHDH-specific) | Medium |
+| extensions | [#2527](https://github.com/redhat-developer/rhdh-plugins/pull/2527) | `compatWrapper` usage | Medium |
+| homepage | [#2423](https://github.com/redhat-developer/rhdh-plugins/pull/2423) | HomePageWidgets | Medium |
+| quickstart | [#2842](https://github.com/redhat-developer/rhdh-plugins/pull/2842) | Drawer + GlobalHeaderMenuItem | Medium-High |
+
+---
+
 ## RHDH-specific features without upstream equivalents (yet)
 
 | Feature | Status |
 | --- | --- |
 | Nested sidebar menu groups (`menuItems.parent`) | RHDH dynamic plugins only — use `NavContentBlueprint` for custom nav upstream |
-| Application drawer mount points | RHDH-specific — pending new frontend system design |
+| Application drawer mount points | `AppDrawerContentBlueprint` in `@red-hat-developer-hub/backstage-plugin-app-react/alpha` — see [drawer section](#adding-application-drawers-applicationinternaldrawer) |
 | `global.header/help` and similar RHDH header slots | Being migrated in `rhdh-plugins` global-header workspace |
 | RHDH `mountPoints[].config.layout` grid SX | Implement in component CSS or card wrapper |
 | `staticJSXContent` dynamic plugin pattern | Legacy dynamic host — replace with extension inputs / Utility APIs |
