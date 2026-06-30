@@ -368,12 +368,7 @@ fi
 
 # Pull runner image first (can take a while)
 log::section "Pulling runner container image"
-# Skip pull for local images (localhost/ prefix)
-if [[ "$RUNNER_IMAGE" != localhost/* ]]; then
-  podman pull "$RUNNER_IMAGE"
-else
-  log::info "Using local image: $RUNNER_IMAGE (skipping pull)"
-fi
+podman pull "$RUNNER_IMAGE"
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
@@ -450,7 +445,7 @@ echo ""
 CONTAINER_EXIT_CODE=0
 podman run -v "$WORK_DIR":/tmp/rhdh \
   -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro \
-  -it -u root --privileged \
+  -i -u root --privileged \
   --mount type=tmpfs,destination=/tmp/secrets \
   -e VAULT_ADDR="$VAULT_ADDR" \
   -e VAULT_TOKEN="$VAULT_TOKEN" \
