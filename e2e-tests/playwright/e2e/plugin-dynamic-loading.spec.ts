@@ -30,11 +30,12 @@ import { test, expect } from "@support/coverage/test";
 import { startTestBackend, mockServices } from "@backstage/backend-test-utils";
 import catalogPlugin from "@backstage/plugin-catalog-backend";
 import scaffolderPlugin from "@backstage/plugin-scaffolder-backend";
-import { mkdtemp, rm, writeFile, mkdir } from "fs/promises";
+import { mkdtemp, rm, writeFile, mkdir, readFile } from "fs/promises";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { tmpdir } from "os";
 import { execSync } from "child_process";
+import { existsSync } from "fs";
 import {
   loadManifest,
   loadBackendPlugins,
@@ -111,11 +112,7 @@ test.describe("Plugin Dynamic Loading", () => {
 
       try {
         // Step 1: Create dynamic-plugins-root directory
-        // The CLI will automatically use dynamic-plugins.default.yaml from the catalog index
         await mkdir(dynamicPluginsRoot, { recursive: true });
-
-        // Do NOT create dynamic-plugins.yaml - let the CLI use the extracted
-        // dynamic-plugins.default.yaml which has the full plugin list and generates manifest.json
 
         reportDownloadStarted();
 
@@ -133,9 +130,40 @@ test.describe("Plugin Dynamic Loading", () => {
           );
         }
 
-        // Step 3: Run install-dynamic-plugins
+        // Step 3a: Extract catalog index to get dynamic-plugins.default.yaml
         const installCmd = `npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install .`;
 
+        console.log("📦 Extracting catalog index...");
+        try {
+          execSync(installCmd, {
+            cwd: dynamicPluginsRoot,
+            env: {
+              ...process.env,
+              CATALOG_INDEX_IMAGE: catalogIndexImage,
+            },
+            stdio: "inherit",
+          });
+        } catch (error) {
+          // First run extracts catalog but skips install (no dynamic-plugins.yaml)
+          // This is expected - we'll copy the default file next
+          console.log("✓ Catalog index extracted");
+        }
+
+        // Step 3b: Copy dynamic-plugins.default.yaml to dynamic-plugins.yaml
+        const defaultConfig = join(dynamicPluginsRoot, "dynamic-plugins.default.yaml");
+        const targetConfig = join(dynamicPluginsRoot, "dynamic-plugins.yaml");
+
+        if (existsSync(defaultConfig)) {
+          const configContent = await readFile(defaultConfig, "utf8");
+          await writeFile(targetConfig, configContent);
+          console.log("✓ Copied dynamic-plugins.default.yaml to dynamic-plugins.yaml");
+        } else {
+          throw new Error(
+            `dynamic-plugins.default.yaml not found after catalog extraction at ${defaultConfig}`,
+          );
+        }
+
+        // Step 3c: Run install again with the config file
         reportCliCommand(installCmd, catalogIndexImage);
 
         try {
