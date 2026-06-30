@@ -166,6 +166,20 @@ handle_ocp_disconnected_helm() {
   envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 
+  # Combined CA bundle: system CAs + mirror registry CA.
+  # The init container's skopeo needs to trust the mirror registry when
+  # IDMS redirects quay.io/registry.redhat.io pulls to the mirror.
+  local combined_ca="${DISCONNECTED_TMPDIR}/combined-ca-bundle.crt"
+  cat /etc/pki/tls/certs/ca-bundle.crt "${MIRROR_REGISTRY_CA}" > "${combined_ca}"
+  oc create configmap mirror-registry-ca \
+    --from-file="tls-ca-bundle.pem=${combined_ca}" \
+    -n "${NAME_SPACE}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create mirror-registry-ca ConfigMap — aborting"
+    return 1
+  }
+  log::success "ConfigMap mirror-registry-ca created in ${NAME_SPACE}"
+
   # --- Section I: Helm deployment from mirrored chart ---
   log::section "Helm Deployment"
 
