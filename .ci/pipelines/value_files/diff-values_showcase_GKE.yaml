@@ -14,13 +14,13 @@ global:
       # OCM - test ignored
       # Test file: e2e-tests/playwright/e2e/plugins/ocm.spec.ts (currently doesn't exist)
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-        disabled: true
+        enabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-        disabled: true
+        enabled: false
 
       # Scaffolder relation processor - keep enabled for K8s
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-        disabled: false
+        enabled: true
 upstream:
   backstage:
     extraEnvVarsSecrets:

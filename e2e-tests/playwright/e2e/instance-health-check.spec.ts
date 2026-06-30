@@ -1,7 +1,7 @@
 import { test, expect } from "@support/coverage/test";
 
 test.describe("Application health check", () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",
@@ -13,7 +13,7 @@ test.describe("Application health check", () => {
 
     const response = await request.get(healthCheckEndpoint);
 
-    const responseBody = await response.json();
+    const responseBody: unknown = await response.json();
 
     expect(response.status()).toBe(200);
 

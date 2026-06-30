@@ -1,4 +1,6 @@
 import { test, expect, Page } from "@support/coverage/test";
+
+import RhdhRbacApi from "../../support/api/rbac-api";
 import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
 import {
   RBAC_API,
@@ -12,10 +14,8 @@ import {
   buildNotAllowedError,
   httpMethod,
 } from "./rbac-test-utils";
-import RhdhRbacApi from "../../support/api/rbac-api";
 
-const auditStatus = (ok: boolean): "succeeded" | "failed" =>
-  ok ? "succeeded" : "failed";
+const auditStatus = (ok: boolean): "succeeded" | "failed" => (ok ? "succeeded" : "failed");
 
 let common: Common;
 let rbacApi: RhdhRbacApi;
@@ -171,11 +171,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     {
       name: "update",
       call: () =>
-        rbacApi.updatePolicy(
-          ROLE_NAME,
-          [POLICY_DATA],
-          [{ ...POLICY_DATA, effect: "deny" }],
-        ),
+        rbacApi.updatePolicy(ROLE_NAME, [POLICY_DATA], [{ ...POLICY_DATA, effect: "deny" }]),
       url: RBAC_API.policy.item(ROLE_NAME),
       action: "update" as const,
     },
@@ -195,11 +191,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
         USER_ENTITY_REF,
         { method: httpMethod(s.action), url: s.url },
         { actionType: s.action, source: "rest" },
-        buildNotAllowedError(
-          s.action,
-          "policy",
-          `${ROLE_NAME},policy-entity,read,allow`,
-        ),
+        buildNotAllowedError(s.action, "policy", `${ROLE_NAME},policy-entity,read,allow`),
         "failed",
       );
     });

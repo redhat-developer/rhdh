@@ -9,12 +9,14 @@
   "scripts": {
     "copy-dynamic-plugins": "node ./copy-plugins.js",
     "lint": "backstage-cli package lint",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
     "test": "backstage-cli package test --passWithNoTests --coverage"
   },
   "devDependencies": {
     "@backstage/cli": "0.36.3",
     "@backstage/cli-defaults": "0.1.3",
     "glob": "11.1.0",
-    "yaml": "2.8.3"
+    "yaml": "2.9.0"
   }
 }

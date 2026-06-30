@@ -1,6 +1,7 @@
 import KcAdminClient from "@keycloak/keycloak-admin-client";
-import UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
-import GroupRepresentation from "@keycloak/keycloak-admin-client/lib/defs/groupRepresentation";
+
+type UserRepresentation = NonNullable<Parameters<KcAdminClient["users"]["create"]>[0]>;
+type GroupRepresentation = NonNullable<Parameters<KcAdminClient["groups"]["create"]>[0]>;
 
 interface KeycloakConfig {
   baseUrl: string;
@@ -31,8 +32,8 @@ export class KeycloakHelper {
 
       // Refresh token every 58 minutes
       setInterval(
-        async () => {
-          await this.kcAdminClient.auth({
+        () => {
+          void this.kcAdminClient.auth({
             clientId: this.config.clientId,
             clientSecret: this.config.clientSecret,
             grantType: "client_credentials",
@@ -83,15 +84,11 @@ export class KeycloakHelper {
     }
   }
 
-  async findUserByUsername(
-    username: string,
-  ): Promise<UserRepresentation | undefined> {
+  async findUserByUsername(username: string): Promise<UserRepresentation | undefined> {
     try {
       console.log(`[KEYCLOAK] Finding user by username: ${username}`);
       const users = await this.kcAdminClient.users.find({ username });
-      console.log(
-        `[KEYCLOAK] Found ${users.length} users with username: ${username}`,
-      );
+      console.log(`[KEYCLOAK] Found ${users.length} users with username: ${username}`);
       return users[0];
     } catch (error) {
       console.error(`[KEYCLOAK] Failed to find user ${username}:`, error);
@@ -112,10 +109,7 @@ export class KeycloakHelper {
     }
   }
 
-  async updateGroup(
-    groupId: string,
-    group: GroupRepresentation,
-  ): Promise<void> {
+  async updateGroup(groupId: string, group: GroupRepresentation): Promise<void> {
     try {
       console.log(`[KEYCLOAK] Updating group: ${groupId}`);
       await this.kcAdminClient.groups.update({ id: groupId }, group);
@@ -142,14 +136,9 @@ export class KeycloakHelper {
     try {
       console.log(`[KEYCLOAK] Adding user ${userId} to group ${groupId}`);
       await this.kcAdminClient.users.addToGroup({ id: userId, groupId });
-      console.log(
-        `[KEYCLOAK] User ${userId} added to group ${groupId} successfully`,
-      );
+      console.log(`[KEYCLOAK] User ${userId} added to group ${groupId} successfully`);
     } catch (error) {
-      console.error(
-        `[KEYCLOAK] Failed to add user ${userId} to group ${groupId}:`,
-        error,
-      );
+      console.error(`[KEYCLOAK] Failed to add user ${userId} to group ${groupId}:`, error);
       throw error;
     }
   }
@@ -158,14 +147,9 @@ export class KeycloakHelper {
     try {
       console.log(`[KEYCLOAK] Removing user ${userId} from group ${groupId}`);
       await this.kcAdminClient.users.delFromGroup({ id: userId, groupId });
-      console.log(
-        `[KEYCLOAK] User ${userId} removed from group ${groupId} successfully`,
-      );
+      console.log(`[KEYCLOAK] User ${userId} removed from group ${groupId} successfully`);
     } catch (error) {
-      console.error(
-        `[KEYCLOAK] Failed to remove user ${userId} from group ${groupId}:`,
-        error,
-      );
+      console.error(`[KEYCLOAK] Failed to remove user ${userId} from group ${groupId}:`, error);
       throw error;
     }
   }
@@ -180,25 +164,20 @@ export class KeycloakHelper {
       }
 
       const sessions = await this.kcAdminClient.users.listSessions({
-        id: user.id,
+        id: user.id!,
       });
-      console.log(
-        `[KEYCLOAK] Found ${sessions.length} sessions for user ${username}`,
-      );
+      console.log(`[KEYCLOAK] Found ${sessions.length} sessions for user ${username}`);
 
       for (const session of sessions) {
         await this.kcAdminClient.realms.removeSession({
           realm: this.config.realmName,
-          sessionId: session.id,
+          sessionId: session.id!,
         });
       }
 
       console.log(`[KEYCLOAK] All sessions cleared for user ${username}`);
     } catch (error) {
-      console.error(
-        `[KEYCLOAK] Failed to clear sessions for user ${username}:`,
-        error,
-      );
+      console.error(`[KEYCLOAK] Failed to clear sessions for user ${username}:`, error);
       throw error;
     }
   }

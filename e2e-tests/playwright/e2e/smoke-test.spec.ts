@@ -1,12 +1,13 @@
 import { test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
+
 import { Common } from "../utils/common";
+import { UIhelper } from "../utils/ui-helper";
 
 test.describe("Smoke test", { tag: "@smoke" }, () => {
   let uiHelper: UIhelper;
   let common: Common;
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",

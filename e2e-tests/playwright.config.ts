@@ -1,32 +1,25 @@
 import { defineConfig, devices } from "@playwright/test";
 import type { ReporterDescription } from "@playwright/test";
+
 import { PW_PROJECT } from "./playwright/projects";
 
-process.env.JOB_NAME = process.env.JOB_NAME || "";
-process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
+process.env.JOB_NAME = process.env.JOB_NAME ?? "";
+process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT ?? "";
 
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
 if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_DE))) {
   process.env.LOCALE = "de";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_ES))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_ES))) {
   process.env.LOCALE = "es";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
   process.env.LOCALE = "fr";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))) {
   process.env.LOCALE = "it";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))) {
   process.env.LOCALE = "ja";
-} else if (!process.env.LOCALE) {
+} else if (process.env.LOCALE === undefined || process.env.LOCALE === "") {
   process.env.LOCALE = "en";
 }
 
@@ -34,8 +27,9 @@ const k8sSpecificConfig = {
   use: {
     actionTimeout: 15 * 1000,
   },
+  // Global expect timeout
   expect: {
-    timeout: 15 * 1000, // Global expect timeout
+    timeout: 15 * 1000,
   },
 };
 
@@ -43,9 +37,9 @@ export default defineConfig({
   timeout: 90 * 1000,
   testDir: "./playwright",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: process.env.CI !== undefined && process.env.CI !== "",
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI !== undefined && process.env.CI !== "" ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: 3,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -54,16 +48,14 @@ export default defineConfig({
   reporter: [
     ["html"],
     ["list"],
-    ["junit", { outputFile: process.env.JUNIT_RESULTS || "junit-results.xml" }],
+    ["junit", { outputFile: process.env.JUNIT_RESULTS ?? "junit-results.xml" }],
     ...(process.env.COLLECT_COVERAGE === "true"
-      ? ([
-          ["./playwright/support/coverage/reporter.ts"],
-        ] satisfies ReporterDescription[])
+      ? ([["./playwright/support/coverage/reporter.ts"]] satisfies ReporterDescription[])
       : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    locale: process.env.LOCALE || "en",
+    locale: process.env.LOCALE ?? "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
     trace: "on",
@@ -81,8 +73,9 @@ export default defineConfig({
     actionTimeout: 10 * 1000,
     navigationTimeout: 50 * 1000,
   },
+  // Global expect timeout
   expect: {
-    timeout: 10 * 1000, // Global expect timeout
+    timeout: 10 * 1000,
   },
 
   /* Configure projects for major browsers */
@@ -119,7 +112,8 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
-        "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
+        // temporarily disable github-happy-path
+        "**/playwright/e2e/auth-providers/github-happy-path.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
       ],
@@ -178,20 +172,18 @@ export default defineConfig({
       testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
-      name: PW_PROJECT.SHOWCASE_RUNTIME_DB,
-      workers: 1,
-      testMatch: [
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
-      ],
-    },
-    {
       name: PW_PROJECT.SHOWCASE_RUNTIME,
       workers: 1,
-      dependencies: [PW_PROJECT.SHOWCASE_RUNTIME_DB],
+      // Runtime tests restart the RHDH deployment (ConfigMap changes,
+      // external DB reconfiguration, schema-mode setup). Each restart
+      // takes ~60-90 s on a typical cluster, so the default 90 s global
+      // timeout is insufficient. 10 minutes gives comfortable headroom.
+      timeout: 10 * 60 * 1000,
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
       ],
     },
 

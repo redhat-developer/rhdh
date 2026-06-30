@@ -793,23 +793,6 @@
       "badges.addedByAdmin": "Plugin aggiunti dall'amministratore"
     }
   },
-  "plugin.global-floating-action-button": {
-    "it": {
-      "fab.create.label": "Crea",
-      "fab.create.tooltip": "Crea entità",
-      "fab.docs.label": "Documenti",
-      "fab.docs.tooltip": "Documentazione",
-      "fab.apis.label": "API",
-      "fab.apis.tooltip": "Documentazione API",
-      "fab.github.label": "GitHub",
-      "fab.github.tooltip": "Repository di GitHub",
-      "fab.bulkImport.label": "Importazione in blocco",
-      "fab.bulkImport.tooltip": "Registra più repository in blocco",
-      "fab.quay.label": "Quay",
-      "fab.quay.tooltip": "Registro container Quay",
-      "fab.menu.tooltip": "Menu"
-    }
-  },
   "plugin.global-header": {
     "it": {
       "help.tooltip": "Assistenza",

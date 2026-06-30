@@ -1,8 +1,9 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
+
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
+import { UIhelper } from "../../utils/ui-helper";
 let page: Page;
 let context: BrowserContext;
 
@@ -14,6 +15,7 @@ GITHUB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
+// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
 test.describe("Configure Github Provider", async () => {
   let common: Common;
   let uiHelper: UIhelper;
@@ -58,15 +60,15 @@ test.describe("Configure Github Provider", async () => {
 
     // expect some expected variables
 
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_USER_PASSWORD).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_USER_2FA).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ADMIN_2FA).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_APP_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_USER_2FA!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_APP_ID!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY!).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET!).toBeDefined();
 
     // clean old namespaces
     await deployment.deleteNamespaceIfExists();
@@ -81,33 +83,37 @@ test.describe("Configure Github Provider", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
+    if (
+      process.env.ISRUNNINGLOCAL === undefined ||
+      process.env.ISRUNNINGLOCAL === "" ||
+      process.env.ISRUNNINGLOCAL === "false"
+    ) {
       await deployment.addSecretData("BASE_URL", backstageUrl);
       await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_NAME",
-      process.env.AUTH_PROVIDERS_GH_ORG_NAME,
+      process.env.AUTH_PROVIDERS_GH_ORG_NAME!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_APP_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_APP_ID,
+      process.env.AUTH_PROVIDERS_GH_ORG_APP_ID!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
-      process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY,
+      process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET,
+      process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET!,
     );
 
     await deployment.createSecret();
@@ -126,18 +132,16 @@ test.describe("Configure Github Provider", async () => {
     await deployment.waitForSynced();
   });
 
-  test.beforeEach(async () => {
+  test.beforeEach(() => {
     test.info().setTimeout(600 * 1000);
-    console.log(
-      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
-    );
+    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
 
   test("Login with Github default resolver", async () => {
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
     );
     expect(login).toBe("Login successful");
 
@@ -152,7 +156,7 @@ test.describe("Configure Github Provider", async () => {
     await deployment.setGithubResolver("usernameMatchingUserEntityName", false);
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -160,8 +164,8 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
     );
     expect(login).toBe("Login successful");
 
@@ -173,13 +177,10 @@ test.describe("Configure Github Provider", async () => {
 
   test("Login with Github emailMatchingUserEntityProfileEmail resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await deployment.setGithubResolver(
-      "emailMatchingUserEntityProfileEmail",
-      false,
-    );
+    await deployment.setGithubResolver("emailMatchingUserEntityProfileEmail", false);
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -187,26 +188,21 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
+    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await context.clearCookies();
   });
 
   test("Login with Github emailLocalPartMatchingUserEntityName resolver", async () => {
     //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await deployment.setGithubResolver(
-      "emailLocalPartMatchingUserEntityName",
-      false,
-    );
+    await deployment.setGithubResolver("emailLocalPartMatchingUserEntityName", false);
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -214,28 +210,23 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
     );
 
     // Login failed; caused by Error: Login failed, user profile does not contain an email
 
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
+    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await context.clearCookies();
   });
 
   test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty(
-      "auth.providers.github.production.sessionDuration",
-      "3days",
-    );
+    deployment.setAppConfigProperty("auth.providers.github.production.sessionDuration", "3days");
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -243,22 +234,23 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
     );
     expect(login).toBe("Login successful");
 
     await page.reload();
 
     const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "github-refresh-token",
-    );
+    const authCookie = cookies.find((cookie) => cookie.name === "github-refresh-token");
+    expect(authCookie).toBeDefined();
 
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+    // expected duration of 3 days in ms
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    // allow for 3 minutes tolerance
+    const tolerance = 3 * 60 * 1000;
 
-    const actualDuration = authCookie.expires * 1000 - Date.now();
+    const actualDuration = authCookie!.expires * 1000 - Date.now();
 
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
@@ -271,34 +263,20 @@ test.describe("Configure Github Provider", async () => {
 
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     test.setTimeout(300 * 1000);
-    await page.waitForTimeout(5000);
 
+    await expect
+      .poll(() => deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"]), {
+        timeout: 120_000,
+      })
+      .toBe(true);
     expect(
-      await deployment.checkUserIsIngestedInCatalog([
-        "RHDH QE User 1",
-        "RHDH QE Admin",
-      ]),
+      await deployment.checkGroupIsIngestedInCatalog(["test_admins", "test_all", "test_users"]),
     ).toBe(true);
-    expect(
-      await deployment.checkGroupIsIngestedInCatalog([
-        "test_admins",
-        "test_all",
-        "test_users",
-      ]),
-    ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins"),
-    ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("rhdhqeauth1", "test_users"),
-    ).toBe(true);
+    expect(await deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("rhdhqeauth1", "test_users")).toBe(true);
 
-    expect(
-      await deployment.checkGroupIsChildOfGroup("test_users", "test_all"),
-    ).toBe(true);
-    expect(
-      await deployment.checkGroupIsChildOfGroup("test_admins", "test_all"),
-    ).toBe(true);
+    expect(await deployment.checkGroupIsChildOfGroup("test_users", "test_all")).toBe(true);
+    expect(await deployment.checkGroupIsChildOfGroup("test_admins", "test_all")).toBe(true);
 
     expect(
       await deployment.checkUserHasAnnotation(
@@ -308,11 +286,7 @@ test.describe("Configure Github Provider", async () => {
       ),
     ).toBe(true);
     expect(
-      await deployment.checkUserHasAnnotation(
-        "rhdhqeauth1",
-        "MY_CUSTOM_ANNOTATION",
-        "rhdhqeauth1",
-      ),
+      await deployment.checkUserHasAnnotation("rhdhqeauth1", "MY_CUSTOM_ANNOTATION", "rhdhqeauth1"),
     ).toBe(true);
   });
 
@@ -323,7 +297,7 @@ test.describe("Configure Github Provider", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    await deployment.waitForConfigReconciled();
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -331,14 +305,14 @@ test.describe("Configure Github Provider", async () => {
 
     const login = await common.githubLogin(
       "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
     );
 
     expect(login).toBe("Login successful");
 
     await uiHelper.verifyAlertErrorMessage(
-      /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/,
+      /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/u,
     );
     await context.clearCookies();
   });

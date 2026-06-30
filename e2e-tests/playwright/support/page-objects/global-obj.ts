@@ -1,5 +1,7 @@
+/* oxlint-disable playwright/no-raw-locators -- Legacy CSS selector constants; prefer SemanticSelectors get*() methods */
 import { Page, Locator } from "@playwright/test";
-import { SemanticSelectors } from "../selectors/semantic-selectors";
+
+import { SemanticSelectors } from "../selectors/semantic";
 
 /**
  * WAIT_OBJECTS - Loading indicators
@@ -30,8 +32,7 @@ export const UI_HELPER_ELEMENTS = {
   // ========================================
 
   /** @deprecated Use SemanticSelectors.button(page, name) or getButton() */
-  MuiButtonLabel:
-    'span[class^="MuiButton-label"],button[class*="MuiButton-root"]',
+  MuiButtonLabel: 'span[class^="MuiButton-label"],button[class*="MuiButton-root"]',
   /** @deprecated Use SemanticSelectors.button(page, name) with filter */
   MuiToggleButtonLabel: 'span[class^="MuiToggleButton-label"]',
   /** @deprecated Use SemanticSelectors.inputByLabel(page, label) */
@@ -79,16 +80,14 @@ export const UI_HELPER_ELEMENTS = {
    * ✅ Preferred over MuiButtonLabel
    * @example UI_HELPER_ELEMENTS.getButton(page, 'Submit').click()
    */
-  getButton: (page: Page, name: string | RegExp): Locator =>
-    SemanticSelectors.button(page, name),
+  getButton: (page: Page, name: string | RegExp): Locator => SemanticSelectors.button(page, name),
 
   /**
    * Get a link by its accessible name
    * ✅ Preferred for navigation elements
    * @example UI_HELPER_ELEMENTS.getLink(page, 'View Details').click()
    */
-  getLink: (page: Page, name: string | RegExp): Locator =>
-    SemanticSelectors.link(page, name),
+  getLink: (page: Page, name: string | RegExp): Locator => SemanticSelectors.link(page, name),
 
   /**
    * Get a table element
@@ -125,26 +124,21 @@ export const UI_HELPER_ELEMENTS = {
    * Get a heading by text and optional level
    * @example UI_HELPER_ELEMENTS.getHeading(page, 'RBAC', 1)
    */
-  getHeading: (
-    page: Page,
-    name: string | RegExp,
-    level?: 1 | 2 | 3 | 4 | 5 | 6,
-  ): Locator => SemanticSelectors.heading(page, name, level),
+  getHeading: (page: Page, name: string | RegExp, level?: 1 | 2 | 3 | 4 | 5 | 6): Locator =>
+    SemanticSelectors.heading(page, name, level),
 
   /**
    * Get a tab by name
    * ✅ Preferred over tabs selector
    * @example UI_HELPER_ELEMENTS.getTab(page, 'Settings').click()
    */
-  getTab: (page: Page, name: string | RegExp): Locator =>
-    SemanticSelectors.tab(page, name),
+  getTab: (page: Page, name: string | RegExp): Locator => SemanticSelectors.tab(page, name),
 
   /**
    * Get a dialog/modal
    * @example const dialog = UI_HELPER_ELEMENTS.getDialog(page, 'Confirm Delete')
    */
-  getDialog: (page: Page, name?: string | RegExp): Locator =>
-    SemanticSelectors.dialog(page, name),
+  getDialog: (page: Page, name?: string | RegExp): Locator => SemanticSelectors.dialog(page, name),
 
   /**
    * Get a card by heading text (semantic alternative to MuiCard)
@@ -196,8 +190,7 @@ export const UI_HELPER_ELEMENTS = {
    * ✅ Preferred over MuiAlert
    * @example await expect(UI_HELPER_ELEMENTS.getAlert(page, 'Error')).toBeVisible()
    */
-  getAlert: (page: Page, name?: string | RegExp): Locator =>
-    SemanticSelectors.alert(page, name),
+  getAlert: (page: Page, name?: string | RegExp): Locator => SemanticSelectors.alert(page, name),
 
   /**
    * Get navigation element

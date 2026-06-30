@@ -793,23 +793,6 @@
       "badges.addedByAdmin": "Vom Administrator hinzugefügte Plugins"
     }
   },
-  "plugin.global-floating-action-button": {
-    "de": {
-      "fab.create.label": "Erstellen",
-      "fab.create.tooltip": "Entity erstellen",
-      "fab.docs.label": "Dokumente",
-      "fab.docs.tooltip": "Dokumentation",
-      "fab.apis.label": "APIs",
-      "fab.apis.tooltip": "API-Dokumentation",
-      "fab.github.label": "GitHub",
-      "fab.github.tooltip": "GitHub-Repository",
-      "fab.bulkImport.label": "Massenimport",
-      "fab.bulkImport.tooltip": "Mehrere Repositorys gleichzeitig registrieren",
-      "fab.quay.label": "Quay",
-      "fab.quay.tooltip": "Quay-Containerregistrierung",
-      "fab.menu.tooltip": "Menü"
-    }
-  },
   "plugin.global-header": {
     "de": {
       "help.tooltip": "Hilfe",

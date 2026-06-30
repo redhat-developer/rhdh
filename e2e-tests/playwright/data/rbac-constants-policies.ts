@@ -1,0 +1,148 @@
+import { Policy } from "../support/api/rbac-api-structures";
+
+export const EXPECTED_POLICIES: Policy[] = [
+  {
+    entityReference: "role:default/rbac_admin",
+    permission: "policy-entity",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/rbac_admin",
+    permission: "policy.entity.create",
+    policy: "create",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/rbac_admin",
+    permission: "policy-entity",
+    policy: "delete",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/rbac_admin",
+    permission: "policy-entity",
+    policy: "update",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/rbac_admin",
+    permission: "catalog-entity",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/guests",
+    permission: "catalog.entity.create",
+    policy: "create",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/team_a",
+    permission: "catalog-entity",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:xyz/team_a",
+    permission: "catalog-entity",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:xyz/team_a",
+    permission: "catalog.entity.create",
+    policy: "create",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:xyz/team_a",
+    permission: "catalog.location.create",
+    policy: "create",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:xyz/team_a",
+    permission: "catalog.location.read",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/qe_rbac_admin",
+    permission: "kubernetes.proxy",
+    policy: "use",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/qe_rbac_admin",
+    permission: "kubernetes.resources.read",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/qe_rbac_admin",
+    permission: "kubernetes.clusters.read",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/qe_rbac_admin",
+    permission: "catalog.entity.create",
+    policy: "create",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/qe_rbac_admin",
+    permission: "catalog.location.create",
+    policy: "create",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/qe_rbac_admin",
+    permission: "catalog.location.read",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/kubernetes_reader",
+    permission: "kubernetes.resources.read",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/kubernetes_reader",
+    permission: "kubernetes.clusters.read",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/catalog_reader",
+    permission: "catalog.entity.read",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/all_resource_reader",
+    permission: "catalog-entity",
+    policy: "read",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/all_resource_reader",
+    permission: "catalog-entity",
+    policy: "create",
+    effect: "allow",
+  },
+  {
+    entityReference: "role:default/all_resource_denier",
+    permission: "catalog-entity",
+    policy: "read",
+    effect: "deny",
+  },
+  {
+    entityReference: "role:default/all_resource_denier",
+    permission: "catalog-entity",
+    policy: "create",
+    effect: "allow",
+  },
+];

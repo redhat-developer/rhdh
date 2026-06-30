@@ -21,7 +21,6 @@ export const PW_PROJECT = projectsJson as {
   readonly SHOWCASE_RBAC_K8S: string;
   readonly SHOWCASE_OPERATOR: string;
   readonly SHOWCASE_OPERATOR_RBAC: string;
-  readonly SHOWCASE_RUNTIME_DB: string;
   readonly SHOWCASE_RUNTIME: string;
   readonly SHOWCASE_AUTH_PROVIDERS: string;
   readonly SHOWCASE_SANITY_PLUGINS: string;
@@ -34,5 +33,4 @@ export const PW_PROJECT = projectsJson as {
 };
 
 // Type for project names
-export type PlaywrightProjectName =
-  (typeof PW_PROJECT)[keyof typeof PW_PROJECT];
+export type PlaywrightProjectName = (typeof PW_PROJECT)[keyof typeof PW_PROJECT];

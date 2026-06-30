@@ -1,8 +1,7 @@
 const baseApiUrl = "https://api.github.com";
 const perPage = 100;
 
-const getRepoUrl = (owner: string, repo: string) =>
-  `${baseApiUrl}/repos/${owner}/${repo}`;
+const getRepoUrl = (owner: string, repo: string) => `${baseApiUrl}/repos/${owner}/${repo}`;
 const getOrgUrl = (owner: string) => `${baseApiUrl}/orgs/${owner}`;
 
 export const GITHUB_API_ENDPOINTS = {
@@ -21,6 +20,5 @@ export const GITHUB_API_ENDPOINTS = {
   pull_files: (owner: string, repoName: string, pr: number) =>
     `${getRepoUrl(owner, repoName)}/pulls/${pr}/files`,
 
-  contents: (owner: string, repoName: string) =>
-    `${getRepoUrl(owner, repoName)}/contents`,
+  contents: (owner: string, repoName: string) => `${getRepoUrl(owner, repoName)}/contents`,
 };

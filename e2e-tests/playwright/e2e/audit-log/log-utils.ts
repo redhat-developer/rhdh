@@ -1,27 +1,113 @@
-import { expect } from "@playwright/test";
 import { execFile, exec } from "child_process";
-import { type JsonObject } from "@backstage/types";
-import {
-  Log,
-  type LogRequest,
-  type EventStatus,
-  type EventSeverityLevel,
-} from "./logs";
-import { getBackstageDeploySelector } from "../../utils/helper";
 
-export class LogUtils {
+import { type JsonObject } from "@backstage/types";
+import { expect } from "@playwright/test";
+
+import { getBackstageDeploySelector } from "../../utils/helper";
+import { BACKSTAGE_BACKEND_CONTAINER } from "../../utils/kube-client";
+import { Log, type LogRequest, type EventStatus, type EventSeverityLevel } from "./logs";
+
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stringifyForComparison(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return JSON.stringify(value);
+}
+
+function compareValues(actual: unknown, expected: unknown): void {
+  if (isRecord(expected)) {
+    Object.keys(expected).forEach((subKey) => {
+      const expectedSubValue = expected[subKey];
+      const actualSubValue = isRecord(actual) ? actual[subKey] : undefined;
+      compareValues(actualSubValue, expectedSubValue);
+    });
+  } else if (typeof expected === "number") {
+    expect(actual).toBe(expected);
+  } else if (typeof expected === "string") {
+    if (actual === undefined || actual === null) {
+      throw new Error(`Expected value "${expected}" but got ${String(actual)}`);
+    }
+    expect(stringifyForComparison(actual)).toContain(expected);
+  } else {
+    expect(actual).toBe(expected);
+  }
+}
+
+function validateLog(actual: Log, expected: Partial<Log>): void {
+  for (const [key, expectedValue] of Object.entries(expected)) {
+    if (expectedValue === undefined) {
+      continue;
+    }
+    compareValues(getLogProperty(actual, key), expectedValue);
+  }
+}
+
+function getLogProperty(log: Log, key: string): unknown {
+  switch (key) {
+    case "actor":
+      return log.actor;
+    case "eventId":
+      return log.eventId;
+    case "isAuditEvent":
+      return log.isAuditEvent;
+    case "severityLevel":
+      return log.severityLevel;
+    case "plugin":
+      return log.plugin;
+    case "request":
+      return log.request;
+    case "response":
+      return log.response;
+    case "service":
+      return log.service;
+    case "status":
+      return log.status;
+    case "timestamp":
+      return log.timestamp;
+    case "meta":
+      return log.meta;
+    case "message":
+      return log.message;
+    case "name":
+      return log.name;
+    case "stack":
+      return log.stack;
+    default:
+      return undefined;
+  }
+}
+
+function parseLogFromJson(text: string): Log {
+  const parsed: unknown = JSON.parse(text);
+  if (!isRecord(parsed)) {
+    throw new TypeError("Audit log JSON must be an object");
+  }
+  return new Log(parsed as Partial<Log>);
+}
+
+export const LogUtils = {
   /**
    * Executes a command and returns the output as a promise.
-   *
-   * @param command The command to execute
-   * @param args An array of arguments for the command
-   * @returns A promise that resolves with the command output
    */
-  static executeCommand(command: string, args: string[] = []): Promise<string> {
+  executeCommand(command: string, args: string[] = []): Promise<string> {
     return new Promise((resolve, reject) => {
       execFile(command, args, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
-          reject(`Error: ${error.message}`);
+          reject(new Error(error.message));
           return;
         }
         if (stderr) {
@@ -30,17 +116,12 @@ export class LogUtils {
         resolve(stdout);
       });
     });
-  }
+  },
 
   /**
    * Executes a command with retry logic.
-   *
-   * @param command The command to execute
-   * @param args An array of arguments for the command
-   * @param maxRetries Maximum number of retry attempts (default: 3)
-   * @returns A promise that resolves with the command output
    */
-  static async executeCommandWithRetries(
+  async executeCommandWithRetries(
     command: string,
     args: string[] = [],
     maxRetries: number = 3,
@@ -55,10 +136,7 @@ export class LogUtils {
         console.log(`Command executed successfully on attempt ${attempt + 1}`);
         return output;
       } catch (error) {
-        console.error(
-          `Error executing command on attempt ${attempt + 1}:`,
-          error,
-        );
+        console.error(`Error executing command on attempt ${attempt + 1}:`, error);
         attempt++;
       }
     }
@@ -66,19 +144,16 @@ export class LogUtils {
     throw new Error(
       `Failed to execute command "${command} ${args.join(" ")}" after ${maxRetries} attempts.`,
     );
-  }
+  },
 
   /**
    * Executes a shell command and returns the output as a promise.
-   *
-   * @param command The shell command to execute
-   * @returns A promise that resolves with the command output
    */
-  static executeShellCommand(command: string): Promise<string> {
+  executeShellCommand(command: string): Promise<string> {
     return new Promise((resolve, reject) => {
       exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
-          reject(`Error: ${error.message}`);
+          reject(new Error(error.message));
           return;
         }
         if (stderr) {
@@ -87,81 +162,30 @@ export class LogUtils {
         resolve(stdout);
       });
     });
-  }
+  },
 
-  /**
-   * Validates if the actual log matches the expected log values.
-   * It compares both primitive and nested object properties.
-   *
-   * @param actual The actual log returned by the system
-   * @param expected The expected log values to validate against
-   */
-  public static validateLog(actual: Log, expected: Partial<Log>) {
-    Object.keys(expected).forEach((key) => {
-      const expectedValue = expected[key as keyof Log];
-      if (expectedValue !== undefined) {
-        const actualValue = actual[key as keyof Log];
-        LogUtils.compareValues(actualValue, expectedValue);
-      }
-    });
-  }
-
-  /**
-   * Compare the actual and expected values. Uses 'toBe' for numbers and 'toContain' for strings/arrays.
-   * Handles nested object comparison.
-   *
-   * @param actual The actual value to compare
-   * @param expected The expected value
-   */
-  private static compareValues(actual: unknown, expected: unknown) {
-    if (typeof expected === "object" && expected !== null) {
-      Object.keys(expected).forEach((subKey) => {
-        const expectedSubValue = expected[subKey];
-        const actualSubValue = actual?.[subKey];
-        LogUtils.compareValues(actualSubValue, expectedSubValue);
-      });
-    } else if (typeof expected === "number") {
-      expect(actual).toBe(expected);
-    } else if (typeof expected === "string") {
-      if (actual === undefined || actual === null) {
-        throw new Error(`Expected value "${expected}" but got ${actual}`);
-      }
-      expect(String(actual)).toContain(expected);
-    } else {
-      expect(actual).toBe(expected);
-    }
-  }
+  validateLog,
 
   /**
    * Lists all pods in the specified namespace and returns their details.
-   *
-   * @param namespace The namespace to list pods from
-   * @returns A promise that resolves with the pod details
    */
-  static async listPods(namespace: string): Promise<string> {
+  async listPods(namespace: string): Promise<string> {
     const args = ["get", "pods", "-n", namespace, "-o", "wide"];
     try {
       console.log("Fetching pod list with command:", "oc", args.join(" "));
       return await LogUtils.executeCommand("oc", args);
     } catch (error) {
       console.error("Error listing pods:", error);
-      throw new Error(
-        `Failed to list pods in namespace "${namespace}": ${error}`,
-      );
+      throw new Error(`Failed to list pods in namespace "${namespace}": ${formatError(error)}`, {
+        cause: error,
+      });
     }
-  }
+  },
 
   /**
    * Fetches detailed information about a specific pod.
-   *
-   * @param podName The name of the pod to fetch details for
-   * @param namespace The namespace where the pod is located
-   * @returns A promise that resolves with the pod details in JSON format
    */
-  static async getPodDetails(
-    podName: string,
-    namespace: string,
-  ): Promise<string> {
+  async getPodDetails(podName: string, namespace: string): Promise<string> {
     const args = ["get", "pod", podName, "-n", namespace, "-o", "json"];
     try {
       const output = await LogUtils.executeCommand("oc", args);
@@ -169,33 +193,26 @@ export class LogUtils {
       return output;
     } catch (error) {
       console.error(`Error fetching details for pod ${podName}:`, error);
-      throw new Error(`Failed to fetch pod details: ${error}`);
+      throw new Error(`Failed to fetch pod details: ${formatError(error)}`, {
+        cause: error,
+      });
     }
-  }
+  },
 
   /**
    * Fetches logs using grep for filtering directly in the shell.
-   *
-   * @param filterWords The required words the logs must contain to filter the logs
-   * @param namespace The namespace to use to retrieve logs from pod
-   * @param maxRetries Maximum number of retry attempts
-   * @param retryDelay Delay (in milliseconds) between retries
-   * @returns The log line matching the filter, or throws an error if not found
    */
-  static async getPodLogsWithGrep(
+  async getPodLogsWithGrep(
     filterWords: string[] = [],
-    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
+    namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
     maxRetries: number = 4,
     retryDelay: number = 2000,
   ): Promise<string> {
     const deploySelector = getBackstageDeploySelector();
     const tailNumber = 500;
 
-    // Resolve the deployment by its metadata labels, then fetch logs from it.
-    // This works for both Helm and Operator since both set app.kubernetes.io/name
-    // on the Deployment (with different values), even though pod labels differ.
     const deployTarget = `$(oc get deploy -n ${namespace} -l ${deploySelector} -o name)`;
-    let grepCommand = `oc logs ${deployTarget} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
+    let grepCommand = `oc logs ${deployTarget} --tail=${tailNumber} -c ${BACKSTAGE_BACKEND_CONTAINER} -n ${namespace}`;
     for (const word of filterWords) {
       grepCommand += ` | grep '${word}'`;
     }
@@ -203,54 +220,45 @@ export class LogUtils {
     let attempt = 0;
     while (attempt <= maxRetries) {
       try {
-        console.log(
-          `Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`,
-        );
+        console.log(`Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`);
         const output = await LogUtils.executeShellCommand(grepCommand);
 
-        const logLines = output
-          .split("\n")
-          .filter((line) => line.trim() !== "");
+        const logLines = output.split("\n").filter((line) => line.trim() !== "");
         if (logLines.length > 0) {
           console.log("Matching log line found:", logLines[0]);
-          return logLines[0]; // Return the first matching log
+          return logLines[0];
         }
 
         console.warn(
-          `No matching logs found for filter "${filterWords}" on attempt ${attempt + 1}. Retrying...`,
+          `No matching logs found for filter ${JSON.stringify(filterWords)} on attempt ${attempt + 1}. Retrying...`,
         );
       } catch (error) {
-        console.error(
-          `Error fetching logs on attempt ${attempt + 1}:`,
-          error.message,
-        );
+        console.error(`Error fetching logs on attempt ${attempt + 1}:`, formatError(error));
       }
 
       attempt++;
       if (attempt <= maxRetries) {
         console.log(`Waiting ${retryDelay / 1000} seconds before retrying...`);
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, retryDelay);
+        });
       }
     }
 
     throw new Error(
-      `Failed to fetch logs for filter "${filterWords}" after ${maxRetries + 1} attempts.`,
+      `Failed to fetch logs for filter ${JSON.stringify(filterWords)} after ${maxRetries + 1} attempts.`,
     );
-  }
+  },
 
   /**
    * Logs in to OpenShift using a token and server URL.
-   *
-   * @returns A promise that resolves when the login is successful
    */
-  static async loginToOpenShift(): Promise<void> {
-    const token = process.env.K8S_CLUSTER_TOKEN || "";
-    const server = process.env.K8S_CLUSTER_URL || "";
+  async loginToOpenShift(): Promise<void> {
+    const token = process.env.K8S_CLUSTER_TOKEN ?? "";
+    const server = process.env.K8S_CLUSTER_URL ?? "";
 
-    if (!token || !server) {
-      throw new Error(
-        "Environment variables K8S_CLUSTER_TOKEN and K8S_CLUSTER_URL must be set.",
-      );
+    if (token === "" || server === "") {
+      throw new Error("Environment variables K8S_CLUSTER_TOKEN and K8S_CLUSTER_URL must be set.");
     }
 
     const command = "oc";
@@ -266,26 +274,14 @@ export class LogUtils {
       console.log("Login successful.");
     } catch (error) {
       console.error("Error during login: ", error);
-      throw new Error(`Failed to login to OpenShift`);
+      throw new Error(`Failed to login to OpenShift`, { cause: error });
     }
-  }
+  },
 
   /**
    * Validates if the actual log matches the expected log values for a specific event.
-   * This is a reusable method for different log validations across various tests.
-   *
-   * @param eventId The id of the event to filter in the logs
-   * @param actorId The id of actor initiating the request
-   * @param request The url endpoint and HTTP method (GET, POST, etc.) hit
-   * @param meta The metadata about the event
-   * @param error The error that occurred
-   * @param status The status of event
-   * @param plugin The plugin name that triggered the log event
-   * @param severityLevel The level of severity of the event
-   * @param filterWords The required words the logs must contain to filter the logs besides eventId and request url if specified
-   * @param namespace The namespace to use to retrieve logs from pod
    */
-  public static async validateLogEvent(
+  async validateLogEvent(
     eventId: string,
     actorId: string,
     request?: LogRequest,
@@ -295,23 +291,26 @@ export class LogUtils {
     plugin: string = "catalog",
     severityLevel: EventSeverityLevel = "medium",
     filterWords: string[] = [],
-    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
-  ) {
+    namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
+  ): Promise<void> {
     const filterWordsAll = [eventId, status, ...filterWords];
-    if (request?.method) filterWordsAll.push(request.method);
-    if (request?.url) filterWordsAll.push(request.url);
+    if (request?.method !== undefined && request.method !== "") {
+      filterWordsAll.push(request.method);
+    }
+    if (request?.url !== undefined && request.url !== "") {
+      filterWordsAll.push(request.url);
+    }
     try {
-      const actualLog = await LogUtils.getPodLogsWithGrep(
-        filterWordsAll,
-        namespace,
-      );
+      const actualLog = await LogUtils.getPodLogsWithGrep(filterWordsAll, namespace);
 
       let parsedLog: Log;
       try {
-        parsedLog = JSON.parse(actualLog);
+        parsedLog = parseLogFromJson(actualLog);
       } catch (parseError) {
         console.error("Failed to parse log JSON. Log content:", actualLog);
-        throw new Error(`Invalid JSON received for log: ${parseError}`);
+        throw new Error(`Invalid JSON received for log: ${formatError(parseError)}`, {
+          cause: parseError,
+        });
       }
 
       const expectedLog: Partial<Log> = {
@@ -327,16 +326,16 @@ export class LogUtils {
       };
 
       console.log("Validating log with expected values:", expectedLog);
-      LogUtils.validateLog(parsedLog, expectedLog);
-    } catch (error) {
-      console.error("Error validating log event:", error);
+      validateLog(parsedLog, expectedLog);
+    } catch (validationError) {
+      console.error("Error validating log event:", validationError);
       console.error("Event id:", eventId);
       console.error("Actor id:", actorId);
       console.error("Meta:", meta);
       console.error("Expected method:", request?.method);
       console.error("Expected URL:", request?.url);
       console.error("Plugin:", plugin);
-      throw error;
+      throw validationError;
     }
-  }
-}
+  },
+};

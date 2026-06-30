@@ -793,23 +793,6 @@
       "badges.addedByAdmin": "管理者によって追加されたプラグイン"
     }
   },
-  "plugin.global-floating-action-button": {
-    "ja": {
-      "fab.create.label": "作成",
-      "fab.create.tooltip": "エンティティーの作成",
-      "fab.docs.label": "ドキュメント",
-      "fab.docs.tooltip": "ドキュメント",
-      "fab.apis.label": "API",
-      "fab.apis.tooltip": "API ドキュメント",
-      "fab.github.label": "GitHub",
-      "fab.github.tooltip": "GitHub リポジトリー",
-      "fab.bulkImport.label": "一括インポート",
-      "fab.bulkImport.tooltip": "複数のリポジトリーを一括登録する",
-      "fab.quay.label": "Quay",
-      "fab.quay.tooltip": "Quay コンテナーレジストリー",
-      "fab.menu.tooltip": "メニュー"
-    }
-  },
   "plugin.global-header": {
     "ja": {
       "help.tooltip": "ヘルプ",

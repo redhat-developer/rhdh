@@ -267,10 +267,6 @@ dynamicPlugins:
           importName: GlobalHeader
           config:
             position: above-main-content # above-main-content | above-sidebar
-    red-hat-developer-hub.backstage-plugin-global-floating-action-button:
-      mountPoints:
-        - mountPoint: application/listener
-          importName: DynamicGlobalFloatingActionButton
     red-hat-developer-hub.backstage-plugin-quickstart:
       mountPoints:
         - mountPoint: application/provider
@@ -617,6 +613,10 @@ dynamicPlugins:
         extensions:
           parent: default.admin
     red-hat-developer-hub.backstage-plugin-adoption-insights:
+      translationResources:
+        - importName: adoptionInsightsTranslations
+          module: Alpha
+          ref: adoptionInsightsTranslationRef
       appIcons:
         - name: adoptionInsightsIcon
           importName: AdoptionInsightsIcon

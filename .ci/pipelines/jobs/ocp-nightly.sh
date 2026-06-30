@@ -47,35 +47,17 @@ run_standard_deployment_tests() {
 }
 
 run_runtime_config_change_tests() {
-  # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
+  # Runtime tests handle their own deployment via TypeScript (runtime-deploy.ts).
+  # The first test file (config-map.spec.ts) calls ensureRuntimeDeployed() which:
+  #   - Creates the namespace
+  #   - Deploys RHDH with Helm + internal PostgreSQL sub-chart
+  #   - Configures schema-mode env vars for port-forwarding
+  # Subsequent test files reuse the existing deployment (workers: 1).
+  #
+  # The CI wrapper only needs to set environment variables and invoke Playwright.
 
-  # Create the namespace first (this will delete/recreate it)
-  namespace::configure "${NAME_SPACE_RUNTIME}"
-
-  # Configure external PostgreSQL credentials and certificates for runtime namespace
-  # This creates postgres-crt and postgres-cred secrets needed by values-showcase-postgres.yaml
-  # IMPORTANT: Must be called AFTER namespace is created but BEFORE helm install
-  configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
-
-  # Deploy RHDH with Helm (skip namespace creation since we already did it)
-  helm::uninstall "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}"
-  oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
-  # shellcheck disable=SC2046
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_RUNTIME}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
-
-  # Configure schema-mode environment (opt-in: tests skip if env not configured)
-  if configure_schema_mode_runtime_env "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}" helm; then
-    log::info "Schema-mode environment configured successfully; schema-mode tests will run"
-  else
-    log::warn "Schema-mode environment not configured; schema-mode tests will skip (this is expected if PostgreSQL is not available)"
-  fi
-
+  export INSTALL_METHOD="helm"
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  # Run tests - allow failures since schema-mode tests are opt-in
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
