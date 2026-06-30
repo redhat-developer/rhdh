@@ -1,10 +1,14 @@
 name: Build & Push e2e-runner Image to Quay.io
 
 on:
+  pull_request:
+    paths:
+      - '.ci/images/Dockerfile'
+      - '.yarnrc.yml'
   push:
     branches:
       - main
-      - 'release-1.*'
+      - 'release-*'
     paths:
       - '.ci/images/Dockerfile'
       - '.yarnrc.yml'
@@ -16,7 +20,7 @@ on:
         default: 'NONE'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -49,26 +53,21 @@ jobs:
       - name: Prepare Environment Variables
         env:
           INPUT_BRANCH: ${{ inputs.branch }}
-          MATRIX_OS: ${{ matrix.os }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
-          # Derive platform from runner OS
-          if [ "$MATRIX_OS" == "ubuntu-24.04" ]; then
-            platform="linux/amd64"
-          elif [ "$MATRIX_OS" == "ubuntu-24.04-arm" ]; then
-            platform="linux/arm64"
-          else
-            echo "::error::Unknown runner OS: $MATRIX_OS"
-            exit 1
-          fi
-          echo "PLATFORM=$platform" >> $GITHUB_ENV
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
-          echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
+          # Detect platform from runner's native architecture
+          arch=$(dpkg --print-architecture)
+          echo "PLATFORM=linux/${arch}" >> $GITHUB_ENV
+          echo "PLATFORM_PAIR=linux-${arch}" >> $GITHUB_ENV
+          echo "PLATFORM_ARCH=${arch}" >> $GITHUB_ENV
 
           # Create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
           if [[ "$INPUT_BRANCH" ]] && [[ "$INPUT_BRANCH" != "NONE" ]]; then
             echo "Switch to $INPUT_BRANCH"
             git checkout "$INPUT_BRANCH"
             IMAGE_TAG="$INPUT_BRANCH"
+          elif [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+            IMAGE_TAG="pr-${PR_NUMBER}"
           else
             echo "Use current branch $GITHUB_REF"
             IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD)
@@ -77,6 +76,7 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Check Quay credentials
+        if: github.event_name != 'pull_request'
         run: |
           if [ "$HAS_QUAY_AUTH" != "true" ]; then
             echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
@@ -90,6 +90,7 @@ jobs:
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Login to Quay
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -102,13 +103,14 @@ jobs:
         with:
           context: .
           file: .ci/images/Dockerfile
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.PLATFORM_ARCH }}
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
           platforms: ${{ env.PLATFORM }}
 
       - name: Export digest
+        if: github.event_name != 'pull_request'
         env:
           DIGEST: ${{ steps.build-push.outputs.digest }}
         run: |
@@ -117,6 +119,7 @@ jobs:
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: digests-${{ env.PLATFORM_PAIR }}
@@ -126,6 +129,7 @@ jobs:
 
   merge:
     name: Create multi-arch manifest
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     needs: build-image
     permissions:
