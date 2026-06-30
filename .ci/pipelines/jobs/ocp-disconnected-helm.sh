@@ -190,15 +190,16 @@ handle_ocp_disconnected_helm() {
     )
   fi
 
-  # Render the overrides with envsubst (resolves image refs for init container)
-  local rendered_overrides="${DISCONNECTED_TMPDIR}/helm-overrides-rendered.yaml"
-  envsubst < "${DIR}/resources/disconnected/helm-overrides.yaml" > "${rendered_overrides}"
-  cp "${rendered_overrides}" "${ARTIFACT_DIR}/disconnected-helm-overrides-rendered.yaml" 2> /dev/null || true
+  # Post-renderer appends registries.conf volume + mount to the rendered
+  # Deployment, avoiding the Helm "array clobber" pitfall where a values
+  # file that defines extraVolumes[] replaces the chart's entire default
+  # array (which grows across chart versions).
+  local post_renderer="${DIR}/resources/disconnected/helm-post-renderer.sh"
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${chart_install_path}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    -f "${rendered_overrides}" \
+    --post-renderer "${post_renderer}" \
     "${helm_set_flags[@]}" || {
     log::error "Helm deployment failed"
     return 1
