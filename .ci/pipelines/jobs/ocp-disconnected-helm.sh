@@ -198,7 +198,7 @@ handle_ocp_disconnected_helm() {
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${chart_install_path}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+    -f "${DIR}/value_files/values_disconnected-smoke.yaml" \
     --post-renderer "${post_renderer}" \
     "${helm_set_flags[@]}" || {
     log::error "Helm deployment failed"
