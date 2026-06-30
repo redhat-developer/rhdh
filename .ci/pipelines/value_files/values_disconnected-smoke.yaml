@@ -1,0 +1,13 @@
+# Minimal Helm values for disconnected smoke test.
+# The smoke test only verifies: login page renders → guest login → homepage.
+# No GitHub integrations, external secrets, dynamic plugins, or OIDC needed.
+upstream:
+  backstage:
+    image:
+      pullPolicy: Always
+    appConfig:
+      auth:
+        environment: development
+        providers:
+          guest:
+            dangerouslyAllowOutsideDevelopment: true
