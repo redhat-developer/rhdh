@@ -42,13 +42,11 @@ export default defineConfig({
   testDir: "./playwright",
   // Fails fast if dynamic-plugins-root has not been populated.
   globalSetup: "./playwright/support/local-harness-global-setup.ts",
-  // Runs only what is verified green off-cluster so far: the guest-signin home-page
-  // test (Quick Access from the dynamic home-page plugin). `grep` scopes to that test
-  // because its two siblings — and several other UI specs — navigate via the top-right
-  // profile dropdown (needs the global-header plugin) or need per-spec config. See
-  // docs/e2e-tests/local-e2e-harness.md "Known issues". Widen as specs are validated.
+  // Existing RHDH specs validated to run off-cluster. The dynamic-home-page and
+  // global-header plugins are installed from OCI (see local-harness/dynamic-plugins.yaml),
+  // so guest sign-in, the home page, Settings and sign-out all render. Widen as more
+  // specs are validated.
   testMatch: ["e2e/guest-signin-happy-path.spec.ts"],
-  grep: /Homepage renders with Search Bar/u,
   timeout: 90 * 1000,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,

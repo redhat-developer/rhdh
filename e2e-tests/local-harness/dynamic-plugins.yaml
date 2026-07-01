@@ -1,12 +1,15 @@
 # Cluster-free harness plugin set — installed via install-dynamic-plugins from OCI
 # (ghcr, pulled with skopeo), so no dynamic-plugins/dist source build is needed.
 #
-# Only the dynamic-home-page frontend plugin is required: app-config.dynamic-plugins.yaml
-# (loaded by the harness) already configures it (route / -> DynamicHomePage, SearchBar,
-# QuickAccessCard, Starred Entities), so the guest-signin home-page test renders off-cluster.
+# app-config.dynamic-plugins.yaml (loaded by the harness) already configures these
+# plugins, so the existing RHDH specs render off-cluster.
 #
-# NOTE: OCI tag is backstage 1.49.4 (RHDH is on 1.52.0) — bump to a matching tag when the
-# overlays repo publishes one.
+# NOTE: OCI tags are backstage 1.49.4 (RHDH is on 1.52.0) — bump to matching tags when
+# the overlays repo publishes them.
 plugins:
+  # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
+    disabled: false
+  # Global header (top bar + profile dropdown) — needed by the Settings / Sign-out specs.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:bs_1.49.4__1.21.6!red-hat-developer-hub-backstage-plugin-global-header
     disabled: false
