@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RUNNER_IMAGE="quay.io/rhdh-community/rhdh-e2e-runner:main"
+RUNNER_IMAGE="${RUNNER_IMAGE:-quay.io/rhdh-community/rhdh-e2e-runner:main}"
 RUN_CONFIG_FILE="$SCRIPT_DIR/.local-test/run-config.env"
 
 # Source logging library
