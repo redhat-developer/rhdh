@@ -450,6 +450,7 @@ log::info "Container log: $CONTAINER_LOG"
 echo ""
 
 CONTAINER_EXIT_CODE=0
+# no -t: stdout is piped to tee and CI has no TTY
 podman run -v "$WORK_DIR":/tmp/rhdh \
   -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro \
   -i -u root --privileged \
