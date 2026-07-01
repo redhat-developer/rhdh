@@ -34,7 +34,7 @@
     "@kubernetes/client-node": "0.22.3",
     "@microsoft/microsoft-graph-client": "3.0.7",
     "isomorphic-fetch": "3.0.0",
-    "js-yaml": "4.2.0",
+    "js-yaml": "4.3.0",
     "node-fetch": "2.7.0",
     "octokit": "4.1.4",
     "pg": "8.22.0",
