@@ -398,11 +398,6 @@ plugins:
             mountPoints:
               - mountPoint: application/listener
                 importName: DynamicGlobalFloatingActionButton
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-global-header@sha256:ae509f575128df75ddb3d140447e0888fddff579cdbf270e2869daed8b019d5a
-  # Tag: 1.9.4--1.20.1, Build date: 2026-04-30T23:34:17Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
     disabled: false
     pluginConfig:
@@ -1735,18 +1730,21 @@ plugins:
         workflowLogProvider:
           loki:
             baseUrl: ${LOKI_BASE_URL}
+  # Tag: 1.9.4--8.6.7, Build date: 2026-04-30T18:57:25Z
   - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:0909c5ed32a913ffa51bd248f08b9afdb938e6461dedc3a08c6ac6e963a85dd7
     disabled: true
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
+  # Tag: 1.9.4--1.6.9, Build date: 2026-04-30T18:56:56Z
   - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:70fe997519010e9cb570249f609ae22771b85a9813767fe7ad7818a2aac82a3e
     disabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+  # Tag: 1.9.4--5.4.7, Build date: 2026-04-30T18:56:52Z
   - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator@sha256:1f33cd54d84e597fbb72acae06ba719d42f0a5d45ec1e3ae96845c6cfad72177
     disabled: true
     pluginConfig:
@@ -1777,6 +1775,7 @@ plugins:
                     if:
                       anyOf:
                         - IsOrchestratorCatalogTabAvailable
+  # Tag: 1.9.4--1.3.6, Build date: 2026-04-30T18:56:21Z
   - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:f02280932ca261a359f3c640dc11e400b299eadfd25e6cac0d9a93c0ad65f90f
     disabled: true
     pluginConfig:
