@@ -98,6 +98,7 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/plugin-dynamic-loading.spec.ts",
       ],
     },
     {
@@ -195,6 +196,7 @@ export default defineConfig({
         "**/playwright/e2e/home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
         "**/playwright/e2e/instance-health-check.spec.ts",
+        "**/playwright/e2e/plugin-dynamic-loading.spec.ts",
       ],
     },
     {

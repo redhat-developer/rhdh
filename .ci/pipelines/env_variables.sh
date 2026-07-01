@@ -56,9 +56,10 @@ IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
 
 # Catalog index image reference.
+# Defaults to the nightly catalog index for the current release branch.
 # Override via Gangway for RC (e.g., --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9-60) or
 # GA verification (e.g., --catalog-index-image registry.access.redhat.com/rhdh/plugin-catalog-index:1.9.4).
-CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-}"
+CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}}"
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
   # Derived components for Helm chart (requires separate registry/repository/tag)
   CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"
