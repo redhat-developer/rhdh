@@ -56,7 +56,7 @@
     "node-gyp": "10.3.1",
     "rulesync": "7.30.0",
     "sherif": "1.12.0",
-    "turbo": "2.9.18"
+    "turbo": "2.10.0"
   },
   "dependenciesMeta": {
     "keytar": {
