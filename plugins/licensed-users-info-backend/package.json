@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@backstage-community/plugin-rbac-common": "1.26.1",
-    "@backstage/backend-defaults": "0.17.3",
+    "@backstage/backend-defaults": "0.17.4",
     "@backstage/backend-plugin-api": "1.9.2",
     "@backstage/catalog-client": "1.16.0",
     "@backstage/catalog-model": "1.9.0",

@@ -14,7 +14,7 @@
       "backstage-community-plugin-tech-radar",
       "backstage-community-plugin-tech-radar-backend"
     ],
-    "supported-versions": "1.52.0"
+    "supported-versions": "1.52.1"
   },
   "exports": {
     ".": "./src/index.ts",

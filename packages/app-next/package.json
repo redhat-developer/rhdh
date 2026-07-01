@@ -46,7 +46,7 @@
     "@backstage/core-compat-api": "0.5.12",
     "@backstage/core-components": "0.18.11",
     "@backstage/core-plugin-api": "1.12.7",
-    "@backstage/frontend-app-api": "0.16.4",
+    "@backstage/frontend-app-api": "0.16.5",
     "@backstage/frontend-defaults": "0.5.3",
     "@backstage/frontend-dynamic-feature-loader": "0.1.13",
     "@backstage/frontend-plugin-api": "0.17.2",
