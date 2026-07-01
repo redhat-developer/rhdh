@@ -1,9 +1,9 @@
 import { test, expect } from "@support/coverage/test";
 
+import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName, isRecord } from "../../utils/kube-client";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
-import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Change app-config at e2e test runtime", () => {
   test.beforeAll(async () => {
@@ -53,7 +53,7 @@ test.describe("Change app-config at e2e test runtime", () => {
       await page.context().clearPermissions();
       await page.reload({ waitUntil: "domcontentloaded" });
       await common.loginAsGuest();
-      await new UIhelper(page).openSidebar("Home");
+      await new RhdhHomePage(page).openHomeSidebar();
       console.log("Verifying new title in the UI... ");
       expect(await page.title()).toContain(dynamicTitle);
       console.log("Title successfully verified in the UI.");

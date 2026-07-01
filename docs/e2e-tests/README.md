@@ -11,6 +11,8 @@
 | `e2e-tests/playwright/e2e`               | Contains all the end-to-end (E2E) test suites and test cases                                                   |
 | `e2e-tests/playwright/e2e/plugins`       | Contains all the dynamic plugins E2E test suites and test cases                                                |
 | `e2e-tests/playwright/utils`             | Utilities for easier test development, from UI interaction tasks to network requests                           |
+| `e2e-tests/unit/**/*.test.ts`            | Vitest unit tests for shared helpers (run via `yarn test:unit`)                                                |
+| `e2e-tests/vitest.config.ts`             | Vitest configuration for unit tests                                                                          |
 | `e2e-tests/playwright/support`           | Contains helper files for Playwright, like custom commands and page objects                                    |
 | `e2e-tests/playwright-report/index.html` | HTML report of the test execution                                                                              |
 | `e2e-tests/test-results`                 | Contains video recordings of the executed test cases                                                           |
@@ -35,6 +37,8 @@ yarn playwright install chromium
 ## Adding a Test
 
 To incorporate a new test case, create a file with a `.spec.ts` extension in the `e2e-tests/playwright/e2e` directory.
+
+Unit tests for shared helpers (for example `poll-until.ts`) live in `e2e-tests/unit/` as `*.test.ts` and run with `yarn test:unit` (Vitest). E2E specs use `*.spec.ts` under `playwright/e2e/`.
 The tests within a spec file can run in parallel (by default) or sequentially if using the `.serial` modifier like in [these examples](../../e2e-tests/playwright/e2e/). Note that sequential execution is considered a bad practice and is strongly discouraged.
 To add or edit a test, you should adhere to the [contribution guidelines](./CONTRIBUTING.MD).
 
@@ -83,7 +87,14 @@ The currently supported environment variables are:
 
 ### Running the Tests
 
-The Playwright command line supports many options; see them [here](https://playwright.dev/docs/test-cli). Flags like `--ui` or `--headed` are very useful when debugging. You can also specify a specific test to run:
+Unit tests (Vitest) do not need a deployed RHDH instance:
+
+```bash
+cd e2e-tests
+yarn test:unit
+```
+
+E2E tests (Playwright) require `BASE_URL` and a running application. The Playwright command line supports many options; see them [here](https://playwright.dev/docs/test-cli). Flags like `--ui` or `--headed` are very useful when debugging. You can also specify a specific test to run:
 
 ```bash
 yarn playwright test e2e-tests/playwright/e2e/your-test-file.spec.ts

@@ -1,5 +1,6 @@
 import { test } from "@support/coverage/test";
 
+import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
@@ -10,7 +11,6 @@ import {
   prepareForExternalDatabase,
 } from "../../utils/postgres-config";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
-import { UIhelper } from "../../utils/ui-helper";
 
 interface RdsConfig {
   name: string;
@@ -106,10 +106,10 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
 
       test("Verify successful DB connection", async ({ page }) => {
         try {
-          const uiHelper = new UIhelper(page);
+          const rhdhHomePage = new RhdhHomePage(page);
           const common = new Common(page);
           await common.loginAsGuest();
-          await uiHelper.verifyHeading("Welcome back!");
+          await rhdhHomePage.verifyWelcomeHeading();
         } finally {
           await page.goto("about:blank").catch(() => {});
         }

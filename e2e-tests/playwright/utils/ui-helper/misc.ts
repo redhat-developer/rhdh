@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test";
 
 import { getCurrentLanguage } from "../../e2e/localization/locale";
-import { getCardByHeading } from "../../support/page-objects/ui-locators";
+import { getCardByHeading } from "../../support/selectors/ui-locators";
 import { clickButtonByLabel, clickByDataTestId, clickLink } from "./interaction";
 import { openSidebar, selectMuiBox } from "./navigation";
 import { verifyCellsInTable } from "./table";

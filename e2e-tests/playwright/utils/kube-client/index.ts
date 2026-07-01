@@ -3,6 +3,7 @@ import { V1ConfigMap } from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
 
 import { hasStatusCode } from "../errors";
+import { waitForPodsTerminatedImpl } from "../kube-client-deployment-pods";
 import { findAppConfigMapName, updateConfigMapTitleImpl } from "./configmap";
 import { restartDeploymentImpl } from "./deployment/restart";
 import { getDeploymentPodSelectorImpl, scaleDeploymentImpl } from "./deployment/scale";
@@ -365,8 +366,18 @@ export class KubeClient {
     return restartDeploymentImpl(
       (name, ns, replicas) => this.scaleDeployment(name, ns, replicas),
       (name, ns, replicas, t) => this.waitForDeploymentReady(name, ns, replicas, t),
+      (name, ns) => this.waitForPodsTerminated(name, ns),
       (name, ns) => this.logPodConditionsForDeployment(name, ns),
       (name, ns) => this.logDeploymentEvents(name, ns),
+      deploymentName,
+      namespace,
+    );
+  }
+
+  waitForPodsTerminated(deploymentName: string, namespace: string) {
+    return waitForPodsTerminatedImpl(
+      this.coreV1Api,
+      (name, ns) => this.getDeploymentPodSelector(name, ns),
       deploymentName,
       namespace,
     );

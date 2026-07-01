@@ -2,7 +2,7 @@ import { Page, expect } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
 import { UIhelper } from "../../utils/ui-helper";
-import { CATALOG_IMPORT_COMPONENTS } from "../page-objects/page-obj";
+import { CATALOG_IMPORT_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -85,4 +85,4 @@ export class CatalogImport {
   }
 }
 
-export { BackstageShowcase } from "./backstage-showcase";
+export { RhdhInstance } from "./rhdh-instance";

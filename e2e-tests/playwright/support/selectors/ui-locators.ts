@@ -1,13 +1,20 @@
 /* oxlint-disable playwright/no-raw-locators -- legacy card/table region selectors pending SemanticSelectors migration */
 import { Locator, Page } from "@playwright/test";
 
-import { SemanticSelectors } from "../selectors/semantic";
-import { UI_HELPER_ELEMENTS } from "./global-obj";
+import { SemanticSelectors } from "./semantic";
+
+const legacyCardByHeading = (cardHeading: string) =>
+  `//div[contains(@class,'MuiCardHeader-root') and descendant::*[text()='${cardHeading}']]/..`;
+
+const legacyCardByText = (cardText: string) =>
+  `//div[contains(@class,'MuiCard-root')][descendant::text()[contains(., '${cardText}')]]`;
+
+const legacyRowByText = (text: string) => `tr:has(:text-is("${text}"))`;
 
 export function getCardByHeading(page: Page, heading: string | RegExp): Locator {
   if (typeof heading === "string") {
     /* oxlint-disable-next-line typescript/no-deprecated -- MUI cards lack region/heading roles; XPath matches production DOM */
-    return page.locator(UI_HELPER_ELEMENTS.MuiCard(heading));
+    return page.locator(legacyCardByHeading(heading));
   }
   return page
     .locator('[role="region"], article, section')
@@ -20,7 +27,7 @@ export function getCardByHeading(page: Page, heading: string | RegExp): Locator 
 export function getCardByText(page: Page, text: string | RegExp): Locator {
   if (typeof text === "string") {
     /* oxlint-disable-next-line typescript/no-deprecated -- MUI cards lack region roles; XPath matches production DOM */
-    return page.locator(UI_HELPER_ELEMENTS.MuiCardRoot(text));
+    return page.locator(legacyCardByText(text));
   }
   return page
     .locator('[role="region"], article, section')
@@ -39,7 +46,7 @@ export function getTableRow(page: Page, text?: string | RegExp): Locator {
   }
   if (typeof text === "string") {
     /* oxlint-disable-next-line typescript/no-deprecated -- :text-is() avoids ambiguous hasText row matches in review tables */
-    return page.locator(UI_HELPER_ELEMENTS.rowByText(text));
+    return page.locator(legacyRowByText(text));
   }
   return SemanticSelectors.tableRow(page, text);
 }
