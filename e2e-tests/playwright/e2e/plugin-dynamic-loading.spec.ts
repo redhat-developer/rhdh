@@ -149,36 +149,49 @@ test.describe("Plugin Dynamic Loading", () => {
           console.log("✓ Catalog index extracted");
         }
 
-        // Step 3b: Find and copy dynamic-plugins.default.yaml to dynamic-plugins.yaml
+        // Step 3b: Find dynamic-plugins.default.yaml (search in common cache locations)
         const targetConfig = join(dynamicPluginsRoot, "dynamic-plugins.yaml");
 
-        // Search for dynamic-plugins.default.yaml in the entire temp directory
-        const findCmd = `find "${tempDir}" -name "dynamic-plugins.default.yaml" -type f`;
-        let defaultConfigPath: string;
+        // Search in multiple locations where CLI might cache the file
+        const searchPaths = [
+          tempDir,                    // Our temp directory
+          "/tmp",                     // System temp
+          process.env.HOME,           // Home directory
+          join(process.env.HOME || "~", ".cache"),
+          join(process.env.HOME || "~", ".npm"),
+        ].filter(Boolean);
 
-        try {
-          const findResult = execSync(findCmd, { encoding: "utf-8" }).trim();
-          const foundPaths = findResult.split("\n").filter(Boolean);
+        console.log(`🔍 Searching for dynamic-plugins.default.yaml in: ${searchPaths.join(", ")}`);
 
-          if (foundPaths.length === 0) {
-            throw new Error(
-              `dynamic-plugins.default.yaml not found after catalog extraction. Searched in ${tempDir}`,
-            );
+        let defaultConfigPath: string | undefined;
+
+        for (const searchPath of searchPaths) {
+          try {
+            const findCmd = `find "${searchPath}" -name "dynamic-plugins.default.yaml" -type f 2>/dev/null | head -1`;
+            const findResult = execSync(findCmd, { encoding: "utf-8" }).trim();
+
+            if (findResult) {
+              defaultConfigPath = findResult;
+              console.log(`✓ Found at: ${defaultConfigPath}`);
+              break;
+            }
+          } catch (error) {
+            // Continue searching in next path
           }
-
-          defaultConfigPath = foundPaths[0]; // Use first match
-          console.log(`✓ Found dynamic-plugins.default.yaml at: ${defaultConfigPath}`);
-
-          const configContent = await readFile(defaultConfigPath, "utf8");
-          await writeFile(targetConfig, configContent);
-          console.log("✓ Copied to dynamic-plugins.yaml");
-        } catch (error) {
-          // List directory contents for debugging
-          console.log("\n📂 Directory contents after extraction:");
-          execSync(`ls -la "${dynamicPluginsRoot}"`, { stdio: "inherit" });
-          execSync(`find "${tempDir}" -type f -name "*.yaml"`, { stdio: "inherit" });
-          throw error;
         }
+
+        if (!defaultConfigPath) {
+          console.log("\n📂 Debug: Directory contents after extraction:");
+          execSync(`ls -la "${dynamicPluginsRoot}"`, { stdio: "inherit" });
+          execSync(`find "${tempDir}" -type f`, { stdio: "inherit" });
+          throw new Error(
+            `dynamic-plugins.default.yaml not found in any cache location. Searched: ${searchPaths.join(", ")}`,
+          );
+        }
+
+        const configContent = await readFile(defaultConfigPath, "utf8");
+        await writeFile(targetConfig, configContent);
+        console.log("✓ Copied to dynamic-plugins.yaml");
 
         // Step 3c: Run install again with the config file
         reportCliCommand(installCmd, catalogIndexImage);
