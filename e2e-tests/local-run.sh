@@ -368,7 +368,7 @@ fi
 
 # Pull runner image (always attempt; fall back to local copy if pull fails)
 log::section "Pulling runner container image"
-if ! podman pull "$RUNNER_IMAGE" 2>/dev/null; then
+if ! podman pull "$RUNNER_IMAGE"; then
   if podman image exists "$RUNNER_IMAGE" 2>/dev/null; then
     log::info "Pull failed but image exists locally: $RUNNER_IMAGE"
   else
