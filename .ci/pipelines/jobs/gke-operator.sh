@@ -31,7 +31,7 @@ handle_gke_operator() {
 
   cluster_setup_k8s_operator
 
-  prepare_operator
+  prepare_operator "3"
 
   initiate_gke_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
