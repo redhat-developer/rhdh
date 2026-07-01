@@ -107,8 +107,18 @@ testing::run_tests() {
   # Use artifacts_subdir for artifact directory to keep artifacts organized
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${JUNIT_RESULTS}" || true
-  if [[ "${CI}" == "true" ]]; then
-    rsync "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
+  if [[ "${CI}" == "true" && -f "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" ]]; then
+    # Gzip junit before writing to SHARED_DIR to stay under Kubernetes Secret 1 MiB limit
+    gzip -c "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" > "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+    local gz_size
+    gz_size=$(stat -c%s "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz" 2> /dev/null || stat -f%z "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz")
+    local max_size=$((800 * 1024))
+    if ((gz_size > max_size)); then
+      echo "[WARNING] junit-results-${artifacts_subdir}.xml.gz is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
+      rm -f "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+    else
+      echo "[INFO] Copied junit-results-${artifacts_subdir}.xml.gz to SHARED_DIR ($((gz_size / 1024)) KB)"
+    fi
   fi
 
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
