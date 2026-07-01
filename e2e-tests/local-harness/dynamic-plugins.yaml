@@ -10,6 +10,7 @@ plugins:
   # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false
-  # Global header (top bar + profile dropdown) — needed by the Settings / Sign-out specs.
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:bs_1.49.4__1.21.6!red-hat-developer-hub-backstage-plugin-global-header
-    disabled: false
+  # TODO(follow-up): the global-header plugin (top bar + profile dropdown) loads off-cluster
+  # but does not mount in the layout with the default config, so the Settings/Sign-out specs
+  # can't run yet. Add it here once the header render config is sorted:
+  #   oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:bs_1.49.4__1.21.6!red-hat-developer-hub-backstage-plugin-global-header
