@@ -179,6 +179,18 @@ handle_ocp_disconnected_helm() {
   }
   log::success "ConfigMap mirror-registry-ca created in ${NAME_SPACE}"
 
+  # Registry auth for the init container — the chart mounts
+  # ${RELEASE_NAME}-dynamic-plugins-registry-auth at
+  # /opt/app-root/src/.config/containers (containers auth.json path).
+  oc create secret generic "${RELEASE_NAME}-dynamic-plugins-registry-auth" \
+    --from-file="auth.json=${MIRROR_REGISTRY_PULL_SECRET}" \
+    -n "${NAME_SPACE}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create registry auth secret — aborting"
+    return 1
+  }
+  log::success "Secret ${RELEASE_NAME}-dynamic-plugins-registry-auth created in ${NAME_SPACE}"
+
   # --- Section I: Helm deployment from mirrored chart ---
   log::section "Helm Deployment"
 
