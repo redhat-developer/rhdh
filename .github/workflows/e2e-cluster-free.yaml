@@ -76,14 +76,14 @@ jobs:
         working-directory: ./e2e-tests
         run: yarn install --mode=skip-build
 
-      - name: Populate dynamic-plugins-root from the catalog index
-        # Mirrors the install-dynamic-plugins flow used by the nightly sanity check:
-        # an empty plugin list + CATALOG_INDEX_IMAGE pulls the default plugin set
-        # (incl. the dynamic home-page plugin) from the public index via skopeo.
+      - name: Populate dynamic-plugins-root (OCI, no source build)
+        # install-dynamic-plugins pulls the dynamic-home-page frontend plugin from the
+        # public OCI registry (ghcr) via skopeo — the core plugins in the catalog
+        # index's default.yaml reference local ./dynamic-plugins/dist paths that only
+        # exist after a source build, so we install the OCI-published build instead.
         run: |
           mkdir -p dynamic-plugins-root
-          printf 'plugins: []\n' > dynamic-plugins.yaml
-          cp dynamic-plugins.yaml dynamic-plugins-root/dynamic-plugins.yaml
+          cp e2e-tests/local-harness/dynamic-plugins.yaml dynamic-plugins.yaml
           npx -y @red-hat-developer-hub/cli-module-install-dynamic-plugins@0.2.0 install dynamic-plugins-root
 
       - name: Run cluster-free E2E (legacy app)
