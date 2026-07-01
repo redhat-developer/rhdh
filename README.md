@@ -48,7 +48,15 @@ Our current list of plugins include:
 
 ## Getting Started
 
-Dependencies:
+### Quick Start
+
+```bash
+corepack enable   # Enable Yarn via corepack (one-time)
+yarn install      # Install all dependencies
+yarn dev          # Start frontend + backend
+```
+
+### Prerequisites
 
 - [Node.js](https://nodejs.org/en/) - [required version](.nvmrc)
 - [corepack](https://github.com/nodejs/corepack)
@@ -58,6 +66,19 @@ Information on running RHDH can be found in our [Getting Started](https://github
 We are excited to see people wanting to contribute to our project and welcome anyone who wishes to participate. You are more than welcome to browse through our open issues and tackle anything you feel confident in working on.
 
 We also welcome non code contributions in the form of bug reporting and documentation writing. If you run across any bugs, please raise an issue here in [JIRA](https://issues.redhat.com/browse/RHDHBUGS).
+
+## Usage
+
+After completing setup, start the application locally:
+
+```bash
+yarn dev        # Start both frontend and backend (recommended for development)
+yarn start      # Start backend only
+```
+
+The frontend is available at `http://localhost:3000` and the backend at `http://localhost:7007`.
+
+For production deployments on OpenShift, see the [Getting Started documentation](https://github.com/redhat-developer/rhdh/blob/main/docs/index.md).
 
 ## Community, Discussion, and Support
 
