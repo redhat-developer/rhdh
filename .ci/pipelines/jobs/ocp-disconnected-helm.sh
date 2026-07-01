@@ -166,13 +166,12 @@ handle_ocp_disconnected_helm() {
   envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 
-  # Combined CA bundle: system CAs + mirror registry CA.
-  # The init container's skopeo needs to trust the mirror registry when
-  # IDMS redirects quay.io/registry.redhat.io pulls to the mirror.
-  local combined_ca="${DISCONNECTED_TMPDIR}/combined-ca-bundle.crt"
-  cat /etc/pki/tls/certs/ca-bundle.crt "${MIRROR_REGISTRY_CA}" > "${combined_ca}"
+  # Mirror registry CA — mounted at /etc/containers/certs.d/<registry>/ca.crt
+  # inside the init container so skopeo trusts the mirror when IDMS redirects
+  # quay.io/registry.redhat.io pulls. Uses the standard container-tools
+  # per-registry CA mechanism; no system trust store replacement needed.
   oc create configmap mirror-registry-ca \
-    --from-file="tls-ca-bundle.pem=${combined_ca}" \
+    --from-file="ca.crt=${MIRROR_REGISTRY_CA}" \
     -n "${NAME_SPACE}" \
     --dry-run=client -o yaml | oc apply -f - || {
     log::error "Failed to create mirror-registry-ca ConfigMap — aborting"
@@ -214,6 +213,7 @@ handle_ocp_disconnected_helm() {
     "${chart_install_path}" \
     -f "${DIR}/value_files/values_disconnected-smoke.yaml" \
     --post-renderer "${post_renderer}" \
+    --post-renderer-args "${MIRROR_REGISTRY_URL}" \
     "${helm_set_flags[@]}" || {
     log::error "Helm deployment failed"
     return 1
