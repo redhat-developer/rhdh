@@ -36,10 +36,12 @@ jobs:
   legacy-local:
     name: Cluster-free E2E (legacy app)
     runs-on: ubuntu-latest
-    # Playwright image: browsers + OS deps preinstalled (matches @playwright/test
-    # 1.59.1), so no browser-install step (which hung on plain ubuntu runners).
+    # Playwright image: browsers + OS deps preinstalled, so no browser-install step
+    # (which hung on plain ubuntu runners). Keep the tag in sync with the
+    # @playwright/test version in e2e-tests/package.json (currently 1.61.1) — a
+    # mismatch fails with "Executable doesn't exist at /ms-playwright/...".
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
