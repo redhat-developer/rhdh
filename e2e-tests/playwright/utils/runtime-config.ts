@@ -17,7 +17,13 @@
 
 import * as yaml from "js-yaml";
 
-import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
+import {
+  type ImageRef,
+  buildImageRef,
+  getReleaseName,
+  imageRefToString,
+  parseCatalogIndexImage,
+} from "./helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
 // Re-export image utilities so existing `import from "./runtime-config"`
@@ -79,7 +85,7 @@ export interface AppConfigYaml {
  * Build a RuntimeDeployConfig from environment variables.
  */
 export function resolveConfig(routerBase: string): RuntimeDeployConfig {
-  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
+  const releaseName = getReleaseName();
   const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
   const imageRegistry = process.env.IMAGE_REGISTRY ?? "quay.io";
   const imageRepo = process.env.IMAGE_REPO ?? "rhdh-community/rhdh";
@@ -308,9 +314,25 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
  * `dynamic-plugins.default.yaml` — many of its default-enabled plugins
  * crash without external config (GitHub org, GitLab, LDAP, Keycloak,
  * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
+ *
+ * The homepage plugin is explicitly enabled so that the DynamicHomePage
+ * component renders the "Welcome back!" heading — external DB tests use
+ * this to verify a successful database connection via the UI.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.dump({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: -1 });
+  return yaml.dump(
+    {
+      includes: [] as string[],
+      plugins: [
+        {
+          package:
+            "./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page",
+          enabled: true,
+        },
+      ],
+    },
+    { lineWidth: -1 },
+  );
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────

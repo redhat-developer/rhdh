@@ -52,6 +52,12 @@ testing::run_tests() {
   test_run_tracker::register "$artifacts_subdir"
   test_run_tracker::mark_deploy_success
 
+  # Pessimistic default: assume tests failed until Playwright proves otherwise.
+  # If the job is killed (Prow timeout) or Playwright hangs, the STATUS files
+  # still have entries for all registered test runs — preventing misaligned
+  # arrays that break downstream reporting (Slack notifications).
+  test_run_tracker::mark_test_result "false" "N/A"
+
   BASE_URL="${url}"
   export BASE_URL
   log::info "BASE_URL: ${BASE_URL}"
