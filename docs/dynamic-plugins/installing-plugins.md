@@ -297,7 +297,7 @@ If the `install-dynamic-plugins` init container is killed with a SIGKILL signal,
 - container runtime issues
 - exceeding resource limits (OOM for example)
 
-When this occurs, the next pod to start will wait up to **10 minutes** (by default) for the stale lock to be released, logging the following message every second:
+When this occurs, the next pod to start will wait up to **10 minutes** (by default) for the stale lock to be released, logging the following message:
 
 ```console
 oc logs -n <namespace-name> -f backstage-<backstage-name>-<pod-suffix> -c install-dynamic-plugins
@@ -311,14 +311,16 @@ Timed out after 600000ms waiting for lock file /dynamic-plugins-root/install-dyn
 Another install may be stuck — remove the file manually to proceed.
 ```
 
-The pod then enters a CrashLoopBackOff cycle, restarting and waiting again every 10 minutes, until the stale lock file is manually removed.
+The exit handler automatically removes the stale lock file during shutdown. The pod restarts, and the next init container run starts with no lock file present, so it proceeds normally. The total recovery time equals the configured lock timeout (10 minutes by default). No manual intervention is required.
 
-To resolve this, delete the lock file from any of the Pods:
+To skip the timeout wait and recover immediately, delete the lock file manually:
 
 ```console
 oc exec -n <namespace-name> deploy/backstage-<backstage-name> -c install-dynamic-plugins -- rm -f /dynamic-plugins-root/install-dynamic-plugins.lock
 ```
 
 The lock timeout can be configured via the `DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS` environment variable on the `install-dynamic-plugins` init container (value in milliseconds, default: `600000` which is 10 minutes).
+
+> **Note:** In RHDH 1.10.x and earlier, the install script used a Python implementation with no lock timeout. A stale lock file would cause the init container to wait indefinitely, and the only way to recover was to manually delete the lock file. The timeout, configurable environment variable, and automatic lock cleanup on exit were introduced with the TypeScript rewrite of the install script.
 
 Note: This lock file behavior only applies when using a persistent volume for the `dynamic-plugins-root` directory. With the default ephemeral volume, each pod gets its own volume, so no lock contention can occur.
