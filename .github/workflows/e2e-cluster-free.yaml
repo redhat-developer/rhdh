@@ -1,4 +1,4 @@
-name: E2E Cluster-free Harness
+name: E2E Cluster-free
 
 # Runs the cluster-free local E2E harness (RHIDP-13501 / RHIDP-15075): boots the
 # backend and the legacy app dev server in-process and drives Playwright against
@@ -29,8 +29,8 @@ permissions:
   contents: read
 
 jobs:
-  legacy-local:
-    name: Cluster-free E2E (legacy app)
+  e2e:
+    name: e2e
     runs-on: ubuntu-latest
     # Playwright image: browsers + OS deps preinstalled, so no browser-install step
     # (which hung on plain ubuntu runners). Keep the tag in sync with the
