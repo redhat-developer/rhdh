@@ -28,27 +28,9 @@ handle_ocp_disconnected_operator() {
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
 
-  # --- Section A: Operator Mirroring + Installation ---
   # Uses prepare-restricted-environment.sh from rhdh-operator, which handles
   # mirroring operator/operand images and installing the operator CatalogSource.
-  # Requires podman for building custom operator index images.
   log::section "Operator Mirroring and Installation"
-
-  if ! command -v podman &> /dev/null; then
-    log::info "Installing podman (required by prepare-restricted-environment.sh)..."
-    if ! apt-get update 2>&1; then
-      log::warn "apt-get update failed — continuing anyway"
-    fi
-    if ! apt-get install -y podman 2>&1; then
-      log::error "apt-get install podman failed"
-    fi
-    hash -r
-    if ! command -v podman &> /dev/null; then
-      log::error "podman not available after install. Add podman to the rhdh-e2e-runner Dockerfile."
-      return 1
-    fi
-    log::success "podman installed: $(podman --version)"
-  fi
 
   disconnected::fetch_script "prepare-restricted-environment.sh" "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" \
     || {
@@ -76,13 +58,11 @@ handle_ocp_disconnected_operator() {
     }
   log::success "Operator installed via prepare-restricted-environment.sh"
 
-  # --- Section B: Wait for Operator CRD ---
   k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || {
     log::error "Backstage CRD not available after operator installation"
     return 1
   }
 
-  # --- Section C: Plugin Mirroring ---
   log::section "Plugin Mirroring"
 
   disconnected::fetch_script "mirror-plugins.sh" "${DISCONNECTED_TMPDIR}/mirror-plugins.sh" \
@@ -103,8 +83,7 @@ handle_ocp_disconnected_operator() {
     return 1
   }
 
-  # --- Section D: Namespace + registries.conf ConfigMap ---
-  log::section "Cluster Resources"
+  log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
 
@@ -118,7 +97,6 @@ handle_ocp_disconnected_operator() {
   envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 
-  # --- Section E: Backstage CR Deployment ---
   log::section "Backstage CR Deployment"
 
   local rendered_cr
@@ -141,7 +119,6 @@ handle_ocp_disconnected_operator() {
   deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}"
   log::success "Backstage CR deployed in ${NAME_SPACE}"
 
-  # --- Section F: Smoke Test ---
   log::section "Smoke Test"
 
   local url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
