@@ -15,3 +15,5 @@ data:
     [[registry]]
     prefix = "ghcr.io/redhat-developer/rhdh-plugin-export-overlays"
     location = "${MIRROR_REGISTRY_URL}/rhdh-plugin-export-overlays"
+  policy.json: |
+    {"default": [{"type": "insecureAcceptAnything"}]}
