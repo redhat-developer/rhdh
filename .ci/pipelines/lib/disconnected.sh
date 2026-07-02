@@ -22,10 +22,6 @@ source "${DIR}/lib/common.sh"
 DISCONNECTED_TMPDIR=$(mktemp -d)
 export DISCONNECTED_TMPDIR
 
-# oc-mirror binary path, set by disconnected::install_oc_mirror.
-OC_MIRROR_BIN=""
-export OC_MIRROR_BIN
-
 # Validate that all required disconnected environment variables are set.
 # These are exported by the step-registry commands.sh before calling
 # openshift-ci-tests.sh.
@@ -61,57 +57,6 @@ disconnected::setup_auth() {
   unset REGISTRY_AUTH_PREFERENCE
 
   log::info "Container auth configured from ${MIRROR_REGISTRY_PULL_SECRET}"
-}
-
-# Download the oc-mirror binary at runtime from mirror.openshift.com.
-# Uses CONTAINER_PLATFORM_VERSION to select the matching version.
-disconnected::install_oc_mirror() {
-  local arch
-  arch=$(uname -m)
-  case ${arch} in
-    x86_64) arch="amd64" ;;
-    aarch64) arch="arm64" ;;
-  esac
-
-  local ocp_version="${CONTAINER_PLATFORM_VERSION:-4.21}"
-  local oc_mirror_version=""
-
-  # Try stable channel for the OCP minor version, fall back to latest
-  local stable_url="https://mirror.openshift.com/pub/openshift-v4/${arch}/clients/ocp/stable-${ocp_version}/"
-  if curl -sf --head --connect-timeout 10 "${stable_url}" > /dev/null 2>&1; then
-    oc_mirror_version="stable-${ocp_version}"
-    log::info "Using oc-mirror from stable-${ocp_version} channel"
-  else
-    oc_mirror_version="latest"
-    log::info "stable-${ocp_version} not available, using oc-mirror from latest channel"
-  fi
-
-  local download_dir="${DISCONNECTED_TMPDIR}/oc-mirror-download"
-  mkdir -p "${download_dir}"
-
-  local base_url="https://mirror.openshift.com/pub/openshift-v4/${arch}/clients/ocp/${oc_mirror_version}"
-
-  log::info "Downloading oc-mirror from ${base_url}/"
-  if ! curl -fL --retry 5 --connect-timeout 30 -o "${download_dir}/oc-mirror.tar.gz" "${base_url}/oc-mirror.tar.gz"; then
-    log::error "Failed to download oc-mirror"
-    return 1
-  fi
-
-  # Verify checksum
-  if curl -fL --retry 3 --connect-timeout 30 -o "${download_dir}/sha256sum.txt" "${base_url}/sha256sum.txt" 2> /dev/null; then
-    if grep "oc-mirror.tar.gz" "${download_dir}/sha256sum.txt" | (cd "${download_dir}" && sha256sum -c -); then
-      log::info "oc-mirror checksum verified"
-    else
-      log::warn "oc-mirror checksum verification failed — continuing anyway"
-    fi
-  fi
-
-  tar -xzf "${download_dir}/oc-mirror.tar.gz" -C "${download_dir}"
-  chmod +x "${download_dir}/oc-mirror"
-  OC_MIRROR_BIN="${download_dir}/oc-mirror"
-  export OC_MIRROR_BIN
-
-  log::success "oc-mirror installed: $(${OC_MIRROR_BIN} version --output=yaml 2>&1 | head -1)"
 }
 
 # Build an ImageSetConfiguration for oc-mirror.
@@ -187,7 +132,7 @@ disconnected::run_oc_mirror() {
   unset REGISTRY_AUTH_FILE
 
   log::info "Running oc-mirror --v2 → ${MIRROR_REGISTRY_URL}"
-  if ! "${OC_MIRROR_BIN}" \
+  if ! oc-mirror \
     -c "${imageset_config}" \
     "docker://${MIRROR_REGISTRY_URL}" \
     --dest-tls-verify=false \

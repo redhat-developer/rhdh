@@ -26,15 +26,6 @@ handle_ocp_disconnected_helm() {
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
 
-  # --- Section A: Install oc-mirror ---
-  log::section "oc-mirror Setup"
-
-  disconnected::install_oc_mirror || {
-    log::error "Failed to install oc-mirror — aborting"
-    return 1
-  }
-
-  # --- Section B: Resolve chart source and pull locally ---
   log::section "Chart Resolution"
 
   local is_ga="false"
@@ -43,7 +34,6 @@ handle_ocp_disconnected_helm() {
   fi
 
   if [[ "${is_ga}" == "true" ]]; then
-    # GA: pull chart from charts.openshift.io
     helm repo add openshift-helm-charts https://charts.openshift.io 2> /dev/null || true
     helm repo update openshift-helm-charts
     log::info "Pulling GA chart from charts.openshift.io (version: ${RELEASE_VERSION})"
@@ -54,7 +44,6 @@ handle_ocp_disconnected_helm() {
       return 1
     }
   else
-    # CI/upstream: pull chart from OCI registry
     log::info "Pulling CI chart from ${HELM_CHART_URL} (version: ${CHART_VERSION})"
     helm pull "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
       -d "${DISCONNECTED_TMPDIR}" || {
@@ -72,7 +61,7 @@ handle_ocp_disconnected_helm() {
   fi
   log::success "Chart pulled: ${CHART_LOCAL_TGZ}"
 
-  # --- Section C: Resolve PostgreSQL image from chart ---
+  # Resolve PostgreSQL image from chart values
   local helm_values
   helm_values=$(helm show values "${CHART_LOCAL_TGZ}" 2> /dev/null || true)
 
@@ -98,7 +87,6 @@ handle_ocp_disconnected_helm() {
 
   echo "${helm_values}" > "${ARTIFACT_DIR}/disconnected-helm-chart-values.yaml" 2> /dev/null || true
 
-  # --- Section D: Build ImageSetConfiguration ---
   log::section "Image Mirroring"
 
   local imageset_config="${DISCONNECTED_TMPDIR}/imageset-config.yaml"
@@ -107,14 +95,12 @@ handle_ocp_disconnected_helm() {
     return 1
   }
 
-  # --- Section E: Run oc-mirror ---
   local workspace="${DISCONNECTED_TMPDIR}/oc-mirror-workspace"
   disconnected::run_oc_mirror "${imageset_config}" "${workspace}" || {
     log::error "oc-mirror failed — aborting"
     return 1
   }
 
-  # --- Section F: Patch and apply IDMS ---
   log::section "Cluster Resources"
 
   disconnected::patch_idms "${OC_MIRROR_IDMS_FILE}"
@@ -133,7 +119,6 @@ handle_ocp_disconnected_helm() {
     log::success "ImageTagMirrorSet applied"
   fi
 
-  # --- Section G: Plugin mirroring ---
   log::section "Plugin Mirroring"
 
   disconnected::fetch_script "mirror-plugins.sh" "${DISCONNECTED_TMPDIR}/mirror-plugins.sh" || {
@@ -153,7 +138,8 @@ handle_ocp_disconnected_helm() {
     return 1
   }
 
-  # --- Section H: Namespace + registries.conf ConfigMap ---
+  log::section "Namespace and Secrets"
+
   namespace::configure "${NAME_SPACE}"
 
   envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
@@ -191,7 +177,6 @@ handle_ocp_disconnected_helm() {
   }
   log::success "Secret ${RELEASE_NAME}-dynamic-plugins-registry-auth created in ${NAME_SPACE}"
 
-  # --- Section I: Helm deployment from mirrored chart ---
   log::section "Helm Deployment"
 
   # Prefer the chart from oc-mirror workspace, fall back to the pulled tgz
@@ -215,10 +200,8 @@ handle_ocp_disconnected_helm() {
     )
   fi
 
-  # Post-renderer appends registries.conf volume + mount to the rendered
-  # Deployment, avoiding the Helm "array clobber" pitfall where a values
-  # file that defines extraVolumes[] replaces the chart's entire default
-  # array (which grows across chart versions).
+  # Post-renderer appends disconnected volumes (registries.conf, mirror CA)
+  # to the rendered Deployment, avoiding the Helm "array clobber" pitfall.
   local post_renderer="${DIR}/resources/disconnected/helm-post-renderer.sh"
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
@@ -235,7 +218,6 @@ handle_ocp_disconnected_helm() {
 
   printf '%s\n' "${helm_set_flags[@]}" > "${ARTIFACT_DIR}/disconnected-helm-set-flags.txt" 2> /dev/null || true
 
-  # --- Section J: Smoke test ---
   log::section "Smoke Test"
 
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
