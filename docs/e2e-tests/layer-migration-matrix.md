@@ -4,7 +4,7 @@
 **Story**: RHIDP-15076 — Identify E2E specs supplementable by Layer 3 / cluster-free harness (Phase 1)
 **Author**: Gustavo Lira e Silva
 **Date**: 2026-06-26 (updated 2026-07-02 with L4a harness validation results)
-**Status**: DRAFT
+**Status**: DRAFT — promote once the batches below are groomed into RHIDP-13528/13529
 
 > **This is an _additive_ analysis, not a removal plan.** Per the epic, no E2E spec
 > has to be deleted. The goal is to identify where a faster Layer 1/2/3 (or cluster-free
@@ -31,9 +31,11 @@
 
 ## Update 2026-07-02 — L4a harness validation (RHIDP-15075, PR #5005)
 
-The cluster-free harness now **runs 4 of these tests green in CI** (~3.5 min GitHub
-Actions job, no cluster, no image build): the full `guest-signin-happy-path` spec
-(#4 — home page, Settings, Sign-out) and `learning-path-page` (#6). Two findings that
+(Spec numbers refer to the summary matrix below.)
+
+The cluster-free harness now **runs 2 specs (4 test cases) green in CI** (~3.5 min
+GitHub Actions job, no cluster, no image build): the full `guest-signin-happy-path`
+spec (#4 — home page, Settings, Sign-out: 3 test cases) and `learning-path-page` (#6). Two findings that
 change the cost picture for the remaining candidates:
 
 - **The global-header blocker is solved.** The repo's static
@@ -62,11 +64,11 @@ land.
 Note: #19 `plugin-dynamic-loading` ships with PR #4967, which is still **open** — the
 row below describes its state once merged.
 
-## Summary matrix (30 specs)
+## Summary matrix (30 specs: 29 on `main` + #19 pending in PR #4967)
 
 Legend: ✅ = Layer 3 equivalent **already drafted** on branch
-`RHIDP-13235-layer3-component-tests`. 🟢 = **validated green on the L4a cluster-free
-harness** (PR #5005).
+[rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged).
+🟢 = **validated green on the L4a cluster-free harness** (PR #5005).
 
 | #   | Spec                                                                  | Current project     | Cluster? | Renders UI | External svc            | **Target layer**                     |
 | --- | --------------------------------------------------------------------- | ------------------- | -------- | ---------- | ----------------------- | ------------------------------------ |
@@ -106,26 +108,27 @@ harness** (PR #5005).
 | Target         | Count | Specs                                       |
 | -------------- | ----- | ------------------------------------------- |
 | **L2**         | 4     | #1, #2, #13, #14                            |
-| **L3**         | 9     | #3\*, #4, #5, #6, #7, #8, #9, #10, #11, #12 |
+| **L3**         | 10    | #3\*, #4, #5, #6, #7, #8, #9, #10, #11, #12 |
 | **L4a**        | 5     | #15, #16, #17, #18, #19                     |
 | **L4b (stay)** | 11    | #20–#30                                     |
 
 \* smoke-test: migrate the assertion to L3 but keep a minimal L4a/L4b smoke as a deployment heartbeat.
 
-## Already covered on `RHIDP-13235-layer3-component-tests`
+## Already drafted in [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged)
 
 Four of the L3 candidates already have a Layer 3 equivalent drafted under epic
-RHIDP-13235 (Layer 3 component tests). These prove the pattern works and should be the
-template for the rest:
+RHIDP-13235 (Layer 3 component tests), carried by PR #4864. These prove the pattern
+works and should be the template for the rest (the PR is the durable reference — its
+branch may be rebased or deleted):
 
-| E2E spec                               | Layer 3 equivalent (commit)                 |
-| -------------------------------------- | ------------------------------------------- |
-| `learning-path-page` (#6)              | `e3a57bd2` LearningPaths page               |
-| `settings` (#5)                        | `d2391899` settings GeneralPage composition |
-| `plugins/frontend/sidebar` (#8)        | `7328dac4` CustomSidebarItem                |
-| `plugins/user-settings-info-card` (#9) | `495e734b` InfoCard build info card         |
-| _(theming / global header feature)_    | `75032c56` app-bar themed branding config   |
-| _(header mount points feature)_        | `26236e1c` mount-point data resolution      |
+| E2E spec                               | Layer 3 equivalent drafted in #4864 |
+| -------------------------------------- | ----------------------------------- |
+| `learning-path-page` (#6)              | LearningPaths page test             |
+| `settings` (#5)                        | settings GeneralPage composition    |
+| `plugins/frontend/sidebar` (#8)        | CustomSidebarItem test              |
+| `plugins/user-settings-info-card` (#9) | InfoCard build info card test       |
+| _(theming / global header feature)_    | app-bar themed branding config test |
+| _(header mount points feature)_        | mount-point data resolution test    |
 
 > Note: the epic briefing listed `custom-theme`, `default-global-header`,
 > `header-mount-points`, and `dynamic-home-page-customization` as specs — **these do not
@@ -233,7 +236,9 @@ Build **two harnesses**, not one Docker fixture:
 
 1. **Native backend harness (no Docker)** — resurrect PR #2231's idea on top of the
    published `install-dynamic-plugins` CLI + `startTestBackend`. Replaces all **32 Docker
-   smoke-tests** and fully covers the **12 pure-backend workspaces** (load + API):
+   smoke-tests** and covers the **load + API surface** of the **12 pure-backend
+   workspaces** (their UI e2e, where one exists — e.g.
+   `scaffolder-backend-module-kubernetes` — still needs the render harness):
    `3scale, ai-integrations, apiconnect, github-notifications, keycloak,
 mcp-integrations, pingidentity, scaffolder-backend-module-{kubernetes,regex,servicenow,sonarqube},
 scaffolder-relation-processor`.
@@ -264,6 +269,6 @@ scaffolder-relation-processor`.
 
 - Epic RHIDP-13501, Stories RHIDP-15075 (spike), RHIDP-15076 (this), RHIDP-15082 (L4a harness),
   RHIDP-13528/13529 (L3 batches), RHIDP-13530 (overlay coord), RHIDP-13236 (optional retirement).
-- Existing L3 work: branch `RHIDP-13235-layer3-component-tests`.
-- Cluster-free L4a harness: branch `rhidp-15075-cluster-free-e2e-harness` (PR #5005).
+- Existing L3 work: [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged; RHIDP-13235).
+- Cluster-free L4a harness: [rhdh#5005](https://github.com/redhat-developer/rhdh/pull/5005) (RHIDP-15075).
 - Plugin load validation (L4a): `e2e-tests/playwright/e2e/plugin-dynamic-loading.spec.ts` (RHIDP-13508, PR #4967).
