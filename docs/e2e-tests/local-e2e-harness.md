@@ -65,16 +65,24 @@ dev server with `app-config.yaml` + `app-config.dynamic-plugins.yaml` +
 if `dynamic-plugins-root` has no plugins.
 
 The run is scoped to tests tagged `@cluster-free` within the spec files allowlisted in
-`testMatch` — today the one test verified green off-cluster, the
-`guest-signin-happy-path` home-page test. To widen coverage, tag a validated test with
-`@cluster-free` and add its spec file to `testMatch` (see "Known issues").
+`testMatch`. To widen coverage, tag a validated test with `@cluster-free` and add its
+spec file to `testMatch`; if the test needs extra plugins, add them (with their
+`pluginConfig`) to `e2e-tests/local-harness/dynamic-plugins.yaml` and re-run
+`populate.sh` (see "Known issues").
 
 ### Verified
 
 With plugins populated, the legacy app renders the full production RHDH UI off-cluster
-(branding, sidebar, and Quick Access from the dynamic home-page plugin). The existing
-`guest-signin-happy-path` **home-page test passes unmodified** — confirming a dynamic
-frontend plugin renders with no cluster.
+(branding, sidebar, global header, and Quick Access from the dynamic plugins). The
+existing specs **pass unmodified**:
+
+- `guest-signin-happy-path` — all three tests: home page (dynamic-home-page plugin),
+  Settings and Sign-out (navigation via the global-header profile dropdown, using the
+  plugin's canonical `pluginConfig` merged through the generated
+  `dynamic-plugins-root/app-config.dynamic-plugins.yaml`, exactly as in-cluster).
+- `learning-path-page` — renders from the static fallback data bundled with
+  `packages/app`; the "References" sidebar group mirrors the CI menu customization via
+  `app-config.local-e2e.yaml`.
 
 ## CI
 
@@ -111,8 +119,17 @@ just `run`), which is why this harness boots the dev servers directly instead.
   dependency versions), backend dynamic-plugin builds fail with version-mismatch errors
   and yarn may not surface workspace bins. Run `yarn install` first. The
   `install-dynamic-plugins` populate path avoids building from source and is unaffected.
-- **`global-header` plugin mounting** still needs config sorting for the legacy harness;
-  specs that navigate via the top-right profile dropdown depend on it.
+- **Re-run `populate.sh` after changing the harness plugin set.** The `pluginConfig`
+  blocks in `e2e-tests/local-harness/dynamic-plugins.yaml` (e.g. the global-header
+  mount points) only take effect through the generated
+  `dynamic-plugins-root/app-config.dynamic-plugins.yaml`, which the webServer loads
+  last. A stale populate leaves plugins loaded but unconfigured (the header renders
+  empty).
+- **Specs that need CI test data are not enabled yet.** `settings.spec.ts` asserts
+  ownership entities ("Guest User, team-a") that come from catalog locations in the CI
+  config map; `home-page-customization.spec.ts` needs the home-page card customization
+  from `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml`. Enabling them
+  means mirroring that data/config into the harness overlay.
 - **Live-external-service specs** (real k8s cluster, GitHub org, Quay, Tekton, Keycloak)
   still need those services or mocks; this harness covers UI/plugin-rendering scenarios
   that don't require live external infra.

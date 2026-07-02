@@ -38,15 +38,19 @@ test.describe("Guest Signing Happy path", () => {
     },
   );
 
-  test("Verify Profile is Guest in the Settings page", async () => {
+  test("Verify Profile is Guest in the Settings page", { tag: "@cluster-free" }, async () => {
     await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("Guest");
     await uiHelper.verifyHeading("User Entity: guest");
   });
 
-  test("Sign Out and Verify that you return to the Sign-in page", async () => {
-    await uiHelper.goToSettingsPage();
-    await common.signOut();
-    await uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
-  });
+  test(
+    "Sign Out and Verify that you return to the Sign-in page",
+    { tag: "@cluster-free" },
+    async () => {
+      await uiHelper.goToSettingsPage();
+      await common.signOut();
+      await uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
+    },
+  );
 });
