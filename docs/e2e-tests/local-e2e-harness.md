@@ -25,8 +25,8 @@ sign in."_
 Run the same script CI uses — it installs the harness plugin set
 (`e2e-tests/local-harness/dynamic-plugins.yaml`) from the public OCI registry (ghcr)
 via `install-dynamic-plugins` + skopeo, pinned to the same CLI version as CI. No
-source build needed; works from a fresh clone. Requires skopeo (Linux/CI — not
-available on macOS):
+source build needed; works from a fresh clone. Requires skopeo (preinstalled in CI;
+`brew install skopeo` on macOS):
 
 ```bash
 ./e2e-tests/local-harness/populate.sh

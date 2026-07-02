@@ -7,7 +7,7 @@
 # Installs the plugin set from e2e-tests/local-harness/dynamic-plugins.yaml
 # from the public OCI registry (ghcr) via install-dynamic-plugins + skopeo —
 # no dynamic-plugins/dist source build and no cluster. Requires skopeo
-# (Linux/CI; not available on macOS — see docs/e2e-tests/local-e2e-harness.md).
+# (preinstalled in CI; `brew install skopeo` on macOS).
 set -e
 
 # Pinned so local runs install the exact CLI version CI uses.
