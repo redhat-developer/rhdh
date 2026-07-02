@@ -7,6 +7,9 @@
 #   2. Mounts the mirror registry CA at the standard container-tools
 #      per-registry path (/etc/containers/certs.d/<registry>/ca.crt)
 #      so skopeo trusts the mirror's TLS certificate.
+#   3. Mounts a permissive policy.json so skopeo accepts unsigned images
+#      from the mirror (Red Hat signature server is unreachable in
+#      disconnected environments).
 #
 # Using a post-renderer avoids the Helm "array clobber" pitfall:
 # a values file that defines extraVolumes[] or initContainers[] replaces
@@ -31,6 +34,7 @@ yq eval "
     ] |
     .spec.template.spec.initContainers[0].volumeMounts += [
       {\"mountPath\": \"/etc/containers/registries.conf.d/rhdh-registries.conf\", \"name\": \"rhdh-plugin-mirror-conf\", \"readOnly\": true, \"subPath\": \"rhdh-registries.conf\"},
+      {\"mountPath\": \"/etc/containers/policy.json\", \"name\": \"rhdh-plugin-mirror-conf\", \"readOnly\": true, \"subPath\": \"policy.json\"},
       {\"mountPath\": \"/etc/containers/certs.d/${MIRROR_REGISTRY_URL}/ca.crt\", \"name\": \"mirror-registry-ca\", \"readOnly\": true, \"subPath\": \"ca.crt\"}
     ]
   ) // .
