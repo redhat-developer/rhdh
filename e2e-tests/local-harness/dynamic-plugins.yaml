@@ -1,5 +1,6 @@
-# Cluster-free harness plugin set — installed via install-dynamic-plugins from OCI
-# (ghcr, pulled with skopeo), so no dynamic-plugins/dist source build is needed.
+# Cluster-free harness plugin set — installed by ./populate.sh via
+# install-dynamic-plugins from OCI (ghcr, pulled with skopeo), so no
+# dynamic-plugins/dist source build is needed.
 #
 # app-config.dynamic-plugins.yaml (loaded by the harness) already configures these
 # plugins, so the existing RHDH specs render off-cluster.

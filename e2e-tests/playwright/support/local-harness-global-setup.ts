@@ -12,18 +12,22 @@ export default function requireDynamicPluginsPopulated(): void {
   // process.cwd() is e2e-tests when Playwright runs; the plugins root is at repo root.
   const root = resolve(process.cwd(), "..", "dynamic-plugins-root");
 
+  // Plugins are installed as one directory each; count only directories so the
+  // installer's generated global-config file (written into the same root even when
+  // zero plugins install) does not satisfy the guard.
   let pluginCount = 0;
   try {
-    pluginCount = readdirSync(root).filter((entry) => entry !== ".gitkeep").length;
+    pluginCount = readdirSync(root, { withFileTypes: true }).filter((entry) =>
+      entry.isDirectory(),
+    ).length;
   } catch {
     // root missing — treated as empty below.
   }
 
   if (pluginCount === 0) {
     throw new Error(
-      `dynamic-plugins-root is empty — populate it before running e2e:legacy-local:\n\n` +
-        `  CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:latest \\\n` +
-        `    npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install dynamic-plugins-root\n\n` +
+      `dynamic-plugins-root has no plugins — populate it before running e2e:legacy-local:\n\n` +
+        `  ./e2e-tests/local-harness/populate.sh\n\n` +
         `See docs/e2e-tests/local-e2e-harness.md.`,
     );
   }

@@ -27,11 +27,16 @@ test.describe("Guest Signing Happy path", () => {
     await common.loginAsGuest();
   });
 
-  test("Verify the Homepage renders with Search Bar, Quick Access and Starred Entities", async () => {
-    await uiHelper.verifyHeading("Welcome back!");
-    await uiHelper.openSidebar("Home");
-    await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
-  });
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
+    { tag: "@cluster-free" },
+    async () => {
+      await uiHelper.verifyHeading("Welcome back!");
+      await uiHelper.openSidebar("Home");
+      await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+    },
+  );
 
   test("Verify Profile is Guest in the Settings page", async () => {
     await uiHelper.goToSettingsPage();

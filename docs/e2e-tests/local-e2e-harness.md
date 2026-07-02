@@ -22,21 +22,36 @@ sign in."_
 
 ### 1. Populate `dynamic-plugins-root` (one-time)
 
-Production-faithful — full plugin set and generated config, the same source CI uses:
+Run the same script CI uses — it installs the harness plugin set
+(`e2e-tests/local-harness/dynamic-plugins.yaml`) from the public OCI registry (ghcr)
+via `install-dynamic-plugins` + skopeo, pinned to the same CLI version as CI. No
+source build needed; works from a fresh clone. Requires skopeo (Linux/CI — not
+available on macOS):
 
 ```bash
-# main branch -> :latest; release branches -> the matching :1.y tag
-CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:latest \
-  npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install dynamic-plugins-root
+./e2e-tests/local-harness/populate.sh
 ```
 
-Offline alternative (frontend plugins only; requires a reconciled workspace —
-see "Known issues"):
+Alternatives:
 
-```bash
-yarn --cwd dynamic-plugins export-dynamic
-yarn --cwd dynamic-plugins copy-dynamic-plugins ../dynamic-plugins-root
-```
+- **Catalog index** — the index's `dynamic-plugins.default.yaml` references the core
+  plugins by local `./dynamic-plugins/dist/…` paths that only exist after a source
+  build, so on a fresh clone most plugins are skipped. Use only after building
+  `dynamic-plugins` from source (main -> `:latest`; release branches -> the matching
+  `:1.y` tag):
+
+  ```bash
+  CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:latest \
+    npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install dynamic-plugins-root
+  ```
+
+- **Offline from-source** (frontend plugins only; requires a reconciled workspace —
+  see "Known issues"):
+
+  ```bash
+  yarn --cwd dynamic-plugins export-dynamic
+  yarn --cwd dynamic-plugins copy-dynamic-plugins ../dynamic-plugins-root
+  ```
 
 ### 2. Run
 
@@ -47,11 +62,12 @@ yarn --cwd e2e-tests e2e:legacy-local
 Playwright (`playwright.legacy-local.config.ts`) boots the backend and the legacy app
 dev server with `app-config.yaml` + `app-config.dynamic-plugins.yaml` +
 `app-config.local-e2e.yaml`. A `globalSetup` first fails fast with the populate command
-if `dynamic-plugins-root` is empty.
+if `dynamic-plugins-root` has no plugins.
 
-By default the run is scoped (via `grep`) to the one test verified green off-cluster so
-far — the `guest-signin-happy-path` home-page test. Widen `testMatch`/`grep` as more
-specs are validated (see "Known issues").
+The run is scoped to tests tagged `@cluster-free` within the spec files allowlisted in
+`testMatch` — today the one test verified green off-cluster, the
+`guest-signin-happy-path` home-page test. To widen coverage, tag a validated test with
+`@cluster-free` and add its spec file to `testMatch` (see "Known issues").
 
 ### Verified
 
@@ -63,11 +79,11 @@ frontend plugin renders with no cluster.
 ## CI
 
 `.github/workflows/e2e-cluster-free.yaml` runs this harness on GitHub Actions in a
-cluster-free phase: it installs deps + skopeo, populates `dynamic-plugins-root` from the
-public catalog index via the `install-dynamic-plugins` CLI (the same mechanism the
-nightly sanity check uses), then runs `yarn e2e:legacy-local`. No cluster or container
-image is built. It triggers on `e2e-tests/**` and `app-config*.yaml` changes; the scope
-can widen to `packages/app/**` / `packages/backend/**` once it is proven stable.
+cluster-free phase: it installs deps + skopeo, populates `dynamic-plugins-root` via
+`./e2e-tests/local-harness/populate.sh` (the harness plugin set from the public OCI
+registry, ghcr), then runs `yarn e2e:legacy-local`. No cluster or container image is
+built. It triggers on `e2e-tests/**` and `app-config*.yaml` changes; the scope can
+widen to `packages/app/**` / `packages/backend/**` once it is proven stable.
 
 ## Why the legacy app, not app-next
 

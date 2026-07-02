@@ -10,14 +10,9 @@ import { defineConfig, devices } from "@playwright/test";
  * OpenShift/Kubernetes cluster or container images. Playwright boots the backend and
  * the legacy app dev server itself and drives the browser against them.
  *
- *   # one-time: populate dynamic-plugins-root (production-faithful — full plugin set
- *   # and generated config, same source CI uses):
- *   # main -> :latest; release branches -> the matching :1.y tag
- *   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:latest \
- *     npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install dynamic-plugins-root
- *   # (offline alternative, frontend plugins only, needs reconciled deps:
- *   #  yarn --cwd dynamic-plugins export-dynamic && \
- *   #  yarn --cwd dynamic-plugins copy-dynamic-plugins ../dynamic-plugins-root)
+ *   # one-time: populate dynamic-plugins-root (same script CI uses — OCI, no build;
+ *   # alternatives in docs/e2e-tests/local-e2e-harness.md):
+ *   ./e2e-tests/local-harness/populate.sh
  *
  *   yarn --cwd e2e-tests e2e:legacy-local
  *
@@ -42,13 +37,16 @@ export default defineConfig({
   testDir: "./playwright",
   // Fails fast if dynamic-plugins-root has not been populated.
   globalSetup: "./playwright/support/local-harness-global-setup.ts",
-  // Runs the guest-signin home-page test, verified green off-cluster (the dynamic
-  // home-page plugin renders from OCI). `grep` scopes to it because the sibling
-  // Settings/Sign-out tests navigate via the top-right profile dropdown, which needs
-  // the global-header plugin to *mount* in the layout — it loads off-cluster but
-  // rendering it needs more config (follow-up). Widen as specs are validated.
+  // A test runs cluster-free when its spec file is listed in `testMatch` (an
+  // allowlist, so unvalidated specs are never loaded) AND it carries the
+  // @cluster-free tag. To widen coverage: tag the test where it lives and add its
+  // spec file here. Today that is the guest-signin home-page test, verified green
+  // off-cluster (the dynamic home-page plugin renders from OCI); its sibling
+  // Settings/Sign-out tests stay untagged because they navigate via the top-right
+  // profile dropdown, which needs the global-header plugin to *mount* in the
+  // layout — it loads off-cluster but rendering it needs more config (follow-up).
   testMatch: ["e2e/guest-signin-happy-path.spec.ts"],
-  grep: /Homepage renders with Search Bar/u,
+  grep: /@cluster-free/u,
   timeout: 90 * 1000,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,

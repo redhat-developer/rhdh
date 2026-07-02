@@ -2,9 +2,9 @@ name: E2E Cluster-free Harness
 
 # Runs the cluster-free local E2E harness (RHIDP-13501 / RHIDP-15075): boots the
 # backend and the legacy app dev server in-process and drives Playwright against
-# them, with dynamic plugins pulled from the public catalog index via the
-# install-dynamic-plugins CLI (skopeo). No OpenShift/Kubernetes cluster or image.
-# See docs/e2e-tests/local-e2e-harness.md.
+# them, with dynamic plugins installed from the public OCI registry (ghcr) via
+# the install-dynamic-plugins CLI (skopeo). No OpenShift/Kubernetes cluster or
+# image. See docs/e2e-tests/local-e2e-harness.md.
 
 on:
   pull_request:
@@ -27,10 +27,6 @@ concurrency:
 
 permissions:
   contents: read
-
-env:
-  # Public index; release branches can override to the matching :1.y tag.
-  CATALOG_INDEX_IMAGE: quay.io/rhdh/plugin-catalog-index:latest
 
 jobs:
   legacy-local:
@@ -77,14 +73,11 @@ jobs:
         run: yarn install --mode=skip-build
 
       - name: Populate dynamic-plugins-root (OCI, no source build)
-        # install-dynamic-plugins pulls the dynamic-home-page frontend plugin from the
-        # public OCI registry (ghcr) via skopeo — the core plugins in the catalog
-        # index's default.yaml reference local ./dynamic-plugins/dist paths that only
-        # exist after a source build, so we install the OCI-published build instead.
-        run: |
-          mkdir -p dynamic-plugins-root
-          cp e2e-tests/local-harness/dynamic-plugins.yaml dynamic-plugins.yaml
-          npx -y @red-hat-developer-hub/cli-module-install-dynamic-plugins@0.2.0 install dynamic-plugins-root
+        # install-dynamic-plugins pulls the harness plugin set from the public OCI
+        # registry (ghcr) via skopeo — the core plugins in the catalog index's
+        # default.yaml reference local ./dynamic-plugins/dist paths that only exist
+        # after a source build, so we install the OCI-published builds instead.
+        run: ./e2e-tests/local-harness/populate.sh
 
       - name: Run cluster-free E2E (legacy app)
         working-directory: ./e2e-tests
