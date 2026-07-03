@@ -61,6 +61,12 @@ export default defineConfig({
     locale: process.env.LOCALE ?? "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
+    // Proxy for disconnected environments where the CI runner reaches the
+    // cluster through a squid proxy (HTTPS_PROXY set by proxy-conf.sh).
+    proxy:
+      process.env.HTTPS_PROXY !== undefined && process.env.HTTPS_PROXY !== ""
+        ? { server: process.env.HTTPS_PROXY }
+        : undefined,
     trace: "retain-on-failure",
     screenshot: "on",
     ...devices["Desktop Chrome"],
