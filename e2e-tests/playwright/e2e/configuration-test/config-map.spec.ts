@@ -26,9 +26,11 @@ test.describe("Change app-config at e2e test runtime", () => {
     await ensureRuntimeDeployed();
   });
 
-  // Navigate away from RHDH to close WebSocket connections before
-  // Playwright tears down the page — prevents a long hang during
-  // context/trace cleanup.
+  // RHDH's frontend opens an SSE (EventSource) connection for live
+  // updates. With tracing enabled, Playwright's fixture teardown hangs
+  // waiting for network idle, which never resolves while SSE stays open
+  // (microsoft/playwright#41513, fixed in v1.62). Navigating away drops
+  // the connection so teardown completes immediately.
   test.afterEach(async ({ page }) => {
     await page.goto("about:blank").catch(() => {});
   });

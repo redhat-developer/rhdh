@@ -156,6 +156,13 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     await killPortForward(portForwardProcess);
   });
 
+  // RHDH's frontend opens an SSE (EventSource) connection for live
+  // updates. With tracing enabled, Playwright's fixture teardown hangs
+  // waiting for network idle, which never resolves while SSE stays open
+  // (microsoft/playwright#41513, fixed in v1.62). Navigating away drops
+  // the connection so teardown completes immediately.
+  // Requesting `page` creates a context for every test, including non-UI
+  // ones — acceptable overhead vs per-test conditional logic.
   test.afterEach(async ({ page }) => {
     await page.goto("about:blank").catch(() => {});
   });

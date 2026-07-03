@@ -89,6 +89,8 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
         });
       });
 
+      // Drop RHDH SSE connection so Playwright trace teardown doesn't hang
+      // (microsoft/playwright#41513, fixed in v1.62).
       test.afterEach(async ({ page }) => {
         await page.goto("about:blank").catch(() => {});
       });
