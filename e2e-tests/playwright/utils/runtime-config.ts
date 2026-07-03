@@ -38,6 +38,15 @@ const dynamicPluginsPvcSize = "5Gi";
 /** Backstage CRD API version — update when the CRD version bumps. */
 export const BACKSTAGE_CR_API_VERSION = "rhdh.redhat.com/v1alpha5";
 
+/**
+ * Secrets injected via spec.application.extraEnvs.secrets in the Backstage CR.
+ * Shared between generateBackstageCR() and addPostgresCredToBackstageCR()
+ * so the two cannot drift.
+ */
+export const BACKSTAGE_CR_EXTRA_ENV_SECRETS: ReadonlyArray<{ name: string }> = [
+  { name: "rhdh-runtime-config" },
+];
+
 // ─── Resolved configuration ─────────────────────────────────────────────────
 
 export interface RuntimeDeployConfig {
@@ -422,7 +431,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
         },
         extraEnvs: {
           envs,
-          secrets: [{ name: "rhdh-runtime-config" }],
+          secrets: [...BACKSTAGE_CR_EXTRA_ENV_SECRETS],
         },
         route: { enabled: true },
       },

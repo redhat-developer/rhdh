@@ -16,7 +16,7 @@ import { Client } from "pg";
 
 import { base64Encode, getReleaseName, resolveInstallMethod } from "./helper";
 import { KubeClient, BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
-import { BACKSTAGE_CR_API_VERSION } from "./runtime-config";
+import { BACKSTAGE_CR_API_VERSION, BACKSTAGE_CR_EXTRA_ENV_SECRETS } from "./runtime-config";
 import type { AppConfigYaml } from "./runtime-config";
 
 /**
@@ -406,8 +406,8 @@ async function ensurePostgresCredEnvVars(
  * tests need the real credentials injected.
  *
  * Uses JSON merge-patch so the secrets array is replaced wholesale.
- * The CR is created by generateBackstageCR() with only rhdh-runtime-config
- * in extraEnvs.secrets, so we set both here explicitly.
+ * Builds the list from BACKSTAGE_CR_EXTRA_ENV_SECRETS (shared with
+ * generateBackstageCR) plus postgres-cred, so the two cannot drift.
  */
 async function addPostgresCredToBackstageCR(
   kubeClient: KubeClient,
@@ -420,7 +420,7 @@ async function addPostgresCredToBackstageCR(
     spec: {
       application: {
         extraEnvs: {
-          secrets: [{ name: "rhdh-runtime-config" }, { name: "postgres-cred" }],
+          secrets: [...BACKSTAGE_CR_EXTRA_ENV_SECRETS, { name: "postgres-cred" }],
         },
       },
     },
