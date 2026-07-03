@@ -426,17 +426,13 @@ async function addPostgresCredToBackstageCR(
     },
   };
 
-  await kubeClient.customObjectsApi.patchNamespacedCustomObject(
+  await kubeClient.mergePatchCustomObject(
     group,
     version,
     namespace,
     "backstages",
     releaseName,
     patch,
-    undefined,
-    undefined,
-    undefined,
-    { headers: { "Content-Type": "application/merge-patch+json" } },
   );
   console.log("Patched Backstage CR: added postgres-cred to extraEnvs.secrets");
 }
