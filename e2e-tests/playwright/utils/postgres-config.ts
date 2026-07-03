@@ -14,8 +14,9 @@ import { readFileSync, existsSync } from "fs";
 
 import { Client } from "pg";
 
-import { base64Encode } from "./helper";
+import { base64Encode, getReleaseName, resolveInstallMethod } from "./helper";
 import { KubeClient, BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
+import { BACKSTAGE_CR_API_VERSION, BACKSTAGE_CR_EXTRA_ENV_SECRETS } from "./runtime-config";
 import type { AppConfigYaml } from "./runtime-config";
 
 /**
@@ -128,6 +129,15 @@ export async function configurePostgresCredentials(
     data,
   };
   await kubeClient.createOrUpdateSecret(secret, namespace);
+
+  // For operator installs, ensure the Backstage CR includes postgres-cred in
+  // extraEnvs.secrets so the operator injects the credentials as env vars.
+  // This is done here (not in prepareForExternalDatabase) because the secret
+  // must contain real credentials before the operator reconciles — placeholder
+  // values would break the DB connection and leave readiness at 503.
+  if (resolveInstallMethod() === "operator") {
+    await addPostgresCredToBackstageCR(kubeClient, namespace);
+  }
 }
 
 const SYSTEM_DATABASES = [
@@ -297,7 +307,11 @@ export async function prepareForExternalDatabase(
   // Schema-mode tests may have added individual secretKeyRef env vars pointing
   // to a *-postgresql secret. These override the bulk envFrom injection from
   // postgres-cred and must be removed before external DB tests.
-  await removeSchemaModePatchedEnvVars(kubeClient, deploymentName, namespace);
+  // Skip for operator — the operator manages env vars via extraEnvs.secrets
+  // in the Backstage CR, so there are no direct deployment patches to remove.
+  if (resolveInstallMethod() !== "operator") {
+    await removeSchemaModePatchedEnvVars(kubeClient, deploymentName, namespace);
+  }
 
   // --- 2. Patch app-config ConfigMap to use external DB connection ---
   console.log("Patching app-config to use external database connection (env var placeholders)...");
@@ -314,11 +328,20 @@ export async function prepareForExternalDatabase(
   });
   console.log("App-config patched for external database connection");
 
-  // --- 3. Add POSTGRES_* env vars to the deployment via secretKeyRef ---
-  // The deployment starts with internal DB (no postgres-cred env vars).
-  // Add individual env vars pointing to the postgres-cred secret so the
-  // app-config ${POSTGRES_HOST} etc. placeholders resolve correctly.
-  await ensurePostgresCredEnvVars(kubeClient, deploymentName, namespace);
+  // --- 3. Add POSTGRES_* env vars to the deployment ---
+  // Helm: patch individual env vars pointing to the postgres-cred secret so
+  // the app-config ${POSTGRES_HOST} etc. placeholders resolve correctly.
+  // Operator: the Backstage CR is patched later by configurePostgresCredentials()
+  // after real credentials are written to the postgres-cred secret. Patching the
+  // CR here with placeholder values would trigger operator reconciliation and
+  // break the DB connection (readiness 503).
+  if (resolveInstallMethod() === "operator") {
+    console.log(
+      "Skipping env var setup (operator CR will be patched by configurePostgresCredentials)",
+    );
+  } else {
+    await ensurePostgresCredEnvVars(kubeClient, deploymentName, namespace);
+  }
 }
 
 /**
@@ -370,4 +393,46 @@ async function ensurePostgresCredEnvVars(
     [...postgresCredEnvKeys],
   );
   console.log("POSTGRES_* env vars added to deployment from postgres-cred");
+}
+
+/**
+ * Patch the operator Backstage CR to add postgres-cred to extraEnvs.secrets.
+ * This causes the operator to inject all keys from the postgres-cred secret
+ * as env vars into the RHDH container.
+ *
+ * The postgres-cred secret is NOT included in the CR at deployment time —
+ * it contains placeholder values that would override the operator-managed
+ * internal PostgreSQL credentials. It is only added here, when external DB
+ * tests need the real credentials injected.
+ *
+ * Uses JSON merge-patch so the secrets array is replaced wholesale.
+ * Builds the list from BACKSTAGE_CR_EXTRA_ENV_SECRETS (shared with
+ * generateBackstageCR) plus postgres-cred, so the two cannot drift.
+ */
+async function addPostgresCredToBackstageCR(
+  kubeClient: KubeClient,
+  namespace: string,
+): Promise<void> {
+  const releaseName = getReleaseName();
+  const [group, version] = BACKSTAGE_CR_API_VERSION.split("/");
+
+  const patch = {
+    spec: {
+      application: {
+        extraEnvs: {
+          secrets: [...BACKSTAGE_CR_EXTRA_ENV_SECRETS, { name: "postgres-cred" }],
+        },
+      },
+    },
+  };
+
+  await kubeClient.mergePatchCustomObject(
+    group,
+    version,
+    namespace,
+    "backstages",
+    releaseName,
+    patch,
+  );
+  console.log("Patched Backstage CR: added postgres-cred to extraEnvs.secrets");
 }

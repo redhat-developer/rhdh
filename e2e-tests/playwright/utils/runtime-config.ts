@@ -17,7 +17,13 @@
 
 import * as yaml from "js-yaml";
 
-import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
+import {
+  type ImageRef,
+  buildImageRef,
+  getReleaseName,
+  imageRefToString,
+  parseCatalogIndexImage,
+} from "./helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
 // Re-export image utilities so existing `import from "./runtime-config"`
@@ -31,6 +37,15 @@ const dynamicPluginsPvcSize = "5Gi";
 
 /** Backstage CRD API version — update when the CRD version bumps. */
 export const BACKSTAGE_CR_API_VERSION = "rhdh.redhat.com/v1alpha5";
+
+/**
+ * Secrets injected via spec.application.extraEnvs.secrets in the Backstage CR.
+ * Shared between generateBackstageCR() and addPostgresCredToBackstageCR()
+ * so the two cannot drift.
+ */
+export const BACKSTAGE_CR_EXTRA_ENV_SECRETS: ReadonlyArray<{ name: string }> = [
+  { name: "rhdh-runtime-config" },
+];
 
 // ─── Resolved configuration ─────────────────────────────────────────────────
 
@@ -79,7 +94,7 @@ export interface AppConfigYaml {
  * Build a RuntimeDeployConfig from environment variables.
  */
 export function resolveConfig(routerBase: string): RuntimeDeployConfig {
-  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
+  const releaseName = getReleaseName();
   const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
   const imageRegistry = process.env.IMAGE_REGISTRY ?? "quay.io";
   const imageRepo = process.env.IMAGE_REPO ?? "rhdh-community/rhdh";
@@ -301,16 +316,46 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
 // ─── Operator dynamic-plugins ConfigMap ──────────────────────────────────────
 
 /**
- * Generate the dynamic-plugins.yaml content for the operator path.
+ * Generate the dynamic-plugins.yaml content.
  *
  * Runtime tests only need a basic RHDH instance (config-map changes, DB
  * connectivity).  We set `includes: []` to prevent loading
  * `dynamic-plugins.default.yaml` — many of its default-enabled plugins
  * crash without external config (GitHub org, GitLab, LDAP, Keycloak,
  * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
+ *
+ * The homepage plugin is explicitly enabled with its frontend wiring
+ * (dynamicRoutes) so that the DynamicHomePage component renders the
+ * "Welcome back!" heading — external DB tests verify a successful
+ * database connection via the UI.  This explicit pluginConfig approach
+ * is future-proof: it does not depend on dynamic-plugins.default.yaml
+ * and works identically for both helm and operator install methods.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.dump({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: -1 });
+  return yaml.dump(
+    {
+      includes: [] as string[],
+      plugins: [
+        {
+          // Uses local dist path; switch to OCI ref once runtime deploy
+          // supports it (see #4909 for the migration direction).
+          package:
+            "./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page",
+          enabled: true,
+          pluginConfig: {
+            dynamicPlugins: {
+              frontend: {
+                "red-hat-developer-hub.backstage-plugin-dynamic-home-page": {
+                  dynamicRoutes: [{ path: "/", importName: "DynamicHomePage" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+    { lineWidth: -1 },
+  );
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────
@@ -388,7 +433,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
         },
         extraEnvs: {
           envs,
-          secrets: [{ name: "rhdh-runtime-config" }],
+          secrets: [...BACKSTAGE_CR_EXTRA_ENV_SECRETS],
         },
         route: { enabled: true },
       },
