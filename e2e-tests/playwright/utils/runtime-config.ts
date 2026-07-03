@@ -337,6 +337,8 @@ export function generateDynamicPluginsYaml(): string {
       includes: [] as string[],
       plugins: [
         {
+          // Uses local dist path; switch to OCI ref once runtime deploy
+          // supports it (see #4909 for the migration direction).
           package:
             "./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page",
           enabled: true,
