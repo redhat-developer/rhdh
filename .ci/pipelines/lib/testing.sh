@@ -56,7 +56,7 @@ testing::run_tests() {
   # If the job is killed (Prow timeout) or Playwright hangs, the STATUS files
   # still have entries for all registered test runs — preventing misaligned
   # arrays that break downstream reporting (Slack notifications).
-  test_run_tracker::mark_test_result "false" "N/A"
+  test_run_tracker::mark_test_result "false" "${UNKNOWN_FAILURE_COUNT}"
 
   BASE_URL="${url}"
   export BASE_URL
@@ -189,15 +189,15 @@ testing::run_tests() {
     failed_tests=$((_junit_failures + _junit_errors))
     if [[ "${failed_tests}" -eq 0 ]]; then
       # Playwright exited non-zero but JUnit reports 0 failures and 0 errors —
-      # the process likely crashed or timed out globally. Report "some" so the
-      # Slack alert doesn't misleadingly say "0 tests failed".
-      failed_tests="some"
+      # the process likely crashed or timed out globally. Use the sentinel so
+      # the Slack alert doesn't misleadingly say "0 tests failed".
+      failed_tests="${UNKNOWN_FAILURE_COUNT}"
     fi
     echo "Number of failed tests: ${failed_tests}"
   else
     echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
-    failed_tests="some"
-    echo "Number of failed tests unknown, saving as $failed_tests."
+    failed_tests="${UNKNOWN_FAILURE_COUNT}"
+    echo "Number of failed tests unknown, saving as ${failed_tests}."
   fi
   test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
   return "$test_result"
