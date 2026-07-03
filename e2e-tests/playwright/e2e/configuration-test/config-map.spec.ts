@@ -43,33 +43,29 @@ test.describe("Change app-config at e2e test runtime", () => {
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
-    try {
-      console.log("Updating app-config ConfigMap with new title.");
-      await kubeUtils.patchAppConfig(namespace, (appConfig: Record<string, unknown>) => {
-        if (!isRecord(appConfig.app)) {
-          throw new Error("Invalid app-config structure: expected 'app' section not found.");
-        }
-        console.log(`Current title: ${String(appConfig.app.title)}`);
-        appConfig.app.title = dynamicTitle;
-        console.log(`New title: ${dynamicTitle}`);
-      });
 
-      console.log(`Restarting deployment '${deploymentName}' to apply ConfigMap changes.`);
-      await kubeUtils.restartDeployment(deploymentName, namespace);
+    console.log("Updating app-config ConfigMap with new title.");
+    await kubeUtils.patchAppConfig(namespace, (appConfig: Record<string, unknown>) => {
+      if (!isRecord(appConfig.app)) {
+        throw new Error("Invalid app-config structure: expected 'app' section not found.");
+      }
+      console.log(`Current title: ${String(appConfig.app.title)}`);
+      appConfig.app.title = dynamicTitle;
+      console.log(`New title: ${dynamicTitle}`);
+    });
 
-      const common = new Common(page);
-      await page.context().clearCookies();
-      await page.context().clearPermissions();
-      await page.reload({ waitUntil: "domcontentloaded" });
-      await common.loginAsGuest();
-      await new UIhelper(page).openSidebar("Home");
-      console.log("Verifying new title in the UI... ");
-      expect(await page.title()).toContain(dynamicTitle);
-      console.log("Title successfully verified in the UI.");
-    } catch (error) {
-      console.log(`Test failed during ConfigMap update or deployment restart:`, error);
-      throw error;
-    }
+    console.log(`Restarting deployment '${deploymentName}' to apply ConfigMap changes.`);
+    await kubeUtils.restartDeployment(deploymentName, namespace);
+
+    const common = new Common(page);
+    await page.context().clearCookies();
+    await page.context().clearPermissions();
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await common.loginAsGuest();
+    await new UIhelper(page).openSidebar("Home");
+    console.log("Verifying new title in the UI... ");
+    expect(await page.title()).toContain(dynamicTitle);
+    console.log("Title successfully verified in the UI.");
   });
 });
 
