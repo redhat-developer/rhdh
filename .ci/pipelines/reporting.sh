@@ -54,6 +54,13 @@ save_status_number_of_test_failed() {
 # Writes the file from scratch each time so that the same deployment ID
 # can be safely updated multiple times (e.g. pessimistic default written
 # before Playwright runs, then overwritten with the real result).
+#
+# IMPORTANT: All callers must run in the same shell process.
+# Associative arrays are not inherited by child processes (export -f
+# only exports function definitions, not array contents). If this
+# function runs in a subshell, it will see an empty array and truncate
+# the file. This is fine today — all test_run_tracker calls are
+# sequential in the main shell.
 _regenerate_status_file() {
   local var_name=$1
   local -n _arr="${var_name}"
