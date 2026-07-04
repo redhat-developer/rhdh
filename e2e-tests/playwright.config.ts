@@ -8,6 +8,24 @@ import { PW_PROJECT } from "./playwright/projects";
 process.env.JOB_NAME = process.env.JOB_NAME ?? "";
 process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT ?? "";
 
+// Parse HTTPS_PROXY (http://user:pass@host:port) into Playwright's proxy
+// config with separate username/password fields. No-op for connected envs.
+function parseProxy(
+  proxyUrl: string | undefined,
+): { server: string; username?: string; password?: string } | undefined {
+  if (proxyUrl === undefined || proxyUrl === "") return undefined;
+  try {
+    const u = new URL(proxyUrl);
+    return {
+      server: `${u.protocol}//${u.host}`,
+      ...(u.username !== "" && { username: decodeURIComponent(u.username) }),
+      ...(u.password !== "" && { password: decodeURIComponent(u.password) }),
+    };
+  } catch {
+    return { server: proxyUrl };
+  }
+}
+
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
@@ -63,10 +81,7 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
     // Proxy for disconnected environments where the CI runner reaches the
     // cluster through a squid proxy (HTTPS_PROXY set by proxy-conf.sh).
-    proxy:
-      process.env.HTTPS_PROXY !== undefined && process.env.HTTPS_PROXY !== ""
-        ? { server: process.env.HTTPS_PROXY }
-        : undefined,
+    proxy: parseProxy(process.env.HTTPS_PROXY),
     trace: "retain-on-failure",
     screenshot: "on",
     ...devices["Desktop Chrome"],
