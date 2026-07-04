@@ -43,6 +43,8 @@ jobs:
 
       - name: Run ShellCheck
         working-directory: ./e2e-tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn shellcheck
 
       - name: Run Oxfmt check
