@@ -51,6 +51,12 @@ handle_ocp_disconnected_operator() {
     )
   fi
 
+  # The CI pod runs with nested_podman: true (hostUsers: false), placing it
+  # inside a Linux user namespace. podman build tries to create another user
+  # namespace, which fails with "newuidmap: open of uid_map failed: Permission
+  # denied". BUILDAH_ISOLATION=chroot uses chroot instead of nested namespaces.
+  export BUILDAH_ISOLATION=chroot
+
   bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
     || {
       log::error "prepare-restricted-environment.sh failed — aborting"
