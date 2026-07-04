@@ -52,10 +52,29 @@ handle_ocp_disconnected_operator() {
   fi
 
   # The CI pod runs with nested_podman: true (hostUsers: false), placing it
-  # inside a Linux user namespace. podman build tries to create another user
-  # namespace, which fails with "newuidmap: open of uid_map failed: Permission
-  # denied". BUILDAH_ISOLATION=chroot uses chroot instead of nested namespaces.
+  # inside a Linux user namespace. podman's rootless setup calls newuidmap to
+  # create a nested user namespace, which fails with:
+  #   newuidmap: open of uid_map failed: Permission denied
+  # Fix:
+  #   _CONTAINERS_USERNS_CONFIGURED=1 — skip newuidmap (userns already set up)
+  #   BUILDAH_ISOLATION=chroot — chroot instead of user namespace for builds
+  #   storage driver=vfs + ignore_chown_errors — vfs avoids fuse-overlayfs
+  #     userns ops; ignore_chown_errors prevents "chown: operation not
+  #     permitted" when podman can't chown storage files as non-root
+  export _CONTAINERS_USERNS_CONFIGURED=1
   export BUILDAH_ISOLATION=chroot
+  mkdir -p "${HOME}/.config/containers"
+  cat > "${HOME}/.config/containers/storage.conf" << 'EOF'
+[storage]
+driver = "vfs"
+
+[storage.options]
+ignore_chown_errors = "true"
+EOF
+
+  log::info "Podman environment: uid=$(id -u), BUILDAH_ISOLATION=${BUILDAH_ISOLATION}"
+  log::info "Storage config: $(cat "${HOME}/.config/containers/storage.conf" | tr '\n' ' ')"
+  log::info "subuid: $(cat /etc/subuid 2> /dev/null || echo 'not found')"
 
   bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
     || {

@@ -220,6 +220,10 @@ handle_ocp_disconnected_helm() {
 
   log::section "Smoke Test"
 
+  if [[ -n "${HTTPS_PROXY:-}" ]]; then
+    log::info "HTTPS_PROXY is set (Playwright will use it): ${HTTPS_PROXY%%@*}@***"
+  fi
+
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SMOKE_TEST}" "${url}"
 
