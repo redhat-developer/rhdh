@@ -320,7 +320,3 @@ oc exec -n <namespace-name> deploy/backstage-<backstage-name> -c install-dynamic
 ```
 
 The lock timeout can be configured via the `DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS` environment variable on the `install-dynamic-plugins` init container (value in milliseconds, default: `600000` which is 10 minutes).
-
-> **Note:** In RHDH 1.10.x and earlier, the install script used a Python implementation with no lock timeout. A stale lock file would cause the init container to wait indefinitely, and the only way to recover was to manually delete the lock file. The timeout, configurable environment variable, and automatic lock cleanup on exit were introduced with the TypeScript rewrite of the install script.
-
-> **Note:** Lock contention only applies when using a persistent volume for the `dynamic-plugins-root` directory. With the default ephemeral volume, each pod gets its own volume, so no lock contention can occur.
