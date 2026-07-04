@@ -287,7 +287,7 @@ When using the Operator ....
 
 The directory where dynamic plugins are located is mounted as a volume to the `install-dynamic-plugins` init container and the `backstage-backend` container. The `install-dynamic-plugins` init container is responsible for downloading and extracting the plugins into this directory. Depending on the deployment method, the directory is mounted as an ephemeral or persistent volume. In the latter case, the volume can be shared between several Pods, and the plugins installation script is also responsible for downloading and extracting the plugins only once, avoiding conflicts.
 
-**Important Note:** When the `dynamic-plugins-root` directory is backed by a persistent volume, the `install-dynamic-plugins` init container uses a lock file (`/dynamic-plugins-root/install-dynamic-plugins.lock`) to prevent concurrent plugin installations across Pods that share the same volume. The lock is acquired before installation begins and released when it completes (or fails).
+**Important Note:** The `install-dynamic-plugins` init container always acquires a lock file (`/dynamic-plugins-root/install-dynamic-plugins.lock`) before installing plugins. The lock prevents concurrent installations and is released when the process completes (or fails). Lock contention — where one pod waits for another's lock — only occurs when the `dynamic-plugins-root` directory is backed by a persistent volume shared between pods.
 
 If the `install-dynamic-plugins` init container is killed with a SIGKILL signal, the lock file cannot be cleaned up. This may happen due to the following reasons:
 
@@ -323,4 +323,4 @@ The lock timeout can be configured via the `DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS` env
 
 > **Note:** In RHDH 1.10.x and earlier, the install script used a Python implementation with no lock timeout. A stale lock file would cause the init container to wait indefinitely, and the only way to recover was to manually delete the lock file. The timeout, configurable environment variable, and automatic lock cleanup on exit were introduced with the TypeScript rewrite of the install script.
 
-Note: This lock file behavior only applies when using a persistent volume for the `dynamic-plugins-root` directory. With the default ephemeral volume, each pod gets its own volume, so no lock contention can occur.
+> **Note:** Lock contention only applies when using a persistent volume for the `dynamic-plugins-root` directory. With the default ephemeral volume, each pod gets its own volume, so no lock contention can occur.
