@@ -48,9 +48,16 @@ export default defineConfig({
   // @cluster-free tag. To widen coverage: tag the test where it lives and add its
   // spec file here. Validated so far: the full guest-signin spec (home page via the
   // dynamic-home-page OCI plugin; Settings/Sign-out via the global-header OCI plugin
-  // with its canonical pluginConfig) and the learning-paths spec (static fallback
-  // data bundled with packages/app).
-  testMatch: ["e2e/guest-signin-happy-path.spec.ts", "e2e/learning-path-page.spec.ts"],
+  // with its canonical pluginConfig), the learning-paths spec (static fallback
+  // data bundled with packages/app), and the instance health check (/healthcheck is
+  // proxied to the backend by the app dev server — see packages/app package.json —
+  // mirroring the single-origin production container).
+  testMatch: [
+    "e2e/guest-signin-happy-path.spec.ts",
+    "e2e/learning-path-page.spec.ts",
+    "e2e/instance-health-check.spec.ts",
+    "e2e/smoke-test.spec.ts",
+  ],
   grep: /@cluster-free/u,
   timeout: 90 * 1000,
   forbidOnly: isCI,

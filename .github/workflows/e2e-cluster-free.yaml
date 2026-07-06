@@ -11,6 +11,8 @@ on:
     paths:
       - "e2e-tests/**"
       - "app-config*.yaml"
+      # the harness relies on the app dev-server proxy defined here
+      - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
   push:
     branches:
@@ -19,6 +21,8 @@ on:
     paths:
       - "e2e-tests/**"
       - "app-config*.yaml"
+      # the harness relies on the app dev-server proxy defined here
+      - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
 
 concurrency:

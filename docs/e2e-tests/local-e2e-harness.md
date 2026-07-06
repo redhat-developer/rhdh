@@ -83,6 +83,12 @@ existing specs **pass unmodified**:
 - `learning-path-page` — renders from the static fallback data bundled with
   `packages/app`; the "References" sidebar group mirrors the CI menu customization via
   `app-config.local-e2e.yaml`.
+- `instance-health-check` — `GET /healthcheck` against the frontend origin. The app dev
+  server proxies `/healthcheck` to the backend (`proxy` field in
+  `packages/app/package.json`), mirroring the single-origin production container where
+  the backend serves both the app and the health endpoint.
+- `smoke-test` — guest sign-in plus the home-page welcome heading (dynamic-home-page
+  plugin); its readiness poll uses the same proxied `/healthcheck`.
 
 ## CI
 
