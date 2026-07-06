@@ -1,10 +1,14 @@
 name: Build & Push e2e-runner Image to Quay.io
 
 on:
+  pull_request:
+    paths:
+      - '.ci/images/Dockerfile'
+      - '.yarnrc.yml'
   push:
     branches:
       - main
-      - 'release-1.*'
+      - 'release-*'
     paths:
       - '.ci/images/Dockerfile'
       - '.yarnrc.yml'
@@ -16,7 +20,7 @@ on:
         default: 'NONE'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -25,12 +29,112 @@ env:
 
 jobs:
   build-image:
-    name: Build & Push e2e-runner Image
+    name: Build e2e-runner (${{ matrix.os }})
+    env:
+      HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04]
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Environment Variables
+        env:
+          INPUT_BRANCH: ${{ inputs.branch }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          # Detect platform from runner's native architecture
+          arch=$(dpkg --print-architecture)
+          echo "PLATFORM=linux/${arch}" >> $GITHUB_ENV
+          echo "PLATFORM_PAIR=linux-${arch}" >> $GITHUB_ENV
+          echo "PLATFORM_ARCH=${arch}" >> $GITHUB_ENV
+
+          # Create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
+          if [[ "$INPUT_BRANCH" ]] && [[ "$INPUT_BRANCH" != "NONE" ]]; then
+            echo "Switch to $INPUT_BRANCH"
+            git checkout "$INPUT_BRANCH"
+            IMAGE_TAG="$INPUT_BRANCH"
+          elif [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+            IMAGE_TAG="pr-${PR_NUMBER}"
+          else
+            echo "Use current branch $GITHUB_REF"
+            IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD)
+          fi
+          echo "Use IMAGE_TAG = $IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Check Quay credentials
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ "$HAS_QUAY_AUTH" != "true" ]; then
+            echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
+            exit 1
+          fi
+
+      - name: Get the last commit short SHA
+        uses: ./.github/actions/get-sha
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Login to Quay
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Build and Push Image
+        id: build-push
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: .
+          file: .ci/images/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.PLATFORM_ARCH }}
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+          labels: |
+            quay.expires-after=1w
+          platforms: ${{ env.PLATFORM }}
+
+      - name: Export digest
+        if: github.event_name != 'pull_request'
+        env:
+          DIGEST: ${{ steps.build-push.outputs.digest }}
+        run: |
+          mkdir -p /tmp/digests
+          digest="$DIGEST"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    name: Create multi-arch manifest
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: build-image
     permissions:
       contents: read
       packages: write
@@ -45,22 +149,23 @@ jobs:
         env:
           INPUT_BRANCH: ${{ inputs.branch }}
         run: |
-          echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
-
-          # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
           if [[ "$INPUT_BRANCH" ]] && [[ "$INPUT_BRANCH" != "NONE" ]]; then
-            echo "Switch to $INPUT_BRANCH"
             git checkout "$INPUT_BRANCH"
             IMAGE_TAG="$INPUT_BRANCH"
           else
-            echo "Use current branch $GITHUB_REF"
             IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD)
           fi
-          echo "Use IMAGE_TAG = $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
+
+      - name: Download digests
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
@@ -72,13 +177,17 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
 
-      - name: Build and Push Image
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
-        with:
-          context: .
-          file: .ci/images/Dockerfile
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}
-          platforms: ${{ env.PLATFORM }}
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          for tag in \
+            "${REGISTRY}/${REGISTRY_IMAGE}:${IMAGE_TAG}" \
+            "${REGISTRY}/${REGISTRY_IMAGE}:${IMAGE_TAG}-${SHORT_SHA}"; do
+            echo "Creating multi-arch manifest for: $tag"
+            docker buildx imagetools create -t "$tag" \
+              $(printf "${REGISTRY}/${REGISTRY_IMAGE}@sha256:%s " *)
+          done
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect "${REGISTRY}/${REGISTRY_IMAGE}:${IMAGE_TAG}"

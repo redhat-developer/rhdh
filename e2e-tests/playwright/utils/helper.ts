@@ -131,6 +131,20 @@ export function resolveInstallMethod(): "helm" | "operator" {
   return job.includes("operator") ? "operator" : "helm";
 }
 
+/**
+ * Canonical release name resolution. Returns the RELEASE_NAME env var if set
+ * and non-empty, otherwise defaults to "rhdh".
+ *
+ * Note: the explicit check is used instead of `||` because oxlint's
+ * strict-boolean-expressions and prefer-nullish-coalescing rules
+ * (pedantic category) reject `||` on string operands.
+ */
+export function getReleaseName(): string {
+  return process.env.RELEASE_NAME !== undefined && process.env.RELEASE_NAME !== ""
+    ? process.env.RELEASE_NAME
+    : "rhdh";
+}
+
 /** Base64-encode a string. */
 export function base64Encode(value: string): string {
   return Buffer.from(value).toString("base64");

@@ -524,6 +524,33 @@ export class KubeClient {
     );
   }
 
+  /**
+   * Apply a JSON merge-patch to a namespaced custom object.
+   * Centralises the Content-Type header so callers don't need to pass
+   * trailing positional `undefined` args to reach the options parameter.
+   */
+  async mergePatchCustomObject(
+    group: string,
+    version: string,
+    namespace: string,
+    plural: string,
+    name: string,
+    patch: object,
+  ): Promise<void> {
+    await this.customObjectsApi.patchNamespacedCustomObject(
+      group,
+      version,
+      namespace,
+      plural,
+      name,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      { headers: { "Content-Type": k8s.PatchUtils.PATCH_FORMAT_JSON_MERGE_PATCH } },
+    );
+  }
+
   async restartDeploymentWithRetry(
     deploymentName: string,
     namespace: string,

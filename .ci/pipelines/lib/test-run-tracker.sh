@@ -9,6 +9,11 @@ readonly RHDH_TEST_RUN_TRACKER_LIB_SOURCED=1
 # shellcheck source=.ci/pipelines/reporting.sh
 source "$(dirname "${BASH_SOURCE[0]}")/../reporting.sh"
 
+# Sentinel value for STATUS_NUMBER_OF_TEST_FAILED when the real count
+# is unknown (deploy failed, Prow timeout, JUnit file missing, or
+# Playwright crashed without producing failure counts).
+UNKNOWN_FAILURE_COUNT="N/A"
+
 # Internal state
 _TEST_RUN_COUNTER=0
 
@@ -36,7 +41,7 @@ test_run_tracker::mark_deploy_failed() {
   test_run_tracker::register "$label"
   save_status_failed_to_deploy "${_TEST_RUN_COUNTER}" true
   save_status_test_failed "${_TEST_RUN_COUNTER}" true
-  save_status_number_of_test_failed "${_TEST_RUN_COUNTER}" "N/A"
+  save_status_number_of_test_failed "${_TEST_RUN_COUNTER}" "${UNKNOWN_FAILURE_COUNT}"
   save_overall_result 1
 }
 
