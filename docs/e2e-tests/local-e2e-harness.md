@@ -94,6 +94,11 @@ existing specs **pass unmodified**:
   `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml`) is mirrored in
   `app-config.local-e2e.yaml`; the Random Joke card fetches jokes from the public
   Official Joke API in the browser, so it needs outbound network access.
+- `plugins/frontend/sidebar` — sidebar menu customization (References group, Test
+  enabled/nested items, techdocs Favorites → Docs and Test_i items) mirrored from the
+  same CI configmap into `app-config.local-e2e.yaml`. The `/docs` index page needs the
+  techdocs frontend OCI plugin in the harness set (its route/menu config already lives
+  in the static `app-config.dynamic-plugins.yaml`).
 
 ## CI
 

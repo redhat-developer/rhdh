@@ -58,6 +58,7 @@ export default defineConfig({
     "e2e/instance-health-check.spec.ts",
     "e2e/smoke-test.spec.ts",
     "e2e/home-page-customization.spec.ts",
+    "e2e/plugins/frontend/sidebar.spec.ts",
   ],
   grep: /@cluster-free/u,
   timeout: 90 * 1000,

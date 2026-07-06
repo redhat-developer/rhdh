@@ -23,7 +23,8 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
     await common.loginAsGuest();
   });
 
-  test("Verify menu order and navigate to Docs", async () => {
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test("Verify menu order and navigate to Docs", { tag: "@cluster-free" }, async () => {
     await sidebarPage.verifyMenuItemInSection("References", t["rhdh"][lang]["menuItem.apis"]);
     await sidebarPage.verifyMenuItemInSection(
       "References",

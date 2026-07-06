@@ -11,6 +11,11 @@ plugins:
   # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false
+  # TechDocs frontend: /docs route (TechDocsIndexPage) + the "Docs" sidebar menu item,
+  # exercised by plugins/frontend/sidebar.spec.ts. Route/menu config comes from the
+  # repo's static app-config.dynamic-plugins.yaml; no pluginConfig needed here.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-techdocs:bs_1.49.4__1.17.2!backstage-plugin-techdocs
+    disabled: false
   # Global header: top bar + profile dropdown (Settings / Sign-out navigation).
   #
   # The repo's static app-config.dynamic-plugins.yaml only mounts the bare GlobalHeader

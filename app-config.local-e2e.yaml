@@ -44,6 +44,37 @@ dynamicPlugins:
           parent: default.list
         default.learning-path:
           parent: default.list
+        default.test_enabled:
+          title: Test enabled
+          enabled: true
+        default.test_nested_enabled:
+          parent: default.test_enabled
+          title: Test nested enabled
+          enabled: true
+        default.test_nested_disabled:
+          parent: default.test_enabled
+          title: Test nested disabled
+          enabled: false
+        default.test_disabled:
+          title: Test disabled
+          enabled: false
+    backstage.plugin-techdocs:
+      menuItems:
+        favorites:
+          title: Favorites
+          icon: star
+          priority: 10
+        docs:
+          parent: favorites
+          priority: 1
+        test_i_enabled:
+          title: Test_i enabled
+          priority: 20
+          enabled: true
+        test_i_disabled:
+          title: Test_i disabled
+          priority: 20
+          enabled: false
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: application/listener
