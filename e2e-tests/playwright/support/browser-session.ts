@@ -1,24 +1,28 @@
-import { type Browser, type BrowserContext, type Page, type TestInfo } from "@playwright/test";
+import type { Browser, BrowserContext, Page, TestInfo, WorkerInfo } from "@playwright/test";
 
 import { setupBrowser, teardownBrowser } from "../utils/common/browser";
+
+/** Minimal Playwright scope info used for worker-scoped browser sessions. */
+export type BrowserSessionScope = Pick<TestInfo, "workerIndex"> &
+  Partial<Pick<TestInfo, "retry" | "file" | "titlePath">>;
 
 export type BrowserSession = {
   page: Page;
   context: BrowserContext;
-  teardown(testInfo: TestInfo): Promise<void>;
+  teardown(sessionInfo: BrowserSessionScope): Promise<void>;
 };
 
 /** Worker-scoped browser session with explicit setup and teardown. */
 export async function createBrowserSession(
   browser: Browser,
-  testInfo: TestInfo,
+  sessionInfo: BrowserSessionScope | WorkerInfo,
 ): Promise<BrowserSession> {
-  const { page, context } = await setupBrowser(browser, testInfo);
+  const { page, context } = await setupBrowser(browser, sessionInfo);
   return {
     page,
     context,
-    async teardown(sessionTestInfo: TestInfo): Promise<void> {
-      await teardownBrowser(page, sessionTestInfo);
+    async teardown(sessionScope: BrowserSessionScope | WorkerInfo): Promise<void> {
+      await teardownBrowser(page, sessionScope);
     },
   };
 }

@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     "./test": "./test.ts",
+    "./instrumentation": "./instrumentation.ts",
     "./paths": "./paths.ts",
     "./reporter": "./reporter.ts"
   }

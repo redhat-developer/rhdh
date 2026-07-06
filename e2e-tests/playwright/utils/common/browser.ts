@@ -1,31 +1,37 @@
 import * as path from "node:path";
 
-import { type Browser, type BrowserContext, type Page, type TestInfo } from "@playwright/test";
+import type { Browser, BrowserContext, Page, TestInfo, WorkerInfo } from "@playwright/test";
 
-import { startCoverageForPage, stopCoverageForPage } from "../../support/coverage/test";
+import { startCoverageForPage, stopCoverageForPage } from "../../support/coverage/instrumentation";
 
-function getSpecStem(testInfo: TestInfo): string {
-  if (testInfo.file !== undefined && testInfo.file !== "") {
-    return path.parse(testInfo.file).name.replace(/\.spec$/u, "");
+type BrowserScope = Pick<TestInfo, "workerIndex"> &
+  Partial<Pick<TestInfo, "retry" | "file" | "titlePath">>;
+
+function getSpecStem(scope: BrowserScope | WorkerInfo): string {
+  if ("file" in scope && scope.file !== undefined && scope.file !== "") {
+    return path.parse(scope.file).name.replace(/\.spec$/u, "");
   }
-  return `worker-${testInfo.workerIndex}`;
+  return `worker-${scope.workerIndex}`;
 }
 
-function getSuiteName(testInfo: TestInfo): string {
-  return testInfo.titlePath?.[1] ?? testInfo.titlePath?.[0] ?? "suite";
+function getSuiteName(scope: BrowserScope | WorkerInfo): string {
+  if ("titlePath" in scope && scope.titlePath !== undefined) {
+    return scope.titlePath[1] ?? scope.titlePath[0] ?? "suite";
+  }
+  return "suite";
 }
 
-function resolveVideoDir(testInfo: TestInfo): string {
-  return `test-results/${getSpecStem(testInfo)}/${getSuiteName(testInfo)}`;
+function resolveVideoDir(scope: BrowserScope | WorkerInfo): string {
+  return `test-results/${getSpecStem(scope)}/${getSuiteName(scope)}`;
 }
 
 export async function setupBrowser(
   browser: Browser,
-  testInfo: TestInfo,
+  scope: BrowserScope | WorkerInfo,
 ): Promise<{ page: Page; context: BrowserContext }> {
   const context = await browser.newContext({
     recordVideo: {
-      dir: resolveVideoDir(testInfo),
+      dir: resolveVideoDir(scope),
       size: { width: 1280, height: 720 },
     },
   });
@@ -34,12 +40,12 @@ export async function setupBrowser(
   return { page, context };
 }
 
-export async function teardownBrowser(page: Page, testInfo: TestInfo): Promise<void> {
+export async function teardownBrowser(page: Page, scope: BrowserScope | WorkerInfo): Promise<void> {
   if (page.isClosed()) {
     return;
   }
 
-  await stopCoverageForPage(page, testInfo);
+  await stopCoverageForPage(page, scope);
   const context = page.context();
   if (!page.isClosed()) {
     await page.close();
