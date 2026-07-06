@@ -30,8 +30,6 @@ export class SidebarPage {
   }
 
   async openReferencesLearningPaths(): Promise<void> {
-    // Legacy cluster-free app uses a flat References group; the full
-    // openSidebarLinkInSection helper targets CI sidebar overlays instead.
     await this.ui.openSidebarButton("References");
     await this.ui.openSidebar("Learning Paths");
   }

@@ -198,7 +198,14 @@ export async function waitForSideBarVisible(page: Page) {
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  await clickSidebarLink(page, navBarText);
+  // Legacy packages/app sidebar (cluster-free harness) uses plain nav anchors.
+  const legacyLink = page.locator(`nav a:has-text("${navBarText}")`).first();
+  try {
+    await expect(legacyLink).toBeVisible({ timeout: 3_000 });
+    await legacyLink.dispatchEvent("click");
+  } catch {
+    await clickSidebarLink(page, navBarText);
+  }
 }
 
 export async function openSidebarLinkInSection(
@@ -224,7 +231,14 @@ export async function openCatalogSidebar(page: Page, kind: string) {
 }
 
 export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
-  await expandSidebarSection(page, navBarButtonLabel);
+  // Legacy packages/app sidebar expands groups via aria-label buttons.
+  const legacyButton = page.locator(`nav button[aria-label="${navBarButtonLabel}"]`);
+  try {
+    await expect(legacyButton).toBeVisible({ timeout: 3_000 });
+    await legacyButton.click();
+  } catch {
+    await expandSidebarSection(page, navBarButtonLabel);
+  }
 }
 
 export async function selectMuiBox(page: Page, label: string, value: string, notVisible?: boolean) {
