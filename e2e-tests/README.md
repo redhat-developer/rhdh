@@ -6,6 +6,21 @@ The example and bootstraps to create tests are [here](../docs/e2e-tests/examples
 
 ---
 
+## Cluster-free Harness (no cluster, no image build)
+
+A subset of the specs (tagged `@cluster-free`) can run against a real RHDH instance
+booted in-process — no OpenShift/Kubernetes cluster and no container image. Populate
+the dynamic plugins once with `./local-harness/populate.sh` (works from any directory;
+requires skopeo), then:
+
+```bash
+yarn e2e:legacy-local
+```
+
+See [docs/e2e-tests/local-e2e-harness.md](../docs/e2e-tests/local-e2e-harness.md) for
+how it works and how to enable more specs. For everything else, use the cluster-based
+Local Test Runner below.
+
 ## Local Test Runner
 
 This directory contains scripts to run e2e tests locally against an OpenShift cluster.
