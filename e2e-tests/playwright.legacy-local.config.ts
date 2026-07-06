@@ -61,6 +61,8 @@ export default defineConfig({
     "e2e/plugins/frontend/sidebar.spec.ts",
     "e2e/settings.spec.ts",
     "e2e/plugins/user-settings-info-card.spec.ts",
+    "e2e/plugins/application-provider.spec.ts",
+    "e2e/plugins/application-listener.spec.ts",
   ],
   grep: /@cluster-free/u,
   timeout: 90 * 1000,

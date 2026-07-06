@@ -108,6 +108,14 @@ existing specs **pass unmodified**:
   issues ownership refs including `team-a` exactly as in-cluster.
 - `plugins/user-settings-info-card` — the CI `buildInfo` card customization ("RHDH
   Build info") mirrored in the overlay.
+- `plugins/application-provider` and `plugins/application-listener` — the
+  application-provider-test / application-listener-test OCI plugins with the same
+  pluginConfig CI uses in its Helm values (`values_showcase.yaml`); they are OCI-only
+  builds, not part of the repo's dynamic-plugins source tree.
+
+Not enablable yet: `plugins/licensed-users-info-backend` — the
+`licensed-users-info-backend` plugin is not published to the overlays OCI registry
+(ghcr) and only exists as a `./dynamic-plugins/dist` source build.
 
 ## CI
 
