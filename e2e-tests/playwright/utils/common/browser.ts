@@ -7,7 +7,6 @@ type BrowserScope = Pick<TestInfo, "workerIndex"> &
 
 export async function setupBrowser(
   browser: Browser,
-  _scope: BrowserScope | WorkerInfo,
 ): Promise<{ page: Page; context: BrowserContext }> {
   const context = await browser.newContext();
   const page = await context.newPage();

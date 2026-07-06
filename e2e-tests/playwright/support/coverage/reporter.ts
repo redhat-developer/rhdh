@@ -15,6 +15,7 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 import type { Reporter } from "@playwright/test/reporter";
 import { CoverageReport } from "monocart-coverage-reports";
 import { COVERAGE_RAW_DIR, COVERAGE_REPORT_DIR } from "./paths";
@@ -41,18 +42,22 @@ async function withTimeout<T>(
   timeoutMs: number,
   label: string,
 ): Promise<T> {
-  let timer: NodeJS.Timeout | undefined;
-  const timeout = new Promise<never>((_resolve, reject) => {
-    timer = setTimeout(() => {
-      reject(new Error(`${label} timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-  });
+  const controller = new AbortController();
+  const timeout = sleep(timeoutMs, undefined, { signal: controller.signal })
+    .then((): never => {
+      throw new Error(`${label} timed out after ${timeoutMs}ms`);
+    })
+    .catch((error: unknown) => {
+      if (controller.signal.aborted) {
+        return new Promise<never>(() => {});
+      }
+      throw error;
+    });
+
   try {
     return await Promise.race([promise, timeout]);
   } finally {
-    if (timer) {
-      clearTimeout(timer);
-    }
+    controller.abort();
   }
 }
 

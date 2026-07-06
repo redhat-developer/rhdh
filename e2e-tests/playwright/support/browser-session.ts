@@ -13,11 +13,8 @@ export type BrowserSession = {
 };
 
 /** Worker-scoped browser session with explicit setup and teardown. */
-export async function createBrowserSession(
-  browser: Browser,
-  sessionInfo: BrowserSessionScope | WorkerInfo,
-): Promise<BrowserSession> {
-  const { page, context } = await setupBrowser(browser, sessionInfo);
+export async function createBrowserSession(browser: Browser): Promise<BrowserSession> {
+  const { page, context } = await setupBrowser(browser);
   return {
     page,
     context,

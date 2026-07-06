@@ -71,7 +71,7 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     },
     rhdhContext: [
       async ({ browser }, use, workerInfo: WorkerInfo) => {
-        const session = await createBrowserSession(browser, workerInfo);
+        const session = await createBrowserSession(browser);
         await use(session.context);
         await runWorkerCleanups(workerInfo);
         await session.teardown(workerInfo);

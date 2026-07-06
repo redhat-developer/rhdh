@@ -1,8 +1,6 @@
 import { readdirSync } from "fs";
 import { resolve } from "path";
 
-import type { FullConfig } from "@playwright/test";
-
 /**
  * globalSetup for the cluster-free legacy harness (playwright.legacy-local.config.ts).
  *
@@ -10,7 +8,7 @@ import type { FullConfig } from "@playwright/test";
  * populated — otherwise the legacy app boots with no plugins and specs fail with a
  * confusing locator timeout instead of a clear "populate first" error.
  */
-export default function requireDynamicPluginsPopulated(_config: FullConfig): void {
+export default function requireDynamicPluginsPopulated(): void {
   // process.cwd() is e2e-tests when Playwright runs; the plugins root is at repo root.
   const root = resolve(process.cwd(), "..", "dynamic-plugins-root");
 
