@@ -1,6 +1,6 @@
 import { expect, Page } from "@playwright/test";
 
-import { CatalogUsersPO } from "../../support/page-objects/catalog/catalog-users-obj";
+import { CatalogUsersPage } from "../../support/pages/catalog-users-page";
 import { base64Decode } from "../helper";
 import { UIhelper } from "../ui-helper";
 import Group from "./group";
@@ -110,18 +110,19 @@ class Keycloak {
     uiHelper: UIhelper,
     keycloak: Keycloak,
   ) {
-    await CatalogUsersPO.visitUserPage(page, keycloakUser.username);
-    const emailLink = CatalogUsersPO.getEmailLink(page);
+    const catalogUsers = new CatalogUsersPage(page);
+    await catalogUsers.visitUserPage(keycloakUser.username);
+    const emailLink = catalogUsers.getEmailLink();
     await expect(emailLink).toBeVisible();
     await uiHelper.verifyDivHasText(`${keycloakUser.firstName} ${keycloakUser.lastName}`);
 
     const groups = await keycloak.getGroupsOfUser(token, keycloakUser.id);
     for (const group of groups) {
-      const groupLink = CatalogUsersPO.getGroupLink(page, group.name);
+      const groupLink = catalogUsers.getGroupLink(group.name);
       await expect(groupLink).toBeVisible();
     }
 
-    await CatalogUsersPO.visitBaseURL(page);
+    await catalogUsers.visitBaseURL();
   }
 }
 

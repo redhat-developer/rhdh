@@ -1,5 +1,6 @@
 import { test } from "@support/coverage/test";
 
+import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
 import { Common } from "../../utils/common";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import {
@@ -10,7 +11,6 @@ import {
   prepareForExternalDatabase,
 } from "../../utils/postgres-config";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
-import { UIhelper } from "../../utils/ui-helper";
 
 interface AzureDbConfig {
   name: string;
@@ -89,12 +89,6 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
         });
       });
 
-      // Drop RHDH SSE connection so Playwright trace teardown doesn't hang
-      // (microsoft/playwright#41513, fixed in v1.62).
-      test.afterEach(async ({ page }) => {
-        await page.goto("about:blank").catch(() => {});
-      });
-
       test("Configure and restart deployment", async ({}, testInfo) => {
         if (!config.host) {
           testInfo.skip(true, `AZURE_DB_*_HOST not set for ${config.name}`);
@@ -111,10 +105,14 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
       });
 
       test("Verify successful DB connection", async ({ page }) => {
-        const uiHelper = new UIhelper(page);
-        const common = new Common(page);
-        await common.loginAsGuest();
-        await uiHelper.verifyHeading("Welcome back!");
+        try {
+          const rhdhHomePage = new RhdhHomePage(page);
+          const common = new Common(page);
+          await common.loginAsGuest();
+          await rhdhHomePage.verifyWelcomeHeading();
+        } finally {
+          await page.goto("about:blank").catch(() => {});
+        }
       });
     });
   }

@@ -34,8 +34,9 @@ const k8sSpecificConfig = {
 };
 
 export default defineConfig({
+  globalSetup: "./playwright/global-setup.ts",
   timeout: 90 * 1000,
-  testDir: "./playwright",
+  testDir: "./playwright/e2e",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: process.env.CI !== undefined && process.env.CI !== "",
   /* Retry on CI only */
@@ -63,9 +64,8 @@ export default defineConfig({
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
     // Note: this video config only applies to tests using the built-in { page } fixture.
-    // Tests that create their own context via setupBrowser() in playwright/utils/common.ts
-    // must configure recordVideo explicitly because manually created contexts don't
-    // inherit these recording options.
+    // Tests that share one browser context across a describe block should use
+    // the worker-scoped rhdhPage / rhdhContext fixtures from @support/coverage/test.
     video: {
       mode: "retain-on-failure",
       size: { width: 1280, height: 720 },
@@ -83,10 +83,10 @@ export default defineConfig({
     {
       name: PW_PROJECT.SMOKE_TEST,
       testMatch: "**/playwright/e2e/smoke-test.spec.ts",
-      retries: 10,
     },
     {
       name: PW_PROJECT.SHOWCASE,
+      timeout: 180 * 1000,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/seed.spec.ts",
@@ -110,6 +110,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
+      timeout: 600 * 1000,
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
         // temporarily disable github-happy-path
@@ -174,10 +175,6 @@ export default defineConfig({
     {
       name: PW_PROJECT.SHOWCASE_RUNTIME,
       workers: 1,
-      // Runtime tests restart the RHDH deployment (ConfigMap changes,
-      // external DB reconfiguration, schema-mode setup). Each restart
-      // takes ~60-90 s on a typical cluster, so the default 90 s global
-      // timeout is insufficient. 10 minutes gives comfortable headroom.
       timeout: 10 * 60 * 1000,
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",

@@ -4,7 +4,7 @@ export const RESOURCES = [
   // "Janus-IDP",
   "Red Hat Developer Hub",
   "ArgoCD",
-  "GitHub Showcase repository",
+  "RHDH GitHub catalog",
   "KeyCloak",
   "S3 Object bucket storage",
   "PostgreSQL cluster",

@@ -1,13 +1,12 @@
-import { expect, Page, test } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 
+import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
 import { CatalogImport } from "../../../support/pages/catalog-import";
+import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 import { APIHelper } from "../../../utils/api-helper";
-import { Common, setupBrowser, teardownBrowser } from "../../../utils/common";
+import { Common } from "../../../utils/common";
 import { base64Decode } from "../../../utils/helper";
-import { UIhelper } from "../../../utils/ui-helper";
-
-let page: Page;
 
 test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test.skip(
@@ -15,7 +14,8 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     "skipping due to RHDHBUGS-555 on OSD Env",
   );
 
-  let uiHelper: UIhelper;
+  let scaffolderFlowPage: ScaffolderFlowPage;
+  let catalogBrowsePage: CatalogBrowsePage;
   let common: Common;
   let catalogImport: CatalogImport;
 
@@ -30,70 +30,44 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     label: "test-label",
     annotation: "test-annotation",
     repo: `test-relation-${Date.now()}`,
-    // Default repoOwner janus-qe
     repoOwner: base64Decode(process.env.GITHUB_ORG ?? "amFudXMtcWU="),
   };
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
-
-    common = new Common(page);
-    uiHelper = new UIhelper(page);
-    catalogImport = new CatalogImport(page);
+    common = new Common(rhdhPage);
+    scaffolderFlowPage = new ScaffolderFlowPage(rhdhPage);
+    catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
+    catalogImport = new CatalogImport(rhdhPage);
 
     await common.loginAsGuest();
   });
 
   test("Register the template for scaffolder relation processor", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.verifyText("Name");
+    await catalogBrowsePage.openCatalogSidebar();
+    await catalogBrowsePage.verifyText("Name");
 
-    await uiHelper.clickButton("Self-service");
-    await uiHelper.verifyHeading("Self-service");
-    await uiHelper.clickButton("Import an existing Git repository");
+    await scaffolderFlowPage.openSelfServiceFromCatalog();
+    await scaffolderFlowPage.verifySelfServiceHeading();
+    await scaffolderFlowPage.clickImportGitRepository();
     await catalogImport.registerExistingComponent(template, false);
   });
 
   test("Scaffold a component to test relation processing", async () => {
-    test.setTimeout(130000);
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickButton("Self-service");
-    await uiHelper.searchInputPlaceholder("Create React App Template");
-    await uiHelper.verifyText("Create React App Template");
-    await uiHelper.waitForTextDisappear("Add ArgoCD to an existing project");
-    await uiHelper.clickButton("Choose");
+    await scaffolderFlowPage.openSelfServiceFromCatalog();
+    await scaffolderFlowPage.fillCreateReactAppTemplateForm(reactAppDetails);
 
-    await uiHelper.fillTextInputByLabel("Name", reactAppDetails.componentName);
-    await uiHelper.fillTextInputByLabel("Description", reactAppDetails.description);
-    await uiHelper.fillTextInputByLabel("Owner", reactAppDetails.owner);
-    await uiHelper.fillTextInputByLabel("Label", reactAppDetails.label);
-    await uiHelper.fillTextInputByLabel("Annotation", reactAppDetails.annotation);
-    await uiHelper.clickButton("Next");
-
-    await uiHelper.fillTextInputByLabel("Owner", reactAppDetails.repoOwner);
-    await uiHelper.fillTextInputByLabel("Repository", reactAppDetails.repo);
-    await uiHelper.pressTab();
-    await uiHelper.clickButton("Review");
-
-    await uiHelper.clickButton("Create");
-    // Wait for the scaffolder task to complete and the link to appear
-    await expect(page.getByRole("link", { name: "Open in catalog" })).toBeVisible({
-      timeout: 60000,
-    });
-    await uiHelper.clickLink("Open in catalog");
-    // Ensure the entity page has loaded
-    await expect(page.getByText(reactAppDetails.componentName)).toBeVisible({
-      timeout: 20000,
-    });
+    await scaffolderFlowPage.clickCreate();
+    await scaffolderFlowPage.waitForOpenInCatalogLink();
+    await scaffolderFlowPage.clickOpenInCatalog();
+    await scaffolderFlowPage.verifyComponentNameVisible(reactAppDetails.componentName);
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
-    // Verify the scaffoldedFrom relation in the YAML view of the entity
     await catalogImport.inspectEntityAndVerifyYaml(
       `relations:
         - type: ownedBy
@@ -107,51 +81,34 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
         scaffoldedFrom: template:default/create-react-app-template-with-timestamp-entityref`,
     );
 
-    await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.searchInputPlaceholder("test-relation-\n");
-    await clickOnRelationTestComponent();
+    await catalogBrowsePage.openCatalogSidebar("Component");
+    await catalogBrowsePage.searchCatalog("test-relation-\n");
+    await catalogBrowsePage.openEntityLinkByHref("/catalog/default/component/test-relation-");
 
-    await uiHelper.clickTab("Dependencies");
+    await catalogBrowsePage.openDependenciesTab();
 
-    const labelSelector = 'g[data-testid="label"]';
-    const nodeSelector = 'g[data-testid="node"]';
-
-    await uiHelper.verifyTextInSelector(labelSelector, "scaffolderOf / scaffoldedFrom");
-
-    await uiHelper.verifyPartialTextInSelector(nodeSelector, reactAppDetails.componentPartialName);
+    await scaffolderFlowPage.verifyDependencyGraphLabels(
+      'g[data-testid="label"]',
+      'g[data-testid="node"]',
+      "scaffolderOf / scaffoldedFrom",
+      reactAppDetails.componentPartialName,
+    );
   });
 
   test("Verify scaffolderOf relation on the template", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Template");
+    await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
-    await uiHelper.searchInputPlaceholder("Create React App Template\n");
-    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", ["website"]);
-    await uiHelper.clickLink("Create React App Template");
-
-    // Verify the scaffolderOf relation in the YAML view
     await catalogImport.inspectEntityAndVerifyYaml(
       `- type: scaffolderOf\n    targetRef: component:default/${reactAppDetails.componentName}\n`,
     );
 
-    // Verify the template is still functional
-    await uiHelper.clickLink("Launch Template");
-    await uiHelper.verifyText("Provide some simple information");
+    await scaffolderFlowPage.launchTemplateAndVerifyIntro();
   });
 
-  test.afterAll(async ({}, testInfo) => {
+  test.afterAll(async () => {
     await APIHelper.githubRequest(
       "DELETE",
       GITHUB_API_ENDPOINTS.deleteRepo(reactAppDetails.repoOwner, reactAppDetails.repo),
     );
-    await teardownBrowser(page, testInfo);
   });
-
-  async function clickOnRelationTestComponent() {
-    const selector = 'a[href*="/catalog/default/component/test-relation-"]';
-    await page.locator(selector).first().waitFor({ state: "visible" });
-    const link = page.locator(selector).first();
-    await expect(link).toBeVisible();
-    await link.click();
-  }
 });

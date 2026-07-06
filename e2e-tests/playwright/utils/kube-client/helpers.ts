@@ -1,7 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse, hasStatusCode } from "../errors";
-import { getReleaseName, resolveInstallMethod } from "../helper";
+import { resolveInstallMethod } from "../helper";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -135,7 +135,10 @@ export function getKubeApiErrorMessage(error: unknown): string {
  * then falls back to JOB_NAME pattern matching.
  */
 export function getRhdhDeploymentName(): string {
-  const releaseName = getReleaseName();
+  const releaseName =
+    process.env.RELEASE_NAME !== undefined && process.env.RELEASE_NAME !== ""
+      ? process.env.RELEASE_NAME
+      : "rhdh";
   return resolveInstallMethod() === "operator"
     ? `backstage-${releaseName}`
     : `${releaseName}-developer-hub`;
@@ -145,13 +148,7 @@ export function rejectAsError(reject: (reason: Error) => void, err: unknown): vo
   reject(err instanceof Error ? err : new Error(getErrorMessage(err)));
 }
 
-export function sleep(ms: number): Promise<void> {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, ms);
-  });
-}
+export { sleep, pollUntil } from "../poll-until";
 
 export function podNameOrUnknown(name: string | undefined): string {
   return name !== undefined && name !== "" ? name : "unknown";

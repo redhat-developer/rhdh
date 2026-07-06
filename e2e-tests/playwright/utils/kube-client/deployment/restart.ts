@@ -1,4 +1,4 @@
-import { getKubeApiErrorMessage, sleep } from "../helpers";
+import { getKubeApiErrorMessage } from "../helpers";
 
 async function scaleDeploymentDown(
   scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,
@@ -8,6 +8,7 @@ async function scaleDeploymentDown(
     expectedReplicas: number,
     timeout?: number,
   ) => Promise<void>,
+  waitForPodsTerminated: (deploymentName: string, namespace: string) => Promise<void>,
   logPodConditionsForDeployment: (deploymentName: string, namespace: string) => Promise<void>,
   deploymentName: string,
   namespace: string,
@@ -18,7 +19,7 @@ async function scaleDeploymentDown(
   await scaleDeployment(deploymentName, namespace, 0);
   await waitForDeploymentReady(deploymentName, namespace, 0, 300000);
   console.log("Waiting for pods to be fully terminated...");
-  await sleep(10000);
+  await waitForPodsTerminated(deploymentName, namespace);
 }
 
 async function scaleDeploymentUp(
@@ -45,6 +46,7 @@ export async function restartDeploymentImpl(
     expectedReplicas: number,
     timeout?: number,
   ) => Promise<void>,
+  waitForPodsTerminated: (deploymentName: string, namespace: string) => Promise<void>,
   logPodConditionsForDeployment: (deploymentName: string, namespace: string) => Promise<void>,
   logDeploymentEvents: (deploymentName: string, namespace: string) => Promise<void>,
   deploymentName: string,
@@ -55,6 +57,7 @@ export async function restartDeploymentImpl(
     await scaleDeploymentDown(
       scaleDeployment,
       waitForDeploymentReady,
+      waitForPodsTerminated,
       logPodConditionsForDeployment,
       deploymentName,
       namespace,

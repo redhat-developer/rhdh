@@ -1,8 +1,8 @@
-import { expect, test } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 
+import { SidebarPage } from "../support/pages/sidebar-page";
 import { runAccessibilityTests } from "../utils/accessibility";
 import { Common } from "../utils/common";
-import { UIhelper } from "../utils/ui-helper";
 
 test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
   test.beforeAll(() => {
@@ -13,10 +13,10 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
   });
 
   let common: Common;
-  let uiHelper: UIhelper;
+  let sidebarPage: SidebarPage;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    sidebarPage = new SidebarPage(page);
     common = new Common(page);
     await common.loginAsGuest();
   });
@@ -26,17 +26,8 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
     "Verify that links in Learning Paths for Backstage opens in a new tab",
     { tag: "@cluster-free" },
     async ({ page }, testInfo) => {
-      await uiHelper.openSidebarButton("References");
-      await uiHelper.openSidebar("Learning Paths");
-
-      // Scope to main content area to get only Learning Path links
-      const learningPathLinks = page.getByRole("main").getByRole("link");
-
-      for (const learningPathCard of await learningPathLinks.all()) {
-        await expect(learningPathCard).toBeVisible();
-        await expect(learningPathCard).toHaveAttribute("target", "_blank");
-        await expect(learningPathCard).not.toHaveAttribute("href", "");
-      }
+      await sidebarPage.openReferencesLearningPaths();
+      await sidebarPage.verifyLearningPathLinksOpenInNewTab();
 
       await runAccessibilityTests(page, testInfo);
     },

@@ -3,8 +3,8 @@ import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import { expect, test } from "@support/coverage/test";
 import Redis from "ioredis";
 
+import { TechDocsPage } from "../support/pages/techdocs-page";
 import { Common } from "../utils/common";
-import { UIhelper } from "../utils/ui-helper";
 
 function streamDataToString(data: Buffer | string): string {
   return typeof data === "string" ? data : data.toString();
@@ -20,12 +20,12 @@ test.describe("Verify Redis Cache DB", () => {
 
   test.describe.configure({ mode: "serial" });
   let common: Common;
-  let uiHelper: UIhelper;
+  let techDocsPage: TechDocsPage;
   let portForward: ChildProcessWithoutNullStreams;
   let redis: Redis;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    techDocsPage = new TechDocsPage(page);
     common = new Common(page);
     await common.loginAsGuest();
 
@@ -56,19 +56,15 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
-    test.setTimeout(120_000);
-
     portForward.stdout.on("data", (data: Buffer | string) => {
       console.log(`Port-forward stdout: ${streamDataToString(data)}`);
     });
 
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar("Docs");
-    await uiHelper.clickLink("Red Hat Developer Hub");
+    await techDocsPage.openDocFromFavorites("Red Hat Developer Hub");
 
     // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
     await expect(async () => {
-      await uiHelper.verifyHeading("rhdh");
+      await techDocsPage.verifyDocHeading("rhdh");
     }).toPass({
       intervals: [3_000],
       timeout: 60_000,

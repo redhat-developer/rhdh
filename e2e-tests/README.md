@@ -6,21 +6,6 @@ The example and bootstraps to create tests are [here](../docs/e2e-tests/examples
 
 ---
 
-## Cluster-free Harness (no cluster, no image build)
-
-A subset of the specs (tagged `@cluster-free`) can run against a real RHDH instance
-booted in-process — no OpenShift/Kubernetes cluster and no container image. Populate
-the dynamic plugins once with `./local-harness/populate.sh` (works from any directory;
-requires skopeo), then:
-
-```bash
-yarn e2e:legacy-local
-```
-
-See [docs/e2e-tests/local-e2e-harness.md](../docs/e2e-tests/local-e2e-harness.md) for
-how it works and how to enable more specs. For everything else, use the cluster-based
-Local Test Runner below.
-
 ## Local Test Runner
 
 This directory contains scripts to run e2e tests locally against an OpenShift cluster.
@@ -216,6 +201,7 @@ letting CI or a local run target a subset.
 | `@smoke`             | Fast, high-signal check suitable to run on every PR.                                      |
 | `@ga-plugin`         | Exercises a generally-available (GA) plugin.                                              |
 | `@non-ga-plugin`     | Exercises a tech-preview / dev-preview (non-GA) plugin.                                   |
+| `@blocked`           | Blocked by a known issue; tests are skipped with a Jira reference.                        |
 
 ```bash
 # Run only smoke-tagged tests
@@ -419,18 +405,24 @@ This opens an interactive UI where you can select individual tests, watch them r
 
 After running `local-test-setup.sh`, these variables are set:
 
-| Variable                    | Description                                   |
-| --------------------------- | --------------------------------------------- |
-| `BASE_URL`                  | URL of the deployed RHDH instance             |
-| `SHOWCASE_URL`              | Showcase deployment URL                       |
-| `SHOWCASE_RBAC_URL`         | Showcase RBAC deployment URL                  |
-| `K8S_CLUSTER_URL`           | OpenShift API server URL                      |
-| `K8S_CLUSTER_TOKEN`         | Service account token (48-hour duration)      |
-| `JOB_NAME`                  | Selected job name                             |
-| `IMAGE_REGISTRY`            | Image registry (default: `quay.io`)           |
-| `IMAGE_REPO`                | Image repository (fallback: `QUAY_REPO`)      |
-| `TAG_NAME`                  | Image tag                                     |
-| Plus all secrets from Vault | (exported with `-`, `.`, `/` replaced by `_`) |
+| Variable                    | Description                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------- |
+| `BASE_URL`                  | URL of the deployed RHDH instance (Playwright uses this as the test base URL)                  |
+| `SHOWCASE_URL`              | Legacy name for the standard RHDH deployment URL (same value as `BASE_URL` for showcase tests) |
+| `SHOWCASE_RBAC_URL`         | Legacy name for the RBAC deployment URL                                                        |
+| `K8S_CLUSTER_URL`           | OpenShift API server URL                                                                       |
+| `K8S_CLUSTER_TOKEN`         | Service account token (48-hour duration)                                                       |
+| `JOB_NAME`                  | Selected job name                                                                              |
+| `IMAGE_REGISTRY`            | Image registry (default: `quay.io`)                                                            |
+| `IMAGE_REPO`                | Image repository (fallback: `QUAY_REPO`)                                                       |
+| `TAG_NAME`                  | Image tag                                                                                      |
+| Plus all secrets from Vault | (exported with `-`, `.`, `/` replaced by `_`)                                                  |
+
+> **Note:** `BASE_URL` is the canonical Playwright base URL for the RHDH instance under test.
+> `SHOWCASE_URL` and `SHOWCASE_RBAC_URL` are legacy names retained by `local-test-setup.sh` and
+> deployment scripts; `local-test-setup.sh` sets `BASE_URL` from the appropriate legacy URL.
+> Yarn scripts such as `yarn showcase`, `yarn showcase-rbac`, and `yarn test:stability` still use
+> the `showcase` Playwright project name for historical reasons.
 
 ### Artifacts and Logs
 
