@@ -60,10 +60,6 @@ export class CatalogBrowsePage {
     await interaction.clickTab(this.page, "Dependencies");
   }
 
-  async clickButton(label: string): Promise<void> {
-    await interaction.clickButton(this.page, label);
-  }
-
   async verifyHeading(heading: string | RegExp): Promise<void> {
     await verification.verifyHeading(this.page, heading);
   }
@@ -99,22 +95,6 @@ export class CatalogBrowsePage {
   async importGitRepositoryFromCatalog(): Promise<void> {
     await this.openSelfServiceFromCatalog();
     await interaction.clickButton(this.page, "Import an existing Git repository");
-  }
-
-  async verifyTextInSelector(selector: string, expectedText: string): Promise<void> {
-    await verification.verifyTextInSelector(this.page, selector, expectedText);
-  }
-
-  async verifyPartialTextInSelector(selector: string, partialText: string): Promise<void> {
-    await verification.verifyPartialTextInSelector(this.page, selector, partialText);
-  }
-
-  async openTemplateFromCatalog(templateName: string): Promise<void> {
-    await navigation.openSidebar(this.page, "Catalog");
-    await navigation.selectMuiBox(this.page, "Kind", "Template");
-    await this.fillSearch(`${templateName}\n`);
-    await table.verifyRowInTableByUniqueText(this.page, templateName, [templateName]);
-    await interaction.clickLink(this.page, templateName);
   }
 
   async clearSearchIfVisible(): Promise<void> {

@@ -33,22 +33,20 @@
   "dependencies": {
     "@azure/arm-network": "34.2.0",
     "@azure/identity": "4.13.1",
+    "@backstage/catalog-model": "1.9.0",
+    "@backstage/types": "1.2.2",
     "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
     "@microsoft/microsoft-graph-client": "3.0.7",
     "isomorphic-fetch": "3.0.0",
-    "js-yaml": "4.2.0",
-    "node-fetch": "2.7.0",
-    "octokit": "4.1.4",
     "pg": "8.22.0",
     "uuid": "14.0.1",
-    "winston": "3.14.2"
+    "yaml": "2.9.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.3",
-    "@microsoft/microsoft-graph-types": "2.43.1",
     "@playwright/test": "1.61.0",
-    "@types/js-yaml": "4.0.9",
+    "@support/coverage": "portal:./playwright/support/coverage",
     "@types/node": "24.13.2",
     "@types/pg": "8.20.0",
     "eslint-plugin-check-file": "3.3.1",

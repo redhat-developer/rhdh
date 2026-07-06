@@ -1,19 +1,11 @@
 import { expect, Page } from "@playwright/test";
 
-import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
-
-const t = getTranslations();
-const lang = getCurrentLanguage();
 
 /** Sidebar navigation on the RHDH instance. */
 export class SidebarPage {
   constructor(private readonly page: Page) {}
-
-  getSideBarMenuItem(name: string) {
-    return this.page.getByTestId("login-button").getByText(name);
-  }
 
   async openSidebar(label: string): Promise<void> {
     await navigation.openSidebar(this.page, label);
@@ -26,11 +18,6 @@ export class SidebarPage {
   async openReferencesLearningPaths(): Promise<void> {
     await this.openSidebarButton("References");
     await this.openSidebar("Learning Paths");
-  }
-
-  async openFavoritesDocs(): Promise<void> {
-    await this.openSidebarButton("Favorites");
-    await this.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
   }
 
   async verifyDocumentationHeading(): Promise<void> {

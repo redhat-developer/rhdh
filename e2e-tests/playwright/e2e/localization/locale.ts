@@ -112,13 +112,3 @@ export function getCurrentLanguage(): Locale {
 export function getTranslations() {
   return translations;
 }
-
-/**
- * Get a translation string by namespace and key.
- * Evaluates language at runtime, so works correctly regardless of when module is loaded.
- * @example tr("rhdh", "menuItem.home")
- */
-export function tr(namespace: string, key: string): string {
-  const lang = getCurrentLanguage();
-  return translations[namespace]?.[lang]?.[key] ?? key;
-}

@@ -4,7 +4,7 @@ import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
 /* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
-import { HOME_PAGE_COMPONENTS, SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
+import { HOME_PAGE_COMPONENTS } from "../selectors/page-selectors";
 
 export class HomePage {
   private page: Page;
@@ -45,14 +45,6 @@ export class HomePage {
 
   async verifyMainHeadingVisible(): Promise<void> {
     await expect(this.page.getByRole("heading", { level: 1 })).toBeVisible();
-  }
-
-  async verifyQuickSearchBar(text: string) {
-    const searchBar = SEARCH_OBJECTS_COMPONENTS.getSearchInput(this.page);
-    await searchBar.waitFor();
-    await searchBar.fill("");
-    await searchBar.pressSequentially(`${text}\n`);
-    await verification.verifyLink(this.page, text);
   }
 
   async verifyQuickAccess(section: string, items: string | string[], expand = false) {

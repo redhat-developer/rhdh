@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 import type { ReporterDescription } from "@playwright/test";
 
+/* oxlint-disable import/no-unassigned-import -- intentional side-effect graph wiring */
+import "./playwright/entry-graph";
 import { PW_PROJECT } from "./playwright/projects";
 
 process.env.JOB_NAME = process.env.JOB_NAME ?? "";

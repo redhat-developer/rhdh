@@ -27,11 +27,17 @@ test.describe("Verify Redis Cache DB", () => {
         `,
       },
       {
-        readyPattern: /Forwarding from 127\\.0\\.0\\.1:6379/u,
+        readyPattern: /Forwarding from/u,
+        readyTimeoutMs: 60_000,
       },
     );
     console.log("Waiting for port-forward to be ready...");
-    await portForward.start();
+    try {
+      await portForward.start();
+    } catch (error) {
+      await portForward.stop();
+      throw error;
+    }
   });
 
   test.beforeEach(({ guestPage }) => {

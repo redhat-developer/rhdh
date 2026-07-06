@@ -12,6 +12,31 @@ const lang = getCurrentLanguage();
 
 const LANGUAGE_OPTIONS_PATTERN = /English|Deutsch|Español|Français|Italiano|日本語/u;
 
+type UserSettingsLocale = keyof (typeof t)["user-settings"];
+
+async function verifyLocalizedUserSettingsLabelsCore(
+  page: Page,
+  locale: UserSettingsLocale,
+  ownershipEntities: string,
+  includeSignOutMenu: boolean,
+): Promise<void> {
+  const labels = t["user-settings"][locale];
+  await verification.verifyText(page, labels["profileCard.title"]);
+  await verification.verifyText(page, labels["appearanceCard.title"]);
+  await verification.verifyText(page, labels["themeToggle.title"]);
+  if (includeSignOutMenu) {
+    await verification.verifyText(page, labels["signOutMenu.title"]);
+  }
+  await verification.verifyText(page, labels["identityCard.title"]);
+  await verification.verifyText(page, `${labels["identityCard.userEntity"]}: Guest User`);
+  await verification.verifyText(
+    page,
+    `${labels["identityCard.ownershipEntities"]}: ${ownershipEntities}`,
+  );
+  await verification.verifyText(page, labels["pinToggle.title"]);
+  await verification.verifyText(page, labels["pinToggle.description"]);
+}
+
 /** Settings and profile interactions. */
 export class SettingsPage {
   private readonly page: Page;
@@ -81,46 +106,11 @@ export class SettingsPage {
     await interaction.checkCheckbox(this.page, label);
   }
 
-  async verifyLocalizedUserSettingsLabels(
-    locale: keyof (typeof t)["user-settings"],
-  ): Promise<void> {
-    const labels = t["user-settings"][locale];
-    await verification.verifyText(this.page, labels["profileCard.title"]);
-    await verification.verifyText(this.page, labels["appearanceCard.title"]);
-    await verification.verifyText(this.page, labels["themeToggle.title"]);
-    await verification.verifyText(this.page, labels["signOutMenu.title"]);
-    await verification.verifyText(this.page, labels["identityCard.title"]);
-    await verification.verifyText(this.page, `${labels["identityCard.userEntity"]}: Guest User`);
-    await verification.verifyText(
-      this.page,
-      `${labels["identityCard.ownershipEntities"]}: ownershipEntities`,
-    );
-    await verification.verifyText(this.page, labels["pinToggle.title"]);
-    await verification.verifyText(this.page, labels["pinToggle.description"]);
-  }
-
   async verifyLocalizedUserSettingsLabelsWithOwnership(
-    locale: keyof (typeof t)["user-settings"],
+    locale: UserSettingsLocale,
     ownershipEntities: string,
   ): Promise<void> {
-    const labels = t["user-settings"][locale];
-    await verification.verifyText(this.page, labels["profileCard.title"]);
-    await verification.verifyText(this.page, labels["appearanceCard.title"]);
-    await verification.verifyText(this.page, labels["themeToggle.title"]);
-    await verification.verifyText(this.page, labels["identityCard.title"]);
-    await verification.verifyText(this.page, `${labels["identityCard.userEntity"]}: Guest User`);
-    await verification.verifyText(
-      this.page,
-      `${labels["identityCard.ownershipEntities"]}: ${ownershipEntities}`,
-    );
-    await verification.verifyText(this.page, labels["pinToggle.title"]);
-    await verification.verifyText(this.page, labels["pinToggle.description"]);
-  }
-
-  async togglePinSidebar(locale: keyof (typeof t)["user-settings"]): Promise<void> {
-    const labels = t["user-settings"][locale];
-    await interaction.uncheckCheckbox(this.page, labels["pinToggle.ariaLabelTitle"]);
-    await interaction.checkCheckbox(this.page, labels["pinToggle.ariaLabelTitle"]);
+    await verifyLocalizedUserSettingsLabelsCore(this.page, locale, ownershipEntities, false);
   }
 
   async verifyLanguageToggleList(locale: keyof (typeof t)["user-settings"]): Promise<void> {

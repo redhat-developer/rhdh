@@ -87,10 +87,4 @@ export class RuntimeHarness {
     await page.reload({ waitUntil: "domcontentloaded" });
     await signInAsGuest(page);
   }
-
-  /** Restart the deployment and re-establish a guest session on the given page. */
-  async restartAndVerifyGuestSession(page: Page): Promise<void> {
-    await this.restartDeploymentWithRetry();
-    await this.verifyGuestSession(page);
-  }
 }

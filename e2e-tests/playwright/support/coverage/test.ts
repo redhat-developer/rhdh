@@ -28,7 +28,7 @@ import {
 } from "@playwright/test";
 import { AuthProviderSession } from "../auth/provider-auth";
 import { signInAsGuest } from "../auth/guest-auth";
-import { BrowserSession } from "../browser-session";
+import { createBrowserSession, type BrowserSession } from "../browser-session";
 import { runWorkerCleanups } from "../worker-session";
 // Re-export all Playwright types and values so specs can replace
 // `from "@playwright/test"` with this module. The locally-defined `test`
@@ -155,7 +155,7 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     },
     rhdhContext: [
       async ({ browser }, use, testInfo) => {
-        const session = await BrowserSession.create(browser, testInfo);
+        const session = await createBrowserSession(browser, testInfo);
         await use(session.context);
         await runWorkerCleanups(testInfo);
         await session.teardown(testInfo);
@@ -188,3 +188,6 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const expect = baseExpect;
+
+export { createBrowserSession, type BrowserSession } from "../browser-session";
+export { runWorkerCleanups } from "../worker-session";

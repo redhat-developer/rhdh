@@ -1,6 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
-import * as yaml from "js-yaml";
+import * as yaml from "yaml";
 
 import { hasStatusCode } from "../errors";
 import { waitForPodsTerminatedImpl } from "../kube-client-deployment-pods";
@@ -495,7 +495,7 @@ export class KubeClient {
       throw new Error(`No app-config data key found in ConfigMap '${configMapName}'`);
     }
 
-    const parsed: unknown = yaml.load(configMap.data[configKey]);
+    const parsed: unknown = yaml.parse(configMap.data[configKey]);
     if (!isRecord(parsed)) {
       throw new Error(`Invalid YAML structure in ConfigMap key '${configKey}'`);
     }
@@ -504,7 +504,7 @@ export class KubeClient {
 
     patchFn(appConfig);
 
-    const after = yaml.dump(appConfig);
+    const after = yaml.stringify(appConfig, { lineWidth: 0 });
     if (before === after) {
       console.log("patchAppConfig: no changes needed");
       return;

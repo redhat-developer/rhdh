@@ -2,6 +2,9 @@ import { resolve } from "path";
 
 import { defineConfig, devices } from "@playwright/test";
 
+/* oxlint-disable import/no-unassigned-import -- intentional side-effect graph wiring */
+import "./playwright/entry-graph";
+
 /**
  * Cluster-free local E2E harness for the legacy frontend (`packages/app`) — Tier B.
  *

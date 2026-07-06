@@ -21,15 +21,12 @@ export type PortForwardOptions = {
 export class PortForwardSession {
   private child: ChildProcessByStdio<null, Readable, Readable> | null = null;
   private readonly output: string[] = [];
+  private outputBuffer = "";
 
   constructor(
     private readonly command: PortForwardCommand,
     private readonly options: PortForwardOptions,
   ) {}
-
-  get process(): ChildProcessByStdio<null, Readable, Readable> | null {
-    return this.child;
-  }
 
   async start(): Promise<ChildProcessByStdio<null, Readable, Readable>> {
     if (this.child !== null) {
@@ -37,6 +34,7 @@ export class PortForwardSession {
     }
 
     this.output.length = 0;
+    this.outputBuffer = "";
     const child =
       "shellCommand" in this.command
         ? spawn("/bin/sh", ["-c", this.command.shellCommand], {
@@ -60,7 +58,8 @@ export class PortForwardSession {
       const handleOutput = (chunk: Buffer | string) => {
         const text = chunk.toString();
         this.output.push(text);
-        if (this.options.readyPattern.test(text)) {
+        this.outputBuffer += text;
+        if (this.options.readyPattern.test(this.outputBuffer)) {
           cleanup();
           resolve();
         }

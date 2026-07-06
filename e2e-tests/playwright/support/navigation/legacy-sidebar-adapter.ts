@@ -1,35 +1,17 @@
 import { expect, type Page } from "@playwright/test";
 
-import type { SidebarAdapter } from "./sidebar-nav";
+export async function expandLegacySection(page: Page, sectionLabel: string): Promise<void> {
+  const button = page.locator(`nav button[aria-label="${sectionLabel}"]`);
+  await expect(button).toBeVisible();
+  await button.click();
+}
 
-export class LegacySidebarAdapter implements SidebarAdapter {
-  constructor(private readonly page: Page) {}
+export async function openLegacyLink(page: Page, linkName: string): Promise<void> {
+  const link = page.locator(`nav a:has-text("${linkName}")`).first();
+  await expect(link).toBeVisible({ timeout: 15_000 });
+  await link.dispatchEvent("click");
+}
 
-  async expandSection(sectionLabel: string): Promise<void> {
-    const button = this.page.locator(`nav button[aria-label="${sectionLabel}"]`);
-    await expect(button).toBeVisible();
-    await button.click();
-  }
-
-  async openLink(linkName: string): Promise<void> {
-    const link = this.page.locator(`nav a:has-text("${linkName}")`).first();
-    await expect(link).toBeVisible({ timeout: 15_000 });
-    await link.dispatchEvent("click");
-  }
-
-  async openInSection(sectionLabel: string, linkName: string): Promise<void> {
-    await this.expandSection(sectionLabel);
-    await this.openLink(linkName);
-  }
-
-  async expectLinkVisible(linkName: string, sectionLabel?: string): Promise<void> {
-    if (sectionLabel !== undefined && sectionLabel !== "") {
-      await this.expandSection(sectionLabel);
-    }
-    await expect(this.page.locator(`nav a:has-text("${linkName}")`).first()).toBeVisible();
-  }
-
-  async waitForVisible(): Promise<void> {
-    await this.page.waitForSelector("nav a", { timeout: 10_000 });
-  }
+export async function waitForLegacySidebarVisible(page: Page): Promise<void> {
+  await page.waitForSelector("nav a", { timeout: 10_000 });
 }

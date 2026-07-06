@@ -3,7 +3,7 @@
  * Handles database setup and RHDH configuration for both Helm and Operator deployments.
  */
 
-import * as yaml from "js-yaml";
+import * as yaml from "yaml";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { KubeClient } from "../../utils/kube-client";
@@ -30,7 +30,7 @@ function parseAppConfigYaml(value: unknown): AppConfigYaml {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new TypeError("App config YAML must be an object");
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- js-yaml returns unknown; shape validated at use sites
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- yaml.parse returns unknown; shape validated at use sites
   return value as AppConfigYaml;
 }
 
@@ -240,7 +240,7 @@ export class SchemaModeTestSetup {
       throw new Error(`Could not find app-config key in ConfigMap ${configMapName}`);
     }
 
-    const appConfig = parseAppConfigYaml(yaml.load(configMap.data[configKey]));
+    const appConfig = parseAppConfigYaml(yaml.parse(configMap.data[configKey]));
     appConfig.backend ??= {};
 
     const currentDbConfig = appConfig.backend.database;
@@ -268,7 +268,7 @@ export class SchemaModeTestSetup {
       },
     };
 
-    configMap.data[configKey] = yaml.dump(appConfig);
+    configMap.data[configKey] = yaml.stringify(appConfig);
     delete configMap.metadata?.creationTimestamp;
     delete configMap.metadata?.resourceVersion;
 
@@ -278,39 +278,6 @@ export class SchemaModeTestSetup {
       configMap,
     );
     console.log("App-config updated for schema mode");
-  }
-
-  async getRHDHUrl(): Promise<string> {
-    const routeNames =
-      this.installMethod === "operator"
-        ? [`backstage-${this.releaseName}`, `${this.releaseName}-developer-hub`]
-        : [`${this.releaseName}-developer-hub`, `backstage-${this.releaseName}`];
-
-    for (const routeName of routeNames) {
-      try {
-        const route = (await this.kubeClient.customObjectsApi.getNamespacedCustomObject(
-          "route.openshift.io",
-          "v1",
-          this.namespace,
-          "routes",
-          routeName,
-        )) as { body?: { spec?: { host?: string } } };
-
-        const routeHost = route.body?.spec?.host;
-        if (routeHost !== undefined && routeHost !== "") {
-          const url = `https://${routeHost}`;
-          console.log(`Found RHDH URL: ${url}`);
-          return url;
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    throw new Error(
-      `Could not find OpenShift Route for RHDH in namespace ${this.namespace}. ` +
-        `Set BASE_URL environment variable manually.`,
-    );
   }
 
   async verifyRestrictedDatabasePermissions(): Promise<boolean> {

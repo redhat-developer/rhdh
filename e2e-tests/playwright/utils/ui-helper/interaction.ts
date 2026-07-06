@@ -1,7 +1,5 @@
 import { expect, Locator, Page } from "@playwright/test";
 
-import { getCardByText } from "../../support/selectors/ui-locators";
-import { getErrorMessage } from "../errors";
 import { DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS, DEFAULT_CLICK_BUTTON_OPTIONS } from "./defaults";
 
 export function getGlobalHeader(page: Page): Locator {
@@ -29,27 +27,10 @@ export async function clickButton(
   return button;
 }
 
-export async function clickBtnByTitleIfNotPressed(page: Page, title: string) {
-  const button = page.locator(`button[title="${title}"]`);
-  const isPressed = await button.getAttribute("aria-pressed");
-
-  if (isPressed === "false") {
-    await button.scrollIntoViewIfNeeded();
-    await expect(button).toBeVisible();
-    await button.click();
-  }
-}
-
 export async function clickByDataTestId(page: Page, dataTestId: string) {
   const element = page.getByTestId(dataTestId);
   await element.waitFor({ state: "visible" });
   await element.click();
-}
-
-export async function clickDivByTitle(page: Page, title: string) {
-  const divElement = page.locator(`div[title="${title}"]`);
-  await divElement.waitFor({ state: "visible" });
-  await divElement.click();
 }
 
 export async function clickButtonByText(
@@ -80,10 +61,6 @@ export async function clickButtonByText(
   }
 }
 
-export async function clickButtonByLabel(page: Page, label: string | RegExp) {
-  await page.getByRole("button", { name: label }).first().click();
-}
-
 export async function fillTextInputByLabel(page: Page, label: string, text: string) {
   await page.getByLabel(label).fill(text);
 }
@@ -104,29 +81,6 @@ export async function uncheckCheckbox(page: Page, text: string) {
 
 export async function pressTab(page: Page) {
   await page.keyboard.press("Tab");
-}
-
-export async function clickByTitleIfVisible(
-  page: Page,
-  title: string,
-  elementType: string = "div",
-): Promise<boolean> {
-  try {
-    const element = page.locator(`${elementType}[title="${title}"]`);
-    const isVisible = await element.isVisible();
-
-    if (isVisible) {
-      await element.click();
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.log(
-      `Element with title "${title}" not found or not clickable: `,
-      getErrorMessage(error),
-    );
-    return false;
-  }
 }
 
 export async function clickLink(
@@ -151,16 +105,4 @@ export async function clickTab(page: Page, tabName: string) {
   const tabLocator = page.getByRole("tab", { name: tabName });
   await tabLocator.waitFor({ state: "visible" });
   await tabLocator.click();
-}
-
-export async function clickById(page: Page, id: string) {
-  const locator = page.locator(`#${id}`);
-  await locator.waitFor({ state: "attached" });
-  await locator.click();
-}
-
-export async function clickBtnInCard(page: Page, cardText: string, btnText: string, exact = true) {
-  const cardLocator = getCardByText(page, cardText).first();
-  await cardLocator.scrollIntoViewIfNeeded();
-  await cardLocator.getByRole("button", { name: btnText, exact }).first().click();
 }

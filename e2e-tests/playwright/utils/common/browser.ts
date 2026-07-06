@@ -4,13 +4,19 @@ import { type Browser, type BrowserContext, type Page, type TestInfo } from "@pl
 
 import { startCoverageForPage, stopCoverageForPage } from "../../support/coverage/test";
 
+function getSpecStem(testInfo: TestInfo): string {
+  if (testInfo.file !== undefined && testInfo.file !== "") {
+    return path.parse(testInfo.file).name.replace(/\.spec$/u, "");
+  }
+  return `worker-${testInfo.workerIndex}`;
+}
+
+function getSuiteName(testInfo: TestInfo): string {
+  return testInfo.titlePath?.[1] ?? testInfo.titlePath?.[0] ?? "suite";
+}
+
 function resolveVideoDir(testInfo: TestInfo): string {
-  const specStem =
-    typeof testInfo.file === "string" && testInfo.file !== ""
-      ? path.parse(testInfo.file).name.replace(/\.spec$/u, "")
-      : `worker-${testInfo.workerIndex}`;
-  const suiteName = testInfo.titlePath?.[1] ?? testInfo.titlePath?.[0] ?? "suite";
-  return `test-results/${specStem}/${suiteName}`;
+  return `test-results/${getSpecStem(testInfo)}/${getSuiteName(testInfo)}`;
 }
 
 export async function setupBrowser(

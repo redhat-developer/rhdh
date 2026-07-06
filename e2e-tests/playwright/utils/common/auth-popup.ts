@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { authenticator } from "otplib";
 
-export async function waitForAuthPopupReady(popup: Page): Promise<void> {
+async function waitForAuthPopupReady(popup: Page): Promise<void> {
   await expect(async () => {
     await popup.waitForLoadState("domcontentloaded");
     expect(popup).toBeTruthy();
@@ -11,7 +11,7 @@ export async function waitForAuthPopupReady(popup: Page): Promise<void> {
   });
 }
 
-export async function tryAlreadyLoggedIn(popup: Page): Promise<string | null> {
+async function tryAlreadyLoggedIn(popup: Page): Promise<string | null> {
   try {
     await popup.waitForEvent("close", { timeout: 5000 });
     return "Already logged in";

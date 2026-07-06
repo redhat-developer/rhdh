@@ -1,32 +1,54 @@
-import { expect, Locator, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { SidebarNav } from "../../support/navigation/sidebar-nav";
-import { getErrorMessage } from "../errors";
-import { clickButtonByText, clickByDataTestId, clickLink, getGlobalHeader } from "./interaction";
+import { hasJsonHealthcheck } from "../../support/auth/app-shell";
+import {
+  expandLegacySection,
+  openLegacyLink,
+  waitForLegacySidebarVisible,
+} from "../../support/navigation/legacy-sidebar-adapter";
+import {
+  expandRhdhSection,
+  openRhdhLink,
+  waitForRhdhSidebarVisible,
+} from "../../support/navigation/rhdh-sidebar-adapter";
+import { SEARCH_OBJECTS_COMPONENTS } from "../../support/selectors/page-selectors";
+import { clickByDataTestId, clickLink, getGlobalHeader } from "./interaction";
+import * as table from "./table";
 import { verifyHeading } from "./verification";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-/** Left nav excluding the global header bar (profile menu uses a separate navigation). */
-export function getSidebarNav(page: Page): Locator {
-  return page
-    .getByRole("navigation")
-    .filter({ hasNot: page.getByTestId("KeyboardArrowDownOutlinedIcon") })
-    .first();
-}
-
-export async function expectSidebarLinkVisible(
+async function runSidebarAction(
   page: Page,
-  linkName: string,
-  sectionName?: string,
+  legacy: (page: Page) => Promise<void>,
+  rhdh: (page: Page) => Promise<void>,
 ): Promise<void> {
-  const sidebar = await SidebarNav.forPage(page);
-  await sidebar.expectLinkVisible(linkName, sectionName);
+  if (await hasJsonHealthcheck(page)) {
+    await rhdh(page);
+    return;
+  }
+  await legacy(page);
 }
 
-export async function openProfileDropdown(page: Page) {
+async function openLegacySidebarLink(page: Page, navBarText: string): Promise<void> {
+  await openLegacyLink(page, navBarText);
+}
+
+async function openRhdhSidebarLink(page: Page, navBarText: string): Promise<void> {
+  await openRhdhLink(page, navBarText);
+}
+
+async function expandLegacySidebarSection(page: Page, navBarButtonLabel: string): Promise<void> {
+  await expandLegacySection(page, navBarButtonLabel);
+}
+
+async function expandRhdhSidebarSection(page: Page, navBarButtonLabel: string): Promise<void> {
+  await expandRhdhSection(page, navBarButtonLabel);
+}
+
+async function openProfileDropdown(page: Page) {
   const header = getGlobalHeader(page);
   await expect(header).toBeVisible();
   await header.getByTestId("KeyboardArrowDownOutlinedIcon").click();
@@ -38,13 +60,6 @@ export async function goToPageUrl(page: Page, url: string, heading?: string) {
   if (heading !== undefined && heading !== "") {
     await verifyHeading(page, heading);
   }
-}
-
-export async function goToMyProfilePage(page: Page) {
-  await expect(getGlobalHeader(page)).toBeVisible();
-  await openProfileDropdown(page);
-  // RHDHBUGS-2552: profile label not translated yet; keep English until fixed
-  await clickLink(page, "My profile");
 }
 
 export async function goToSettingsPage(page: Page) {
@@ -65,22 +80,27 @@ export async function goToSelfServicePage(page: Page) {
 }
 
 export async function waitForSideBarVisible(page: Page) {
-  const sidebar = await SidebarNav.forPage(page);
-  await sidebar.waitForVisible();
+  await runSidebarAction(page, waitForLegacySidebarVisible, waitForRhdhSidebarVisible);
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  const sidebar = await SidebarNav.forPage(page);
-  await sidebar.openLink(navBarText);
+  await runSidebarAction(
+    page,
+    (currentPage) => openLegacySidebarLink(currentPage, navBarText),
+    (currentPage) => openRhdhSidebarLink(currentPage, navBarText),
+  );
 }
 
-export async function openSidebarLinkInSection(
+export async function openTemplateInCatalog(
   page: Page,
-  sectionName: string,
-  linkName: string,
+  templateName: string,
+  kindColumn: string = templateName,
 ): Promise<void> {
-  const sidebar = await SidebarNav.forPage(page);
-  await sidebar.openInSection(sectionName, linkName);
+  await openSidebar(page, "Catalog");
+  await selectMuiBox(page, "Kind", "Template");
+  await page.fill(SEARCH_OBJECTS_COMPONENTS.placeholderSearch, `${templateName}\n`);
+  await table.verifyRowInTableByUniqueText(page, templateName, [kindColumn]);
+  await clickLink(page, templateName);
 }
 
 export async function openCatalogSidebar(page: Page, kind: string) {
@@ -96,8 +116,11 @@ export async function openCatalogSidebar(page: Page, kind: string) {
 }
 
 export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
-  const sidebar = await SidebarNav.forPage(page);
-  await sidebar.expandSection(navBarButtonLabel);
+  await runSidebarAction(
+    page,
+    (currentPage) => expandLegacySidebarSection(currentPage, navBarButtonLabel),
+    (currentPage) => expandRhdhSidebarSection(currentPage, navBarButtonLabel),
+  );
 }
 
 export async function selectMuiBox(page: Page, label: string, value: string, notVisible?: boolean) {
@@ -122,24 +145,5 @@ export async function selectMuiBox(page: Page, label: string, value: string, not
   } else {
     await expect(option).toBeVisible();
     await option.click();
-  }
-}
-
-export async function markAllNotificationsAsReadIfVisible(page: Page) {
-  try {
-    const markAllReadDiv = page.getByTitle("Mark all read");
-    const isVisible = await markAllReadDiv.isVisible();
-
-    if (isVisible) {
-      await markAllReadDiv.click();
-      await clickButtonByText(page, "Mark All", {
-        timeout: 5000,
-      });
-    }
-  } catch (error) {
-    console.log(
-      "Mark all read functionality not available or already processed: ",
-      getErrorMessage(error),
-    );
   }
 }

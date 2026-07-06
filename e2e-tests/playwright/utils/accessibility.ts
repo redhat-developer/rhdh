@@ -1,16 +1,16 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, Page, TestInfo } from "@playwright/test";
+import { Page, TestInfo } from "@playwright/test";
+
+import { waitForLoadingToSettle } from "../support/auth/app-shell";
 
 export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
   attachName = "accessibility-scan-results.violations.json",
 ) {
-  // Let Backstage loading indicators finish before scanning the page shell.
-  const progressBars = page.locator('[role="progressbar"]');
-  if ((await progressBars.count()) > 0) {
-    await expect(progressBars).toBeHidden({ timeout: 60_000 });
-  }
+  // Wait for MUI loading indicators — avoid role=progressbar, which can be
+  // persistent (determinate bars) or match multiple elements in strict mode.
+  await waitForLoadingToSettle(page, 60_000);
 
   // Type mismatch between Playwright's Page and AxeBuilder's expected type
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- @axe-core/playwright Page type differs from @playwright/test

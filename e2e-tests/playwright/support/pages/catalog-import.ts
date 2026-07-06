@@ -17,15 +17,12 @@ export class CatalogImport {
    * @param url - The URL of the component to analyze
    */
   private async analyzeAndWait(url: string): Promise<void> {
-    await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await expect(
-      await interaction.clickButton(
-        this.page,
-        t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
-      ),
-    ).not.toBeVisible({
-      timeout: 25_000,
+    const analyzeButton = this.page.getByRole("button", {
+      name: t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
     });
+    await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
+    await analyzeButton.click();
+    await expect(analyzeButton).not.toBeVisible({ timeout: 25_000 });
   }
 
   /**
@@ -55,13 +52,11 @@ export class CatalogImport {
         this.page,
         t["catalog-import"][lang]["stepReviewLocation.refresh"],
       );
-      expect(
-        await this.page
-          .getByRole("button", {
-            name: t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
-          })
-          .isVisible(),
-      ).toBeTruthy();
+      await expect(
+        this.page.getByRole("button", {
+          name: t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
+        }),
+      ).toBeVisible();
     } else {
       await interaction.clickButton(
         this.page,
@@ -75,14 +70,6 @@ export class CatalogImport {
       }
     }
     return isComponentAlreadyRegistered;
-  }
-
-  async analyzeComponent(url: string) {
-    await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await interaction.clickButton(
-      this.page,
-      t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
-    );
   }
 
   async inspectEntityAndVerifyYaml(text: string) {

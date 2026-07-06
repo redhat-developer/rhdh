@@ -2,7 +2,7 @@ import { Page, Locator } from "@playwright/test";
 
 import { semanticSelectorsAccessibility } from "./accessibility";
 
-export function findTableCell(page: Page, rowText: string | RegExp, cellIndex: number): Locator {
+function findTableCell(page: Page, rowText: string | RegExp, cellIndex: number): Locator {
   const row = semanticSelectorsAccessibility.tableRow(page, rowText);
   return row.getByRole("cell").nth(cellIndex);
 }

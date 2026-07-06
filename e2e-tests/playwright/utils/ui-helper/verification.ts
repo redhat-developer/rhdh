@@ -44,11 +44,6 @@ export async function verifyTextVisible(
   await expect(locator).toBeVisible({ timeout });
 }
 
-export async function verifyLinkVisible(page: Page, text: string, timeout = 10000): Promise<void> {
-  const locator = page.locator(`a:has-text("${text}")`);
-  await expect(locator).toBeVisible({ timeout });
-}
-
 export async function verifyText(
   page: Page,
   text: string | RegExp,
@@ -165,12 +160,6 @@ export async function verifyHeading(page: Page, heading: string | RegExp, timeou
   await expect(headingLocator).toBeVisible();
 }
 
-export async function verifyParagraph(page: Page, paragraph: string) {
-  const headingLocator = page.getByText(paragraph).first();
-  await headingLocator.waitFor({ state: "visible", timeout: 20000 });
-  await expect(headingLocator).toBeVisible();
-}
-
 export async function waitForTitle(page: Page, text: string, level: number = 1) {
   await expect(page.locator(`h${level}:has-text("${text}")`)).toBeVisible();
 }
@@ -179,14 +168,4 @@ export async function verifyAlertErrorMessage(page: Page, message: string | RegE
   const alert = page.getByRole("alert");
   await alert.waitFor();
   await expect(alert).toHaveText(message);
-}
-
-export async function verifyTextInTooltip(page: Page, text: string | RegExp) {
-  const tooltip = page.getByRole("tooltip").getByText(text);
-  await expect(tooltip).toBeVisible();
-}
-
-export async function clickSpanByText(page: Page, text: string) {
-  await verifyText(page, text);
-  await page.click(`span:has-text("${text}")`);
 }

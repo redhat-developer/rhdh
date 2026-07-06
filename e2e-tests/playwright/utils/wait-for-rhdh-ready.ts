@@ -1,7 +1,5 @@
 import { expect, type APIRequestContext } from "@playwright/test";
 
-export { waitForNextTotpWindow } from "./poll-until";
-
 /** Poll the RHDH instance health endpoint until it responds OK. */
 export async function waitForRhdhReady(
   request: APIRequestContext,
