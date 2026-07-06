@@ -37,8 +37,21 @@ export class Common {
     this.uiHelper = new UIhelper(page);
   }
 
+  private async hasJsonHealthcheck(): Promise<boolean> {
+    const response = await this.page.request.get("/healthcheck").catch(() => null);
+    if (response === null || response.status() !== 200) {
+      return false;
+    }
+    const contentType = response.headers()["content-type"] ?? "";
+    return contentType.includes("json");
+  }
+
   private async waitForAppReady(timeout = 120_000): Promise<void> {
-    await waitForRhdhReady(this.page.request, timeout);
+    // Cluster-free legacy harness serves the SPA on BASE_URL; backend readiness is
+    // enforced by webServer startup instead of a JSON /healthcheck on the frontend.
+    if (await this.hasJsonHealthcheck()) {
+      await waitForRhdhReady(this.page.request, timeout);
+    }
     await this.waitForLoad(timeout);
   }
 
