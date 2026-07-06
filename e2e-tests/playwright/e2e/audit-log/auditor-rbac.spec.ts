@@ -1,7 +1,7 @@
-import { test, expect, Page } from "@support/coverage/test";
+import { test, expect } from "@support/coverage/test";
 
 import RhdhRbacApi from "../../support/api/rbac-api";
-import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
+import { Common } from "../../utils/common";
 import {
   RBAC_API,
   ROLE_NAME,
@@ -25,19 +25,16 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
-  let page: Page;
-
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "audit-log",
     });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
-    page = (await setupBrowser(browser, testInfo)).page;
-    common = new Common(page);
+    common = new Common(rhdhPage);
     await common.loginAsKeycloakUser();
-    rbacApi = await RhdhRbacApi.buildRbacApi(page);
+    rbacApi = await RhdhRbacApi.buildRbacApi(rhdhPage);
   });
 
   /* --------------------------------------------------------------------- */
@@ -278,9 +275,5 @@ test.describe("Auditor check for RBAC Plugin", () => {
       "succeeded",
       ["policy.entity.read", USER_ENTITY_REF],
     );
-  });
-
-  test.afterAll(async ({}, testInfo) => {
-    await teardownBrowser(page, testInfo);
   });
 });

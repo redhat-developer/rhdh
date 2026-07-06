@@ -23,8 +23,7 @@ set -e
 if ! command -v vault &> /dev/null; then
   VAULT_VERSION="${VAULT_VERSION:-1.15.4}"
   log::info "Installing vault ${VAULT_VERSION}..."
-  VAULT_ARCH=$(dpkg --print-architecture)
-  curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o /tmp/vault.zip
+  curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip" -o /tmp/vault.zip
   unzip -q /tmp/vault.zip -d /usr/local/bin/
   rm /tmp/vault.zip
 fi

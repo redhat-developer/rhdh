@@ -1,6 +1,6 @@
 import { Locator, Page } from "@playwright/test";
 
-import { SEARCH_OBJECTS_COMPONENTS } from "../../support/page-objects/page-obj";
+import { SEARCH_OBJECTS_COMPONENTS } from "../../support/selectors/page-selectors";
 import * as interaction from "./interaction";
 import * as misc from "./misc";
 import * as navigation from "./navigation";
@@ -19,8 +19,11 @@ export class UIhelper {
     return misc.verifyComponentInCatalog(this.page, kind, expectedRows);
   }
 
-  getSideBarMenuItem(menuItem: string): Locator {
-    return this.page.getByTestId("login-button").getByText(menuItem);
+  getSideBarMenuItem(sectionName: string): Locator {
+    const sidebar = navigation.getSidebarNav(this.page);
+    return sidebar.filter({
+      has: sidebar.getByRole("button", { name: sectionName, exact: true }),
+    });
   }
 
   fillTextInputByLabel(label: string, text: string) {
@@ -152,6 +155,10 @@ export class UIhelper {
 
   openSidebarButton(navBarButtonLabel: string) {
     return navigation.openSidebarButton(this.page, navBarButtonLabel);
+  }
+
+  openSidebarLinkInSection(sectionName: string, linkName: string) {
+    return navigation.openSidebarLinkInSection(this.page, sectionName, linkName);
   }
 
   selectMuiBox(label: string, value: string, notVisible?: boolean) {

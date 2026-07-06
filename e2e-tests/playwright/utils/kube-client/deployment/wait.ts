@@ -1,6 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 
-import { getKubeApiErrorMessage, PodFailureResult, sleep } from "../helpers";
+import { pollUntil } from "../../poll-until";
+import { getKubeApiErrorMessage, PodFailureResult } from "../helpers";
 
 export interface DeploymentDiagnostics {
   logDeploymentEvents: (deploymentName: string, namespace: string) => Promise<void>;
@@ -13,6 +14,8 @@ export interface DeploymentDiagnostics {
     containerName?: string,
   ) => Promise<void>;
 }
+
+const POLL_INTERVAL_MS = 2000;
 
 async function handlePodFailureDuringWait(
   diagnostics: DeploymentDiagnostics,
@@ -129,46 +132,64 @@ export async function waitForDeploymentReadyImpl(
   namespace: string,
   expectedReplicas: number,
   timeout: number = 300000,
-  checkInterval: number = 10000,
+  checkInterval: number = POLL_INTERVAL_MS,
   labelSelector?: string,
 ): Promise<void> {
-  const endTime = Date.now() + timeout;
   const podSelector = await getDeploymentPodSelector(deploymentName, namespace);
   const finalLabelSelector = labelSelector ?? podSelector;
-  const progressLogStart = endTime - timeout + checkInterval * 2;
+  let loggedProgress = false;
 
-  while (Date.now() < endTime) {
-    try {
-      const isReady = await checkDeploymentReplicaStatus(
-        appsApi,
-        checkPodFailureStates,
-        logPodConditions,
-        diagnostics,
-        deploymentName,
-        namespace,
-        expectedReplicas,
-        podSelector,
-        finalLabelSelector,
+  try {
+    await pollUntil(
+      async () => {
+        try {
+          const isReady = await checkDeploymentReplicaStatus(
+            appsApi,
+            checkPodFailureStates,
+            logPodConditions,
+            diagnostics,
+            deploymentName,
+            namespace,
+            expectedReplicas,
+            podSelector,
+            finalLabelSelector,
+          );
+          if (isReady) {
+            return true;
+          }
+
+          if (!loggedProgress) {
+            await logDeploymentWaitProgress(appsApi, deploymentName, namespace, expectedReplicas);
+            loggedProgress = true;
+          }
+          return false;
+        } catch (error) {
+          console.error(`Error checking deployment status: ${getKubeApiErrorMessage(error)}`);
+          if (isPodStartupFailure(error)) {
+            throw error;
+          }
+          return false;
+        }
+      },
+      {
+        timeoutMs: timeout,
+        intervalMs: checkInterval,
+        label: `Deployment ${deploymentName} ready (${expectedReplicas} replicas)`,
+      },
+    );
+  } catch (error) {
+    await logDeploymentTimeoutDiagnostics(
+      diagnostics,
+      deploymentName,
+      namespace,
+      finalLabelSelector,
+    );
+    if (error instanceof Error && error.message.includes("Condition not met")) {
+      throw new Error(
+        `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
+        { cause: error },
       );
-      if (isReady) {
-        return;
-      }
-
-      if (Date.now() > progressLogStart) {
-        await logDeploymentWaitProgress(appsApi, deploymentName, namespace, expectedReplicas);
-      }
-    } catch (error) {
-      console.error(`Error checking deployment status: ${getKubeApiErrorMessage(error)}`);
-      if (isPodStartupFailure(error)) {
-        throw error;
-      }
     }
-
-    await sleep(checkInterval);
+    throw error;
   }
-
-  await logDeploymentTimeoutDiagnostics(diagnostics, deploymentName, namespace, finalLabelSelector);
-  throw new Error(
-    `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
-  );
 }

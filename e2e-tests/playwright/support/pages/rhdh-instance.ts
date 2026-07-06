@@ -2,9 +2,10 @@ import { Page, expect } from "@playwright/test";
 
 import { APIHelper } from "../../utils/api-helper";
 import { UIhelper } from "../../utils/ui-helper";
-import { BACKSTAGE_SHOWCASE_COMPONENTS } from "../page-objects/page-obj";
+import { RHDH_INSTANCE_TABLE } from "../selectors/rhdh-instance-table";
 
-export class BackstageShowcase {
+/** Page object for RHDH instance catalog views (PR tables, entity cards). */
+export class RhdhInstance {
   private readonly page: Page;
   private uiHelper: UIhelper;
 
@@ -13,20 +14,20 @@ export class BackstageShowcase {
     this.uiHelper = new UIhelper(page);
   }
 
-  static getShowcasePRs(state: "open" | "closed" | "all", paginated = false) {
+  static getRhdhPullRequests(state: "open" | "closed" | "all", paginated = false) {
     return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
   }
 
   async clickNextPage() {
-    await BACKSTAGE_SHOWCASE_COMPONENTS.getNextPageButton(this.page).click();
+    await RHDH_INSTANCE_TABLE.getNextPageButton(this.page).click();
   }
 
   async clickPreviousPage() {
-    await BACKSTAGE_SHOWCASE_COMPONENTS.getPreviousPageButton(this.page).click();
+    await RHDH_INSTANCE_TABLE.getPreviousPageButton(this.page).click();
   }
 
   async clickLastPage() {
-    await BACKSTAGE_SHOWCASE_COMPONENTS.getLastPageButton(this.page).click();
+    await RHDH_INSTANCE_TABLE.getLastPageButton(this.page).click();
   }
 
   async verifyPRRowsPerPage(rows: number, allPRs: { title: string; number: string }[]) {
@@ -37,7 +38,7 @@ export class BackstageShowcase {
       notVisible: true,
     });
 
-    const tableRows = BACKSTAGE_SHOWCASE_COMPONENTS.getTableRows(this.page);
+    const tableRows = RHDH_INSTANCE_TABLE.getTableRows(this.page);
     await expect(tableRows).toHaveCount(rows);
   }
 
@@ -60,5 +61,26 @@ export class BackstageShowcase {
     for (let i = startRow; i < lastRow; i++) {
       await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
     }
+  }
+
+  async waitForEntityPath(path: string): Promise<void> {
+    await this.page.waitForURL(`**${path}`, {
+      waitUntil: "domcontentloaded",
+      timeout: 20_000,
+    });
+    expect(this.page.url()).toContain(path);
+  }
+
+  /** Workaround for RHDHBUGS-2091: smaller page size avoids missing PR stats. */
+  async setPullRequestPageSize(size: number): Promise<void> {
+    await this.page.getByRole("button", { name: "20" }).click();
+    await this.page.getByRole("option", { name: String(size), exact: true }).click();
+  }
+
+  async clickPullRequestFilter(name: string): Promise<void> {
+    const button = this.page.getByRole("button", { name });
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
+    await button.click();
   }
 }

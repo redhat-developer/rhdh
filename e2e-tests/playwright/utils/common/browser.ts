@@ -30,16 +30,23 @@ export function parseAuthStateCookies(content: string): Cookie[] {
   return cookies;
 }
 
+function resolveVideoDir(testInfo: TestInfo): string {
+  const specStem =
+    typeof testInfo.file === "string" && testInfo.file !== ""
+      ? path.parse(testInfo.file).name.replace(/\.spec$/u, "")
+      : `worker-${testInfo.workerIndex}`;
+  const suiteName = testInfo.titlePath?.[1] ?? testInfo.titlePath?.[0] ?? "suite";
+  return `test-results/${specStem}/${suiteName}`;
+}
+
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
+  const videoDir = resolveVideoDir(testInfo);
+
   const context = await browser.newContext({
-    ...(testInfo.retry > 0 && {
-      recordVideo: {
-        dir: `test-results/${path
-          .parse(testInfo.file)
-          .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
-        size: { width: 1280, height: 720 },
-      },
-    }),
+    recordVideo: {
+      dir: videoDir,
+      size: { width: 1280, height: 720 },
+    },
   });
   const page = await context.newPage();
   await startCoverageForPage(page);
@@ -48,6 +55,17 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
 }
 
 export async function teardownBrowser(page: Page, testInfo: TestInfo): Promise<void> {
+  if (page.isClosed()) {
+    return;
+  }
+
   await stopCoverageForPage(page, testInfo);
-  await page.close();
+  const context = page.context();
+  if (!page.isClosed()) {
+    await page.close();
+  }
+  const browser = context.browser();
+  if (browser !== null && browser.contexts().includes(context)) {
+    await context.close();
+  }
 }

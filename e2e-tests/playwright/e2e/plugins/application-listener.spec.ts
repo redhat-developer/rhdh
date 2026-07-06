@@ -1,7 +1,7 @@
 import { expect, test } from "@support/coverage/test";
 
+import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Test ApplicationListener", () => {
   test.beforeAll(() => {
@@ -11,11 +11,11 @@ test.describe("Test ApplicationListener", () => {
     });
   });
 
-  let uiHelper: UIhelper;
+  let catalogBrowsePage: CatalogBrowsePage;
 
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
-    uiHelper = new UIhelper(page);
+    catalogBrowsePage = new CatalogBrowsePage(page);
     await common.loginAsGuest();
   });
 
@@ -28,7 +28,7 @@ test.describe("Test ApplicationListener", () => {
       }
     });
 
-    await uiHelper.openSidebar("Catalog");
+    await catalogBrowsePage.openCatalogSidebar();
 
     expect(logs.some((l) => l.includes("pathname: /catalog"))).toBeTruthy();
   });

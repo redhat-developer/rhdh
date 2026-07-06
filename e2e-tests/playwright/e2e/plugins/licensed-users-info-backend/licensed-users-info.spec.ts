@@ -2,7 +2,7 @@ import { test, expect, APIRequestContext, APIResponse, request } from "@support/
 
 import playwrightConfig from "../../../../playwright.config";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
-import { CatalogUsersPO } from "../../../support/page-objects/catalog/catalog-users-obj";
+import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
 import { Common } from "../../../utils/common";
 
 interface HealthResponse {
@@ -48,6 +48,7 @@ function isLicensedUserArray(value: unknown): value is LicensedUser[] {
 
 test.describe("Test licensed users info backend plugin", () => {
   let common: Common;
+  let catalogBrowsePage: CatalogBrowsePage;
 
   test.beforeAll(() => {
     test.info().annotations.push({
@@ -63,10 +64,10 @@ test.describe("Test licensed users info backend plugin", () => {
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
+    catalogBrowsePage = new CatalogBrowsePage(page);
     await common.loginAsGuest();
-    await CatalogUsersPO.visitBaseURL(page);
+    await catalogBrowsePage.openLicensedUsersCatalog();
 
-    // Get the api token
     const hacker: RhdhAuthUiHack = RhdhAuthUiHack.getInstance();
     apiToken = await hacker.getApiToken(page);
   });

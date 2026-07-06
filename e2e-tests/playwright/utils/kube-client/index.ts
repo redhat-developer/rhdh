@@ -3,6 +3,7 @@ import { V1ConfigMap } from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
 
 import { hasStatusCode } from "../errors";
+import { waitForPodsTerminatedImpl } from "../kube-client-deployment-pods";
 import { findAppConfigMapName, updateConfigMapTitleImpl } from "./configmap";
 import { restartDeploymentImpl } from "./deployment/restart";
 import { getDeploymentPodSelectorImpl, scaleDeploymentImpl } from "./deployment/scale";
@@ -365,8 +366,18 @@ export class KubeClient {
     return restartDeploymentImpl(
       (name, ns, replicas) => this.scaleDeployment(name, ns, replicas),
       (name, ns, replicas, t) => this.waitForDeploymentReady(name, ns, replicas, t),
+      (name, ns) => this.waitForPodsTerminated(name, ns),
       (name, ns) => this.logPodConditionsForDeployment(name, ns),
       (name, ns) => this.logDeploymentEvents(name, ns),
+      deploymentName,
+      namespace,
+    );
+  }
+
+  waitForPodsTerminated(deploymentName: string, namespace: string) {
+    return waitForPodsTerminatedImpl(
+      this.coreV1Api,
+      (name, ns) => this.getDeploymentPodSelector(name, ns),
       deploymentName,
       namespace,
     );
@@ -521,33 +532,6 @@ export class KubeClient {
       undefined,
       undefined,
       { headers: { "Content-Type": "application/json-patch+json" } },
-    );
-  }
-
-  /**
-   * Apply a JSON merge-patch to a namespaced custom object.
-   * Centralises the Content-Type header so callers don't need to pass
-   * trailing positional `undefined` args to reach the options parameter.
-   */
-  async mergePatchCustomObject(
-    group: string,
-    version: string,
-    namespace: string,
-    plural: string,
-    name: string,
-    patch: object,
-  ): Promise<void> {
-    await this.customObjectsApi.patchNamespacedCustomObject(
-      group,
-      version,
-      namespace,
-      plural,
-      name,
-      patch,
-      undefined,
-      undefined,
-      undefined,
-      { headers: { "Content-Type": k8s.PatchUtils.PATCH_FORMAT_JSON_MERGE_PATCH } },
     );
   }
 

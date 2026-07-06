@@ -1,12 +1,11 @@
 import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 
+import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { SettingsPage } from "../../support/pages/settings-page";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
-import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser } from "../../utils/common";
+import { Common } from "../../utils/common";
+import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
-import { UIhelper } from "../../utils/ui-helper";
-let page: Page;
-let context: BrowserContext;
 
 /* SUPPORTED RESOLVERS
 OIDC:
@@ -19,122 +18,69 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
-// oxlint-disable-next-line eslint/require-await -- top-level await configures test.use baseURL
-test.describe("Configure OIDC provider (using RHBK)", async () => {
+const harness = await AuthProviderHarness.create("albarbaro-test-namespace-oidc");
+
+const keycloakHelper = new KeycloakHelper({
+  baseUrl: process.env.RHBK_BASE_URL!,
+  realmName: process.env.RHBK_REALM!,
+  clientId: process.env.RHBK_CLIENT_ID!,
+  clientSecret: process.env.RHBK_CLIENT_SECRET!,
+});
+
+test.describe("Configure OIDC provider (using RHBK)", () => {
+  test.use({ baseURL: harness.backstageUrl });
+
   let common: Common;
-  let uiHelper: UIhelper;
+  let settingsPage: SettingsPage;
+  let page: Page;
+  let context: BrowserContext;
 
-  const namespace = "albarbaro-test-namespace-oidc";
-  const appConfigMap = "app-config-rhdh";
-  const rbacConfigMap = "rbac-policy";
-  const dynamicPluginsConfigMap = "dynamic-plugins";
-  const secretName = "rhdh-secrets";
-
-  const keycloakHelper = new KeycloakHelper({
-    baseUrl: process.env.RHBK_BASE_URL!,
-    realmName: process.env.RHBK_REALM!,
-    clientId: process.env.RHBK_CLIENT_ID!,
-    clientSecret: process.env.RHBK_CLIENT_SECRET!,
-  });
-
-  // set deployment instance
-  const deployment: RHDHDeployment = new RHDHDeployment(
-    namespace,
-    appConfigMap,
-    rbacConfigMap,
-    dynamicPluginsConfigMap,
-    secretName,
-  );
-  deployment.instanceName = "rhdh";
-  // compute backstage baseurl
-  const backstageUrl = await deployment.computeBackstageUrl();
-  const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
-  console.log(`Backstage BaseURL is: ${backstageUrl}`);
-
-  test.use({ baseURL: backstageUrl });
-
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage, rhdhContext }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
     });
 
-    test.info().setTimeout(600 * 1000);
-    // load default configs from yaml files
-    await deployment.loadAllConfigs();
-    // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
-    common = new Common(page);
-    uiHelper = new UIhelper(page);
+    page = rhdhPage;
+    context = rhdhContext;
+    common = new Common(rhdhPage);
+    settingsPage = new SettingsPage(rhdhPage);
 
-    // initialize keycloak helper
+    harness.expectEnvVars([
+      "DEFAULT_USER_PASSWORD",
+      "RHBK_BASE_URL",
+      "RHBK_REALM",
+      "RHBK_CLIENT_ID",
+      "RHBK_CLIENT_SECRET",
+    ]);
+
     console.log("[TEST] Initializing Keycloak helper...");
     await keycloakHelper.initialize();
     console.log("[TEST] Keycloak helper initialized successfully");
 
-    // expect some expected variables
-    expect(process.env.DEFAULT_USER_PASSWORD!).toBeDefined();
-    expect(process.env.RHBK_BASE_URL!).toBeDefined();
-    expect(process.env.RHBK_REALM!).toBeDefined();
-    expect(process.env.RHBK_CLIENT_ID!).toBeDefined();
-    expect(process.env.RHBK_CLIENT_SECRET!).toBeDefined();
+    await harness.loadConfigsAndProvisionNamespace();
+    await harness.addBaseUrlSecretsIfRemote();
+    await harness.addSecretsFromEnv({
+      DEFAULT_USER_PASSWORD: "DEFAULT_USER_PASSWORD",
+      DEFAULT_USER_PASSWORD_2: "DEFAULT_USER_PASSWORD_2",
+      RHBK_BASE_URL: "RHBK_BASE_URL",
+      RHBK_REALM: "RHBK_REALM",
+      RHBK_CLIENT_ID: "RHBK_CLIENT_ID",
+      RHBK_CLIENT_SECRET: "RHBK_CLIENT_SECRET",
+      AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET: "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+    });
+    await harness.createSecret();
 
-    // clean old namespaces
-    await deployment.deleteNamespaceIfExists();
-
-    // create namespace and wait for it to be active
-    await (await deployment.createNamespace()).waitForNamespaceActive();
-
-    // create all base configmaps
-    await deployment.createAllConfigs();
-
-    // generate static token
-    await deployment.generateStaticToken();
-
-    // set enviroment variables and create secret
-    if (
-      process.env.ISRUNNINGLOCAL === undefined ||
-      process.env.ISRUNNINGLOCAL === "" ||
-      process.env.ISRUNNINGLOCAL === "false"
-    ) {
-      await deployment.addSecretData("BASE_URL", backstageUrl);
-      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
-    }
-    await deployment.addSecretData("DEFAULT_USER_PASSWORD", process.env.DEFAULT_USER_PASSWORD!);
-    await deployment.addSecretData("DEFAULT_USER_PASSWORD_2", process.env.DEFAULT_USER_PASSWORD_2!);
-    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL!);
-    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM!);
-    await deployment.addSecretData("RHBK_CLIENT_ID", process.env.RHBK_CLIENT_ID!);
-    await deployment.addSecretData("RHBK_CLIENT_SECRET", process.env.RHBK_CLIENT_SECRET!);
-
-    await deployment.addSecretData(
-      "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!,
-    );
-    await deployment.addSecretData(
-      "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!,
-    );
-
-    await deployment.createSecret();
-
-    // create initial deployment
-    // enable keycloak login with ingestion
     console.log("[TEST] Enabling OIDC login with ingestion...");
-    await deployment.enableOIDCLoginWithIngestion();
-    await deployment.updateAllConfigs();
+    await harness.deployment.enableOIDCLoginWithIngestion();
+    await harness.deployment.updateAllConfigs();
     console.log("[TEST] OIDC login with ingestion enabled successfully");
 
-    // create backstage deployment and wait for it to be ready
-    await deployment.createBackstageDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployAndWait();
   });
 
   test.beforeEach(() => {
-    test.info().setTimeout(600 * 1000);
     console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
 
@@ -142,132 +88,96 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
 
-    await uiHelper.hideQuickstartIfVisible();
+    await settingsPage.hideQuickstartIfVisible();
 
-    // Click "Show more" button to display metadata info
-    await page.getByTitle("Show more").click();
-    // Verify Metadata text is present
-    await uiHelper.verifyText("RHDH Metadata");
+    await settingsPage.verifyRhdhMetadata();
 
     await common.signOut();
   });
 
   test("Login with OIDC oidcSubClaimMatchingKeycloakUserId resolver", async () => {
-    await deployment.enableOIDCLoginWithIngestion();
-    await deployment.setOIDCResolver("oidcSubClaimMatchingKeycloakUserId", false);
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployment.enableOIDCLoginWithIngestion();
+    await harness.deployment.setOIDCResolver("oidcSubClaimMatchingKeycloakUserId", false);
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
   test("Login with OIDC emailMatchingUserEntityProfileEmail resolver", async () => {
-    await deployment.setOIDCResolver("emailMatchingUserEntityProfileEmail", false);
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployment.setOIDCResolver("emailMatchingUserEntityProfileEmail", false);
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName resolver", async () => {
-    await deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", false);
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", false);
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
 
     const login2 = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
     expect(login2).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await keycloakHelper.initialize();
     await keycloakHelper.clearUserSessions("atena");
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName with dangerouslyAllowSignInWithoutUserInCatalog resolver", async () => {
-    await deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", true);
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", true);
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
 
     const login2 = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
     expect(login2).toBe("Login successful");
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Atena Minerva");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Atena Minerva");
     await common.signOut();
   });
 
   test("Login with OIDC preferredUsernameMatchingUserEntityName resolver", async () => {
-    await deployment.setOIDCResolver("preferredUsernameMatchingUserEntityName", false);
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.deployment.setOIDCResolver("preferredUsernameMatchingUserEntityName", false);
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("atena", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Atena Minerva");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Atena Minerva");
     await common.signOut();
   });
 
   test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty("auth.providers.oidc.production.sessionDuration", "3days");
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    harness.deployment.setAppConfigProperty(
+      "auth.providers.oidc.production.sessionDuration",
+      "3days",
+    );
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
@@ -288,14 +198,14 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
   test(`Ingestion of users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     expect(
-      await deployment.checkUserIsIngestedInCatalog([
+      await harness.deployment.checkUserIsIngestedInCatalog([
         "Admin E2e",
         "Atena Minerva",
         "Elio Sole",
@@ -303,35 +213,32 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
         "Zeus Giove",
       ]),
     ).toBe(true);
-    expect(await deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"])).toBe(
-      true,
-    );
-    expect(await deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("atena", "goddesses")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
+    expect(
+      await harness.deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"]),
+    ).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("atena", "goddesses")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
 
-    expect(await deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
-    expect(await deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(true);
   });
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
-    expect(await deployment.checkUserIsIngestedInCatalog(["Invalid Username"])).toBe(true);
-    expect(await deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"])).toBe(true);
+    expect(await harness.deployment.checkUserIsIngestedInCatalog(["Invalid Username"])).toBe(true);
+    expect(await harness.deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"])).toBe(
+      true,
+    );
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
-    await uiHelper.goToPageUrl("/", "Select a sign-in method");
-    // Scope to the main content area to get only sign-in method card headers
-    const signInMethodsContainer = page.getByRole("main");
-    const singInMethods = await signInMethodsContainer
-      .getByRole("heading", { level: 6 })
-      .allInnerTexts();
-    expect(singInMethods).not.toContain("Guest");
+    await settingsPage.goToPageUrl("/", "Select a sign-in method");
+    await settingsPage.verifyGuestSignInMethodNotListed();
   });
 
   test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
@@ -339,13 +246,13 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     expect(oidcLogin).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
 
     expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
     // set up GitHub auth
-    deployment.setAppConfigProperty("auth.providers.github", {
+    harness.deployment.setAppConfigProperty("auth.providers.github", {
       production: {
         clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
         clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
@@ -353,19 +260,13 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       },
     });
 
-    deployment.setAppConfigProperty(
+    harness.deployment.setAppConfigProperty(
       "auth.providers.github.production.disableIdentityResolution",
       "true",
     );
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
+    await harness.reconcileAfterConfigChange();
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    await uiHelper.hideQuickstartIfVisible();
+    await settingsPage.hideQuickstartIfVisible();
 
     const ghLogin = await common.githubLoginFromSettingsPage(
       "rhdhqeauth1",
@@ -377,32 +278,24 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await page.getByTitle("Sign out from GitHub").click();
 
     // Sign out for OIDC
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
     await context.clearCookies();
   });
 
   test(`Enable autologout and user is logged out after inactivity`, async () => {
-    deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+    harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
     // minimum allowed value is 0.5 minutes
-    deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
-    deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
+    harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyTextVisible("Logging out due to inactivity", false, 60000);
-    await expect(page.getByText("Logging out due to inactivity")).toBeHidden({
-      timeout: 30000,
-    });
+    await settingsPage.verifyTextVisible("Logging out due to inactivity", false, 60000);
+    await settingsPage.verifyInactivityLogoutMessageHidden();
 
     await page.reload();
 
@@ -412,31 +305,26 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
-    deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+    harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
     // minimum allowed value is 0.5 minutes
-    deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
-    deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
-    await deployment.updateAllConfigs();
-    await deployment.waitForConfigReconciled();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
+    harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+    await harness.reconcileAfterConfigChange();
 
     const login = await common.keycloakLogin("zeus", process.env.DEFAULT_USER_PASSWORD!);
     expect(login).toBe("Login successful");
 
-    await uiHelper.clickButtonByText("Don't log me out", { timeout: 60000 });
+    await settingsPage.clickButtonByText("Don't log me out", {
+      timeout: 60000,
+    });
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+    await settingsPage.open();
+    await settingsPage.verifyProfileHeading("Zeus Giove");
     await common.signOut();
   });
 
-  test.afterAll(async () => {
-    console.log("[TEST] Starting cleanup...");
-    await deployment.killRunningProcess();
-    console.log("[TEST] Cleanup completed");
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
+    await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

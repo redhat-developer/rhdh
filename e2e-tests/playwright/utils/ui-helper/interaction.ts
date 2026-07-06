@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 
-import { getCardByText } from "../../support/page-objects/ui-locators";
+import { getCardByText } from "../../support/selectors/ui-locators";
 import { getErrorMessage } from "../errors";
 import { DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS, DEFAULT_CLICK_BUTTON_OPTIONS } from "./defaults";
 
@@ -43,7 +43,7 @@ export async function clickBtnByTitleIfNotPressed(page: Page, title: string) {
 export async function clickByDataTestId(page: Page, dataTestId: string) {
   const element = page.getByTestId(dataTestId);
   await element.waitFor({ state: "visible" });
-  await element.dispatchEvent("click");
+  await element.click();
 }
 
 export async function clickDivByTitle(page: Page, title: string) {
