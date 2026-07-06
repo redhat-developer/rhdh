@@ -37,7 +37,8 @@ export function normalizeDbHost(host: string): string {
 
 let portForwardRestarter: (() => Promise<void>) | null = null;
 
-export function setPortForwardRestarter(fn: (() => Promise<void>) | null): void {
+/** @internal Bound by PortForwardHarness for schema-mode DB reconnect retries. */
+export function bindPortForwardRestarter(fn: (() => Promise<void>) | null): void {
   portForwardRestarter = fn;
 }
 

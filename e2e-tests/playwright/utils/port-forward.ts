@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import type { Readable } from "node:stream";
 
-type PortForwardCommand =
+export type PortForwardCommand =
   | {
       command: string;
       args: string[];
@@ -12,7 +12,7 @@ type PortForwardCommand =
       shellCommand: string;
     };
 
-type PortForwardOptions = {
+export type PortForwardOptions = {
   readyPattern: RegExp;
   readyTimeoutMs?: number;
   stopTimeoutMs?: number;

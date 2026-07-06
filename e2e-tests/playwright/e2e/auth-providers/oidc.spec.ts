@@ -4,7 +4,6 @@ import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
-import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPPORTED RESOLVERS
@@ -365,8 +364,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     });
   });
 
-  test.afterAll(async ({ rhdhPage }, testInfo) => {
+  test.afterAll(async () => {
     await harness.cleanup();
-    await teardownBrowser(rhdhPage, testInfo);
   });
 });

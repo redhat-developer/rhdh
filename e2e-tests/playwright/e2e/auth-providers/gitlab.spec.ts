@@ -4,7 +4,6 @@ import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
-import { teardownBrowser } from "../../utils/common/browser";
 
 /* SUPORTED RESOLVERS
 GITLAB:
@@ -161,7 +160,7 @@ test.describe("Configure GitLab Provider", () => {
     ).toBe(true);
   });
 
-  test.afterAll(async ({ rhdhPage }, testInfo) => {
+  test.afterAll(async () => {
     if (oauthAppId !== null) {
       try {
         await gitlabHelper.deleteOAuthApplication(oauthAppId);
@@ -172,6 +171,5 @@ test.describe("Configure GitLab Provider", () => {
     }
 
     await harness.cleanup();
-    await teardownBrowser(rhdhPage, testInfo);
   });
 });

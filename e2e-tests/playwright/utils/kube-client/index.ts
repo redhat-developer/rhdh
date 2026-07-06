@@ -585,14 +585,12 @@ export class KubeClient {
 
     if (indicesToRemove.length === 0) return 0;
 
-    // toSorted requires ES2023 lib; spread creates a copy to avoid mutation
-    const sorted = [...indicesToRemove];
-    // oxlint-disable-next-line unicorn/no-array-sort
-    sorted.sort((a: number, b: number) => b - a);
-    const patch = sorted.map((idx: number) => ({
-      op: "remove" as const,
-      path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,
-    }));
+    const patch = indicesToRemove
+      .toSorted((a: number, b: number) => b - a)
+      .map((idx: number) => ({
+        op: "remove" as const,
+        path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,
+      }));
 
     await this.jsonPatchDeployment(deploymentName, namespace, patch);
     return indicesToRemove.length;
@@ -623,8 +621,7 @@ export class KubeClient {
       .map((e) => e.idx);
 
     if (indicesToRemove.length > 0) {
-      // oxlint-disable-next-line unicorn/no-array-sort -- toSorted requires ES2023 lib; spread creates a copy
-      for (const idx of [...indicesToRemove].sort((a: number, b: number) => b - a)) {
+      for (const idx of indicesToRemove.toSorted((a: number, b: number) => b - a)) {
         patch.push({
           op: "remove",
           path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,

@@ -1,6 +1,5 @@
 import { test, expect } from "@support/coverage/test";
 
-import { signInAsGuest } from "../../support/auth/guest-auth";
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
 
@@ -29,10 +28,7 @@ test.describe("Change app-config at e2e test runtime", () => {
       console.log("Restarting deployment to apply ConfigMap changes.");
       await runtimeHarness.restartDeploymentWithRetry();
 
-      await page.context().clearCookies();
-      await page.context().clearPermissions();
-      await page.reload({ waitUntil: "domcontentloaded" });
-      await signInAsGuest(page);
+      await runtimeHarness.verifyGuestSession(page);
       await new HomePage(page).openHomeSidebar();
       console.log("Verifying new title in the UI... ");
       expect(await page.title()).toContain(dynamicTitle);

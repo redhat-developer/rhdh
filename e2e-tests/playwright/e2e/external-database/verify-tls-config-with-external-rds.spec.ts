@@ -1,6 +1,5 @@
 import { expect, test } from "@support/coverage/test";
 
-import { signInAsGuest } from "../../support/auth/guest-auth";
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
 import { clearDatabase, readCertificateFile } from "../../utils/postgres-config";
@@ -83,8 +82,8 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
       });
 
       test("Verify successful DB connection", async ({ page }) => {
+        await runtimeHarness.verifyGuestSession(page);
         const homePage = new HomePage(page);
-        await signInAsGuest(page);
         await homePage.verifyWelcomeHeading();
       });
     });

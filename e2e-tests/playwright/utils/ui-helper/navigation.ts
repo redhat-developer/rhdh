@@ -1,6 +1,7 @@
 import { expect, Locator, Page } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
+import { SidebarNav } from "../../support/navigation/sidebar-nav";
 import { getErrorMessage } from "../errors";
 import { clickButtonByText, clickByDataTestId, clickLink, getGlobalHeader } from "./interaction";
 import { verifyHeading } from "./verification";
@@ -16,141 +17,13 @@ export function getSidebarNav(page: Page): Locator {
     .first();
 }
 
-function sidebarLinks(page: Page, linkName: string): Locator {
-  return getSidebarNav(page).getByRole("link", { name: linkName, exact: true });
-}
-
-async function resolveVisibleSidebarLink(page: Page, linkName: string): Promise<Locator> {
-  const candidates = sidebarLinks(page, linkName);
-  await expect(candidates.first()).toBeAttached({ timeout: 15_000 });
-
-  const count = await candidates.count();
-  for (let index = 0; index < count; index++) {
-    const candidate = candidates.nth(index);
-    if (await candidate.isVisible()) {
-      return candidate;
-    }
-  }
-
-  throw new Error(`Sidebar link "${linkName}" is not visible`);
-}
-
-async function expandSidebarSection(page: Page, sectionLabel: string): Promise<void> {
-  const sectionButton = getSidebarNav(page).getByRole("button", {
-    name: sectionLabel,
-    exact: true,
-  });
-  await expect(sectionButton).toBeVisible();
-
-  const expanded = await sectionButton.getAttribute("aria-expanded");
-  if (expanded === "true") {
-    return;
-  }
-  if (expanded === "false") {
-    await sectionButton.click();
-    await expect(sectionButton).toHaveAttribute("aria-expanded", "true");
-    return;
-  }
-
-  // Some sidebar sections omit aria-expanded; avoid toggling closed an already-open group.
-  const sectionGroup = sectionButton.locator("xpath=..");
-  const nestedLinks = sectionGroup.getByRole("link");
-  if ((await nestedLinks.count()) > 0 && (await nestedLinks.first().isVisible())) {
-    return;
-  }
-  await sectionButton.click();
-}
-
-/** Collapse expanded sidebar sections so nested links are not covered by layout overlays. */
-async function collapseOtherExpandedSidebarSections(
-  page: Page,
-  keepSection: string,
-): Promise<void> {
-  const nav = getSidebarNav(page);
-  const keepButton = nav.getByRole("button", { name: keepSection, exact: true });
-  const keepHandle = await keepButton.elementHandle();
-  const buttons = nav.getByRole("button");
-  const count = await buttons.count();
-  for (let index = 0; index < count; index++) {
-    const button = buttons.nth(index);
-    if ((await button.getAttribute("aria-expanded")) !== "true") {
-      continue;
-    }
-    if (keepHandle !== null && (await button.evaluate((el, keep) => el === keep, keepHandle))) {
-      continue;
-    }
-    await button.click();
-    await expect(button).toHaveAttribute("aria-expanded", "false");
-  }
-}
-
-async function resolveVisibleSidebarLinkInSection(
-  page: Page,
-  sectionLabel: string,
-  linkName: string,
-): Promise<Locator> {
-  const sectionButton = getSidebarNav(page).getByRole("button", {
-    name: sectionLabel,
-    exact: true,
-  });
-  await expect(sectionButton).toBeVisible();
-
-  const sectionGroup = sectionButton.locator("xpath=..");
-  const scopedLink = sectionGroup.getByRole("link", { name: linkName, exact: true });
-  if ((await scopedLink.count()) > 0 && (await scopedLink.first().isVisible())) {
-    return scopedLink.first();
-  }
-
-  return resolveVisibleSidebarLink(page, linkName);
-}
-
-async function activateSidebarLink(page: Page, resolveLink: () => Promise<Locator>): Promise<void> {
-  try {
-    await expect(async () => {
-      const link = await resolveLink();
-      await link.scrollIntoViewIfNeeded();
-      await expect(link).toBeEnabled();
-      await link.click({ timeout: 3000 });
-    }).toPass({
-      intervals: [500],
-      timeout: 15_000,
-    });
-  } catch {
-    const link = await resolveLink();
-    const href = await link.getAttribute("href");
-    // RHDH sidebar MUI layout can intercept pointer events on nested links in CI.
-    if (href !== null && href !== "") {
-      await page.goto(href);
-      return;
-    }
-    throw new Error("Sidebar link is not clickable and has no href fallback");
-  }
-}
-
-async function clickSidebarLink(page: Page, linkName: string): Promise<void> {
-  await activateSidebarLink(page, () => resolveVisibleSidebarLink(page, linkName));
-}
-
-async function clickSidebarLinkInSection(
-  page: Page,
-  sectionLabel: string,
-  linkName: string,
-): Promise<void> {
-  await activateSidebarLink(page, () =>
-    resolveVisibleSidebarLinkInSection(page, sectionLabel, linkName),
-  );
-}
-
 export async function expectSidebarLinkVisible(
   page: Page,
   linkName: string,
   sectionName?: string,
 ): Promise<void> {
-  if (sectionName !== undefined && sectionName !== "") {
-    await expandSidebarSection(page, sectionName);
-  }
-  const link = await resolveVisibleSidebarLink(page, linkName);
-  await expect(link).toBeVisible();
+  const sidebar = await SidebarNav.forPage(page);
+  await sidebar.expectLinkVisible(linkName, sectionName);
 }
 
 export async function openProfileDropdown(page: Page) {
@@ -192,20 +65,13 @@ export async function goToSelfServicePage(page: Page) {
 }
 
 export async function waitForSideBarVisible(page: Page) {
-  await expect(getSidebarNav(page).getByRole("link").first()).toBeVisible({
-    timeout: 10_000,
-  });
+  const sidebar = await SidebarNav.forPage(page);
+  await sidebar.waitForVisible();
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  // Legacy packages/app sidebar (cluster-free harness) uses plain nav anchors.
-  const legacyLink = page.locator(`nav a:has-text("${navBarText}")`).first();
-  try {
-    await expect(legacyLink).toBeVisible({ timeout: 3_000 });
-    await legacyLink.dispatchEvent("click");
-  } catch {
-    await clickSidebarLink(page, navBarText);
-  }
+  const sidebar = await SidebarNav.forPage(page);
+  await sidebar.openLink(navBarText);
 }
 
 export async function openSidebarLinkInSection(
@@ -213,9 +79,8 @@ export async function openSidebarLinkInSection(
   sectionName: string,
   linkName: string,
 ): Promise<void> {
-  await collapseOtherExpandedSidebarSections(page, sectionName);
-  await expandSidebarSection(page, sectionName);
-  await clickSidebarLinkInSection(page, sectionName, linkName);
+  const sidebar = await SidebarNav.forPage(page);
+  await sidebar.openInSection(sectionName, linkName);
 }
 
 export async function openCatalogSidebar(page: Page, kind: string) {
@@ -231,14 +96,8 @@ export async function openCatalogSidebar(page: Page, kind: string) {
 }
 
 export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
-  // Legacy packages/app sidebar expands groups via aria-label buttons.
-  const legacyButton = page.locator(`nav button[aria-label="${navBarButtonLabel}"]`);
-  try {
-    await expect(legacyButton).toBeVisible({ timeout: 3_000 });
-    await legacyButton.click();
-  } catch {
-    await expandSidebarSection(page, navBarButtonLabel);
-  }
+  const sidebar = await SidebarNav.forPage(page);
+  await sidebar.expandSection(navBarButtonLabel);
 }
 
 export async function selectMuiBox(page: Page, label: string, value: string, notVisible?: boolean) {

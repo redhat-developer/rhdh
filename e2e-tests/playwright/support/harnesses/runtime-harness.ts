@@ -1,9 +1,12 @@
+import { type Page } from "@playwright/test";
+
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import { pollUntil } from "../../utils/poll-until";
 import {
   configurePostgresCertificate,
   configurePostgresCredentials,
 } from "../../utils/postgres-config";
+import { signInAsGuest } from "../auth/guest-auth";
 
 type ExternalPostgresOptions = {
   certificateContent?: string | null;
@@ -75,5 +78,19 @@ export class RuntimeHarness {
     }
     await this.configurePostgresCredentials(options.credentials);
     await this.restartDeploymentWithRetry();
+  }
+
+  /** Clear session state and sign in as guest after a deployment restart. */
+  async verifyGuestSession(page: Page): Promise<void> {
+    await page.context().clearCookies();
+    await page.context().clearPermissions();
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await signInAsGuest(page);
+  }
+
+  /** Restart the deployment and re-establish a guest session on the given page. */
+  async restartAndVerifyGuestSession(page: Page): Promise<void> {
+    await this.restartDeploymentWithRetry();
+    await this.verifyGuestSession(page);
   }
 }

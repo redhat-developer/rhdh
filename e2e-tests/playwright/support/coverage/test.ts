@@ -28,7 +28,8 @@ import {
 } from "@playwright/test";
 import { AuthProviderSession } from "../auth/provider-auth";
 import { signInAsGuest } from "../auth/guest-auth";
-import { setupBrowser, teardownBrowser } from "../../utils/common/browser";
+import { BrowserSession } from "../browser-session";
+import { runWorkerCleanups } from "../worker-session";
 // Re-export all Playwright types and values so specs can replace
 // `from "@playwright/test"` with this module. The locally-defined `test`
 // and `expect` below shadow the star re-exports.
@@ -154,9 +155,10 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     },
     rhdhContext: [
       async ({ browser }, use, testInfo) => {
-        const { page, context } = await setupBrowser(browser, testInfo);
-        await use(context);
-        await teardownBrowser(page, testInfo);
+        const session = await BrowserSession.create(browser, testInfo);
+        await use(session.context);
+        await runWorkerCleanups(testInfo);
+        await session.teardown(testInfo);
       },
       { scope: "worker" },
     ],

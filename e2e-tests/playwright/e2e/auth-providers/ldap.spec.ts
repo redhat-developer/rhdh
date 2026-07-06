@@ -4,7 +4,6 @@ import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
-import { teardownBrowser } from "../../utils/common/browser";
 
 /* SUPPORTED RESOLVERS
 LDAP:
@@ -198,7 +197,7 @@ test.describe("Configure LDAP Provider", () => {
     });
   });
 
-  test.afterAll(async ({ rhdhPage }, testInfo) => {
+  test.afterAll(async () => {
     try {
       if (nsgCleanup) {
         console.log("[TEST] Cleaning up NSG rule...");
@@ -213,6 +212,5 @@ test.describe("Configure LDAP Provider", () => {
     }
 
     await harness.cleanup();
-    await teardownBrowser(rhdhPage, testInfo);
   });
 });

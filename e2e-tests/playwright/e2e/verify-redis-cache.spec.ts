@@ -1,8 +1,8 @@
 import { expect, test } from "@support/coverage/test";
 import Redis from "ioredis";
 
+import { PortForwardHarness } from "../support/harnesses/port-forward-harness";
 import { TechDocsPage } from "../support/pages/techdocs-page";
-import { PortForwardSession } from "../utils/port-forward";
 
 test.describe("Verify Redis Cache DB", () => {
   test.beforeAll(() => {
@@ -13,12 +13,12 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   let techDocsPage: TechDocsPage;
-  let portForward: PortForwardSession | null = null;
+  let portForward: PortForwardHarness | null = null;
   let redis: Redis;
 
   test.beforeAll(async () => {
     console.log("Starting port-forward process...");
-    portForward = new PortForwardSession(
+    portForward = new PortForwardHarness(
       {
         shellCommand: `
           oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&

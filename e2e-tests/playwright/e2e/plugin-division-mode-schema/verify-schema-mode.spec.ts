@@ -1,19 +1,8 @@
-/**
- * E2E test for pluginDivisionMode: schema
- *
- * Verifies that RHDH can operate with schema-mode enabled when the database user
- * has restricted permissions (NOCREATEDB), matching production managed database environments.
- *
- * Tests are opt-in - they skip when SCHEMA_MODE_* environment variables are not set.
- */
-
 import { test, expect } from "@support/coverage/test";
 
-import { signInAsGuest } from "../../support/auth/guest-auth";
+import { PortForwardHarness } from "../../support/harnesses/port-forward-harness";
 import { HomePage } from "../../support/pages/home-page";
 import { KubeClient } from "../../utils/kube-client";
-import { PortForwardSession } from "../../utils/port-forward";
-import { setPortForwardRestarter } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
 test.describe("Verify pluginDivisionMode: schema", () => {
@@ -21,7 +10,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
   const releaseName = process.env.RELEASE_NAME ?? "developer-hub";
   const installMethod = process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
 
-  let portForwardSession: PortForwardSession | null = null;
+  let portForwardHarness: PortForwardHarness | null = null;
   let testSetup: SchemaModeTestSetup;
 
   test.beforeAll(async ({}, testInfo) => {
@@ -62,7 +51,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     if (hasPortForwardMeta) {
       console.log(`Starting port-forward: ${pfResource} in ${pfNamespace} -> localhost:5432`);
 
-      portForwardSession = new PortForwardSession(
+      portForwardHarness = new PortForwardHarness(
         {
           command: "oc",
           args: ["port-forward", "-n", pfNamespace, pfResource, "5432:5432"],
@@ -72,15 +61,10 @@ test.describe("Verify pluginDivisionMode: schema", () => {
           readyTimeoutMs: 30_000,
         },
       );
-      await portForwardSession.start();
+      await portForwardHarness.start();
+      portForwardHarness.enableAutoRestartOnDbConnect();
       console.log("Port-forward established");
       process.env.SCHEMA_MODE_DB_HOST = "localhost";
-
-      setPortForwardRestarter(async () => {
-        console.log("Restarting port-forward...");
-        await portForwardSession?.restart();
-        console.log("Port-forward re-established");
-      });
     }
 
     testSetup = new SchemaModeTestSetup(namespace, releaseName, installMethod);
@@ -95,8 +79,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
   });
 
   test.afterAll(async () => {
-    setPortForwardRestarter(null);
-    await portForwardSession?.stop();
+    await portForwardHarness?.stop();
   });
 
   test("Verify database user has restricted permissions", async () => {
@@ -104,7 +87,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     expect(hasRestrictedPerms).toBe(true);
   });
 
-  test("Verify RHDH is accessible with schema mode", async ({ page }, testInfo) => {
+  test("Verify RHDH is accessible with schema mode", async ({ guestPage }, testInfo) => {
     const kubeClient = new KubeClient();
     const deploymentName = testSetup.getDeploymentName();
 
@@ -123,9 +106,7 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       console.warn("Could not check deployment readiness:", error);
     }
 
-    await signInAsGuest(page);
-
-    const homePage = new HomePage(page);
+    const homePage = new HomePage(guestPage);
     await homePage.verifyMainHeadingVisible();
 
     console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
