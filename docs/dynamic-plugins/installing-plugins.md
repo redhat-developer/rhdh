@@ -287,7 +287,7 @@ When using the Operator ....
 
 The directory where dynamic plugins are located is mounted as a volume to the `install-dynamic-plugins` init container and the `backstage-backend` container. The `install-dynamic-plugins` init container is responsible for downloading and extracting the plugins into this directory. Depending on the deployment method, the directory is mounted as an ephemeral or persistent volume. In the latter case, the volume can be shared between several Pods, and the plugins installation script is also responsible for downloading and extracting the plugins only once, avoiding conflicts.
 
-**Important Note:** The `install-dynamic-plugins` init container always acquires a lock file (`/dynamic-plugins-root/install-dynamic-plugins.lock`) before installing plugins. The lock prevents concurrent installations and is released when the process completes (or fails). Lock contention — where one pod waits for another's lock — only occurs when the `dynamic-plugins-root` directory is backed by a persistent volume shared between pods.
+**Important Note:** The `install-dynamic-plugins` init container always acquires a lock file (`/dynamic-plugins-root/install-dynamic-plugins.lock`) before installing plugins. The lock prevents concurrent installations and is released when the process completes (or fails). Lock contention, where one pod waits for another's lock, only occurs when the `dynamic-plugins-root` directory is backed by a persistent volume shared between pods.
 
 If the `install-dynamic-plugins` init container is killed with a SIGKILL signal, the lock file cannot be cleaned up. This may happen due to the following reasons:
 
@@ -311,9 +311,9 @@ Timed out after 600000ms waiting for lock file /dynamic-plugins-root/install-dyn
 Another install may be stuck — remove the file manually to proceed.
 ```
 
-The exit handler automatically removes the stale lock file during shutdown. The pod restarts, and the next init container run starts with no lock file present, so it proceeds normally. The total recovery time equals the configured lock timeout (10 minutes by default). No manual intervention is required.
+The exit handler automatically removes the stale lock file during shutdown. The pod restarts, and the next init container run starts with no lock file present, so it proceeds normally. The total recovery time equals the configured lock timeout (10 minutes by default). No manual intervention is required in this case.
 
-To skip the timeout wait and recover immediately, delete the lock file manually:
+If the exit handler itself fails to remove the lock file (for example, due to a filesystem error or the container being forcefully terminated before the handler runs), you must delete the lock file manually:
 
 ```console
 oc exec -n <namespace-name> deploy/backstage-<backstage-name> -c install-dynamic-plugins -- rm -f /dynamic-plugins-root/install-dynamic-plugins.lock
