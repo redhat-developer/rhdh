@@ -16,6 +16,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { Reporter } from "@playwright/test/reporter";
+import { CoverageReport } from "monocart-coverage-reports";
 import { COVERAGE_RAW_DIR, COVERAGE_REPORT_DIR } from "./paths";
 
 const generateTimeoutMs = Number(
@@ -107,12 +108,7 @@ class CoverageReporter implements Reporter {
         return;
       }
 
-      // Dynamic import defers loading the monocart module until the report
-      // is about to be generated. With COLLECT_COVERAGE unset the reporter
-      // is not even registered, so this branch is never reached.
-      const monocart = await import("monocart-coverage-reports");
-
-      const report = new monocart.CoverageReport({
+      const report = new CoverageReport({
         name: "RHDH E2E Coverage",
         outputDir: COVERAGE_REPORT_DIR,
         reports: [

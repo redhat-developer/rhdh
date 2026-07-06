@@ -1,4 +1,4 @@
-import { bindPortForwardRestarter } from "../../e2e/plugin-division-mode-schema/schema-mode-db";
+import { bindPortForwardRestarter } from "../../utils/port-forward";
 import {
   PortForwardSession,
   type PortForwardCommand,

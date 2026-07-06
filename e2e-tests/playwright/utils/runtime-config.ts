@@ -51,6 +51,26 @@ export interface BackstageCR {
   };
 }
 
+/** Shared app-config YAML structure used across runtime tests. */
+export interface AppConfigYaml {
+  app?: { title?: string; baseUrl?: string; [key: string]: unknown };
+  backend?: {
+    database?: {
+      client?: string;
+      pluginDivisionMode?: string;
+      ensureSchemaExists?: boolean;
+      connection?: Record<string, unknown>;
+      [key: string]: unknown;
+    };
+    auth?: Record<string, unknown>;
+    baseUrl?: string;
+    cors?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  auth?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 /**
  * Build a RuntimeDeployConfig from environment variables.
  */

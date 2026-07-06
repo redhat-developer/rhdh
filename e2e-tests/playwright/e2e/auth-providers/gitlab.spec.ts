@@ -65,7 +65,7 @@ test.describe("Configure GitLab Provider", () => {
         oauthAppId = oauthApp.id;
         oauthClientId = oauthApp.application_id;
         oauthClientSecret = oauthApp.secret;
-        console.log(`[TEST] GitLab OAuth application created - ID: ${oauthApp.application_id}`);
+        console.log(`[TEST] GitLab OAuth application created: ${oauthAppName}`);
       },
       envSecrets: {
         AUTH_PROVIDERS_GITLAB_HOST: "AUTH_PROVIDERS_GITLAB_HOST",

@@ -98,22 +98,25 @@ async function streamPodLogsUntilMatch(
     console.log("Log stream ended.");
   });
 
-  await log.log(state.namespace, podName, "backstage-backend", logStream, {
-    follow: true,
-    tailLines: 1,
-    pretty: false,
-    timestamps: false,
-  });
+  try {
+    await log.log(state.namespace, podName, "backstage-backend", logStream, {
+      follow: true,
+      tailLines: 1,
+      pretty: false,
+      timestamps: false,
+    });
 
-  await pollUntil(() => Promise.resolve(found), {
-    timeoutMs,
-    intervalMs: 500,
-    label: `Log pattern ${searchString} in pod ${podName}`,
-  });
+    await pollUntil(() => Promise.resolve(found), {
+      timeoutMs,
+      intervalMs: 500,
+      label: `Log pattern ${searchString} in pod ${podName}`,
+    });
 
-  logStream.end();
-  logStream.removeAllListeners();
-  return true;
+    return true;
+  } finally {
+    logStream.end();
+    logStream.removeAllListeners();
+  }
 }
 
 export async function followPodLogs(

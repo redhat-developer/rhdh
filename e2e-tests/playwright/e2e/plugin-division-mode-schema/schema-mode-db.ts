@@ -8,6 +8,7 @@ import type { ClientConfig } from "pg";
 
 import { base64Decode } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
+import { getPortForwardRestarter } from "../../utils/port-forward";
 
 /** Default schema-mode test database user (overridable via SCHEMA_MODE_DB_USER). */
 const SCHEMA_MODE_DEFAULT_DB_USER = "bn_backstage";
@@ -35,8 +36,6 @@ function normalizeDbHost(host: string): string {
   return host === "localhost" ? "127.0.0.1" : host;
 }
 
-let portForwardRestarter: (() => Promise<void>) | null = null;
-
 function connectionErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -55,7 +54,7 @@ async function tryRestartPortForward(
   maxRetries: number,
   errorMsg: string,
 ): Promise<void> {
-  if (!isConnectionDeadError(errorMsg) || !portForwardRestarter) {
+  if (!isConnectionDeadError(errorMsg) || !getPortForwardRestarter()) {
     console.warn(`Connection attempt ${attempt}/${maxRetries} failed, retrying...`);
     return;
   }
@@ -64,7 +63,7 @@ async function tryRestartPortForward(
     `Connection attempt ${attempt}/${maxRetries} failed (${errorMsg}), restarting port-forward...`,
   );
   try {
-    await portForwardRestarter();
+    await getPortForwardRestarter()!();
   } catch (pfErr) {
     console.error(
       `Port-forward restart failed: ${pfErr instanceof Error ? pfErr.message : String(pfErr)}`,
@@ -79,11 +78,6 @@ async function waitBeforeConnectRetry(attempt: number): Promise<void> {
       resolve();
     }, delay);
   });
-}
-
-/** @internal Bound by PortForwardHarness for schema-mode DB reconnect retries. */
-export function bindPortForwardRestarter(fn: (() => Promise<void>) | null): void {
-  portForwardRestarter = fn;
 }
 
 async function connectWithRetry(config: ClientConfig): Promise<Client> {

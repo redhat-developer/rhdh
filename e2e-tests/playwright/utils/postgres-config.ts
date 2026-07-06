@@ -15,7 +15,29 @@ import { readFileSync, existsSync } from "fs";
 import { Client } from "pg";
 
 import { base64Encode } from "./helper";
-import { KubeClient } from "./kube-client";
+import { KubeClient, BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
+import type { AppConfigYaml } from "./runtime-config";
+
+/**
+ * Core POSTGRES_* env var keys used by both schema-mode and external-DB tests
+ * to configure the database connection from a Secret.
+ */
+export const POSTGRES_ENV_KEYS = [
+  "POSTGRES_HOST",
+  "POSTGRES_PORT",
+  "POSTGRES_DB",
+  "POSTGRES_USER",
+  "POSTGRES_PASSWORD",
+] as const;
+
+const postgresCredEnvKeys = [
+  "POSTGRES_HOST",
+  "POSTGRES_PORT",
+  "POSTGRES_USER",
+  "POSTGRES_PASSWORD",
+  "PGSSLMODE",
+  "NODE_EXTRA_CA_CERTS",
+] as const;
 
 /**
  * Convert escaped newlines (\n) to actual newline characters.
@@ -236,4 +258,73 @@ export async function clearDatabase(credentials: {
   } finally {
     await client.end();
   }
+}
+
+/**
+ * Prepare the RHDH deployment for external database tests.
+ *
+ * Switches configuration from internal PostgreSQL to external DB placeholders
+ * and ensures POSTGRES_* env vars resolve from the postgres-cred secret.
+ */
+export async function prepareForExternalDatabase(
+  kubeClient: KubeClient,
+  namespace: string,
+  deploymentName: string,
+): Promise<void> {
+  await removeSchemaModePatchedEnvVars(kubeClient, deploymentName, namespace);
+
+  console.log("Patching app-config to use external database connection (env var placeholders)...");
+  await kubeClient.patchAppConfig(namespace, (appConfig: AppConfigYaml) => {
+    appConfig.backend ??= {};
+    appConfig.backend.database = {
+      connection: {
+        host: "${POSTGRES_HOST}",
+        port: "${POSTGRES_PORT}",
+        user: "${POSTGRES_USER}",
+        password: "${POSTGRES_PASSWORD}",
+      },
+    };
+  });
+  console.log("App-config patched for external database connection");
+
+  await ensurePostgresCredEnvVars(kubeClient, deploymentName, namespace);
+}
+
+async function removeSchemaModePatchedEnvVars(
+  kubeClient: KubeClient,
+  deploymentName: string,
+  namespace: string,
+): Promise<void> {
+  const removed = await kubeClient.removeContainerEnvVars(
+    deploymentName,
+    namespace,
+    BACKSTAGE_BACKEND_CONTAINER,
+    (envVar) =>
+      (POSTGRES_ENV_KEYS as readonly string[]).includes(envVar.name) &&
+      (envVar.valueFrom?.secretKeyRef?.name?.endsWith("-postgresql") ?? false),
+  );
+
+  if (removed > 0) {
+    console.log(`Removed ${removed} schema-mode env var patches from deployment`);
+  } else {
+    console.log("No schema-mode env var patches found on deployment");
+  }
+}
+
+async function ensurePostgresCredEnvVars(
+  kubeClient: KubeClient,
+  deploymentName: string,
+  namespace: string,
+): Promise<void> {
+  console.log(
+    `Adding ${postgresCredEnvKeys.length} POSTGRES_* env vars from postgres-cred to deployment`,
+  );
+  await kubeClient.addContainerEnvVarsFromSecret(
+    deploymentName,
+    namespace,
+    BACKSTAGE_BACKEND_CONTAINER,
+    "postgres-cred",
+    [...postgresCredEnvKeys],
+  );
+  console.log("POSTGRES_* env vars added to deployment from postgres-cred");
 }

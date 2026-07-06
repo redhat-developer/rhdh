@@ -4,14 +4,14 @@
 /* oxlint-disable import/no-unassigned-import -- intentional side-effect graph wiring */
 
 import { GetOrganizationResponse, ItemStatus } from "../support/api/github-structures";
+import { RESOURCES } from "../support/test-data/resources";
+import { TEMPLATES } from "../support/test-data/templates";
 import * as githubApi from "../utils/api-helper/github";
-import "./github-happy-path.blocked";
-import { GITHUB_HAPPY_PATH_BLOCKER } from "./github-happy-path.blocked";
 import "../support/pages/rhdh-instance";
 import "../utils/ui-helper/visibility";
-
-void GITHUB_HAPPY_PATH_BLOCKER;
 void GetOrganizationResponse;
+void RESOURCES;
+void TEMPLATES;
 void ItemStatus;
 void ItemStatus.OPEN;
 void ItemStatus.CLOSED;

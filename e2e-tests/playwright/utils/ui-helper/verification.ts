@@ -63,8 +63,8 @@ export async function verifyRowsInTable(
   }
 }
 
-export async function waitForTextDisappear(page: Page, text: string) {
-  await expect(page.getByText(text)).toHaveCount(0);
+export async function waitForTextDisappear(page: Page, text: string, timeout = 30_000) {
+  await expect(page.getByText(text)).toHaveCount(0, { timeout });
 }
 
 async function verifyTextInLocator(

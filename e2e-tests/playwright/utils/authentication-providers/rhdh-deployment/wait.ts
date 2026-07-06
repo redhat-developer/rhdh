@@ -172,11 +172,15 @@ async function waitForRolloutStart(
 
     console.log("[INFO] Rollout detected");
     return { rolloutStarted: true, initialGeneration };
-  } catch {
-    console.log(
-      `[INFO] No rollout detected after ${rolloutStartTimeout}ms, checking if deployment is already ready`,
-    );
-    return { rolloutStarted: true, initialGeneration };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("Deployment rollout start")) {
+      console.log(
+        `[INFO] No rollout detected after ${rolloutStartTimeout}ms, checking if deployment is already ready`,
+      );
+      return { rolloutStarted: true, initialGeneration };
+    }
+    throw error;
   }
 }
 

@@ -118,3 +118,14 @@ export class PortForwardSession {
     clearTimeout(killTimeout);
   }
 }
+
+let portForwardRestarter: (() => Promise<void>) | null = null;
+
+/** @internal Bound by PortForwardHarness for schema-mode DB reconnect retries. */
+export function bindPortForwardRestarter(fn: (() => Promise<void>) | null): void {
+  portForwardRestarter = fn;
+}
+
+export function getPortForwardRestarter(): (() => Promise<void>) | null {
+  return portForwardRestarter;
+}

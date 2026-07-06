@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.3",
-    "@playwright/test": "1.61.0",
+    "@playwright/test": "1.61.1",
     "@support/coverage": "portal:./playwright/support/coverage",
     "@types/node": "24.13.2",
     "@types/pg": "8.20.0",
@@ -59,7 +59,7 @@
     "oxlint-tsgolint": "0.23.0",
     "shellcheck": "4.1.0",
     "typescript": "6.0.3",
-    "vitest": "^4.1.9"
+    "vitest": "4.1.9"
   },
   "engines": {
     "node": "24"

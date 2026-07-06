@@ -131,13 +131,16 @@ export class AuthProviderHarness {
   }
 
   async runLoginCase(options: AuthLoginCase): Promise<void> {
-    if (options.configure !== undefined) {
-      await options.configure();
+    try {
+      if (options.configure !== undefined) {
+        await options.configure();
+      }
+      const result = await options.login();
+      expect(result).toBe(options.expectedResult ?? "Login successful");
+      await options.assert();
+    } finally {
+      await options.cleanup?.();
     }
-    const result = await options.login();
-    expect(result).toBe(options.expectedResult ?? "Login successful");
-    await options.assert();
-    await options.cleanup?.();
   }
 
   async cleanup(): Promise<void> {

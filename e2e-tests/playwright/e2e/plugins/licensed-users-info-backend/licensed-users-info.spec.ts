@@ -1,4 +1,5 @@
-import { test, expect, APIRequestContext, APIResponse, request } from "@support/coverage/test";
+import { type APIRequestContext, type APIResponse, request } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
 
 import playwrightConfig from "../../../../playwright.config";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";

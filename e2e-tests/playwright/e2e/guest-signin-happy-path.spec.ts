@@ -19,20 +19,29 @@ test.describe("Guest Signing Happy path", () => {
     settingsPage = new SettingsPage(guestPage);
   });
 
-  test("Verify the Homepage renders with Search Bar, Quick Access and Starred Entities", async () => {
-    await homePage.verifyWelcomeHeading();
-    await homePage.openHomeSidebar();
-    await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
-  });
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
+    { tag: "@cluster-free" },
+    async () => {
+      await homePage.verifyWelcomeHeading();
+      await homePage.openHomeSidebar();
+      await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+    },
+  );
 
-  test("Verify Profile is Guest in the Settings page", async () => {
+  test("Verify Profile is Guest in the Settings page", { tag: "@cluster-free" }, async () => {
     await settingsPage.open();
     await settingsPage.verifyGuestProfile();
   });
 
-  test("Sign Out and Verify that you return to the Sign-in page", async () => {
-    await settingsPage.open();
-    await settingsPage.signOut();
-    await settingsPage.verifySignInPageTitle();
-  });
+  test(
+    "Sign Out and Verify that you return to the Sign-in page",
+    { tag: "@cluster-free" },
+    async () => {
+      await settingsPage.open();
+      await settingsPage.signOut();
+      await settingsPage.verifySignInPageTitle();
+    },
+  );
 });

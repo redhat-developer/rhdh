@@ -5,6 +5,7 @@ import { pollUntil } from "../../utils/poll-until";
 import {
   configurePostgresCertificate,
   configurePostgresCredentials,
+  prepareForExternalDatabase,
 } from "../../utils/postgres-config";
 import { signInAsGuest } from "../auth/guest-auth";
 
@@ -78,6 +79,11 @@ export class RuntimeHarness {
     }
     await this.configurePostgresCredentials(options.credentials);
     await this.restartDeploymentWithRetry();
+  }
+
+  /** Patch app-config and deployment env for external PostgreSQL tests. */
+  async prepareForExternalDatabase(): Promise<void> {
+    await prepareForExternalDatabase(this.kubeClient, this.namespace, this.deploymentName);
   }
 
   /** Clear session state and sign in as guest after a deployment restart. */

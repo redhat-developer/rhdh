@@ -3,6 +3,7 @@ import { test, expect } from "@support/coverage/test";
 
 import { PortForwardHarness } from "../../support/harnesses/port-forward-harness";
 import { HomePage } from "../../support/pages/home-page";
+import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
@@ -133,8 +134,8 @@ async function setupSchemaModeTests(
 
 test.describe("Verify pluginDivisionMode: schema", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME ?? "developer-hub";
-  const installMethod = process.env.INSTALL_METHOD === "operator" ? "operator" : "helm";
+  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
+  const installMethod = resolveInstallMethod();
 
   let portForwardHarness: PortForwardHarness | null = null;
   let testSetup: SchemaModeTestSetup;

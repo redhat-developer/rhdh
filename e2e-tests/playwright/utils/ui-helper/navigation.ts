@@ -20,12 +20,24 @@ import { verifyHeading } from "./verification";
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
+let cachedUsesRhdhSidebar: boolean | undefined;
+let cachedSidebarBaseUrl: string | undefined;
+
+async function usesRhdhSidebar(page: Page): Promise<boolean> {
+  const baseUrl = process.env.BASE_URL ?? page.url();
+  if (cachedSidebarBaseUrl !== baseUrl || cachedUsesRhdhSidebar === undefined) {
+    cachedUsesRhdhSidebar = await hasJsonHealthcheck(page);
+    cachedSidebarBaseUrl = baseUrl;
+  }
+  return cachedUsesRhdhSidebar;
+}
+
 async function runSidebarAction(
   page: Page,
   legacy: (page: Page) => Promise<void>,
   rhdh: (page: Page) => Promise<void>,
 ): Promise<void> {
-  if (await hasJsonHealthcheck(page)) {
+  if (await usesRhdhSidebar(page)) {
     await rhdh(page);
     return;
   }
