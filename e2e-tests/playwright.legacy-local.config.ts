@@ -59,6 +59,7 @@ export default defineConfig({
     "e2e/smoke-test.spec.ts",
     "e2e/home-page-customization.spec.ts",
     "e2e/plugins/frontend/sidebar.spec.ts",
+    "e2e/settings.spec.ts",
   ],
   grep: /@cluster-free/u,
   timeout: 90 * 1000,

@@ -99,6 +99,13 @@ existing specs **pass unmodified**:
   same CI configmap into `app-config.local-e2e.yaml`. The `/docs` index page needs the
   techdocs frontend OCI plugin in the harness set (its route/menu config already lives
   in the static `app-config.dynamic-plugins.yaml`).
+- `settings` — language toggle (needs the CI `i18n.locales` list mirrored in the
+  overlay) plus the identity card ownership ("Guest User, team-a"). CI gets those
+  entities from Keycloak ingestion; the harness ingests the equivalent minimal
+  User/Group pair from `e2e-tests/local-harness/guest-ownership-entities.yaml` via a
+  `catalog.locations` file entry in the overlay (file targets resolve relative to the
+  backend cwd, `packages/backend`). The guest sign-in resolver picks the entity up and
+  issues ownership refs including `team-a` exactly as in-cluster.
 
 ## CI
 

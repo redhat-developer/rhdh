@@ -25,6 +25,34 @@ backend:
     client: better-sqlite3
     connection: ":memory:"
 
+# The settings page language toggle only renders with multiple locales
+# configured; mirror the CI list (settings.spec.ts switches to French).
+i18n:
+  locales:
+    - en
+    - de
+    - es
+    - fr
+    - it
+    - ja
+
+# CI opts user settings out of database storage.
+userSettings:
+  persistence: browser
+
+# CI ingests the guest user ("Guest User", member of team-a) from Keycloak via
+# the keycloakOrg provider; off-cluster the same entities come from a local
+# file. NOTE: this locations array replaces the base app-config.yaml one (the
+# GitHub URL locations), keeping the harness catalog offline and deterministic.
+catalog:
+  locations:
+    # file targets resolve relative to the backend process cwd, which the
+    # harness webServer sets to packages/backend.
+    - type: file
+      target: ../../e2e-tests/local-harness/guest-ownership-entities.yaml
+      rules:
+        - allow: [User, Group]
+
 # The e2e specs are written against the CI deployment's customization
 # (.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml): APIs and
 # Learning Paths nest under a "References" sidebar group, and the home page
