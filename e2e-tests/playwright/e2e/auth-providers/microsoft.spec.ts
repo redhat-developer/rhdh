@@ -4,6 +4,7 @@ import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harnes
 import { SettingsPage } from "../../support/pages/settings-page";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import { Common } from "../../utils/common";
+import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPPORTED RESOLVERS
@@ -259,7 +260,7 @@ test.describe("Configure Microsoft Provider", () => {
     );
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
     try {
       console.log("[TEST] Cleaning up Microsoft Azure App Registration...");
       const graphClient = new MSClient(
@@ -278,5 +279,6 @@ test.describe("Configure Microsoft Provider", () => {
     }
 
     await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

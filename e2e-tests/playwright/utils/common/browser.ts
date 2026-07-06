@@ -55,10 +55,17 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
 }
 
 export async function teardownBrowser(page: Page, testInfo: TestInfo): Promise<void> {
+  if (page.isClosed()) {
+    return;
+  }
+
   await stopCoverageForPage(page, testInfo);
   const context = page.context();
   if (!page.isClosed()) {
     await page.close();
   }
-  await context.close();
+  const browser = context.browser();
+  if (browser !== null && browser.contexts().includes(context)) {
+    await context.close();
+  }
 }

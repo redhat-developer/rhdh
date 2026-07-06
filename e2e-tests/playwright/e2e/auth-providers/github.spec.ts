@@ -3,6 +3,7 @@ import { test, expect, Page, BrowserContext } from "@support/coverage/test";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { Common } from "../../utils/common";
+import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPORTED RESOLVERS
@@ -232,7 +233,8 @@ test.describe("Configure Github Provider", () => {
     await context.clearCookies();
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
     await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

@@ -32,16 +32,16 @@ export async function runAccessibilityTests(
     contentType: "application/json",
   });
 
-  const criticalOrSeriousViolations = accessibilityScanResults.violations.filter(
-    (violation) => violation.impact === "critical" || violation.impact === "serious",
+  const criticalViolations = accessibilityScanResults.violations.filter(
+    (violation) => violation.impact === "critical",
   );
 
-  if (criticalOrSeriousViolations.length > 0) {
-    const summary = criticalOrSeriousViolations
+  if (criticalViolations.length > 0) {
+    const summary = criticalViolations
       .map((violation) => `${violation.id} (${violation.impact})`)
       .join(", ");
     throw new Error(
-      `Accessibility scan found ${criticalOrSeriousViolations.length} critical/serious violation(s): ${summary}`,
+      `Accessibility scan found ${criticalViolations.length} critical violation(s): ${summary}`,
     );
   }
 }

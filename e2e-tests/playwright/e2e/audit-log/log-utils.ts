@@ -5,7 +5,7 @@ import { expect } from "@playwright/test";
 
 import { getBackstageDeploySelector } from "../../utils/helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "../../utils/kube-client";
-import { sleep } from "../../utils/poll-until";
+import { pollForValue } from "../../utils/poll-until";
 import { Log, type LogRequest, type EventStatus, type EventSeverityLevel } from "./logs";
 
 function formatError(error: unknown): string {
@@ -173,7 +173,7 @@ export const LogUtils = {
   /**
    * Fetches logs using grep for filtering directly in the shell.
    */
-  async getPodLogsWithGrep(
+  getPodLogsWithGrep(
     filterWords: string[] = [],
     namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
     maxRetries: number = 4,
@@ -188,34 +188,32 @@ export const LogUtils = {
       grepCommand += ` | grep '${word}'`;
     }
 
-    let attempt = 0;
-    while (attempt <= maxRetries) {
-      try {
-        console.log(`Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`);
-        const output = await LogUtils.executeShellCommand(grepCommand);
+    return pollForValue(
+      async () => {
+        try {
+          console.log(`Fetching logs with grep for filter ${JSON.stringify(filterWords)}...`);
+          const output = await LogUtils.executeShellCommand(grepCommand);
 
-        const logLines = output.split("\n").filter((line) => line.trim() !== "");
-        if (logLines.length > 0) {
-          console.log("Matching log line found:", logLines[0]);
-          return logLines[0];
+          const logLines = output.split("\n").filter((line) => line.trim() !== "");
+          if (logLines.length > 0) {
+            console.log("Matching log line found:", logLines[0]);
+            return logLines[0];
+          }
+
+          console.warn(
+            `No matching logs found for filter ${JSON.stringify(filterWords)}. Retrying...`,
+          );
+        } catch (error) {
+          console.error(`Error fetching logs:`, formatError(error));
         }
 
-        console.warn(
-          `No matching logs found for filter ${JSON.stringify(filterWords)} on attempt ${attempt + 1}. Retrying...`,
-        );
-      } catch (error) {
-        console.error(`Error fetching logs on attempt ${attempt + 1}:`, formatError(error));
-      }
-
-      attempt++;
-      if (attempt <= maxRetries) {
-        console.log(`Waiting ${retryDelay / 1000} seconds before retrying...`);
-        await sleep(retryDelay);
-      }
-    }
-
-    throw new Error(
-      `Failed to fetch logs for filter ${JSON.stringify(filterWords)} after ${maxRetries + 1} attempts.`,
+        return null;
+      },
+      {
+        timeoutMs: (maxRetries + 1) * retryDelay,
+        intervalMs: retryDelay,
+        label: `Failed to fetch logs for filter ${JSON.stringify(filterWords)} after ${maxRetries + 1} attempts.`,
+      },
     );
   },
 

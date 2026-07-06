@@ -7,7 +7,7 @@ import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
 import { hasErrorResponse } from "../../errors";
-import { sleep } from "../../poll-until";
+import { pollUntil } from "../../poll-until";
 import {
   BackstageCr,
   currentDirName,
@@ -364,19 +364,25 @@ export async function killRunningProcess(
       resolvePromise();
     });
   });
-  await sleep(5000);
-  console.log("Process termination buffer elapsed.");
   state.runningProcess = null;
 
   const baseUrl = await getBackstageUrl();
-  try {
-    const response = await fetch(baseUrl, { method: "HEAD" });
-    if (response.status === 200) {
-      throw new Error("Homepage is still accessible after process termination");
-    }
-  } catch (error) {
-    console.log("Homepage is not accessible as expected: ", error);
-  }
+  await pollUntil(
+    async () => {
+      try {
+        const response = await fetch(baseUrl, { method: "HEAD" });
+        return response.status !== 200;
+      } catch {
+        return true;
+      }
+    },
+    {
+      timeoutMs: 30_000,
+      intervalMs: 500,
+      label: "Homepage should become inaccessible after process termination",
+    },
+  );
+  console.log("Homepage is not accessible as expected after process termination.");
 }
 
 export function computeBackstageUrl(state: RHDHDeploymentState): string {
