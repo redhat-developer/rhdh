@@ -1,0 +1,42 @@
+# Config overlay for the cluster-free local E2E harness (legacy `packages/app`, Tier B).
+#
+# Layered on top of app-config.yaml and app-config.dynamic-plugins.yaml to run
+# Playwright E2E without an OpenShift/Kubernetes cluster or container images:
+#
+#   yarn --cwd e2e-tests e2e:legacy-local
+#
+# It enables guest sign-in (the auth backend rejects guest unless a provider is
+# configured) and pins the in-memory SQLite database so a single `run` is fully
+# self-contained. See docs/e2e-tests/local-e2e-harness.md.
+#
+# NOTE: test-only. This grants unauthenticated guest access
+# (dangerouslyAllowOutsideDevelopment) and must never be layered into a
+# production config.
+auth:
+  environment: development
+  providers:
+    guest:
+      userEntityRef: user:default/guest
+      # Required because auth.environment may resolve outside "development" in CI.
+      dangerouslyAllowOutsideDevelopment: true
+
+backend:
+  database:
+    client: better-sqlite3
+    connection: ":memory:"
+
+# The e2e specs are written against the CI deployment's menu customization
+# (.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml): APIs and
+# Learning Paths nest under a "References" sidebar group. Mirror it here so
+# navigation helpers like openSidebarButton("References") work off-cluster.
+dynamicPlugins:
+  frontend:
+    default.main-menu-items:
+      menuItems:
+        default.list:
+          title: References
+          icon: bookmarks
+        default.apis:
+          parent: default.list
+        default.learning-path:
+          parent: default.list

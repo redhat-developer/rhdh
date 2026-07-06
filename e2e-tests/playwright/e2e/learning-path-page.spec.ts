@@ -21,21 +21,24 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
     await common.loginAsGuest();
   });
 
-  test("Verify that links in Learning Paths for Backstage opens in a new tab", async ({
-    page,
-  }, testInfo) => {
-    await uiHelper.openSidebarButton("References");
-    await uiHelper.openSidebar("Learning Paths");
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify that links in Learning Paths for Backstage opens in a new tab",
+    { tag: "@cluster-free" },
+    async ({ page }, testInfo) => {
+      await uiHelper.openSidebarButton("References");
+      await uiHelper.openSidebar("Learning Paths");
 
-    // Scope to main content area to get only Learning Path links
-    const learningPathLinks = page.getByRole("main").getByRole("link");
+      // Scope to main content area to get only Learning Path links
+      const learningPathLinks = page.getByRole("main").getByRole("link");
 
-    for (const learningPathCard of await learningPathLinks.all()) {
-      await expect(learningPathCard).toBeVisible();
-      await expect(learningPathCard).toHaveAttribute("target", "_blank");
-      await expect(learningPathCard).not.toHaveAttribute("href", "");
-    }
+      for (const learningPathCard of await learningPathLinks.all()) {
+        await expect(learningPathCard).toBeVisible();
+        await expect(learningPathCard).toHaveAttribute("target", "_blank");
+        await expect(learningPathCard).not.toHaveAttribute("href", "");
+      }
 
-    await runAccessibilityTests(page, testInfo);
-  });
+      await runAccessibilityTests(page, testInfo);
+    },
+  );
 });

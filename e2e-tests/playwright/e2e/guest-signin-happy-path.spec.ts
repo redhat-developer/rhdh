@@ -27,21 +27,30 @@ test.describe("Guest Signing Happy path", () => {
     await common.loginAsGuest();
   });
 
-  test("Verify the Homepage renders with Search Bar, Quick Access and Starred Entities", async () => {
-    await uiHelper.verifyHeading("Welcome back!");
-    await uiHelper.openSidebar("Home");
-    await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
-  });
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
+    { tag: "@cluster-free" },
+    async () => {
+      await uiHelper.verifyHeading("Welcome back!");
+      await uiHelper.openSidebar("Home");
+      await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+    },
+  );
 
-  test("Verify Profile is Guest in the Settings page", async () => {
+  test("Verify Profile is Guest in the Settings page", { tag: "@cluster-free" }, async () => {
     await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("Guest");
     await uiHelper.verifyHeading("User Entity: guest");
   });
 
-  test("Sign Out and Verify that you return to the Sign-in page", async () => {
-    await uiHelper.goToSettingsPage();
-    await common.signOut();
-    await uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
-  });
+  test(
+    "Sign Out and Verify that you return to the Sign-in page",
+    { tag: "@cluster-free" },
+    async () => {
+      await uiHelper.goToSettingsPage();
+      await common.signOut();
+      await uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
+    },
+  );
 });
