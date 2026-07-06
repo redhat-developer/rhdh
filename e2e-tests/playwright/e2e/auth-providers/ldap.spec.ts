@@ -4,6 +4,7 @@ import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
+import { teardownBrowser } from "../../utils/common/browser";
 
 /* SUPPORTED RESOLVERS
 LDAP:
@@ -15,6 +16,7 @@ const harness = AuthProviderHarness.create("albarbaro-test-namespace-ldap");
 let nsgCleanup: (() => Promise<void>) | undefined;
 
 test.describe("Configure LDAP Provider", () => {
+  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;
@@ -197,7 +199,7 @@ test.describe("Configure LDAP Provider", () => {
     });
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
     try {
       if (nsgCleanup) {
         console.log("[TEST] Cleaning up NSG rule...");
@@ -212,5 +214,6 @@ test.describe("Configure LDAP Provider", () => {
     }
 
     await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

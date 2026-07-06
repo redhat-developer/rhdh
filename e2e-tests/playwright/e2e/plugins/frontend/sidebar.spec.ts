@@ -7,6 +7,8 @@ const t = getTranslations();
 const lang = getCurrentLanguage();
 
 test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equivalent" }, () => {
+  test.describe.configure({ mode: "serial" });
+
   let sidebarPage: SidebarPage;
 
   test.beforeAll(({ rhdhGuestPage }) => {

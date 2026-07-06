@@ -4,6 +4,7 @@ import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
+import { teardownBrowser } from "../../utils/common/browser";
 
 /* SUPORTED RESOLVERS
 GITLAB:
@@ -16,6 +17,7 @@ GITLAB:
 const harness = AuthProviderHarness.create("albarbaro-test-namespace-gitlab");
 
 test.describe("Configure GitLab Provider", () => {
+  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;
@@ -160,7 +162,7 @@ test.describe("Configure GitLab Provider", () => {
     ).toBe(true);
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
     if (oauthAppId !== null) {
       try {
         await gitlabHelper.deleteOAuthApplication(oauthAppId);
@@ -171,5 +173,6 @@ test.describe("Configure GitLab Provider", () => {
     }
 
     await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

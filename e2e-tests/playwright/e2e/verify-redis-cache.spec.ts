@@ -17,9 +17,7 @@ test.describe("Verify Redis Cache DB", () => {
   let portForward: PortForwardSession | null = null;
   let redis: Redis;
 
-  test.beforeEach(async ({ guestPage }) => {
-    techDocsPage = new TechDocsPage(guestPage);
-
+  test.beforeAll(async () => {
     console.log("Starting port-forward process...");
     portForward = new PortForwardSession(
       {
@@ -35,6 +33,10 @@ test.describe("Verify Redis Cache DB", () => {
     );
     console.log("Waiting for port-forward to be ready...");
     await portForward.start();
+  });
+
+  test.beforeEach(({ guestPage }) => {
+    techDocsPage = new TechDocsPage(guestPage);
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
@@ -65,10 +67,13 @@ test.describe("Verify Redis Cache DB", () => {
     });
   });
 
-  test.afterEach(async () => {
+  test.afterEach(() => {
     if (redis?.status === "ready") {
       redis.disconnect();
     }
+  });
+
+  test.afterAll(async () => {
     await portForward?.stop();
   });
 });

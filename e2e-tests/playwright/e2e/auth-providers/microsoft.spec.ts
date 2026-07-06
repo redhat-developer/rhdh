@@ -4,6 +4,7 @@ import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
+import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPPORTED RESOLVERS
@@ -17,6 +18,7 @@ MICOROSFT:
 const harness = AuthProviderHarness.create("albarbaro-test-namespace-msgraph");
 
 test.describe("Configure Microsoft Provider", () => {
+  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;
@@ -276,7 +278,7 @@ test.describe("Configure Microsoft Provider", () => {
     );
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
     try {
       console.log("[TEST] Cleaning up Microsoft Azure App Registration...");
       const graphClient = new MSClient(
@@ -295,5 +297,6 @@ test.describe("Configure Microsoft Provider", () => {
     }
 
     await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

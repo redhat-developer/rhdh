@@ -3,6 +3,7 @@ import { test, expect, type Page, type BrowserContext } from "@support/coverage/
 import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
+import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPORTED RESOLVERS
@@ -16,6 +17,7 @@ GITHUB:
 const harness = AuthProviderHarness.create("albarbaro-test-namespace-github");
 
 test.describe("Configure Github Provider", () => {
+  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;
@@ -231,7 +233,8 @@ test.describe("Configure Github Provider", () => {
     });
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
     await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

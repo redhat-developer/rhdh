@@ -156,6 +156,13 @@ export default defineConfig({
       },
     },
     {
+      files: ["playwright/blocked/**/*.ts"],
+      rules: {
+        "eslint/max-lines-per-function": "off",
+        "import/max-dependencies": "off",
+      },
+    },
+    {
       files: ["playwright/utils/**/*.ts", "playwright/e2e/localization/**/*.ts"],
       rules: {
         "import/max-dependencies": "off",

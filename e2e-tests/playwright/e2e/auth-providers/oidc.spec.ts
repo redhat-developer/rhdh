@@ -4,6 +4,7 @@ import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
+import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPPORTED RESOLVERS
@@ -27,6 +28,7 @@ const keycloakHelper = new KeycloakHelper({
 });
 
 test.describe("Configure OIDC provider (using RHBK)", () => {
+  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;
@@ -364,7 +366,8 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     });
   });
 
-  test.afterAll(async () => {
+  test.afterAll(async ({ rhdhPage }, testInfo) => {
     await harness.cleanup();
+    await teardownBrowser(rhdhPage, testInfo);
   });
 });

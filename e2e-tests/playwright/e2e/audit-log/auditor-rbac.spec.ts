@@ -25,6 +25,8 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
+  test.describe.configure({ mode: "serial" });
+
   test.beforeAll(async ({ rhdhPage, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
