@@ -89,6 +89,11 @@ existing specs **pass unmodified**:
   the backend serves both the app and the health endpoint.
 - `smoke-test` — guest sign-in plus the home-page welcome heading (dynamic-home-page
   plugin); its readiness poll uses the same proxied `/healthcheck`.
+- `home-page-customization` — all three tests. The CI home-page card customization
+  (Placeholder/Markdown/Featured Docs/Random Joke/Top + Recently Visited, from
+  `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml`) is mirrored in
+  `app-config.local-e2e.yaml`; the Random Joke card fetches jokes from the public
+  Official Joke API in the browser, so it needs outbound network access.
 
 ## CI
 
