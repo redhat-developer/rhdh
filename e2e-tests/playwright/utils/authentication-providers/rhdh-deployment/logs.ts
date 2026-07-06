@@ -112,7 +112,7 @@ async function streamPodLogsUntilMatch(
       label: `Log pattern ${searchString} in pod ${podName}`,
     });
 
-    return true;
+    return found;
   } finally {
     logStream.end();
     logStream.removeAllListeners();
@@ -185,13 +185,18 @@ export async function followLocalLogs(
     console.log("Local log stream ended.");
   });
 
-  await pollUntil(() => Promise.resolve(found), {
-    timeoutMs,
-    intervalMs: 500,
-    label: `Log pattern ${searchString} in local process output`,
-  });
+  try {
+    await pollUntil(() => Promise.resolve(found), {
+      timeoutMs,
+      intervalMs: 500,
+      label: `Log pattern ${searchString} in local process output`,
+    });
 
-  return true;
+    return found;
+  } finally {
+    logStream.end();
+    logStream.removeAllListeners();
+  }
 }
 
 export function followLogs(

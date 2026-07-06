@@ -64,34 +64,31 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await scaffolderFlowPage.clickCreate();
     await scaffolderFlowPage.waitForOpenInCatalogLink(30_000);
     await scaffolderFlowPage.clickOpenInCatalog();
+    await scaffolderFlowPage.verifyComponentNameVisible(reactAppDetails.componentName);
   });
 
   test("Verify custom label is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
-    await catalogImport.inspectEntityAndVerifyYaml(
-      `labels:\n    custom: ${reactAppDetails.label}\n`,
-    );
+    await catalogImport.verifyEntityYaml(`labels:\n    custom: ${reactAppDetails.label}\n`);
   });
 
   test("Verify custom annotation is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
-    await catalogImport.inspectEntityAndVerifyYaml(
-      `custom.io/annotation: ${reactAppDetails.annotation}`,
-    );
+    await catalogImport.verifyEntityYaml(`custom.io/annotation: ${reactAppDetails.annotation}`);
   });
 
   test("Verify template version annotation is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);
   });
 
   test("Verify template version annotation is present on the template", async () => {
     await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);
   });
 
   test.afterAll(async () => {

@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
-import { waitForRhdhReady } from "../../utils/wait-for-rhdh-ready";
+import { waitForRhdhReady, isJsonHealthcheckResponse } from "../../utils/wait-for-rhdh-ready";
 
 const LOADING_INDICATOR_SELECTORS = [
   'div[class*="MuiLinearProgress-root"]',
@@ -19,11 +19,11 @@ export async function waitForLoadingToSettle(page: Page, timeout = 120_000): Pro
 
 export async function hasJsonHealthcheck(page: Page): Promise<boolean> {
   const response = await page.request.get("/healthcheck").catch(() => null);
-  if (response === null || response.status() !== 200) {
+  if (response === null) {
     return false;
   }
   const contentType = response.headers()["content-type"] ?? "";
-  return contentType.includes("json");
+  return isJsonHealthcheckResponse(response.status(), contentType);
 }
 
 export async function waitForAppReady(page: Page, timeout = 120_000): Promise<void> {

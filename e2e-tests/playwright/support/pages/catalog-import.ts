@@ -72,7 +72,7 @@ export class CatalogImport {
     return isComponentAlreadyRegistered;
   }
 
-  async inspectEntityAndVerifyYaml(text: string) {
+  async verifyEntityYaml(text: string) {
     await this.page.getByTitle("More").click();
     await this.page.getByRole("menuitem").getByText("Inspect entity").click();
     await interaction.clickTab(this.page, "Raw YAML");

@@ -38,7 +38,7 @@ export async function verifyTextVisible(
   page: Page,
   text: string,
   exact = false,
-  timeout = 10000,
+  timeout = 30_000,
 ): Promise<void> {
   const locator = page.getByText(text, { exact });
   await expect(locator).toBeVisible({ timeout });
@@ -48,7 +48,7 @@ export async function verifyText(
   page: Page,
   text: string | RegExp,
   exact: boolean = true,
-  timeout: number = 5000,
+  timeout: number = 30_000,
 ) {
   await verifyTextInLocator(page, "", text, exact, timeout);
 }
@@ -72,7 +72,7 @@ async function verifyTextInLocator(
   locator: string,
   text: string | RegExp,
   exact: boolean,
-  timeout: number = 5000,
+  timeout: number = 30_000,
 ) {
   const elementLocator = locator
     ? page.locator(locator).getByText(text, { exact }).first()

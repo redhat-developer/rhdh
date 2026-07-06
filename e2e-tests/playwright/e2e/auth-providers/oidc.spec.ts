@@ -277,46 +277,45 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
-    await harness.runLoginCase({
-      configure: async () => {
-        await Promise.resolve();
-        expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
-        expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
-      },
-      login: loginAsZeus,
-      assert: async () => {
-        await settingsPage.open();
-        await settingsPage.verifyProfileHeading("Zeus Giove");
+    try {
+      expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
+      expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
 
-        harness.deployment.setAppConfigProperty("auth.providers.github", {
-          production: {
-            clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
-            clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
-            callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
-          },
-        });
-        harness.deployment.setAppConfigProperty(
-          "auth.providers.github.production.disableIdentityResolution",
-          "true",
-        );
-        await harness.reconcileAfterConfigChange();
+      const result = await loginAsZeus();
+      expect(result).toBe("Login successful");
 
-        await settingsPage.hideQuickstartIfVisible();
+      await settingsPage.open();
+      await settingsPage.verifyProfileHeading("Zeus Giove");
 
-        const ghLogin = await authSession.loginWithGitHubFromSettingsPage(
-          "rhdhqeauth1",
-          process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
-          process.env.AUTH_PROVIDERS_GH_USER_2FA!,
-        );
-        expect(ghLogin).toBe("Login successful");
-        await page.getByTitle("Sign out from GitHub").click();
+      harness.deployment.setAppConfigProperty("auth.providers.github", {
+        production: {
+          clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
+          clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
+          callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+        },
+      });
+      harness.deployment.setAppConfigProperty(
+        "auth.providers.github.production.disableIdentityResolution",
+        "true",
+      );
+      await harness.reconcileAfterConfigChange();
 
-        await settingsPage.open();
-        await settingsPage.verifyProfileHeading("Zeus Giove");
-        await settingsPage.signOut();
-      },
-      cleanup: clearSession,
-    });
+      await settingsPage.hideQuickstartIfVisible();
+
+      const ghLogin = await authSession.loginWithGitHubFromSettingsPage(
+        "rhdhqeauth1",
+        process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+        process.env.AUTH_PROVIDERS_GH_USER_2FA!,
+      );
+      expect(ghLogin).toBe("Login successful");
+      await page.getByTitle("Sign out from GitHub").click();
+
+      await settingsPage.open();
+      await settingsPage.verifyProfileHeading("Zeus Giove");
+      await settingsPage.signOut();
+    } finally {
+      await clearSession();
+    }
   });
 
   test(`Enable autologout and user is logged out after inactivity`, async () => {

@@ -64,7 +64,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
-    await catalogImport.inspectEntityAndVerifyYaml(
+    await catalogImport.verifyEntityYaml(
       `relations:
         - type: ownedBy
             targetRef: group:janus-qe/maintainers
@@ -94,7 +94,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test("Verify scaffolderOf relation on the template", async () => {
     await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
-    await catalogImport.inspectEntityAndVerifyYaml(
+    await catalogImport.verifyEntityYaml(
       `- type: scaffolderOf\n    targetRef: component:default/${reactAppDetails.componentName}\n`,
     );
 

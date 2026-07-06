@@ -5,8 +5,8 @@
 /* oxlint-disable import/no-unassigned-import -- intentional side-effect graph wiring */
 
 import "./support/coverage/test";
-import CoverageReporter from "./support/coverage/reporter";
 import { createBrowserSession } from "./support/browser-session";
+import CoverageReporter from "./support/coverage/reporter";
 import requireDynamicPluginsPopulated from "./support/local-harness-global-setup";
 import { runWorkerCleanups } from "./support/worker-session";
 import "./utils/common/browser";

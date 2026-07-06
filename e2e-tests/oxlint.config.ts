@@ -69,12 +69,7 @@ const playwrightAssertFunctions = [
   "waitForEntityPath",
   "waitForOpenInCatalogLink",
   "waitForTitle",
-  "clickCreate",
-  "clickOpenInCatalog",
-  "openComponentInCatalog",
-  "inspectEntityAndVerifyYaml",
-  "clearSearchIfVisible",
-  "sortCreatedAtDescending",
+  "verifyEntityYaml",
   "verifyFirstRowCreatedAtNotEmpty",
 ];
 
