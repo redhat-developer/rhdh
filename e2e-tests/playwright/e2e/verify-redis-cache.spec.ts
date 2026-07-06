@@ -12,7 +12,6 @@ test.describe("Verify Redis Cache DB", () => {
     });
   });
 
-  test.describe.configure({ mode: "serial" });
   let techDocsPage: TechDocsPage;
   let portForward: PortForwardSession | null = null;
   let redis: Redis;

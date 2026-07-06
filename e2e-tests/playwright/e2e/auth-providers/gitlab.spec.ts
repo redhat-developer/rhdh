@@ -17,7 +17,6 @@ GITLAB:
 const harness = AuthProviderHarness.create("albarbaro-test-namespace-gitlab");
 
 test.describe("Configure GitLab Provider", () => {
-  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;

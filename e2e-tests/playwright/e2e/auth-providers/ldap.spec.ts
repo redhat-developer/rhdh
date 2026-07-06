@@ -16,7 +16,6 @@ const harness = AuthProviderHarness.create("albarbaro-test-namespace-ldap");
 let nsgCleanup: (() => Promise<void>) | undefined;
 
 test.describe("Configure LDAP Provider", () => {
-  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;

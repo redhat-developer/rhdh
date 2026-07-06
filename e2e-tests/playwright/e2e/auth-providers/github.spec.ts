@@ -17,7 +17,6 @@ GITHUB:
 const harness = AuthProviderHarness.create("albarbaro-test-namespace-github");
 
 test.describe("Configure Github Provider", () => {
-  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;

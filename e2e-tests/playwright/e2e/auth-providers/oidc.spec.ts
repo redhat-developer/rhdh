@@ -28,7 +28,6 @@ const keycloakHelper = new KeycloakHelper({
 });
 
 test.describe("Configure OIDC provider (using RHBK)", () => {
-  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;

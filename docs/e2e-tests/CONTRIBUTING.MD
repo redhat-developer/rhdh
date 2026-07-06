@@ -55,9 +55,11 @@ These principles are valid for new contributions. Some parts of the codebase may
    We follow Playwright best practices, including the use of fixtures. Adhering to these practices ensures that our tests are reliable, efficient, and maintainable. Please refer to the [Playwright Best Practices](https://playwright.dev/docs/best-practices) and [Fixtures](https://playwright.dev/docs/test-fixtures) documentation for guidance.
 
    - Prefer the shared fixtures from `@support/coverage/test` instead of re-implementing login/setup in each spec:
-     - Use `guestPage` for ordinary specs that need a fresh guest login per test.
-     - Use `rhdhGuestPage` only when a describe block intentionally shares one browser context/page across tests.
-   - If you use `rhdhPage`, `rhdhGuestPage`, `rhdhContext`, or other worker-scoped fixtures across multiple tests in one file, make the suite serial so state sharing is explicit.
+     - Use `guestPage` for ordinary specs that need a fresh guest login per test (best isolation; default choice).
+     - Use `rhdhGuestPage` or `rhdhPage` only when a describe block intentionally shares one browser context/page across tests (for example to avoid repeated guest login or amortize expensive setup).
+   - Worker-scoped fixtures (`rhdhPage`, `rhdhGuestPage`, `rhdhContext`, `rhdhAuthSession`) do **not** require `test.describe.configure({ mode: "serial" })` by themselves. With the default Playwright config, tests in a file already run sequentially in one worker.
+   - When sharing a worker-scoped page/context across multiple tests, reset browser state between tests (sign out, `clearCookies`, or a harness `cleanup` callback) so each test stays independent.
+   - Use `test.describe.configure({ mode: "serial" })` (or `test.describe.serial`) **only** when a later test depends on side effects from an earlier test in the same file—for example, import an entity in test 1 and verify it in test 2. Do not add serial merely because worker fixtures are present.
 
 3. **Avoid Using `uiHelper` in Spec Files**
 

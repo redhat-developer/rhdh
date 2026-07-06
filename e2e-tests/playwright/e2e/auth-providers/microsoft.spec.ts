@@ -18,7 +18,6 @@ MICOROSFT:
 const harness = AuthProviderHarness.create("albarbaro-test-namespace-msgraph");
 
 test.describe("Configure Microsoft Provider", () => {
-  test.describe.configure({ mode: "serial" });
   test.use({ baseURL: harness.backstageUrl });
 
   let authSession: AuthProviderSession;
