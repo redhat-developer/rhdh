@@ -60,6 +60,7 @@ export default defineConfig({
     "e2e/home-page-customization.spec.ts",
     "e2e/plugins/frontend/sidebar.spec.ts",
     "e2e/settings.spec.ts",
+    "e2e/plugins/user-settings-info-card.spec.ts",
   ],
   grep: /@cluster-free/u,
   timeout: 90 * 1000,

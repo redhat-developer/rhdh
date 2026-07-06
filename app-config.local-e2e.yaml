@@ -25,6 +25,16 @@ backend:
     client: better-sqlite3
     connection: ":memory:"
 
+# CI's customized build-info card on the Settings page, exercised by
+# plugins/user-settings-info-card.spec.ts.
+buildInfo:
+  title: "RHDH Build info"
+  card:
+    TechDocs builder: "local"
+    Authentication provider: "Github"
+    RBAC: disabled
+  overrideBuildInfo: true
+
 # The settings page language toggle only renders with multiple locales
 # configured; mirror the CI list (settings.spec.ts switches to French).
 i18n:

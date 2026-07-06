@@ -106,6 +106,8 @@ existing specs **pass unmodified**:
   `catalog.locations` file entry in the overlay (file targets resolve relative to the
   backend cwd, `packages/backend`). The guest sign-in resolver picks the entity up and
   issues ownership refs including `team-a` exactly as in-cluster.
+- `plugins/user-settings-info-card` — the CI `buildInfo` card customization ("RHDH
+  Build info") mirrored in the overlay.
 
 ## CI
 
