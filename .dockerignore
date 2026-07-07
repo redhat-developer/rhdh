@@ -11,9 +11,6 @@ plugins
 coverage
 dist-types
 examples
-.ci/images/*
-!.ci/images/Dockerfile
-!.yarnrc.yml
 hermeto-cache
 .github
 .cursor
@@ -22,4 +19,11 @@ hermeto-cache
 .rulesyncignore
 .pr_agents.toml
 .sonarcloud.properties
+docs
+e2e-tests
+.opencode
+.husky
+.vscode
+.turbo
+.config
 
