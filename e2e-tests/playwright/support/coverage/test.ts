@@ -74,10 +74,11 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     },
     rhdhContext: [
       async ({ browser }, use, workerInfo: WorkerInfo) => {
+        const { baseURL, locale, ignoreHTTPSErrors } = workerInfo.project.use;
         const session = await createBrowserSession(browser, {
-          baseURL: process.env.BASE_URL,
-          locale: process.env.LOCALE ?? "en",
-          ignoreHTTPSErrors: true,
+          baseURL,
+          locale,
+          ignoreHTTPSErrors,
         });
         await use(session.context);
         await runWorkerCleanups(workerInfo);
@@ -94,19 +95,23 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
       { scope: "worker" },
     ],
     rhdhGuestPage: [
-      async ({ rhdhPage }, use) => {
+      async ({ rhdhPage }, use, workerInfo: WorkerInfo) => {
         const { signInAsGuest } = await import("../auth/guest-auth");
         const { resolveLocale } = await import("../../e2e/localization/locale");
-        await signInAsGuest(rhdhPage, { locale: resolveLocale(process.env.LOCALE) });
+        await signInAsGuest(rhdhPage, {
+          locale: resolveLocale(workerInfo.project.use.locale),
+        });
         await use(rhdhPage);
       },
       { scope: "worker" },
     ],
     rhdhAuthSession: [
-      async ({ rhdhPage }, use) => {
+      async ({ rhdhPage }, use, workerInfo: WorkerInfo) => {
         const { AuthProviderSession } = await import("../auth/provider-auth");
         const { resolveLocale } = await import("../../e2e/localization/locale");
-        await use(new AuthProviderSession(rhdhPage, resolveLocale(process.env.LOCALE)));
+        await use(
+          new AuthProviderSession(rhdhPage, resolveLocale(workerInfo.project.use.locale)),
+        );
       },
       { scope: "worker" },
     ],
