@@ -378,6 +378,11 @@ install_subscription() {
   package=$4          # Package name of the operator
   source_name=$5      # Name of the source catalog
   source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
+  starting_csv=${7:-} # Optional starting CSV to pin subscription install
+  starting_csv_line=""
+  if [[ -n "$starting_csv" ]]; then
+    starting_csv_line="  startingCSV: $starting_csv"
+  fi
   # Apply the subscription manifest
   oc apply -f - << EOD
 apiVersion: operators.coreos.com/v1alpha1
@@ -391,6 +396,7 @@ spec:
   name: $package
   source: $source_name
   sourceNamespace: $source_namespace
+$starting_csv_line
 EOD
 }
 
@@ -494,11 +500,20 @@ waitfor_crunchy_postgres_k8s_operator() {
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
 # Use waitfor_serverless_logic_ocp_operator to wait for the operator to be ready
 install_serverless_logic_ocp_operator() {
-  install_subscription logic-operator-rhel8 openshift-operators alpha logic-operator-rhel8 redhat-operators openshift-marketplace
+  local osl_starting_csv="${OSL_STARTING_CSV:-logic-operator.v1.37.2}"
+  log::info "Installing Serverless Logic Operator from channel stable with startingCSV ${osl_starting_csv}"
+  install_subscription logic-operator openshift-operators stable logic-operator redhat-operators openshift-marketplace "${osl_starting_csv}"
 }
 
 waitfor_serverless_logic_ocp_operator() {
   check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
+  local osl_csv_info
+  osl_csv_info=$(oc get csv -n openshift-operators -l operators.coreos.com/logic-operator.openshift-operators -o jsonpath='{.items[0].metadata.name} {.items[0].spec.version}' 2> /dev/null || true)
+  if [[ -n "${osl_csv_info}" ]]; then
+    log::info "Installed OSL CSV/version: ${osl_csv_info}"
+  else
+    log::warn "Unable to determine installed OSL CSV/version from openshift-operators namespace"
+  fi
 }
 
 # Installs the OpenShift Serverless Operator (Knative) from OpenShift Marketplace
@@ -1538,6 +1553,24 @@ get_previous_release_value_file() {
   fi
 }
 
+: "${SERVERLESS_WORKFLOWS_DEFAULT_REF:=daeeee8dec16beab6d96a81774ef500081a2c2b0}"
+readonly SERVERLESS_WORKFLOWS_DEFAULT_REF
+
+checkout_serverless_workflows_ref() {
+  local workflow_dir=$1
+  local workflow_repo_ref="${SERVERLESS_WORKFLOWS_REF:-${SERVERLESS_WORKFLOWS_DEFAULT_REF}}"
+  log::info "Using serverless-workflows ref: ${workflow_repo_ref}"
+  git -C "${workflow_dir}" fetch --depth=1 origin "${workflow_repo_ref}" || {
+    log::error "Failed to fetch serverless-workflows ref: ${workflow_repo_ref}"
+    return 1
+  }
+  git -C "${workflow_dir}" checkout --detach "${workflow_repo_ref}" || {
+    log::error "Failed to checkout serverless-workflows ref: ${workflow_repo_ref}"
+    return 1
+  }
+  log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
+}
+
 # Helper function to deploy workflows for orchestrator testing
 deploy_orchestrator_workflows() {
   local namespace=$1
@@ -1549,7 +1582,8 @@ deploy_orchestrator_workflows() {
   local greeting_manifests="${workflow_dir}/workflows/greeting/manifests/"
 
   rm -rf "${workflow_dir}"
-  git clone "${workflow_repo}" "${workflow_dir}"
+  git clone --depth=1 "${workflow_repo}" "${workflow_dir}"
+  checkout_serverless_workflows_ref "${workflow_dir}" || return 1
 
   if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
     local pqsl_secret_name="postgres-cred"
@@ -1633,6 +1667,7 @@ deploy_orchestrator_workflows_operator() {
 
   rm -rf "${workflow_dir}"
   git clone --depth=1 "${workflow_repo}" "${workflow_dir}"
+  checkout_serverless_workflows_ref "${workflow_dir}" || return 1
 
   # Wait for backstage and sonata flow pods to be ready before continuing
   wait_for_deployment $namespace backstage-psql 15
