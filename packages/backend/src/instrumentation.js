@@ -1,3 +1,8 @@
+// Prevent from running more than once (due to worker threads)
+if (!require('node:worker_threads').isMainThread) {
+  return;
+}
+
 const { NodeSDK } = require('@opentelemetry/sdk-node');
 const {
   getNodeAutoInstrumentations,
