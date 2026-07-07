@@ -42,8 +42,8 @@ export class SidebarPage {
   }
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    await this.openSidebarButton(section);
-    await expect(this.page.locator(`nav a:has-text("${itemText}")`).first()).toBeVisible();
+    const sectionMenu = this.page.getByTestId("login-button").getByText(section);
+    await expect(sectionMenu.getByText(itemText)).toBeVisible();
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {

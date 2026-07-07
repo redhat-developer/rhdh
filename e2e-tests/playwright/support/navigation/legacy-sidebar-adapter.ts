@@ -1,9 +1,16 @@
 import { expect, type Page } from "@playwright/test";
 
 export async function expandLegacySection(page: Page, sectionLabel: string): Promise<void> {
-  const button = page.locator(`nav button[aria-label="${sectionLabel}"]`);
-  await expect(button).toBeVisible();
-  await button.click();
+  const ariaButton = page.locator(`nav button[aria-label="${sectionLabel}"]`);
+  if ((await ariaButton.count()) > 0) {
+    await expect(ariaButton).toBeVisible();
+    await ariaButton.click();
+    return;
+  }
+
+  const sectionToggle = page.getByTestId("login-button").getByText(sectionLabel, { exact: true });
+  await expect(sectionToggle.first()).toBeVisible();
+  await sectionToggle.first().click();
 }
 
 export async function openLegacyLink(page: Page, linkName: string): Promise<void> {

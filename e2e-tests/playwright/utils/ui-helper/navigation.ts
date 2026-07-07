@@ -32,6 +32,9 @@ async function hasLegacySidebarMarkup(page: Page): Promise<boolean> {
 }
 
 async function detectRhdhSidebar(page: Page): Promise<boolean> {
+  if (process.env.E2E_FORCE_LEGACY_SIDEBAR === "true") {
+    return false;
+  }
   // Cluster-free legacy harness proxies JSON /healthcheck but keeps legacy nav markup.
   if (await hasLegacySidebarMarkup(page)) {
     return false;
