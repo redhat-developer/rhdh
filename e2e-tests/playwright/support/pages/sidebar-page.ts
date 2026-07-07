@@ -16,13 +16,14 @@ export class SidebarPage {
     await navigation.openSidebar(this.page, label);
   }
 
-  async openSidebarButton(label: string): Promise<void> {
-    await navigation.openSidebarButton(this.page, label);
+  async openSidebarButton(label: string, childItemText?: string): Promise<void> {
+    await navigation.openSidebarButton(this.page, label, childItemText);
   }
 
   async openReferencesLearningPaths(): Promise<void> {
-    await this.openSidebarButton("References");
-    await this.openSidebar("Learning Paths");
+    const learningPaths = t["rhdh"][lang]["menuItem.learningPaths"];
+    await ensureLegacySectionExpanded(this.page, "References", learningPaths);
+    await this.openSidebar(learningPaths);
   }
 
   async openFavoritesDocs(): Promise<void> {

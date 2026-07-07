@@ -35,7 +35,7 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
     await sidebarPage.verifyText("Test enabled");
     await sidebarPage.verifyLinkHidden("Test disabled");
 
-    await sidebarPage.openSidebarButton("Test enabled");
+    await sidebarPage.openSidebarButton("Test enabled", "Test nested enabled");
     await sidebarPage.verifyText("Test nested enabled");
     await sidebarPage.verifyLinkHidden("Test nested disabled");
 

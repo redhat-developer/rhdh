@@ -11,17 +11,13 @@ async function isLegacySectionExpanded(page: Page, sectionLabel: string): Promis
     return false;
   }
 
-  const expanded = await ariaButton.getAttribute("aria-expanded");
-  if (expanded === "true") {
-    return true;
-  }
-  if (expanded === "false") {
-    return false;
-  }
+  // Only trust aria-expanded; parent xpath checks match unrelated sidebar links.
+  return (await ariaButton.getAttribute("aria-expanded")) === "true";
+}
 
-  const sectionGroup = ariaButton.locator("xpath=..");
-  const nestedLinks = sectionGroup.getByRole("link");
-  return (await nestedLinks.count()) > 0 && (await nestedLinks.first().isVisible());
+function isLegacyChildLinkVisible(page: Page, childItemText: string): Promise<boolean> {
+  const childLink = page.locator(`nav a:has-text("${childItemText}")`).first();
+  return childLink.isVisible().catch(() => false);
 }
 
 export async function ensureLegacySectionExpanded(
@@ -29,12 +25,10 @@ export async function ensureLegacySectionExpanded(
   sectionLabel: string,
   childItemText?: string,
 ): Promise<void> {
-  if (childItemText !== undefined) {
-    const childLink = page.locator(`nav a:has-text("${childItemText}")`).first();
-    if (await childLink.isVisible().catch(() => false)) {
-      return;
-    }
-  } else if (await isLegacySectionExpanded(page, sectionLabel)) {
+  if (childItemText !== undefined && (await isLegacyChildLinkVisible(page, childItemText))) {
+    return;
+  }
+  if (childItemText === undefined && (await isLegacySectionExpanded(page, sectionLabel))) {
     return;
   }
 
@@ -42,18 +36,33 @@ export async function ensureLegacySectionExpanded(
   const ariaButton = page.locator(`nav button[aria-label="${sectionLabel}"]`);
   if ((await ariaButton.count()) > 0) {
     await expect(ariaButton).toBeVisible();
-    await ariaButton.click();
+    const expanded = await ariaButton.getAttribute("aria-expanded");
+    if (expanded !== "true") {
+      await ariaButton.click();
+      if (expanded === "false") {
+        await expect(ariaButton).toHaveAttribute("aria-expanded", "true");
+      }
+    }
     return;
   }
 
   // Intentional divergence: cluster-free sidebar root is login-button, not global-header nav.
   const sectionToggle = page.getByTestId("login-button").getByText(sectionLabel);
-  await expect(sectionToggle.first()).toBeVisible();
-  await sectionToggle.first().click();
+  if ((await sectionToggle.count()) > 0) {
+    if (childItemText !== undefined && (await isLegacyChildLinkVisible(page, childItemText))) {
+      return;
+    }
+    await expect(sectionToggle.first()).toBeVisible();
+    await sectionToggle.first().click();
+  }
 }
 
-export async function expandLegacySection(page: Page, sectionLabel: string): Promise<void> {
-  await ensureLegacySectionExpanded(page, sectionLabel);
+export async function expandLegacySection(
+  page: Page,
+  sectionLabel: string,
+  childItemText?: string,
+): Promise<void> {
+  await ensureLegacySectionExpanded(page, sectionLabel, childItemText);
 }
 
 export async function openLegacyLink(page: Page, linkName: string): Promise<void> {

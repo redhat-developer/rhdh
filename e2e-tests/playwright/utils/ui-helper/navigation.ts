@@ -76,8 +76,12 @@ async function openRhdhSidebarLink(page: Page, navBarText: string): Promise<void
   await openRhdhLink(page, navBarText);
 }
 
-async function expandLegacySidebarSection(page: Page, navBarButtonLabel: string): Promise<void> {
-  await expandLegacySection(page, navBarButtonLabel);
+async function expandLegacySidebarSection(
+  page: Page,
+  navBarButtonLabel: string,
+  childItemText?: string,
+): Promise<void> {
+  await expandLegacySection(page, navBarButtonLabel, childItemText);
 }
 
 async function expandRhdhSidebarSection(page: Page, navBarButtonLabel: string): Promise<void> {
@@ -151,10 +155,14 @@ export async function openCatalogSidebar(page: Page, kind: string) {
   });
 }
 
-export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
+export async function openSidebarButton(
+  page: Page,
+  navBarButtonLabel: string,
+  childItemText?: string,
+) {
   await runSidebarAction(
     page,
-    (currentPage) => expandLegacySidebarSection(currentPage, navBarButtonLabel),
+    (currentPage) => expandLegacySidebarSection(currentPage, navBarButtonLabel, childItemText),
     (currentPage) => expandRhdhSidebarSection(currentPage, navBarButtonLabel),
   );
 }
