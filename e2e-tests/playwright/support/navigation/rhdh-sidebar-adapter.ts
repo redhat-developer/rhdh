@@ -8,7 +8,11 @@ function getNav(page: Page): Locator {
 }
 
 function sidebarLinks(page: Page, linkName: string): Locator {
-  return getNav(page).getByRole("link", { name: linkName, exact: true });
+  const nav = getNav(page);
+  // Intentional divergence: sidebar item accessible names may differ from visible labels.
+  return nav
+    .getByRole("link", { name: linkName, exact: true })
+    .or(nav.locator(`a:has-text("${linkName}")`));
 }
 
 function isRhdhChildLinkVisible(page: Page, linkName: string): Promise<boolean> {
