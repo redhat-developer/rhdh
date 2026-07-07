@@ -27,8 +27,9 @@ export class SidebarPage {
   }
 
   async openFavoritesDocs(): Promise<void> {
-    await this.openSidebarButton("Favorites");
-    await this.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
+    const docs = t["rhdh"][lang]["menuItem.docs"];
+    await this.openSidebarButton("Favorites", docs);
+    await this.openSidebar(docs);
   }
 
   async verifyDocumentationHeading(): Promise<void> {

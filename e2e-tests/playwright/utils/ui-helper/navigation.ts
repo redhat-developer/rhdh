@@ -84,8 +84,12 @@ async function expandLegacySidebarSection(
   await expandLegacySection(page, navBarButtonLabel, childItemText);
 }
 
-async function expandRhdhSidebarSection(page: Page, navBarButtonLabel: string): Promise<void> {
-  await expandRhdhSection(page, navBarButtonLabel);
+async function expandRhdhSidebarSection(
+  page: Page,
+  navBarButtonLabel: string,
+  childItemText?: string,
+): Promise<void> {
+  await expandRhdhSection(page, navBarButtonLabel, childItemText);
 }
 
 async function openProfileDropdown(page: Page) {
@@ -163,7 +167,7 @@ export async function openSidebarButton(
   await runSidebarAction(
     page,
     (currentPage) => expandLegacySidebarSection(currentPage, navBarButtonLabel, childItemText),
-    (currentPage) => expandRhdhSidebarSection(currentPage, navBarButtonLabel),
+    (currentPage) => expandRhdhSidebarSection(currentPage, navBarButtonLabel, childItemText),
   );
 }
 

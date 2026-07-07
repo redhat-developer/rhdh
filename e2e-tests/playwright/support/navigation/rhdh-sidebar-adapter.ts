@@ -11,6 +11,51 @@ function sidebarLinks(page: Page, linkName: string): Locator {
   return getNav(page).getByRole("link", { name: linkName, exact: true });
 }
 
+function isRhdhChildLinkVisible(page: Page, linkName: string): Promise<boolean> {
+  return sidebarLinks(page, linkName)
+    .first()
+    .isVisible()
+    .catch(() => false);
+}
+
+async function isRhdhSectionExpanded(page: Page, sectionLabel: string): Promise<boolean> {
+  const sectionButton = getNav(page).getByRole("button", {
+    name: sectionLabel,
+    exact: true,
+  });
+  if ((await sectionButton.count()) === 0) {
+    return false;
+  }
+
+  return (await sectionButton.getAttribute("aria-expanded")) === "true";
+}
+
+export async function ensureRhdhSectionExpanded(
+  page: Page,
+  sectionLabel: string,
+  childItemText?: string,
+): Promise<void> {
+  if (childItemText !== undefined && (await isRhdhChildLinkVisible(page, childItemText))) {
+    return;
+  }
+  if (childItemText === undefined && (await isRhdhSectionExpanded(page, sectionLabel))) {
+    return;
+  }
+
+  const sectionButton = getNav(page).getByRole("button", {
+    name: sectionLabel,
+    exact: true,
+  });
+  await expect(sectionButton).toBeVisible();
+  const expanded = await sectionButton.getAttribute("aria-expanded");
+  if (expanded !== "true") {
+    await sectionButton.click();
+    if (expanded === "false") {
+      await expect(sectionButton).toHaveAttribute("aria-expanded", "true");
+    }
+  }
+}
+
 async function resolveVisibleLink(page: Page, linkName: string): Promise<Locator> {
   const candidates = sidebarLinks(page, linkName);
   await expect(candidates.first()).toBeAttached({ timeout: 15_000 });
@@ -24,32 +69,6 @@ async function resolveVisibleLink(page: Page, linkName: string): Promise<Locator
   }
 
   throw new Error(`Sidebar link "${linkName}" is not visible`);
-}
-
-async function expandSectionInternal(page: Page, sectionLabel: string): Promise<void> {
-  const sectionButton = getNav(page).getByRole("button", {
-    name: sectionLabel,
-    exact: true,
-  });
-  await expect(sectionButton).toBeVisible();
-
-  const expanded = await sectionButton.getAttribute("aria-expanded");
-  if (expanded === "true") {
-    return;
-  }
-  if (expanded === "false") {
-    await sectionButton.click();
-    await expect(sectionButton).toHaveAttribute("aria-expanded", "true");
-    return;
-  }
-
-  const sectionGroup = sectionButton.locator("xpath=..");
-  // Intentional divergence: some section groups pre-expand without aria-expanded; check parent for links.
-  const nestedLinks = sectionGroup.getByRole("link");
-  if ((await nestedLinks.count()) > 0 && (await nestedLinks.first().isVisible())) {
-    return;
-  }
-  await sectionButton.click();
 }
 
 async function activateLink(page: Page, resolveLink: () => Promise<Locator>): Promise<void> {
@@ -75,8 +94,12 @@ async function activateLink(page: Page, resolveLink: () => Promise<Locator>): Pr
   }
 }
 
-export async function expandRhdhSection(page: Page, sectionLabel: string): Promise<void> {
-  await expandSectionInternal(page, sectionLabel);
+export async function expandRhdhSection(
+  page: Page,
+  sectionLabel: string,
+  childItemText?: string,
+): Promise<void> {
+  await ensureRhdhSectionExpanded(page, sectionLabel, childItemText);
 }
 
 export async function openRhdhLink(page: Page, linkName: string): Promise<void> {

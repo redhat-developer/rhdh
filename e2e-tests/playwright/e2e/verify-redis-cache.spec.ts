@@ -4,6 +4,8 @@ import Redis from "ioredis";
 import { PortForwardHarness } from "../support/harnesses/port-forward-harness";
 import { TechDocsPage } from "../support/pages/techdocs-page";
 
+const REDIS_LOCAL_PORT = 16_379;
+
 test.describe("Verify Redis Cache DB", () => {
   test.beforeAll(() => {
     test.info().annotations.push({
@@ -17,13 +19,14 @@ test.describe("Verify Redis Cache DB", () => {
   let redis: Redis;
 
   test.beforeAll(async () => {
+    await portForward?.stop();
     console.log("Starting port-forward process...");
     portForward = new PortForwardHarness(
       {
         shellCommand: `
           oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
           kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
-          kubectl port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}"
+          kubectl port-forward service/redis ${REDIS_LOCAL_PORT}:6379 --namespace="${process.env.NAME_SPACE}"
         `,
       },
       {
@@ -57,7 +60,7 @@ test.describe("Verify Redis Cache DB", () => {
 
     console.log("Connecting to Redis...");
     redis = new Redis(
-      `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:6379`,
+      `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:${REDIS_LOCAL_PORT}`,
     );
     console.log("Verifying Redis keys...");
     await expect(async () => {

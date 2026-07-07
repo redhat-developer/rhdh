@@ -73,7 +73,12 @@ export class CatalogImport {
   }
 
   async verifyEntityYaml(text: string) {
-    await this.page.getByRole("button", { name: "More" }).click();
+    // Intentional divergence: entity header overflow uses title="More", not always role name.
+    const moreButton = this.page
+      .getByRole("button", { name: "More" })
+      .or(this.page.getByTitle("More"));
+    await expect(moreButton.first()).toBeVisible({ timeout: 30_000 });
+    await moreButton.first().click();
     await this.page.getByRole("menuitem", { name: "Inspect entity" }).click();
     await interaction.clickTab(this.page, "Raw YAML");
     await expect(this.page.getByTestId("code-snippet")).toContainText(text);
