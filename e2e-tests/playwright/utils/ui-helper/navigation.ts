@@ -23,10 +23,26 @@ const lang = getCurrentLanguage();
 let cachedUsesRhdhSidebar: boolean | undefined;
 let cachedSidebarBaseUrl: string | undefined;
 
+async function hasLegacySidebarMarkup(page: Page): Promise<boolean> {
+  const legacySection = page.locator("nav button[aria-label]").first();
+  if ((await legacySection.count()) === 0) {
+    return false;
+  }
+  return legacySection.isVisible().catch(() => false);
+}
+
+async function detectRhdhSidebar(page: Page): Promise<boolean> {
+  // Cluster-free legacy harness proxies JSON /healthcheck but keeps legacy nav markup.
+  if (await hasLegacySidebarMarkup(page)) {
+    return false;
+  }
+  return hasJsonHealthcheck(page);
+}
+
 async function usesRhdhSidebar(page: Page): Promise<boolean> {
   const baseUrl = process.env.BASE_URL ?? page.url();
   if (cachedSidebarBaseUrl !== baseUrl || cachedUsesRhdhSidebar === undefined) {
-    cachedUsesRhdhSidebar = await hasJsonHealthcheck(page);
+    cachedUsesRhdhSidebar = await detectRhdhSidebar(page);
     cachedSidebarBaseUrl = baseUrl;
   }
   return cachedUsesRhdhSidebar;

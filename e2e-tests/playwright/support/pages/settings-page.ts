@@ -175,7 +175,10 @@ export class SettingsPage {
   }
 
   async openFromProfile(userName: string): Promise<void> {
-    await this.page.getByText(userName).click();
+    const header = interaction.getGlobalHeader(this.page);
+    await expect(header).toBeVisible();
+    const profileName = userName.endsWith(" User") ? userName : `${userName} User`;
+    await header.getByRole("button", { name: profileName, exact: true }).click();
     await this.page.getByRole("menuitem", { name: "Settings" }).click();
   }
 
