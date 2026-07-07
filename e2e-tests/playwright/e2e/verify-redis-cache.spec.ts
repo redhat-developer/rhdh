@@ -19,7 +19,6 @@ test.describe("Verify Redis Cache DB", () => {
   let redis: Redis;
 
   test.beforeAll(async () => {
-    await portForward?.stop();
     console.log("Starting port-forward process...");
     portForward = new PortForwardHarness(
       {

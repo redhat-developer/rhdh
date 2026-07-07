@@ -18,7 +18,6 @@ import * as table from "./table";
 import { verifyHeading } from "./verification";
 
 const t = getTranslations();
-const lang = getCurrentLanguage();
 
 let cachedUsesRhdhSidebar: boolean | undefined;
 let cachedSidebarBaseUrl: string | undefined;
@@ -48,11 +47,15 @@ async function detectRhdhSidebar(page: Page): Promise<boolean> {
 
 async function usesRhdhSidebar(page: Page): Promise<boolean> {
   const baseUrl = process.env.BASE_URL ?? page.url();
-  if (cachedSidebarBaseUrl !== baseUrl || cachedUsesRhdhSidebar === undefined) {
-    cachedUsesRhdhSidebar = await detectRhdhSidebar(page);
+  if (cachedSidebarBaseUrl === baseUrl && cachedUsesRhdhSidebar === true) {
+    return true;
+  }
+  const detected = await detectRhdhSidebar(page);
+  if (detected) {
+    cachedUsesRhdhSidebar = true;
     cachedSidebarBaseUrl = baseUrl;
   }
-  return cachedUsesRhdhSidebar;
+  return detected;
 }
 
 async function runSidebarAction(
@@ -107,6 +110,7 @@ export async function goToPageUrl(page: Page, url: string, heading?: string) {
 }
 
 export async function goToSettingsPage(page: Page) {
+  const lang = getCurrentLanguage();
   await expect(getGlobalHeader(page)).toBeVisible();
   await openProfileDropdown(page);
   const settingsItem = page.getByRole("menuitem", {
@@ -117,6 +121,7 @@ export async function goToSettingsPage(page: Page) {
 }
 
 export async function goToSelfServicePage(page: Page) {
+  const lang = getCurrentLanguage();
   await clickLink(page, {
     ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
   });
@@ -148,6 +153,7 @@ export async function openTemplateInCatalog(
 }
 
 export async function openCatalogSidebar(page: Page, kind: string) {
+  const lang = getCurrentLanguage();
   await openSidebar(page, t["rhdh"][lang]["menuItem.catalog"]);
   await selectMuiBox(page, t["catalog-react"][lang]["entityKindPicker.title"], kind);
   await expect(async () => {

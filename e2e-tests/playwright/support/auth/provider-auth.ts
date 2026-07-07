@@ -1,6 +1,10 @@
 import { expect, type BrowserContext, type Page } from "@playwright/test";
 
-import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
+import {
+  getCurrentLanguage,
+  getTranslations,
+  type Locale,
+} from "../../e2e/localization/locale";
 import {
   handleGitHubPopupLogin,
   handleGitlabPopupLogin,
@@ -12,10 +16,16 @@ import * as interaction from "../../utils/ui-helper/interaction";
 import { waitForAppReady } from "./app-shell";
 
 const t = getTranslations();
-const lang = getCurrentLanguage();
 
 export class AuthProviderSession {
-  constructor(private readonly page: Page) {}
+  constructor(
+    private readonly page: Page,
+    private readonly locale?: Locale,
+  ) {}
+
+  private lang(): Locale {
+    return this.locale ?? getCurrentLanguage();
+  }
 
   async clearAuthState(context: BrowserContext): Promise<void> {
     await context.clearCookies();
@@ -29,6 +39,7 @@ export class AuthProviderSession {
   }
 
   private async openPrimarySignInPopup(): Promise<Page> {
+    const lang = this.lang();
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
       interaction.clickButton(this.page, t["core-components"][lang]["signIn.title"]),
@@ -37,12 +48,14 @@ export class AuthProviderSession {
   }
 
   async loginWithKeycloak(username: string, password: string): Promise<string> {
+    const lang = this.lang();
     await this.openLandingPageWithProviderMessage(t["rhdh"][lang]["signIn.providers.oidc.message"]);
     const popup = await this.openPrimarySignInPopup();
     return handleKeycloakPopupLogin(popup, username, password);
   }
 
   async loginWithGitHub(username: string, password: string, twofactor: string): Promise<string> {
+    const lang = this.lang();
     await this.openLandingPageWithProviderMessage(
       t["rhdh"][lang]["signIn.providers.github.message"],
     );
@@ -55,11 +68,13 @@ export class AuthProviderSession {
     password: string,
     twofactor: string,
   ): Promise<string> {
+    const lang = this.lang();
     await this.page.goto("/settings/auth-providers");
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
       this.page
+        // Intentional divergence: provider settings expose sign-in via title tooltip, not button role.
         .getByTitle(
           t["user-settings"][lang]["providerSettingsItem.title.signIn"].replace(
             "{{title}}",
@@ -74,6 +89,7 @@ export class AuthProviderSession {
   }
 
   async loginWithGitLab(username: string, password: string): Promise<string> {
+    const lang = this.lang();
     await this.openLandingPageWithProviderMessage(
       t["rhdh"][lang]["signIn.providers.gitlab.message"],
     );
@@ -82,6 +98,7 @@ export class AuthProviderSession {
   }
 
   async loginWithMicrosoftAzure(username: string, password: string): Promise<string> {
+    const lang = this.lang();
     await this.openLandingPageWithProviderMessage(
       t["rhdh"][lang]["signIn.providers.microsoft.message"],
     );
@@ -90,6 +107,7 @@ export class AuthProviderSession {
   }
 
   async loginWithPingFederate(username: string, password: string): Promise<string> {
+    const lang = this.lang();
     await this.openLandingPageWithProviderMessage(t["rhdh"][lang]["signIn.providers.oidc.message"]);
     const popup = await this.openPrimarySignInPopup();
     return handlePingFederatePopupLogin(popup, username, password);

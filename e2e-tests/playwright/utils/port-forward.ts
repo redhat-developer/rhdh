@@ -74,16 +74,23 @@ export class PortForwardSession {
         );
       };
 
+      const handleError = (error: Error) => {
+        cleanup();
+        reject(new Error(`Port-forward spawn failed: ${error.message}`));
+      };
+
       const cleanup = () => {
         clearTimeout(timeout);
         child.stdout.off("data", handleOutput);
         child.stderr.off("data", handleOutput);
         child.off("exit", handleExit);
+        child.off("error", handleError);
       };
 
       child.stdout.on("data", handleOutput);
       child.stderr.on("data", handleOutput);
       child.on("exit", handleExit);
+      child.on("error", handleError);
     });
 
     return child;

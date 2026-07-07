@@ -3,10 +3,8 @@ import { expect, Page } from "@playwright/test";
 import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
-import { ensureLegacySectionExpanded } from "../navigation/legacy-sidebar-adapter";
 
 const t = getTranslations();
-const lang = getCurrentLanguage();
 
 /** Sidebar navigation on the RHDH instance. */
 export class SidebarPage {
@@ -21,13 +19,13 @@ export class SidebarPage {
   }
 
   async openReferencesLearningPaths(): Promise<void> {
-    const learningPaths = t["rhdh"][lang]["menuItem.learningPaths"];
-    await ensureLegacySectionExpanded(this.page, "References", learningPaths);
+    const learningPaths = t["rhdh"][getCurrentLanguage()]["menuItem.learningPaths"];
+    await navigation.openSidebarButton(this.page, "References", learningPaths);
     await this.openSidebar(learningPaths);
   }
 
   async openFavoritesDocs(): Promise<void> {
-    const docs = t["rhdh"][lang]["menuItem.docs"];
+    const docs = t["rhdh"][getCurrentLanguage()]["menuItem.docs"];
     await this.openSidebarButton("Favorites", docs);
     await this.openSidebar(docs);
   }
@@ -45,7 +43,7 @@ export class SidebarPage {
   }
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    await ensureLegacySectionExpanded(this.page, section, itemText);
+    await navigation.openSidebarButton(this.page, section, itemText);
     // Intentional divergence: nested menu items are nav links, not login-button text descendants.
     await expect(this.page.locator(`nav a:has-text("${itemText}")`).first()).toBeVisible();
   }

@@ -61,18 +61,24 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
       await use(page);
       await stopCoverageForPage(page, testInfo);
     },
-    guestPage: async ({ page }, use) => {
+    guestPage: async ({ page, locale }, use) => {
       const { signInAsGuest } = await import("../auth/guest-auth");
-      await signInAsGuest(page);
+      const { resolveLocale } = await import("../../e2e/localization/locale");
+      await signInAsGuest(page, { locale: resolveLocale(locale) });
       await use(page);
     },
-    authSession: async ({ page }, use) => {
+    authSession: async ({ page, locale }, use) => {
       const { AuthProviderSession } = await import("../auth/provider-auth");
-      await use(new AuthProviderSession(page));
+      const { resolveLocale } = await import("../../e2e/localization/locale");
+      await use(new AuthProviderSession(page, resolveLocale(locale)));
     },
     rhdhContext: [
       async ({ browser }, use, workerInfo: WorkerInfo) => {
-        const session = await createBrowserSession(browser);
+        const session = await createBrowserSession(browser, {
+          baseURL: process.env.BASE_URL,
+          locale: process.env.LOCALE ?? "en",
+          ignoreHTTPSErrors: true,
+        });
         await use(session.context);
         await runWorkerCleanups(workerInfo);
         await session.teardown(workerInfo);
@@ -90,7 +96,8 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     rhdhGuestPage: [
       async ({ rhdhPage }, use) => {
         const { signInAsGuest } = await import("../auth/guest-auth");
-        await signInAsGuest(rhdhPage);
+        const { resolveLocale } = await import("../../e2e/localization/locale");
+        await signInAsGuest(rhdhPage, { locale: resolveLocale(process.env.LOCALE) });
         await use(rhdhPage);
       },
       { scope: "worker" },
@@ -98,7 +105,8 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     rhdhAuthSession: [
       async ({ rhdhPage }, use) => {
         const { AuthProviderSession } = await import("../auth/provider-auth");
-        await use(new AuthProviderSession(rhdhPage));
+        const { resolveLocale } = await import("../../e2e/localization/locale");
+        await use(new AuthProviderSession(rhdhPage, resolveLocale(process.env.LOCALE)));
       },
       { scope: "worker" },
     ],

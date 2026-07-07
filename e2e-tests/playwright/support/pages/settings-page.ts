@@ -8,7 +8,6 @@ import * as verification from "../../utils/ui-helper/verification";
 import { SETTINGS_PAGE_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
-const lang = getCurrentLanguage();
 
 const LANGUAGE_OPTIONS_PATTERN = /English|Deutsch|Español|Français|Italiano|日本語/u;
 
@@ -18,15 +17,11 @@ async function verifyLocalizedUserSettingsLabelsCore(
   page: Page,
   locale: UserSettingsLocale,
   ownershipEntities: string,
-  includeSignOutMenu: boolean,
 ): Promise<void> {
   const labels = t["user-settings"][locale];
   await verification.verifyText(page, labels["profileCard.title"]);
   await verification.verifyText(page, labels["appearanceCard.title"]);
   await verification.verifyText(page, labels["themeToggle.title"]);
-  if (includeSignOutMenu) {
-    await verification.verifyText(page, labels["signOutMenu.title"]);
-  }
   await verification.verifyText(page, labels["identityCard.title"]);
   await verification.verifyText(page, `${labels["identityCard.userEntity"]}: Guest User`);
   await verification.verifyText(
@@ -68,7 +63,10 @@ export class SettingsPage {
   }
 
   async verifySignInPageTitle(): Promise<void> {
-    await verification.verifyHeading(this.page, t["rhdh"][lang]["signIn.page.title"]);
+    await verification.verifyHeading(
+      this.page,
+      t["rhdh"][getCurrentLanguage()]["signIn.page.title"],
+    );
   }
 
   async verifySignInError(message: string | RegExp): Promise<void> {
@@ -110,7 +108,7 @@ export class SettingsPage {
     locale: UserSettingsLocale,
     ownershipEntities: string,
   ): Promise<void> {
-    await verifyLocalizedUserSettingsLabelsCore(this.page, locale, ownershipEntities, false);
+    await verifyLocalizedUserSettingsLabelsCore(this.page, locale, ownershipEntities);
   }
 
   async verifyLanguageToggleList(locale: keyof (typeof t)["user-settings"]): Promise<void> {

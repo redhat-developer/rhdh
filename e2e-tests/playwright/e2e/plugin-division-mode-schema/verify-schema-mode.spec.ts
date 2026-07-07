@@ -5,6 +5,7 @@ import { PortForwardHarness } from "../../support/harnesses/port-forward-harness
 import { HomePage } from "../../support/pages/home-page";
 import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
+import { configureSchemaMode } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
 type SchemaModeEnv = {
@@ -142,6 +143,11 @@ test.describe("Verify pluginDivisionMode: schema", () => {
 
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
+
+    if (readSchemaModeEnv() === null) {
+      const kubeClient = new KubeClient();
+      await configureSchemaMode(kubeClient, namespace, releaseName, installMethod);
+    }
 
     const setup = await setupSchemaModeTests(testInfo, namespace, releaseName, installMethod);
     if (setup === null) {

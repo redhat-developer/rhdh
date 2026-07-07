@@ -64,18 +64,21 @@ async function withTimeout<T>(
 class CoverageReporter implements Reporter {
   private enabled = process.env.COLLECT_COVERAGE === "true";
 
-  onBegin(): void {
+  // Playwright Reporter hooks accept Promise<void>; oxlint's void-only rule is stricter than upstream types.
+  // oxlint-disable-next-line typescript/no-misused-promises, typescript/strict-void-return
+  onBegin(): Promise<void> {
     if (!this.enabled) {
-      return;
+      return Promise.resolve();
     }
-    void this.prepareRawDir();
+    return this.prepareRawDir();
   }
 
-  onEnd(): void {
+  // oxlint-disable-next-line typescript/no-misused-promises, typescript/strict-void-return
+  onEnd(): Promise<void> {
     if (!this.enabled) {
-      return;
+      return Promise.resolve();
     }
-    void this.generateReport();
+    return this.generateReport();
   }
 
   private async prepareRawDir(): Promise<void> {

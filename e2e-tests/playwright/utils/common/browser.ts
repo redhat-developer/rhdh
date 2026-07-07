@@ -1,4 +1,11 @@
-import type { Browser, BrowserContext, Page, TestInfo, WorkerInfo } from "@playwright/test";
+import type {
+  Browser,
+  BrowserContext,
+  BrowserContextOptions,
+  Page,
+  TestInfo,
+  WorkerInfo,
+} from "@playwright/test";
 
 import { startCoverageForPage, stopCoverageForPage } from "../../support/coverage/instrumentation";
 
@@ -7,8 +14,9 @@ type BrowserScope = Pick<TestInfo, "workerIndex"> &
 
 export async function setupBrowser(
   browser: Browser,
+  contextOptions: BrowserContextOptions = {},
 ): Promise<{ page: Page; context: BrowserContext }> {
-  const context = await browser.newContext();
+  const context = await browser.newContext(contextOptions);
   const page = await context.newPage();
   await startCoverageForPage(page);
   return { page, context };

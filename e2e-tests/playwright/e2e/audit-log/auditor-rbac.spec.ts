@@ -2,6 +2,7 @@ import { test, expect } from "@support/coverage/test";
 
 import RhdhRbacApi from "../../support/api/rbac-api";
 import { AuthProviderSession } from "../../support/auth/provider-auth";
+import * as navigation from "../../utils/ui-helper/navigation";
 import {
   RBAC_API,
   ROLE_NAME,
@@ -33,10 +34,12 @@ test.describe("Auditor check for RBAC Plugin", () => {
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
     authSession = rhdhAuthSession;
-    await authSession.loginWithKeycloak(
+    const loginResult = await authSession.loginWithKeycloak(
       process.env.GH_USER_ID ?? "",
       process.env.GH_USER_PASS ?? "",
     );
+    expect(loginResult).not.toBe("");
+    await navigation.waitForSideBarVisible(rhdhPage);
     rbacApi = await RhdhRbacApi.buildRbacApi(rhdhPage);
   });
 

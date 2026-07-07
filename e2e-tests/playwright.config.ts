@@ -61,7 +61,7 @@ export default defineConfig({
     locale: process.env.LOCALE ?? "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },

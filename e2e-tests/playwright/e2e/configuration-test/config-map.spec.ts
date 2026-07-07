@@ -2,9 +2,10 @@ import { test, expect } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 test.describe("Change app-config at e2e test runtime", () => {
-  test.beforeAll(() => {
+  test.beforeAll(async () => {
     test.info().annotations.push(
       {
         type: "component",
@@ -15,6 +16,8 @@ test.describe("Change app-config at e2e test runtime", () => {
         description: process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime",
       },
     );
+
+    await ensureRuntimeDeployed();
   });
 
   test("Verify title change after ConfigMap modification", async ({ page }) => {

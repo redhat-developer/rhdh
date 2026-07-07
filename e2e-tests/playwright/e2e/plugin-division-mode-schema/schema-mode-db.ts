@@ -12,8 +12,14 @@ import { getPortForwardRestarter } from "../../utils/port-forward";
 
 /** Default schema-mode test database user (overridable via SCHEMA_MODE_DB_USER). */
 const SCHEMA_MODE_DEFAULT_DB_USER = "bn_backstage";
-/** Default schema-mode test database password (overridable via SCHEMA_MODE_DB_PASSWORD). */
-const SCHEMA_MODE_DEFAULT_DB_PASSWORD = "test_password_123";
+/** Default schema-mode test database password (overridable via env). */
+function getSchemaModeDefaultDbPassword(): string {
+  return (
+    process.env.SCHEMA_MODE_DEFAULT_DB_PASSWORD ??
+    process.env.POSTGRES_PASSWORD ??
+    "test_password_123"
+  );
+}
 
 export interface SchemaModeEnv {
   dbHost: string;
@@ -361,7 +367,7 @@ export async function configureSchemaMode(
   process.env.SCHEMA_MODE_DB_ADMIN_USER = "postgres";
   process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD = adminPassword;
   process.env.SCHEMA_MODE_DB_PASSWORD =
-    process.env.SCHEMA_MODE_DB_PASSWORD ?? SCHEMA_MODE_DEFAULT_DB_PASSWORD;
+    process.env.SCHEMA_MODE_DB_PASSWORD ?? getSchemaModeDefaultDbPassword();
   process.env.SCHEMA_MODE_DB_USER = process.env.SCHEMA_MODE_DB_USER ?? SCHEMA_MODE_DEFAULT_DB_USER;
 
   console.log(`Schema-mode env configured: port-forward svc/${svcName} in ${namespace}`);

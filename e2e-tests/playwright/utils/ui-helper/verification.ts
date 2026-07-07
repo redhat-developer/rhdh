@@ -39,7 +39,7 @@ export async function verifyTextVisible(
   page: Page,
   text: string,
   exact = false,
-  timeout = 30_000,
+  timeout = 15_000,
 ): Promise<void> {
   const locator = page.getByText(text, { exact });
   await expect(locator).toBeVisible({ timeout });
@@ -49,7 +49,7 @@ export async function verifyText(
   page: Page,
   text: string | RegExp,
   exact: boolean = true,
-  timeout: number = 30_000,
+  timeout: number = 15_000,
 ) {
   await verifyTextInLocator(page, "", text, exact, timeout);
 }
@@ -64,7 +64,7 @@ export async function verifyRowsInTable(
   }
 }
 
-export async function waitForTextDisappear(page: Page, text: string, timeout = 30_000) {
+export async function waitForTextDisappear(page: Page, text: string, timeout = 15_000) {
   await expect(page.getByText(text)).toHaveCount(0, { timeout });
 }
 
@@ -73,7 +73,7 @@ async function verifyTextInLocator(
   locator: string,
   text: string | RegExp,
   exact: boolean,
-  timeout: number = 30_000,
+  timeout: number = 15_000,
 ) {
   const elementLocator = locator
     ? page.locator(locator).getByText(text, { exact }).first()

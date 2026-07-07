@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 type TranslationFile = Record<string, Record<string, Record<string, string>>>;
 
-const TRANSLATIONS_DIR = join(process.cwd(), "..", "translations");
+const TRANSLATIONS_DIR = join(import.meta.dirname, "../../../translations");
 
 function loadTranslationJson(fileName: string): TranslationFile {
   const raw: unknown = JSON.parse(readFileSync(join(TRANSLATIONS_DIR, fileName), "utf8"));
@@ -121,6 +121,12 @@ const translations = createMergedTranslations();
 
 export function getCurrentLanguage(): Locale {
   const lang = process.env.LOCALE ?? "en";
+  return isLocale(lang) ? lang : "en";
+}
+
+/** Resolve app locale from Playwright project locale or process env. */
+export function resolveLocale(localeHint?: string): Locale {
+  const lang = localeHint ?? process.env.LOCALE ?? "en";
   return isLocale(lang) ? lang : "en";
 }
 

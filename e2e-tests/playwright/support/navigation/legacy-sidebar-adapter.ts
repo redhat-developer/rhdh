@@ -6,6 +6,7 @@ import { expect, type Page } from "@playwright/test";
  * specs were written against.
  */
 async function isLegacySectionExpanded(page: Page, sectionLabel: string): Promise<boolean> {
+  // Intentional divergence: packaged-app section toggles use aria-label, not role=button.
   const ariaButton = page.locator(`nav button[aria-label="${sectionLabel}"]`);
   if ((await ariaButton.count()) === 0) {
     return false;
@@ -16,6 +17,7 @@ async function isLegacySectionExpanded(page: Page, sectionLabel: string): Promis
 }
 
 function isLegacyChildLinkVisible(page: Page, childItemText: string): Promise<boolean> {
+  // Intentional divergence: legacy sidebar links live in nav a, not role=navigation scope.
   const childLink = page.locator(`nav a:has-text("${childItemText}")`).first();
   return childLink.isVisible().catch(() => false);
 }

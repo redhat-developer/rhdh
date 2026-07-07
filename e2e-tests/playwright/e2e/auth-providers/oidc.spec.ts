@@ -308,6 +308,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
         process.env.AUTH_PROVIDERS_GH_USER_2FA!,
       );
       expect(ghLogin).toBe("Login successful");
+      // Intentional divergence: GitHub provider settings expose sign-out via title tooltip.
       await page.getByTitle("Sign out from GitHub").click();
 
       await settingsPage.open();
