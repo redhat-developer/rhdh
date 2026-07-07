@@ -249,12 +249,23 @@ respecting:
 **native in-process harness** (no container, no image pull, runs on any runner, parallel),
 reusing the published CLI. Docker/NFS only enters for the UI-rendering tests.
 
+**Update 2026-07-07: this harness has landed.** #2231's idea was rebuilt on the
+published CLI and merged as
+[overlays#2714](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2714)
+(`smoke-tests-native/` — installs plugins with
+`cli-module-install-dynamic-plugins`, boots them with `startTestBackend`; ~20x faster
+than the per-workspace Docker smoke for that scope), with per-workspace mode added in
+[overlays#2731](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2731).
+It runs as a dedicated `native-smoke.yaml` workflow alongside — not yet replacing —
+the Docker-based `run-workspace-smoke-tests.yaml`.
+
 ### Recommendation for the overlay repo (feeds RHIDP-13530 / RHDHPLAN-525)
 
 Build **two harnesses**, not one Docker fixture:
 
-1. **Native backend harness (no Docker)** — resurrect PR #2231's idea on top of the
-   published `install-dynamic-plugins` CLI + `startTestBackend`. Replaces all **32 Docker
+1. **Native backend harness (no Docker)** — **landed as overlays#2714/#2731** (see
+   update above): PR #2231's idea on top of the published `install-dynamic-plugins`
+   CLI + `startTestBackend`. Can replace all **32 Docker
    smoke-tests** and covers the **load + API surface** of the **12 pure-backend
    workspaces** (their UI e2e, where one exists — e.g.
    `scaffolder-backend-module-kubernetes` — still needs the render harness):
@@ -292,3 +303,6 @@ scaffolder-relation-processor`.
 - Cluster-free L4a harness: [rhdh#5005](https://github.com/redhat-developer/rhdh/pull/5005) (RHIDP-15075);
   expansion to 10 specs: [rhdh#5057](https://github.com/redhat-developer/rhdh/pull/5057).
 - Plugin load validation (L4a): `e2e-tests/playwright/e2e/plugin-dynamic-loading.spec.ts` (RHIDP-13508, PR #4967).
+- Overlay-repo native smoke harness (no Docker):
+  [overlays#2714](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2714),
+  workspace mode [overlays#2731](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2731).
