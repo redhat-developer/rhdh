@@ -172,6 +172,29 @@ WORKDIR $CONTAINER_SOURCE
 # Only keep the dist sub-folder in the dynamic-plugins folder
 RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
 
+# dump console logs if they have errors
+RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*  -name build.log || true); do \
+  failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
+  if [[ $failsCheck != "" ]]; then \
+  echo "==== $d SUMMARY ===="; echo "$failsCheck"; \
+  echo "==== $d FULL ====";    cat "$d"; echo "==== $d ===="; \
+  (( hadFail = hadFail +1 )); \
+  fi; \
+  done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
+
+# Stage 4 - Install production dependencies in a clean stage (exclude monorepo sources)
+FROM skeleton AS cleanup
+
+COPY --from=build $CONTAINER_SOURCE/yarn.lock \
+  $CONTAINER_SOURCE/package.json \
+  ./
+COPY --from=build \
+  $CONTAINER_SOURCE/packages/backend/dist/skeleton.tar.gz \
+  $CONTAINER_SOURCE/packages/backend/dist/bundle.tar.gz \
+  ./packages/backend/dist/
+# node-gyp headers for native module compilation (extracted in deps stage, network is blocked here)
+COPY --from=build $CONTAINER_SOURCE/.cache/node-gyp ./.cache/node-gyp
+
 # unpack and remove tarballs
 ENV TARBALL_PATH=./packages/backend/dist
 RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.gz; \
@@ -231,6 +254,7 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
 # Techdocs: Installing Python dependencies and building the techdocs venv.
 # Prevents duplicating the same dependencies in the final minimal image.
 # hadolint ignore=DL3013,DL3041,SC2086
+COPY $EXTERNAL_SOURCE_NESTED/python/ ./python/
 RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
   python3.11 -m venv /opt/techdocs-venv && \
   /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
@@ -238,6 +262,11 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
   /opt/techdocs-venv/bin/mkdocs --version && \
   rm -rf python/  /opt/techdocs-venv/bin/pip && \
   dnf clean all
+
+# Clean up build-generated artifacts not needed at runtime
+RUN rm -rf \
+  .yarn/berry .yarn/cache .cache .turbo .config .git .nvm \
+  dist-types packages/app/.webpack-cache
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-24-minimal
@@ -266,9 +295,11 @@ COPY --from=build /usr/bin/openssl /usr/bin/openssl
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
 
-# App tree and techdocs venv from build stage (no compiler/devel RPMs in final layer)
-COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
-COPY --from=build --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
+# Production app tree from cleanup stage (excludes monorepo sources/build artifacts)
+COPY --from=cleanup --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
+# Embedded dynamic plugins and techdocs venv are built separately
+COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/dynamic-plugins/ ./dynamic-plugins/
+COPY --from=cleanup --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
 
 ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 
