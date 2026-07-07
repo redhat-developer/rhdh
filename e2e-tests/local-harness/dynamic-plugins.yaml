@@ -11,6 +11,39 @@ plugins:
   # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false
+  # TechDocs frontend: /docs route (TechDocsIndexPage) + the "Docs" sidebar menu item,
+  # exercised by plugins/frontend/sidebar.spec.ts. Route/menu config comes from the
+  # repo's static app-config.dynamic-plugins.yaml; no pluginConfig needed here.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-techdocs:bs_1.49.4__1.17.2!backstage-plugin-techdocs
+    disabled: false
+  # application/provider + application/listener test plugins, exercised by
+  # plugins/application-provider.spec.ts and plugins/application-listener.spec.ts.
+  # Package refs and pluginConfig mirror the CI Helm values
+  # (.ci/pipelines/value_files/values_showcase.yaml), which install the same OCI
+  # builds (they are not part of the repo's dynamic-plugins source tree).
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-application-provider-test:
+            dynamicRoutes:
+              - path: /application-provider-test-page
+                importName: TestPage
+            mountPoints:
+              - mountPoint: application/provider
+                importName: TestProviderOne
+              - mountPoint: application/provider
+                importName: TestProviderTwo
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-listener-test:bs_1.45.3__0.6.0
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-application-listener-test:
+            mountPoints:
+              - mountPoint: application/listener
+                importName: LocationListener
   # Global header: top bar + profile dropdown (Settings / Sign-out navigation).
   #
   # The repo's static app-config.dynamic-plugins.yaml only mounts the bare GlobalHeader

@@ -19,17 +19,22 @@ test.describe("Test ApplicationListener", () => {
     await common.loginAsGuest();
   });
 
-  test("Verify that the LocationListener logs the current location", async ({ page }) => {
-    const logs: string[] = [];
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify that the LocationListener logs the current location",
+    { tag: "@cluster-free" },
+    async ({ page }) => {
+      const logs: string[] = [];
 
-    page.on("console", (msg) => {
-      if (msg.type() === "log") {
-        logs.push(msg.text());
-      }
-    });
+      page.on("console", (msg) => {
+        if (msg.type() === "log") {
+          logs.push(msg.text());
+        }
+      });
 
-    await catalogBrowsePage.openCatalogSidebar();
+      await catalogBrowsePage.openCatalogSidebar();
 
-    expect(logs.some((l) => l.includes("pathname: /catalog"))).toBeTruthy();
-  });
+      expect(logs.some((l) => l.includes("pathname: /catalog"))).toBeTruthy();
+    },
+  );
 });

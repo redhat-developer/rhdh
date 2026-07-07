@@ -23,7 +23,8 @@ test.describe("Test user settings info card", { tag: "@layer3-equivalent" }, () 
     settingsPage = new SettingsPage(page);
   });
 
-  test("Check if customized build info is rendered", async () => {
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test("Check if customized build info is rendered", { tag: "@cluster-free" }, async () => {
     await rhdhHomePage.openHomeSidebar();
     await settingsPage.openFromProfile("Guest");
 

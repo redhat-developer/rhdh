@@ -22,7 +22,8 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
   });
 
   // Run tests only for the selected language
-  test(`Verify settings page`, async () => {
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(`Verify settings page`, { tag: "@cluster-free" }, async () => {
     await settingsPage.hideQuickstartIfVisible();
     await settingsPage.verifyLanguageToggleList(lang);
     await settingsPage.verifyLanguageSelectShowsOptions();

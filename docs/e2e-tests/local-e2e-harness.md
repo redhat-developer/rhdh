@@ -83,6 +83,39 @@ existing specs **pass unmodified**:
 - `learning-path-page` — renders from the static fallback data bundled with
   `packages/app`; the "References" sidebar group mirrors the CI menu customization via
   `app-config.local-e2e.yaml`.
+- `instance-health-check` — `GET /healthcheck` against the frontend origin. The app dev
+  server proxies `/healthcheck` to the backend (`proxy` field in
+  `packages/app/package.json`), mirroring the single-origin production container where
+  the backend serves both the app and the health endpoint.
+- `smoke-test` — guest sign-in plus the home-page welcome heading (dynamic-home-page
+  plugin); its readiness poll uses the same proxied `/healthcheck`.
+- `home-page-customization` — all three tests. The CI home-page card customization
+  (Placeholder/Markdown/Featured Docs/Random Joke/Top + Recently Visited, from
+  `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml`) is mirrored in
+  `app-config.local-e2e.yaml`; the Random Joke card fetches jokes from the public
+  Official Joke API in the browser, so it needs outbound network access.
+- `plugins/frontend/sidebar` — sidebar menu customization (References group, Test
+  enabled/nested items, techdocs Favorites → Docs and Test_i items) mirrored from the
+  same CI configmap into `app-config.local-e2e.yaml`. The `/docs` index page needs the
+  techdocs frontend OCI plugin in the harness set (its route/menu config already lives
+  in the static `app-config.dynamic-plugins.yaml`).
+- `settings` — language toggle (needs the CI `i18n.locales` list mirrored in the
+  overlay) plus the identity card ownership ("Guest User, team-a"). CI gets those
+  entities from Keycloak ingestion; the harness ingests the equivalent minimal
+  User/Group pair from `e2e-tests/local-harness/guest-ownership-entities.yaml` via a
+  `catalog.locations` file entry in the overlay (file targets resolve relative to the
+  backend cwd, `packages/backend`). The guest sign-in resolver picks the entity up and
+  issues ownership refs including `team-a` exactly as in-cluster.
+- `plugins/user-settings-info-card` — the CI `buildInfo` card customization ("RHDH
+  Build info") mirrored in the overlay.
+- `plugins/application-provider` and `plugins/application-listener` — the
+  application-provider-test / application-listener-test OCI plugins with the same
+  pluginConfig CI uses in its Helm values (`values_showcase.yaml`); they are OCI-only
+  builds, not part of the repo's dynamic-plugins source tree.
+
+Not enablable yet: `plugins/licensed-users-info-backend` — the
+`licensed-users-info-backend` plugin is not published to the overlays OCI registry
+(ghcr) and only exists as a `./dynamic-plugins/dist` source build.
 
 ## CI
 
