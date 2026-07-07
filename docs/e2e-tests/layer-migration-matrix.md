@@ -59,7 +59,7 @@ L3 equivalents land.
 
 ## Update 2026-07-07 — L4a expansion batch merged (PR #5057)
 
-Every remaining cheap-enablement candidate from the 2026-07-02 scan landed on
+Every cheap-enablement candidate from the 2026-07-02 scan except #2 landed on
 `main`: the harness now runs **10 specs (14 test cases)** green on the PR check — #1 `instance-health-check`, #3
 `smoke-test`, #4 `guest-signin-happy-path`, #5 `settings`, #6 `learning-path-page`,
 #7 `home-page-customization`, #8 `sidebar`, #9 `user-settings-info-card`, #10/#11
@@ -188,7 +188,7 @@ branch may be rebased or deleted):
    for the event-shape contract, keep one L4b smoke for the wiring.
 2. Do we want L4a scaffolder tests to mock GitHub (deterministic, faster) or keep real
    GitHub (true integration)? Coordinate with RHDHPLAN-525 / overlay-repo strategy (RHIDP-13530).
-3. ROI: the 9 L3 + 4 L2 candidates are ~648 LOC of UI-only specs today; migrating buys
+3. ROI: the 10 L3 + 4 L2 candidates are ~648 LOC of UI-only specs today; migrating buys
    PR-time feedback (seconds vs. a nightly cluster deploy) for the most frequently-broken
    surface (UI/config). The 11 L4b specs are where the real cluster cost lives and are
    **not** the optimization target.
@@ -204,7 +204,8 @@ system — and tier 1 is _already cluster-free_:
 | **e2e-tests**   | 24 workspaces | `run-e2e.sh` → helm/operator deploy + Keycloak; Playwright via `@red-hat-developer-hub/e2e-test-utils` (`rhdh.deploy()`, `k8sClient.getRouteLocation()`, `loginAsKeycloakUser()`) | **YES**  | RHDH auth/cluster specs (L4b)       |
 
 **Takeaway:** the overlay smoke harness is the _same cluster-free pattern_ we want — a
-container boot + load check. The migration opportunity is the 24 cluster-bound
+container boot + load check (and since 2026-07-07 a native, container-free variant also
+exists — see the update below). The migration opportunity is the 24 cluster-bound
 `e2e-tests`. There is already an in-repo signal that the team wants this: a TODO in
 `workspaces/tech-radar/e2e-tests` reads _"This is cluster-dependent and we need tests
 cluster-agnostic."_
@@ -265,9 +266,10 @@ Build **two harnesses**, not one Docker fixture:
 
 1. **Native backend harness (no Docker)** — **landed as overlays#2714/#2731** (see
    update above): PR #2231's idea on top of the published `install-dynamic-plugins`
-   CLI + `startTestBackend`. Can replace all **32 Docker
-   smoke-tests** and covers the **load + API surface** of the **12 pure-backend
-   workspaces** (their UI e2e, where one exists — e.g.
+   CLI + `startTestBackend`. Targets all **32 Docker smoke-tests** — backend boots
+   landed in #2714; catalog-extending backend modules (a known `startTestBackend`
+   gap) and the frontend bundle probe still pend — and covers the **load + API
+   surface** of the **12 pure-backend workspaces** (their UI e2e, where one exists — e.g.
    `scaffolder-backend-module-kubernetes` — still needs the render harness):
    `3scale, ai-integrations, apiconnect, github-notifications, keycloak,
 mcp-integrations, pingidentity, scaffolder-backend-module-{kubernetes,regex,servicenow,sonarqube},
@@ -283,12 +285,12 @@ scaffolder-relation-processor`.
 
 `F` = ships frontend plugin(s), `B` = backend only. `e2e` = UI Playwright, `smoke` = load.
 
-| Bucket                                   | Cluster-free fit                                                         | Workspaces                                                                                                                                                                                                                                                                                                                                                                                         |
-| ---------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Pure backend (12)**                    | **Native in-process harness — full (load + API)**                        | 3scale, ai-integrations, apiconnect, github-notifications, keycloak, mcp-integrations, pingidentity, scaffolder-backend-module-kubernetes, scaffolder-backend-module-regex, scaffolder-backend-module-servicenow, scaffolder-backend-module-sonarqube, scaffolder-relation-processor                                                                                                               |
-| **Frontend, load-only today (32 smoke)** | **Native harness — bundle + registration probe** (replaces Docker smoke) | acr, acs, analytics, apiconnect, argocd, azure-devops, backstage, backstage-plugins-for-aws, config-viewer, cost-management, dynatrace-dql, extensions, gitlab, jenkins, kiali, konflux, lightspeed, mcp-chat, mta, npm, orchestrator, pagerduty, roadie-backstage-plugins, scorecard, servicenow, sonarqube, tech-radar, x2a (+ keycloak, pingidentity, 3scale, scaffolder-servicenow as backend) |
-| **Frontend UI e2e (24)**                 | **Render harness (NFS/app-next) — `startTestBackend` insufficient**      | acr, adoption-insights, analytics, app-defaults, argocd, backstage, bulk-import, extensions, github, global-header, homepage, keycloak, lightspeed, orchestrator, quay, quickstart, rbac, roadie-backstage-plugins, scaffolder-backend-module-kubernetes, scorecard, tech-radar, tekton, theme, topology                                                                                           |
-| **No tests yet (≈18)**                   | candidates for native smoke at minimum                                   | adr, announcements, bookmarks, dynatrace, env-viewer, github-notifications, icon-viewer, jfrog-artifactory, lighthouse, mcp-integrations, multi-source-security-viewer, nexus-repository-manager, scaffolder-backend-module-regex, scaffolder-backend-module-sonarqube, scaffolder-relation-processor, tech-insights, todo, translations                                                           |
+| Bucket                                   | Cluster-free fit                                                                                         | Workspaces                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pure backend (12)**                    | **Native in-process harness — full (load + API)**                                                        | 3scale, ai-integrations, apiconnect, github-notifications, keycloak, mcp-integrations, pingidentity, scaffolder-backend-module-kubernetes, scaffolder-backend-module-regex, scaffolder-backend-module-servicenow, scaffolder-backend-module-sonarqube, scaffolder-relation-processor                                                                                                               |
+| **Frontend, load-only today (32 smoke)** | **Native harness — bundle + registration probe** (Docker-smoke replacement target; probe not yet landed) | acr, acs, analytics, apiconnect, argocd, azure-devops, backstage, backstage-plugins-for-aws, config-viewer, cost-management, dynatrace-dql, extensions, gitlab, jenkins, kiali, konflux, lightspeed, mcp-chat, mta, npm, orchestrator, pagerduty, roadie-backstage-plugins, scorecard, servicenow, sonarqube, tech-radar, x2a (+ keycloak, pingidentity, 3scale, scaffolder-servicenow as backend) |
+| **Frontend UI e2e (24)**                 | **Render harness (NFS/app-next) — `startTestBackend` insufficient**                                      | acr, adoption-insights, analytics, app-defaults, argocd, backstage, bulk-import, extensions, github, global-header, homepage, keycloak, lightspeed, orchestrator, quay, quickstart, rbac, roadie-backstage-plugins, scaffolder-backend-module-kubernetes, scorecard, tech-radar, tekton, theme, topology                                                                                           |
+| **No tests yet (≈18)**                   | candidates for native smoke at minimum                                                                   | adr, announcements, bookmarks, dynatrace, env-viewer, github-notifications, icon-viewer, jfrog-artifactory, lighthouse, mcp-integrations, multi-source-security-viewer, nexus-repository-manager, scaffolder-backend-module-regex, scaffolder-backend-module-sonarqube, scaffolder-relation-processor, tech-insights, todo, translations                                                           |
 
 > The 24 e2e workspaces being ~all UI-driven is confirmed by grep: every one matches
 > `uiHelper`/`openSidebar`/`verifyHeading`/`page.*`; only `app-defaults`, `backstage`,
