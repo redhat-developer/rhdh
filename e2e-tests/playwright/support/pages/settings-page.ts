@@ -203,7 +203,9 @@ export class SettingsPage {
   }
 
   async verifyInactivityLogoutMessageHidden(timeout = 30_000): Promise<void> {
-    await expect(this.page.getByRole("alert").filter({ hasText: "Logging out due to inactivity" })).toBeHidden({
+    await expect(
+      this.page.getByRole("alert").filter({ hasText: "Logging out due to inactivity" }),
+    ).toBeHidden({
       timeout,
     });
   }
