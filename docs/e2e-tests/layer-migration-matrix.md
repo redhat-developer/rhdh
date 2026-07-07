@@ -3,7 +3,7 @@
 **Epic**: RHIDP-13501 — [Test Strategy] E2E Test Optimization (Optional)
 **Story**: RHIDP-15076 — Identify E2E specs supplementable by Layer 3 / cluster-free harness (Phase 1)
 **Author**: Gustavo Lira e Silva
-**Date**: 2026-06-26 (updated 2026-07-02 with L4a harness validation results)
+**Date**: 2026-06-26 (updated 2026-07-07 with L4a harness expansion results)
 **Status**: DRAFT — promote once the batches below are groomed into RHIDP-13528/13529
 
 > **This is an _additive_ analysis, not a removal plan.** Per the epic, no E2E spec
@@ -53,13 +53,32 @@ change the cost picture for the remaining candidates:
 
 A fresh dependency scan (2026-07-02) of all 29 specs on `main` confirms the L4b bucket
 below is exactly the CLUSTER-BOUND set (pod-log scraping, ConfigMap patch + restart,
-port-forward, managed DBs, full `RHDHDeployment` lifecycle). Next cheapest L4a
-enablements, in order: #7 `home-page-customization`, #5 `settings` (needs the `team-a`
-ownership entities mirrored), #8 `sidebar`, #10/#11 `application-provider/listener`,
-#9 `user-settings-info-card`, #2 `licensed-users-info` (backend API only), #1
-`instance-health-check`, #3 `smoke-test`. Running a spec on the L4a harness does not
-change its **target layer** — L4a supplements PR-time signal until the L3 equivalents
-land.
+port-forward, managed DBs, full `RHDHDeployment` lifecycle). Running a spec on the L4a
+harness does not change its **target layer** — L4a supplements PR-time signal until the
+L3 equivalents land.
+
+## Update 2026-07-07 — L4a expansion batch merged (PR #5057)
+
+The entire cheap-enablement queue above landed on `main`: the harness now runs
+**9 specs (14 test cases)** green on the PR check — #1 `instance-health-check`, #3
+`smoke-test`, #4 `guest-signin-happy-path`, #5 `settings`, #6 `learning-path-page`,
+#7 `home-page-customization`, #8 `sidebar`, #9 `user-settings-info-card`, #10/#11
+`application-provider/listener`. Notable mechanics (details in
+`docs/e2e-tests/local-e2e-harness.md`):
+
+- `/healthcheck` is proxied to the backend by the app dev server (`proxy` field in
+  `packages/app/package.json`), mirroring the production single-origin container.
+- The `team-a` ownership entities CI ingests from Keycloak are mirrored as a minimal
+  User/Group file ingested via a `catalog.locations` file entry.
+- #10/#11's provider/listener test plugins turned out to be **OCI-only builds** that CI
+  installs through its Helm values — the harness installs the same packages, so the
+  earlier "local-path plugins" caveat is gone.
+- The one remaining candidate, #2 `licensed-users-info`, needs **no plugin work at
+  all**: the backend plugin is `@internal` and compiled into the RHDH backend
+  (`packages/backend/src/index.ts`), so the harness already serves its API. The
+  spec-side blocker is that it builds absolute URLs from the root
+  `playwright.config.ts` `BASE_URL`, which the harness does not set — a small
+  follow-up.
 
 Note: #19 `plugin-dynamic-loading` ships with PR #4967, which is still **open** — the
 row below describes its state once merged.
@@ -68,21 +87,21 @@ row below describes its state once merged.
 
 Legend: ✅ = Layer 3 equivalent **already drafted** on branch
 [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged).
-🟢 = **validated green on the L4a cluster-free harness** (PR #5005).
+🟢 = **validated green on the L4a cluster-free harness** (PRs #5005, #5057).
 
 | #   | Spec                                                                  | Current project     | Cluster? | Renders UI | External svc            | **Target layer**                     |
 | --- | --------------------------------------------------------------------- | ------------------- | -------- | ---------- | ----------------------- | ------------------------------------ |
-| 1   | `instance-health-check`                                               | showcase            | no       | no (API)   | none                    | **L2**                               |
+| 1   | `instance-health-check` 🟢                                            | showcase            | no       | no (API)   | none                    | **L2**                               |
 | 2   | `plugins/licensed-users-info-backend/licensed-users-info`             | sanity-plugins      | no       | no (API)   | none                    | **L2**                               |
-| 3   | `smoke-test`                                                          | smoke               | no       | yes        | none                    | **L3** (keep a thin L4a smoke)       |
+| 3   | `smoke-test` 🟢                                                       | smoke               | no       | yes        | none                    | **L3** (keep a thin L4a smoke)       |
 | 4   | `guest-signin-happy-path` 🟢                                          | showcase            | no       | yes        | none                    | **L3**                               |
-| 5   | `settings`                                                            | showcase            | no       | yes        | none                    | **L3** ✅                            |
+| 5   | `settings` 🟢                                                         | showcase            | no       | yes        | none                    | **L3** ✅                            |
 | 6   | `learning-path-page` 🟢                                               | showcase            | no       | yes        | none                    | **L3** ✅                            |
-| 7   | `home-page-customization`                                             | showcase            | no       | yes        | none                    | **L3**                               |
-| 8   | `plugins/frontend/sidebar`                                            | showcase            | no       | yes        | none                    | **L3** ✅                            |
-| 9   | `plugins/user-settings-info-card`                                     | showcase            | no       | yes        | none                    | **L3** ✅                            |
-| 10  | `plugins/application-provider`                                        | showcase            | no       | yes        | none                    | **L3** (context logic → L1)          |
-| 11  | `plugins/application-listener`                                        | showcase            | no       | yes        | none                    | **L3**                               |
+| 7   | `home-page-customization` 🟢                                          | showcase            | no       | yes        | none                    | **L3**                               |
+| 8   | `plugins/frontend/sidebar` 🟢                                         | showcase            | no       | yes        | none                    | **L3** ✅                            |
+| 9   | `plugins/user-settings-info-card` 🟢                                  | showcase            | no       | yes        | none                    | **L3** ✅                            |
+| 10  | `plugins/application-provider` 🟢                                     | showcase            | no       | yes        | none                    | **L3** (context logic → L1)          |
+| 11  | `plugins/application-listener` 🟢                                     | showcase            | no       | yes        | none                    | **L3**                               |
 | 12  | `catalog-timestamp`                                                   | showcase            | no       | yes        | GitHub (import)         | **L3** (replace import with fixture) |
 | 13  | `audit-log/auditor-rbac`                                              | showcase-rbac       | no       | no (API)   | Keycloak                | **L2** (mock auth)                   |
 | 14  | `audit-log/auditor-catalog`                                           | showcase-rbac       | no       | minimal    | GitHub (import)         | **L2 / L4a** (mock GitHub)           |
