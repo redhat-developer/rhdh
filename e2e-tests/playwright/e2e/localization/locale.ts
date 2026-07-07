@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 type TranslationFile = Record<string, Record<string, Record<string, string>>>;
 
-const TRANSLATIONS_DIR = join(import.meta.dirname, "../../../translations");
+const TRANSLATIONS_DIR = join(import.meta.dirname, "../../../../translations");
 
 function loadTranslationJson(fileName: string): TranslationFile {
   const raw: unknown = JSON.parse(readFileSync(join(TRANSLATIONS_DIR, fileName), "utf8"));
