@@ -33,8 +33,8 @@
 
 (Spec numbers refer to the summary matrix below.)
 
-The cluster-free harness now **runs 2 specs (4 test cases) green in CI** (~3.5 min
-GitHub Actions job, no cluster, no image build): the full `guest-signin-happy-path`
+As of this update, the cluster-free harness **ran 2 specs (4 test cases) green in
+CI** (~3.5 min GitHub Actions job, no cluster, no image build): the full `guest-signin-happy-path`
 spec (#4 — home page, Settings, Sign-out: 3 test cases) and `learning-path-page` (#6). Two findings that
 change the cost picture for the remaining candidates:
 
@@ -59,8 +59,8 @@ L3 equivalents land.
 
 ## Update 2026-07-07 — L4a expansion batch merged (PR #5057)
 
-The entire cheap-enablement queue above landed on `main`: the harness now runs
-**9 specs (14 test cases)** green on the PR check — #1 `instance-health-check`, #3
+Every remaining cheap-enablement candidate from the 2026-07-02 scan landed on
+`main`: the harness now runs **10 specs (14 test cases)** green on the PR check — #1 `instance-health-check`, #3
 `smoke-test`, #4 `guest-signin-happy-path`, #5 `settings`, #6 `learning-path-page`,
 #7 `home-page-customization`, #8 `sidebar`, #9 `user-settings-info-card`, #10/#11
 `application-provider/listener`. Notable mechanics (details in
@@ -80,8 +80,8 @@ The entire cheap-enablement queue above landed on `main`: the harness now runs
   `playwright.config.ts` `BASE_URL`, which the harness does not set — a small
   follow-up.
 
-Note: #19 `plugin-dynamic-loading` ships with PR #4967, which is still **open** — the
-row below describes its state once merged.
+Note: #19 `plugin-dynamic-loading` ships with PR #4967, **open at the time of
+writing (2026-07-07)** — the row below describes its state once merged.
 
 ## Summary matrix (30 specs: 29 on `main` + #19 pending in PR #4967)
 
@@ -289,5 +289,6 @@ scaffolder-relation-processor`.
 - Epic RHIDP-13501, Stories RHIDP-15075 (spike), RHIDP-15076 (this), RHIDP-15082 (L4a harness),
   RHIDP-13528/13529 (L3 batches), RHIDP-13530 (overlay coord), RHIDP-13236 (optional retirement).
 - Existing L3 work: [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged; RHIDP-13235).
-- Cluster-free L4a harness: [rhdh#5005](https://github.com/redhat-developer/rhdh/pull/5005) (RHIDP-15075).
+- Cluster-free L4a harness: [rhdh#5005](https://github.com/redhat-developer/rhdh/pull/5005) (RHIDP-15075);
+  expansion to 10 specs: [rhdh#5057](https://github.com/redhat-developer/rhdh/pull/5057).
 - Plugin load validation (L4a): `e2e-tests/playwright/e2e/plugin-dynamic-loading.spec.ts` (RHIDP-13508, PR #4967).
