@@ -3,6 +3,7 @@ import { expect, type Page } from "@playwright/test";
 import { waitForRhdhReady, isJsonHealthcheckResponse } from "../../utils/wait-for-rhdh-ready";
 
 const LOADING_INDICATOR_SELECTORS = [
+  // Intentional divergence: MUI progress bars lack stable roles; class hooks are reliable in CI.
   'div[class*="MuiLinearProgress-root"]',
   '[class*="MuiCircularProgress-root"]',
 ] as const;

@@ -146,6 +146,7 @@ export class CatalogBrowsePage {
   }
 
   async verifyDependencyResource(resource: string): Promise<void> {
+    // Intentional divergence: topology graph workspace nodes lack stable roles; keyed by id + text.
     const resourceElement = this.page.locator(`#workspace:has-text("${resource}")`);
     await resourceElement.scrollIntoViewIfNeeded();
     await expect(resourceElement).toBeVisible();

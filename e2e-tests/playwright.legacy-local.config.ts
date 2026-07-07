@@ -4,6 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 // Packaged-app sidebar markup differs from the RHDH container global-header sidebar
 // even though /healthcheck returns JSON via the dev-server proxy.
+// Intentional divergence: force legacy sidebar adapter for cluster-free harness.
 process.env.E2E_FORCE_LEGACY_SIDEBAR = "true";
 
 /**

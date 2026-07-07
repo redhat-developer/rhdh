@@ -24,6 +24,7 @@ let cachedUsesRhdhSidebar: boolean | undefined;
 let cachedSidebarBaseUrl: string | undefined;
 
 async function hasLegacySidebarMarkup(page: Page): Promise<boolean> {
+  // Intentional divergence: packaged-app exposes login-button; cluster RHDH uses global-header nav.
   const packagedSidebar = page.getByTestId("login-button");
   if ((await packagedSidebar.count()) > 0) {
     return packagedSidebar.isVisible().catch(() => false);
@@ -34,6 +35,7 @@ async function hasLegacySidebarMarkup(page: Page): Promise<boolean> {
 }
 
 async function detectRhdhSidebar(page: Page): Promise<boolean> {
+  // Intentional divergence: cluster-free harness forces legacy adapter (playwright.legacy-local.config.ts).
   if (process.env.E2E_FORCE_LEGACY_SIDEBAR === "true") {
     return false;
   }
@@ -58,6 +60,7 @@ async function runSidebarAction(
   legacy: (page: Page) => Promise<void>,
   rhdh: (page: Page) => Promise<void>,
 ): Promise<void> {
+  // Intentional divergence: dual sidebar adapters — legacy packaged-app vs RHDH global-header.
   if (await usesRhdhSidebar(page)) {
     await rhdh(page);
     return;
@@ -165,6 +168,7 @@ export async function selectMuiBox(page: Page, label: string, value: string, not
 
   const combobox = page
     .getByRole("combobox", { name: label })
+    // Intentional divergence: MUI Autocomplete exposes aria-label div, not always role=combobox.
     .or(page.locator(`div[aria-label="${label}"]`))
     .first();
 

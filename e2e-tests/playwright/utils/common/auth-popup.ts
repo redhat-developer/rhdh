@@ -32,7 +32,7 @@ export async function handleGitHubPopupLogin(
     return alreadyLoggedIn;
   }
 
-  /* oxlint-disable playwright/no-raw-locators -- GitHub login popup (third-party) */
+  /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party GitHub login popup */
   try {
     await popup.locator("#login_field").click({ timeout: 5000 });
     await popup.locator("#login_field").fill(username, { timeout: 5000 });
@@ -64,7 +64,7 @@ export async function handleGitHubPopupLogin(
 }
 
 async function findGitlabAuthorizeButton(popup: Page): Promise<Locator> {
-  /* oxlint-disable playwright/no-raw-locators -- GitLab authorize popup (third-party) */
+  /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party GitLab authorize popup */
   const authorization = popup.getByTestId("authorize-button");
   const authorizationByText = popup.getByRole("button", { name: "Authorize" });
   /* oxlint-enable playwright/no-raw-locators */
@@ -104,7 +104,8 @@ async function clickGitlabAuthorizeButton(popup: Page, authorizeButton: Locator)
   try {
     await authorizeButton.click({ timeout: 5000 });
   } catch {
-    // oxlint-disable-next-line playwright/no-force-option -- overlay dismissal is unreliable in CI
+    // Intentional divergence: GitLab authorize overlay dismissal is unreliable in CI.
+    // oxlint-disable-next-line playwright/no-force-option
     await authorizeButton.click({ force: true, timeout: 5000 });
   }
 }
@@ -120,7 +121,7 @@ export async function handleGitlabPopupLogin(
     return alreadyLoggedIn;
   }
 
-  /* oxlint-disable playwright/no-raw-locators -- GitLab login popup (third-party) */
+  /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party GitLab login popup */
   try {
     await popup.locator("#user_login").click({ timeout: 5000 });
     await popup.locator("#user_login").fill(username, { timeout: 5000 });
@@ -155,7 +156,7 @@ async function fillMicrosoftCredentials(
   username: string,
   password: string,
 ): Promise<string> {
-  /* oxlint-disable playwright/no-raw-locators -- Microsoft Azure login popup (third-party) */
+  /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party Microsoft Azure login popup */
   try {
     await popup.locator("[name=loginfmt]").click();
     await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
@@ -194,7 +195,7 @@ async function fillPingFederateCredentials(
   username: string,
   password: string,
 ): Promise<string> {
-  /* oxlint-disable playwright/no-raw-locators -- PingFederate login popup (third-party) */
+  /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party PingFederate login popup */
   try {
     await popup.locator("#username").click();
     await popup.locator("#username").fill(username, { timeout: 5000 });
@@ -239,7 +240,7 @@ export async function handleKeycloakPopupLogin(
     return alreadyLoggedIn;
   }
 
-  /* oxlint-disable playwright/no-raw-locators -- Keycloak OIDC login popup (third-party) */
+  /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party Keycloak OIDC login popup */
   try {
     await popup.locator("#username").click();
     await popup.locator("#username").fill(username);

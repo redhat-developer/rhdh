@@ -44,6 +44,7 @@ async function expandSectionInternal(page: Page, sectionLabel: string): Promise<
   }
 
   const sectionGroup = sectionButton.locator("xpath=..");
+  // Intentional divergence: some section groups pre-expand without aria-expanded; check parent for links.
   const nestedLinks = sectionGroup.getByRole("link");
   if ((await nestedLinks.count()) > 0 && (await nestedLinks.first().isVisible())) {
     return;
@@ -66,6 +67,7 @@ async function activateLink(page: Page, resolveLink: () => Promise<Locator>): Pr
     const link = await resolveLink();
     const href = await link.getAttribute("href");
     if (href !== null && href !== "") {
+      // Intentional divergence: sidebar link click can fail when overlay blocks; goto href as fallback.
       await page.goto(href);
       return;
     }

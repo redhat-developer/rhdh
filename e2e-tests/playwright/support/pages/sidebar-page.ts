@@ -3,6 +3,7 @@ import { expect, Page } from "@playwright/test";
 import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
+import { ensureLegacySectionExpanded } from "../navigation/legacy-sidebar-adapter";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -42,8 +43,9 @@ export class SidebarPage {
   }
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    const sectionMenu = this.page.getByTestId("login-button").getByText(section);
-    await expect(sectionMenu.getByText(itemText)).toBeVisible();
+    await ensureLegacySectionExpanded(this.page, section, itemText);
+    // Intentional divergence: nested menu items are nav links, not login-button text descendants.
+    await expect(this.page.locator(`nav a:has-text("${itemText}")`).first()).toBeVisible();
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {

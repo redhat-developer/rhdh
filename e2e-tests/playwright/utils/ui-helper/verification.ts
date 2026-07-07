@@ -20,6 +20,7 @@ export async function verifyLink(
   let notVisibleCheck: boolean;
 
   if (typeof arg === "object") {
+    // Intentional divergence: sidebar-group links are grouped by aria-label div, not accessible name.
     linkLocator = page.locator(`div[aria-label="${arg.label}"] a`);
     notVisibleCheck = false;
   } else {

@@ -19,7 +19,8 @@ export async function clickButton(
   await expect(button).toBeVisible();
 
   if (force) {
-    // oxlint-disable-next-line playwright/no-force-option -- MUI overlay blocks native click in CI
+    // Intentional divergence: MUI overlay blocks native click in CI.
+    // oxlint-disable-next-line playwright/no-force-option
     await button.click({ force: true });
   } else {
     await button.click();
@@ -54,7 +55,8 @@ export async function clickButtonByText(
   });
 
   if (force) {
-    // oxlint-disable-next-line playwright/no-force-option -- MUI overlay blocks native click in CI
+    // Intentional divergence: MUI overlay blocks native click in CI.
+    // oxlint-disable-next-line playwright/no-force-option
     await buttonElement.click({ force: true });
   } else {
     await buttonElement.click();
@@ -92,8 +94,10 @@ export async function clickLink(
   if (typeof options === "string") {
     linkLocator = page.getByRole("link", { name: options }).first();
   } else if ("href" in options) {
+    // Intentional divergence: some nav links only have a stable href, not accessible name.
     linkLocator = page.locator(`a[href="${options.href}"]`).first();
   } else {
+    // Intentional divergence: sidebar-group links are grouped by aria-label div, not accessible name.
     linkLocator = page.locator(`div[aria-label='${options.ariaLabel}'] a`).first();
   }
 

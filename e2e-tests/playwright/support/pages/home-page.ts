@@ -58,10 +58,12 @@ export class HomePage {
 
     if (expand) {
       await accordionButton.click();
+      // Intentional divergence: MUI accordion details lack stable roles.
       await expect(sectionLocator.locator('[class*="MuiAccordionDetails-root"]')).toBeVisible();
     }
 
     for (const item of Array.isArray(items) ? items : [items]) {
+      // Intentional divergence: quick-access items use MUI list text nodes, not role=link.
       const itemLocator = sectionLocator
         .locator(`a div[class*="MuiListItemText-root"]`)
         .filter({ hasText: item });
@@ -78,6 +80,7 @@ export class HomePage {
     await expect(sectionLocator).toBeVisible();
 
     const itemLocator = sectionLocator.locator(`li[class*="MuiListItem-root"]`);
+    // Intentional divergence: visited-card list items use MUI class hooks, not role=listitem.
     expect(await itemLocator.count()).toBeGreaterThanOrEqual(0);
   }
 }
