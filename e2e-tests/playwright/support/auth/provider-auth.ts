@@ -25,7 +25,7 @@ export class AuthProviderSession {
   private async openLandingPageWithProviderMessage(message: string): Promise<void> {
     await this.page.goto("/");
     await waitForAppReady(this.page);
-    await expect(this.page.getByText(message)).toBeVisible();
+    await expect(this.page.getByRole("main").getByText(message)).toBeVisible();
   }
 
   private async openPrimarySignInPopup(): Promise<Page> {

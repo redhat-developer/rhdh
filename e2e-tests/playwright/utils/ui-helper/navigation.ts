@@ -24,11 +24,13 @@ let cachedUsesRhdhSidebar: boolean | undefined;
 let cachedSidebarBaseUrl: string | undefined;
 
 async function hasLegacySidebarMarkup(page: Page): Promise<boolean> {
-  const legacySection = page.locator("nav button[aria-label]").first();
-  if ((await legacySection.count()) === 0) {
-    return false;
+  const packagedSidebar = page.getByTestId("login-button");
+  if ((await packagedSidebar.count()) > 0) {
+    return packagedSidebar.isVisible().catch(() => false);
   }
-  return legacySection.isVisible().catch(() => false);
+
+  const legacyNavButton = page.getByRole("navigation").getByRole("button").first();
+  return legacyNavButton.isVisible().catch(() => false);
 }
 
 async function detectRhdhSidebar(page: Page): Promise<boolean> {

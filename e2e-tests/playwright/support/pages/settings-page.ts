@@ -171,7 +171,7 @@ export class SettingsPage {
   }
 
   async verifySidebarMenuItemHidden(text: string): Promise<void> {
-    await expect(this.page.getByText(text)).toBeHidden();
+    await expect(this.page.getByRole("link", { name: text })).toBeHidden();
   }
 
   async openFromProfile(userName: string): Promise<void> {
@@ -183,7 +183,7 @@ export class SettingsPage {
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {
-    await expect(this.page.getByText("RHDH Build info")).toBeVisible();
+    await expect(this.page.getByRole("main").getByText("RHDH Build info")).toBeVisible();
   }
 
   async verifyBuildInfoText(text: string): Promise<void> {
@@ -191,7 +191,7 @@ export class SettingsPage {
   }
 
   async expandShowMoreSection(): Promise<void> {
-    await this.page.getByTitle("Show more").click();
+    await this.page.getByRole("button", { name: "Show more" }).click();
   }
 
   async verifyGuestSignInMethodNotListed(): Promise<void> {
@@ -203,7 +203,9 @@ export class SettingsPage {
   }
 
   async verifyInactivityLogoutMessageHidden(timeout = 30_000): Promise<void> {
-    await expect(this.page.getByText("Logging out due to inactivity")).toBeHidden({ timeout });
+    await expect(this.page.getByRole("alert").filter({ hasText: "Logging out due to inactivity" })).toBeHidden({
+      timeout,
+    });
   }
 
   async verifyRhdhMetadata(): Promise<void> {

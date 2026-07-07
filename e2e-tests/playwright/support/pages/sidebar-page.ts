@@ -43,7 +43,10 @@ export class SidebarPage {
 
   async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
     const sectionMenu = this.page.getByTestId("login-button").getByText(section);
-    await expect(sectionMenu.getByText(itemText)).toBeVisible();
+    const menuItem = sectionMenu
+      .getByRole("link", { name: itemText })
+      .or(sectionMenu.getByText(itemText, { exact: true }));
+    await expect(menuItem.first()).toBeVisible();
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {

@@ -46,7 +46,7 @@ export async function clickButtonByText(
     ...DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS,
     ...options,
   };
-  const buttonElement = page.getByRole("button").getByText(buttonText, { exact });
+  const buttonElement = page.getByRole("button", { name: buttonText, exact });
 
   await buttonElement.waitFor({
     state: "visible",

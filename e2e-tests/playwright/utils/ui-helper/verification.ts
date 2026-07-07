@@ -146,7 +146,7 @@ export async function verifyColumnHeading(
   exact: boolean = true,
 ) {
   for (const rowText of rowTexts) {
-    const rowLocator = page.getByRole("columnheader").getByText(rowText, { exact }).first();
+    const rowLocator = page.getByRole("columnheader", { name: rowText, exact }).first();
     await rowLocator.waitFor({ state: "visible" });
     await rowLocator.scrollIntoViewIfNeeded();
     await expect(rowLocator).toBeVisible();
@@ -160,8 +160,19 @@ export async function verifyHeading(page: Page, heading: string | RegExp, timeou
   await expect(headingLocator).toBeVisible();
 }
 
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+function coerceHeadingLevel(level: number): HeadingLevel {
+  if (level === 1 || level === 2 || level === 3 || level === 4 || level === 5 || level === 6) {
+    return level;
+  }
+  return 1;
+}
+
 export async function waitForTitle(page: Page, text: string, level: number = 1) {
-  await expect(page.locator(`h${level}:has-text("${text}")`)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: text, level: coerceHeadingLevel(level) }),
+  ).toBeVisible();
 }
 
 export async function verifyAlertErrorMessage(page: Page, message: string | RegExp) {

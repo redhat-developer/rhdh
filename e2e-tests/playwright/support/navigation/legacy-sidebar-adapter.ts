@@ -1,10 +1,17 @@
 import { expect, type Page } from "@playwright/test";
 
+function legacyNavigation(page: Page) {
+  return page.getByRole("navigation").first();
+}
+
 export async function expandLegacySection(page: Page, sectionLabel: string): Promise<void> {
-  const ariaButton = page.locator(`nav button[aria-label="${sectionLabel}"]`);
-  if ((await ariaButton.count()) > 0) {
-    await expect(ariaButton).toBeVisible();
-    await ariaButton.click();
+  const navButton = legacyNavigation(page).getByRole("button", {
+    name: sectionLabel,
+    exact: true,
+  });
+  if ((await navButton.count()) > 0) {
+    await expect(navButton.first()).toBeVisible();
+    await navButton.first().click();
     return;
   }
 
@@ -14,11 +21,13 @@ export async function expandLegacySection(page: Page, sectionLabel: string): Pro
 }
 
 export async function openLegacyLink(page: Page, linkName: string): Promise<void> {
-  const link = page.locator(`nav a:has-text("${linkName}")`).first();
+  const link = legacyNavigation(page).getByRole("link", { name: linkName }).first();
   await expect(link).toBeVisible({ timeout: 15_000 });
-  await link.dispatchEvent("click");
+  await link.click();
 }
 
 export async function waitForLegacySidebarVisible(page: Page): Promise<void> {
-  await page.waitForSelector("nav a", { timeout: 10_000 });
+  await expect(legacyNavigation(page).getByRole("link").first()).toBeVisible({
+    timeout: 10_000,
+  });
 }

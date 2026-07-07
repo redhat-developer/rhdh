@@ -73,8 +73,8 @@ export class CatalogImport {
   }
 
   async verifyEntityYaml(text: string) {
-    await this.page.getByTitle("More").click();
-    await this.page.getByRole("menuitem").getByText("Inspect entity").click();
+    await this.page.getByRole("button", { name: "More" }).click();
+    await this.page.getByRole("menuitem", { name: "Inspect entity" }).click();
     await interaction.clickTab(this.page, "Raw YAML");
     await expect(this.page.getByTestId("code-snippet")).toContainText(text);
     await interaction.clickButton(this.page, "Close");

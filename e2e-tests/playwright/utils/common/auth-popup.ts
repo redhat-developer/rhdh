@@ -38,7 +38,7 @@ export async function handleGitHubPopupLogin(
     await popup.locator("#login_field").fill(username, { timeout: 5000 });
     const cookieLocator = popup.locator("#wcpConsentBannerCtrl");
     if (await cookieLocator.isVisible()) {
-      await popup.click('button:has-text("Reject")', { timeout: 5000 });
+      await popup.getByRole("button", { name: "Reject" }).click({ timeout: 5000 });
     }
     await popup.locator("#password").click({ timeout: 5000 });
     await popup.locator("#password").fill(password, { timeout: 5000 });
@@ -66,7 +66,7 @@ export async function handleGitHubPopupLogin(
 async function findGitlabAuthorizeButton(popup: Page): Promise<Locator> {
   /* oxlint-disable playwright/no-raw-locators -- GitLab authorize popup (third-party) */
   const authorization = popup.getByTestId("authorize-button");
-  const authorizationByText = popup.locator('button:has-text("Authorize")');
+  const authorizationByText = popup.getByRole("button", { name: "Authorize" });
   /* oxlint-enable playwright/no-raw-locators */
 
   let buttonToClick: Locator | undefined;
@@ -159,12 +159,12 @@ async function fillMicrosoftCredentials(
   try {
     await popup.locator("[name=loginfmt]").click();
     await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
-    await popup.locator('[type=submit]:has-text("Next")').click({ timeout: 5000 });
+    await popup.getByRole("button", { name: "Next" }).click({ timeout: 5000 });
 
     await popup.locator("[name=passwd]").click();
     await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
-    await popup.locator('[type=submit]:has-text("Sign in")').click({ timeout: 5000 });
-    await popup.locator('[type=button]:has-text("No")').click({ timeout: 15000 });
+    await popup.getByRole("button", { name: "Sign in" }).click({ timeout: 5000 });
+    await popup.getByRole("button", { name: "No" }).click({ timeout: 15000 });
     return "Login successful";
   } catch (e) {
     const usernameError = popup.locator("id=usernameError");
