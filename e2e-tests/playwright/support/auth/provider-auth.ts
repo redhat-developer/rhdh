@@ -1,10 +1,6 @@
 import { expect, type BrowserContext, type Page } from "@playwright/test";
 
-import {
-  getCurrentLanguage,
-  getTranslations,
-  type Locale,
-} from "../../e2e/localization/locale";
+import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/localization/locale";
 import {
   handleGitHubPopupLogin,
   handleGitlabPopupLogin,

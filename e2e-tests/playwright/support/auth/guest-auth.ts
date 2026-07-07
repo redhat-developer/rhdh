@@ -1,10 +1,6 @@
 import { type Page } from "@playwright/test";
 
-import {
-  getCurrentLanguage,
-  getTranslations,
-  type Locale,
-} from "../../e2e/localization/locale";
+import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/localization/locale";
 import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
