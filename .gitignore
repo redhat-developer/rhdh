@@ -64,6 +64,8 @@ site
 # Dynamic plugins root content
 dynamic-plugins-root/*
 !dynamic-plugins-root/.gitkeep
+# install-dynamic-plugins config copied to the repo root by e2e-tests/local-harness/populate.sh
+/dynamic-plugins.yaml
 
 #dev caches
 .webpack-cache

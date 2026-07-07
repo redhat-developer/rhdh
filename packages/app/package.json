@@ -6,6 +6,9 @@
   "backstage": {
     "role": "frontend"
   },
+  "proxy": {
+    "/healthcheck": "http://localhost:7007"
+  },
   "scripts": {
     "start": "janus-cli package start",
     "build": "janus-cli package build && node ../../scripts/generate-index-template.mjs",

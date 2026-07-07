@@ -69,7 +69,7 @@ export async function verifyRowsInTable(
 }
 
 export async function waitForTextDisappear(page: Page, text: string) {
-  await page.waitForSelector(`text=${text}`, { state: "detached" });
+  await expect(page.getByText(text)).toHaveCount(0);
 }
 
 async function verifyTextInLocator(
@@ -172,7 +172,7 @@ export async function verifyParagraph(page: Page, paragraph: string) {
 }
 
 export async function waitForTitle(page: Page, text: string, level: number = 1) {
-  await page.waitForSelector(`h${level}:has-text("${text}")`);
+  await expect(page.locator(`h${level}:has-text("${text}")`)).toBeVisible();
 }
 
 export async function verifyAlertErrorMessage(page: Page, message: string | RegExp) {

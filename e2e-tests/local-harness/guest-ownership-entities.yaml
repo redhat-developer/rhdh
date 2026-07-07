@@ -1,0 +1,22 @@
+# Minimal catalog entities for the cluster-free harness, mirroring the guest
+# user ownership that CI gets from Keycloak ingestion (keycloakOrg provider in
+# .ci/pipelines/resources/config_map/app-config-rhdh.yaml): the guest identity
+# resolves to user:default/guest, displayed as "Guest User", member of team-a.
+# Loaded via a catalog file location in app-config.local-e2e.yaml; exercised by
+# settings.spec.ts ("Ownership Entities: Guest User, team-a").
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: guest
+spec:
+  profile:
+    displayName: Guest User
+  memberOf: [team-a]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-a
+spec:
+  type: team
+  children: []

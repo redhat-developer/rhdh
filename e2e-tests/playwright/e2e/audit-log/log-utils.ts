@@ -5,6 +5,7 @@ import { expect } from "@playwright/test";
 
 import { getBackstageDeploySelector } from "../../utils/helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "../../utils/kube-client";
+import { pollForValue } from "../../utils/poll-until";
 import { Log, type LogRequest, type EventStatus, type EventSeverityLevel } from "./logs";
 
 function formatError(error: unknown): string {
@@ -47,7 +48,7 @@ function compareValues(actual: unknown, expected: unknown): void {
   }
 }
 
-function validateLog(actual: Log, expected: Partial<Log>): void {
+function validateLog(actual: Record<string, unknown>, expected: Partial<Log>): void {
   for (const [key, expectedValue] of Object.entries(expected)) {
     if (expectedValue === undefined) {
       continue;
@@ -56,47 +57,17 @@ function validateLog(actual: Log, expected: Partial<Log>): void {
   }
 }
 
-function getLogProperty(log: Log, key: string): unknown {
-  switch (key) {
-    case "actor":
-      return log.actor;
-    case "eventId":
-      return log.eventId;
-    case "isAuditEvent":
-      return log.isAuditEvent;
-    case "severityLevel":
-      return log.severityLevel;
-    case "plugin":
-      return log.plugin;
-    case "request":
-      return log.request;
-    case "response":
-      return log.response;
-    case "service":
-      return log.service;
-    case "status":
-      return log.status;
-    case "timestamp":
-      return log.timestamp;
-    case "meta":
-      return log.meta;
-    case "message":
-      return log.message;
-    case "name":
-      return log.name;
-    case "stack":
-      return log.stack;
-    default:
-      return undefined;
-  }
+function getLogProperty(log: Record<string, unknown>, key: string): unknown {
+  return log[key];
 }
 
-function parseLogFromJson(text: string): Log {
+/** Parse audit log JSON without applying Log constructor defaults. */
+function parseLogFromJson(text: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(text);
   if (!isRecord(parsed)) {
     throw new TypeError("Audit log JSON must be an object");
   }
-  return new Log(parsed as Partial<Log>);
+  return parsed;
 }
 
 export const LogUtils = {
@@ -202,7 +173,7 @@ export const LogUtils = {
   /**
    * Fetches logs using grep for filtering directly in the shell.
    */
-  async getPodLogsWithGrep(
+  getPodLogsWithGrep(
     filterWords: string[] = [],
     namespace: string = process.env.NAME_SPACE ?? "showcase-ci-nightly",
     maxRetries: number = 4,
@@ -217,36 +188,32 @@ export const LogUtils = {
       grepCommand += ` | grep '${word}'`;
     }
 
-    let attempt = 0;
-    while (attempt <= maxRetries) {
-      try {
-        console.log(`Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`);
-        const output = await LogUtils.executeShellCommand(grepCommand);
+    return pollForValue(
+      async () => {
+        try {
+          console.log(`Fetching logs with grep for filter ${JSON.stringify(filterWords)}...`);
+          const output = await LogUtils.executeShellCommand(grepCommand);
 
-        const logLines = output.split("\n").filter((line) => line.trim() !== "");
-        if (logLines.length > 0) {
-          console.log("Matching log line found:", logLines[0]);
-          return logLines[0];
+          const logLines = output.split("\n").filter((line) => line.trim() !== "");
+          if (logLines.length > 0) {
+            console.log("Matching log line found:", logLines[0]);
+            return logLines[0];
+          }
+
+          console.warn(
+            `No matching logs found for filter ${JSON.stringify(filterWords)}. Retrying...`,
+          );
+        } catch (error) {
+          console.error(`Error fetching logs:`, formatError(error));
         }
 
-        console.warn(
-          `No matching logs found for filter ${JSON.stringify(filterWords)} on attempt ${attempt + 1}. Retrying...`,
-        );
-      } catch (error) {
-        console.error(`Error fetching logs on attempt ${attempt + 1}:`, formatError(error));
-      }
-
-      attempt++;
-      if (attempt <= maxRetries) {
-        console.log(`Waiting ${retryDelay / 1000} seconds before retrying...`);
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, retryDelay);
-        });
-      }
-    }
-
-    throw new Error(
-      `Failed to fetch logs for filter ${JSON.stringify(filterWords)} after ${maxRetries + 1} attempts.`,
+        return null;
+      },
+      {
+        timeoutMs: (maxRetries + 1) * retryDelay,
+        intervalMs: retryDelay,
+        label: `Failed to fetch logs for filter ${JSON.stringify(filterWords)} after ${maxRetries + 1} attempts.`,
+      },
     );
   },
 
@@ -303,7 +270,7 @@ export const LogUtils = {
     try {
       const actualLog = await LogUtils.getPodLogsWithGrep(filterWordsAll, namespace);
 
-      let parsedLog: Log;
+      let parsedLog: Record<string, unknown>;
       try {
         parsedLog = parseLogFromJson(actualLog);
       } catch (parseError) {

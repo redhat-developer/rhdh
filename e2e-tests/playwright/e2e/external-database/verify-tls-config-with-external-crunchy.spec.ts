@@ -1,7 +1,8 @@
 import { test, expect } from "@support/coverage/test";
 
+import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
+import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Verify TLS configuration with external Crunchy Postgres DB", () => {
   test.beforeAll(() => {
@@ -18,15 +19,16 @@ test.describe("Verify TLS configuration with external Crunchy Postgres DB", () =
   });
 
   test("Verify successful DB connection", async ({ page }) => {
-    const uiHelper = new UIhelper(page);
+    const rhdhHomePage = new RhdhHomePage(page);
+    const catalogBrowsePage = new CatalogBrowsePage(page);
     const common = new Common(page);
     await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
-    await uiHelper.verifyHeading("Welcome back!");
+    await rhdhHomePage.verifyWelcomeHeading();
     await page.getByLabel("Catalog").first().click();
-    await uiHelper.selectMuiBox("Kind", "Component");
+    await catalogBrowsePage.selectKind("Component");
     await expect(async () => {
-      await uiHelper.clickByDataTestId("user-picker-all");
-      await uiHelper.verifyRowsInTable(["test-rhdh-qe-2-team-owned"]);
+      await catalogBrowsePage.clickByDataTestId("user-picker-all");
+      await catalogBrowsePage.verifyTableRows(["test-rhdh-qe-2-team-owned"]);
     }).toPass({
       intervals: [1_000, 2_000],
       timeout: 15_000,

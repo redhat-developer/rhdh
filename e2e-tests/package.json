@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:stability": "playwright test --project=showcase --retries=0",
     "showcase": "playwright test --project=showcase",
     "showcase-rbac": "playwright test --project=showcase-rbac",
     "showcase-k8s": "playwright test --project=showcase-k8s",
@@ -22,10 +23,12 @@
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "test:list": "playwright test --list",
+    "test:unit": "vitest run",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "postinstall": "playwright install chromium",
-    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always"
+    "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
+    "e2e:legacy-local": "playwright test --config=playwright.legacy-local.config.ts"
   },
   "dependencies": {
     "@azure/arm-network": "34.2.0",
@@ -42,12 +45,11 @@
     "winston": "3.14.2"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.12.1",
+    "@axe-core/playwright": "4.11.3",
     "@microsoft/microsoft-graph-types": "2.43.1",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.61.0",
     "@types/js-yaml": "4.0.9",
     "@types/node": "24.13.2",
-    "@types/node-fetch": "2.6.13",
     "@types/pg": "8.20.0",
     "eslint-plugin-check-file": "3.3.1",
     "eslint-plugin-playwright": "2.10.4",
@@ -58,7 +60,8 @@
     "oxlint": "1.71.0",
     "oxlint-tsgolint": "0.23.0",
     "shellcheck": "4.1.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "^4.1.9"
   },
   "engines": {
     "node": "24"

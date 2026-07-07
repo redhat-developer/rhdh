@@ -1,13 +1,13 @@
 import { test } from "@support/coverage/test";
 
 import { HomePage } from "../support/pages/home-page";
+import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 import { runAccessibilityTests } from "../utils/accessibility";
 import { Common } from "../utils/common";
-import { UIhelper } from "../utils/ui-helper";
 
 test.describe("Home page customization", () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let rhdhHomePage: RhdhHomePage;
   let homePage: HomePage;
 
   test.beforeAll(() => {
@@ -18,40 +18,53 @@ test.describe("Home page customization", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    rhdhHomePage = new RhdhHomePage(page);
     common = new Common(page);
     homePage = new HomePage(page);
     await common.loginAsGuest();
   });
 
-  test("Verify that home page is customized", async ({ page }, testInfo) => {
-    await uiHelper.verifyTextinCard("Quick Access", "Quick Access");
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify that home page is customized",
+    { tag: "@cluster-free" },
+    async ({ page }, testInfo) => {
+      await rhdhHomePage.verifyTextInCard("Quick Access", "Quick Access");
 
-    await runAccessibilityTests(page, testInfo);
+      await runAccessibilityTests(page, testInfo);
 
-    await uiHelper.verifyTextinCard("Your Starred Entities", "Your Starred Entities");
-    await uiHelper.verifyHeading("Placeholder tests");
-    await uiHelper.verifyDivHasText("Home page customization test 1");
-    await uiHelper.verifyDivHasText("Home page customization test 2");
-    await uiHelper.verifyDivHasText("Home page customization test 3");
-    await uiHelper.verifyHeading("Markdown tests");
-    await uiHelper.verifyTextinCard("Company links", "Company links");
-    await uiHelper.verifyHeading("Important company links");
-    await uiHelper.verifyHeading("RHDH");
-    await uiHelper.verifyTextinCard("Featured Docs", "Featured Docs");
-    await uiHelper.verifyTextinCard("Random Joke", "Random Joke");
-    await uiHelper.clickButton("Reroll");
-  });
+      await rhdhHomePage.verifyTextInCard("Your Starred Entities", "Your Starred Entities");
+      await rhdhHomePage.verifyHeading("Placeholder tests");
+      await rhdhHomePage.verifyDivHasText("Home page customization test 1");
+      await rhdhHomePage.verifyDivHasText("Home page customization test 2");
+      await rhdhHomePage.verifyDivHasText("Home page customization test 3");
+      await rhdhHomePage.verifyHeading("Markdown tests");
+      await rhdhHomePage.verifyTextInCard("Company links", "Company links");
+      await rhdhHomePage.verifyHeading("Important company links");
+      await rhdhHomePage.verifyHeading("RHDH");
+      await rhdhHomePage.verifyTextInCard("Featured Docs", "Featured Docs");
+      await rhdhHomePage.verifyTextInCard("Random Joke", "Random Joke");
+      await rhdhHomePage.clickButton("Reroll");
+    },
+  );
 
-  test("Verify that the Top Visited card in the Home page renders without an error", async () => {
-    await uiHelper.verifyTextinCard("Top Visited", "Top Visited");
-    await homePage.verifyVisitedCardContent("Top Visited");
-  });
+  test(
+    "Verify that the Top Visited card in the Home page renders without an error",
+    { tag: "@cluster-free" },
+    async () => {
+      await rhdhHomePage.verifyTextInCard("Top Visited", "Top Visited");
+      await homePage.verifyVisitedCardContent("Top Visited");
+    },
+  );
 
-  test("Verify that the Recently Visited card in the Home page renders without an error", async () => {
-    await uiHelper.verifyTextinCard("Recently Visited", "Recently Visited");
-    await homePage.verifyVisitedCardContent("Recently Visited");
-  });
+  test(
+    "Verify that the Recently Visited card in the Home page renders without an error",
+    { tag: "@cluster-free" },
+    async () => {
+      await rhdhHomePage.verifyTextInCard("Recently Visited", "Recently Visited");
+      await homePage.verifyVisitedCardContent("Recently Visited");
+    },
+  );
 
   test("Verify Customized Quick Access", async () => {
     // Expanded by default

@@ -12,7 +12,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { test, expect } from "@support/coverage/test";
 
 import { Common } from "../../utils/common";
-import { getReleaseName, resolveInstallMethod } from "../../utils/helper";
+import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 import { setPortForwardRestarter } from "./schema-mode-db";
@@ -80,7 +80,7 @@ function killPortForward(proc: ChildProcessWithoutNullStreams | undefined): Prom
 
 test.describe("Verify pluginDivisionMode: schema", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
-  const releaseName = getReleaseName();
+  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
   const installMethod = resolveInstallMethod();
 
   let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
@@ -156,17 +156,6 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     await killPortForward(portForwardProcess);
   });
 
-  // RHDH's frontend opens an SSE (EventSource) connection for live
-  // updates. With tracing enabled, Playwright's fixture teardown hangs
-  // waiting for network idle, which never resolves while SSE stays open
-  // (microsoft/playwright#41513, fixed in v1.62). Navigating away drops
-  // the connection so teardown completes immediately.
-  // Requesting `page` creates a context for every test, including non-UI
-  // ones — acceptable overhead vs per-test conditional logic.
-  test.afterEach(async ({ page }) => {
-    await page.goto("about:blank").catch(() => {});
-  });
-
   test("Verify database user has restricted permissions", async () => {
     const hasRestrictedPerms = await testSetup.verifyRestrictedDatabasePermissions();
     expect(hasRestrictedPerms).toBe(true);
@@ -192,10 +181,17 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     }
 
     const common = new Common(page);
-    await common.loginAsGuest();
+    try {
+      await common.loginAsGuest();
 
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+      console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+    } finally {
+      // Navigate away from RHDH to close WebSocket connections before
+      // Playwright tears down the page — prevents a long hang during
+      // context/trace cleanup.
+      await page.goto("about:blank").catch(() => {});
+    }
   });
 });

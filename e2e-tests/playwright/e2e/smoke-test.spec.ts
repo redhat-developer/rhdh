@@ -1,10 +1,11 @@
 import { test } from "@support/coverage/test";
 
+import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 import { Common } from "../utils/common";
-import { UIhelper } from "../utils/ui-helper";
+import { waitForRhdhReady } from "../utils/wait-for-rhdh-ready";
 
 test.describe("Smoke test", { tag: "@smoke" }, () => {
-  let uiHelper: UIhelper;
+  let rhdhHomePage: RhdhHomePage;
   let common: Common;
 
   test.beforeAll(() => {
@@ -14,13 +15,15 @@ test.describe("Smoke test", { tag: "@smoke" }, () => {
     });
   });
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+  test.beforeEach(async ({ page, request }) => {
+    await waitForRhdhReady(request);
+    rhdhHomePage = new RhdhHomePage(page);
     common = new Common(page);
     await common.loginAsGuest();
   });
 
-  test("Verify the Homepage renders", async () => {
-    await uiHelper.verifyHeading("Welcome back!");
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test("Verify the RHDH instance homepage renders", { tag: "@cluster-free" }, async () => {
+    await rhdhHomePage.verifyWelcomeHeading();
   });
 });

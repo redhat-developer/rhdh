@@ -1,23 +1,21 @@
 import { Page, expect } from "@playwright/test";
 
-import { UIhelper } from "../../utils/ui-helper";
+import * as verification from "../../utils/ui-helper/verification";
 /* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
-import { HOME_PAGE_COMPONENTS, SEARCH_OBJECTS_COMPONENTS } from "../page-objects/page-obj";
+import { HOME_PAGE_COMPONENTS, SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
 
 export class HomePage {
   private page: Page;
-  private uiHelper: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
   }
   async verifyQuickSearchBar(text: string) {
     const searchBar = SEARCH_OBJECTS_COMPONENTS.getSearchInput(this.page);
     await searchBar.waitFor();
     await searchBar.fill("");
     await searchBar.pressSequentially(`${text}\n`);
-    await this.uiHelper.verifyLink(text);
+    await verification.verifyLink(this.page, text);
   }
 
   async verifyQuickAccess(section: string, items: string | string[], expand = false) {

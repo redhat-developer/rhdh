@@ -1,7 +1,7 @@
 import { expect, test } from "@support/coverage/test";
 
+import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Test ApplicationListener", () => {
   test.beforeAll(() => {
@@ -11,25 +11,30 @@ test.describe("Test ApplicationListener", () => {
     });
   });
 
-  let uiHelper: UIhelper;
+  let catalogBrowsePage: CatalogBrowsePage;
 
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
-    uiHelper = new UIhelper(page);
+    catalogBrowsePage = new CatalogBrowsePage(page);
     await common.loginAsGuest();
   });
 
-  test("Verify that the LocationListener logs the current location", async ({ page }) => {
-    const logs: string[] = [];
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify that the LocationListener logs the current location",
+    { tag: "@cluster-free" },
+    async ({ page }) => {
+      const logs: string[] = [];
 
-    page.on("console", (msg) => {
-      if (msg.type() === "log") {
-        logs.push(msg.text());
-      }
-    });
+      page.on("console", (msg) => {
+        if (msg.type() === "log") {
+          logs.push(msg.text());
+        }
+      });
 
-    await uiHelper.openSidebar("Catalog");
+      await catalogBrowsePage.openCatalogSidebar();
 
-    expect(logs.some((l) => l.includes("pathname: /catalog"))).toBeTruthy();
-  });
+      expect(logs.some((l) => l.includes("pathname: /catalog"))).toBeTruthy();
+    },
+  );
 });

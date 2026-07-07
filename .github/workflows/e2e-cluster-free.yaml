@@ -1,0 +1,96 @@
+name: E2E Cluster-free
+
+# Runs the cluster-free local E2E harness (RHIDP-13501 / RHIDP-15075): boots the
+# backend and the legacy app dev server in-process and drives Playwright against
+# them, with dynamic plugins installed from the public OCI registry (ghcr) via
+# the install-dynamic-plugins CLI (skopeo). No OpenShift/Kubernetes cluster or
+# image. See docs/e2e-tests/local-e2e-harness.md.
+
+on:
+  pull_request:
+    paths:
+      - "e2e-tests/**"
+      - "app-config*.yaml"
+      # the harness relies on the app dev-server proxy defined here
+      - "packages/app/package.json"
+      - ".github/workflows/e2e-cluster-free.yaml"
+  push:
+    branches:
+      - "main"
+      - "release-*"
+    paths:
+      - "e2e-tests/**"
+      - "app-config*.yaml"
+      # the harness relies on the app dev-server proxy defined here
+      - "packages/app/package.json"
+      - ".github/workflows/e2e-cluster-free.yaml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    # Playwright image: browsers + OS deps preinstalled, so no browser-install step
+    # (which hung on plain ubuntu runners). Keep the tag in sync with the
+    # @playwright/test version in e2e-tests/package.json (currently 1.61.1) — a
+    # mismatch fails with "Executable doesn't exist at /ms-playwright/...".
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Enable Corepack (vendored yarn 4)
+        run: corepack enable
+
+      - name: Cache yarn global cache
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
+        with:
+          path: ~/.yarn/berry/cache
+          key: yarn-${{ hashFiles('yarn.lock', 'e2e-tests/yarn.lock') }}
+          restore-keys: |
+            yarn-
+
+      - name: Install skopeo
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends skopeo
+
+      - name: Install dependencies (root)
+        run: yarn install
+
+      - name: Install dependencies (e2e-tests)
+        working-directory: ./e2e-tests
+        run: yarn install --mode=skip-build
+
+      - name: Populate dynamic-plugins-root (OCI, no source build)
+        # install-dynamic-plugins pulls the harness plugin set from the public OCI
+        # registry (ghcr) via skopeo — the core plugins in the catalog index's
+        # default.yaml reference local ./dynamic-plugins/dist paths that only exist
+        # after a source build, so we install the OCI-published builds instead.
+        run: ./e2e-tests/local-harness/populate.sh
+
+      - name: Run cluster-free E2E (legacy app)
+        working-directory: ./e2e-tests
+        run: yarn e2e:legacy-local
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report-legacy-local
+          path: e2e-tests/playwright-report-legacy-local
+          retention-days: 7

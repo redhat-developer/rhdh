@@ -1,5 +1,87 @@
 import { defineConfig } from "oxlint";
 
+/** POM and helper methods that perform assertions on behalf of E2E specs. */
+const playwrightAssertFunctions = [
+  "expect",
+  "toPass",
+  "verifyHeading",
+  "verifyWelcomeHeading",
+  "verifyGuestProfile",
+  "verifySignInPageTitle",
+  "verifyProfileHeading",
+  "verifySignInError",
+  "verifyQuickAccess",
+  "verifyLink",
+  "verifyRowsInTable",
+  "verifyRowInTableByUniqueText",
+  "verifyDivHasText",
+  "verifyComponentInCatalog",
+  "verifyComponentsInCatalog",
+  "verifyParagraph",
+  "verifyText",
+  "verifyTextinCard",
+  "verifyTextInCard",
+  "verifyVisitedCardContent",
+  "verifyAboutCardIsDisplayed",
+  "verifyPRStatisticsRendered",
+  "verifyPRRows",
+  "verifyPRRowsPerPage",
+  "waitForEntityPath",
+  "clickPullRequestFilter",
+  "verifyGithubUserProfile",
+  "verifySignInButtonVisible",
+  "verifyTemplateHeading",
+  "verifyTableCell",
+  "verifyDependencyResource",
+  "verifySharedCardCount",
+  "incrementFirstCardCounter",
+  "waitForOpenInCatalogLink",
+  "verifyComponentNameVisible",
+  "verifyLinkHidden",
+  "clearSearchIfVisible",
+  "sortCreatedAtDescending",
+  "verifyFirstRowCreatedAtNotEmpty",
+  "openLicensedUsersCatalog",
+  "verifyTestPageContent",
+  "verifyContextOneCard",
+  "verifyContextTwoCard",
+  "verifyTemplatesHeading",
+  "verifyDocumentationHeading",
+  "verifyDocHeading",
+  "verifyCreateReactAppReviewTableWithGroupOwner",
+  "verifyDependencyGraphLabels",
+  "launchTemplateAndVerifyIntro",
+  "runHttpRequestTemplateFlow",
+  "inspectEntityAndVerifyYaml",
+  "registerExistingComponent",
+  "runAccessibilityTests",
+  "validateLog",
+  "validateLogEvent",
+  "validateRbacLogEvent",
+  "checkRbacResponse",
+  "verifyTextInSelector",
+  "verifyPartialTextInSelector",
+  "verifyTextVisible",
+  "verifyLanguageToggleList",
+  "verifyLanguageSelectShowsOptions",
+  "verifyLanguageOptionsList",
+  "verifySelectedLanguage",
+  "verifySignOutMenuLabel",
+  "verifySidebarMenuItemHidden",
+  "verifyLocalizedUserSettingsLabelsWithOwnership",
+  "verifyBuildInfoCardVisible",
+  "verifyBuildInfoText",
+  "verifyGuestSignInMethodNotListed",
+  "verifyInactivityLogoutMessageHidden",
+  "verifyRhdhMetadata",
+  "verifyMenuItemInSection",
+  "verifyLearningPathLinksOpenInNewTab",
+  "verifyMainHeadingVisible",
+  "loginAsGuest",
+  "restartDeployment",
+  "waitForTitle",
+];
+
 export default defineConfig({
   plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "node", "promise"],
   categories: {
@@ -11,7 +93,7 @@ export default defineConfig({
     typeAware: true,
     typeCheck: true,
   },
-  jsPlugins: ["eslint-plugin-playwright", "eslint-plugin-check-file"],
+  jsPlugins: ["eslint-plugin-check-file"],
   ignorePatterns: [
     "node_modules/**",
     "playwright-report/**",
@@ -44,29 +126,9 @@ export default defineConfig({
         "**": "KEBAB_CASE",
       },
     ],
-    "playwright/no-wait-for-timeout": "error",
-    "playwright/no-force-option": "error",
-    "playwright/expect-expect": "error",
-    "playwright/valid-expect": "error",
-    "playwright/prefer-native-locators": "error",
-    "playwright/no-raw-locators": [
-      "error",
-      {
-        allowed: [],
-      },
-    ],
-    "playwright/no-skipped-test": [
-      "error",
-      {
-        allowConditional: true,
-      },
-    ],
   },
   overrides: [
     {
-      // Auth-provider specs deploy RHDH in beforeAll and use async Playwright hooks.
-      // strict-void-return and no-misused-promises produce false positives on those
-      // describe/beforeAll callbacks without improving test safety.
       files: ["playwright/e2e/auth-providers/**/*.spec.ts"],
       rules: {
         "typescript/strict-void-return": "off",
@@ -74,8 +136,6 @@ export default defineConfig({
       },
     },
     {
-      // Spec files orchestrate multi-step E2E flows; length limits target production
-      // code readability, not test scenarios that must stay in one file for clarity.
       files: ["**/*.spec.ts", "**/*.test.ts"],
       rules: {
         "eslint/max-lines": "off",
@@ -83,9 +143,6 @@ export default defineConfig({
       },
     },
     {
-      // Shared infrastructure (utils, support, data, e2e helpers) is split into
-      // modules but still contains cohesive orchestration (kube waits, deployment
-      // setup, log parsing). Complexity limits would force artificial fragmentation.
       files: [
         "playwright/utils/**/*.ts",
         "playwright/support/**/*.ts",
@@ -99,27 +156,32 @@ export default defineConfig({
       },
     },
     {
-      // Facade modules aggregate many submodules by design (e.g. KubeClient re-exports,
-      // rhdh-deployment orchestration, locale translation maps). A flat import count
-      // does not reflect coupling when each import is a focused submodule.
       files: ["playwright/utils/**/*.ts", "playwright/e2e/localization/**/*.ts"],
       rules: {
         "import/max-dependencies": "off",
       },
     },
     {
-      // valid-title / valid-describe-callback: existing suite uses legacy naming
-      // patterns that do not match the plugin's strict conventions.
-      // no-wait-for-selector: replaced with expect() and locator.waitFor() per
-      // hardening guidelines; rule would flag intentional migration patterns.
-      // expect-expect + assertFunctionNames: POM verify* helpers and loginAsGuest
-      // perform assertions on behalf of the spec; register them so specs are not
-      // forced to duplicate expect() calls after every helper invocation.
-      files: ["**/*.spec.ts", "**/*.test.ts", "playwright/**/*.ts"],
+      // E2E: *.spec.ts only. Playwright jsPlugin is not loaded for other files.
+      files: ["**/*.spec.ts"],
+      jsPlugins: ["eslint-plugin-playwright"],
       rules: {
-        // Playwright requires object destructuring for hook/test callbacks that take
-        // testInfo as a second argument (e.g. async ({}, testInfo) =>). Oxlint's
-        // no-empty-pattern rejects {}; disable it here so lint and runtime agree.
+        "playwright/no-wait-for-timeout": "error",
+        "playwright/no-force-option": "error",
+        "playwright/valid-expect": "error",
+        "playwright/prefer-native-locators": "error",
+        "playwright/no-raw-locators": [
+          "error",
+          {
+            allowed: [],
+          },
+        ],
+        "playwright/no-skipped-test": [
+          "error",
+          {
+            allowConditional: true,
+          },
+        ],
         "eslint/no-empty-pattern": "off",
         "playwright/valid-title": "off",
         "playwright/valid-describe-callback": "off",
@@ -127,39 +189,21 @@ export default defineConfig({
         "playwright/expect-expect": [
           "error",
           {
-            assertFunctionNames: [
-              "expect",
-              "toPass",
-              "verifyHeading",
-              "verifyQuickAccess",
-              "verifyLink",
-              "verifyRowsInTable",
-              "verifyRowInTableByUniqueText",
-              "verifyDivHasText",
-              "verifyComponentInCatalog",
-              "verifyParagraph",
-              "verifyText",
-              "verifyTextinCard",
-              "verifyVisitedCardContent",
-              "verifyAboutCardIsDisplayed",
-              "verifyPRStatisticsRendered",
-              "verifyPRRows",
-              "verifyPRRowsPerPage",
-              "registerExistingComponent",
-              "inspectEntityAndVerifyYaml",
-              "runAccessibilityTests",
-              "validateLog",
-              "validateLogEvent",
-              "validateRbacLogEvent",
-              "checkRbacResponse",
-              "verifyTextInSelector",
-              "verifyPartialTextInSelector",
-              "loginAsGuest",
-              "restartDeployment",
-              "waitForTitle",
-            ],
+            assertFunctionNames: playwrightAssertFunctions,
           },
         ],
+      },
+    },
+    {
+      // Unit: *.test.ts only. Vitest plugin is not loaded for other files.
+      files: ["**/*.test.ts"],
+      plugins: ["vitest"],
+      rules: {
+        "vitest/expect-expect": "error",
+        "vitest/valid-expect": "off",
+        "vitest/no-conditional-in-test": "off",
+        "vitest/no-conditional-tests": "off",
+        "eslint/no-empty-pattern": "off",
       },
     },
   ],

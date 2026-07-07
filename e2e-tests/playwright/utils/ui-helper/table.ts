@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 
-import { getTableCell, getTableRow } from "../../support/page-objects/ui-locators";
+import { getTableCell, getTableRow } from "../../support/selectors/ui-locators";
 import { DEFAULT_VERIFY_BUTTON_URL_OPTIONS } from "./defaults";
 
 export async function verifyCellsInTable(page: Page, texts: (string | RegExp)[]) {
@@ -84,7 +84,9 @@ export async function clickOnButtonInTableByUniqueText(
 }
 
 export async function verifyTableHeadingAndRows(page: Page, texts: string[]) {
-  await page.waitForSelector("table tbody tr", { state: "visible" });
+  await expect(
+    page.getByRole("table").getByRole("rowgroup").last().getByRole("row").first(),
+  ).toBeVisible();
   for (const column of texts) {
     const columnSelector = `table th:has-text("${column}")`;
     const columnCount = await page.locator(columnSelector).count();

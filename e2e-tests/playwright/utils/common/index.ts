@@ -1,12 +1,13 @@
 import * as fs from "fs";
 
-import { test, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { authenticator } from "otplib";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { SETTINGS_PAGE_COMPONENTS } from "../../support/page-objects/page-obj";
+import { SETTINGS_PAGE_COMPONENTS } from "../../support/selectors/page-selectors";
 import { getErrorMessage } from "../errors";
 import { UIhelper } from "../ui-helper";
+import { waitForNextTotpWindow, waitForRhdhReady } from "../wait-for-rhdh-ready";
 import {
   handleGitHubPopupLogin,
   handleGitlabPopupLogin,
@@ -36,9 +37,27 @@ export class Common {
     this.uiHelper = new UIhelper(page);
   }
 
+  private async hasJsonHealthcheck(): Promise<boolean> {
+    const response = await this.page.request.get("/healthcheck").catch(() => null);
+    if (response === null || response.status() !== 200) {
+      return false;
+    }
+    const contentType = response.headers()["content-type"] ?? "";
+    return contentType.includes("json");
+  }
+
+  private async waitForAppReady(timeout = 120_000): Promise<void> {
+    // Cluster-free legacy harness serves the SPA on BASE_URL; backend readiness is
+    // enforced by webServer startup instead of a JSON /healthcheck on the frontend.
+    if (await this.hasJsonHealthcheck()) {
+      await waitForRhdhReady(this.page.request, timeout);
+    }
+    await this.waitForLoad(timeout);
+  }
+
   async loginAsGuest() {
     await this.page.goto("/");
-    await this.waitForLoad(240000);
+    await this.waitForAppReady();
     // RHIDP-2043: Remove dialog handler after dynamic Guest Authentication Provider plugin is created
     this.page.on("dialog", async (dialog) => {
       console.log(`Dialog message: ${dialog.message()}`);
@@ -52,7 +71,7 @@ export class Common {
 
   async waitForLoad(timeout = 120000) {
     for (const selector of LOADING_INDICATOR_SELECTORS) {
-      await this.page.waitForSelector(selector, {
+      await this.page.locator(selector).waitFor({
         state: "hidden",
         timeout: timeout,
       });
@@ -67,7 +86,8 @@ export class Common {
 
   private async logintoGithub(userid: string) {
     await this.page.goto("https://github.com/login");
-    await this.page.waitForSelector("#login_field");
+    /* oxlint-disable playwright/no-raw-locators -- GitHub login page (third-party) */
+    await expect(this.page.locator("#login_field")).toBeVisible();
     await this.page.fill("#login_field", userid);
 
     const password =
@@ -83,21 +103,18 @@ export class Common {
 
     await this.page.click('[value="Sign in"]');
     await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
-    test.setTimeout(130000);
     if (
       (await this.uiHelper.isTextVisible(
         "The two-factor code you entered has already been used",
       )) ||
       (await this.uiHelper.isTextVisible("too many codes have been submitted", 3000))
     ) {
-      // GitHub TOTP codes cannot be reused within ~30s; wait for the next window.
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 60_000);
-      });
+      await waitForNextTotpWindow();
       await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
     }
 
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
+    /* oxlint-enable playwright/no-raw-locators */
   }
 
   async logintoKeycloak(userid: string, password: string) {
@@ -125,7 +142,7 @@ export class Common {
     password: string = process.env.GH_USER_PASS ?? "",
   ) {
     await this.page.goto("/");
-    await this.waitForLoad(240000);
+    await this.waitForAppReady();
     await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
     await this.logintoKeycloak(userid, password);
     await this.uiHelper.waitForSideBarVisible();
@@ -139,13 +156,13 @@ export class Common {
       await this.page.context().addCookies(cookies);
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
-      await this.waitForLoad(12000);
+      await this.waitForAppReady(30_000);
       await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
       await this.checkAndReauthorizeGithubApp();
     } else {
       await this.logintoGithub(userid);
       await this.page.goto("/");
-      await this.waitForLoad(240000);
+      await this.waitForAppReady();
       await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForSideBarVisible();
@@ -232,9 +249,9 @@ export class Common {
 
   async keycloakLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
-    );
+    await expect(
+      this.page.locator(`p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -246,9 +263,9 @@ export class Common {
 
   async githubLogin(username: string, password: string, twofactor: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.github.message"]}")`,
-    );
+    await expect(
+      this.page.locator(`p:has-text("${t["rhdh"][lang]["signIn.providers.github.message"]}")`),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -279,9 +296,9 @@ export class Common {
 
   async gitlabLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.gitlab.message"]}")`,
-    );
+    await expect(
+      this.page.locator(`p:has-text("${t["rhdh"][lang]["signIn.providers.gitlab.message"]}")`),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -293,9 +310,9 @@ export class Common {
 
   async MicrosoftAzureLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.microsoft.message"]}")`,
-    );
+    await expect(
+      this.page.locator(`p:has-text("${t["rhdh"][lang]["signIn.providers.microsoft.message"]}")`),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
@@ -307,9 +324,9 @@ export class Common {
 
   async pingFederateLogin(username: string, password: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector(
-      `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
-    );
+    await expect(
+      this.page.locator(`p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`),
+    ).toBeVisible();
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),

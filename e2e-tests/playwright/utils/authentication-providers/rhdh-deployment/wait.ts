@@ -1,11 +1,14 @@
 import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse } from "../../errors";
-import { BackstageCr, RHDHDeploymentState, sleep } from "./types";
+import { pollUntil, pollUntilStable } from "../../poll-until";
+import { BackstageCr, RHDHDeploymentState } from "./types";
 
 const BACKSTAGE_LABELS = {
   "app.kubernetes.io/name": "backstage",
 } as const;
+
+const POLL_INTERVAL_MS = 500;
 
 function buildLabelSelector(instanceName: string): string {
   const labels = {
@@ -46,20 +49,17 @@ export async function waitForConfigReconciled(
 
   const baseline =
     state.configReconcileBaselineGeneration ?? (await getDeploymentGeneration(state));
-  const startTime = Date.now();
 
-  while (Date.now() - startTime < timeoutMs) {
-    const currentGeneration = await getDeploymentGeneration(state);
-    if (currentGeneration > baseline) {
-      console.log(
-        `[INFO] Config reconciled - deployment generation ${baseline} -> ${currentGeneration}`,
-      );
-      return;
-    }
-    await sleep(1000);
+  try {
+    await pollUntil(async () => (await getDeploymentGeneration(state)) > baseline, {
+      timeoutMs,
+      intervalMs: POLL_INTERVAL_MS,
+      label: `Config reconcile (generation > ${baseline})`,
+    });
+    console.log(`[INFO] Config reconciled - deployment generation > ${baseline}`);
+  } catch {
+    console.log(`[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`);
   }
-
-  console.log(`[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`);
 }
 
 function hasRolloutStarted(
@@ -109,129 +109,98 @@ function isDeploymentReady(deployment: k8s.V1Deployment, cr: BackstageCr): boole
   );
 }
 
+async function getLabeledDeployment(
+  state: RHDHDeploymentState,
+  labelSelector: string,
+): Promise<k8s.V1Deployment> {
+  const deployments = await state.appsV1Api.listNamespacedDeployment(
+    state.namespace,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    labelSelector,
+  );
+
+  if (deployments.body.items.length === 0) {
+    throw new Error(`No deployment found with labels: ${labelSelector}`);
+  }
+
+  return deployments.body.items[0];
+}
+
 async function waitForRolloutStart(
   state: RHDHDeploymentState,
   labelSelector: string,
   rolloutStartTimeout: number,
-  startTime: number,
 ): Promise<{ rolloutStarted: boolean; initialGeneration: number }> {
   let initialGeneration = 0;
-  let rolloutStarted = false;
 
-  while (Date.now() - startTime < rolloutStartTimeout) {
-    const deployments = await state.appsV1Api.listNamespacedDeployment(
-      state.namespace,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      labelSelector,
+  try {
+    await pollUntil(
+      async () => {
+        const deployment = await getLabeledDeployment(state, labelSelector);
+
+        if (initialGeneration === 0) {
+          initialGeneration = deployment.metadata?.generation ?? 0;
+          console.log(`[INFO] Initial deployment generation: ${initialGeneration}`);
+        }
+
+        const currentGeneration = deployment.metadata?.generation ?? 0;
+        const observedGeneration = deployment.status?.observedGeneration ?? 0;
+        const isProgressing = (deployment.status?.conditions ?? []).some(
+          (condition) => condition.type === "Progressing" && condition.status === "True",
+        );
+
+        return hasRolloutStarted(
+          initialGeneration,
+          currentGeneration,
+          observedGeneration,
+          isProgressing,
+        );
+      },
+      {
+        timeoutMs: rolloutStartTimeout,
+        intervalMs: POLL_INTERVAL_MS,
+        label: "Deployment rollout start",
+      },
     );
 
-    if (deployments.body.items.length === 0) {
-      throw new Error(`No deployment found with labels: ${labelSelector}`);
-    }
-
-    const deployment = deployments.body.items[0];
-    const conditions = deployment.status?.conditions ?? [];
-
-    if (initialGeneration === 0) {
-      initialGeneration = deployment.metadata?.generation ?? 0;
-      console.log(`[INFO] Initial deployment generation: ${initialGeneration}`);
-    }
-
-    const currentGeneration = deployment.metadata?.generation ?? 0;
-    const observedGeneration = deployment.status?.observedGeneration ?? 0;
-    const isProgressing = conditions.some(
-      (condition) => condition.type === "Progressing" && condition.status === "True",
-    );
-
-    if (
-      hasRolloutStarted(initialGeneration, currentGeneration, observedGeneration, isProgressing)
-    ) {
-      rolloutStarted = true;
-      console.log(
-        `[INFO] Rollout detected - Generation: ${currentGeneration}, Observed: ${observedGeneration}`,
-      );
-      return { rolloutStarted, initialGeneration };
-    }
-
-    const elapsedSinceStart = Date.now() - startTime;
+    console.log("[INFO] Rollout detected");
+    return { rolloutStarted: true, initialGeneration };
+  } catch {
     console.log(
-      `[INFO] Waiting for rollout to start... (${Math.round(elapsedSinceStart / 1000)}s elapsed)`,
+      `[INFO] No rollout detected after ${rolloutStartTimeout}ms, checking if deployment is already ready`,
     );
-    await sleep(2000);
+    return { rolloutStarted: true, initialGeneration };
   }
-
-  console.log(
-    `[INFO] No rollout detected after ${rolloutStartTimeout}ms, checking if deployment is already ready`,
-  );
-  return { rolloutStarted: true, initialGeneration };
 }
 
 async function pollDeploymentReady(
   state: RHDHDeploymentState,
   labelSelector: string,
   timeoutMs: number,
-  startTime: number,
 ): Promise<void> {
-  const rolloutStartTimeout = 60000;
-  const { rolloutStarted } = await waitForRolloutStart(
-    state,
-    labelSelector,
-    rolloutStartTimeout,
-    startTime,
+  const rolloutStartTimeout = 60_000;
+  await waitForRolloutStart(state, labelSelector, rolloutStartTimeout);
+
+  await pollUntilStable(
+    async () => {
+      try {
+        const deployment = await getLabeledDeployment(state, labelSelector);
+        return isDeploymentReady(deployment, state.cr);
+      } catch (error) {
+        console.log(`[INFO] Deployment readiness check failed: ${getErrorMessage(error)}`);
+        return false;
+      }
+    },
+    {
+      timeoutMs,
+      intervalMs: POLL_INTERVAL_MS,
+      stableChecks: 2,
+      label: `Deployment ready (${labelSelector})`,
+    },
   );
-
-  if (!rolloutStarted) {
-    throw new Error("Rollout did not start within timeout");
-  }
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const deployments = await state.appsV1Api.listNamespacedDeployment(
-        state.namespace,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        labelSelector,
-      );
-
-      if (deployments.body.items.length === 0) {
-        throw new Error(`No deployment found with labels: ${labelSelector}`);
-      }
-
-      const deployment = deployments.body.items[0];
-
-      if (isDeploymentReady(deployment, state.cr)) {
-        await sleep(5000);
-        return;
-      }
-
-      const desiredReplicas = state.cr.spec.replicas ?? 1;
-      const availableReplicas = deployment.status?.availableReplicas ?? 0;
-      const readyReplicas = deployment.status?.readyReplicas ?? 0;
-      const updatedReplicas = deployment.status?.updatedReplicas ?? 0;
-      const observedGeneration = deployment.status?.observedGeneration ?? 0;
-      const currentGeneration = deployment.metadata?.generation ?? 0;
-
-      console.log(
-        `[INFO] Deployment is progressing - Available: ${availableReplicas}, Ready: ${readyReplicas}, Updated: ${updatedReplicas}, Desired: ${desiredReplicas}, Observed Gen: ${observedGeneration}/${currentGeneration}`,
-      );
-
-      await sleep(5000);
-    } catch (error) {
-      if (Date.now() - startTime >= timeoutMs) {
-        throw new Error(`Timeout waiting for deployment to be ready: ${getErrorMessage(error)}`, {
-          cause: error,
-        });
-      }
-      await sleep(5000);
-    }
-  }
-
-  throw new Error(`Timeout waiting for deployment to be ready after ${timeoutMs}ms`);
 }
 
 export async function waitForDeploymentReady(
@@ -244,41 +213,33 @@ export async function waitForDeploymentReady(
   }
 
   const labelSelector = buildLabelSelector(state.instanceName);
-  const startTime = Date.now();
-  await pollDeploymentReady(state, labelSelector, timeoutMs, startTime);
+  await pollDeploymentReady(state, labelSelector, timeoutMs);
 }
 
 export async function waitForNamespaceActive(
   state: RHDHDeploymentState,
   timeoutMs: number = 30000,
 ): Promise<void> {
-  const startTime = Date.now();
   if (state.isRunningLocal) {
     console.log("Skipping namespace active check as isRunningLocal is true.");
     return;
   }
 
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const response = await state.k8sApi.readNamespace(state.namespace);
-      const phase = response.body.status?.phase;
-
-      if (phase === "Active") {
-        return;
+  await pollUntil(
+    async () => {
+      try {
+        const response = await state.k8sApi.readNamespace(state.namespace);
+        return response.body.status?.phase === "Active";
+      } catch {
+        return false;
       }
-
-      await sleep(1000);
-    } catch (error) {
-      if (Date.now() - startTime >= timeoutMs) {
-        throw new Error(`Timeout waiting for namespace to be active: ${getErrorMessage(error)}`, {
-          cause: error,
-        });
-      }
-      await sleep(1000);
-    }
-  }
-
-  throw new Error(`Timeout waiting for namespace to be active after ${timeoutMs}ms`);
+    },
+    {
+      timeoutMs,
+      intervalMs: POLL_INTERVAL_MS,
+      label: `Namespace ${state.namespace} active`,
+    },
+  );
 }
 
 export async function ensureBackstageCRIsAvailable(
@@ -290,29 +251,28 @@ export async function ensureBackstageCRIsAvailable(
     return;
   }
 
-  const startTime = Date.now();
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const customObjectsApi = state.kc.makeApiClient(k8s.CustomObjectsApi);
-      await customObjectsApi.getClusterCustomObject(
-        "apiextensions.k8s.io",
-        "v1",
-        "customresourcedefinitions",
-        "backstages.rhdh.redhat.com",
-      );
-      return;
-    } catch (error) {
-      console.log(`Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`);
-      if (Date.now() - startTime >= timeoutMs) {
-        throw new Error(
-          `Timeout waiting for Backstage CRD to be available: ${getErrorMessage(error)}`,
-          { cause: error },
+  await pollUntil(
+    async () => {
+      try {
+        const customObjectsApi = state.kc.makeApiClient(k8s.CustomObjectsApi);
+        await customObjectsApi.getClusterCustomObject(
+          "apiextensions.k8s.io",
+          "v1",
+          "customresourcedefinitions",
+          "backstages.rhdh.redhat.com",
         );
+        return true;
+      } catch (error) {
+        console.log(`Waiting for Backstage CRD: ${getErrorMessage(error)}`);
+        return false;
       }
-      await sleep(5000);
-    }
-  }
-  throw new Error(`Timeout waiting for Backstage CRD to be available after ${timeoutMs}ms`);
+    },
+    {
+      timeoutMs,
+      intervalMs: POLL_INTERVAL_MS,
+      label: "Backstage CRD available",
+    },
+  );
 }
 
 export async function deleteNamespaceIfExists(
@@ -327,19 +287,24 @@ export async function deleteNamespaceIfExists(
   try {
     await state.k8sApi.deleteNamespace(state.namespace);
 
-    const startTime = Date.now();
-    while (Date.now() - startTime < timeoutMs) {
-      try {
-        await state.k8sApi.readNamespace(state.namespace);
-        await sleep(1000);
-      } catch (error) {
-        if (hasErrorResponse(error) && error.response?.statusCode === 404) {
-          return;
+    await pollUntil(
+      async () => {
+        try {
+          await state.k8sApi.readNamespace(state.namespace);
+          return false;
+        } catch (error) {
+          if (hasErrorResponse(error) && error.response?.statusCode === 404) {
+            return true;
+          }
+          throw error;
         }
-        throw error;
-      }
-    }
-    throw new Error(`Timeout waiting for namespace to be deleted after ${timeoutMs}ms`);
+      },
+      {
+        timeoutMs,
+        intervalMs: POLL_INTERVAL_MS,
+        label: `Namespace ${state.namespace} deleted`,
+      },
+    );
   } catch (e) {
     if (hasErrorResponse(e) && e.response?.statusCode === 404) {
       return;
