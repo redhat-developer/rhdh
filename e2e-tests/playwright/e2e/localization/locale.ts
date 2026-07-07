@@ -1,19 +1,36 @@
-import deBackstage from "../../../../translations/backstage-de.json" with { type: "json" };
-import esBackstage from "../../../../translations/backstage-es.json" with { type: "json" };
-import frBackstage from "../../../../translations/backstage-fr.json" with { type: "json" };
-import itBackstage from "../../../../translations/backstage-it.json" with { type: "json" };
-import jaBackstage from "../../../../translations/backstage-ja.json" with { type: "json" };
-import deRhdh from "../../../../translations/rhdh-de.json" with { type: "json" };
-import esRhdh from "../../../../translations/rhdh-es.json" with { type: "json" };
-import frRhdh from "../../../../translations/rhdh-fr.json" with { type: "json" };
-import itRhdh from "../../../../translations/rhdh-it.json" with { type: "json" };
-import jaRhdh from "../../../../translations/rhdh-ja.json" with { type: "json" };
-import deRhdhPlugins from "../../../../translations/rhdh-plugins-de.json" with { type: "json" };
-import esRhdhPlugins from "../../../../translations/rhdh-plugins-es.json" with { type: "json" };
-import frRhdhPlugins from "../../../../translations/rhdh-plugins-fr.json" with { type: "json" };
-import itRhdhPlugins from "../../../../translations/rhdh-plugins-it.json" with { type: "json" };
-import jaRhdhPlugins from "../../../../translations/rhdh-plugins-ja.json" with { type: "json" };
-import en from "../../../../translations/test/all-en.json" with { type: "json" };
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+type TranslationFile = Record<string, Record<string, Record<string, string>>>;
+
+const TRANSLATIONS_DIR = join(process.cwd(), "..", "translations");
+
+function loadTranslationJson(fileName: string): TranslationFile {
+  const raw: unknown = JSON.parse(readFileSync(join(TRANSLATIONS_DIR, fileName), "utf8"));
+  if (typeof raw !== "object" || raw === null) {
+    throw new Error(`Invalid translation file: ${fileName}`);
+  }
+  // Translation bundles are trusted repo fixtures; validate only top-level shape.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON fixture files are repo-controlled
+  return raw as TranslationFile;
+}
+
+const deBackstage = loadTranslationJson("backstage-de.json");
+const esBackstage = loadTranslationJson("backstage-es.json");
+const frBackstage = loadTranslationJson("backstage-fr.json");
+const itBackstage = loadTranslationJson("backstage-it.json");
+const jaBackstage = loadTranslationJson("backstage-ja.json");
+const deRhdh = loadTranslationJson("rhdh-de.json");
+const esRhdh = loadTranslationJson("rhdh-es.json");
+const frRhdh = loadTranslationJson("rhdh-fr.json");
+const itRhdh = loadTranslationJson("rhdh-it.json");
+const jaRhdh = loadTranslationJson("rhdh-ja.json");
+const deRhdhPlugins = loadTranslationJson("rhdh-plugins-de.json");
+const esRhdhPlugins = loadTranslationJson("rhdh-plugins-es.json");
+const frRhdhPlugins = loadTranslationJson("rhdh-plugins-fr.json");
+const itRhdhPlugins = loadTranslationJson("rhdh-plugins-it.json");
+const jaRhdhPlugins = loadTranslationJson("rhdh-plugins-ja.json");
+const en = loadTranslationJson("test/all-en.json");
 
 const de = {
   ...deBackstage,
@@ -62,8 +79,6 @@ function isLocale(lang: string): lang is Locale {
   return LOCALE_SET.has(lang);
 }
 
-type TranslationFile = Record<string, Record<string, Record<string, string>>>;
-
 /**
  * Merge translations with English fallback.
  * For each namespace, if a locale doesn't have translations, fall back to English.
@@ -81,7 +96,7 @@ function createMergedTranslations() {
   const merged: Record<string, Record<string, Record<string, string>>> = {};
 
   for (const namespace of allNamespaces) {
-    const enKeys = (en as TranslationFile)[namespace]?.en ?? {};
+    const enKeys = en[namespace]?.en ?? {};
     const namespaceTranslations: Record<string, Record<string, string>> = {
       en: enKeys,
     };
@@ -92,7 +107,7 @@ function createMergedTranslations() {
       }
       namespaceTranslations[locale] = {
         ...enKeys,
-        ...(NON_EN_LOCALE_BUNDLES[locale] as TranslationFile)[namespace]?.[locale],
+        ...NON_EN_LOCALE_BUNDLES[locale][namespace]?.[locale],
       };
     }
 

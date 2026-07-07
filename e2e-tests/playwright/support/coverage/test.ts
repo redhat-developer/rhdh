@@ -26,8 +26,7 @@ import {
   type Page,
   type WorkerInfo,
 } from "@playwright/test";
-import { AuthProviderSession } from "../auth/provider-auth";
-import { signInAsGuest } from "../auth/guest-auth";
+import type { AuthProviderSession } from "../auth/provider-auth";
 import { createBrowserSession } from "../browser-session";
 import { runWorkerCleanups } from "../worker-session";
 import { startCoverageForPage, stopCoverageForPage } from "./instrumentation";
@@ -63,10 +62,12 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
       await stopCoverageForPage(page, testInfo);
     },
     guestPage: async ({ page }, use) => {
+      const { signInAsGuest } = await import("../auth/guest-auth");
       await signInAsGuest(page);
       await use(page);
     },
     authSession: async ({ page }, use) => {
+      const { AuthProviderSession } = await import("../auth/provider-auth");
       await use(new AuthProviderSession(page));
     },
     rhdhContext: [
@@ -88,6 +89,7 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     ],
     rhdhGuestPage: [
       async ({ rhdhPage }, use) => {
+        const { signInAsGuest } = await import("../auth/guest-auth");
         await signInAsGuest(rhdhPage);
         await use(rhdhPage);
       },
@@ -95,6 +97,7 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
     ],
     rhdhAuthSession: [
       async ({ rhdhPage }, use) => {
+        const { AuthProviderSession } = await import("../auth/provider-auth");
         await use(new AuthProviderSession(rhdhPage));
       },
       { scope: "worker" },
