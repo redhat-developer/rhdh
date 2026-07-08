@@ -194,6 +194,8 @@ COPY --from=build \
   ./packages/backend/dist/
 # node-gyp headers for native module compilation (extracted in deps stage, network is blocked here)
 COPY --from=build $CONTAINER_SOURCE/.cache/node-gyp ./.cache/node-gyp
+# Translation overrides served by the translations-backend plugin at /api/translations
+COPY --from=build $CONTAINER_SOURCE/translations/ ./translations/
 
 # unpack and remove tarballs
 ENV TARBALL_PATH=./packages/backend/dist
