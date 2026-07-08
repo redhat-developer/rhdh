@@ -64,6 +64,8 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
+    await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
+
     await catalogImport.verifyEntityYaml(
       `relations:
         - type: ownedBy
