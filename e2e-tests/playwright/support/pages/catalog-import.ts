@@ -73,9 +73,9 @@ export class CatalogImport {
   }
 
   async verifyEntityYaml(text: string) {
-    await expect(
-      this.page.getByRole("alert").filter({ hasText: "Entity not found" }),
-    ).toBeHidden({ timeout: 60_000 });
+    await expect(this.page.getByRole("alert").filter({ hasText: "Entity not found" })).toBeHidden({
+      timeout: 60_000,
+    });
 
     // Intentional divergence: entity header overflow uses title="More", not always role name.
     const moreButton = this.page
