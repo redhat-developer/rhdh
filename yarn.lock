@@ -7113,17 +7113,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grpc/grpc-js@npm:^1.10.9":
-  version: 1.14.3
-  resolution: "@grpc/grpc-js@npm:1.14.3"
-  dependencies:
-    "@grpc/proto-loader": ^0.8.0
-    "@js-sdsl/ordered-map": ^4.4.2
-  checksum: 5deaf9d6571031d312b9cc412cf5528fb3e394da156ae6ce38fa08e3fb1cd9d38a8f3ed208d4cf497355ff523f6012748aed310ebce0087b3342023a7cc8e9ed
-  languageName: node
-  linkType: hard
-
-"@grpc/grpc-js@npm:^1.14.3":
+"@grpc/grpc-js@npm:^1.10.9, @grpc/grpc-js@npm:^1.14.3":
   version: 1.14.4
   resolution: "@grpc/grpc-js@npm:1.14.4"
   dependencies:
@@ -9523,12 +9513,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api-logs@npm:0.217.0, @opentelemetry/api-logs@npm:^0.217.0":
+"@opentelemetry/api-logs@npm:0.217.0":
   version: 0.217.0
   resolution: "@opentelemetry/api-logs@npm:0.217.0"
   dependencies:
     "@opentelemetry/api": ^1.3.0
   checksum: 7681c10c388ff7765c1547ffa3894b30550596f079badc398ad94b4d8d0e7f66744fe1b00bfe04d515e70512f535167717ec106c364d705f1e3ce0fb4c6ebf96
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/api-logs@npm:0.218.0, @opentelemetry/api-logs@npm:^0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/api-logs@npm:0.218.0"
+  dependencies:
+    "@opentelemetry/api": ^1.3.0
+  checksum: 4b0f4693c170e03bd160c3b71bede007c5eb79218e4d10e4eeffe22854bf82945fc1071f52f6d6ac3e0f34cd6af79501d40c517f0b2cc2c92056dbc60381c1a2
   languageName: node
   linkType: hard
 
@@ -9539,74 +9538,74 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/auto-instrumentations-node@npm:0.75.0":
-  version: 0.75.0
-  resolution: "@opentelemetry/auto-instrumentations-node@npm:0.75.0"
+"@opentelemetry/auto-instrumentations-node@npm:0.76.0":
+  version: 0.76.0
+  resolution: "@opentelemetry/auto-instrumentations-node@npm:0.76.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
-    "@opentelemetry/instrumentation-amqplib": ^0.64.0
-    "@opentelemetry/instrumentation-aws-lambda": ^0.69.0
-    "@opentelemetry/instrumentation-aws-sdk": ^0.72.0
-    "@opentelemetry/instrumentation-bunyan": ^0.62.0
-    "@opentelemetry/instrumentation-cassandra-driver": ^0.62.0
-    "@opentelemetry/instrumentation-connect": ^0.60.0
-    "@opentelemetry/instrumentation-cucumber": ^0.33.0
-    "@opentelemetry/instrumentation-dataloader": ^0.34.0
-    "@opentelemetry/instrumentation-dns": ^0.60.0
-    "@opentelemetry/instrumentation-express": ^0.65.0
-    "@opentelemetry/instrumentation-fs": ^0.36.0
-    "@opentelemetry/instrumentation-generic-pool": ^0.60.0
-    "@opentelemetry/instrumentation-graphql": ^0.65.0
-    "@opentelemetry/instrumentation-grpc": ^0.217.0
-    "@opentelemetry/instrumentation-hapi": ^0.63.0
-    "@opentelemetry/instrumentation-http": ^0.217.0
-    "@opentelemetry/instrumentation-ioredis": ^0.65.0
-    "@opentelemetry/instrumentation-kafkajs": ^0.26.0
-    "@opentelemetry/instrumentation-knex": ^0.61.0
-    "@opentelemetry/instrumentation-koa": ^0.65.0
-    "@opentelemetry/instrumentation-lru-memoizer": ^0.61.0
-    "@opentelemetry/instrumentation-memcached": ^0.60.0
-    "@opentelemetry/instrumentation-mongodb": ^0.70.0
-    "@opentelemetry/instrumentation-mongoose": ^0.63.0
-    "@opentelemetry/instrumentation-mysql": ^0.63.0
-    "@opentelemetry/instrumentation-mysql2": ^0.63.0
-    "@opentelemetry/instrumentation-nestjs-core": ^0.63.0
-    "@opentelemetry/instrumentation-net": ^0.61.0
-    "@opentelemetry/instrumentation-openai": ^0.15.0
-    "@opentelemetry/instrumentation-oracledb": ^0.42.0
-    "@opentelemetry/instrumentation-pg": ^0.69.0
-    "@opentelemetry/instrumentation-pino": ^0.63.0
-    "@opentelemetry/instrumentation-redis": ^0.65.0
-    "@opentelemetry/instrumentation-restify": ^0.62.0
-    "@opentelemetry/instrumentation-router": ^0.61.0
-    "@opentelemetry/instrumentation-runtime-node": ^0.30.0
-    "@opentelemetry/instrumentation-socket.io": ^0.64.0
-    "@opentelemetry/instrumentation-tedious": ^0.36.0
-    "@opentelemetry/instrumentation-undici": ^0.27.0
-    "@opentelemetry/instrumentation-winston": ^0.61.0
-    "@opentelemetry/resource-detector-alibaba-cloud": ^0.33.7
-    "@opentelemetry/resource-detector-aws": ^2.17.0
-    "@opentelemetry/resource-detector-azure": ^0.25.0
-    "@opentelemetry/resource-detector-container": ^0.8.8
-    "@opentelemetry/resource-detector-gcp": ^0.52.0
+    "@opentelemetry/instrumentation": ^0.218.0
+    "@opentelemetry/instrumentation-amqplib": ^0.65.0
+    "@opentelemetry/instrumentation-aws-lambda": ^0.70.0
+    "@opentelemetry/instrumentation-aws-sdk": ^0.73.0
+    "@opentelemetry/instrumentation-bunyan": ^0.63.0
+    "@opentelemetry/instrumentation-cassandra-driver": ^0.63.0
+    "@opentelemetry/instrumentation-connect": ^0.61.0
+    "@opentelemetry/instrumentation-cucumber": ^0.34.0
+    "@opentelemetry/instrumentation-dataloader": ^0.35.0
+    "@opentelemetry/instrumentation-dns": ^0.61.0
+    "@opentelemetry/instrumentation-express": ^0.66.0
+    "@opentelemetry/instrumentation-fs": ^0.37.0
+    "@opentelemetry/instrumentation-generic-pool": ^0.61.0
+    "@opentelemetry/instrumentation-graphql": ^0.66.0
+    "@opentelemetry/instrumentation-grpc": ^0.218.0
+    "@opentelemetry/instrumentation-hapi": ^0.64.0
+    "@opentelemetry/instrumentation-http": ^0.218.0
+    "@opentelemetry/instrumentation-ioredis": ^0.66.0
+    "@opentelemetry/instrumentation-kafkajs": ^0.27.0
+    "@opentelemetry/instrumentation-knex": ^0.62.0
+    "@opentelemetry/instrumentation-koa": ^0.66.0
+    "@opentelemetry/instrumentation-lru-memoizer": ^0.62.0
+    "@opentelemetry/instrumentation-memcached": ^0.61.0
+    "@opentelemetry/instrumentation-mongodb": ^0.71.0
+    "@opentelemetry/instrumentation-mongoose": ^0.64.0
+    "@opentelemetry/instrumentation-mysql": ^0.64.0
+    "@opentelemetry/instrumentation-mysql2": ^0.64.0
+    "@opentelemetry/instrumentation-nestjs-core": ^0.64.0
+    "@opentelemetry/instrumentation-net": ^0.62.0
+    "@opentelemetry/instrumentation-openai": ^0.16.0
+    "@opentelemetry/instrumentation-oracledb": ^0.43.0
+    "@opentelemetry/instrumentation-pg": ^0.70.0
+    "@opentelemetry/instrumentation-pino": ^0.64.0
+    "@opentelemetry/instrumentation-redis": ^0.66.0
+    "@opentelemetry/instrumentation-restify": ^0.63.0
+    "@opentelemetry/instrumentation-router": ^0.62.0
+    "@opentelemetry/instrumentation-runtime-node": ^0.31.0
+    "@opentelemetry/instrumentation-socket.io": ^0.65.0
+    "@opentelemetry/instrumentation-tedious": ^0.37.0
+    "@opentelemetry/instrumentation-undici": ^0.28.0
+    "@opentelemetry/instrumentation-winston": ^0.62.0
+    "@opentelemetry/resource-detector-alibaba-cloud": ^0.33.8
+    "@opentelemetry/resource-detector-aws": ^2.18.0
+    "@opentelemetry/resource-detector-azure": ^0.26.0
+    "@opentelemetry/resource-detector-container": ^0.8.9
+    "@opentelemetry/resource-detector-gcp": ^0.53.0
     "@opentelemetry/resources": ^2.0.0
-    "@opentelemetry/sdk-node": ^0.217.0
+    "@opentelemetry/sdk-node": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.4.1
     "@opentelemetry/core": ^2.0.0
-  checksum: 0cb6184f21ab4b42ef080084172d7b2d65de0b840fee3fad7f25a0c42cb3d6fddabaa7a9ee8a94cd4c78e835ec49c80fb363db92127dbce11bbe13515f9fea39
+  checksum: 0eba623922e7f71022e094a60d74ece83f0c41d9ae7568504c6124fce7d18bb501cd3b88abb5b78fa49194be216ce8dfcec3ca233c618f0e8403954ae93c8365
   languageName: node
   linkType: hard
 
-"@opentelemetry/configuration@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/configuration@npm:0.217.0"
+"@opentelemetry/configuration@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/configuration@npm:0.218.0"
   dependencies:
     "@opentelemetry/core": 2.7.1
     yaml: ^2.0.0
   peerDependencies:
     "@opentelemetry/api": ^1.9.0
-  checksum: 9f5f429e3433aed3fbbf723566cb457a48497b1e0ff0e0c6dfb6002e84f261d2de6d74b81629c0d1231ed19a7a3fb742e9d3c4a5ef160ed1af5fabacb58c29ac
+  checksum: b5f9662418ae6f3be7ce8efeb968a1e147a774b8845432732e38a1a12d28b6b6b13ea1feee2808e7ed1ab7492ac0ca5eabb13429b1cea08c990a7be0d2fb1dac
   languageName: node
   linkType: hard
 
@@ -9619,7 +9618,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:2.0.0, @opentelemetry/core@npm:^2.0.0":
+"@opentelemetry/core@npm:2.0.0":
   version: 2.0.0
   resolution: "@opentelemetry/core@npm:2.0.0"
   dependencies:
@@ -9630,7 +9629,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:2.7.1":
+"@opentelemetry/core@npm:2.7.1, @opentelemetry/core@npm:^2.0.0":
   version: 2.7.1
   resolution: "@opentelemetry/core@npm:2.7.1"
   dependencies:
@@ -9641,100 +9640,100 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-logs-otlp-grpc@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-logs-otlp-grpc@npm:0.217.0"
+"@opentelemetry/exporter-logs-otlp-grpc@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-logs-otlp-grpc@npm:0.218.0"
   dependencies:
     "@grpc/grpc-js": ^1.14.3
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-grpc-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
-    "@opentelemetry/sdk-logs": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-grpc-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
+    "@opentelemetry/sdk-logs": 0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: c184c652d78a5b6f0a68c3137a2b460ea21f1ef46b00d86684574bc8cc41108f1cd6ddfe8ce47f7f4135dbbe440aa12033a059764ee8ab333d8e400e3d7bc4d8
+  checksum: 5173379e20239f4028062ce5eb51fc02b55b51404edc0de174db9ed8a4d673cbfbce83ab35e251d1f6cff1b6e986e34e23f6b5a6b7011745e219cc94ad1033a0
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-logs-otlp-http@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-logs-otlp-http@npm:0.217.0"
+"@opentelemetry/exporter-logs-otlp-http@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-logs-otlp-http@npm:0.218.0"
   dependencies:
-    "@opentelemetry/api-logs": 0.217.0
+    "@opentelemetry/api-logs": 0.218.0
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
-    "@opentelemetry/sdk-logs": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
+    "@opentelemetry/sdk-logs": 0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 042ea5d2ff3f77dd5193575ea8aa58bdd947ffab3b930f8a18fcca4f222dcf1aca84baf5e9edfb3c6db6cc3a2ce844a4dde67e927692a8cb717a78a80d0e36ee
+  checksum: 85eaa2fcc90aeef0e895532bc94cb8a0c608f0f54b0c1725dc00a8884dcf7af5175580e400900c0210ae2bf8fc3ce28a1e0e566416d7d5316d6a39b0084e23d9
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-logs-otlp-proto@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-logs-otlp-proto@npm:0.217.0"
+"@opentelemetry/exporter-logs-otlp-proto@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-logs-otlp-proto@npm:0.218.0"
   dependencies:
-    "@opentelemetry/api-logs": 0.217.0
+    "@opentelemetry/api-logs": 0.218.0
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
     "@opentelemetry/resources": 2.7.1
-    "@opentelemetry/sdk-logs": 0.217.0
+    "@opentelemetry/sdk-logs": 0.218.0
     "@opentelemetry/sdk-trace-base": 2.7.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 69d012f89bb760f2461a3739004a023f310784089105543c7e6bb0ea79b36feead7bf8effac65139de0701faa2b285ee5e3c19d6334325dee0b2d1158ca6f093
+  checksum: d8ec0eb042ce1600d259d6e5f8d21c159adaf2142a830e0841760cd12eaa62b2d7a15ccfe742d8f8b6a456df751505151020600663b774a632646f90f02519fa
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-metrics-otlp-grpc@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-metrics-otlp-grpc@npm:0.217.0"
+"@opentelemetry/exporter-metrics-otlp-grpc@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-metrics-otlp-grpc@npm:0.218.0"
   dependencies:
     "@grpc/grpc-js": ^1.14.3
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/exporter-metrics-otlp-http": 0.217.0
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-grpc-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/exporter-metrics-otlp-http": 0.218.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-grpc-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
     "@opentelemetry/resources": 2.7.1
     "@opentelemetry/sdk-metrics": 2.7.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: a08bac9e1055f6ffc0171dc0d2335742fbb43bdcee735501db0dd129e341e8641fd9f8a8b78e38426de21a20c95e6d5e2fa36519becb1052c2c34bff8ce43080
+  checksum: f20797d7b15c62de122d5deb9c17b68d633bbf9780021a65a635dd6b331123a48d8f67bbab142669dc5c3230fe6d8ac24672568dc0f51a7046f0ebc9a391a7a6
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-metrics-otlp-http@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-metrics-otlp-http@npm:0.217.0"
+"@opentelemetry/exporter-metrics-otlp-http@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-metrics-otlp-http@npm:0.218.0"
   dependencies:
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
     "@opentelemetry/resources": 2.7.1
     "@opentelemetry/sdk-metrics": 2.7.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: ee1151829bae794159e7eee17146d2abf8a055ee5fe10cf4372c4fc6f4ee2526a70fb7a78571aafa4094208185b1955eaeb7e10f3bd53446eabb23eb4f66ee0c
+  checksum: 795282b9ad83244af1eed2ce75703c260d920abf771dbb81010813c52ae7e3965e0099d64a3206c9cf20b3064fa2480fa83a8fb38da1309fe39aad0b55da1912
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-metrics-otlp-proto@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-metrics-otlp-proto@npm:0.217.0"
+"@opentelemetry/exporter-metrics-otlp-proto@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-metrics-otlp-proto@npm:0.218.0"
   dependencies:
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/exporter-metrics-otlp-http": 0.217.0
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/exporter-metrics-otlp-http": 0.218.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
     "@opentelemetry/resources": 2.7.1
     "@opentelemetry/sdk-metrics": 2.7.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 254ddd03e6d9b3ce35cf2ee0856a6e93fe770b208a277dcd946e25b53e6c2d8bd7c858146724c8b65f7c7fd51cfa56577022c7eefa387e6443c6ed5c84e3e045
+  checksum: 86238131b3419db8158e1fd4ba98515ef22dd4692c1e684f3aff931f5ca4b62de2e45ac6fba0dd288f8a86771418aa4a9a64170d2312a7e16119b58327481e7d
   languageName: node
   linkType: hard
 
@@ -9752,50 +9751,64 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-grpc@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-trace-otlp-grpc@npm:0.217.0"
+"@opentelemetry/exporter-prometheus@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-prometheus@npm:0.218.0"
+  dependencies:
+    "@opentelemetry/core": 2.7.1
+    "@opentelemetry/resources": 2.7.1
+    "@opentelemetry/sdk-metrics": 2.7.1
+    "@opentelemetry/semantic-conventions": ^1.29.0
+  peerDependencies:
+    "@opentelemetry/api": ^1.3.0
+  checksum: b6445953d4682e69d7abdf805b1063f735fdf37e4231017424918d95b24cc246500be73f97e659602b31adb6a05061bca09ae785704dfc856ffdedb7527b20dc
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/exporter-trace-otlp-grpc@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-trace-otlp-grpc@npm:0.218.0"
   dependencies:
     "@grpc/grpc-js": ^1.14.3
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-grpc-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-grpc-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
     "@opentelemetry/resources": 2.7.1
     "@opentelemetry/sdk-trace-base": 2.7.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 810f6449570d3442bdef06690005dbaffc0162541c305d4e404ca8b75c4f97117994a799122f388b610969a2b3a7a6e0830b024abe97d23af0df0af8e7ed4ac1
+  checksum: c98dde855a1ae46d51cd8f7cea656c1022029aa8137db20c56eac9b21af9392bbb5791e5f11f475cb57a0d2bfb363430bae00aa7895c59fea103013100726bc5
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-http@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-trace-otlp-http@npm:0.217.0"
+"@opentelemetry/exporter-trace-otlp-http@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-trace-otlp-http@npm:0.218.0"
   dependencies:
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
     "@opentelemetry/resources": 2.7.1
     "@opentelemetry/sdk-trace-base": 2.7.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: f792053193f66b3533beca15ad1b358b56ed04aeefa2e4353e01aa64c49e9efb6480e430a8f60f0c3d8334af8ed36a23c852ef3949e315edc8a8757741d449bc
+  checksum: 856c7d298793ce1a22f3b8f343b887e50ab623d367621b6f65dc6d4351b3b29d8e8296345675ac25a84aefd3e017c4ad57efb6ae54b7ee9e737b0401f7a1b7a9
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-proto@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/exporter-trace-otlp-proto@npm:0.217.0"
+"@opentelemetry/exporter-trace-otlp-proto@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/exporter-trace-otlp-proto@npm:0.218.0"
   dependencies:
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
     "@opentelemetry/resources": 2.7.1
     "@opentelemetry/sdk-trace-base": 2.7.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: c347f3c8fcf32a7b64f9f02d8db36083a6cfbffbc15236bd6296d05a6062246660166deeeefb4ce579cac9961a311d65cb6c13b6a26a3ef5db16042a5f46e14c
+  checksum: a50818c55a4905d5caefbb9bf9a0b9b196a9c3930fcef06d18283651b679f8119c7c680f0341a1b9de623815e223635cc3665c605610b775ff2a796a3b645106
   languageName: node
   linkType: hard
 
@@ -9824,447 +9837,447 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-amqplib@npm:^0.64.0":
-  version: 0.64.0
-  resolution: "@opentelemetry/instrumentation-amqplib@npm:0.64.0"
+"@opentelemetry/instrumentation-amqplib@npm:^0.65.0":
+  version: 0.65.0
+  resolution: "@opentelemetry/instrumentation-amqplib@npm:0.65.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: a38bd7f7bfcffd908452b79c4b0400d6fb7ef9b16128bcc7f4877158bf7a36c2841afdab55018a8ab0066c9a36ec89486a893577ef6ec5341c934d92fd83a81d
+  checksum: 2e415404735d759cdd76b74556dd537b5d4d2a243ebb3a3f93e7f0b2d34d6893d92536d2eacc4094fb48f63275620637a9b3b6e8db51a60933a6c93253eb1705
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-aws-lambda@npm:^0.69.0":
-  version: 0.69.0
-  resolution: "@opentelemetry/instrumentation-aws-lambda@npm:0.69.0"
+"@opentelemetry/instrumentation-aws-lambda@npm:^0.70.0":
+  version: 0.70.0
+  resolution: "@opentelemetry/instrumentation-aws-lambda@npm:0.70.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.27.0
     "@types/aws-lambda": ^8.10.155
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 5fa57b603000d16a4d4a0afe8fbad8666c3108c52c650e76e5b2895cb18aaad4d5c6397852af68fded661c183b629befd23a476850f96280d76aae066e86f51a
+  checksum: e681fae4ab85cac74b532ae68b5b266aebd2717e3f730dd3839a82488b58407db9a2ecc5488e94495647e5f055bc43a2e0749f56206f93eea637b1140d567549
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-aws-sdk@npm:^0.72.0":
-  version: 0.72.0
-  resolution: "@opentelemetry/instrumentation-aws-sdk@npm:0.72.0"
+"@opentelemetry/instrumentation-aws-sdk@npm:^0.73.0":
+  version: 0.73.0
+  resolution: "@opentelemetry/instrumentation-aws-sdk@npm:0.73.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.34.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 8c207d8fc225a8e2656d3be627614652c58dc5a79b9a7787e84a32af67ecb3415712f5e1156e078585ea105506aa16fa7b428a5b13b83ba15ec80201586e22bd
+  checksum: 0a489a72e5323771ad6b3ca4303e383e526670e317be22015a08b16adb2738f07b3b9880a8267b946a75a8f96533b6c6d6dad95c6525258de0ce4624ebe36101
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-bunyan@npm:^0.62.0":
-  version: 0.62.0
-  resolution: "@opentelemetry/instrumentation-bunyan@npm:0.62.0"
+"@opentelemetry/instrumentation-bunyan@npm:^0.63.0":
+  version: 0.63.0
+  resolution: "@opentelemetry/instrumentation-bunyan@npm:0.63.0"
   dependencies:
-    "@opentelemetry/api-logs": ^0.217.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/api-logs": ^0.218.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@types/bunyan": 1.8.11
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 21cb85aa43c48113a9d5282a3d23a20455029aefedbf48b9feadf55bdab3fabdc314e5447b1e4e652271a593f9448cb658b367aab118e26a162743eb7eee86ad
+  checksum: 61cc879c89771335ece1ab4f1565d7d4d8bd20c4752ddf28b83bdef92889cebfdcad5acd1ac47e47af4e672c3d47be58ab0b253521a7050fb91e4fe4627205f5
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-cassandra-driver@npm:^0.62.0":
-  version: 0.62.0
-  resolution: "@opentelemetry/instrumentation-cassandra-driver@npm:0.62.0"
+"@opentelemetry/instrumentation-cassandra-driver@npm:^0.63.0":
+  version: 0.63.0
+  resolution: "@opentelemetry/instrumentation-cassandra-driver@npm:0.63.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.37.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 0c3b0a6805388d7e55bbd00536413d5d560ebcbfc75571735640657797f1567beef58a7593e44f201c4baf8c71be14f4fb55668dab280e108c5889f9160fe96f
+  checksum: 263c998a62f19ca65c05da8b5f397513b6365d98e78131b2b4538062723037e1fb79a2cb48f99c00856918c80b4c6d2dde0d83789980092788bfafc51f7570ed
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-connect@npm:^0.60.0":
-  version: 0.60.0
-  resolution: "@opentelemetry/instrumentation-connect@npm:0.60.0"
+"@opentelemetry/instrumentation-connect@npm:^0.61.0":
+  version: 0.61.0
+  resolution: "@opentelemetry/instrumentation-connect@npm:0.61.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.27.0
     "@types/connect": 3.4.38
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: aac9d8c735042e689a3fbb6b9560a8ce5c92bd79f318e4a8f32d609a07c40722d31a1d3edf58672ad66ed623f22ce2e5dd2d773c754f515be9dba9d6a235a36d
+  checksum: 8f89be6ef311f73f26d84fbd958eef2bd2cd9cf3418688afdd1b822aec52b4da4b04e5cc165dd2089b8fc45c2aefcc12454adeb1a7ac65e5f6e462b9215c780c
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-cucumber@npm:^0.33.0":
-  version: 0.33.0
-  resolution: "@opentelemetry/instrumentation-cucumber@npm:0.33.0"
+"@opentelemetry/instrumentation-cucumber@npm:^0.34.0":
+  version: 0.34.0
+  resolution: "@opentelemetry/instrumentation-cucumber@npm:0.34.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.27.0
   peerDependencies:
     "@opentelemetry/api": ^1.0.0
-  checksum: 2e0878932c52a01c5058325818f3682ab153851212b7285daafe3f3a9001916c5f220fa3825e4ea6b8294e249a4485b15f49053ad7c579daad69df9f9b62bbd2
+  checksum: ba68f2f6d4858c45c5dabda569dba649b63548ea03c6364ed8ed7354c30bc6fa086f95552d1acd10392c4610c86dffb7df5231f130e2c09cb912bac4491c9511
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-dataloader@npm:^0.34.0":
-  version: 0.34.0
-  resolution: "@opentelemetry/instrumentation-dataloader@npm:0.34.0"
+"@opentelemetry/instrumentation-dataloader@npm:^0.35.0":
+  version: 0.35.0
+  resolution: "@opentelemetry/instrumentation-dataloader@npm:0.35.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 78a8e31e710d4ec609a8cb1cc135835f96b1f91adc423f881103153d41255ebb9c46a137ec228b1e8e42b25cf0ef163a186178b0bd94e7629798860e5a47c0bf
+  checksum: 3c97fa4129a0ec8fe58c660ba56a9b356996cd5b8bcbfa54b8fbd2da2af1b9c5067cf82f28b6efd67f57f77681c3e8b0112c189fb093d33111e9c98ed728fca3
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-dns@npm:^0.60.0":
-  version: 0.60.0
-  resolution: "@opentelemetry/instrumentation-dns@npm:0.60.0"
+"@opentelemetry/instrumentation-dns@npm:^0.61.0":
+  version: 0.61.0
+  resolution: "@opentelemetry/instrumentation-dns@npm:0.61.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: eaac891a0dbd6a17b38c8a85d39aa5475aa505b54448447ea9efc61d0f7ad817bf8fedd19cfb15b525b6d5f8d5ec58831c647d4eeb4b16e7901731e537c1b8fc
+  checksum: 505a430d69e1e57196c6516856c8cd31ebcba3dbffb833d27d277b264147a1d2061949c38e708a14745a9140771d6e1e87f1085257464d5d3c1ad31070a9c8c7
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-express@npm:^0.65.0":
-  version: 0.65.0
-  resolution: "@opentelemetry/instrumentation-express@npm:0.65.0"
+"@opentelemetry/instrumentation-express@npm:^0.66.0":
+  version: 0.66.0
+  resolution: "@opentelemetry/instrumentation-express@npm:0.66.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.27.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: e725df6b8b8f677190a4f1386af5726b878e03c262c8e445648a433296f16cef1c77eb35740a86767259e1be55f47bebe6d5ab87301d4ae91f9950a2e198922e
+  checksum: 7d431252bad09fb10ee7806680239767c14adb9de1d14edd9a7cbf135f8710104c190d663aed32c58bd7211e4733309145219c857ba28a4729e92cb855720e85
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-fs@npm:^0.36.0":
-  version: 0.36.0
-  resolution: "@opentelemetry/instrumentation-fs@npm:0.36.0"
+"@opentelemetry/instrumentation-fs@npm:^0.37.0":
+  version: 0.37.0
+  resolution: "@opentelemetry/instrumentation-fs@npm:0.37.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 51bea662523eb9cdfb4ad3b7d3d5c3e876721a4dc4dafc4e521d189d0a8f8045afe6c245d3a3dde6a70e39e0fcb1ec3900a3c2393afd9b48cc19590b9eab0761
+  checksum: 4dfca0dc964eae8b993923209e6b848c03929b908a804b5985af5dbdcbde85012bf756b9eb5ab8c23a464771387506e5ba38bfbeb5bfd61b3f5a5d9c795b15ef
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-generic-pool@npm:^0.60.0":
-  version: 0.60.0
-  resolution: "@opentelemetry/instrumentation-generic-pool@npm:0.60.0"
+"@opentelemetry/instrumentation-generic-pool@npm:^0.61.0":
+  version: 0.61.0
+  resolution: "@opentelemetry/instrumentation-generic-pool@npm:0.61.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 05c3aceb758c2ab82b76d6b54b1f488da72076179a8fba6016aae7427ffe61c809db040b87cb2b859ca291643e3e2b2f54cea39c1be2140e8f41fa484962467b
+  checksum: 662098258951fa877dad460ddcbf641aee9796ad05870a8523f2e0920ae7931cf10bd064209b20eea38acd357ef0b2c8c7af5b151c721ef3faf5b6a0f069fa34
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-graphql@npm:^0.65.0":
-  version: 0.65.0
-  resolution: "@opentelemetry/instrumentation-graphql@npm:0.65.0"
+"@opentelemetry/instrumentation-graphql@npm:^0.66.0":
+  version: 0.66.0
+  resolution: "@opentelemetry/instrumentation-graphql@npm:0.66.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: f5227b7a9b297282cd88f8424a36b3a2c31417df46ed4216337fbc300237b307f372fb4b03b87be108d05cfdf4e51235ff593cb84a0fad5464f1ba6ea6718fac
+  checksum: f5d4fbf1bf92276d40a5f88175aed043fe674f0cb2ec349dcf2b1a30ad08fc41ca62e02d769f91450f6e783337e66d42efc5fc2f5139ecd1cfa6bf9ce4553312
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-grpc@npm:^0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/instrumentation-grpc@npm:0.217.0"
+"@opentelemetry/instrumentation-grpc@npm:^0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/instrumentation-grpc@npm:0.218.0"
   dependencies:
-    "@opentelemetry/instrumentation": 0.217.0
+    "@opentelemetry/instrumentation": 0.218.0
     "@opentelemetry/semantic-conventions": ^1.29.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: fb7ac6f93567c318c930322369a166c49ab630bab2abdf2ac1a46e97f60ffd512ef3f9e46c167d554f4a134518f6189b90d5145ca028c6d6df72c11d8ee93ef1
+  checksum: 9599991112e6d98ec5680de056086a2ad02989df29448e83db22e96fa071e9e4eab7e9a59c23c450c68973353845fb0c9ac27140bdabc5c5165b8d5f262194cb
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-hapi@npm:^0.63.0":
-  version: 0.63.0
-  resolution: "@opentelemetry/instrumentation-hapi@npm:0.63.0"
+"@opentelemetry/instrumentation-hapi@npm:^0.64.0":
+  version: 0.64.0
+  resolution: "@opentelemetry/instrumentation-hapi@npm:0.64.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.27.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 55847cca424fca2e2bed308e4fa0da7578df200eb3c189dd10e712d41dc0129975e118123b60b5e51c654d4ba6cb731e9b9d21db3cc215c0ab4be75326d79f74
+  checksum: 1a10b41a03ce02e66c38d3fd12850a194d03c331edfb68cdf27cd8a0e1d8aa6445fcbdbcb79b7e895c99bce5ff162f09caefaf2a8d7f6913529dd51f0f7f52fa
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-http@npm:^0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/instrumentation-http@npm:0.217.0"
+"@opentelemetry/instrumentation-http@npm:^0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/instrumentation-http@npm:0.218.0"
   dependencies:
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/instrumentation": 0.217.0
+    "@opentelemetry/instrumentation": 0.218.0
     "@opentelemetry/semantic-conventions": ^1.29.0
     forwarded-parse: 2.1.2
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 21276e3f00519af60e7d5a0247c93dea7e6498cfff7d0446d59528f586d21ebc3d8f01f9be2290e8a84e3bf62927d919e9dbd7c070e406a6425b123cc7f60d53
+  checksum: 3d81abe6c310af1d1697be48703c09d8315a118bfadd22b9ea67635d5b1f5ac9d974411228e8cc97286f3824450b0ba93b306f9b0acfc0a403f6b1131f9ee3b3
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-ioredis@npm:^0.65.0":
-  version: 0.65.0
-  resolution: "@opentelemetry/instrumentation-ioredis@npm:0.65.0"
+"@opentelemetry/instrumentation-ioredis@npm:^0.66.0":
+  version: 0.66.0
+  resolution: "@opentelemetry/instrumentation-ioredis@npm:0.66.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/redis-common": ^0.38.3
     "@opentelemetry/semantic-conventions": ^1.33.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 960e60dd29be1594e6e00e8cd6927d4c8dbb9e60ad3f21901ec5be1a84350724a85fe56bacb94ca66b55710b91a4516b78b6726f64cbf75babe107330b89d77a
+  checksum: 7c3af4b604898cbf620de6f1939d91bac0f282aed952d898597193708b64c867e12340110f0eebeefb6486fd721a6ab2b30669408e1d3f72670d02cc15038a6f
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-kafkajs@npm:^0.26.0":
-  version: 0.26.0
-  resolution: "@opentelemetry/instrumentation-kafkajs@npm:0.26.0"
+"@opentelemetry/instrumentation-kafkajs@npm:^0.27.0":
+  version: 0.27.0
+  resolution: "@opentelemetry/instrumentation-kafkajs@npm:0.27.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.30.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 27a4351085a800435863ccc3bc111726d8f9a2a3ba4e797f785a3c703846877eff0e38a701ab3acf3d0cf3094a2e839ebe455f4ee1276d1de0adb8ca9111f6d8
+  checksum: b582520d2b57cdb765aad89c1193cb1141ebd1cef77cf61cd398c0c98348bde598b27c7ceae574d7c59789ae4c4e0eaf986a08768bf50d597006c58213799520
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-knex@npm:^0.61.0":
-  version: 0.61.0
-  resolution: "@opentelemetry/instrumentation-knex@npm:0.61.0"
+"@opentelemetry/instrumentation-knex@npm:^0.62.0":
+  version: 0.62.0
+  resolution: "@opentelemetry/instrumentation-knex@npm:0.62.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 5eb03c2686217b32f5bc5581515dea090dd7d048f2b1540d4eedab030b572e9bd7c9ffa0151a7a53bb300a3be94d373942af3351912f1c2b10cebd95983adff5
+  checksum: e578c65ccab7b40b4bb962f38991de17e51f6b805990e588a827ef627adb137e999454366ae80288b66e5c6702c16473d5afac2569009fd01faa03b17020f082
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-koa@npm:^0.65.0":
-  version: 0.65.0
-  resolution: "@opentelemetry/instrumentation-koa@npm:0.65.0"
+"@opentelemetry/instrumentation-koa@npm:^0.66.0":
+  version: 0.66.0
+  resolution: "@opentelemetry/instrumentation-koa@npm:0.66.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.36.0
   peerDependencies:
     "@opentelemetry/api": ^1.9.0
-  checksum: 87b02c9955b05e76bd40795f26f2c27d98c9342768132b131702f91bef8ff7a61da9be2feb270050bd7723261e53ca3904fb93bf6b3df16979bb7126c6b8b5a2
+  checksum: 340a07e9b96ae29bc2477d52f3c15c6e31a7f54208a36c4d3a82dd3e0e810cb3b2ceff48cd6bfc5bb996dcc11f9f8ae96535f311e593497292ce7aae5efac030
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-lru-memoizer@npm:^0.61.0":
-  version: 0.61.0
-  resolution: "@opentelemetry/instrumentation-lru-memoizer@npm:0.61.0"
+"@opentelemetry/instrumentation-lru-memoizer@npm:^0.62.0":
+  version: 0.62.0
+  resolution: "@opentelemetry/instrumentation-lru-memoizer@npm:0.62.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 23da638ff4e66f4cc19764b069295f67e82aca89f4480b23d4248b4f64591bcc51f5822a9314a6cb2e4de95e3e7662d22414c4e69e49c70920861da5689d93a3
+  checksum: b1d2a4e4a54bc64c2400eac7e44c11d3f92579d0e97aca076715a3d00b713b4ef6c495d0b6c72d9a650949b4975be83ded2c852ba4f5ddee42d280d6da930f86
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-memcached@npm:^0.60.0":
-  version: 0.60.0
-  resolution: "@opentelemetry/instrumentation-memcached@npm:0.60.0"
+"@opentelemetry/instrumentation-memcached@npm:^0.61.0":
+  version: 0.61.0
+  resolution: "@opentelemetry/instrumentation-memcached@npm:0.61.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
     "@types/memcached": ^2.2.6
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 3d312f764417b98df584a1f6cfc1e5ebdd9e40bf5f9a9708874653ef2084f3773d0039beccbf7036c509dc1986f7f925ec918aa691386e7c959bbd0190cf7558
+  checksum: 29d332780e72869f5b22bf8bca7ffc5eb4dad4b5aad60d05c4b5b3024b17c63598648e244602d6751a72b350d2bb7df395b17c6f7c3f185cf9c63cced635a75a
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-mongodb@npm:^0.70.0":
-  version: 0.70.0
-  resolution: "@opentelemetry/instrumentation-mongodb@npm:0.70.0"
+"@opentelemetry/instrumentation-mongodb@npm:^0.71.0":
+  version: 0.71.0
+  resolution: "@opentelemetry/instrumentation-mongodb@npm:0.71.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 60956a8aebc301ad3ab3897c9172987b4871d388372eb3246a72d0ed217c45a8288979ec6504863b73e946c641f277792de3c5aac15f7cbd1b2ec5e6a657f12e
+  checksum: 3b4e8b64080c93c58ab56d0783c5b9df8ca7ca391661b97a97c2b63260924ff44b9f39da02afe2be2f6c5abe76153d47e648d7e481d1364c4dd3ec494c58f544
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-mongoose@npm:^0.63.0":
-  version: 0.63.0
-  resolution: "@opentelemetry/instrumentation-mongoose@npm:0.63.0"
+"@opentelemetry/instrumentation-mongoose@npm:^0.64.0":
+  version: 0.64.0
+  resolution: "@opentelemetry/instrumentation-mongoose@npm:0.64.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: e6fc8c5006c9ccf4803d48571519ec0b33886bc34545e2292ab659154637e8c6c1ae21e038cfa345ff6dfac03d272a2b0e48c68da61333cbe401b1e444b8c933
+  checksum: ffaffc427f5805049cd5456d5f4f27a88f63d5aae6c9cb12e9f09e74ff07928047a106692b0a6cc967c6fef2bc660205d8ab7119f90295ea5daf9bdbb44a9023
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-mysql2@npm:^0.63.0":
-  version: 0.63.0
-  resolution: "@opentelemetry/instrumentation-mysql2@npm:0.63.0"
+"@opentelemetry/instrumentation-mysql2@npm:^0.64.0":
+  version: 0.64.0
+  resolution: "@opentelemetry/instrumentation-mysql2@npm:0.64.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
     "@opentelemetry/sql-common": ^0.41.2
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 5aaecb80f7752a23ca85f1671103d44969f3b371daa12e62a8ca513ceaf4a704ba0de378df8c251cfff8eefea0c91d5871392ea0f1b9d42a11599001011b048d
+  checksum: 6868a7765bfc67641c92a2a371d5b246fd65b5f713bc535b9a5fc79e046e82231b6e01b666a7fe8bb57d92f9219bafb97f17adf3e76d83e6d16a0bdf38fe1306
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-mysql@npm:^0.63.0":
-  version: 0.63.0
-  resolution: "@opentelemetry/instrumentation-mysql@npm:0.63.0"
+"@opentelemetry/instrumentation-mysql@npm:^0.64.0":
+  version: 0.64.0
+  resolution: "@opentelemetry/instrumentation-mysql@npm:0.64.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
     "@types/mysql": 2.15.27
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: f8328bc4bbb3eb3fa1f140062a69fcb42ee487dda3d5385da82e87137059e395d37743875029996445eac427b11d6ea5398ea9ecfbfeceb60c8e8939906ab3cf
+  checksum: ba2b9109bd8285ef3469a278a6867b516fa0f71785b241d24ef6bb4153ef0fd99a29a86d6b34a916cefcabae88ef174ec0f594189394b60eb2ad5edbb7885fba
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-nestjs-core@npm:^0.63.0":
-  version: 0.63.0
-  resolution: "@opentelemetry/instrumentation-nestjs-core@npm:0.63.0"
+"@opentelemetry/instrumentation-nestjs-core@npm:^0.64.0":
+  version: 0.64.0
+  resolution: "@opentelemetry/instrumentation-nestjs-core@npm:0.64.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.30.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 84fda02bc7f18bd4e42d5e12d2449207a82b95e566217f1ef663da28d303700dabd94656c332d7f1052d790f8cb47280dcf524fa1cd613a9ec1337abab85f279
+  checksum: 1bd96e76fd3dcf13499de41df4f5c835aabb421d21b25a86599f9bdc092059cf37f48cf5816a925612679eb2b8bcae21dd2dc43cbaab1244976573ba4913d4de
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-net@npm:^0.61.0":
-  version: 0.61.0
-  resolution: "@opentelemetry/instrumentation-net@npm:0.61.0"
+"@opentelemetry/instrumentation-net@npm:^0.62.0":
+  version: 0.62.0
+  resolution: "@opentelemetry/instrumentation-net@npm:0.62.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 0d4f13b9b80843ffeded71b0e48a4180507628b1295753d3393a7b523c970b3e2ddd974d14e219733d518a365d0e260895a97a80941256cd0e10d1e093eebad9
+  checksum: cc199c1b845761788793b1d7467df8fc2d3f9a0f736805b33755a60036fd77cec2ad6e37116dcbf01561376804a1eed282a763dd44bf197faf2e150b6a61f9ac
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-openai@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "@opentelemetry/instrumentation-openai@npm:0.15.0"
+"@opentelemetry/instrumentation-openai@npm:^0.16.0":
+  version: 0.16.0
+  resolution: "@opentelemetry/instrumentation-openai@npm:0.16.0"
   dependencies:
-    "@opentelemetry/api-logs": ^0.217.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/api-logs": ^0.218.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.36.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 036387e22994bd9e09450e7445ce9c2fb7bccbbff5176d0e8ad06be0d2ef1624a5b17edba15e7ce62b7defe903707c8ebca3c678df932963ceb408859433ebf0
+  checksum: 843280d447e185f289cdf195b7e054f91622bac19273c6127d0fd4c0b6f700eb3e0e2afec86419ca0d9047ba6895f4a2802c7c5a51aea92b3dc11a7d9b8fcfee
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-oracledb@npm:^0.42.0":
-  version: 0.42.0
-  resolution: "@opentelemetry/instrumentation-oracledb@npm:0.42.0"
+"@opentelemetry/instrumentation-oracledb@npm:^0.43.0":
+  version: 0.43.0
+  resolution: "@opentelemetry/instrumentation-oracledb@npm:0.43.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.34.0
     "@types/oracledb": 6.5.2
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 87d5e8452fc51c2f2c2a3b2cd28a022789513aa83ad017c672efbd57ad8946f2924bc1249db4cb708c20901c47645904f6cbd01a6e2abdde79d9d96ab0d74a4a
+  checksum: 68015be908325011db59f8f165586a8b1642c27c64b4adb2231e2379398260b5bad654c4ba114257c5e09859fb8ef905af521c300c4a8f437e2709019e670d60
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-pg@npm:^0.69.0":
-  version: 0.69.0
-  resolution: "@opentelemetry/instrumentation-pg@npm:0.69.0"
+"@opentelemetry/instrumentation-pg@npm:^0.70.0":
+  version: 0.70.0
+  resolution: "@opentelemetry/instrumentation-pg@npm:0.70.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.34.0
     "@opentelemetry/sql-common": ^0.41.2
     "@types/pg": 8.15.6
     "@types/pg-pool": 2.0.7
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 26a1b28445527150e0d912e35d233a9ad19b39f14eec5d38b62548483caf5a3b9b24a9134bf24b05ea21e4fa4b0c433f9084d2ed29651b8a7045e372f5ebc492
+  checksum: 04b040625b6bb3a6fe98ac467fa9aeb5ccb6db501012bce6f792867b9dadb37b4f9ded1bba04a658129c7bd38258bf90c998f6e22d8338f961fcb0056bd1c041
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-pino@npm:^0.63.0":
-  version: 0.63.0
-  resolution: "@opentelemetry/instrumentation-pino@npm:0.63.0"
+"@opentelemetry/instrumentation-pino@npm:^0.64.0":
+  version: 0.64.0
+  resolution: "@opentelemetry/instrumentation-pino@npm:0.64.0"
   dependencies:
-    "@opentelemetry/api-logs": ^0.217.0
+    "@opentelemetry/api-logs": ^0.218.0
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 3074d403d4f0f4509c0521bd7b390b0ceae60e9c6143bf4a6bee77b1935f72bc523637629f1cf22e13844d7745e6eeedd1d8c26e2675761c6ee1e8b9fb566251
+  checksum: fa9d8904a428ad249dbbb8b6a1b4e79a0f7bc1e7f772f9d978bab5745d92bd5ddc789f9c2f4aa306bb44b19b249b7d0c09967df7210b09491588f57dafb699c8
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-redis@npm:^0.65.0":
-  version: 0.65.0
-  resolution: "@opentelemetry/instrumentation-redis@npm:0.65.0"
+"@opentelemetry/instrumentation-redis@npm:^0.66.0":
+  version: 0.66.0
+  resolution: "@opentelemetry/instrumentation-redis@npm:0.66.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/redis-common": ^0.38.3
     "@opentelemetry/semantic-conventions": ^1.27.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 07d1e165f9cc88ea0cea9630d6ccc326ae187474aabcc716e5fc9e973301d6253ece1dd4b0c8e69e969f3210d3f70b384d8aa290c1e04b50261f9d6434bd5da7
+  checksum: 2534b4e89c6108d56006a6fd422af4b3c171999ef190c2f755bc88e358cb0d70a00309e2ce5861c90d0965a851d062dbaee1e4b9644031b61e5f1bc52fa71d7c
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-restify@npm:^0.62.0":
-  version: 0.62.0
-  resolution: "@opentelemetry/instrumentation-restify@npm:0.62.0"
+"@opentelemetry/instrumentation-restify@npm:^0.63.0":
+  version: 0.63.0
+  resolution: "@opentelemetry/instrumentation-restify@npm:0.63.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.27.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: ddbb33b78fe49f7266afa82f43836347d9070449b98bee0312e104b01c6b3153971dfb9e4bf9b9cf12a5bddd6b71651482523e7120c1a55036ad55e41f347efe
+  checksum: a934c284285c6e51beb02fd31432f948129fd0ab5b9bdc8d4b84a9a7ad14289bb2ff7e6600d33c62beb9c15d6a6265c4ab74c83bdba13be686ec1601bd448a6f
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-router@npm:^0.61.0":
-  version: 0.61.0
-  resolution: "@opentelemetry/instrumentation-router@npm:0.61.0"
+"@opentelemetry/instrumentation-router@npm:^0.62.0":
+  version: 0.62.0
+  resolution: "@opentelemetry/instrumentation-router@npm:0.62.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.27.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: db4e379a4056f5ca2b277be211ad6d5eedf5c50891d1de0cfe47bd2a9d3c2533d55e6490d4d7cd4f2855d51c608b043491d6cf231017c980be9e3c6bd3e5cf5e
+  checksum: 9340249d5abef1a804d8b44b5fee87217d1387cf6771bcc02dcd339cf45f54e67efc8fddd7a2fb20cd7b0b778e1a7c25394dd19f995563b4146bdfb81c04d638
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-runtime-node@npm:0.30.0, @opentelemetry/instrumentation-runtime-node@npm:^0.30.0":
+"@opentelemetry/instrumentation-runtime-node@npm:0.30.0":
   version: 0.30.0
   resolution: "@opentelemetry/instrumentation-runtime-node@npm:0.30.0"
   dependencies:
@@ -10275,56 +10288,82 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-socket.io@npm:^0.64.0":
-  version: 0.64.0
-  resolution: "@opentelemetry/instrumentation-socket.io@npm:0.64.0"
+"@opentelemetry/instrumentation-runtime-node@npm:^0.31.0":
+  version: 0.31.0
+  resolution: "@opentelemetry/instrumentation-runtime-node@npm:0.31.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/api-logs": ^0.218.0
+    "@opentelemetry/core": ^2.0.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: a8d9e7f70d8dde860991f40420bba58a41a65f14b6cfa6f827b739ef5d30704f19afbf3debfbca78f13585ee7f39bb2c7c4a590d49b0fafad5088d2301472c55
+  checksum: 4ed0df793dce13cc832cc44efdf4946db1dd64c9cc2b7a4eaddf8bccf21efefb296e0b161e9ff34d4b5c0054785a710f5988688dd01a7be2fd2f49f8a0ffcde0
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-tedious@npm:^0.36.0":
-  version: 0.36.0
-  resolution: "@opentelemetry/instrumentation-tedious@npm:0.36.0"
+"@opentelemetry/instrumentation-socket.io@npm:^0.65.0":
+  version: 0.65.0
+  resolution: "@opentelemetry/instrumentation-socket.io@npm:0.65.0"
   dependencies:
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
+  peerDependencies:
+    "@opentelemetry/api": ^1.3.0
+  checksum: 63d82279c4b0887f84b5a3392b3216b94616fac38af2a8833b01dad75f5ac39f53c529bbebecb3f2cc8614538f21b49021325e41ab7cfc35abfb004d4866a2df
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/instrumentation-tedious@npm:^0.37.0":
+  version: 0.37.0
+  resolution: "@opentelemetry/instrumentation-tedious@npm:0.37.0"
+  dependencies:
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.33.0
     "@types/tedious": ^4.0.14
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 13f244dc3ce330f01e07ea10091b5a7e5944baeebc299fa83012c7676a16f36beed05416c1e4eb1bad4712484ec92a07f8988b72927708ae49f912ba9a6c75ed
+  checksum: de949a736416cf4f2503b2002128700d40de85f365370d8568799fda01a5c6e3d1449c912308fbdf1e9cb7ca5d61854bb4600e13702361ad169485b39b118821
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-undici@npm:^0.27.0":
-  version: 0.27.0
-  resolution: "@opentelemetry/instrumentation-undici@npm:0.27.0"
+"@opentelemetry/instrumentation-undici@npm:^0.28.0":
+  version: 0.28.0
+  resolution: "@opentelemetry/instrumentation-undici@npm:0.28.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/instrumentation": ^0.218.0
     "@opentelemetry/semantic-conventions": ^1.24.0
   peerDependencies:
     "@opentelemetry/api": ^1.7.0
-  checksum: 7a9e342106ccb1204d153215c5ca08cabc1e891738c1266583255642f9d934c77ec06f0326a35c8e811b3593865049c0aa3a7cee40679387a2128c14b7795be4
+  checksum: 8d1d5433c6fc6b854cc05435e460e324354c6116c2003dbbd8ab2e4b2bb7c6a70c704940a2bc782c7fd46cee7bd4057f45db715ddce479ae9fba41a30be53cb0
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-winston@npm:^0.61.0":
-  version: 0.61.0
-  resolution: "@opentelemetry/instrumentation-winston@npm:0.61.0"
+"@opentelemetry/instrumentation-winston@npm:^0.62.0":
+  version: 0.62.0
+  resolution: "@opentelemetry/instrumentation-winston@npm:0.62.0"
   dependencies:
-    "@opentelemetry/api-logs": ^0.217.0
-    "@opentelemetry/instrumentation": ^0.217.0
+    "@opentelemetry/api-logs": ^0.218.0
+    "@opentelemetry/instrumentation": ^0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 5c034d2a915e34ce3c0a5502fa9e95f5094977601a0cb5a3c278ef7852b3303f51a1f7a3bd29bfe679d91ffadc492c44b3cc2385073a3f6b8987f47b898d8da9
+  checksum: 8a796bd08f1d31ff03200981054ea65e559f88e6191c3acdac8c72416acfb7864eaba28f16ab1ec44e16bbc04ae93897cad3e9f5c7bc682f9334fef83f40b2ec
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation@npm:0.217.0, @opentelemetry/instrumentation@npm:^0.217.0":
+"@opentelemetry/instrumentation@npm:0.218.0, @opentelemetry/instrumentation@npm:^0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/instrumentation@npm:0.218.0"
+  dependencies:
+    "@opentelemetry/api-logs": 0.218.0
+    import-in-the-middle: ^3.0.0
+    require-in-the-middle: ^8.0.0
+  peerDependencies:
+    "@opentelemetry/api": ^1.3.0
+  checksum: 204ef2a31d4bbd5453edab9326f6cea4f217a5ea52ca327458cbdba8436068542020ee409ea8eb7905afeebcce531c326093ffd7aaccdb3c6b70c0cff51f3850
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/instrumentation@npm:^0.217.0":
   version: 0.217.0
   resolution: "@opentelemetry/instrumentation@npm:0.217.0"
   dependencies:
@@ -10337,46 +10376,45 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/otlp-exporter-base@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/otlp-exporter-base@npm:0.217.0"
+"@opentelemetry/otlp-exporter-base@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/otlp-exporter-base@npm:0.218.0"
   dependencies:
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/otlp-transformer": 0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 2aab5a9f25fb124fb08f0fa1724c4e3d3430c7b81c92c2bb2b064237fa36a33394fe04b40d3a75b2e66e198f62abfc2e4e4323bc9632d9a8a32dd8a521f26bca
+  checksum: 0c98f36129c6e6ac48d081e8edf657fd0f0385d518a96ac2fe605a6907391c57a77626fb28aa98b00dec47e6986d16b6c43ccec22ffdfc4294908a1b5e3788fb
   languageName: node
   linkType: hard
 
-"@opentelemetry/otlp-grpc-exporter-base@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/otlp-grpc-exporter-base@npm:0.217.0"
+"@opentelemetry/otlp-grpc-exporter-base@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/otlp-grpc-exporter-base@npm:0.218.0"
   dependencies:
     "@grpc/grpc-js": ^1.14.3
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/otlp-exporter-base": 0.217.0
-    "@opentelemetry/otlp-transformer": 0.217.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
+    "@opentelemetry/otlp-transformer": 0.218.0
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 8af5f07ff95dba729785226042803a377eee2b84d6c251dc336c4022aac9eeb4a1c54e7757fa987c063ea6c5e776c7a4769f6180fe515220b1de6a075b43ee37
+  checksum: 2de9c150f74c4c0d2d7c0861beb8a11b8660a840ed8da9ae532edeff46341a3d8d1ee4456df6f47d896733beb3e7965662ad3d5415058f6c5d7c1f45ca5f1dd5
   languageName: node
   linkType: hard
 
-"@opentelemetry/otlp-transformer@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/otlp-transformer@npm:0.217.0"
+"@opentelemetry/otlp-transformer@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/otlp-transformer@npm:0.218.0"
   dependencies:
-    "@opentelemetry/api-logs": 0.217.0
+    "@opentelemetry/api-logs": 0.218.0
     "@opentelemetry/core": 2.7.1
     "@opentelemetry/resources": 2.7.1
-    "@opentelemetry/sdk-logs": 0.217.0
+    "@opentelemetry/sdk-logs": 0.218.0
     "@opentelemetry/sdk-metrics": 2.7.1
     "@opentelemetry/sdk-trace-base": 2.7.1
-    protobufjs: 8.0.1
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: e3010ddcc0ad3afaea5db55a6767e71b73b4c1a56b2c76a3de6574f10bef6780293d7e42cc273e8817e6b7274fa5524edae5d2a122ca967dd14b80256180e914
+  checksum: 0a666f31a06b7a67ca4e2d1394439df9a85d747669ee7b92b23a8976e54d64ecdbd12ad0a65211272acda116d994e60054035823cbd075dbb15757d800e31d25
   languageName: node
   linkType: hard
 
@@ -10409,7 +10447,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resource-detector-alibaba-cloud@npm:^0.33.7":
+"@opentelemetry/resource-detector-alibaba-cloud@npm:^0.33.8":
   version: 0.33.8
   resolution: "@opentelemetry/resource-detector-alibaba-cloud@npm:0.33.8"
   dependencies:
@@ -10421,7 +10459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resource-detector-aws@npm:^2.17.0":
+"@opentelemetry/resource-detector-aws@npm:^2.18.0":
   version: 2.20.0
   resolution: "@opentelemetry/resource-detector-aws@npm:2.20.0"
   dependencies:
@@ -10434,20 +10472,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resource-detector-azure@npm:^0.25.0":
-  version: 0.25.0
-  resolution: "@opentelemetry/resource-detector-azure@npm:0.25.0"
+"@opentelemetry/resource-detector-azure@npm:^0.26.0":
+  version: 0.26.0
+  resolution: "@opentelemetry/resource-detector-azure@npm:0.26.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
     "@opentelemetry/resources": ^2.0.0
     "@opentelemetry/semantic-conventions": ^1.37.0
   peerDependencies:
     "@opentelemetry/api": ^1.0.0
-  checksum: e0a1e67fdedd0982af5c32825f290000d1a828c79139b9d3fdf9b936d37d093493a44915a2a7dd0409cad7e66869e0ef5782b60d96ab3fbffa26df0d720479ac
+  checksum: 0df3cbea1028dd07a0d7ca132610fa26a1868665dd3b78b8cef79a9e19f615d83625c6c0d645fefb8a3b5d1155c08b742c67f710117c401ec03d5db8bc84867e
   languageName: node
   linkType: hard
 
-"@opentelemetry/resource-detector-container@npm:^0.8.8":
+"@opentelemetry/resource-detector-container@npm:^0.8.9":
   version: 0.8.11
   resolution: "@opentelemetry/resource-detector-container@npm:0.8.11"
   dependencies:
@@ -10459,20 +10497,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resource-detector-gcp@npm:^0.52.0":
-  version: 0.52.0
-  resolution: "@opentelemetry/resource-detector-gcp@npm:0.52.0"
+"@opentelemetry/resource-detector-gcp@npm:^0.53.0":
+  version: 0.53.0
+  resolution: "@opentelemetry/resource-detector-gcp@npm:0.53.0"
   dependencies:
     "@opentelemetry/core": ^2.0.0
     "@opentelemetry/resources": ^2.0.0
     gcp-metadata: ^8.0.0
   peerDependencies:
     "@opentelemetry/api": ^1.0.0
-  checksum: 279420256954977278b14e7cff2eb4d1cbaf82f29c46fb72118af13bd72cf8926c546a78f9e5eed0142c46675d28fcd84b2bb70e782039686b968066e6d0f383
+  checksum: 332ea674a1a0260db7666ce0e1882d5fe2434332448cf603e70689ada8a9845188ae0f3cf7354f57507611cc754cf4db3330f9ca40da8e1508929f209d1264bd
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:2.7.1":
+"@opentelemetry/resources@npm:2.7.1, @opentelemetry/resources@npm:^2.0.0":
   version: 2.7.1
   resolution: "@opentelemetry/resources@npm:2.7.1"
   dependencies:
@@ -10484,29 +10522,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@opentelemetry/resources@npm:2.0.0"
+"@opentelemetry/sdk-logs@npm:0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/sdk-logs@npm:0.218.0"
   dependencies:
-    "@opentelemetry/core": 2.0.0
-    "@opentelemetry/semantic-conventions": ^1.29.0
-  peerDependencies:
-    "@opentelemetry/api": ">=1.3.0 <1.10.0"
-  checksum: bf3c03769f9b850322727cab1232739a7264e0f4f68fa6bec82f4f2cb81f6b19f537b17297a3d01fefa00ce1aa103116341b37f95028a95a75e5591c343a40d0
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/sdk-logs@npm:0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/sdk-logs@npm:0.217.0"
-  dependencies:
-    "@opentelemetry/api-logs": 0.217.0
+    "@opentelemetry/api-logs": 0.218.0
     "@opentelemetry/core": 2.7.1
     "@opentelemetry/resources": 2.7.1
     "@opentelemetry/semantic-conventions": ^1.29.0
   peerDependencies:
     "@opentelemetry/api": ">=1.4.0 <1.10.0"
-  checksum: 2246fda9f6068031bdc0e4e6d8e293e55413394ff34b2241abd49449c8068cd0e8c79a56cb2fadd6b9f8e25c254691280dbfd3cff79c8daeddc3f14bc2fbe6eb
+  checksum: e83e9cf891f78f00916772442fc479627b4a9b755973cab48850c1a768755c644b89c2a3cfb217691cbaa138d4cb59ffc104849be942b54f95772755f124e985
   languageName: node
   linkType: hard
 
@@ -10522,38 +10548,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-node@npm:0.217.0, @opentelemetry/sdk-node@npm:^0.217.0":
-  version: 0.217.0
-  resolution: "@opentelemetry/sdk-node@npm:0.217.0"
+"@opentelemetry/sdk-node@npm:0.218.0, @opentelemetry/sdk-node@npm:^0.218.0":
+  version: 0.218.0
+  resolution: "@opentelemetry/sdk-node@npm:0.218.0"
   dependencies:
-    "@opentelemetry/api-logs": 0.217.0
-    "@opentelemetry/configuration": 0.217.0
+    "@opentelemetry/api-logs": 0.218.0
+    "@opentelemetry/configuration": 0.218.0
     "@opentelemetry/context-async-hooks": 2.7.1
     "@opentelemetry/core": 2.7.1
-    "@opentelemetry/exporter-logs-otlp-grpc": 0.217.0
-    "@opentelemetry/exporter-logs-otlp-http": 0.217.0
-    "@opentelemetry/exporter-logs-otlp-proto": 0.217.0
-    "@opentelemetry/exporter-metrics-otlp-grpc": 0.217.0
-    "@opentelemetry/exporter-metrics-otlp-http": 0.217.0
-    "@opentelemetry/exporter-metrics-otlp-proto": 0.217.0
-    "@opentelemetry/exporter-prometheus": 0.217.0
-    "@opentelemetry/exporter-trace-otlp-grpc": 0.217.0
-    "@opentelemetry/exporter-trace-otlp-http": 0.217.0
-    "@opentelemetry/exporter-trace-otlp-proto": 0.217.0
+    "@opentelemetry/exporter-logs-otlp-grpc": 0.218.0
+    "@opentelemetry/exporter-logs-otlp-http": 0.218.0
+    "@opentelemetry/exporter-logs-otlp-proto": 0.218.0
+    "@opentelemetry/exporter-metrics-otlp-grpc": 0.218.0
+    "@opentelemetry/exporter-metrics-otlp-http": 0.218.0
+    "@opentelemetry/exporter-metrics-otlp-proto": 0.218.0
+    "@opentelemetry/exporter-prometheus": 0.218.0
+    "@opentelemetry/exporter-trace-otlp-grpc": 0.218.0
+    "@opentelemetry/exporter-trace-otlp-http": 0.218.0
+    "@opentelemetry/exporter-trace-otlp-proto": 0.218.0
     "@opentelemetry/exporter-zipkin": 2.7.1
-    "@opentelemetry/instrumentation": 0.217.0
-    "@opentelemetry/otlp-exporter-base": 0.217.0
+    "@opentelemetry/instrumentation": 0.218.0
+    "@opentelemetry/otlp-exporter-base": 0.218.0
     "@opentelemetry/propagator-b3": 2.7.1
     "@opentelemetry/propagator-jaeger": 2.7.1
     "@opentelemetry/resources": 2.7.1
-    "@opentelemetry/sdk-logs": 0.217.0
+    "@opentelemetry/sdk-logs": 0.218.0
     "@opentelemetry/sdk-metrics": 2.7.1
     "@opentelemetry/sdk-trace-base": 2.7.1
     "@opentelemetry/sdk-trace-node": 2.7.1
     "@opentelemetry/semantic-conventions": ^1.29.0
   peerDependencies:
     "@opentelemetry/api": ">=1.3.0 <1.10.0"
-  checksum: 056ed265556c8086031524b3cc3eda6c3326813a4d3e54a0f7f4ee13fc65237ae8f191ba7638c4bb1364a8ba5e72f980c2a8282b30e689e83a746683f68b01ed
+  checksum: 24629e60c56d2b26cc0049173748284b7f9b5f3e7383b563b3df494ea06acb6d10107e71053b4e20d4f15dec60737819837d97dfb8cef387577209e4572813e4
   languageName: node
   linkType: hard
 
@@ -10583,17 +10609,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/semantic-conventions@npm:^1.24.0, @opentelemetry/semantic-conventions@npm:^1.33.0, @opentelemetry/semantic-conventions@npm:^1.33.1, @opentelemetry/semantic-conventions@npm:^1.34.0, @opentelemetry/semantic-conventions@npm:^1.36.0, @opentelemetry/semantic-conventions@npm:^1.37.0":
+"@opentelemetry/semantic-conventions@npm:^1.24.0, @opentelemetry/semantic-conventions@npm:^1.27.0, @opentelemetry/semantic-conventions@npm:^1.29.0, @opentelemetry/semantic-conventions@npm:^1.30.0, @opentelemetry/semantic-conventions@npm:^1.33.0, @opentelemetry/semantic-conventions@npm:^1.33.1, @opentelemetry/semantic-conventions@npm:^1.34.0, @opentelemetry/semantic-conventions@npm:^1.36.0, @opentelemetry/semantic-conventions@npm:^1.37.0":
   version: 1.42.0
   resolution: "@opentelemetry/semantic-conventions@npm:1.42.0"
   checksum: 197d704ab3c02a3effb1226e7a21b25ef065beaaf947f2b55a8a29a8b7856f5af5ad761acfa6f81159167854a5883529887f3d440ac0bfd637b83cc693e026fc
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/semantic-conventions@npm:^1.27.0, @opentelemetry/semantic-conventions@npm:^1.29.0, @opentelemetry/semantic-conventions@npm:^1.30.0":
-  version: 1.30.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.30.0"
-  checksum: 53d3489f11eeae07d12e878e4ae6df2de72b6a05ea434cfa2c2301023b9d3df35bcaafaeb294be708b93ae946b510067baf35008a3fd0275f52f0e0790014240
   languageName: node
   linkType: hard
 
@@ -10702,17 +10721,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/codegen@npm:^2.0.4, @protobufjs/codegen@npm:^2.0.5":
+"@protobufjs/codegen@npm:^2.0.5":
   version: 2.0.5
   resolution: "@protobufjs/codegen@npm:2.0.5"
   checksum: b5f1e43b4b9432247297083e395982054b8ff0e3a6de550bffe12de16a22bd6e900f7820a3348ecbac95cbf78bbb6b71e268f64fdbbeda1f354846965baa01ca
-  languageName: node
-  linkType: hard
-
-"@protobufjs/eventemitter@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/eventemitter@npm:1.1.0"
-  checksum: 0369163a3d226851682f855f81413cbf166cd98f131edb94a0f67f79e75342d86e89df9d7a1df08ac28be2bc77e0a7f0200526bb6c2a407abbfee1f0262d5fd7
   languageName: node
   linkType: hard
 
@@ -10720,16 +10732,6 @@ __metadata:
   version: 1.1.1
   resolution: "@protobufjs/eventemitter@npm:1.1.1"
   checksum: 7f8cb422ebccf3e17fd7baf9a0b5cd7ddbe2e83bc44d0330aa48e45931806b7cfea68319a2025856c68f7376dc602f9e7b4fcbcfc369de2ce58d99a4a800e1ab
-  languageName: node
-  linkType: hard
-
-"@protobufjs/fetch@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/fetch@npm:1.1.0"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.1
-    "@protobufjs/inquire": ^1.1.0
-  checksum: 3fce7e09eb3f1171dd55a192066450f65324fd5f7cc01a431df01bb00d0a895e6bfb5b0c5561ce157ee1d886349c90703d10a4e11a1a256418ff591b969b3477
   languageName: node
   linkType: hard
 
@@ -10749,13 +10751,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/inquire@npm:^1.1.0":
-  version: 1.1.2
-  resolution: "@protobufjs/inquire@npm:1.1.2"
-  checksum: 6515cd6d884e16aa1f78df479f43860a492cf79450e0e8a35838da2a59d5fc08bd63f9a5daf752e7c4b0999f7ac6cdc44419a36f916af40cbf5831e8a8856949
-  languageName: node
-  linkType: hard
-
 "@protobufjs/path@npm:^1.1.2":
   version: 1.1.2
   resolution: "@protobufjs/path@npm:1.1.2"
@@ -10770,17 +10765,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/utf8@npm:^1.1.0":
+"@protobufjs/utf8@npm:^1.1.1":
   version: 1.1.2
   resolution: "@protobufjs/utf8@npm:1.1.2"
   checksum: 7abb5abdd9ebd720692f135b3ae2379f6827db9224b1ec96ada20837f26b9b26b24a20e53c8001f754c4bc78fd00f9ab92fe2b86fc71cfb48563ac4fb35c1dc7
-  languageName: node
-  linkType: hard
-
-"@protobufjs/utf8@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@protobufjs/utf8@npm:1.1.1"
-  checksum: 9352cf54a92219bd7eac9791c62f4d9abc27381a4b8d639e76ca33edb4813e6905c17ea1f894f4730ea1c6e99e69dac4484a661d6715193d88e90c1775df9fe9
   languageName: node
   linkType: hard
 
@@ -15829,17 +15817,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/aws-lambda@npm:^8.10.155":
+"@types/aws-lambda@npm:^8.10.155, @types/aws-lambda@npm:^8.10.83":
   version: 8.10.162
   resolution: "@types/aws-lambda@npm:8.10.162"
   checksum: 2f33da335cdd091ac766a5f53b3ae375eab010649afa73f3240715a548ad804f409536aec9057c48bc1457ac913c0b3b63114921772b3b5f2e93e115511dc6e0
-  languageName: node
-  linkType: hard
-
-"@types/aws-lambda@npm:^8.10.83":
-  version: 8.10.147
-  resolution: "@types/aws-lambda@npm:8.10.147"
-  checksum: 697348cb9040563f072d2a77eec8aad3d9705f3e0f43c75ce8ae338c522e0bce8caffcfa0e11e51b674030d3221f776b07c257f98377375af08fe08df6e4de84
   languageName: node
   linkType: hard
 
@@ -16491,18 +16472,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:*":
-  version: 8.11.10
-  resolution: "@types/pg@npm:8.11.10"
-  dependencies:
-    "@types/node": "*"
-    pg-protocol: "*"
-    pg-types: ^4.0.1
-  checksum: b2b481784e44429b284c7fc18121372f8afe747c3ada84aaff55de3aa07e205cecf18e8623c8b61860f8eeb499305bef8f934b62c9a1911bef3f8509febef071
-  languageName: node
-  linkType: hard
-
-"@types/pg@npm:8.15.6":
+"@types/pg@npm:*, @types/pg@npm:8.15.6":
   version: 8.15.6
   resolution: "@types/pg@npm:8.15.6"
   dependencies:
@@ -18499,12 +18469,12 @@ __metadata:
     "@internal/plugin-licensed-users-info-backend": "*"
     "@internal/plugin-scalprum-backend": "*"
     "@opentelemetry/api": 1.9.0
-    "@opentelemetry/auto-instrumentations-node": 0.75.0
+    "@opentelemetry/auto-instrumentations-node": 0.76.0
     "@opentelemetry/core": 2.0.0
     "@opentelemetry/exporter-prometheus": 0.217.0
     "@opentelemetry/host-metrics": 0.38.3
     "@opentelemetry/instrumentation-runtime-node": 0.30.0
-    "@opentelemetry/sdk-node": 0.217.0
+    "@opentelemetry/sdk-node": 0.218.0
     "@red-hat-developer-hub/backstage-plugin-translations-backend": 0.2.1
     "@types/express": 4.17.25
     "@types/global-agent": 2.1.3
@@ -24698,16 +24668,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hasown@npm:^2.0.0, hasown@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "hasown@npm:2.0.2"
-  dependencies:
-    function-bind: ^1.1.2
-  checksum: e8516f776a15149ca6c6ed2ae3110c417a00b62260e222590e54aa367cbcd6ed99122020b37b7fbdf05748df57b265e70095d7bf35a47660587619b15ffb93db
-  languageName: node
-  linkType: hard
-
-"hasown@npm:^2.0.4":
+"hasown@npm:^2.0.0, hasown@npm:^2.0.2, hasown@npm:^2.0.4":
   version: 2.0.4
   resolution: "hasown@npm:2.0.4"
   dependencies:
@@ -28158,14 +28119,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:^5.0.0, long@npm:^5.2.1":
-  version: 5.2.3
-  resolution: "long@npm:5.2.3"
-  checksum: 885ede7c3de4facccbd2cacc6168bae3a02c3e836159ea4252c87b6e34d40af819824b2d4edce330bfb5c4d6e8ce3ec5864bdcf9473fa1f53a4f8225860e5897
-  languageName: node
-  linkType: hard
-
-"long@npm:^5.3.2":
+"long@npm:^5.0.0, long@npm:^5.2.1, long@npm:^5.3.2":
   version: 5.3.2
   resolution: "long@npm:5.3.2"
   checksum: be215816b563f4ca27ad3677678b53415bc489f9e3466414e54d2d85f5f8e86768547fa58493bacfb363ffc57a664debc83403ccc2178aef0c40aca28bad47c9
@@ -29366,14 +29320,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minipass@npm:^5.0.0 || ^6.0.2 || ^7.0.0, minipass@npm:^7.0.2, minipass@npm:^7.0.3, minipass@npm:^7.1.2":
-  version: 7.1.2
-  resolution: "minipass@npm:7.1.2"
-  checksum: 2bfd325b95c555f2b4d2814d49325691c7bee937d753814861b0b49d5edcda55cbbf22b6b6a60bb91eddac8668771f03c5ff647dcd9d0f798e9548b9cdc46ee3
-  languageName: node
-  linkType: hard
-
-"minipass@npm:^7.0.4":
+"minipass@npm:^5.0.0 || ^6.0.2 || ^7.0.0, minipass@npm:^7.0.2, minipass@npm:^7.0.3, minipass@npm:^7.0.4, minipass@npm:^7.1.2":
   version: 7.1.3
   resolution: "minipass@npm:7.1.3"
   checksum: 2ede17c0bf8fec499be3360fd07f0ec7666189e3907320a9b653f1530cf84af98928c5b12d80bfb75f321833bf2e97785b940540213ebdafe97a5f10327e664d
@@ -29485,14 +29432,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"module-details-from-path@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "module-details-from-path@npm:1.0.3"
-  checksum: 378a8a26013889aa3086bfb0776b7860c5bb957336253e1ba5d779c2f239a218930b145ca76e52c1dd7c8079d52b2af64b8eec30822f81ffdb0dfa27d6fe6f33
-  languageName: node
-  linkType: hard
-
-"module-details-from-path@npm:^1.0.4":
+"module-details-from-path@npm:^1.0.3, module-details-from-path@npm:^1.0.4":
   version: 1.0.4
   resolution: "module-details-from-path@npm:1.0.4"
   checksum: 2ebfada5358492f6ab496b70f70a1042f2ee7a4c79d29467f59ed6704f741fb4461d7cecb5082144ed39a05fec4d19e9ff38b731c76228151be97227240a05b2
@@ -30286,7 +30226,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"obuf@npm:^1.0.0, obuf@npm:^1.1.2, obuf@npm:~1.1.2":
+"obuf@npm:^1.0.0, obuf@npm:^1.1.2":
   version: 1.1.2
   resolution: "obuf@npm:1.1.2"
   checksum: 41a2ba310e7b6f6c3b905af82c275bf8854896e2e4c5752966d64cbcd2f599cfffd5932006bcf3b8b419dfdacebb3a3912d5d94e10f1d0acab59876c8757f27f
@@ -31256,13 +31196,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-numeric@npm:1.0.2":
-  version: 1.0.2
-  resolution: "pg-numeric@npm:1.0.2"
-  checksum: 8899f8200caa1744439a8778a9eb3ceefb599d893e40a09eef84ee0d4c151319fd416634a6c0fc7b7db4ac268710042da5be700b80ef0de716fe089b8652c84f
-  languageName: node
-  linkType: hard
-
 "pg-pool@npm:^3.6.1":
   version: 3.6.1
   resolution: "pg-pool@npm:3.6.1"
@@ -31289,21 +31222,6 @@ __metadata:
     postgres-date: ~1.0.4
     postgres-interval: ^1.1.0
   checksum: bf4ec3f594743442857fb3a8dfe5d2478a04c98f96a0a47365014557cbc0b4b0cee01462c79adca863b93befbf88f876299b75b72c665b5fb84a2c94fbd10316
-  languageName: node
-  linkType: hard
-
-"pg-types@npm:^4.0.1":
-  version: 4.0.2
-  resolution: "pg-types@npm:4.0.2"
-  dependencies:
-    pg-int8: 1.0.1
-    pg-numeric: 1.0.2
-    postgres-array: ~3.0.1
-    postgres-bytea: ~3.0.0
-    postgres-date: ~2.1.0
-    postgres-interval: ^3.0.0
-    postgres-range: ^1.1.1
-  checksum: c4b813382d4a75f87462fab3245d5422b86ba1a54a1b330e6b43a459c127b4d02553dc7e5b4ae4fa0f5f17971d416eb393810f69ff6d30d986e45c2f20778c55
   languageName: node
   linkType: hard
 
@@ -31917,26 +31835,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postgres-array@npm:~3.0.1":
-  version: 3.0.2
-  resolution: "postgres-array@npm:3.0.2"
-  checksum: 5955f9dffeb6fa960c1a0b04fd4b2ba16813ddb636934ad26f902e4d76a91c0b743dcc6edc4cffc52deba7d547505e0020adea027c1d50a774f989cf955420d1
-  languageName: node
-  linkType: hard
-
 "postgres-bytea@npm:~1.0.0":
   version: 1.0.0
   resolution: "postgres-bytea@npm:1.0.0"
   checksum: d844ae4ca7a941b70e45cac1261a73ee8ed39d72d3d74ab1d645248185a1b7f0ac91a3c63d6159441020f4e1f7fe64689ac56536a307b31cef361e5187335090
-  languageName: node
-  linkType: hard
-
-"postgres-bytea@npm:~3.0.0":
-  version: 3.0.0
-  resolution: "postgres-bytea@npm:3.0.0"
-  dependencies:
-    obuf: ~1.1.2
-  checksum: 5f917a003fcaa0df7f285e1c37108ad474ce91193466b9bd4bcaecef2cdea98ca069c00aa6a8dbe6d2e7192336cadc3c9b36ae48d1555a299521918e00e2936b
   languageName: node
   linkType: hard
 
@@ -31947,33 +31849,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postgres-date@npm:~2.1.0":
-  version: 2.1.0
-  resolution: "postgres-date@npm:2.1.0"
-  checksum: 5c573b0602e17c6134fd8bc8ac7689ac0302e1b199f15dd3578fc45186f206dbd0609f97bf0e4bd1db62234d7a37f29c04f4df525f7efebb9304363b2efca272
-  languageName: node
-  linkType: hard
-
 "postgres-interval@npm:^1.1.0":
   version: 1.2.0
   resolution: "postgres-interval@npm:1.2.0"
   dependencies:
     xtend: ^4.0.0
   checksum: 746b71f93805ae33b03528e429dc624706d1f9b20ee81bf743263efb6a0cd79ae02a642a8a480dbc0f09547b4315ab7df6ce5ec0be77ed700bac42730f5c76b2
-  languageName: node
-  linkType: hard
-
-"postgres-interval@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "postgres-interval@npm:3.0.0"
-  checksum: c7a1cf006de97de663b6b8c4d2b167aa9909a238c4866a94b15d303762f5ac884ff4796cd6e2111b7f0a91302b83c570453aa8506fd005b5a5d5dfa87441bebc
-  languageName: node
-  linkType: hard
-
-"postgres-range@npm:^1.1.1":
-  version: 1.1.4
-  resolution: "postgres-range@npm:1.1.4"
-  checksum: 460af8c882a50e2c3d08ede5d5ee9e5e5a99dcf471e3ed55b4c17cad62dc85177b51bb8105b626a9c73de9edcba934e86665923b0d86e1c8e1f55d3e0f3530c6
   languageName: node
   linkType: hard
 
@@ -32195,26 +32076,6 @@ __metadata:
   dependencies:
     protobufjs: ^7.2.5
   checksum: 21b8aa65be6dac2bb24920e5bdabef48b249bdf65b1498ae7e69ac4e70722275b083cd60a21d2b4be3ead9d768de2f6f5fb6b188bd177d51c824a539b5ba55cc
-  languageName: node
-  linkType: hard
-
-"protobufjs@npm:8.0.1":
-  version: 8.0.1
-  resolution: "protobufjs@npm:8.0.1"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.2
-    "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
-    "@protobufjs/eventemitter": ^1.1.0
-    "@protobufjs/fetch": ^1.1.0
-    "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
-    "@protobufjs/path": ^1.1.2
-    "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
-    "@types/node": ">=13.7.0"
-    long: ^5.0.0
-  checksum: 13dae695fb481f3c4c7d9b82f2e816ef8ee1fdf89a4de19fa5e041894e3d9516547ed8e63b11f0f9f7f835df7fb772cb872eb72bf3ce2400c0520da13d4ddd87
   languageName: node
   linkType: hard
 
