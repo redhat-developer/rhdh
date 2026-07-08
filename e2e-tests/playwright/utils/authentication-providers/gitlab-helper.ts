@@ -165,45 +165,4 @@ export class GitLabHelper {
       throw error;
     }
   }
-
-  /**
-   * Lists all OAuth applications
-   * @returns Array of OAuth applications
-   */
-  async listOAuthApplications(): Promise<GitLabOAuthApp[]> {
-    try {
-      console.log("[GITLAB] Listing OAuth applications");
-      const response = await fetch(`${this.apiBaseUrl}/applications`, {
-        method: "GET",
-        headers: {
-          "PRIVATE-TOKEN": this.config.personalAccessToken,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to list OAuth applications: ${response.status} ${response.statusText} - ${errorText}`,
-        );
-      }
-
-      const apps: unknown = await response.json();
-      if (!Array.isArray(apps)) {
-        throw new TypeError("Expected array of OAuth applications");
-      }
-      const validatedApps = apps.filter((app) => isGitLabOAuthAppResponse(app));
-      console.log(`[GITLAB] Found ${validatedApps.length} OAuth applications`);
-      return validatedApps.map((app) => ({
-        id: app.id,
-        application_id: app.application_id,
-        application_name: app.application_name ?? app.name ?? "",
-        secret: app.secret,
-        callback_url: app.callback_url ?? app.redirect_uri ?? "",
-        scopes: app.scopes ?? [],
-      }));
-    } catch (error) {
-      console.error("[GITLAB] Failed to list OAuth applications:", error);
-      throw error;
-    }
-  }
 }

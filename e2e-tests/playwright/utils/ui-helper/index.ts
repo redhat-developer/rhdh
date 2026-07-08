@@ -1,1 +1,0 @@
-export { UIhelper } from "./class";

@@ -1,14 +1,10 @@
-import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
-
 import { expect, test } from "@support/coverage/test";
 import Redis from "ioredis";
 
+import { PortForwardHarness } from "../support/harnesses/port-forward-harness";
 import { TechDocsPage } from "../support/pages/techdocs-page";
-import { Common } from "../utils/common";
 
-function streamDataToString(data: Buffer | string): string {
-  return typeof data === "string" ? data : data.toString();
-}
+const REDIS_LOCAL_PORT = 16_379;
 
 test.describe("Verify Redis Cache DB", () => {
   test.beforeAll(() => {
@@ -18,48 +14,39 @@ test.describe("Verify Redis Cache DB", () => {
     });
   });
 
-  test.describe.configure({ mode: "serial" });
-  let common: Common;
   let techDocsPage: TechDocsPage;
-  let portForward: ChildProcessWithoutNullStreams;
+  let portForward: PortForwardHarness | null = null;
   let redis: Redis;
 
-  test.beforeEach(async ({ page }) => {
-    techDocsPage = new TechDocsPage(page);
-    common = new Common(page);
-    await common.loginAsGuest();
-
+  test.beforeAll(async () => {
     console.log("Starting port-forward process...");
-    portForward = spawn("/bin/sh", [
-      "-c",
-      `
-      oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
-      kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
-      kubectl port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}"
-    `,
-    ]);
-
+    portForward = new PortForwardHarness(
+      {
+        shellCommand: `
+          oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
+          kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
+          kubectl port-forward service/redis ${REDIS_LOCAL_PORT}:6379 --namespace="${process.env.NAME_SPACE}"
+        `,
+      },
+      {
+        readyPattern: /Forwarding from/u,
+        readyTimeoutMs: 60_000,
+      },
+    );
     console.log("Waiting for port-forward to be ready...");
-    await new Promise<void>((resolve, reject) => {
-      portForward.stdout.on("data", (data: Buffer | string) => {
-        if (streamDataToString(data).includes("Forwarding from 127.0.0.1:6379")) {
-          resolve();
-        }
-      });
+    try {
+      await portForward.start();
+    } catch (error) {
+      await portForward.stop();
+      throw error;
+    }
+  });
 
-      portForward.stderr.on("data", (data: Buffer | string) => {
-        const message = streamDataToString(data);
-        console.error(`Port forwarding failed: ${message}`);
-        reject(new Error(`Port forwarding failed: ${message}`));
-      });
-    });
+  test.beforeEach(({ guestPage }) => {
+    techDocsPage = new TechDocsPage(guestPage);
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
-    portForward.stdout.on("data", (data: Buffer | string) => {
-      console.log(`Port-forward stdout: ${streamDataToString(data)}`);
-    });
-
     await techDocsPage.openDocFromFavorites("Red Hat Developer Hub");
 
     // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
@@ -72,7 +59,7 @@ test.describe("Verify Redis Cache DB", () => {
 
     console.log("Connecting to Redis...");
     redis = new Redis(
-      `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:6379`,
+      `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:${REDIS_LOCAL_PORT}`,
     );
     console.log("Verifying Redis keys...");
     await expect(async () => {
@@ -91,9 +78,9 @@ test.describe("Verify Redis Cache DB", () => {
     if (redis?.status === "ready") {
       redis.disconnect();
     }
-    console.log("Killing port-forward process with ID:", portForward.pid);
-    portForward.kill("SIGKILL");
-    console.log("Killing remaining port-forward process.");
-    exec(`ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`);
+  });
+
+  test.afterAll(async () => {
+    await portForward?.stop();
   });
 });

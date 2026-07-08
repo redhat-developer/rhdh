@@ -3,7 +3,6 @@ import { test } from "@support/coverage/test";
 import { CatalogImport } from "../../support/pages/catalog-import";
 import { SelfServicePage } from "../../support/pages/self-service-page";
 import { APIHelper } from "../../utils/api-helper";
-import { Common } from "../../utils/common";
 import { LogUtils } from "./log-utils";
 
 const template = "https://github.com/janus-qe/sample-service/blob/main/demo_template.yaml";
@@ -28,7 +27,6 @@ async function ensureEntityDoesNotExist() {
 
 test.describe.serial("Audit Log check for Catalog Plugin", () => {
   let selfServicePage: SelfServicePage;
-  let common: Common;
   let catalogImport: CatalogImport;
 
   test.beforeAll(() => {
@@ -38,11 +36,9 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
     });
   });
 
-  test.beforeEach(async ({ page }) => {
-    selfServicePage = new SelfServicePage(page);
-    common = new Common(page);
-    catalogImport = new CatalogImport(page);
-    await common.loginAsGuest();
+  test.beforeEach(async ({ guestPage }) => {
+    selfServicePage = new SelfServicePage(guestPage);
+    catalogImport = new CatalogImport(guestPage);
     await selfServicePage.open();
   });
 

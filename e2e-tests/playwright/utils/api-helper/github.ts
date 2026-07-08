@@ -61,8 +61,6 @@ async function getGithubPaginatedRequest(
   return getGithubPaginatedRequest(url, pageNo + 1, response);
 }
 
-export { getGithubPaginatedRequest };
-
 export async function createGitHubRepo(owner: string, repoName: string) {
   const response = await githubRequest("POST", GITHUB_API_ENDPOINTS.createRepo(owner), {
     name: repoName,

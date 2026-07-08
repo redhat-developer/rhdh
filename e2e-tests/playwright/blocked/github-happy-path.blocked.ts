@@ -1,13 +1,31 @@
-import type { BrowserContext } from "@playwright/test";
+/**
+ * Historical GitHub happy-path coverage retained outside the default E2E suite.
+ *
+ * Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099 — this file intentionally
+ * does not use the `*.spec.ts` suffix and will not be picked up by Playwright discovery.
+ * Restore it as an executable spec once the underlying catalog/entity issues are fixed.
+ */
+
+import type { BrowserContext, Page } from "@playwright/test";
 import { test, expect } from "@support/coverage/test";
 
+import { getCurrentLanguage, getTranslations } from "../e2e/localization/locale";
+import { waitForLoadingToSettle } from "../support/auth/app-shell";
+import { AuthProviderSession } from "../support/auth/provider-auth";
 import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
 import { RhdhInstance, CatalogImport } from "../support/pages/catalog-import";
 import { SelfServicePage } from "../support/pages/self-service-page";
 import { SettingsPage } from "../support/pages/settings-page";
 import { RESOURCES } from "../support/test-data/resources";
 import { TEMPLATES } from "../support/test-data/templates";
-import { Common } from "../utils/common";
+import * as interaction from "../utils/ui-helper/interaction";
+import * as table from "../utils/ui-helper/table";
+import * as visibility from "../utils/ui-helper/visibility";
+
+export const GITHUB_HAPPY_PATH_BLOCKER = "RHDHBUGS-2099";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 type GithubPullRequest = { title: string; number: string };
 
@@ -47,15 +65,52 @@ async function getRhdhPullRequests(
   return parseGithubPullRequests(data);
 }
 
-// Blocked by https://issues.redhat.com/browse/RHDHBUGS-2099
+async function reauthorizeGithubAppIfNeeded(page: Page): Promise<void> {
+  /* oxlint-disable playwright/no-raw-locators -- GitHub OAuth authorize popup (third-party) */
+  await new Promise<void>((resolve) => {
+    page.once("popup", async (popup) => {
+      await popup.waitForLoadState();
+
+      const authorizeButton = popup.locator("button.js-oauth-authorize-btn");
+      await Promise.race([
+        popup.waitForEvent("close", { timeout: 10_000 }),
+        authorizeButton.waitFor({ state: "visible", timeout: 10_000 }),
+      ]).catch(() => {});
+
+      if (!popup.isClosed() && (await authorizeButton.isVisible())) {
+        await popup.locator("body").click();
+        await authorizeButton.waitFor();
+        await authorizeButton.click();
+      }
+      resolve();
+    });
+  });
+  /* oxlint-enable playwright/no-raw-locators */
+}
+
+async function clickGithubLoginPopupIfVisible(page: Page): Promise<void> {
+  const signInLabel = t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"];
+  if (await visibility.isTextVisible(page, signInLabel)) {
+    await interaction.clickButton(page, signInLabel);
+    await interaction.clickButton(page, t["core-components"][lang]["oauthRequestDialog.login"]);
+    await reauthorizeGithubAppIfNeeded(page);
+    await table.waitForLoginBtnDisappear(page);
+  } else {
+    console.log('"Log in" button is not visible. Skipping login popup actions.');
+  }
+}
+
 test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
-  let common: Common;
+  test.describe.configure({ mode: "serial" });
+
+  let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let catalogBrowsePage: CatalogBrowsePage;
   let selfServicePage: SelfServicePage;
   let catalogImport: CatalogImport;
   let rhdhInstance: RhdhInstance;
   let browserContext: BrowserContext;
+  let page: Page;
 
   const component = "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
@@ -63,24 +118,28 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     test.skip(true, "RHDHBUGS-2099: GitHub happy path blocked pending catalog entity updates");
   });
 
-  test.beforeAll(({ rhdhPage, rhdhContext }) => {
+  test.beforeAll(({ rhdhPage, rhdhContext, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
 
+    page = rhdhPage;
     browserContext = rhdhContext;
+    authSession = rhdhAuthSession;
     settingsPage = new SettingsPage(rhdhPage);
     catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
     selfServicePage = new SelfServicePage(rhdhPage);
-    common = new Common(rhdhPage);
     catalogImport = new CatalogImport(rhdhPage);
     rhdhInstance = new RhdhInstance(rhdhPage);
   });
 
   test("Login as a Github user from Settings page.", async () => {
-    await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
-    const ghLogin = await common.githubLoginFromSettingsPage(
+    await authSession.loginWithKeycloak(
+      process.env.GH_USER2_ID ?? "",
+      process.env.GH_USER2_PASS ?? "",
+    );
+    const ghLogin = await authSession.loginWithGitHubFromSettingsPage(
       process.env.GH_USER2_ID!,
       process.env.GH_USER2_PASS!,
       process.env.GH_USER2_2FA_SECRET!,
@@ -141,7 +200,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     const expectedPath = "/catalog/default/component/red-hat-developer-hub";
     await rhdhInstance.waitForEntityPath(expectedPath);
 
-    await common.clickOnGHloginPopup();
+    await clickGithubLoginPopupIfVisible(page);
     await catalogBrowsePage.verifyLink("About RHDH", { exact: false });
     await rhdhInstance.setPullRequestPageSize(10);
     await rhdhInstance.verifyPRStatisticsRendered();
@@ -157,7 +216,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async () => {
     await rhdhInstance.clickPullRequestFilter("CLOSED");
     const closedPRs = await getRhdhPullRequests("closed");
-    await common.waitForLoad();
+    await waitForLoadingToSettle(page);
     await rhdhInstance.verifyPRRows(closedPRs, 0, 5);
   });
 
@@ -181,14 +240,14 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
 
     console.log("Clicking on Previous Page button");
     await rhdhInstance.clickPreviousPage();
-    await common.waitForLoad();
+    await waitForLoadingToSettle(page);
     await rhdhInstance.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs - 1);
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
     await catalogBrowsePage.openCatalogSidebar("Component");
     await catalogBrowsePage.openEntityLink("Red Hat Developer Hub");
-    await common.clickOnGHloginPopup();
+    await clickGithubLoginPopupIfVisible(page);
     await catalogBrowsePage.clickTab("Pull/Merge Requests");
     const allPRs = await getRhdhPullRequests("open");
     await rhdhInstance.verifyPRRowsPerPage(5, allPRs);
@@ -205,7 +264,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
 
   test("Sign out and verify that you return back to the Sign in page", async () => {
     await settingsPage.open();
-    await common.signOut();
+    await settingsPage.signOut();
     await browserContext.clearCookies();
     await settingsPage.verifySignInButtonVisible();
   });

@@ -107,14 +107,6 @@ export default class RhdhRbacApi {
     return this.myContext.get(`roles/conditions/${id}`);
   }
 
-  public deleteConditionById(id: number): Promise<APIResponse> {
-    return this.myContext.delete(`roles/conditions/${id}`);
-  }
-
-  public async dispose(): Promise<void> {
-    await this.myContext.dispose();
-  }
-
   private checkRoleFormat(role: string) {
     if (!this.roleRegex.test(role)) {
       throw new Error("roles passed to the Rbac api must have format like: default/admin");
