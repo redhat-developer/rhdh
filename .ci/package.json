@@ -1,6 +1,6 @@
 {
   "name": ".ci",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "private": true,
   "engines": {
     "node": "24"
