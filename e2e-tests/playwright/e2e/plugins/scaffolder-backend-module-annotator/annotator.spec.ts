@@ -6,18 +6,17 @@ import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page"
 import { runAccessibilityTests } from "../../../utils/accessibility";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 import { APIHelper } from "../../../utils/api-helper";
-import { Common } from "../../../utils/common";
-import { base64Decode } from "../../../utils/helper";
+import { JOB_NAME_PATTERNS } from "../../../utils/constants";
+import { skipIfJobName } from "../../../utils/helper";
 
 test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   test.skip(
-    () => (process.env.JOB_NAME ?? "").includes("osd-gcp"),
+    () => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP),
     "skipping due to RHDHBUGS-555 on OSD Env",
   );
 
   let scaffolderFlowPage: ScaffolderFlowPage;
   let catalogBrowsePage: CatalogBrowsePage;
-  let common: Common;
   let catalogImport: CatalogImport;
 
   const template =
@@ -30,21 +29,18 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     label: "some-label",
     annotation: "some-annotation",
     repo: `test-annotator-${Date.now()}`,
-    repoOwner: base64Decode(process.env.GITHUB_ORG ?? "amFudXMtcWU="),
+    repoOwner: Buffer.from(process.env.GITHUB_ORG ?? "amFudXMtcWU=", "base64").toString("utf8"),
   };
 
-  test.beforeAll(async ({ rhdhPage }) => {
+  test.beforeAll(({ rhdhGuestPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    common = new Common(rhdhPage);
-    scaffolderFlowPage = new ScaffolderFlowPage(rhdhPage);
-    catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
-    catalogImport = new CatalogImport(rhdhPage);
-
-    await common.loginAsGuest();
+    scaffolderFlowPage = new ScaffolderFlowPage(rhdhGuestPage);
+    catalogBrowsePage = new CatalogBrowsePage(rhdhGuestPage);
+    catalogImport = new CatalogImport(rhdhGuestPage);
   });
 
   test("Register the annotator template", async ({ rhdhPage }, testInfo) => {
@@ -68,34 +64,31 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await scaffolderFlowPage.clickCreate();
     await scaffolderFlowPage.waitForOpenInCatalogLink(30_000);
     await scaffolderFlowPage.clickOpenInCatalog();
+    await scaffolderFlowPage.verifyComponentNameVisible(reactAppDetails.componentName);
   });
 
   test("Verify custom label is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
-    await catalogImport.inspectEntityAndVerifyYaml(
-      `labels:\n    custom: ${reactAppDetails.label}\n`,
-    );
+    await catalogImport.verifyEntityYaml(`labels:\n    custom: ${reactAppDetails.label}\n`);
   });
 
   test("Verify custom annotation is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
-    await catalogImport.inspectEntityAndVerifyYaml(
-      `custom.io/annotation: ${reactAppDetails.annotation}`,
-    );
+    await catalogImport.verifyEntityYaml(`custom.io/annotation: ${reactAppDetails.annotation}`);
   });
 
   test("Verify template version annotation is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);
   });
 
   test("Verify template version annotation is present on the template", async () => {
     await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
-    await catalogImport.inspectEntityAndVerifyYaml(`backstage.io/template-version: 0.0.1`);
+    await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);
   });
 
   test.afterAll(async () => {

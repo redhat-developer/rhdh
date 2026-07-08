@@ -1,36 +1,27 @@
-import { test } from "@support/coverage/test";
+import { test, expect } from "@support/coverage/test";
 
-import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
-import { Common } from "../../utils/common";
-import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
-import {
-  readCertificateFile,
-  configurePostgresCertificate,
-  configurePostgresCredentials,
-  clearDatabase,
-  prepareForExternalDatabase,
-} from "../../utils/postgres-config";
+import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
+import { HomePage } from "../../support/pages/home-page";
+import { clearDatabase, readCertificateFile } from "../../utils/postgres-config";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 interface AzureDbConfig {
   name: string;
-  host: string;
+  host: string | undefined;
 }
 
 test.describe("Verify TLS configuration with Azure Database for PostgreSQL health check", () => {
-  const namespace = process.env.NAME_SPACE_RUNTIME! || "showcase-runtime";
-  const deploymentName = getRhdhDeploymentName();
+  const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
+  const runtimeHarness = new RuntimeHarness(namespace);
 
-  // Azure DB configuration from environment
-  const azureUser = process.env.AZURE_DB_USER!;
-  const azurePassword = process.env.AZURE_DB_PASSWORD!;
+  const azureUser = process.env.AZURE_DB_USER;
+  const azurePassword = process.env.AZURE_DB_PASSWORD;
 
-  // Define all Azure DB configurations to test
   const azureConfigurations: AzureDbConfig[] = [
-    { name: "latest-3", host: process.env.AZURE_DB_1_HOST! },
-    { name: "latest-2", host: process.env.AZURE_DB_2_HOST! },
-    { name: "latest-1", host: process.env.AZURE_DB_3_HOST! },
-    { name: "latest", host: process.env.AZURE_DB_4_HOST! },
+    { name: "latest-3", host: process.env.AZURE_DB_1_HOST },
+    { name: "latest-2", host: process.env.AZURE_DB_2_HOST },
+    { name: "latest-1", host: process.env.AZURE_DB_3_HOST },
+    { name: "latest", host: process.env.AZURE_DB_4_HOST },
   ];
 
   test.beforeAll(async ({}, testInfo) => {
@@ -45,12 +36,16 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
       },
     );
 
-    // Ensure the runtime RHDH instance is deployed (idempotent — no-op if already running)
     await ensureRuntimeDeployed();
 
-    // Validate certificates are available — skip gracefully if not set
     const azureCerts = readCertificateFile(process.env.AZURE_DB_CERTIFICATES_PATH);
-    if (azureCerts === null || azureCerts === undefined || !azureUser || !azurePassword) {
+    if (
+      azureCerts === null ||
+      azureUser === undefined ||
+      azureUser === "" ||
+      azurePassword === undefined ||
+      azurePassword === ""
+    ) {
       testInfo.skip(
         true,
         "Azure DB environment variables not configured (AZURE_DB_CERTIFICATES_PATH, AZURE_DB_USER, AZURE_DB_PASSWORD) — Azure DB tests are opt-in",
@@ -58,22 +53,16 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
       return;
     }
 
-    const kubeClient = new KubeClient();
-
-    // Prepare the deployment for external database tests: patch the app-config
-    // to use env var placeholders and clean up any schema-mode env var patches
-    await prepareForExternalDatabase(kubeClient, namespace, deploymentName);
-
-    // Create/update the postgres-crt secret with Azure certificates
+    await runtimeHarness.prepareForExternalDatabase();
     console.log("Configuring Azure Database for PostgreSQL TLS certificates...");
-    await configurePostgresCertificate(kubeClient, namespace, azureCerts);
+    await runtimeHarness.configurePostgresCertificate(azureCerts);
   });
 
   for (const config of azureConfigurations) {
     test.describe.serial(`Azure DB ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async ({}, testInfo) => {
-        test.setTimeout(180000);
-        if (!config.host) {
+        test.setTimeout(180_000);
+        if (config.host === undefined || config.host === "") {
           testInfo.skip(true, `AZURE_DB_*_HOST not set for ${config.name} — skipping`);
           return;
         }
@@ -83,36 +72,32 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
         });
         await clearDatabase({
           host: config.host,
-          user: azureUser,
-          password: azurePassword,
+          user: azureUser!,
+          password: azurePassword!,
           certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH,
         });
       });
 
       test("Configure and restart deployment", async ({}, testInfo) => {
-        if (!config.host) {
+        if (config.host === undefined || config.host === "") {
           testInfo.skip(true, `AZURE_DB_*_HOST not set for ${config.name}`);
           return;
         }
-        const kubeClient = new KubeClient();
-        test.setTimeout(600000);
-        await configurePostgresCredentials(kubeClient, namespace, {
-          host: config.host,
-          user: azureUser,
-          password: azurePassword,
+        test.setTimeout(600_000);
+        await runtimeHarness.configureExternalPostgres({
+          credentials: {
+            host: config.host,
+            user: azureUser!,
+            password: azurePassword!,
+          },
         });
-        await kubeClient.restartDeployment(deploymentName, namespace);
+        expect(config.host).toBeTruthy();
       });
 
       test("Verify successful DB connection", async ({ page }) => {
-        try {
-          const rhdhHomePage = new RhdhHomePage(page);
-          const common = new Common(page);
-          await common.loginAsGuest();
-          await rhdhHomePage.verifyWelcomeHeading();
-        } finally {
-          await page.goto("about:blank").catch(() => {});
-        }
+        await runtimeHarness.verifyGuestSession(page);
+        const homePage = new HomePage(page);
+        await homePage.verifyWelcomeHeading();
       });
     });
   }

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "lib": ["es2022", "dom"],
+    "target": "es2023",
+    "lib": ["es2023", "dom"],
     "types": ["@playwright/test", "node"],
     "esModuleInterop": true,
     "skipLibCheck": true,

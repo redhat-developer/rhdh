@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 import type { ReporterDescription } from "@playwright/test";
 
+/* oxlint-disable import/no-unassigned-import -- intentional side-effect graph wiring */
+import "./playwright/entry-graph";
 import { PW_PROJECT } from "./playwright/projects";
 
 process.env.JOB_NAME = process.env.JOB_NAME ?? "";
@@ -41,8 +43,8 @@ export default defineConfig({
   forbidOnly: process.env.CI !== undefined && process.env.CI !== "",
   /* Retry on CI only */
   retries: process.env.CI !== undefined && process.env.CI !== "" ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: 3,
+  /* Keep a small shared worker pool; stateful projects override this to 1. */
+  workers: process.env.CI !== undefined && process.env.CI !== "" ? 3 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // Coverage reporter (RHIDP-13243) is appended only when COLLECT_COVERAGE=true;
   // otherwise it is not registered at all and the default reporters run alone.
@@ -59,7 +61,7 @@ export default defineConfig({
     locale: process.env.LOCALE ?? "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
-    trace: "on",
+    trace: "retain-on-failure",
     screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
@@ -205,6 +207,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_DE,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "de",
       },
@@ -216,6 +219,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_ES,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "es",
       },
@@ -227,6 +231,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "fr",
       },
@@ -238,6 +243,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_IT,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "it",
       },
@@ -249,6 +255,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_JA,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "ja",
       },

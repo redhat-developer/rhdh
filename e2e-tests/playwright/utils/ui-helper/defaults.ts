@@ -1,5 +1,3 @@
-import { Locator } from "@playwright/test";
-
 export const DEFAULT_CLICK_BUTTON_OPTIONS = {
   exact: true,
   force: false,
@@ -15,11 +13,3 @@ export const DEFAULT_VERIFY_LINK_OPTIONS = {
   exact: true,
   notVisible: false,
 } as const;
-
-export const DEFAULT_VERIFY_BUTTON_URL_OPTIONS: {
-  locator: string | Locator;
-  exact: boolean;
-} = {
-  locator: "",
-  exact: true,
-};

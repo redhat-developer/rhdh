@@ -1,10 +1,9 @@
-import { test, expect, Page, BrowserContext } from "@support/coverage/test";
+import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
+import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
-import { Common } from "../../utils/common";
-import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPPORTED RESOLVERS
@@ -15,17 +14,42 @@ MICOROSFT:
     [-] emailLocalPartMatchingUserEntityName
 */
 
-const harness = await AuthProviderHarness.create("albarbaro-test-namespace-msgraph");
+const harness = AuthProviderHarness.create("albarbaro-test-namespace-msgraph");
 
 test.describe("Configure Microsoft Provider", () => {
   test.use({ baseURL: harness.backstageUrl });
 
-  let common: Common;
+  let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let page: Page;
   let context: BrowserContext;
 
-  test.beforeAll(async ({ rhdhPage, rhdhContext }) => {
+  async function clearSession(): Promise<void> {
+    await authSession.clearAuthState(context);
+  }
+
+  function loginAsZeus(): Promise<string> {
+    return authSession.loginWithMicrosoftAzure(
+      "zeus@rhdhtesting.onmicrosoft.com",
+      process.env.DEFAULT_USER_PASSWORD_2!,
+    );
+  }
+
+  function loginAsAtena(): Promise<string> {
+    return authSession.loginWithMicrosoftAzure(
+      "atena@rhdhtesting.onmicrosoft.com",
+      process.env.DEFAULT_USER_PASSWORD_2!,
+    );
+  }
+
+  function loginAsTyke(): Promise<string> {
+    return authSession.loginWithMicrosoftAzure(
+      "tyke@rhdhtesting.onmicrosoft.com",
+      process.env.DEFAULT_USER_PASSWORD_2!,
+    );
+  }
+
+  test.beforeAll(async ({ rhdhPage, rhdhContext, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
@@ -33,46 +57,42 @@ test.describe("Configure Microsoft Provider", () => {
 
     page = rhdhPage;
     context = rhdhContext;
-    common = new Common(rhdhPage);
+    authSession = rhdhAuthSession;
     settingsPage = new SettingsPage(rhdhPage);
 
-    harness.expectEnvVars([
-      "DEFAULT_USER_PASSWORD_2",
-      "AUTH_PROVIDERS_AZURE_CLIENT_ID",
-      "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
-      "AUTH_PROVIDERS_AZURE_TENANT_ID",
-    ]);
-
-    await harness.loadConfigsAndProvisionNamespace();
-    await harness.addBaseUrlSecretsIfRemote();
-    await harness.addSecretsFromEnv({
-      DEFAULT_USER_PASSWORD: "DEFAULT_USER_PASSWORD",
-      DEFAULT_USER_PASSWORD_2: "DEFAULT_USER_PASSWORD_2",
-      AUTH_PROVIDERS_AZURE_CLIENT_ID: "AUTH_PROVIDERS_AZURE_CLIENT_ID",
-      AUTH_PROVIDERS_AZURE_CLIENT_SECRET: "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
-      AUTH_PROVIDERS_AZURE_TENANT_ID: "AUTH_PROVIDERS_AZURE_TENANT_ID",
-      MICROSOFT_CLIENT_ID: "AUTH_PROVIDERS_AZURE_CLIENT_ID",
-      MICROSOFT_CLIENT_SECRET: "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
-      MICROSOFT_TENANT_ID: "AUTH_PROVIDERS_AZURE_TENANT_ID",
+    await harness.prepareProvider({
+      requiredEnvVars: [
+        "DEFAULT_USER_PASSWORD_2",
+        "AUTH_PROVIDERS_AZURE_CLIENT_ID",
+        "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
+        "AUTH_PROVIDERS_AZURE_TENANT_ID",
+      ],
+      envSecrets: {
+        DEFAULT_USER_PASSWORD: "DEFAULT_USER_PASSWORD",
+        DEFAULT_USER_PASSWORD_2: "DEFAULT_USER_PASSWORD_2",
+        AUTH_PROVIDERS_AZURE_CLIENT_ID: "AUTH_PROVIDERS_AZURE_CLIENT_ID",
+        AUTH_PROVIDERS_AZURE_CLIENT_SECRET: "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
+        AUTH_PROVIDERS_AZURE_TENANT_ID: "AUTH_PROVIDERS_AZURE_TENANT_ID",
+        MICROSOFT_CLIENT_ID: "AUTH_PROVIDERS_AZURE_CLIENT_ID",
+        MICROSOFT_CLIENT_SECRET: "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
+        MICROSOFT_TENANT_ID: "AUTH_PROVIDERS_AZURE_TENANT_ID",
+      },
+      enableProvider: async (deployment) => {
+        await deployment.enableMicrosoftLoginWithIngestion();
+      },
+      beforeDeploy: async () => {
+        console.log("[TEST] Configuring Microsoft Azure App Registration...");
+        const graphClient = new MSClient(
+          process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!,
+          process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!,
+          process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!,
+        );
+        const redirectUrl = `${harness.backstageUrl}/api/auth/microsoft/handler/frame`;
+        console.log(`[TEST] Adding redirect URL: ${redirectUrl}`);
+        await graphClient.addAppRedirectUrlsAsync([redirectUrl]);
+        console.log("[TEST] Microsoft Azure App Registration configured successfully");
+      },
     });
-    await harness.createSecret();
-
-    await harness.deployment.enableMicrosoftLoginWithIngestion();
-    await harness.deployment.updateAllConfigs();
-
-    console.log("[TEST] Configuring Microsoft Azure App Registration...");
-    const graphClient = new MSClient(
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!,
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!,
-      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!,
-    );
-
-    const redirectUrl = `${harness.backstageUrl}/api/auth/microsoft/handler/frame`;
-    console.log(`[TEST] Adding redirect URL: ${redirectUrl}`);
-    await graphClient.addAppRedirectUrlsAsync([redirectUrl]);
-    console.log("[TEST] Microsoft Azure App Registration configured successfully");
-
-    await harness.deployAndWait();
   });
 
   test.beforeEach(() => {
@@ -80,119 +100,115 @@ test.describe("Configure Microsoft Provider", () => {
   });
 
   test("Login with Microsoft default resolver", async () => {
-    const login = await common.MicrosoftAzureLogin(
-      "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2!,
-    );
-    expect(login).toBe("Login successful");
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("TEST Zeus");
-    await common.signOut();
-    await context.clearCookies();
+    await harness.runLoginCase({
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("TEST Zeus");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with Microsoft emailMatchingUserEntityAnnotation resolver", async () => {
-    //Looks up the user by matching their Microsoft email to the email entity annotation.
-    //User atena has no email attribute set
-    await harness.deployment.setMicrosoftResolver("emailMatchingUserEntityAnnotation", false);
-    await harness.reconcileAfterConfigChange();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setMicrosoftResolver("emailMatchingUserEntityAnnotation", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("TEST Zeus");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
 
-    const login = await common.MicrosoftAzureLogin(
-      "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2!,
-    );
-    expect(login).toBe("Login successful");
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("TEST Zeus");
-    await common.signOut();
-    await context.clearCookies();
-
-    const login2 = await common.MicrosoftAzureLogin(
-      "atena@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2!,
-    );
-    expect(login2).toBe("Login successful");
-    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
-    await context.clearCookies();
+    await harness.runLoginCase({
+      login: loginAsAtena,
+      assert: async () => {
+        await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with Microsoft emailMatchingUserEntityProfileEmail resolver", async () => {
-    //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setMicrosoftResolver("emailMatchingUserEntityProfileEmail", false);
-    await harness.reconcileAfterConfigChange();
-
-    const login = await common.MicrosoftAzureLogin(
-      "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2!,
-    );
-    expect(login).toBe("Login successful");
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("TEST Zeus");
-    await common.signOut();
-    await context.clearCookies();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setMicrosoftResolver("emailMatchingUserEntityProfileEmail", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("TEST Zeus");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   // NOTE: entity name is "name": "zeus_rhdhtesting.onmicrosoft.com", email is "email": "zeus@rhdhtesting.onmicrosoft.com" not resolving?
   test.fixme("Login with Microsoft emailLocalPartMatchingUserEntityName resolver", async () => {
-    //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setMicrosoftResolver("emailLocalPartMatchingUserEntityName", false);
-    await harness.reconcileAfterConfigChange();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setMicrosoftResolver(
+          "emailLocalPartMatchingUserEntityName",
+          false,
+        );
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("TEST Zeus");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
 
-    const login = await common.MicrosoftAzureLogin(
-      "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2!,
-    );
-    expect(login).toBe("Login successful");
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("TEST Zeus");
-    await common.signOut();
-    await context.clearCookies();
-
-    const login2 = await common.MicrosoftAzureLogin(
-      "tyke@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2!,
-    );
-    expect(login2).toBe("Login successful");
-
-    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+    await harness.runLoginCase({
+      login: loginAsTyke,
+      assert: async () => {
+        await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Set Micrisoft sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    harness.deployment.setAppConfigProperty(
-      "auth.providers.microsoft.production.sessionDuration",
-      "3days",
-    );
-    await harness.reconcileAfterConfigChange();
+    await harness.runLoginCase({
+      configure: async () => {
+        harness.deployment.setAppConfigProperty(
+          "auth.providers.microsoft.production.sessionDuration",
+          "3days",
+        );
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await page.reload();
 
-    const login = await common.MicrosoftAzureLogin(
-      "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2!,
-    );
-    expect(login).toBe("Login successful");
+        const cookies = await context.cookies();
+        const authCookie = cookies.find((cookie) => cookie.name === "microsoft-refresh-token");
+        expect(authCookie).toBeDefined();
 
-    await page.reload();
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        const tolerance = 3 * 60 * 1000;
+        const actualDuration = authCookie!.expires * 1000 - Date.now();
 
-    const cookies = await context.cookies();
-    const authCookie = cookies.find((cookie) => cookie.name === "microsoft-refresh-token");
-    expect(authCookie).toBeDefined();
+        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
+        expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    // expected duration of 3 days in ms
-    const threeDays = 3 * 24 * 60 * 60 * 1000;
-    // allow for 3 minutes tolerance
-    const tolerance = 3 * 60 * 1000;
-
-    const actualDuration = authCookie!.expires * 1000 - Date.now();
-
-    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-    expect(actualDuration).toBeLessThan(threeDays + tolerance);
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("TEST Zeus");
-    await common.signOut();
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("TEST Zeus");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Ingestion of Microsoft users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
@@ -260,7 +276,7 @@ test.describe("Configure Microsoft Provider", () => {
     );
   });
 
-  test.afterAll(async ({ rhdhPage }, testInfo) => {
+  test.afterAll(async () => {
     try {
       console.log("[TEST] Cleaning up Microsoft Azure App Registration...");
       const graphClient = new MSClient(
@@ -279,6 +295,5 @@ test.describe("Configure Microsoft Provider", () => {
     }
 
     await harness.cleanup();
-    await teardownBrowser(rhdhPage, testInfo);
   });
 });

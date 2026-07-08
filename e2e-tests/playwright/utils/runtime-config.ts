@@ -15,14 +15,10 @@
  *     with `containers: ["install-dynamic-plugins"]`.
  */
 
-import * as yaml from "js-yaml";
+import * as yaml from "yaml";
 
 import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
-
-// Re-export image utilities so existing `import from "./runtime-config"`
-// callers continue to work without changes.
-export { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage };
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -214,13 +210,7 @@ export function generateHelmValuesYaml(): string {
     },
   };
 
-  // js-yaml's dump wraps strings with {{ in quotes, which is correct for
-  // Helm — template expressions in values.yaml are always quoted strings.
-  return yaml.dump(values, {
-    lineWidth: -1,
-    quotingType: "'",
-    forceQuotes: false,
-  });
+  return yaml.stringify(values, { lineWidth: 0 });
 }
 
 /**
@@ -295,7 +285,7 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
     },
   };
 
-  return yaml.dump(appConfig, { lineWidth: -1 });
+  return yaml.stringify(appConfig, { lineWidth: 0 });
 }
 
 // ─── Operator dynamic-plugins ConfigMap ──────────────────────────────────────
@@ -310,7 +300,7 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
  * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.dump({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: -1 });
+  return yaml.stringify({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: 0 });
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────

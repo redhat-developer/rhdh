@@ -1,6 +1,6 @@
 import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
-import * as yaml from "js-yaml";
+import * as yaml from "yaml";
 
 import { hasStatusCode } from "../errors";
 import { waitForPodsTerminatedImpl } from "../kube-client-deployment-pods";
@@ -495,7 +495,7 @@ export class KubeClient {
       throw new Error(`No app-config data key found in ConfigMap '${configMapName}'`);
     }
 
-    const parsed: unknown = yaml.load(configMap.data[configKey]);
+    const parsed: unknown = yaml.parse(configMap.data[configKey]);
     if (!isRecord(parsed)) {
       throw new Error(`Invalid YAML structure in ConfigMap key '${configKey}'`);
     }
@@ -504,7 +504,7 @@ export class KubeClient {
 
     patchFn(appConfig);
 
-    const after = yaml.dump(appConfig);
+    const after = yaml.stringify(appConfig, { lineWidth: 0 });
     if (before === after) {
       console.log("patchAppConfig: no changes needed");
       return;
@@ -585,14 +585,12 @@ export class KubeClient {
 
     if (indicesToRemove.length === 0) return 0;
 
-    // toSorted requires ES2023 lib; spread creates a copy to avoid mutation
-    const sorted = [...indicesToRemove];
-    // oxlint-disable-next-line unicorn/no-array-sort
-    sorted.sort((a: number, b: number) => b - a);
-    const patch = sorted.map((idx: number) => ({
-      op: "remove" as const,
-      path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,
-    }));
+    const patch = indicesToRemove
+      .toSorted((a: number, b: number) => b - a)
+      .map((idx: number) => ({
+        op: "remove" as const,
+        path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,
+      }));
 
     await this.jsonPatchDeployment(deploymentName, namespace, patch);
     return indicesToRemove.length;
@@ -623,8 +621,7 @@ export class KubeClient {
       .map((e) => e.idx);
 
     if (indicesToRemove.length > 0) {
-      // oxlint-disable-next-line unicorn/no-array-sort -- toSorted requires ES2023 lib; spread creates a copy
-      for (const idx of [...indicesToRemove].sort((a: number, b: number) => b - a)) {
+      for (const idx of indicesToRemove.toSorted((a: number, b: number) => b - a)) {
         patch.push({
           op: "remove",
           path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,

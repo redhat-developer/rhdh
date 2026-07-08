@@ -28,12 +28,6 @@ export class ScaffolderFlowPage {
     await this.page.fill(SEARCH_OBJECTS_COMPONENTS.placeholderSearch, query);
   }
 
-  async openImportGitRepository(): Promise<void> {
-    await navigation.openSidebar(this.page, "Catalog");
-    await interaction.clickButton(this.page, "Self-service");
-    await interaction.clickButton(this.page, "Import an existing Git repository");
-  }
-
   async openSelfServiceFromCatalog(): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
     await interaction.clickButton(this.page, "Self-service");
@@ -47,34 +41,15 @@ export class ScaffolderFlowPage {
     await interaction.clickButton(this.page, "Import an existing Git repository");
   }
 
-  async runCreateReactAppTemplate(details: ReactAppTemplateDetails): Promise<void> {
-    await navigation.openSidebar(this.page, "Catalog");
-    await interaction.clickButton(this.page, "Self-service");
-    await verification.verifyHeading(this.page, "Self-service");
-    await this.fillSearch("Create React App Template");
-    await verification.verifyText(this.page, "Create React App Template");
-    await verification.waitForTextDisappear(this.page, "Add ArgoCD to an existing project");
-    await interaction.clickButton(this.page, "Choose");
-
-    await interaction.fillTextInputByLabel(this.page, "Name", details.componentName);
-    await interaction.fillTextInputByLabel(this.page, "Description", details.description);
-    await interaction.fillTextInputByLabel(this.page, "Owner", details.owner);
-    await interaction.fillTextInputByLabel(this.page, "Label", details.label);
-    await interaction.fillTextInputByLabel(this.page, "Annotation", details.annotation);
-    await interaction.clickButton(this.page, "Next");
-
-    await interaction.fillTextInputByLabel(this.page, "Owner", details.repoOwner);
-    await interaction.fillTextInputByLabel(this.page, "Repository", details.repo);
-    await interaction.pressTab(this.page);
-    await interaction.clickButton(this.page, "Review");
-  }
-
   async fillCreateReactAppTemplateForm(details: ReactAppTemplateDetails): Promise<void> {
     await this.fillSearch("Create React App Template");
     await verification.verifyText(this.page, "Create React App Template");
     await verification.waitForTextDisappear(this.page, "Add ArgoCD to an existing project");
     await interaction.clickButton(this.page, "Choose");
+    await this.fillCreateReactAppTemplateSteps(details);
+  }
 
+  private async fillCreateReactAppTemplateSteps(details: ReactAppTemplateDetails): Promise<void> {
     await interaction.fillTextInputByLabel(this.page, "Name", details.componentName);
     await interaction.fillTextInputByLabel(this.page, "Description", details.description);
     await interaction.fillTextInputByLabel(this.page, "Owner", details.owner);
@@ -88,33 +63,27 @@ export class ScaffolderFlowPage {
     await interaction.clickButton(this.page, "Review");
   }
 
-  async verifyCreateReactAppReviewTable(details: ReactAppTemplateDetails): Promise<void> {
-    await table.verifyRowInTableByUniqueText(this.page, "Owner", [details.owner]);
+  private async verifyCreateReactAppReviewRows(
+    details: ReactAppTemplateDetails,
+    ownerValue: string,
+    repoLocation: string,
+  ): Promise<void> {
+    await table.verifyRowInTableByUniqueText(this.page, "Owner", [ownerValue]);
     await table.verifyRowInTableByUniqueText(this.page, "Name", [details.componentName]);
     await table.verifyRowInTableByUniqueText(this.page, "Description", [details.description]);
     await table.verifyRowInTableByUniqueText(this.page, "Label", [details.label]);
     await table.verifyRowInTableByUniqueText(this.page, "Annotation", [details.annotation]);
-    await table.verifyRowInTableByUniqueText(this.page, "Repository Location", [
-      `${details.repoOwner}/${details.repo}`,
-    ]);
+    await table.verifyRowInTableByUniqueText(this.page, "Repository Location", [repoLocation]);
   }
 
   async verifyCreateReactAppReviewTableWithGroupOwner(
     details: ReactAppTemplateDetails,
   ): Promise<void> {
-    await table.verifyRowInTableByUniqueText(this.page, "Owner", [`group:${details.owner}`]);
-    await table.verifyRowInTableByUniqueText(this.page, "Name", [details.componentName]);
-    await table.verifyRowInTableByUniqueText(this.page, "Description", [details.description]);
-    await table.verifyRowInTableByUniqueText(this.page, "Label", [details.label]);
-    await table.verifyRowInTableByUniqueText(this.page, "Annotation", [details.annotation]);
-    await table.verifyRowInTableByUniqueText(this.page, "Repository Location", [
+    await this.verifyCreateReactAppReviewRows(
+      details,
+      `group:${details.owner}`,
       `github.com?owner=${details.repoOwner}&repo=${details.repo}`,
-    ]);
-  }
-
-  async createAndOpenInCatalog(): Promise<void> {
-    await interaction.clickButton(this.page, "Create");
-    await interaction.clickLink(this.page, "Open in catalog");
+    );
   }
 
   async clickCreate(): Promise<void> {
@@ -134,11 +103,7 @@ export class ScaffolderFlowPage {
   }
 
   async openTemplateFromCatalog(templateName: string, kindColumn = templateName): Promise<void> {
-    await navigation.openSidebar(this.page, "Catalog");
-    await navigation.selectMuiBox(this.page, "Kind", "Template");
-    await this.fillSearch(`${templateName}\n`);
-    await table.verifyRowInTableByUniqueText(this.page, templateName, [kindColumn]);
-    await interaction.clickLink(this.page, templateName);
+    await navigation.openTemplateInCatalog(this.page, templateName, kindColumn);
   }
 
   async launchTemplateAndVerifyIntro(): Promise<void> {

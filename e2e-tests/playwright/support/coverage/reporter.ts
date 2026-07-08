@@ -15,41 +15,73 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 import type { Reporter } from "@playwright/test/reporter";
+import { CoverageReport } from "monocart-coverage-reports";
 import { COVERAGE_RAW_DIR, COVERAGE_REPORT_DIR } from "./paths";
 
 const generateTimeoutMs = Number(
-  process.env.COVERAGE_GENERATE_TIMEOUT_MS || 2 * 60 * 1000,
+  process.env.COVERAGE_GENERATE_TIMEOUT_MS ?? 2 * 60 * 1000,
 );
+
+function isENOENT(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: unknown }).code === "ENOENT"
+  );
+}
+
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
 
 async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
   label: string,
 ): Promise<T> {
-  let timer: NodeJS.Timeout | undefined;
-  const timeout = new Promise<never>((_resolve, reject) => {
-    timer = setTimeout(
-      () => reject(new Error(`${label} timed out after ${timeoutMs}ms`)),
-      timeoutMs,
-    );
-  });
+  const controller = new AbortController();
+  const timeout = sleep(timeoutMs, undefined, { signal: controller.signal })
+    .then((): never => {
+      throw new Error(`${label} timed out after ${timeoutMs}ms`);
+    })
+    .catch((error: unknown) => {
+      if (controller.signal.aborted) {
+        return new Promise<never>(() => {});
+      }
+      throw error;
+    });
+
   try {
     return await Promise.race([promise, timeout]);
   } finally {
-    if (timer) {
-      clearTimeout(timer);
-    }
+    controller.abort();
   }
 }
 
 class CoverageReporter implements Reporter {
   private enabled = process.env.COLLECT_COVERAGE === "true";
 
-  async onBegin(): Promise<void> {
+  // Playwright Reporter hooks accept Promise<void>; oxlint's void-only rule is stricter than upstream types.
+  // oxlint-disable-next-line typescript/no-misused-promises, typescript/strict-void-return
+  onBegin(): Promise<void> {
     if (!this.enabled) {
-      return;
+      return Promise.resolve();
     }
+    return this.prepareRawDir();
+  }
+
+  // oxlint-disable-next-line typescript/no-misused-promises, typescript/strict-void-return
+  onEnd(): Promise<void> {
+    if (!this.enabled) {
+      return Promise.resolve();
+    }
+    return this.generateReport();
+  }
+
+  private async prepareRawDir(): Promise<void> {
     // Clear any raw coverage left over from a previous run so the merged
     // report only reflects the current Playwright run. Without this the
     // reporter would accumulate stale *.json files across runs and produce
@@ -65,17 +97,13 @@ class CoverageReporter implements Reporter {
     );
   }
 
-  async onEnd(): Promise<void> {
-    if (!this.enabled) {
-      return;
-    }
+  private async generateReport(): Promise<void> {
     try {
       const files = await fs.readdir(COVERAGE_RAW_DIR).catch((err: unknown) => {
         // Only swallow "directory does not exist" — any other failure (I/O,
         // permissions) surfaces so CI logs show the actual cause instead of
         // the misleading "no coverage collected" warning below.
-        const code = (err as NodeJS.ErrnoException).code;
-        if (code === "ENOENT") {
+        if (isENOENT(err)) {
           return [] as string[];
         }
         throw err;
@@ -88,12 +116,7 @@ class CoverageReporter implements Reporter {
         return;
       }
 
-      // Dynamic import defers loading the monocart module until the report
-      // is about to be generated. With COLLECT_COVERAGE unset the reporter
-      // is not even registered, so this branch is never reached.
-      const monocart = await import("monocart-coverage-reports");
-
-      const report = new monocart.CoverageReport({
+      const report = new CoverageReport({
         name: "RHDH E2E Coverage",
         outputDir: COVERAGE_REPORT_DIR,
         reports: [
@@ -113,7 +136,7 @@ class CoverageReporter implements Reporter {
             "utf-8",
           );
           const parsed: unknown = JSON.parse(content);
-          if (!Array.isArray(parsed)) {
+          if (!isUnknownArray(parsed)) {
             console.warn(
               `[coverage] Skipping ${file}: expected an array of V8 script coverage entries, got ${typeof parsed}`,
             );

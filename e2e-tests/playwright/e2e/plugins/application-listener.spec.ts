@@ -1,7 +1,6 @@
 import { expect, test } from "@support/coverage/test";
 
 import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
-import { Common } from "../../utils/common";
 
 test.describe("Test ApplicationListener", () => {
   test.beforeAll(() => {
@@ -13,10 +12,8 @@ test.describe("Test ApplicationListener", () => {
 
   let catalogBrowsePage: CatalogBrowsePage;
 
-  test.beforeEach(async ({ page }) => {
-    const common = new Common(page);
-    catalogBrowsePage = new CatalogBrowsePage(page);
-    await common.loginAsGuest();
+  test.beforeEach(({ guestPage }) => {
+    catalogBrowsePage = new CatalogBrowsePage(guestPage);
   });
 
   // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)

@@ -8,11 +8,18 @@ import type { ClientConfig } from "pg";
 
 import { base64Decode } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
+import { getPortForwardRestarter } from "../../utils/port-forward";
 
 /** Default schema-mode test database user (overridable via SCHEMA_MODE_DB_USER). */
-export const SCHEMA_MODE_DEFAULT_DB_USER = "bn_backstage";
-/** Default schema-mode test database password (overridable via SCHEMA_MODE_DB_PASSWORD). */
-export const SCHEMA_MODE_DEFAULT_DB_PASSWORD = "test_password_123";
+const SCHEMA_MODE_DEFAULT_DB_USER = "bn_backstage";
+/** Default schema-mode test database password (overridable via env). */
+function getSchemaModeDefaultDbPassword(): string {
+  return (
+    process.env.SCHEMA_MODE_DEFAULT_DB_PASSWORD ??
+    process.env.POSTGRES_PASSWORD ??
+    "test_password_123"
+  );
+}
 
 export interface SchemaModeEnv {
   dbHost: string;
@@ -31,14 +38,52 @@ function escapePasswordLiteral(value: string): string {
   return value.replaceAll("'", "''");
 }
 
-export function normalizeDbHost(host: string): string {
+function normalizeDbHost(host: string): string {
   return host === "localhost" ? "127.0.0.1" : host;
 }
 
-let portForwardRestarter: (() => Promise<void>) | null = null;
+function connectionErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
-export function setPortForwardRestarter(fn: (() => Promise<void>) | null): void {
-  portForwardRestarter = fn;
+function isConnectionDeadError(errorMsg: string): boolean {
+  return (
+    errorMsg.includes("ECONNREFUSED") ||
+    errorMsg.includes("connection reset") ||
+    errorMsg.includes("ECONNRESET") ||
+    errorMsg.includes("EPIPE")
+  );
+}
+
+async function tryRestartPortForward(
+  attempt: number,
+  maxRetries: number,
+  errorMsg: string,
+): Promise<void> {
+  if (!isConnectionDeadError(errorMsg) || !getPortForwardRestarter()) {
+    console.warn(`Connection attempt ${attempt}/${maxRetries} failed, retrying...`);
+    return;
+  }
+
+  console.warn(
+    `Connection attempt ${attempt}/${maxRetries} failed (${errorMsg}), restarting port-forward...`,
+  );
+  try {
+    await getPortForwardRestarter()!();
+  } catch (pfErr) {
+    console.error(
+      `Port-forward restart failed: ${pfErr instanceof Error ? pfErr.message : String(pfErr)}`,
+    );
+  }
+}
+
+async function waitBeforeConnectRetry(attempt: number): Promise<void> {
+  const delay = Math.min(2000 * attempt, 10000);
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, delay);
+  });
 }
 
 async function connectWithRetry(config: ClientConfig): Promise<Client> {
@@ -58,39 +103,14 @@ async function connectWithRetry(config: ClientConfig): Promise<Client> {
       await client.end().catch(() => {});
 
       if (attempt < maxRetries) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        const isConnectionDead =
-          errorMsg.includes("ECONNREFUSED") ||
-          errorMsg.includes("connection reset") ||
-          errorMsg.includes("ECONNRESET") ||
-          errorMsg.includes("EPIPE");
-
-        if (isConnectionDead && portForwardRestarter) {
-          console.warn(
-            `Connection attempt ${attempt}/${maxRetries} failed (${errorMsg}), restarting port-forward...`,
-          );
-          try {
-            await portForwardRestarter();
-          } catch (pfErr) {
-            console.error(
-              `Port-forward restart failed: ${pfErr instanceof Error ? pfErr.message : String(pfErr)}`,
-            );
-          }
-        } else {
-          console.warn(`Connection attempt ${attempt}/${maxRetries} failed, retrying...`);
-        }
-
-        const delay = Math.min(2000 * attempt, 10000);
-        await new Promise<void>((resolve) => {
-          setTimeout(() => {
-            resolve();
-          }, delay);
-        });
+        const errorMsg = connectionErrorMessage(error);
+        await tryRestartPortForward(attempt, maxRetries, errorMsg);
+        await waitBeforeConnectRetry(attempt);
       }
     }
   }
 
-  const errorMsg = lastError instanceof Error ? lastError.message : String(lastError);
+  const errorMsg = connectionErrorMessage(lastError);
   throw new Error(`Failed to connect after ${maxRetries} attempts: ${errorMsg}`);
 }
 
@@ -100,7 +120,7 @@ const defaultConnectionOptions: Partial<ClientConfig> = {
   keepAliveInitialDelayMillis: 10000,
 };
 
-export async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
+async function connectWithSslFallback(config: ClientConfig): Promise<Client> {
   // Try SSL first (single attempt), fall back to non-SSL if the server doesn't support it.
   const sslConfig = { ...defaultConnectionOptions, ...config };
   const sslClient = new Client(sslConfig);
@@ -285,10 +305,6 @@ export async function setupSchemaModeDatabase(
 /**
  * Discover PostgreSQL service and admin password in the runtime namespace
  * and set SCHEMA_MODE_* environment variables for schema-mode tests.
- *
- * Called by ensureRuntimeDeployed() after the deployment is ready.
- * Fails gracefully (returns without setting env vars) if no PostgreSQL
- * service or admin password is found — schema-mode tests will skip.
  */
 export async function configureSchemaMode(
   kubeClient: KubeClient,
@@ -296,7 +312,6 @@ export async function configureSchemaMode(
   releaseName: string,
   installMethod: "helm" | "operator",
 ): Promise<void> {
-  // Find PostgreSQL service
   const svcCandidates =
     installMethod === "operator"
       ? [`backstage-psql-${releaseName}`, `${releaseName}-postgresql`]
@@ -318,7 +333,6 @@ export async function configureSchemaMode(
     return;
   }
 
-  // Find admin password
   const secretCandidates =
     installMethod === "operator"
       ? [`backstage-psql-secret-${releaseName}`, `${releaseName}-postgresql`, "postgres-cred"]
@@ -348,13 +362,12 @@ export async function configureSchemaMode(
     return;
   }
 
-  // Export schema-mode env vars
   process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE = namespace;
   process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE = `svc/${svcName}`;
   process.env.SCHEMA_MODE_DB_ADMIN_USER = "postgres";
   process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD = adminPassword;
   process.env.SCHEMA_MODE_DB_PASSWORD =
-    process.env.SCHEMA_MODE_DB_PASSWORD ?? SCHEMA_MODE_DEFAULT_DB_PASSWORD;
+    process.env.SCHEMA_MODE_DB_PASSWORD ?? getSchemaModeDefaultDbPassword();
   process.env.SCHEMA_MODE_DB_USER = process.env.SCHEMA_MODE_DB_USER ?? SCHEMA_MODE_DEFAULT_DB_USER;
 
   console.log(`Schema-mode env configured: port-forward svc/${svcName} in ${namespace}`);

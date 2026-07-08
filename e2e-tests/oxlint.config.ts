@@ -1,4 +1,11 @@
+import eslintPluginPlaywright from "eslint-plugin-playwright";
+import { CoverageReport } from "monocart-coverage-reports";
 import { defineConfig } from "oxlint";
+import { shellcheck } from "shellcheck";
+
+void eslintPluginPlaywright;
+void CoverageReport;
+void shellcheck;
 
 /** POM and helper methods that perform assertions on behalf of E2E specs. */
 const playwrightAssertFunctions = [
@@ -16,7 +23,6 @@ const playwrightAssertFunctions = [
   "verifyRowInTableByUniqueText",
   "verifyDivHasText",
   "verifyComponentInCatalog",
-  "verifyComponentsInCatalog",
   "verifyParagraph",
   "verifyText",
   "verifyTextinCard",
@@ -26,22 +32,10 @@ const playwrightAssertFunctions = [
   "verifyPRStatisticsRendered",
   "verifyPRRows",
   "verifyPRRowsPerPage",
-  "waitForEntityPath",
-  "clickPullRequestFilter",
-  "verifyGithubUserProfile",
-  "verifySignInButtonVisible",
   "verifyTemplateHeading",
-  "verifyTableCell",
-  "verifyDependencyResource",
   "verifySharedCardCount",
-  "incrementFirstCardCounter",
-  "waitForOpenInCatalogLink",
   "verifyComponentNameVisible",
   "verifyLinkHidden",
-  "clearSearchIfVisible",
-  "sortCreatedAtDescending",
-  "verifyFirstRowCreatedAtNotEmpty",
-  "openLicensedUsersCatalog",
   "verifyTestPageContent",
   "verifyContextOneCard",
   "verifyContextTwoCard",
@@ -50,11 +44,6 @@ const playwrightAssertFunctions = [
   "verifyDocHeading",
   "verifyCreateReactAppReviewTableWithGroupOwner",
   "verifyDependencyGraphLabels",
-  "launchTemplateAndVerifyIntro",
-  "runHttpRequestTemplateFlow",
-  "inspectEntityAndVerifyYaml",
-  "registerExistingComponent",
-  "runAccessibilityTests",
   "validateLog",
   "validateLogEvent",
   "validateRbacLogEvent",
@@ -77,9 +66,11 @@ const playwrightAssertFunctions = [
   "verifyMenuItemInSection",
   "verifyLearningPathLinksOpenInNewTab",
   "verifyMainHeadingVisible",
-  "loginAsGuest",
-  "restartDeployment",
+  "waitForEntityPath",
+  "waitForOpenInCatalogLink",
   "waitForTitle",
+  "verifyEntityYaml",
+  "verifyFirstRowCreatedAtNotEmpty",
 ];
 
 export default defineConfig({
@@ -153,6 +144,13 @@ export default defineConfig({
         "eslint/max-lines": "off",
         "eslint/max-lines-per-function": "off",
         "eslint/max-depth": "off",
+      },
+    },
+    {
+      files: ["playwright/blocked/**/*.ts"],
+      rules: {
+        "eslint/max-lines-per-function": "off",
+        "import/max-dependencies": "off",
       },
     },
     {

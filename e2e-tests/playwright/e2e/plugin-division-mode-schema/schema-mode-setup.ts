@@ -103,10 +103,6 @@ export class SchemaModeTestSetup {
     const { host: rhdhPostgresHost, isInternal } = this.resolveRhdhPostgresHost();
     console.log(`RHDH pods will connect to PostgreSQL at: ${rhdhPostgresHost}`);
 
-    // 1. Update secret with schema-mode credentials.
-    //    For operator: the operator injects env vars from the managed secret
-    //    via envFrom, so we must preserve keys the PostgreSQL image needs
-    //    (POSTGRESQL_ADMIN_PASSWORD) while adding/overriding POSTGRES_* keys.
     const secretData: Record<string, string> = {
       password: base64Encode(this.env.dbPassword),
       "postgres-password": base64Encode(this.env.dbPassword),
@@ -118,9 +114,6 @@ export class SchemaModeTestSetup {
     };
 
     if (this.installMethod === "operator") {
-      // Preserve POSTGRESQL_ADMIN_PASSWORD — the operator-managed PostgreSQL
-      // image reads this on startup (set_passwords.sh). Without it the
-      // StatefulSet pod fails to start.
       try {
         const existing = await this.kubeClient.coreV1Api.readNamespacedSecret(
           secretName,
@@ -146,10 +139,6 @@ export class SchemaModeTestSetup {
     );
     console.log(`Updated secret ${secretName} with schema-mode credentials`);
 
-    // 2. Ensure POSTGRES_* env vars are set in the deployment (Helm only).
-    //    Operator deployments inject env vars from the managed secret via
-    //    envFrom in the StatefulSet/Deployment spec. Patching the Deployment
-    //    directly would be reverted by operator reconciliation.
     if (this.installMethod === "operator") {
       console.log(
         "Skipping Deployment env var patching (operator injects env vars from secret via extraEnvs.secrets)",
@@ -158,10 +147,8 @@ export class SchemaModeTestSetup {
       await this.ensureDeploymentEnvVars(deploymentName, secretName);
     }
 
-    // 3. Update app-config ConfigMap for schema mode
     await this.updateAppConfigForSchemaMode(isInternal);
 
-    // 4. Restart to apply changes (with retry for operator reconciliation)
     await this.kubeClient.restartDeploymentWithRetry(deploymentName, this.namespace);
   }
 
@@ -256,6 +243,7 @@ export class SchemaModeTestSetup {
     console.log("App-config updated for schema mode");
   }
 
+  // fallow-ignore-next-line unused-class-member -- operator route discovery for future schema-mode specs
   async getRHDHUrl(): Promise<string> {
     const routeNames =
       this.installMethod === "operator"

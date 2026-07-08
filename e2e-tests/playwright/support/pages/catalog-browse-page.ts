@@ -6,6 +6,7 @@ import * as navigation from "../../utils/ui-helper/navigation";
 import * as table from "../../utils/ui-helper/table";
 import * as verification from "../../utils/ui-helper/verification";
 import { SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
+import { findTableCellByColumn } from "../selectors/semantic/table-helpers";
 
 /** Catalog browse and entity list interactions. */
 export class CatalogBrowsePage {
@@ -59,10 +60,6 @@ export class CatalogBrowsePage {
     await interaction.clickTab(this.page, "Dependencies");
   }
 
-  async clickButton(label: string): Promise<void> {
-    await interaction.clickButton(this.page, label);
-  }
-
   async verifyHeading(heading: string | RegExp): Promise<void> {
     await verification.verifyHeading(this.page, heading);
   }
@@ -100,22 +97,6 @@ export class CatalogBrowsePage {
     await interaction.clickButton(this.page, "Import an existing Git repository");
   }
 
-  async verifyTextInSelector(selector: string, expectedText: string): Promise<void> {
-    await verification.verifyTextInSelector(this.page, selector, expectedText);
-  }
-
-  async verifyPartialTextInSelector(selector: string, partialText: string): Promise<void> {
-    await verification.verifyPartialTextInSelector(this.page, selector, partialText);
-  }
-
-  async openTemplateFromCatalog(templateName: string): Promise<void> {
-    await navigation.openSidebar(this.page, "Catalog");
-    await navigation.selectMuiBox(this.page, "Kind", "Template");
-    await this.fillSearch(`${templateName}\n`);
-    await table.verifyRowInTableByUniqueText(this.page, templateName, [templateName]);
-    await interaction.clickLink(this.page, templateName);
-  }
-
   async clearSearchIfVisible(): Promise<void> {
     const clearButton = this.page.getByRole("button", { name: "clear search" });
     if (await clearButton.isVisible()) {
@@ -142,7 +123,11 @@ export class CatalogBrowsePage {
       .getByRole("row")
       .filter({ has: this.page.getByRole("cell") })
       .first();
-    const createdAtCell = firstRow.getByRole("cell").nth(7);
+    const rowText = await firstRow.textContent();
+    if (rowText === null || rowText === "") {
+      throw new Error("Expected the first catalog row to have text content");
+    }
+    const createdAtCell = await findTableCellByColumn(this.page, rowText, "Created At");
     await expect(createdAtCell).not.toBeEmpty();
   }
 
@@ -161,6 +146,7 @@ export class CatalogBrowsePage {
   }
 
   async verifyDependencyResource(resource: string): Promise<void> {
+    // Intentional divergence: topology graph workspace nodes lack stable roles; keyed by id + text.
     const resourceElement = this.page.locator(`#workspace:has-text("${resource}")`);
     await resourceElement.scrollIntoViewIfNeeded();
     await expect(resourceElement).toBeVisible();

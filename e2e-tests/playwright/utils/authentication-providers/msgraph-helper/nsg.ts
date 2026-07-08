@@ -7,7 +7,7 @@ import {
 
 import { getErrorMessage, hasStatusCode } from "../../errors";
 
-export async function getNetworkSecurityGroupRule(
+async function getNetworkSecurityGroupRule(
   armNetworkClient: NetworkManagementClient,
   resourceGroupName: string,
   nsgName: string,
@@ -30,7 +30,7 @@ export async function getNetworkSecurityGroupRule(
   }
 }
 
-export async function getNetworkSecurityGroup(
+async function getNetworkSecurityGroup(
   armNetworkClient: NetworkManagementClient,
   resourceGroupName: string,
   nsgName: string,
