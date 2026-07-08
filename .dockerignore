@@ -8,6 +8,7 @@ plugins
 !plugins/licensed-users-info-backend
 !plugins/scalprum-backend
 *.local.yaml
+*.local-e2e.yaml
 coverage
 dist-types
 examples
