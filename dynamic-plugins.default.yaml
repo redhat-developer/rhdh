@@ -8,11 +8,6 @@
   # https://github.com/redhat-developer/rhdh/blob/main/.github/workflows/update-dynamic-plugins-default.yaml#L44-L75
   
 plugins:
-  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment@sha256:fb3a8dc6b4f2e8859a61b94f54cccf2f815105b3f2b761665a3240d07c1eb030
-  # Tag: 1.9.6--1.22.2, Build date: 2026-06-25T18:34:12Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
   - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
     disabled: false
     pluginConfig:
@@ -381,11 +376,6 @@ plugins:
   # disabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
     disabled: false
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-global-floating-action-button@sha256:21506faeab4c1862f731c3cb78e51b298aad1a0c0278dfc7c591ce325a9b4018
-  # Tag: 1.9.6--1.7.3, Build date: 2026-06-25T18:21:53Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
     disabled: false
     pluginConfig:
@@ -398,11 +388,6 @@ plugins:
             mountPoints:
               - mountPoint: application/listener
                 importName: DynamicGlobalFloatingActionButton
-  # - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-global-header@sha256:6d5e0bc53b6dbc07cf42d672a41c0b6ed3a2d6c7af6b141864ed6878fc7fa41b
-  # Tag: 1.9.6--1.20.1, Build date: 2026-06-25T18:38:01Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
     disabled: false
     pluginConfig:
@@ -772,11 +757,6 @@ plugins:
                   if:
                     anyOf:
                       - isQuayAvailable
-  # - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-rbac@sha256:a0ec43cf8545b614b0bce7d7c499925afda8ddb8d30f19ea9dda7cd4fcd0a002
-  # Tag: 1.9.6--1.47.4, Build date: 2026-06-25T18:32:30Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
   - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
     disabled: true
     pluginConfig:
@@ -1181,11 +1161,6 @@ plugins:
               - name: argoInstance2
                 url: ${ARGOCD_INSTANCE2_URL}
                 token: ${ARGOCD_AUTH_TOKEN2}
-  # - package: oci://registry.access.redhat.com/rhdh/roadiehq-scaffolder-backend-module-http-request@sha256:c048dcb7bb4d8e529cb460db057ec32c37eb3c4c381f635dfba44829b6210149
-  # Tag: 1.9.6--5.5.1, Build date: 2026-06-25T18:11:34Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
   - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
     disabled: true
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-3scale-backend:bs_1.45.3__3.10.0
@@ -1727,8 +1702,7 @@ plugins:
                       - isSecurityInsightsAvailable
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.45.3__4.1.1
     disabled: true
-  # Tag: 1.9.6--1.0.7, Build date: 2026-06-25T18:29:22Z
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki@sha256:a6cb9f44979f57fbf60309bd8d1982df540392f85f57a450280e9f6a3a1ff067
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki@sha256:96746078a2c13ebf673d7f84d327f0e60d70e3c36794ec9b953016834e263f78
     disabled: true
     pluginConfig:
       orchestrator:
@@ -1736,19 +1710,19 @@ plugins:
           loki:
             baseUrl: ${LOKI_BASE_URL}
             token: ${AUTH_TOKEN}
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:07e24f56b89d059b57b8270886a71e2fb9f49a76f9f7505f6464b54cc9794203
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:0909c5ed32a913ffa51bd248f08b9afdb938e6461dedc3a08c6ac6e963a85dd7
     disabled: true
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:67b7d95dd6f6dd669316e89deee214adfcb903d17cf4a12a28b66229c21b2bcc
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:70fe997519010e9cb570249f609ae22771b85a9813767fe7ad7818a2aac82a3e
     disabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator@sha256:daa8a36a76088d81cdd90c058985c5547ddf0e5926234a0e9f02d8359d041c0c
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator@sha256:1f33cd54d84e597fbb72acae06ba719d42f0a5d45ec1e3ae96845c6cfad72177
     disabled: true
     pluginConfig:
       dynamicPlugins:
@@ -1778,7 +1752,7 @@ plugins:
                     if:
                       anyOf:
                         - IsOrchestratorCatalogTabAvailable
-  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:dd549590c3fa25c97281b711ced40e02bafb132e6eccb012aa1fd337285b7aa9
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:f02280932ca261a359f3c640dc11e400b299eadfd25e6cac0d9a93c0ad65f90f
     disabled: true
     pluginConfig:
       orchestrator:
