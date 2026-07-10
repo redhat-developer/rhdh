@@ -319,8 +319,8 @@ class RHDHDeployment implements RHDHDeploymentState {
     return loadBackstageCRImpl(this);
   }
 
-  async createBackstageDeployment(): Promise<RHDHDeployment> {
-    await createBackstageDeploymentImpl(this);
+  async createBackstageDeployment(options?: { waitForReady?: boolean }): Promise<RHDHDeployment> {
+    await createBackstageDeploymentImpl(this, options);
     return this;
   }
 

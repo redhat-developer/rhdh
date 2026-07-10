@@ -19,6 +19,7 @@ describe("operator runtime config", () => {
     expect(yamlText).toContain("red-hat-developer-hub-backstage-plugin-dynamic-home-page");
     expect(yamlText).toContain("DynamicHomePage");
     expect(yamlText).not.toMatch(/plugins:\s*\[\]/u);
+    expect(yamlText).toContain("includes: []");
   });
 
   it("injects BACKEND_SECRET into the Backstage CR env", () => {
@@ -31,5 +32,7 @@ describe("operator runtime config", () => {
     const serialized = JSON.stringify(cr);
     expect(serialized).toContain('"name":"BACKEND_SECRET"');
     expect(serialized).toContain('"value":"super-secret-for-tests"');
+    expect(cr.spec.flavours).toEqual([]);
+    expect(cr.apiVersion).toBe("rhdh.redhat.com/v1alpha5");
   });
 });

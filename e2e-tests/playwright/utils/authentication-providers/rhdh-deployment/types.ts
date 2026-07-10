@@ -8,6 +8,7 @@ export type YamlConfig = Record<string, unknown>;
 
 export interface DynamicPluginConfig {
   package: string;
+  enabled?: boolean;
   disabled?: boolean;
 }
 
@@ -18,6 +19,9 @@ export type DynamicPluginsConfig = Record<string, unknown> & {
 export interface BackstageCrSpec {
   replicas?: number;
   deployment?: unknown;
+  application?: unknown;
+  flavours?: unknown[];
+  [key: string]: unknown;
 }
 
 export interface BackstageCr {

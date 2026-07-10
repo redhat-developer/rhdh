@@ -17,16 +17,22 @@
 
 import * as yaml from "yaml";
 
+import { createRuntimeDynamicPluginsProfile } from "./dynamic-plugins-profile";
 import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
+import {
+  BACKSTAGE_CR_API_VERSION,
+  OPERATOR_BACKEND_SECRET,
+  applyOperatorInstallProfileToAppConfig,
+  applyOperatorInstallProfileToCr,
+} from "./operator-install-profile";
+
+export { BACKSTAGE_CR_API_VERSION } from "./operator-install-profile";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
 const appTitle = "Red Hat Developer Hub";
 const dynamicPluginsPvcSize = "5Gi";
-
-/** Backstage CRD API version — update when the CRD version bumps. */
-export const BACKSTAGE_CR_API_VERSION = "rhdh.redhat.com/v1alpha5";
 
 // ─── Resolved configuration ─────────────────────────────────────────────────
 
@@ -250,9 +256,6 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
 
 // ─── Operator app-config generation ──────────────────────────────────────────
 
-/** Stable test secret — mirrors the Helm chart's BACKEND_SECRET default. */
-const runtimeBackendSecret = "super-secret-for-tests";
-
 /**
  * Generate the app-config YAML for the operator-deployed runtime RHDH.
  *
@@ -293,6 +296,7 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
     },
   };
 
+  applyOperatorInstallProfileToAppConfig(appConfig, "runtime");
   return yaml.stringify(appConfig, { lineWidth: 0 });
 }
 
@@ -313,30 +317,9 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
  * also avoids the operator collapsing empty slices to `{}` on merge.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.stringify(
-    {
-      includes: [] as string[],
-      plugins: [
-        {
-          // Uses local dist path; switch to OCI ref once runtime deploy
-          // supports it (see #4909 for the migration direction).
-          package:
-            "./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page",
-          enabled: true,
-          pluginConfig: {
-            dynamicPlugins: {
-              frontend: {
-                "red-hat-developer-hub.backstage-plugin-dynamic-home-page": {
-                  dynamicRoutes: [{ path: "/", importName: "DynamicHomePage" }],
-                },
-              },
-            },
-          },
-        },
-      ],
-    },
-    { lineWidth: 0 },
-  );
+  // Uses local dist path; switch to OCI ref once runtime deploy
+  // supports it (see #4909 for the migration direction).
+  return yaml.stringify(createRuntimeDynamicPluginsProfile(), { lineWidth: 0 });
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────
@@ -355,7 +338,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
     { name: "NODE_OPTIONS", value: "--no-node-snapshot" },
     { name: "NODE_ENV", value: "production" },
     { name: "NODE_TLS_REJECT_UNAUTHORIZED", value: "0" },
-    { name: "BACKEND_SECRET", value: runtimeBackendSecret },
+    { name: "BACKEND_SECRET", value: OPERATOR_BACKEND_SECRET },
   ];
 
   // CATALOG_INDEX_IMAGE override — mirrors the yq injection in
@@ -371,8 +354,8 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
     });
   }
 
-  return {
-    kind: "Backstage",
+  const cr = {
+    kind: "Backstage" as const,
     apiVersion: BACKSTAGE_CR_API_VERSION,
     metadata: { name: config.releaseName },
     spec: {
@@ -419,11 +402,9 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
         },
         route: { enabled: true },
       },
-      // Disable all default flavours (e.g. lightspeed) to avoid unnecessary
-      // sidecar containers and init containers that slow down startup and
-      // restarts.  Runtime tests don't need lightspeed — they only test
-      // ConfigMap changes and DB connectivity.
-      flavours: [],
     },
   };
+
+  applyOperatorInstallProfileToCr(cr);
+  return cr;
 }
