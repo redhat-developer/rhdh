@@ -2,6 +2,25 @@ import { describe, expect, it, vi } from "vitest";
 
 import { classifyBaseUrlMode, ensurePlaywrightReady } from "../playwright/utils/instance-readiness";
 
+type RequestContextOptions = {
+  baseURL: string;
+  ignoreHTTPSErrors: boolean;
+};
+
+type MockDispose = ReturnType<typeof vi.fn<() => Promise<void>>>;
+
+type MockRequestContext = {
+  dispose: MockDispose;
+};
+
+function mockRequestContext(): { context: MockRequestContext; dispose: MockDispose } {
+  const dispose = vi.fn<() => Promise<void>>().mockResolvedValue();
+  return {
+    dispose,
+    context: { dispose },
+  };
+}
+
 describe("classifyBaseUrlMode", () => {
   it("returns unset when BASE_URL is missing", () => {
     expect(classifyBaseUrlMode({})).toBe("unset");
@@ -44,18 +63,18 @@ describe("ensurePlaywrightReady", () => {
       BASE_URL: predicted,
       RUNTIME_AUTO_DEPLOY: "true",
     };
-    const requestContext = {
-      dispose: vi.fn().mockResolvedValue(undefined),
-    };
-    const ensureRuntimeDeployed = vi.fn(async () => undefined);
-    const createRequestContext = vi.fn(async (options: { baseURL: string; ignoreHTTPSErrors: boolean }) => {
-      expect(options).toEqual({
-        baseURL: predicted,
-        ignoreHTTPSErrors: true,
+    const { context: requestContext, dispose } = mockRequestContext();
+    const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const createRequestContext = vi
+      .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
+      .mockImplementation((options) => {
+        expect(options).toEqual({
+          baseURL: predicted,
+          ignoreHTTPSErrors: true,
+        });
+        return Promise.resolve(requestContext);
       });
-      return requestContext;
-    });
-    const waitForRhdhReady = vi.fn(async () => undefined);
+    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
 
     await ensurePlaywrightReady({
       env,
@@ -68,7 +87,7 @@ describe("ensurePlaywrightReady", () => {
     expect(createRequestContext).toHaveBeenCalledOnce();
     expect(waitForRhdhReady).toHaveBeenCalledOnce();
     expect(waitForRhdhReady).toHaveBeenCalledWith(requestContext);
-    expect(requestContext.dispose).toHaveBeenCalledOnce();
+    expect(dispose).toHaveBeenCalledOnce();
     expect(ensureRuntimeDeployed.mock.invocationCallOrder[0]).toBeLessThan(
       waitForRhdhReady.mock.invocationCallOrder[0],
     );
@@ -78,14 +97,15 @@ describe("ensurePlaywrightReady", () => {
     const env: Record<string, string | undefined> = {
       RUNTIME_AUTO_DEPLOY: "true",
     };
-    const requestContext = {
-      dispose: vi.fn().mockResolvedValue(undefined),
-    };
-    const ensureRuntimeDeployed = vi.fn(async () => {
+    const { context: requestContext } = mockRequestContext();
+    const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockImplementation(() => {
       env.BASE_URL = "https://showcase-developer-hub-showcase-runtime.apps.cluster.example.com";
+      return Promise.resolve();
     });
-    const createRequestContext = vi.fn(async () => requestContext);
-    const waitForRhdhReady = vi.fn(async () => undefined);
+    const createRequestContext = vi
+      .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
+      .mockResolvedValue(requestContext);
+    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
 
     await ensurePlaywrightReady({
       env,
@@ -102,19 +122,19 @@ describe("ensurePlaywrightReady", () => {
     await expect(
       ensurePlaywrightReady({
         env: { RUNTIME_AUTO_DEPLOY: "true" },
-        ensureRuntimeDeployed: vi.fn(async () => undefined),
-        createRequestContext: vi.fn(),
-        waitForRhdhReady: vi.fn(),
+        ensureRuntimeDeployed: vi.fn<() => Promise<void>>().mockResolvedValue(),
+        createRequestContext: vi.fn<(options: RequestContextOptions) => Promise<MockRequestContext>>(),
+        waitForRhdhReady: vi.fn<(request: MockRequestContext) => Promise<void>>(),
       }),
     ).rejects.toThrow("Runtime auto-deploy did not produce an instance BASE_URL");
   });
 
   it("does nothing when BASE_URL is unset and auto-deploy is disabled", async () => {
-    const ensureRuntimeDeployed = vi.fn(async () => undefined);
-    const createRequestContext = vi.fn(async () => ({
-      dispose: vi.fn().mockResolvedValue(undefined),
-    }));
-    const waitForRhdhReady = vi.fn(async () => undefined);
+    const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const createRequestContext = vi
+      .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
+      .mockResolvedValue(mockRequestContext().context);
+    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
 
     await ensurePlaywrightReady({
       env: {},
@@ -129,11 +149,11 @@ describe("ensurePlaywrightReady", () => {
   });
 
   it("does nothing when BASE_URL is only the cluster router", async () => {
-    const ensureRuntimeDeployed = vi.fn(async () => undefined);
-    const createRequestContext = vi.fn(async () => ({
-      dispose: vi.fn().mockResolvedValue(undefined),
-    }));
-    const waitForRhdhReady = vi.fn(async () => undefined);
+    const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const createRequestContext = vi
+      .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
+      .mockResolvedValue(mockRequestContext().context);
+    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
 
     await ensurePlaywrightReady({
       env: {
@@ -152,12 +172,12 @@ describe("ensurePlaywrightReady", () => {
   });
 
   it("waits only when BASE_URL points at a deployed instance", async () => {
-    const requestContext = {
-      dispose: vi.fn().mockResolvedValue(undefined),
-    };
-    const ensureRuntimeDeployed = vi.fn(async () => undefined);
-    const createRequestContext = vi.fn(async () => requestContext);
-    const waitForRhdhReady = vi.fn(async () => undefined);
+    const { context: requestContext, dispose } = mockRequestContext();
+    const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const createRequestContext = vi
+      .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
+      .mockResolvedValue(requestContext);
+    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
 
     await ensurePlaywrightReady({
       env: {
@@ -176,6 +196,6 @@ describe("ensurePlaywrightReady", () => {
     });
     expect(waitForRhdhReady).toHaveBeenCalledOnce();
     expect(waitForRhdhReady).toHaveBeenCalledWith(requestContext);
-    expect(requestContext.dispose).toHaveBeenCalledOnce();
+    expect(dispose).toHaveBeenCalledOnce();
   });
 });
