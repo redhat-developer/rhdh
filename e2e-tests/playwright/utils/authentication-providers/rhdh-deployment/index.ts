@@ -70,6 +70,7 @@ import {
 import {
   deleteNamespaceIfExists as deleteNamespaceIfExistsImpl,
   getDeploymentGeneration as getDeploymentGenerationImpl,
+  tryGetDeploymentGeneration as tryGetDeploymentGenerationImpl,
   waitForConfigReconciled as waitForConfigReconciledImpl,
   waitForDeploymentReady as waitForDeploymentReadyImpl,
   waitForNamespaceActive as waitForNamespaceActiveImpl,
@@ -434,7 +435,10 @@ class RHDHDeployment implements RHDHDeploymentState {
 
   async updateAllConfigs(): Promise<RHDHDeployment> {
     if (!this.isRunningLocal) {
-      this.configReconcileBaselineGeneration = await this.getDeploymentGeneration();
+      // First-time prepareProvider updates configs before createBackstageDeployment,
+      // so the deployment may not exist yet. Baseline is only needed for later
+      // reconcileAfterConfigChange waits.
+      this.configReconcileBaselineGeneration = await tryGetDeploymentGenerationImpl(this);
     }
     await this.updateAppConfig();
     await this.updateDynamicPluginsConfig();

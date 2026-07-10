@@ -30,8 +30,25 @@ function buildLabelSelector(instanceName: string): string {
     .join(",");
 }
 
+type DeploymentListClient = {
+  listNamespacedDeployment: (
+    namespace: string,
+    pretty?: string,
+    allowWatchBookmarks?: boolean,
+    _continue?: string,
+    fieldSelector?: string,
+    labelSelector?: string,
+  ) => Promise<{ body: { items: k8s.V1Deployment[] } }>;
+};
+
+type DeploymentGenerationState = {
+  instanceName: string;
+  namespace: string;
+  appsV1Api: DeploymentListClient;
+};
+
 async function getLabeledDeployment(
-  state: RHDHDeploymentState,
+  state: DeploymentGenerationState,
   labelSelector: string,
 ): Promise<k8s.V1Deployment> {
   const deployments = await state.appsV1Api.listNamespacedDeployment(
@@ -50,10 +67,27 @@ async function getLabeledDeployment(
   return deployments.body.items[0];
 }
 
-export async function getDeploymentGeneration(state: RHDHDeploymentState): Promise<number> {
+export async function getDeploymentGeneration(state: DeploymentGenerationState): Promise<number> {
   const labelSelector = buildLabelSelector(state.instanceName);
   const deployment = await getLabeledDeployment(state, labelSelector);
   return deployment.metadata?.generation ?? 0;
+}
+
+/**
+ * Like getDeploymentGeneration, but returns undefined when the operator has
+ * not created the deployment yet (first-time auth-provider deploy).
+ */
+export async function tryGetDeploymentGeneration(
+  state: DeploymentGenerationState,
+): Promise<number | undefined> {
+  try {
+    return await getDeploymentGeneration(state);
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("No deployment found with labels:")) {
+      return undefined;
+    }
+    throw error;
+  }
 }
 
 export async function waitForConfigReconciled(
