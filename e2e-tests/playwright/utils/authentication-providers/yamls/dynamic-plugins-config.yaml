@@ -1,3 +1,4 @@
+includes: []
 plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
     enabled: false

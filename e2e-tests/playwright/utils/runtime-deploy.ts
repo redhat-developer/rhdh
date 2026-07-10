@@ -22,7 +22,7 @@
  *   K8S_CLUSTER_ROUTER_BASE              — cluster router base domain
  *
  * Environment variables exported after deployment:
- *   BASE_URL              — RHDH route URL (set only if not already set)
+ *   BASE_URL              — RHDH route URL (always set to the instance URL)
  *   SCHEMA_MODE_*         — schema-mode env vars (via configureSchemaMode in schema-mode-db.ts)
  */
 
@@ -317,6 +317,7 @@ export async function ensureRuntimeDeployed(): Promise<void> {
 
   // Check if deployment already exists and is ready
   const deploymentName = getRhdhDeploymentName();
+  const runtimeUrl = `https://backstage-${releaseName}-${namespace}.${routerBase}`;
   try {
     const dep = await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
     const ready = dep.body.status?.readyReplicas ?? 0;
@@ -324,6 +325,9 @@ export async function ensureRuntimeDeployed(): Promise<void> {
       console.log(
         `Deployment ${deploymentName} already running (${ready} ready replicas) — skipping deploy`,
       );
+      // Always publish the instance URL — overwrite router-stub / empty BASE_URL.
+      process.env.BASE_URL = runtimeUrl;
+      console.log(`BASE_URL set to ${runtimeUrl}`);
       deployed = true;
       // Still configure schema-mode env if not already set
       if (
@@ -343,18 +347,17 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   await kubeClient.createNamespace(namespace);
   await createPlaceholderSecrets(kubeClient, namespace);
 
-  let runtimeUrl: string;
+  let deployedUrl: string;
   if (installMethod === "helm") {
-    runtimeUrl = await deployWithHelm(kubeClient, config);
+    deployedUrl = await deployWithHelm(kubeClient, config);
   } else {
-    runtimeUrl = await deployWithOperator(kubeClient, config);
+    deployedUrl = await deployWithOperator(kubeClient, config);
   }
 
-  // Set BASE_URL if not already set
-  if (process.env.BASE_URL === undefined || process.env.BASE_URL === "") {
-    process.env.BASE_URL = runtimeUrl;
-    console.log(`BASE_URL set to ${runtimeUrl}`);
-  }
+  // Always publish the instance URL — overwrite router-stub / empty BASE_URL so
+  // ensurePlaywrightReady can reclassify after RUNTIME_AUTO_DEPLOY.
+  process.env.BASE_URL = deployedUrl;
+  console.log(`BASE_URL set to ${deployedUrl}`);
 
   // Configure schema-mode env vars
   await configureSchemaMode(kubeClient, namespace, releaseName, installMethod);
