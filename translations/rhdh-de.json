@@ -1,7 +1,7 @@
 {
   "rhdh": {
     "de": {
-      "menuItem.home": "Heim",
+      "menuItem.home": "Startseite",
       "menuItem.myGroup_one": "Meine Gruppe",
       "menuItem.myGroup_other": "Meine Gruppen",
       "menuItem.catalog": "Katalog",
@@ -14,13 +14,13 @@
       "menuItem.clusters": "Cluster",
       "menuItem.rbac": "RBAC",
       "menuItem.bulkImport": "Massenimport",
-      "menuItem.docs": "Dokumente",
+      "menuItem.docs": "Dokumentation",
       "menuItem.lighthouse": "Leuchtturm",
       "menuItem.techRadar": "Tech Radar",
       "menuItem.orchestrator": "Orchestrator",
       "menuItem.adoptionInsights": "Adoption Insights",
       "sidebar.menu": "Menü",
-      "sidebar.home": "Heim",
+      "sidebar.home": "Startseite",
       "sidebar.homeLogo": "Startseitenlogo",
       "signIn.page.title": "Wählen Sie eine Anmeldemethode aus",
       "signIn.providers.auth0.title": "Auth0",
@@ -59,7 +59,7 @@
       "catalog.entityPage.lighthouse.title": "Leuchtturm",
       "catalog.entityPage.api.title": "API",
       "catalog.entityPage.dependencies.title": "Abhängigkeiten",
-      "catalog.entityPage.docs.title": "Dokumente",
+      "catalog.entityPage.docs.title": "Dokumentation",
       "catalog.entityPage.definition.title": "Definition",
       "catalog.entityPage.diagram.title": "Systemdiagramm",
       "catalog.entityPage.workflows.title": "Workflows",
