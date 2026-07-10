@@ -12,15 +12,15 @@ type RequestContextOptions = {
   ignoreHTTPSErrors: boolean;
 };
 
-type RequestContextLike = {
+type DisposableRequestContext = {
   dispose(): Promise<void>;
 };
 
-type EnsurePlaywrightReadyDeps = {
+type EnsurePlaywrightReadyDeps<TContext extends DisposableRequestContext> = {
   env?: ReadinessEnv;
   ensureRuntimeDeployed?: () => Promise<void>;
-  createRequestContext?: (options: RequestContextOptions) => Promise<RequestContextLike>;
-  waitForRhdhReady?: (request: RequestContextLike) => Promise<void>;
+  createRequestContext?: (options: RequestContextOptions) => Promise<TContext>;
+  waitForRhdhReady?: (request: TContext) => Promise<void>;
 };
 
 function normalizeEnvValue(value: string | undefined): string | undefined {
@@ -74,13 +74,35 @@ export function classifyBaseUrlMode(env: ReadinessEnv): BaseUrlMode {
     : "instance-url";
 }
 
-const defaultCreateRequestContext = async (
-  options: RequestContextOptions,
-): Promise<RequestContextLike> => playwrightRequest.newContext(options);
+async function healthcheckInstance(baseURL: string): Promise<void> {
+  const requestContext = await playwrightRequest.newContext({
+    baseURL,
+    ignoreHTTPSErrors: true,
+  });
 
-const defaultWaitForRhdhReady = async (request: RequestContextLike): Promise<void> => {
-  await waitForRhdhReady(request as APIRequestContext);
-};
+  try {
+    await waitForRhdhReady(requestContext);
+  } finally {
+    await requestContext.dispose();
+  }
+}
+
+async function healthcheckWithDeps<TContext extends DisposableRequestContext>(
+  baseURL: string,
+  createRequestContext: (options: RequestContextOptions) => Promise<TContext>,
+  waitForReady: (request: TContext) => Promise<void>,
+): Promise<void> {
+  const requestContext = await createRequestContext({
+    baseURL,
+    ignoreHTTPSErrors: true,
+  });
+
+  try {
+    await waitForReady(requestContext);
+  } finally {
+    await requestContext.dispose();
+  }
+}
 
 /**
  * Resolve Playwright readiness before any project runs.
@@ -94,12 +116,14 @@ const defaultWaitForRhdhReady = async (request: RequestContextLike): Promise<voi
  * Runtime CI must still pass a predicted instance URL as BASE_URL so
  * `playwright.config.ts` freezes a usable `use.baseURL` before this runs.
  */
-export async function ensurePlaywrightReady({
+export async function ensurePlaywrightReady<
+  TContext extends DisposableRequestContext = APIRequestContext,
+>({
   env = process.env,
   ensureRuntimeDeployed: deployRuntime = ensureRuntimeDeployed,
-  createRequestContext = defaultCreateRequestContext,
-  waitForRhdhReady: waitForReady = defaultWaitForRhdhReady,
-}: EnsurePlaywrightReadyDeps = {}): Promise<void> {
+  createRequestContext,
+  waitForRhdhReady: waitForReady,
+}: EnsurePlaywrightReadyDeps<TContext> = {}): Promise<void> {
   let baseUrlMode = classifyBaseUrlMode(env);
 
   if (baseUrlMode === "router-stub") {
@@ -123,14 +147,10 @@ export async function ensurePlaywrightReady({
     return;
   }
 
-  const requestContext = await createRequestContext({
-    baseURL,
-    ignoreHTTPSErrors: true,
-  });
-
-  try {
-    await waitForReady(requestContext);
-  } finally {
-    await requestContext.dispose();
+  if (createRequestContext !== undefined && waitForReady !== undefined) {
+    await healthcheckWithDeps(baseURL, createRequestContext, waitForReady);
+    return;
   }
+
+  await healthcheckInstance(baseURL);
 }
