@@ -5,11 +5,8 @@
  * stay behind the seam.
  */
 
-import { request as playwrightRequest } from "@playwright/test";
-
 import { waitForDeploymentReadiness } from "../deployment-readiness";
-import { OPERATOR_BACKEND_SECRET } from "../operator-install-profile";
-import { waitForRhdhReady } from "../wait-for-rhdh-ready";
+import { RHDH_READY_DEPLOY_TIMEOUT_MS, healthcheckRhdhAtUrl } from "../wait-for-rhdh-ready";
 
 /** Minimal deployment surface the deployer needs (satisfied by RHDHDeployment). */
 export type AuthDeploymentPort = {
@@ -17,7 +14,7 @@ export type AuthDeploymentPort = {
   addSecretData: (key: string, value: string) => Promise<unknown>;
   updateAllConfigs: () => Promise<unknown>;
   createBackstageDeployment: (options?: { waitForReady?: boolean }) => Promise<unknown>;
-  waitForDeploymentReady: () => Promise<unknown>;
+  waitForDeploymentCreated: () => Promise<unknown>;
   waitForSynced: () => Promise<unknown>;
   waitForConfigReconciled: () => Promise<unknown>;
   restartLocalDeployment: () => Promise<unknown>;
@@ -48,28 +45,16 @@ export type AuthInstanceDeployerHost = {
   createSecret: () => Promise<void>;
 };
 
-async function waitForHttpReady(baseURL: string): Promise<void> {
-  const requestContext = await playwrightRequest.newContext({
-    baseURL,
-    ignoreHTTPSErrors: true,
-  });
-  try {
-    await waitForRhdhReady(requestContext);
-  } finally {
-    await requestContext.dispose();
-  }
-}
-
 function readinessDeps(host: AuthInstanceDeployerHost) {
   return {
-    waitForAvailable: async () => {
-      await host.deployment.waitForDeploymentReady();
+    waitForCreated: async () => {
+      await host.deployment.waitForDeploymentCreated();
     },
     waitForHttpReady: async () => {
       if (host.deployment.isRunningLocal) {
         return;
       }
-      await waitForHttpReady(host.backstageUrl);
+      await healthcheckRhdhAtUrl(host.backstageUrl, RHDH_READY_DEPLOY_TIMEOUT_MS);
     },
     waitForSynced: async () => {
       await host.deployment.waitForSynced();
@@ -78,7 +63,10 @@ function readinessDeps(host: AuthInstanceDeployerHost) {
 }
 
 /**
- * Deploy an auth-provider RHDH instance and wait Available → HTTP → synced.
+ * Deploy an auth-provider RHDH instance and wait created → HTTP → synced.
+ *
+ * BACKEND_SECRET comes only from the CR extraEnvs (OperatorInstallProfile) —
+ * do not also put it in rhdh-secrets or the operator emits a duplicate env.
  */
 export async function deployAuthInstance(
   host: AuthInstanceDeployerHost,
@@ -100,14 +88,13 @@ export async function deployAuthInstance(
     }
   }
 
-  await host.deployment.addSecretData("BACKEND_SECRET", OPERATOR_BACKEND_SECRET);
   await host.createSecret();
   await options.enableProvider(host.deployment);
   await host.deployment.updateAllConfigs();
   await options.beforeDeploy?.();
 
   await host.deployment.createBackstageDeployment({ waitForReady: false });
-  await waitForDeploymentReadiness(["available", "http", "synced"], readinessDeps(host));
+  await waitForDeploymentReadiness(["created", "http", "synced"], readinessDeps(host));
 
   return {
     url: host.backstageUrl,
@@ -117,10 +104,10 @@ export async function deployAuthInstance(
   };
 }
 
-/** Reconcile after in-place config changes (Available → HTTP → synced). */
+/** Reconcile after in-place config changes (created → HTTP → synced). */
 export async function reconcileAuthInstance(host: AuthInstanceDeployerHost): Promise<void> {
   await host.deployment.updateAllConfigs();
   await host.deployment.restartLocalDeployment();
   await host.deployment.waitForConfigReconciled();
-  await waitForDeploymentReadiness(["available", "http", "synced"], readinessDeps(host));
+  await waitForDeploymentReadiness(["created", "http", "synced"], readinessDeps(host));
 }

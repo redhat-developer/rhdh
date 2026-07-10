@@ -280,6 +280,34 @@ export async function waitForDeploymentReady(
   await pollDeploymentReady(state, labelSelector, timeoutMs);
 }
 
+/**
+ * Wait until the operator has created the Backstage Deployment object.
+ * Does not wait for Available — use HTTP /healthcheck for that.
+ */
+export async function waitForDeploymentCreated(
+  state: DeploymentGenerationState & { isRunningLocal: boolean },
+  timeoutMs: number = 600000,
+): Promise<void> {
+  if (state.isRunningLocal) {
+    console.log("Skipping deployment created check as isRunningLocal is true.");
+    return;
+  }
+
+  const labelSelector = buildLabelSelector(state.instanceName);
+  await pollUntil(
+    async () => {
+      const deployment = await tryGetLabeledDeployment(state, labelSelector);
+      return deployment !== undefined;
+    },
+    {
+      timeoutMs,
+      intervalMs: POLL_INTERVAL_MS,
+      label: `Deployment created (${labelSelector})`,
+    },
+  );
+  console.log(`[INFO] Deployment created with labels: ${labelSelector}`);
+}
+
 export async function waitForNamespaceActive(
   state: RHDHDeploymentState,
   timeoutMs: number = 30000,
