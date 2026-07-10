@@ -16,6 +16,7 @@ import {
   isRecord,
   RHDHDeploymentState,
   rootDirName,
+  yamlsDirName,
 } from "./types";
 import { ensureBackstageCRIsAvailable, waitForDeploymentReady } from "./wait";
 
@@ -107,7 +108,7 @@ async function updateConfigMap(
 }
 
 export async function loadBaseConfig(state: RHDHDeploymentState): Promise<void> {
-  const configPath = join(currentDirName, "yamls", "configmap.yaml");
+  const configPath = join(yamlsDirName, "configmap.yaml");
   const yamlContent = await fs.readFile(configPath, "utf8");
   const configData: unknown = yaml.parse(yamlContent);
 
@@ -202,7 +203,7 @@ export async function deleteSecret(state: RHDHDeploymentState): Promise<void> {
 }
 
 export async function loadRbacConfig(state: RHDHDeploymentState): Promise<void> {
-  const configPath = join(currentDirName, "yamls", "rbac-policy.csv");
+  const configPath = join(yamlsDirName, "rbac-policy.csv");
   state.rbacConfig = await fs.readFile(configPath, "utf8");
 }
 
@@ -237,7 +238,7 @@ export async function updateRbacConfig(state: RHDHDeploymentState): Promise<void
 }
 
 export async function loadDynamicPluginsConfig(state: RHDHDeploymentState): Promise<void> {
-  const configPath = join(currentDirName, "yamls", "dynamic-plugins-config.yaml");
+  const configPath = join(yamlsDirName, "dynamic-plugins-config.yaml");
   const yamlContent = await fs.readFile(configPath, "utf8");
   const configData: unknown = yaml.parse(yamlContent);
 
@@ -289,7 +290,7 @@ export async function updateDynamicPluginsConfig(state: RHDHDeploymentState): Pr
 }
 
 export async function loadBackstageCR(state: RHDHDeploymentState): Promise<BackstageCr> {
-  const configPath = join(currentDirName, "yamls", "backstage.yaml");
+  const configPath = join(yamlsDirName, "backstage.yaml");
   const parsed: unknown = await readYamlToJson(configPath);
   if (!isBackstageCr(parsed)) {
     throw new Error("Invalid Backstage CR config");
