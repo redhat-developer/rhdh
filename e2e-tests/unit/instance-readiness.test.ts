@@ -74,7 +74,9 @@ describe("ensurePlaywrightReady", () => {
         });
         return Promise.resolve(requestContext);
       });
-    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
+    const waitForRhdhReady = vi
+      .fn<(request: MockRequestContext) => Promise<void>>()
+      .mockResolvedValue();
 
     await ensurePlaywrightReady({
       env,
@@ -105,7 +107,9 @@ describe("ensurePlaywrightReady", () => {
     const createRequestContext = vi
       .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
       .mockResolvedValue(requestContext);
-    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
+    const waitForRhdhReady = vi
+      .fn<(request: MockRequestContext) => Promise<void>>()
+      .mockResolvedValue();
 
     await ensurePlaywrightReady({
       env,
@@ -123,7 +127,8 @@ describe("ensurePlaywrightReady", () => {
       ensurePlaywrightReady({
         env: { RUNTIME_AUTO_DEPLOY: "true" },
         ensureRuntimeDeployed: vi.fn<() => Promise<void>>().mockResolvedValue(),
-        createRequestContext: vi.fn<(options: RequestContextOptions) => Promise<MockRequestContext>>(),
+        createRequestContext:
+          vi.fn<(options: RequestContextOptions) => Promise<MockRequestContext>>(),
         waitForRhdhReady: vi.fn<(request: MockRequestContext) => Promise<void>>(),
       }),
     ).rejects.toThrow("Runtime auto-deploy did not produce an instance BASE_URL");
@@ -134,7 +139,9 @@ describe("ensurePlaywrightReady", () => {
     const createRequestContext = vi
       .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
       .mockResolvedValue(mockRequestContext().context);
-    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
+    const waitForRhdhReady = vi
+      .fn<(request: MockRequestContext) => Promise<void>>()
+      .mockResolvedValue();
 
     await ensurePlaywrightReady({
       env: {},
@@ -153,7 +160,9 @@ describe("ensurePlaywrightReady", () => {
     const createRequestContext = vi
       .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
       .mockResolvedValue(mockRequestContext().context);
-    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
+    const waitForRhdhReady = vi
+      .fn<(request: MockRequestContext) => Promise<void>>()
+      .mockResolvedValue();
 
     await ensurePlaywrightReady({
       env: {
@@ -177,7 +186,9 @@ describe("ensurePlaywrightReady", () => {
     const createRequestContext = vi
       .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
       .mockResolvedValue(requestContext);
-    const waitForRhdhReady = vi.fn<(request: MockRequestContext) => Promise<void>>().mockResolvedValue();
+    const waitForRhdhReady = vi
+      .fn<(request: MockRequestContext) => Promise<void>>()
+      .mockResolvedValue();
 
     await ensurePlaywrightReady({
       env: {
