@@ -67,6 +67,24 @@ async function getLabeledDeployment(
   return deployments.body.items[0];
 }
 
+function isDeploymentNotFoundError(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith("No deployment found with labels:");
+}
+
+async function tryGetLabeledDeployment(
+  state: DeploymentGenerationState,
+  labelSelector: string,
+): Promise<k8s.V1Deployment | undefined> {
+  try {
+    return await getLabeledDeployment(state, labelSelector);
+  } catch (error) {
+    if (isDeploymentNotFoundError(error)) {
+      return undefined;
+    }
+    throw error;
+  }
+}
+
 export async function getDeploymentGeneration(state: DeploymentGenerationState): Promise<number> {
   const labelSelector = buildLabelSelector(state.instanceName);
   const deployment = await getLabeledDeployment(state, labelSelector);
@@ -83,7 +101,7 @@ export async function tryGetDeploymentGeneration(
   try {
     return await getDeploymentGeneration(state);
   } catch (error) {
-    if (error instanceof Error && error.message.startsWith("No deployment found with labels:")) {
+    if (isDeploymentNotFoundError(error)) {
       return undefined;
     }
     throw error;
@@ -177,7 +195,12 @@ async function waitForRolloutStart(
   try {
     await pollUntil(
       async () => {
-        const deployment = await getLabeledDeployment(state, labelSelector);
+        // Operator creates the Deployment asynchronously after the CR is
+        // applied — treat "not found yet" as still waiting, not a hard fail.
+        const deployment = await tryGetLabeledDeployment(state, labelSelector);
+        if (deployment === undefined) {
+          return false;
+        }
 
         if (initialGeneration === 0) {
           initialGeneration = deployment.metadata?.generation ?? 0;
