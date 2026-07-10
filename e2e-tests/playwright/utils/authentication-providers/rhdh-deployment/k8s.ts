@@ -6,7 +6,12 @@ import * as k8s from "@kubernetes/client-node";
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
+import { applyDynamicPluginsProfile } from "../../dynamic-plugins-profile";
 import { hasErrorResponse } from "../../errors";
+import {
+  applyOperatorInstallProfileToAppConfig,
+  applyOperatorInstallProfileToCr,
+} from "../../operator-install-profile";
 import { pollUntil } from "../../poll-until";
 import {
   BackstageCr,
@@ -114,6 +119,9 @@ export async function loadBaseConfig(state: RHDHDeploymentState): Promise<void> 
 
   if (isRecord(configData)) {
     state.appConfig = configData;
+    if (!state.isRunningLocal) {
+      applyOperatorInstallProfileToAppConfig(state.appConfig, "auth-providers");
+    }
   }
 }
 
@@ -244,6 +252,7 @@ export async function loadDynamicPluginsConfig(state: RHDHDeploymentState): Prom
 
   if (isDynamicPluginsConfig(configData)) {
     state.dynamicPluginsConfig = configData;
+    applyDynamicPluginsProfile(state.dynamicPluginsConfig);
   }
 }
 
@@ -319,6 +328,7 @@ export async function loadBackstageCR(state: RHDHDeploymentState): Promise<Backs
     },
   };
   console.log(`Setting Backstage CR image via deployment.patch to ${image}`);
+  applyOperatorInstallProfileToCr(parsed);
   state.cr = parsed;
   state.instanceName = parsed.metadata.name;
   return parsed;
@@ -368,7 +378,11 @@ function startLocalBackstageProcess(state: RHDHDeploymentState): void {
   console.log(`Local production server started with PID: ${state.runningProcess.pid}`);
 }
 
-export async function createBackstageDeployment(state: RHDHDeploymentState): Promise<void> {
+export async function createBackstageDeployment(
+  state: RHDHDeploymentState,
+  options: { waitForReady?: boolean } = {},
+): Promise<void> {
+  const waitForReady = options.waitForReady ?? true;
   try {
     if (state.isRunningLocal) {
       startLocalBackstageProcess(state);
@@ -377,7 +391,9 @@ export async function createBackstageDeployment(state: RHDHDeploymentState): Pro
     await ensureBackstageCRIsAvailable(state, 60000);
     const backstageConfig = await loadBackstageCR(state);
     await applyCustomResource(state, backstageConfig);
-    await waitForDeploymentReady(state);
+    if (waitForReady) {
+      await waitForDeploymentReady(state);
+    }
   } catch (e) {
     console.log(JSON.stringify(e));
     throw e;
