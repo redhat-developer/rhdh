@@ -5,6 +5,7 @@ This document serves as a comprehensive starting point for LLMs working with the
 ## Table of Contents
 
 - [E2E Testing Framework](#e2e-testing-framework)
+- [Verifying E2E Changes on a PR (`/test`)](#verifying-e2e-changes-on-a-pr-test)
 - [CI/CD Infrastructure](#cicd-infrastructure)
 - [Key Dependencies and Common Issues](#key-dependencies-and-common-issues)
 - [Documentation References](#documentation-references)
@@ -185,6 +186,40 @@ yarn prettier:fix                  # Prettier fixing
 ```
 
 **Note**: The CI pipeline no longer uses yarn script aliases. Instead, it runs Playwright directly with `yarn playwright test --project=<project-name>`. This decouples the namespace from the test project name, enabling more flexible namespace and test project reuse.
+
+## Verifying E2E Changes on a PR (`/test`)
+
+**Required practice:** when a PR changes e2e tests or shared e2e infrastructure, trigger the Prow jobs that exercise those paths and wait for them to finish. Do not merge (or call the change verified) based only on unit/lint or the default mandatory PR check if the change affects other jobs.
+
+Nightlies and optional jobs are **not** all run automatically on every PR. Shared refactors (fixtures, `global-setup.ts`, `playwright.config.ts`, deploy helpers, auth harness, localization) can break jobs that never ran on the PR unless you trigger them.
+
+### How to trigger
+
+1. Comment `/test ?` on the PR — the `openshift-ci` bot lists available short job names for that branch/PR.
+2. Comment `/test <job-name>` for each affected job (use **only** names from the bot list; never invent full `pull-ci-...` names).
+3. Wait for the jobs to complete and confirm they still pass, or are not worse than before the change.
+
+```bash
+gh pr comment <PR-number> --repo redhat-developer/rhdh --body "/test ?"
+gh pr comment <PR-number> --repo redhat-developer/rhdh --body "/test e2e-ocp-helm-nightly"
+```
+
+- Prefer specific jobs over `/test all` (wastes cluster capacity).
+- External contributors need `/ok-to-test` from an org member before `/test` works — see [docs/e2e-tests/CI.md](docs/e2e-tests/CI.md).
+- Detailed bot polling and job-name matching for fix PRs: `e2e-submit-and-review` skill.
+
+### What to trigger (by change area)
+
+| If you changed… | Trigger at least… |
+|-----------------|-------------------|
+| Shared fixtures, `global-setup.ts`, `wait-for-rhdh-ready`, browser/session helpers | `e2e-ocp-helm-nightly` and `e2e-ocp-operator-nightly` |
+| `showcase-runtime`, `runtime-deploy.ts`, `runtime-config.ts`, config-map / external-db / schema-mode specs | `e2e-ocp-helm-nightly` and `e2e-ocp-operator-nightly` (runtime project) |
+| `auth-providers/**`, auth harness / `rhdh-deployment` | `e2e-ocp-operator-auth-providers-nightly` |
+| Localization specs, `locale.ts`, localization project config | `e2e-ocp-helm-localization-nightly` |
+| Smoke / homepage / catalog / most showcase specs | Mandatory `e2e-ocp-helm` (auto on ready PRs); add nightly if the change is cross-cutting |
+| K8s-only paths | Matching `e2e-aks-*` / `e2e-eks-*` / `e2e-gke-*` job from `/test ?` |
+
+Job → Playwright project mapping lives in the `e2e-fix-workflow` rule. Human-oriented CI trigger docs: [docs/e2e-tests/CI.md](docs/e2e-tests/CI.md) and [docs/e2e-tests/CI-medic-guide.md](docs/e2e-tests/CI-medic-guide.md).
 
 ### Environment Variables
 

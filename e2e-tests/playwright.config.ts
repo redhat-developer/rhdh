@@ -207,7 +207,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_DE,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "de",
       },
@@ -219,7 +218,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_ES,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "es",
       },
@@ -231,7 +229,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "fr",
       },
@@ -243,7 +240,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_IT,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "it",
       },
@@ -255,7 +251,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_JA,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "ja",
       },

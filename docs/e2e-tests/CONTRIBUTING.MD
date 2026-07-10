@@ -85,6 +85,18 @@ These principles are valid for new contributions. Some parts of the codebase may
 When contributing new tests or modifying existing ones, please adhere to the guidelines.
 To open a PR, follow the steps described in the [general contribution guide](../../CONTRIBUTING.md)
 
+### Verify Affected CI Jobs Before Merging
+
+Changing e2e specs or shared e2e infrastructure (fixtures, `global-setup.ts`, `playwright.config.ts`, deploy helpers, auth harness, localization) can break nightly or optional jobs that do **not** run automatically on every PR.
+
+On your PR:
+
+1. Comment `/test ?` to list available Prow jobs for that branch.
+2. Comment `/test <job-name>` for each job your change affects (for example `e2e-ocp-helm-nightly`, `e2e-ocp-operator-nightly`, `e2e-ocp-helm-localization-nightly`, `e2e-ocp-operator-auth-providers-nightly`).
+3. Wait for those jobs to finish and confirm they still pass, or are not worse than before.
+
+Do not use `/test all` unless you intentionally need every optional job. Details and job naming are in [CI.md](CI.md).
+
 ### Collaboration and Communication
 
 - **Team Consensus:**
