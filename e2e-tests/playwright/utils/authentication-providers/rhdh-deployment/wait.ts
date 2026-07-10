@@ -35,7 +35,7 @@ type DeploymentListClient = {
     namespace: string,
     pretty?: string,
     allowWatchBookmarks?: boolean,
-    _continue?: string,
+    continueToken?: string,
     fieldSelector?: string,
     labelSelector?: string,
   ) => Promise<{ body: { items: k8s.V1Deployment[] } }>;
