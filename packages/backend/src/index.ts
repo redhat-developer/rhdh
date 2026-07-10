@@ -14,6 +14,7 @@ import { configureCorporateProxyAgent } from './corporate-proxy';
 import { getDefaultServiceFactories } from './defaultServiceFactories';
 import {
   healthCheckPlugin,
+  nfsModuleFilterPlugin,
   pluginIDProviderService,
   rbacDynamicPluginsProvider,
 } from './modules';
@@ -99,7 +100,7 @@ if (
   // standard Module Federation assets for every installed dynamic frontend plugin.
   // For now in RHDH the old frontend application doesn't use standard module federation and, by default,
   // exported RHDH dynamic frontend plugins don't contain standard module federation assets.
-  // That's why we disable (bu overriding it with a noop) this service unless stadard module federation use
+  // That's why we disable (by overriding it with a noop) this service unless standard module federation use
   // is explicitly requested.
   backend.add(
     createServiceFactory({
@@ -110,6 +111,11 @@ if (
       }),
     }),
   );
+} else {
+  // RHIDP-15377: when standard module federation is enabled, filter out
+  // exposed modules that are not NFS entrypoints based on backstage.features
+  // metadata in each frontend plugin's package.json.
+  backend.add(nfsModuleFilterPlugin);
 }
 
 backend.add(healthCheckPlugin);
