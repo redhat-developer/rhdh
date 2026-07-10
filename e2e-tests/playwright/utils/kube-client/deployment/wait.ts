@@ -117,6 +117,7 @@ async function logDeploymentTimeoutDiagnostics(
   await diagnostics.logReplicaSetStatus(deploymentName, namespace);
   await diagnostics.logPodEvents(namespace, finalLabelSelector);
   await diagnostics.logPodConditions(namespace, finalLabelSelector);
+  await diagnostics.logPodContainerLogs(namespace, finalLabelSelector, "backstage-backend");
 }
 
 export async function waitForDeploymentReadyImpl(

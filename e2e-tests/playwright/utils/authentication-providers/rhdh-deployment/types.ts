@@ -98,6 +98,8 @@ export function getCatalogGroups(response: unknown): GroupEntity[] {
 }
 
 export const currentDirName = import.meta.dirname;
+/** Fixture YAMLs live beside `rhdh-deployment/`, not inside it. */
+export const yamlsDirName = resolvePath(currentDirName, "..", "yamls");
 export const rootDirName = resolvePath(currentDirName, "..", "..", "..", "..");
 
 export const syncedLogRegex =
