@@ -272,9 +272,7 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
     },
     backend: {
       auth: {
-        // Match Helm chart / showcase operator: keys + externalAccess both
-        // resolve ${BACKEND_SECRET}. Missing keys leaves readiness at HTTP 503.
-        keys: [{ secret: "${BACKEND_SECRET}" }],
+        // keys come from OperatorInstallProfile; externalAccess is runtime-specific.
         externalAccess: [
           {
             type: "legacy",

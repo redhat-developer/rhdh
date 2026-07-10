@@ -155,7 +155,7 @@ describe("ensurePlaywrightReady", () => {
     expect(waitForRhdhReady).not.toHaveBeenCalled();
   });
 
-  it("does nothing when BASE_URL is only the cluster router", async () => {
+  it("does nothing when BASE_URL is only the cluster router without auto-deploy", async () => {
     const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockResolvedValue();
     const createRequestContext = vi
       .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
@@ -168,7 +168,6 @@ describe("ensurePlaywrightReady", () => {
       env: {
         BASE_URL: "https://apps.cluster.example.com",
         K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
-        RUNTIME_AUTO_DEPLOY: "true",
       },
       ensureRuntimeDeployed,
       createRequestContext,
@@ -178,6 +177,50 @@ describe("ensurePlaywrightReady", () => {
     expect(ensureRuntimeDeployed).not.toHaveBeenCalled();
     expect(createRequestContext).not.toHaveBeenCalled();
     expect(waitForRhdhReady).not.toHaveBeenCalled();
+  });
+
+  it("deploys when router-stub BASE_URL is paired with auto-deploy", async () => {
+    const env: Record<string, string | undefined> = {
+      BASE_URL: "https://apps.cluster.example.com",
+      K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
+      RUNTIME_AUTO_DEPLOY: "true",
+    };
+    const { context: requestContext } = mockRequestContext();
+    const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockImplementation(() => {
+      env.BASE_URL = "https://showcase-developer-hub-showcase-runtime.apps.cluster.example.com";
+      return Promise.resolve();
+    });
+    const createRequestContext = vi
+      .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
+      .mockResolvedValue(requestContext);
+    const waitForRhdhReady = vi
+      .fn<(request: MockRequestContext) => Promise<void>>()
+      .mockResolvedValue();
+
+    await ensurePlaywrightReady({
+      env,
+      ensureRuntimeDeployed,
+      createRequestContext,
+      waitForRhdhReady,
+    });
+
+    expect(ensureRuntimeDeployed).toHaveBeenCalledOnce();
+    expect(waitForRhdhReady).toHaveBeenCalledOnce();
+  });
+
+  it("throws when auto-deploy leaves BASE_URL as a router-stub", async () => {
+    await expect(
+      ensurePlaywrightReady({
+        env: {
+          BASE_URL: "https://apps.cluster.example.com",
+          RUNTIME_AUTO_DEPLOY: "true",
+        },
+        ensureRuntimeDeployed: vi.fn<() => Promise<void>>().mockResolvedValue(),
+        createRequestContext:
+          vi.fn<(options: RequestContextOptions) => Promise<MockRequestContext>>(),
+        waitForRhdhReady: vi.fn<(request: MockRequestContext) => Promise<void>>(),
+      }),
+    ).rejects.toThrow("Runtime auto-deploy did not produce an instance BASE_URL");
   });
 
   it("waits only when BASE_URL points at a deployed instance", async () => {

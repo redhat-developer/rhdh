@@ -1,7 +1,7 @@
-import { request as playwrightRequest, type APIRequestContext } from "@playwright/test";
+import { type APIRequestContext } from "@playwright/test";
 
 import { ensureRuntimeDeployed } from "./runtime-deploy";
-import { waitForRhdhReady } from "./wait-for-rhdh-ready";
+import { healthcheckRhdhAtUrl } from "./wait-for-rhdh-ready";
 
 export type BaseUrlMode = "unset" | "router-stub" | "instance-url";
 
@@ -74,19 +74,6 @@ export function classifyBaseUrlMode(env: ReadinessEnv): BaseUrlMode {
     : "instance-url";
 }
 
-async function healthcheckInstance(baseURL: string): Promise<void> {
-  const requestContext = await playwrightRequest.newContext({
-    baseURL,
-    ignoreHTTPSErrors: true,
-  });
-
-  try {
-    await waitForRhdhReady(requestContext);
-  } finally {
-    await requestContext.dispose();
-  }
-}
-
 async function healthcheckWithDeps<TContext extends DisposableRequestContext>(
   baseURL: string,
   createRequestContext: (options: RequestContextOptions) => Promise<TContext>,
@@ -108,8 +95,10 @@ async function healthcheckWithDeps<TContext extends DisposableRequestContext>(
  * Resolve Playwright readiness before any project runs.
  *
  * Modes:
- * - router-stub → no-op (auth harness self-deploys; do not probe the router)
  * - RUNTIME_AUTO_DEPLOY=true → ensure runtime is deployed, then healthcheck
+ *   (runs even if BASE_URL was initially a router-stub; deploy must produce
+ *   an instance URL)
+ * - router-stub (without auto-deploy) → no-op
  * - instance-url → healthcheck only (CI predeployed)
  * - unset → no-op
  *
@@ -126,16 +115,14 @@ export async function ensurePlaywrightReady<
 }: EnsurePlaywrightReadyDeps<TContext> = {}): Promise<void> {
   let baseUrlMode = classifyBaseUrlMode(env);
 
-  if (baseUrlMode === "router-stub") {
-    return;
-  }
-
   if (env.RUNTIME_AUTO_DEPLOY === "true") {
     await deployRuntime();
     baseUrlMode = classifyBaseUrlMode(env);
     if (baseUrlMode !== "instance-url") {
       throw new Error("Runtime auto-deploy did not produce an instance BASE_URL");
     }
+  } else if (baseUrlMode === "router-stub") {
+    return;
   }
 
   if (baseUrlMode !== "instance-url") {
@@ -152,5 +139,5 @@ export async function ensurePlaywrightReady<
     return;
   }
 
-  await healthcheckInstance(baseURL);
+  await healthcheckRhdhAtUrl(baseURL);
 }

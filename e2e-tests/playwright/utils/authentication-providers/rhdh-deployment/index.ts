@@ -72,6 +72,7 @@ import {
   getDeploymentGeneration as getDeploymentGenerationImpl,
   tryGetDeploymentGeneration as tryGetDeploymentGenerationImpl,
   waitForConfigReconciled as waitForConfigReconciledImpl,
+  waitForDeploymentCreated as waitForDeploymentCreatedImpl,
   waitForDeploymentReady as waitForDeploymentReadyImpl,
   waitForNamespaceActive as waitForNamespaceActiveImpl,
 } from "./wait";
@@ -261,6 +262,11 @@ class RHDHDeployment implements RHDHDeploymentState {
 
   async waitForDeploymentReady(timeoutMs = 600000): Promise<RHDHDeployment> {
     await waitForDeploymentReadyImpl(this, timeoutMs);
+    return this;
+  }
+
+  async waitForDeploymentCreated(timeoutMs = 600000): Promise<RHDHDeployment> {
+    await waitForDeploymentCreatedImpl(this, timeoutMs);
     return this;
   }
 

@@ -1,3 +1,4 @@
+includes: []
 plugins:
   - package: ref://backstage-community-plugin-catalog-backend-module-keycloak
     enabled: false

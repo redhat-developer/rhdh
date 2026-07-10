@@ -5,11 +5,24 @@ import {
   type AuthDeploymentPort,
   type AuthInstanceDeployerHost,
 } from "../playwright/utils/authentication-providers/auth-instance-deployer";
+import { RHDH_READY_DEPLOY_TIMEOUT_MS } from "../playwright/utils/wait-for-rhdh-ready";
 
-function createHost(): AuthInstanceDeployerHost & { calls: string[] } {
+const healthcheckRhdhAtUrl = vi.hoisted(() =>
+  vi.fn<(baseURL: string, timeoutMs?: number) => Promise<void>>().mockResolvedValue(),
+);
+
+vi.mock("../playwright/utils/wait-for-rhdh-ready", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../playwright/utils/wait-for-rhdh-ready")>();
+  return {
+    ...actual,
+    healthcheckRhdhAtUrl,
+  };
+});
+
+function createHost(isRunningLocal: boolean): AuthInstanceDeployerHost & { calls: string[] } {
   const calls: string[] = [];
   const deployment: AuthDeploymentPort = {
-    isRunningLocal: true,
+    isRunningLocal,
     addSecretData: (key: string) => {
       calls.push(`secret:${key}`);
       return Promise.resolve();
@@ -22,8 +35,8 @@ function createHost(): AuthInstanceDeployerHost & { calls: string[] } {
       calls.push(`createBackstageDeployment:${String(options?.waitForReady)}`);
       return Promise.resolve();
     },
-    waitForDeploymentReady: () => {
-      calls.push("waitForDeploymentReady");
+    waitForDeploymentCreated: () => {
+      calls.push("waitForDeploymentCreated");
       return Promise.resolve();
     },
     waitForSynced: () => {
@@ -62,33 +75,73 @@ function createHost(): AuthInstanceDeployerHost & { calls: string[] } {
 }
 
 describe("deployAuthInstance", () => {
-  it("applies BACKEND_SECRET, deploys without nested wait, then stages readiness", async () => {
-    const host = createHost();
-    const enableProvider = vi
-      .fn<(deployment: AuthDeploymentPort) => Promise<void>>()
-      .mockImplementation(() => {
+  it("does not put BACKEND_SECRET in rhdh-secrets (CR env owns it)", async () => {
+    const host = createHost(true);
+    await deployAuthInstance(host, {
+      requiredEnvVars: ["FOO"],
+      enableProvider: () => {
         host.calls.push("enableProvider");
         return Promise.resolve();
-      });
-
-    const result = await deployAuthInstance(host, {
-      requiredEnvVars: ["FOO"],
-      enableProvider,
+      },
     });
 
-    expect(result.url).toBe("https://rhdh.example.test");
+    expect(host.calls).not.toContain("secret:BACKEND_SECRET");
+  });
+
+  it("stages created → synced locally without HTTP", async () => {
+    const host = createHost(true);
+    await deployAuthInstance(host, {
+      requiredEnvVars: ["FOO"],
+      enableProvider: () => {
+        host.calls.push("enableProvider");
+        return Promise.resolve();
+      },
+    });
+
     expect(host.calls).toEqual([
       "expectEnvVars",
       "loadConfigs",
       "addBaseUrlSecrets",
-      "secret:BACKEND_SECRET",
       "createSecret",
       "enableProvider",
       "updateAllConfigs",
       "createBackstageDeployment:false",
-      "waitForDeploymentReady",
+      "waitForDeploymentCreated",
       "waitForSynced",
     ]);
-    expect(typeof result.reconcile).toBe("function");
+    expect(healthcheckRhdhAtUrl).not.toHaveBeenCalled();
+  });
+
+  it("stages created → HTTP → synced on the remote CI path", async () => {
+    const host = createHost(false);
+    healthcheckRhdhAtUrl.mockClear();
+    healthcheckRhdhAtUrl.mockImplementation(() => {
+      host.calls.push("http");
+      return Promise.resolve();
+    });
+    await deployAuthInstance(host, {
+      requiredEnvVars: ["FOO"],
+      enableProvider: () => {
+        host.calls.push("enableProvider");
+        return Promise.resolve();
+      },
+    });
+
+    expect(host.calls).toEqual([
+      "expectEnvVars",
+      "loadConfigs",
+      "addBaseUrlSecrets",
+      "createSecret",
+      "enableProvider",
+      "updateAllConfigs",
+      "createBackstageDeployment:false",
+      "waitForDeploymentCreated",
+      "http",
+      "waitForSynced",
+    ]);
+    expect(healthcheckRhdhAtUrl).toHaveBeenCalledExactlyOnceWith(
+      "https://rhdh.example.test",
+      RHDH_READY_DEPLOY_TIMEOUT_MS,
+    );
   });
 });
