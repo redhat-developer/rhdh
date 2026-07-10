@@ -76,4 +76,4 @@ fi
 
 All test code must follow the project's coding rules:
 - **`playwright-locators`** — locator priority, anti-patterns, assertions, Page Objects
-- **`ci-e2e-testing`** — test structure, component annotations, utility classes, CI scripts
+- **`ci-e2e-testing`** — test structure, component annotations, utility classes, CI scripts, and **verifying affected jobs with `/test ?` / `/test <job>` on the PR**

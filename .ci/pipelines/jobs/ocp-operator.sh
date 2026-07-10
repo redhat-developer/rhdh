@@ -68,20 +68,16 @@ initiate_operator_deployments_osd_gcp() {
 }
 
 run_operator_runtime_config_change_tests() {
-  # Runtime tests handle their own deployment via TypeScript (runtime-deploy.ts).
-  # The first test file (config-map.spec.ts) calls ensureRuntimeDeployed() which:
-  #   - Creates the namespace
-  #   - Deploys RHDH via the operator with internal PostgreSQL
-  #   - Configures schema-mode env vars for port-forwarding
+  # Runtime tests self-deploy from Playwright global setup when
+  # RUNTIME_AUTO_DEPLOY=true. Pass the predicted route as BASE_URL so
+  # playwright.config.ts freezes a usable use.baseURL before globalSetup.
+  # globalSetup then deploys via ensureRuntimeDeployed() and healthchecks.
   # Subsequent test files reuse the existing deployment (workers: 1).
   #
   # INSTALL_METHOD=operator is already exported in handle_ocp_operator().
-  #
-  # No URL is passed on purpose - see the same note in jobs/ocp-nightly.sh.
-  # A pre-set BASE_URL makes global-setup.ts skip the deploy branch and poll a
-  # route nothing has created yet; ensureRuntimeDeployed() sets BASE_URL itself.
   export RUNTIME_AUTO_DEPLOY="true"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" || true
+  local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
+  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
 handle_ocp_operator() {
@@ -99,14 +95,12 @@ handle_ocp_operator() {
 
   cluster_setup_ocp_operator
 
+  prepare_operator
+
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    # OSD-GCP internal registry is unreliable under parallel load; reduce
-    # concurrent skopeo pushes and allow retries (RHDHBUGS-1136).
-    export MAX_PARALLEL=3
-    prepare_operator 3
+    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment"
     initiate_operator_deployments_osd_gcp
   else
-    prepare_operator
     initiate_operator_deployments
   fi
 

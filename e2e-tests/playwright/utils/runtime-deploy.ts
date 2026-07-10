@@ -2,9 +2,11 @@
  * Runtime deployment utility for SHOWCASE_RUNTIME tests.
  *
  * Deploys RHDH with an internal PostgreSQL database via Helm sub-chart
- * (helm) or operator-managed StatefulSet (operator). The deployment
- * happens once in the first test file's beforeAll — subsequent specs
- * reuse the existing deployment since the project runs with workers: 1.
+ * (helm) or operator-managed StatefulSet (operator). Called from
+ * Playwright globalSetup when RUNTIME_AUTO_DEPLOY=true (and still safe
+ * to call from a spec beforeAll — idempotent via a process-local flag
+ * and an existing-deployment check). Subsequent specs reuse the
+ * deployment since the project runs with workers: 1.
  *
  * All deployment configuration is generated from `runtime-config.ts` —
  * a single source of truth that produces Helm values YAML, Operator
