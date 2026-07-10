@@ -250,11 +250,16 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
 
 // ─── Operator app-config generation ──────────────────────────────────────────
 
+/** Stable test secret — mirrors the Helm chart's BACKEND_SECRET default. */
+const runtimeBackendSecret = "super-secret-for-tests";
+
 /**
  * Generate the app-config YAML for the operator-deployed runtime RHDH.
  *
  * The operator path needs an explicit app-config ConfigMap because it
- * doesn't have Helm template helpers for hostname resolution.
+ * doesn't have Helm template helpers for hostname resolution. Unlike Helm,
+ * we must also supply `backend.auth.keys` + `BACKEND_SECRET` — chart defaults
+ * do not apply here, and missing keys leaves the readiness probe at HTTP 503.
  */
 export function generateAppConfigYaml(runtimeUrl: string): string {
   const appConfig = {
@@ -264,12 +269,15 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
     },
     backend: {
       auth: {
+        // Match Helm chart / showcase operator: keys + externalAccess both
+        // resolve ${BACKEND_SECRET}. Missing keys leaves readiness at HTTP 503.
+        keys: [{ secret: "${BACKEND_SECRET}" }],
         externalAccess: [
           {
             type: "legacy",
             options: {
               subject: "legacy-default-config",
-              secret: "secret",
+              secret: "${BACKEND_SECRET}",
             },
           },
         ],
@@ -294,13 +302,41 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
  * Generate the dynamic-plugins.yaml content for the operator path.
  *
  * Runtime tests only need a basic RHDH instance (config-map changes, DB
- * connectivity).  We set `includes: []` to prevent loading
+ * connectivity). We set `includes: []` to prevent loading
  * `dynamic-plugins.default.yaml` — many of its default-enabled plugins
  * crash without external config (GitHub org, GitLab, LDAP, Keycloak,
  * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
+ *
+ * The homepage plugin is explicitly enabled with its frontend wiring
+ * (dynamicRoutes) so DynamicHomePage renders "Welcome back!" — external DB
+ * tests verify DB connectivity via the UI. Keeping a non-empty plugins list
+ * also avoids the operator collapsing empty slices to `{}` on merge.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.stringify({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: 0 });
+  return yaml.stringify(
+    {
+      includes: [] as string[],
+      plugins: [
+        {
+          // Uses local dist path; switch to OCI ref once runtime deploy
+          // supports it (see #4909 for the migration direction).
+          package:
+            "./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page",
+          enabled: true,
+          pluginConfig: {
+            dynamicPlugins: {
+              frontend: {
+                "red-hat-developer-hub.backstage-plugin-dynamic-home-page": {
+                  dynamicRoutes: [{ path: "/", importName: "DynamicHomePage" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+    { lineWidth: 0 },
+  );
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────
@@ -319,6 +355,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
     { name: "NODE_OPTIONS", value: "--no-node-snapshot" },
     { name: "NODE_ENV", value: "production" },
     { name: "NODE_TLS_REJECT_UNAUTHORIZED", value: "0" },
+    { name: "BACKEND_SECRET", value: runtimeBackendSecret },
   ];
 
   // CATALOG_INDEX_IMAGE override — mirrors the yq injection in
