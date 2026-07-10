@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
+import { setPluginEnabled } from "../../dynamic-plugins-profile";
 import { RHDHDeploymentState } from "./types";
 
 export interface AuthConfigActions {
@@ -349,21 +350,7 @@ export function setDynamicPluginEnabled(
   pluginName: string,
   enabled: boolean,
 ): void {
-  const plugin = state.dynamicPluginsConfig.plugins.find((p) => p.package === pluginName);
-  if (plugin === undefined) {
-    state.dynamicPluginsConfig.plugins = [
-      ...state.dynamicPluginsConfig.plugins,
-      {
-        package: pluginName,
-        disabled: !enabled,
-      },
-    ];
-    console.log(
-      `Plugin ${pluginName} has been added to the dynamic plugins config and set to ${enabled ? "enabled" : "disabled"}.`,
-    );
-    return;
-  }
-  plugin.disabled = !enabled;
+  setPluginEnabled(state.dynamicPluginsConfig, pluginName, enabled);
   console.log(`Plugin ${pluginName} has been ${enabled ? "enabled" : "disabled"}.`);
 }
 

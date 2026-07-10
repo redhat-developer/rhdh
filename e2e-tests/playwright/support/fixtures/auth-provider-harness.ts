@@ -1,5 +1,9 @@
 import { expect } from "@playwright/test";
 
+import {
+  deployAuthInstance,
+  reconcileAuthInstance,
+} from "../../utils/authentication-providers/auth-instance-deployer";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 
 const DEFAULT_CONFIG_MAPS = {
@@ -9,15 +13,6 @@ const DEFAULT_CONFIG_MAPS = {
   secretName: "rhdh-secrets",
 } as const;
 
-type PrepareAuthProviderOptions = {
-  requiredEnvVars: string[];
-  envSecrets?: Record<string, string>;
-  extraSecrets?: Record<string, string> | (() => Record<string, string>);
-  beforeSecrets?: () => Promise<void>;
-  beforeDeploy?: () => Promise<void>;
-  enableProvider: (deployment: RHDHDeployment) => Promise<void>;
-};
-
 type AuthLoginCase = {
   configure?: () => Promise<void>;
   login: () => Promise<string>;
@@ -26,7 +21,7 @@ type AuthLoginCase = {
   expectedResult?: string;
 };
 
-/** Shared K8s + RHDH deployment orchestration for auth-provider E2E specs. */
+/** Playwright glue over AuthInstanceDeployer for auth-provider E2E specs. */
 export class AuthProviderHarness {
   readonly deployment: RHDHDeployment;
   readonly backstageUrl: string;
@@ -92,42 +87,24 @@ export class AuthProviderHarness {
     await this.deployment.createSecret();
   }
 
-  async deployAndWait(): Promise<void> {
-    await this.deployment.createBackstageDeployment();
-    await this.deployment.waitForDeploymentReady();
-    await this.deployment.waitForSynced();
-  }
-
-  async prepareProvider(options: PrepareAuthProviderOptions): Promise<void> {
-    this.expectEnvVars(options.requiredEnvVars);
-    await this.loadConfigsAndProvisionNamespace();
-    await options.beforeSecrets?.();
-    await this.addBaseUrlSecretsIfRemote();
-
-    if (options.envSecrets !== undefined) {
-      await this.addSecretsFromEnv(options.envSecrets);
-    }
-    const extraSecrets =
-      typeof options.extraSecrets === "function" ? options.extraSecrets() : options.extraSecrets;
-    if (extraSecrets !== undefined) {
-      for (const [key, value] of Object.entries(extraSecrets)) {
-        await this.deployment.addSecretData(key, value);
-      }
-    }
-
-    await this.createSecret();
-    await options.enableProvider(this.deployment);
-    await this.deployment.updateAllConfigs();
-    await options.beforeDeploy?.();
-    await this.deployAndWait();
+  async prepareProvider(options: {
+    requiredEnvVars: string[];
+    envSecrets?: Record<string, string>;
+    extraSecrets?: Record<string, string> | (() => Record<string, string>);
+    beforeSecrets?: () => Promise<void>;
+    beforeDeploy?: () => Promise<void>;
+    enableProvider: (deployment: RHDHDeployment) => Promise<void>;
+  }): Promise<void> {
+    await deployAuthInstance(this, {
+      ...options,
+      enableProvider: async () => {
+        await options.enableProvider(this.deployment);
+      },
+    });
   }
 
   async reconcileAfterConfigChange(): Promise<void> {
-    await this.deployment.updateAllConfigs();
-    await this.deployment.restartLocalDeployment();
-    await this.deployment.waitForConfigReconciled();
-    await this.deployment.waitForDeploymentReady();
-    await this.deployment.waitForSynced();
+    await reconcileAuthInstance(this);
   }
 
   async runLoginCase(options: AuthLoginCase): Promise<void> {
