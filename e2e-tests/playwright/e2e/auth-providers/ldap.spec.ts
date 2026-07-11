@@ -1,7 +1,7 @@
 import { test, expect } from "@support/coverage/test";
 
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 
@@ -10,13 +10,11 @@ LDAP:
     [x] oidcLdapUuidMatchingAnnotation -> (Default)
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-ldap");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-ldap");
 
 let nsgCleanup: (() => Promise<void>) | undefined;
 
 test.describe("Configure LDAP Provider", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let clearSession: (() => Promise<void>) | undefined;
