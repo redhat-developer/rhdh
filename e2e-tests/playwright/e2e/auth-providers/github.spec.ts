@@ -1,7 +1,7 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
@@ -13,11 +13,9 @@ GITHUB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-github");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-github");
 
 test.describe("Configure Github Provider", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let page: Page;

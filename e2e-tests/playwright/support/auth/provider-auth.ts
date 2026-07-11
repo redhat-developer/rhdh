@@ -17,10 +17,20 @@ export class AuthProviderSession {
   constructor(
     private readonly page: Page,
     private readonly locale?: Locale,
+    private readonly baseURL?: string,
   ) {}
 
   private lang(): Locale {
     return this.locale ?? getCurrentLanguage();
+  }
+
+  /** Prefer absolute URLs when baseURL is known so relative goto works without context baseURL. */
+  private resolveUrl(path: string): string {
+    if (this.baseURL === undefined || this.baseURL === "") {
+      return path;
+    }
+    const base = this.baseURL.endsWith("/") ? this.baseURL : `${this.baseURL}/`;
+    return new URL(path, base).href;
   }
 
   async clearAuthState(context: BrowserContext): Promise<void> {
@@ -29,7 +39,7 @@ export class AuthProviderSession {
   }
 
   private async openLandingPageWithProviderMessage(message: string): Promise<void> {
-    await this.page.goto("/");
+    await this.page.goto(this.resolveUrl("/"));
     await waitForAppReady(this.page);
     await expect(this.page.getByRole("main").getByText(message)).toBeVisible();
   }
@@ -65,7 +75,7 @@ export class AuthProviderSession {
     twofactor: string,
   ): Promise<string> {
     const lang = this.lang();
-    await this.page.goto("/settings/auth-providers");
+    await this.page.goto(this.resolveUrl("/settings/auth-providers"));
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),

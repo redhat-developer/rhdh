@@ -1,7 +1,7 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
@@ -17,7 +17,7 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-oidc");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-oidc");
 
 const keycloakHelper = new KeycloakHelper({
   baseUrl: process.env.RHBK_BASE_URL!,
@@ -27,8 +27,6 @@ const keycloakHelper = new KeycloakHelper({
 });
 
 test.describe("Configure OIDC provider (using RHBK)", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let page: Page;

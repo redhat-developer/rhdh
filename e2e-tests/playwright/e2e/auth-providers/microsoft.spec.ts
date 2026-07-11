@@ -1,7 +1,7 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
@@ -14,11 +14,9 @@ MICOROSFT:
     [-] emailLocalPartMatchingUserEntityName
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-msgraph");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-msgraph");
 
 test.describe("Configure Microsoft Provider", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let page: Page;

@@ -1,7 +1,7 @@
 import { test, expect, type BrowserContext } from "@support/coverage/test";
 
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
 
@@ -13,11 +13,9 @@ GITLAB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-gitlab");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-gitlab");
 
 test.describe("Configure GitLab Provider", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let context: BrowserContext;
