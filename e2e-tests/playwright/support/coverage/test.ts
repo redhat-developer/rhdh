@@ -11,6 +11,7 @@
 //
 // For serial specs that share one browser context across a describe block,
 // use the worker-scoped fixtures instead of manual beforeAll setup:
+//   useRhdhBaseURL(instanceUrl); // file top-level — or createAuthProviderHarness()
 //   test.beforeAll(async ({ rhdhPage, rhdhContext }) => { ... });
 //
 // For specs that create their own context/page via browser.newContext(),
@@ -46,12 +47,28 @@ type RhdhBrowserWorkerFixtures = {
   rhdhPage: Page;
   rhdhGuestPage: Page;
   rhdhAuthSession: AuthProviderSession;
+  // Worker-scoped mirror of baseURL for rhdhContext (test.use({ baseURL }) is test-scoped only).
+  workerBaseURL: string | undefined;
 };
 
 type RhdhPerTestFixtures = {
   guestPage: Page;
   authSession: AuthProviderSession;
 };
+
+function resolveWorkerBaseURL(
+  workerBaseURL: string | undefined,
+  projectBaseURL: string | undefined,
+): string | undefined {
+  // Treat "" like unset — auth CI intentionally exports empty BASE_URL.
+  if (workerBaseURL !== undefined && workerBaseURL !== "") {
+    return workerBaseURL;
+  }
+  if (projectBaseURL !== undefined && projectBaseURL !== "") {
+    return projectBaseURL;
+  }
+  return undefined;
+}
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtures>(
@@ -67,14 +84,18 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
       await signInAsGuest(page, { locale: resolveLocale(locale) });
       await use(page);
     },
-    authSession: async ({ page, locale }, use) => {
+    authSession: async ({ page, locale, baseURL }, use) => {
       const { AuthProviderSession } = await import("../auth/provider-auth");
       const { resolveLocale } = await import("../../e2e/localization/locale");
-      await use(new AuthProviderSession(page, resolveLocale(locale)));
+      await use(new AuthProviderSession(page, resolveLocale(locale), baseURL));
     },
+    // Default undefined → fall back to project `use.baseURL` (process.env.BASE_URL).
+    // Must be set via file top-level test.use / useRhdhBaseURL — not inside describe.
+    workerBaseURL: [undefined, { option: true, scope: "worker" }],
     rhdhContext: [
-      async ({ browser }, use, workerInfo: WorkerInfo) => {
-        const { baseURL, locale, ignoreHTTPSErrors } = workerInfo.project.use;
+      async ({ browser, workerBaseURL }, use, workerInfo: WorkerInfo) => {
+        const { baseURL: projectBaseURL, locale, ignoreHTTPSErrors } = workerInfo.project.use;
+        const baseURL = resolveWorkerBaseURL(workerBaseURL, projectBaseURL);
         const session = await createBrowserSession(browser, {
           baseURL,
           locale,
@@ -106,17 +127,27 @@ export const test = baseTest.extend<RhdhPerTestFixtures, RhdhBrowserWorkerFixtur
       { scope: "worker" },
     ],
     rhdhAuthSession: [
-      async ({ rhdhPage }, use, workerInfo: WorkerInfo) => {
+      async ({ rhdhPage, workerBaseURL }, use, workerInfo: WorkerInfo) => {
         const { AuthProviderSession } = await import("../auth/provider-auth");
         const { resolveLocale } = await import("../../e2e/localization/locale");
+        const baseURL = resolveWorkerBaseURL(workerBaseURL, workerInfo.project.use.baseURL);
         await use(
-          new AuthProviderSession(rhdhPage, resolveLocale(workerInfo.project.use.locale)),
+          new AuthProviderSession(rhdhPage, resolveLocale(workerInfo.project.use.locale), baseURL),
         );
       },
       { scope: "worker" },
     ],
   },
 );
+
+/**
+ * Sets test-scoped `baseURL` and worker-scoped `workerBaseURL` together.
+ * Call at file top level (outside `test.describe`) — Playwright rejects
+ * worker-scoped options inside a describe group.
+ */
+export function useRhdhBaseURL(url: string): void {
+  test.use({ baseURL: url, workerBaseURL: url });
+}
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const expect = baseExpect;

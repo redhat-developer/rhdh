@@ -21,7 +21,7 @@ type AuthLoginCase = {
   expectedResult?: string;
 };
 
-/** Playwright glue over AuthInstanceDeployer for auth-provider E2E specs. */
+/** Deploy/config glue for auth-provider E2E specs. For Playwright wiring use createAuthProviderHarness. */
 export class AuthProviderHarness {
   readonly deployment: RHDHDeployment;
   readonly backstageUrl: string;
