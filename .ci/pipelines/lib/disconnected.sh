@@ -98,6 +98,12 @@ EOF
     additional_images+=("${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}")
   fi
 
+  # Catalog index: the chart references it by digest and the init container
+  # pulls it at startup. Must be mirrored so IDMS can redirect the pull.
+  if [[ -n "${CI_REGISTRY:-}" && -n "${CI_REPO:-}" && -n "${CI_TAG:-}" ]]; then
+    additional_images+=("${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR:-:}${CI_TAG}")
+  fi
+
   if [[ ${#additional_images[@]} -gt 0 ]]; then
     {
       echo "  additionalImages:"
