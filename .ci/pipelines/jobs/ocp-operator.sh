@@ -75,9 +75,10 @@ run_operator_runtime_config_change_tests() {
   # Subsequent test files reuse the existing deployment (workers: 1).
   #
   # INSTALL_METHOD=operator is already exported in handle_ocp_operator().
-  export RUNTIME_AUTO_DEPLOY="true"
+  # Scope RUNTIME_AUTO_DEPLOY to this invocation only — a lasting export would
+  # leak into later jobs and stomp BASE_URL.
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  RUNTIME_AUTO_DEPLOY=true testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
 handle_ocp_operator() {

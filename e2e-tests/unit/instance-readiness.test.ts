@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { classifyBaseUrlMode, ensurePlaywrightReady } from "../playwright/utils/instance-readiness";
+import {
+  classifyBaseUrlMode,
+  ensurePlaywrightReady,
+  shouldAutoDeployRuntime,
+} from "../playwright/utils/instance-readiness";
 
 type RequestContextOptions = {
   baseURL: string;
@@ -56,12 +60,64 @@ describe("classifyBaseUrlMode", () => {
   });
 });
 
+describe("shouldAutoDeployRuntime", () => {
+  it("is false when the flag is unset", () => {
+    expect(
+      shouldAutoDeployRuntime({
+        BASE_URL: "https://rhdh-developer-hub-showcase-runtime.apps.cluster.example.com",
+        K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
+      }),
+    ).toBe(false);
+  });
+
+  it("is true for unset or router-stub BASE_URL when the flag is set", () => {
+    expect(shouldAutoDeployRuntime({ RUNTIME_AUTO_DEPLOY: "true" })).toBe(true);
+    expect(
+      shouldAutoDeployRuntime({
+        BASE_URL: "https://apps.cluster.example.com",
+        K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
+        RUNTIME_AUTO_DEPLOY: "true",
+      }),
+    ).toBe(true);
+  });
+
+  it("is true only when BASE_URL matches the predicted runtime URL", () => {
+    expect(
+      shouldAutoDeployRuntime(
+        {
+          BASE_URL: "https://rhdh-developer-hub-showcase-runtime.apps.cluster.example.com",
+          K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
+          RUNTIME_AUTO_DEPLOY: "true",
+          RELEASE_NAME: "rhdh",
+          NAME_SPACE_RUNTIME: "showcase-runtime",
+        },
+        "helm",
+      ),
+    ).toBe(true);
+    expect(
+      shouldAutoDeployRuntime(
+        {
+          BASE_URL: "https://rhdh-developer-hub-showcase-sanity.apps.cluster.example.com",
+          K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
+          RUNTIME_AUTO_DEPLOY: "true",
+          RELEASE_NAME: "rhdh",
+          NAME_SPACE_RUNTIME: "showcase-runtime",
+        },
+        "helm",
+      ),
+    ).toBe(false);
+  });
+});
+
 describe("ensurePlaywrightReady", () => {
   it("deploys then waits when auto-deploy is enabled with a predicted instance URL", async () => {
     const predicted = "https://showcase-developer-hub-showcase-runtime.apps.cluster.example.com";
     const env: Record<string, string | undefined> = {
       BASE_URL: predicted,
+      K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
       RUNTIME_AUTO_DEPLOY: "true",
+      RELEASE_NAME: "showcase",
+      NAME_SPACE_RUNTIME: "showcase-runtime",
     };
     const { context: requestContext, dispose } = mockRequestContext();
     const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockResolvedValue();
@@ -83,6 +139,7 @@ describe("ensurePlaywrightReady", () => {
       ensureRuntimeDeployed,
       createRequestContext,
       waitForRhdhReady,
+      resolveInstallMethod: () => "helm",
     });
 
     expect(ensureRuntimeDeployed).toHaveBeenCalledOnce();
@@ -221,6 +278,34 @@ describe("ensurePlaywrightReady", () => {
         waitForRhdhReady: vi.fn<(request: MockRequestContext) => Promise<void>>(),
       }),
     ).rejects.toThrow("Runtime auto-deploy did not produce an instance BASE_URL");
+  });
+
+  it("ignores a leaked RUNTIME_AUTO_DEPLOY flag for non-runtime instance URLs", async () => {
+    const ensureRuntimeDeployed = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const { context: requestContext } = mockRequestContext();
+    const createRequestContext = vi
+      .fn<(options: RequestContextOptions) => Promise<MockRequestContext>>()
+      .mockResolvedValue(requestContext);
+    const waitForRhdhReady = vi
+      .fn<(request: MockRequestContext) => Promise<void>>()
+      .mockResolvedValue();
+
+    await ensurePlaywrightReady({
+      env: {
+        BASE_URL: "https://rhdh-developer-hub-showcase-sanity.apps.cluster.example.com",
+        K8S_CLUSTER_ROUTER_BASE: "apps.cluster.example.com",
+        RUNTIME_AUTO_DEPLOY: "true",
+        RELEASE_NAME: "rhdh",
+        NAME_SPACE_RUNTIME: "showcase-runtime",
+      },
+      ensureRuntimeDeployed,
+      createRequestContext,
+      waitForRhdhReady,
+      resolveInstallMethod: () => "helm",
+    });
+
+    expect(ensureRuntimeDeployed).not.toHaveBeenCalled();
+    expect(waitForRhdhReady).toHaveBeenCalledOnce();
   });
 
   it("waits only when BASE_URL points at a deployed instance", async () => {
