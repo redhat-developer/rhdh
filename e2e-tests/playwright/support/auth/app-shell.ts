@@ -52,17 +52,22 @@ export async function waitForAuthenticatedShell(page: Page, timeout = 120_000): 
  * or a sign-in alert appears (expected identity-resolution failures). Waiting
  * only for the header breaks negative login cases.
  */
-export async function waitForLoginOutcome(page: Page, timeout = 120_000): Promise<void> {
+export type LoginOutcome = "authenticated" | "error";
+
+export async function waitForLoginOutcome(page: Page, timeout = 120_000): Promise<LoginOutcome> {
   await waitForAppReady(page, timeout);
   const header = getGlobalHeader(page);
   const alert = page.getByRole("alert");
+  let outcome: LoginOutcome | "pending" = "pending";
   await expect
     .poll(
       async () => {
         if (await header.isVisible().catch(() => false)) {
+          outcome = "authenticated";
           return "authenticated";
         }
         if (await alert.isVisible().catch(() => false)) {
+          outcome = "error";
           return "error";
         }
         return "pending";
@@ -70,4 +75,8 @@ export async function waitForLoginOutcome(page: Page, timeout = 120_000): Promis
       { timeout, intervals: [500, 1000, 2000] },
     )
     .not.toBe("pending");
+  if (outcome === "pending") {
+    throw new Error("Login outcome stayed pending after waitForLoginOutcome");
+  }
+  return outcome;
 }

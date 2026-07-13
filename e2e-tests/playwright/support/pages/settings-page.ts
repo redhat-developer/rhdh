@@ -164,6 +164,17 @@ export class SettingsPage {
     await SETTINGS_PAGE_COMPONENTS.getSignOut(this.page).click();
   }
 
+  /** Sign out a secondary OAuth provider from Settings → Authentication Providers. */
+  async signOutFromAuthProvider(providerTitle: string): Promise<void> {
+    const lang = getCurrentLanguage();
+    const title = t["user-settings"][lang]["providerSettingsItem.title.signOut"].replace(
+      "{{title}}",
+      providerTitle,
+    );
+    // Intentional divergence: provider settings expose sign-out via title tooltip.
+    await this.page.getByTitle(title).click();
+  }
+
   async closeUserSettingsMenu(): Promise<void> {
     await this.page.keyboard.press("Escape");
   }

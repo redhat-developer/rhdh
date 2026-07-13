@@ -1,8 +1,13 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
+import type { LoginOutcome } from "../../support/auth/app-shell";
 import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  THREE_DAYS_MS,
+  isRefreshTokenDurationNear,
+} from "../../utils/authentication-providers/auth-cookie-duration";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
@@ -36,11 +41,11 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     await authSession.clearAuthState(context);
   }
 
-  function loginAsZeus(): Promise<string> {
+  function loginAsZeus(): Promise<LoginOutcome> {
     return authSession.loginWithKeycloak("zeus", process.env.DEFAULT_USER_PASSWORD!);
   }
 
-  function loginAsAtena(): Promise<string> {
+  function loginAsAtena(): Promise<LoginOutcome> {
     return authSession.loginWithKeycloak("atena", process.env.DEFAULT_USER_PASSWORD!);
   }
 
@@ -153,6 +158,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
 
     await harness.runLoginCase({
       login: loginAsAtena,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
         await keycloakHelper.initialize();
@@ -219,14 +225,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
 
         const cookies = await context.cookies();
         const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
-        expect(authCookie).toBeDefined();
-
-        const threeDays = 3 * 24 * 60 * 60 * 1000;
-        const tolerance = 3 * 60 * 1000;
-        const actualDuration = authCookie!.expires * 1000 - Date.now();
-
-        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-        expect(actualDuration).toBeLessThan(threeDays + tolerance);
+        expect(isRefreshTokenDurationNear(authCookie, THREE_DAYS_MS)).toBe(true);
 
         await settingsPage.open();
         await settingsPage.verifyProfileHeading("Zeus Giove");
@@ -292,7 +291,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
       await harness.reconcileAfterConfigChange();
 
       const result = await loginAsZeus();
-      expect(result).toBe("Login successful");
+      expect(result).toBe("authenticated");
 
       await settingsPage.open();
       await settingsPage.verifyProfileHeading("Zeus Giove");
@@ -303,9 +302,8 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
         process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
         process.env.AUTH_PROVIDERS_GH_USER_2FA!,
       );
-      expect(ghLogin).toBe("Login successful");
-      // Intentional divergence: GitHub provider settings expose sign-out via title tooltip.
-      await page.getByTitle("Sign out from GitHub").click();
+      expect(ghLogin).toBe("authenticated");
+      await settingsPage.signOutFromAuthProvider("GitHub");
 
       await settingsPage.open();
       await settingsPage.verifyProfileHeading("Zeus Giove");

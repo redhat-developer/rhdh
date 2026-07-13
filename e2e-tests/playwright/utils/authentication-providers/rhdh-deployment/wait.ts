@@ -2,11 +2,8 @@ import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse } from "../../errors";
 import { pollUntil, pollUntilStable } from "../../poll-until";
+import { buildDeploymentLabelSelector } from "./deployment-labels";
 import { BackstageCr, RHDHDeploymentState } from "./types";
-
-const BACKSTAGE_LABELS = {
-  "app.kubernetes.io/name": "backstage",
-} as const;
 
 const POLL_INTERVAL_MS = 500;
 
@@ -18,16 +15,6 @@ function skipIfRunningLocal(state: RHDHDeploymentState, message?: string): boole
     return true;
   }
   return false;
-}
-
-function buildLabelSelector(instanceName: string): string {
-  const labels = {
-    ...BACKSTAGE_LABELS,
-    "app.kubernetes.io/instance": instanceName,
-  };
-  return Object.entries(labels)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(",");
 }
 
 type DeploymentListClient = {
@@ -86,7 +73,7 @@ async function tryGetLabeledDeployment(
 }
 
 export async function getDeploymentGeneration(state: DeploymentGenerationState): Promise<number> {
-  const labelSelector = buildLabelSelector(state.instanceName);
+  const labelSelector = buildDeploymentLabelSelector(state.instanceName);
   const deployment = await getLabeledDeployment(state, labelSelector);
   return deployment.metadata?.generation ?? 0;
 }
@@ -272,7 +259,7 @@ export async function waitForDeploymentReady(
     return;
   }
 
-  const labelSelector = buildLabelSelector(state.instanceName);
+  const labelSelector = buildDeploymentLabelSelector(state.instanceName);
   await pollDeploymentReady(state, labelSelector, timeoutMs);
 }
 
@@ -289,7 +276,7 @@ export async function waitForDeploymentCreated(
     return;
   }
 
-  const labelSelector = buildLabelSelector(state.instanceName);
+  const labelSelector = buildDeploymentLabelSelector(state.instanceName);
   await pollUntil(
     async () => {
       const deployment = await tryGetLabeledDeployment(state, labelSelector);

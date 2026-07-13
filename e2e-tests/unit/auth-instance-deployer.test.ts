@@ -28,6 +28,9 @@ function createHost(isRunningLocal: boolean): AuthInstanceDeployerHost & { calls
       calls.push(`secret:${key}`);
       return Promise.resolve();
     },
+    setAppConfigProperty: (path: string, value: unknown) => {
+      calls.push(`setAppConfigProperty:${path}:${String(value)}`);
+    },
     updateAllConfigs: () => {
       calls.push("updateAllConfigs");
       return Promise.resolve();
@@ -44,8 +47,8 @@ function createHost(isRunningLocal: boolean): AuthInstanceDeployerHost & { calls
       calls.push("waitForSynced");
       return Promise.resolve();
     },
-    waitUntilAuthConfigLive: () => {
-      calls.push("waitUntilAuthConfigLive");
+    waitUntilAuthConfigLive: (marker: string) => {
+      calls.push(`waitUntilAuthConfigLive:${marker}`);
       return Promise.resolve();
     },
     restartLocalDeployment: () => {
@@ -93,6 +96,17 @@ describe("deployAuthInstance", () => {
     });
 
     expect(host.calls).not.toContain("secret:BACKEND_SECRET");
+  });
+
+  it("returns only the instance URL (no unused reconcile handle)", async () => {
+    const host = createHost(true);
+    const result = await deployAuthInstance(host, {
+      requiredEnvVars: ["FOO"],
+      enableProvider: () => Promise.resolve(),
+    });
+
+    expect(result).toEqual({ url: "https://rhdh.example.test" });
+    expect(result).not.toHaveProperty("reconcile");
   });
 
   it("stages created → synced locally without HTTP", async () => {
@@ -154,7 +168,7 @@ describe("deployAuthInstance", () => {
 });
 
 describe("reconcileAuthInstance", () => {
-  it("persists config, restarts, proves live, then HTTP → synced on remote", async () => {
+  it("stamps a title marker, restarts, proves live, then HTTP only by default", async () => {
     const host = createHost(false);
     healthcheckRhdhAtUrl.mockClear();
     healthcheckRhdhAtUrl.mockImplementation(() => {
@@ -164,14 +178,29 @@ describe("reconcileAuthInstance", () => {
 
     await reconcileAuthInstance(host);
 
-    expect(host.calls).toEqual([
+    expect(host.calls[0]).toMatch(/^setAppConfigProperty:app\.title:e2e-auth-config-/u);
+    expect(host.calls.slice(1, 4)).toEqual([
       "updateAllConfigs",
       "restartLocalDeployment",
-      "waitUntilAuthConfigLive",
-      "waitForDeploymentCreated",
-      "http",
-      "waitForSynced",
+      expect.stringMatching(/^waitUntilAuthConfigLive:e2e-auth-config-/u),
     ]);
+    expect(host.calls).toContain("http");
+    expect(host.calls).not.toContain("waitForSynced");
+    expect(host.calls).not.toContain("waitForDeploymentCreated");
+  });
+
+  it("opts into catalog sync when waitForCatalogSync is true", async () => {
+    const host = createHost(false);
+    healthcheckRhdhAtUrl.mockClear();
+    healthcheckRhdhAtUrl.mockImplementation(() => {
+      host.calls.push("http");
+      return Promise.resolve();
+    });
+
+    await reconcileAuthInstance(host, { waitForCatalogSync: true });
+
+    expect(host.calls).toContain("http");
+    expect(host.calls).toContain("waitForSynced");
   });
 
   it("skips remote HTTP on local path but still proves config live", async () => {
@@ -180,13 +209,10 @@ describe("reconcileAuthInstance", () => {
 
     await reconcileAuthInstance(host);
 
-    expect(host.calls).toEqual([
-      "updateAllConfigs",
-      "restartLocalDeployment",
-      "waitUntilAuthConfigLive",
-      "waitForDeploymentCreated",
-      "waitForSynced",
-    ]);
+    expect(host.calls[0]).toMatch(/^setAppConfigProperty:app\.title:e2e-auth-config-/u);
+    expect(host.calls).toContain("restartLocalDeployment");
+    expect(host.calls.some((c) => c.startsWith("waitUntilAuthConfigLive:"))).toBe(true);
+    expect(host.calls).not.toContain("waitForSynced");
     expect(healthcheckRhdhAtUrl).not.toHaveBeenCalled();
   });
 });

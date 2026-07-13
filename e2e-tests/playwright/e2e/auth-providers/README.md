@@ -15,7 +15,7 @@ For each providers the tests verify:
 - that nested groups are ingested correctly
 - the session token duration can be configured (`auth.providers.<id>.<env>.sessionDuration`)
 
-Since changing any setting in the authentication providers configuration require to restart RHDH, the tests are dynamically configuring, creating, updating, restarting and deleting the RHDH instances.
+Since changing any setting in the authentication providers configuration require to restart RHDH, the tests are dynamically configuring, creating, updating, restarting and deleting the RHDH instances. Reconcile after config change proves the new app-config is mounted and HTTP-ready; catalog sync is only waited when a test opts in.
 
 The main target for these tests suites is Openshift and our CI environment. If you want to use your cluster as target, make sure you are currently logged in to an Openshift cluster as admin and your kubeconfig is currently exported. The tests will create a client from it and start creating the necessary resources. These tests rely on the RHDH Operator, make sure you have it installed in your cluster before running the tests.
 
