@@ -210,12 +210,23 @@ async function fillPingFederateCredentials(
     await signOnButton.first().click();
 
     // Consent / allow is not always shown (already consented sessions).
-    const allowVisible = await allowButton.isVisible({ timeout: 10_000 }).catch(() => false);
-    if (allowVisible) {
+    // Prefer waiting on the allow control or popup close rather than a fixed sleep.
+    const allowWait = allowButton
+      .waitFor({ state: "visible", timeout: 15_000 })
+      .then(() => "allow" as const)
+      .catch(() => null);
+    const closeWait = popup
+      .waitForEvent("close", { timeout: 15_000 })
+      .then(() => "closed" as const)
+      .catch(() => null);
+    const allowOrClosed = await Promise.race([allowWait, closeWait]);
+
+    if (allowOrClosed === "allow") {
       await allowButton.click({ timeout: 10_000 });
     }
-
-    await popup.waitForEvent("close", { timeout: 30_000 });
+    if (allowOrClosed !== "closed" && !popup.isClosed()) {
+      await popup.waitForEvent("close", { timeout: 90_000 });
+    }
     return "Login successful";
   } catch (e) {
     const errorElement = popup.locator(".ping-error, .error, [role=alert]");
