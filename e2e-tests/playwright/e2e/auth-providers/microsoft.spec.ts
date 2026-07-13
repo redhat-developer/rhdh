@@ -177,11 +177,11 @@ test.describe("Configure Microsoft Provider", () => {
     });
   });
 
-  test(`Set Micrisoft sessionDuration and confirm in auth cookie duration has been set`, async () => {
+  test(`Set Microsoft cookieMaxAge and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
         harness.deployment.setAppConfigProperty(
-          "auth.providers.microsoft.production.sessionDuration",
+          "auth.providers.microsoft.production.cookieMaxAge",
           "3days",
         );
         await harness.reconcileAfterConfigChange();
@@ -275,23 +275,9 @@ test.describe("Configure Microsoft Provider", () => {
   });
 
   test.afterAll(async () => {
-    try {
-      console.log("[TEST] Cleaning up Microsoft Azure App Registration...");
-      const graphClient = new MSClient(
-        process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID!,
-        process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET!,
-        process.env.AUTH_PROVIDERS_AZURE_TENANT_ID!,
-      );
-
-      const redirectUrl = `${harness.backstageUrl}/api/auth/microsoft/handler/frame`;
-      console.log(`[TEST] Removing redirect URL: ${redirectUrl}`);
-      await graphClient.removeAppRedirectUrlsAsync([redirectUrl]);
-      console.log("[TEST] Microsoft Azure App Registration cleanup completed");
-    } catch (error) {
-      console.error("[TEST] Failed to cleanup Microsoft Azure App Registration:", error);
-      // Don't fail the test cleanup if Azure cleanup fails
-    }
-
+    // Keep the Azure redirect URI registered. The albarbaro-* hostnames are
+    // intentionally stable for this suite; removing mid-job races with retries
+    // and Graph API eventual consistency (AADSTS50011).
     await harness.cleanup();
   });
 });
