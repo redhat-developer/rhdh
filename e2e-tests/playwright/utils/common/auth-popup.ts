@@ -197,17 +197,29 @@ async function fillPingFederateCredentials(
 ): Promise<string> {
   /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party PingFederate login popup */
   try {
-    await popup.locator("#username").click();
-    await popup.locator("#username").fill(username, { timeout: 5000 });
-    await popup.locator("#password").click();
-    await popup.locator("#password").fill(password, { timeout: 5000 });
-    await popup.locator("#signOnButton").click({ timeout: 5000 });
-    await popup.locator("#allowButton").click({ timeout: 10000 });
-    await popup.waitForEvent("close", { timeout: 2000 });
+    const usernameField = popup.locator("#username");
+    const passwordField = popup.locator("#password");
+    const signOnButton = popup.locator("#signOnButton, button[type='submit'], #submit");
+    const allowButton = popup.locator("#allowButton");
+
+    await expect(usernameField).toBeVisible({ timeout: 30_000 });
+    await usernameField.fill(username);
+    await expect(passwordField).toBeVisible({ timeout: 10_000 });
+    await passwordField.fill(password);
+    await expect(signOnButton.first()).toBeVisible({ timeout: 10_000 });
+    await signOnButton.first().click();
+
+    // Consent / allow is not always shown (already consented sessions).
+    const allowVisible = await allowButton.isVisible({ timeout: 10_000 }).catch(() => false);
+    if (allowVisible) {
+      await allowButton.click({ timeout: 10_000 });
+    }
+
+    await popup.waitForEvent("close", { timeout: 30_000 });
     return "Login successful";
   } catch (e) {
     const errorElement = popup.locator(".ping-error, .error, [role=alert]");
-    if (await errorElement.isVisible()) {
+    if (await errorElement.isVisible().catch(() => false)) {
       await popup.close();
       return "Login failed - invalid credentials";
     }

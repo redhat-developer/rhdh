@@ -204,11 +204,11 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     });
   });
 
-  test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
+  test(`Set OIDC cookieMaxAge and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
         harness.deployment.setAppConfigProperty(
-          "auth.providers.oidc.production.sessionDuration",
+          "auth.providers.oidc.production.cookieMaxAge",
           "3days",
         );
         await harness.reconcileAfterConfigChange();
@@ -279,25 +279,23 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
       expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
       expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
 
-      const result = await loginAsZeus();
-      expect(result).toBe("Login successful");
-
-      await settingsPage.open();
-      await settingsPage.verifyProfileHeading("Zeus Giove");
-
       harness.deployment.setAppConfigProperty("auth.providers.github", {
         production: {
           clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
           clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
           callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+          disableIdentityResolution: true,
         },
       });
-      harness.deployment.setAppConfigProperty(
-        "auth.providers.github.production.disableIdentityResolution",
-        "true",
-      );
+      // Reconcile before primary login — restart drops the session, so OIDC
+      // must happen after the GitHub secondary provider is already configured.
       await harness.reconcileAfterConfigChange();
 
+      const result = await loginAsZeus();
+      expect(result).toBe("Login successful");
+
+      await settingsPage.open();
+      await settingsPage.verifyProfileHeading("Zeus Giove");
       await settingsPage.hideQuickstartIfVisible();
 
       const ghLogin = await authSession.loginWithGitHubFromSettingsPage(

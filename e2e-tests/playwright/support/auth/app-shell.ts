@@ -46,3 +46,28 @@ export async function waitForAuthenticatedShell(page: Page, timeout = 120_000): 
   await waitForAppReady(page, timeout);
   await expect(getGlobalHeader(page)).toBeVisible({ timeout });
 }
+
+/**
+ * After an OAuth popup closes, either the authenticated shell appears (success)
+ * or a sign-in alert appears (expected identity-resolution failures). Waiting
+ * only for the header breaks negative login cases.
+ */
+export async function waitForLoginOutcome(page: Page, timeout = 120_000): Promise<void> {
+  await waitForAppReady(page, timeout);
+  const header = getGlobalHeader(page);
+  const alert = page.getByRole("alert");
+  await expect
+    .poll(
+      async () => {
+        if (await header.isVisible().catch(() => false)) {
+          return "authenticated";
+        }
+        if (await alert.isVisible().catch(() => false)) {
+          return "error";
+        }
+        return "pending";
+      },
+      { timeout, intervals: [500, 1000, 2000] },
+    )
+    .not.toBe("pending");
+}

@@ -9,7 +9,7 @@ import {
   handlePingFederatePopupLogin,
 } from "../../utils/common/auth-popup";
 import * as interaction from "../../utils/ui-helper/interaction";
-import { waitForAppReady, waitForAuthenticatedShell } from "./app-shell";
+import { waitForAppReady, waitForLoginOutcome } from "./app-shell";
 
 const t = getTranslations();
 
@@ -55,9 +55,8 @@ export class AuthProviderSession {
 
   private async finishLogin(popupResult: Promise<string>): Promise<string> {
     const result = await popupResult;
-    // Popup close ≠ authenticated shell — wait for global header before callers
-    // navigate via Settings POM (goToSettingsPage / profile dropdown).
-    await waitForAuthenticatedShell(this.page);
+    // Popup close ≠ settled auth UI — wait for shell (success) or alert (expected failure).
+    await waitForLoginOutcome(this.page);
     return result;
   }
 
