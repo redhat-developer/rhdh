@@ -70,8 +70,11 @@ handle_ocp_disconnected_operator() {
   local podman_run="${DISCONNECTED_TMPDIR}/podman-run"
   mkdir -p "${podman_storage}" "${podman_run}"
 
-  mkdir -p "${HOME}/.config/containers"
-  cat > "${HOME}/.config/containers/storage.conf" << EOF
+  # Write storage.conf to DISCONNECTED_TMPDIR (not ${HOME}/.config/containers/)
+  # to avoid conflicting with the entrypoint's config. CONTAINERS_STORAGE_CONF
+  # takes precedence over user/system defaults.
+  local storage_conf="${DISCONNECTED_TMPDIR}/storage.conf"
+  cat > "${storage_conf}" << EOF
 [storage]
 driver = "vfs"
 graphroot = "${podman_storage}"
@@ -80,10 +83,13 @@ runroot = "${podman_run}"
 [storage.options]
 ignore_chown_errors = "true"
 EOF
-  export CONTAINERS_STORAGE_CONF="${HOME}/.config/containers/storage.conf"
+  export CONTAINERS_STORAGE_CONF="${storage_conf}"
+
+  # Clear any pre-initialized storage state from the entrypoint
+  podman system reset --force 2> /dev/null || true
 
   log::info "Podman environment: uid=$(id -u), BUILDAH_ISOLATION=${BUILDAH_ISOLATION}"
-  log::info "Storage config: $(cat "${CONTAINERS_STORAGE_CONF}" | tr '\n' ' ')"
+  log::info "Storage config (${CONTAINERS_STORAGE_CONF}): $(tr '\n' ' ' < "${storage_conf}")"
   log::info "subuid: $(cat /etc/subuid 2> /dev/null || echo 'not found')"
 
   bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
