@@ -256,13 +256,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.1-1.el9
     sourcerpm: go-rpm-macros-3.8.1-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-687.22.1.el9_8.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-687.23.1.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 2850165
-    checksum: sha256:58fb284b54e4b3d1826ede282eb76631b26912f2405c479e3ca6fd2bd53e87f9
+    size: 2851397
+    checksum: sha256:7329138f9c24daab4db6af9975fb3caa72c54fb7f4217bf2c0e71085fc1ea32c
     name: kernel-headers
-    evr: 5.14.0-687.22.1.el9_8
-    sourcerpm: kernel-5.14.0-687.22.1.el9_8.src.rpm
+    evr: 5.14.0-687.23.1.el9_8
+    sourcerpm: kernel-5.14.0-687.23.1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 14098
@@ -2370,13 +2370,13 @@ arches:
     name: scl-utils
     evr: 1:2.0.3-4.el9
     sourcerpm: scl-utils-2.0.3-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/s/skopeo-1.22.2-6.el9_8.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/s/skopeo-1.22.2-7.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 7714893
-    checksum: sha256:df9ea6b7c57fbcc9eae8fd7279b9d009be2c56a7dd479d7497655bf387b19c38
+    size: 7730213
+    checksum: sha256:074a883d072a5cbf34005d8d5b4a001358d346636ea9215cf45962081133d93e
     name: skopeo
-    evr: 2:1.22.2-6.el9_8
-    sourcerpm: skopeo-1.22.2-6.el9_8.src.rpm
+    evr: 2:1.22.2-7.el9_8
+    sourcerpm: skopeo-1.22.2-7.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/s/slirp4netns-1.3.3-1.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 48428
@@ -4522,12 +4522,12 @@ arches:
     checksum: sha256:ca6fe92503402d24ebc976123288ec2169e75632bd63dd1c146e8d310eb5ee01
     name: sgml-common
     evr: 0.6.3-58.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-6.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-7.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
-    size: 10193995
-    checksum: sha256:2a36919d2eb3d1a75138b52d343729ce9625b5d2664677630bd8148b7503bca2
+    size: 10194092
+    checksum: sha256:13dcedda81723abf87f55c5891cea75663d5df9598266d1cdb54225131d6a8be
     name: skopeo
-    evr: 2:1.22.2-6.el9_8
+    evr: 2:1.22.2-7.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/s/slirp4netns-1.3.3-1.el9.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
     size: 76019
@@ -5432,13 +5432,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.1-1.el9
     sourcerpm: go-rpm-macros-3.8.1-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-687.22.1.el9_8.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-687.23.1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 2889457
-    checksum: sha256:869e0079dae6f5e877a5f74ecaeca359bf21e7cc07e03ccd2806145c19e3cd98
+    size: 2890677
+    checksum: sha256:1861444d417af370a6fdd8d0ff28c3bbd6b6f4ebe5764edd5d3d21aebbc2bd6a
     name: kernel-headers
-    evr: 5.14.0-687.22.1.el9_8
-    sourcerpm: kernel-5.14.0-687.22.1.el9_8.src.rpm
+    evr: 5.14.0-687.23.1.el9_8
+    sourcerpm: kernel-5.14.0-687.23.1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 14098
@@ -7532,13 +7532,13 @@ arches:
     name: scl-utils
     evr: 1:2.0.3-4.el9
     sourcerpm: scl-utils-2.0.3-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/s/skopeo-1.22.2-6.el9_8.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/s/skopeo-1.22.2-7.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 8615114
-    checksum: sha256:954c605d231d1ba23425745b6533f7558fe5b737a50bce95a162eddf5da34008
+    size: 8623168
+    checksum: sha256:ec499a7f895bc70eae5e50527dbbe6b1ff621ba0599bc8bbf0a55a4661924bbc
     name: skopeo
-    evr: 2:1.22.2-6.el9_8
-    sourcerpm: skopeo-1.22.2-6.el9_8.src.rpm
+    evr: 2:1.22.2-7.el9_8
+    sourcerpm: skopeo-1.22.2-7.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/s/slirp4netns-1.3.3-1.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 48562
@@ -9691,12 +9691,12 @@ arches:
     checksum: sha256:ca6fe92503402d24ebc976123288ec2169e75632bd63dd1c146e8d310eb5ee01
     name: sgml-common
     evr: 0.6.3-58.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-6.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-7.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 10193995
-    checksum: sha256:2a36919d2eb3d1a75138b52d343729ce9625b5d2664677630bd8148b7503bca2
+    size: 10194092
+    checksum: sha256:13dcedda81723abf87f55c5891cea75663d5df9598266d1cdb54225131d6a8be
     name: skopeo
-    evr: 2:1.22.2-6.el9_8
+    evr: 2:1.22.2-7.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/s/slirp4netns-1.3.3-1.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 76019
