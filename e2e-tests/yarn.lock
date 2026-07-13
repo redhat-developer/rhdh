@@ -5,14 +5,14 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@axe-core/playwright@npm:4.11.3":
-  version: 4.11.3
-  resolution: "@axe-core/playwright@npm:4.11.3"
+"@axe-core/playwright@npm:4.12.1":
+  version: 4.12.1
+  resolution: "@axe-core/playwright@npm:4.12.1"
   dependencies:
-    axe-core: "npm:~4.11.4"
+    axe-core: "npm:~4.12.1"
   peerDependencies:
     playwright-core: ">= 1.0.0"
-  checksum: 10c0/da1854726dbc461a71ac25e0435f5dd9b7d143dc9142f53b1aeb4a8d7edcb4533eddb59949e8a07c4f4e3dce85ae43b7f249b3801e8b255f605fc974b94616fe
+  checksum: 10c0/7a52498c8a09f7427581473ee9253b986efca7c61870187f5c64a1d04c4e4db43d4f26b0cf7650f75840ce7a7d69c7d07547ef76eb93704fa927a4fcf4020139
   languageName: node
   linkType: hard
 
@@ -1400,10 +1400,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:~4.11.4":
-  version: 4.11.4
-  resolution: "axe-core@npm:4.11.4"
-  checksum: 10c0/c4aa83fc3eac5f7a0d0cb1a28f9d073acf0c06ce8daacc38608faa278c57ce084c028c850746b98817ae4c101c30c1a32e95ea34748c4b4c7419b9b81221ef84
+"axe-core@npm:~4.12.1":
+  version: 4.12.1
+  resolution: "axe-core@npm:4.12.1"
+  checksum: 10c0/03438bd98cef38ad57554feea0d8de21705001db2655c27e0c33ff55e16dd7d6f49c28fb420dc93f7532e68ff363c0953056a5836e6f47068f193eb1765c7db7
   languageName: node
   linkType: hard
 
@@ -1981,7 +1981,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-tests@workspace:."
   dependencies:
-    "@axe-core/playwright": "npm:4.11.3"
+    "@axe-core/playwright": "npm:4.12.1"
     "@azure/arm-network": "npm:34.2.0"
     "@azure/identity": "npm:4.13.1"
     "@backstage/catalog-model": "npm:1.9.0"
