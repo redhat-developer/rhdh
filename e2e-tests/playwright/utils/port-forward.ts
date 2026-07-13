@@ -18,6 +18,29 @@ export type PortForwardOptions = {
   stopTimeoutMs?: number;
 };
 
+function killProcessTree(
+  child: ChildProcessByStdio<null, Readable, Readable>,
+  signal: NodeJS.Signals,
+): void {
+  const pid = child.pid;
+  if (pid === undefined) {
+    return;
+  }
+
+  // Prefer process-group kill so shell-spawned kubectl/oc children die with the shell.
+  // Detached sessions on POSIX put the child in its own group (negative PID).
+  if (process.platform !== "win32") {
+    try {
+      process.kill(-pid, signal);
+      return;
+    } catch {
+      // Fall through — group may not exist if spawn was not detached.
+    }
+  }
+
+  child.kill(signal);
+}
+
 export class PortForwardSession {
   private child: ChildProcessByStdio<null, Readable, Readable> | null = null;
   private readonly output: string[] = [];
@@ -35,13 +58,18 @@ export class PortForwardSession {
 
     this.output.length = 0;
     this.outputBuffer = "";
+
+    // Detach on POSIX so stop() can signal the whole process group (shell + kubectl).
+    const useProcessGroup = process.platform !== "win32";
     const child =
       "shellCommand" in this.command
         ? spawn("/bin/sh", ["-c", this.command.shellCommand], {
             stdio: ["ignore", "pipe", "pipe"],
+            detached: useProcessGroup,
           })
         : spawn(this.command.command, this.command.args, {
             stdio: ["ignore", "pipe", "pipe"],
+            detached: useProcessGroup,
           });
 
     this.child = child;
@@ -116,11 +144,11 @@ export class PortForwardSession {
     const stopTimeoutMs = this.options.stopTimeoutMs ?? 5_000;
     const killTimeout = setTimeout(() => {
       if (child.exitCode === null && child.signalCode === null) {
-        child.kill("SIGKILL");
+        killProcessTree(child, "SIGKILL");
       }
     }, stopTimeoutMs);
 
-    child.kill("SIGTERM");
+    killProcessTree(child, "SIGTERM");
     await once(child, "exit");
     clearTimeout(killTimeout);
   }

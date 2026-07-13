@@ -53,11 +53,13 @@ run_runtime_config_change_tests() {
   # (Playwright resolves config before globalSetup runs). globalSetup then
   # deploys via ensureRuntimeDeployed() and healthchecks that URL.
   # Subsequent test files reuse the existing deployment (workers: 1).
+  #
+  # Scope RUNTIME_AUTO_DEPLOY to this invocation only — a lasting export would
+  # leak into later projects (e.g. sanity-plugins) and stomp BASE_URL.
 
   export INSTALL_METHOD="helm"
-  export RUNTIME_AUTO_DEPLOY="true"
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  RUNTIME_AUTO_DEPLOY=true testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
 run_sanity_plugins_check() {

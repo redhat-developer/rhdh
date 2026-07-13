@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
+import { getGlobalHeader } from "../../utils/ui-helper/interaction";
 import { waitForRhdhReady, isJsonHealthcheckResponse } from "../../utils/wait-for-rhdh-ready";
 
 const LOADING_INDICATOR_SELECTORS = [
@@ -34,4 +35,14 @@ export async function waitForAppReady(page: Page, timeout = 120_000): Promise<vo
     await waitForRhdhReady(page.request, timeout);
   }
   await waitForLoadingToSettle(page, timeout);
+}
+
+/**
+ * Post-login readiness: OAuth popup close is not "authenticated shell".
+ * Wait until the global header (profile dropdown) is visible — the same
+ * signal Settings POM navigation depends on.
+ */
+export async function waitForAuthenticatedShell(page: Page, timeout = 120_000): Promise<void> {
+  await waitForAppReady(page, timeout);
+  await expect(getGlobalHeader(page)).toBeVisible({ timeout });
 }

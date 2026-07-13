@@ -8,6 +8,7 @@ import * as yaml from "yaml";
 
 import { applyDynamicPluginsProfile } from "../../dynamic-plugins-profile";
 import { hasErrorResponse } from "../../errors";
+import { predictedUrl } from "../../instance-route-identity";
 import {
   applyOperatorInstallProfileToAppConfig,
   applyOperatorInstallProfileToCr,
@@ -453,7 +454,13 @@ export function computeBackstageUrl(state: RHDHDeploymentState): string {
   if (clusterBaseUrl === "") {
     console.log("No match found.");
   }
-  return `https://backstage-${state.instanceName}-${state.namespace}.apps.${clusterBaseUrl}`;
+  // Auth providers always deploy via the operator.
+  return predictedUrl({
+    installMethod: "operator",
+    releaseName: state.instanceName,
+    namespace: state.namespace,
+    routerBase: `apps.${clusterBaseUrl}`,
+  });
 }
 
 export function computeBackstageBackendUrl(state: RHDHDeploymentState): string {
