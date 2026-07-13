@@ -617,13 +617,17 @@ initiate_upgrade_base_deployments() {
   previous_release_value_file=$(helm::get_previous_release_values "showcase")
   echo "Using dynamic value file: ${previous_release_value_file}"
 
+  # Disable orchestrator to prevent the chart's sonataflows.yaml template from
+  # running a `lookup` for the SonataFlowPlatform CRD, which fails when the
+  # SonataFlow operator is not installed on the cluster.
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${previous_release_value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
     --set upstream.backstage.image.repository="${IMAGE_REPO_BASE}" \
-    --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+    --set upstream.backstage.image.tag="${TAG_NAME_BASE}" \
+    --set orchestrator.enabled=false
 }
 
 initiate_upgrade_deployments() {
