@@ -8,10 +8,22 @@ import {
   handleMicrosoftAzurePopupLogin,
   handlePingFederatePopupLogin,
 } from "../../utils/common/auth-popup";
+import { sleep } from "../../utils/poll-until";
 import * as interaction from "../../utils/ui-helper/interaction";
 import { waitForAppReady, waitForLoginOutcome } from "./app-shell";
 
 const t = getTranslations();
+
+function isTransientNavigationError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("ERR_ABORTED") ||
+    message.includes("ERR_CONNECTION_REFUSED") ||
+    message.includes("ERR_CONNECTION_RESET") ||
+    message.includes("ERR_EMPTY_RESPONSE") ||
+    message.includes("net::ERR_FAILED")
+  );
+}
 
 export class AuthProviderSession {
   constructor(
@@ -38,8 +50,30 @@ export class AuthProviderSession {
     await context.clearPermissions();
   }
 
+  /** Retry goto across brief post-reconcile connection drops. */
+  private async gotoWithRetry(url: string, attempts = 4): Promise<void> {
+    let lastError: Error | undefined;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        await this.page.goto(url, { waitUntil: "domcontentloaded" });
+        return;
+      } catch (error) {
+        const normalized = error instanceof Error ? error : new Error(String(error));
+        lastError = normalized;
+        if (!isTransientNavigationError(error) || attempt === attempts) {
+          throw normalized;
+        }
+        console.log(
+          `[INFO] Transient navigation error on attempt ${attempt}/${attempts}, retrying: ${normalized.message}`,
+        );
+        await sleep(2_000 * attempt);
+      }
+    }
+    throw lastError ?? new Error(`Failed to navigate to ${url}`);
+  }
+
   private async openLandingPageWithProviderMessage(message: string): Promise<void> {
-    await this.page.goto(this.resolveUrl("/"));
+    await this.gotoWithRetry(this.resolveUrl("/"));
     await waitForAppReady(this.page);
     await expect(this.page.getByRole("main").getByText(message)).toBeVisible();
   }
@@ -82,19 +116,19 @@ export class AuthProviderSession {
     twofactor: string,
   ): Promise<string> {
     const lang = this.lang();
-    await this.page.goto(this.resolveUrl("/settings/auth-providers"));
+    await this.gotoWithRetry(this.resolveUrl("/settings/auth-providers"));
+    await waitForAppReady(this.page);
+
+    const signInTitle = t["user-settings"][lang]["providerSettingsItem.title.signIn"].replace(
+      "{{title}}",
+      "GitHub",
+    );
+    const githubSignIn = this.page.getByTitle(signInTitle);
+    await expect(githubSignIn).toBeVisible({ timeout: 30_000 });
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
-      this.page
-        // Intentional divergence: provider settings expose sign-in via title tooltip, not button role.
-        .getByTitle(
-          t["user-settings"][lang]["providerSettingsItem.title.signIn"].replace(
-            "{{title}}",
-            "GitHub",
-          ),
-        )
-        .click(),
+      githubSignIn.click(),
       interaction.clickButton(this.page, t["core-components"][lang]["oauthRequestDialog.login"]),
     ]);
 

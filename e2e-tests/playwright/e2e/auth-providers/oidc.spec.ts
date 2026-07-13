@@ -204,11 +204,11 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     });
   });
 
-  test(`Set OIDC cookieMaxAge and confirm auth cookie duration has been set`, async () => {
+  test(`Set OIDC sessionDuration and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
         harness.deployment.setAppConfigProperty(
-          "auth.providers.oidc.production.cookieMaxAge",
+          "auth.providers.oidc.production.sessionDuration",
           "3days",
         );
         await harness.reconcileAfterConfigChange();
@@ -318,7 +318,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Enable autologout and user is logged out after inactivity`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+        harness.deployment.setAppConfigProperty("auth.autologout.enabled", true);
         harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
         harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
         await harness.reconcileAfterConfigChange();
@@ -341,7 +341,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+        harness.deployment.setAppConfigProperty("auth.autologout.enabled", true);
         harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
         harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
         await harness.reconcileAfterConfigChange();

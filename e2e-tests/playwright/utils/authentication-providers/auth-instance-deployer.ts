@@ -16,7 +16,8 @@ export type AuthDeploymentPort = {
   createBackstageDeployment: (options?: { waitForReady?: boolean }) => Promise<unknown>;
   waitForDeploymentCreated: () => Promise<unknown>;
   waitForSynced: () => Promise<unknown>;
-  waitForConfigReconciled: () => Promise<unknown>;
+  /** Persist → force restart → Ready (remote). Local restart is separate. */
+  waitUntilAuthConfigLive: () => Promise<unknown>;
   restartLocalDeployment: () => Promise<unknown>;
 };
 
@@ -104,10 +105,16 @@ export async function deployAuthInstance(
   };
 }
 
-/** Reconcile after in-place config changes (created → HTTP → synced). */
+/**
+ * Reconcile after in-place config changes.
+ *
+ * Auth settings are process-start only: persist ConfigMaps, force a workload
+ * restart (local process or remote Deployment rollout), prove Ready + HTTP,
+ * then wait for catalog sync on the new process.
+ */
 export async function reconcileAuthInstance(host: AuthInstanceDeployerHost): Promise<void> {
   await host.deployment.updateAllConfigs();
   await host.deployment.restartLocalDeployment();
-  await host.deployment.waitForConfigReconciled();
+  await host.deployment.waitUntilAuthConfigLive();
   await waitForDeploymentReadiness(["created", "http", "synced"], readinessDeps(host));
 }
