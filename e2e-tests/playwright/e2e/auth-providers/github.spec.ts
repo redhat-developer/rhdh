@@ -140,11 +140,13 @@ test.describe("Configure Github Provider", () => {
     });
   });
 
-  test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
+  test(`Set Github cookieMaxAge and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
+        // sessionDuration controls the Backstage session; refresh-token cookie
+        // lifespan is cookieMaxAge (browsers also cap ~400d when unset/default).
         harness.deployment.setAppConfigProperty(
-          "auth.providers.github.production.sessionDuration",
+          "auth.providers.github.production.cookieMaxAge",
           "3days",
         );
         await harness.reconcileAfterConfigChange();

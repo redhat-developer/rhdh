@@ -112,6 +112,9 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
+      // One worker avoids cross-file races on shared IdP app registrations
+      // (Azure redirect URIs) while each describe still owns its own namespace.
+      workers: 1,
       timeout: 600 * 1000,
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
