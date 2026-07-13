@@ -3,8 +3,10 @@ import { expect } from "@playwright/test";
 import {
   deployAuthInstance,
   reconcileAuthInstance,
+  type ReconcileAuthInstanceOptions,
 } from "../../utils/authentication-providers/auth-instance-deployer";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
+import type { LoginOutcome } from "../auth/app-shell";
 
 const DEFAULT_CONFIG_MAPS = {
   appConfigMap: "app-config-rhdh",
@@ -15,10 +17,10 @@ const DEFAULT_CONFIG_MAPS = {
 
 type AuthLoginCase = {
   configure?: () => Promise<void>;
-  login: () => Promise<string>;
+  login: () => Promise<LoginOutcome>;
   assert: () => Promise<void>;
   cleanup?: () => Promise<void>;
-  expectedResult?: string;
+  expectedResult?: LoginOutcome;
 };
 
 /** Deploy/config glue for auth-provider E2E specs. For Playwright wiring use createAuthProviderHarness. */
@@ -103,8 +105,8 @@ export class AuthProviderHarness {
     });
   }
 
-  async reconcileAfterConfigChange(): Promise<void> {
-    await reconcileAuthInstance(this);
+  async reconcileAfterConfigChange(options?: ReconcileAuthInstanceOptions): Promise<void> {
+    await reconcileAuthInstance(this, options);
   }
 
   async runLoginCase(options: AuthLoginCase): Promise<void> {
@@ -113,7 +115,7 @@ export class AuthProviderHarness {
         await options.configure();
       }
       const result = await options.login();
-      expect(result).toBe(options.expectedResult ?? "Login successful");
+      expect(result).toBe(options.expectedResult ?? "authenticated");
       await options.assert();
     } finally {
       await options.cleanup?.();

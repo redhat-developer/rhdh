@@ -12,12 +12,13 @@ import { RHDH_READY_DEPLOY_TIMEOUT_MS, healthcheckRhdhAtUrl } from "../wait-for-
 export type AuthDeploymentPort = {
   isRunningLocal: boolean;
   addSecretData: (key: string, value: string) => Promise<unknown>;
+  setAppConfigProperty: (path: string, value: unknown) => unknown;
   updateAllConfigs: () => Promise<unknown>;
   createBackstageDeployment: (options?: { waitForReady?: boolean }) => Promise<unknown>;
   waitForDeploymentCreated: () => Promise<unknown>;
   waitForSynced: () => Promise<unknown>;
-  /** Persist → force restart → Ready (remote). Local restart is separate. */
-  waitUntilAuthConfigLive: () => Promise<unknown>;
+  /** Persist → force restart → prove marker in mounted config (remote). */
+  waitUntilAuthConfigLive: (configMarker: string) => Promise<unknown>;
   restartLocalDeployment: () => Promise<unknown>;
 };
 
@@ -32,7 +33,11 @@ export type AuthInstanceDeployerOptions = {
 
 export type AuthInstanceDeployResult = {
   url: string;
-  reconcile: () => Promise<void>;
+};
+
+export type ReconcileAuthInstanceOptions = {
+  /** When true, also wait for catalog sync after HTTP. Default false (auth-only). */
+  waitForCatalogSync?: boolean;
 };
 
 export type AuthInstanceDeployerHost = {
@@ -61,6 +66,10 @@ function readinessDeps(host: AuthInstanceDeployerHost) {
       await host.deployment.waitForSynced();
     },
   };
+}
+
+function newAuthConfigMarker(): string {
+  return `e2e-auth-config-${String(Date.now())}`;
 }
 
 /**
@@ -97,24 +106,27 @@ export async function deployAuthInstance(
   await host.deployment.createBackstageDeployment({ waitForReady: false });
   await waitForDeploymentReadiness(["created", "http", "synced"], readinessDeps(host));
 
-  return {
-    url: host.backstageUrl,
-    reconcile: async () => {
-      await reconcileAuthInstance(host);
-    },
-  };
+  return { url: host.backstageUrl };
 }
 
 /**
  * Reconcile after in-place config changes.
  *
- * Auth settings are process-start only: persist ConfigMaps, force a workload
- * restart (local process or remote Deployment rollout), prove Ready + HTTP,
- * then wait for catalog sync on the new process.
+ * Auth settings are process-start only: stamp a title marker, persist ConfigMaps,
+ * force a workload restart, prove the marker is on the mounted config, then HTTP.
+ * Catalog sync is opt-in — most auth-only mutations do not need it.
  */
-export async function reconcileAuthInstance(host: AuthInstanceDeployerHost): Promise<void> {
+export async function reconcileAuthInstance(
+  host: AuthInstanceDeployerHost,
+  options: ReconcileAuthInstanceOptions = {},
+): Promise<void> {
+  const marker = newAuthConfigMarker();
+  host.deployment.setAppConfigProperty("app.title", marker);
   await host.deployment.updateAllConfigs();
   await host.deployment.restartLocalDeployment();
-  await host.deployment.waitUntilAuthConfigLive();
-  await waitForDeploymentReadiness(["created", "http", "synced"], readinessDeps(host));
+  await host.deployment.waitUntilAuthConfigLive(marker);
+  await waitForDeploymentReadiness(["http"], readinessDeps(host));
+  if (options.waitForCatalogSync === true) {
+    await waitForDeploymentReadiness(["synced"], readinessDeps(host));
+  }
 }
