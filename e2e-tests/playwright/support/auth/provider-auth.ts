@@ -10,18 +10,18 @@ import {
 } from "../../utils/common/auth-popup";
 import { sleep } from "../../utils/poll-until";
 import * as interaction from "../../utils/ui-helper/interaction";
-import { waitForAppReady, waitForLoginOutcome } from "./app-shell";
+import { waitForAppReady, waitForLoginOutcome, type LoginOutcome } from "./app-shell";
 
 const t = getTranslations();
 
-function isTransientNavigationError(error: unknown): boolean {
+/** Connection drops after pod restart — not generic navigation aborts. */
+function isRetryableConnectionError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return (
-    message.includes("ERR_ABORTED") ||
     message.includes("ERR_CONNECTION_REFUSED") ||
     message.includes("ERR_CONNECTION_RESET") ||
-    message.includes("ERR_EMPTY_RESPONSE") ||
-    message.includes("net::ERR_FAILED")
+    message.includes("ERR_CONNECTION_CLOSED") ||
+    message.includes("ERR_EMPTY_RESPONSE")
   );
 }
 
@@ -50,8 +50,8 @@ export class AuthProviderSession {
     await context.clearPermissions();
   }
 
-  /** Retry goto across brief post-reconcile connection drops. */
-  private async gotoWithRetry(url: string, attempts = 4): Promise<void> {
+  /** Retry only hard connection failures (e.g. brief post-reconcile downtime). */
+  private async gotoWithRetry(url: string, attempts = 3): Promise<void> {
     let lastError: Error | undefined;
     for (let attempt = 1; attempt <= attempts; attempt++) {
       try {
@@ -60,11 +60,11 @@ export class AuthProviderSession {
       } catch (error) {
         const normalized = error instanceof Error ? error : new Error(String(error));
         lastError = normalized;
-        if (!isTransientNavigationError(error) || attempt === attempts) {
+        if (!isRetryableConnectionError(error) || attempt === attempts) {
           throw normalized;
         }
         console.log(
-          `[INFO] Transient navigation error on attempt ${attempt}/${attempts}, retrying: ${normalized.message}`,
+          `[INFO] Connection error on attempt ${attempt}/${attempts} for ${url}, retrying: ${normalized.message}`,
         );
         await sleep(2_000 * attempt);
       }
@@ -87,21 +87,27 @@ export class AuthProviderSession {
     return popup;
   }
 
-  private async finishLogin(popupResult: Promise<string>): Promise<string> {
-    const result = await popupResult;
-    // Popup close ≠ settled auth UI — wait for shell (success) or alert (expected failure).
-    await waitForLoginOutcome(this.page);
-    return result;
+  private async finishLogin(popupResult: Promise<string>): Promise<LoginOutcome> {
+    const popupStatus = await popupResult;
+    const outcome = await waitForLoginOutcome(this.page);
+    if (popupStatus !== "Login successful") {
+      return "error";
+    }
+    return outcome;
   }
 
-  async loginWithKeycloak(username: string, password: string): Promise<string> {
+  async loginWithKeycloak(username: string, password: string): Promise<LoginOutcome> {
     const lang = this.lang();
     await this.openLandingPageWithProviderMessage(t["rhdh"][lang]["signIn.providers.oidc.message"]);
     const popup = await this.openPrimarySignInPopup();
     return this.finishLogin(handleKeycloakPopupLogin(popup, username, password));
   }
 
-  async loginWithGitHub(username: string, password: string, twofactor: string): Promise<string> {
+  async loginWithGitHub(
+    username: string,
+    password: string,
+    twofactor: string,
+  ): Promise<LoginOutcome> {
     const lang = this.lang();
     await this.openLandingPageWithProviderMessage(
       t["rhdh"][lang]["signIn.providers.github.message"],
@@ -114,7 +120,7 @@ export class AuthProviderSession {
     username: string,
     password: string,
     twofactor: string,
-  ): Promise<string> {
+  ): Promise<LoginOutcome> {
     const lang = this.lang();
     await this.gotoWithRetry(this.resolveUrl("/settings/auth-providers"));
     await waitForAppReady(this.page);
@@ -135,7 +141,7 @@ export class AuthProviderSession {
     return this.finishLogin(handleGitHubPopupLogin(popup, username, password, twofactor));
   }
 
-  async loginWithGitLab(username: string, password: string): Promise<string> {
+  async loginWithGitLab(username: string, password: string): Promise<LoginOutcome> {
     const lang = this.lang();
     await this.openLandingPageWithProviderMessage(
       t["rhdh"][lang]["signIn.providers.gitlab.message"],
@@ -144,7 +150,7 @@ export class AuthProviderSession {
     return this.finishLogin(handleGitlabPopupLogin(popup, username, password));
   }
 
-  async loginWithMicrosoftAzure(username: string, password: string): Promise<string> {
+  async loginWithMicrosoftAzure(username: string, password: string): Promise<LoginOutcome> {
     const lang = this.lang();
     await this.openLandingPageWithProviderMessage(
       t["rhdh"][lang]["signIn.providers.microsoft.message"],
@@ -153,7 +159,7 @@ export class AuthProviderSession {
     return this.finishLogin(handleMicrosoftAzurePopupLogin(popup, username, password));
   }
 
-  async loginWithPingFederate(username: string, password: string): Promise<string> {
+  async loginWithPingFederate(username: string, password: string): Promise<LoginOutcome> {
     const lang = this.lang();
     await this.openLandingPageWithProviderMessage(t["rhdh"][lang]["signIn.providers.oidc.message"]);
     const popup = await this.openPrimarySignInPopup();

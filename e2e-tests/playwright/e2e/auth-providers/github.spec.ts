@@ -1,8 +1,13 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
+import type { LoginOutcome } from "../../support/auth/app-shell";
 import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  THREE_DAYS_MS,
+  isRefreshTokenDurationNear,
+} from "../../utils/authentication-providers/auth-cookie-duration";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPORTED RESOLVERS
@@ -25,7 +30,7 @@ test.describe("Configure Github Provider", () => {
     await authSession.clearAuthState(context);
   }
 
-  function loginAsGithubAdmin(): Promise<string> {
+  function loginAsGithubAdmin(): Promise<LoginOutcome> {
     return authSession.loginWithGitHub(
       "rhdhqeauthadmin",
       process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
@@ -33,7 +38,7 @@ test.describe("Configure Github Provider", () => {
     );
   }
 
-  function loginAsGithubUser(): Promise<string> {
+  function loginAsGithubUser(): Promise<LoginOutcome> {
     return authSession.loginWithGitHub(
       "rhdhqeauth1",
       process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
@@ -119,6 +124,7 @@ test.describe("Configure Github Provider", () => {
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubUser,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
       },
@@ -133,6 +139,7 @@ test.describe("Configure Github Provider", () => {
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubUser,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
       },
@@ -156,14 +163,7 @@ test.describe("Configure Github Provider", () => {
 
         const cookies = await context.cookies();
         const authCookie = cookies.find((cookie) => cookie.name === "github-refresh-token");
-        expect(authCookie).toBeDefined();
-
-        const threeDays = 3 * 24 * 60 * 60 * 1000;
-        const tolerance = 3 * 60 * 1000;
-        const actualDuration = authCookie!.expires * 1000 - Date.now();
-
-        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-        expect(actualDuration).toBeLessThan(threeDays + tolerance);
+        expect(isRefreshTokenDurationNear(authCookie, THREE_DAYS_MS)).toBe(true);
 
         await settingsPage.open();
         await settingsPage.verifyProfileHeading("RHDH QE Admin");
@@ -221,6 +221,7 @@ test.describe("Configure Github Provider", () => {
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubUser,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(
           /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/u,

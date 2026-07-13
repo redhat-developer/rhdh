@@ -1,6 +1,22 @@
 import { describe, expect, it } from "vitest";
 
 import { appConfigMatchesExpected } from "../playwright/utils/authentication-providers/rhdh-deployment/config-liveness";
+import {
+  buildDeploymentLabelSelector,
+  labelSelectorFromMatchLabels,
+} from "../playwright/utils/authentication-providers/rhdh-deployment/deployment-labels";
+
+describe("deployment-labels", () => {
+  it("builds the standard backstage Deployment label selector", () => {
+    expect(buildDeploymentLabelSelector("rhdh")).toBe(
+      "app.kubernetes.io/name=backstage,app.kubernetes.io/instance=rhdh",
+    );
+  });
+
+  it("joins matchLabels into a selector", () => {
+    expect(labelSelectorFromMatchLabels({ a: "1", b: "2" })).toBe("a=1,b=2");
+  });
+});
 
 describe("appConfigMatchesExpected", () => {
   it("returns true when remote YAML matches expected config", () => {

@@ -1,8 +1,13 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
+import type { LoginOutcome } from "../../support/auth/app-shell";
 import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  THREE_DAYS_MS,
+  isRefreshTokenDurationNear,
+} from "../../utils/authentication-providers/auth-cookie-duration";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
@@ -26,21 +31,21 @@ test.describe("Configure Microsoft Provider", () => {
     await authSession.clearAuthState(context);
   }
 
-  function loginAsZeus(): Promise<string> {
+  function loginAsZeus(): Promise<LoginOutcome> {
     return authSession.loginWithMicrosoftAzure(
       "zeus@rhdhtesting.onmicrosoft.com",
       process.env.DEFAULT_USER_PASSWORD_2!,
     );
   }
 
-  function loginAsAtena(): Promise<string> {
+  function loginAsAtena(): Promise<LoginOutcome> {
     return authSession.loginWithMicrosoftAzure(
       "atena@rhdhtesting.onmicrosoft.com",
       process.env.DEFAULT_USER_PASSWORD_2!,
     );
   }
 
-  function loginAsTyke(): Promise<string> {
+  function loginAsTyke(): Promise<LoginOutcome> {
     return authSession.loginWithMicrosoftAzure(
       "tyke@rhdhtesting.onmicrosoft.com",
       process.env.DEFAULT_USER_PASSWORD_2!,
@@ -126,6 +131,7 @@ test.describe("Configure Microsoft Provider", () => {
 
     await harness.runLoginCase({
       login: loginAsAtena,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
       },
@@ -170,6 +176,7 @@ test.describe("Configure Microsoft Provider", () => {
 
     await harness.runLoginCase({
       login: loginAsTyke,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
       },
@@ -192,14 +199,7 @@ test.describe("Configure Microsoft Provider", () => {
 
         const cookies = await context.cookies();
         const authCookie = cookies.find((cookie) => cookie.name === "microsoft-refresh-token");
-        expect(authCookie).toBeDefined();
-
-        const threeDays = 3 * 24 * 60 * 60 * 1000;
-        const tolerance = 3 * 60 * 1000;
-        const actualDuration = authCookie!.expires * 1000 - Date.now();
-
-        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-        expect(actualDuration).toBeLessThan(threeDays + tolerance);
+        expect(isRefreshTokenDurationNear(authCookie, THREE_DAYS_MS)).toBe(true);
 
         await settingsPage.open();
         await settingsPage.verifyProfileHeading("TEST Zeus");

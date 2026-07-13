@@ -261,8 +261,8 @@ class RHDHDeployment implements RHDHDeploymentState {
     return this;
   }
 
-  async waitUntilAuthConfigLive(): Promise<RHDHDeployment> {
-    await waitUntilAuthConfigLiveImpl(this);
+  async waitUntilAuthConfigLive(configMarker: string): Promise<RHDHDeployment> {
+    await waitUntilAuthConfigLiveImpl(this, configMarker);
     return this;
   }
 

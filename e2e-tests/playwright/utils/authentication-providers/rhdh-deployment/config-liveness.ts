@@ -1,40 +1,26 @@
 /**
- * Prove auth config is persisted and the workload has restarted onto it.
+ * Prove auth config is persisted and the new workload has mounted it.
  *
  * Backstage reads app-config at process start. Updating the ConfigMap alone is
- * not enough — reconcile must force a rollout and wait until the new pods are
- * Available before tests assume resolvers / sessionDuration / autologout apply.
+ * not enough — reconcile must force new pods and prove the marker is present in
+ * the mounted file before tests assume resolvers / sessionDuration / autologout.
+ *
+ * Does not wait for Deployment Available — callers use HTTP /healthcheck next
+ * so 503s fail fast instead of burning the Available timeout.
  */
 
 import * as k8s from "@kubernetes/client-node";
 import * as yaml from "yaml";
 
+import { execPodCommandImpl } from "../../kube-client/exec";
 import { pollUntil } from "../../poll-until";
+import { buildDeploymentLabelSelector, labelSelectorFromMatchLabels } from "./deployment-labels";
 import { RHDHDeploymentState, isRecord } from "./types";
-import { waitForDeploymentReady } from "./wait";
-
-const BACKSTAGE_LABELS = {
-  "app.kubernetes.io/name": "backstage",
-} as const;
 
 const POLL_INTERVAL_MS = 500;
 const POD_UID_WAIT_TIMEOUT_MS = 120_000;
-
-function buildDeploymentLabelSelector(instanceName: string): string {
-  const labels = {
-    ...BACKSTAGE_LABELS,
-    "app.kubernetes.io/instance": instanceName,
-  };
-  return Object.entries(labels)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(",");
-}
-
-function labelSelectorFromMatchLabels(matchLabels: Record<string, string>): string {
-  return Object.entries(matchLabels)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(",");
-}
+const MOUNTED_APP_CONFIG_PATH = "/opt/app-root/src/app-config.yaml";
+const BACKSTAGE_BACKEND_CONTAINER = "backstage-backend";
 
 async function getLabeledDeployment(state: RHDHDeploymentState): Promise<k8s.V1Deployment> {
   const labelSelector = buildDeploymentLabelSelector(state.instanceName);
@@ -92,6 +78,28 @@ async function listRunningPodUids(state: RHDHDeploymentState): Promise<string[]>
     .toSorted();
 }
 
+async function newestRunningPodName(state: RHDHDeploymentState): Promise<string> {
+  const labelSelector = await getPodLabelSelector(state);
+  const pods = await listRunningPods(state, labelSelector);
+  if (pods.length === 0) {
+    throw new Error(`No Running pods with labels ${labelSelector} in ${state.namespace}`);
+  }
+  pods.sort((a, b) => {
+    const aCreated = a.metadata?.creationTimestamp
+      ? new Date(a.metadata.creationTimestamp).getTime()
+      : 0;
+    const bCreated = b.metadata?.creationTimestamp
+      ? new Date(b.metadata.creationTimestamp).getTime()
+      : 0;
+    return bCreated - aCreated;
+  });
+  const name = pods[0]?.metadata?.name;
+  if (name === undefined || name === "") {
+    throw new Error(`Running pod missing metadata.name (${labelSelector})`);
+  }
+  return name;
+}
+
 /** True when remote YAML parses to the same object as in-memory appConfig. */
 export function appConfigMatchesExpected(
   remoteYaml: string,
@@ -129,6 +137,49 @@ export async function assertAppConfigPersisted(state: RHDHDeploymentState): Prom
   }
 
   console.log(`[INFO] Persisted app-config matches expected config (${state.appConfigMap})`);
+}
+
+/**
+ * Prove the new pod's mounted app-config contains the reconcile marker
+ * (effective load path, not just ConfigMap API bytes).
+ */
+export async function assertMountedAppConfigContainsMarker(
+  state: RHDHDeploymentState,
+  marker: string,
+): Promise<void> {
+  if (state.isRunningLocal) {
+    return;
+  }
+
+  await pollUntil(
+    async () => {
+      try {
+        const podName = await newestRunningPodName(state);
+        const { stdout } = await execPodCommandImpl(
+          state.kc,
+          podName,
+          state.namespace,
+          BACKSTAGE_BACKEND_CONTAINER,
+          ["cat", MOUNTED_APP_CONFIG_PATH],
+          30_000,
+        );
+        return stdout.includes(marker);
+      } catch (error) {
+        console.log(
+          `[INFO] Mounted app-config marker check not ready yet: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        return false;
+      }
+    },
+    {
+      timeoutMs: POD_UID_WAIT_TIMEOUT_MS,
+      intervalMs: POLL_INTERVAL_MS,
+      label: `Mounted app-config contains marker ${marker}`,
+    },
+  );
+  console.log(`[INFO] Mounted app-config contains reconcile marker ${marker}`);
 }
 
 /**
@@ -199,9 +250,13 @@ export function captureRunningPodUids(state: RHDHDeploymentState): Promise<strin
 }
 
 /**
- * Full remote config-liveness gate: persisted CM → restart → new pods → Ready.
+ * Remote config-liveness: persisted CM → restart → new pods → marker in mount.
+ * Callers must follow with HTTP /healthcheck (not Deployment Available).
  */
-export async function waitUntilAuthConfigLive(state: RHDHDeploymentState): Promise<void> {
+export async function waitUntilAuthConfigLive(
+  state: RHDHDeploymentState,
+  configMarker: string,
+): Promise<void> {
   if (state.isRunningLocal) {
     return;
   }
@@ -210,6 +265,6 @@ export async function waitUntilAuthConfigLive(state: RHDHDeploymentState): Promi
   const previousUids = await captureRunningPodUids(state);
   await restartRemoteDeployment(state);
   await waitForPodUidChange(state, previousUids);
-  await waitForDeploymentReady(state);
-  console.log("[INFO] Auth config live: persisted, restarted, deployment Ready");
+  await assertMountedAppConfigContainsMarker(state, configMarker);
+  console.log("[INFO] Auth config live: persisted, restarted, marker mounted");
 }
