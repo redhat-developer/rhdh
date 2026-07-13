@@ -55,25 +55,35 @@ handle_ocp_disconnected_operator() {
   # inside a Linux user namespace. podman's rootless setup calls newuidmap to
   # create a nested user namespace, which fails with:
   #   newuidmap: open of uid_map failed: Permission denied
+  # And chowns the storage graphroot, which fails with:
+  #   chown .../storage/vfs/dir: operation not permitted
   # Fix:
   #   _CONTAINERS_USERNS_CONFIGURED=1 — skip newuidmap (userns already set up)
   #   BUILDAH_ISOLATION=chroot — chroot instead of user namespace for builds
-  #   storage driver=vfs + ignore_chown_errors — vfs avoids fuse-overlayfs
-  #     userns ops; ignore_chown_errors prevents "chown: operation not
-  #     permitted" when podman can't chown storage files as non-root
+  #   graphroot/runroot in DISCONNECTED_TMPDIR — pre-owned by uid 1000, so
+  #     podman skips chown during storage init
+  #   ignore_chown_errors — safety net for layer operations
   export _CONTAINERS_USERNS_CONFIGURED=1
   export BUILDAH_ISOLATION=chroot
+
+  local podman_storage="${DISCONNECTED_TMPDIR}/podman-storage"
+  local podman_run="${DISCONNECTED_TMPDIR}/podman-run"
+  mkdir -p "${podman_storage}" "${podman_run}"
+
   mkdir -p "${HOME}/.config/containers"
-  cat > "${HOME}/.config/containers/storage.conf" << 'EOF'
+  cat > "${HOME}/.config/containers/storage.conf" << EOF
 [storage]
 driver = "vfs"
+graphroot = "${podman_storage}"
+runroot = "${podman_run}"
 
 [storage.options]
 ignore_chown_errors = "true"
 EOF
+  export CONTAINERS_STORAGE_CONF="${HOME}/.config/containers/storage.conf"
 
   log::info "Podman environment: uid=$(id -u), BUILDAH_ISOLATION=${BUILDAH_ISOLATION}"
-  log::info "Storage config: $(cat "${HOME}/.config/containers/storage.conf" | tr '\n' ' ')"
+  log::info "Storage config: $(cat "${CONTAINERS_STORAGE_CONF}" | tr '\n' ' ')"
   log::info "subuid: $(cat /etc/subuid 2> /dev/null || echo 'not found')"
 
   bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \

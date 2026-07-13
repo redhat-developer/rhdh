@@ -85,6 +85,22 @@ handle_ocp_disconnected_helm() {
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"
 
+  # Resolve catalog index image (same digest encoding as PG).
+  # The init container pulls this by digest; it must be in the mirror.
+  export CI_REGISTRY CI_REPO CI_TAG CI_SEPARATOR
+  CI_REGISTRY=$(echo "${helm_values}" | yq '.global.catalogIndex.image.registry' || true)
+  CI_REPO=$(echo "${helm_values}" | yq '.global.catalogIndex.image.repository' || true)
+  CI_TAG=$(echo "${helm_values}" | yq '.global.catalogIndex.image.tag' || true)
+  CI_REGISTRY="${CI_REGISTRY:-quay.io}"
+  CI_REPO="${CI_REPO:-rhdh/plugin-catalog-index}"
+  CI_TAG="${CI_TAG:-latest}"
+  CI_SEPARATOR=":"
+  if [[ "${CI_REPO}" == *"@"* ]]; then
+    CI_SEPARATOR="@${CI_REPO##*@}:"
+    CI_REPO="${CI_REPO%@*}"
+  fi
+  log::info "Catalog index from chart: ${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
+
   echo "${helm_values}" > "${ARTIFACT_DIR}/disconnected-helm-chart-values.yaml" 2> /dev/null || true
 
   log::section "Image Mirroring"
