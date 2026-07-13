@@ -29,6 +29,7 @@ import {
   parseGroupMemberFromEntity,
   parseGroupParentFromEntity,
 } from "./catalog";
+import { waitUntilAuthConfigLive as waitUntilAuthConfigLiveImpl } from "./config-liveness";
 import {
   applyCustomResource,
   computeBackstageBackendUrl as computeBackstageBackendUrlImpl,
@@ -257,6 +258,11 @@ class RHDHDeployment implements RHDHDeploymentState {
 
   async waitForConfigReconciled(timeoutMs = 60000): Promise<RHDHDeployment> {
     await waitForConfigReconciledImpl(this, timeoutMs);
+    return this;
+  }
+
+  async waitUntilAuthConfigLive(): Promise<RHDHDeployment> {
+    await waitUntilAuthConfigLiveImpl(this);
     return this;
   }
 

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   deployAuthInstance,
+  reconcileAuthInstance,
   type AuthDeploymentPort,
   type AuthInstanceDeployerHost,
 } from "../playwright/utils/authentication-providers/auth-instance-deployer";
@@ -43,8 +44,14 @@ function createHost(isRunningLocal: boolean): AuthInstanceDeployerHost & { calls
       calls.push("waitForSynced");
       return Promise.resolve();
     },
-    waitForConfigReconciled: () => Promise.resolve(),
-    restartLocalDeployment: () => Promise.resolve(),
+    waitUntilAuthConfigLive: () => {
+      calls.push("waitUntilAuthConfigLive");
+      return Promise.resolve();
+    },
+    restartLocalDeployment: () => {
+      calls.push("restartLocalDeployment");
+      return Promise.resolve();
+    },
   };
 
   return {
@@ -143,5 +150,43 @@ describe("deployAuthInstance", () => {
       "https://rhdh.example.test",
       RHDH_READY_DEPLOY_TIMEOUT_MS,
     );
+  });
+});
+
+describe("reconcileAuthInstance", () => {
+  it("persists config, restarts, proves live, then HTTP → synced on remote", async () => {
+    const host = createHost(false);
+    healthcheckRhdhAtUrl.mockClear();
+    healthcheckRhdhAtUrl.mockImplementation(() => {
+      host.calls.push("http");
+      return Promise.resolve();
+    });
+
+    await reconcileAuthInstance(host);
+
+    expect(host.calls).toEqual([
+      "updateAllConfigs",
+      "restartLocalDeployment",
+      "waitUntilAuthConfigLive",
+      "waitForDeploymentCreated",
+      "http",
+      "waitForSynced",
+    ]);
+  });
+
+  it("skips remote HTTP on local path but still proves config live", async () => {
+    const host = createHost(true);
+    healthcheckRhdhAtUrl.mockClear();
+
+    await reconcileAuthInstance(host);
+
+    expect(host.calls).toEqual([
+      "updateAllConfigs",
+      "restartLocalDeployment",
+      "waitUntilAuthConfigLive",
+      "waitForDeploymentCreated",
+      "waitForSynced",
+    ]);
+    expect(healthcheckRhdhAtUrl).not.toHaveBeenCalled();
   });
 });

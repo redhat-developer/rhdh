@@ -13,7 +13,7 @@ For each providers the tests verify:
 - the supported resolvers
 - the users and group ingestion
 - that nested groups are ingested correctly
-- the session token duration can be configured
+- the session token duration can be configured (`auth.providers.<id>.<env>.sessionDuration`)
 
 Since changing any setting in the authentication providers configuration require to restart RHDH, the tests are dynamically configuring, creating, updating, restarting and deleting the RHDH instances.
 

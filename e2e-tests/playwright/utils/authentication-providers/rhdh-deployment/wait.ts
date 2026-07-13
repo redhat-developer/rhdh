@@ -119,16 +119,12 @@ export async function waitForConfigReconciled(
   const baseline =
     state.configReconcileBaselineGeneration ?? (await getDeploymentGeneration(state));
 
-  try {
-    await pollUntil(async () => (await getDeploymentGeneration(state)) > baseline, {
-      timeoutMs,
-      intervalMs: POLL_INTERVAL_MS,
-      label: `Config reconcile (generation > ${baseline})`,
-    });
-    console.log(`[INFO] Config reconciled - deployment generation > ${baseline}`);
-  } catch {
-    console.log(`[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`);
-  }
+  await pollUntil(async () => (await getDeploymentGeneration(state)) > baseline, {
+    timeoutMs,
+    intervalMs: POLL_INTERVAL_MS,
+    label: `Config reconcile (generation > ${baseline})`,
+  });
+  console.log(`[INFO] Config reconciled - deployment generation > ${baseline}`);
 }
 
 function hasRolloutStarted(
