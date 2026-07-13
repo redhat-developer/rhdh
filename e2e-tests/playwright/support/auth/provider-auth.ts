@@ -9,7 +9,7 @@ import {
   handlePingFederatePopupLogin,
 } from "../../utils/common/auth-popup";
 import * as interaction from "../../utils/ui-helper/interaction";
-import { waitForAppReady } from "./app-shell";
+import { waitForAppReady, waitForAuthenticatedShell } from "./app-shell";
 
 const t = getTranslations();
 
@@ -53,11 +53,19 @@ export class AuthProviderSession {
     return popup;
   }
 
+  private async finishLogin(popupResult: Promise<string>): Promise<string> {
+    const result = await popupResult;
+    // Popup close ≠ authenticated shell — wait for global header before callers
+    // navigate via Settings POM (goToSettingsPage / profile dropdown).
+    await waitForAuthenticatedShell(this.page);
+    return result;
+  }
+
   async loginWithKeycloak(username: string, password: string): Promise<string> {
     const lang = this.lang();
     await this.openLandingPageWithProviderMessage(t["rhdh"][lang]["signIn.providers.oidc.message"]);
     const popup = await this.openPrimarySignInPopup();
-    return handleKeycloakPopupLogin(popup, username, password);
+    return this.finishLogin(handleKeycloakPopupLogin(popup, username, password));
   }
 
   async loginWithGitHub(username: string, password: string, twofactor: string): Promise<string> {
@@ -66,7 +74,7 @@ export class AuthProviderSession {
       t["rhdh"][lang]["signIn.providers.github.message"],
     );
     const popup = await this.openPrimarySignInPopup();
-    return handleGitHubPopupLogin(popup, username, password, twofactor);
+    return this.finishLogin(handleGitHubPopupLogin(popup, username, password, twofactor));
   }
 
   async loginWithGitHubFromSettingsPage(
@@ -91,7 +99,7 @@ export class AuthProviderSession {
       interaction.clickButton(this.page, t["core-components"][lang]["oauthRequestDialog.login"]),
     ]);
 
-    return handleGitHubPopupLogin(popup, username, password, twofactor);
+    return this.finishLogin(handleGitHubPopupLogin(popup, username, password, twofactor));
   }
 
   async loginWithGitLab(username: string, password: string): Promise<string> {
@@ -100,7 +108,7 @@ export class AuthProviderSession {
       t["rhdh"][lang]["signIn.providers.gitlab.message"],
     );
     const popup = await this.openPrimarySignInPopup();
-    return handleGitlabPopupLogin(popup, username, password);
+    return this.finishLogin(handleGitlabPopupLogin(popup, username, password));
   }
 
   async loginWithMicrosoftAzure(username: string, password: string): Promise<string> {
@@ -109,13 +117,13 @@ export class AuthProviderSession {
       t["rhdh"][lang]["signIn.providers.microsoft.message"],
     );
     const popup = await this.openPrimarySignInPopup();
-    return handleMicrosoftAzurePopupLogin(popup, username, password);
+    return this.finishLogin(handleMicrosoftAzurePopupLogin(popup, username, password));
   }
 
   async loginWithPingFederate(username: string, password: string): Promise<string> {
     const lang = this.lang();
     await this.openLandingPageWithProviderMessage(t["rhdh"][lang]["signIn.providers.oidc.message"]);
     const popup = await this.openPrimarySignInPopup();
-    return handlePingFederatePopupLogin(popup, username, password);
+    return this.finishLogin(handlePingFederatePopupLogin(popup, username, password));
   }
 }

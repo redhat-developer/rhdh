@@ -1,5 +1,7 @@
 import { type APIRequestContext } from "@playwright/test";
 
+import { resolveInstallMethod } from "./helper";
+import { isPredictedRuntimeUrl } from "./instance-route-identity";
 import { ensureRuntimeDeployed } from "./runtime-deploy";
 import { healthcheckRhdhAtUrl } from "./wait-for-rhdh-ready";
 
@@ -21,6 +23,7 @@ type EnsurePlaywrightReadyDeps<TContext extends DisposableRequestContext> = {
   ensureRuntimeDeployed?: () => Promise<void>;
   createRequestContext?: (options: RequestContextOptions) => Promise<TContext>;
   waitForRhdhReady?: (request: TContext) => Promise<void>;
+  resolveInstallMethod?: () => "helm" | "operator";
 };
 
 function normalizeEnvValue(value: string | undefined): string | undefined {
@@ -74,6 +77,49 @@ export function classifyBaseUrlMode(env: ReadinessEnv): BaseUrlMode {
     : "instance-url";
 }
 
+/**
+ * RUNTIME_AUTO_DEPLOY must only rewrite / redeploy when the invocation is
+ * clearly targeting the runtime project. CI should scope the flag to the
+ * runtime Playwright run; this gate is defense-in-depth against export leaks
+ * that would otherwise redeploy runtime and stomp BASE_URL for later projects.
+ */
+export function shouldAutoDeployRuntime(
+  env: ReadinessEnv,
+  installMethod: "helm" | "operator" = resolveInstallMethod(),
+): boolean {
+  if (env.RUNTIME_AUTO_DEPLOY !== "true") {
+    return false;
+  }
+
+  const mode = classifyBaseUrlMode(env);
+  if (mode === "unset" || mode === "router-stub") {
+    return true;
+  }
+
+  const baseUrl = normalizeEnvValue(env.BASE_URL);
+  const routerBase = normalizeEnvValue(env.K8S_CLUSTER_ROUTER_BASE);
+  if (baseUrl === undefined || routerBase === undefined) {
+    // Predicted instance URL without router base — allow only when hostname
+    // still matches the runtime formula using router base from the URL itself.
+    if (baseUrl === undefined) {
+      return false;
+    }
+    try {
+      const host = new URL(baseUrl).hostname;
+      const appsIdx = host.indexOf(".apps.");
+      if (appsIdx === -1) {
+        return false;
+      }
+      const inferredRouterBase = host.slice(appsIdx + 1);
+      return isPredictedRuntimeUrl(baseUrl, installMethod, inferredRouterBase, env);
+    } catch {
+      return false;
+    }
+  }
+
+  return isPredictedRuntimeUrl(baseUrl, installMethod, routerBase, env);
+}
+
 async function healthcheckWithDeps<TContext extends DisposableRequestContext>(
   baseURL: string,
   createRequestContext: (options: RequestContextOptions) => Promise<TContext>,
@@ -95,10 +141,10 @@ async function healthcheckWithDeps<TContext extends DisposableRequestContext>(
  * Resolve Playwright readiness before any project runs.
  *
  * Modes:
- * - RUNTIME_AUTO_DEPLOY=true → ensure runtime is deployed, then healthcheck
- *   (runs even if BASE_URL was initially a router-stub; deploy must produce
- *   an instance URL)
- * - router-stub (without auto-deploy) → no-op
+ * - RUNTIME_AUTO_DEPLOY=true targeting runtime → ensure deployed, then healthcheck
+ * - RUNTIME_AUTO_DEPLOY=true but BASE_URL is a non-runtime instance → healthcheck only
+ *   (ignores the leaked flag)
+ * - router-stub (without eligible auto-deploy) → no-op
  * - instance-url → healthcheck only (CI predeployed)
  * - unset → no-op
  *
@@ -112,10 +158,12 @@ export async function ensurePlaywrightReady<
   ensureRuntimeDeployed: deployRuntime = ensureRuntimeDeployed,
   createRequestContext,
   waitForRhdhReady: waitForReady,
+  resolveInstallMethod: resolveMethod = resolveInstallMethod,
 }: EnsurePlaywrightReadyDeps<TContext> = {}): Promise<void> {
   let baseUrlMode = classifyBaseUrlMode(env);
+  const autoDeploy = shouldAutoDeployRuntime(env, resolveMethod());
 
-  if (env.RUNTIME_AUTO_DEPLOY === "true") {
+  if (autoDeploy) {
     await deployRuntime();
     baseUrlMode = classifyBaseUrlMode(env);
     if (baseUrlMode !== "instance-url") {
