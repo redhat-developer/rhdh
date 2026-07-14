@@ -40,7 +40,7 @@ initiate_operator_deployments() {
 }
 
 initiate_operator_deployments_osd_gcp() {
-  # TODO: RHDHBUGS-1136 - investigate OSD-GCP operator init container crash ({{inherit}} resolution)
+  # RHDHBUGS-1136: OSD-GCP registry fix applied in handle_ocp_operator (MAX_PARALLEL + retries)
   log::info "Initiating Operator-backed deployments on OSD-GCP"
 
   namespace::configure "${NAME_SPACE}"
@@ -96,7 +96,14 @@ handle_ocp_operator() {
 
   cluster_setup_ocp_operator
 
-  prepare_operator
+  if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
+    # OSD-GCP internal registry is unreliable under parallel load; reduce
+    # concurrent skopeo pushes and allow retries (RHDHBUGS-1136).
+    export MAX_PARALLEL=3
+    prepare_operator 3
+  else
+    prepare_operator
+  fi
 
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
     log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment"
