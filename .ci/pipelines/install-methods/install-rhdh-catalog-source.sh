@@ -137,7 +137,7 @@ function k8s_check_bundle_manifest_default_config() {
   fi
 
   local file="$1"
-  if ! yq --exit-status 'tag == "!!map"' "$file" &>/dev/null; then
+  if ! yq --exit-status 'tag == "!!map"' "$file" &> /dev/null; then
     # https://mikefarah.gitbook.io/yq/usage/tips-and-tricks#validating-yaml-files
     debugf "Skipping $file for k8s_update_bundle_manifest_default_config (for K8s compatibility): not a valid YAML file" >&2
     return 0
@@ -174,7 +174,7 @@ function process_bundle() {
   local pull_attempt
   local pull_ok=false
   for pull_attempt in 1 2 3; do
-    if skopeo copy "docker://$bundleImg" "oci:./${bundle_dir}/src:latest" 2>"${bundle_dir}/copy.err"; then
+    if skopeo copy "docker://$bundleImg" "oci:./${bundle_dir}/src:latest" 2> "${bundle_dir}/copy.err"; then
       pull_ok=true
       break
     fi
@@ -205,7 +205,7 @@ function process_bundle() {
   local push_attempt
   local push_ok=false
   for push_attempt in 1 2 3; do
-    if skopeo copy --dest-tls-verify=false "oci:./${bundle_dir}/src:latest" "docker://${newBundleImage}" 2>"${bundle_dir}/push.err"; then
+    if skopeo copy --dest-tls-verify=false "oci:./${bundle_dir}/src:latest" "docker://${newBundleImage}" 2> "${bundle_dir}/push.err"; then
       push_ok=true
       break
     fi
@@ -255,7 +255,7 @@ function update_refs_in_iib_bundles() {
     while true; do
       local running=0
       for pid in ${pids[@]+"${pids[@]}"}; do
-        if kill -0 "$pid" 2>/dev/null; then
+        if kill -0 "$pid" 2> /dev/null; then
           running=$((running + 1))
         fi
       done
@@ -281,7 +281,7 @@ function update_refs_in_iib_bundles() {
   fi
 
   local sed_files
-  sed_files=$(find "$sed_commands_dir" -name '*.sed' 2>/dev/null)
+  sed_files=$(find "$sed_commands_dir" -name '*.sed' 2> /dev/null)
   if [[ -n "$sed_files" ]]; then
     local combined_sed="${TMPDIR}/combined_sed_commands.txt"
     cat "$sed_commands_dir"/*.sed > "$combined_sed"
@@ -350,7 +350,7 @@ function ocp_install() {
   update_refs_in_iib_bundles "$internal_registry_url" "$my_registry" >&2
 
   debugf "Submitting in-cluster build request for the updated IIB..." >&2
-  if ! oc -n rhdh get buildconfig.build.openshift.io/iib >& /dev/null; then
+  if ! oc -n rhdh get buildconfig.build.openshift.io/iib >&/dev/null; then
     oc -n rhdh new-build --strategy docker --binary --name iib >&2
   fi
   oc -n rhdh patch buildconfig.build.openshift.io/iib -p '{"spec": {"strategy": {"dockerStrategy": {"dockerfilePath": "rhdh.Dockerfile"}}}}' >&2
@@ -385,7 +385,7 @@ function k8s_install() {
     password=$(invoke_cluster_cli -n "${namespace}" get secret "${registry_name}-auth-creds" -o json | jq -r '.data.password' | base64 -d)
   else
     debugf "Generating auth secret for mirror registry. FYI, those creds will be stored in a secret named '${registry_name}-auth-creds' in ${namespace} ..." >&2
-    cat <<EOF | invoke_cluster_cli apply -f - >&2
+    cat << EOF | invoke_cluster_cli apply -f - >&2
 apiVersion: v1
 kind: Secret
 type: Opaque
@@ -399,7 +399,7 @@ EOF
   fi
 
   registry_htpasswd=$(htpasswd -Bbn "${username}" "${password}")
-  cat <<EOF | invoke_cluster_cli apply -f - >&2
+  cat << EOF | invoke_cluster_cli apply -f - >&2
 apiVersion: v1
 kind: Secret
 type: Opaque
@@ -411,7 +411,7 @@ stringData:
 EOF
 
   debugf "Creating the registry Deployment: deployment/${registry_name} ..." >&2
-  cat <<EOF | invoke_cluster_cli apply -f - >&2
+  cat << EOF | invoke_cluster_cli apply -f - >&2
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -459,7 +459,7 @@ EOF
   # NOTE: We need a NodePort here, for the kubelet to be able to pull insecurely from localhost.
   # We cannot use the internal Service DNS name (ending with .svc.cluster.local) because the Kubelet is responsible for
   # pulling the images and does not seem able to resolve such internal DNS names.
-  cat <<EOF | invoke_cluster_cli apply -f - >&2
+  cat << EOF | invoke_cluster_cli apply -f - >&2
 apiVersion: v1
 kind: Service
 metadata:
@@ -486,7 +486,7 @@ EOF
   fi
 
   debugf "Waiting for deployment $registry_name in namespace $namespace to become ready..." >&2
-  if ! invoke_cluster_cli rollout status deployment/$registry_name -n $namespace --timeout=5m &>/dev/null; then
+  if ! invoke_cluster_cli rollout status deployment/$registry_name -n $namespace --timeout=5m &> /dev/null; then
     errorf "Timed out waiting for deployment $registry_name to be ready." >&2
     return 1
   fi
@@ -499,17 +499,17 @@ EOF
   sleep 7
   # Check if the port-forward is running
   if ! kill -0 $port_fwd_pid &> /dev/null; then
-      errorf "Port-forwarding to the cluster registry failed to start. Logs:" >&2
-      cat "${registry_port_fwd_out}"
-      return 1
+    errorf "Port-forwarding to the cluster registry failed to start. Logs:" >&2
+    cat "${registry_port_fwd_out}"
+    return 1
   fi
 
   local portFwdLocalPort
   portFwdLocalPort=$(grep -oP '127\.0\.0\.1:\K[0-9]+' "${registry_port_fwd_out}")
   if [[ -z "$portFwdLocalPort" ]]; then
-      errorf "Failed to determine the local port. Logs:" >&2
-      cat "${registry_port_fwd_out}"
-      return 1
+    errorf "Failed to determine the local port. Logs:" >&2
+    cat "${registry_port_fwd_out}"
+    return 1
   fi
   debugf "Port-forwarding from localhost:${portFwdLocalPort} to the cluster registry..." >&2
   local internal_registry_url
@@ -520,19 +520,19 @@ EOF
   kaniko_internal_registry_url="${registry_name}.${namespace}.svc.cluster.local:5000"
 
   invoke_cluster_cli -n olm create secret docker-registry internal-reg-ext-auth-for-rhdh \
-      --docker-server="${internal_registry_url}" \
-      --docker-username="${username}" \
-      --docker-password="${password}" \
-      --docker-email="admin@internal-registry-ext.example.com" \
-      --dry-run=client -o=yaml | \
-      invoke_cluster_cli apply -f - >&2
+    --docker-server="${internal_registry_url}" \
+    --docker-username="${username}" \
+    --docker-password="${password}" \
+    --docker-email="admin@internal-registry-ext.example.com" \
+    --dry-run=client -o=yaml \
+    | invoke_cluster_cli apply -f - >&2
   invoke_cluster_cli -n olm create secret docker-registry internal-reg-auth-for-rhdh \
-      --docker-server="${internal_registry_url}" \
-      --docker-username="${username}" \
-      --docker-password="${password}" \
-      --docker-email="admin@internal-registry.example.com" \
-      --dry-run=client -o=yaml | \
-      invoke_cluster_cli apply -f - >&2
+    --docker-server="${internal_registry_url}" \
+    --docker-username="${username}" \
+    --docker-password="${password}" \
+    --docker-email="admin@internal-registry.example.com" \
+    --dry-run=client -o=yaml \
+    | invoke_cluster_cli apply -f - >&2
 
   # 3. Regenerate the IIB image with the local changes to the render.yaml file and build and push it from within the cluster
   update_refs_in_iib_bundles "$internal_registry_url" "localhost:$portFwdLocalPort" >&2
@@ -544,19 +544,19 @@ EOF
   # 4. Rebuild the IIB image in the cluster using Kaniko
   debugf "Rebuilding the IIB Image using Kaniko in the cluster..." >&2
   invoke_cluster_cli -n "${namespace}" create secret docker-registry kaniko-registry-secret \
-      --docker-server="${kaniko_internal_registry_url}" \
-      --docker-username="${username}" \
-      --docker-password="${password}" \
-      --docker-email="admin@internal-registry-ext.kaniko.example.com" \
-      --dry-run=client -o=yaml | \
-      invoke_cluster_cli apply -f - >&2
+    --docker-server="${kaniko_internal_registry_url}" \
+    --docker-username="${username}" \
+    --docker-password="${password}" \
+    --docker-email="admin@internal-registry-ext.kaniko.example.com" \
+    --dry-run=client -o=yaml \
+    | invoke_cluster_cli apply -f - >&2
   local timestamp
   local kanikoJobName
   local kanikoPod
   local localContext
   timestamp=$(date +%s)
   kanikoJobName="kaniko-build-${timestamp}"
-  cat <<EOF | invoke_cluster_cli apply -f - >&2
+  cat << EOF | invoke_cluster_cli apply -f - >&2
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -706,7 +706,7 @@ while [[ "$#" -gt 0 ]]; do
       TO_INSTALL="$2"
       shift 1
       ;;
-    '--next'|'--latest')
+    '--next' | '--latest')
       # if logged in, this should return something like latest-v4.12-x86_64 or next-v4.12-x86_64
       IIB_TAG="${1/--/}-${OCP_VER}-$OCP_ARCH"
       ;;
@@ -728,7 +728,7 @@ while [[ "$#" -gt 0 ]]; do
       INSTALL_PLAN_APPROVAL="$2"
       shift 1
       ;;
-    '-h'|'--help')
+    '-h' | '--help')
       usage
       exit 0
       ;;
@@ -798,8 +798,8 @@ newIIBImage=${IIB_IMAGE}
 
 if [[ "${IS_OPENSHIFT}" = "true" ]]; then
   # Defaulting to the hosted control plane behavior which has more chances to work
-  CONTROL_PLANE_TECH=$(oc get infrastructure cluster -o jsonpath='{.status.controlPlaneTopology}' || \
-    (warnf 'Could not determine the cluster type => defaulting to the hosted control plane behavior' >&2 && echo 'External'))
+  CONTROL_PLANE_TECH=$(oc get infrastructure cluster -o jsonpath='{.status.controlPlaneTopology}' \
+    || (warnf 'Could not determine the cluster type => defaulting to the hosted control plane behavior' >&2 && echo 'External'))
   IS_HOSTED_CONTROL_PLANE="false"
   if [[ "${CONTROL_PLANE_TECH}" == "External" ]]; then
     # 'External' indicates that the control plane is hosted externally to the cluster
