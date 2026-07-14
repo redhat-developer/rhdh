@@ -59,7 +59,7 @@
     "oxlint-tsgolint": "0.23.0",
     "shellcheck": "4.1.0",
     "typescript": "6.0.3",
-    "vitest": "4.1.9"
+    "vitest": "4.1.10"
   },
   "engines": {
     "node": "24"
