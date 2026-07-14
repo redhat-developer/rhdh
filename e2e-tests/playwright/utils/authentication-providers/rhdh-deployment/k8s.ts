@@ -7,7 +7,7 @@ import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
 import { applyDynamicPluginsProfile } from "../../dynamic-plugins-profile";
-import { hasErrorResponse } from "../../errors";
+import { isKubernetesConflictError } from "../../errors";
 import { predictedUrl } from "../../instance-route-identity";
 import {
   applyOperatorInstallProfileToAppConfig,
@@ -65,7 +65,7 @@ export async function createNamespace(state: RHDHDeploymentState): Promise<void>
   try {
     await state.k8sApi.createNamespace(namespaceObj);
   } catch (e) {
-    if (hasErrorResponse(e) && e.response?.statusCode === 409) {
+    if (isKubernetesConflictError(e)) {
       return;
     }
     throw e;
@@ -185,23 +185,32 @@ export async function createSecret(state: RHDHDeploymentState): Promise<void> {
     },
     data: state.secretData,
   };
-  await state.k8sApi.createNamespacedSecret(state.namespace, secret);
+  try {
+    await state.k8sApi.createNamespacedSecret(state.namespace, secret);
+  } catch (error: unknown) {
+    // Worker-restart reuse keeps the namespace; create must upsert so retries
+    // do not die on AlreadyExists before enableProvider runs.
+    if (isKubernetesConflictError(error)) {
+      console.log(
+        `[INFO] Secret ${state.secretName} already exists — replacing with current secret data`,
+      );
+      await updateSecret(state);
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function updateSecret(state: RHDHDeploymentState): Promise<void> {
   if (skipIfRunningLocal(state, "Skipping secret update as isRunningLocal is true.")) {
     return;
   }
-  const secret: k8s.V1Secret = {
-    apiVersion: "v1",
-    kind: "Secret",
-    metadata: {
-      name: state.secretName,
-      namespace: state.namespace,
-    },
-    data: state.secretData,
-  };
-  await state.k8sApi.replaceNamespacedSecret(state.secretName, state.namespace, secret);
+  // Read-merge-replace keeps resourceVersion, labels, annotations, and type so
+  // replace is conditional and does not clobber operator-owned metadata.
+  const existing = await state.k8sApi.readNamespacedSecret(state.secretName, state.namespace);
+  const body = existing.body;
+  body.data = state.secretData;
+  await state.k8sApi.replaceNamespacedSecret(state.secretName, state.namespace, body);
 }
 
 export async function deleteSecret(state: RHDHDeploymentState): Promise<void> {
