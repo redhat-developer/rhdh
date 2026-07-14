@@ -1,5 +1,6 @@
 import { request as playwrightRequest } from "@playwright/test";
 
+import { parseProxy } from "./utils/proxy";
 import { ensureRuntimeDeployed } from "./utils/runtime-deploy";
 import { waitForRhdhReady } from "./utils/wait-for-rhdh-ready";
 
@@ -27,6 +28,10 @@ export default async function globalSetup(): Promise<void> {
   const request = await playwrightRequest.newContext({
     baseURL,
     ignoreHTTPSErrors: true,
+    // In disconnected environments the CI runner reaches the cluster through a
+    // squid proxy (HTTPS_PROXY). Unlike browser contexts which inherit the
+    // proxy from playwright.config.ts, APIRequestContext needs it explicitly.
+    proxy: parseProxy(process.env.HTTPS_PROXY),
   });
   try {
     await waitForRhdhReady(request);
