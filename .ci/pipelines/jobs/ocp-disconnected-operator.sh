@@ -51,68 +51,34 @@ handle_ocp_disconnected_operator() {
     )
   fi
 
-  # The CI pod runs with nested_podman: true (hostUsers: false), placing it
-  # inside a Linux user namespace. podman's rootless setup calls newuidmap to
-  # create a nested user namespace, which fails with:
-  #   newuidmap: open of uid_map failed: Permission denied
-  # And chowns the storage graphroot, which fails with:
-  #   chown .../storage/vfs/dir: operation not permitted
-  # Fix:
-  #   _CONTAINERS_USERNS_CONFIGURED=1 — skip newuidmap (userns already set up)
-  #   BUILDAH_ISOLATION=chroot — chroot instead of user namespace for builds
-  #   rootless_storage_path — the only field that getRootlessStorageOpts()
-  #     checks before falling back to $HOME/.local/share/containers/storage;
-  #     plain "graphroot" is overwritten by the rootless path logic
-  #   XDG_DATA_HOME — controls homedir.GetDataHome() fallback in c/storage
-  #   ignore_chown_errors — safety net for layer operations
-  export _CONTAINERS_USERNS_CONFIGURED=1
+  # The CI pod runs with nested_podman: true, which provides:
+  #   - hostUsers: false (Linux user namespace)
+  #   - /dev/fuse device (via CRI-O annotation)
+  #   - SETUID/SETGID capabilities (for newuidmap/newgidmap)
+  # The entrypoint.sh (from the nested-podman image) detects /dev/fuse +
+  # fuse-overlayfs and creates an overlay storage config at
+  # /home/user/.config/containers/storage.conf with:
+  #   driver = "overlay", graphroot = "/tmp/graphroot",
+  #   mount_program = "/usr/bin/fuse-overlayfs"
+  #
+  # commands.sh overrides HOME=/tmp, so podman no longer finds the
+  # entrypoint's config at /home/user/.config/containers/. Fix: run
+  # prepare-restricted-environment.sh with HOME=/home/user so podman
+  # uses the entrypoint's overlay config naturally — the same way the
+  # nested-podman image is used by other teams (e.g., MCO) in CI.
+  #
+  # BUILDAH_ISOLATION=chroot avoids creating a nested user namespace
+  # inside the already-active pod userns.
   export BUILDAH_ISOLATION=chroot
 
-  local podman_storage="${DISCONNECTED_TMPDIR}/podman-storage"
-  local podman_run="${DISCONNECTED_TMPDIR}/podman-run"
-  mkdir -p "${podman_storage}" "${podman_run}"
-
-  # Point XDG_DATA_HOME to our tmpdir so the c/storage library's
-  # getRootlessStorageOpts() computes graphroot under our directory
-  # instead of defaulting to $HOME/.local/share/containers/storage.
-  export XDG_DATA_HOME="${DISCONNECTED_TMPDIR}/data"
-  mkdir -p "${XDG_DATA_HOME}"
-
-  # Clear any pre-initialized storage state from the entrypoint BEFORE
-  # writing our config. podman system reset deletes $HOME/.config/containers/
-  # in some versions, so we must run it first.
-  podman system reset --force 2> /dev/null || true
-
-  # Write storage.conf with rootless_storage_path — the only field that
-  # containers/storage's getRootlessStorageOpts() respects for overriding
-  # the rootless graphroot. Plain "graphroot" is overwritten by rootless
-  # path logic (it falls back to $XDG_DATA_HOME/containers/storage).
-  local storage_conf="${DISCONNECTED_TMPDIR}/storage.conf"
-  cat > "${storage_conf}" << EOF
-[storage]
-driver = "vfs"
-graphroot = "${podman_storage}"
-rootless_storage_path = "${podman_storage}"
-runroot = "${podman_run}"
-
-[storage.options]
-ignore_chown_errors = "true"
-EOF
-  export CONTAINERS_STORAGE_CONF="${storage_conf}"
-
-  # Also install the config at the user-level path (HOME/.config/containers/).
-  # The prepare-restricted-environment.sh script invokes podman build which
-  # may read this path instead of CONTAINERS_STORAGE_CONF.
-  mkdir -p "${HOME}/.config/containers"
-  cp "${storage_conf}" "${HOME}/.config/containers/storage.conf"
-
+  local entrypoint_home="/home/user"
   log::info "Podman environment: uid=$(id -u), BUILDAH_ISOLATION=${BUILDAH_ISOLATION}"
-  log::info "Storage config (${CONTAINERS_STORAGE_CONF}): $(tr '\n' ' ' < "${storage_conf}")"
-  log::info "XDG_DATA_HOME=${XDG_DATA_HOME}"
+  log::info "Entrypoint storage config: $(tr '\n' ' ' < "${entrypoint_home}/.config/containers/storage.conf" 2> /dev/null || echo 'not found')"
   log::info "subuid: $(cat /etc/subuid 2> /dev/null || echo 'not found')"
-  log::info "Podman graphRoot: $(podman info --format '{{.Store.GraphRoot}}' 2>&1 || echo 'podman info failed')"
+  log::info "fuse-overlayfs: $(command -v fuse-overlayfs 2> /dev/null || echo 'not found'), /dev/fuse: $(test -c /dev/fuse && echo 'present' || echo 'missing')"
+  log::info "Podman graphRoot: $(HOME=${entrypoint_home} podman info --format '{{.Store.GraphRoot}}' 2>&1 || echo 'podman info failed')"
 
-  bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
+  HOME=${entrypoint_home} bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
     || {
       log::error "prepare-restricted-environment.sh failed — aborting"
       return 1
