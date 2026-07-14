@@ -1,7 +1,11 @@
 import { expect, type Page } from "@playwright/test";
 
 import { getGlobalHeader } from "../../utils/ui-helper/interaction";
-import { waitForRhdhReady, isJsonHealthcheckResponse } from "../../utils/wait-for-rhdh-ready";
+import {
+  isJsonHealthcheckResponse,
+  RHDH_READY_DEFAULT_TIMEOUT_MS,
+  waitForRhdhReady,
+} from "../../utils/wait-for-rhdh-ready";
 
 const LOADING_INDICATOR_SELECTORS = [
   // Intentional divergence: MUI progress bars lack stable roles; class hooks are reliable in CI.
@@ -9,7 +13,10 @@ const LOADING_INDICATOR_SELECTORS = [
   '[class*="MuiCircularProgress-root"]',
 ] as const;
 
-export async function waitForLoadingToSettle(page: Page, timeout = 120_000): Promise<void> {
+export async function waitForLoadingToSettle(
+  page: Page,
+  timeout = RHDH_READY_DEFAULT_TIMEOUT_MS,
+): Promise<void> {
   for (const selector of LOADING_INDICATOR_SELECTORS) {
     const indicator = page.locator(selector).first();
     const visible = await indicator.isVisible().catch(() => false);
@@ -28,12 +35,18 @@ export async function hasJsonHealthcheck(page: Page): Promise<boolean> {
   return isJsonHealthcheckResponse(response.status(), contentType);
 }
 
-export async function waitForAppReady(page: Page, timeout = 120_000): Promise<void> {
+export async function waitForAppReady(
+  page: Page,
+  timeout = RHDH_READY_DEFAULT_TIMEOUT_MS,
+): Promise<void> {
   // Cluster-free legacy harness serves the SPA on BASE_URL; backend readiness is
   // enforced by webServer startup instead of a JSON /healthcheck on the frontend.
   if (await hasJsonHealthcheck(page)) {
     await waitForRhdhReady(page.request, timeout);
   }
+  // Main must exist before loader settle is meaningful — otherwise hydrate lag
+  // can make waitForLoadingToSettle no-op while only a progressbar is painted.
+  await expect(page.getByRole("main")).toBeVisible({ timeout });
   await waitForLoadingToSettle(page, timeout);
 }
 
@@ -42,7 +55,10 @@ export async function waitForAppReady(page: Page, timeout = 120_000): Promise<vo
  * Wait until the global header (profile dropdown) is visible — the same
  * signal Settings POM navigation depends on.
  */
-export async function waitForAuthenticatedShell(page: Page, timeout = 120_000): Promise<void> {
+export async function waitForAuthenticatedShell(
+  page: Page,
+  timeout = RHDH_READY_DEFAULT_TIMEOUT_MS,
+): Promise<void> {
   await waitForAppReady(page, timeout);
   await expect(getGlobalHeader(page)).toBeVisible({ timeout });
 }
@@ -62,7 +78,10 @@ export function isPopupLoginSuccess(popupStatus: string): boolean {
   return POPUP_SUCCESS_STATUSES.has(popupStatus);
 }
 
-export async function waitForLoginOutcome(page: Page, timeout = 120_000): Promise<LoginOutcome> {
+export async function waitForLoginOutcome(
+  page: Page,
+  timeout = RHDH_READY_DEFAULT_TIMEOUT_MS,
+): Promise<LoginOutcome> {
   const header = getGlobalHeader(page);
   const alert = page.getByRole("alert");
   let outcome: LoginOutcome | "pending" = "pending";

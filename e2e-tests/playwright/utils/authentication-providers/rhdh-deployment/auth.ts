@@ -332,6 +332,40 @@ export function setGithubResolver(
   ]);
 }
 
+/**
+ * Login cases that are not resolver experiments must pin a known-good resolver
+ * together with any other auth mutation (e.g. sessionDuration). Otherwise an
+ * earlier test's resolver leaks across the shared namespace and breaks login.
+ */
+export function configureGithubSessionDuration(
+  actions: AuthConfigActions,
+  sessionDuration: string,
+): void {
+  setGithubResolver(actions, "usernameMatchingUserEntityName", false);
+  actions.setAppConfigProperty("auth.providers.github.production.sessionDuration", sessionDuration);
+}
+
+export function configureOidcSessionDuration(
+  actions: AuthConfigActions,
+  sessionDuration: string,
+): void {
+  // Prefer emailMatching + Zeus over preferredUsername + Atena: email is stable
+  // across Keycloak profiles and does not depend on the patched preferredUsername resolver.
+  setOIDCResolver(actions, "emailMatchingUserEntityProfileEmail", false);
+  actions.setAppConfigProperty("auth.providers.oidc.production.sessionDuration", sessionDuration);
+}
+
+export function configureMicrosoftSessionDuration(
+  actions: AuthConfigActions,
+  sessionDuration: string,
+): void {
+  setMicrosoftResolver(actions, "emailMatchingUserEntityProfileEmail", false);
+  actions.setAppConfigProperty(
+    "auth.providers.microsoft.production.sessionDuration",
+    sessionDuration,
+  );
+}
+
 export function setGitlabResolver(
   actions: AuthConfigActions,
   resolver: string,

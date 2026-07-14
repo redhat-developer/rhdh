@@ -10,6 +10,7 @@ import {
 } from "../../utils/common/auth-popup";
 import { sleep } from "../../utils/poll-until";
 import * as interaction from "../../utils/ui-helper/interaction";
+import { RHDH_READY_DEFAULT_TIMEOUT_MS } from "../../utils/wait-for-rhdh-ready";
 import {
   waitForAppReady,
   waitForLoginOutcome,
@@ -80,7 +81,11 @@ export class AuthProviderSession {
   private async openLandingPageWithProviderMessage(message: string): Promise<void> {
     await this.gotoWithRetry(this.resolveUrl("/"));
     await waitForAppReady(this.page);
-    await expect(this.page.getByRole("main").getByText(message)).toBeVisible();
+    // Post-reconcile SPA can still be hydrating after /healthcheck is OK —
+    // give the provider card the same budget as app readiness, not expect's 10s default.
+    await expect(this.page.getByRole("main").getByText(message)).toBeVisible({
+      timeout: RHDH_READY_DEFAULT_TIMEOUT_MS,
+    });
   }
 
   private async openPrimarySignInPopup(): Promise<Page> {
@@ -95,7 +100,7 @@ export class AuthProviderSession {
   private async finishLogin(popupResult: Promise<string>): Promise<LoginOutcome> {
     const popupStatus = await popupResult;
     // IdP rejection: still race the app shell briefly so alerts can win; fail closed on timeout.
-    const timeoutMs = isPopupLoginSuccess(popupStatus) ? 120_000 : 15_000;
+    const timeoutMs = isPopupLoginSuccess(popupStatus) ? RHDH_READY_DEFAULT_TIMEOUT_MS : 15_000;
     return waitForLoginOutcome(this.page, timeoutMs);
   }
 

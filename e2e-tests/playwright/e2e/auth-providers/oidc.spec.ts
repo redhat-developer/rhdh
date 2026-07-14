@@ -213,10 +213,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Set OIDC sessionDuration and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty(
-          "auth.providers.oidc.production.sessionDuration",
-          "3days",
-        );
+        harness.deployment.configureOidcSessionDuration("3days");
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsZeus,

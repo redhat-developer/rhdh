@@ -150,11 +150,8 @@ test.describe("Configure Github Provider", () => {
   test(`Set Github sessionDuration and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        // sessionDuration sets refresh-token cookie maxAge in @backstage/plugin-auth-node.
-        harness.deployment.setAppConfigProperty(
-          "auth.providers.github.production.sessionDuration",
-          "3days",
-        );
+        // Pin resolver + duration together — earlier resolver tests share this namespace.
+        harness.deployment.configureGithubSessionDuration("3days");
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubAdmin,
