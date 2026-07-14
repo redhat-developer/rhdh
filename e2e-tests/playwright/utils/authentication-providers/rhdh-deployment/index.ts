@@ -5,6 +5,9 @@ import { expect } from "@playwright/test";
 import { v4 as uuidv4 } from "uuid";
 
 import {
+  configureGithubSessionDuration as configureGithubSessionDurationImpl,
+  configureMicrosoftSessionDuration as configureMicrosoftSessionDurationImpl,
+  configureOidcSessionDuration as configureOidcSessionDurationImpl,
   enableGithubLoginWithIngestion,
   enableGitlabLoginWithIngestion,
   enableLDAPLoginWithIngestion,
@@ -499,6 +502,22 @@ class RHDHDeployment implements RHDHDeploymentState {
   ): Promise<RHDHDeployment> {
     setGithubResolverImpl(this, resolver, dangerouslyAllowSignInWithoutUserInCatalog);
     return Promise.resolve(this);
+  }
+
+  /** Pin username resolver + sessionDuration so earlier resolver tests cannot leak. */
+  configureGithubSessionDuration(sessionDuration: string): RHDHDeployment {
+    configureGithubSessionDurationImpl(this, sessionDuration);
+    return this;
+  }
+
+  configureOidcSessionDuration(sessionDuration: string): RHDHDeployment {
+    configureOidcSessionDurationImpl(this, sessionDuration);
+    return this;
+  }
+
+  configureMicrosoftSessionDuration(sessionDuration: string): RHDHDeployment {
+    configureMicrosoftSessionDurationImpl(this, sessionDuration);
+    return this;
   }
 
   enableGitlabLoginWithIngestion(): Promise<RHDHDeployment> {
