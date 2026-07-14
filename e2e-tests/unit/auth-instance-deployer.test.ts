@@ -67,7 +67,7 @@ function createHost(isRunningLocal: boolean): AuthInstanceDeployerHost & { calls
     },
     loadConfigsAndProvisionNamespace: () => {
       calls.push("loadConfigs");
-      return Promise.resolve();
+      return Promise.resolve("fresh" as const);
     },
     addBaseUrlSecretsIfRemote: () => {
       calls.push("addBaseUrlSecrets");
@@ -164,6 +164,44 @@ describe("deployAuthInstance", () => {
       "https://rhdh.example.test",
       RHDH_READY_DEPLOY_TIMEOUT_MS,
     );
+  });
+
+  it("reuses a healthy namespace by re-applying baseline and reconciling instead of NS wipe", async () => {
+    const host = createHost(false);
+    host.loadConfigsAndProvisionNamespace = () => {
+      host.calls.push("loadConfigs:reused");
+      return Promise.resolve("reused");
+    };
+    healthcheckRhdhAtUrl.mockClear();
+    healthcheckRhdhAtUrl.mockImplementation(() => {
+      host.calls.push("http");
+      return Promise.resolve();
+    });
+
+    await deployAuthInstance(host, {
+      requiredEnvVars: ["FOO"],
+      enableProvider: () => {
+        host.calls.push("enableProvider");
+        return Promise.resolve();
+      },
+    });
+
+    expect(host.calls).toEqual([
+      "expectEnvVars",
+      "loadConfigs:reused",
+      "addBaseUrlSecrets",
+      "createSecret",
+      "enableProvider",
+      "updateAllConfigs",
+      "createBackstageDeployment:false",
+      expect.stringMatching(/^setAppConfigProperty:app\.title:e2e-auth-config-/u),
+      "updateAllConfigs",
+      "restartLocalDeployment",
+      expect.stringMatching(/^waitUntilAuthConfigLive:e2e-auth-config-/u),
+      "http",
+      "waitForSynced",
+    ]);
+    expect(host.calls).not.toContain("waitForDeploymentCreated");
   });
 });
 

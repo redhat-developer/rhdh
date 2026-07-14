@@ -49,13 +49,20 @@ export async function waitForAuthenticatedShell(page: Page, timeout = 120_000): 
 
 /**
  * After an OAuth popup closes, either the authenticated shell appears (success)
- * or a sign-in alert appears (expected identity-resolution failures). Waiting
- * only for the header breaks negative login cases.
+ * or a sign-in alert appears (expected identity-resolution failures).
+ *
+ * Do not stack a full /healthcheck budget here — reconcile/deploy already proved
+ * HTTP. Racing header vs alert is the login locality signal.
  */
 export type LoginOutcome = "authenticated" | "error";
 
+const POPUP_SUCCESS_STATUSES = new Set(["Login successful", "Already logged in"]);
+
+export function isPopupLoginSuccess(popupStatus: string): boolean {
+  return POPUP_SUCCESS_STATUSES.has(popupStatus);
+}
+
 export async function waitForLoginOutcome(page: Page, timeout = 120_000): Promise<LoginOutcome> {
-  await waitForAppReady(page, timeout);
   const header = getGlobalHeader(page);
   const alert = page.getByRole("alert");
   let outcome: LoginOutcome | "pending" = "pending";

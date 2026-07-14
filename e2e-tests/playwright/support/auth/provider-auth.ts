@@ -10,7 +10,12 @@ import {
 } from "../../utils/common/auth-popup";
 import { sleep } from "../../utils/poll-until";
 import * as interaction from "../../utils/ui-helper/interaction";
-import { waitForAppReady, waitForLoginOutcome, type LoginOutcome } from "./app-shell";
+import {
+  waitForAppReady,
+  waitForLoginOutcome,
+  isPopupLoginSuccess,
+  type LoginOutcome,
+} from "./app-shell";
 
 const t = getTranslations();
 
@@ -89,11 +94,9 @@ export class AuthProviderSession {
 
   private async finishLogin(popupResult: Promise<string>): Promise<LoginOutcome> {
     const popupStatus = await popupResult;
-    const outcome = await waitForLoginOutcome(this.page);
-    if (popupStatus !== "Login successful") {
-      return "error";
-    }
-    return outcome;
+    // IdP rejection: still race the app shell briefly so alerts can win; fail closed on timeout.
+    const timeoutMs = isPopupLoginSuccess(popupStatus) ? 120_000 : 15_000;
+    return waitForLoginOutcome(this.page, timeoutMs);
   }
 
   async loginWithKeycloak(username: string, password: string): Promise<LoginOutcome> {

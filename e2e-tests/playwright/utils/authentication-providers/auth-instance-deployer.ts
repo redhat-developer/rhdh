@@ -40,12 +40,19 @@ export type ReconcileAuthInstanceOptions = {
   waitForCatalogSync?: boolean;
 };
 
+export type AuthNamespaceProvision = "fresh" | "reused";
+
 export type AuthInstanceDeployerHost = {
   deployment: AuthDeploymentPort;
   backstageUrl: string;
   backstageBackendUrl: string;
   expectEnvVars: (envVarNames: string[]) => void;
-  loadConfigsAndProvisionNamespace: () => Promise<void>;
+  /**
+   * Load file configs and either wipe+provision a new namespace (`fresh`) or
+   * keep a healthy existing one (`reused`) so worker restarts after flakes do
+   * not pay full CR recreate cost.
+   */
+  loadConfigsAndProvisionNamespace: () => Promise<AuthNamespaceProvision>;
   addBaseUrlSecretsIfRemote: () => Promise<void>;
   addSecretsFromEnv: (entries: Record<string, string>) => Promise<void>;
   createSecret: () => Promise<void>;
@@ -75,6 +82,11 @@ function newAuthConfigMarker(): string {
 /**
  * Deploy an auth-provider RHDH instance and wait created → HTTP → synced.
  *
+ * When the namespace is reused (healthy leftover from a prior worker), still
+ * re-apply secrets/CR/provider baseline, then reconcile with catalog sync
+ * instead of deleting the namespace — preserves IdP redirect registrations
+ * while resetting resolver state.
+ *
  * BACKEND_SECRET comes only from the CR extraEnvs (OperatorInstallProfile) —
  * do not also put it in rhdh-secrets or the operator emits a duplicate env.
  */
@@ -83,7 +95,8 @@ export async function deployAuthInstance(
   options: AuthInstanceDeployerOptions,
 ): Promise<AuthInstanceDeployResult> {
   host.expectEnvVars(options.requiredEnvVars);
-  await host.loadConfigsAndProvisionNamespace();
+  const provision = await host.loadConfigsAndProvisionNamespace();
+
   await options.beforeSecrets?.();
   await host.addBaseUrlSecretsIfRemote();
 
@@ -102,10 +115,16 @@ export async function deployAuthInstance(
   await options.enableProvider(host.deployment);
   await host.deployment.updateAllConfigs();
   await options.beforeDeploy?.();
-
   await host.deployment.createBackstageDeployment({ waitForReady: false });
-  await waitForDeploymentReadiness(["created", "http", "synced"], readinessDeps(host));
 
+  if (provision === "reused") {
+    // Namespace/CR already existed (worker retry). Re-apply baseline above, then
+    // force process restart + catalog sync so leftover resolver state cannot leak.
+    await reconcileAuthInstance(host, { waitForCatalogSync: true });
+    return { url: host.backstageUrl };
+  }
+
+  await waitForDeploymentReadiness(["created", "http", "synced"], readinessDeps(host));
   return { url: host.backstageUrl };
 }
 

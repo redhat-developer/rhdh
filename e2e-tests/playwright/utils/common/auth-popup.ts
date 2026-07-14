@@ -166,6 +166,9 @@ async function fillMicrosoftCredentials(
     await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
     await popup.getByRole("button", { name: "Sign in" }).click({ timeout: 5000 });
     await popup.getByRole("button", { name: "No" }).click({ timeout: 15000 });
+    if (!popup.isClosed()) {
+      await popup.waitForEvent("close", { timeout: 20_000 });
+    }
     return "Login successful";
   } catch (e) {
     const usernameError = popup.locator("id=usernameError");
@@ -269,7 +272,7 @@ export async function handleKeycloakPopupLogin(
     await popup.locator("#username").fill(username);
     await popup.locator("#password").fill(password);
     await popup.locator("[name=login]").click({ timeout: 5000 });
-    await popup.waitForEvent("close", { timeout: 2000 });
+    await popup.waitForEvent("close", { timeout: 20_000 });
     return "Login successful";
   } catch (e) {
     const usernameError = popup.locator("id=input-error");
