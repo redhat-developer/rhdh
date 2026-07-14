@@ -11,13 +11,34 @@ export function isJsonHealthcheckResponse(status: number, contentType: string): 
   return status === 200 && contentType.includes("json");
 }
 
-type HealthcheckProbe = {
+export type HealthcheckProbe = {
   ok: boolean;
   detail: string;
 };
 
-async function probeHealthcheck(request: APIRequestContext): Promise<HealthcheckProbe> {
-  const response = await request.get("/healthcheck");
+/** Minimal HTTP surface for one /healthcheck GET (Playwright APIRequestContext satisfies this). */
+export type HealthcheckHttpClient = {
+  get: (url: string) => Promise<{
+    status: () => number;
+    headers: () => Record<string, string>;
+    json: () => Promise<unknown>;
+  }>;
+};
+
+/**
+ * Single /healthcheck attempt. Never throws — transport failures (Route down,
+ * Playwright request timeout) are `{ ok: false }` so expect.poll can retry for
+ * the full readiness budget instead of aborting on the first TimeoutError.
+ */
+export async function probeHealthcheck(request: HealthcheckHttpClient): Promise<HealthcheckProbe> {
+  let response;
+  try {
+    response = await request.get("/healthcheck");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { ok: false, detail: `request failed: ${message}` };
+  }
+
   const status = response.status();
   const contentType = response.headers()["content-type"] ?? "";
 
