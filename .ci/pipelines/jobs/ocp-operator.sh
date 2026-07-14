@@ -40,6 +40,7 @@ initiate_operator_deployments() {
 }
 
 initiate_operator_deployments_osd_gcp() {
+  # TODO: RHDHBUGS-1136 - investigate OSD-GCP operator init container crash ({{inherit}} resolution)
   log::info "Initiating Operator-backed deployments on OSD-GCP"
 
   namespace::configure "${NAME_SPACE}"
