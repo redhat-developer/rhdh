@@ -3,9 +3,11 @@ import { expect } from "@playwright/test";
 import {
   deployAuthInstance,
   reconcileAuthInstance,
+  type AuthNamespaceProvision,
   type ReconcileAuthInstanceOptions,
 } from "../../utils/authentication-providers/auth-instance-deployer";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
+import { healthcheckRhdhAtUrl } from "../../utils/wait-for-rhdh-ready";
 import type { LoginOutcome } from "../auth/app-shell";
 
 const DEFAULT_CONFIG_MAPS = {
@@ -14,6 +16,9 @@ const DEFAULT_CONFIG_MAPS = {
   dynamicPluginsConfigMap: "dynamic-plugins",
   secretName: "rhdh-secrets",
 } as const;
+
+/** Short probe — only decides wipe vs reuse, not deploy readiness. */
+const REUSE_HEALTHCHECK_TIMEOUT_MS = 20_000;
 
 type AuthLoginCase = {
   configure?: () => Promise<void>;
@@ -60,12 +65,39 @@ export class AuthProviderHarness {
     }
   }
 
-  async loadConfigsAndProvisionNamespace(): Promise<void> {
+  /**
+   * Prefer reusing a healthy remote instance after Playwright worker restarts
+   * (flake retries). Wipe only when forced, local, or healthcheck fails.
+   */
+  async loadConfigsAndProvisionNamespace(): Promise<AuthNamespaceProvision> {
     await this.deployment.loadAllConfigs();
+    if (await this.canReuseHealthyRemoteInstance()) {
+      await this.deployment.generateStaticToken();
+      console.log(
+        "[INFO] Reusing healthy auth namespace — skip wipe (set FORCE_AUTH_REDEPLOY=1 to force)",
+      );
+      return "reused";
+    }
     await this.deployment.deleteNamespaceIfExists();
     await (await this.deployment.createNamespace()).waitForNamespaceActive();
     await this.deployment.createAllConfigs();
     await this.deployment.generateStaticToken();
+    return "fresh";
+  }
+
+  private async canReuseHealthyRemoteInstance(): Promise<boolean> {
+    if (this.deployment.isRunningLocal) {
+      return false;
+    }
+    if (process.env.FORCE_AUTH_REDEPLOY === "1") {
+      return false;
+    }
+    try {
+      await healthcheckRhdhAtUrl(this.backstageUrl, REUSE_HEALTHCHECK_TIMEOUT_MS);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async addBaseUrlSecretsIfRemote(): Promise<void> {
