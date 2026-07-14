@@ -21,11 +21,17 @@ install_rhdh_operator() {
     log::warn "IMAGE_REGISTRY is set to '${IMAGE_REGISTRY}', but the RHDH operator is always installed from quay.io/rhdh/iib"
   fi
 
-  # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
-  if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
-    log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"
-    return 1
+  local local_script="${DIR}/install-methods/install-rhdh-catalog-source.sh"
+  if [[ "${JOB_NAME:-}" =~ osd-gcp ]] && [[ -f "$local_script" ]]; then
+    # RHDHBUGS-1136: use local copy with skopeo retry logic for OSD-GCP
+    log::info "Using local install-rhdh-catalog-source.sh (OSD-GCP workaround)"
+    cp "$local_script" /tmp/install-rhdh-catalog-source.sh
+  else
+    if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
+      log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"
+      return 1
+    fi
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
