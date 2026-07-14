@@ -270,5 +270,3 @@ auth:
 External authentication providers can be loaded using the dynamic plugins mechanism.  Typically this will require a backend plugin to provide the authentication provider API implementation and callback handling, and a frontend plugin to connect this API to important parts of the UI in the form of a [custom SignInPage](dynamic-plugins/frontend-plugin-wiring.md#use-a-custom-signinpage-component) and [provider settings](dynamic-plugins/frontend-plugin-wiring.md#adding-custom-authentication-provider-settings) entries for the user settings page.  
 
 The existing Developer Hub authentication module will need to be disabled by setting an [environment variable](dynamic-plugins/override-core-services.md#overriding-the-provided-authentication-module), `ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE` to `true` for the Developer Hub backend.
-
-Some examples of composing dynamic plugins to provide an authentication solution are available in the [dynamic plugins examples](dynamic-plugins/examples.md).
