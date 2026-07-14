@@ -55,30 +55,37 @@ handle_ocp_disconnected_operator() {
   #   - hostUsers: false (Linux user namespace)
   #   - /dev/fuse device (via CRI-O annotation)
   #   - SETUID/SETGID capabilities (for newuidmap/newgidmap)
-  # The entrypoint.sh (from the nested-podman image) detects /dev/fuse +
-  # fuse-overlayfs and creates an overlay storage config at
-  # /home/user/.config/containers/storage.conf with:
-  #   driver = "overlay", graphroot = "/tmp/graphroot",
-  #   mount_program = "/usr/bin/fuse-overlayfs"
+  # The entrypoint.sh (from the nested-podman image) would normally create an
+  # overlay storage config at ${HOME}/.config/containers/storage.conf, but it
+  # silently fails because /home/user is not writable by uid 1000 at entrypoint
+  # time (the passwd entry that grants gid 0 is created after the mkdir).
   #
-  # commands.sh overrides HOME=/tmp, so podman no longer finds the
-  # entrypoint's config at /home/user/.config/containers/. Fix: run
-  # prepare-restricted-environment.sh with HOME=/home/user so podman
-  # uses the entrypoint's overlay config naturally — the same way the
-  # nested-podman image is used by other teams (e.g., MCO) in CI.
+  # Fix: write the same overlay+fuse-overlayfs config the entrypoint would have
+  # created, but at the runtime HOME (/tmp, set by commands.sh). This uses the
+  # overlay driver which does NOT chown the graphroot on init (unlike VFS which
+  # triggers "chown: operation not permitted" in the user namespace).
   #
-  # BUILDAH_ISOLATION=chroot avoids creating a nested user namespace
-  # inside the already-active pod userns.
+  # BUILDAH_ISOLATION=chroot avoids creating a nested user namespace inside the
+  # already-active pod userns.
   export BUILDAH_ISOLATION=chroot
 
-  local entrypoint_home="/home/user"
+  mkdir -p "${HOME}/.config/containers"
+  cat > "${HOME}/.config/containers/storage.conf" << 'EOF'
+[storage]
+driver = "overlay"
+graphroot = "/tmp/graphroot"
+
+[storage.options.overlay]
+mount_program = "/usr/bin/fuse-overlayfs"
+EOF
+
   log::info "Podman environment: uid=$(id -u), BUILDAH_ISOLATION=${BUILDAH_ISOLATION}"
-  log::info "Entrypoint storage config: $(tr '\n' ' ' < "${entrypoint_home}/.config/containers/storage.conf" 2> /dev/null || echo 'not found')"
+  log::info "Storage config (${HOME}/.config/containers/storage.conf): $(tr '\n' ' ' < "${HOME}/.config/containers/storage.conf")"
   log::info "subuid: $(cat /etc/subuid 2> /dev/null || echo 'not found')"
   log::info "fuse-overlayfs: $(command -v fuse-overlayfs 2> /dev/null || echo 'not found'), /dev/fuse: $(test -c /dev/fuse && echo 'present' || echo 'missing')"
-  log::info "Podman graphRoot: $(HOME=${entrypoint_home} podman info --format '{{.Store.GraphRoot}}' 2>&1 || echo 'podman info failed')"
+  log::info "Podman graphRoot: $(podman info --format '{{.Store.GraphRoot}}' 2>&1 || echo 'podman info failed')"
 
-  HOME=${entrypoint_home} bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
+  bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
     || {
       log::error "prepare-restricted-environment.sh failed — aborting"
       return 1
