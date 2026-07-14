@@ -60,8 +60,10 @@ handle_ocp_disconnected_operator() {
   # Fix:
   #   _CONTAINERS_USERNS_CONFIGURED=1 — skip newuidmap (userns already set up)
   #   BUILDAH_ISOLATION=chroot — chroot instead of user namespace for builds
-  #   graphroot/runroot in DISCONNECTED_TMPDIR — pre-owned by uid 1000, so
-  #     podman skips chown during storage init
+  #   rootless_storage_path — the only field that getRootlessStorageOpts()
+  #     checks before falling back to $HOME/.local/share/containers/storage;
+  #     plain "graphroot" is overwritten by the rootless path logic
+  #   XDG_DATA_HOME — controls homedir.GetDataHome() fallback in c/storage
   #   ignore_chown_errors — safety net for layer operations
   export _CONTAINERS_USERNS_CONFIGURED=1
   export BUILDAH_ISOLATION=chroot
@@ -70,13 +72,27 @@ handle_ocp_disconnected_operator() {
   local podman_run="${DISCONNECTED_TMPDIR}/podman-run"
   mkdir -p "${podman_storage}" "${podman_run}"
 
-  # Write storage.conf with explicit graphroot in our tmpdir so podman/buildah
-  # never fall back to the default HOME-based path.
+  # Point XDG_DATA_HOME to our tmpdir so the c/storage library's
+  # getRootlessStorageOpts() computes graphroot under our directory
+  # instead of defaulting to $HOME/.local/share/containers/storage.
+  export XDG_DATA_HOME="${DISCONNECTED_TMPDIR}/data"
+  mkdir -p "${XDG_DATA_HOME}"
+
+  # Clear any pre-initialized storage state from the entrypoint BEFORE
+  # writing our config. podman system reset deletes $HOME/.config/containers/
+  # in some versions, so we must run it first.
+  podman system reset --force 2> /dev/null || true
+
+  # Write storage.conf with rootless_storage_path — the only field that
+  # containers/storage's getRootlessStorageOpts() respects for overriding
+  # the rootless graphroot. Plain "graphroot" is overwritten by rootless
+  # path logic (it falls back to $XDG_DATA_HOME/containers/storage).
   local storage_conf="${DISCONNECTED_TMPDIR}/storage.conf"
   cat > "${storage_conf}" << EOF
 [storage]
 driver = "vfs"
 graphroot = "${podman_storage}"
+rootless_storage_path = "${podman_storage}"
 runroot = "${podman_run}"
 
 [storage.options]
@@ -85,19 +101,16 @@ EOF
   export CONTAINERS_STORAGE_CONF="${storage_conf}"
 
   # Also install the config at the user-level path (HOME/.config/containers/).
-  # The CI commands.sh sets HOME=/tmp; the entrypoint.sh wrote a default config
-  # at /home/user/.config/containers/ (the original HOME) which has no graphroot.
-  # Some podman versions or downstream scripts may ignore CONTAINERS_STORAGE_CONF
-  # and read the user-level config instead, so we overwrite it at both locations.
+  # The prepare-restricted-environment.sh script invokes podman build which
+  # may read this path instead of CONTAINERS_STORAGE_CONF.
   mkdir -p "${HOME}/.config/containers"
   cp "${storage_conf}" "${HOME}/.config/containers/storage.conf"
 
-  # Clear any pre-initialized storage state from the entrypoint
-  podman system reset --force 2> /dev/null || true
-
   log::info "Podman environment: uid=$(id -u), BUILDAH_ISOLATION=${BUILDAH_ISOLATION}"
   log::info "Storage config (${CONTAINERS_STORAGE_CONF}): $(tr '\n' ' ' < "${storage_conf}")"
+  log::info "XDG_DATA_HOME=${XDG_DATA_HOME}"
   log::info "subuid: $(cat /etc/subuid 2> /dev/null || echo 'not found')"
+  log::info "Podman graphRoot: $(podman info --format '{{.Store.GraphRoot}}' 2>&1 || echo 'podman info failed')"
 
   bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
     || {
@@ -105,6 +118,15 @@ EOF
       return 1
     }
   log::success "Operator installed via prepare-restricted-environment.sh"
+
+  # prepare-restricted-environment.sh applies IDMS/CatalogSource which triggers
+  # a MachineConfig update and node rolling. Wait for completion before deploying
+  # workloads, same as the Helm path.
+  log::info "Waiting for MachineConfigPool updates to complete (up to 20m)..."
+  if ! oc wait machineconfigpool --all --for=condition=Updated=True --timeout=20m; then
+    log::warn "MachineConfigPool wait timed out — proceeding anyway"
+  fi
+  log::success "All MachineConfigPools are Updated"
 
   k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || {
     log::error "Backstage CRD not available after operator installation"
