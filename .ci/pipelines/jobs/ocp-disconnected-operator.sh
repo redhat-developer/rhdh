@@ -70,9 +70,8 @@ handle_ocp_disconnected_operator() {
   local podman_run="${DISCONNECTED_TMPDIR}/podman-run"
   mkdir -p "${podman_storage}" "${podman_run}"
 
-  # Write storage.conf to DISCONNECTED_TMPDIR (not ${HOME}/.config/containers/)
-  # to avoid conflicting with the entrypoint's config. CONTAINERS_STORAGE_CONF
-  # takes precedence over user/system defaults.
+  # Write storage.conf with explicit graphroot in our tmpdir so podman/buildah
+  # never fall back to the default HOME-based path.
   local storage_conf="${DISCONNECTED_TMPDIR}/storage.conf"
   cat > "${storage_conf}" << EOF
 [storage]
@@ -84,6 +83,14 @@ runroot = "${podman_run}"
 ignore_chown_errors = "true"
 EOF
   export CONTAINERS_STORAGE_CONF="${storage_conf}"
+
+  # Also install the config at the user-level path (HOME/.config/containers/).
+  # The CI commands.sh sets HOME=/tmp; the entrypoint.sh wrote a default config
+  # at /home/user/.config/containers/ (the original HOME) which has no graphroot.
+  # Some podman versions or downstream scripts may ignore CONTAINERS_STORAGE_CONF
+  # and read the user-level config instead, so we overwrite it at both locations.
+  mkdir -p "${HOME}/.config/containers"
+  cp "${storage_conf}" "${HOME}/.config/containers/storage.conf"
 
   # Clear any pre-initialized storage state from the entrypoint
   podman system reset --force 2> /dev/null || true
