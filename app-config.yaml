@@ -3,6 +3,52 @@ developerHub:
 app:
   title: Red Hat Developer Hub
   baseUrl: http://localhost:3000
+  # NFS extension settings for plugins statically bundled in app-next
+  # (homepage, global-header, quickstart).
+  extensions:
+    # Homepage — route, visit tracking, and default RHDH layout
+    - page:home:
+        config:
+          path: /
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: true
+          widgetLayout:
+            RhdhTemplateSection:
+              priority: 300
+              breakpoints:
+                xl: { w: 12, h: 5 }
+                lg: { w: 12, h: 5 }
+                md: { w: 12, h: 5 }
+                sm: { w: 12, h: 5 }
+                xs: { w: 12, h: 7.5 }
+                xxs: { w: 12, h: 13.5 }
+            RhdhEntitySection:
+              priority: 200
+              breakpoints:
+                xl: { w: 12, h: 7 }
+                lg: { w: 12, h: 7 }
+                md: { w: 12, h: 8 }
+                sm: { w: 12, h: 9 }
+                xs: { w: 12, h: 11 }
+                xxs: { w: 12, h: 15 }
+            RhdhOnboardingSection:
+              priority: 100
+              breakpoints:
+                xl: { w: 12, h: 6 }
+                lg: { w: 12, h: 6 }
+                md: { w: 12, h: 7 }
+                sm: { w: 12, h: 8 }
+                xs: { w: 12, h: 9 }
+                xxs: { w: 12, h: 14 }
+    # Global header and quickstart drawer
+    - app-root-wrapper:app/global-header: true
+    - app-root-wrapper:app/drawer: true
+    - app-drawer-content:quickstart/quickstart: true
+    - gh-menu-item:quickstart/quickstart: false
+    - gh-menu-item:app/quickstart-help: true
   branding:
     fullLogoWidth: ${FULL_LOGO_WIDTH}
     theme:
@@ -170,6 +216,19 @@ dynatrace:
 # Plugin: Permission
 permission:
   enabled: ${PERMISSION_ENABLED}
+
+# Auth providers for local development (app-next via `backend start:next`).
+# Guest works out of the box; GitHub requires GITHUB_OAUTH_APP_ID and
+# GITHUB_OAUTH_APP_SECRET (create a GitHub OAuth App with callback URL
+# `<backend.baseUrl>/api/auth/github/handler/frame`).
+auth:
+  environment: development
+  providers:
+    guest: {}
+    github:
+      development:
+        clientId: ${GITHUB_OAUTH_APP_ID}
+        clientSecret: ${GITHUB_OAUTH_APP_SECRET}
 
 dynamicPlugins:
   rootDirectory: dynamic-plugins-root
