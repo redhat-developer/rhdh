@@ -40,7 +40,6 @@ initiate_operator_deployments() {
 }
 
 initiate_operator_deployments_osd_gcp() {
-  # RHDHBUGS-1136: OSD-GCP registry fix applied in handle_ocp_operator (MAX_PARALLEL + retries)
   log::info "Initiating Operator-backed deployments on OSD-GCP"
 
   namespace::configure "${NAME_SPACE}"
