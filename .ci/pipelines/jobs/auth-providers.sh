@@ -11,10 +11,40 @@ source "$DIR"/playwright-projects.sh
 # shellcheck source=.ci/pipelines/lib/common.sh
 source "$DIR"/lib/common.sh
 
+wait_for_image_registry_route() {
+  log::info "Ensuring OpenShift image registry route is available..."
+  oc patch configs.imageregistry.operator.openshift.io/cluster \
+    --patch '{"spec":{"defaultRoute":true}}' --type=merge
+
+  local max_attempts=30
+  local wait_interval=10
+  for ((i = 1; i <= max_attempts; i++)); do
+    local registry_host
+    registry_host=$(oc get route default-route -n openshift-image-registry \
+      --template='{{ .spec.host }}' 2>/dev/null) || true
+    if [[ -n "$registry_host" ]]; then
+      local http_status
+      http_status=$(curl -sk -o /dev/null -w "%{http_code}" \
+        "https://${registry_host}/v2/" 2>/dev/null) || true
+      if [[ "$http_status" != "503" && "$http_status" != "000" ]]; then
+        log::info "Image registry is ready at ${registry_host} (HTTP ${http_status})"
+        return 0
+      fi
+      log::debug "Registry not ready (HTTP ${http_status}), attempt ${i}/${max_attempts}"
+    else
+      log::debug "Waiting for registry route, attempt ${i}/${max_attempts}"
+    fi
+    sleep "$wait_interval"
+  done
+
+  log::warn "Image registry may not be fully ready, proceeding anyway..."
+}
+
 handle_auth_providers() {
-  local retry_operator_installation="${1:-1}"
+  local retry_operator_installation="${1:-2}"
   common::oc_login
   configure_namespace "${OPERATOR_MANAGER}"
+  wait_for_image_registry_route
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
   wait_for_backstage_crd "default"
 
