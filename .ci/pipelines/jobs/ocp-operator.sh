@@ -101,14 +101,9 @@ handle_ocp_operator() {
     # concurrent skopeo pushes and allow retries (RHDHBUGS-1136).
     export MAX_PARALLEL=3
     prepare_operator 3
-  else
-    prepare_operator
-  fi
-
-  if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment"
     initiate_operator_deployments_osd_gcp
   else
+    prepare_operator
     initiate_operator_deployments
   fi
 
