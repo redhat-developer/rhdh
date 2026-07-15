@@ -28,14 +28,9 @@ install_rhdh_operator() {
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
-  local iib_flag="--next"
-  if [[ "${JOB_NAME:-}" =~ osd-gcp ]]; then
-    iib_flag="--latest"
-  fi
-
   if [[ "$RELEASE_VERSION" == "next" ]]; then
-    log::info "Installing RHDH operator with '${iib_flag}' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh "${iib_flag}" --install-operator rhdh; then
+    log::info "Installing RHDH operator with '--next' flag"
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
