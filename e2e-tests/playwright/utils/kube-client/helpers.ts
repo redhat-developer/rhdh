@@ -130,6 +130,11 @@ export function getKubeApiErrorMessage(error: unknown): string {
   return message === "" ? "Unknown Kubernetes API error" : message;
 }
 
+/** Wrap a Kubernetes client failure with operation context for CI diagnosis. */
+export function wrapKubernetesError(operation: string, error: unknown): Error {
+  return new Error(`${operation}: ${getKubeApiErrorMessage(error)}`, { cause: error });
+}
+
 /**
  * Returns the RHDH deployment name based on the install method.
  * Uses resolveInstallMethod() which checks INSTALL_METHOD env var first,

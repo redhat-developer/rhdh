@@ -7,6 +7,8 @@ import { RHDHDeploymentState } from "./types";
 export interface AuthConfigActions {
   setDynamicPluginEnabled(pluginName: string, enabled: boolean): void;
   setAppConfigProperty(path: string, value: unknown): void;
+  /** Remove a previously set path so leftover keys cannot leak across login cases. */
+  deleteAppConfigProperty(path: string): void;
 }
 
 const OIDC_CALLBACK_URL = "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame";
@@ -363,6 +365,24 @@ export function configureMicrosoftSessionDuration(
   actions.setAppConfigProperty(
     "auth.providers.microsoft.production.sessionDuration",
     sessionDuration,
+  );
+}
+
+/**
+ * Autologout cases must pin a known-good resolver and clear leftover
+ * sessionDuration from earlier tests so cookie lifetime does not fight idle logout.
+ */
+export function configureOidcAutologout(
+  actions: AuthConfigActions,
+  options: { idleTimeoutMinutes: number; promptBeforeIdleSeconds: number },
+): void {
+  setOIDCResolver(actions, "emailMatchingUserEntityProfileEmail", false);
+  actions.deleteAppConfigProperty("auth.providers.oidc.production.sessionDuration");
+  actions.setAppConfigProperty("auth.autologout.enabled", true);
+  actions.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", options.idleTimeoutMinutes);
+  actions.setAppConfigProperty(
+    "auth.autologout.promptBeforeIdleSeconds",
+    options.promptBeforeIdleSeconds,
   );
 }
 

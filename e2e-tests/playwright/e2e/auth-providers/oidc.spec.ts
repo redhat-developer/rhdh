@@ -7,6 +7,7 @@ import { SettingsPage } from "../../support/pages/settings-page";
 import {
   THREE_DAYS_MS,
   isRefreshTokenDurationNear,
+  waitForNamedCookieAbsent,
 } from "../../utils/authentication-providers/auth-cookie-duration";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
@@ -313,9 +314,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Enable autologout and user is logged out after inactivity`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty("auth.autologout.enabled", true);
-        harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
-        harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+        harness.deployment.configureOidcAutologout({
+          idleTimeoutMinutes: 0.5,
+          promptBeforeIdleSeconds: 5,
+        });
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsZeus,
@@ -324,10 +326,8 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
         await settingsPage.verifyInactivityLogoutMessageHidden();
 
         await page.reload();
-
-        const cookies = await context.cookies();
-        const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
-        expect(authCookie).toBeUndefined();
+        // Idle logout can clear the shell before the httpOnly refresh cookie drops.
+        await waitForNamedCookieAbsent(context, "oidc-refresh-token");
       },
       cleanup: clearSession,
     });
@@ -336,9 +336,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty("auth.autologout.enabled", true);
-        harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
-        harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+        harness.deployment.configureOidcAutologout({
+          idleTimeoutMinutes: 0.5,
+          promptBeforeIdleSeconds: 5,
+        });
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsZeus,

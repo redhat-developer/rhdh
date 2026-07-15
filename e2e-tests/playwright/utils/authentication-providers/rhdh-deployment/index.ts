@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import {
   configureGithubSessionDuration as configureGithubSessionDurationImpl,
   configureMicrosoftSessionDuration as configureMicrosoftSessionDurationImpl,
+  configureOidcAutologout as configureOidcAutologoutImpl,
   configureOidcSessionDuration as configureOidcSessionDurationImpl,
   enableGithubLoginWithIngestion,
   enableGitlabLoginWithIngestion,
@@ -197,6 +198,30 @@ class RHDHDeployment implements RHDHDeploymentState {
 
   setAppConfigProperty(path: string, value: unknown): RHDHDeployment {
     return this.setConfigProperty(this.appConfig, path, value);
+  }
+
+  deleteAppConfigProperty(path: string): RHDHDeployment {
+    const parts = path.split(".");
+    let current: Record<string, unknown> = this.appConfig;
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      if (part === undefined) {
+        throw new Error(`Invalid config path: ${path}`);
+      }
+      const next = current[part];
+      if (!isRecord(next)) {
+        return this;
+      }
+      current = next;
+    }
+
+    const lastPart = parts.at(-1);
+    if (lastPart === undefined) {
+      throw new Error(`Invalid config path: ${path}`);
+    }
+    delete current[lastPart];
+    return this;
   }
 
   getAppConfig(): YamlConfig {
@@ -517,6 +542,15 @@ class RHDHDeployment implements RHDHDeploymentState {
 
   configureMicrosoftSessionDuration(sessionDuration: string): RHDHDeployment {
     configureMicrosoftSessionDurationImpl(this, sessionDuration);
+    return this;
+  }
+
+  /** Pin email resolver + autologout; clear leftover sessionDuration from prior cases. */
+  configureOidcAutologout(options: {
+    idleTimeoutMinutes: number;
+    promptBeforeIdleSeconds: number;
+  }): RHDHDeployment {
+    configureOidcAutologoutImpl(this, options);
     return this;
   }
 

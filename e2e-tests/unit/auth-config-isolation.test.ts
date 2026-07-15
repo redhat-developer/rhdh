@@ -4,18 +4,29 @@ import { isRetryableConnectionError } from "../playwright/support/auth/provider-
 import {
   configureGithubSessionDuration,
   configureMicrosoftSessionDuration,
+  configureOidcAutologout,
   configureOidcSessionDuration,
   type AuthConfigActions,
 } from "../playwright/utils/authentication-providers/rhdh-deployment/auth";
-import { isKubernetesConflictError } from "../playwright/utils/errors";
+import { isKubernetesConflictError, isKubernetesNotFoundError } from "../playwright/utils/errors";
+import { wrapKubernetesError } from "../playwright/utils/kube-client/helpers";
 
-function captureActions(): AuthConfigActions & { props: Record<string, unknown> } {
+function captureActions(): AuthConfigActions & {
+  props: Record<string, unknown>;
+  deleted: string[];
+} {
   const props: Record<string, unknown> = {};
+  const deleted: string[] = [];
   return {
     props,
+    deleted,
     setDynamicPluginEnabled: vi.fn<(pluginName: string, enabled: boolean) => void>(),
     setAppConfigProperty: (path: string, value: unknown): void => {
       props[path] = value;
+    },
+    deleteAppConfigProperty: (path: string): void => {
+      deleted.push(path);
+      delete props[path];
     },
   };
 }
@@ -32,6 +43,30 @@ describe("isKubernetesConflictError", () => {
   it("rejects non-conflict errors", () => {
     expect(isKubernetesConflictError({ statusCode: 500 })).toBe(false);
     expect(isKubernetesConflictError(new Error("HTTP request failed"))).toBe(false);
+  });
+});
+
+describe("isKubernetesNotFoundError", () => {
+  it("detects top-level and nested 404", () => {
+    expect(isKubernetesNotFoundError({ statusCode: 404 })).toBe(true);
+    expect(isKubernetesNotFoundError({ response: { statusCode: 404 } })).toBe(true);
+  });
+
+  it("rejects non-404 errors", () => {
+    expect(isKubernetesNotFoundError({ statusCode: 409 })).toBe(false);
+  });
+});
+
+describe("wrapKubernetesError", () => {
+  it("includes operation context and status detail", () => {
+    const wrapped = wrapKubernetesError("Failed to delete pod foo", {
+      response: { statusCode: 500, statusMessage: "Internal Server Error" },
+    });
+    expect(wrapped.message).toContain("Failed to delete pod foo");
+    expect(wrapped.message).toContain("HTTP 500");
+    expect(wrapped.cause).toEqual({
+      response: { statusCode: 500, statusMessage: "Internal Server Error" },
+    });
   });
 });
 
@@ -99,5 +134,29 @@ describe("configure*SessionDuration", () => {
       },
     ]);
     expect(actions.props["auth.providers.microsoft.production.sessionDuration"]).toBe("3days");
+  });
+});
+
+describe("configureOidcAutologout", () => {
+  it("pins email resolver, enables autologout, and clears leftover sessionDuration", () => {
+    const actions = captureActions();
+    actions.setAppConfigProperty("auth.providers.oidc.production.sessionDuration", "3days");
+
+    configureOidcAutologout(actions, {
+      idleTimeoutMinutes: 0.5,
+      promptBeforeIdleSeconds: 5,
+    });
+
+    expect(actions.props["auth.providers.oidc.production.signIn.resolvers"]).toEqual([
+      {
+        resolver: "emailMatchingUserEntityProfileEmail",
+        dangerouslyAllowSignInWithoutUserInCatalog: false,
+      },
+    ]);
+    expect(actions.deleted).toContain("auth.providers.oidc.production.sessionDuration");
+    expect(actions.props["auth.providers.oidc.production.sessionDuration"]).toBeUndefined();
+    expect(actions.props["auth.autologout.enabled"]).toBe(true);
+    expect(actions.props["auth.autologout.idleTimeoutMinutes"]).toBe(0.5);
+    expect(actions.props["auth.autologout.promptBeforeIdleSeconds"]).toBe(5);
   });
 });

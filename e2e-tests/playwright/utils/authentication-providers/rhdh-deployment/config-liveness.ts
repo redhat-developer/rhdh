@@ -12,7 +12,9 @@
 import * as k8s from "@kubernetes/client-node";
 import * as yaml from "yaml";
 
+import { isKubernetesNotFoundError } from "../../errors";
 import { execPodCommandImpl } from "../../kube-client/exec";
+import { wrapKubernetesError } from "../../kube-client/helpers";
 import { pollUntil } from "../../poll-until";
 import { buildDeploymentLabelSelector, labelSelectorFromMatchLabels } from "./deployment-labels";
 import { RHDHDeploymentState, isRecord } from "./types";
@@ -24,20 +26,30 @@ const BACKSTAGE_BACKEND_CONTAINER = "backstage-backend";
 
 async function getLabeledDeployment(state: RHDHDeploymentState): Promise<k8s.V1Deployment> {
   const labelSelector = buildDeploymentLabelSelector(state.instanceName);
-  const deployments = await state.appsV1Api.listNamespacedDeployment(
-    state.namespace,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    labelSelector,
-  );
+  try {
+    const deployments = await state.appsV1Api.listNamespacedDeployment(
+      state.namespace,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      labelSelector,
+    );
 
-  if (deployments.body.items.length === 0) {
-    throw new Error(`No deployment found with labels: ${labelSelector}`);
+    if (deployments.body.items.length === 0) {
+      throw new Error(`No deployment found with labels: ${labelSelector}`);
+    }
+
+    return deployments.body.items[0];
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.startsWith("No deployment found")) {
+      throw error;
+    }
+    throw wrapKubernetesError(
+      `Failed to list deployments in ${state.namespace} (${labelSelector})`,
+      error,
+    );
   }
-
-  return deployments.body.items[0];
 }
 
 async function getPodLabelSelector(state: RHDHDeploymentState): Promise<string> {
@@ -55,18 +67,25 @@ async function listRunningPods(
   state: RHDHDeploymentState,
   labelSelector: string,
 ): Promise<k8s.V1Pod[]> {
-  const pods = await state.k8sApi.listNamespacedPod(
-    state.namespace,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    labelSelector,
-  );
+  try {
+    const pods = await state.k8sApi.listNamespacedPod(
+      state.namespace,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      labelSelector,
+    );
 
-  return pods.body.items.filter(
-    (pod) => pod.status?.phase === "Running" && pod.metadata?.deletionTimestamp === undefined,
-  );
+    return pods.body.items.filter(
+      (pod) => pod.status?.phase === "Running" && pod.metadata?.deletionTimestamp === undefined,
+    );
+  } catch (error: unknown) {
+    throw wrapKubernetesError(
+      `Failed to list pods in ${state.namespace} (${labelSelector})`,
+      error,
+    );
+  }
 }
 
 async function listRunningPodUids(state: RHDHDeploymentState): Promise<string[]> {
@@ -122,7 +141,15 @@ export async function assertAppConfigPersisted(state: RHDHDeploymentState): Prom
     return;
   }
 
-  const response = await state.k8sApi.readNamespacedConfigMap(state.appConfigMap, state.namespace);
+  let response: { body: k8s.V1ConfigMap };
+  try {
+    response = await state.k8sApi.readNamespacedConfigMap(state.appConfigMap, state.namespace);
+  } catch (error: unknown) {
+    throw wrapKubernetesError(
+      `Failed to read ConfigMap ${state.appConfigMap} in ${state.namespace}`,
+      error,
+    );
+  }
   const remoteYaml = response.body.data?.["app-config.yaml"];
   if (remoteYaml === undefined || remoteYaml === "") {
     throw new Error(
@@ -207,7 +234,16 @@ export async function restartRemoteDeployment(state: RHDHDeploymentState): Promi
       continue;
     }
     console.log(`[INFO] Deleting pod ${name} to reload auth config`);
-    await state.k8sApi.deleteNamespacedPod(name, state.namespace);
+    try {
+      await state.k8sApi.deleteNamespacedPod(name, state.namespace);
+    } catch (error: unknown) {
+      // Pod may already be terminating from a concurrent reconcile.
+      if (isKubernetesNotFoundError(error)) {
+        console.log(`[INFO] Pod ${name} already gone — continuing restart`);
+        continue;
+      }
+      throw wrapKubernetesError(`Failed to delete pod ${name} in ${state.namespace}`, error);
+    }
   }
 }
 
