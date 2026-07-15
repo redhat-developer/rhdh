@@ -287,11 +287,15 @@ COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 # `install --help` invocation fails the build if either the bin disappears
 # or the `install` subcommand the shim hardcodes is renamed/removed,
 # instead of letting that surface as a pod-start failure.
+# RHDHBUGS-3449: the shim uses a process-group trap instead of `exec` so
+# SIGTERM is forwarded to child processes (skopeo, npm) on pod deletion.
 RUN INSTALLER_BIN=/opt/app-root/src/node_modules/.bin/cli-module-install-dynamic-plugins \
     && "$INSTALLER_BIN" install --help >/dev/null \
     && printf '%s\n' \
         '#!/bin/sh' \
-        "exec $INSTALLER_BIN install \"\$@\"" \
+        "trap 'trap - TERM; kill 0' TERM" \
+        "$INSTALLER_BIN install \"\$@\" &" \
+        'wait $!' \
         > /opt/app-root/src/install-dynamic-plugins.sh \
     && chmod a+rx /opt/app-root/src/install-dynamic-plugins.sh
 
