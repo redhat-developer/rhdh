@@ -22,16 +22,9 @@ install_rhdh_operator() {
   fi
 
   rm -f /tmp/install-rhdh-catalog-source.sh
-  local local_script="${DIR}/install-methods/install-rhdh-catalog-source.sh"
-  if [[ "${JOB_NAME:-}" =~ osd-gcp ]] && [[ -f "$local_script" ]]; then
-    # RHDHBUGS-1136: use local copy with skopeo retry logic for OSD-GCP
-    log::info "Using local install-rhdh-catalog-source.sh (OSD-GCP workaround)"
-    cp "$local_script" /tmp/install-rhdh-catalog-source.sh
-  else
-    if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
-      log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"
-      return 1
-    fi
+  if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
+    log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"
+    return 1
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
