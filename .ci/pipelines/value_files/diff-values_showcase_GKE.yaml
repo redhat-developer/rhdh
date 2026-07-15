@@ -7,19 +7,8 @@ route:
 global:
   dynamic:
     plugins:
-      # Disable plugins to save disk space on GKE
-      # These plugins correspond to tests that are ignored in showcase-k8s project
-      # See e2e-tests/playwright.config.ts SHOWCASE_K8S config
-
-      # OCM - test ignored
-      # Test file: e2e-tests/playwright/e2e/plugins/ocm.spec.ts (currently doesn't exist)
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-        enabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-        enabled: false
-
       # Scaffolder relation processor - keep enabled for K8s
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor:bs_1.52.0__2.15.0
         enabled: true
 upstream:
   backstage:
