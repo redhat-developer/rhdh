@@ -22,19 +22,21 @@ const t = getTranslations();
 
 /**
  * Connection drops after pod restart / route flip.
- * Includes ERR_ABORTED — Chromium aborts in-flight navigations when the pod
- * restarts mid-goto after reconcile (seen on Microsoft auth CI).
+ * ERR_ABORTED only when it is a page.goto navigation abort — not arbitrary AbortErrors.
  */
 export function isRetryableConnectionError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  return (
+  if (
     message.includes("ERR_CONNECTION_REFUSED") ||
     message.includes("ERR_CONNECTION_RESET") ||
     message.includes("ERR_CONNECTION_CLOSED") ||
     message.includes("ERR_EMPTY_RESPONSE") ||
-    message.includes("ERR_ABORTED") ||
     message.includes("ERR_NETWORK_CHANGED")
-  );
+  ) {
+    return true;
+  }
+  // Chromium aborts in-flight navigations when the pod restarts mid-goto after reconcile.
+  return message.includes("ERR_ABORTED") && /page\.goto|navigating to/iu.test(message);
 }
 
 export class AuthProviderSession {
@@ -78,6 +80,8 @@ export class AuthProviderSession {
         console.log(
           `[INFO] Connection error on attempt ${attempt}/${attempts} for ${url}, retrying: ${normalized.message}`,
         );
+        // Clear half-loaded documents so the next goto does not inherit a stuck paint.
+        await this.page.goto("about:blank").catch(() => {});
         await sleep(2_000 * attempt);
       }
     }

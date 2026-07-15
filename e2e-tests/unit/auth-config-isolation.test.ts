@@ -36,10 +36,23 @@ describe("isKubernetesConflictError", () => {
 });
 
 describe("isRetryableConnectionError", () => {
-  it("retries post-reconcile navigation aborts and connection drops", () => {
-    expect(isRetryableConnectionError(new Error("net::ERR_ABORTED"))).toBe(true);
+  it("retries connection drops and network changes", () => {
     expect(isRetryableConnectionError(new Error("net::ERR_CONNECTION_REFUSED"))).toBe(true);
     expect(isRetryableConnectionError(new Error("net::ERR_NETWORK_CHANGED"))).toBe(true);
+  });
+
+  it("retries ERR_ABORTED only for page.goto navigations", () => {
+    expect(
+      isRetryableConnectionError(
+        new Error(
+          'page.goto: net::ERR_ABORTED at https://example.com/\nCall log:\n  - navigating to "https://example.com/"',
+        ),
+      ),
+    ).toBe(true);
+    expect(isRetryableConnectionError(new Error("net::ERR_ABORTED"))).toBe(false);
+    expect(isRetryableConnectionError(new Error("AbortError: The operation was aborted"))).toBe(
+      false,
+    );
   });
 
   it("does not retry unrelated navigation failures", () => {
