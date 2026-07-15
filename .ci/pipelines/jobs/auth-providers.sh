@@ -21,11 +21,11 @@ wait_for_image_registry_route() {
   for ((i = 1; i <= max_attempts; i++)); do
     local registry_host
     registry_host=$(oc get route default-route -n openshift-image-registry \
-      --template='{{ .spec.host }}' 2>/dev/null) || true
+      --template='{{ .spec.host }}' 2> /dev/null) || true
     if [[ -n "$registry_host" ]]; then
       local http_status
       http_status=$(curl -sk -o /dev/null -w "%{http_code}" \
-        "https://${registry_host}/v2/" 2>/dev/null) || true
+        "https://${registry_host}/v2/" 2> /dev/null) || true
       if [[ "$http_status" != "503" && "$http_status" != "000" ]]; then
         log::info "Image registry is ready at ${registry_host} (HTTP ${http_status})"
         return 0
