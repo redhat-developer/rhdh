@@ -20,14 +20,20 @@ import {
 
 const t = getTranslations();
 
-/** Connection drops after pod restart — not generic navigation aborts. */
-function isRetryableConnectionError(error: unknown): boolean {
+/**
+ * Connection drops after pod restart / route flip.
+ * Includes ERR_ABORTED — Chromium aborts in-flight navigations when the pod
+ * restarts mid-goto after reconcile (seen on Microsoft auth CI).
+ */
+export function isRetryableConnectionError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return (
     message.includes("ERR_CONNECTION_REFUSED") ||
     message.includes("ERR_CONNECTION_RESET") ||
     message.includes("ERR_CONNECTION_CLOSED") ||
-    message.includes("ERR_EMPTY_RESPONSE")
+    message.includes("ERR_EMPTY_RESPONSE") ||
+    message.includes("ERR_ABORTED") ||
+    message.includes("ERR_NETWORK_CHANGED")
   );
 }
 
