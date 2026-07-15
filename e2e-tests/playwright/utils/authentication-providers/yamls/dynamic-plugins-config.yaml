@@ -1,11 +1,11 @@
 plugins:
-  - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-catalog-backend-module-keycloak:{{inherit}}
     enabled: false
-  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-github-org:{{inherit}}
     enabled: false
   - package: oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.3.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer
     enabled: false
-  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-msgraph:{{inherit}}
     enabled: false
-  - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-rbac:{{inherit}}
     enabled: false

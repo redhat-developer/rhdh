@@ -18,7 +18,7 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `enabled` flag to enable/disable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-github:{{ "{{" }}inherit{{ "}}" }}'
         enabled: true
         pluginConfig:
           catalog:
@@ -36,9 +36,9 @@ global:
                       seconds: 15
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.49.4__3.7.0"
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-catalog-backend-module-keycloak:{{ "{{" }}inherit{{ "}}" }}'
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-rbac:{{ "{{" }}inherit{{ "}}" }}'
         enabled: true
         pluginConfig:
           dynamicPlugins:

@@ -3,7 +3,7 @@ global:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
     includes:
-      # -- List of dynamic plugin wrappers included in, or side-loaded as oci artifacts to, the `rhdh` container image, some of which are not enabled by default.
+      # -- List of dynamic plugins loaded as OCI artifacts, some of which are not enabled by default.
       - 'dynamic-plugins.default.yaml'
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
@@ -11,9 +11,9 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `enabled` flag to enable/disable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-bulk-import-backend:bs_1.49.4__7.3.5
         enabled: true
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-bulk-import:bs_1.49.4__7.3.5
         enabled: true
         pluginConfig:
           dynamicPlugins:
@@ -28,7 +28,7 @@ global:
                     menuItem:
                       icon: bulkImportIcon
                       text: Bulk import
-      # - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+      # - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-kubernetes-backend:{{ "{{" }}inherit{{ "}}" }}'
       #   enabled: true
       #   pluginConfig:
       #     kubernetes:
@@ -55,7 +55,7 @@ global:
       #               authProvider: 'serviceAccount'
       #               skipTLSVerify: true
       #               serviceAccountToken: ${K8S_CLUSTER_TOKEN}
-      # - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+      # - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-kubernetes:{{ "{{" }}inherit{{ "}}" }}'
       #   enabled: true
       #   pluginConfig:
       #     dynamicPlugins:
@@ -71,7 +71,7 @@ global:
       #                   anyOf:
       #                     - hasAnnotation: backstage.io/kubernetes-id
       #                     - hasAnnotation: backstage.io/kubernetes-namespace
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+      # - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-topology:{{ "{{" }}inherit{{ "}}" }}'
       #   enabled: true
       #   pluginConfig:
       #     dynamicPlugins:
@@ -88,7 +88,7 @@ global:
       #                   anyOf:
       #                     - hasAnnotation: backstage.io/kubernetes-id
       #                     - hasAnnotation: backstage.io/kubernetes-namespace
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tech-radar:{{ "{{" }}inherit{{ "}}" }}'
         enabled: true
         pluginConfig:
           dynamicPlugins:
@@ -109,7 +109,7 @@ global:
                       props:
                         width: 1500
                         height: 800
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-rbac:{{ "{{" }}inherit{{ "}}" }}'
         enabled: true
         pluginConfig:
           dynamicPlugins:
@@ -127,7 +127,7 @@ global:
                 dynamicRoutes:
                   - path: /admin/rbac
                     importName: RbacPage
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+      # - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-catalog-backend-module-keycloak:{{ "{{" }}inherit{{ "}}" }}'
       #   enabled: true
       #   pluginConfig:
       #     catalog:
