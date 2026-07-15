@@ -13,10 +13,20 @@ const LOADING_INDICATOR_SELECTORS = [
   '[class*="MuiCircularProgress-root"]',
 ] as const;
 
+/** Brief window for post-reconcile hydrate to mount a loader before settle no-ops. */
+const LOADER_APPEAR_BUDGET_MS = 5_000;
+
 export async function waitForLoadingToSettle(
   page: Page,
   timeout = RHDH_READY_DEFAULT_TIMEOUT_MS,
 ): Promise<void> {
+  const loaders = page.locator(LOADING_INDICATOR_SELECTORS.join(", "));
+  // Do not require role=main here: CI has stuck paints that show only a progressbar
+  // with no landmark. Callers wait for feature UI (provider card / header) next.
+  await loaders
+    .first()
+    .waitFor({ state: "visible", timeout: Math.min(LOADER_APPEAR_BUDGET_MS, timeout) })
+    .catch(() => {});
   for (const selector of LOADING_INDICATOR_SELECTORS) {
     const indicator = page.locator(selector).first();
     const visible = await indicator.isVisible().catch(() => false);
@@ -44,9 +54,6 @@ export async function waitForAppReady(
   if (await hasJsonHealthcheck(page)) {
     await waitForRhdhReady(page.request, timeout);
   }
-  // Main must exist before loader settle is meaningful — otherwise hydrate lag
-  // can make waitForLoadingToSettle no-op while only a progressbar is painted.
-  await expect(page.getByRole("main")).toBeVisible({ timeout });
   await waitForLoadingToSettle(page, timeout);
 }
 

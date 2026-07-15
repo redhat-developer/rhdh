@@ -9,6 +9,7 @@ import * as yaml from "yaml";
 import { applyDynamicPluginsProfile } from "../../dynamic-plugins-profile";
 import { isKubernetesConflictError } from "../../errors";
 import { predictedUrl } from "../../instance-route-identity";
+import { getKubeApiErrorMessage } from "../../kube-client/helpers";
 import {
   applyOperatorInstallProfileToAppConfig,
   applyOperatorInstallProfileToCr,
@@ -197,7 +198,10 @@ export async function createSecret(state: RHDHDeploymentState): Promise<void> {
       await updateSecret(state);
       return;
     }
-    throw error;
+    throw new Error(
+      `Failed to create secret ${state.secretName}: ${getKubeApiErrorMessage(error)}`,
+      { cause: error },
+    );
   }
 }
 
@@ -207,10 +211,30 @@ export async function updateSecret(state: RHDHDeploymentState): Promise<void> {
   }
   // Read-merge-replace keeps resourceVersion, labels, annotations, and type so
   // replace is conditional and does not clobber operator-owned metadata.
-  const existing = await state.k8sApi.readNamespacedSecret(state.secretName, state.namespace);
-  const body = existing.body;
-  body.data = state.secretData;
-  await state.k8sApi.replaceNamespacedSecret(state.secretName, state.namespace, body);
+  // Retry once on conflict — concurrent writers can invalidate resourceVersion.
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const existing = await state.k8sApi.readNamespacedSecret(state.secretName, state.namespace);
+      const body = existing.body;
+      body.data = state.secretData;
+      await state.k8sApi.replaceNamespacedSecret(state.secretName, state.namespace, body);
+      return;
+    } catch (error: unknown) {
+      lastError = error;
+      if (attempt < 2 && isKubernetesConflictError(error)) {
+        console.log(
+          `[INFO] Secret ${state.secretName} replace conflict — retrying read-merge-replace`,
+        );
+        continue;
+      }
+      break;
+    }
+  }
+  throw new Error(
+    `Failed to update secret ${state.secretName}: ${getKubeApiErrorMessage(lastError)}`,
+    { cause: lastError },
+  );
 }
 
 export async function deleteSecret(state: RHDHDeploymentState): Promise<void> {
