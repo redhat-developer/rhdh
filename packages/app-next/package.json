@@ -76,7 +76,7 @@
     "react-dom": "18.3.1",
     "react-router": "6.30.3",
     "react-router-dom": "6.30.3",
-    "react-use": "17.6.0",
+    "react-use": "17.6.1",
     "zen-observable": "0.10.0"
   },
   "devDependencies": {
