@@ -291,7 +291,9 @@ RUN INSTALLER_BIN=/opt/app-root/src/node_modules/.bin/cli-module-install-dynamic
     && "$INSTALLER_BIN" install --help >/dev/null \
     && printf '%s\n' \
         '#!/bin/sh' \
-        "exec $INSTALLER_BIN install \"\$@\"" \
+        "trap 'trap - TERM; kill 0' TERM" \
+        "$INSTALLER_BIN install \"\$@\" &" \
+        'wait $!' \
         > /opt/app-root/src/install-dynamic-plugins.sh \
     && chmod a+rx /opt/app-root/src/install-dynamic-plugins.sh
 
