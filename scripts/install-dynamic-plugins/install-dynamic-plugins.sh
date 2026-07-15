@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 
-# Forward SIGTERM to the whole process group so skopeo/npm/openssl children
-# are terminated instead of outliving the container's grace period.
+# RHDHBUGS-3449: forward SIGTERM to the whole process group so skopeo/npm/openssl
+# children are terminated instead of outliving the container's grace period.
 # `kill 0` sends TERM to this shell too, so the trap must disarm itself first
 # (`trap - TERM`) or it re-triggers itself in an infinite loop.
 trap 'trap - TERM; kill 0' TERM
