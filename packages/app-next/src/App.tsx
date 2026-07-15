@@ -1,26 +1,52 @@
-import type { IconElement } from '@backstage/frontend-plugin-api';
 import { createApp } from '@backstage/frontend-defaults';
+import appVisualizerPlugin from '@backstage/plugin-app-visualizer';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import catalogImportBase from '@backstage/plugin-catalog-import/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import searchPlugin from '@backstage/plugin-search/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import { dynamicFrontendFeaturesLoader } from '@backstage/frontend-dynamic-feature-loader';
-
-// Keep the /catalog-import route for scaffolder, but hide it from the sidebar.
-const catalogImportPlugin = catalogImportBase.withOverrides({
-  title: '',
-  icon: false as unknown as IconElement,
-});
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import globalHeaderPlugin, {
+  globalHeaderModule,
+  globalHeaderTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import {
+  homePageModule,
+  homepageTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
+import quickstartPlugin, {
+  quickstartInitModule,
+  quickstartTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-quickstart/alpha';
+import homePlugin from '@backstage/plugin-home/alpha';
+import { navModule } from './modules/nav';
+import { quickstartHelpModule } from './modules/quickstartHelp';
+import { signInModule } from './modules/signIn';
 
 const app = createApp({
   features: [
+    rhdhThemeModule,
+    navModule,
+    signInModule,
+    homePlugin,
+    homePageModule,
+    homepageTranslationsModule,
+    appVisualizerPlugin,
     catalogPlugin,
-    catalogImportPlugin,
     scaffolderPlugin,
     searchPlugin,
     userSettingsPlugin,
+    appDrawerModule,
     dynamicFrontendFeaturesLoader(),
+    // Static global-header must load after MF remotes so it wins plugin deduplication.
+    globalHeaderModule,
+    globalHeaderPlugin,
+    globalHeaderTranslationsModule,
+    quickstartHelpModule,
+    quickstartPlugin,
+    quickstartInitModule,
+    quickstartTranslationsModule,
   ],
 });
 
