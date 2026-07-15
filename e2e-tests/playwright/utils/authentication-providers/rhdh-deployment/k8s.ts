@@ -87,7 +87,18 @@ async function createConfigMap(
     },
     data,
   };
-  await state.k8sApi.createNamespacedConfigMap(state.namespace, configMap);
+  try {
+    await state.k8sApi.createNamespacedConfigMap(state.namespace, configMap);
+  } catch (error: unknown) {
+    if (isKubernetesConflictError(error)) {
+      console.log(`[INFO] ConfigMap ${name} already exists — replacing data`);
+      await updateConfigMap(state, name, data);
+      return;
+    }
+    throw new Error(`Failed to create ConfigMap ${name}: ${getKubeApiErrorMessage(error)}`, {
+      cause: error,
+    });
+  }
 }
 
 async function updateConfigMap(
@@ -101,17 +112,23 @@ async function updateConfigMap(
   }
 
   const patch = [{ op: "replace", path: "/data", value: data }];
-  await state.k8sApi.patchNamespacedConfigMap(
-    name,
-    state.namespace,
-    patch,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    { headers: { "Content-Type": "application/json-patch+json" } },
-  );
+  try {
+    await state.k8sApi.patchNamespacedConfigMap(
+      name,
+      state.namespace,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { headers: { "Content-Type": "application/json-patch+json" } },
+    );
+  } catch (error: unknown) {
+    throw new Error(`Failed to update ConfigMap ${name}: ${getKubeApiErrorMessage(error)}`, {
+      cause: error,
+    });
+  }
 }
 
 export async function loadBaseConfig(state: RHDHDeploymentState): Promise<void> {
