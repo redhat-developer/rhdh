@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { isRetryableConnectionError } from "../playwright/support/auth/provider-auth";
 import {
   configureGithubSessionDuration,
   configureMicrosoftSessionDuration,
@@ -31,6 +32,19 @@ describe("isKubernetesConflictError", () => {
   it("rejects non-conflict errors", () => {
     expect(isKubernetesConflictError({ statusCode: 500 })).toBe(false);
     expect(isKubernetesConflictError(new Error("HTTP request failed"))).toBe(false);
+  });
+});
+
+describe("isRetryableConnectionError", () => {
+  it("retries post-reconcile navigation aborts and connection drops", () => {
+    expect(isRetryableConnectionError(new Error("net::ERR_ABORTED"))).toBe(true);
+    expect(isRetryableConnectionError(new Error("net::ERR_CONNECTION_REFUSED"))).toBe(true);
+    expect(isRetryableConnectionError(new Error("net::ERR_NETWORK_CHANGED"))).toBe(true);
+  });
+
+  it("does not retry unrelated navigation failures", () => {
+    expect(isRetryableConnectionError(new Error("net::ERR_NAME_NOT_RESOLVED"))).toBe(false);
+    expect(isRetryableConnectionError(new Error("Timeout 30000ms exceeded"))).toBe(false);
   });
 });
 
