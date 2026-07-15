@@ -1,6 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse } from "../../errors";
+import { wrapKubernetesError } from "../../kube-client/helpers";
 import { pollUntil, pollUntilStable } from "../../poll-until";
 import { buildDeploymentLabelSelector } from "./deployment-labels";
 import { BackstageCr, RHDHDeploymentState } from "./types";
@@ -38,14 +39,22 @@ async function getLabeledDeployment(
   state: DeploymentGenerationState,
   labelSelector: string,
 ): Promise<k8s.V1Deployment> {
-  const deployments = await state.appsV1Api.listNamespacedDeployment(
-    state.namespace,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    labelSelector,
-  );
+  let deployments: { body: { items: k8s.V1Deployment[] } };
+  try {
+    deployments = await state.appsV1Api.listNamespacedDeployment(
+      state.namespace,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      labelSelector,
+    );
+  } catch (error: unknown) {
+    throw wrapKubernetesError(
+      `Failed to list deployments in ${state.namespace} (${labelSelector})`,
+      error,
+    );
+  }
 
   if (deployments.body.items.length === 0) {
     throw new Error(`No deployment found with labels: ${labelSelector}`);

@@ -28,3 +28,11 @@ export function isKubernetesConflictError(error: unknown): boolean {
   }
   return hasErrorResponse(error) && error.response?.statusCode === 409;
 }
+
+/** True for Kubernetes NotFound responses (idempotent deletes). */
+export function isKubernetesNotFoundError(error: unknown): boolean {
+  if (hasStatusCode(error) && error.statusCode === 404) {
+    return true;
+  }
+  return hasErrorResponse(error) && error.response?.statusCode === 404;
+}
