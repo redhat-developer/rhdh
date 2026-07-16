@@ -171,41 +171,40 @@ test.describe("Configure Github Provider", () => {
   });
 
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    await expect
-      .poll(
-        () => harness.deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"]),
-        { timeout: 120_000 },
-      )
-      .toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog([
-        "test_admins",
-        "test_all",
-        "test_users",
-      ]),
-    ).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins")).toBe(
-      true,
-    );
-    expect(await harness.deployment.checkUserIsInGroup("rhdhqeauth1", "test_users")).toBe(true);
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog(["test_admins", "test_all", "test_users"]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("rhdhqeauth1", "test_users"),
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("test_users", "test_all")).toBe(true);
-    expect(await harness.deployment.checkGroupIsChildOfGroup("test_admins", "test_all")).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("test_users", "test_all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("test_admins", "test_all"),
+    ).resolves.toBeUndefined();
 
-    expect(
-      await harness.deployment.checkUserHasAnnotation(
+    await expect(
+      harness.deployment.checkUserHasAnnotation(
         "rhdhqeauthadmin",
         "MY_CUSTOM_ANNOTATION",
         "rhdhqeauthadmin",
       ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserHasAnnotation(
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserHasAnnotation(
         "rhdhqeauth1",
         "MY_CUSTOM_ANNOTATION",
         "rhdhqeauth1",
       ),
-    ).toBe(true);
+    ).resolves.toBeUndefined();
   });
 
   test("Login with Github as only auth provider with disableIdentityResolution should fail", async () => {

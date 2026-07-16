@@ -1,13 +1,7 @@
 import { GroupEntity } from "@backstage/catalog-model";
 
 import { APIHelper } from "../../api-helper";
-import {
-  getCatalogGroups,
-  getCatalogUsers,
-  isGroupEntity,
-  isUserEntity,
-  RHDHDeploymentState,
-} from "./types";
+import { getCatalogGroups, getCatalogUsers, isGroupEntity, RHDHDeploymentState } from "./types";
 
 /** Poll budget for Keycloak/OIDC entities to appear after provider sync. */
 export const CATALOG_INGESTION_POLL_TIMEOUT_MS = 120_000;
@@ -56,7 +50,12 @@ async function createCatalogApi(
   return api;
 }
 
-async function pollUntilTrue(check: () => Promise<boolean>, label: string): Promise<boolean> {
+/**
+ * Poll until `check` returns true. Hard errors inside `check` (HTTP non-2xx,
+ * malformed entities) propagate immediately — only "not present yet" should
+ * return false.
+ */
+async function waitUntilCatalogReady(check: () => Promise<boolean>, label: string): Promise<void> {
   const { expect } = await import("@playwright/test");
   await expect
     .poll(check, {
@@ -65,15 +64,25 @@ async function pollUntilTrue(check: () => Promise<boolean>, label: string): Prom
       message: label,
     })
     .toBe(true);
-  return true;
 }
 
+function requireGroupEntity(entity: unknown, group: string): GroupEntity {
+  if (!isGroupEntity(entity)) {
+    throw new TypeError(`Invalid group entity for ${group}: ${JSON.stringify(entity)}`);
+  }
+  return entity;
+}
+
+/**
+ * Wait until the listed users appear in the catalog (by displayName).
+ * Resolves on success; throws on HTTP/shape errors or poll timeout.
+ */
 export function checkUserIsIngestedInCatalog(
   state: RHDHDeploymentState,
   users: string[],
   computeBackstageBackendUrl: () => Promise<string>,
-): Promise<boolean> {
-  return pollUntilTrue(
+): Promise<void> {
+  return waitUntilCatalogReady(
     async () => {
       const api = await createCatalogApi(state, computeBackstageBackendUrl);
       const response: unknown = await api.getAllCatalogUsersFromAPI();
@@ -93,12 +102,16 @@ export function checkUserIsIngestedInCatalog(
   );
 }
 
+/**
+ * Wait until the listed groups appear in the catalog (by displayName).
+ * Resolves on success; throws on HTTP/shape errors or poll timeout.
+ */
 export function checkGroupIsIngestedInCatalog(
   state: RHDHDeploymentState,
   groups: string[],
   computeBackstageBackendUrl: () => Promise<string>,
-): Promise<boolean> {
-  return pollUntilTrue(
+): Promise<void> {
+  return waitUntilCatalogReady(
     async () => {
       const api = await createCatalogApi(state, computeBackstageBackendUrl);
       const response: unknown = await api.getAllCatalogGroupsFromAPI();
@@ -123,14 +136,15 @@ export function checkUserIsInGroup(
   user: string,
   group: string,
   computeBackstageBackendUrl: () => Promise<string>,
-): Promise<boolean> {
-  return pollUntilTrue(async () => {
+): Promise<void> {
+  return waitUntilCatalogReady(async () => {
     const api = await createCatalogApi(state, computeBackstageBackendUrl);
-    const entity: unknown = await api.getGroupEntityFromAPI(group);
-    if (!isGroupEntity(entity)) {
+    const entity = await api.getGroupEntityFromAPI(group);
+    if (entity === null) {
       return false;
     }
-    const members = parseGroupMemberFromEntity(entity);
+    const groupEntity = requireGroupEntity(entity, group);
+    const members = parseGroupMemberFromEntity(groupEntity);
     console.log(`Checking group ${group} (${JSON.stringify(members)}) contains user ${user}`);
     return members.includes(user);
   }, `group ${group} contains user ${user}`);
@@ -141,15 +155,18 @@ export function checkGroupIsParentOfGroup(
   parent: string,
   child: string,
   computeBackstageBackendUrl: () => Promise<string>,
-): Promise<boolean> {
-  return pollUntilTrue(async () => {
+): Promise<void> {
+  return waitUntilCatalogReady(async () => {
     const api = await createCatalogApi(state, computeBackstageBackendUrl);
-    const entity: unknown = await api.getGroupEntityFromAPI(parent);
-    if (!isGroupEntity(entity)) {
+    const entity = await api.getGroupEntityFromAPI(parent);
+    if (entity === null) {
       return false;
     }
-    const children = parseGroupChildrenFromEntity(entity);
-    console.log(`Checking group ${parent} (${JSON.stringify(children)}) is parent of ${child}`);
+    const groupEntity = requireGroupEntity(entity, parent);
+    const children = parseGroupChildrenFromEntity(groupEntity);
+    console.log(
+      `Checking children of ${parent} (${JSON.stringify(children)}) contain group ${child}`,
+    );
     return children.includes(child);
   }, `group ${parent} is parent of ${child}`);
 }
@@ -159,15 +176,18 @@ export function checkGroupIsChildOfGroup(
   child: string,
   parent: string,
   computeBackstageBackendUrl: () => Promise<string>,
-): Promise<boolean> {
-  return pollUntilTrue(async () => {
+): Promise<void> {
+  return waitUntilCatalogReady(async () => {
     const api = await createCatalogApi(state, computeBackstageBackendUrl);
-    const entity: unknown = await api.getGroupEntityFromAPI(child);
-    if (!isGroupEntity(entity)) {
+    const entity = await api.getGroupEntityFromAPI(child);
+    if (entity === null) {
       return false;
     }
-    const parents = parseGroupParentFromEntity(entity);
-    console.log(`Checking group ${child} (${JSON.stringify(parents)}) is child of ${parent}`);
+    const groupEntity = requireGroupEntity(entity, child);
+    const parents = parseGroupParentFromEntity(groupEntity);
+    console.log(
+      `Checking parents of ${child} (${JSON.stringify(parents)}) contain group ${parent}`,
+    );
     return parents.includes(parent);
   }, `group ${child} is child of ${parent}`);
 }
@@ -178,11 +198,11 @@ export function checkUserHasAnnotation(
   annotationKey: string,
   expectedValue: string,
   computeBackstageBackendUrl: () => Promise<string>,
-): Promise<boolean> {
-  return pollUntilTrue(async () => {
+): Promise<void> {
+  return waitUntilCatalogReady(async () => {
     const api = await createCatalogApi(state, computeBackstageBackendUrl);
-    const entity: unknown = await api.getCatalogUserFromAPI(user);
-    if (!isUserEntity(entity)) {
+    const entity = await api.getCatalogUserFromAPI(user);
+    if (entity === null) {
       return false;
     }
     const actualValue = entity.metadata.annotations?.[annotationKey];
