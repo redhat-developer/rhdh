@@ -64,6 +64,9 @@ test.describe("Configure GitLab Provider", async () => {
     expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG).toBeDefined();
     expect(process.env.DEFAULT_USER_PASSWORD).toBeDefined();
 
+
+    console.log(`[DEBUG E2E] AUTH_PROVIDERS_GITLAB_HOST: ${process.env.AUTH_PROVIDERS_GITLAB_HOST}`);
+
     // Initialize GitLab helper and create OAuth application dynamically
     gitlabHelper = new GitLabHelper({
       host: process.env.AUTH_PROVIDERS_GITLAB_HOST!,
