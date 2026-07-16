@@ -8,7 +8,7 @@ on:
   push:
     branches:
       - main
-      - release-1.**
+      - release-[0-9]+.**
     paths:
       - 'rpms.in.yaml'
       - 'build/containerfiles/Containerfile'
