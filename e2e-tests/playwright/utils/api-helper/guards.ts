@@ -1,5 +1,13 @@
 import { type UserEntity } from "@backstage/catalog-model";
-import { type APIResponse } from "@playwright/test";
+
+/** Minimal surface of Playwright APIResponse used by parseJsonResponse. */
+export interface JsonHttpResponse {
+  ok(): boolean;
+  status(): number;
+  url(): string;
+  text(): Promise<string>;
+  json(): Promise<unknown>;
+}
 
 interface GitHubPullRequestFile {
   filename: string;
@@ -42,7 +50,17 @@ export function isUserEntity(value: unknown): value is UserEntity {
   return isEntityMetadataResponse(value) && "kind" in value && value.kind === "User";
 }
 
-export function parseJsonResponse(response: APIResponse): Promise<unknown> {
+/**
+ * Parse JSON from a successful response. Non-2xx fails immediately so callers
+ * do not treat auth/proxy errors as "not ingested yet".
+ */
+export async function parseJsonResponse(response: JsonHttpResponse): Promise<unknown> {
+  if (!response.ok()) {
+    const body = await response.text().catch(() => "");
+    throw new Error(
+      `HTTP ${String(response.status())} for ${response.url()}: ${body.slice(0, 200)}`,
+    );
+  }
   return response.json();
 }
 

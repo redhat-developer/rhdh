@@ -207,68 +207,54 @@ test.describe("Configure Microsoft Provider", () => {
   });
 
   test(`Ingestion of Microsoft users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    await expect
-      .poll(
-        () =>
-          harness.deployment.checkUserIsIngestedInCatalog([
-            "TEST Admin",
-            "TEST Atena",
-            "TEST Elio",
-            "TEST Tyke",
-            "TEST Zeus",
-          ]),
-        { timeout: 120_000 },
-      )
-      .toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog([
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog([
+        "TEST Admin",
+        "TEST Atena",
+        "TEST Elio",
+        "TEST Tyke",
+        "TEST Zeus",
+      ]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog([
         "TEST_admins",
         "TEST_goddesses",
         "TEST_gods",
         "TEST_all",
       ]),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup(
-        "admin_rhdhtesting.onmicrosoft.com",
-        "TEST_admins",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup(
-        "zeus_rhdhtesting.onmicrosoft.com",
-        "TEST_admins",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup(
-        "atena_rhdhtesting.onmicrosoft.com",
-        "TEST_goddesses",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup(
-        "tiche_rhdhtesting.onmicrosoft.com",
-        "TEST_goddesses",
-      ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup("elio_rhdhtesting.onmicrosoft.com", "TEST_gods"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserIsInGroup("zeus_rhdhtesting.onmicrosoft.com", "TEST_gods"),
-    ).toBe(true);
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("admin_rhdhtesting.onmicrosoft.com", "TEST_admins"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("zeus_rhdhtesting.onmicrosoft.com", "TEST_admins"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("atena_rhdhtesting.onmicrosoft.com", "TEST_goddesses"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("tiche_rhdhtesting.onmicrosoft.com", "TEST_goddesses"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("elio_rhdhtesting.onmicrosoft.com", "TEST_gods"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("zeus_rhdhtesting.onmicrosoft.com", "TEST_gods"),
+    ).resolves.toBeUndefined();
 
-    //expect(await harness.deployment.checkUserIsInGroup('zeus', 'all')).toBe(true);
-    //expect(await harness.deployment.checkUserIsInGroup('tyke', 'all')).toBe(true);
-    expect(await harness.deployment.checkGroupIsChildOfGroup("test_gods", "test_all")).toBe(true);
-    expect(await harness.deployment.checkGroupIsChildOfGroup("test_goddesses", "test_all")).toBe(
-      true,
-    );
-    expect(await harness.deployment.checkGroupIsParentOfGroup("test_all", "test_gods")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("test_all", "test_goddesses")).toBe(
-      true,
-    );
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("test_gods", "test_all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("test_goddesses", "test_all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("test_all", "test_gods"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("test_all", "test_goddesses"),
+    ).resolves.toBeUndefined();
   });
 
   test.afterAll(async () => {

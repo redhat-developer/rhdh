@@ -120,17 +120,12 @@ test.describe("Configure LDAP Provider", () => {
   });
 
   test(`Ingestion of LDAP users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    expect(
-      await harness.deployment.checkUserIsIngestedInCatalog([
-        "User 1",
-        "User 2",
-        "User 3",
-        "RHDH Admin",
-      ]),
-    ).toBe(true);
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog(["User 1", "User 2", "User 3", "RHDH Admin"]),
+    ).resolves.toBeUndefined();
 
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog([
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog([
         "Admins",
         "All_Users",
         "testGroup",
@@ -138,23 +133,29 @@ test.describe("Configure LDAP Provider", () => {
         "testSubSubGroup",
         "SubAdmins",
       ]),
-    ).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("rhdh-admin", "Admins")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("user1", "All_Users")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("user2", "All_Users")).toBe(true);
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("rhdh-admin", "Admins"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("user1", "All_Users"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("user2", "All_Users"),
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("testsubgroup", "testgroup")).toBe(
-      true,
-    );
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup("testsubsubgroup", "testsubgroup"),
-    ).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("testgroup", "testsubgroup")).toBe(
-      true,
-    );
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup("testsubgroup", "testsubsubgroup"),
-    ).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("testsubgroup", "testgroup"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("testsubsubgroup", "testsubgroup"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("testgroup", "testsubgroup"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("testsubgroup", "testsubsubgroup"),
+    ).resolves.toBeUndefined();
   });
 
   test("Login with PingFederate OIDC (with LDAP catalog)", async () => {

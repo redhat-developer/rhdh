@@ -234,36 +234,50 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test(`Ingestion of users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    expect(
-      await harness.deployment.checkUserIsIngestedInCatalog([
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog([
         "Admin E2e",
         "Atena Minerva",
         "Elio Sole",
         "Tyke Fortuna",
         "Zeus Giove",
       ]),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"]),
-    ).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("atena", "goddesses")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"]),
+    ).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("admin", "admins")).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("zeus", "admins")).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("atena", "goddesses"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("tyke", "goddesses"),
+    ).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("elio", "gods")).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("zeus", "gods")).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
-    expect(await harness.deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("gods", "all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("goddesses", "all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("all", "gods"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("all", "goddesses"),
+    ).resolves.toBeUndefined();
   });
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
-    expect(await harness.deployment.checkUserIsIngestedInCatalog(["Invalid Username"])).toBe(true);
-    expect(await harness.deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"])).toBe(
-      true,
-    );
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog(["Invalid Username"]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"]),
+    ).resolves.toBeUndefined();
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {

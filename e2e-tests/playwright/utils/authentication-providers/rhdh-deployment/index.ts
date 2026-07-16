@@ -576,23 +576,25 @@ class RHDHDeployment implements RHDHDeploymentState {
   parseGroupChildrenFromEntity = parseGroupChildrenFromEntity;
   parseGroupParentFromEntity = parseGroupParentFromEntity;
 
-  checkUserIsIngestedInCatalog(users: string[]): Promise<boolean> {
+  /** Polls until users are ingested; throws on HTTP/shape errors or timeout. */
+  checkUserIsIngestedInCatalog(users: string[]): Promise<void> {
     return checkUserIsIngestedInCatalog(this, users, () => this.computeBackstageBackendUrl());
   }
 
-  checkGroupIsIngestedInCatalog(groups: string[]): Promise<boolean> {
+  /** Polls until groups are ingested; throws on HTTP/shape errors or timeout. */
+  checkGroupIsIngestedInCatalog(groups: string[]): Promise<void> {
     return checkGroupIsIngestedInCatalog(this, groups, () => this.computeBackstageBackendUrl());
   }
 
-  checkUserIsInGroup(user: string, group: string): Promise<boolean> {
+  checkUserIsInGroup(user: string, group: string): Promise<void> {
     return checkUserIsInGroup(this, user, group, () => this.computeBackstageBackendUrl());
   }
 
-  checkGroupIsParentOfGroup(parent: string, child: string): Promise<boolean> {
+  checkGroupIsParentOfGroup(parent: string, child: string): Promise<void> {
     return checkGroupIsParentOfGroup(this, parent, child, () => this.computeBackstageBackendUrl());
   }
 
-  checkGroupIsChildOfGroup(child: string, parent: string): Promise<boolean> {
+  checkGroupIsChildOfGroup(child: string, parent: string): Promise<void> {
     return checkGroupIsChildOfGroup(this, child, parent, () => this.computeBackstageBackendUrl());
   }
 
@@ -600,7 +602,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     user: string,
     annotationKey: string,
     expectedValue: string,
-  ): Promise<boolean> {
+  ): Promise<void> {
     return checkUserHasAnnotation(this, user, annotationKey, expectedValue, () =>
       this.computeBackstageBackendUrl(),
     );

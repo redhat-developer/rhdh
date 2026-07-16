@@ -89,16 +89,28 @@ export function isGroupEntity(value: unknown): value is GroupEntity {
 
 export function getCatalogUsers(response: unknown): UserEntity[] {
   if (!isRecord(response) || !Array.isArray(response.items)) {
-    return [];
+    throw new TypeError(`Invalid catalog users response: ${JSON.stringify(response)}`);
   }
-  return response.items.filter(isUserEntity);
+  const users = response.items.filter(isUserEntity);
+  if (users.length !== response.items.length) {
+    throw new TypeError(
+      `Catalog users response contained non-User items: ${JSON.stringify(response.items)}`,
+    );
+  }
+  return users;
 }
 
 export function getCatalogGroups(response: unknown): GroupEntity[] {
   if (!isRecord(response) || !Array.isArray(response.items)) {
-    return [];
+    throw new TypeError(`Invalid catalog groups response: ${JSON.stringify(response)}`);
   }
-  return response.items.filter(isGroupEntity);
+  const groups = response.items.filter(isGroupEntity);
+  if (groups.length !== response.items.length) {
+    throw new TypeError(
+      `Catalog groups response contained non-Group items: ${JSON.stringify(response.items)}`,
+    );
+  }
+  return groups;
 }
 
 export const currentDirName = import.meta.dirname;

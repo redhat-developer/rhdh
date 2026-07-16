@@ -5,8 +5,14 @@ import * as catalogApi from "./catalog";
 import * as githubApi from "./github";
 import { isUserEntity, parseJsonResponse } from "./guards";
 
-/** Default Playwright request timeout is 10s; catalog through Routes often needs longer. */
-export const CATALOG_API_TIMEOUT_MS = 60_000;
+/**
+ * Shared Playwright APIRequest timeout. Default is 10s; RHDH through OpenShift
+ * Routes often needs longer for catalog and other authenticated fetches.
+ */
+export const API_REQUEST_TIMEOUT_MS = 60_000;
+
+/** Alias of API_REQUEST_TIMEOUT_MS for catalog-oriented call sites. */
+export const CATALOG_API_TIMEOUT_MS = API_REQUEST_TIMEOUT_MS;
 
 export class APIHelper {
   private staticToken = "";
@@ -35,7 +41,7 @@ export class APIHelper {
     url: string,
     staticToken: string,
     body?: string | object,
-    timeoutMs: number = CATALOG_API_TIMEOUT_MS,
+    timeoutMs: number = API_REQUEST_TIMEOUT_MS,
   ): Promise<APIResponse> {
     const context = await request.newContext({ timeout: timeoutMs });
     const options: {
@@ -79,16 +85,34 @@ export class APIHelper {
     return parseJsonResponse(response);
   }
 
-  async getGroupEntityFromAPI(group: string): Promise<unknown> {
-    const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
-    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
+  private static jsonOrNullOn404(response: APIResponse): Promise<unknown> {
+    if (response.status() === 404) {
+      return Promise.resolve(null);
+    }
     return parseJsonResponse(response);
   }
 
-  async getCatalogUserFromAPI(user: string): Promise<UserEntity> {
+  /**
+   * Fetch a group by name. Returns null on 404 so ingestion polls can
+   * wait for the entity; other non-2xx and malformed 200s fail fast.
+   */
+  async getGroupEntityFromAPI(group: string): Promise<unknown> {
+    const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
+    const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
+    return APIHelper.jsonOrNullOn404(response);
+  }
+
+  /**
+   * Fetch a user by name. Returns null on 404 so annotation polls can wait;
+   * other non-2xx and malformed 200s fail fast.
+   */
+  async getCatalogUserFromAPI(user: string): Promise<UserEntity | null> {
     const url = `${this.baseUrl}/api/catalog/entities/by-name/user/default/${user}`;
     const response = await APIHelper.APIRequestWithStaticToken("GET", url, this.getAuthToken());
-    const body: unknown = await parseJsonResponse(response);
+    const body = await APIHelper.jsonOrNullOn404(response);
+    if (body === null) {
+      return null;
+    }
     if (!isUserEntity(body)) {
       throw new TypeError(`Invalid catalog user response for ${user}`);
     }
