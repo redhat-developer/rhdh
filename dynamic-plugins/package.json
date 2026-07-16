@@ -37,7 +37,9 @@
     "@types/react-dom": "18.3.7",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "infinispan": "0.13.0",
-    "react-use": "17.6.1"
+    "react-use": "17.6.1",
+    "monaco-editor": "0.56.0",
+    "@red-hat-developer-hub/backstage-plugin-extensions": "patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.1#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.1-ea480f3404.patch"
   },
   "packageManager": "yarn@4.12.0"
 }
