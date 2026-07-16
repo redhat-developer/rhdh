@@ -5,6 +5,9 @@ import * as catalogApi from "./catalog";
 import * as githubApi from "./github";
 import { isUserEntity, parseJsonResponse } from "./guards";
 
+/** Default Playwright request timeout is 10s; catalog through Routes often needs longer. */
+export const CATALOG_API_TIMEOUT_MS = 60_000;
+
 export class APIHelper {
   private staticToken = "";
   private baseUrl = "";
@@ -32,8 +35,9 @@ export class APIHelper {
     url: string,
     staticToken: string,
     body?: string | object,
+    timeoutMs: number = CATALOG_API_TIMEOUT_MS,
   ): Promise<APIResponse> {
-    const context = await request.newContext();
+    const context = await request.newContext({ timeout: timeoutMs });
     const options: {
       method: string;
       headers: {
@@ -41,12 +45,14 @@ export class APIHelper {
         Authorization: string;
       };
       data?: string | object;
+      timeout: number;
     } = {
       method: method,
       headers: {
         Accept: "application/json",
         Authorization: staticToken,
       },
+      timeout: timeoutMs,
     };
 
     if (body !== undefined) {

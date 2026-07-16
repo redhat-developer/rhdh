@@ -62,6 +62,14 @@ global:
                   rbac:
                     parent: default.admin
                     icon: rbacIcon
+
+      # Disable chart/operator-injected lightspeed plugins ({{inherit}} cannot resolve
+      # against the catalog index). Restores #4791 after it was dropped in #4869.
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed-backend:{{ "{{" }}inherit{{ "}}" }}'
+        disabled: true
+
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
 upstream:
