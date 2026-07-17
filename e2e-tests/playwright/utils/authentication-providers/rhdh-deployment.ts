@@ -1428,7 +1428,7 @@ class RHDHDeployment {
 
     this.setAppConfigProperty("catalog.providers", {
       gitlab: {
-        default: {
+        orgProvider: {
           host: "${AUTH_PROVIDERS_GITLAB_HOST}",
           orgEnabled: true,
           group: "${AUTH_PROVIDERS_GITLAB_PARENT_ORG}",
