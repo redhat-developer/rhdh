@@ -1,9 +1,6 @@
 import { Page, expect } from "@playwright/test";
 
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../../e2e/localization/locale";
+import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
 import * as interaction from "../../utils/ui-helper/interaction";
 import { CATALOG_IMPORT_COMPONENTS } from "../selectors/page-selectors";
 
@@ -49,13 +46,9 @@ export class CatalogImport {
    * @param url - The component URL to register
    * @param clickViewComponent - Whether to click "View Component" after import
    */
-  async registerExistingComponent(
-    url: string,
-    clickViewComponent: boolean = true,
-  ) {
+  async registerExistingComponent(url: string, clickViewComponent: boolean = true) {
     await this.analyzeAndWait(url);
-    const isComponentAlreadyRegistered =
-      await this.isComponentAlreadyRegistered();
+    const isComponentAlreadyRegistered = await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
       await interaction.clickButton(
         this.page,
@@ -63,9 +56,7 @@ export class CatalogImport {
       );
       await expect(
         this.page.getByRole("button", {
-          name: t["catalog-import"][lang][
-            "stepFinishImportLocation.backButtonText"
-          ],
+          name: t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
         }),
       ).toBeVisible();
     } else {
@@ -76,9 +67,7 @@ export class CatalogImport {
       if (clickViewComponent) {
         await interaction.clickButton(
           this.page,
-          t["catalog-import"][lang][
-            "stepFinishImportLocation.locations.viewButtonText"
-          ],
+          t["catalog-import"][lang]["stepFinishImportLocation.locations.viewButtonText"],
         );
       }
     }
@@ -86,9 +75,7 @@ export class CatalogImport {
   }
 
   async verifyEntityYaml(text: string) {
-    await expect(
-      this.page.getByRole("alert").filter({ hasText: "Entity not found" }),
-    ).toBeHidden({
+    await expect(this.page.getByRole("alert").filter({ hasText: "Entity not found" })).toBeHidden({
       timeout: 60_000,
     });
 
