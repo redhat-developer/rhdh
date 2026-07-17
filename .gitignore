@@ -109,3 +109,4 @@ build/containerfiles/Containerfile.hermeto
 
 # Claude Code session lock
 .claude/scheduled_tasks.lock
+.debug-logs/
