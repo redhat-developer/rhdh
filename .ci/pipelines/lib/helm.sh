@@ -212,7 +212,8 @@ helm::uninstall() {
 # ==============================================================================
 
 # Get common Helm set parameters for image configuration
-# Uses global variables: IMAGE_REGISTRY, IMAGE_REPO, TAG_NAME
+# Uses global variables: IMAGE_REGISTRY, IMAGE_REPO, TAG_NAME,
+#   CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO, CATALOG_INDEX_TAG (from env_variables.sh)
 # Returns:
 #   Prints the Helm --set parameters string
 helm::get_image_params() {
@@ -226,6 +227,12 @@ helm::get_image_params() {
 
   # Add image tag
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
+
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    params+="--set global.catalogIndex.image.registry=${CATALOG_INDEX_REGISTRY} "
+    params+="--set global.catalogIndex.image.repository=${CATALOG_INDEX_REPO} "
+    params+="--set global.catalogIndex.image.tag=${CATALOG_INDEX_TAG} "
+  fi
 
   echo "${params}"
   return 0

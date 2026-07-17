@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-24
-FROM registry.access.redhat.com/ubi9/nodejs-24:9.7-1777855644@sha256:2de19f9aed8524187e52c146da60635a80adb06739f23519a5c8a16fda2850e5 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-24:9.8-1783932865@sha256:89bad1c0a72e15291ca0ecaae14956839d017f5ee044908fd29dfba399367b43 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -241,7 +241,7 @@ RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 &
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:9.7-1777884007@sha256:5f89659f11c3cc51c78e9f762b8373097421b76ac20bbe0fac68fb42a2def08c AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:9.8-1783399045@sha256:c71bc3282e204a2b09143d2621236ebc83ef149af67ba2604ba43ad3ec21a5fb AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -275,9 +275,25 @@ ENV PATH="/opt/techdocs-venv/bin:${PATH}"
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
-# Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh ./
-RUN chmod -R a+rx ./install-dynamic-plugins.*
+# Install the dynamic-plugins installer through yarn instead of fetching the
+# vendored .cjs from this repo. The `@red-hat-developer-hub/cli-module-install-dynamic-plugins`
+# dependency is declared in `packages/backend/package.json` so the bin
+# survives the `=== YARN WORKSPACES FOCUS ===` production install (the
+# earlier `=== DELETE DYNAMIC PLUGINS/* ===` step wipes
+# `dynamic-plugins/node_modules/` to keep only `dist/`). Hermeto already
+# prefetches yarn deps for the repo root (the `{"type": "yarn", "path": "."}`
+# entry in the fetch-deps call in scripts/local-hermeto-build.sh), so this
+# works in the hermetic Konflux build with no infra change. The build-time
+# `install --help` invocation fails the build if either the bin disappears
+# or the `install` subcommand the shim hardcodes is renamed/removed,
+# instead of letting that surface as a pod-start failure.
+RUN INSTALLER_BIN=/opt/app-root/src/node_modules/.bin/cli-module-install-dynamic-plugins \
+    && "$INSTALLER_BIN" install --help >/dev/null \
+    && printf '%s\n' \
+        '#!/bin/sh' \
+        "exec $INSTALLER_BIN install \"\$@\"" \
+        > /opt/app-root/src/install-dynamic-plugins.sh \
+    && chmod a+rx /opt/app-root/src/install-dynamic-plugins.sh
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm

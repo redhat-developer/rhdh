@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$(dirname "${BASH_SOURCE[0]}")"/lib/log.sh
@@ -14,11 +15,10 @@ id=$(echo "$input_url" | awk -F'/' '{print $NF}')
 job=$(echo "$input_url" | awk -F'/' '{print $(NF-1)}')
 
 build_log_url="https://prow.ci.openshift.org/log?container=test&id=${id}&job=${job}"
-namespace=$(curl -s $build_log_url | grep "The claimed cluster" | sed -E 's/.*The claimed cluster ([^.]+)\ is ready after.*/\1/')
+namespace=$(curl -s "$build_log_url" | grep "The claimed cluster" | sed -E 's/.*The claimed cluster ([^.]+)\ is ready after.*/\1/' || true)
 
-# Output the constructed URL
 log::info "Prow build log URL: $build_log_url"
-log::info "hosted-mgmt Namespace: $namespace"
+log::info "Ephemeral cluster namespace: $namespace"
 
 if [[ -z "$namespace" ]]; then
   log::error "Cluster claim not found. Please provide a valid prow url that uses cluster claim."
@@ -28,35 +28,59 @@ elif [[ ! "$namespace" =~ ^rhdh-[0-9]+-[0-9]+-us-east-2 ]]; then
   exit 1
 fi
 
-# Log in to the cluster
-oc login --web https://api.hosted-mgmt.ci.devcluster.openshift.com:6443
+# ── Vault credentials ─────────────────────────────────────────────────────────
 
-if ! oc get namespace "$namespace" > /dev/null 2>&1; then
-  log::error "Namespace ${namespace} is expired or deleted, exiting..."
+VAULT_ADDR="${VAULT_ADDR:-https://vault.ci.openshift.org}"
+VAULT_BASE_PATH="${VAULT_BASE_PATH:-selfservice/rhdh-qe}"
+export VAULT_ADDR
+
+for cmd in vault oc jq; do
+  if ! command -v "$cmd" > /dev/null 2>&1; then
+    log::error "'$cmd' CLI not found. Please install it before running this script."
+    exit 1
+  fi
+done
+
+if ! vault token lookup > /dev/null 2>&1; then
+  log::info "Vault: not logged in, starting OIDC login..."
+  vault login -no-print -method=oidc
+  if ! vault token lookup > /dev/null 2>&1; then
+    log::error "Vault login failed. Try manually: export VAULT_ADDR='${VAULT_ADDR}' && vault login -method=oidc"
+    exit 1
+  fi
+fi
+
+log::info "Fetching cluster credentials from Vault..."
+vault_creds=$(vault kv get -format=json -mount=kv "${VAULT_BASE_PATH}/ephemeral_cluster" 2> /dev/null || true)
+
+CLUSTER_ADMIN_USERNAME=$(echo "$vault_creds" | jq -r '.data.data.EPHEMERAL_CLUSTER_ADMIN_USERNAME // empty')
+CLUSTER_ADMIN_PASSWORD=$(echo "$vault_creds" | jq -r '.data.data.EPHEMERAL_CLUSTER_ADMIN_PASSWORD // empty')
+
+if [[ -z "$CLUSTER_ADMIN_USERNAME" ]]; then
+  log::error "CLUSTER_ADMIN_USERNAME not found in Vault at ${VAULT_BASE_PATH}/ephemeral_cluster"
+  exit 1
+fi
+if [[ -z "$CLUSTER_ADMIN_PASSWORD" ]]; then
+  log::error "CLUSTER_ADMIN_PASSWORD not found in Vault at ${VAULT_BASE_PATH}/ephemeral_cluster"
   exit 1
 fi
 
-# Try to retrieve secrets from the namespace
-namespace_secrets=$(oc get secrets -n "$namespace" 2>&1)
-if echo "$namespace_secrets" | grep -q "Forbidden"; then
-  log::error "You do not have access to the namespace '$namespace'."
-  log::info "check if you are member of 'rhdh-pool-admins' group at: https://rover.redhat.com/groups/search?q=rhdh-pool-admins"
-  log::info "Please reach out to the rhdh-qe team for assistance."
+# ── Log in to the ephemeral cluster ──────────────────────────────────────────
+
+cluster_api="https://api.${namespace}.rhdh-qe.devcluster.openshift.com:6443"
+log::info "Logging in to cluster: $cluster_api"
+
+if ! oc login "$cluster_api" --username "$CLUSTER_ADMIN_USERNAME" --password "$CLUSTER_ADMIN_PASSWORD" --insecure-skip-tls-verify=true; then
+  log::error "Login failed. The cluster may be expired or the HTPasswd identity provider is not configured."
+  log::info "To enable cluster login for investigation:"
+  log::info "  1. Add [debug] to your PR title  →  e.g. 'fix: my change [debug]'"
+  log::info "  2. Re-trigger the CI job         →  /test e2e-ocp-helm"
+  log::info "  3. Re-run this script with the new job's prow URL"
   exit 1
 fi
 
-cluster_secret=$(oc get secrets -n "$namespace" | grep admin-password | awk '{print $1}')
-# Retrieve the kubeadmin password from the specified namespace
-password=$(oc get secret $cluster_secret -n "$namespace" -o jsonpath='{.data.password}' | base64 -d)
+# ── Web console ───────────────────────────────────────────────────────────────
 
-# Log out from the current session
-oc logout
-
-# Log in to the namespace-specific cluster
-oc login https://api."$namespace".rhdh-qe.devcluster.openshift.com:6443 --username kubeadmin --password "$password" --insecure-skip-tls-verify=true
-oc project showcase
-
-# Prompt the user to open the web console
 read -p "Do you want to open the OpenShift web console? (y/n): " open_console
 
 if [[ "$open_console" == "y" || "$open_console" == "Y" ]]; then
@@ -64,18 +88,26 @@ if [[ "$open_console" == "y" || "$open_console" == "Y" ]]; then
   console_url="https://console-openshift-console.apps.${namespace}.rhdh-qe.devcluster.openshift.com/dashboards"
 
   log::info "Opening web console at $console_url..."
-  log::info "Use bellow user and password to login into web console:"
-  log::info "Username: kubeadmin"
-  log::info "Password: $password"
-  log::success "Password copied to clipboard"
-  echo $password | pbcopy
+  log::info "Use below user and password to login into web console:"
+  log::info "Username: $CLUSTER_ADMIN_USERNAME"
+  if command -v pbcopy &> /dev/null; then
+    echo "$CLUSTER_ADMIN_PASSWORD" | pbcopy
+    log::success "Password copied to clipboard"
+  elif command -v xclip &> /dev/null; then
+    echo "$CLUSTER_ADMIN_PASSWORD" | xclip -selection clipboard
+    log::success "Password copied to clipboard"
+  elif command -v wl-copy &> /dev/null; then
+    echo "$CLUSTER_ADMIN_PASSWORD" | wl-copy
+    log::success "Password copied to clipboard"
+  else
+    log::warn "No clipboard utility found (install pbcopy/xclip/wl-copy to enable)"
+  fi
   sleep 3
 
-  # Attempt to open the web console in the default browser
   if command -v xdg-open &> /dev/null; then
-    xdg-open "$console_url" # For Linux systems
+    xdg-open "$console_url"
   elif command -v open &> /dev/null; then
-    open "$console_url" # For macOS
+    open "$console_url"
   else
     log::warn "Unable to detect a browser. Please open the following URL manually:"
     log::info "$console_url"

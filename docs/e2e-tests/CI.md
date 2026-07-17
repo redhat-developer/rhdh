@@ -101,15 +101,13 @@ The nightly job for the `main` branch also runs against three OpenShift Containe
 
 ### Localization Tests
 
-Localization tests verify that the RHDH UI displays correctly translated strings for supported languages. These tests run as part of the OCP Helm nightly job.
+Localization tests verify that the RHDH UI displays correctly translated strings for supported languages. These tests run in a dedicated `e2e-ocp-helm-localization-nightly` nightly job.
 
 - **Supported Languages:** German (de), Spanish (es), French (fr), Italian (it), and Japanese (ja)
-- **When They Run:** Localization tests run at the end of the OCP nightly job, after standard deployment tests, runtime config tests, and sanity plugin checks.
-- **Skip Condition:** Localization tests are **skipped for OSD-GCP jobs** due to environment constraints.
-- **Reuses Existing Deployment:** The tests run against the same RHDH instance deployed for standard tests, so no additional deployment is needed.
+- **When They Run:** Localization tests run in their own nightly job with a dedicated showcase deployment.
 - **Playwright Projects:** `showcase-localization-de`, `showcase-localization-es`, `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`
 
-The localization test implementation is in `.ci/pipelines/jobs/ocp-nightly.sh` (`run_localization_tests()` function).
+The localization test implementation is in `.ci/pipelines/jobs/ocp-localization.sh` (`run_localization_tests()` function).
 
 ### CI Job Definitions
 

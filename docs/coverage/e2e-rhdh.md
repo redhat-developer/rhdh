@@ -160,7 +160,6 @@ parallel workers and retries never overwrite each other's output.
 | Flag | Source | Scope |
 |---|---|---|
 | `rhdh` | Jest (`packages/*`, `plugins/*`) | Unit / integration |
-| `install-dynamic-plugins` | Vitest (`scripts/install-dynamic-plugins`) | Install script unit tests |
 | `rhdh-e2e-frontend` (new) | Playwright `page.coverage` | E2E frontend — this doc |
 | `rhdh-e2e-full` (future) | Instrumented showcase image variant | E2E frontend, higher fidelity (RHIDP-13244) |
 | `overlays-e2e-<plugin>` (future) | CoverPort Tekton | Upstream plugins via OCI (RHIDP-11866) |

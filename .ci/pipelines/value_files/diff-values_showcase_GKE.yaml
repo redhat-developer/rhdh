@@ -14,24 +14,13 @@ global:
       # OCM - test ignored
       # Test file: e2e-tests/playwright/e2e/plugins/ocm.spec.ts (currently doesn't exist)
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-        disabled: true
+        enabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-        disabled: true
-
-      # Orchestrator - large OCI plugins causing disk space issues
-      # Tests skipped on GKE: e2e-tests/playwright/e2e/plugins/orchestrator/*.spec.ts
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
+        enabled: false
 
       # Scaffolder relation processor - keep enabled for K8s
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-        disabled: false
+        enabled: true
 upstream:
   backstage:
     extraEnvVarsSecrets:
@@ -57,4 +46,3 @@ upstream:
       ingress.gcp.kubernetes.io/pre-shared-cert: ""
       networking.gke.io/v1beta1.FrontendConfig: rhdh-gke-ingress-security-config
     className: gce
-orchestrator: null

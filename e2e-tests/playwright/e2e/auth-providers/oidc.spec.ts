@@ -1,11 +1,10 @@
-import { test, expect, Page, BrowserContext } from "@support/coverage/test";
-import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
-import { Common, setupBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
+
+import { AuthProviderSession } from "../../support/auth/provider-auth";
+import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { SettingsPage } from "../../support/pages/settings-page";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
-let page: Page;
-let context: BrowserContext;
 
 /* SUPPORTED RESOLVERS
 OIDC:
@@ -18,338 +17,230 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
-test.describe("Configure OIDC provider (using RHBK)", async () => {
-  let common: Common;
-  let uiHelper: UIhelper;
+const harness = AuthProviderHarness.create("albarbaro-test-namespace-oidc");
 
-  const namespace = "albarbaro-test-namespace-oidc";
-  const appConfigMap = "app-config-rhdh";
-  const rbacConfigMap = "rbac-policy";
-  const dynamicPluginsConfigMap = "dynamic-plugins";
-  const secretName = "rhdh-secrets";
+const keycloakHelper = new KeycloakHelper({
+  baseUrl: process.env.RHBK_BASE_URL!,
+  realmName: process.env.RHBK_REALM!,
+  clientId: process.env.RHBK_CLIENT_ID!,
+  clientSecret: process.env.RHBK_CLIENT_SECRET!,
+});
 
-  const keycloakHelper = new KeycloakHelper({
-    baseUrl: process.env.RHBK_BASE_URL,
-    realmName: process.env.RHBK_REALM,
-    clientId: process.env.RHBK_CLIENT_ID,
-    clientSecret: process.env.RHBK_CLIENT_SECRET,
-  });
+test.describe("Configure OIDC provider (using RHBK)", () => {
+  test.use({ baseURL: harness.backstageUrl });
 
-  // set deployment instance
-  const deployment: RHDHDeployment = new RHDHDeployment(
-    namespace,
-    appConfigMap,
-    rbacConfigMap,
-    dynamicPluginsConfigMap,
-    secretName,
-  );
-  deployment.instanceName = "rhdh";
-  // compute backstage baseurl
-  const backstageUrl = await deployment.computeBackstageUrl();
-  const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
-  console.log(`Backstage BaseURL is: ${backstageUrl}`);
+  let authSession: AuthProviderSession;
+  let settingsPage: SettingsPage;
+  let page: Page;
+  let context: BrowserContext;
 
-  test.use({ baseURL: backstageUrl });
+  async function clearSession(): Promise<void> {
+    await authSession.clearAuthState(context);
+  }
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  function loginAsZeus(): Promise<string> {
+    return authSession.loginWithKeycloak("zeus", process.env.DEFAULT_USER_PASSWORD!);
+  }
+
+  function loginAsAtena(): Promise<string> {
+    return authSession.loginWithKeycloak("atena", process.env.DEFAULT_USER_PASSWORD!);
+  }
+
+  test.beforeAll(async ({ rhdhPage, rhdhContext, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
     });
 
-    test.info().setTimeout(600 * 1000);
-    // load default configs from yaml files
-    await deployment.loadAllConfigs();
-    // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
-    common = new Common(page);
-    uiHelper = new UIhelper(page);
+    page = rhdhPage;
+    context = rhdhContext;
+    authSession = rhdhAuthSession;
+    settingsPage = new SettingsPage(rhdhPage);
 
-    // initialize keycloak helper
     console.log("[TEST] Initializing Keycloak helper...");
     await keycloakHelper.initialize();
     console.log("[TEST] Keycloak helper initialized successfully");
 
-    // expect some expected variables
-    expect(process.env.DEFAULT_USER_PASSWORD).toBeDefined();
-    expect(process.env.RHBK_BASE_URL).toBeDefined();
-    expect(process.env.RHBK_REALM).toBeDefined();
-    expect(process.env.RHBK_CLIENT_ID).toBeDefined();
-    expect(process.env.RHBK_CLIENT_SECRET).toBeDefined();
-
-    // clean old namespaces
-    await deployment.deleteNamespaceIfExists();
-
-    // create namespace and wait for it to be active
-    await (await deployment.createNamespace()).waitForNamespaceActive();
-
-    // create all base configmaps
-    await deployment.createAllConfigs();
-
-    // generate static token
-    await deployment.generateStaticToken();
-
-    // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL) {
-      await deployment.addSecretData("BASE_URL", backstageUrl);
-      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
-    }
-    await deployment.addSecretData(
-      "DEFAULT_USER_PASSWORD",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    await deployment.addSecretData(
-      "DEFAULT_USER_PASSWORD_2",
-      process.env.DEFAULT_USER_PASSWORD_2,
-    );
-    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
-    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
-    await deployment.addSecretData(
-      "RHBK_CLIENT_ID",
-      process.env.RHBK_CLIENT_ID,
-    );
-    await deployment.addSecretData(
-      "RHBK_CLIENT_SECRET",
-      process.env.RHBK_CLIENT_SECRET,
-    );
-
-    await deployment.addSecretData(
-      "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
-    );
-    await deployment.addSecretData(
-      "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
-    );
-
-    await deployment.createSecret();
-
-    // create initial deployment
-    // enable keycloak login with ingestion
-    console.log("[TEST] Enabling OIDC login with ingestion...");
-    await deployment.enableOIDCLoginWithIngestion();
-    await deployment.updateAllConfigs();
-    console.log("[TEST] OIDC login with ingestion enabled successfully");
-
-    // create backstage deployment and wait for it to be ready
-    await deployment.createBackstageDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+    await harness.prepareProvider({
+      requiredEnvVars: [
+        "DEFAULT_USER_PASSWORD",
+        "RHBK_BASE_URL",
+        "RHBK_REALM",
+        "RHBK_CLIENT_ID",
+        "RHBK_CLIENT_SECRET",
+      ],
+      envSecrets: {
+        DEFAULT_USER_PASSWORD: "DEFAULT_USER_PASSWORD",
+        DEFAULT_USER_PASSWORD_2: "DEFAULT_USER_PASSWORD_2",
+        RHBK_BASE_URL: "RHBK_BASE_URL",
+        RHBK_REALM: "RHBK_REALM",
+        RHBK_CLIENT_ID: "RHBK_CLIENT_ID",
+        RHBK_CLIENT_SECRET: "RHBK_CLIENT_SECRET",
+        AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+        AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET: "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      },
+      enableProvider: async (deployment) => {
+        console.log("[TEST] Enabling OIDC login with ingestion...");
+        await deployment.enableOIDCLoginWithIngestion();
+        console.log("[TEST] OIDC login with ingestion enabled successfully");
+      },
+    });
   });
 
-  test.beforeEach(async () => {
-    test.info().setTimeout(600 * 1000);
-    console.log(
-      `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
-    );
+  test.beforeEach(() => {
+    console.log(`Running test case ${test.info().title} - Attempt #${test.info().retry}`);
   });
 
   test("Login with OIDC default resolver", async () => {
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-
-    await uiHelper.hideQuickstartIfVisible();
-
-    // Click "Show more" button to display metadata info
-    await page.getByTitle("Show more").click();
-    // Verify Metadata text is present
-    await uiHelper.verifyText("RHDH Metadata");
-
-    await common.signOut();
+    await harness.runLoginCase({
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Zeus Giove");
+        await settingsPage.hideQuickstartIfVisible();
+        await settingsPage.verifyRhdhMetadata();
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with OIDC oidcSubClaimMatchingKeycloakUserId resolver", async () => {
-    await deployment.enableOIDCLoginWithIngestion();
-    await deployment.setOIDCResolver(
-      "oidcSubClaimMatchingKeycloakUserId",
-      false,
-    );
-    await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-    await common.signOut();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.enableOIDCLoginWithIngestion();
+        await harness.deployment.setOIDCResolver("oidcSubClaimMatchingKeycloakUserId", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Zeus Giove");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with OIDC emailMatchingUserEntityProfileEmail resolver", async () => {
-    await deployment.setOIDCResolver(
-      "emailMatchingUserEntityProfileEmail",
-      false,
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-    await common.signOut();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setOIDCResolver("emailMatchingUserEntityProfileEmail", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Zeus Giove");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName resolver", async () => {
-    await deployment.setOIDCResolver(
-      "emailLocalPartMatchingUserEntityName",
-      false,
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.waitForDeploymentReady();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Zeus Giove");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-    await common.signOut();
-
-    const login2 = await common.keycloakLogin(
-      "atena",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login2).toBe("Login successful");
-
-    await uiHelper.verifyAlertErrorMessage(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
-    await keycloakHelper.initialize();
-    await keycloakHelper.clearUserSessions("atena");
+    await harness.runLoginCase({
+      login: loginAsAtena,
+      assert: async () => {
+        await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+        await keycloakHelper.initialize();
+        await keycloakHelper.clearUserSessions("atena");
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with OIDC emailLocalPartMatchingUserEntityName with dangerouslyAllowSignInWithoutUserInCatalog resolver", async () => {
-    await deployment.setOIDCResolver(
-      "emailLocalPartMatchingUserEntityName",
-      true,
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.waitForDeploymentReady();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", true);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Zeus Giove");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-    await common.signOut();
-
-    const login2 = await common.keycloakLogin(
-      "atena",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login2).toBe("Login successful");
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Atena Minerva");
-    await common.signOut();
+    await harness.runLoginCase({
+      login: loginAsAtena,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Atena Minerva");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with OIDC preferredUsernameMatchingUserEntityName resolver", async () => {
-    await deployment.setOIDCResolver(
-      "preferredUsernameMatchingUserEntityName",
-      false,
-    );
-    await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.keycloakLogin(
-      "atena",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Atena Minerva");
-    await common.signOut();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setOIDCResolver("preferredUsernameMatchingUserEntityName", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsAtena,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Atena Minerva");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty(
-      "auth.providers.oidc.production.sessionDuration",
-      "3days",
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.waitForDeploymentReady();
+    await harness.runLoginCase({
+      configure: async () => {
+        harness.deployment.setAppConfigProperty(
+          "auth.providers.oidc.production.sessionDuration",
+          "3days",
+        );
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await page.reload();
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+        const cookies = await context.cookies();
+        const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
+        expect(authCookie).toBeDefined();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        const tolerance = 3 * 60 * 1000;
+        const actualDuration = authCookie!.expires * 1000 - Date.now();
 
-    await page.reload();
+        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
+        expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "oidc-refresh-token",
-    );
-
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
-
-    const actualDuration = authCookie.expires * 1000 - Date.now();
-
-    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-    expect(actualDuration).toBeLessThan(threeDays + tolerance);
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-    await common.signOut();
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Zeus Giove");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Ingestion of users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     expect(
-      await deployment.checkUserIsIngestedInCatalog([
+      await harness.deployment.checkUserIsIngestedInCatalog([
         "Admin E2e",
         "Atena Minerva",
         "Elio Sole",
@@ -358,179 +249,122 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       ]),
     ).toBe(true);
     expect(
-      await deployment.checkGroupIsIngestedInCatalog([
-        "admins",
-        "goddesses",
-        "gods",
-      ]),
+      await harness.deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"]),
     ).toBe(true);
-    expect(await deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("atena", "goddesses")).toBe(
-      true,
-    );
-    expect(await deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("atena", "goddesses")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
+    expect(await harness.deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
 
-    expect(await deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
-    expect(await deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(
-      true,
-    );
-    expect(await deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(
-      true,
-    );
-    expect(await deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(
-      true,
-    );
+    expect(await harness.deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(true);
+    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(true);
   });
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
-    expect(
-      await deployment.checkUserIsIngestedInCatalog(["Invalid Username"]),
-    ).toBe(true);
-    expect(
-      await deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"]),
-    ).toBe(true);
+    expect(await harness.deployment.checkUserIsIngestedInCatalog(["Invalid Username"])).toBe(true);
+    expect(await harness.deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"])).toBe(
+      true,
+    );
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
-    await uiHelper.goToPageUrl("/", "Select a sign-in method");
-    // Scope to the main content area to get only sign-in method card headers
-    const signInMethodsContainer = page.getByRole("main");
-    const singInMethods = await signInMethodsContainer
-      .getByRole("heading", { level: 6 })
-      .allInnerTexts();
-    expect(singInMethods).not.toContain("Guest");
+    await settingsPage.goToPageUrl("/", "Select a sign-in method");
+    await settingsPage.verifyGuestSignInMethodNotListed();
   });
 
   test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
-    const oidcLogin = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
+    try {
+      expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
+      expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
 
-    expect(oidcLogin).toBe("Login successful");
+      const result = await loginAsZeus();
+      expect(result).toBe("Login successful");
 
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
+      await settingsPage.open();
+      await settingsPage.verifyProfileHeading("Zeus Giove");
 
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID).toBeDefined();
-    // set up GitHub auth
-    deployment.setAppConfigProperty("auth.providers.github", {
-      production: {
-        clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
-        clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
-        callbackUrl:
-          "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
-      },
-    });
+      harness.deployment.setAppConfigProperty("auth.providers.github", {
+        production: {
+          clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
+          clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
+          callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+        },
+      });
+      harness.deployment.setAppConfigProperty(
+        "auth.providers.github.production.disableIdentityResolution",
+        "true",
+      );
+      await harness.reconcileAfterConfigChange();
 
-    deployment.setAppConfigProperty(
-      "auth.providers.github.production.disableIdentityResolution",
-      "true",
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.waitForDeploymentReady();
+      await settingsPage.hideQuickstartIfVisible();
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+      const ghLogin = await authSession.loginWithGitHubFromSettingsPage(
+        "rhdhqeauth1",
+        process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+        process.env.AUTH_PROVIDERS_GH_USER_2FA!,
+      );
+      expect(ghLogin).toBe("Login successful");
+      // Intentional divergence: GitHub provider settings expose sign-out via title tooltip.
+      await page.getByTitle("Sign out from GitHub").click();
 
-    await uiHelper.hideQuickstartIfVisible();
-
-    const ghLogin = await common.githubLoginFromSettingsPage(
-      "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA,
-    );
-    expect(ghLogin).toBe("Login successful");
-    // Sign out for GitHub
-    await page.getByTitle("Sign out from GitHub").click();
-
-    // Sign out for OIDC
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-    await common.signOut();
-    await context.clearCookies();
+      await settingsPage.open();
+      await settingsPage.verifyProfileHeading("Zeus Giove");
+      await settingsPage.signOut();
+    } finally {
+      await clearSession();
+    }
   });
 
   test(`Enable autologout and user is logged out after inactivity`, async () => {
-    deployment.setAppConfigProperty("auth.autologout.enabled", "true");
-    deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5, // minimum allowed value is 0.5 minutes
-    );
-    deployment.setAppConfigProperty(
-      "auth.autologout.promptBeforeIdleSeconds",
-      5,
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.waitForDeploymentReady();
+    await harness.runLoginCase({
+      configure: async () => {
+        harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+        harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
+        harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.verifyTextVisible("Logging out due to inactivity", false, 60000);
+        await settingsPage.verifyInactivityLogoutMessageHidden();
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+        await page.reload();
 
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.verifyTextVisible(
-      "Logging out due to inactivity",
-      false,
-      60000,
-    );
-    await page.waitForTimeout(5000);
-
-    await page.reload();
-
-    const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "oidc-refresh-token",
-    );
-    expect(authCookie).toBeUndefined();
+        const cookies = await context.cookies();
+        const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
+        expect(authCookie).toBeUndefined();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
-    deployment.setAppConfigProperty("auth.autologout.enabled", "true");
-    deployment.setAppConfigProperty(
-      "auth.autologout.idleTimeoutMinutes",
-      0.5, // minimum allowed value is 0.5 minutes
-    );
-    deployment.setAppConfigProperty(
-      "auth.autologout.promptBeforeIdleSeconds",
-      5,
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
-    await deployment.waitForDeploymentReady();
+    await harness.runLoginCase({
+      configure: async () => {
+        harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+        harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
+        harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsZeus,
+      assert: async () => {
+        await settingsPage.clickButtonByText("Don't log me out", {
+          timeout: 60000,
+        });
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await uiHelper.clickButtonByText("Don't log me out", { timeout: 60000 });
-
-    await uiHelper.goToSettingsPage();
-    await uiHelper.verifyHeading("Zeus Giove");
-    await common.signOut();
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("Zeus Giove");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test.afterAll(async () => {
-    console.log("[TEST] Starting cleanup...");
-    await deployment.killRunningProcess();
-    console.log("[TEST] Cleanup completed");
+    await harness.cleanup();
   });
 });

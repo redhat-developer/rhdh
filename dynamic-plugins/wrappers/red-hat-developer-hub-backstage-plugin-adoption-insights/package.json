@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-adoption-insights",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -9,9 +9,24 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.49.4",
+    "supported-versions": "1.52.0",
     "pluginId": "red-hat-developer-hub-backstage-plugin-adoption-insights",
     "pluginPackages": [
       "red-hat-developer-hub-backstage-plugin-adoption-insights",
@@ -30,11 +45,11 @@
   },
   "dependencies": {
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights": "0.8.1"
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights": "0.8.2"
   },
   "devDependencies": {
-    "@backstage/cli": "0.36.0",
-    "@backstage/cli-defaults": "0.1.0",
+    "@backstage/cli": "0.36.3",
+    "@backstage/cli-defaults": "0.1.3",
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },
@@ -46,7 +61,8 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-adoption-insights",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.ts"
     }
   },
   "repository": {

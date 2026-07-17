@@ -1,160 +1,173 @@
-/**
- * E2E test for pluginDivisionMode: schema
- *
- * Verifies that RHDH can operate with schema-mode enabled when the database user
- * has restricted permissions (NOCREATEDB), matching production managed database environments.
- *
- * Tests are opt-in - they skip when SCHEMA_MODE_* environment variables are not set.
- */
-
+import { type TestInfo } from "@playwright/test";
 import { test, expect } from "@support/coverage/test";
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { Common } from "../../utils/common";
+
+import { PortForwardHarness } from "../../support/harnesses/port-forward-harness";
+import { HomePage } from "../../support/pages/home-page";
+import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
-import { setPortForwardRestarter } from "./schema-mode-db";
+import { configureSchemaMode } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
-function startPortForward(
-  pfNamespace: string,
-  pfResource: string,
-): Promise<ChildProcessWithoutNullStreams> {
-  return new Promise<ChildProcessWithoutNullStreams>((resolve, reject) => {
-    const proc = spawn("oc", [
-      "port-forward",
-      "-n",
-      pfNamespace,
-      pfResource,
-      "5432:5432",
-    ]);
+type SchemaModeEnv = {
+  adminPassword: string;
+  dbPassword: string;
+  pfNamespace?: string;
+  pfResource?: string;
+  dbHost?: string;
+};
 
-    const timeout = setTimeout(() => {
-      proc.kill("SIGTERM");
-      reject(new Error("Port-forward timeout after 30 seconds"));
-    }, 30000);
+function readSchemaModeEnv(): SchemaModeEnv | null {
+  const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
+  const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
+  const dbHost = process.env.SCHEMA_MODE_DB_HOST;
+  const adminPassword = process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD;
+  const dbPassword = process.env.SCHEMA_MODE_DB_PASSWORD;
 
-    proc.stdout.on("data", (data) => {
-      if (data.toString().includes("Forwarding from")) {
-        clearTimeout(timeout);
-        resolve(proc);
-      }
-    });
+  const hasPortForwardMeta =
+    pfNamespace !== undefined &&
+    pfNamespace !== "" &&
+    pfResource !== undefined &&
+    pfResource !== "";
+  const hasDirectHost = dbHost !== undefined && dbHost !== "";
 
-    proc.stderr.on("data", (data) => {
-      const msg = data.toString().trim();
-      if (msg) console.error(`Port-forward stderr: ${msg}`);
-    });
+  if (
+    adminPassword === undefined ||
+    adminPassword === "" ||
+    dbPassword === undefined ||
+    dbPassword === "" ||
+    (!hasPortForwardMeta && !hasDirectHost)
+  ) {
+    return null;
+  }
 
-    proc.on("error", (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-  });
+  return {
+    adminPassword,
+    dbPassword,
+    pfNamespace: hasPortForwardMeta ? pfNamespace : undefined,
+    pfResource: hasPortForwardMeta ? pfResource : undefined,
+    dbHost: hasDirectHost ? dbHost : undefined,
+  };
 }
 
-function killPortForward(
-  proc: ChildProcessWithoutNullStreams | undefined,
-): Promise<void> {
-  if (!proc || proc.exitCode !== null) return Promise.resolve();
+async function startSchemaModePortForward(
+  pfNamespace: string,
+  pfResource: string,
+): Promise<PortForwardHarness> {
+  console.log(`Starting port-forward: ${pfResource} in ${pfNamespace} -> localhost:5432`);
 
-  return new Promise<void>((resolve) => {
-    const forceKillTimeout = setTimeout(() => {
-      try {
-        proc.kill("SIGKILL");
-      } catch {
-        // already dead
-      }
-      resolve();
-    }, 5000);
+  const portForwardHarness = new PortForwardHarness(
+    {
+      command: "oc",
+      args: ["port-forward", "-n", pfNamespace, pfResource, "5432:5432"],
+    },
+    {
+      readyPattern: /Forwarding from/u,
+      readyTimeoutMs: 30_000,
+    },
+  );
+  await portForwardHarness.start();
+  portForwardHarness.enableAutoRestartOnDbConnect();
+  console.log("Port-forward established");
+  process.env.SCHEMA_MODE_DB_HOST = "localhost";
+  return portForwardHarness;
+}
 
-    proc.once("close", () => {
-      clearTimeout(forceKillTimeout);
-      resolve();
-    });
+async function initializeSchemaModeSetup(
+  namespace: string,
+  releaseName: string,
+  installMethod: "helm" | "operator",
+  testInfo: TestInfo,
+): Promise<SchemaModeTestSetup | null> {
+  const testSetup = new SchemaModeTestSetup(namespace, releaseName, installMethod);
 
-    proc.kill("SIGTERM");
-  });
+  try {
+    await testSetup.setupDatabase();
+    await testSetup.configureRHDH();
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    testInfo.skip(true, `Schema mode setup failed: ${errorMsg}`);
+    return null;
+  }
+
+  return testSetup;
+}
+
+async function setupSchemaModeTests(
+  testInfo: TestInfo,
+  namespace: string,
+  releaseName: string,
+  installMethod: "helm" | "operator",
+): Promise<{
+  portForwardHarness: PortForwardHarness | null;
+  testSetup: SchemaModeTestSetup;
+} | null> {
+  const env = readSchemaModeEnv();
+  if (env === null) {
+    testInfo.skip(
+      true,
+      "SCHEMA_MODE_* environment variables not set - schema mode tests are opt-in",
+    );
+    return null;
+  }
+
+  testInfo.annotations.push(
+    { type: "component", description: "data-management" },
+    { type: "namespace", description: namespace },
+  );
+
+  let portForwardHarness: PortForwardHarness | null = null;
+  if (env.pfNamespace !== undefined && env.pfResource !== undefined) {
+    portForwardHarness = await startSchemaModePortForward(env.pfNamespace, env.pfResource);
+  }
+
+  const testSetup = await initializeSchemaModeSetup(
+    namespace,
+    releaseName,
+    installMethod,
+    testInfo,
+  );
+  if (testSetup === null) {
+    return null;
+  }
+
+  return { portForwardHarness, testSetup };
 }
 
 test.describe("Verify pluginDivisionMode: schema", () => {
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const releaseName = process.env.RELEASE_NAME || "developer-hub";
-  const installMethod = (
-    process.env.INSTALL_METHOD === "operator" ? "operator" : "helm"
-  ) as "helm" | "operator";
+  const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
+  const releaseName = process.env.RELEASE_NAME ?? "rhdh";
+  const installMethod = resolveInstallMethod();
 
-  let portForwardProcess: ChildProcessWithoutNullStreams | undefined;
+  let portForwardHarness: PortForwardHarness | null = null;
   let testSetup: SchemaModeTestSetup;
 
   test.beforeAll(async ({}, testInfo) => {
-    test.setTimeout(300000);
+    test.setTimeout(900000);
 
-    const hasPortForwardMeta =
-      !!process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE &&
-      !!process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE;
-    const hasDirectHost = !!process.env.SCHEMA_MODE_DB_HOST;
+    if (readSchemaModeEnv() === null) {
+      const kubeClient = new KubeClient();
+      await configureSchemaMode(kubeClient, namespace, releaseName, installMethod);
+    }
 
-    if (
-      !process.env.SCHEMA_MODE_DB_ADMIN_PASSWORD ||
-      !process.env.SCHEMA_MODE_DB_PASSWORD ||
-      (!hasPortForwardMeta && !hasDirectHost)
-    ) {
-      testInfo.skip(
-        true,
-        "SCHEMA_MODE_* environment variables not set - schema mode tests are opt-in",
-      );
+    const setup = await setupSchemaModeTests(testInfo, namespace, releaseName, installMethod);
+    if (setup === null) {
       return;
     }
 
-    testInfo.annotations.push(
-      { type: "component", description: "data-management" },
-      { type: "namespace", description: namespace },
-    );
-
-    if (hasPortForwardMeta) {
-      const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE!;
-      const pfResource = process.env.SCHEMA_MODE_PORT_FORWARD_RESOURCE!;
-
-      console.log(
-        `Starting port-forward: ${pfResource} in ${pfNamespace} -> localhost:5432`,
-      );
-
-      portForwardProcess = await startPortForward(pfNamespace, pfResource);
-      console.log("Port-forward established");
-      process.env.SCHEMA_MODE_DB_HOST = "localhost";
-
-      setPortForwardRestarter(async () => {
-        await killPortForward(portForwardProcess);
-        console.log("Restarting port-forward...");
-        portForwardProcess = await startPortForward(pfNamespace, pfResource);
-        console.log("Port-forward re-established");
-      });
-    }
-
-    testSetup = new SchemaModeTestSetup(namespace, releaseName, installMethod);
-
-    try {
-      await testSetup.setupDatabase();
-      await testSetup.configureRHDH();
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      testInfo.skip(true, `Schema mode setup failed: ${errorMsg}`);
-    }
+    portForwardHarness = setup.portForwardHarness;
+    testSetup = setup.testSetup;
   });
 
   test.afterAll(async () => {
-    setPortForwardRestarter(null);
-    await killPortForward(portForwardProcess);
+    await portForwardHarness?.stop();
   });
 
   test("Verify database user has restricted permissions", async () => {
-    const hasRestrictedPerms =
-      await testSetup.verifyRestrictedDatabasePermissions();
+    const hasRestrictedPerms = await testSetup.verifyRestrictedDatabasePermissions();
     expect(hasRestrictedPerms).toBe(true);
   });
 
-  test("Verify RHDH is accessible with schema mode", async ({
-    page,
-  }, testInfo) => {
+  test("Verify RHDH is accessible with schema mode", async ({ guestPage }, testInfo) => {
     const kubeClient = new KubeClient();
     const deploymentName = testSetup.getDeploymentName();
 
@@ -166,21 +179,16 @@ test.describe("Verify pluginDivisionMode: schema", () => {
       const readyReplicas = deployment.body.status?.readyReplicas ?? 0;
 
       if (readyReplicas < 1) {
-        testInfo.skip(
-          true,
-          "Deployment is not ready (cluster capacity or PVC issue)",
-        );
+        testInfo.skip(true, "Deployment is not ready (cluster capacity or PVC issue)");
         return;
       }
     } catch (error) {
       console.warn("Could not check deployment readiness:", error);
     }
 
-    const common = new Common(page);
-    await common.loginAsGuest();
+    const homePage = new HomePage(guestPage);
+    await homePage.verifyMainHeadingVisible();
 
-    console.log(
-      "RHDH is accessible - plugins successfully created schemas in schema mode",
-    );
+    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
   });
 });

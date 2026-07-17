@@ -38,7 +38,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -56,7 +56,7 @@ jobs:
 
       - name: Setup local Turbo cache
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1.3.0
         with:
           cache-prefix: turbogha-pr-${{ github.event.number }}
 
@@ -81,7 +81,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -98,7 +98,7 @@ jobs:
 
       - name: Setup local Turbo cache
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1.3.0
         with:
           cache-prefix: turbogha-pr-${{ github.event.number }}
 
@@ -111,13 +111,6 @@ jobs:
         uses: backstage/actions/yarn-install@2cd6978b476cbdc39fec48346f8b6ca13199dd6a # v0.7.8
         with:
           cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
-
-      - name: Install Python dependencies
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: | 
-          pip install -r python/requirements-dev.txt
-          pip install -r python/requirements-build.txt
-          pip install -r python/requirements.txt
 
       - name: Run prettier
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -156,7 +149,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6.0.2
         with:
           flags: rhdh
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -171,31 +164,17 @@ jobs:
           directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
 
-      - name: Run Python tests
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v --cov=scripts/install-dynamic-plugins --cov-report=lcov:coverage-install-dynamic-plugins.lcov
-
-      - name: Upload install-dynamic-plugins coverage to Codecov
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
-        with:
-          files: coverage-install-dynamic-plugins.lcov
-          flags: install-dynamic-plugins
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-
-      - name: Change directory to dynamic-plugins
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: cd ./dynamic-plugins
-
       - name: Install dynamic plugin dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: dynamic-plugins
         run: yarn install
 
       - name: Test the dynamic plugin wrappers
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: dynamic-plugins
         run: yarn test --continue --affected
 
       - name: Export the dynamic plugin wrappers
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        working-directory: dynamic-plugins
         run: yarn export-dynamic --continue --affected

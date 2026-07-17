@@ -11,8 +11,7 @@ Some tests use a global page variable `let page: Page;`. This is used to avoid r
 
 Examples:
 
-* https://github.com/redhat-developer/rhdh/blob/release-1.5/e2e-tests/playwright/e2e/google-signin-happy-path.spec.ts
-* https://github.com/redhat-developer/rhdh/blob/release-1.5/e2e-tests/playwright/e2e/guest-signin-happy-path.spec.ts
+* [guest-signin-happy-path.spec.ts](../../e2e-tests/playwright/e2e/guest-signin-happy-path.spec.ts)
 
 ## Types of tests
 

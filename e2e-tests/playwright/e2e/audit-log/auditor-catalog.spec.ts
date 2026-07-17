@@ -1,84 +1,77 @@
 import { test } from "@support/coverage/test";
-import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
-import { LogUtils } from "./log-utils";
+
 import { CatalogImport } from "../../support/pages/catalog-import";
+import { SelfServicePage } from "../../support/pages/self-service-page";
 import { APIHelper } from "../../utils/api-helper";
-const template =
-  "https://github.com/janus-qe/sample-service/blob/main/demo_template.yaml";
+import { LogUtils } from "./log-utils";
+
+const template = "https://github.com/janus-qe/sample-service/blob/main/demo_template.yaml";
 const entityName = "hello-world-2";
 const namespace = "default";
 
-// Ensures the entity exists in the catalog (registers if needed)
 async function ensureEntityExists() {
   const uid = await APIHelper.getTemplateEntityUidByName(entityName, namespace);
-  if (!uid) {
+  if (uid === undefined || uid === "") {
     await APIHelper.registerLocation(template);
+    return false;
   }
-  return !!uid;
+  return true;
 }
 
-// Ensures the entity does not exist in the catalog (deletes if needed)
 async function ensureEntityDoesNotExist() {
   const id = await APIHelper.getLocationIdByTarget(template);
-  if (id) {
+  if (id !== undefined && id !== "") {
     await APIHelper.deleteEntityLocationById(id);
   }
 }
 
 test.describe.serial("Audit Log check for Catalog Plugin", () => {
-  let uiHelper: UIhelper;
-  let common: Common;
+  let selfServicePage: SelfServicePage;
   let catalogImport: CatalogImport;
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "audit-log",
     });
   });
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
-    catalogImport = new CatalogImport(page);
-    await common.loginAsGuest();
-    await uiHelper.goToSelfServicePage();
+  test.beforeEach(async ({ guestPage }) => {
+    selfServicePage = new SelfServicePage(guestPage);
+    catalogImport = new CatalogImport(guestPage);
+    await selfServicePage.open();
   });
 
   test("Should fetch logs for entity-mutate event and validate log structure and values", async () => {
-    // Ensure the entity exists
     await ensureEntityExists();
-    await uiHelper.clickButton("Import an existing Git repository");
-    // Register as existing (should trigger entity-mutate)
+    await selfServicePage.clickImportGitRepository();
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
       "entity-mutate",
       "user:development/guest",
       { method: "POST", url: "/api/catalog/refresh" },
-      undefined, // meta
-      undefined, // error
-      "succeeded", // status
-      "catalog", // plugin
-      "medium", // severityLevel
+      undefined,
+      undefined,
+      "succeeded",
+      "catalog",
+      "medium",
       ["entity-mutate", "POST", "/api/catalog/refresh"],
     );
   });
 
   test("Should fetch logs for location-mutate event and validate log structure and values", async () => {
     await ensureEntityDoesNotExist();
-    await uiHelper.clickButton("Import an existing Git repository");
-    // Register as new (should trigger location-mutate)
+    await selfServicePage.clickImportGitRepository();
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
       "location-mutate",
       "user:development/guest",
       { method: "POST", url: "/api/catalog/locations" },
-      undefined, // meta
-      undefined, // error
-      "succeeded", // status
-      "catalog", // plugin
-      "medium", // severityLevel
+      undefined,
+      undefined,
+      "succeeded",
+      "catalog",
+      "medium",
       ["location-mutate", "POST", "/api/catalog/locations"],
     );
   });

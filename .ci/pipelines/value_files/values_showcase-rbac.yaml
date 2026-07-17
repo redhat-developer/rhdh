@@ -9,17 +9,17 @@ global:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
     includes:
-      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
+      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are not enabled by default.
       # This file ONLY works with the `rhdh-community/rhdh` container image.
       - "dynamic-plugins.default.yaml"
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
     # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
-    # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
+    # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `enabled` flag to enable/disable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
-        disabled: false
+        enabled: true
         pluginConfig:
           catalog:
             providers:
@@ -35,16 +35,11 @@ global:
                     initialDelay:
                       seconds: 15
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.49.4__3.7.0"
-        disabled: false
+        enabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
-        disabled: false
-      # Enable Bulk import plugins.
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
-        disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
-        disabled: false
+        enabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-        disabled: false
+        enabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -67,66 +62,6 @@ global:
                   rbac:
                     parent: default.admin
                     icon: rbacIcon
-      # Enable orchestrator plugins - Official release
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-orchestrator:
-                appIcons:
-                  - importName: OrchestratorIcon
-                    name: orchestratorIcon
-                dynamicRoutes:
-                  - importName: OrchestratorPage
-                    menuItem:
-                      icon: orchestratorIcon
-                      text: Orchestrator
-                      textKey: menuItem.orchestrator
-                    path: /orchestrator
-                entityTabs:
-                  - path: /workflows
-                    title: Workflows
-                    titleKey: catalog.entityPage.workflows.title
-                    mountPoint: entity.page.workflows
-                mountPoints:
-                  - mountPoint: entity.page.workflows/cards
-                    importName: OrchestratorCatalogTab
-                    config:
-                      layout:
-                        gridColumn: "1 / -1"
-                      if:
-                        anyOf:
-                          - IsOrchestratorCatalogTabAvailable
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          orchestrator:
-            dataIndexService:
-              url: http://sonataflow-platform-data-index-service
-
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          orchestrator:
-            dataIndexService:
-              url: http://sonataflow-platform-data-index-service
-
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
-
-      # Disable operator-injected lightspeed plugins (lightspeed flavor is enabledByDefault in the RHDH operator).
-      # The catalog index only provides lightspeed from ghcr.io, not registry.access.redhat.com,
-      # so {{inherit}} cannot resolve. Disable to prevent InstallException in operator deployments.
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-      - package: 'oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-lightspeed-backend:{{ "{{" }}inherit{{ "}}" }}'
-        disabled: true
-
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
 upstream:
@@ -221,8 +156,6 @@ upstream:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
         mountPath: /opt/app-root/src/dynamic-plugins-root
-      - name: extensions-catalog
-        mountPath: /extensions
       - name: temp
         mountPath: /tmp
 
@@ -266,8 +199,6 @@ upstream:
           secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
       - name: npmcacache
         emptyDir: {}
-      # -- Ephemeral volume used by the install-dynamic-plugins init container to extract catalog entities from the catalog index image.
-      # Mounted at the /extensions path in the backstage-backend main container for automatic discovery by the extension catalog backend providers.
       - name: extensions-catalog
         emptyDir: {}
       - name: temp
@@ -291,42 +222,3 @@ upstream:
     enabled: false
     auth:
       existingSecret: postgres-cred
-
-orchestrator:
-  plugins: [] # disable chart-based orchestrator plugins and define above for clarity (may need a new test config to cover helm chart plugins)
-  enabled: true
-  serverlessLogicOperator:
-    enabled: true
-  serverlessOperator:
-    enabled: true
-  sonataflowPlatform:
-    monitoring:
-      enabled: true
-    eventing:
-      broker:
-        name: ""
-        namespace: ""
-    resources:
-      requests:
-        memory: "64Mi"
-        cpu: "250m"
-      limits:
-        memory: "1Gi"
-        cpu: "500m"
-    # -- Secret name for the user-created secret to connect an external DB
-    externalDBsecretRef: "postgres-cred"
-
-    # -- Name for the user-configured external Database
-    externalDBName: "postgres"
-
-    # -- Host for the user-configured external Database
-    externalDBHost: "postgress-external-db-primary.postgress-external-db.svc.cluster.local"
-
-    # -- Port for the user-configured external Database
-    externalDBPort: "5432"
-
-    # -- Image for the init container used by the create-db job
-    initContainerImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547"
-
-    # -- Image for the container used by the create-db job
-    createDBJobImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547"

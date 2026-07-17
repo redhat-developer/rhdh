@@ -28,8 +28,7 @@ Functions: `k8s_wait::deployment`, `k8s_wait::job`, `k8s_wait::service`, `k8s_wa
 Operator and OLM installations.
 
 Functions: `operator::install_subscription`, `operator::check_status`,
-`operator::install_postgres_ocp`, `operator::install_postgres_k8s`,
-`operator::install_serverless_logic`, `operator::install_serverless`, `operator::install_pipelines`,
+`operator::install_postgres_ocp`, `operator::install_postgres_k8s`, `operator::install_pipelines`,
 `operator::install_olm`, `operator::uninstall_olm`
 
 ### `helm.sh`
@@ -38,14 +37,6 @@ Helm chart operations and value file manipulation.
 
 Functions: `helm::merge_values`, `helm::get_previous_release_values`, `helm::get_chart_version`,
 `helm::uninstall`, `helm::get_image_params`, `helm::install`
-
-### `orchestrator.sh`
-
-Orchestrator/Sonataflow deployment and configuration.
-
-Functions: `orchestrator::should_skip`, `orchestrator::disable_plugins_in_values`,
-`orchestrator::deploy_workflows`, `orchestrator::deploy_workflows_operator`,
-`orchestrator::enable_plugins_op`
 
 ### `namespace.sh`
 

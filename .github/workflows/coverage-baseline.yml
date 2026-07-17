@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -56,7 +56,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1.3.0
         with:
           cache-prefix: turbogha-coverage
 
@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6.0.2
         with:
           flags: rhdh
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -99,17 +99,3 @@ jobs:
           directory: ${{ runner.temp }}/test-results
           fail_ci_if_error: false
 
-      - name: Install Python dependencies
-        run: pip install -r python/requirements-dev.txt -r python/requirements.txt
-
-      - name: Run Python tests with coverage
-        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v --cov=scripts/install-dynamic-plugins --cov-report=lcov:coverage-install-dynamic-plugins.lcov
-
-      - name: Upload install-dynamic-plugins coverage to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
-        with:
-          files: coverage-install-dynamic-plugins.lcov
-          flags: install-dynamic-plugins
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false

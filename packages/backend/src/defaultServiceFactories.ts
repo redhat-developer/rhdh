@@ -32,6 +32,10 @@ import { eventsServiceFactory } from '@backstage/plugin-events-node';
  * Service factories that are added to the backend statically by default.  This
  * should be kept up to date with the upstream package code, which is currently
  * not exported.
+ *
+ * Intentionally omitted vs upstream `@backstage/backend-defaults`:
+ * - `core.instanceMetadata` (deprecated upstream service)
+ * - `alpha.core.tracing` (RHDH uses custom OpenTelemetry in `instrumentation.js`)
  */
 export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   auditorServiceFactory,

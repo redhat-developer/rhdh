@@ -1,0 +1,208 @@
+import eslintPluginPlaywright from "eslint-plugin-playwright";
+import { CoverageReport } from "monocart-coverage-reports";
+import { defineConfig } from "oxlint";
+import { shellcheck } from "shellcheck";
+
+void eslintPluginPlaywright;
+void CoverageReport;
+void shellcheck;
+
+/** POM and helper methods that perform assertions on behalf of E2E specs. */
+const playwrightAssertFunctions = [
+  "expect",
+  "toPass",
+  "verifyHeading",
+  "verifyWelcomeHeading",
+  "verifyGuestProfile",
+  "verifySignInPageTitle",
+  "verifyProfileHeading",
+  "verifySignInError",
+  "verifyQuickAccess",
+  "verifyLink",
+  "verifyRowsInTable",
+  "verifyRowInTableByUniqueText",
+  "verifyDivHasText",
+  "verifyComponentInCatalog",
+  "verifyParagraph",
+  "verifyText",
+  "verifyTextinCard",
+  "verifyTextInCard",
+  "verifyVisitedCardContent",
+  "verifyAboutCardIsDisplayed",
+  "verifyPRStatisticsRendered",
+  "verifyPRRows",
+  "verifyPRRowsPerPage",
+  "verifyTemplateHeading",
+  "verifySharedCardCount",
+  "verifyComponentNameVisible",
+  "verifyLinkHidden",
+  "verifyTestPageContent",
+  "verifyContextOneCard",
+  "verifyContextTwoCard",
+  "verifyTemplatesHeading",
+  "verifyDocumentationHeading",
+  "verifyDocHeading",
+  "verifyCreateReactAppReviewTableWithGroupOwner",
+  "verifyDependencyGraphLabels",
+  "validateLog",
+  "validateLogEvent",
+  "validateRbacLogEvent",
+  "checkRbacResponse",
+  "verifyTextInSelector",
+  "verifyPartialTextInSelector",
+  "verifyTextVisible",
+  "verifyLanguageToggleList",
+  "verifyLanguageSelectShowsOptions",
+  "verifyLanguageOptionsList",
+  "verifySelectedLanguage",
+  "verifySignOutMenuLabel",
+  "verifySidebarMenuItemHidden",
+  "verifyLocalizedUserSettingsLabelsWithOwnership",
+  "verifyBuildInfoCardVisible",
+  "verifyBuildInfoText",
+  "verifyGuestSignInMethodNotListed",
+  "verifyInactivityLogoutMessageHidden",
+  "verifyRhdhMetadata",
+  "verifyMenuItemInSection",
+  "verifyLearningPathLinksOpenInNewTab",
+  "verifyMainHeadingVisible",
+  "waitForEntityPath",
+  "waitForOpenInCatalogLink",
+  "waitForTitle",
+  "verifyEntityYaml",
+  "verifyFirstRowCreatedAtNotEmpty",
+];
+
+export default defineConfig({
+  plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "node", "promise"],
+  categories: {
+    correctness: "error",
+    suspicious: "error",
+    pedantic: "error",
+  },
+  options: {
+    typeAware: true,
+    typeCheck: true,
+  },
+  jsPlugins: ["eslint-plugin-check-file"],
+  ignorePatterns: [
+    "node_modules/**",
+    "playwright-report/**",
+    "test-results/**",
+    "coverage/**",
+    ".local-test/**",
+    "scripts/**",
+  ],
+  rules: {
+    "typescript/no-floating-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/strict-void-return": "error",
+    "typescript/prefer-readonly-parameter-types": "off",
+    "check-file/filename-naming-convention": [
+      "error",
+      {
+        "**/*.{js,ts,jsx,tsx}": "KEBAB_CASE",
+      },
+      {
+        ignoreMiddleExtensions: true,
+      },
+    ],
+    "check-file/folder-naming-convention": [
+      "error",
+      {
+        "**": "KEBAB_CASE",
+      },
+    ],
+  },
+  overrides: [
+    {
+      files: ["playwright/e2e/auth-providers/**/*.spec.ts"],
+      rules: {
+        "typescript/strict-void-return": "off",
+        "typescript/no-misused-promises": "off",
+      },
+    },
+    {
+      files: ["**/*.spec.ts", "**/*.test.ts"],
+      rules: {
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+      },
+    },
+    {
+      files: [
+        "playwright/utils/**/*.ts",
+        "playwright/support/**/*.ts",
+        "playwright/data/**/*.ts",
+        "playwright/e2e/**/*.ts",
+      ],
+      rules: {
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+        "eslint/max-depth": "off",
+      },
+    },
+    {
+      files: ["playwright/blocked/**/*.ts"],
+      rules: {
+        "eslint/max-lines-per-function": "off",
+        "import/max-dependencies": "off",
+      },
+    },
+    {
+      files: ["playwright/utils/**/*.ts", "playwright/e2e/localization/**/*.ts"],
+      rules: {
+        "import/max-dependencies": "off",
+      },
+    },
+    {
+      // E2E: *.spec.ts only. Playwright jsPlugin is not loaded for other files.
+      files: ["**/*.spec.ts"],
+      jsPlugins: ["eslint-plugin-playwright"],
+      rules: {
+        "playwright/no-wait-for-timeout": "error",
+        "playwright/no-force-option": "error",
+        "playwright/valid-expect": "error",
+        "playwright/prefer-native-locators": "error",
+        "playwright/no-raw-locators": [
+          "error",
+          {
+            allowed: [],
+          },
+        ],
+        "playwright/no-skipped-test": [
+          "error",
+          {
+            allowConditional: true,
+          },
+        ],
+        "eslint/no-empty-pattern": "off",
+        "playwright/valid-title": "off",
+        "playwright/valid-describe-callback": "off",
+        "playwright/no-wait-for-selector": "off",
+        "playwright/expect-expect": [
+          "error",
+          {
+            assertFunctionNames: playwrightAssertFunctions,
+          },
+        ],
+      },
+    },
+    {
+      // Unit: *.test.ts only. Vitest plugin is not loaded for other files.
+      files: ["**/*.test.ts"],
+      plugins: ["vitest"],
+      rules: {
+        "vitest/expect-expect": "error",
+        "vitest/valid-expect": "off",
+        "vitest/no-conditional-in-test": "off",
+        "vitest/no-conditional-tests": "off",
+        "eslint/no-empty-pattern": "off",
+      },
+    },
+  ],
+});

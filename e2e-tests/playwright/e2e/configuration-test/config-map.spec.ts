@@ -1,7 +1,8 @@
 import { test, expect } from "@support/coverage/test";
-import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
-import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+
+import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
+import { HomePage } from "../../support/pages/home-page";
+import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 test.describe("Change app-config at e2e test runtime", () => {
   test.beforeAll(async () => {
@@ -12,55 +13,37 @@ test.describe("Change app-config at e2e test runtime", () => {
       },
       {
         type: "namespace",
-        description: process.env.NAME_SPACE_RUNTIME || "showcase-runtime",
+        description: process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime",
       },
     );
+
+    await ensureRuntimeDeployed();
   });
 
   test("Verify title change after ConfigMap modification", async ({ page }) => {
-    test.setTimeout(300000); // Increasing to 5 minutes
-
-    // Start with a common name, but let KubeClient find the actual ConfigMap
     const configMapName = "app-config-rhdh";
-
-    const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-    const deploymentName = getRhdhDeploymentName();
-
-    const kubeUtils = new KubeClient();
+    const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
+    const runtimeHarness = new RuntimeHarness(namespace);
     const dynamicTitle = generateDynamicTitle();
     try {
       console.log(`Updating ConfigMap '${configMapName}' with new title.`);
-      await kubeUtils.updateConfigMapTitle(
-        configMapName,
-        namespace,
-        dynamicTitle,
-      );
+      await runtimeHarness.updateConfigMapTitle(configMapName, dynamicTitle);
+      console.log("Restarting deployment to apply ConfigMap changes.");
+      await runtimeHarness.restartDeploymentWithRetry();
 
-      console.log(
-        `Restarting deployment '${deploymentName}' to apply ConfigMap changes.`,
-      );
-      await kubeUtils.restartDeployment(deploymentName, namespace);
-
-      const common = new Common(page);
-      await page.context().clearCookies();
-      await page.context().clearPermissions();
-      await page.reload({ waitUntil: "domcontentloaded" });
-      await common.loginAsGuest();
-      await new UIhelper(page).openSidebar("Home");
+      await runtimeHarness.verifyGuestSession(page);
+      await new HomePage(page).openHomeSidebar();
       console.log("Verifying new title in the UI... ");
       expect(await page.title()).toContain(dynamicTitle);
       console.log("Title successfully verified in the UI.");
     } catch (error) {
-      console.log(
-        `Test failed during ConfigMap update or deployment restart:`,
-        error,
-      );
+      console.log(`Test failed during ConfigMap update or deployment restart:`, error);
       throw error;
     }
   });
 });
 
 function generateDynamicTitle() {
-  const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+  const timestamp = new Date().toISOString().replaceAll(/[-:.]/gu, "");
   return `New Title - ${timestamp}`;
 }

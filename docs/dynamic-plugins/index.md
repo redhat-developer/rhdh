@@ -21,6 +21,10 @@ More details about publishing dynamic plugins is in the [Packaging Dynamic Plugi
 
 [Frontend Plugin Wiring](frontend-plugin-wiring.md)
 
+[Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md)
+
+[Migrating Config to the New Frontend System](migrating-config-to-new-frontend-system.md)
+
 [Local configuration (for development only)](local.md)
 
 [Version Compatibility Matrix](versions.md)
@@ -28,8 +32,6 @@ More details about publishing dynamic plugins is in the [Packaging Dynamic Plugi
 [Debugging Dynamic Plugins](debugging.md)
 
 [Wrapping a third-party backend plugin to add dynamic plugin support](wrapping-plugins.md)
-
-[Examples](examples.md)
 
 ## Installing external Backstage plugins into RHDH
 
@@ -130,9 +132,9 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
 
     plugins:
       - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo
-        disabled: false
+        enabled: true
       - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo-backend-dynamic
-        disabled: false
+        enabled: true
     ```
 
     Push image to container registry.
@@ -152,7 +154,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
     ```yaml
     # frontend and backend plugins for the todo plugin
     - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo
-      disabled: false
+      enabled: true
       pluginConfig:
         dynamicPlugins:
           frontend:
@@ -165,7 +167,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
                   title: Todo
                   mountPoint: entity.page.todo
     - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo-backend-dynamic
-      disabled: false
+      enabled: true
     ```
 
 

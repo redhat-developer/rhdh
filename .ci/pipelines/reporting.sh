@@ -10,10 +10,11 @@ readonly REPORTING_LIB_SOURCED=1
 source "$(dirname "${BASH_SOURCE[0]}")"/lib/log.sh
 
 # Variables for reporting
-export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployments.
-export STATUS_FAILED_TO_DEPLOY     # Array that indicates if deployment failed. false = success, true = failure
-export STATUS_TEST_FAILED          # Array that indicates if test run failed. false = success, true = failure
-export OVERALL_RESULT              # Overall result of the test run. 0 = success, 1 = failure
+export STATUS_DEPLOYMENT_NAMESPACE  # Array that holds the namespaces of deployments.
+export STATUS_FAILED_TO_DEPLOY      # Array that indicates if deployment failed. false = success, true = failure
+export STATUS_TEST_FAILED           # Array that indicates if test run failed. false = success, true = failure
+export STATUS_NUMBER_OF_TEST_FAILED # Array that holds the number of test failures per deployment.
+export OVERALL_RESULT               # Overall result of the test run. 0 = success, 1 = failure
 
 mkdir -p "$ARTIFACT_DIR/reporting"
 
@@ -22,8 +23,7 @@ save_status_deployment_namespace() {
   local current_namespace=$2
   log::debug "Saving STATUS_DEPLOYMENT_NAMESPACE[\"${current_deployment}\"]=${current_namespace}"
   STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]="${current_namespace}"
-  printf "%s\n" "${STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt"
-  cp "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt" "$ARTIFACT_DIR/reporting/STATUS_DEPLOYMENT_NAMESPACE.txt"
+  _regenerate_status_file "STATUS_DEPLOYMENT_NAMESPACE"
 }
 
 save_status_failed_to_deploy() {
@@ -31,8 +31,7 @@ save_status_failed_to_deploy() {
   local status=$2
   log::debug "Saving STATUS_FAILED_TO_DEPLOY[\"${current_deployment}\"]=${status}"
   STATUS_FAILED_TO_DEPLOY["${current_deployment}"]="${status}"
-  printf "%s\n" "${STATUS_FAILED_TO_DEPLOY["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt"
-  cp "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt" "$ARTIFACT_DIR/reporting/STATUS_FAILED_TO_DEPLOY.txt"
+  _regenerate_status_file "STATUS_FAILED_TO_DEPLOY"
 }
 
 save_status_test_failed() {
@@ -40,8 +39,7 @@ save_status_test_failed() {
   local status=$2
   log::debug "Saving STATUS_TEST_FAILED[\"${current_deployment}\"]=${status}"
   STATUS_TEST_FAILED["${current_deployment}"]="${status}"
-  printf "%s\n" "${STATUS_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_TEST_FAILED.txt"
-  cp "$SHARED_DIR/STATUS_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_TEST_FAILED.txt"
+  _regenerate_status_file "STATUS_TEST_FAILED"
 }
 
 save_status_number_of_test_failed() {
@@ -49,8 +47,30 @@ save_status_number_of_test_failed() {
   local number=$2
   log::debug "Saving STATUS_NUMBER_OF_TEST_FAILED[\"${current_deployment}\"]=${number}"
   STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]="${number}"
-  printf "%s\n" "${STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt"
-  cp "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
+  _regenerate_status_file "STATUS_NUMBER_OF_TEST_FAILED"
+}
+
+# Regenerate a STATUS file from its in-memory associative array.
+# Writes the file from scratch each time so that the same deployment ID
+# can be safely updated multiple times (e.g. pessimistic default written
+# before Playwright runs, then overwritten with the real result).
+#
+# IMPORTANT: All callers must run in the same shell process.
+# Associative arrays are not inherited by child processes (export -f
+# only exports function definitions, not array contents). If this
+# function runs in a subshell, it will see an empty array and truncate
+# the file. This is fine today — all test_run_tracker calls are
+# sequential in the main shell.
+_regenerate_status_file() {
+  local var_name=$1
+  local -n _arr="${var_name}"
+  local file="$SHARED_DIR/${var_name}.txt"
+  : > "$file"
+  local key
+  for key in $(printf '%s\n' "${!_arr[@]}" | sort -n); do
+    printf '%s\n' "${_arr[$key]}" >> "$file"
+  done
+  cp "$file" "$ARTIFACT_DIR/reporting/${var_name}.txt"
 }
 
 save_overall_result() {

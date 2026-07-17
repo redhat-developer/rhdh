@@ -1,40 +1,31 @@
-import { expect, test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common } from "../utils/common";
+import { test } from "@support/coverage/test";
+
+import { SidebarPage } from "../support/pages/sidebar-page";
 import { runAccessibilityTests } from "../utils/accessibility";
 
-test.describe("Learning Paths", () => {
-  test.beforeAll(async () => {
+test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
   });
 
-  let common: Common;
-  let uiHelper: UIhelper;
+  let sidebarPage: SidebarPage;
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
-    await common.loginAsGuest();
+  test.beforeEach(({ guestPage }) => {
+    sidebarPage = new SidebarPage(guestPage);
   });
 
-  test("Verify that links in Learning Paths for Backstage opens in a new tab", async ({
-    page,
-  }, testInfo) => {
-    await uiHelper.openSidebarButton("References");
-    await uiHelper.openSidebar("Learning Paths");
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test(
+    "Verify that links in Learning Paths for Backstage opens in a new tab",
+    { tag: "@cluster-free" },
+    async ({ guestPage }, testInfo) => {
+      await sidebarPage.openReferencesLearningPaths();
+      await sidebarPage.verifyLearningPathLinksOpenInNewTab();
 
-    // Scope to main content area to get only Learning Path links
-    const learningPathLinks = page.getByRole("main").getByRole("link");
-
-    for (const learningPathCard of await learningPathLinks.all()) {
-      await expect(learningPathCard).toBeVisible();
-      await expect(learningPathCard).toHaveAttribute("target", "_blank");
-      await expect(learningPathCard).not.toHaveAttribute("href", "");
-    }
-
-    await runAccessibilityTests(page, testInfo);
-  });
+      await runAccessibilityTests(guestPage, testInfo);
+    },
+  );
 });

@@ -1,5 +1,3 @@
-// Assisted by watsonx Code Assistant 
-
 import { writeFile } from 'fs/promises';
 
 // Check for required arguments
@@ -17,13 +15,6 @@ if (targetBranch !== 'main' && !targetBranch.startsWith('release-')) {
 }
 
 const repository = process.env.GITHUB_REPOSITORY || 'redhat-developer/rhdh';
-
-// old branches
-const skipBranches = [
-  "release-0.1",
-  "release-0.2",
-  "release-1.0",
-]
 
 const backstageJsonPath = 'backstage.json';
 const frontendPackageJsonPath = 'packages/app/package.json';
@@ -49,52 +40,6 @@ const backendPackages = [
   '@backstage/config',
   '@backstage/config-loader'
 ];
-
-// List all branches in the repository
-// uses fetch and no github library to avoid depencies on extra libraries
-async function listBranchNames(repository, page = 1, collected = []) {
-  const url = `https://api.github.com/repos/${repository}/branches?page=${page}`;
-
-  const headers = {
-    'Accept': 'application/vnd.github.v3+json'
-  }
-  if (process.env.GITHUB_TOKEN) {
-    headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
-  } else {
-    console.info('WARNING: GITHUB_TOKEN is not set. Using unauthenticated requests may result in rate limiting.');
-  }
-  try {
-    const response = await fetch(url, {
-      headers: headers
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.error(`Repository ${repository} not found.`);
-      } else {
-        console.error(`Error listing branches:`, response.statusText);
-      }
-      return [];
-    }
-
-    const data = await response.json();
-    const branchNames = data.map(branch => branch.name);
-    const allNames = [...collected, ...branchNames];
-
-    const links = response.headers.get('Link');
-    const hasNext = links && links.includes('rel="next"');
-
-    if (hasNext) {
-      return listBranchNames(repository, page + 1, allNames);
-    } else {
-      return allNames;
-    }
-
-  } catch (error) {
-    console.error(`Error listing branches:`, error.message);
-    return [];
-  }
-}
 
 // return the content of the file
 async function getFileFromGithub(repository, branch, filePath) {
@@ -125,7 +70,6 @@ async function getFileFromGithub(repository, branch, filePath) {
 
 }
 
-
 // generate the table for the packages and versions based on the provided package.json
 // only packages in the packageNames array will be included
 async function generateTable(packageJson, packageNames) {
@@ -155,61 +99,47 @@ async function writeToFile(filePath, content) {
 }
 
 async function main() {
-  if (targetBranch.startsWith('release-') && skipBranches.includes(targetBranch)) {
-    console.error(`Branch "${targetBranch}" is intentionally skipped.`);
-    process.exit(0);
+  console.log(`Processing branch ${targetBranch}`)
+
+  let release = ""
+  if (targetBranch === "main") {
+    release = "next"
+  } else {
+    release = targetBranch.split('-')[1];
+  }
+  console.log(`Release: ${release}`)
+
+  const backstageJson = await getFileFromGithub(repository, targetBranch, backstageJsonPath);
+  const backstageVersion = JSON.parse(backstageJson).version
+
+  if (!backstageVersion) {
+    console.error(`Unable to find backstage version in ${backstageJson}`);
+    process.exit(1);
   }
 
-  // Generate docs only for the branch passed in from workflow.
-  const releaseBranches = [targetBranch];
+  const minorBackstageVersion = backstageVersion.split('.').slice(0, 2).join('.')
 
-  console.log(`Release branches found: ${releaseBranches.join(", ")}`);
+  const frontendPackageJson = await getFileFromGithub(repository, targetBranch, frontendPackageJsonPath);
+  const backendPackageJson = await getFileFromGithub(repository, targetBranch, backendPackageJsonPath);
 
-  // Collect all outputs
-  let allOutputs = '';
+  const frontendTable = await generateTable(JSON.parse(frontendPackageJson), frontendPackages)
+  const backendTable = await generateTable(JSON.parse(backendPackageJson), backendPackages)
 
-  for (const branch of releaseBranches) {
-    console.log(`Processing branch ${branch}`)
+  const preRelaseInfo = `(pre-release, versions can change for final release)`
 
-    let release = ""
-    if (branch === "main") {
-      release = "next"
-    } else {
-      release = branch.split('-')[1];
-    }
-    console.log(`Release: ${release}`)
+  const createAppPackageJson = await getFileFromGithub("backstage/backstage", `v${backstageVersion}`, 'packages/create-app/package.json');
+  const createAppVersion = JSON.parse(createAppPackageJson).version
 
-    const backstageJson = await getFileFromGithub(repository, branch, backstageJsonPath);
-    const backstageVersion = JSON.parse(backstageJson).version
+  if (!createAppVersion) {
+    console.error(`Unable to find create-app version in ${createAppPackageJson}`)
+    process.exit(1);
+  }
 
-    if (!backstageVersion) {
-      console.error(`Unable to find backstage version in ${backstageJson}`);
-      process.exit(1);
-    }
-
-    const minorBackstageVersion = backstageVersion.split('.').slice(0, 2).join('.')
-
-    const frontendPackageJson = await getFileFromGithub(repository, branch, frontendPackageJsonPath);
-    const backendPackageJson = await getFileFromGithub(repository, branch, backendPackageJsonPath);
-
-    const frontendTable = await generateTable(JSON.parse(frontendPackageJson), frontendPackages)
-    const backendTable = await generateTable(JSON.parse(backendPackageJson), backendPackages)
-
-    const preRelaseInfo = `(pre-release, versions can change for final release)`
-
-    const createAppPackageJson = await getFileFromGithub("backstage/backstage", `v${backstageVersion}`, 'packages/create-app/package.json');
-    const createAppVersion = JSON.parse(createAppPackageJson).version
-
-    if (!createAppVersion) {
-      console.error(`Unable to find create-app version in ${createAppPackageJson}`)
-      process.exit(1);
-    }
-
-    const out = `
-## RHDH ${release} ${branch === "main" ? preRelaseInfo : ""}
+  const out = `
+## RHDH ${release} ${targetBranch === "main" ? preRelaseInfo : ""}
 
 <!-- source
-https://github.com/redhat-developer/rhdh/blob/${branch}/backstage.json
+https://github.com/redhat-developer/rhdh/blob/${targetBranch}/backstage.json
 -->
 
 Based on [Backstage ${backstageVersion}](https://backstage.io/docs/releases/v${minorBackstageVersion}.0)
@@ -226,9 +156,9 @@ ${frontendTable}
 
 
 If you want to check versions of other packages, you can check the 
-[\`package.json\`](https://github.com/redhat-developer/rhdh/blob/${branch}/packages/app/package.json) in the
-[\`app\`](https://github.com/redhat-developer/rhdh/tree/${branch}/packages/app) package 
-in the \`${branch}\` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/${branch}).
+[\`package.json\`](https://github.com/redhat-developer/rhdh/blob/${targetBranch}/packages/app/package.json) in the
+[\`app\`](https://github.com/redhat-developer/rhdh/tree/${targetBranch}/packages/app) package 
+in the \`${targetBranch}\` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/${targetBranch}).
 
 ### Backend packages
 
@@ -236,15 +166,12 @@ ${backendTable}
 
 
 If you want to check versions of other packages, you can check the
-[\`package.json\`](https://github.com/redhat-developer/rhdh/blob/${branch}/packages/backend/package.json) in the
-[\`backend\`](https://github.com/redhat-developer/rhdh/tree/${branch}/packages/backend) package
-in the \`${branch}\` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/${branch}).
+[\`package.json\`](https://github.com/redhat-developer/rhdh/blob/${targetBranch}/packages/backend/package.json) in the
+[\`backend\`](https://github.com/redhat-developer/rhdh/tree/${targetBranch}/packages/backend) package
+in the \`${targetBranch}\` branch of the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/${targetBranch}).
 `
 
-    allOutputs += out;
-  }
-
-  await writeToFile(outputFilePath, allOutputs);
+  await writeToFile(outputFilePath, out);
 }
 
 await main();

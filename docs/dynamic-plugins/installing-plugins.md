@@ -3,12 +3,12 @@
 To install a dynamic plugin, you need to add the plugin definition to the `dynamic-plugins.yaml` file.
 
 The placement of `dynamic-plugins.yaml` depends on the deployment method.
-For more information, see [Installing Dynamic Plugins with the Red Hat Developer Hub Operator](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.7/html/installing_and_viewing_plugins_in_red_hat_developer_hub/rhdh-installing-rhdh-plugins_title-plugins-rhdh-about#proc-config-dynamic-plugins-rhdh-operator_rhdh-installing-rhdh-plugins) or [Installing Dynamic Plugins Using the Helm Chart](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.7/html/installing_and_viewing_plugins_in_red_hat_developer_hub/rhdh-installing-rhdh-plugins_title-plugins-rhdh-about#con-install-dynamic-plugin-helm_rhdh-installing-rhdh-plugins).
+For more information, see [Installing Dynamic Plugins with the Red Hat Developer Hub Operator](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.10/html/installing_and_viewing_plugins_in_red_hat_developer_hub/install-dynamic-plugins-in-rhdh_installing-and-viewing-plugins-in-rhdh) or [Installing Dynamic Plugins Using the Helm Chart](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.10/html/installing_and_viewing_plugins_in_red_hat_developer_hub/install-dynamic-plugins-in-rhdh_installing-and-viewing-plugins-in-rhdh).
 
 Plugins are defined in the `plugins` array in the `dynamic-plugins.yaml` file. Each plugin is defined as an object with the following properties:
 
 - `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path. For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag to inherit the version from an included configuration. Additionally, when using single-plugin OCI images, the plugin path can also be omitted.
-- `disabled`: A boolean value that determines whether the plugin is enabled or disabled.
+- `enabled`: A boolean value that determines whether the plugin is enabled (`true`) or disabled (`false`). The legacy `disabled` field is still accepted for backward compatibility; when both are present, `enabled` takes precedence.
 - `integrity`: The integrity hash of the package. This is required for `tgz` archives and npm packages.
 - `pluginConfig`: The configuration for the plugin. For backend plugins this is optional and can be used to pass configuration to the plugin. For frontend plugins this is required, see [Frontend Plugin Wiring](frontend-plugin-wiring.md) for more information on how to configure bindings and routes. This is a fragment of the `app-config.yaml` file. Anything that is added to this object will be merged into a `app-config.dynamic-plugins.yaml` file whose config can be merged with the main `app-config.yaml` config when launching RHDH.
 
@@ -16,23 +16,23 @@ Note: Duplicate plugins found across config files in the `includes` field will t
 
 ## Dynamic plugins included in the RHDH container image
 
-The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configued to work. The comprehensive list of these packages is at [`default.packages.yaml`](../../default.packages.yaml) file.
+The RHDH container image is preloaded with a variety of dynamic plugin packages, the majority of which are initially disabled, as they must be configured to work. The comprehensive list of these packages can be found in the [`default.packages.yaml`](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/default.packages.yaml) file.
 
-On application start, for each disabled package, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's will log something like:
+On application start, for each plugin that is not enabled, the `install-dynamic-plugins` init container within the `redhat-developer-hub` pod's will log something like:
 
 ```console
 ======= Skipping disabled dynamic plugin oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment
 ```
 
-To activate this plugin, simply add a package with the same name and adjust the `disabled` field.
+To activate this plugin, simply add a package with the same name and set `enabled: true`.
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
 ```
 
-While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file, you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
+While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file (now delivered via the catalog index image; see [Using a Catalog Index Image](#using-a-catalog-index-image-for-default-plugin-configurations) below), you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
 
 Note: The plugin's default configuration typically references environment variables, and it is essential to ensure that these variables are set in the Helm chart values or the Operator configuration.
 
@@ -67,16 +67,16 @@ The catalog index OCI image should contain the following at the root level:
 # Contents of dynamic-plugins.default.yaml in the OCI image
 plugins:
   - package: '@backstage/plugin-catalog'
-    disabled: true
+    enabled: false
     pluginConfig:
       # ... plugin configuration
   - package: oci://quay.io/example/plugin:v1.0!my-plugin
-    disabled: true
+    enabled: false
 ```
 
 ### Catalog Entities Extraction
 
-When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-entities/marketplace` directory, the [`install-dynamic-plugins.py`](../../scripts/install-dynamic-plugins/install-dynamic-plugins.py) will automatically extract these catalog entities to a configurable location.
+When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-entities/marketplace` directory, the [`install-dynamic-plugins`](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/install-dynamic-plugins) installer will automatically extract these catalog entities to a configurable location.
 
 The extraction destination is governed by the `CATALOG_ENTITIES_EXTRACT_DIR` environment variable:
 
@@ -133,7 +133,7 @@ When defining the plugin packaged as an OCI image, use the `oci://` prefix, foll
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:v0.0.1!backstage-plugin-myplugin
 ```
 
@@ -143,7 +143,7 @@ For integrity check one may use [image digests](https://github.com/opencontainer
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image@sha256:28036abec4dffc714394e4ee433f16a59493db8017795049c831be41c02eb5dc!backstage-plugin-myplugin
 ```
 
@@ -155,7 +155,7 @@ Explicit Path Usage:
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:v1.0.0!backstage-plugin-myplugin
 ```
 
@@ -163,7 +163,7 @@ Auto-detected Path Usage:
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:v1.0.0
 ```
 
@@ -180,7 +180,7 @@ For example, if we have an included dynamic plugin file (`dynamic-plugins.exampl
 ```yaml
 # dynamic-plugins.example.yaml
 plugins:
-  - disabled: true
+  - enabled: false
     package: oci://quay.io/example/image:v0.0.2!backstage-plugin-myplugin
 ```
 
@@ -191,13 +191,13 @@ and a `dynamic-plugins.yaml` file with the `{{inherit}}` tag using configuration
 includes:
 - dynamic-plugins.example.yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:{{inherit}}!backstage-plugin-myplugin
     pluginConfig:
       exampleName: "test"
 ```
 
-The resolved version would be `v0.0.2`, but the overridden `pluginConfig` and `disabled: false` would still apply.
+The resolved version would be `v0.0.2`, but the overridden `pluginConfig` and `enabled: true` would still apply.
 
 **General Notes:**
 
@@ -214,7 +214,7 @@ For example, we can have an example plugin that uses auto-detection that will re
 ```yaml
 # dynamic-plugins.example.yaml
 plugins:
-  - disabled: true
+  - enabled: false
     package: oci://quay.io/example/image:v0.0.2
 ```
 
@@ -225,7 +225,7 @@ Then we can just use `{{inherit}}` without a path, and we will inherit both the 
 includes:
 - dynamic-plugins.example.yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://quay.io/example/image:{{inherit}}
     pluginConfig:
       exampleName: "test"
@@ -239,7 +239,7 @@ When defining the plugin packaged as a `tgz` archive, use the URL of the archive
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: https://example.com/backstage-plugin-myplugin-1.0.0.tgz
     integrity: sha512-9WlbgEdadJNeQxdn1973r5E4kNFvnT9GjLD627GWgrhCaxjCmxqdNW08cj+Bf47mwAtZMt1Ttyo+ZhDRDj9PoA==
 ```
@@ -250,7 +250,7 @@ When defining the plugin packaged as an npm package, use the package name and ve
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: @example/backstage-plugin-myplugin@1.0.0
     integrity: sha512-9WlbgEdadJNeQxdn1973r5E4kNFvnT9GjLD627GWgrhCaxjCmxqdNW08cj+Bf47mwAtZMt1Ttyo+ZhDRDj9PoA==
 ```
@@ -287,23 +287,36 @@ When using the Operator ....
 
 The directory where dynamic plugins are located is mounted as a volume to the `install-dynamic-plugins` init container and the `backstage-backend` container. The `install-dynamic-plugins` init container is responsible for downloading and extracting the plugins into this directory. Depending on the deployment method, the directory is mounted as an ephemeral or persistent volume. In the latter case, the volume can be shared between several Pods, and the plugins installation script is also responsible for downloading and extracting the plugins only once, avoiding conflicts.
 
-**Important Note:** If `install-dynamic-plugins` init container was killed with SIGKILL signal, which may happen due to the following reasons:
+**Important Note:** The `install-dynamic-plugins` init container always acquires a lock file (`/dynamic-plugins-root/install-dynamic-plugins.lock`) before installing plugins. The lock prevents concurrent installations and is released when the process completes (or fails). Lock contention, where one pod waits for another's lock, only occurs when the `dynamic-plugins-root` directory is backed by a persistent volume shared between pods.
+
+If the `install-dynamic-plugins` init container is killed with a SIGKILL signal, the lock file cannot be cleaned up. This may happen due to the following reasons:
 
 - pod eviction (to free up node resources)
-- pod deletion (if not terminated with SIGTERM within graceful period)
+- pod deletion (if not terminated with SIGTERM within the graceful period)
 - node shutdown
 - container runtime issues
 - exceeding resource limits (OOM for example)
 
-Then the script will not be able to remove the lock file, so the next time the pod starts, it will be be stuck waiting for the lock to release. You will see the following message in the logs for the init `install-dynamic-plugins` container:
+When this occurs, the next pod to start will wait up to **10 minutes** (by default) for the stale lock to be released, logging the following message:
 
 ```console
 oc logs -n <namespace-name> -f backstage-<backstage-name>-<pod-suffix> -c install-dynamic-plugins
-======= Waiting for lock release (file: /dynamic-plugins-root/install-dynamic-plugins.lock)...
+======= Waiting for lock to be released: /dynamic-plugins-root/install-dynamic-plugins.lock
 ```
 
-In such a case, you can delete the lock file manually from any of the Pods:
+After the timeout expires, the init container exits with an error:
+
+```
+Timed out after 600000ms waiting for lock file /dynamic-plugins-root/install-dynamic-plugins.lock.
+Another install may be stuck — remove the file manually to proceed.
+```
+
+The exit handler automatically removes the stale lock file during shutdown. The pod restarts, and the next init container run starts with no lock file present, so it proceeds normally. The total recovery time equals the configured lock timeout (10 minutes by default). No manual intervention is required in this case.
+
+If the exit handler itself fails to remove the lock file (for example, due to a filesystem error or the container being forcefully terminated before the handler runs), you must delete the lock file manually:
 
 ```console
-oc exec -n <namespace-name> deploy/backstage-<backstage-name> -c install-dynamic-plugins -- rm -f /dynamic-plugins-root/dynamic-plugins.lock
+oc exec -n <namespace-name> deploy/backstage-<backstage-name> -c install-dynamic-plugins -- rm -f /dynamic-plugins-root/install-dynamic-plugins.lock
 ```
+
+The lock timeout can be configured via the `DYNAMIC_PLUGINS_LOCK_TIMEOUT_MS` environment variable on the `install-dynamic-plugins` init container (value in milliseconds, default: `600000` which is 10 minutes).
