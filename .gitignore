@@ -39,6 +39,7 @@ node_modules/
 
 # Build output
 dist
+!**/__fixtures__/**/dist
 dist-types
 dist-scalprum
 dist-dynamic
