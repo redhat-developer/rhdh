@@ -3,7 +3,7 @@
 **Epic**: RHIDP-13501 — [Test Strategy] E2E Test Optimization (Optional)
 **Story**: RHIDP-15076 — Identify E2E specs supplementable by Layer 3 / cluster-free harness (Phase 1)
 **Author**: Gustavo Lira e Silva
-**Date**: 2026-06-26 (updated 2026-07-07 with L4a harness expansion results)
+**Date**: 2026-06-26 (updated 2026-07-20; last verified against `main` on 2026-07-20)
 **Status**: DRAFT — promote once the batches below are groomed into RHIDP-13528/13529
 
 > **This is an _additive_ analysis, not a removal plan.** Per the epic, no E2E spec
@@ -80,47 +80,51 @@ Every cheap-enablement candidate from the 2026-07-02 scan except #2 landed on
   `playwright.config.ts` `BASE_URL`, which the harness does not set — a small
   follow-up.
 
-Note: #19 `plugin-dynamic-loading` ships with PR #4967, **open at the time of
-writing (2026-07-07)** — the row below describes its state once merged.
+Note: #19 `plugin-dynamic-loading` ships with PR #4967, still **open as of 2026-07-20** —
+the row below describes its state once merged.
 
 ## Summary matrix (30 specs: 29 on `main` + #19 pending in PR #4967)
 
-Legend: ✅ = Layer 3 equivalent **already drafted** on branch
-[rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged).
+The 29 on `main` are the 28 `*.spec.ts` files under `e2e-tests/playwright/e2e/` plus
+#18 `github-happy-path`, parked as
+`e2e-tests/playwright/blocked/github-happy-path.blocked.ts` since #5022.
+
+Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
+[rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (see the file list below).
 🟢 = **validated green on the L4a cluster-free harness** (PRs #5005, #5057).
 
-| #   | Spec                                                                  | Current project     | Cluster? | Renders UI | External svc            | **Target layer**                     |
-| --- | --------------------------------------------------------------------- | ------------------- | -------- | ---------- | ----------------------- | ------------------------------------ |
-| 1   | `instance-health-check` 🟢                                            | showcase            | no       | no (API)   | none                    | **L2**                               |
-| 2   | `plugins/licensed-users-info-backend/licensed-users-info`             | sanity-plugins      | no       | no (API)   | none                    | **L2**                               |
-| 3   | `smoke-test` 🟢                                                       | smoke               | no       | yes        | none                    | **L3** (keep a thin L4a smoke)       |
-| 4   | `guest-signin-happy-path` 🟢                                          | showcase            | no       | yes        | none                    | **L3**                               |
-| 5   | `settings` 🟢                                                         | showcase            | no       | yes        | none                    | **L3** ✅                            |
-| 6   | `learning-path-page` 🟢                                               | showcase            | no       | yes        | none                    | **L3** ✅                            |
-| 7   | `home-page-customization` 🟢                                          | showcase            | no       | yes        | none                    | **L3**                               |
-| 8   | `plugins/frontend/sidebar` 🟢                                         | showcase            | no       | yes        | none                    | **L3** ✅                            |
-| 9   | `plugins/user-settings-info-card` 🟢                                  | showcase            | no       | yes        | none                    | **L3** ✅                            |
-| 10  | `plugins/application-provider` 🟢                                     | showcase            | no       | yes        | none                    | **L3** (context logic → L1)          |
-| 11  | `plugins/application-listener` 🟢                                     | showcase            | no       | yes        | none                    | **L3**                               |
-| 12  | `catalog-timestamp`                                                   | showcase            | no       | yes        | GitHub (import)         | **L3** (replace import with fixture) |
-| 13  | `audit-log/auditor-rbac`                                              | showcase-rbac       | no       | no (API)   | Keycloak                | **L2** (mock auth)                   |
-| 14  | `audit-log/auditor-catalog`                                           | showcase-rbac       | no       | minimal    | GitHub (import)         | **L2 / L4a** (mock GitHub)           |
-| 15  | `plugins/http-request`                                                | sanity-plugins      | no       | yes        | GitHub                  | **L4a** (or L2 w/ mock)              |
-| 16  | `plugins/scaffolder-backend-module-annotator/annotator`               | sanity-plugins      | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
-| 17  | `plugins/scaffolder-relation-processor/scaffolder-relation-processor` | sanity-plugins      | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
-| 18  | `github-happy-path`                                                   | showcase (`.fixme`) | no       | yes        | GitHub OAuth+API        | **L4a / L4b**                        |
-| 19  | `plugin-dynamic-loading`                                              | sanity-plugins      | no       | no (API)   | catalog index image     | **L4a** (already cluster-free)       |
-| 20  | `auth-providers/oidc`                                                 | auth-providers      | **yes**  | yes        | Keycloak/RHBK           | **L4b**                              |
-| 21  | `auth-providers/microsoft`                                            | auth-providers      | **yes**  | yes        | Azure Entra             | **L4b**                              |
-| 22  | `auth-providers/github`                                               | auth-providers      | **yes**  | yes        | GitHub                  | **L4b**                              |
-| 23  | `auth-providers/gitlab`                                               | auth-providers      | **yes**  | yes        | GitLab                  | **L4b**                              |
-| 24  | `auth-providers/ldap`                                                 | auth-providers      | **yes**  | yes        | Keycloak+LDAP+Azure NSG | **L4b**                              |
-| 25  | `external-database/...-crunchy`                                       | runtime-db          | **yes**  | yes        | Crunchy PG              | **L4b**                              |
-| 26  | `external-database/...-azure-db`                                      | runtime-db          | **yes**  | yes        | Azure PG (x4)           | **L4b**                              |
-| 27  | `external-database/...-rds`                                           | runtime-db          | **yes**  | yes        | AWS RDS (x4)            | **L4b**                              |
-| 28  | `configuration-test/config-map`                                       | showcase            | **yes**  | yes        | ConfigMap reload        | **L4b**                              |
-| 29  | `verify-redis-cache`                                                  | showcase            | **yes**  | yes        | Redis (port-fwd)        | **L4b**                              |
-| 30  | `plugin-division-mode-schema/verify-schema-mode`                      | runtime             | **yes**  | minimal    | K8s + restricted DB     | **L4b**                              |
+| #   | Spec                                                                  | Current project   | Cluster? | Renders UI | External svc            | **Target layer**                     |
+| --- | --------------------------------------------------------------------- | ----------------- | -------- | ---------- | ----------------------- | ------------------------------------ |
+| 1   | `instance-health-check` 🟢                                            | showcase          | no       | no (API)   | none                    | **L2**                               |
+| 2   | `plugins/licensed-users-info-backend/licensed-users-info`             | sanity-plugins    | no       | no (API)   | none                    | **L2**                               |
+| 3   | `smoke-test` 🟢                                                       | smoke             | no       | yes        | none                    | **L3** (keep a thin L4a smoke)       |
+| 4   | `guest-signin-happy-path` 🟢                                          | showcase          | no       | yes        | none                    | **L3**                               |
+| 5   | `settings` 🟢                                                         | showcase          | no       | yes        | none                    | **L3** ✅                            |
+| 6   | `learning-path-page` 🟢                                               | showcase          | no       | yes        | none                    | **L3** ✅                            |
+| 7   | `home-page-customization` 🟢                                          | showcase          | no       | yes        | none                    | **L3**                               |
+| 8   | `plugins/frontend/sidebar` 🟢                                         | showcase          | no       | yes        | none                    | **L3** ✅                            |
+| 9   | `plugins/user-settings-info-card` 🟢                                  | showcase          | no       | yes        | none                    | **L3** ✅                            |
+| 10  | `plugins/application-provider` 🟢                                     | showcase          | no       | yes        | none                    | **L3** (context logic → L1)          |
+| 11  | `plugins/application-listener` 🟢                                     | showcase          | no       | yes        | none                    | **L3**                               |
+| 12  | `catalog-timestamp`                                                   | showcase          | no       | yes        | GitHub (import)         | **L3** (replace import with fixture) |
+| 13  | `audit-log/auditor-rbac`                                              | showcase-rbac     | no       | no (API)   | Keycloak                | **L2** (mock auth)                   |
+| 14  | `audit-log/auditor-catalog`                                           | showcase-rbac     | no       | minimal    | GitHub (import)         | **L2 / L4a** (mock GitHub)           |
+| 15  | `plugins/http-request`                                                | sanity-plugins    | no       | yes        | GitHub                  | **L4a** (or L2 w/ mock)              |
+| 16  | `plugins/scaffolder-backend-module-annotator/annotator`               | sanity-plugins    | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
+| 17  | `plugins/scaffolder-relation-processor/scaffolder-relation-processor` | sanity-plugins    | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
+| 18  | `github-happy-path`                                                   | none (`blocked/`) | no       | yes        | GitHub OAuth+API        | **L4a / L4b**                        |
+| 19  | `plugin-dynamic-loading`                                              | sanity-plugins    | no       | no (API)   | catalog index image     | **L4a** (already cluster-free)       |
+| 20  | `auth-providers/oidc`                                                 | auth-providers    | **yes**  | yes        | Keycloak/RHBK           | **L4b**                              |
+| 21  | `auth-providers/microsoft`                                            | auth-providers    | **yes**  | yes        | Azure Entra             | **L4b**                              |
+| 22  | `auth-providers/github`                                               | auth-providers    | **yes**  | yes        | GitHub                  | **L4b**                              |
+| 23  | `auth-providers/gitlab`                                               | auth-providers    | **yes**  | yes        | GitLab                  | **L4b**                              |
+| 24  | `auth-providers/ldap`                                                 | auth-providers    | **yes**  | yes        | Keycloak+LDAP+Azure NSG | **L4b**                              |
+| 25  | `external-database/...-crunchy`                                       | runtime-db        | **yes**  | yes        | Crunchy PG              | **L4b**                              |
+| 26  | `external-database/...-azure-db`                                      | runtime-db        | **yes**  | yes        | Azure PG (x4)           | **L4b**                              |
+| 27  | `external-database/...-rds`                                           | runtime-db        | **yes**  | yes        | AWS RDS (x4)            | **L4b**                              |
+| 28  | `configuration-test/config-map`                                       | showcase          | **yes**  | yes        | ConfigMap reload        | **L4b**                              |
+| 29  | `verify-redis-cache`                                                  | showcase          | **yes**  | yes        | Redis (port-fwd)        | **L4b**                              |
+| 30  | `plugin-division-mode-schema/verify-schema-mode`                      | runtime           | **yes**  | minimal    | K8s + restricted DB     | **L4b**                              |
 
 ### Tally
 
@@ -133,21 +137,24 @@ Legend: ✅ = Layer 3 equivalent **already drafted** on branch
 
 \* smoke-test: migrate the assertion to L3 but keep a minimal L4a/L4b smoke as a deployment heartbeat.
 
-## Already drafted in [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged)
+## Already landed on `main` via [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (merged 2026-06-01)
 
-Four of the L3 candidates already have a Layer 3 equivalent drafted under epic
-RHIDP-13235 (Layer 3 component tests), carried by PR #4864. These prove the pattern
-works and should be the template for the rest (the PR is the durable reference — its
-branch may be rebased or deleted):
+Four of the L3 candidates already have a Layer 3 equivalent **merged** under epic
+RHIDP-13235 (Layer 3 component tests). These prove the pattern works and are the
+template for the rest — copy their structure rather than starting from scratch:
 
-| E2E spec                               | Layer 3 equivalent drafted in #4864 |
-| -------------------------------------- | ----------------------------------- |
-| `learning-path-page` (#6)              | LearningPaths page test             |
-| `settings` (#5)                        | settings GeneralPage composition    |
-| `plugins/frontend/sidebar` (#8)        | CustomSidebarItem test              |
-| `plugins/user-settings-info-card` (#9) | InfoCard build info card test       |
-| _(theming / global header feature)_    | app-bar themed branding config test |
-| _(header mount points feature)_        | mount-point data resolution test    |
+| E2E spec                               | Layer 3 equivalent on `main`                                           |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| `learning-path-page` (#6)              | `packages/app/src/components/learningPaths/LearningPathsPage.test.tsx` |
+| `settings` (#5)                        | `packages/app/src/components/UserSettings/GeneralPage.test.tsx`        |
+| `plugins/frontend/sidebar` (#8)        | `packages/app/src/components/Root/CustomSidebarItem.test.tsx`          |
+| `plugins/user-settings-info-card` (#9) | `packages/app/src/components/UserSettings/InfoCard.test.tsx`           |
+| _(theming / global header feature)_    | `packages/app/src/hooks/useThemedConfig.test.tsx`                      |
+| _(header mount points feature)_        | `packages/app/src/utils/dynamicUI/getMountPointData.test.ts`           |
+
+These are Vitest/RTL tests in `packages/app` — they run on every PR, no cluster, no
+Playwright. The corresponding E2E specs (#5, #6, #8, #9) were intentionally kept, per
+the additive rule at the top of this document.
 
 > Note: the epic briefing listed `custom-theme`, `default-global-header`,
 > `header-mount-points`, and `dynamic-home-page-customization` as specs — **these do not
@@ -156,9 +163,9 @@ branch may be rebased or deleted):
 
 ## Suggested batches (feed RHIDP-13528 / RHIDP-13529)
 
-**Batch 1 — finish the started L3 set + the cheap wins** (RHIDP-13528)
+**Batch 1 — extend the landed L3 set + the cheap wins** (RHIDP-13528)
 
-- Close out #5, #6, #8, #9 (land the RHIDP-13235 work).
+- ~~#5, #6, #8, #9~~ — **done**, merged with #4864 (see the table above); use them as the template.
 - Add #7 `home-page-customization`, #4 `guest-signin-happy-path`, #10 `application-provider`, #11 `application-listener`.
 - L2: #1 `instance-health-check`, #2 `licensed-users-info` (pure backend API → supertest).
 
@@ -301,7 +308,7 @@ scaffolder-relation-processor`.
 
 - Epic RHIDP-13501, Stories RHIDP-15075 (spike), RHIDP-15076 (this), RHIDP-15082 (L4a harness),
   RHIDP-13528/13529 (L3 batches), RHIDP-13530 (overlay coord), RHIDP-13236 (optional retirement).
-- Existing L3 work: [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (closed, not merged; RHIDP-13235).
+- Existing L3 work: [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (merged 2026-06-01; RHIDP-13235) — tests live in `packages/app/src/`.
 - Cluster-free L4a harness: [rhdh#5005](https://github.com/redhat-developer/rhdh/pull/5005) (RHIDP-15075);
   expansion to 10 specs: [rhdh#5057](https://github.com/redhat-developer/rhdh/pull/5057).
 - Plugin load validation (L4a): `e2e-tests/playwright/e2e/plugin-dynamic-loading.spec.ts` (RHIDP-13508, PR #4967).
