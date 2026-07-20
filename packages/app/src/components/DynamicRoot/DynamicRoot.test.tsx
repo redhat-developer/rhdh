@@ -255,7 +255,9 @@ describe('DynamicRoot', () => {
       expect(rendered.getByTestId('isLoadingFinished')).toBeInTheDocument();
       expect(createAppSpy).toHaveBeenCalled();
       expect(
-        createAppSpy.mock.calls[0][0]?.plugins?.map(p => p.getId()),
+        createAppSpy.mock.calls[0][0]?.plugins?.map(
+          (p: { getId: () => string }) => p.getId(),
+        ),
       ).toEqual(['fooPlugin', 'fooPluginTarget']);
     });
   });
@@ -276,7 +278,9 @@ describe('DynamicRoot', () => {
       expect(rendered.getByTestId('isLoadingFinished')).toBeInTheDocument();
       expect(createAppSpy).toHaveBeenCalled();
       expect(
-        createAppSpy.mock.calls[0][0]?.plugins?.map(p => p.getId()),
+        createAppSpy.mock.calls[0][0]?.plugins?.map(
+          (p: { getId: () => string }) => p.getId(),
+        ),
       ).toEqual(['barPlugin']);
     });
   });
@@ -778,7 +782,9 @@ describe('DynamicRoot', () => {
         targetRoutes: { barTarget: createRouteRef({ id: 'bar' }) },
       });
       expect(
-        createAppSpy.mock.calls[0][0]?.plugins?.map(p => p.getId()),
+        createAppSpy.mock.calls[0][0]?.plugins?.map(
+          (p: { getId: () => string }) => p.getId(),
+        ),
       ).toEqual(['fooPlugin', 'fooPluginTarget']);
     });
   });
