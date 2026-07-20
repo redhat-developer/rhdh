@@ -7,8 +7,8 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 const NFS_FEATURE_TYPES = new Set([
   '@backstage/FrontendPlugin',
