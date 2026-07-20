@@ -118,6 +118,11 @@ jest.mock('@backstage/app-defaults', () => ({
   __esModule: true,
 }));
 
+// Avoid real network calls to backend.baseUrl (can hang on localhost in CI).
+jest.mock('../../utils/translations/fetchOverrideTranslations', () => ({
+  fetchOverrideTranslations: jest.fn().mockResolvedValue({}),
+}));
+
 const mockInitializeRemotePlugins = jest.fn() as jest.MockedFunction<
   typeof initializeRemotePlugins
 >;
