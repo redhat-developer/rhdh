@@ -69,37 +69,38 @@ export function rhdhDynamicFrontendFeaturesLoader(
           const shared = await loadModuleFederationHostShared({
             onError: err => error(err.message, err.cause),
           });
-          const createOptions: Parameters<typeof createInstance>[0] = {
+          // Keep options untyped: duplicate @module-federation/runtime-core
+          // copies under enhanced vs host resolve to incompatible UserOptions.
+          const createOptions = {
             name: appPackageName
               .replaceAll('@', '')
               .replaceAll('/', '__')
               .replaceAll('-', '_'),
             shared,
-            remotes: [],
+            remotes: [] as [],
+            ...(options?.moduleFederation?.shareStrategy
+              ? { shareStrategy: options.moduleFederation.shareStrategy }
+              : {}),
           };
-          if (options?.moduleFederation?.shareStrategy) {
-            createOptions.shareStrategy =
-              options.moduleFederation.shareStrategy;
-          }
           instance = createInstance(createOptions);
         }
 
-        const userOptions: Parameters<typeof instance.initOptions>[0] = {
+        const userOptions = {
           name: instance.name,
           remotes: frontendPluginRemotes.map(remote => ({
             alias: remote.packageName,
             ...remote.remoteInfo,
           })),
+          ...(options?.moduleFederation?.plugins
+            ? { plugins: options.moduleFederation.plugins }
+            : {}),
+          ...(options?.moduleFederation?.shareStrategy
+            ? { shareStrategy: options.moduleFederation.shareStrategy }
+            : {}),
+          ...(options?.moduleFederation?.shared
+            ? { shared: options.moduleFederation.shared }
+            : {}),
         };
-        if (options?.moduleFederation?.plugins) {
-          userOptions.plugins = options.moduleFederation.plugins;
-        }
-        if (options?.moduleFederation?.shareStrategy) {
-          userOptions.shareStrategy = options.moduleFederation.shareStrategy;
-        }
-        if (options?.moduleFederation?.shared) {
-          userOptions.shared = options.moduleFederation.shared;
-        }
         instance.initOptions(userOptions);
       } catch (err) {
         error('Failed initializing module federation', err);
