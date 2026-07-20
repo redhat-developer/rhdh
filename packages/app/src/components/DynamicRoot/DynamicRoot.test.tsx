@@ -120,6 +120,7 @@ jest.mock('@backstage/app-defaults', () => ({
 
 // Avoid real network calls to backend.baseUrl (can hang on localhost in CI).
 jest.mock('../../utils/translations/fetchOverrideTranslations', () => ({
+  __esModule: true,
   fetchOverrideTranslations: jest.fn().mockResolvedValue({}),
 }));
 
@@ -166,6 +167,14 @@ const getDynamicApis = (createAppSpy: jest.SpyInstance) =>
 describe('DynamicRoot', () => {
   beforeEach(() => {
     removeScalprum();
+    // Belt-and-suspenders: DynamicRoot (and deps) must not hit a real backend.
+    jest.spyOn(global, 'fetch').mockImplementation(async () =>
+      Promise.resolve({
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+      } as Response),
+    );
     mockInitializeRemotePlugins.mockImplementation(
       (_, __, requiredModules: { scope: string; module: string }[]) =>
         Promise.resolve({
@@ -226,6 +235,7 @@ describe('DynamicRoot', () => {
 
   afterEach(() => {
     consoleSpy.mockReset();
+    jest.mocked(global.fetch).mockRestore();
   });
 
   it('should add plugins found in default module', async () => {
