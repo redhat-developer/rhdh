@@ -36,6 +36,11 @@ yarn playwright install chromium
 
 ## Adding a Test
 
+Before adding a new E2E spec, check the
+[E2E layer migration matrix](./layer-migration-matrix.md) — it classifies every spec by
+the cheapest layer that can catch the bug (unit, integration, component, cluster-free
+E2E, or full-cluster E2E), so new coverage lands at the right level.
+
 To incorporate a new test case, create a file with a `.spec.ts` extension in the `e2e-tests/playwright/e2e` directory.
 
 Unit tests for shared helpers (for example `poll-until.ts`) live in `e2e-tests/unit/` as `*.test.ts` and run with `yarn test:unit` (Vitest). E2E specs use `*.spec.ts` under `playwright/e2e/`.
@@ -53,6 +58,7 @@ To run the tests, ensure you have:
 - [Playwright browsers installed](#install-playwright-browsers)
 
 #### macOS Users
+
 **Important**: If you're using macOS, you need to install GNU `grep` and GNU `sed` to avoid compatibility issues with scripts and CI/CD pipelines:
 
 ```bash
