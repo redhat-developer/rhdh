@@ -12,6 +12,9 @@ plugins
 coverage
 dist-types
 examples
+ci/images/*
+!.ci/images/Dockerfile
+!.yarnrc.yml
 hermeto-cache
 .github
 .cursor
