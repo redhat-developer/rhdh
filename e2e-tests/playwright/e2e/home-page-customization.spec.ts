@@ -17,10 +17,10 @@ test.describe("Home page customization", () => {
     homePage = new HomePage(guestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test(
     "Verify that home page is customized",
-    { tag: "@cluster-free" },
+    { tag: "@cluster-free-capable" },
     async ({ page }, testInfo) => {
       await homePage.verifyTextInCard("Quick Access", "Quick Access");
 
@@ -43,7 +43,7 @@ test.describe("Home page customization", () => {
 
   test(
     "Verify that the Top Visited card in the Home page renders without an error",
-    { tag: "@cluster-free" },
+    { tag: "@cluster-free-capable" },
     async () => {
       await homePage.verifyTextInCard("Top Visited", "Top Visited");
       await homePage.verifyVisitedCardContent("Top Visited");
@@ -52,7 +52,7 @@ test.describe("Home page customization", () => {
 
   test(
     "Verify that the Recently Visited card in the Home page renders without an error",
-    { tag: "@cluster-free" },
+    { tag: "@cluster-free-capable" },
     async () => {
       await homePage.verifyTextInCard("Recently Visited", "Recently Visited");
       await homePage.verifyVisitedCardContent("Recently Visited");

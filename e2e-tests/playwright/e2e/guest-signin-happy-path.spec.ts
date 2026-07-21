@@ -19,10 +19,10 @@ test.describe("Guest Signing Happy path", () => {
     settingsPage = new SettingsPage(guestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test(
     "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
-    { tag: "@cluster-free" },
+    { tag: "@cluster-free-capable" },
     async () => {
       await homePage.verifyWelcomeHeading();
       await homePage.openHomeSidebar();
@@ -30,14 +30,18 @@ test.describe("Guest Signing Happy path", () => {
     },
   );
 
-  test("Verify Profile is Guest in the Settings page", { tag: "@cluster-free" }, async () => {
-    await settingsPage.open();
-    await settingsPage.verifyGuestProfile();
-  });
+  test(
+    "Verify Profile is Guest in the Settings page",
+    { tag: "@cluster-free-capable" },
+    async () => {
+      await settingsPage.open();
+      await settingsPage.verifyGuestProfile();
+    },
+  );
 
   test(
     "Sign Out and Verify that you return to the Sign-in page",
-    { tag: "@cluster-free" },
+    { tag: "@cluster-free-capable" },
     async () => {
       await settingsPage.open();
       await settingsPage.signOut();

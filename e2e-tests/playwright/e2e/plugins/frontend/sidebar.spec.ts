@@ -18,8 +18,8 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
     sidebarPage = new SidebarPage(rhdhGuestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
-  test("Verify menu order and navigate to Docs", { tag: "@cluster-free" }, async () => {
+  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test("Verify menu order and navigate to Docs", { tag: "@cluster-free-capable" }, async () => {
     await sidebarPage.verifyMenuItemInSection("References", t["rhdh"][lang]["menuItem.apis"]);
     await sidebarPage.verifyMenuItemInSection(
       "References",

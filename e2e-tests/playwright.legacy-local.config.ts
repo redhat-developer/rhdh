@@ -50,7 +50,7 @@ export default defineConfig({
   globalSetup: "./playwright/support/local-harness-global-setup.ts",
   // A test runs cluster-free when its spec file is listed in `testMatch` (an
   // allowlist, so unvalidated specs are never loaded) AND it carries the
-  // @cluster-free tag. To widen coverage: tag the test where it lives and add its
+  // @cluster-free-capable tag. To widen coverage: tag the test where it lives and add its
   // spec file here. Validated so far: the full guest-signin spec (home page via the
   // dynamic-home-page OCI plugin; Settings/Sign-out via the global-header OCI plugin
   // with its canonical pluginConfig), the learning-paths spec (static fallback
@@ -69,7 +69,7 @@ export default defineConfig({
     "e2e/plugins/application-provider.spec.ts",
     "e2e/plugins/application-listener.spec.ts",
   ],
-  grep: /@cluster-free/u,
+  grep: /@cluster-free-capable/u,
   timeout: 90 * 1000,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
