@@ -1,0 +1,18 @@
+# Config overlay for the cluster-free plugin sanity check
+# (e2e-tests/playwright.plugin-sanity.config.ts).
+#
+# Layered on top of app-config.local-e2e.yaml when the backend boots with the
+# FULL catalog index plugin set. Some plugins validate their config at startup
+# and abort the whole backend when it is missing; the values below are DUMMY
+# entries that only exist to satisfy that validation — the sanity check never
+# talks to these services.
+#
+# NOTE: test-only. Never layer this into a production config.
+
+# @roadiehq/backstage-plugin-argo-cd-backend requires at least one instance URL.
+argocd:
+  appLocatorMethods:
+    - type: config
+      instances:
+        - name: plugin-sanity-dummy
+          url: https://argocd.invalid

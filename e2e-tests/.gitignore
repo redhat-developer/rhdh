@@ -68,6 +68,8 @@ site
 
 # e2e test results
 junit-results.xml
+junit-results-*.xml
+/playwright-report-*/
 
 # Local e2e test run files
 .local-test
