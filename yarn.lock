@@ -8448,12 +8448,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mongodb-js/saslprep@npm:^1.3.0":
-  version: 1.4.11
-  resolution: "@mongodb-js/saslprep@npm:1.4.11"
+"@mongodb-js/saslprep@npm:^1.4.11":
+  version: 1.4.12
+  resolution: "@mongodb-js/saslprep@npm:1.4.12"
   dependencies:
     sparse-bitfield: "npm:^3.0.3"
-  checksum: 10c0/fd80e94bcb0ae6330c4ad9873f429be08baf5d840b757b4feb377bd0e127d8338f898e7f887aceb9a7712a39756d10ab0634ec1096a2d30b2c7cbd62e2499fee
+  checksum: 10c0/0958b753bb890f03c963175086a50a599e2d2624e893a7118d86a364901b9b2373a0b8a4c12cec27a961108562e90a58fdfcb3e26c8ccce6a4ace875748a6fc1
   languageName: node
   linkType: hard
 
@@ -11367,7 +11367,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:14.3.1"
     "@testing-library/react-hooks": "npm:8.0.1"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     "@types/react": "npm:18.3.31"
     "@types/react-dom": "npm:18.3.7"
     prettier: "npm:3.8.4"
@@ -13637,44 +13637,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turbo/darwin-64@npm:2.10.0":
-  version: 2.10.0
-  resolution: "@turbo/darwin-64@npm:2.10.0"
+"@turbo/darwin-64@npm:2.10.4":
+  version: 2.10.4
+  resolution: "@turbo/darwin-64@npm:2.10.4"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/darwin-arm64@npm:2.10.0":
-  version: 2.10.0
-  resolution: "@turbo/darwin-arm64@npm:2.10.0"
+"@turbo/darwin-arm64@npm:2.10.4":
+  version: 2.10.4
+  resolution: "@turbo/darwin-arm64@npm:2.10.4"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/linux-64@npm:2.10.0":
-  version: 2.10.0
-  resolution: "@turbo/linux-64@npm:2.10.0"
+"@turbo/linux-64@npm:2.10.4":
+  version: 2.10.4
+  resolution: "@turbo/linux-64@npm:2.10.4"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/linux-arm64@npm:2.10.0":
-  version: 2.10.0
-  resolution: "@turbo/linux-arm64@npm:2.10.0"
+"@turbo/linux-arm64@npm:2.10.4":
+  version: 2.10.4
+  resolution: "@turbo/linux-arm64@npm:2.10.4"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/windows-64@npm:2.10.0":
-  version: 2.10.0
-  resolution: "@turbo/windows-64@npm:2.10.0"
+"@turbo/windows-64@npm:2.10.4":
+  version: 2.10.4
+  resolution: "@turbo/windows-64@npm:2.10.4"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/windows-arm64@npm:2.10.0":
-  version: 2.10.0
-  resolution: "@turbo/windows-arm64@npm:2.10.0"
+"@turbo/windows-arm64@npm:2.10.4":
+  version: 2.10.4
+  resolution: "@turbo/windows-arm64@npm:2.10.4"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -14279,12 +14279,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.13.2, @types/node@npm:^24.10.2":
-  version: 24.13.2
-  resolution: "@types/node@npm:24.13.2"
+"@types/node@npm:24.13.3":
+  version: 24.13.3
+  resolution: "@types/node@npm:24.13.3"
   dependencies:
     undici-types: "npm:~7.18.0"
-  checksum: 10c0/d7d48a88a4feb0a6aac3cbfaf9ef3b12752b4b09447f88dd0b4c77c03b281e3d4330fe6982a99aedcd63fc16c7540a0c248b91eb2abb0b3edd884d7fe684e9ea
+  checksum: 10c0/a5bc08f49b9581dcdca90e02cd77197a3c799840807664942e5cd5161a553d4d2ae8064f7e3294410d748d7d098b5c1848be7fa50c06f29c4193ab16be4e59eb
   languageName: node
   linkType: hard
 
@@ -14308,6 +14308,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10c0/22ba2bc9f8863101a7e90a56aaeba1eb3ebdc51e847cef4a6d188967ab1acbce9b4f92251372fd0329ecb924bbf610509e122c3dfe346c04dbad04013d4ad7d0
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^24.10.2":
+  version: 24.13.2
+  resolution: "@types/node@npm:24.13.2"
+  dependencies:
+    undici-types: "npm:~7.18.0"
+  checksum: 10c0/d7d48a88a4feb0a6aac3cbfaf9ef3b12752b4b09447f88dd0b4c77c03b281e3d4330fe6982a99aedcd63fc16c7540a0c248b91eb2abb0b3edd884d7fe684e9ea
   languageName: node
   linkType: hard
 
@@ -15903,15 +15912,15 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:0.14.7"
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.3.1"
     "@red-hat-developer-hub/plugin-utils": "workspace:*"
-    "@scalprum/core": "npm:0.10.0"
-    "@scalprum/react-core": "npm:0.13.0"
+    "@scalprum/core": "npm:0.10.1"
+    "@scalprum/react-core": "npm:0.13.1"
     "@scalprum/react-test-utils": "npm:0.3.0"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:14.3.1"
     "@testing-library/react-hooks": "npm:8.0.1"
     "@testing-library/user-event": "npm:14.6.1"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     "@types/react": "npm:18.3.31"
     "@types/react-dom": "npm:18.3.7"
     eslint-plugin-unused-imports: "npm:4.4.1"
@@ -16572,7 +16581,7 @@ __metadata:
     better-sqlite3: "npm:12.11.1"
     global-agent: "npm:3.0.0"
     jose: "npm:5.10.0"
-    mongodb: "npm:7.4.0"
+    mongodb: "npm:7.5.0"
     prettier: "npm:3.8.4"
     typescript: "npm:5.9.3"
     undici: "npm:7.28.0"
@@ -27754,7 +27763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-connection-string-url@npm:^7.0.0":
+"mongodb-connection-string-url@npm:^7.0.1":
   version: 7.0.1
   resolution: "mongodb-connection-string-url@npm:7.0.1"
   dependencies:
@@ -27764,19 +27773,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:7.4.0":
-  version: 7.4.0
-  resolution: "mongodb@npm:7.4.0"
+"mongodb@npm:7.5.0":
+  version: 7.5.0
+  resolution: "mongodb@npm:7.5.0"
   dependencies:
-    "@mongodb-js/saslprep": "npm:^1.3.0"
+    "@mongodb-js/saslprep": "npm:^1.4.11"
     bson: "npm:^7.2.0"
-    mongodb-connection-string-url: "npm:^7.0.0"
+    mongodb-connection-string-url: "npm:^7.0.1"
   peerDependencies:
     "@aws-sdk/credential-providers": ^3.806.0
     "@mongodb-js/zstd": ^7.0.0
     gcp-metadata: ^7.0.1
     kerberos: ^7.0.0
-    mongodb-client-encryption: ">=7.0.0 <7.1.0"
+    mongodb-client-encryption: ^7.2.0
     snappy: ^7.3.2
     socks: ^2.8.6
   peerDependenciesMeta:
@@ -27794,7 +27803,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10c0/c48bb6ba149d3bab23a0e54b751d7702d00a40cf7374f58c021d3b5f869bdbdc790555a64af7d250e8013c19c4ea6260970c725b67d5dec61912b456bd0dbee0
+  checksum: 10c0/468db2b24fa3e497d6212bc3073c008b46ebffdace1197be5982c976d61e962e85727ac4443c6c8b59a9baed10d14ed589b6ea9234e87727469d7a19e82f9cd0
   languageName: node
   linkType: hard
 
@@ -32466,8 +32475,8 @@ __metadata:
     lint-staged: "npm:15.5.2"
     node-gyp: "npm:10.3.1"
     rulesync: "npm:7.30.0"
-    sherif: "npm:1.12.0"
-    turbo: "npm:2.10.0"
+    sherif: "npm:1.13.0"
+    turbo: "npm:2.10.4"
   dependenciesMeta:
     keytar:
       built: false
@@ -33028,74 +33037,74 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sherif-darwin-arm64@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-darwin-arm64@npm:1.12.0"
+"sherif-darwin-arm64@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-darwin-arm64@npm:1.13.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-darwin-x64@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-darwin-x64@npm:1.12.0"
+"sherif-darwin-x64@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-darwin-x64@npm:1.13.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64-musl@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-linux-arm64-musl@npm:1.12.0"
-  conditions: os=linux & cpu=arm64
+"sherif-linux-arm64-musl@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-linux-arm64-musl@npm:1.13.0"
+  conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-linux-arm64@npm:1.12.0"
-  conditions: os=linux & cpu=arm64
+"sherif-linux-arm64@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-linux-arm64@npm:1.13.0"
+  conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"sherif-linux-x64-musl@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-linux-x64-musl@npm:1.12.0"
-  conditions: os=linux & cpu=x64
+"sherif-linux-x64-musl@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-linux-x64-musl@npm:1.13.0"
+  conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"sherif-linux-x64@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-linux-x64@npm:1.12.0"
-  conditions: os=linux & cpu=x64
+"sherif-linux-x64@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-linux-x64@npm:1.13.0"
+  conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"sherif-windows-arm64@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-windows-arm64@npm:1.12.0"
+"sherif-windows-arm64@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-windows-arm64@npm:1.13.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-windows-x64@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif-windows-x64@npm:1.12.0"
+"sherif-windows-x64@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif-windows-x64@npm:1.13.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif@npm:1.12.0":
-  version: 1.12.0
-  resolution: "sherif@npm:1.12.0"
+"sherif@npm:1.13.0":
+  version: 1.13.0
+  resolution: "sherif@npm:1.13.0"
   dependencies:
-    sherif-darwin-arm64: "npm:1.12.0"
-    sherif-darwin-x64: "npm:1.12.0"
-    sherif-linux-arm64: "npm:1.12.0"
-    sherif-linux-arm64-musl: "npm:1.12.0"
-    sherif-linux-x64: "npm:1.12.0"
-    sherif-linux-x64-musl: "npm:1.12.0"
-    sherif-windows-arm64: "npm:1.12.0"
-    sherif-windows-x64: "npm:1.12.0"
+    sherif-darwin-arm64: "npm:1.13.0"
+    sherif-darwin-x64: "npm:1.13.0"
+    sherif-linux-arm64: "npm:1.13.0"
+    sherif-linux-arm64-musl: "npm:1.13.0"
+    sherif-linux-x64: "npm:1.13.0"
+    sherif-linux-x64-musl: "npm:1.13.0"
+    sherif-windows-arm64: "npm:1.13.0"
+    sherif-windows-x64: "npm:1.13.0"
   dependenciesMeta:
     sherif-darwin-arm64:
       optional: true
@@ -33115,7 +33124,7 @@ __metadata:
       optional: true
   bin:
     sherif: index.js
-  checksum: 10c0/05827508a7878ef8ddcba6433a9a58451b16f95d8016bf1670570b0a6aa4a60803796f694dc18dcf0d7db303e3e3662533aaf5e73f4e21dcc6a000717033bbca
+  checksum: 10c0/e98cbde65962fe897a2462ccf86e1a7ef5a4fe066be9ab0025ee98d40caa69c30c3fabfdc1ac608066374e25f9cc51783c319e7b0985a6a401487b0c779ef0cb
   languageName: node
   linkType: hard
 
@@ -35168,16 +35177,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo@npm:2.10.0":
-  version: 2.10.0
-  resolution: "turbo@npm:2.10.0"
+"turbo@npm:2.10.4":
+  version: 2.10.4
+  resolution: "turbo@npm:2.10.4"
   dependencies:
-    "@turbo/darwin-64": "npm:2.10.0"
-    "@turbo/darwin-arm64": "npm:2.10.0"
-    "@turbo/linux-64": "npm:2.10.0"
-    "@turbo/linux-arm64": "npm:2.10.0"
-    "@turbo/windows-64": "npm:2.10.0"
-    "@turbo/windows-arm64": "npm:2.10.0"
+    "@turbo/darwin-64": "npm:2.10.4"
+    "@turbo/darwin-arm64": "npm:2.10.4"
+    "@turbo/linux-64": "npm:2.10.4"
+    "@turbo/linux-arm64": "npm:2.10.4"
+    "@turbo/windows-64": "npm:2.10.4"
+    "@turbo/windows-arm64": "npm:2.10.4"
   dependenciesMeta:
     "@turbo/darwin-64":
       optional: true
@@ -35193,7 +35202,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10c0/2ceaa5b31afd284a6d52889ed53a047c3234ce475a4bb4c43ae1c7dc1844bd4f24c505390fc458d96909f816c67a0cd5a5cef6681a4d7136feece924802a8f1b
+  checksum: 10c0/2d5d3b9de35c1ce8d442bd208f9076da41cfe0fd1add6d8f6ce1e3927ee188c2f4b81a48c70dabdbd2b1e982505e80272befa91556c03a64d39ad24cf7045bca
   languageName: node
   linkType: hard
 

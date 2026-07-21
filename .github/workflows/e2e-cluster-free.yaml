@@ -41,7 +41,7 @@ jobs:
     # @playwright/test version in e2e-tests/package.json (currently 1.61.1) — a
     # mismatch fails with "Executable doesn't exist at /ms-playwright/...".
     container:
-      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3

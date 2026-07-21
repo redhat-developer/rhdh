@@ -1,0 +1,17 @@
+{
+  "name": "plugin-test-no-features-dynamic",
+  "version": "0.0.0",
+  "description": "A test frontend plugin without backstage.features metadata",
+  "backstage": {
+    "role": "frontend-dynamic-container",
+    "pluginId": "test-no-features",
+    "pluginPackages": [
+      "plugin-test-no-features"
+    ]
+  },
+  "keywords": [
+    "backstage",
+    "dynamic"
+  ],
+  "main": "remote-entry.js"
+}

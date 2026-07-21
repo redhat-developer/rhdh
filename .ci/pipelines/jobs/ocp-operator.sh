@@ -95,12 +95,14 @@ handle_ocp_operator() {
 
   cluster_setup_ocp_operator
 
-  prepare_operator
-
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment"
+    # OSD-GCP internal registry is unreliable under parallel load; reduce
+    # concurrent skopeo pushes and allow retries (RHDHBUGS-1136).
+    export MAX_PARALLEL=3
+    prepare_operator 3
     initiate_operator_deployments_osd_gcp
   else
+    prepare_operator
     initiate_operator_deployments
   fi
 

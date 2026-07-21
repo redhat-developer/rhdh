@@ -230,8 +230,8 @@ spec:
 ```
 
 See these docs for more info:
-* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/configuring_dynamic_plugins/index#installing-ansible-plug-ins-for-red-hat-developer-hub or
-* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/configuring_red_hat_developer_hub/configuring-the-deployment
+* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.10/html-single/configuring_dynamic_plugins/index#installing-ansible-plugins-for-rhdh_configuring-dynamic-plugins or
+* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.10/html/configuring_red_hat_developer_hub/configure-rhdh-deployment-when-using-the-operator_configuring-rhdh
 
 
 ### Customizing Telemetry Destination

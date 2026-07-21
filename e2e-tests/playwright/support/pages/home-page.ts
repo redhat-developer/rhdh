@@ -1,10 +1,14 @@
 import { Page, expect } from "@playwright/test";
 
+import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
 import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
 /* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
 import { HOME_PAGE_COMPONENTS } from "../selectors/page-selectors";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 export class HomePage {
   private page: Page;
@@ -14,7 +18,7 @@ export class HomePage {
   }
 
   async verifyWelcomeHeading(): Promise<void> {
-    await verification.verifyHeading(this.page, "Welcome back!");
+    await verification.verifyHeading(this.page, t["plugin.homepage"][lang]["header.welcome"]);
   }
 
   async openHomeSidebar(): Promise<void> {
