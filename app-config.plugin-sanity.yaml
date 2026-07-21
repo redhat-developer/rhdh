@@ -16,3 +16,64 @@ argocd:
       instances:
         - name: plugin-sanity-dummy
           url: https://argocd.invalid
+
+# @backstage-community/plugin-tech-radar-backend requires a data URL.
+techRadar:
+  url: https://tech-radar.invalid/data.json
+
+# @backstage/plugin-kubernetes-backend. The index ships a pluginConfig pointing
+# these at ${K8S_CLUSTER_NAME} / ${K8S_CLUSTER_URL} / ${K8S_CLUSTER_TOKEN},
+# which only exist in the cluster deployment; off-cluster they expand to empty
+# strings and `name` fails validation. This block replaces that one wholesale.
+kubernetes:
+  serviceLocatorMethod:
+    type: multiTenant
+  clusterLocatorMethods:
+    - type: config
+      clusters:
+        - name: plugin-sanity-dummy
+          url: https://kubernetes.invalid
+          authProvider: serviceAccount
+          skipTLSVerify: true
+          serviceAccountToken: plugin-sanity-dummy
+
+catalog:
+  providers:
+    # The ldapOrg / microsoftGraphOrg providers validate their connection config
+    # at startup. They do reach out once the backend is up, but the .invalid TLD
+    # never resolves, so they fail harmlessly at refresh time (the same thing the
+    # cluster deployment does with its `temp` placeholders) long after boot.
+    ldapOrg:
+      default:
+        target: ldaps://ldap.invalid
+        bind:
+          dn: cn=plugin-sanity-dummy
+          secret: plugin-sanity-dummy
+        users:
+          - dn: ou=people,dc=invalid
+            options:
+              filter: (uid=*)
+        groups:
+          - dn: ou=groups,dc=invalid
+            options:
+              filter: (objectClass=groupOfUniqueNames)
+        schedule:
+          frequency:
+            hours: 24
+          initialDelay:
+            seconds: 15
+          timeout:
+            minutes: 15
+    microsoftGraphOrg:
+      providerId:
+        target: https://graph.microsoft.com/v1.0
+        tenantId: plugin-sanity-dummy
+        clientId: plugin-sanity-dummy
+        clientSecret: plugin-sanity-dummy
+        schedule:
+          frequency:
+            hours: 24
+          initialDelay:
+            seconds: 15
+          timeout:
+            minutes: 15
