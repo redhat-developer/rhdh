@@ -71,4 +71,18 @@ run_sanity_plugins_check() {
   local sanity_plugins_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_SANITY_PLUGINS_CHECK}.${K8S_CLUSTER_ROUTER_BASE}"
   initiate_sanity_plugin_checks_deployment "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}"
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}" "${sanity_plugins_url}"
+  # Name the culprit plugin(s) loudly when the deployment or tests failed -
+  # a broken plugin takes the whole pod down, and the answer is buried in the
+  # pod logs otherwise. Advisory: prints nothing fatal on healthy runs.
+  testing::report_plugin_startup_failures "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}"
+
+  # Cluster-free counterpart (RHIDP-13508): boots packages/backend from source
+  # inside the test pod with EVERY plugin the catalog index declares and
+  # verifies the product's dynamic plugin loader loaded all of them. The
+  # cluster deployment above validates the curated plugin set on the shipped
+  # image; this validates the full index composition against the current
+  # backend line. The function records its own result via test_run_tracker and
+  # save_overall_result (like testing::run_tests), so a failure here marks the
+  # job without aborting remaining steps.
+  testing::run_plugin_sanity_check "plugin-dynamic-loading" || true
 }

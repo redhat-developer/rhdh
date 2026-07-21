@@ -28,7 +28,8 @@
     "fmt:check": "oxfmt --check .",
     "postinstall": "playwright install chromium",
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
-    "e2e:legacy-local": "playwright test --config=playwright.legacy-local.config.ts"
+    "e2e:legacy-local": "playwright test --config=playwright.legacy-local.config.ts",
+    "plugin-sanity": "playwright test --config=playwright.plugin-sanity.config.ts"
   },
   "dependencies": {
     "@azure/arm-network": "34.2.0",
