@@ -21,7 +21,8 @@ install_rhdh_operator() {
   if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
     log::info "Installing RHDH operator with '--next' flag"
     for ((i = 1; i <= max_attempts; i++)); do
-      if output=$(bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh); then
+      # Not using bash -x to avoid leaking skopeo tokens in CI logs
+      if output=$(bash /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh 2>&1); then
         log::debug "${output}"
         log::success "RHDH Operator installed on attempt ${i}."
         break
@@ -42,7 +43,8 @@ install_rhdh_operator() {
     fi
     log::info "Installing RHDH operator with '-v $operator_version' flag"
     for ((i = 1; i <= max_attempts; i++)); do
-      if output=$(bash -x /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh); then
+      # Not using bash -x to avoid leaking skopeo tokens in CI logs
+      if output=$(bash /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh 2>&1); then
         log::debug "${output}"
         log::success "RHDH Operator installed on attempt ${i}."
         break
