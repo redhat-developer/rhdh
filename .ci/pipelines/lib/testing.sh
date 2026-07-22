@@ -36,6 +36,59 @@ readonly _TESTING_ERR_MISSING_PARAMS="Missing required parameters"
 #   0 - Tests passed
 #   Non-zero - Tests failed
 # Uses globals: DIR, TAG_NAME, ARTIFACT_DIR, LOGFILE, JUNIT_RESULTS, CI, SHARED_DIR
+# Publishes a JUnit file to SHARED_DIR, gzipped to stay under the Kubernetes
+# Secret 1 MiB limit, dropping it when it is still too large (an oversized entry
+# would break the downstream Slack reporting for every run in the job).
+# Args:
+#   $1 - artifacts_subdir (names the SHARED_DIR entry)
+#   $2 - path to the JUnit file already copied into ARTIFACT_DIR
+testing::_publish_junit_to_shared_dir() {
+  local artifacts_subdir=$1 junit_in_artifact_dir=$2
+  local target="${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+  local max_size=$((800 * 1024))
+
+  [[ "${CI}" == "true" && -f "${junit_in_artifact_dir}" ]] || return 0
+
+  gzip -c "${junit_in_artifact_dir}" > "${target}"
+  local gz_size
+  # stat is -c on GNU, -f on BSD; CI is GNU, local runs may not be.
+  gz_size=$(stat -c%s "${target}" 2> /dev/null || stat -f%z "${target}")
+  if ((gz_size > max_size)); then
+    echo "[WARNING] $(basename "${target}") is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
+    rm -f "${target}"
+  else
+    echo "[INFO] Copied $(basename "${target}") to SHARED_DIR ($((gz_size / 1024)) KB)"
+  fi
+}
+
+# Echoes the number of failed tests in a JUnit file, or UNKNOWN_FAILURE_COUNT
+# when it cannot be determined. JUnit distinguishes "failures" (assertion
+# failures) from "errors" (exceptions/timeouts) and Playwright reports
+# TimeoutError and crashes as errors, so both are summed from the root
+# <testsuites> element - otherwise the Slack notification under-reports.
+# A zero total after a non-zero exit means the process crashed or timed out
+# globally, so the sentinel is used instead of a misleading "0 tests failed".
+# Args:
+#   $1 - path to the JUnit file
+testing::_count_junit_failures() {
+  local junit_file=$1
+
+  if [[ ! -f "${junit_file}" ]]; then
+    echo "${UNKNOWN_FAILURE_COUNT}"
+    return 0
+  fi
+
+  local failures errors total
+  failures=$(grep -oP 'failures="\K[0-9]+' "${junit_file}" | head -n 1)
+  errors=$(grep -oP 'errors="\K[0-9]+' "${junit_file}" | head -n 1)
+  total=$((${failures:-0} + ${errors:-0}))
+  if [[ "${total}" -eq 0 ]]; then
+    echo "${UNKNOWN_FAILURE_COUNT}"
+  else
+    echo "${total}"
+  fi
+}
+
 testing::run_tests() {
   local release_name=$1
   local namespace=$2
@@ -113,19 +166,7 @@ testing::run_tests() {
   # Use artifacts_subdir for artifact directory to keep artifacts organized
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${JUNIT_RESULTS}" || true
-  if [[ "${CI}" == "true" && -f "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" ]]; then
-    # Gzip junit before writing to SHARED_DIR to stay under Kubernetes Secret 1 MiB limit
-    gzip -c "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" > "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    local gz_size
-    gz_size=$(stat -c%s "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz" 2> /dev/null || stat -f%z "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz")
-    local max_size=$((800 * 1024))
-    if ((gz_size > max_size)); then
-      echo "[WARNING] junit-results-${artifacts_subdir}.xml.gz is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
-      rm -f "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    else
-      echo "[INFO] Copied junit-results-${artifacts_subdir}.xml.gz to SHARED_DIR ($((gz_size / 1024)) KB)"
-    fi
-  fi
+  testing::_publish_junit_to_shared_dir "${artifacts_subdir}" "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}"
 
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
@@ -176,28 +217,9 @@ testing::run_tests() {
   local failed_tests
   if [[ "${test_result}" -eq 0 ]]; then
     failed_tests="0"
-  elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
-    # JUnit XML distinguishes "failures" (assertion failures) from "errors"
-    # (exceptions/timeouts). Playwright reports TimeoutError, crash, and
-    # similar issues as errors, not failures. Sum both from the root
-    # <testsuites> element so the Slack notification reflects the real count.
-    local _junit_failures _junit_errors
-    _junit_failures=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    _junit_errors=$(grep -oP 'errors="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    _junit_failures="${_junit_failures:-0}"
-    _junit_errors="${_junit_errors:-0}"
-    failed_tests=$((_junit_failures + _junit_errors))
-    if [[ "${failed_tests}" -eq 0 ]]; then
-      # Playwright exited non-zero but JUnit reports 0 failures and 0 errors —
-      # the process likely crashed or timed out globally. Use the sentinel so
-      # the Slack alert doesn't misleadingly say "0 tests failed".
-      failed_tests="${UNKNOWN_FAILURE_COUNT}"
-    fi
-    echo "Number of failed tests: ${failed_tests}"
   else
-    echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
-    failed_tests="${UNKNOWN_FAILURE_COUNT}"
-    echo "Number of failed tests unknown, saving as ${failed_tests}."
+    failed_tests=$(testing::_count_junit_failures "${e2e_tests_dir}/${JUNIT_RESULTS}")
+    echo "Number of failed tests: ${failed_tests}"
   fi
   test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
   return "$test_result"
@@ -290,15 +312,11 @@ testing::run_plugin_sanity_check() {
     return 1
   fi
 
-  # Must record the failure like every other path here: a bare return would
-  # leave OVERALL_RESULT green while the tracker row says the run failed.
-  cd "${repo_root}/e2e-tests" || {
-    log::error "Could not enter ${repo_root}/e2e-tests"
-    save_overall_result 1
-    return 1
-  }
+  # `yarn --cwd` rather than `cd`: this function used to leave the shell in
+  # e2e-tests, which is invisible until someone adds a step after it.
+  local e2e_dir="${repo_root}/e2e-tests"
 
-  if ! yarn install --immutable > /tmp/yarn.install.log.txt 2>&1; then
+  if ! yarn --cwd "${e2e_dir}" install --immutable > /tmp/yarn.install.log.txt 2>&1; then
     log::error "=== YARN INSTALL FAILED ==="
     cat /tmp/yarn.install.log.txt
     save_overall_result 1
@@ -308,28 +326,16 @@ testing::run_plugin_sanity_check() {
   local junit_results="junit-results-plugin-sanity.xml"
   (
     set -e
-    JUNIT_RESULTS="${junit_results}" yarn plugin-sanity
+    JUNIT_RESULTS="${junit_results}" yarn --cwd "${e2e_dir}" plugin-sanity
   ) 2>&1 | tee "/tmp/${LOGFILE}-plugin-sanity"
   local test_result=${PIPESTATUS[0]}
 
-  common::save_artifact "${artifacts_subdir}" "${repo_root}/e2e-tests/${junit_results}" || true
-  if [[ "${CI}" == "true" && -f "${ARTIFACT_DIR}/${artifacts_subdir}/${junit_results}" ]]; then
-    # Gzip junit before writing to SHARED_DIR to stay under Kubernetes Secret 1 MiB limit
-    gzip -c "${ARTIFACT_DIR}/${artifacts_subdir}/${junit_results}" > "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    local gz_size
-    gz_size=$(stat -c%s "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz" 2> /dev/null || stat -f%z "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz")
-    local max_size=$((800 * 1024))
-    if ((gz_size > max_size)); then
-      echo "[WARNING] junit-results-${artifacts_subdir}.xml.gz is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
-      rm -f "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    else
-      echo "[INFO] Copied junit-results-${artifacts_subdir}.xml.gz to SHARED_DIR ($((gz_size / 1024)) KB)"
-    fi
-  fi
+  common::save_artifact "${artifacts_subdir}" "${e2e_dir}/${junit_results}" || true
+  testing::_publish_junit_to_shared_dir "${artifacts_subdir}" "${ARTIFACT_DIR}/${artifacts_subdir}/${junit_results}"
 
   ansi2html < "/tmp/${LOGFILE}-plugin-sanity" > "/tmp/${LOGFILE}-plugin-sanity.html"
   common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}-plugin-sanity.html" || true
-  common::save_artifact "${artifacts_subdir}" "${repo_root}/e2e-tests/playwright-report-plugin-sanity/" || true
+  common::save_artifact "${artifacts_subdir}" "${e2e_dir}/playwright-report-plugin-sanity/" || true
 
   echo "Cluster-free plugin sanity check (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   local test_passed="true"
@@ -349,19 +355,7 @@ testing::run_plugin_sanity_check() {
   fi
   local failed_tests="0"
   if [[ "${test_result}" -ne 0 ]]; then
-    if [[ -f "${repo_root}/e2e-tests/${junit_results}" ]]; then
-      local _junit_failures _junit_errors
-      _junit_failures=$(grep -oP 'failures="\K[0-9]+' "${repo_root}/e2e-tests/${junit_results}" | head -n 1)
-      _junit_errors=$(grep -oP 'errors="\K[0-9]+' "${repo_root}/e2e-tests/${junit_results}" | head -n 1)
-      _junit_failures="${_junit_failures:-0}"
-      _junit_errors="${_junit_errors:-0}"
-      failed_tests=$((_junit_failures + _junit_errors))
-      if [[ "${failed_tests}" -eq 0 ]]; then
-        failed_tests="${UNKNOWN_FAILURE_COUNT}"
-      fi
-    else
-      failed_tests="${UNKNOWN_FAILURE_COUNT}"
-    fi
+    failed_tests=$(testing::_count_junit_failures "${e2e_dir}/${junit_results}")
     echo "Number of failed tests: ${failed_tests}"
   fi
   test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
