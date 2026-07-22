@@ -76,9 +76,12 @@ handle_ocp_disconnected_operator() {
     --filter-versions "${filter_versions}"
   )
 
-  # prepare-restricted-environment.sh skips OLM v1 pull-secret setup for external
-  # registries; merge mirror credentials so catalogd can pull the ClusterCatalog.
+  # prepare-restricted-environment.sh skips OLM v1 pull-secret/CA setup for
+  # external registries. Catalogd must trust the mirror CA and authenticate
+  # before ClusterCatalog can reach Serving=True.
   disconnected::ensure_olm_mirror_pull_secret || return 1
+  disconnected::ensure_mirror_registry_ca || return 1
+  disconnected::wait_mcp_updated
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
   if ! disconnected::with_unset_registry_auth_file \
