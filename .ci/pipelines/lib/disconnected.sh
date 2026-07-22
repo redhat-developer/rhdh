@@ -320,6 +320,51 @@ disconnected::apply_plugin_mirror_configmap() {
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 }
 
+# Ensure the mirror registry CA is trusted cluster-wide via
+# image.config.openshift.io/cluster additionalTrustedCA so OLM v1 catalogd
+# can pull ClusterCatalog images (x509 unknown authority otherwise).
+# Triggers an MCP update; callers should run disconnected::wait_mcp_updated after.
+disconnected::ensure_mirror_registry_ca() {
+  local registry_host="${MIRROR_REGISTRY_URL%%/*}"
+  # OpenShift ConfigMap keys use ".." in place of ":" for host:port.
+  local cm_key="${registry_host//:/..}"
+  local cm_name="rhdh-disconnected-mirror-ca"
+  local existing_cm
+
+  if [[ ! -f "${MIRROR_REGISTRY_CA}" ]]; then
+    log::error "MIRROR_REGISTRY_CA file not found: ${MIRROR_REGISTRY_CA}"
+    return 1
+  fi
+
+  existing_cm=$(oc get image.config.openshift.io/cluster -o jsonpath='{.spec.additionalTrustedCA.name}' 2> /dev/null || true)
+  if [[ -n "${existing_cm}" ]]; then
+    cm_name="${existing_cm}"
+    log::info "Merging mirror CA into existing additionalTrustedCA ConfigMap ${cm_name}"
+    oc get configmap "${cm_name}" -n openshift-config -o json \
+      | jq --arg key "${cm_key}" --rawfile cert "${MIRROR_REGISTRY_CA}" \
+        '.data[$key] = $cert | del(.metadata.resourceVersion, .metadata.uid, .metadata.creationTimestamp)' \
+      | oc apply -f - || {
+      log::error "Failed to merge mirror CA into ConfigMap ${cm_name}"
+      return 1
+    }
+  else
+    log::info "Creating additionalTrustedCA ConfigMap ${cm_name} for ${registry_host}"
+    oc create configmap "${cm_name}" -n openshift-config \
+      --from-file="${cm_key}=${MIRROR_REGISTRY_CA}" \
+      --dry-run=client -o yaml | oc apply -f - || {
+      log::error "Failed to create ConfigMap ${cm_name}"
+      return 1
+    }
+    oc patch image.config.openshift.io/cluster --type=merge \
+      -p "{\"spec\":{\"additionalTrustedCA\":{\"name\":\"${cm_name}\"}}}" || {
+      log::error "Failed to patch image.config.openshift.io/cluster additionalTrustedCA"
+      return 1
+    }
+  fi
+
+  log::success "Mirror CA trusted for ${registry_host} via ${cm_name}/${cm_key}"
+}
+
 # Merge mirror-registry credentials into openshift-config/pull-secret so OLM v1
 # catalogd/operator-controller can pull mirrored catalog/bundle images.
 # prepare-restricted-environment.sh skips this for external registries.
@@ -417,6 +462,7 @@ export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
 export -f disconnected::mirror_plugins
 export -f disconnected::apply_plugin_mirror_configmap
+export -f disconnected::ensure_mirror_registry_ca
 export -f disconnected::ensure_olm_mirror_pull_secret
 export -f disconnected::dump_olm_v1_status
 export -f disconnected::wait_operator_crd_olm_v1
