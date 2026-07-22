@@ -1,0 +1,8 @@
+# Minimal app-config for disconnected operator smoke (guest login only).
+app:
+  title: Red Hat Developer Hub
+auth:
+  environment: development
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
