@@ -18,7 +18,8 @@ source "$DIR"/lib/disconnected.sh
 export INSTALL_METHOD="operator"
 
 handle_ocp_disconnected_operator() {
-  export NAME_SPACE="${NAME_SPACE:-showcase-disconnected}"
+  # Force a dedicated namespace (env_variables.sh may already set NAME_SPACE=showcase).
+  export NAME_SPACE="showcase-disconnected"
 
   disconnected::require_env
   disconnected::setup_auth
@@ -129,8 +130,18 @@ handle_ocp_disconnected_operator() {
 
   log::section "Backstage CR Deployment"
 
+  # Minimal guest-auth ConfigMap (full rhdh-start.yaml references ConfigMaps/Secrets
+  # created by apply_yaml_files(), which this disconnected handler skips).
+  oc create configmap app-config-rhdh-disconnected-smoke \
+    --from-file="app-config-rhdh.yaml=${DIR}/resources/config_map/app-config-rhdh-disconnected-smoke.yaml" \
+    --namespace="${NAME_SPACE}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create app-config ConfigMap — aborting"
+    return 1
+  }
+
   local rendered_cr
-  rendered_cr=$(envsubst < "${DIR}/resources/rhdh-operator/rhdh-start.yaml")
+  rendered_cr=$(envsubst < "${DIR}/resources/rhdh-operator/rhdh-start-disconnected-smoke.yaml")
   rendered_cr=$(echo "$rendered_cr" | yq eval \
     '.spec.application.extraFiles.configMaps = [
       {
