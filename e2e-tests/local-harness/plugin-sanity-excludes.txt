@@ -12,11 +12,22 @@
 # Prefer a dummy config entry in app-config.plugin-sanity.yaml over an
 # exclusion whenever the failure is just startup config validation.
 
-# Fails init with "Cannot read properties of undefined (reading 'id')" in
-# BackendInitializer.#getInitDeps when loaded into the main-branch backend —
-# it requires the full orchestrator/SonataFlow environment and its init deps
-# do not resolve in a standalone boot. The orchestrator FRONTEND plugins stay
-# in (they are static assets to the backend and are validated normally).
+# Two separate problems, both currently blocking:
+#
+# 1. The digests the 1.10 index publishes for these two packages DO NOT RESOLVE
+#    (verified with `skopeo inspect` on 2026-07-22) - the install fails before
+#    boot is even reached. That is an index composition bug, tracked in
+#    RHDHBUGS-3455, NOT a limitation of this harness.
+# 2. When the refs did resolve, orchestrator-backend failed init with "Cannot
+#    read properties of undefined (reading 'id')" in
+#    BackendInitializer.#getInitDeps: it wants the full orchestrator/SonataFlow
+#    environment, which a standalone boot does not provide.
+#
+# Re-evaluate BOTH once RHDHBUGS-3455 is fixed: if (2) no longer reproduces,
+# these entries should go, because keeping them means this check is being told
+# not to look at exactly the kind of breakage it exists to catch.
+# The orchestrator FRONTEND plugins stay in (they are static assets to the
+# backend and are validated normally).
 red-hat-developer-hub-backstage-plugin-orchestrator-backend(@|:)
 
 # Module on the orchestrator backend plugin - excluded with its host plugin.

@@ -53,27 +53,27 @@ test.describe("Plugin Dynamic Loading", () => {
     "all catalog index plugins load in the RHDH backend",
     { tag: "@sanity" },
     async ({ request }) => {
-      // Step 1: enumerate what install-dynamic-plugins installed
+      // Step 1: enumerate what install-dynamic-plugins installed, and check it
+      // covers the WHOLE index - a partial install would otherwise pass this
+      // spec trivially. loadManifest throws when nothing is installed at all.
       const manifest = loadManifest(DYNAMIC_PLUGINS_ROOT);
       console.log(
-        `📋 Installed: ${manifest.backend.length} backend, ${manifest.frontend.length} frontend plugins`,
+        `[TEST] Installed: ${manifest.backend.length} backend, ${manifest.frontend.length} frontend plugins`,
       );
 
       const expected = [...manifest.backend, ...manifest.frontend];
-      expect(expected.length).toBeGreaterThan(0);
 
-      // The install must cover the WHOLE index, not just whatever happened to
-      // land: a partial install would otherwise pass this spec trivially.
+      // Throw rather than assert-and-return: a bare `return` here would report
+      // the test as PASSED without having validated anything.
       const indexExpectation = readCatalogIndexExpectation(DYNAMIC_PLUGINS_ROOT);
-      expect(
-        indexExpectation,
-        "dynamic-plugins-root was not populated from the catalog index - run " +
-          "local-harness/populate-catalog-index.sh with CATALOG_INDEX_IMAGE set",
-      ).not.toBeNull();
-      // Narrowing for the type checker; the assertion above is the real gate.
-      if (indexExpectation === null) return;
+      if (indexExpectation === null) {
+        throw new Error(
+          "dynamic-plugins-root was not populated from the catalog index - run " +
+            "local-harness/populate-catalog-index.sh with CATALOG_INDEX_IMAGE set",
+        );
+      }
 
-      console.log(`🗂️  Catalog index: ${indexExpectation.image}`);
+      console.log(`[TEST] Catalog index: ${indexExpectation.image}`);
       if (process.env.CATALOG_INDEX_IMAGE !== undefined && process.env.CATALOG_INDEX_IMAGE !== "") {
         expect(
           indexExpectation.image,
@@ -111,12 +111,12 @@ test.describe("Plugin Dynamic Loading", () => {
       });
       expect(response.status(), "loaded-plugins endpoint should respond").toBe(200);
       const loadedNames = parseLoadedPluginNames(await response.json());
-      console.log(`🔌 Backend reports ${loadedNames.size} loaded dynamic plugins`);
+      console.log(`[TEST] Backend reports ${loadedNames.size} loaded dynamic plugins`);
 
       // Step 4: every installed plugin must have been loaded
       const notLoaded = expected.filter((plugin) => !loadedNames.has(plugin.name));
       if (notLoaded.length > 0) {
-        console.log(`\n⚠️  Installed but not loaded (${notLoaded.length}):`);
+        console.log(`\n[TEST] Installed but not loaded (${notLoaded.length}):`);
         for (const plugin of notLoaded) {
           console.log(`   - ${plugin.name} (${plugin.dirName})`);
         }
@@ -134,7 +134,7 @@ test.describe("Plugin Dynamic Loading", () => {
       // Step 5: frontend bundle artifacts (static check)
       const frontendErrors = validateFrontendBundles(manifest.frontend);
       if (frontendErrors.length > 0) {
-        console.log(`\n⚠️  Frontend bundle errors (${frontendErrors.length}):`);
+        console.log(`\n[TEST] Frontend bundle errors (${frontendErrors.length}):`);
         for (const { plugin, error } of frontendErrors) {
           console.log(`   - ${plugin.name}: ${error}`);
         }
@@ -145,7 +145,7 @@ test.describe("Plugin Dynamic Loading", () => {
       ).toEqual([]);
 
       // Step 6: summary
-      console.log("\n📊 Summary:");
+      console.log("\n[TEST] Summary:");
       console.log(`   Installed: ${manifest.backend.length + manifest.frontend.length}`);
       console.log(`   - Backend: ${manifest.backend.length}`);
       console.log(`   - Frontend: ${manifest.frontend.length}`);
