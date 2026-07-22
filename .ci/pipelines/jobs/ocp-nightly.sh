@@ -55,10 +55,16 @@ run_runtime_config_change_tests() {
   # Subsequent test files reuse the existing deployment (workers: 1).
   #
   # The CI wrapper only needs to set environment variables and invoke Playwright.
-
+  #
+  # No URL is passed on purpose. run_tests exports whatever it gets as BASE_URL,
+  # and global-setup.ts only deploys when BASE_URL is EMPTY and
+  # RUNTIME_AUTO_DEPLOY is true. Passing the route pre-set BASE_URL, so the
+  # deploy branch was skipped and global-setup instead polled a route that
+  # nothing had created yet - failing after 120s before any test could run.
+  # ensureRuntimeDeployed() sets BASE_URL itself once the route exists.
   export INSTALL_METHOD="helm"
-  local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  export RUNTIME_AUTO_DEPLOY="true"
+  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" || true
 }
 
 run_sanity_plugins_check() {
