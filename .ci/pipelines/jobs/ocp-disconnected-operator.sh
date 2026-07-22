@@ -38,67 +38,34 @@ handle_ocp_disconnected_operator() {
       return 1
     }
 
+  # Use oc-mirror (documented air-gapped OCP path) instead of the script's
+  # default skopeo/umoci/podman-build path. Nested Podman in this CI pod cannot
+  # initialize storage (newuidmap / VFS chown both fail under hostUsers: false).
+  # CATALOG_INDEX_IMAGE is the plugin catalog index — do not pass it as
+  # --index-image (OLM operator catalog). Keep it for mirror-plugins.sh below.
   local prepare_args=(
+    --use-oc-mirror true
     --to-registry "${MIRROR_REGISTRY_URL}"
+    --index-image "registry.redhat.io/redhat/redhat-operator-index:v4.21"
     --filter-versions "${RELEASE_VERSION}"
   )
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    prepare_args=(
-      --to-registry "${MIRROR_REGISTRY_URL}"
-      --index-image "${CATALOG_INDEX_IMAGE}"
-      --ci-index true
-      --filter-versions "${RELEASE_VERSION}"
-    )
+
+  # oc-mirror panics when REGISTRY_AUTH_FILE is set (distribution/distribution
+  # treats it as storage driver config). Auth comes from
+  # ${XDG_RUNTIME_DIR}/containers/auth.json via disconnected::setup_auth.
+  local saved_registry_auth_file="${REGISTRY_AUTH_FILE:-}"
+  unset REGISTRY_AUTH_FILE
+
+  log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
+  if ! bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}"; then
+    [[ -n "${saved_registry_auth_file}" ]] && export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
+    log::error "prepare-restricted-environment.sh failed — aborting"
+    return 1
   fi
 
-  # The CI pod runs with nested_podman: true (hostUsers: false), placing it
-  # inside a Linux user namespace. Two storage drivers were attempted:
-  #   - overlay+fuse-overlayfs: needs newuidmap to create a nested userns,
-  #     but newuidmap fails ("open of uid_map failed: Permission denied")
-  #     because file capabilities set at build time are not effective inside
-  #     the pod's user namespace.
-  #   - VFS: doesn't need newuidmap, but chowns the graphroot on storage
-  #     initialization, which fails in the userns.
-  #
-  # Fix: use VFS with _CONTAINERS_USERNS_CONFIGURED=1 (skip newuidmap) and
-  # pre-create the graphroot directory tree so the store initialization's
-  # MkdirAllAndChown finds existing dirs and skips chown. BUILDAH_ISOLATION=
-  # chroot avoids creating a nested userns for builds. ignore_chown_errors
-  # covers layer-level chown operations.
-  export _CONTAINERS_USERNS_CONFIGURED=1
-  export BUILDAH_ISOLATION=chroot
-
-  local graphroot="/tmp/graphroot"
-  local runroot="/tmp/runroot"
-
-  # Pre-create the directory tree that podman/c-storage expects. When the
-  # directories already exist and are owned by uid 1000, the store
-  # initialization skips chown (which would fail in the userns).
-  mkdir -p "${graphroot}/vfs/dir" "${graphroot}/vfs-images" "${graphroot}/vfs-layers"
-  mkdir -p "${runroot}/vfs" "${runroot}/libpod"
-
-  mkdir -p "${HOME}/.config/containers"
-  cat > "${HOME}/.config/containers/storage.conf" << EOF
-[storage]
-driver = "vfs"
-graphroot = "${graphroot}"
-runroot = "${runroot}"
-
-[storage.options]
-ignore_chown_errors = "true"
-EOF
-
-  log::info "Podman environment: uid=$(id -u), BUILDAH_ISOLATION=${BUILDAH_ISOLATION}"
-  log::info "Storage config (${HOME}/.config/containers/storage.conf): $(tr '\n' ' ' < "${HOME}/.config/containers/storage.conf")"
-  log::info "subuid: $(cat /etc/subuid 2> /dev/null || echo 'not found')"
-  log::info "graphroot owner: $(ls -ld "${graphroot}/vfs/dir" 2> /dev/null || echo 'not found')"
-  log::info "Podman graphRoot: $(podman info --format '{{.Store.GraphRoot}}' 2>&1 || echo 'podman info failed')"
-
-  bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}" \
-    || {
-      log::error "prepare-restricted-environment.sh failed — aborting"
-      return 1
-    }
+  if [[ -n "${saved_registry_auth_file}" ]]; then
+    export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
+  fi
   log::success "Operator installed via prepare-restricted-environment.sh"
 
   # prepare-restricted-environment.sh applies IDMS/CatalogSource which triggers
