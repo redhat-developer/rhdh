@@ -17,7 +17,6 @@ test.describe("Home page customization", () => {
     homePage = new HomePage(guestPage);
   });
 
-  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test(
     "Verify that home page is customized",
     { tag: "@cluster-free-capable" },

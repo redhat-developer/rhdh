@@ -17,7 +17,6 @@ test.describe("Test ApplicationProvider", () => {
     applicationProviderPage = new ApplicationProviderTestPage(guestPage);
   });
 
-  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test(
     "Verify that the TestPage is rendered",
     { tag: "@cluster-free-capable" },

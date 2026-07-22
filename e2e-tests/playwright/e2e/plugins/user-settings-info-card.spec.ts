@@ -19,7 +19,6 @@ test.describe("Test user settings info card", { tag: "@layer3-equivalent" }, () 
     settingsPage = new SettingsPage(guestPage);
   });
 
-  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test("Check if customized build info is rendered", { tag: "@cluster-free-capable" }, async () => {
     await homePage.openHomeSidebar();
     await settingsPage.openFromProfile("Guest User");

@@ -69,7 +69,11 @@ export default defineConfig({
     "e2e/plugins/application-provider.spec.ts",
     "e2e/plugins/application-listener.spec.ts",
   ],
-  grep: /@cluster-free-capable/u,
+  // The optional `-capable` keeps branches still carrying the old @cluster-free
+  // spelling working while they land. Without it they are silently dropped from
+  // this run — no error, the tests just stop executing here. Drop the
+  // alternation once no in-flight branch uses the old tag.
+  grep: /@cluster-free(-capable)?/u,
   timeout: 90 * 1000,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,

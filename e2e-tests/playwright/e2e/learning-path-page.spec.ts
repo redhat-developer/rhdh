@@ -17,7 +17,6 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
     sidebarPage = new SidebarPage(guestPage);
   });
 
-  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test(
     "Verify that links in Learning Paths for Backstage opens in a new tab",
     { tag: "@cluster-free-capable" },

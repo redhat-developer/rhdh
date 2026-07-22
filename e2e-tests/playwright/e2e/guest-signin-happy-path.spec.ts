@@ -19,7 +19,6 @@ test.describe("Guest Signing Happy path", () => {
     settingsPage = new SettingsPage(guestPage);
   });
 
-  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test(
     "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
     { tag: "@cluster-free-capable" },

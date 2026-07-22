@@ -16,7 +16,6 @@ test.describe("Test ApplicationListener", () => {
     catalogBrowsePage = new CatalogBrowsePage(guestPage);
   });
 
-  // @cluster-free-capable: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
   test(
     "Verify that the LocationListener logs the current location",
     { tag: "@cluster-free-capable" },
