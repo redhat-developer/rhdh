@@ -12,27 +12,33 @@ readonly POSTGRES_LIB_SOURCED=1
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
 
-# Refresh PostgreSQL collation versions after a major version upgrade.
-# Suppresses "collation version mismatch" warnings that occur when upgrading
-# across glibc versions (e.g. Fedora base image jumps).
+# Wait until the chart-managed PostgreSQL pod is Ready.
 # Args:
 #   $1 - namespace containing the PostgreSQL pod
-#   $2 - optional max wait seconds for the pod (default: 120)
-refresh_postgres_collation_versions() {
+#   $2 - optional max wait seconds (default: 300)
+# Prints the pod name on success; returns 1 on timeout.
+wait_for_postgres_ready() {
   local namespace=$1
-  local max_wait=${2:-120}
-
-  log::info "Refreshing PostgreSQL collation versions in namespace: ${namespace}"
-
+  local max_wait=${2:-300}
   local pg_pod=""
   local waited=0
+
+  log::info "Waiting for PostgreSQL pod to be Ready in namespace: ${namespace}"
   while [[ $waited -lt $max_wait ]]; do
     pg_pod=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/name=postgresql" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
     if [[ -n "$pg_pod" ]]; then
       local ready
       ready=$(oc get pod -n "${namespace}" "${pg_pod}" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null || true)
       if [[ "$ready" == "True" ]]; then
-        break
+        # Also require StatefulSet to report Ready replicas, avoiding a brief Ready
+        # blip while a replacement pod is still coming up after helm upgrade.
+        local sts_ready
+        sts_ready=$(oc get statefulset -n "${namespace}" -l "app.kubernetes.io/name=postgresql" -o jsonpath='{.items[0].status.readyReplicas}' 2> /dev/null || true)
+        if [[ "${sts_ready:-0}" -ge 1 ]]; then
+          log::info "PostgreSQL pod is Ready: ${pg_pod}"
+          echo "${pg_pod}"
+          return 0
+        fi
       fi
     fi
     log::debug "Waiting for PostgreSQL pod to be ready... (${waited}s/${max_wait}s)"
@@ -40,8 +46,49 @@ refresh_postgres_collation_versions() {
     waited=$((waited + 5))
   done
 
+  log::error "PostgreSQL pod not Ready in namespace ${namespace} after ${max_wait}s"
+  oc get pods -n "${namespace}" -l "app.kubernetes.io/name=postgresql" -o wide 2> /dev/null || true
+  return 1
+}
+
+# Log the running PostgreSQL server version (for upgrade evidence).
+# Args:
+#   $1 - namespace
+#   $2 - optional postgres pod name
+log_postgres_version() {
+  local namespace=$1
+  local pg_pod=${2:-}
+
   if [[ -z "$pg_pod" ]]; then
-    log::warn "No PostgreSQL pod found in namespace ${namespace}. Skipping collation refresh."
+    pg_pod=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/name=postgresql" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
+  fi
+  if [[ -z "$pg_pod" ]]; then
+    log::warn "Cannot log PostgreSQL version: no pod found in ${namespace}"
+    return 0
+  fi
+
+  local version
+  version=$(oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -t -A -c "SHOW server_version;" 2> /dev/null | tr -d '[:space:]' || true)
+  local image
+  image=$(oc get pod -n "${namespace}" "${pg_pod}" -o jsonpath='{.spec.containers[0].image}' 2> /dev/null || true)
+  log::info "PostgreSQL evidence — version='${version:-unknown}' image='${image:-unknown}' pod='${pg_pod}'"
+}
+
+# Refresh PostgreSQL collation versions after a major version upgrade.
+# Suppresses "collation version mismatch" warnings that occur when upgrading
+# across glibc versions (e.g. Fedora base image jumps).
+# Args:
+#   $1 - namespace containing the PostgreSQL pod
+#   $2 - optional max wait seconds for the pod (default: 300)
+refresh_postgres_collation_versions() {
+  local namespace=$1
+  local max_wait=${2:-300}
+
+  log::info "Refreshing PostgreSQL collation versions in namespace: ${namespace}"
+
+  local pg_pod
+  if ! pg_pod=$(wait_for_postgres_ready "${namespace}" "${max_wait}"); then
+    log::warn "Skipping collation refresh; PostgreSQL not Ready."
     return 0
   fi
 
