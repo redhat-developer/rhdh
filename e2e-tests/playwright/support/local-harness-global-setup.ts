@@ -2,13 +2,17 @@ import { readdirSync } from "fs";
 import { resolve } from "path";
 
 /**
- * globalSetup for the cluster-free legacy harness (playwright.legacy-local.config.ts).
+ * Shared guard for the cluster-free harnesses.
  *
  * Fails fast with an actionable message when `dynamic-plugins-root` has not been
- * populated — otherwise the legacy app boots with no plugins and specs fail with a
+ * populated — otherwise the app boots with no plugins and specs fail with a
  * confusing locator timeout instead of a clear "populate first" error.
+ *
+ * Each harness passes its OWN populate command: the two harnesses use different
+ * scripts (and the plugin-sanity one needs CATALOG_INDEX_IMAGE), so a single
+ * hard-coded hint would send half the callers to the wrong script.
  */
-export default function requireDynamicPluginsPopulated(): void {
+export function requireDynamicPluginsPopulated(runCommand: string, populateCommand: string): void {
   // process.cwd() is e2e-tests when Playwright runs; the plugins root is at repo root.
   const root = resolve(process.cwd(), "..", "dynamic-plugins-root");
 
@@ -26,9 +30,14 @@ export default function requireDynamicPluginsPopulated(): void {
 
   if (pluginCount === 0) {
     throw new Error(
-      `dynamic-plugins-root has no plugins — populate it before running e2e:legacy-local:\n\n` +
-        `  ./e2e-tests/local-harness/populate.sh\n\n` +
+      `dynamic-plugins-root has no plugins — populate it before running ${runCommand}:\n\n` +
+        `  ${populateCommand}\n\n` +
         `See docs/e2e-tests/local-e2e-harness.md.`,
     );
   }
+}
+
+/** globalSetup for playwright.legacy-local.config.ts. */
+export default function legacyLocalGlobalSetup(): void {
+  requireDynamicPluginsPopulated("e2e:legacy-local", "./e2e-tests/local-harness/populate.sh");
 }

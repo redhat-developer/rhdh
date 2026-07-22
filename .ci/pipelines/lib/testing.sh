@@ -36,6 +36,59 @@ readonly _TESTING_ERR_MISSING_PARAMS="Missing required parameters"
 #   0 - Tests passed
 #   Non-zero - Tests failed
 # Uses globals: DIR, TAG_NAME, ARTIFACT_DIR, LOGFILE, JUNIT_RESULTS, CI, SHARED_DIR
+# Publishes a JUnit file to SHARED_DIR, gzipped to stay under the Kubernetes
+# Secret 1 MiB limit, dropping it when it is still too large (an oversized entry
+# would break the downstream Slack reporting for every run in the job).
+# Args:
+#   $1 - artifacts_subdir (names the SHARED_DIR entry)
+#   $2 - path to the JUnit file already copied into ARTIFACT_DIR
+testing::_publish_junit_to_shared_dir() {
+  local artifacts_subdir=$1 junit_in_artifact_dir=$2
+  local target="${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+  local max_size=$((800 * 1024))
+
+  [[ "${CI}" == "true" && -f "${junit_in_artifact_dir}" ]] || return 0
+
+  gzip -c "${junit_in_artifact_dir}" > "${target}"
+  local gz_size
+  # stat is -c on GNU, -f on BSD; CI is GNU, local runs may not be.
+  gz_size=$(stat -c%s "${target}" 2> /dev/null || stat -f%z "${target}")
+  if ((gz_size > max_size)); then
+    echo "[WARNING] $(basename "${target}") is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
+    rm -f "${target}"
+  else
+    echo "[INFO] Copied $(basename "${target}") to SHARED_DIR ($((gz_size / 1024)) KB)"
+  fi
+}
+
+# Echoes the number of failed tests in a JUnit file, or UNKNOWN_FAILURE_COUNT
+# when it cannot be determined. JUnit distinguishes "failures" (assertion
+# failures) from "errors" (exceptions/timeouts) and Playwright reports
+# TimeoutError and crashes as errors, so both are summed from the root
+# <testsuites> element - otherwise the Slack notification under-reports.
+# A zero total after a non-zero exit means the process crashed or timed out
+# globally, so the sentinel is used instead of a misleading "0 tests failed".
+# Args:
+#   $1 - path to the JUnit file
+testing::_count_junit_failures() {
+  local junit_file=$1
+
+  if [[ ! -f "${junit_file}" ]]; then
+    echo "${UNKNOWN_FAILURE_COUNT}"
+    return 0
+  fi
+
+  local failures errors total
+  failures=$(grep -oP 'failures="\K[0-9]+' "${junit_file}" | head -n 1)
+  errors=$(grep -oP 'errors="\K[0-9]+' "${junit_file}" | head -n 1)
+  total=$((${failures:-0} + ${errors:-0}))
+  if [[ "${total}" -eq 0 ]]; then
+    echo "${UNKNOWN_FAILURE_COUNT}"
+  else
+    echo "${total}"
+  fi
+}
+
 testing::run_tests() {
   local release_name=$1
   local namespace=$2
@@ -113,19 +166,7 @@ testing::run_tests() {
   # Use artifacts_subdir for artifact directory to keep artifacts organized
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${JUNIT_RESULTS}" || true
-  if [[ "${CI}" == "true" && -f "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" ]]; then
-    # Gzip junit before writing to SHARED_DIR to stay under Kubernetes Secret 1 MiB limit
-    gzip -c "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" > "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    local gz_size
-    gz_size=$(stat -c%s "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz" 2> /dev/null || stat -f%z "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz")
-    local max_size=$((800 * 1024))
-    if ((gz_size > max_size)); then
-      echo "[WARNING] junit-results-${artifacts_subdir}.xml.gz is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
-      rm -f "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    else
-      echo "[INFO] Copied junit-results-${artifacts_subdir}.xml.gz to SHARED_DIR ($((gz_size / 1024)) KB)"
-    fi
-  fi
+  testing::_publish_junit_to_shared_dir "${artifacts_subdir}" "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}"
 
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
@@ -176,28 +217,146 @@ testing::run_tests() {
   local failed_tests
   if [[ "${test_result}" -eq 0 ]]; then
     failed_tests="0"
-  elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
-    # JUnit XML distinguishes "failures" (assertion failures) from "errors"
-    # (exceptions/timeouts). Playwright reports TimeoutError, crash, and
-    # similar issues as errors, not failures. Sum both from the root
-    # <testsuites> element so the Slack notification reflects the real count.
-    local _junit_failures _junit_errors
-    _junit_failures=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    _junit_errors=$(grep -oP 'errors="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    _junit_failures="${_junit_failures:-0}"
-    _junit_errors="${_junit_errors:-0}"
-    failed_tests=$((_junit_failures + _junit_errors))
-    if [[ "${failed_tests}" -eq 0 ]]; then
-      # Playwright exited non-zero but JUnit reports 0 failures and 0 errors —
-      # the process likely crashed or timed out globally. Use the sentinel so
-      # the Slack alert doesn't misleadingly say "0 tests failed".
-      failed_tests="${UNKNOWN_FAILURE_COUNT}"
-    fi
-    echo "Number of failed tests: ${failed_tests}"
   else
-    echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
-    failed_tests="${UNKNOWN_FAILURE_COUNT}"
-    echo "Number of failed tests unknown, saving as ${failed_tests}."
+    failed_tests=$(testing::_count_junit_failures "${e2e_tests_dir}/${JUNIT_RESULTS}")
+    echo "Number of failed tests: ${failed_tests}"
+  fi
+  test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
+  return "$test_result"
+}
+
+# Filters stdin down to the dynamic-plugin startup failures worth reporting.
+# Backstage emits three fatal shapes (createInitializationResultCollector):
+# "Plugin '<id>' threw an error during startup", "Module '<m>' in Plugin
+# '<id>' threw an error during startup", and "Plugin '<id>' reported failure
+# for module '<m>' during startup". The near-identical variants that end in
+# "boot failure is permitted ... so startup will continue" are NON-fatal and
+# must not be reported as failures.
+testing::_filter_plugin_startup_failures() {
+  grep -E "(threw an error|reported failure for module).*during startup|Backend startup failed" \
+    | grep -v "boot failure is permitted" \
+    | sort -u
+}
+
+# Scans RHDH pod logs in a namespace for dynamic-plugin startup failures and
+# prints a loud, grep-free summary naming each failed plugin. Backstage logs
+# "Plugin '<id>' threw an error during startup ..." / "Module <m> in Plugin
+# '<id>' threw an error ..." before the pod exits, so on CrashLoopBackOff the
+# culprit is in the PREVIOUS container logs (-p). Advisory only: never fails.
+# Args:
+#   $1 - namespace
+#   $2 - artifacts_subdir: where to save the summary artifact
+testing::report_plugin_startup_failures() {
+  local namespace=$1
+  local artifacts_subdir=$2
+  local out="/tmp/plugin-startup-failures-${namespace}.txt"
+
+  {
+    local pod
+    for pod in $(oc get pods -n "${namespace}" -o name 2> /dev/null | grep -E 'backstage|developer-hub' || true); do
+      # Current and previous (pre-crash) logs; either may not exist yet.
+      oc logs "${pod}" -n "${namespace}" --all-containers 2> /dev/null || true
+      oc logs "${pod}" -n "${namespace}" --all-containers -p 2> /dev/null || true
+    done
+  } | testing::_filter_plugin_startup_failures > "${out}" || true
+
+  if [[ -s "${out}" ]]; then
+    log::error "==================== PLUGIN STARTUP FAILURES (${namespace}) ===================="
+    cat "${out}"
+    log::error "==============================================================================="
+    common::save_artifact "${artifacts_subdir}" "${out}" || true
+  else
+    log::info "No dynamic-plugin startup failures found in ${namespace} pod logs."
+  fi
+}
+
+# Cluster-free plugin sanity check (RHIDP-13508): boots packages/backend from
+# source with every OCI plugin declared by the catalog index and verifies -
+# via /api/dynamic-plugins-info/loaded-plugins - that the product's dynamic
+# plugin loader loaded all of them. Runs entirely inside the test pod: no
+# cluster deployment and no product image (see
+# e2e-tests/playwright.plugin-sanity.config.ts).
+# Args:
+#   $1 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to plugin-dynamic-loading)
+testing::run_plugin_sanity_check() {
+  local artifacts_subdir="${1:-plugin-dynamic-loading}"
+
+  test_run_tracker::register "$artifacts_subdir"
+  test_run_tracker::mark_deploy_success
+  # Pessimistic default, same rationale as testing::run_tests.
+  test_run_tracker::mark_test_result "false" "${UNKNOWN_FAILURE_COUNT}"
+
+  # Branch-aware nightly index by default; overridable via Gangway
+  # (--catalog-index-image), e.g. for RC verification.
+  export CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}}"
+  log::info "Running cluster-free plugin sanity check against ${CATALOG_INDEX_IMAGE}"
+
+  local repo_root
+  repo_root="$(cd "${DIR}/../.." && pwd)"
+
+  # Booting packages/backend from source needs the ROOT workspace dependencies
+  # (e2e-tests has its own lockfile, installed separately below).
+  if ! (cd "${repo_root}" && yarn install --immutable > /tmp/yarn.install.root.log.txt 2>&1); then
+    log::error "=== ROOT YARN INSTALL FAILED ==="
+    cat /tmp/yarn.install.root.log.txt
+    save_overall_result 1
+    return 1
+  fi
+  log::success "Root yarn install completed successfully."
+
+  "${repo_root}/e2e-tests/local-harness/populate-catalog-index.sh" 2>&1 | tee "/tmp/${LOGFILE}-plugin-sanity-populate"
+  local populate_result=${PIPESTATUS[0]}
+  if [[ "${populate_result}" -ne 0 ]]; then
+    log::error "populate-catalog-index.sh failed (exit ${populate_result})"
+    save_overall_result 1
+    return 1
+  fi
+
+  # `yarn --cwd` rather than `cd`: this function used to leave the shell in
+  # e2e-tests, which is invisible until someone adds a step after it.
+  local e2e_dir="${repo_root}/e2e-tests"
+
+  if ! yarn --cwd "${e2e_dir}" install --immutable > /tmp/yarn.install.log.txt 2>&1; then
+    log::error "=== YARN INSTALL FAILED ==="
+    cat /tmp/yarn.install.log.txt
+    save_overall_result 1
+    return 1
+  fi
+
+  local junit_results="junit-results-plugin-sanity.xml"
+  (
+    set -e
+    JUNIT_RESULTS="${junit_results}" yarn --cwd "${e2e_dir}" plugin-sanity
+  ) 2>&1 | tee "/tmp/${LOGFILE}-plugin-sanity"
+  local test_result=${PIPESTATUS[0]}
+
+  common::save_artifact "${artifacts_subdir}" "${e2e_dir}/${junit_results}" || true
+  testing::_publish_junit_to_shared_dir "${artifacts_subdir}" "${ARTIFACT_DIR}/${artifacts_subdir}/${junit_results}"
+
+  ansi2html < "/tmp/${LOGFILE}-plugin-sanity" > "/tmp/${LOGFILE}-plugin-sanity.html"
+  common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}-plugin-sanity.html" || true
+  common::save_artifact "${artifacts_subdir}" "${e2e_dir}/playwright-report-plugin-sanity/" || true
+
+  echo "Cluster-free plugin sanity check (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
+  local test_passed="true"
+  if [[ "${test_result}" -ne 0 ]]; then
+    save_overall_result 1
+    test_passed="false"
+    # The backend log streams through Playwright's webServer pipe into the run
+    # log; surface the per-plugin startup failures so nobody has to dig.
+    local failures_out="/tmp/plugin-startup-failures-cluster-free.txt"
+    testing::_filter_plugin_startup_failures < "/tmp/${LOGFILE}-plugin-sanity" > "${failures_out}" || true
+    if [[ -s "${failures_out}" ]]; then
+      log::error "==================== PLUGIN STARTUP FAILURES (cluster-free) ===================="
+      cat "${failures_out}"
+      log::error "================================================================================="
+      common::save_artifact "${artifacts_subdir}" "${failures_out}" || true
+    fi
+  fi
+  local failed_tests="0"
+  if [[ "${test_result}" -ne 0 ]]; then
+    failed_tests=$(testing::_count_junit_failures "${e2e_dir}/${junit_results}")
+    echo "Number of failed tests: ${failed_tests}"
   fi
   test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
   return "$test_result"

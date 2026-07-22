@@ -1,0 +1,35 @@
+# Catalog index packages excluded from the plugin sanity check.
+#
+# Each non-comment line is an extended-regex (grep -E) pattern matched against
+# the full package ref (oci://registry/name@sha256:...!plugin-name or
+# oci://registry/name:tag!plugin-name). Anchor plugin names with `(@|:)` so a
+# pattern keeps matching when the index flips between digest- and tag-style
+# references, without also matching longer plugin names sharing the prefix.
+#
+# A plugin that throws during backend init aborts the WHOLE backend, so plugins
+# that cannot initialize in the standalone harness must not be installed.
+# Every entry documents why, so it can be re-evaluated (and removed) later.
+# Prefer a dummy config entry in app-config.plugin-sanity.yaml over an
+# exclusion whenever the failure is just startup config validation.
+
+# orchestrator-backend fails init with "Cannot read properties of undefined
+# (reading 'id')" in BackendInitializer.#getInitDeps when loaded into the
+# main-branch backend: it wants the full orchestrator/SonataFlow environment,
+# which a standalone boot does not provide. The orchestrator FRONTEND plugins
+# stay in (they are static assets to the backend and are validated normally).
+#
+# Do NOT try to confirm a ref is broken with a local `skopeo inspect` by digest
+# against registry.access.redhat.com: every package this index declares reports
+# "manifest unknown" that way, including the nine the CI run installs
+# successfully. Local digest lookups against that registry are not a usable
+# signal - an earlier revision of this file drew the wrong conclusion from
+# exactly that check.
+#
+# Re-evaluate when the orchestrator backend gains a standalone-friendly init
+# path: keeping an entry here means the check is being told not to look at the
+# class of breakage it exists to catch.
+red-hat-developer-hub-backstage-plugin-orchestrator-backend(@|:)
+
+# Module on the orchestrator backend plugin - excluded with its host plugin.
+# (Also requires orchestrator.workflowLogProvider.loki.baseUrl at startup.)
+red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki(@|:)

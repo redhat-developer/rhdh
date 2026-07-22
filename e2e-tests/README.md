@@ -6,6 +6,33 @@ The example and bootstraps to create tests are [here](../docs/e2e-tests/examples
 
 ---
 
+## Plugin Sanity Check (cluster-free)
+
+Validates that every plugin enabled by the catalog index loads in the real RHDH
+backend (booted from `packages/backend` source). Populate `dynamic-plugins-root`
+with the full index set, then run the dedicated Playwright config:
+
+```bash
+CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
+  ./local-harness/populate-catalog-index.sh
+yarn plugin-sanity
+```
+
+CI runs it in the nightly OCP job, right after the cluster-based sanity-plugins
+deployment (`testing::run_plugin_sanity_check`); override the index via Gangway
+(`--catalog-index-image`) for RC verification. It is independent of that
+deployment: the cluster job validates the curated plugin set on the shipped
+image, while this validates the index composition against the current backend
+line, with no cluster and no product image.
+
+A plugin that throws during init aborts the whole backend, so plugins that
+cannot initialize here are excluded in `local-harness/plugin-sanity-excludes.txt`
+(each entry documents why). Prefer a dummy config entry in
+`app-config.plugin-sanity.yaml` over an exclusion whenever the failure is just
+startup config validation. When a plugin does take the pod down, the nightly
+prints a "PLUGIN STARTUP FAILURES" summary naming the culprit (also saved as a
+build artifact).
+
 ## Local Test Runner
 
 This directory contains scripts to run e2e tests locally against an OpenShift cluster.

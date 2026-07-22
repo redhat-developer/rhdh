@@ -7,7 +7,8 @@
 import { createBrowserSession } from "./support/browser-session";
 import CoverageReporter from "./support/coverage/reporter";
 import "./support/coverage/instrumentation";
-import requireDynamicPluginsPopulated from "./support/local-harness-global-setup";
+import legacyLocalGlobalSetup from "./support/local-harness-global-setup";
+import pluginSanityGlobalSetup from "./support/plugin-sanity-global-setup";
 import { runWorkerCleanups } from "./support/worker-session";
 import "./utils/common/browser";
 import "./blocked/entry-graph";
@@ -15,6 +16,7 @@ import { ensureRuntimeDeployed } from "./utils/runtime-deploy";
 
 void createBrowserSession;
 void CoverageReporter;
-void requireDynamicPluginsPopulated;
+void legacyLocalGlobalSetup;
+void pluginSanityGlobalSetup;
 void runWorkerCleanups;
 void ensureRuntimeDeployed;

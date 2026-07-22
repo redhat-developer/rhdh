@@ -32,6 +32,13 @@ source build needed; works from a fresh clone. Requires skopeo (preinstalled in 
 ./e2e-tests/local-harness/populate.sh
 ```
 
+`populate.sh` takes an optional install-config path as its first argument
+(default: the curated harness set above). The plugin sanity check uses that hook
+via `populate-catalog-index.sh`, which generates a config enabling every package
+the catalog index declares — see "Plugin Sanity Check" in
+[`e2e-tests/README.md`](../../e2e-tests/README.md). Both flavors share
+`catalog-index-refs.sh` (index parsing + `plugin-sanity-excludes.txt`).
+
 Alternatives:
 
 - **Catalog index** — the index's `dynamic-plugins.default.yaml` references the core
