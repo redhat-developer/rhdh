@@ -1,6 +1,6 @@
 {
   "name": "backstage-plugin-notifications",
-  "version": "0.5.18",
+  "version": "0.5.19",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.52.0",
+    "supported-versions": "1.53.0",
     "pluginId": "notifications",
     "pluginPackages": [
       "backstage-plugin-notifications",
@@ -44,13 +44,13 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/core-plugin-api": "1.12.7",
-    "@backstage/plugin-notifications": "0.5.18",
+    "@backstage/core-plugin-api": "1.12.8",
+    "@backstage/plugin-notifications": "0.5.19",
     "@mui/material": "5.18.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.36.3",
-    "@backstage/cli-defaults": "0.1.3",
+    "@backstage/cli": "0.36.4",
+    "@backstage/cli-defaults": "0.1.4",
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },

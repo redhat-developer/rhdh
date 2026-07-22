@@ -26,7 +26,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.52.0",
+    "supported-versions": "1.53.0",
     "pluginId": "red-hat-developer-hub-backstage-plugin-adoption-insights",
     "pluginPackages": [
       "red-hat-developer-hub-backstage-plugin-adoption-insights",
@@ -48,8 +48,8 @@
     "@red-hat-developer-hub/backstage-plugin-adoption-insights": "0.8.2"
   },
   "devDependencies": {
-    "@backstage/cli": "0.36.3",
-    "@backstage/cli-defaults": "0.1.3",
+    "@backstage/cli": "0.36.4",
+    "@backstage/cli-defaults": "0.1.4",
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },
