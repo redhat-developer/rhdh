@@ -33,11 +33,21 @@ handle_ocp_disconnected_operator() {
   # mirroring operator/operand images and installing the operator CatalogSource.
   log::section "Operator Mirroring and Installation"
 
-  disconnected::fetch_script "prepare-restricted-environment.sh" "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" \
-    || {
-      log::error "Failed to fetch prepare-restricted-environment.sh — aborting"
-      return 1
-    }
+  # TEMPORARY: pin prepare-restricted-environment.sh to rhdh-operator PR #3259
+  # (https://github.com/redhat-developer/rhdh-operator/pull/3259) so oc-mirror
+  # + OLM v1 uses native cc-*.yaml catalogs and skips re-applying a synthetic
+  # clusterCatalog.yaml that is missing on main. Revert to
+  # disconnected::fetch_script once that PR merges.
+  local prepare_script_sha="0f0db074a3504bf61ff2cfbbc90a8089c4723822"
+  local prepare_script_path="${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
+  local prepare_script_url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/${prepare_script_sha}/.rhdh/scripts/prepare-restricted-environment.sh"
+  log::info "Fetching prepare-restricted-environment.sh from rhdh-operator@${prepare_script_sha} (temporary pin for PR #3259)..."
+  if ! curl -fL --max-time 30 -o "${prepare_script_path}" "${prepare_script_url}"; then
+    log::error "Failed to download prepare-restricted-environment.sh from ${prepare_script_url}"
+    return 1
+  fi
+  chmod +x "${prepare_script_path}"
+  log::success "Downloaded prepare-restricted-environment.sh to ${prepare_script_path}"
 
   # Use oc-mirror (documented air-gapped OCP path) instead of the script's
   # default skopeo/umoci/podman-build path. Nested Podman in this CI pod cannot
@@ -45,10 +55,8 @@ handle_ocp_disconnected_operator() {
   # CATALOG_INDEX_IMAGE is the plugin catalog index — do not pass it as
   # --index-image (OLM operator catalog). Keep it for mirror-plugins.sh below.
   #
-  # Force OLM v0: prepare-restricted-environment.sh on main auto-detects OLM v1
-  # on newer OCP (e.g. 4.21), but the oc-mirror + OLM v1 install path then
-  # applies a missing clusterCatalog.yaml (upstream bug). CatalogSource +
-  # Subscription (v0) works with oc-mirror's cs-*.yaml output.
+  # OLM version: leave default (auto). On OCP 4.21+ this selects OLM v1;
+  # the temporary prepare-script pin above fixes the oc-mirror + v1 path.
   local filter_versions="${RELEASE_VERSION}"
   if [[ "${filter_versions}" == "next" || "${filter_versions}" == "*" ]]; then
     filter_versions="*"
@@ -67,7 +75,6 @@ handle_ocp_disconnected_operator() {
 
   local prepare_args=(
     --use-oc-mirror true
-    --olm-version v0
     --to-registry "${MIRROR_REGISTRY_URL}"
     --index-image "${index_image}"
     --filter-versions "${filter_versions}"
@@ -80,7 +87,7 @@ handle_ocp_disconnected_operator() {
   unset REGISTRY_AUTH_FILE
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
-  if ! bash "${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh" "${prepare_args[@]}"; then
+  if ! bash "${prepare_script_path}" "${prepare_args[@]}"; then
     [[ -n "${saved_registry_auth_file}" ]] && export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
     log::error "prepare-restricted-environment.sh failed — aborting"
     return 1
