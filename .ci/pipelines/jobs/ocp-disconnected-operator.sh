@@ -43,11 +43,22 @@ handle_ocp_disconnected_operator() {
   # initialize storage (newuidmap / VFS chown both fail under hostUsers: false).
   # CATALOG_INDEX_IMAGE is the plugin catalog index — do not pass it as
   # --index-image (OLM operator catalog). Keep it for mirror-plugins.sh below.
+  #
+  # Force OLM v0: prepare-restricted-environment.sh on main auto-detects OLM v1
+  # on OCP 4.21, but the oc-mirror + OLM v1 install path then applies a missing
+  # clusterCatalog.yaml (upstream bug). CatalogSource + Subscription (v0) works
+  # with oc-mirror's cs-*.yaml output.
+  local filter_versions="${RELEASE_VERSION}"
+  if [[ "${filter_versions}" == "next" || "${filter_versions}" == "*" ]]; then
+    filter_versions="*"
+  fi
+
   local prepare_args=(
     --use-oc-mirror true
+    --olm-version v0
     --to-registry "${MIRROR_REGISTRY_URL}"
     --index-image "registry.redhat.io/redhat/redhat-operator-index:v4.21"
-    --filter-versions "${RELEASE_VERSION}"
+    --filter-versions "${filter_versions}"
   )
 
   # oc-mirror panics when REGISTRY_AUTH_FILE is set (distribution/distribution
