@@ -195,13 +195,19 @@ tag out of the test title, so names stay stable for historical reporting while
 Playwright's `--grep` / `--grep-invert` filters still select tests by tag,
 letting CI or a local run target a subset.
 
-| Tag                  | Meaning                                                                                   |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| `@layer3-equivalent` | A UI behavior in this spec also has a sibling Layer 3 component test (in `packages/app`). |
-| `@smoke`             | Fast, high-signal check suitable to run on every PR.                                      |
-| `@ga-plugin`         | Exercises a generally-available (GA) plugin.                                              |
-| `@non-ga-plugin`     | Exercises a tech-preview / dev-preview (non-GA) plugin.                                   |
-| `@blocked`           | Blocked by a known issue; tests are skipped with a Jira reference.                        |
+| Tag                     | Meaning                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `@layer3-equivalent`    | A UI behavior in this spec also has a sibling Layer 3 component test (in `packages/app`). |
+| `@smoke`                | Fast, high-signal check suitable to run on every PR.                                      |
+| `@ga-plugin`            | Exercises a generally-available (GA) plugin.                                              |
+| `@non-ga-plugin`        | Exercises a tech-preview / dev-preview (non-GA) plugin.                                   |
+| `@blocked`              | Blocked by a known issue; tests are skipped with a Jira reference.                        |
+| `@cluster-free-capable` | Validated to also run on the cluster-free harness.                                        |
+
+`@cluster-free-capable` is what `playwright.legacy-local.config.ts` selects on. It
+describes a capability of the test, not how a given run executed: the tag still shows
+in reports of cluster runs, where the project name (e.g. `showcase-sanity-plugins`) is
+what identifies the execution mode.
 
 ```bash
 # Run only smoke-tagged tests

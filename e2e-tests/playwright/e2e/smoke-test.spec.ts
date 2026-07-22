@@ -16,8 +16,7 @@ test.describe("Smoke test", { tag: "@smoke" }, () => {
     homePage = new HomePage(guestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
-  test("Verify the RHDH instance homepage renders", { tag: "@cluster-free" }, async () => {
+  test("Verify the RHDH instance homepage renders", { tag: "@cluster-free-capable" }, async () => {
     await homePage.verifyWelcomeHeading();
   });
 });
