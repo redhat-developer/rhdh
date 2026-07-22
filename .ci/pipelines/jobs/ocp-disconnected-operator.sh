@@ -59,16 +59,15 @@ handle_ocp_disconnected_operator() {
     filter_versions="*"
   fi
 
-  # Match redhat-operator-index major.minor to the live cluster (same pattern as
-  # e2e-tests/container-init.sh CONTAINER_PLATFORM_VERSION).
-  local ocp_version
-  ocp_version=$(oc version --output json 2> /dev/null | jq -r '.openshiftVersion' | cut -d'.' -f1,2)
-  if [[ -z "${ocp_version}" || "${ocp_version}" == "null" || ! "${ocp_version}" =~ ^[0-9]+\.[0-9]+$ ]]; then
-    log::error "Failed to detect OpenShift major.minor version from 'oc version'"
+  # CONTAINER_PLATFORM_VERSION is set by e2e-tests/container-init.sh from the
+  # live cluster (oc version → major.minor).
+  local ocp_version="${CONTAINER_PLATFORM_VERSION:-}"
+  if [[ -z "${ocp_version}" || "${ocp_version}" == "unknown" || ! "${ocp_version}" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    log::error "CONTAINER_PLATFORM_VERSION is unset or invalid ('${ocp_version}'); expected OpenShift major.minor"
     return 1
   fi
   local index_image="registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}"
-  log::info "Detected OCP ${ocp_version}; using index image ${index_image}"
+  log::info "Using OCP ${ocp_version} (CONTAINER_PLATFORM_VERSION); index image ${index_image}"
 
   local prepare_args=(
     --use-oc-mirror true
