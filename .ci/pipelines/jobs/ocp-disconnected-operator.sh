@@ -76,6 +76,10 @@ handle_ocp_disconnected_operator() {
     --filter-versions "${filter_versions}"
   )
 
+  # prepare-restricted-environment.sh skips OLM v1 pull-secret setup for external
+  # registries; merge mirror credentials so catalogd can pull the ClusterCatalog.
+  disconnected::ensure_olm_mirror_pull_secret || return 1
+
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
   if ! disconnected::with_unset_registry_auth_file \
     bash "${prepare_script_path}" "${prepare_args[@]}"; then
@@ -84,12 +88,32 @@ handle_ocp_disconnected_operator() {
   fi
   log::success "Operator installed via prepare-restricted-environment.sh"
 
+  # prepare patches the operator SA with internal-registry secret names that do
+  # not exist for an external mirror. Provide a real mirror pull secret and
+  # attach it to the OLM v1 installer SA used by ClusterExtension.
+  local operator_ns="rhdh-operator"
+  oc create secret generic reg-pull-secret \
+    --from-file=.dockerconfigjson="${MIRROR_REGISTRY_PULL_SECRET}" \
+    --type=kubernetes.io/dockerconfigjson \
+    -n "${operator_ns}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create reg-pull-secret in ${operator_ns}"
+    return 1
+  }
+  oc patch serviceaccount rhdh-operator-installer -n "${operator_ns}" --type=merge \
+    -p '{"imagePullSecrets":[{"name":"reg-pull-secret"}]}' || {
+    log::warn "Failed to patch rhdh-operator-installer imagePullSecrets — continuing"
+  }
+  log::success "Configured mirror pull secret on rhdh-operator-installer SA"
+
   # prepare-restricted-environment.sh applies IDMS/CatalogSource which triggers
   # a MachineConfig update and node rolling. Wait for completion before deploying
   # workloads, same as the Helm path.
   disconnected::wait_mcp_updated
 
-  k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || {
+  # prepare only creates the ClusterExtension; wait until OLM v1 installs the
+  # operator and the Backstage CRD appears (dump status on timeout).
+  disconnected::wait_operator_crd_olm_v1 "rhdh-operator" "backstages.rhdh.redhat.com" 600 || {
     log::error "Backstage CRD not available after operator installation"
     return 1
   }
