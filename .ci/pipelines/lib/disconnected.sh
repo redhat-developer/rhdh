@@ -320,6 +320,95 @@ disconnected::apply_plugin_mirror_configmap() {
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 }
 
+# Merge mirror-registry credentials into openshift-config/pull-secret so OLM v1
+# catalogd/operator-controller can pull mirrored catalog/bundle images.
+# prepare-restricted-environment.sh skips this for external registries.
+disconnected::ensure_olm_mirror_pull_secret() {
+  local existing mirror_auth merged
+
+  existing=$(oc get secret pull-secret -n openshift-config -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d) || {
+    log::error "Failed to read openshift-config/pull-secret"
+    return 1
+  }
+  mirror_auth=$(cat "${MIRROR_REGISTRY_PULL_SECRET}") || {
+    log::error "Failed to read ${MIRROR_REGISTRY_PULL_SECRET}"
+    return 1
+  }
+
+  merged=$(jq -n --argjson existing "${existing}" --argjson mirror "${mirror_auth}" \
+    '{auths: ($existing.auths + $mirror.auths)}') || {
+    log::error "Failed to merge mirror credentials into pull-secret JSON"
+    return 1
+  }
+
+  echo "${merged}" | oc set data secret/pull-secret -n openshift-config \
+    --from-file=.dockerconfigjson=/dev/stdin || {
+    log::error "Failed to update openshift-config/pull-secret with mirror credentials"
+    return 1
+  }
+  log::success "Merged mirror registry credentials into openshift-config/pull-secret"
+}
+
+# Dump OLM v1 install status for debugging when the operator CRD never appears.
+disconnected::dump_olm_v1_status() {
+  local extension_name=${1:-rhdh-operator}
+  local catalog_name=${2:-rhdh-catalog}
+  local operator_ns=${3:-rhdh-operator}
+
+  log::info "Dumping OLM v1 status (ClusterCatalog/ClusterExtension/pods)..."
+  oc get clustercatalog "${catalog_name}" -o yaml > "${ARTIFACT_DIR}/disconnected-clustercatalog.yaml" 2> /dev/null || true
+  oc get clusterextension "${extension_name}" -o yaml > "${ARTIFACT_DIR}/disconnected-clusterextension.yaml" 2> /dev/null || true
+  oc get clustercatalog "${catalog_name}" -o wide 2>&1 | tee -a "${ARTIFACT_DIR}/disconnected-olm-v1-status.txt" || true
+  oc get clusterextension "${extension_name}" -o wide 2>&1 | tee -a "${ARTIFACT_DIR}/disconnected-olm-v1-status.txt" || true
+  oc describe clusterextension "${extension_name}" 2>&1 | tee -a "${ARTIFACT_DIR}/disconnected-olm-v1-status.txt" || true
+  oc get pods -n "${operator_ns}" -o wide 2>&1 | tee -a "${ARTIFACT_DIR}/disconnected-olm-v1-status.txt" || true
+  oc get events -n "${operator_ns}" --sort-by='.lastTimestamp' 2>&1 | tail -50 \
+    | tee -a "${ARTIFACT_DIR}/disconnected-olm-v1-status.txt" || true
+}
+
+# Wait for OLM v1 ClusterExtension to report Installed, then for the CRD.
+# Args:
+#   $1 - extension name (default: rhdh-operator)
+#   $2 - crd name (default: backstages.rhdh.redhat.com)
+#   $3 - timeout seconds (default: 600)
+disconnected::wait_operator_crd_olm_v1() {
+  local extension_name=${1:-rhdh-operator}
+  local crd_name=${2:-backstages.rhdh.redhat.com}
+  local timeout=${3:-600}
+  local interval=15
+  local elapsed=0
+
+  log::info "Waiting for ClusterExtension/${extension_name} and CRD ${crd_name} (timeout: ${timeout}s)..."
+
+  while ((elapsed < timeout)); do
+    if oc get crd "${crd_name}" > /dev/null 2>&1; then
+      log::success "CRD '${crd_name}' is available"
+      return 0
+    fi
+
+    local installed
+    installed=$(oc get clusterextension "${extension_name}" \
+      -o jsonpath='{range .status.conditions[?(@.type=="Installed")]}{.status}{end}' 2> /dev/null || true)
+    if [[ "${installed}" == "True" ]]; then
+      log::info "ClusterExtension/${extension_name} reports Installed=True; waiting for CRD..."
+    else
+      local progressing reason
+      progressing=$(oc get clusterextension "${extension_name}" \
+        -o jsonpath='{range .status.conditions[?(@.type=="Progressing")]}{.status}{end}' 2> /dev/null || true)
+      reason=$(oc get clusterextension "${extension_name}" \
+        -o jsonpath='{range .status.conditions[?(@.type=="Installed")]}{.reason}{" "}{.message}{end}' 2> /dev/null || true)
+      log::debug "ClusterExtension Installed=${installed:-unknown} Progressing=${progressing:-unknown} ${reason}"
+    fi
+
+    sleep "${interval}"
+    elapsed=$((elapsed + interval))
+  done
+
+  log::error "Timeout waiting for CRD '${crd_name}' after ${timeout}s"
+  disconnected::dump_olm_v1_status "${extension_name}"
+  return 1
+}
+
 # Export functions for subshell usage (e.g., timeout bash -c "...")
 export -f disconnected::require_env
 export -f disconnected::setup_auth
@@ -328,3 +417,6 @@ export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
 export -f disconnected::mirror_plugins
 export -f disconnected::apply_plugin_mirror_configmap
+export -f disconnected::ensure_olm_mirror_pull_secret
+export -f disconnected::dump_olm_v1_status
+export -f disconnected::wait_operator_crd_olm_v1
