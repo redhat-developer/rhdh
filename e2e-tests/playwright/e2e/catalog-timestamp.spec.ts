@@ -1,103 +1,67 @@
-import { Page, expect, test } from "@support/coverage/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser, teardownBrowser } from "../utils/common";
+import { test } from "@support/coverage/test";
+
+import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale";
+import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
 import { CatalogImport } from "../support/pages/catalog-import";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../e2e/localization/locale";
+import { SelfServicePage } from "../support/pages/self-service-page";
+import { JOB_NAME_PATTERNS } from "../utils/constants";
+import { skipIfJobName } from "../utils/helper";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-let page: Page;
-
 test.describe("Test timestamp column on Catalog", () => {
   test.skip(
-    () => process.env.JOB_NAME.includes("osd-gcp"),
+    () => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP),
     "skipping on OSD-GCP cluster due to RHDHBUGS-555",
   );
 
-  let uiHelper: UIhelper;
-  let common: Common;
+  let catalogBrowsePage: CatalogBrowsePage;
+  let selfServicePage: SelfServicePage;
   let catalogImport: CatalogImport;
 
   const component =
     "https://github.com/janus-qe/custom-catalog-entities/blob/main/timestamp-catalog-info.yaml";
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.describe.configure({ mode: "serial" });
+
+  test.beforeAll(({ rhdhGuestPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
-
-    common = new Common(page);
-    uiHelper = new UIhelper(page);
-    catalogImport = new CatalogImport(page);
-
-    await common.loginAsGuest();
+    catalogBrowsePage = new CatalogBrowsePage(rhdhGuestPage);
+    selfServicePage = new SelfServicePage(rhdhGuestPage);
+    catalogImport = new CatalogImport(rhdhGuestPage);
   });
 
   test.beforeEach(async () => {
-    await uiHelper.openSidebar(t["rhdh"][lang]["menuItem.catalog"]);
-    await uiHelper.verifyHeading(
+    await catalogBrowsePage.openSidebar(t["rhdh"][lang]["menuItem.catalog"]);
+    await catalogBrowsePage.verifyHeading(
       t["catalog"][lang]["indexPage.title"].replace("{{orgName}}", "My Org"),
     );
-    await uiHelper.openCatalogSidebar("Component");
+    await catalogBrowsePage.openCatalogSidebar("Component");
   });
 
   test("Import an existing Git repository and verify `Created At` column and value in the Catalog Page", async () => {
-    await uiHelper.goToSelfServicePage();
-    await uiHelper.clickButton(
-      t["scaffolder"][lang][
-        "templateListPage.contentHeader.registerExistingButtonTitle"
-      ],
+    await selfServicePage.open();
+    await selfServicePage.clickImportGitRepositoryLocalized(
+      t["scaffolder"][lang]["templateListPage.contentHeader.registerExistingButtonTitle"],
     );
     await catalogImport.registerExistingComponent(component);
-    await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.searchInputPlaceholder("timestamp-test-created");
-    await uiHelper.verifyText("timestamp-test-created");
-    await uiHelper.verifyColumnHeading(["Created At"], true);
-    await uiHelper.verifyRowInTableByUniqueText("timestamp-test-created", [
-      /^\d{1,2}\/\d{1,2}\/\d{1,4}, \d:\d{1,2}:\d{1,2} (AM|PM)$/g,
+    await catalogBrowsePage.openCatalogSidebar("Component");
+    await catalogBrowsePage.searchCatalog("timestamp-test-created");
+    await catalogBrowsePage.verifyText("timestamp-test-created");
+    await catalogBrowsePage.verifyColumnHeading(["Created At"], true);
+    await catalogBrowsePage.verifyRowByUniqueText("timestamp-test-created", [
+      /^\d{1,2}\/\d{1,2}\/\d{1,4}, \d:\d{1,2}:\d{1,2} (AM|PM)$/u,
     ]);
   });
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
-    // Clear search filter from previous test to show all components
-    const clearButton = page.getByRole("button", { name: "clear search" });
-    if ((await clearButton.isVisible()) && (await clearButton.isEnabled())) {
-      await clearButton.click();
-    }
-
-    // Wait for the table to have data rows
-    await expect(
-      page.getByRole("row").filter({ has: page.getByRole("cell") }),
-    ).not.toHaveCount(0);
-
-    // Get the first data row's "Created At" cell using semantic selectors
-    const firstRow = page
-      .getByRole("row")
-      .filter({ has: page.getByRole("cell") })
-      .first();
-    const createdAtCell = firstRow.getByRole("cell").nth(7); // 0-indexed, 8th column = index 7
-
-    const column = page.getByRole("columnheader", {
-      name: "Created At",
-      exact: true,
-    });
-
-    // Click twice to sort descending — newest entries first
-    await column.click();
-    await column.click();
-
-    // After sorting descending, the first row should have a non-empty "Created At"
-    await expect(createdAtCell).not.toBeEmpty();
-  });
-
-  test.afterAll(async ({}, testInfo) => {
-    await teardownBrowser(page, testInfo);
+    await catalogBrowsePage.clearSearchIfVisible();
+    await catalogBrowsePage.sortCreatedAtDescending();
+    await catalogBrowsePage.verifyFirstRowCreatedAtNotEmpty();
   });
 });

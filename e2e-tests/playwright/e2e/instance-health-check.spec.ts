@@ -1,19 +1,20 @@
 import { test, expect } from "@support/coverage/test";
 
 test.describe("Application health check", () => {
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
   });
 
-  test("Application health check", async ({ request }) => {
+  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  test("Application health check", { tag: "@cluster-free" }, async ({ request }) => {
     const healthCheckEndpoint = "/healthcheck";
 
     const response = await request.get(healthCheckEndpoint);
 
-    const responseBody = await response.json();
+    const responseBody: unknown = await response.json();
 
     expect(response.status()).toBe(200);
 

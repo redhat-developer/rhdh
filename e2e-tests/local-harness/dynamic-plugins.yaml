@@ -1,0 +1,165 @@
+# Cluster-free harness plugin set — installed by ./populate.sh via
+# install-dynamic-plugins from OCI (ghcr, pulled with skopeo), so no
+# dynamic-plugins/dist source build is needed.
+#
+# app-config.dynamic-plugins.yaml (loaded by the harness) already configures these
+# plugins, so the existing RHDH specs render off-cluster.
+#
+# NOTE: OCI tags are backstage 1.49.4 (RHDH is on 1.52.0) — bump to matching tags when
+# the overlays repo publishes them.
+plugins:
+  # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
+    disabled: false
+  # TechDocs frontend: /docs route (TechDocsIndexPage) + the "Docs" sidebar menu item,
+  # exercised by plugins/frontend/sidebar.spec.ts. Route/menu config comes from the
+  # repo's static app-config.dynamic-plugins.yaml; no pluginConfig needed here.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-techdocs:bs_1.49.4__1.17.2!backstage-plugin-techdocs
+    disabled: false
+  # application/provider + application/listener test plugins, exercised by
+  # plugins/application-provider.spec.ts and plugins/application-listener.spec.ts.
+  # Package refs and pluginConfig mirror the CI Helm values
+  # (.ci/pipelines/value_files/values_showcase.yaml), which install the same OCI
+  # builds (they are not part of the repo's dynamic-plugins source tree).
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-application-provider-test:
+            dynamicRoutes:
+              - path: /application-provider-test-page
+                importName: TestPage
+            mountPoints:
+              - mountPoint: application/provider
+                importName: TestProviderOne
+              - mountPoint: application/provider
+                importName: TestProviderTwo
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-listener-test:bs_1.45.3__0.6.0
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-application-listener-test:
+            mountPoints:
+              - mountPoint: application/listener
+                importName: LocationListener
+  # Global header: top bar + profile dropdown (Settings / Sign-out navigation).
+  #
+  # The repo's static app-config.dynamic-plugins.yaml only mounts the bare GlobalHeader
+  # container (no children), so the header renders empty off-cluster. In-cluster the full
+  # config comes from the plugin's pluginConfig in the catalog index's
+  # dynamic-plugins.default.yaml; the block below is that canonical config, copied from
+  # rhdh-plugins workspaces/global-header/plugins/global-header/app-config.dynamic.yaml.
+  # install-dynamic-plugins merges it into the generated
+  # dynamic-plugins-root/app-config.dynamic-plugins.yaml, which the harness loads last —
+  # exactly how the production container consumes it.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:bs_1.49.4__1.21.6!red-hat-developer-hub-backstage-plugin-global-header
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-global-header:
+            translationResources:
+              - importName: globalHeaderTranslations
+                ref: globalHeaderTranslationRef
+            mountPoints:
+              - mountPoint: application/header
+                importName: GlobalHeader
+                config:
+                  position: above-sidebar # above-main-content | above-sidebar
+              - mountPoint: global.header/component
+                importName: CompanyLogo
+                config:
+                  priority: 200
+                  props:
+                    to: "/"
+              - mountPoint: global.header/component
+                importName: SearchComponent
+                config:
+                  priority: 100
+              - mountPoint: global.header/component
+                importName: Spacer
+                config:
+                  priority: 99
+                  props:
+                    growFactor: 0
+              - mountPoint: global.header/component
+                importName: HeaderIconButton
+                config:
+                  priority: 90
+                  props:
+                    title: Self-service
+                    titleKey: create.title
+                    icon: add
+                    to: create
+              - mountPoint: global.header/component
+                importName: StarredDropdown
+                config:
+                  priority: 85
+              - mountPoint: global.header/component
+                importName: ApplicationLauncherDropdown
+                config:
+                  priority: 82
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Documentation
+                  priority: 150
+                  props:
+                    title: Developer Hub
+                    titleKey: applicationLauncher.developerHub
+                    icon: developerHub
+                    link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Developer Tools
+                  priority: 100
+                  props:
+                    title: RHDH Local
+                    titleKey: applicationLauncher.rhdhLocal
+                    icon: developerHub
+                    link: https://github.com/redhat-developer/rhdh-local
+              - mountPoint: global.header/component
+                importName: HelpDropdown
+                config:
+                  priority: 80
+              - mountPoint: global.header/help
+                importName: SupportButton
+                config:
+                  priority: 10
+              - mountPoint: global.header/component
+                importName: NotificationButton
+                config:
+                  priority: 70
+              - mountPoint: global.header/component
+                importName: Divider
+                config:
+                  priority: 50
+              - mountPoint: global.header/component
+                importName: ProfileDropdown
+                config:
+                  priority: 10
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 100
+                  props:
+                    title: Settings
+                    titleKey: profile.settings
+                    link: /settings
+                    icon: manageAccounts
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 90
+                  props:
+                    title: My profile
+                    titleKey: profile.myProfile
+                    type: myProfile
+                    icon: account
+              - mountPoint: global.header/profile
+                importName: LogoutButton
+                config:
+                  priority: 10

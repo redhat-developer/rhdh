@@ -32,7 +32,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - name: Checkout
-          uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+          uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
           with:
             fetch-depth: 0
 
@@ -79,7 +79,7 @@ jobs:
             private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
 
         - name: Create Pull Request to update dynamic-plugins.default.yaml
-          uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+          uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
           with:
             token: ${{ steps.generate-token.outputs.token }}
             commit-message: |

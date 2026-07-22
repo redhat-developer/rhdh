@@ -1,47 +1,73 @@
-import {
-  HOME_PAGE_COMPONENTS,
-  SEARCH_OBJECTS_COMPONENTS,
-} from "../page-objects/page-obj";
-import { UIhelper } from "../../utils/ui-helper";
 import { Page, expect } from "@playwright/test";
+
+import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
+import * as interaction from "../../utils/ui-helper/interaction";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as verification from "../../utils/ui-helper/verification";
+/* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
+import { HOME_PAGE_COMPONENTS } from "../selectors/page-selectors";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 export class HomePage {
   private page: Page;
-  private uiHelper: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
-  }
-  async verifyQuickSearchBar(text: string) {
-    const searchBar = this.page.locator(
-      SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch,
-    );
-    await searchBar.waitFor();
-    await searchBar.fill("");
-    await searchBar.type(text + "\n"); // '\n' simulates pressing the Enter key
-    await this.uiHelper.verifyLink(text);
   }
 
-  async verifyQuickAccess(
-    section: string,
-    items: string | string[],
-    expand = false,
-  ) {
-    await this.page.waitForSelector(HOME_PAGE_COMPONENTS.MuiAccordion, {
-      state: "visible",
-    });
+  async verifyWelcomeHeading(): Promise<void> {
+    await verification.verifyHeading(this.page, t["plugin.homepage"][lang]["header.welcome"]);
+  }
+
+  async openHomeSidebar(): Promise<void> {
+    await navigation.openSidebar(this.page, "Home");
+  }
+
+  async verifyTextInCard(cardHeading: string, text: string | RegExp, exact = true): Promise<void> {
+    const card = HOME_PAGE_COMPONENTS.getCard(this.page, cardHeading);
+    await expect(card).toBeVisible();
+    if (typeof text === "string") {
+      await expect(card.getByText(text, { exact })).toBeVisible();
+      return;
+    }
+    await expect(card.getByText(text)).toBeVisible();
+  }
+
+  async verifyHeading(heading: string | RegExp): Promise<void> {
+    await verification.verifyHeading(this.page, heading);
+  }
+
+  async verifyDivHasText(text: string | RegExp): Promise<void> {
+    await verification.verifyDivHasText(this.page, text);
+  }
+
+  async clickButton(label: string): Promise<void> {
+    await interaction.clickButton(this.page, label);
+  }
+
+  async verifyMainHeadingVisible(): Promise<void> {
+    await expect(this.page.getByRole("heading", { level: 1 })).toBeVisible();
+  }
+
+  async verifyQuickAccess(section: string, items: string | string[], expand = false) {
+    const accordionButton = HOME_PAGE_COMPONENTS.getAccordion(this.page, section);
+    await expect(accordionButton).toBeVisible();
 
     const sectionLocator = this.page
+      /* oxlint-disable-next-line typescript/no-deprecated -- accordion items live outside the summary button node */
       .locator(HOME_PAGE_COMPONENTS.MuiAccordion)
-      .filter({ hasText: section });
+      .filter({ has: accordionButton });
 
     if (expand) {
-      await sectionLocator.click();
-      await this.page.waitForTimeout(500);
+      await accordionButton.click();
+      // Intentional divergence: MUI accordion details lack stable roles.
+      await expect(sectionLocator.locator('[class*="MuiAccordionDetails-root"]')).toBeVisible();
     }
 
     for (const item of Array.isArray(items) ? items : [items]) {
+      // Intentional divergence: quick-access items use MUI list text nodes, not role=link.
       const itemLocator = sectionLocator
         .locator(`a div[class*="MuiListItemText-root"]`)
         .filter({ hasText: item });
@@ -51,15 +77,14 @@ export class HomePage {
   }
 
   async verifyVisitedCardContent(section: string) {
-    await this.page.waitForSelector(HOME_PAGE_COMPONENTS.MuiCard, {
-      state: "visible",
-    });
-
     const sectionLocator = this.page
+      /* oxlint-disable-next-line typescript/no-deprecated -- visited cards use MuiCard-root, not region/article roles */
       .locator(HOME_PAGE_COMPONENTS.MuiCard)
       .filter({ hasText: section });
+    await expect(sectionLocator).toBeVisible();
 
     const itemLocator = sectionLocator.locator(`li[class*="MuiListItem-root"]`);
+    // Intentional divergence: visited-card list items use MUI class hooks, not role=listitem.
     expect(await itemLocator.count()).toBeGreaterThanOrEqual(0);
   }
 }

@@ -72,20 +72,6 @@ operator::install_postgres_ocp() {
   return 0
 }
 
-# Install OpenShift Serverless Logic Operator (SonataFlow)
-operator::install_serverless_logic() {
-  operator::install_subscription logic-operator-rhel8 "${OPERATOR_NAMESPACE}" alpha logic-operator-rhel8 redhat-operators openshift-marketplace
-  operator::check_status 300 "${OPERATOR_NAMESPACE}" "OpenShift Serverless Logic Operator (Alpha)" "${OPERATOR_STATUS_SUCCEEDED}"
-  return $?
-}
-
-# Install OpenShift Serverless Operator (Knative)
-operator::install_serverless() {
-  operator::install_subscription serverless-operator "${OPERATOR_NAMESPACE}" stable serverless-operator redhat-operators openshift-marketplace
-  operator::check_status 300 "${OPERATOR_NAMESPACE}" "Red Hat OpenShift Serverless" "${OPERATOR_STATUS_SUCCEEDED}"
-  return $?
-}
-
 # Install Red Hat OpenShift Pipelines operator if not present
 operator::install_pipelines() {
   local display_name="Red Hat OpenShift Pipelines"

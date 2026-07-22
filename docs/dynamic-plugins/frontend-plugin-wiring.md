@@ -1,5 +1,10 @@
 # Frontend Plugin Wiring
 
+> **Legacy configuration reference.** This document describes RHDH dynamic plugin frontend wiring for the **current** app shell. If you are moving to the Backstage new frontend system, use:
+>
+> - **Operators / platform admins** (YAML customization only) → [Migrating Config to the New Frontend System](migrating-config-to-new-frontend-system.md)
+> - **Plugin authors** (plugin code and `/alpha` exports) → [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md)
+
 Compared to the backend plugins, where mount points are defined in code and consumed by the backend plugin manager, frontend plugins require additional configuration in the `app-config.yaml`. A plugin missing this configuration will not be loaded into the application and will not be displayed.
 
 Similarly to traditional Backstage instances, there are various kinds of functionality a dynamic frontend plugin can offer:
@@ -16,7 +21,7 @@ The overall configuration is as follows:
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -38,7 +43,7 @@ Backstage offers an internal catalog of system icons available across the applic
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -83,7 +88,7 @@ In dynamic plugins this mechanism has changed and users are no longer allowed to
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -128,7 +133,7 @@ Here is an example configuration specifying a custom `SidebarItem` component:
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -151,7 +156,7 @@ Order and parent-children relationship of plugin menu items which are in main si
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -185,7 +190,7 @@ Up to 3 levels of nested menu items are supported.
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -227,7 +232,7 @@ Dynamic plugins offer similar functionality via `routeBindings` configuration:
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -306,7 +311,7 @@ Here is an example of the overall configuration structure of a mount point:
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -358,7 +363,7 @@ The context menu entry can be configured via the `props` configuration entry for
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -586,7 +591,7 @@ Out of the box the frontend system provides an opinionated set of tabs for catal
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -651,7 +656,7 @@ Users can add translation resources exported by plugin packages in the plugin's 
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -667,7 +672,7 @@ Users can override default translations of a plugin with their own JSON-based tr
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:

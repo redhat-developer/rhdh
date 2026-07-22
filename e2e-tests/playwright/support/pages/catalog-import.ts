@@ -1,26 +1,14 @@
 import { Page, expect } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
-import { APIHelper } from "../../utils/api-helper";
-import {
-  BACKSTAGE_SHOWCASE_COMPONENTS,
-  CATALOG_IMPORT_COMPONENTS,
-} from "../page-objects/page-obj";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../../e2e/localization/locale";
+
+import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
+import * as interaction from "../../utils/ui-helper/interaction";
+import { CATALOG_IMPORT_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
 export class CatalogImport {
-  private page: Page;
-  private uiHelper: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.uiHelper = new UIhelper(page);
-  }
+  constructor(private readonly page: Page) {}
 
   /**
    * Fills the component URL input and clicks the "Analyze" button.
@@ -29,14 +17,12 @@ export class CatalogImport {
    * @param url - The URL of the component to analyze
    */
   private async analyzeAndWait(url: string): Promise<void> {
-    await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await expect(
-      await this.uiHelper.clickButton(
-        t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
-      ),
-    ).not.toBeVisible({
-      timeout: 25_000,
+    const analyzeButton = this.page.getByRole("button", {
+      name: t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
     });
+    await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
+    await analyzeButton.click();
+    await expect(analyzeButton).not.toBeVisible({ timeout: 25_000 });
   }
 
   /**
@@ -45,10 +31,10 @@ export class CatalogImport {
    *
    * @returns boolean indicating if the component is already registered
    */
-  async isComponentAlreadyRegistered(): Promise<boolean> {
-    return await this.uiHelper.isBtnVisible(
-      t["catalog-import"][lang]["stepReviewLocation.refresh"],
-    );
+  isComponentAlreadyRegistered(): Promise<boolean> {
+    return this.page
+      .getByRole("button", { name: t["catalog-import"][lang]["stepReviewLocation.refresh"] })
+      .isVisible();
   }
 
   /**
@@ -58,128 +44,50 @@ export class CatalogImport {
    * @param url - The component URL to register
    * @param clickViewComponent - Whether to click "View Component" after import
    */
-  async registerExistingComponent(
-    url: string,
-    clickViewComponent: boolean = true,
-  ) {
+  async registerExistingComponent(url: string, clickViewComponent: boolean = true) {
     await this.analyzeAndWait(url);
-    const isComponentAlreadyRegistered =
-      await this.isComponentAlreadyRegistered();
+    const isComponentAlreadyRegistered = await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
-      await this.uiHelper.clickButton(
+      await interaction.clickButton(
+        this.page,
         t["catalog-import"][lang]["stepReviewLocation.refresh"],
       );
-      expect(
-        await this.uiHelper.isBtnVisible(
-          t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
-        ),
-      ).toBeTruthy();
+      await expect(
+        this.page.getByRole("button", {
+          name: t["catalog-import"][lang]["stepFinishImportLocation.backButtonText"],
+        }),
+      ).toBeVisible();
     } else {
-      await this.uiHelper.clickButton(
+      await interaction.clickButton(
+        this.page,
         t["catalog-import"][lang]["stepReviewLocation.import"],
       );
       if (clickViewComponent) {
-        await this.uiHelper.clickButton(
-          t["catalog-import"][lang][
-            "stepFinishImportLocation.locations.viewButtonText"
-          ],
+        await interaction.clickButton(
+          this.page,
+          t["catalog-import"][lang]["stepFinishImportLocation.locations.viewButtonText"],
         );
       }
     }
     return isComponentAlreadyRegistered;
   }
 
-  async analyzeComponent(url: string) {
-    await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await this.uiHelper.clickButton(
-      t["catalog-import"][lang]["stepInitAnalyzeUrl.nextButtonText"],
-    );
-  }
-
-  async inspectEntityAndVerifyYaml(text: string) {
-    await this.page.getByTitle("More").click();
-    await this.page.getByRole("menuitem").getByText("Inspect entity").click();
-    await this.uiHelper.clickTab("Raw YAML");
-    await expect(this.page.getByTestId("code-snippet")).toContainText(text);
-    await this.uiHelper.clickButton("Close");
-  }
-}
-
-export class BackstageShowcase {
-  private readonly page: Page;
-  private uiHelper: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.uiHelper = new UIhelper(page);
-  }
-
-  static async getShowcasePRs(
-    state: "open" | "closed" | "all",
-    paginated = false,
-  ) {
-    return await APIHelper.getGitHubPRs(
-      "redhat-developer",
-      "rhdh",
-      state,
-      paginated,
-    );
-  }
-
-  async clickNextPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableNextPage);
-  }
-
-  async clickPreviousPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tablePreviousPage);
-  }
-
-  async clickLastPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableLastPage);
-  }
-
-  async verifyPRRowsPerPage(rows, allPRs) {
-    await this.selectRowsPerPage(rows);
-    await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
-    await this.uiHelper.verifyLink(allPRs[rows].number, {
-      exact: false,
-      notVisible: true,
+  async verifyEntityYaml(text: string) {
+    await expect(this.page.getByRole("alert").filter({ hasText: "Entity not found" })).toBeHidden({
+      timeout: 60_000,
     });
 
-    const tableRows = this.page.locator(
-      BACKSTAGE_SHOWCASE_COMPONENTS.tableRows,
-    );
-    await expect(tableRows).toHaveCount(rows);
-  }
-
-  async selectRowsPerPage(rows: number) {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tablePageSelectBox);
-    await this.page.click(`ul[role="listbox"] li[data-value="${rows}"]`);
-  }
-
-  async verifyPRStatisticsRendered() {
-    const regex = /Average Size Of PR\d+ lines/;
-    await this.uiHelper.verifyText(regex);
-  }
-
-  async verifyAboutCardIsDisplayed() {
-    const url =
-      "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
-    const isLinkVisible = await this.page
-      .locator(`a[href="${url}"]`)
-      .isVisible();
-    if (!isLinkVisible) {
-      throw new Error("About card is not displayed");
-    }
-  }
-
-  async verifyPRRows(
-    allPRs: { title: string }[],
-    startRow: number,
-    lastRow: number,
-  ) {
-    for (let i = startRow; i < lastRow; i++) {
-      await this.uiHelper.verifyRowsInTable([allPRs[i].title], false);
-    }
+    // Intentional divergence: entity header overflow uses title="More", not always role name.
+    const moreButton = this.page
+      .getByRole("button", { name: "More" })
+      .or(this.page.getByTitle("More"));
+    await expect(moreButton.first()).toBeVisible({ timeout: 30_000 });
+    await moreButton.first().click();
+    await this.page.getByRole("menuitem", { name: "Inspect entity" }).click();
+    await interaction.clickTab(this.page, "Raw YAML");
+    await expect(this.page.getByTestId("code-snippet")).toContainText(text);
+    await interaction.clickButton(this.page, "Close");
   }
 }
+
+export { RhdhInstance } from "./rhdh-instance";

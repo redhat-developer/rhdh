@@ -52,6 +52,12 @@ testing::run_tests() {
   test_run_tracker::register "$artifacts_subdir"
   test_run_tracker::mark_deploy_success
 
+  # Pessimistic default: assume tests failed until Playwright proves otherwise.
+  # If the job is killed (Prow timeout) or Playwright hangs, the STATUS files
+  # still have entries for all registered test runs — preventing misaligned
+  # arrays that break downstream reporting (Slack notifications).
+  test_run_tracker::mark_test_result "false" "${UNKNOWN_FAILURE_COUNT}"
+
   BASE_URL="${url}"
   export BASE_URL
   log::info "BASE_URL: ${BASE_URL}"
@@ -86,10 +92,18 @@ testing::run_tests() {
   # is never mistakenly uploaded for the current run.
   rm -rf "${e2e_tests_dir}/coverage/e2e" "${e2e_tests_dir}/coverage/e2e-raw"
 
+  # Optional tag filter: set PLAYWRIGHT_GREP (e.g. '@smoke' or '@layer3-equivalent')
+  # to run only the matching subset. Unset means run the whole project.
+  local grep_args=()
+  if [[ -n "${PLAYWRIGHT_GREP:-}" ]]; then
+    grep_args+=(--grep "${PLAYWRIGHT_GREP}")
+    log::info "Filtering tests by tag: ${PLAYWRIGHT_GREP}"
+  fi
+
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
-    yarn playwright test --project="${playwright_project}"
+    yarn playwright test --project="${playwright_project}" ${grep_args[@]+"${grep_args[@]}"}
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local test_result=${PIPESTATUS[0]}
@@ -99,8 +113,18 @@ testing::run_tests() {
   # Use artifacts_subdir for artifact directory to keep artifacts organized
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${JUNIT_RESULTS}" || true
-  if [[ "${CI}" == "true" ]]; then
-    rsync "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
+  if [[ "${CI}" == "true" && -f "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" ]]; then
+    # Gzip junit before writing to SHARED_DIR to stay under Kubernetes Secret 1 MiB limit
+    gzip -c "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" > "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+    local gz_size
+    gz_size=$(stat -c%s "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz" 2> /dev/null || stat -f%z "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz")
+    local max_size=$((800 * 1024))
+    if ((gz_size > max_size)); then
+      echo "[WARNING] junit-results-${artifacts_subdir}.xml.gz is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
+      rm -f "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+    else
+      echo "[INFO] Copied junit-results-${artifacts_subdir}.xml.gz to SHARED_DIR ($((gz_size / 1024)) KB)"
+    fi
   fi
 
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
@@ -153,13 +177,27 @@ testing::run_tests() {
   if [[ "${test_result}" -eq 0 ]]; then
     failed_tests="0"
   elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
-    failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    failed_tests="${failed_tests:-some}"
+    # JUnit XML distinguishes "failures" (assertion failures) from "errors"
+    # (exceptions/timeouts). Playwright reports TimeoutError, crash, and
+    # similar issues as errors, not failures. Sum both from the root
+    # <testsuites> element so the Slack notification reflects the real count.
+    local _junit_failures _junit_errors
+    _junit_failures=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    _junit_errors=$(grep -oP 'errors="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    _junit_failures="${_junit_failures:-0}"
+    _junit_errors="${_junit_errors:-0}"
+    failed_tests=$((_junit_failures + _junit_errors))
+    if [[ "${failed_tests}" -eq 0 ]]; then
+      # Playwright exited non-zero but JUnit reports 0 failures and 0 errors —
+      # the process likely crashed or timed out globally. Use the sentinel so
+      # the Slack alert doesn't misleadingly say "0 tests failed".
+      failed_tests="${UNKNOWN_FAILURE_COUNT}"
+    fi
     echo "Number of failed tests: ${failed_tests}"
   else
     echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
-    failed_tests="some"
-    echo "Number of failed tests unknown, saving as $failed_tests."
+    failed_tests="${UNKNOWN_FAILURE_COUNT}"
+    echo "Number of failed tests unknown, saving as ${failed_tests}."
   fi
   test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
   return "$test_result"

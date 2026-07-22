@@ -21,7 +21,6 @@ install_rhdh_operator() {
     log::warn "IMAGE_REGISTRY is set to '${IMAGE_REGISTRY}', but the RHDH operator is always installed from quay.io/rhdh/iib"
   fi
 
-  # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
   if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
     log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"
@@ -29,20 +28,15 @@ install_rhdh_operator() {
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
-  if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
+  if [[ "$RELEASE_VERSION" == "next" ]]; then
     log::info "Installing RHDH operator with '--next' flag"
     if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
   else
-    local operator_version="${RELEASE_BRANCH_NAME#release-}"
-    if [[ -z "$operator_version" ]]; then
-      log::error "Failed to extract operator version from RELEASE_BRANCH_NAME: '$RELEASE_BRANCH_NAME'"
-      return 1
-    fi
-    log::info "Installing RHDH operator with '-v $operator_version' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh; then
+    log::info "Installing RHDH operator with '-v $RELEASE_VERSION' flag"
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$RELEASE_VERSION" --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
@@ -78,6 +72,10 @@ deploy_rhdh_operator() {
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
 
   rendered_yaml=$(envsubst < "$backstage_crd_path")
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    # Dynamically inject CATALOG_INDEX_IMAGE environment variable if specified
+    rendered_yaml=$(echo "$rendered_yaml" | yq eval '.spec.application.extraEnvs.envs += [{"name": "CATALOG_INDEX_IMAGE", "value": "'"$CATALOG_INDEX_IMAGE"'", "containers": ["install-dynamic-plugins"]}]' -)
+  fi
   log::info "Applying Backstage CR from: $backstage_crd_path"
   log::debug "$rendered_yaml"
   echo "$rendered_yaml" | oc apply -f - -n "$namespace"

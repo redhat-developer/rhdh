@@ -1,5 +1,8 @@
-import { test, expect, Page } from "@support/coverage/test";
-import { Common, setupBrowser, teardownBrowser } from "../../utils/common";
+import { test, expect } from "@support/coverage/test";
+
+import RhdhRbacApi from "../../support/api/rbac-api";
+import { AuthProviderSession } from "../../support/auth/provider-auth";
+import * as navigation from "../../utils/ui-helper/navigation";
 import {
   RBAC_API,
   ROLE_NAME,
@@ -12,12 +15,10 @@ import {
   buildNotAllowedError,
   httpMethod,
 } from "./rbac-test-utils";
-import RhdhRbacApi from "../../support/api/rbac-api";
 
-const auditStatus = (ok: boolean): "succeeded" | "failed" =>
-  ok ? "succeeded" : "failed";
+const auditStatus = (ok: boolean): "succeeded" | "failed" => (ok ? "succeeded" : "failed");
 
-let common: Common;
+let authSession: AuthProviderSession;
 let rbacApi: RhdhRbacApi;
 
 /* ======================================================================== */
@@ -25,19 +26,21 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
-  let page: Page;
-
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ rhdhPage, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
       description: "audit-log",
     });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
-    page = (await setupBrowser(browser, testInfo)).page;
-    common = new Common(page);
-    await common.loginAsKeycloakUser();
-    rbacApi = await RhdhRbacApi.buildRbacApi(page);
+    authSession = rhdhAuthSession;
+    const loginResult = await authSession.loginWithKeycloak(
+      process.env.GH_USER_ID ?? "",
+      process.env.GH_USER_PASS ?? "",
+    );
+    expect(loginResult).not.toBe("");
+    await navigation.waitForSideBarVisible(rhdhPage);
+    rbacApi = await RhdhRbacApi.buildRbacApi(rhdhPage);
   });
 
   /* --------------------------------------------------------------------- */
@@ -171,11 +174,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     {
       name: "update",
       call: () =>
-        rbacApi.updatePolicy(
-          ROLE_NAME,
-          [POLICY_DATA],
-          [{ ...POLICY_DATA, effect: "deny" }],
-        ),
+        rbacApi.updatePolicy(ROLE_NAME, [POLICY_DATA], [{ ...POLICY_DATA, effect: "deny" }]),
       url: RBAC_API.policy.item(ROLE_NAME),
       action: "update" as const,
     },
@@ -195,11 +194,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
         USER_ENTITY_REF,
         { method: httpMethod(s.action), url: s.url },
         { actionType: s.action, source: "rest" },
-        buildNotAllowedError(
-          s.action,
-          "policy",
-          `${ROLE_NAME},policy-entity,read,allow`,
-        ),
+        buildNotAllowedError(s.action, "policy", `${ROLE_NAME},policy-entity,read,allow`),
         "failed",
       );
     });
@@ -286,9 +281,5 @@ test.describe("Auditor check for RBAC Plugin", () => {
       "succeeded",
       ["policy.entity.read", USER_ENTITY_REF],
     );
-  });
-
-  test.afterAll(async ({}, testInfo) => {
-    await teardownBrowser(page, testInfo);
   });
 });

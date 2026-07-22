@@ -3,6 +3,7 @@
  * --------------------------------------------------------------------------*/
 
 import { type JsonObject } from "@backstage/types";
+
 import { LogUtils } from "./log-utils";
 import { EventStatus, LogRequest } from "./logs";
 
@@ -37,10 +38,7 @@ export function buildNotAllowedError(
   entityRef?: string,
 ): string {
   // Backend verbs differ from our logical action names:
-  const backendVerb: Record<
-    "create" | "update" | "delete",
-    "add" | "edit" | "delete"
-  > = {
+  const backendVerb: Record<"create" | "update" | "delete", "add" | "edit" | "delete"> = {
     create: "add",
     update: "edit",
     delete: "delete",
@@ -82,6 +80,8 @@ export function httpMethod(
       return "PUT";
     case "delete":
       return "DELETE";
+    case "read":
+      return "GET";
     default:
       return "GET";
   }
@@ -104,8 +104,8 @@ export async function validateRbacLogEvent(
     meta,
     error,
     status,
-    "permission", // plugin name
-    "medium", // expected severity
+    "permission",
+    "medium",
     filterWords,
     process.env.NAME_SPACE_RBAC,
   );

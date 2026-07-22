@@ -9,8 +9,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: ".ci@workspace:."
   dependencies:
-    prettier: "npm:3.8.1"
-    prettier-plugin-sh: "npm:0.18.0"
+    prettier: "npm:3.8.4"
+    prettier-plugin-sh: "npm:0.18.1"
     shellcheck: "npm:4.1.0"
   languageName: unknown
   linkType: soft
@@ -34,10 +34,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@reteps/dockerfmt@npm:^0.3.6":
-  version: 0.3.6
-  resolution: "@reteps/dockerfmt@npm:0.3.6"
-  checksum: 10c0/b6ca467ba97ea49071c44d0fbecf131fc8045165e950d0d01372c1834000c58d53f62bff42f09b851f7a9d91899047f071cd8fe57e1fc88fc27e2a3d2bdb214d
+"@reteps/dockerfmt@npm:^0.5.1":
+  version: 0.5.2
+  resolution: "@reteps/dockerfmt@npm:0.5.2"
+  checksum: 10c0/c0af5dcc9c8c9d51c9eec4cfb454c85f31c760373288b9254054709b29a4accc1df10bd765712128dd173e53bfb8b880a94b0aa8b6c2d4294866d800dbdd14e1
   languageName: node
   linkType: hard
 
@@ -757,24 +757,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-plugin-sh@npm:0.18.0":
-  version: 0.18.0
-  resolution: "prettier-plugin-sh@npm:0.18.0"
+"prettier-plugin-sh@npm:0.18.1":
+  version: 0.18.1
+  resolution: "prettier-plugin-sh@npm:0.18.1"
   dependencies:
-    "@reteps/dockerfmt": "npm:^0.3.6"
+    "@reteps/dockerfmt": "npm:^0.5.1"
     sh-syntax: "npm:^0.5.8"
   peerDependencies:
     prettier: ^3.6.0
-  checksum: 10c0/d8946440abaab1c0f32cee270e0ad285e1f4bba0008aff7c55a9a1c8639032aa8b397aef8f8387a5b88c3f4fb657f1d4d1ab7ae6a1f5c4599875080fb951b9b1
+  checksum: 10c0/e79a8dab1b9cd966bf078b1ca4ec412d190fb905ca6bfb89f841d309ed39ecb7136901b64919e3d8e52e9233d658b64bc69203ff81384914ec90dedbcbe804da
   languageName: node
   linkType: hard
 
-"prettier@npm:3.8.1":
-  version: 3.8.1
-  resolution: "prettier@npm:3.8.1"
+"prettier@npm:3.8.4":
+  version: 3.8.4
+  resolution: "prettier@npm:3.8.4"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/33169b594009e48f570471271be7eac7cdcf88a209eed39ac3b8d6d78984039bfa9132f82b7e6ba3b06711f3bfe0222a62a1bfb87c43f50c25a83df1b78a2c42
+  checksum: 10c0/b90a0cbe75b88ac0af9c13fe0f359bd19926fabccd88483227b21f71f0c1cc42da056fc1ac3a361e665577c568371d5ccfb2c62c31c8a1186f8d1bd531a063e9
   languageName: node
   linkType: hard
 

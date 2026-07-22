@@ -78,8 +78,6 @@ catalog:
     - type: url
       target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
     - type: url
-      target: https://github.com/janus-test/janus-test-3-bulk-import/blob/main/catalog-info.yaml
-    - type: url
       target: https://github.com/janus-qe/rhdh-test/blob/main/user.yml
       rules:
         - allow: [User]
@@ -89,11 +87,6 @@ catalog:
         - allow: [User, Group]
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/e2e-test-resources/rbac-transitive-parent-ownership.yaml
-    # Orchestrator entity-workflow integration templates (RHIDP-11833 through RHIDP-11840)
-    - type: url
-      target: https://github.com/testetson22/greeting_54mjks/blob/main/templates/greeting/greeting.yaml
-    - type: url
-      target: https://github.com/testetson22/greeting_54mjks/blob/main/templates/greeting/greeting_w_component.yaml
   providers:
     keycloakOrg:
       default:
@@ -108,16 +101,6 @@ catalog:
           timeout: { minutes: 1 }
 dynatrace:
   baseUrl: temp
-bulkImport:
-  instructionsEnabled: true
-  instructionsDefaultExpanded: true
-  instructionsSteps:
-    - id: "step1"
-      text: "Choose your source control platform"
-      icon: "kind:component"
-    - id: "step2"
-      text: "Browse and select repositories"
-      icon: "search"
 argocd:
   appLocatorMethods:
     - type: "config"
@@ -139,7 +122,6 @@ permission:
       - catalog
       - permission
       - scaffolder
-      - orchestrator
     admin:
       users:
         - name: user:default/rhdh-qe

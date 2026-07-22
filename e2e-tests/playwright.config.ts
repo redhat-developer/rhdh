@@ -1,44 +1,27 @@
 import { defineConfig, devices } from "@playwright/test";
 import type { ReporterDescription } from "@playwright/test";
+
+/* oxlint-disable import/no-unassigned-import -- intentional side-effect graph wiring */
+import "./playwright/entry-graph";
 import { PW_PROJECT } from "./playwright/projects";
 
-process.env.JOB_NAME = process.env.JOB_NAME || "";
-process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
-
-const isPrOcpHelmJob =
-  process.env.JOB_NAME.includes("pull") &&
-  process.env.JOB_NAME.includes("e2e-ocp-helm") &&
-  !process.env.JOB_NAME.includes("e2e-ocp-helm-nightly");
-
-const isOsdGcpJob = process.env.JOB_NAME.includes("osd-gcp");
-
-const isNonOpenShiftJob = process.env.IS_OPENSHIFT === "false";
-
-const shouldSkipOrchestratorTests =
-  isPrOcpHelmJob || isOsdGcpJob || isNonOpenShiftJob;
+process.env.JOB_NAME = process.env.JOB_NAME ?? "";
+process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT ?? "";
 
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
 if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_DE))) {
   process.env.LOCALE = "de";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_ES))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_ES))) {
   process.env.LOCALE = "es";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
   process.env.LOCALE = "fr";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))) {
   process.env.LOCALE = "it";
-} else if (
-  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))
-) {
+} else if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))) {
   process.env.LOCALE = "ja";
-} else if (!process.env.LOCALE) {
+} else if (process.env.LOCALE === undefined || process.env.LOCALE === "") {
   process.env.LOCALE = "en";
 }
 
@@ -46,46 +29,45 @@ const k8sSpecificConfig = {
   use: {
     actionTimeout: 15 * 1000,
   },
+  // Global expect timeout
   expect: {
-    timeout: 15 * 1000, // Global expect timeout
+    timeout: 15 * 1000,
   },
 };
 
 export default defineConfig({
+  globalSetup: "./playwright/global-setup.ts",
   timeout: 90 * 1000,
-  testDir: "./playwright",
+  testDir: "./playwright/e2e",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: process.env.CI !== undefined && process.env.CI !== "",
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: 3,
+  retries: process.env.CI !== undefined && process.env.CI !== "" ? 2 : 0,
+  /* Keep a small shared worker pool; stateful projects override this to 1. */
+  workers: process.env.CI !== undefined && process.env.CI !== "" ? 3 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // Coverage reporter (RHIDP-13243) is appended only when COLLECT_COVERAGE=true;
   // otherwise it is not registered at all and the default reporters run alone.
   reporter: [
     ["html"],
     ["list"],
-    ["junit", { outputFile: process.env.JUNIT_RESULTS || "junit-results.xml" }],
+    ["junit", { outputFile: process.env.JUNIT_RESULTS ?? "junit-results.xml" }],
     ...(process.env.COLLECT_COVERAGE === "true"
-      ? ([
-          ["./playwright/support/coverage/reporter.ts"],
-        ] satisfies ReporterDescription[])
+      ? ([["./playwright/support/coverage/reporter.ts"]] satisfies ReporterDescription[])
       : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    locale: process.env.LOCALE || "en",
+    locale: process.env.LOCALE ?? "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
-    trace: "on",
+    trace: "retain-on-failure",
     screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
     // Note: this video config only applies to tests using the built-in { page } fixture.
-    // Tests that create their own context via setupBrowser() in playwright/utils/common.ts
-    // must configure recordVideo explicitly because manually created contexts don't
-    // inherit these recording options.
+    // Tests that share one browser context across a describe block should use
+    // the worker-scoped rhdhPage / rhdhContext fixtures from @support/coverage/test.
     video: {
       mode: "retain-on-failure",
       size: { width: 1280, height: 720 },
@@ -93,8 +75,9 @@ export default defineConfig({
     actionTimeout: 10 * 1000,
     navigationTimeout: 50 * 1000,
   },
+  // Global expect timeout
   expect: {
-    timeout: 10 * 1000, // Global expect timeout
+    timeout: 10 * 1000,
   },
 
   /* Configure projects for major browsers */
@@ -102,10 +85,10 @@ export default defineConfig({
     {
       name: PW_PROJECT.SMOKE_TEST,
       testMatch: "**/playwright/e2e/smoke-test.spec.ts",
-      retries: 10,
     },
     {
       name: PW_PROJECT.SHOWCASE,
+      timeout: 180 * 1000,
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/seed.spec.ts",
@@ -113,14 +96,10 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
-        ...(shouldSkipOrchestratorTests
-          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
-          : []),
       ],
     },
     {
@@ -129,19 +108,15 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
-      testIgnore: [
-        ...(shouldSkipOrchestratorTests
-          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
-          : []),
       ],
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
+      timeout: 600 * 1000,
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
-        "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
+        // temporarily disable github-happy-path
+        "**/playwright/e2e/auth-providers/github-happy-path.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
       ],
@@ -158,7 +133,6 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -168,18 +142,13 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
-        "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts",
       ],
     },
     {
       name: PW_PROJECT.SHOWCASE_RBAC_K8S,
       ...k8sSpecificConfig,
       dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
-      testIgnore: ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"],
+      testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR,
@@ -190,7 +159,6 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
@@ -199,37 +167,22 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
-        "**/playwright/e2e/plugins/orchestrator/token-propagation-workflow.spec.ts",
       ],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR_RBAC,
       dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
-      testIgnore: [
-        ...(shouldSkipOrchestratorTests
-          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
-          : []),
-      ],
-    },
-    {
-      name: PW_PROJECT.SHOWCASE_RUNTIME_DB,
-      workers: 1,
-      testMatch: [
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
-      ],
+      testMatch: ["**/playwright/e2e/**/*-rbac.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_RUNTIME,
       workers: 1,
-      dependencies: [PW_PROJECT.SHOWCASE_RUNTIME_DB],
+      timeout: 10 * 60 * 1000,
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
       ],
     },
 
@@ -254,6 +207,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_DE,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "de",
       },
@@ -265,6 +219,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_ES,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "es",
       },
@@ -276,6 +231,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "fr",
       },
@@ -287,6 +243,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_IT,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "it",
       },
@@ -298,6 +255,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_JA,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "ja",
       },

@@ -1,4 +1,9 @@
-import React from 'react';
+import {
+  useEffect,
+  type ComponentType,
+  type CSSProperties,
+  type FC,
+} from 'react';
 
 import { SidebarItem } from '@backstage/core-components';
 
@@ -20,10 +25,10 @@ const StyledSidebarItemWrapper = styled('div')<{
 }));
 
 // Global styles for built-in Backstage sidebar items (Settings, Search)
-const GlobalSidebarStyles: React.FC<{ selectedBackgroundColor: string }> = ({
+const GlobalSidebarStyles: FC<{ selectedBackgroundColor: string }> = ({
   selectedBackgroundColor,
 }) => {
-  React.useEffect(() => {
+  useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
       /* Target built-in Backstage sidebar items like Settings and Search */
@@ -46,17 +51,17 @@ const GlobalSidebarStyles: React.FC<{ selectedBackgroundColor: string }> = ({
 };
 
 interface CustomSidebarItemProps {
-  icon?: React.ComponentType<{}>;
+  icon?: ComponentType<{}>;
   to: string;
   text: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 /**
  * Custom SidebarItem component that uses the theme's sidebar selected background color.
  * Uses theme.palette.rhdh.general.sidebarItemSelectedBackgroundColor.
  */
-export const CustomSidebarItem: React.FC<CustomSidebarItemProps> = ({
+export const CustomSidebarItem: FC<CustomSidebarItemProps> = ({
   icon,
   to,
   text,

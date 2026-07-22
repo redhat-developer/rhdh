@@ -3,26 +3,20 @@
  * Handles database setup and RHDH configuration for both Helm and Operator deployments.
  */
 
-import * as yaml from "js-yaml";
-import { KubeClient } from "../../utils/kube-client";
+import { base64Encode } from "../../utils/helper";
+import {
+  KubeClient,
+  getRhdhDeploymentName,
+  BACKSTAGE_BACKEND_CONTAINER,
+} from "../../utils/kube-client";
+import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
+import type { AppConfigYaml } from "../../utils/runtime-config";
 import {
   getSchemaModeEnv,
   connectAdminClient,
   cleanupOldPluginDatabases,
   setupSchemaModeDatabase,
 } from "./schema-mode-db";
-
-interface AppConfigYaml {
-  backend?: {
-    database?: {
-      client?: string;
-      pluginDivisionMode?: string;
-      ensureSchemaExists?: boolean;
-      connection?: Record<string, unknown>;
-    };
-  };
-  [key: string]: unknown;
-}
 
 export class SchemaModeTestSetup {
   private namespace: string;
@@ -31,11 +25,7 @@ export class SchemaModeTestSetup {
   private env: ReturnType<typeof getSchemaModeEnv>;
   private kubeClient: KubeClient;
 
-  constructor(
-    namespace: string,
-    releaseName: string,
-    installMethod: "helm" | "operator",
-  ) {
+  constructor(namespace: string, releaseName: string, installMethod: "helm" | "operator") {
     this.namespace = namespace;
     this.releaseName = releaseName;
     this.installMethod = installMethod;
@@ -44,13 +34,13 @@ export class SchemaModeTestSetup {
   }
 
   getDeploymentName(): string {
-    if (this.installMethod === "operator") {
-      return `backstage-${this.releaseName}`;
-    }
-    return `${this.releaseName}-developer-hub`;
+    return getRhdhDeploymentName();
   }
 
   private getSecretName(): string {
+    if (this.installMethod === "operator") {
+      return `backstage-psql-secret-${this.releaseName}`;
+    }
     return `${this.releaseName}-postgresql`;
   }
 
@@ -72,238 +62,207 @@ export class SchemaModeTestSetup {
   }
 
   /**
-   * Resolve the PostgreSQL host that RHDH pods should use (in-cluster DNS).
+   * Resolve the PostgreSQL host that RHDH pods should use (in-cluster DNS)
+   * and whether the target is the Helm sub-chart's internal PostgreSQL.
    * The test runner connects via localhost port-forward, but pods need the
    * cluster-internal address.
    */
-  private resolveRhdhPostgresHost(): string {
+  private resolveRhdhPostgresHost(): { host: string; isInternal: boolean } {
     const pfNamespace = process.env.SCHEMA_MODE_PORT_FORWARD_NAMESPACE;
 
-    if (pfNamespace && pfNamespace !== this.namespace) {
-      return `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`;
+    if (pfNamespace !== undefined && pfNamespace !== "" && pfNamespace !== this.namespace) {
+      return {
+        host: `postgress-external-db-primary.${pfNamespace}.svc.cluster.local`,
+        isInternal: false,
+      };
     }
 
     if (this.env.dbHost === "localhost" || this.env.dbHost === "127.0.0.1") {
-      return `${this.releaseName}-postgresql`;
+      const host =
+        this.installMethod === "operator"
+          ? `backstage-psql-${this.releaseName}`
+          : `${this.releaseName}-postgresql`;
+      return { host, isInternal: true };
     }
 
-    return this.env.dbHost;
+    return { host: this.env.dbHost, isInternal: false };
   }
 
   /**
    * Configure RHDH for schema mode:
    * 1. Update the Secret with schema-mode test user credentials
-   * 2. Patch the Deployment to inject POSTGRES_* env vars from the Secret
+   * 2. Patch the Deployment to inject POSTGRES_* env vars from the Secret (Helm only)
    * 3. Update the app-config ConfigMap for schema mode
-   * 4. Restart the deployment
+   * 4. Restart the deployment (with retry for operator reconciliation)
    */
   async configureRHDH(): Promise<void> {
-    console.log("Configuring RHDH for schema mode...");
+    console.log(`Configuring RHDH for schema mode (${this.installMethod})...`);
 
     const deploymentName = this.getDeploymentName();
     const secretName = this.getSecretName();
-    const rhdhPostgresHost = this.resolveRhdhPostgresHost();
+    const { host: rhdhPostgresHost, isInternal } = this.resolveRhdhPostgresHost();
     console.log(`RHDH pods will connect to PostgreSQL at: ${rhdhPostgresHost}`);
 
-    // 1. Update secret with schema-mode credentials
+    const secretData: Record<string, string> = {
+      password: base64Encode(this.env.dbPassword),
+      "postgres-password": base64Encode(this.env.dbPassword),
+      POSTGRES_PASSWORD: base64Encode(this.env.dbPassword),
+      POSTGRES_DB: base64Encode(this.env.dbName),
+      POSTGRES_USER: base64Encode(this.env.dbUser),
+      POSTGRES_HOST: base64Encode(rhdhPostgresHost),
+      POSTGRES_PORT: base64Encode("5432"),
+    };
+
+    if (this.installMethod === "operator") {
+      try {
+        const existing = await this.kubeClient.coreV1Api.readNamespacedSecret(
+          secretName,
+          this.namespace,
+        );
+        const existingData = existing.body.data ?? {};
+        if (existingData.POSTGRESQL_ADMIN_PASSWORD) {
+          secretData.POSTGRESQL_ADMIN_PASSWORD = existingData.POSTGRESQL_ADMIN_PASSWORD;
+        }
+      } catch {
+        console.warn(
+          `Could not read existing secret ${secretName}; POSTGRESQL_ADMIN_PASSWORD may be lost`,
+        );
+      }
+    }
+
     await this.kubeClient.createOrUpdateSecret(
       {
         metadata: { name: secretName },
-        data: {
-          password: Buffer.from(this.env.dbPassword).toString("base64"),
-          "postgres-password": Buffer.from(this.env.dbPassword).toString(
-            "base64",
-          ),
-          POSTGRES_PASSWORD: Buffer.from(this.env.dbPassword).toString(
-            "base64",
-          ),
-          POSTGRES_DB: Buffer.from(this.env.dbName).toString("base64"),
-          POSTGRES_USER: Buffer.from(this.env.dbUser).toString("base64"),
-          POSTGRES_HOST: Buffer.from(rhdhPostgresHost).toString("base64"),
-          POSTGRES_PORT: Buffer.from("5432").toString("base64"),
-        },
+        data: secretData,
       },
       this.namespace,
     );
     console.log(`Updated secret ${secretName} with schema-mode credentials`);
 
-    // 2. Ensure POSTGRES_* env vars are set in the deployment
-    await this.ensureDeploymentEnvVars(deploymentName, secretName);
+    if (this.installMethod === "operator") {
+      console.log(
+        "Skipping Deployment env var patching (operator injects env vars from secret via extraEnvs.secrets)",
+      );
+    } else {
+      await this.ensureDeploymentEnvVars(deploymentName, secretName);
+    }
 
-    // 3. Update app-config ConfigMap for schema mode
-    await this.updateAppConfigForSchemaMode();
+    await this.updateAppConfigForSchemaMode(isInternal);
 
-    // 4. Restart to apply changes
-    console.log("Restarting RHDH to apply schema mode configuration...");
-    await this.kubeClient.restartDeployment(deploymentName, this.namespace);
-    console.log("RHDH restart completed");
+    await this.kubeClient.restartDeploymentWithRetry(deploymentName, this.namespace);
   }
 
-  private async ensureDeploymentEnvVars(
-    deploymentName: string,
-    secretName: string,
-  ): Promise<void> {
+  private async ensureDeploymentEnvVars(deploymentName: string, secretName: string): Promise<void> {
     const deployment = await this.kubeClient.appsApi.readNamespacedDeployment(
       deploymentName,
       this.namespace,
     );
-    const containers = deployment.body.spec?.template?.spec?.containers || [];
-    const backstageIdx = containers.findIndex(
-      (c) => c.name === "backstage-backend",
-    );
-    const backstageContainer = containers[backstageIdx];
+    const containers = deployment.body.spec?.template?.spec?.containers ?? [];
+    const backstageContainer = containers.find((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
+    const backstageIdx = containers.findIndex((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
 
-    if (!backstageContainer) {
-      console.warn("backstage-backend container not found in deployment");
-      return;
-    }
+    if (backstageContainer === undefined) {
+      console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
+    } else {
+      const existingEnv = backstageContainer.env ?? [];
+      const missingVars = ([...POSTGRES_ENV_KEYS] as string[]).filter(
+        (v) => !existingEnv.some((e) => e.name === v),
+      );
 
-    const existingEnv = backstageContainer.env || [];
-    const requiredVars = [
-      "POSTGRES_HOST",
-      "POSTGRES_PORT",
-      "POSTGRES_DB",
-      "POSTGRES_USER",
-      "POSTGRES_PASSWORD",
-    ];
-    const missingVars = requiredVars.filter(
-      (v) => !existingEnv.some((e) => e.name === v),
-    );
+      if (missingVars.length === 0) {
+        console.log("POSTGRES_* env vars already present in deployment");
+        return;
+      }
 
-    if (missingVars.length === 0) {
-      console.log("POSTGRES_* env vars already present in deployment");
-      return;
-    }
+      console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
+      const patch: { op: string; path: string; value?: unknown }[] = [];
 
-    console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
-    const patch: { op: string; path: string; value?: unknown }[] = [];
+      if (backstageContainer.env === undefined || backstageContainer.env.length === 0) {
+        patch.push({
+          op: "add",
+          path: `/spec/template/spec/containers/${backstageIdx}/env`,
+          value: [],
+        });
+      }
 
-    if (!backstageContainer.env || backstageContainer.env.length === 0) {
-      patch.push({
-        op: "add",
-        path: `/spec/template/spec/containers/${backstageIdx}/env`,
-        value: [],
-      });
-    }
-
-    for (const varName of missingVars) {
-      patch.push({
-        op: "add",
-        path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
-        value: {
-          name: varName,
-          valueFrom: {
-            secretKeyRef: { name: secretName, key: varName },
+      for (const varName of missingVars) {
+        patch.push({
+          op: "add",
+          path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
+          value: {
+            name: varName,
+            valueFrom: {
+              secretKeyRef: { name: secretName, key: varName },
+            },
           },
-        },
-      });
-    }
+        });
+      }
 
-    await this.kubeClient.appsApi.patchNamespacedDeployment(
-      deploymentName,
-      this.namespace,
-      patch,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      { headers: { "Content-Type": "application/json-patch+json" } },
-    );
-    console.log("Added env vars to deployment");
+      await this.kubeClient.jsonPatchDeployment(deploymentName, this.namespace, patch);
+      console.log("Added env vars to deployment");
+    }
   }
 
-  private async updateAppConfigForSchemaMode(): Promise<void> {
-    const configMapName = await this.kubeClient.findAppConfigMap(
-      this.namespace,
-    );
-    let configMapResponse;
+  private async updateAppConfigForSchemaMode(isInternalDb: boolean): Promise<void> {
+    await this.kubeClient.patchAppConfig(this.namespace, (appConfig: AppConfigYaml) => {
+      appConfig.backend ??= {};
 
-    try {
-      configMapResponse = await this.kubeClient.getConfigMap(
-        configMapName,
-        this.namespace,
-      );
-    } catch {
-      throw new Error(
-        `ConfigMap '${configMapName}' not found in namespace '${this.namespace}'. ` +
-          `Ensure RHDH is deployed before running schema mode tests.`,
-      );
-    }
+      const currentDbConfig = appConfig.backend.database;
+      const isAlreadyConfigured =
+        currentDbConfig?.pluginDivisionMode === "schema" &&
+        currentDbConfig?.ensureSchemaExists === true;
 
-    const configMap = configMapResponse.body;
-    const configKey = Object.keys(configMap.data || {}).find((key) =>
-      key.includes("app-config"),
-    );
+      if (isAlreadyConfigured) {
+        console.log("App-config already configured for schema mode");
+        return;
+      }
 
-    if (!configKey || !configMap.data) {
-      throw new Error(
-        `Could not find app-config key in ConfigMap ${configMapName}`,
-      );
-    }
-
-    const appConfig = yaml.load(configMap.data[configKey]) as AppConfigYaml;
-    if (!appConfig.backend) appConfig.backend = {};
-
-    const currentDbConfig = appConfig.backend.database;
-    const isAlreadyConfigured =
-      currentDbConfig?.pluginDivisionMode === "schema" &&
-      currentDbConfig?.ensureSchemaExists === true;
-
-    if (isAlreadyConfigured) {
-      console.log("App-config already configured for schema mode");
-      return;
-    }
-
-    console.log("Updating app-config for schema mode...");
-    appConfig.backend.database = {
-      client: "pg",
-      pluginDivisionMode: "schema",
-      ensureSchemaExists: true,
-      connection: {
+      console.log("Updating app-config for schema mode...");
+      const connection: Record<string, unknown> = {
         host: "${POSTGRES_HOST}",
         port: "${POSTGRES_PORT}",
         user: "${POSTGRES_USER}",
         password: "${POSTGRES_PASSWORD}",
         database: "${POSTGRES_DB}",
-        ssl: { rejectUnauthorized: false },
-      },
-    };
+      };
 
-    configMap.data[configKey] = yaml.dump(appConfig);
-    delete configMap.metadata?.creationTimestamp;
-    delete configMap.metadata?.resourceVersion;
+      if (isInternalDb) {
+        console.log("Using non-SSL connection for internal PostgreSQL");
+      } else {
+        connection.ssl = { rejectUnauthorized: false };
+        console.log("Using SSL connection for external PostgreSQL");
+      }
 
-    await this.kubeClient.coreV1Api.replaceNamespacedConfigMap(
-      configMapName,
-      this.namespace,
-      configMap,
-    );
+      appConfig.backend.database = {
+        client: "pg",
+        pluginDivisionMode: "schema",
+        ensureSchemaExists: true,
+        connection,
+      };
+    });
     console.log("App-config updated for schema mode");
   }
 
+  // fallow-ignore-next-line unused-class-member -- operator route discovery for future schema-mode specs
   async getRHDHUrl(): Promise<string> {
     const routeNames =
       this.installMethod === "operator"
         ? [`backstage-${this.releaseName}`, `${this.releaseName}-developer-hub`]
-        : [
-            `${this.releaseName}-developer-hub`,
-            `backstage-${this.releaseName}`,
-          ];
+        : [`${this.releaseName}-developer-hub`, `backstage-${this.releaseName}`];
 
     for (const routeName of routeNames) {
       try {
-        const route =
-          (await this.kubeClient.customObjectsApi.getNamespacedCustomObject(
-            "route.openshift.io",
-            "v1",
-            this.namespace,
-            "routes",
-            routeName,
-          )) as { body?: { spec?: { host?: string } } };
+        const route = (await this.kubeClient.customObjectsApi.getNamespacedCustomObject(
+          "route.openshift.io",
+          "v1",
+          this.namespace,
+          "routes",
+          routeName,
+        )) as { body?: { spec?: { host?: string } } };
 
-        if (route?.body?.spec?.host) {
-          const url = `https://${route.body.spec.host}`;
+        const routeHost = route.body?.spec?.host;
+        if (routeHost !== undefined && routeHost !== "") {
+          const url = `https://${routeHost}`;
           console.log(`Found RHDH URL: ${url}`);
           return url;
         }
@@ -337,16 +296,11 @@ export class SchemaModeTestSetup {
 
       const hasCreateDb = result.rows[0].rolcreatedb;
       if (!hasCreateDb) {
-        console.log(
-          `Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`,
-        );
+        console.log(`Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`);
         return true;
-      } else {
-        console.warn(
-          `Database user "${this.env.dbUser}" has CREATEDB privilege`,
-        );
-        return false;
       }
+      console.warn(`Database user "${this.env.dbUser}" has CREATEDB privilege`);
+      return false;
     } finally {
       await adminClient.end();
     }

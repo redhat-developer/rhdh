@@ -18,6 +18,7 @@ import { policyEntityReadPermission } from '@backstage-community/plugin-rbac-com
 import express from 'express';
 import Router from 'express-promise-router';
 import { json2csv } from 'json-2-csv';
+import type { Knex } from 'knex';
 import { DateTime } from 'luxon';
 
 import {
@@ -59,7 +60,8 @@ export async function createRouter(
 
   const catalogClient = new CatalogClient({ discoveryApi: discovery });
 
-  const userInfoStore = new DatabaseUserInfoStore(authDB);
+  // DatabaseManager returns Knex from a nested dependency copy; align types for yarn duplicates.
+  const userInfoStore = new DatabaseUserInfoStore(authDB as unknown as Knex);
   const catalogEntityStore = new CatalogEntityStore(catalogClient, auth);
 
   const router = Router();

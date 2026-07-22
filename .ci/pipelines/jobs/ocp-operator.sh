@@ -12,6 +12,10 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/schema-mode-env.sh
+source "$DIR"/lib/schema-mode-env.sh
+
+export INSTALL_METHOD=operator
 
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
@@ -24,10 +28,6 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
-  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
-  # enable_orchestrator_plugins_op "${NAME_SPACE}"
-  # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
-  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE deployment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
@@ -37,63 +37,46 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
-  # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
-  # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
-  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE_RBAC deployment"
 }
 
-# OSD-GCP specific operator deployment that skips orchestrator workflows
 initiate_operator_deployments_osd_gcp() {
-  log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
+  log::info "Initiating Operator-backed deployments on OSD-GCP"
 
   namespace::configure "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
-  # Merge base values with OSD-GCP diff file before creating dynamic plugins config
-  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-  config::create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR}" "/tmp/configmap-dynamic-plugins.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
-  # Skip orchestrator plugins and workflows for OSD-GCP
-  log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
-
   namespace::configure "${NAME_SPACE_RBAC}"
   config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
-  # Merge RBAC values with OSD-GCP diff file before creating dynamic plugins config
-  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-  config::create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-
-  # Skip orchestrator plugins and workflows for OSD-GCP RBAC
-  log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP RBAC environment"
 }
 
 run_operator_runtime_config_change_tests() {
-  # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
-  namespace::configure "${NAME_SPACE_RUNTIME}"
-  config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
-  # Pre-create placeholder secrets so the operator accepts the Backstage CR (enableLocalDb=false).
-  # The E2E tests (RDS/Azure DB) will overwrite these with real credentials at runtime.
+  # Runtime tests handle their own deployment via TypeScript (runtime-deploy.ts).
+  # The first test file (config-map.spec.ts) calls ensureRuntimeDeployed() which:
+  #   - Creates the namespace
+  #   - Deploys RHDH via the operator with internal PostgreSQL
+  #   - Configures schema-mode env vars for port-forwarding
+  # Subsequent test files reuse the existing deployment (workers: 1).
+  #
+  # INSTALL_METHOD=operator is already exported in handle_ocp_operator().
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  create_postgres_cred_secret "${NAME_SPACE_RUNTIME}" "tmp" "tmp" "RHDH_RUNTIME_URL=${runtime_url}"
-  oc apply -f "$DIR/resources/postgres-db/postgres-crt.yaml" -n "${NAME_SPACE_RUNTIME}"
-  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-runtime.yaml"
-  oc apply -f /tmp/configmap-dynamic-plugins-runtime.yaml -n "${NAME_SPACE_RUNTIME}"
-  deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml" "true"
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
@@ -101,6 +84,7 @@ handle_ocp_operator() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
   export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
+  export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 
   common::oc_login
 
@@ -111,13 +95,14 @@ handle_ocp_operator() {
 
   cluster_setup_ocp_operator
 
-  prepare_operator
-
-  # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment (orchestrator disabled)"
+    # OSD-GCP internal registry is unreliable under parallel load; reduce
+    # concurrent skopeo pushes and allow retries (RHDHBUGS-1136).
+    export MAX_PARALLEL=3
+    prepare_operator 3
     initiate_operator_deployments_osd_gcp
   else
+    prepare_operator
     initiate_operator_deployments
   fi
 

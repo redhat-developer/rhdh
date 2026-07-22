@@ -1,10 +1,10 @@
 import { type JsonObject } from "@backstage/types";
 
-class Actor {
+interface LogActor {
   actorId?: string;
 }
 
-export class LogRequest {
+export interface LogRequest {
   body?: object;
   method: string;
   params?: object;
@@ -16,16 +16,20 @@ export class LogRequest {
   url: string;
 }
 
-class LogResponse {
+interface LogResponse {
   status: number;
 }
 
-export type EventStatus = "initiated" | "succeeded" | "failed";
+const EVENT_STATUSES = ["initiated", "succeeded", "failed"] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
 
-export type EventSeverityLevel = "low" | "medium" | "high" | "critical";
+const EVENT_SEVERITY_LEVELS = ["low", "medium", "high", "critical"] as const;
+export type EventSeverityLevel = (typeof EVENT_SEVERITY_LEVELS)[number];
+
+const DEFAULT_ACTOR_ID = "user:default/guest";
 
 export class Log {
-  actor: Actor;
+  actor: LogActor;
   eventId: string;
   isAuditEvent: boolean;
   severityLevel: EventSeverityLevel;
@@ -48,20 +52,23 @@ export class Log {
    * @param overrides Partial object to override default values in the Log class
    */
   constructor(overrides: Partial<Log> = {}) {
-    // Default value for status
-    this.status = overrides.status || "succeeded";
-    this.isAuditEvent = overrides.isAuditEvent || true;
+    this.status = overrides.status ?? "succeeded";
+    this.isAuditEvent = overrides.isAuditEvent ?? true;
 
-    // Default value for actorId, with other actor properties being optional
     this.actor = {
-      actorId: overrides.actor?.actorId || "user:development/guest", // Default actorId
+      actorId: overrides.actor?.actorId ?? DEFAULT_ACTOR_ID,
     };
 
-    // Other properties without default values
-    this.eventId = overrides.eventId || "";
-    this.plugin = overrides.plugin || "";
+    this.eventId = overrides.eventId ?? "";
+    this.plugin = overrides.plugin ?? "";
+    this.severityLevel = overrides.severityLevel ?? "low";
+    this.service = overrides.service ?? "";
+    this.timestamp = overrides.timestamp ?? "";
     this.request = overrides.request;
     this.response = overrides.response;
     this.meta = overrides.meta;
+    this.message = overrides.message;
+    this.name = overrides.name;
+    this.stack = overrides.stack;
   }
 }

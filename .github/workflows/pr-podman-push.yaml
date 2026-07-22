@@ -55,7 +55,7 @@ jobs:
           fi
       - name: Comment build failure
         if: ${{ github.event.workflow_run.conclusion != 'success' }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
           BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
@@ -99,7 +99,7 @@ jobs:
       - name: Download Skip Status Artifact
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: download-skip-status
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         env:
           SKIP_ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.skip_artifact_name }}
         with:
@@ -133,7 +133,7 @@ jobs:
 
       - name: Download Image Artifacts
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         env:
           ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.artifact_name }}
         with:
@@ -145,6 +145,8 @@ jobs:
       - name: Load and prepare image
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         id: prepare
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
         run: |
           # Check if artifacts exist
           if [ ! -f "./rhdh-podman-artifacts/image.tar" ]; then
@@ -155,22 +157,34 @@ jobs:
           
           # Load the image from tar file (contains all tags)
           podman load -i ./rhdh-podman-artifacts/image.tar
-          
+
           # Read metadata
           TAGS_LIST=$(cat ./rhdh-podman-artifacts/tags.txt)
-                    
+
           echo "Loaded images:"
           podman images
-          
+
           echo "Full tags from metadata:"
           printf '%s\n' "$TAGS_LIST"
-          
+        
+          # SECURITY: tags.txt is produced by the untrusted pull_request job (the
+          # fork author controls ./.github/actions/docker-build). Reject anything
+          # that is not exactly quay.io/rhdh-community/rhdh:pr-<this PR number>[-suffix]
+          # so a poisoned artifact cannot overwrite :next / :latest / :release-* tags.
+          ALLOWED_RE="^quay\.io/rhdh-community/rhdh:pr-${PR_NUMBER}(-[A-Za-z0-9._-]+)?$"
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            if ! [[ "$tag" =~ $ALLOWED_RE ]]; then
+              echo "::error::Refusing to push disallowed tag from untrusted artifact: $tag"
+              exit 1
+            fi
+          done <<< "$TAGS_LIST"
+
           # SECURITY: Use a random delimiter to prevent output injection from artifact poisoning
           DELIMITER=$(openssl rand -hex 16)
           echo "tags<<$DELIMITER" >> $GITHUB_OUTPUT
           printf '%s\n' "$TAGS_LIST" >> $GITHUB_OUTPUT
           echo "$DELIMITER" >> $GITHUB_OUTPUT
-
       - name: Push Images
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
@@ -183,7 +197,7 @@ jobs:
 
       - name: Comment skip status
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped == 'true' }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
           BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
@@ -205,7 +219,7 @@ jobs:
 
       - name: Comment the image pull link
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
@@ -262,7 +276,7 @@ jobs:
 
       - name: Comment publish failure
         if: ${{ failure() && github.event.workflow_run.conclusion == 'success' }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
           BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}

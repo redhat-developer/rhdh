@@ -1,48 +1,83 @@
-import deBackstage from "../../../../translations/backstage-de.json" with { type: "json" };
-import deRhdh from "../../../../translations/rhdh-de.json" with { type: "json" };
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
-import esBackstage from "../../../../translations/backstage-es.json" with { type: "json" };
-import esRhdh from "../../../../translations/rhdh-es.json" with { type: "json" };
+type TranslationFile = Record<string, Record<string, Record<string, string>>>;
 
-import frBackstage from "../../../../translations/backstage-fr.json" with { type: "json" };
-import frRhdh from "../../../../translations/rhdh-fr.json" with { type: "json" };
+const TRANSLATIONS_DIR = join(import.meta.dirname, "../../../../translations");
 
-import itBackstage from "../../../../translations/backstage-it.json" with { type: "json" };
-import itRhdh from "../../../../translations/rhdh-it.json" with { type: "json" };
+function loadTranslationJson(fileName: string): TranslationFile {
+  const raw: unknown = JSON.parse(readFileSync(join(TRANSLATIONS_DIR, fileName), "utf8"));
+  if (typeof raw !== "object" || raw === null) {
+    throw new Error(`Invalid translation file: ${fileName}`);
+  }
+  // Translation bundles are trusted repo fixtures; validate only top-level shape.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON fixture files are repo-controlled
+  return raw as TranslationFile;
+}
 
-import jaBackstage from "../../../../translations/backstage-ja.json" with { type: "json" };
-import jaRhdh from "../../../../translations/rhdh-ja.json" with { type: "json" };
-
-import en from "../../../../translations/test/all-en.json" with { type: "json" };
+const deBackstage = loadTranslationJson("backstage-de.json");
+const esBackstage = loadTranslationJson("backstage-es.json");
+const frBackstage = loadTranslationJson("backstage-fr.json");
+const itBackstage = loadTranslationJson("backstage-it.json");
+const jaBackstage = loadTranslationJson("backstage-ja.json");
+const deRhdh = loadTranslationJson("rhdh-de.json");
+const esRhdh = loadTranslationJson("rhdh-es.json");
+const frRhdh = loadTranslationJson("rhdh-fr.json");
+const itRhdh = loadTranslationJson("rhdh-it.json");
+const jaRhdh = loadTranslationJson("rhdh-ja.json");
+const deRhdhPlugins = loadTranslationJson("rhdh-plugins-de.json");
+const esRhdhPlugins = loadTranslationJson("rhdh-plugins-es.json");
+const frRhdhPlugins = loadTranslationJson("rhdh-plugins-fr.json");
+const itRhdhPlugins = loadTranslationJson("rhdh-plugins-it.json");
+const jaRhdhPlugins = loadTranslationJson("rhdh-plugins-ja.json");
+const en = loadTranslationJson("test/all-en.json");
 
 const de = {
   ...deBackstage,
   ...deRhdh,
+  ...deRhdhPlugins,
 };
 
 const es = {
   ...esBackstage,
   ...esRhdh,
+  ...esRhdhPlugins,
 };
 
 const fr = {
   ...frBackstage,
   ...frRhdh,
+  ...frRhdhPlugins,
 };
 
 const it = {
   ...itBackstage,
   ...itRhdh,
+  ...itRhdhPlugins,
 };
 
 const ja = {
   ...jaBackstage,
   ...jaRhdh,
+  ...jaRhdhPlugins,
 };
 
-export type Locale = "de" | "en" | "es" | "fr" | "it" | "ja";
+const LOCALES = ["de", "en", "es", "fr", "it", "ja"] as const;
+export type Locale = (typeof LOCALES)[number];
 
-type TranslationFile = Record<string, Record<string, Record<string, string>>>;
+const NON_EN_LOCALE_BUNDLES = {
+  de,
+  es,
+  fr,
+  it,
+  ja,
+} as const;
+
+const LOCALE_SET = new Set<string>(LOCALES);
+
+function isLocale(lang: string): lang is Locale {
+  return LOCALE_SET.has(lang);
+}
 
 /**
  * Merge translations with English fallback.
@@ -61,15 +96,22 @@ function createMergedTranslations() {
   const merged: Record<string, Record<string, Record<string, string>>> = {};
 
   for (const namespace of allNamespaces) {
-    const enKeys = (en as TranslationFile)[namespace]?.en || {};
-    merged[namespace] = {
+    const enKeys = en[namespace]?.en ?? {};
+    const namespaceTranslations: Record<string, Record<string, string>> = {
       en: enKeys,
-      de: { ...enKeys, ...((de as TranslationFile)[namespace]?.de || {}) },
-      es: { ...enKeys, ...((es as TranslationFile)[namespace]?.es || {}) },
-      fr: { ...enKeys, ...((fr as TranslationFile)[namespace]?.fr || {}) },
-      it: { ...enKeys, ...((it as TranslationFile)[namespace]?.it || {}) },
-      ja: { ...enKeys, ...((ja as TranslationFile)[namespace]?.ja || {}) },
     };
+
+    for (const locale of LOCALES) {
+      if (locale === "en") {
+        continue;
+      }
+      namespaceTranslations[locale] = {
+        ...enKeys,
+        ...NON_EN_LOCALE_BUNDLES[locale][namespace]?.[locale],
+      };
+    }
+
+    merged[namespace] = namespaceTranslations;
   }
 
   return merged;
@@ -78,20 +120,16 @@ function createMergedTranslations() {
 const translations = createMergedTranslations();
 
 export function getCurrentLanguage(): Locale {
-  const lang = process.env.LOCALE || "en";
-  return lang as Locale;
+  const lang = process.env.LOCALE ?? "en";
+  return isLocale(lang) ? lang : "en";
+}
+
+/** Resolve app locale from Playwright project locale or process env. */
+export function resolveLocale(localeHint?: string): Locale {
+  const lang = localeHint ?? process.env.LOCALE ?? "en";
+  return isLocale(lang) ? lang : "en";
 }
 
 export function getTranslations() {
   return translations;
-}
-
-/**
- * Get a translation string by namespace and key.
- * Evaluates language at runtime, so works correctly regardless of when module is loaded.
- * @example tr("rhdh", "menuItem.home")
- */
-export function tr(namespace: string, key: string): string {
-  const lang = getCurrentLanguage();
-  return translations[namespace]?.[lang]?.[key] ?? key;
 }
