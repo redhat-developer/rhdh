@@ -9250,20 +9250,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openshift/dynamic-plugin-sdk@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "@openshift/dynamic-plugin-sdk@npm:5.0.1"
-  dependencies:
-    lodash: "npm:^4.17.21"
-    semver: "npm:^7.3.7"
-    uuid: "npm:^8.3.2"
-    yup: "npm:^0.32.11"
-  peerDependencies:
-    react: ^17 || ^18
-  checksum: 10c0/2793e27abd90b47daabb0a6c97c76d6acfe0f5a102d394e6eeb1c140e38609b1185dc774ce4816e4fe4ed76656b0f2e5d0295ee4529dc921a544a7d81c263c9c
-  languageName: node
-  linkType: hard
-
 "@openshift/dynamic-plugin-sdk@npm:^8.0.0":
   version: 8.2.0
   resolution: "@openshift/dynamic-plugin-sdk@npm:8.2.0"
@@ -11969,40 +11955,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.9.3":
-  version: 0.9.3
-  resolution: "@scalprum/core@npm:0.9.3"
-  dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/760c3f8d162163cad453d6f4d8494bf61f6b9ae28a624706887176673fe87147a0ed65d3a2e7fd8654b0e75eaf87914bd1357ce041d7c3c28372b24856027304
-  languageName: node
-  linkType: hard
-
-"@scalprum/react-core@npm:0.11.2":
-  version: 0.11.2
-  resolution: "@scalprum/react-core@npm:0.11.2"
-  dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    "@scalprum/core": "npm:^0.9.1"
-    lodash: "npm:^4.17.0"
-  peerDependencies:
-    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 10c0/b27209ff4276f8e12c8b5e956def2d4273fa8dee75a1b54a634a58e02682470d8d51bdbce0d55930a699d32383997e189735299f73a86160c00b720a266f3f2b
-  languageName: node
-  linkType: hard
-
-"@scalprum/react-test-utils@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@scalprum/react-test-utils@npm:0.3.0"
+"@scalprum/core@npm:0.10.1":
+  version: 0.10.1
+  resolution: "@scalprum/core@npm:0.10.1"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^8.0.0"
-    "@scalprum/core": "npm:^0.10.0"
-    "@scalprum/react-core": "npm:^0.12.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/f8fa3da944782d3f74af0f7b92a5a52e6841069bc6bae6032de068400d16fb38a898fc693c3f76eaab30f462b576315114eb6b6dbc796496ae2a1007a1b7ee4d
+  languageName: node
+  linkType: hard
+
+"@scalprum/react-core@npm:0.13.1":
+  version: 0.13.1
+  resolution: "@scalprum/react-core@npm:0.13.1"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": "npm:^8.0.0"
+    "@scalprum/core": "npm:^0.10.1"
+    lodash: "npm:^4.17.0"
+  peerDependencies:
+    react: ">=17.0.0 <20.0.0"
+    react-dom: ">=17.0.0 <20.0.0"
+  checksum: 10c0/a1366ab36c820023104974173c7bb3a3fe6036444cffb71f605e719859664e408304782810f6eb4971efd63fdde92e5ef14cb5b037d9cc0eee58402a2a8c86d0
+  languageName: node
+  linkType: hard
+
+"@scalprum/react-test-utils@npm:0.3.2":
+  version: 0.3.2
+  resolution: "@scalprum/react-test-utils@npm:0.3.2"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": "npm:^8.0.0"
+    "@scalprum/core": "npm:^0.10.1"
+    "@scalprum/react-core": "npm:^0.13.1"
     tslib: "npm:^2.6.2"
     whatwg-fetch: "npm:^3.6.0"
-  checksum: 10c0/c8aeb2881c976c8412e4fc234c1168cbf37a738abe7618e4d20bc79f6dec816c50b727c28e616b6ff54d5017da37f7a9914891291ea74af9e37ee44b6c6465f7
+  checksum: 10c0/b3ca5ec15de121e82fb944c301e89388d37fbb4d0c64d4bdd94563bfd3b3512aaa3b63be791bc08d3a1723d25fd817330be415dba100b70e991c75c71fefcf7f
   languageName: node
   linkType: hard
 
@@ -15937,7 +15923,7 @@ __metadata:
     "@red-hat-developer-hub/plugin-utils": "workspace:*"
     "@scalprum/core": "npm:0.10.1"
     "@scalprum/react-core": "npm:0.13.1"
-    "@scalprum/react-test-utils": "npm:0.3.0"
+    "@scalprum/react-test-utils": "npm:0.3.2"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:14.3.1"
@@ -32843,7 +32829,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.7.1, semver@npm:^7.7.2, semver@npm:^7.7.3":
+"semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.8, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.7.1, semver@npm:^7.7.2, semver@npm:^7.7.3":
   version: 7.8.5
   resolution: "semver@npm:7.8.5"
   bin:
