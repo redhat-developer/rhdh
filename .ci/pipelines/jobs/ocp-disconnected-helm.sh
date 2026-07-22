@@ -138,44 +138,15 @@ handle_ocp_disconnected_helm() {
   # IDMS/ITMS changes trigger a MachineConfig update which rolls worker nodes
   # (drain → apply config → reboot). Wait for all MachineConfigPools to finish
   # before deploying workloads, otherwise pods get evicted mid-startup.
-  log::info "Waiting for MachineConfigPool updates to complete (up to 20m)..."
-  if ! oc wait machineconfigpool --all --for=condition=Updated=True --timeout=20m; then
-    log::warn "MachineConfigPool wait timed out — proceeding anyway"
-  fi
-  log::success "All MachineConfigPools are Updated"
+  disconnected::wait_mcp_updated
 
   log::section "Plugin Mirroring"
-
-  disconnected::fetch_script "mirror-plugins.sh" "${DISCONNECTED_TMPDIR}/mirror-plugins.sh" || {
-    log::error "Failed to fetch mirror-plugins.sh — aborting"
-    return 1
-  }
-
-  local plugin_index="oci://registry.access.redhat.com/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    plugin_index="oci://${CATALOG_INDEX_IMAGE}"
-  fi
-
-  bash "${DISCONNECTED_TMPDIR}/mirror-plugins.sh" \
-    --plugin-index "${plugin_index}" \
-    --to-registry "${MIRROR_REGISTRY_URL}" || {
-    log::error "mirror-plugins.sh failed — aborting"
-    return 1
-  }
+  disconnected::mirror_plugins || return 1
 
   log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
-
-  envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
-    | oc apply -n "${NAME_SPACE}" -f - || {
-    log::error "Failed to create registries.conf ConfigMap — aborting"
-    return 1
-  }
-  log::success "ConfigMap rhdh-plugin-mirror-conf created in ${NAME_SPACE}"
-
-  envsubst < "${DIR}/resources/disconnected/plugin-mirror-configmap.yaml" \
-    > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
+  disconnected::apply_plugin_mirror_configmap "${NAME_SPACE}" || return 1
 
   # Mirror registry CA — mounted at /etc/containers/certs.d/<registry>/ca.crt
   # inside the init container so skopeo trusts the mirror when IDMS redirects

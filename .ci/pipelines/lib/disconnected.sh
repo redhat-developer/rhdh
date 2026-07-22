@@ -119,6 +119,24 @@ EOF
   cp "${output_path}" "${ARTIFACT_DIR}/disconnected-imageset-config.yaml" 2> /dev/null || true
 }
 
+# Run a command with REGISTRY_AUTH_FILE unset, then restore it.
+# oc-mirror (and prepare paths that invoke it) panic when REGISTRY_AUTH_FILE
+# is set because distribution/distribution treats it as a storage driver
+# config. Auth still comes from ${XDG_RUNTIME_DIR}/containers/auth.json
+# (configured by disconnected::setup_auth).
+disconnected::with_unset_registry_auth_file() {
+  local saved_registry_auth_file="${REGISTRY_AUTH_FILE:-}"
+  unset REGISTRY_AUTH_FILE
+
+  local rc=0
+  "$@" || rc=$?
+
+  if [[ -n "${saved_registry_auth_file}" ]]; then
+    export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
+  fi
+  return "${rc}"
+}
+
 # Run oc-mirror to mirror images to the disconnected mirror registry.
 # Sets OC_MIRROR_IDMS_FILE, OC_MIRROR_ITMS_FILE, and OC_MIRROR_CHART_PATH.
 # Args:
@@ -130,29 +148,15 @@ disconnected::run_oc_mirror() {
 
   mkdir -p "${workspace_dir}"
 
-  # oc-mirror panics when REGISTRY_AUTH_FILE is set because the
-  # distribution/distribution library interprets it as a storage driver
-  # config, not an auth file path. oc-mirror reads auth exclusively from
-  # ${XDG_RUNTIME_DIR}/containers/auth.json (set up by setup_auth).
-  local saved_registry_auth_file="${REGISTRY_AUTH_FILE:-}"
-  unset REGISTRY_AUTH_FILE
-
   log::info "Running oc-mirror --v2 → ${MIRROR_REGISTRY_URL}"
-  if ! oc-mirror \
+  if ! disconnected::with_unset_registry_auth_file oc-mirror \
     -c "${imageset_config}" \
     "docker://${MIRROR_REGISTRY_URL}" \
     --dest-tls-verify=false \
     --v2 \
     --workspace "file://${workspace_dir}"; then
-    # Restore before returning
-    [[ -n "${saved_registry_auth_file}" ]] && export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
     log::error "oc-mirror failed"
     return 1
-  fi
-
-  # Restore REGISTRY_AUTH_FILE for subsequent skopeo/mirror-plugins.sh calls
-  if [[ -n "${saved_registry_auth_file}" ]]; then
-    export REGISTRY_AUTH_FILE="${saved_registry_auth_file}"
   fi
 
   local result_dir="${workspace_dir}/working-dir"
@@ -239,15 +243,24 @@ disconnected::patch_idms() {
 # Args:
 #   $1 - script_name: Name of the script (e.g., "mirror-plugins.sh")
 #   $2 - output_path: Local path to save the script
-#   $3 - branch: (optional) Branch name (defaults to $RELEASE_BRANCH_NAME)
+#   $3 - ref: (optional) Branch name or 40-char commit SHA
+#             (defaults to $RELEASE_BRANCH_NAME)
 disconnected::fetch_script() {
   local script_name=$1
   local output_path=$2
-  local branch="${3:-${RELEASE_BRANCH_NAME}}"
+  local ref="${3:-${RELEASE_BRANCH_NAME}}"
+  local url
+  local ref_label
 
-  local url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${branch}/.rhdh/scripts/${script_name}"
+  if [[ "${ref}" =~ ^[0-9a-f]{40}$ ]]; then
+    url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/${ref}/.rhdh/scripts/${script_name}"
+    ref_label="sha: ${ref}"
+  else
+    url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${ref}/.rhdh/scripts/${script_name}"
+    ref_label="branch: ${ref}"
+  fi
 
-  log::info "Fetching ${script_name} from rhdh-operator (branch: ${branch})..."
+  log::info "Fetching ${script_name} from rhdh-operator (${ref_label})..."
   if ! curl -fL --max-time 30 -o "${output_path}" "${url}"; then
     log::error "Failed to download ${script_name} from ${url}"
     return 1
@@ -256,7 +269,62 @@ disconnected::fetch_script() {
   log::success "Downloaded ${script_name} to ${output_path}"
 }
 
+# Wait for MachineConfigPool updates after IDMS/CatalogSource changes.
+# Warns and continues on timeout (same behavior as both handlers historically).
+disconnected::wait_mcp_updated() {
+  log::info "Waiting for MachineConfigPool updates to complete (up to 20m)..."
+  if ! oc wait machineconfigpool --all --for=condition=Updated=True --timeout=20m; then
+    log::warn "MachineConfigPool wait timed out — proceeding anyway"
+  fi
+  log::success "All MachineConfigPools are Updated"
+}
+
+# Fetch and run mirror-plugins.sh against the disconnected mirror registry.
+# Uses CATALOG_INDEX_IMAGE when set; otherwise the GA plugin-catalog-index tag.
+disconnected::mirror_plugins() {
+  local mirror_script="${DISCONNECTED_TMPDIR}/mirror-plugins.sh"
+
+  disconnected::fetch_script "mirror-plugins.sh" "${mirror_script}" || {
+    log::error "Failed to fetch mirror-plugins.sh — aborting"
+    return 1
+  }
+
+  local plugin_index="oci://registry.access.redhat.com/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    plugin_index="oci://${CATALOG_INDEX_IMAGE}"
+  fi
+
+  bash "${mirror_script}" \
+    --plugin-index "${plugin_index}" \
+    --to-registry "${MIRROR_REGISTRY_URL}" || {
+    log::error "mirror-plugins.sh failed — aborting"
+    return 1
+  }
+}
+
+# Apply the shared plugin-mirror registries.conf ConfigMap in a namespace.
+# Args:
+#   $1 - namespace
+disconnected::apply_plugin_mirror_configmap() {
+  local namespace=$1
+  local configmap_template="${DIR}/resources/disconnected/plugin-mirror-configmap.yaml"
+
+  envsubst < "${configmap_template}" \
+    | oc apply -n "${namespace}" -f - || {
+    log::error "Failed to create registries.conf ConfigMap — aborting"
+    return 1
+  }
+  log::success "ConfigMap rhdh-plugin-mirror-conf created in ${namespace}"
+
+  envsubst < "${configmap_template}" \
+    > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
+}
+
 # Export functions for subshell usage (e.g., timeout bash -c "...")
 export -f disconnected::require_env
 export -f disconnected::setup_auth
 export -f disconnected::fetch_script
+export -f disconnected::with_unset_registry_auth_file
+export -f disconnected::wait_mcp_updated
+export -f disconnected::mirror_plugins
+export -f disconnected::apply_plugin_mirror_configmap
