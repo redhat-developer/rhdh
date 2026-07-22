@@ -64,11 +64,12 @@ dev server with `app-config.yaml` + `app-config.dynamic-plugins.yaml` +
 `app-config.local-e2e.yaml`. A `globalSetup` first fails fast with the populate command
 if `dynamic-plugins-root` has no plugins.
 
-The run is scoped to tests tagged `@cluster-free` within the spec files allowlisted in
-`testMatch`. To widen coverage, tag a validated test with `@cluster-free` and add its
-spec file to `testMatch`; if the test needs extra plugins, add them (with their
-`pluginConfig`) to `e2e-tests/local-harness/dynamic-plugins.yaml` and re-run
-`populate.sh` (see "Known issues").
+The run is scoped to tests tagged `@cluster-free-capable` within the spec files
+allowlisted in `testMatch`. To widen coverage, tag a validated test with
+`@cluster-free-capable` and add its spec file to `testMatch`; if the test needs
+extra plugins, add them (with their `pluginConfig`) to
+`e2e-tests/local-harness/dynamic-plugins.yaml` and re-run `populate.sh` (see
+"Known issues").
 
 ### Verified
 
