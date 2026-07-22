@@ -1,8 +1,13 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
+import type { LoginOutcome } from "../../support/auth/app-shell";
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  THREE_DAYS_MS,
+  isRefreshTokenDurationNear,
+} from "../../utils/authentication-providers/auth-cookie-duration";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPORTED RESOLVERS
@@ -13,11 +18,9 @@ GITHUB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-github");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-github");
 
 test.describe("Configure Github Provider", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let page: Page;
@@ -27,7 +30,7 @@ test.describe("Configure Github Provider", () => {
     await authSession.clearAuthState(context);
   }
 
-  function loginAsGithubAdmin(): Promise<string> {
+  function loginAsGithubAdmin(): Promise<LoginOutcome> {
     return authSession.loginWithGitHub(
       "rhdhqeauthadmin",
       process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
@@ -35,7 +38,7 @@ test.describe("Configure Github Provider", () => {
     );
   }
 
-  function loginAsGithubUser(): Promise<string> {
+  function loginAsGithubUser(): Promise<LoginOutcome> {
     return authSession.loginWithGitHub(
       "rhdhqeauth1",
       process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
@@ -121,6 +124,7 @@ test.describe("Configure Github Provider", () => {
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubUser,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
       },
@@ -135,6 +139,7 @@ test.describe("Configure Github Provider", () => {
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubUser,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
       },
@@ -142,13 +147,11 @@ test.describe("Configure Github Provider", () => {
     });
   });
 
-  test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
+  test(`Set Github sessionDuration and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty(
-          "auth.providers.github.production.sessionDuration",
-          "3days",
-        );
+        // Pin resolver + duration together — earlier resolver tests share this namespace.
+        harness.deployment.configureGithubSessionDuration("3days");
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubAdmin,
@@ -157,14 +160,7 @@ test.describe("Configure Github Provider", () => {
 
         const cookies = await context.cookies();
         const authCookie = cookies.find((cookie) => cookie.name === "github-refresh-token");
-        expect(authCookie).toBeDefined();
-
-        const threeDays = 3 * 24 * 60 * 60 * 1000;
-        const tolerance = 3 * 60 * 1000;
-        const actualDuration = authCookie!.expires * 1000 - Date.now();
-
-        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-        expect(actualDuration).toBeLessThan(threeDays + tolerance);
+        expect(isRefreshTokenDurationNear(authCookie, THREE_DAYS_MS)).toBe(true);
 
         await settingsPage.open();
         await settingsPage.verifyProfileHeading("RHDH QE Admin");
@@ -175,41 +171,40 @@ test.describe("Configure Github Provider", () => {
   });
 
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    await expect
-      .poll(
-        () => harness.deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"]),
-        { timeout: 120_000 },
-      )
-      .toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog([
-        "test_admins",
-        "test_all",
-        "test_users",
-      ]),
-    ).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins")).toBe(
-      true,
-    );
-    expect(await harness.deployment.checkUserIsInGroup("rhdhqeauth1", "test_users")).toBe(true);
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog(["test_admins", "test_all", "test_users"]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("rhdhqeauthadmin", "test_admins"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("rhdhqeauth1", "test_users"),
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("test_users", "test_all")).toBe(true);
-    expect(await harness.deployment.checkGroupIsChildOfGroup("test_admins", "test_all")).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("test_users", "test_all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("test_admins", "test_all"),
+    ).resolves.toBeUndefined();
 
-    expect(
-      await harness.deployment.checkUserHasAnnotation(
+    await expect(
+      harness.deployment.checkUserHasAnnotation(
         "rhdhqeauthadmin",
         "MY_CUSTOM_ANNOTATION",
         "rhdhqeauthadmin",
       ),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkUserHasAnnotation(
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserHasAnnotation(
         "rhdhqeauth1",
         "MY_CUSTOM_ANNOTATION",
         "rhdhqeauth1",
       ),
-    ).toBe(true);
+    ).resolves.toBeUndefined();
   });
 
   test("Login with Github as only auth provider with disableIdentityResolution should fail", async () => {
@@ -217,11 +212,12 @@ test.describe("Configure Github Provider", () => {
       configure: async () => {
         harness.deployment.setAppConfigProperty(
           "auth.providers.github.production.disableIdentityResolution",
-          "true",
+          true,
         );
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsGithubUser,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(
           /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/u,

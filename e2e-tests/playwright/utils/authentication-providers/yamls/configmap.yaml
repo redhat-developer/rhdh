@@ -18,7 +18,7 @@ backend:
     credentials: true
   auth:
     keys:
-      - secret: temp
+      - secret: ${BACKEND_SECRET}
     externalAccess:
       - type: static
         options:

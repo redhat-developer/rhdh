@@ -12,10 +12,16 @@ function attachLogMatchHandlers(
   onMatch: () => void,
   onDebug?: (text: string) => void,
 ): void {
+  // Accumulate across chunks — a "Committed N users" line can split mid-stream.
+  let buffer = "";
   logStream.on("data", (chunk: Buffer | string) => {
     const text = typeof chunk === "string" ? chunk : chunk.toString();
     onDebug?.(text);
-    if (searchString.test(text)) {
+    buffer += text;
+    if (buffer.length > 512_000) {
+      buffer = buffer.slice(-256_000);
+    }
+    if (searchString.test(buffer)) {
       process.stdout.write(chunk);
       onMatch();
     }
@@ -62,6 +68,18 @@ async function resolvePodName(
       throw new Error(`No active pods found with labels: ${labelSelector}`);
     }
 
+    // Prefer the newest Running pod — after reconcile the old replica can still
+    // appear briefly and watching it misses the catalog sync on the new pod.
+    activePods.sort((a, b) => {
+      const aCreated = a.metadata?.creationTimestamp
+        ? new Date(a.metadata.creationTimestamp).getTime()
+        : 0;
+      const bCreated = b.metadata?.creationTimestamp
+        ? new Date(b.metadata.creationTimestamp).getTime()
+        : 0;
+      return bCreated - aCreated;
+    });
+
     const pod = activePods[0];
     const resolvedName = pod.metadata?.name;
     if (resolvedName === undefined || resolvedName === "") {
@@ -99,9 +117,11 @@ async function streamPodLogsUntilMatch(
   });
 
   try {
+    // Catalog sync often completes before we attach. A tiny tail misses the
+    // "Committed N users" line and times out even though ingestion succeeded.
     await log.log(state.namespace, podName, "backstage-backend", logStream, {
       follow: true,
-      tailLines: 1,
+      tailLines: 2000,
       pretty: false,
       timestamps: false,
     });

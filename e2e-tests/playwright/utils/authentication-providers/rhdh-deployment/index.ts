@@ -5,6 +5,10 @@ import { expect } from "@playwright/test";
 import { v4 as uuidv4 } from "uuid";
 
 import {
+  configureGithubSessionDuration as configureGithubSessionDurationImpl,
+  configureMicrosoftSessionDuration as configureMicrosoftSessionDurationImpl,
+  configureOidcAutologout as configureOidcAutologoutImpl,
+  configureOidcSessionDuration as configureOidcSessionDurationImpl,
   enableGithubLoginWithIngestion,
   enableGitlabLoginWithIngestion,
   enableLDAPLoginWithIngestion,
@@ -29,6 +33,7 @@ import {
   parseGroupMemberFromEntity,
   parseGroupParentFromEntity,
 } from "./catalog";
+import { waitUntilAuthConfigLive as waitUntilAuthConfigLiveImpl } from "./config-liveness";
 import {
   applyCustomResource,
   computeBackstageBackendUrl as computeBackstageBackendUrlImpl,
@@ -70,7 +75,9 @@ import {
 import {
   deleteNamespaceIfExists as deleteNamespaceIfExistsImpl,
   getDeploymentGeneration as getDeploymentGenerationImpl,
+  tryGetDeploymentGeneration as tryGetDeploymentGenerationImpl,
   waitForConfigReconciled as waitForConfigReconciledImpl,
+  waitForDeploymentCreated as waitForDeploymentCreatedImpl,
   waitForDeploymentReady as waitForDeploymentReadyImpl,
   waitForNamespaceActive as waitForNamespaceActiveImpl,
 } from "./wait";
@@ -193,6 +200,30 @@ class RHDHDeployment implements RHDHDeploymentState {
     return this.setConfigProperty(this.appConfig, path, value);
   }
 
+  deleteAppConfigProperty(path: string): RHDHDeployment {
+    const parts = path.split(".");
+    let current: Record<string, unknown> = this.appConfig;
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      if (part === undefined) {
+        throw new Error(`Invalid config path: ${path}`);
+      }
+      const next = current[part];
+      if (!isRecord(next)) {
+        return this;
+      }
+      current = next;
+    }
+
+    const lastPart = parts.at(-1);
+    if (lastPart === undefined) {
+      throw new Error(`Invalid config path: ${path}`);
+    }
+    delete current[lastPart];
+    return this;
+  }
+
   getAppConfig(): YamlConfig {
     return this.getConfig(this.appConfig);
   }
@@ -258,8 +289,18 @@ class RHDHDeployment implements RHDHDeploymentState {
     return this;
   }
 
+  async waitUntilAuthConfigLive(configMarker: string): Promise<RHDHDeployment> {
+    await waitUntilAuthConfigLiveImpl(this, configMarker);
+    return this;
+  }
+
   async waitForDeploymentReady(timeoutMs = 600000): Promise<RHDHDeployment> {
     await waitForDeploymentReadyImpl(this, timeoutMs);
+    return this;
+  }
+
+  async waitForDeploymentCreated(timeoutMs = 600000): Promise<RHDHDeployment> {
+    await waitForDeploymentCreatedImpl(this, timeoutMs);
     return this;
   }
 
@@ -318,8 +359,8 @@ class RHDHDeployment implements RHDHDeploymentState {
     return loadBackstageCRImpl(this);
   }
 
-  async createBackstageDeployment(): Promise<RHDHDeployment> {
-    await createBackstageDeploymentImpl(this);
+  async createBackstageDeployment(options?: { waitForReady?: boolean }): Promise<RHDHDeployment> {
+    await createBackstageDeploymentImpl(this, options);
     return this;
   }
 
@@ -434,7 +475,10 @@ class RHDHDeployment implements RHDHDeploymentState {
 
   async updateAllConfigs(): Promise<RHDHDeployment> {
     if (!this.isRunningLocal) {
-      this.configReconcileBaselineGeneration = await this.getDeploymentGeneration();
+      // First-time prepareProvider updates configs before createBackstageDeployment,
+      // so the deployment may not exist yet. Baseline is only needed for later
+      // reconcileAfterConfigChange waits.
+      this.configReconcileBaselineGeneration = await tryGetDeploymentGenerationImpl(this);
     }
     await this.updateAppConfig();
     await this.updateDynamicPluginsConfig();
@@ -485,6 +529,31 @@ class RHDHDeployment implements RHDHDeploymentState {
     return Promise.resolve(this);
   }
 
+  /** Pin username resolver + sessionDuration so earlier resolver tests cannot leak. */
+  configureGithubSessionDuration(sessionDuration: string): RHDHDeployment {
+    configureGithubSessionDurationImpl(this, sessionDuration);
+    return this;
+  }
+
+  configureOidcSessionDuration(sessionDuration: string): RHDHDeployment {
+    configureOidcSessionDurationImpl(this, sessionDuration);
+    return this;
+  }
+
+  configureMicrosoftSessionDuration(sessionDuration: string): RHDHDeployment {
+    configureMicrosoftSessionDurationImpl(this, sessionDuration);
+    return this;
+  }
+
+  /** Pin email resolver + autologout; clear leftover sessionDuration from prior cases. */
+  configureOidcAutologout(options: {
+    idleTimeoutMinutes: number;
+    promptBeforeIdleSeconds: number;
+  }): RHDHDeployment {
+    configureOidcAutologoutImpl(this, options);
+    return this;
+  }
+
   enableGitlabLoginWithIngestion(): Promise<RHDHDeployment> {
     enableGitlabLoginWithIngestion(this);
     return Promise.resolve(this);
@@ -507,23 +576,25 @@ class RHDHDeployment implements RHDHDeploymentState {
   parseGroupChildrenFromEntity = parseGroupChildrenFromEntity;
   parseGroupParentFromEntity = parseGroupParentFromEntity;
 
-  checkUserIsIngestedInCatalog(users: string[]): Promise<boolean> {
+  /** Polls until users are ingested; throws on HTTP/shape errors or timeout. */
+  checkUserIsIngestedInCatalog(users: string[]): Promise<void> {
     return checkUserIsIngestedInCatalog(this, users, () => this.computeBackstageBackendUrl());
   }
 
-  checkGroupIsIngestedInCatalog(groups: string[]): Promise<boolean> {
+  /** Polls until groups are ingested; throws on HTTP/shape errors or timeout. */
+  checkGroupIsIngestedInCatalog(groups: string[]): Promise<void> {
     return checkGroupIsIngestedInCatalog(this, groups, () => this.computeBackstageBackendUrl());
   }
 
-  checkUserIsInGroup(user: string, group: string): Promise<boolean> {
+  checkUserIsInGroup(user: string, group: string): Promise<void> {
     return checkUserIsInGroup(this, user, group, () => this.computeBackstageBackendUrl());
   }
 
-  checkGroupIsParentOfGroup(parent: string, child: string): Promise<boolean> {
+  checkGroupIsParentOfGroup(parent: string, child: string): Promise<void> {
     return checkGroupIsParentOfGroup(this, parent, child, () => this.computeBackstageBackendUrl());
   }
 
-  checkGroupIsChildOfGroup(child: string, parent: string): Promise<boolean> {
+  checkGroupIsChildOfGroup(child: string, parent: string): Promise<void> {
     return checkGroupIsChildOfGroup(this, child, parent, () => this.computeBackstageBackendUrl());
   }
 
@@ -531,7 +602,7 @@ class RHDHDeployment implements RHDHDeploymentState {
     user: string,
     annotationKey: string,
     expectedValue: string,
-  ): Promise<boolean> {
+  ): Promise<void> {
     return checkUserHasAnnotation(this, user, annotationKey, expectedValue, () =>
       this.computeBackstageBackendUrl(),
     );

@@ -357,23 +357,89 @@ apply_yaml_files() {
 
 deploy_test_backstage_customization_provider() {
   local project=$1
-  log::info "Deploying test-backstage-customization-provider in namespace ${project}"
+  local app_name="test-backstage-customization-provider"
+  log::info "Deploying ${app_name} in namespace ${project}"
 
   # Check if the buildconfig already exists
-  if ! oc get buildconfig test-backstage-customization-provider -n "${project}" > /dev/null 2>&1; then
+  if ! oc get buildconfig "${app_name}" -n "${project}" > /dev/null 2>&1; then
     # Get latest nodejs UBI9 tag from cluster, fallback to 18-ubi8
     local nodejs_tag
     nodejs_tag=$(oc get imagestream nodejs -n openshift -o jsonpath='{.spec.tags[*].name}' 2> /dev/null \
       | tr ' ' '\n' | grep -E '^[0-9]+-ubi9$' | sort -t'-' -k1 -n | tail -1)
     nodejs_tag="${nodejs_tag:-18-ubi8}"
-    log::info "Creating new app for test-backstage-customization-provider using nodejs:${nodejs_tag}"
+    log::info "Creating new app for ${app_name} using nodejs:${nodejs_tag}"
     oc new-app "openshift/nodejs:${nodejs_tag}~https://github.com/janus-qe/test-backstage-customization-provider" --namespace="${project}"
   else
-    log::warn "BuildConfig for test-backstage-customization-provider already exists in ${project}. Skipping new-app creation."
+    log::warn "BuildConfig for ${app_name} already exists in ${project}. Skipping new-app creation."
   fi
 
-  log::info "Exposing service for test-backstage-customization-provider"
-  oc expose svc/test-backstage-customization-provider --namespace="${project}"
+  # oc new-app creates a Deployment whose first ReplicaSet often has image " "
+  # until the S2I build finishes. Fail closed until a Complete build exists and
+  # the Deployment image is non-whitespace. Skip the build wait when a prior
+  # successful deploy already left a real image (builds may have been pruned).
+  local image image_trimmed
+  image=$(oc get "deployment/${app_name}" -n "${project}" \
+    -o jsonpath='{.spec.template.spec.containers[0].image}' 2> /dev/null || true)
+  image_trimmed="${image//[[:space:]]/}"
+  if [[ -n "${image_trimmed}" ]]; then
+    log::info "${app_name} already has image '${image_trimmed}'; waiting for rollout only"
+    oc rollout status "deployment/${app_name}" -n "${project}" --timeout=300s
+  else
+    log::info "Waiting for ${app_name} build to appear in ${project}"
+    local latest_build=""
+    local attempt
+    for ((attempt = 1; attempt <= 60; attempt++)); do
+      latest_build=$(oc get builds -n "${project}" -l "buildconfig=${app_name}" \
+        --sort-by=.metadata.creationTimestamp \
+        -o jsonpath='{.items[-1:].metadata.name}' 2> /dev/null || true)
+      if [[ -n "${latest_build}" ]]; then
+        break
+      fi
+      sleep 5
+    done
+    if [[ -z "${latest_build}" ]]; then
+      log::error "No ${app_name} build appeared in ${project} within 300s"
+      return 1
+    fi
+
+    log::info "Waiting for build/${latest_build} to Complete in ${project}"
+    local build_phase=""
+    for ((attempt = 1; attempt <= 120; attempt++)); do
+      build_phase=$(oc get "build/${latest_build}" -n "${project}" \
+        -o jsonpath='{.status.phase}' 2> /dev/null || echo "")
+      if [[ "${build_phase}" == "Complete" ]]; then
+        break
+      fi
+      if [[ "${build_phase}" == "Failed" || "${build_phase}" == "Error" || "${build_phase}" == "Cancelled" ]]; then
+        log::error "Build ${latest_build} ended in phase ${build_phase}"
+        oc logs "build/${latest_build}" -n "${project}" --tail=50 || true
+        return 1
+      fi
+      sleep 5
+    done
+    if [[ "${build_phase}" != "Complete" ]]; then
+      log::error "Timed out waiting for build/${latest_build} (last phase: ${build_phase:-unknown})"
+      return 1
+    fi
+
+    log::info "Waiting for ${app_name} deployment to roll out in ${project}"
+    oc rollout status "deployment/${app_name}" -n "${project}" --timeout=300s
+
+    image=$(oc get "deployment/${app_name}" -n "${project}" \
+      -o jsonpath='{.spec.template.spec.containers[0].image}' 2> /dev/null || true)
+    image_trimmed="${image//[[:space:]]/}"
+    if [[ -z "${image_trimmed}" ]]; then
+      log::error "${app_name} deployment still has empty/whitespace image: '${image}'"
+      return 1
+    fi
+  fi
+
+  if ! oc get route "${app_name}" -n "${project}" > /dev/null 2>&1; then
+    log::info "Exposing service for ${app_name}"
+    oc expose svc/"${app_name}" --namespace="${project}"
+  else
+    log::info "Route for ${app_name} already exists in ${project}"
+  fi
 }
 
 deploy_redis_cache() {

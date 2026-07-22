@@ -27,6 +27,7 @@ For scenarios where tests are not automatically triggered, or when you need to m
      - `/test ?` to get a list of all available jobs
      - `/test e2e-ocp-helm` for mandatory PR checks
    - **Note:** Avoid using `/test all` as it may trigger unnecessary jobs and consume CI resources. Instead, use `/test ?` to see available options and trigger only the specific tests you need.
+   - **When changing e2e tests or shared e2e infrastructure:** also trigger the optional/nightly jobs that exercise the paths you touched (for example localization, runtime, auth-providers, operator). The mandatory PR check alone does not cover those suites. Comment `/test ?`, pick the matching short job names from the bot reply, run `/test <job-name>`, and wait for results before merging. See [CONTRIBUTING.MD](CONTRIBUTING.MD#verify-affected-ci-jobs-before-merging).
 3. **Triggering Optional Nightly Job Execution on Pull Requests:**
    The following optional nightly jobs can be manually triggered on PRs targeting the `main` branch and `release-*` branches. These jobs help validate changes across various deployment environments by commenting the trigger command on PR.
 
@@ -55,7 +56,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces. Different sets of tests are executed for both the **non-RBAC RHDH instance** and the **RBAC RHDH instance**, each deployed in separate namespaces.
-- **Access:** In order to access the environment, you can run the bash at `.ci/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you have claimed a cluster, this script will forward the cluster web console url along with the credentials.
+- **Access:** In order to access the environment, you can run the bash at `.ci/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like <https://prow.ci.openshift.org/>...). Once you have claimed a cluster, this script will forward the cluster web console url along with the credentials.
 - **Steps:**
   1. **Detection:** OpenShift-CI detects the PR event.
   2. **Environment Setup:** The test environment is set up using the `openshift-ci-tests.sh` script (see the [High-Level Overview](#high-level-overview-of-openshift-ci-testssh)).

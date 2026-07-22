@@ -6,7 +6,14 @@ import * as k8s from "@kubernetes/client-node";
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
-import { hasErrorResponse } from "../../errors";
+import { applyDynamicPluginsProfile } from "../../dynamic-plugins-profile";
+import { isKubernetesConflictError } from "../../errors";
+import { predictedUrl } from "../../instance-route-identity";
+import { getKubeApiErrorMessage } from "../../kube-client/helpers";
+import {
+  applyOperatorInstallProfileToAppConfig,
+  applyOperatorInstallProfileToCr,
+} from "../../operator-install-profile";
 import { pollUntil } from "../../poll-until";
 import {
   BackstageCr,
@@ -16,6 +23,7 @@ import {
   isRecord,
   RHDHDeploymentState,
   rootDirName,
+  yamlsDirName,
 } from "./types";
 import { ensureBackstageCRIsAvailable, waitForDeploymentReady } from "./wait";
 
@@ -58,7 +66,7 @@ export async function createNamespace(state: RHDHDeploymentState): Promise<void>
   try {
     await state.k8sApi.createNamespace(namespaceObj);
   } catch (e) {
-    if (hasErrorResponse(e) && e.response?.statusCode === 409) {
+    if (isKubernetesConflictError(e)) {
       return;
     }
     throw e;
@@ -79,7 +87,18 @@ async function createConfigMap(
     },
     data,
   };
-  await state.k8sApi.createNamespacedConfigMap(state.namespace, configMap);
+  try {
+    await state.k8sApi.createNamespacedConfigMap(state.namespace, configMap);
+  } catch (error: unknown) {
+    if (isKubernetesConflictError(error)) {
+      console.log(`[INFO] ConfigMap ${name} already exists — replacing data`);
+      await updateConfigMap(state, name, data);
+      return;
+    }
+    throw new Error(`Failed to create ConfigMap ${name}: ${getKubeApiErrorMessage(error)}`, {
+      cause: error,
+    });
+  }
 }
 
 async function updateConfigMap(
@@ -93,26 +112,35 @@ async function updateConfigMap(
   }
 
   const patch = [{ op: "replace", path: "/data", value: data }];
-  await state.k8sApi.patchNamespacedConfigMap(
-    name,
-    state.namespace,
-    patch,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    { headers: { "Content-Type": "application/json-patch+json" } },
-  );
+  try {
+    await state.k8sApi.patchNamespacedConfigMap(
+      name,
+      state.namespace,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { headers: { "Content-Type": "application/json-patch+json" } },
+    );
+  } catch (error: unknown) {
+    throw new Error(`Failed to update ConfigMap ${name}: ${getKubeApiErrorMessage(error)}`, {
+      cause: error,
+    });
+  }
 }
 
 export async function loadBaseConfig(state: RHDHDeploymentState): Promise<void> {
-  const configPath = join(currentDirName, "yamls", "configmap.yaml");
+  const configPath = join(yamlsDirName, "configmap.yaml");
   const yamlContent = await fs.readFile(configPath, "utf8");
   const configData: unknown = yaml.parse(yamlContent);
 
   if (isRecord(configData)) {
     state.appConfig = configData;
+    if (!state.isRunningLocal) {
+      applyOperatorInstallProfileToAppConfig(state.appConfig, "auth-providers");
+    }
   }
 }
 
@@ -175,23 +203,55 @@ export async function createSecret(state: RHDHDeploymentState): Promise<void> {
     },
     data: state.secretData,
   };
-  await state.k8sApi.createNamespacedSecret(state.namespace, secret);
+  try {
+    await state.k8sApi.createNamespacedSecret(state.namespace, secret);
+  } catch (error: unknown) {
+    // Worker-restart reuse keeps the namespace; create must upsert so retries
+    // do not die on AlreadyExists before enableProvider runs.
+    if (isKubernetesConflictError(error)) {
+      console.log(
+        `[INFO] Secret ${state.secretName} already exists — replacing with current secret data`,
+      );
+      await updateSecret(state);
+      return;
+    }
+    throw new Error(
+      `Failed to create secret ${state.secretName}: ${getKubeApiErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
 }
 
 export async function updateSecret(state: RHDHDeploymentState): Promise<void> {
   if (skipIfRunningLocal(state, "Skipping secret update as isRunningLocal is true.")) {
     return;
   }
-  const secret: k8s.V1Secret = {
-    apiVersion: "v1",
-    kind: "Secret",
-    metadata: {
-      name: state.secretName,
-      namespace: state.namespace,
-    },
-    data: state.secretData,
-  };
-  await state.k8sApi.replaceNamespacedSecret(state.secretName, state.namespace, secret);
+  // Read-merge-replace keeps resourceVersion, labels, annotations, and type so
+  // replace is conditional and does not clobber operator-owned metadata.
+  // Retry once on conflict — concurrent writers can invalidate resourceVersion.
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const existing = await state.k8sApi.readNamespacedSecret(state.secretName, state.namespace);
+      const body = existing.body;
+      body.data = state.secretData;
+      await state.k8sApi.replaceNamespacedSecret(state.secretName, state.namespace, body);
+      return;
+    } catch (error: unknown) {
+      lastError = error;
+      if (attempt < 2 && isKubernetesConflictError(error)) {
+        console.log(
+          `[INFO] Secret ${state.secretName} replace conflict — retrying read-merge-replace`,
+        );
+        continue;
+      }
+      break;
+    }
+  }
+  throw new Error(
+    `Failed to update secret ${state.secretName}: ${getKubeApiErrorMessage(lastError)}`,
+    { cause: lastError },
+  );
 }
 
 export async function deleteSecret(state: RHDHDeploymentState): Promise<void> {
@@ -202,7 +262,7 @@ export async function deleteSecret(state: RHDHDeploymentState): Promise<void> {
 }
 
 export async function loadRbacConfig(state: RHDHDeploymentState): Promise<void> {
-  const configPath = join(currentDirName, "yamls", "rbac-policy.csv");
+  const configPath = join(yamlsDirName, "rbac-policy.csv");
   state.rbacConfig = await fs.readFile(configPath, "utf8");
 }
 
@@ -237,12 +297,13 @@ export async function updateRbacConfig(state: RHDHDeploymentState): Promise<void
 }
 
 export async function loadDynamicPluginsConfig(state: RHDHDeploymentState): Promise<void> {
-  const configPath = join(currentDirName, "yamls", "dynamic-plugins-config.yaml");
+  const configPath = join(yamlsDirName, "dynamic-plugins-config.yaml");
   const yamlContent = await fs.readFile(configPath, "utf8");
   const configData: unknown = yaml.parse(yamlContent);
 
   if (isDynamicPluginsConfig(configData)) {
     state.dynamicPluginsConfig = configData;
+    applyDynamicPluginsProfile(state.dynamicPluginsConfig);
   }
 }
 
@@ -289,7 +350,7 @@ export async function updateDynamicPluginsConfig(state: RHDHDeploymentState): Pr
 }
 
 export async function loadBackstageCR(state: RHDHDeploymentState): Promise<BackstageCr> {
-  const configPath = join(currentDirName, "yamls", "backstage.yaml");
+  const configPath = join(yamlsDirName, "backstage.yaml");
   const parsed: unknown = await readYamlToJson(configPath);
   if (!isBackstageCr(parsed)) {
     throw new Error("Invalid Backstage CR config");
@@ -318,6 +379,7 @@ export async function loadBackstageCR(state: RHDHDeploymentState): Promise<Backs
     },
   };
   console.log(`Setting Backstage CR image via deployment.patch to ${image}`);
+  applyOperatorInstallProfileToCr(parsed);
   state.cr = parsed;
   state.instanceName = parsed.metadata.name;
   return parsed;
@@ -367,7 +429,11 @@ function startLocalBackstageProcess(state: RHDHDeploymentState): void {
   console.log(`Local production server started with PID: ${state.runningProcess.pid}`);
 }
 
-export async function createBackstageDeployment(state: RHDHDeploymentState): Promise<void> {
+export async function createBackstageDeployment(
+  state: RHDHDeploymentState,
+  options: { waitForReady?: boolean } = {},
+): Promise<void> {
+  const waitForReady = options.waitForReady ?? true;
   try {
     if (state.isRunningLocal) {
       startLocalBackstageProcess(state);
@@ -376,7 +442,9 @@ export async function createBackstageDeployment(state: RHDHDeploymentState): Pro
     await ensureBackstageCRIsAvailable(state, 60000);
     const backstageConfig = await loadBackstageCR(state);
     await applyCustomResource(state, backstageConfig);
-    await waitForDeploymentReady(state);
+    if (waitForReady) {
+      await waitForDeploymentReady(state);
+    }
   } catch (e) {
     console.log(JSON.stringify(e));
     throw e;
@@ -436,7 +504,13 @@ export function computeBackstageUrl(state: RHDHDeploymentState): string {
   if (clusterBaseUrl === "") {
     console.log("No match found.");
   }
-  return `https://backstage-${state.instanceName}-${state.namespace}.apps.${clusterBaseUrl}`;
+  // Auth providers always deploy via the operator.
+  return predictedUrl({
+    installMethod: "operator",
+    releaseName: state.instanceName,
+    namespace: state.namespace,
+    routerBase: `apps.${clusterBaseUrl}`,
+  });
 }
 
 export function computeBackstageBackendUrl(state: RHDHDeploymentState): string {

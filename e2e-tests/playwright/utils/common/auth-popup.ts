@@ -166,6 +166,9 @@ async function fillMicrosoftCredentials(
     await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
     await popup.getByRole("button", { name: "Sign in" }).click({ timeout: 5000 });
     await popup.getByRole("button", { name: "No" }).click({ timeout: 15000 });
+    if (!popup.isClosed()) {
+      await popup.waitForEvent("close", { timeout: 20_000 });
+    }
     return "Login successful";
   } catch (e) {
     const usernameError = popup.locator("id=usernameError");
@@ -197,17 +200,40 @@ async function fillPingFederateCredentials(
 ): Promise<string> {
   /* oxlint-disable playwright/no-raw-locators -- Intentional divergence: third-party PingFederate login popup */
   try {
-    await popup.locator("#username").click();
-    await popup.locator("#username").fill(username, { timeout: 5000 });
-    await popup.locator("#password").click();
-    await popup.locator("#password").fill(password, { timeout: 5000 });
-    await popup.locator("#signOnButton").click({ timeout: 5000 });
-    await popup.locator("#allowButton").click({ timeout: 10000 });
-    await popup.waitForEvent("close", { timeout: 2000 });
+    const usernameField = popup.locator("#username");
+    const passwordField = popup.locator("#password");
+    const signOnButton = popup.locator("#signOnButton, button[type='submit'], #submit");
+    const allowButton = popup.locator("#allowButton");
+
+    await expect(usernameField).toBeVisible({ timeout: 30_000 });
+    await usernameField.fill(username);
+    await expect(passwordField).toBeVisible({ timeout: 10_000 });
+    await passwordField.fill(password);
+    await expect(signOnButton.first()).toBeVisible({ timeout: 10_000 });
+    await signOnButton.first().click();
+
+    // Consent / allow is not always shown (already consented sessions).
+    // Prefer waiting on the allow control or popup close rather than a fixed sleep.
+    const allowWait = allowButton
+      .waitFor({ state: "visible", timeout: 15_000 })
+      .then(() => "allow" as const)
+      .catch(() => null);
+    const closeWait = popup
+      .waitForEvent("close", { timeout: 15_000 })
+      .then(() => "closed" as const)
+      .catch(() => null);
+    const allowOrClosed = await Promise.race([allowWait, closeWait]);
+
+    if (allowOrClosed === "allow") {
+      await allowButton.click({ timeout: 10_000 });
+    }
+    if (allowOrClosed !== "closed" && !popup.isClosed()) {
+      await popup.waitForEvent("close", { timeout: 90_000 });
+    }
     return "Login successful";
   } catch (e) {
     const errorElement = popup.locator(".ping-error, .error, [role=alert]");
-    if (await errorElement.isVisible()) {
+    if (await errorElement.isVisible().catch(() => false)) {
       await popup.close();
       return "Login failed - invalid credentials";
     }
@@ -246,7 +272,7 @@ export async function handleKeycloakPopupLogin(
     await popup.locator("#username").fill(username);
     await popup.locator("#password").fill(password);
     await popup.locator("[name=login]").click({ timeout: 5000 });
-    await popup.waitForEvent("close", { timeout: 2000 });
+    await popup.waitForEvent("close", { timeout: 20_000 });
     return "Login successful";
   } catch (e) {
     const usernameError = popup.locator("id=input-error");

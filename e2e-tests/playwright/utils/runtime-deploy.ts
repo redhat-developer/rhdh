@@ -2,9 +2,11 @@
  * Runtime deployment utility for SHOWCASE_RUNTIME tests.
  *
  * Deploys RHDH with an internal PostgreSQL database via Helm sub-chart
- * (helm) or operator-managed StatefulSet (operator). The deployment
- * happens once in the first test file's beforeAll — subsequent specs
- * reuse the existing deployment since the project runs with workers: 1.
+ * (helm) or operator-managed StatefulSet (operator). Called from
+ * Playwright globalSetup when RUNTIME_AUTO_DEPLOY=true (and still safe
+ * to call from a spec beforeAll — idempotent via a process-local flag
+ * and an existing-deployment check). Subsequent specs reuse the
+ * deployment since the project runs with workers: 1.
  *
  * All deployment configuration is generated from `runtime-config.ts` —
  * a single source of truth that produces Helm values YAML, Operator
@@ -20,7 +22,7 @@
  *   K8S_CLUSTER_ROUTER_BASE              — cluster router base domain
  *
  * Environment variables exported after deployment:
- *   BASE_URL              — RHDH route URL (set only if not already set)
+ *   BASE_URL              — RHDH route URL (always set to the instance URL)
  *   SCHEMA_MODE_*         — schema-mode env vars (via configureSchemaMode in schema-mode-db.ts)
  */
 
@@ -36,6 +38,12 @@ import {
   discoverRouterBase,
   imageRefToString,
 } from "./helper";
+import {
+  createInstanceRouteIdentity,
+  deploymentName,
+  predictedUrl,
+  routeObjectName,
+} from "./instance-route-identity";
 import {
   KubeClient,
   getErrorStatusCode,
@@ -167,10 +175,9 @@ async function deployWithHelm(
     }
   }
 
-  // Read the actual route URL from the cluster
-  const routeName = releaseName.includes("developer-hub")
-    ? releaseName
-    : `${releaseName}-developer-hub`;
+  // Read the actual route URL from the cluster; fall back to predicted helm URL.
+  const identity = createInstanceRouteIdentity("helm", releaseName, namespace, config.routerBase);
+  const routeName = routeObjectName("helm", releaseName);
   try {
     const route = await kubeClient.customObjectsApi.getNamespacedCustomObject(
       "route.openshift.io",
@@ -184,7 +191,7 @@ async function deployWithHelm(
   } catch {
     // fall through to computed URL
   }
-  return `https://${routeName}-${namespace}.${config.routerBase}`;
+  return predictedUrl(identity);
 }
 
 // ---------------------------------------------------------------------------
@@ -196,12 +203,10 @@ async function deployWithOperator(
   config: ReturnType<typeof resolveConfig>,
 ): Promise<string> {
   const { namespace, releaseName, routerBase } = config;
-  // The operator creates a route named backstage-<release> whose host is
-  // backstage-<release>-<namespace>.<routerBase> — this matches the CR's
-  // spec.application.route.enabled naming convention. Unlike Helm (where
-  // the chart can customise the route name), the operator's naming is
-  // deterministic, so a computed URL is sufficient here.
-  const runtimeUrl = `https://backstage-${releaseName}-${namespace}.${routerBase}`;
+  // Operator route naming is deterministic — InstanceRouteIdentity owns the formula.
+  const runtimeUrl = predictedUrl(
+    createInstanceRouteIdentity("operator", releaseName, namespace, routerBase),
+  );
 
   // 1. Create app-config ConfigMap (generated from runtime-config.ts)
   const appConfigYaml = generateAppConfigYaml(runtimeUrl);
@@ -252,15 +257,17 @@ async function deployWithOperator(
 
   // 6. Wait for the operator to create the deployment
   console.log("Waiting for operator to create the deployment...");
-  const deploymentName = `backstage-${releaseName}`;
+  const operatorDeploymentName = deploymentName("operator", releaseName);
   for (let i = 0; i < 60; i++) {
     try {
-      await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
-      console.log(`Deployment ${deploymentName} found`);
+      await kubeClient.appsApi.readNamespacedDeployment(operatorDeploymentName, namespace);
+      console.log(`Deployment ${operatorDeploymentName} found`);
       break;
     } catch {
       if (i === 59)
-        throw new Error(`Operator did not create deployment ${deploymentName} after 5 minutes`);
+        throw new Error(
+          `Operator did not create deployment ${operatorDeploymentName} after 5 minutes`,
+        );
       await new Promise<void>((resolve) => {
         setTimeout(() => {
           resolve();
@@ -270,7 +277,7 @@ async function deployWithOperator(
   }
 
   // 7. Wait for deployment readiness
-  await kubeClient.waitForDeploymentReady(deploymentName, namespace, 1, 600_000);
+  await kubeClient.waitForDeploymentReady(operatorDeploymentName, namespace, 1, 600_000);
   console.log("Operator deployment ready");
 
   return runtimeUrl;
@@ -314,14 +321,23 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   const kubeClient = new KubeClient();
 
   // Check if deployment already exists and is ready
-  const deploymentName = getRhdhDeploymentName();
+  const existingDeploymentName = getRhdhDeploymentName();
+  const runtimeUrl = predictedUrl(
+    createInstanceRouteIdentity(installMethod, releaseName, namespace, routerBase),
+  );
   try {
-    const dep = await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
+    const dep = await kubeClient.appsApi.readNamespacedDeployment(
+      existingDeploymentName,
+      namespace,
+    );
     const ready = dep.body.status?.readyReplicas ?? 0;
     if (ready >= 1) {
       console.log(
-        `Deployment ${deploymentName} already running (${ready} ready replicas) — skipping deploy`,
+        `Deployment ${existingDeploymentName} already running (${ready} ready replicas) — skipping deploy`,
       );
+      // Always publish the instance URL — overwrite router-stub / empty BASE_URL.
+      process.env.BASE_URL = runtimeUrl;
+      console.log(`BASE_URL set to ${runtimeUrl}`);
       deployed = true;
       // Still configure schema-mode env if not already set
       if (
@@ -341,18 +357,17 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   await kubeClient.createNamespace(namespace);
   await createPlaceholderSecrets(kubeClient, namespace);
 
-  let runtimeUrl: string;
+  let deployedUrl: string;
   if (installMethod === "helm") {
-    runtimeUrl = await deployWithHelm(kubeClient, config);
+    deployedUrl = await deployWithHelm(kubeClient, config);
   } else {
-    runtimeUrl = await deployWithOperator(kubeClient, config);
+    deployedUrl = await deployWithOperator(kubeClient, config);
   }
 
-  // Set BASE_URL if not already set
-  if (process.env.BASE_URL === undefined || process.env.BASE_URL === "") {
-    process.env.BASE_URL = runtimeUrl;
-    console.log(`BASE_URL set to ${runtimeUrl}`);
-  }
+  // Always publish the instance URL — overwrite router-stub / empty BASE_URL so
+  // ensurePlaywrightReady can reclassify after RUNTIME_AUTO_DEPLOY.
+  process.env.BASE_URL = deployedUrl;
+  console.log(`BASE_URL set to ${deployedUrl}`);
 
   // Configure schema-mode env vars
   await configureSchemaMode(kubeClient, namespace, releaseName, installMethod);
