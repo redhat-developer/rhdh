@@ -46,19 +46,30 @@ handle_ocp_disconnected_operator() {
   # --index-image (OLM operator catalog). Keep it for mirror-plugins.sh below.
   #
   # Force OLM v0: prepare-restricted-environment.sh on main auto-detects OLM v1
-  # on OCP 4.21, but the oc-mirror + OLM v1 install path then applies a missing
-  # clusterCatalog.yaml (upstream bug). CatalogSource + Subscription (v0) works
-  # with oc-mirror's cs-*.yaml output.
+  # on newer OCP (e.g. 4.21), but the oc-mirror + OLM v1 install path then
+  # applies a missing clusterCatalog.yaml (upstream bug). CatalogSource +
+  # Subscription (v0) works with oc-mirror's cs-*.yaml output.
   local filter_versions="${RELEASE_VERSION}"
   if [[ "${filter_versions}" == "next" || "${filter_versions}" == "*" ]]; then
     filter_versions="*"
   fi
 
+  # Match redhat-operator-index major.minor to the live cluster (same pattern as
+  # e2e-tests/container-init.sh CONTAINER_PLATFORM_VERSION).
+  local ocp_version
+  ocp_version=$(oc version --output json 2> /dev/null | jq -r '.openshiftVersion' | cut -d'.' -f1,2)
+  if [[ -z "${ocp_version}" || "${ocp_version}" == "null" || ! "${ocp_version}" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    log::error "Failed to detect OpenShift major.minor version from 'oc version'"
+    return 1
+  fi
+  local index_image="registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}"
+  log::info "Detected OCP ${ocp_version}; using index image ${index_image}"
+
   local prepare_args=(
     --use-oc-mirror true
     --olm-version v0
     --to-registry "${MIRROR_REGISTRY_URL}"
-    --index-image "registry.redhat.io/redhat/redhat-operator-index:v4.21"
+    --index-image "${index_image}"
     --filter-versions "${filter_versions}"
   )
 
