@@ -63,6 +63,8 @@ testing::run_tests() {
   log::info "BASE_URL: ${BASE_URL}"
   log::info "Running Playwright project '${playwright_project}' against namespace '${namespace}'"
 
+  export PLAYWRIGHT_PROJECT="${playwright_project}"
+
   cd "${DIR}/../../e2e-tests" || return 1
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
