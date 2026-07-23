@@ -33,15 +33,14 @@ handle_ocp_disconnected_operator() {
   # mirroring operator/operand images and installing the operator CatalogSource.
   log::section "Operator Mirroring and Installation"
 
-  # TEMPORARY: pin prepare-restricted-environment.sh to rhdh-operator PR #3259
+  # TEMPORARY: always fetch prepare-restricted-environment.sh from the current
+  # head of rhdh-operator PR #3259
   # (https://github.com/redhat-developer/rhdh-operator/pull/3259) so oc-mirror
-  # + OLM v1 uses native cc-*.yaml catalogs and skips re-applying a synthetic
-  # clusterCatalog.yaml that is missing on main. Revert to
-  # disconnected::fetch_script (branch default) once that PR merges.
-  local prepare_script_sha="0f0db074a3504bf61ff2cfbbc90a8089c4723822"
+  # + OLM v1 uses native cc-*.yaml catalogs. Revert to the branch default once
+  # that PR merges.
   local prepare_script_path="${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
   disconnected::fetch_script "prepare-restricted-environment.sh" \
-    "${prepare_script_path}" "${prepare_script_sha}" || {
+    "${prepare_script_path}" "pull/3259" || {
     log::error "Failed to fetch prepare-restricted-environment.sh — aborting"
     return 1
   }

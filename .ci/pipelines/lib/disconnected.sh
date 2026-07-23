@@ -243,18 +243,25 @@ disconnected::patch_idms() {
 # Args:
 #   $1 - script_name: Name of the script (e.g., "mirror-plugins.sh")
 #   $2 - output_path: Local path to save the script
-#   $3 - ref: (optional) Branch name or 40-char commit SHA
-#             (defaults to $RELEASE_BRANCH_NAME)
+#   $3 - ref: (optional) Branch name, 40-char commit SHA, or pull request
+#             ref ("pull/<n>" / "refs/pull/<n>/head"). Defaults to
+#             $RELEASE_BRANCH_NAME.
 disconnected::fetch_script() {
   local script_name=$1
   local output_path=$2
   local ref="${3:-${RELEASE_BRANCH_NAME}}"
   local url
   local ref_label
+  local pull_number
 
   if [[ "${ref}" =~ ^[0-9a-f]{40}$ ]]; then
     url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/${ref}/.rhdh/scripts/${script_name}"
     ref_label="sha: ${ref}"
+  elif [[ "${ref}" =~ ^(refs/)?pull/([0-9]+)(/head)?$ ]]; then
+    # Always the current PR head (updates as the PR is pushed).
+    pull_number="${BASH_REMATCH[2]}"
+    url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/pull/${pull_number}/head/.rhdh/scripts/${script_name}"
+    ref_label="pull/${pull_number} head"
   else
     url="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${ref}/.rhdh/scripts/${script_name}"
     ref_label="branch: ${ref}"
