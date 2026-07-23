@@ -299,7 +299,9 @@ function applyCloudSqlToBackstageCr(cr: BackstageCR, instanceConnectionName: str
 
 /**
  * Install/update the Auth Proxy native sidecar and disable local Postgres.
- * Helm: values overlay + Deployment initContainer patch (keeps chart initContainers).
+ * Helm: values overlay (no `--wait`) + Deployment initContainer patch, then
+ * restart. Waiting on helm before the proxy exists leaves the pod unable to
+ * reach Postgres and times out CreateContainer/Ready.
  * Operator: Backstage CR patch (reconcile-safe).
  */
 export async function injectCloudSqlSidecar(
@@ -314,7 +316,10 @@ export async function injectCloudSqlSidecar(
   if (installMethod === "helm") {
     const routerBase = process.env.K8S_CLUSTER_ROUTER_BASE ?? (await discoverRouterBase());
     const config = { ...resolveConfig(routerBase), releaseName, namespace };
-    await upgradeRuntimeHelmRelease(config, generateCloudSqlHelmValuesOverlay());
+    // Apply overlay without --wait: DB is only reachable after the proxy patch.
+    await upgradeRuntimeHelmRelease(config, generateCloudSqlHelmValuesOverlay(), {
+      wait: false,
+    });
     await upsertCloudSqlProxyOnDeployment(
       kubeClient,
       namespace,

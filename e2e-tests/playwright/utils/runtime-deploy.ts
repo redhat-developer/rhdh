@@ -258,42 +258,45 @@ async function deployWithOperator(
 /**
  * `helm upgrade -i` the runtime release with the given values YAML.
  * Shared by initial deploy and external-DB overlays (e.g. Cloud SQL).
+ *
+ * @param options.wait - When false, skip `--wait` so callers can patch the
+ *   Deployment (e.g. Auth Proxy sidecar) before expecting pods to become Ready.
  */
 export async function upgradeRuntimeHelmRelease(
   config: ReturnType<typeof resolveConfig>,
   valuesYaml: string,
+  options: { wait?: boolean } = {},
 ): Promise<void> {
   if (!config.helm) {
     throw new Error("CHART_VERSION environment variable is required for Helm deployment");
   }
 
+  const waitForReady = options.wait !== false;
   const { namespace, releaseName } = config;
   const { chartUrl, chartVersion } = config.helm;
   const tmpValuesFile = path.join(os.tmpdir(), `rhdh-runtime-values-${Date.now()}.yaml`);
   fs.writeFileSync(tmpValuesFile, valuesYaml, "utf-8");
   console.log(`Generated Helm values written to ${tmpValuesFile}`);
 
+  const args = [
+    "upgrade",
+    "-i",
+    releaseName,
+    "-n",
+    namespace,
+    chartUrl,
+    "--version",
+    chartVersion,
+    "-f",
+    tmpValuesFile,
+    ...generateHelmSetArgs(config),
+  ];
+  if (waitForReady) {
+    args.push("--wait", "--timeout", "10m");
+  }
+
   try {
-    await run(
-      "helm",
-      [
-        "upgrade",
-        "-i",
-        releaseName,
-        "-n",
-        namespace,
-        chartUrl,
-        "--version",
-        chartVersion,
-        "-f",
-        tmpValuesFile,
-        ...generateHelmSetArgs(config),
-        "--wait",
-        "--timeout",
-        "10m",
-      ],
-      { timeout: 600_000 },
-    );
+    await run("helm", args, { timeout: waitForReady ? 600_000 : 180_000 });
   } finally {
     try {
       fs.unlinkSync(tmpValuesFile);
