@@ -53,6 +53,13 @@ _pg_upgrade_verify_and_test() {
 
   # Always store pod logs + postgres diagnostics for this hop (unique subdir; never overwrite).
   _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
+
+  # Fail fast so later majors do not run Playwright on a contaminated agent
+  # (e.g. leftover redis port-forward from a prior phase).
+  if [[ "${OVERALL_RESULT:-0}" -ne 0 ]]; then
+    log::error "Playwright (or prior step) failed during ${label}; aborting remaining upgrade phases"
+    return 1
+  fi
 }
 
 # Persist pod logs and postgres diagnostics under ARTIFACT_DIR/<artifacts_subdir>/.
