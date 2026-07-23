@@ -162,7 +162,17 @@ handle_ocp_disconnected_operator() {
   # Also mount registry auth.json for authenticated mirror pulls.
   # CI yq is mikefarah/yq (no --arg); interpolate paths via the shell.
   # shellcheck disable=SC2016
+  # Auth: operator secret mounts use subPath and require an existing parent dir.
+  # /opt/app-root/src/.config/containers is missing in the image, so mount to
+  # /tmp and point REGISTRY_AUTH_FILE at it (skopeo honors that).
   rendered_cr=$(echo "$rendered_cr" | yq eval "
+    .spec.application.extraEnvs.envs += [
+      {
+        \"name\": \"REGISTRY_AUTH_FILE\",
+        \"value\": \"/tmp/auth.json\",
+        \"containers\": [\"install-dynamic-plugins\"]
+      }
+    ] |
     .spec.application.extraFiles.configMaps = [
       {
         \"name\": \"rhdh-plugin-mirror-conf\",
@@ -187,7 +197,7 @@ handle_ocp_disconnected_operator() {
       {
         \"name\": \"${auth_secret}\",
         \"key\": \"auth.json\",
-        \"mountPath\": \"/opt/app-root/src/.config/containers\",
+        \"mountPath\": \"/tmp\",
         \"containers\": [\"install-dynamic-plugins\"]
       }
     ]
