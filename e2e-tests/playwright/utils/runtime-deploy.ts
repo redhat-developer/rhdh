@@ -52,6 +52,17 @@ import {
   BACKSTAGE_CR_API_VERSION,
 } from "./runtime-config";
 
+/** How long `helm --wait` waits for the release to become ready. */
+const HELM_WAIT_TIMEOUT_MINUTES = 10;
+
+/**
+ * How long we let the helm PROCESS run. Deliberately longer than
+ * HELM_WAIT_TIMEOUT_MINUTES so helm always wins the race and gets to print why
+ * it gave up; killing it at the same instant leaves only a truncated
+ * "Command failed" with none of the diagnosis.
+ */
+const HELM_PROCESS_TIMEOUT_MS = (HELM_WAIT_TIMEOUT_MINUTES + 2) * 60 * 1000;
+
 /**
  * Whether deploy has already run in this process.
  * Safe as a bare boolean because the showcase-runtime project runs with
@@ -152,11 +163,16 @@ async function deployWithHelm(
       ...generateHelmSetArgs(config),
       "--wait",
       "--timeout",
-      "10m",
+      `${HELM_WAIT_TIMEOUT_MINUTES}m`,
     ];
 
     console.log("Installing RHDH via Helm...");
-    await run("helm", helmArgs, { timeout: 600_000 });
+    // The process timeout must stay ABOVE helm's own --timeout. When they are
+    // equal, Node SIGTERMs helm at the same moment helm would have reported
+    // why it gave up, so the error is truncated to whatever helm had already
+    // written ("Pulled:", "Digest:") and the actual cause - which pod never
+    // became ready - is lost on every single failure.
+    await run("helm", helmArgs, { timeout: HELM_PROCESS_TIMEOUT_MS });
     console.log("Helm install complete");
   } finally {
     // Clean up temp file
