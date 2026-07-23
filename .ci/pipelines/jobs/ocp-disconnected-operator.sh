@@ -132,6 +132,17 @@ handle_ocp_disconnected_operator() {
   disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
   disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
 
+  # Operator mounts one volume per extraFiles ConfigMap name. policy.json cannot
+  # share rhdh-plugin-mirror-conf or reconcile fails with duplicate volume keys.
+  oc create configmap rhdh-plugin-mirror-policy \
+    --from-literal='policy.json={"default":[{"type":"insecureAcceptAnything"}]}' \
+    -n "${NAME_SPACE}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create rhdh-plugin-mirror-policy ConfigMap — aborting"
+    return 1
+  }
+  log::success "ConfigMap rhdh-plugin-mirror-policy created in ${NAME_SPACE}"
+
   log::section "Backstage CR Deployment"
 
   # Minimal guest-auth ConfigMap (full rhdh-start.yaml references ConfigMaps/Secrets
@@ -160,7 +171,7 @@ handle_ocp_disconnected_operator() {
         \"containers\": [\"install-dynamic-plugins\"]
       },
       {
-        \"name\": \"rhdh-plugin-mirror-conf\",
+        \"name\": \"rhdh-plugin-mirror-policy\",
         \"key\": \"policy.json\",
         \"mountPath\": \"/etc/containers\",
         \"containers\": [\"install-dynamic-plugins\"]
