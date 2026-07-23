@@ -13,16 +13,27 @@ source "$DIR"/lib/postgres.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
 
-# Wait for expected Postgres image + Backstage health after a helm upgrade hop.
-_pg_upgrade_verify_hop() {
+# Wait for Postgres + Backstage, run Playwright, always persist artifacts under a unique subdir.
+# Args:
+#   $1 - label (log/diagnostics)
+#   $2 - artifacts_subdir under ARTIFACT_DIR (must be unique per hop)
+#   $3 - url
+#   $4 - expected postgres image substring (e.g. postgresql-16)
+#   $5 - optional max wait seconds (default: 600)
+_pg_upgrade_verify_and_test() {
   local label=$1
   local artifacts_subdir=$2
   local url=$3
   local expected_image_substr=$4
   local max_wait=${5:-600}
 
+  log::info "=== ${label}: wait for PostgreSQL (${expected_image_substr}) + Backstage, then Playwright ==="
+  log::info "Artifacts subdir: ${ARTIFACT_DIR:-<unset>}/${artifacts_subdir}"
+
   if ! wait_for_postgres_ready "${NAME_SPACE}" "${max_wait}" "${expected_image_substr}" > /dev/null; then
     log::error "PostgreSQL not Ready after ${label}"
+    dump_postgres_diagnostics "${NAME_SPACE}"
+    _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
     return 1
   fi
   log_postgres_version "${NAME_SPACE}"
@@ -33,14 +44,32 @@ _pg_upgrade_verify_hop() {
   if ! testing::check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${artifacts_subdir}" 40 30; then
     log::error "Backstage not healthy after ${label}"
     dump_postgres_diagnostics "${NAME_SPACE}"
+    _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
     return 1
   fi
+
+  # check_and_test always returns 0; Playwright failures are recorded via save_overall_result.
+  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE}" "${url}" "" "" "${artifacts_subdir}"
+
+  # Always store pod logs + postgres diagnostics for this hop (unique subdir; never overwrite).
+  _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
 }
 
-# RHIDP-14594: exercise chart-managed PostgreSQL major upgrades on rhel9 images.
-# sclorg/rhel images only upgrade from POSTGRESQL_PREV_VERSION: 15 -> 16 -> 18.
-# Note: quay.io/fedora/postgresql-18 is unsuitable for 16->18 (PREV_VERSION=16 but
-# only postgresql-17 upgrade binaries are packaged).
+# Persist pod logs and postgres diagnostics under ARTIFACT_DIR/<artifacts_subdir>/.
+_pg_save_phase_artifacts() {
+  local artifacts_subdir=$1
+  local label=$2
+  local diag_file="/tmp/pg-diagnostics-${artifacts_subdir}.txt"
+
+  log::info "Saving phase artifacts for '${label}' → ${ARTIFACT_DIR:-<unset>}/${artifacts_subdir}"
+  dump_postgres_diagnostics "${NAME_SPACE}" > "${diag_file}" 2>&1 || true
+  common::save_artifact "${artifacts_subdir}" "${diag_file}" "postgres" || true
+  save_all_pod_logs "${NAME_SPACE}" "${artifacts_subdir}"
+}
+
+# RHIDP-14594: chart-managed PostgreSQL major upgrades on rhel9 images.
+# Flow: PG15 → Playwright → PG16 → Playwright → PG18 → Playwright
+# Each phase writes to a distinct ARTIFACT_DIR subdir (pod logs + Playwright output).
 handle_ocp_pull() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
@@ -54,7 +83,6 @@ handle_ocp_pull() {
   export K8S_CLUSTER_ROUTER_BASE
   cluster_setup_ocp_helm
 
-  # Install showcase on explicit rhel9/postgresql-15 (same family as product chart default).
   local original_value_file="${HELM_CHART_VALUE_FILE_NAME}"
   HELM_CHART_VALUE_FILE_NAME="values_showcase_15.yaml"
   base_deployment "${PW_PROJECT_SHOWCASE}"
@@ -62,37 +90,31 @@ handle_ocp_pull() {
 
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  local artifacts="${PW_PROJECT_SHOWCASE}"
+  # Unique artifact roots so Playwright/junit/pod logs from later hops cannot overwrite earlier ones.
+  local art_pg15="${PW_PROJECT_SHOWCASE}-pg15"
+  local art_pg16="${PW_PROJECT_SHOWCASE}-pg16"
+  local art_pg18="${PW_PROJECT_SHOWCASE}-pg18"
 
-  log::info "Baseline: rhel9/postgresql-15"
-  if ! _pg_upgrade_verify_hop "PG15 baseline" "${artifacts}-pg15" "${url}" "postgresql-15" 600; then
+  log::info "Phase PG15: rhel9/postgresql-15"
+  if ! _pg_upgrade_verify_and_test "PG15 baseline" "${art_pg15}" "${url}" "postgresql-15" 600; then
     return 1
   fi
 
-  log::info "Hop A: PostgreSQL 15 -> 16 (POSTGRESQL_UPGRADE=copy)"
+  log::info "Phase PG16: upgrade 15 → 16 (POSTGRESQL_UPGRADE=copy)"
   helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_16_upgrade.yaml"
   refresh_postgres_collation_versions "${NAME_SPACE}" 900 "postgresql-16"
-  if ! _pg_upgrade_verify_hop "PG 15->16 upgrade" "${artifacts}-pg16-upgrade" "${url}" "postgresql-16" 900; then
-    return 1
-  fi
   helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_16.yaml"
-  if ! _pg_upgrade_verify_hop "PG16 steady-state" "${artifacts}-pg16" "${url}" "postgresql-16" 600; then
+  if ! _pg_upgrade_verify_and_test "PG16 after upgrade" "${art_pg16}" "${url}" "postgresql-16" 900; then
     return 1
   fi
 
-  log::info "Hop B: PostgreSQL 16 -> 18 (POSTGRESQL_UPGRADE=copy)"
+  log::info "Phase PG18: upgrade 16 → 18 (POSTGRESQL_UPGRADE=copy)"
   helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_18_upgrade.yaml"
   refresh_postgres_collation_versions "${NAME_SPACE}" 900 "postgresql-18"
-  if ! _pg_upgrade_verify_hop "PG 16->18 upgrade" "${artifacts}-pg18-upgrade" "${url}" "postgresql-18" 900; then
-    return 1
-  fi
   helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_18.yaml"
-  if ! _pg_upgrade_verify_hop "PG18 steady-state" "${artifacts}-pg18" "${url}" "postgresql-18" 600; then
+  if ! _pg_upgrade_verify_and_test "PG18 after upgrade" "${art_pg18}" "${url}" "postgresql-18" 900; then
     return 1
   fi
 
-  log::info "Running showcase Playwright suite against PostgreSQL 18"
-  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE}" "${url}"
-
-  log::info "PostgreSQL 15 -> 16 -> 18 Helm upgrade sequence completed"
+  log::info "PostgreSQL 15 → 16 → 18 Helm upgrade sequence completed (Playwright after each major)"
 }
