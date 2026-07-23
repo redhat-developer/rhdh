@@ -62,10 +62,7 @@ _pg_upgrade_verify_and_test() {
   fi
 
   if [[ "${seed_data}" == "seed" ]]; then
-    if ! deploy_pg_upgrade_data_proof_fixture "${NAME_SPACE}"; then
-      _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
-      return 1
-    fi
+    # Public GitHub catalog URL (in-cluster *.svc targets are blocked by Backstage URL reader).
     if ! seed_pg_upgrade_data_proof "${url}" "${NAME_SPACE}"; then
       _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
       return 1
