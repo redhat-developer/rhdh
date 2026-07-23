@@ -20,12 +20,16 @@ source "$DIR"/playwright-projects.sh
 #   $3 - url
 #   $4 - expected postgres image substring (e.g. postgresql-18)
 #   $5 - optional max wait seconds (default: 600)
+#   $6 - optional previous RHDH pod UID (wait for terminate + new Ready pod)
+#   $7 - optional "seed" to register persistence-proof catalog entity before Playwright
 _pg_upgrade_verify_and_test() {
   local label=$1
   local artifacts_subdir=$2
   local url=$3
   local expected_image_substr=$4
   local max_wait=${5:-600}
+  local previous_rhdh_uid=${6:-}
+  local seed_data=${7:-}
 
   log::info "=== ${label}: wait for PostgreSQL (${expected_image_substr}) + Backstage, then Playwright ==="
   log::info "Artifacts subdir: ${ARTIFACT_DIR:-<unset>}/${artifacts_subdir}"
@@ -38,6 +42,15 @@ _pg_upgrade_verify_and_test() {
   fi
   log_postgres_version "${NAME_SPACE}"
 
+  if [[ -n "${previous_rhdh_uid}" ]]; then
+    if ! ensure_rhdh_pod_replaced "${RELEASE_NAME}" "${NAME_SPACE}" "${previous_rhdh_uid}" "${max_wait}"; then
+      log::error "Previous RHDH pod did not terminate cleanly after ${label}"
+      dump_postgres_diagnostics "${NAME_SPACE}"
+      _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
+      return 1
+    fi
+  fi
+
   oc rollout status deployment/"${RELEASE_NAME}-developer-hub" -n "${NAME_SPACE}" --timeout=10m \
     || log::warn "Backstage rollout status check timed out after ${label}"
 
@@ -47,6 +60,26 @@ _pg_upgrade_verify_and_test() {
     _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
     return 1
   fi
+
+  if [[ "${seed_data}" == "seed" ]]; then
+    if ! deploy_pg_upgrade_data_proof_fixture "${NAME_SPACE}"; then
+      _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
+      return 1
+    fi
+    if ! seed_pg_upgrade_data_proof "${url}" "${NAME_SPACE}"; then
+      _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
+      return 1
+    fi
+  elif [[ "${PG_UPGRADE_DATA_PROOF:-}" == "1" ]]; then
+    if ! assert_pg_upgrade_data_proof_api "${url}"; then
+      log::error "Persistence proof entity missing via API after ${label}"
+      _pg_save_phase_artifacts "${artifacts_subdir}" "${label}"
+      return 1
+    fi
+  fi
+
+  # Enable UI verification of the seeded catalog entity in Playwright.
+  export PG_UPGRADE_DATA_PROOF=1
 
   # check_and_test always returns 0; Playwright failures are recorded via save_overall_result.
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE}" "${url}" "" "" "${artifacts_subdir}"
@@ -102,9 +135,13 @@ handle_ocp_pull() {
   local art_pg18="${PW_PROJECT_SHOWCASE}-pg18"
 
   log::info "Phase PG15: fedora/postgresql-15"
-  if ! _pg_upgrade_verify_and_test "PG15 baseline" "${art_pg15}" "${url}" "postgresql-15" 600; then
+  if ! _pg_upgrade_verify_and_test "PG15 baseline" "${art_pg15}" "${url}" "postgresql-15" 600 "" "seed"; then
     return 1
   fi
+
+  local rhdh_uid_before_18
+  rhdh_uid_before_18=$(get_rhdh_pod_uid "${RELEASE_NAME}" "${NAME_SPACE}")
+  log::info "RHDH pod uid before PG18 dump/restore: ${rhdh_uid_before_18:-<none>}"
 
   log::info "Phase PG18: dump/restore 15 → 18 (skip PG16; Fedora copy upgrades unsupported)"
   local dumpfile="/tmp/rhdh-pg15-dumpall.sql"
@@ -124,9 +161,11 @@ handle_ocp_pull() {
   refresh_postgres_collation_versions "${NAME_SPACE}" 600 "postgresql-18"
 
   # Bounce Backstage so it reconnects cleanly to the restored DB.
+  # ensure_rhdh_pod_replaced (inside verify) also restarts if the UID is unchanged,
+  # and always waits for the previous pod UID to terminate before Playwright.
   oc rollout restart deployment/"${RELEASE_NAME}-developer-hub" -n "${NAME_SPACE}" || true
 
-  if ! _pg_upgrade_verify_and_test "PG18 after dump/restore" "${art_pg18}" "${url}" "postgresql-18" 900; then
+  if ! _pg_upgrade_verify_and_test "PG18 after dump/restore" "${art_pg18}" "${url}" "postgresql-18" 900 "${rhdh_uid_before_18}"; then
     return 1
   fi
 
