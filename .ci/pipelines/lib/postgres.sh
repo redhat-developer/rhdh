@@ -397,19 +397,44 @@ deploy_pg_upgrade_data_proof_fixture() {
   fi
 }
 
+# Resolve a publicly fetchable catalog-info URL for the persistence-proof entity.
+# Prefer an explicit override, else GitHub blob URL at the PR/head SHA (Backstage
+# blocks most in-cluster http://*.svc targets via URL reader / SSRF guards).
+pg_upgrade_data_proof_target_url() {
+  if [[ -n "${PG_UPGRADE_PROOF_URL:-}" ]]; then
+    echo "${PG_UPGRADE_PROOF_URL}"
+    return 0
+  fi
+
+  local sha="${PULL_PULL_SHA:-${PULL_BASE_SHA:-}}"
+  if [[ -z "${sha}" ]]; then
+    sha=$(git -C "${DIR}/../.." rev-parse HEAD 2> /dev/null || true)
+  fi
+  local repo="${PG_UPGRADE_PROOF_REPO:-zdrapela/rhdh}"
+  if [[ -z "${sha}" ]]; then
+    log::error "Cannot resolve pg-upgrade proof catalog URL (set PG_UPGRADE_PROOF_URL or PULL_PULL_SHA)"
+    return 1
+  fi
+  echo "https://github.com/${repo}/blob/${sha}/.ci/pipelines/resources/pg-upgrade/catalog-info.yaml"
+}
+
 # Register the persistence-proof Component via the Catalog Locations API and wait until it is queryable.
 # Args:
 #   $1 - Backstage base URL
-#   $2 - namespace (for in-cluster Service DNS)
+#   $2 - namespace (unused; kept for call-site compatibility)
 seed_pg_upgrade_data_proof() {
   local base_url=$1
-  local namespace=$2
-  local target="http://pg-upgrade-data-proof.${namespace}.svc:8080/catalog-info.yaml"
+  local _namespace=$2
+  local target
   local entity_url="${base_url}/api/catalog/entities/by-name/component/default/pg-upgrade-data-proof"
   local locations_url="${base_url}/api/catalog/locations"
   local max_wait=${3:-180}
   local waited=0
   local status body
+
+  if ! target=$(pg_upgrade_data_proof_target_url); then
+    return 1
+  fi
 
   log::info "Seeding pg-upgrade data proof location: ${target}"
 
@@ -435,12 +460,16 @@ seed_pg_upgrade_data_proof() {
         return 0
       fi
     fi
+    if ((waited % 30 == 0)); then
+      log::info "Still waiting for seeded entity… HTTP ${status} (${waited}s/${max_wait}s)"
+    fi
     sleep 5
     waited=$((waited + 5))
   done
 
   log::error "Timed out waiting for seeded entity pg-upgrade-data-proof"
   cat /tmp/pg-upgrade-seed-entity.json >&2 || true
+  curl --insecure -s "${locations_url}" >&2 || true
   return 1
 }
 
