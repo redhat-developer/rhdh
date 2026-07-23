@@ -25,7 +25,8 @@ function isRecord(value: unknown): value is YamlRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function ensureRecord(parent: YamlRecord, key: string): YamlRecord {
+/** Ensure `parent[key]` is a mutable object record (create if missing). */
+export function ensureRecord(parent: YamlRecord, key: string): YamlRecord {
   const existing = parent[key];
   if (isRecord(existing)) {
     return existing;
