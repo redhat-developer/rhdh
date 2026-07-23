@@ -128,6 +128,10 @@ handle_ocp_disconnected_operator() {
 
   namespace::configure "${NAME_SPACE}"
   disconnected::apply_plugin_mirror_configmap "${NAME_SPACE}" || return 1
+  # Same CA/auth secrets as Helm so skopeo in install-dynamic-plugins can pull
+  # from the mirror (registries.conf alone is not enough — TLS verify fails).
+  disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
+  disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
 
   log::section "Backstage CR Deployment"
 
@@ -142,16 +146,43 @@ handle_ocp_disconnected_operator() {
   }
 
   local rendered_cr
+  local auth_secret="${RELEASE_NAME}-dynamic-plugins-registry-auth"
   rendered_cr=$(envsubst < "${DIR}/resources/rhdh-operator/rhdh-start-disconnected-smoke.yaml")
+  # Parity with helm-post-renderer.sh: registries.conf, policy.json, mirror CA.
+  # Also mount registry auth.json for authenticated mirror pulls.
   rendered_cr=$(echo "$rendered_cr" | yq eval \
-    '.spec.application.extraFiles.configMaps = [
+    --arg mirror "${MIRROR_REGISTRY_URL}" \
+    --arg auth_secret "${auth_secret}" \
+    '
+    .spec.application.extraFiles.configMaps = [
       {
         "name": "rhdh-plugin-mirror-conf",
         "key": "rhdh-registries.conf",
         "mountPath": "/etc/containers/registries.conf.d",
         "containers": ["install-dynamic-plugins"]
+      },
+      {
+        "name": "rhdh-plugin-mirror-conf",
+        "key": "policy.json",
+        "mountPath": "/etc/containers",
+        "containers": ["install-dynamic-plugins"]
+      },
+      {
+        "name": "mirror-registry-ca",
+        "key": "ca.crt",
+        "mountPath": ("/etc/containers/certs.d/" + $mirror),
+        "containers": ["install-dynamic-plugins"]
       }
-    ]' -)
+    ] |
+    .spec.application.extraFiles.secrets = [
+      {
+        "name": $auth_secret,
+        "key": "auth.json",
+        "mountPath": "/opt/app-root/src/.config/containers",
+        "containers": ["install-dynamic-plugins"]
+      }
+    ]
+    ' -)
 
   local cr_temp="${DISCONNECTED_TMPDIR}/backstage-cr-disconnected.yaml"
   echo "$rendered_cr" > "${cr_temp}"
