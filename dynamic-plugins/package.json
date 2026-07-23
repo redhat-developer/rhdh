@@ -42,8 +42,7 @@
     "@backstage/cli-common@^0.1.15": "patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch",
     "@backstage/cli-common@^0.1.16": "patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch",
     "infinispan": "0.13.0",
-    "react-use": "17.6.1",
-    "@segment/analytics-next@npm:1.81.1/js-cookie": "3.0.8"
+    "react-use": "17.6.1"
   },
   "packageManager": "yarn@3.8.7"
 }
