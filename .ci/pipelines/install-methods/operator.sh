@@ -50,6 +50,18 @@ prepare_operator() {
 
   # Wait for Backstage CRD to be available after operator installation
   k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || return 1
+
+  # Verify the operator controller-manager pod is running and ready.
+  # The CRD can appear before the operator pod is fully ready, so this
+  # ensures the controller is actually available to reconcile Backstage CRs.
+  # Uses label selector to target the controller-manager pod precisely.
+  log::info "Waiting for operator controller-manager pod to be ready in namespace '${OPERATOR_MANAGER}'..."
+  if ! oc wait -n "${OPERATOR_MANAGER}" pod -l control-plane=controller-manager \
+    --for=condition=Ready --timeout=300s 2> /dev/null; then
+    log::error "Operator controller-manager pod is not ready in namespace '${OPERATOR_MANAGER}'"
+    _operator_debug_info "${OPERATOR_MANAGER}"
+    return 1
+  fi
 }
 
 # Waits for the Crunchy Data PostgreSQL Operator's PostgresCluster CRD to become available.
@@ -70,6 +82,19 @@ deploy_rhdh_operator() {
 
   # Verify Backstage CRD is available
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
+
+  # Verify operator controller-manager is still running before applying the CR.
+  # This catches cases where the operator pod crashed or was evicted after
+  # prepare_operator() completed but before the Backstage CR is applied.
+  # Uses a short 2-minute timeout since the pod should already be running.
+  local operator_ns="${OPERATOR_MANAGER:-rhdh-operator}"
+  log::info "Verifying operator controller-manager is ready before applying Backstage CR..."
+  if ! oc wait -n "$operator_ns" pod -l control-plane=controller-manager \
+    --for=condition=Ready --timeout=120s 2> /dev/null; then
+    log::error "Operator controller-manager pod is not ready in namespace '${operator_ns}'"
+    _operator_debug_info "$namespace"
+    return 1
+  fi
 
   rendered_yaml=$(envsubst < "$backstage_crd_path")
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
@@ -111,12 +136,23 @@ deploy_rhdh_operator() {
 # Helper function to collect operator debug information
 _operator_debug_info() {
   local namespace=$1
+  local operator_ns="${OPERATOR_MANAGER:-rhdh-operator}"
+
   log::info "Checking Backstage CR status for errors..."
   oc get backstage rhdh -n "$namespace" -o yaml | grep -A 20 "status:" || true
+
+  log::info "Checking operator pods in namespace '${operator_ns}'..."
+  oc get pods -n "$operator_ns" -l control-plane=controller-manager -o wide || true
+
   log::info "Checking operator logs..."
-  oc logs -n "${OPERATOR_MANAGER:-rhdh-operator}" -l control-plane=controller-manager --tail=50 || true
+  oc logs -n "$operator_ns" -l control-plane=controller-manager --tail=50 || true
+
+  log::info "Checking operator events (last 20)..."
+  oc get events -n "$operator_ns" --sort-by='.lastTimestamp' 2> /dev/null | tail -20 || true
+
   log::info "Checking for StatefulSet..."
   oc get statefulset -n "$namespace" || true
+
   log::info "Checking for PostgresCluster..."
   oc get postgrescluster -n "$namespace" 2> /dev/null || echo "No PostgresCluster CRD or resources found"
 }
