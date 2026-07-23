@@ -148,30 +148,12 @@ handle_ocp_disconnected_helm() {
   namespace::configure "${NAME_SPACE}"
   disconnected::apply_plugin_mirror_configmap "${NAME_SPACE}" || return 1
 
-  # Mirror registry CA — mounted at /etc/containers/certs.d/<registry>/ca.crt
-  # inside the init container so skopeo trusts the mirror when IDMS redirects
-  # quay.io/registry.redhat.io pulls. Uses the standard container-tools
-  # per-registry CA mechanism; no system trust store replacement needed.
-  oc create configmap mirror-registry-ca \
-    --from-file="ca.crt=${MIRROR_REGISTRY_CA}" \
-    -n "${NAME_SPACE}" \
-    --dry-run=client -o yaml | oc apply -f - || {
-    log::error "Failed to create mirror-registry-ca ConfigMap — aborting"
-    return 1
-  }
-  log::success "ConfigMap mirror-registry-ca created in ${NAME_SPACE}"
-
-  # Registry auth for the init container — the chart mounts
-  # ${RELEASE_NAME}-dynamic-plugins-registry-auth at
-  # /opt/app-root/src/.config/containers (containers auth.json path).
-  oc create secret generic "${RELEASE_NAME}-dynamic-plugins-registry-auth" \
-    --from-file="auth.json=${MIRROR_REGISTRY_PULL_SECRET}" \
-    -n "${NAME_SPACE}" \
-    --dry-run=client -o yaml | oc apply -f - || {
-    log::error "Failed to create registry auth secret — aborting"
-    return 1
-  }
-  log::success "Secret ${RELEASE_NAME}-dynamic-plugins-registry-auth created in ${NAME_SPACE}"
+  # Mirror CA + registry auth for install-dynamic-plugins (skopeo).
+  # Post-renderer mounts CA at /etc/containers/certs.d/<registry>/ca.crt;
+  # the chart mounts ${RELEASE_NAME}-dynamic-plugins-registry-auth at
+  # /opt/app-root/src/.config/containers.
+  disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
+  disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
 
   log::section "Helm Deployment"
 
