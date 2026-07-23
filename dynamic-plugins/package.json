@@ -41,7 +41,8 @@
     "@backstage/backend-plugin-api": "patch:@backstage/backend-plugin-api@npm%3A1.6.0#./.yarn/patches/@backstage-backend-plugin-api-npm-1.6.0-eaa7987a8e.patch",
     "@backstage/cli-common@^0.1.15": "patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch",
     "@backstage/cli-common@^0.1.16": "patch:@backstage/cli-common@npm%3A0.1.16#./.yarn/patches/@backstage-cli-common-npm-0.1.16-576dbc8aa9.patch",
-    "infinispan": "0.13.0"
+    "infinispan": "0.13.0",
+    "react-use": "17.6.1"
   },
   "packageManager": "yarn@3.8.7"
 }
