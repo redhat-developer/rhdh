@@ -1,4 +1,7 @@
 import { test, expect } from "@playwright/test";
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { Orchestrator } from "../../../support/pages/orchestrator";
@@ -70,9 +73,11 @@ test.describe("Orchestrator failswitch workflow tests", () => {
 
     test.skip(!ns, "NAME_SPACE not set");
 
-    const originalHttpbin = "https://httpbin.org/";
+    // Avoid flaky public httpbin.org (503s during retrigger). Use in-cluster mock + local fail URL.
+    const originalHttpbin = `http://e2e-httpbin.${ns}.svc.cluster.local/`;
     try {
-      await patchHttpbin(ns!, "https://foobar.org/");
+      await ensureE2eHttpbin(ns!);
+      await patchHttpbin(ns!, "http://127.0.0.1:1/");
       await restartAndWait(ns!);
 
       await uiHelper.openSidebar("Orchestrator");
@@ -134,6 +139,70 @@ test.describe("Orchestrator failswitch workflow tests", () => {
     await expect(page.getByRole("button", { name: "Next" })).toBeVisible();
   });
 });
+
+/** Minimal in-cluster /get mock so recovery does not depend on public httpbin.org. */
+async function ensureE2eHttpbin(ns: string): Promise<void> {
+  const manifest = `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: e2e-httpbin
+  namespace: ${ns}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: e2e-httpbin
+  template:
+    metadata:
+      labels:
+        app: e2e-httpbin
+    spec:
+      containers:
+        - name: httpbin
+          image: registry.access.redhat.com/ubi9/python-311:latest
+          command:
+            - python3
+            - -c
+            - |
+              from http.server import HTTPServer, BaseHTTPRequestHandler
+              class H(BaseHTTPRequestHandler):
+                def do_GET(self):
+                  b=b'{"args":{},"headers":{},"origin":"e2e","url":"http://e2e-httpbin/get"}'
+                  self.send_response(200); self.send_header("Content-Type","application/json"); self.send_header("Content-Length",str(len(b))); self.end_headers(); self.wfile.write(b)
+                def log_message(self,*_): pass
+              HTTPServer(("0.0.0.0",8080),H).serve_forever()
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /get
+              port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: e2e-httpbin
+  namespace: ${ns}
+spec:
+  selector:
+    app: e2e-httpbin
+  ports:
+    - port: 80
+      targetPort: 8080
+`;
+  const file = path.join(os.tmpdir(), `e2e-httpbin-${ns}.yaml`);
+  fs.writeFileSync(file, manifest);
+  await LogUtils.executeCommand("oc", ["apply", "-f", file]);
+  await LogUtils.executeCommand("oc", [
+    "-n",
+    ns,
+    "rollout",
+    "status",
+    "deployment/e2e-httpbin",
+    "--timeout=180s",
+  ]);
+}
 
 async function getHttpbinValue(ns: string): Promise<string | undefined> {
   const args = [
