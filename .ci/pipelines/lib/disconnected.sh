@@ -320,6 +320,46 @@ disconnected::apply_plugin_mirror_configmap() {
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 }
 
+# Create the per-namespace mirror CA ConfigMap used by install-dynamic-plugins
+# (mounted at /etc/containers/certs.d/<registry>/ca.crt so skopeo trusts TLS).
+# Args:
+#   $1 - namespace
+disconnected::create_mirror_registry_ca_configmap() {
+  local namespace=$1
+
+  if [[ ! -f "${MIRROR_REGISTRY_CA}" ]]; then
+    log::error "MIRROR_REGISTRY_CA file not found: ${MIRROR_REGISTRY_CA}"
+    return 1
+  fi
+
+  oc create configmap mirror-registry-ca \
+    --from-file="ca.crt=${MIRROR_REGISTRY_CA}" \
+    -n "${namespace}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create mirror-registry-ca ConfigMap — aborting"
+    return 1
+  }
+  log::success "ConfigMap mirror-registry-ca created in ${namespace}"
+}
+
+# Create the registry auth secret for the install-dynamic-plugins init container.
+# Args:
+#   $1 - namespace
+#   $2 - secret name (default: ${RELEASE_NAME}-dynamic-plugins-registry-auth)
+disconnected::create_plugin_registry_auth_secret() {
+  local namespace=$1
+  local secret_name=${2:-${RELEASE_NAME}-dynamic-plugins-registry-auth}
+
+  oc create secret generic "${secret_name}" \
+    --from-file="auth.json=${MIRROR_REGISTRY_PULL_SECRET}" \
+    -n "${namespace}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create registry auth secret — aborting"
+    return 1
+  }
+  log::success "Secret ${secret_name} created in ${namespace}"
+}
+
 # Ensure the mirror registry CA is trusted cluster-wide via
 # image.config.openshift.io/cluster additionalTrustedCA so OLM v1 catalogd
 # can pull ClusterCatalog images (x509 unknown authority otherwise).
@@ -462,6 +502,8 @@ export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
 export -f disconnected::mirror_plugins
 export -f disconnected::apply_plugin_mirror_configmap
+export -f disconnected::create_mirror_registry_ca_configmap
+export -f disconnected::create_plugin_registry_auth_secret
 export -f disconnected::ensure_mirror_registry_ca
 export -f disconnected::ensure_olm_mirror_pull_secret
 export -f disconnected::dump_olm_v1_status
