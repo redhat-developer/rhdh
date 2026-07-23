@@ -13099,15 +13099,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-core@npm:1.8.2":
-  version: 1.8.2
-  resolution: "@segment/analytics-core@npm:1.8.2"
+"@segment/analytics-core@npm:1.8.3":
+  version: 1.8.3
+  resolution: "@segment/analytics-core@npm:1.8.3"
   dependencies:
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-generic-utils": 1.2.0
     dset: ^3.1.4
     tslib: ^2.4.1
-  checksum: 7d74eef24fe9e0f0a211026f63b4568c975194de6772201eb97db102f0a27e76a015d5818b45bfe0a65bd40c1dd0fe4307ac4b9d56dacf8874248f44448e50f6
+  checksum: 199305775085fecd5f791ae1a47b37c51654db13e3e8ee574bf19b9df9cdd1d893f7131987d64793272d2745a993ec471cc01ddc24e2b0adb61c78538ed8f925
   languageName: node
   linkType: hard
 
@@ -13121,21 +13121,21 @@ __metadata:
   linkType: hard
 
 "@segment/analytics-next@npm:^1.58.0":
-  version: 1.81.1
-  resolution: "@segment/analytics-next@npm:1.81.1"
+  version: 1.84.1
+  resolution: "@segment/analytics-next@npm:1.84.1"
   dependencies:
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-core": 1.8.2
+    "@segment/analytics-core": 1.8.3
     "@segment/analytics-generic-utils": 1.2.0
     "@segment/analytics-page-tools": 1.0.0
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
     dset: ^3.1.4
-    js-cookie: 3.0.1
+    js-cookie: ^3.0.7
     node-fetch: ^2.6.7
     tslib: ^2.4.1
     unfetch: ^4.1.0
-  checksum: 178c47ac4bf4d3d494be1848878ba085a46dcf0ba77dfad9ceb0ab917afcd8d761f5515ce6942d0282247bdb3cbed88c28bcac6fcc35a289eb08155f1d5b0f55
+  checksum: d4692e2a53f4ff249fe0524ccaeaa1a8a89d71da0d3538283c6f873fbeac1c30d3ed1a3d84debd51c26d95e008962cec587527395f50e05ad25c696f57b94ccb
   languageName: node
   linkType: hard
 
@@ -25390,13 +25390,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:3.0.1":
-  version: 3.0.1
-  resolution: "js-cookie@npm:3.0.1"
-  checksum: bb48de67e2a6bd1ae3dfd6b2d5a167c33dd0c5a37e909206161eb0358c98f17cb55acd55827a58e9eea3630d89444e7479f7938ef4420dda443218b8c434a4c3
-  languageName: node
-  linkType: hard
-
 "js-cookie@npm:^2.2.1":
   version: 2.2.1
   resolution: "js-cookie@npm:2.2.1"
@@ -25404,7 +25397,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:^3.0.0":
+"js-cookie@npm:^3.0.0, js-cookie@npm:^3.0.7":
   version: 3.0.8
   resolution: "js-cookie@npm:3.0.8"
   checksum: 73ce2e57d352caf01b4ff40406fd474e7e2edd545a6fdcecbe8fb1d764ef761db99b40a2ca990473064f0519a6af0f2cfae30410c93fcb8bf2a4bc4215c5395d
