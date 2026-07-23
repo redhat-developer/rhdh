@@ -149,8 +149,10 @@ upstream:
   postgresql:
     enabled: true
     image:
-      registry: quay.io
-      repository: fedora/postgresql-15
+      # Product chart path (rhel9). fedora/postgresql-18 cannot do 16→18 in-place:
+      # it sets POSTGRESQL_PREV_VERSION=16 but only ships postgresql-17 binaries.
+      registry: registry.redhat.io
+      repository: rhel9/postgresql-15
       tag: latest
     primary:
       persistence:

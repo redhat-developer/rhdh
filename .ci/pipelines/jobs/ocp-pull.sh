@@ -37,8 +37,10 @@ _pg_upgrade_verify_hop() {
   fi
 }
 
-# RHIDP-14594: exercise chart-managed PostgreSQL major upgrades on Fedora images.
-# sclorg images only upgrade from POSTGRESQL_PREV_VERSION: 15 -> 16 -> 18.
+# RHIDP-14594: exercise chart-managed PostgreSQL major upgrades on rhel9 images.
+# sclorg/rhel images only upgrade from POSTGRESQL_PREV_VERSION: 15 -> 16 -> 18.
+# Note: quay.io/fedora/postgresql-18 is unsuitable for 16->18 (PREV_VERSION=16 but
+# only postgresql-17 upgrade binaries are packaged).
 handle_ocp_pull() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
@@ -52,7 +54,7 @@ handle_ocp_pull() {
   export K8S_CLUSTER_ROUTER_BASE
   cluster_setup_ocp_helm
 
-  # Install showcase on fedora/postgresql-15 (product chart default is rhel9/postgresql-15).
+  # Install showcase on explicit rhel9/postgresql-15 (same family as product chart default).
   local original_value_file="${HELM_CHART_VALUE_FILE_NAME}"
   HELM_CHART_VALUE_FILE_NAME="values_showcase_15.yaml"
   base_deployment "${PW_PROJECT_SHOWCASE}"
@@ -62,7 +64,7 @@ handle_ocp_pull() {
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   local artifacts="${PW_PROJECT_SHOWCASE}"
 
-  log::info "Baseline: fedora/postgresql-15"
+  log::info "Baseline: rhel9/postgresql-15"
   if ! _pg_upgrade_verify_hop "PG15 baseline" "${artifacts}-pg15" "${url}" "postgresql-15" 600; then
     return 1
   fi

@@ -149,8 +149,8 @@ upstream:
   postgresql:
     enabled: true
     image:
-      registry: quay.io
-      repository: fedora/postgresql-16
+      registry: registry.redhat.io
+      repository: rhel9/postgresql-16
       tag: latest
     primary:
       extraEnvVars:
