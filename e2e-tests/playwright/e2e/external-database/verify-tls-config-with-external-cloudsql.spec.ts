@@ -4,7 +4,7 @@ import { test, expect } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
-import { clearDatabase, readCertificateFile } from "../../utils/postgres-config";
+import { clearDatabase } from "../../utils/postgres-config";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 interface CloudSqlConfig {
@@ -75,7 +75,7 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
     ) {
       testInfo.skip(
         true,
-        "Cloud SQL environment variables not configured (CLOUDSQL_USER, CLOUDSQL_PASSWORD, CLOUDSQL_INSTANCE_*, CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH) — Cloud SQL tests are opt-in",
+        "Cloud SQL environment variables not configured (CLOUDSQL_USER, CLOUDSQL_PASSWORD, CLOUDSQL_INSTANCE_*, cloudsql-service-account.json)",
       );
       return;
     }
@@ -110,24 +110,13 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
           return;
         }
 
-        const certPath = process.env.CLOUDSQL_DB_CERTIFICATES_PATH;
-        const certs = readCertificateFile(certPath);
-        if (certs === null) {
-          // Public IP cleanup without CA: tolerate Cloud SQL server cert.
-          await clearDatabase({
-            host: config.host,
-            user: cloudSqlUser,
-            password: cloudSqlPassword,
-            ssl: { rejectUnauthorized: false },
-          });
-        } else {
-          await clearDatabase({
-            host: config.host,
-            user: cloudSqlUser,
-            password: cloudSqlPassword,
-            certificatePath: certPath,
-          });
-        }
+        // Public IP cleanup without a DB CA PEM: tolerate Cloud SQL server cert.
+        await clearDatabase({
+          host: config.host,
+          user: cloudSqlUser,
+          password: cloudSqlPassword,
+          ssl: { rejectUnauthorized: false },
+        });
       });
 
       test("Configure and restart deployment", async ({}, testInfo) => {

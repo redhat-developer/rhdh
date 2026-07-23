@@ -392,7 +392,7 @@ The most comprehensive nightly job. Runs on OpenShift using ephemeral cluster cl
 **Test suites run (in order)**:
 
 1. **Standard deployment tests** (`showcase`, `showcase-rbac`) -- core functionality with and without RBAC
-2. **Runtime config change tests** (`showcase-runtime`) -- tests that modify RHDH configuration at runtime (config-map, schema-mode, and opt-in external DB TLS: RDS, Azure, Google Cloud SQL Auth Proxy). Cloud SQL skips unless Vault provides `CLOUDSQL_*` + `cloudsql-service-account.json`.
+2. **Runtime config change tests** (`showcase-runtime`) -- tests that modify RHDH configuration at runtime (config-map, schema-mode, and external DB TLS: RDS, Azure, Google Cloud SQL Auth Proxy). Cloud SQL uses Vault `CLOUDSQL_*` keys plus `cloudsql-service-account.json` (no DB CA PEM).
 3. **Sanity plugins check** (`showcase-sanity-plugins`) -- validates plugin loading and basic functionality
 4. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
 
