@@ -18,7 +18,7 @@ source "$DIR"/playwright-projects.sh
 #   $1 - label (log/diagnostics)
 #   $2 - artifacts_subdir under ARTIFACT_DIR (must be unique per hop)
 #   $3 - url
-#   $4 - expected postgres image substring (e.g. postgresql-16)
+#   $4 - expected postgres image substring (e.g. postgresql-18)
 #   $5 - optional max wait seconds (default: 600)
 _pg_upgrade_verify_and_test() {
   local label=$1
@@ -67,11 +67,10 @@ _pg_save_phase_artifacts() {
   save_all_pod_logs "${NAME_SPACE}" "${artifacts_subdir}"
 }
 
-# RHIDP-14594: chart-managed PostgreSQL major upgrades on Fedora images.
-# Flow: PG15 → Playwright → PG16 → Playwright → PG18 → Playwright
-# Hop A (15→16): POSTGRESQL_UPGRADE=copy (fedora/postgresql-16 ships PG15 bins).
-# Hop B (16→18): dump/restore — fedora/postgresql-18 advertises PREV_VERSION=16 but
-# only packages postgresql-17 binaries, so copy upgrade cannot work.
+# RHIDP-14594: Fedora chart-managed PostgreSQL upgrade via dump/restore.
+# Fedora does not support reliable POSTGRESQL_UPGRADE=copy (upstream skips Fedora
+# upgrade tests; fedora/postgresql-18 PREV_VERSION/bins mismatch). No fedora PG17
+# image exists. Skip PG16 entirely: PG15 → Playwright → dump/restore → PG18 → Playwright.
 handle_ocp_pull() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
@@ -93,7 +92,6 @@ handle_ocp_pull() {
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   local art_pg15="${PW_PROJECT_SHOWCASE}-pg15"
-  local art_pg16="${PW_PROJECT_SHOWCASE}-pg16"
   local art_pg18="${PW_PROJECT_SHOWCASE}-pg18"
 
   log::info "Phase PG15: fedora/postgresql-15"
@@ -101,16 +99,8 @@ handle_ocp_pull() {
     return 1
   fi
 
-  log::info "Phase PG16: upgrade 15 → 16 (POSTGRESQL_UPGRADE=copy)"
-  helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_16_upgrade.yaml"
-  refresh_postgres_collation_versions "${NAME_SPACE}" 900 "postgresql-16"
-  helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_16.yaml"
-  if ! _pg_upgrade_verify_and_test "PG16 after upgrade" "${art_pg16}" "${url}" "postgresql-16" 900; then
-    return 1
-  fi
-
-  log::info "Phase PG18: dump/restore 16 → 18 (fedora copy upgrade unsupported)"
-  local dumpfile="/tmp/rhdh-pg16-dumpall.sql"
+  log::info "Phase PG18: dump/restore 15 → 18 (skip PG16; Fedora copy upgrades unsupported)"
+  local dumpfile="/tmp/rhdh-pg15-dumpall.sql"
   if ! postgres_dumpall_to_file "${NAME_SPACE}" "${dumpfile}"; then
     _pg_save_phase_artifacts "${art_pg18}" "PG18 dump failed"
     return 1
@@ -133,5 +123,5 @@ handle_ocp_pull() {
     return 1
   fi
 
-  log::info "PostgreSQL 15 → 16 → 18 Fedora Helm upgrade sequence completed (Playwright after each major)"
+  log::info "PostgreSQL 15 → 18 Fedora dump/restore sequence completed (Playwright after each major)"
 }
