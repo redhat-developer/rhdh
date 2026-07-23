@@ -48,6 +48,7 @@ import {
   KubeClient,
   getErrorStatusCode,
   getRhdhDeploymentName,
+  isRecord,
   waitForBackstageCrd,
 } from "./kube-client";
 import {
@@ -116,7 +117,6 @@ async function deployWithHelm(
   }
 
   const { namespace, releaseName } = config;
-  const { chartUrl, chartVersion } = config.helm;
 
   // Create PVC for dynamic plugins — persists extracted plugins across
   // deployment restarts (config-map and schema-mode tests both restart RHDH).
@@ -138,42 +138,10 @@ async function deployWithHelm(
     }
   }
 
-  // Generate values YAML and write to a temp file
   const valuesYaml = generateHelmValuesYaml();
-  const tmpValuesFile = path.join(os.tmpdir(), `rhdh-runtime-values-${Date.now()}.yaml`);
-  fs.writeFileSync(tmpValuesFile, valuesYaml, "utf-8");
-  console.log(`Generated Helm values written to ${tmpValuesFile}`);
-
-  try {
-    // Helm install
-    const helmArgs = [
-      "upgrade",
-      "-i",
-      releaseName,
-      "-n",
-      namespace,
-      chartUrl,
-      "--version",
-      chartVersion,
-      "-f",
-      tmpValuesFile,
-      ...generateHelmSetArgs(config),
-      "--wait",
-      "--timeout",
-      "10m",
-    ];
-
-    console.log("Installing RHDH via Helm...");
-    await run("helm", helmArgs, { timeout: 600_000 });
-    console.log("Helm install complete");
-  } finally {
-    // Clean up temp file
-    try {
-      fs.unlinkSync(tmpValuesFile);
-    } catch {
-      // ignore cleanup errors
-    }
-  }
+  console.log("Installing RHDH via Helm...");
+  await upgradeRuntimeHelmRelease(config, valuesYaml);
+  console.log("Helm install complete");
 
   // Read the actual route URL from the cluster; fall back to predicted helm URL.
   const identity = createInstanceRouteIdentity("helm", releaseName, namespace, config.routerBase);
@@ -281,6 +249,115 @@ async function deployWithOperator(
   console.log("Operator deployment ready");
 
   return runtimeUrl;
+}
+
+// ---------------------------------------------------------------------------
+// Shared Helm / Operator CR helpers (used by runtime deploy + external DB)
+// ---------------------------------------------------------------------------
+
+/**
+ * `helm upgrade -i` the runtime release with the given values YAML.
+ * Shared by initial deploy and external-DB overlays (e.g. Cloud SQL).
+ */
+export async function upgradeRuntimeHelmRelease(
+  config: ReturnType<typeof resolveConfig>,
+  valuesYaml: string,
+): Promise<void> {
+  if (!config.helm) {
+    throw new Error("CHART_VERSION environment variable is required for Helm deployment");
+  }
+
+  const { namespace, releaseName } = config;
+  const { chartUrl, chartVersion } = config.helm;
+  const tmpValuesFile = path.join(os.tmpdir(), `rhdh-runtime-values-${Date.now()}.yaml`);
+  fs.writeFileSync(tmpValuesFile, valuesYaml, "utf-8");
+  console.log(`Generated Helm values written to ${tmpValuesFile}`);
+
+  try {
+    await run(
+      "helm",
+      [
+        "upgrade",
+        "-i",
+        releaseName,
+        "-n",
+        namespace,
+        chartUrl,
+        "--version",
+        chartVersion,
+        "-f",
+        tmpValuesFile,
+        ...generateHelmSetArgs(config),
+        "--wait",
+        "--timeout",
+        "10m",
+      ],
+      { timeout: 600_000 },
+    );
+  } finally {
+    try {
+      fs.unlinkSync(tmpValuesFile);
+    } catch {
+      // ignore cleanup errors
+    }
+  }
+}
+
+function parseBackstageApiVersion(apiVersion: string): { group: string; version: string } {
+  const [group, version] = apiVersion.split("/");
+  if (group === undefined || version === undefined || group === "" || version === "") {
+    throw new Error(`Invalid Backstage CR apiVersion: ${apiVersion}`);
+  }
+  return { group, version };
+}
+
+function isRuntimeBackstageCr(value: unknown): value is ReturnType<typeof generateBackstageCR> {
+  return (
+    isRecord(value) &&
+    value.kind === "Backstage" &&
+    typeof value.apiVersion === "string" &&
+    isRecord(value.metadata) &&
+    typeof value.metadata.name === "string" &&
+    isRecord(value.spec)
+  );
+}
+
+/** Read the live Backstage CR for the runtime release. */
+export async function getRuntimeBackstageCr(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+): Promise<ReturnType<typeof generateBackstageCR>> {
+  const { group, version } = parseBackstageApiVersion(BACKSTAGE_CR_API_VERSION);
+  const response = await kubeClient.customObjectsApi.getNamespacedCustomObject(
+    group,
+    version,
+    namespace,
+    "backstages",
+    releaseName,
+  );
+  if (!isRuntimeBackstageCr(response.body)) {
+    throw new TypeError(`Backstage CR '${releaseName}' has unexpected shape`);
+  }
+  return response.body;
+}
+
+/** Replace the live Backstage CR (operator reconciles the Deployment). */
+export async function replaceRuntimeBackstageCr(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+  cr: ReturnType<typeof generateBackstageCR>,
+): Promise<void> {
+  const { group, version } = parseBackstageApiVersion(cr.apiVersion || BACKSTAGE_CR_API_VERSION);
+  await kubeClient.customObjectsApi.replaceNamespacedCustomObject(
+    group,
+    version,
+    namespace,
+    "backstages",
+    releaseName,
+    cr,
+  );
 }
 
 // ---------------------------------------------------------------------------
