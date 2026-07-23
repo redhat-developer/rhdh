@@ -4,23 +4,162 @@ global:
     image:
       registry: quay.io
       repository: rhdh/plugin-catalog-index
-      tag: "1.10"
+      tag: "1.11"
   dynamic:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
-    includes:
-      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are not enabled by default.
-      # This file ONLY works with the `rhdh-community/rhdh` container image.
-      - "dynamic-plugins.default.yaml"
+    # NOTE: dynamic-plugins.default.yaml from the catalog index is not included because the
+    # :1.11 / :next index references OCI images on registry.access.redhat.com that are not
+    # publicly accessible yet. All required plugins are listed explicitly below instead.
 
-    # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
+    # -- List of dynamic plugins.
     # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `enabled` flag to enable/disable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
-      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
+      # Core RHDH UI plugins — not available in :1.11 catalog index defaults, added explicitly
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page"
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+                dynamicRoutes:
+                  - importName: DynamicHomePage
+                    path: /
+                mountPoints:
+                  - importName: VisitListener
+                    mountPoint: application/listener
+                  - importName: SearchBar
+                    mountPoint: home.page/cards
+                    config:
+                      id: searchbar
+                      title: Search
+                  - importName: QuickAccessCard
+                    mountPoint: home.page/cards
+                    config:
+                      id: quickaccess-card
+                      title: Quick Access Card
+                  - importName: CatalogStarredEntitiesCard
+                    mountPoint: home.page/cards
+                    config:
+                      id: catalog-starred-entities-card
+                      title: Starred catalog entities
+                  - importName: RecentlyVisitedCard
+                    mountPoint: home.page/cards
+                    config:
+                      id: recently-visited-card
+                      title: Recently visited
+                  - importName: TopVisitedCard
+                    mountPoint: home.page/cards
+                    config:
+                      id: top-visited-card
+                      title: Top visited
+                translationResources:
+                  - importName: homepageTranslations
+                    ref: homepageTranslationRef
+                    module: Alpha
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:bs_1.49.4__1.21.6!red-hat-developer-hub-backstage-plugin-global-header"
+        disabled: false
+        pluginConfig:
+          app:
+            sidebar:
+              logo: false
+              search: false
+              settings: false
+          dynamicPlugins:
+            frontend:
+              default.main-menu-items:
+                menuItems:
+                  default.admin:
+                    icon: admin
+                    textKey: menuItem.administration
+                    title: Administration
+                  default.create:
+                    title: ""
+              red-hat-developer-hub.backstage-plugin-global-header:
+                translationResources:
+                  - importName: globalHeaderTranslations
+                    ref: globalHeaderTranslationRef
+                mountPoints:
+                  - mountPoint: application/header
+                    importName: GlobalHeader
+                    config:
+                      position: above-sidebar
+                  - mountPoint: global.header/component
+                    importName: CompanyLogo
+                    config:
+                      priority: 200
+                      props:
+                        to: "/"
+                  - mountPoint: global.header/component
+                    importName: SearchComponent
+                    config:
+                      priority: 100
+                  - mountPoint: global.header/component
+                    importName: Spacer
+                    config:
+                      priority: 99
+                      props:
+                        growFactor: 0
+                  - mountPoint: global.header/component
+                    importName: HeaderIconButton
+                    config:
+                      priority: 90
+                      props:
+                        title: Self-service
+                        titleKey: create.title
+                        icon: add
+                        to: create
+                  - mountPoint: global.header/component
+                    importName: StarredDropdown
+                    config:
+                      priority: 85
+                  - mountPoint: global.header/component
+                    importName: ApplicationLauncherDropdown
+                    config:
+                      priority: 82
+                  - mountPoint: global.header/component
+                    importName: HelpDropdown
+                    config:
+                      priority: 80
+                  - mountPoint: global.header/component
+                    importName: NotificationButton
+                    config:
+                      priority: 70
+                  - mountPoint: global.header/component
+                    importName: Divider
+                    config:
+                      priority: 50
+                  - mountPoint: global.header/component
+                    importName: ProfileDropdown
+                    config:
+                      priority: 10
+                  - mountPoint: global.header/profile
+                    importName: MenuItemLink
+                    config:
+                      priority: 100
+                      props:
+                        title: Settings
+                        titleKey: profile.settings
+                        link: /settings
+                        icon: manageAccounts
+                  - mountPoint: global.header/profile
+                    importName: MenuItemLink
+                    config:
+                      priority: 90
+                      props:
+                        title: My profile
+                        titleKey: profile.myProfile
+                        type: myProfile
+                        icon: account
+                  - mountPoint: global.header/profile
+                    importName: LogoutButton
+                    config:
+                      priority: 10
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-github:bs_1.52.0__0.9.10
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-github:bs_1.52.0__0.13.3
         enabled: true
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0
         pluginConfig:
@@ -45,11 +184,9 @@ global:
                     importName: LocationListener
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.49.4__3.7.0"
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-catalog-backend-module-keycloak:bs_1.49.4__3.19.2
         enabled: true
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
-        enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor:bs_1.52.0__2.15.0
         enabled: true
       - package: "@backstage-community/plugin-todo@0.2.42"
         enabled: true

@@ -92,7 +92,6 @@ export default defineConfig({
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/seed.spec.ts",
-        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
@@ -100,6 +99,8 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        // Disabled: techdocs frontend plugin not available in :1.11 catalog index
+        "**/playwright/e2e/verify-redis-cache.spec.ts",
       ],
     },
     {
@@ -129,19 +130,19 @@ export default defineConfig({
       testIgnore: [
         "**/playwright/seed.spec.ts",
         "**/playwright/e2e/smoke-test.spec.ts",
-        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
-        "**/playwright/e2e/plugins/ocm.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
+        // Disabled: techdocs frontend plugin not available in :1.11 catalog index
+        "**/playwright/e2e/verify-redis-cache.spec.ts",
       ],
     },
     {
@@ -155,7 +156,6 @@ export default defineConfig({
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/seed.spec.ts",
-        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
@@ -167,6 +167,8 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
+        // Disabled: techdocs frontend plugin not available in :1.11 catalog index
+        "**/playwright/e2e/verify-redis-cache.spec.ts",
       ],
     },
     {

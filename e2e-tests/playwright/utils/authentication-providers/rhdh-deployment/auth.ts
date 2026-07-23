@@ -18,7 +18,7 @@ export function enableOIDCLoginWithIngestion(actions: AuthConfigActions): void {
   expect(process.env.RHBK_CLIENT_SECRET).toBeDefined();
 
   actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic",
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-catalog-backend-module-keycloak:bs_1.49.4__3.19.2",
     true,
   );
   actions.setAppConfigProperty("catalog.providers", {
@@ -77,7 +77,7 @@ export function enableLDAPLoginWithIngestion(actions: AuthConfigActions): void {
   expect(process.env.RHBK_LDAP_CLIENT_SECRET).toBeDefined();
 
   actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic",
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-ldap:bs_1.52.0__0.12.6",
     true,
   );
   actions.setAppConfigProperty("catalog.providers", {
@@ -134,7 +134,7 @@ export function enableMicrosoftLoginWithIngestion(actions: AuthConfigActions): v
   expect(process.env.AUTH_PROVIDERS_AZURE_TENANT_ID).toBeDefined();
 
   actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic",
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-msgraph:bs_1.52.0__0.10.3",
     true,
   );
   actions.setAppConfigProperty("catalog.providers", {
@@ -174,10 +174,7 @@ export function enableMicrosoftLoginWithIngestion(actions: AuthConfigActions): v
   actions.setAppConfigProperty("signInPage", "microsoft");
 }
 
-export function enableGithubLoginWithIngestion(
-  actions: AuthConfigActions,
-  isRunningLocal: boolean,
-): void {
+export function enableGithubLoginWithIngestion(actions: AuthConfigActions): void {
   console.log("Enabling Github login with ingestion...");
   expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME).toBeDefined();
   expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
@@ -187,15 +184,14 @@ export function enableGithubLoginWithIngestion(
   expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET).toBeDefined();
 
   actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-github-org:bs_1.52.0__0.3.23",
     true,
   );
 
-  const transformerPluginPath = isRunningLocal
-    ? "./dynamic-plugins/dist/@internal/backstage-plugin-catalog-backend-module-github-org-transformer-dynamic"
-    : "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.3.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer";
-
-  actions.setDynamicPluginEnabled(transformerPluginPath, true);
+  actions.setDynamicPluginEnabled(
+    "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.3.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer",
+    true,
+  );
 
   actions.setAppConfigProperty("catalog.providers", {
     githubOrg: [
@@ -248,7 +244,7 @@ export function enableGitlabLoginWithIngestion(actions: AuthConfigActions): void
   expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG).toBeDefined();
 
   actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic",
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-gitlab-org:bs_1.52.0__0.2.22",
     true,
   );
 

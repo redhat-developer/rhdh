@@ -421,7 +421,7 @@ class RHDHDeployment implements RHDHDeploymentState {
   }
 
   enableGithubLoginWithIngestion(): Promise<RHDHDeployment> {
-    enableGithubLoginWithIngestion(this, this.isRunningLocal);
+    enableGithubLoginWithIngestion(this);
     return Promise.resolve(this);
   }
 
