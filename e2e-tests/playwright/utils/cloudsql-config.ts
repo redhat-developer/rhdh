@@ -13,7 +13,8 @@ import { existsSync, readFileSync } from "fs";
 import * as yaml from "yaml";
 
 import { base64Encode, discoverRouterBase, resolveInstallMethod } from "./helper";
-import { KubeClient, getRhdhDeploymentName, isRecord } from "./kube-client";
+import { deploymentName as resolveDeploymentName } from "./instance-route-identity";
+import { KubeClient, isRecord } from "./kube-client";
 import { ensureRecord, type YamlRecord } from "./operator-install-profile";
 import { pollUntil } from "./poll-until";
 import { generateHelmValuesYaml, resolveConfig, type BackstageCR } from "./runtime-config";
@@ -154,6 +155,10 @@ export async function createCloudSqlServiceAccountSecret(
  * Helm values overlay: disable local Postgres and wire postgres-cred + SA volume.
  * Proxy is applied separately as a native sidecar initContainer on the Deployment
  * so we do not replace the chart's install-dynamic-plugins initContainer list.
+ *
+ * Also overrides chart-default `POSTGRESQL_ADMIN_PASSWORD` / app-config password
+ * placeholders: with `upstream.postgresql.enabled=false` the `<release>-postgresql`
+ * Secret is not created, and leaving those refs causes CreateContainerConfigError.
  */
 export function generateCloudSqlHelmValuesOverlay(): string {
   const parsed: unknown = yaml.parse(generateHelmValuesYaml());
@@ -168,7 +173,31 @@ export function generateCloudSqlHelmValuesOverlay(): string {
     asNamedRecordList(backstage.extraVolumes),
     buildCloudSqlProxyVolume(),
   );
+  // Keep BACKEND_SECRET only — drop chart-default POSTGRESQL_ADMIN_PASSWORD.
+  backstage.extraEnvVars = [
+    {
+      name: "BACKEND_SECRET",
+      valueFrom: {
+        secretKeyRef: {
+          key: "backend-secret",
+          name: '{{ include "rhdh.backend-secret-name" $ }}',
+        },
+      },
+    },
+  ];
   backstage.extraEnvVarsSecrets = ["postgres-cred"];
+
+  const appConfig = ensureRecord(backstage, "appConfig");
+  const backend = ensureRecord(appConfig, "backend");
+  backend.database = {
+    connection: {
+      host: "${POSTGRES_HOST}",
+      port: "${POSTGRES_PORT}",
+      user: "${POSTGRES_USER}",
+      password: "${POSTGRES_PASSWORD}",
+    },
+  };
+
   upstream.postgresql = { enabled: false };
 
   return yaml.stringify(base, { lineWidth: 0 });
@@ -280,11 +309,11 @@ export async function injectCloudSqlSidecar(
   instanceConnectionName: string,
 ): Promise<void> {
   const installMethod = resolveInstallMethod();
-  const deploymentName = getRhdhDeploymentName();
+  const deploymentName = resolveDeploymentName(installMethod, releaseName);
 
   if (installMethod === "helm") {
     const routerBase = process.env.K8S_CLUSTER_ROUTER_BASE ?? (await discoverRouterBase());
-    const config = resolveConfig(routerBase);
+    const config = { ...resolveConfig(routerBase), releaseName, namespace };
     await upgradeRuntimeHelmRelease(config, generateCloudSqlHelmValuesOverlay());
     await upsertCloudSqlProxyOnDeployment(
       kubeClient,
@@ -315,7 +344,7 @@ export async function configureCloudSqlProxyInstance(
   instanceConnectionName: string,
 ): Promise<void> {
   const installMethod = resolveInstallMethod();
-  const deploymentName = getRhdhDeploymentName();
+  const deploymentName = resolveDeploymentName(installMethod, releaseName);
 
   if (installMethod === "operator") {
     const cr = await getRuntimeBackstageCr(kubeClient, namespace, releaseName);
