@@ -1,0 +1,114 @@
+# Example dynamic-plugins set for a typical RHDH NFS (app-next) local experience.
+#
+# Install into dynamic-plugins-root (from the repo root), then start with
+# `yarn workspace backend start:next`:
+#
+#   cp packages/app-next/dynamic-plugins.example.yaml dynamic-plugins.yaml
+#   npx -y @red-hat-developer-hub/cli-module-install-dynamic-plugins@0.2.0 \
+#     install dynamic-plugins-root
+#
+# Or merge the `plugins:` entries into your own dynamic-plugins.yaml / Helm
+# `global.dynamic.plugins` values. See also e2e-tests/local-harness/populate.sh.
+#
+# Sign-in comes from app-auth (not a static module in app-next), so it stays
+# swappable. Pair with app-integrations when you need default SCM auth APIs.
+#
+# The commented entries under "Additional packages.enabled" mirror the enabled
+# list in rhdh-plugin-export-overlays/default.packages.yaml — uncomment as needed.
+#
+# NOTE: Overlay tags below track published OCI builds and may lag the Backstage
+# version in this repo. Prefer matching `bs_<backstage>__<plugin>` tags when
+# available; otherwise use the newest published tag for each package.
+
+plugins:
+  # --- Minimal NFS shell UX (enabled by default in this example) ---
+
+  # RHDH multi-provider sign-in page + OIDC/Auth0/SAML frontend APIs
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-auth:next__0.0.2!red-hat-developer-hub-backstage-plugin-app-auth
+    disabled: false
+
+  # Default SCM integrations / scmAuth wiring (github, gitlab, azure, bitbucket)
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-integrations:next__0.0.2!red-hat-developer-hub-backstage-plugin-app-integrations
+    disabled: false
+
+  # RHDH theme — OCI tags are still OFS-shaped; leave commented until NFS overlay exists.
+  # Optional local NFS: export from rhdh-plugins (packages/app-next/README.md).
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-theme:next__0.14.5!red-hat-developer-hub-backstage-plugin-theme
+  #   disabled: false
+
+  # Homepage — OCI still OFS-shaped. app-next mounts homePageModule statically so
+  # NFS / works for card verification. Do not enable this OCI tag (overwrites a
+  # local homepage export). See README → Testing homepage cards / Local NFS export.
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage:pr_2644__1.15.0!red-hat-developer-hub-backstage-plugin-homepage
+  #   disabled: false
+
+  # Global header (@red-hat-developer-hub/backstage-plugin-global-header)
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:next__1.21.6!red-hat-developer-hub-backstage-plugin-global-header
+    disabled: false
+
+  # Quickstart drawer + help menu item (@red-hat-developer-hub/backstage-plugin-quickstart)
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-quickstart:pr_2591__1.10.0!red-hat-developer-hub-backstage-plugin-quickstart
+    disabled: false
+
+  # --- Additional packages.enabled (from default.packages.yaml) ---
+  # Uncomment entries you need. Source:
+  # https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/default.packages.yaml
+  #
+  # (global-header and quickstart are already enabled above.)
+
+  # @backstage-community/plugin-analytics-provider-segment
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-analytics-provider-segment:next__1.27.0!backstage-community-plugin-analytics-provider-segment
+  #   disabled: false
+
+  # @backstage-community/plugin-scaffolder-backend-module-regex
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-regex:bs_1.52.0__2.17.0!backstage-community-plugin-scaffolder-backend-module-regex
+  #   disabled: false
+
+  # @backstage/plugin-techdocs
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-techdocs:bs_1.52.0__1.17.7!backstage-plugin-techdocs
+  #   disabled: false
+
+  # @backstage/plugin-techdocs-backend
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-techdocs-backend:bs_1.52.0__2.2.1!backstage-plugin-techdocs-backend
+  #   disabled: false
+
+  # @backstage/plugin-techdocs-module-addons-contrib
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-techdocs-module-addons-contrib:bs_1.52.0__1.1.37!backstage-plugin-techdocs-module-addons-contrib
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-adoption-insights
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-adoption-insights:next__0.8.3!red-hat-developer-hub-backstage-plugin-adoption-insights
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-adoption-insights-backend:next__0.8.3!red-hat-developer-hub-backstage-plugin-adoption-insights-backend
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights:next__0.8.3!red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions:next__0.17.1!red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-dynamic-home-page (OFS / Scalprum home;
+  # prefer NFS homepage above for app-next)
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:next__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-extensions
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-extensions:next__0.17.1!red-hat-developer-hub-backstage-plugin-extensions
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-extensions-backend
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-extensions-backend:next__0.17.1!red-hat-developer-hub-backstage-plugin-extensions-backend
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-lightspeed
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__2.9.0!red-hat-developer-hub-backstage-plugin-lightspeed
+  #   disabled: false
+
+  # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed-backend:next__2.9.0!red-hat-developer-hub-backstage-plugin-lightspeed-backend
+  #   disabled: false

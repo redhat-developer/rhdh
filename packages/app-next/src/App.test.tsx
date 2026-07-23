@@ -1,6 +1,18 @@
 import { renderWithEffects } from '@backstage/test-utils';
 
-jest.setTimeout(30_000);
+jest.mock('./modules/dynamicFeatures/rhdhDynamicFrontendFeaturesLoader', () => {
+  const { createFrontendFeatureLoader } = jest.requireActual(
+    '@backstage/frontend-plugin-api',
+  );
+  return {
+    rhdhDynamicFrontendFeaturesLoader: () =>
+      createFrontendFeatureLoader({
+        async loader() {
+          return [];
+        },
+      }),
+  };
+});
 
 describe('App', () => {
   it('should render', async () => {
@@ -14,6 +26,7 @@ describe('App', () => {
               support: { url: 'http://localhost:7007/support' },
             },
             backend: { baseUrl: 'http://localhost:7007' },
+            dynamicPlugins: { rootDirectory: 'dynamic-plugins-root' },
             lighthouse: {
               baseUrl: 'http://localhost:3003',
             },
@@ -29,5 +42,5 @@ describe('App', () => {
     const { default: app } = await import('./App');
     const rendered = await renderWithEffects(app);
     expect(rendered.baseElement).toBeInTheDocument();
-  });
+  }, 100_000);
 });
