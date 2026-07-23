@@ -67,9 +67,11 @@ _pg_save_phase_artifacts() {
   save_all_pod_logs "${NAME_SPACE}" "${artifacts_subdir}"
 }
 
-# RHIDP-14594: chart-managed PostgreSQL major upgrades on rhel9 images.
+# RHIDP-14594: chart-managed PostgreSQL major upgrades on Fedora images.
 # Flow: PG15 → Playwright → PG16 → Playwright → PG18 → Playwright
-# Each phase writes to a distinct ARTIFACT_DIR subdir (pod logs + Playwright output).
+# Hop A (15→16): POSTGRESQL_UPGRADE=copy (fedora/postgresql-16 ships PG15 bins).
+# Hop B (16→18): dump/restore — fedora/postgresql-18 advertises PREV_VERSION=16 but
+# only packages postgresql-17 binaries, so copy upgrade cannot work.
 handle_ocp_pull() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
@@ -90,12 +92,11 @@ handle_ocp_pull() {
 
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  # Unique artifact roots so Playwright/junit/pod logs from later hops cannot overwrite earlier ones.
   local art_pg15="${PW_PROJECT_SHOWCASE}-pg15"
   local art_pg16="${PW_PROJECT_SHOWCASE}-pg16"
   local art_pg18="${PW_PROJECT_SHOWCASE}-pg18"
 
-  log::info "Phase PG15: rhel9/postgresql-15"
+  log::info "Phase PG15: fedora/postgresql-15"
   if ! _pg_upgrade_verify_and_test "PG15 baseline" "${art_pg15}" "${url}" "postgresql-15" 600; then
     return 1
   fi
@@ -108,13 +109,29 @@ handle_ocp_pull() {
     return 1
   fi
 
-  log::info "Phase PG18: upgrade 16 → 18 (POSTGRESQL_UPGRADE=copy)"
-  helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_18_upgrade.yaml"
-  refresh_postgres_collation_versions "${NAME_SPACE}" 900 "postgresql-18"
+  log::info "Phase PG18: dump/restore 16 → 18 (fedora copy upgrade unsupported)"
+  local dumpfile="/tmp/rhdh-pg16-dumpall.sql"
+  if ! postgres_dumpall_to_file "${NAME_SPACE}" "${dumpfile}"; then
+    _pg_save_phase_artifacts "${art_pg18}" "PG18 dump failed"
+    return 1
+  fi
+  common::save_artifact "${art_pg18}" "${dumpfile}" "postgres" || true
+
+  postgres_wipe_persistent_volume "${NAME_SPACE}"
   helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_18.yaml"
-  if ! _pg_upgrade_verify_and_test "PG18 after upgrade" "${art_pg18}" "${url}" "postgresql-18" 900; then
+  if ! postgres_restore_dumpall_file "${NAME_SPACE}" "${dumpfile}" "postgresql-18"; then
+    dump_postgres_diagnostics "${NAME_SPACE}"
+    _pg_save_phase_artifacts "${art_pg18}" "PG18 restore failed"
+    return 1
+  fi
+  refresh_postgres_collation_versions "${NAME_SPACE}" 600 "postgresql-18"
+
+  # Bounce Backstage so it reconnects cleanly to the restored DB.
+  oc rollout restart deployment/"${RELEASE_NAME}-developer-hub" -n "${NAME_SPACE}" || true
+
+  if ! _pg_upgrade_verify_and_test "PG18 after dump/restore" "${art_pg18}" "${url}" "postgresql-18" 900; then
     return 1
   fi
 
-  log::info "PostgreSQL 15 → 16 → 18 Helm upgrade sequence completed (Playwright after each major)"
+  log::info "PostgreSQL 15 → 16 → 18 Fedora Helm upgrade sequence completed (Playwright after each major)"
 }

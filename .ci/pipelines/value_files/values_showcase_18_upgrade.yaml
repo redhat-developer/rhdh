@@ -149,8 +149,10 @@ upstream:
   postgresql:
     enabled: true
     image:
-      registry: registry.redhat.io
-      repository: rhel9/postgresql-18
+      # Kept for reference; fedora 16→18 uses dump/restore (see ocp-pull.sh).
+      # fedora/postgresql-18 sets PREV_VERSION=16 but only ships postgresql-17 bins.
+      registry: quay.io
+      repository: fedora/postgresql-18
       tag: latest
     primary:
       extraEnvVars:

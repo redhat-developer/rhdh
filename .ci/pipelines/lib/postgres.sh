@@ -158,3 +158,71 @@ refresh_postgres_collation_versions() {
 
   log::info "Collation version refresh completed for namespace: ${namespace}"
 }
+
+# Dump all databases from the chart-managed PostgreSQL (for dump/restore upgrades).
+# Args:
+#   $1 - namespace
+#   $2 - output file path
+postgres_dumpall_to_file() {
+  local namespace=$1
+  local outfile=$2
+  local pg_pod
+
+  if ! pg_pod=$(wait_for_postgres_ready "${namespace}" 300); then
+    log::error "Cannot dumpall: PostgreSQL not Ready in ${namespace}"
+    return 1
+  fi
+
+  log::info "Running pg_dumpall from ${pg_pod} → ${outfile}"
+  mkdir -p "$(dirname "${outfile}")"
+  if ! oc exec -n "${namespace}" "${pg_pod}" -- pg_dumpall -U postgres > "${outfile}"; then
+    log::error "pg_dumpall failed"
+    return 1
+  fi
+  log::info "pg_dumpall wrote $(wc -c < "${outfile}" | tr -d ' ') bytes"
+}
+
+# Wipe the chart-managed Postgres PVC so the next helm install can initdb fresh.
+# Args:
+#   $1 - namespace
+postgres_wipe_persistent_volume() {
+  local namespace=$1
+
+  log::info "Wiping PostgreSQL StatefulSet + PVC in ${namespace} for dump/restore upgrade"
+  oc delete statefulset -n "${namespace}" -l "app.kubernetes.io/name=postgresql" --wait=true --timeout=5m 2>&1 || true
+  oc delete pod -n "${namespace}" -l "app.kubernetes.io/name=postgresql" --force --grace-period=0 2>&1 || true
+
+  local pvc
+  pvc=$(oc get pvc -n "${namespace}" -o name 2> /dev/null | grep -i postgres | head -1 || true)
+  if [[ -n "${pvc}" ]]; then
+    log::info "Deleting ${pvc}"
+    oc delete -n "${namespace}" "${pvc}" --wait=true --timeout=5m 2>&1 || true
+  else
+    log::warn "No postgres PVC found to delete"
+  fi
+}
+
+# Restore a pg_dumpall file into a Ready PostgreSQL pod.
+# Args:
+#   $1 - namespace
+#   $2 - dump file path
+#   $3 - optional expected image substring
+postgres_restore_dumpall_file() {
+  local namespace=$1
+  local dumpfile=$2
+  local expected_image_substr=${3:-}
+  local pg_pod
+
+  if ! pg_pod=$(wait_for_postgres_ready "${namespace}" 600 "${expected_image_substr}"); then
+    log::error "Cannot restore: PostgreSQL not Ready in ${namespace}"
+    return 1
+  fi
+
+  log::info "Restoring pg_dumpall into ${pg_pod} from ${dumpfile}"
+  # Ignore benign "already exists" errors from globals/roles created by image init.
+  if ! oc exec -i -n "${namespace}" "${pg_pod}" -- psql -U postgres -v ON_ERROR_STOP=0 < "${dumpfile}"; then
+    log::error "psql restore failed"
+    return 1
+  fi
+  log::info "pg_dumpall restore completed"
+}
