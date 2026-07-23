@@ -150,39 +150,38 @@ handle_ocp_disconnected_operator() {
   rendered_cr=$(envsubst < "${DIR}/resources/rhdh-operator/rhdh-start-disconnected-smoke.yaml")
   # Parity with helm-post-renderer.sh: registries.conf, policy.json, mirror CA.
   # Also mount registry auth.json for authenticated mirror pulls.
-  rendered_cr=$(echo "$rendered_cr" | yq eval \
-    --arg mirror "${MIRROR_REGISTRY_URL}" \
-    --arg auth_secret "${auth_secret}" \
-    '
+  # CI yq is mikefarah/yq (no --arg); interpolate paths via the shell.
+  # shellcheck disable=SC2016
+  rendered_cr=$(echo "$rendered_cr" | yq eval "
     .spec.application.extraFiles.configMaps = [
       {
-        "name": "rhdh-plugin-mirror-conf",
-        "key": "rhdh-registries.conf",
-        "mountPath": "/etc/containers/registries.conf.d",
-        "containers": ["install-dynamic-plugins"]
+        \"name\": \"rhdh-plugin-mirror-conf\",
+        \"key\": \"rhdh-registries.conf\",
+        \"mountPath\": \"/etc/containers/registries.conf.d\",
+        \"containers\": [\"install-dynamic-plugins\"]
       },
       {
-        "name": "rhdh-plugin-mirror-conf",
-        "key": "policy.json",
-        "mountPath": "/etc/containers",
-        "containers": ["install-dynamic-plugins"]
+        \"name\": \"rhdh-plugin-mirror-conf\",
+        \"key\": \"policy.json\",
+        \"mountPath\": \"/etc/containers\",
+        \"containers\": [\"install-dynamic-plugins\"]
       },
       {
-        "name": "mirror-registry-ca",
-        "key": "ca.crt",
-        "mountPath": ("/etc/containers/certs.d/" + $mirror),
-        "containers": ["install-dynamic-plugins"]
+        \"name\": \"mirror-registry-ca\",
+        \"key\": \"ca.crt\",
+        \"mountPath\": \"/etc/containers/certs.d/${MIRROR_REGISTRY_URL}\",
+        \"containers\": [\"install-dynamic-plugins\"]
       }
     ] |
     .spec.application.extraFiles.secrets = [
       {
-        "name": $auth_secret,
-        "key": "auth.json",
-        "mountPath": "/opt/app-root/src/.config/containers",
-        "containers": ["install-dynamic-plugins"]
+        \"name\": \"${auth_secret}\",
+        \"key\": \"auth.json\",
+        \"mountPath\": \"/opt/app-root/src/.config/containers\",
+        \"containers\": [\"install-dynamic-plugins\"]
       }
     ]
-    ' -)
+  " -)
 
   local cr_temp="${DISCONNECTED_TMPDIR}/backstage-cr-disconnected.yaml"
   echo "$rendered_cr" > "${cr_temp}"
