@@ -161,3 +161,5 @@ upstream:
             secretKeyRef:
               key: postgres-password
               name: '{{- include "postgresql.v1.secretName" . }}'
+      persistence:
+        size: 5Gi

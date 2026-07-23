@@ -150,14 +150,14 @@ upstream:
     enabled: true
     image:
       registry: quay.io
-      repository: fedora/postgresql-16
+      repository: fedora/postgresql-15
       tag: latest
     primary:
+      persistence:
+        size: 5Gi
       extraEnvVars:
         - name: POSTGRESQL_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
               key: postgres-password
               name: '{{- include "postgresql.v1.secretName" . }}'
-      persistence:
-        size: 5Gi
