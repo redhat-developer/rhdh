@@ -50,6 +50,8 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
   ];
 
   test.beforeAll(async ({}, testInfo) => {
+    // Helm overlay + Auth Proxy patch + restart (no helm --wait until proxy is up).
+    test.setTimeout(900_000);
     test.info().annotations.push(
       {
         type: "component",
