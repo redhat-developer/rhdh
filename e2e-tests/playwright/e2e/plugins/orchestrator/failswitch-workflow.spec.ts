@@ -160,7 +160,7 @@ spec:
     spec:
       containers:
         - name: httpbin
-          image: registry.access.redhat.com/ubi9/python-311:latest
+          image: registry.access.redhat.com/ubi9/python-311@sha256:a0bdb55576fc5b8d6704279307817828ef027e1065533ceba133fe9516003a6c
           command:
             - python3
             - -c
