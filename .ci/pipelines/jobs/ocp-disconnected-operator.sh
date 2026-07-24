@@ -123,6 +123,18 @@ handle_ocp_disconnected_operator() {
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
 
+  # Homepage ("Welcome back!") comes from dynamic-plugins.default.yaml inside the
+  # catalog index. Clearing CATALOG_INDEX_IMAGE skips that file and / 404s after
+  # guest login. Rewrite to the index already pushed by mirror_plugins (same
+  # path under MIRROR_REGISTRY_URL). Do this AFTER mirroring so mirror_plugins
+  # still resolves the upstream/index override correctly.
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    export CATALOG_INDEX_IMAGE="${MIRROR_REGISTRY_URL}/${CATALOG_INDEX_IMAGE#*/}"
+  else
+    export CATALOG_INDEX_IMAGE="${MIRROR_REGISTRY_URL}/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
+  fi
+  log::info "Using mirrored CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE}"
+
   log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
