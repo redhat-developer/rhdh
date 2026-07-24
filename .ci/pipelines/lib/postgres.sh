@@ -89,11 +89,26 @@ _operator_related_postgresql_image() {
     2> /dev/null || true
 }
 
+# Resolve operator controller Deployment name in OPERATOR_MANAGER (or empty).
+_operator_controller_deploy_name() {
+  local ns="${OPERATOR_MANAGER:-rhdh-operator}"
+  local deploy
+  deploy=$(oc get deploy -n "${ns}" -l control-plane=controller-manager \
+    -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
+  if [[ -z "${deploy}" ]]; then
+    deploy=$(oc get deploy -n "${ns}" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
+  fi
+  echo "${deploy}"
+}
+
 # Point the RHDH operator at a different Fedora/RHEL PostgreSQL image via RELATED_IMAGE_postgresql.
 #
 # OLM owns the operator Deployment: `oc set env` is raced/reverted to the CSV
 # default (often registry.redhat.io/rhel9/postgresql-15@sha256:…). Pin the value
 # on Subscription.spec.config.env so OLM keeps applying our override.
+#
+# The Backstage CRD can appear before the operator Deployment exists — patch the
+# Subscription first, then wait for Deployment + env.
 #
 # Args:
 #   $1 - full image ref (e.g. quay.io/fedora/postgresql-18:latest)
@@ -101,29 +116,30 @@ set_operator_postgresql_related_image() {
   local image=$1
   local ns="${OPERATOR_MANAGER:-rhdh-operator}"
   local sub="${OPERATOR_SUBSCRIPTION_NAME:-rhdh}"
-  local deploy
+  local deploy=""
   local current=""
   local waited=0
-  local max_wait=180
+  local max_wait=300
 
   if [[ -z "${image}" ]]; then
     log::error "set_operator_postgresql_related_image: image required"
     return 1
   fi
 
-  deploy=$(oc get deploy -n "${ns}" -l control-plane=controller-manager \
-    -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
-  if [[ -z "${deploy}" ]]; then
-    deploy=$(oc get deploy -n "${ns}" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
-  fi
-  if [[ -z "${deploy}" ]]; then
-    log::error "No operator Deployment found in ${ns}"
-    return 1
-  fi
-
+  log::info "Waiting up to ${max_wait}s for Subscription/${sub} in ${ns}"
+  waited=0
+  while ((waited < max_wait)); do
+    if oc get subscription "${sub}" -n "${ns}" &> /dev/null; then
+      break
+    fi
+    log::info "Still waiting… Subscription/${sub} not found (${waited}s/${max_wait}s)"
+    oc get subscription,csv,ip,deploy,pods -n "${ns}" -o wide >&2 || true
+    sleep 5
+    waited=$((waited + 5))
+  done
   if ! oc get subscription "${sub}" -n "${ns}" &> /dev/null; then
     log::error "Subscription/${sub} not found in ${ns}; cannot pin RELATED_IMAGE_postgresql via OLM"
-    oc get subscription -n "${ns}" -o wide >&2 || true
+    oc get subscription,csv,ip,deploy,pods -n "${ns}" -o wide >&2 || true
     return 1
   fi
 
@@ -135,24 +151,31 @@ set_operator_postgresql_related_image() {
     return 1
   fi
 
-  # Also set on the Deployment for a faster first apply; OLM will re-apply from Subscription.
-  oc set env "deployment/${deploy}" -n "${ns}" "RELATED_IMAGE_postgresql=${image}" 2>&1 || true
-
-  log::info "Waiting up to ${max_wait}s for Deployment/${deploy} RELATED_IMAGE_postgresql to equal ${image}"
+  log::info "Waiting up to ${max_wait}s for operator Deployment with RELATED_IMAGE_postgresql=${image}"
+  waited=0
   while ((waited < max_wait)); do
-    current=$(_operator_related_postgresql_image "${deploy}")
-    if [[ "${current}" == "${image}" ]]; then
-      break
+    deploy=$(_operator_controller_deploy_name)
+    if [[ -n "${deploy}" ]]; then
+      # Best-effort immediate apply; OLM re-applies from Subscription.
+      oc set env "deployment/${deploy}" -n "${ns}" "RELATED_IMAGE_postgresql=${image}" 2>&1 || true
+      current=$(_operator_related_postgresql_image "${deploy}")
+      if [[ "${current}" == "${image}" ]]; then
+        break
+      fi
+      log::info "Still waiting… deploy=${deploy} RELATED_IMAGE_postgresql=${current:-<unset>} (${waited}s/${max_wait}s)"
+    else
+      log::info "Still waiting… no operator Deployment yet (${waited}s/${max_wait}s)"
+      oc get subscription,csv,ip,deploy,pods -n "${ns}" -o wide >&2 || true
     fi
-    log::info "Still waiting… RELATED_IMAGE_postgresql=${current:-<unset>} (${waited}s/${max_wait}s)"
     sleep 5
     waited=$((waited + 5))
   done
 
-  if [[ "${current}" != "${image}" ]]; then
-    log::error "RELATED_IMAGE_postgresql did not stick (got '${current:-<unset>}', want '${image}')"
+  if [[ -z "${deploy}" || "${current}" != "${image}" ]]; then
+    log::error "RELATED_IMAGE_postgresql did not stick (deploy='${deploy:-<none>}', got '${current:-<unset>}', want '${image}')"
     oc get subscription "${sub}" -n "${ns}" -o yaml >&2 || true
-    oc get "deploy/${deploy}" -n "${ns}" -o yaml >&2 || true
+    oc get deploy,pods -n "${ns}" -o wide >&2 || true
+    [[ -n "${deploy}" ]] && oc get "deploy/${deploy}" -n "${ns}" -o yaml >&2 || true
     return 1
   fi
 
