@@ -12455,18 +12455,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.2.1"
+"@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.3.0"
   dependencies:
     "@backstage/plugin-permission-common": "npm:^0.9.9"
-  checksum: 10c0/1a2aec14e52e8d021c57b93bf25ee9931ecc816991831655e275e365aec7b52d36fbd6e358212526b75ec59dc917e6fb5e4a237e92ba84b0859caafb791cf49c
+  checksum: 10c0/c3413a6b7d8fa1c3da879a5c05aec4d714034ccacd915d551a914a1e16aad8de76ca1e18a5dd84b4ef74c541efb04fbf5eddbca34090157787490154c846f6a6
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-homepage@npm:1.15.0":
-  version: 1.15.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-homepage@npm:1.15.0"
+"@red-hat-developer-hub/backstage-plugin-homepage@npm:1.16.0":
+  version: 1.16.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage@npm:1.16.0"
   dependencies:
     "@backstage/catalog-client": "npm:^1.15.1"
     "@backstage/catalog-model": "npm:^1.9.0"
@@ -12484,14 +12484,15 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styles": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-homepage-common": "npm:^0.2.1"
+    "@red-hat-developer-hub/backstage-plugin-homepage-common": "npm:^0.3.0"
     "@scalprum/react-core": "npm:0.11.3"
     react-grid-layout: "npm:1.5.3"
     react-use: "npm:17.6.1"
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
+    react-dom: "*"
     react-router-dom: 6.30.4
-  checksum: 10c0/4dd37495b05c4c5c955e69953ae3a5507aba2bb019fa543dc018dc05548114da629803ab457e889e59287e2d8318e8b5b84b23f3257afae3185da4f3da39cb43
+  checksum: 10c0/1a68c580849beb6d2cdb3c4998f807eaaf7dcefcd94a85dad7cbe754cc0dee79eaf0d67bb17bd2e528ed3b5fbb68f38cff12525fdb2a6944495c7b2787aee2d9
   languageName: node
   linkType: hard
 
@@ -17075,7 +17076,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@octokit/rest": "npm:19.0.13"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:0.0.5"
-    "@red-hat-developer-hub/backstage-plugin-homepage": "npm:1.15.0"
+    "@red-hat-developer-hub/backstage-plugin-homepage": "npm:1.16.0"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:14.3.1"
