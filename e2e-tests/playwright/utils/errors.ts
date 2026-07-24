@@ -20,3 +20,19 @@ export function hasStatusCode(error: unknown): error is { statusCode: number } {
     typeof (error as { statusCode: unknown }).statusCode === "number"
   );
 }
+
+/** True for Kubernetes AlreadyExists / conflict responses (create-or-replace paths). */
+export function isKubernetesConflictError(error: unknown): boolean {
+  if (hasStatusCode(error) && error.statusCode === 409) {
+    return true;
+  }
+  return hasErrorResponse(error) && error.response?.statusCode === 409;
+}
+
+/** True for Kubernetes NotFound responses (idempotent deletes). */
+export function isKubernetesNotFoundError(error: unknown): boolean {
+  if (hasStatusCode(error) && error.statusCode === 404) {
+    return true;
+  }
+  return hasErrorResponse(error) && error.response?.statusCode === 404;
+}

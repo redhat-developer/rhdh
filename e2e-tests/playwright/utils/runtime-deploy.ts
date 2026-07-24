@@ -2,9 +2,11 @@
  * Runtime deployment utility for SHOWCASE_RUNTIME tests.
  *
  * Deploys RHDH with an internal PostgreSQL database via Helm sub-chart
- * (helm) or operator-managed StatefulSet (operator). The deployment
- * happens once in the first test file's beforeAll — subsequent specs
- * reuse the existing deployment since the project runs with workers: 1.
+ * (helm) or operator-managed StatefulSet (operator). Called from
+ * Playwright globalSetup when RUNTIME_AUTO_DEPLOY=true (and still safe
+ * to call from a spec beforeAll — idempotent via a process-local flag
+ * and an existing-deployment check). Subsequent specs reuse the
+ * deployment since the project runs with workers: 1.
  *
  * All deployment configuration is generated from `runtime-config.ts` —
  * a single source of truth that produces Helm values YAML, Operator
@@ -20,7 +22,7 @@
  *   K8S_CLUSTER_ROUTER_BASE              — cluster router base domain
  *
  * Environment variables exported after deployment:
- *   BASE_URL              — RHDH route URL (set only if not already set)
+ *   BASE_URL              — RHDH route URL (always set to the instance URL)
  *   SCHEMA_MODE_*         — schema-mode env vars (via configureSchemaMode in schema-mode-db.ts)
  */
 
@@ -37,9 +39,16 @@ import {
   imageRefToString,
 } from "./helper";
 import {
+  createInstanceRouteIdentity,
+  deploymentName,
+  predictedUrl,
+  routeObjectName,
+} from "./instance-route-identity";
+import {
   KubeClient,
   getErrorStatusCode,
   getRhdhDeploymentName,
+  isRecord,
   waitForBackstageCrd,
 } from "./kube-client";
 import {
@@ -108,7 +117,6 @@ async function deployWithHelm(
   }
 
   const { namespace, releaseName } = config;
-  const { chartUrl, chartVersion } = config.helm;
 
   // Create PVC for dynamic plugins — persists extracted plugins across
   // deployment restarts (config-map and schema-mode tests both restart RHDH).
@@ -130,47 +138,14 @@ async function deployWithHelm(
     }
   }
 
-  // Generate values YAML and write to a temp file
   const valuesYaml = generateHelmValuesYaml();
-  const tmpValuesFile = path.join(os.tmpdir(), `rhdh-runtime-values-${Date.now()}.yaml`);
-  fs.writeFileSync(tmpValuesFile, valuesYaml, "utf-8");
-  console.log(`Generated Helm values written to ${tmpValuesFile}`);
+  console.log("Installing RHDH via Helm...");
+  await upgradeRuntimeHelmRelease(config, valuesYaml);
+  console.log("Helm install complete");
 
-  try {
-    // Helm install
-    const helmArgs = [
-      "upgrade",
-      "-i",
-      releaseName,
-      "-n",
-      namespace,
-      chartUrl,
-      "--version",
-      chartVersion,
-      "-f",
-      tmpValuesFile,
-      ...generateHelmSetArgs(config),
-      "--wait",
-      "--timeout",
-      "10m",
-    ];
-
-    console.log("Installing RHDH via Helm...");
-    await run("helm", helmArgs, { timeout: 600_000 });
-    console.log("Helm install complete");
-  } finally {
-    // Clean up temp file
-    try {
-      fs.unlinkSync(tmpValuesFile);
-    } catch {
-      // ignore cleanup errors
-    }
-  }
-
-  // Read the actual route URL from the cluster
-  const routeName = releaseName.includes("developer-hub")
-    ? releaseName
-    : `${releaseName}-developer-hub`;
+  // Read the actual route URL from the cluster; fall back to predicted helm URL.
+  const identity = createInstanceRouteIdentity("helm", releaseName, namespace, config.routerBase);
+  const routeName = routeObjectName("helm", releaseName);
   try {
     const route = await kubeClient.customObjectsApi.getNamespacedCustomObject(
       "route.openshift.io",
@@ -184,7 +159,7 @@ async function deployWithHelm(
   } catch {
     // fall through to computed URL
   }
-  return `https://${routeName}-${namespace}.${config.routerBase}`;
+  return predictedUrl(identity);
 }
 
 // ---------------------------------------------------------------------------
@@ -196,12 +171,10 @@ async function deployWithOperator(
   config: ReturnType<typeof resolveConfig>,
 ): Promise<string> {
   const { namespace, releaseName, routerBase } = config;
-  // The operator creates a route named backstage-<release> whose host is
-  // backstage-<release>-<namespace>.<routerBase> — this matches the CR's
-  // spec.application.route.enabled naming convention. Unlike Helm (where
-  // the chart can customise the route name), the operator's naming is
-  // deterministic, so a computed URL is sufficient here.
-  const runtimeUrl = `https://backstage-${releaseName}-${namespace}.${routerBase}`;
+  // Operator route naming is deterministic — InstanceRouteIdentity owns the formula.
+  const runtimeUrl = predictedUrl(
+    createInstanceRouteIdentity("operator", releaseName, namespace, routerBase),
+  );
 
   // 1. Create app-config ConfigMap (generated from runtime-config.ts)
   const appConfigYaml = generateAppConfigYaml(runtimeUrl);
@@ -252,15 +225,17 @@ async function deployWithOperator(
 
   // 6. Wait for the operator to create the deployment
   console.log("Waiting for operator to create the deployment...");
-  const deploymentName = `backstage-${releaseName}`;
+  const operatorDeploymentName = deploymentName("operator", releaseName);
   for (let i = 0; i < 60; i++) {
     try {
-      await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
-      console.log(`Deployment ${deploymentName} found`);
+      await kubeClient.appsApi.readNamespacedDeployment(operatorDeploymentName, namespace);
+      console.log(`Deployment ${operatorDeploymentName} found`);
       break;
     } catch {
       if (i === 59)
-        throw new Error(`Operator did not create deployment ${deploymentName} after 5 minutes`);
+        throw new Error(
+          `Operator did not create deployment ${operatorDeploymentName} after 5 minutes`,
+        );
       await new Promise<void>((resolve) => {
         setTimeout(() => {
           resolve();
@@ -270,10 +245,122 @@ async function deployWithOperator(
   }
 
   // 7. Wait for deployment readiness
-  await kubeClient.waitForDeploymentReady(deploymentName, namespace, 1, 600_000);
+  await kubeClient.waitForDeploymentReady(operatorDeploymentName, namespace, 1, 600_000);
   console.log("Operator deployment ready");
 
   return runtimeUrl;
+}
+
+// ---------------------------------------------------------------------------
+// Shared Helm / Operator CR helpers (used by runtime deploy + external DB)
+// ---------------------------------------------------------------------------
+
+/**
+ * `helm upgrade -i` the runtime release with the given values YAML.
+ * Shared by initial deploy and external-DB overlays (e.g. Cloud SQL).
+ *
+ * @param options.wait - When false, skip `--wait` so callers can patch the
+ *   Deployment (e.g. Auth Proxy sidecar) before expecting pods to become Ready.
+ */
+export async function upgradeRuntimeHelmRelease(
+  config: ReturnType<typeof resolveConfig>,
+  valuesYaml: string,
+  options: { wait?: boolean } = {},
+): Promise<void> {
+  if (!config.helm) {
+    throw new Error("CHART_VERSION environment variable is required for Helm deployment");
+  }
+
+  const waitForReady = options.wait !== false;
+  const { namespace, releaseName } = config;
+  const { chartUrl, chartVersion } = config.helm;
+  const tmpValuesFile = path.join(os.tmpdir(), `rhdh-runtime-values-${Date.now()}.yaml`);
+  fs.writeFileSync(tmpValuesFile, valuesYaml, "utf-8");
+  console.log(`Generated Helm values written to ${tmpValuesFile}`);
+
+  const args = [
+    "upgrade",
+    "-i",
+    releaseName,
+    "-n",
+    namespace,
+    chartUrl,
+    "--version",
+    chartVersion,
+    "-f",
+    tmpValuesFile,
+    ...generateHelmSetArgs(config),
+  ];
+  if (waitForReady) {
+    args.push("--wait", "--timeout", "10m");
+  }
+
+  try {
+    await run("helm", args, { timeout: waitForReady ? 600_000 : 180_000 });
+  } finally {
+    try {
+      fs.unlinkSync(tmpValuesFile);
+    } catch {
+      // ignore cleanup errors
+    }
+  }
+}
+
+function parseBackstageApiVersion(apiVersion: string): { group: string; version: string } {
+  const [group, version] = apiVersion.split("/");
+  if (group === undefined || version === undefined || group === "" || version === "") {
+    throw new Error(`Invalid Backstage CR apiVersion: ${apiVersion}`);
+  }
+  return { group, version };
+}
+
+function isRuntimeBackstageCr(value: unknown): value is ReturnType<typeof generateBackstageCR> {
+  return (
+    isRecord(value) &&
+    value.kind === "Backstage" &&
+    typeof value.apiVersion === "string" &&
+    isRecord(value.metadata) &&
+    typeof value.metadata.name === "string" &&
+    isRecord(value.spec)
+  );
+}
+
+/** Read the live Backstage CR for the runtime release. */
+export async function getRuntimeBackstageCr(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+): Promise<ReturnType<typeof generateBackstageCR>> {
+  const { group, version } = parseBackstageApiVersion(BACKSTAGE_CR_API_VERSION);
+  const response = await kubeClient.customObjectsApi.getNamespacedCustomObject(
+    group,
+    version,
+    namespace,
+    "backstages",
+    releaseName,
+  );
+  if (!isRuntimeBackstageCr(response.body)) {
+    throw new TypeError(`Backstage CR '${releaseName}' has unexpected shape`);
+  }
+  return response.body;
+}
+
+/** Replace the live Backstage CR (operator reconciles the Deployment). */
+export async function replaceRuntimeBackstageCr(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+  cr: ReturnType<typeof generateBackstageCR>,
+): Promise<void> {
+  const { group, version } = parseBackstageApiVersion(cr.apiVersion || BACKSTAGE_CR_API_VERSION);
+  await kubeClient.customObjectsApi.replaceNamespacedCustomObject(
+    group,
+    version,
+    namespace,
+    "backstages",
+    releaseName,
+    cr,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -314,14 +401,23 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   const kubeClient = new KubeClient();
 
   // Check if deployment already exists and is ready
-  const deploymentName = getRhdhDeploymentName();
+  const existingDeploymentName = getRhdhDeploymentName();
+  const runtimeUrl = predictedUrl(
+    createInstanceRouteIdentity(installMethod, releaseName, namespace, routerBase),
+  );
   try {
-    const dep = await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
+    const dep = await kubeClient.appsApi.readNamespacedDeployment(
+      existingDeploymentName,
+      namespace,
+    );
     const ready = dep.body.status?.readyReplicas ?? 0;
     if (ready >= 1) {
       console.log(
-        `Deployment ${deploymentName} already running (${ready} ready replicas) — skipping deploy`,
+        `Deployment ${existingDeploymentName} already running (${ready} ready replicas) — skipping deploy`,
       );
+      // Always publish the instance URL — overwrite router-stub / empty BASE_URL.
+      process.env.BASE_URL = runtimeUrl;
+      console.log(`BASE_URL set to ${runtimeUrl}`);
       deployed = true;
       // Still configure schema-mode env if not already set
       if (
@@ -341,18 +437,17 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   await kubeClient.createNamespace(namespace);
   await createPlaceholderSecrets(kubeClient, namespace);
 
-  let runtimeUrl: string;
+  let deployedUrl: string;
   if (installMethod === "helm") {
-    runtimeUrl = await deployWithHelm(kubeClient, config);
+    deployedUrl = await deployWithHelm(kubeClient, config);
   } else {
-    runtimeUrl = await deployWithOperator(kubeClient, config);
+    deployedUrl = await deployWithOperator(kubeClient, config);
   }
 
-  // Set BASE_URL if not already set
-  if (process.env.BASE_URL === undefined || process.env.BASE_URL === "") {
-    process.env.BASE_URL = runtimeUrl;
-    console.log(`BASE_URL set to ${runtimeUrl}`);
-  }
+  // Always publish the instance URL — overwrite router-stub / empty BASE_URL so
+  // ensurePlaywrightReady can reclassify after RUNTIME_AUTO_DEPLOY.
+  process.env.BASE_URL = deployedUrl;
+  console.log(`BASE_URL set to ${deployedUrl}`);
 
   // Configure schema-mode env vars
   await configureSchemaMode(kubeClient, namespace, releaseName, installMethod);

@@ -1,12 +1,10 @@
 import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse } from "../../errors";
+import { wrapKubernetesError } from "../../kube-client/helpers";
 import { pollUntil, pollUntilStable } from "../../poll-until";
+import { buildDeploymentLabelSelector } from "./deployment-labels";
 import { BackstageCr, RHDHDeploymentState } from "./types";
-
-const BACKSTAGE_LABELS = {
-  "app.kubernetes.io/name": "backstage",
-} as const;
 
 const POLL_INTERVAL_MS = 500;
 
@@ -20,28 +18,43 @@ function skipIfRunningLocal(state: RHDHDeploymentState, message?: string): boole
   return false;
 }
 
-function buildLabelSelector(instanceName: string): string {
-  const labels = {
-    ...BACKSTAGE_LABELS,
-    "app.kubernetes.io/instance": instanceName,
-  };
-  return Object.entries(labels)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(",");
-}
+type DeploymentListClient = {
+  listNamespacedDeployment: (
+    namespace: string,
+    pretty?: string,
+    allowWatchBookmarks?: boolean,
+    continueToken?: string,
+    fieldSelector?: string,
+    labelSelector?: string,
+  ) => Promise<{ body: { items: k8s.V1Deployment[] } }>;
+};
+
+type DeploymentGenerationState = {
+  instanceName: string;
+  namespace: string;
+  appsV1Api: DeploymentListClient;
+};
 
 async function getLabeledDeployment(
-  state: RHDHDeploymentState,
+  state: DeploymentGenerationState,
   labelSelector: string,
 ): Promise<k8s.V1Deployment> {
-  const deployments = await state.appsV1Api.listNamespacedDeployment(
-    state.namespace,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    labelSelector,
-  );
+  let deployments: { body: { items: k8s.V1Deployment[] } };
+  try {
+    deployments = await state.appsV1Api.listNamespacedDeployment(
+      state.namespace,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      labelSelector,
+    );
+  } catch (error: unknown) {
+    throw wrapKubernetesError(
+      `Failed to list deployments in ${state.namespace} (${labelSelector})`,
+      error,
+    );
+  }
 
   if (deployments.body.items.length === 0) {
     throw new Error(`No deployment found with labels: ${labelSelector}`);
@@ -50,10 +63,45 @@ async function getLabeledDeployment(
   return deployments.body.items[0];
 }
 
-export async function getDeploymentGeneration(state: RHDHDeploymentState): Promise<number> {
-  const labelSelector = buildLabelSelector(state.instanceName);
+function isDeploymentNotFoundError(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith("No deployment found with labels:");
+}
+
+async function tryGetLabeledDeployment(
+  state: DeploymentGenerationState,
+  labelSelector: string,
+): Promise<k8s.V1Deployment | undefined> {
+  try {
+    return await getLabeledDeployment(state, labelSelector);
+  } catch (error) {
+    if (isDeploymentNotFoundError(error)) {
+      return undefined;
+    }
+    throw error;
+  }
+}
+
+export async function getDeploymentGeneration(state: DeploymentGenerationState): Promise<number> {
+  const labelSelector = buildDeploymentLabelSelector(state.instanceName);
   const deployment = await getLabeledDeployment(state, labelSelector);
   return deployment.metadata?.generation ?? 0;
+}
+
+/**
+ * Like getDeploymentGeneration, but returns undefined when the operator has
+ * not created the deployment yet (first-time auth-provider deploy).
+ */
+export async function tryGetDeploymentGeneration(
+  state: DeploymentGenerationState,
+): Promise<number | undefined> {
+  try {
+    return await getDeploymentGeneration(state);
+  } catch (error) {
+    if (isDeploymentNotFoundError(error)) {
+      return undefined;
+    }
+    throw error;
+  }
 }
 
 export async function waitForConfigReconciled(
@@ -67,16 +115,12 @@ export async function waitForConfigReconciled(
   const baseline =
     state.configReconcileBaselineGeneration ?? (await getDeploymentGeneration(state));
 
-  try {
-    await pollUntil(async () => (await getDeploymentGeneration(state)) > baseline, {
-      timeoutMs,
-      intervalMs: POLL_INTERVAL_MS,
-      label: `Config reconcile (generation > ${baseline})`,
-    });
-    console.log(`[INFO] Config reconciled - deployment generation > ${baseline}`);
-  } catch {
-    console.log(`[INFO] No deployment generation change after ${timeoutMs}ms, proceeding`);
-  }
+  await pollUntil(async () => (await getDeploymentGeneration(state)) > baseline, {
+    timeoutMs,
+    intervalMs: POLL_INTERVAL_MS,
+    label: `Config reconcile (generation > ${baseline})`,
+  });
+  console.log(`[INFO] Config reconciled - deployment generation > ${baseline}`);
 }
 
 function hasRolloutStarted(
@@ -143,7 +187,12 @@ async function waitForRolloutStart(
   try {
     await pollUntil(
       async () => {
-        const deployment = await getLabeledDeployment(state, labelSelector);
+        // Operator creates the Deployment asynchronously after the CR is
+        // applied — treat "not found yet" as still waiting, not a hard fail.
+        const deployment = await tryGetLabeledDeployment(state, labelSelector);
+        if (deployment === undefined) {
+          return false;
+        }
 
         if (initialGeneration === 0) {
           initialGeneration = deployment.metadata?.generation ?? 0;
@@ -219,8 +268,36 @@ export async function waitForDeploymentReady(
     return;
   }
 
-  const labelSelector = buildLabelSelector(state.instanceName);
+  const labelSelector = buildDeploymentLabelSelector(state.instanceName);
   await pollDeploymentReady(state, labelSelector, timeoutMs);
+}
+
+/**
+ * Wait until the operator has created the Backstage Deployment object.
+ * Does not wait for Available — use HTTP /healthcheck for that.
+ */
+export async function waitForDeploymentCreated(
+  state: DeploymentGenerationState & { isRunningLocal: boolean },
+  timeoutMs: number = 600000,
+): Promise<void> {
+  if (state.isRunningLocal) {
+    console.log("Skipping deployment created check as isRunningLocal is true.");
+    return;
+  }
+
+  const labelSelector = buildDeploymentLabelSelector(state.instanceName);
+  await pollUntil(
+    async () => {
+      const deployment = await tryGetLabeledDeployment(state, labelSelector);
+      return deployment !== undefined;
+    },
+    {
+      timeoutMs,
+      intervalMs: POLL_INTERVAL_MS,
+      label: `Deployment created (${labelSelector})`,
+    },
+  );
+  console.log(`[INFO] Deployment created with labels: ${labelSelector}`);
 }
 
 export async function waitForNamespaceActive(

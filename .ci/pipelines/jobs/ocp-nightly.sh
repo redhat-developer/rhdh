@@ -47,24 +47,19 @@ run_standard_deployment_tests() {
 }
 
 run_runtime_config_change_tests() {
-  # Runtime tests handle their own deployment via TypeScript (runtime-deploy.ts).
-  # The first test file (config-map.spec.ts) calls ensureRuntimeDeployed() which:
-  #   - Creates the namespace
-  #   - Deploys RHDH with Helm + internal PostgreSQL sub-chart
-  #   - Configures schema-mode env vars for port-forwarding
+  # Runtime tests self-deploy from Playwright global setup when
+  # RUNTIME_AUTO_DEPLOY=true. Pass the predicted route as BASE_URL so
+  # playwright.config.ts freezes a usable use.baseURL before globalSetup
+  # (Playwright resolves config before globalSetup runs). globalSetup then
+  # deploys via ensureRuntimeDeployed() and healthchecks that URL.
   # Subsequent test files reuse the existing deployment (workers: 1).
   #
-  # The CI wrapper only needs to set environment variables and invoke Playwright.
-  #
-  # No URL is passed on purpose. run_tests exports whatever it gets as BASE_URL,
-  # and global-setup.ts only deploys when BASE_URL is EMPTY and
-  # RUNTIME_AUTO_DEPLOY is true. Passing the route pre-set BASE_URL, so the
-  # deploy branch was skipped and global-setup instead polled a route that
-  # nothing had created yet - failing after 120s before any test could run.
-  # ensureRuntimeDeployed() sets BASE_URL itself once the route exists.
+  # Scope RUNTIME_AUTO_DEPLOY to this invocation only — a lasting export would
+  # leak into later projects (e.g. sanity-plugins) and stomp BASE_URL.
+
   export INSTALL_METHOD="helm"
-  export RUNTIME_AUTO_DEPLOY="true"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" || true
+  local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
+  RUNTIME_AUTO_DEPLOY=true testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
 }
 
 run_sanity_plugins_check() {

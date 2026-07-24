@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
@@ -59,9 +59,10 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
   });
 
   for (const config of rdsConfigurations) {
-    test.describe.serial(`RDS ${config.name} PostgreSQL version`, () => {
+    // Configure lives in beforeAll so CI retries of Verify do not redeploy.
+    test.describe(`RDS ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async ({}, testInfo) => {
-        test.setTimeout(135_000);
+        test.setTimeout(600_000);
         if (config.host === undefined || config.host === "") {
           testInfo.skip(true, `RDS_*_HOST not set for ${config.name} — skipping`);
           return;
@@ -76,14 +77,6 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
           password: rdsPassword!,
           certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
         });
-      });
-
-      test("Configure and restart deployment", async ({}, testInfo) => {
-        if (config.host === undefined || config.host === "") {
-          testInfo.skip(true, `RDS_*_HOST not set for ${config.name}`);
-          return;
-        }
-        test.setTimeout(600_000);
         await runtimeHarness.configureExternalPostgres({
           credentials: {
             host: config.host,
@@ -91,7 +84,6 @@ test.describe("Verify TLS configuration with RDS PostgreSQL health check", () =>
             password: rdsPassword!,
           },
         });
-        expect(config.host).toBeTruthy();
       });
 
       test("Verify successful DB connection", async ({ page }) => {

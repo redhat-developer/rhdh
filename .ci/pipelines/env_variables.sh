@@ -142,6 +142,20 @@ AZURE_DB_4_HOST=$(cat /tmp/secrets/AZURE_DB_4_HOST)
 # Store paths instead of content to avoid "Argument list too long" shell errors
 RDS_DB_CERTIFICATES_PATH="/tmp/secrets/rds-db-certificates.pem"
 AZURE_DB_CERTIFICATES_PATH="/tmp/secrets/azure-db-certificates.pem"
+## Google Cloud SQL credentials (Vault-populated in CI)
+## Auth Proxy sidecar uses instance connection names (project:region:instance).
+## Public hosts are used only for clearDatabase from the test runner (no DB CA PEM).
+CLOUDSQL_USER=$(cat /tmp/secrets/CLOUDSQL_USER 2> /dev/null || true)
+CLOUDSQL_PASSWORD=$(cat /tmp/secrets/CLOUDSQL_PASSWORD 2> /dev/null || true)
+CLOUDSQL_INSTANCE_1=$(cat /tmp/secrets/CLOUDSQL_INSTANCE_1 2> /dev/null || true)
+CLOUDSQL_INSTANCE_2=$(cat /tmp/secrets/CLOUDSQL_INSTANCE_2 2> /dev/null || true)
+CLOUDSQL_INSTANCE_3=$(cat /tmp/secrets/CLOUDSQL_INSTANCE_3 2> /dev/null || true)
+CLOUDSQL_INSTANCE_4=$(cat /tmp/secrets/CLOUDSQL_INSTANCE_4 2> /dev/null || true)
+CLOUDSQL_1_HOST=$(cat /tmp/secrets/CLOUDSQL_1_HOST 2> /dev/null || true)
+CLOUDSQL_2_HOST=$(cat /tmp/secrets/CLOUDSQL_2_HOST 2> /dev/null || true)
+CLOUDSQL_3_HOST=$(cat /tmp/secrets/CLOUDSQL_3_HOST 2> /dev/null || true)
+CLOUDSQL_4_HOST=$(cat /tmp/secrets/CLOUDSQL_4_HOST 2> /dev/null || true)
+CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH="/tmp/secrets/cloudsql-service-account.json"
 
 JUNIT_RESULTS="junit-results.xml"
 

@@ -1,8 +1,14 @@
 import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
+import type { LoginOutcome } from "../../support/auth/app-shell";
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
+import {
+  THREE_DAYS_MS,
+  isRefreshTokenDurationNear,
+  waitForNamedCookieAbsent,
+} from "../../utils/authentication-providers/auth-cookie-duration";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
@@ -17,7 +23,7 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-oidc");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-oidc");
 
 const keycloakHelper = new KeycloakHelper({
   baseUrl: process.env.RHBK_BASE_URL!,
@@ -27,8 +33,6 @@ const keycloakHelper = new KeycloakHelper({
 });
 
 test.describe("Configure OIDC provider (using RHBK)", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let page: Page;
@@ -38,11 +42,11 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     await authSession.clearAuthState(context);
   }
 
-  function loginAsZeus(): Promise<string> {
+  function loginAsZeus(): Promise<LoginOutcome> {
     return authSession.loginWithKeycloak("zeus", process.env.DEFAULT_USER_PASSWORD!);
   }
 
-  function loginAsAtena(): Promise<string> {
+  function loginAsAtena(): Promise<LoginOutcome> {
     return authSession.loginWithKeycloak("atena", process.env.DEFAULT_USER_PASSWORD!);
   }
 
@@ -155,6 +159,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
 
     await harness.runLoginCase({
       login: loginAsAtena,
+      expectedResult: "error",
       assert: async () => {
         await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
         await keycloakHelper.initialize();
@@ -206,13 +211,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
     });
   });
 
-  test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
+  test(`Set OIDC sessionDuration and confirm auth cookie duration has been set`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty(
-          "auth.providers.oidc.production.sessionDuration",
-          "3days",
-        );
+        harness.deployment.configureOidcSessionDuration("3days");
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsZeus,
@@ -221,14 +223,7 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
 
         const cookies = await context.cookies();
         const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
-        expect(authCookie).toBeDefined();
-
-        const threeDays = 3 * 24 * 60 * 60 * 1000;
-        const tolerance = 3 * 60 * 1000;
-        const actualDuration = authCookie!.expires * 1000 - Date.now();
-
-        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-        expect(actualDuration).toBeLessThan(threeDays + tolerance);
+        expect(isRefreshTokenDurationNear(authCookie, THREE_DAYS_MS)).toBe(true);
 
         await settingsPage.open();
         await settingsPage.verifyProfileHeading("Zeus Giove");
@@ -239,36 +234,50 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   });
 
   test(`Ingestion of users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    expect(
-      await harness.deployment.checkUserIsIngestedInCatalog([
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog([
         "Admin E2e",
         "Atena Minerva",
         "Elio Sole",
         "Tyke Fortuna",
         "Zeus Giove",
       ]),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"]),
-    ).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("admin", "admins")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("zeus", "admins")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("atena", "goddesses")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("tyke", "goddesses")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("elio", "gods")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("zeus", "gods")).toBe(true);
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog(["admins", "goddesses", "gods"]),
+    ).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("admin", "admins")).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("zeus", "admins")).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("atena", "goddesses"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("tyke", "goddesses"),
+    ).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("elio", "gods")).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("zeus", "gods")).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("gods", "all")).toBe(true);
-    expect(await harness.deployment.checkGroupIsChildOfGroup("goddesses", "all")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "gods")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("all", "goddesses")).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("gods", "all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("goddesses", "all"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("all", "gods"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("all", "goddesses"),
+    ).resolves.toBeUndefined();
   });
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
-    expect(await harness.deployment.checkUserIsIngestedInCatalog(["Invalid Username"])).toBe(true);
-    expect(await harness.deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"])).toBe(
-      true,
-    );
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog(["Invalid Username"]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"]),
+    ).resolves.toBeUndefined();
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
@@ -281,25 +290,23 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
       expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET!).toBeDefined();
       expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID!).toBeDefined();
 
-      const result = await loginAsZeus();
-      expect(result).toBe("Login successful");
-
-      await settingsPage.open();
-      await settingsPage.verifyProfileHeading("Zeus Giove");
-
       harness.deployment.setAppConfigProperty("auth.providers.github", {
         production: {
           clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
           clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
           callbackUrl: "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+          disableIdentityResolution: true,
         },
       });
-      harness.deployment.setAppConfigProperty(
-        "auth.providers.github.production.disableIdentityResolution",
-        "true",
-      );
+      // Reconcile before primary login — restart drops the session, so OIDC
+      // must happen after the GitHub secondary provider is already configured.
       await harness.reconcileAfterConfigChange();
 
+      const result = await loginAsZeus();
+      expect(result).toBe("authenticated");
+
+      await settingsPage.open();
+      await settingsPage.verifyProfileHeading("Zeus Giove");
       await settingsPage.hideQuickstartIfVisible();
 
       const ghLogin = await authSession.loginWithGitHubFromSettingsPage(
@@ -307,9 +314,8 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
         process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
         process.env.AUTH_PROVIDERS_GH_USER_2FA!,
       );
-      expect(ghLogin).toBe("Login successful");
-      // Intentional divergence: GitHub provider settings expose sign-out via title tooltip.
-      await page.getByTitle("Sign out from GitHub").click();
+      expect(ghLogin).toBe("authenticated");
+      await settingsPage.signOutFromAuthProvider("GitHub");
 
       await settingsPage.open();
       await settingsPage.verifyProfileHeading("Zeus Giove");
@@ -322,9 +328,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Enable autologout and user is logged out after inactivity`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
-        harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
-        harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+        harness.deployment.configureOidcAutologout({
+          idleTimeoutMinutes: 0.5,
+          promptBeforeIdleSeconds: 5,
+        });
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsZeus,
@@ -333,10 +340,8 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
         await settingsPage.verifyInactivityLogoutMessageHidden();
 
         await page.reload();
-
-        const cookies = await context.cookies();
-        const authCookie = cookies.find((cookie) => cookie.name === "oidc-refresh-token");
-        expect(authCookie).toBeUndefined();
+        // Idle logout can clear the shell before the httpOnly refresh cookie drops.
+        await waitForNamedCookieAbsent(context, "oidc-refresh-token");
       },
       cleanup: clearSession,
     });
@@ -345,9 +350,10 @@ test.describe("Configure OIDC provider (using RHBK)", () => {
   test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
     await harness.runLoginCase({
       configure: async () => {
-        harness.deployment.setAppConfigProperty("auth.autologout.enabled", "true");
-        harness.deployment.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", 0.5);
-        harness.deployment.setAppConfigProperty("auth.autologout.promptBeforeIdleSeconds", 5);
+        harness.deployment.configureOidcAutologout({
+          idleTimeoutMinutes: 0.5,
+          promptBeforeIdleSeconds: 5,
+        });
         await harness.reconcileAfterConfigChange();
       },
       login: loginAsZeus,
