@@ -3,6 +3,9 @@ apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh
 spec:
+  # Disable default flavours (e.g. lightspeed) — this evidence job only needs
+  # local Postgres + showcase plugins; lightspeed OCI digests have been flaky in CI.
+  flavours: []
   deployment:
     patch:
       spec:
