@@ -36,10 +36,12 @@ plugins:
   # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-theme:next__0.14.5!red-hat-developer-hub-backstage-plugin-theme
   #   disabled: false
 
-  # Homepage — OCI still OFS-shaped. app-next mounts homePageModule statically so
-  # NFS / works for card verification. Do not enable this OCI tag (overwrites a
-  # local homepage export). See README → Testing homepage cards / Local NFS export.
-  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage:pr_2644__1.15.0!red-hat-developer-hub-backstage-plugin-homepage
+  # Homepage — published OCI tags are still OFS-shaped for NFS (expose `.` only).
+  # app-next mounts homePageModule@1.16.0 statically so / works. Do not enable
+  # OCI here until RHIDP-14519 + an NFS overlay (mf-manifest exposes `alpha` or
+  # stable `.`). Local export: README → Local NFS export. Prefer pr_/bs_ tags
+  # with homepage >= 1.16.1 once published.
+  # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage:bs_1.52.0__1.15.0!red-hat-developer-hub-backstage-plugin-homepage
   #   disabled: false
 
   # Global header (@red-hat-developer-hub/backstage-plugin-global-header)
