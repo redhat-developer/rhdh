@@ -20,9 +20,9 @@ import { rhdhDynamicFrontendFeaturesLoader } from './modules/dynamicFeatures/rhd
 // are registered too.
 //
 // Homepage: `@backstage/plugin-home` is the NFS host (pluginId `home`) for
-// RHDH layout and third-party cards (e.g. unread notifications). OCI homepage
-// overlays are still OFS-shaped for NFS, so keep homePageModule static until an
-// NFS overlay exists or a local rhdh-plugins export is used (see README).
+// RHDH layout and third-party cards (e.g. unread notifications). Keep
+// homePageModule static until RHIDP-14519 promotes NFS to stable `.` and an
+// NFS-capable OCI overlay exists (or use a local rhdh-plugins export — README).
 const app = createApp({
   features: [
     navModule,
