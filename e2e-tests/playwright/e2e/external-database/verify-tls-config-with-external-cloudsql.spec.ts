@@ -1,6 +1,6 @@
 import { existsSync } from "fs";
 
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
@@ -92,11 +92,16 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
   });
 
   for (const config of cloudSqlConfigurations) {
-    test.describe.serial(`Cloud SQL ${config.name} PostgreSQL version`, () => {
+    // Configure lives in beforeAll so CI retries of Verify do not redeploy.
+    test.describe(`Cloud SQL ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async ({}, testInfo) => {
-        test.setTimeout(180_000);
+        test.setTimeout(600_000);
         if (!isNonEmpty(config.instanceConnectionName)) {
           testInfo.skip(true, `CLOUDSQL_INSTANCE_* not set for ${config.name} — skipping`);
+          return;
+        }
+        if (!isNonEmpty(cloudSqlUser) || !isNonEmpty(cloudSqlPassword)) {
+          testInfo.skip(true, "CLOUDSQL_USER/PASSWORD not set");
           return;
         }
         test.info().annotations.push({
@@ -104,39 +109,23 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
           description: config.instanceConnectionName.split(":")[2] || "unknown",
         });
 
-        if (!isNonEmpty(config.host)) {
+        if (isNonEmpty(config.host)) {
+          // Public IP cleanup without a DB CA PEM: tolerate Cloud SQL server cert.
+          await clearDatabase({
+            host: config.host,
+            user: cloudSqlUser,
+            password: cloudSqlPassword,
+            ssl: { rejectUnauthorized: false },
+          });
+        } else {
           console.warn(`CLOUDSQL_*_HOST not set for ${config.name} — skipping clearDatabase`);
-          return;
-        }
-        if (!isNonEmpty(cloudSqlUser) || !isNonEmpty(cloudSqlPassword)) {
-          return;
         }
 
-        // Public IP cleanup without a DB CA PEM: tolerate Cloud SQL server cert.
-        await clearDatabase({
-          host: config.host,
-          user: cloudSqlUser,
-          password: cloudSqlPassword,
-          ssl: { rejectUnauthorized: false },
-        });
-      });
-
-      test("Configure and restart deployment", async ({}, testInfo) => {
-        if (!isNonEmpty(config.instanceConnectionName)) {
-          testInfo.skip(true, `CLOUDSQL_INSTANCE_* not set for ${config.name}`);
-          return;
-        }
-        if (!isNonEmpty(cloudSqlUser) || !isNonEmpty(cloudSqlPassword)) {
-          testInfo.skip(true, "CLOUDSQL_USER/PASSWORD not set");
-          return;
-        }
-        test.setTimeout(600_000);
         await runtimeHarness.configureCloudSqlInstance({
           instanceConnectionName: config.instanceConnectionName,
           user: cloudSqlUser,
           password: cloudSqlPassword,
         });
-        expect(config.instanceConnectionName).toBeTruthy();
       });
 
       test("Verify successful DB connection", async ({ page }) => {

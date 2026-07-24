@@ -116,12 +116,15 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  * differ from the chart defaults.
  *
  * Values omitted (inherited from chart defaults):
- *   - global.dynamic.{includes, plugins}
  *   - upstream.nameOverride
  *   - upstream.backstage.appConfig.{app.baseUrl, backend.baseUrl, cors, externalAccess}
  *   - upstream.backstage.extraEnvVars (BACKEND_SECRET, POSTGRESQL_ADMIN_PASSWORD)
  *   - upstream.backstage.installDir
  *   - upstream.postgresql.enabled
+ *
+ * Explicit overrides (not inherited):
+ *   - global.dynamic — runtime homepage profile (includes: [], DynamicHomePage on /)
+ *     so external DB UI checks see "Welcome back!" (same as operator path)
  *
  * Arrays (extraVolumes, extraVolumeMounts) include chart-default entries
  * because Helm replaces arrays entirely — we add postgres-crt and change
@@ -139,6 +142,7 @@ export function generateHelmValuesYaml(): string {
   const values = {
     global: {
       lightspeed: { enabled: false },
+      dynamic: createRuntimeDynamicPluginsProfile(),
     },
     upstream: {
       commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },

@@ -32,7 +32,9 @@ test.describe("Change app-config at e2e test runtime", () => {
       await runtimeHarness.restartDeploymentWithRetry();
 
       await runtimeHarness.verifyGuestSession(page);
-      await new HomePage(page).openHomeSidebar();
+      const homePage = new HomePage(page);
+      await homePage.verifyWelcomeHeading();
+      await homePage.openHomeSidebar();
       console.log("Verifying new title in the UI... ");
       expect(await page.title()).toContain(dynamicTitle);
       console.log("Title successfully verified in the UI.");
