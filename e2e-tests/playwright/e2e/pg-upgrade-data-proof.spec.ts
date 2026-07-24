@@ -42,6 +42,6 @@ test.describe("PostgreSQL upgrade data persistence proof", () => {
 
     await catalogBrowsePage.openEntityLink("PG Upgrade Data Proof");
     await catalogBrowsePage.verifyHeading("PG Upgrade Data Proof");
-    await expect(rhdhGuestPage.getByText(/RHIDP-14594 persistence proof/i)).toBeVisible();
+    await expect(rhdhGuestPage.getByText(/RHIDP-14594 persistence proof/iu)).toBeVisible();
   });
 });

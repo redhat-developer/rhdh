@@ -147,11 +147,12 @@ handle_ocp_operator() {
   cluster_setup_ocp_operator
 
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
+    # OSD-GCP internal registry is unreliable under parallel load; reduce
+    # concurrent skopeo pushes and allow retries (RHDHBUGS-1136).
     export MAX_PARALLEL=3
-    prepare_operator 3
-  else
-    prepare_operator
   fi
+  # Full install+CRD cycles (covers "install script OK but CRD never appears").
+  prepare_operator 3
 
   # Ensure baseline image is Fedora PG15 (operator CSV default; set explicitly for evidence).
   if ! set_operator_postgresql_related_image "${OPERATOR_PG15_IMAGE}"; then

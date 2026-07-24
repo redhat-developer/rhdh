@@ -43,13 +43,50 @@ install_rhdh_operator() {
   fi
 }
 
-prepare_operator() {
-  local retry_operator_installation="${1:-1}"
-  namespace::configure "${OPERATOR_MANAGER}"
-  install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
+# Dump OLM / operator-manager state when Backstage CRD registration fails.
+_operator_olm_debug_info() {
+  local ns="${OPERATOR_MANAGER:-rhdh-operator}"
+  log::info "OLM/operator diagnostics in namespace: ${ns}"
+  oc get csv,sub,ip,catalogsource,deploy,pods -n "${ns}" -o wide 2>&1 || true
+  oc get crd backstages.rhdh.redhat.com -o yaml 2>&1 | head -40 || true
+  oc logs -n "${ns}" -l control-plane=controller-manager --tail=100 2>&1 || true
+  oc get events -n "${ns}" --sort-by='.lastTimestamp' 2>&1 | tail -30 || true
+}
 
-  # Wait for Backstage CRD to be available after operator installation
-  k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || return 1
+# Install the RHDH operator and wait for the Backstage CRD.
+# Retries the *entire* cycle (namespace recreate → install → CRD wait) up to N times.
+# Args:
+#   $1 - max full-cycle attempts (default: 1)
+prepare_operator() {
+  local max_cycles=${1:-1}
+  local attempt=1
+
+  while ((attempt <= max_cycles)); do
+    log::info "Preparing RHDH operator (attempt ${attempt}/${max_cycles})"
+    namespace::configure "${OPERATOR_MANAGER}"
+    # One install-script attempt per cycle; full-cycle retries cover "script OK but CRD missing".
+    if ! install_rhdh_operator "${OPERATOR_MANAGER}" 1; then
+      log::error "Operator install script failed on attempt ${attempt}/${max_cycles}"
+      _operator_olm_debug_info
+      if ((attempt < max_cycles)); then
+        attempt=$((attempt + 1))
+        continue
+      fi
+      return 1
+    fi
+
+    if k8s_wait::crd "backstages.rhdh.redhat.com" 300 10; then
+      log::info "Backstage CRD available after operator prepare attempt ${attempt}"
+      return 0
+    fi
+
+    log::error "Backstage CRD not available after install attempt ${attempt}/${max_cycles}"
+    _operator_olm_debug_info
+    attempt=$((attempt + 1))
+  done
+
+  log::error "Failed to prepare RHDH operator after ${max_cycles} full cycle(s)"
+  return 1
 }
 
 # Waits for the Crunchy Data PostgreSQL Operator's PostgresCluster CRD to become available.
