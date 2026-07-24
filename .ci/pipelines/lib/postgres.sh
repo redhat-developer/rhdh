@@ -80,20 +80,37 @@ _postgres_sts_ready_replicas() {
   echo "${sts_ready:-0}"
 }
 
+# Current RELATED_IMAGE_postgresql on the operator Deployment (or empty).
+_operator_related_postgresql_image() {
+  local ns="${OPERATOR_MANAGER:-rhdh-operator}"
+  local deploy=$1
+  oc get "deploy/${deploy}" -n "${ns}" \
+    -o jsonpath='{range .spec.template.spec.containers[0].env[?(@.name=="RELATED_IMAGE_postgresql")]}{.value}{end}' \
+    2> /dev/null || true
+}
+
 # Point the RHDH operator at a different Fedora/RHEL PostgreSQL image via RELATED_IMAGE_postgresql.
+#
+# OLM owns the operator Deployment: `oc set env` is raced/reverted to the CSV
+# default (often registry.redhat.io/rhel9/postgresql-15@sha256:…). Pin the value
+# on Subscription.spec.config.env so OLM keeps applying our override.
+#
 # Args:
 #   $1 - full image ref (e.g. quay.io/fedora/postgresql-18:latest)
 set_operator_postgresql_related_image() {
   local image=$1
   local ns="${OPERATOR_MANAGER:-rhdh-operator}"
+  local sub="${OPERATOR_SUBSCRIPTION_NAME:-rhdh}"
   local deploy
+  local current=""
+  local waited=0
+  local max_wait=180
 
   if [[ -z "${image}" ]]; then
     log::error "set_operator_postgresql_related_image: image required"
     return 1
   fi
 
-  log::info "Setting RELATED_IMAGE_postgresql=${image} on operator controller in ${ns}"
   deploy=$(oc get deploy -n "${ns}" -l control-plane=controller-manager \
     -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
   if [[ -z "${deploy}" ]]; then
@@ -104,14 +121,58 @@ set_operator_postgresql_related_image() {
     return 1
   fi
 
-  oc set env "deployment/${deploy}" -n "${ns}" "RELATED_IMAGE_postgresql=${image}"
+  if ! oc get subscription "${sub}" -n "${ns}" &> /dev/null; then
+    log::error "Subscription/${sub} not found in ${ns}; cannot pin RELATED_IMAGE_postgresql via OLM"
+    oc get subscription -n "${ns}" -o wide >&2 || true
+    return 1
+  fi
+
+  log::info "Pinning RELATED_IMAGE_postgresql=${image} via Subscription/${sub} spec.config.env (OLM-safe)"
+  # Merge-patch replaces config.env; this job only needs the postgresql related image.
+  if ! oc patch subscription "${sub}" -n "${ns}" --type=merge \
+    -p "{\"spec\":{\"config\":{\"env\":[{\"name\":\"RELATED_IMAGE_postgresql\",\"value\":\"${image}\"}]}}}"; then
+    log::error "Failed to patch Subscription/${sub} config.env"
+    return 1
+  fi
+
+  # Also set on the Deployment for a faster first apply; OLM will re-apply from Subscription.
+  oc set env "deployment/${deploy}" -n "${ns}" "RELATED_IMAGE_postgresql=${image}" 2>&1 || true
+
+  log::info "Waiting up to ${max_wait}s for Deployment/${deploy} RELATED_IMAGE_postgresql to equal ${image}"
+  while ((waited < max_wait)); do
+    current=$(_operator_related_postgresql_image "${deploy}")
+    if [[ "${current}" == "${image}" ]]; then
+      break
+    fi
+    log::info "Still waiting… RELATED_IMAGE_postgresql=${current:-<unset>} (${waited}s/${max_wait}s)"
+    sleep 5
+    waited=$((waited + 5))
+  done
+
+  if [[ "${current}" != "${image}" ]]; then
+    log::error "RELATED_IMAGE_postgresql did not stick (got '${current:-<unset>}', want '${image}')"
+    oc get subscription "${sub}" -n "${ns}" -o yaml >&2 || true
+    oc get "deploy/${deploy}" -n "${ns}" -o yaml >&2 || true
+    return 1
+  fi
+
   if ! oc rollout status "deployment/${deploy}" -n "${ns}" --timeout=5m; then
     log::error "Operator rollout failed after RELATED_IMAGE_postgresql update"
     oc get pods -n "${ns}" -o wide >&2 || true
     oc logs -n "${ns}" "deploy/${deploy}" --tail=80 >&2 || true
     return 1
   fi
-  log::info "Operator controller ready with RELATED_IMAGE_postgresql=${image}"
+
+  # Settle check: OLM must not have reverted after rollout status returned.
+  sleep 5
+  current=$(_operator_related_postgresql_image "${deploy}")
+  if [[ "${current}" != "${image}" ]]; then
+    log::error "OLM reverted RELATED_IMAGE_postgresql after rollout (got '${current:-<unset>}', want '${image}')"
+    oc get subscription "${sub}" -n "${ns}" -o yaml >&2 || true
+    return 1
+  fi
+
+  log::info "Operator controller ready with RELATED_IMAGE_postgresql=${image} (Subscription-pinned)"
 }
 
 # Dump postgres pod diagnostics to stderr (safe under $(...) capture).
@@ -141,6 +202,9 @@ dump_postgres_diagnostics() {
     if [[ "${INSTALL_METHOD:-helm}" == "operator" ]]; then
       log::info "Operator RELATED_IMAGE_postgresql:"
       oc get deploy -n "${OPERATOR_MANAGER:-rhdh-operator}" -o jsonpath='{range .items[*]}{.metadata.name}{" RELATED_IMAGE_postgresql="}{range .spec.template.spec.containers[0].env[?(@.name=="RELATED_IMAGE_postgresql")]}{.value}{end}{"\n"}{end}' 2>&1 || true
+      log::info "Subscription config.env (RELATED_IMAGE_postgresql pin):"
+      oc get subscription "${OPERATOR_SUBSCRIPTION_NAME:-rhdh}" -n "${OPERATOR_MANAGER:-rhdh-operator}" \
+        -o jsonpath='{range .spec.config.env[*]}{.name}{"="}{.value}{"\n"}{end}' 2>&1 || true
       log::info "Backstage CR (database):"
       oc get backstage -n "${namespace}" -o yaml 2>&1 | grep -A20 -E 'database:|enableLocalDb' || true
     else
