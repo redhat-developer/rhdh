@@ -20573,15 +20573,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:3.4.8":
-  version: 3.4.8
-  resolution: "dompurify@npm:3.4.8"
+"dompurify@npm:3.4.7":
+  version: 3.4.7
+  resolution: "dompurify@npm:3.4.7"
   dependencies:
     "@types/trusted-types": ^2.0.7
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 77775a7a22a40d6b169ee9dc53c15e48882c88b1c26b634bd10cb804f76328277893791f08a6339105c67e23c205c12fd931d8d986d2b8c15332bf2edcd3c948
+  checksum: 8f991d420a0eb065715cd05a614a713b5d6a59314786febc14d6a17ce86fffa76464708045fdbb7e0e89ef748525ca2a45e30053a7ae3a4b4f9f43124a93decd
   languageName: node
   linkType: hard
 
@@ -27704,13 +27704,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:0.56.0":
-  version: 0.56.0
-  resolution: "monaco-editor@npm:0.56.0"
+"monaco-editor@npm:^0.55.0":
+  version: 0.55.1
+  resolution: "monaco-editor@npm:0.55.1"
   dependencies:
-    dompurify: 3.4.8
+    dompurify: 3.2.7
     marked: 14.0.0
-  checksum: 398f7af01da302a58c35b29e74170fab1fece20954e3f89e144329753f0e19884910292a4d443ee3e795f1e705c9e28f8c32cccb1475867fa91022f16f5526b9
+  checksum: e6f6d9507e2c9cb81fd30370f853a42cd5133236d2d00158ce74e14c19044606c0dfc0465d9af57b7cf164c4f813c9b87572ebb57d10b02d713a61b566b77d56
   languageName: node
   linkType: hard
 
