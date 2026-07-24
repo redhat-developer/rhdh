@@ -13,10 +13,11 @@
 # ImageDigestMirrorSet from prepare-restricted-environment.sh can rewrite pulls
 # to MIRROR_REGISTRY_URL — same hub already mirrored for the operand.
 #
-# CATALOG_INDEX_IMAGE="" clears the operator profile default (quay.io digest).
-# Helm disconnected mirrors that index via oc-mirror; the operator path does not,
-# and install-dynamic-plugins skips catalog extraction when the env is empty.
-# Smoke does not need marketplace/default plugin configs from the index.
+# CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator() after
+# ocp-disconnected-operator.sh rewrites it to MIRROR_REGISTRY_URL/… (the index
+# already mirrored by disconnected::mirror_plugins). That image provides
+# dynamic-plugins.default.yaml — without it, the home-page plugin is missing
+# and guest login lands on a / 404 ("We couldn't find that page").
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
@@ -36,7 +37,3 @@ spec:
           value: "production"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
-        - name: CATALOG_INDEX_IMAGE
-          value: ""
-          containers:
-            - install-dynamic-plugins
