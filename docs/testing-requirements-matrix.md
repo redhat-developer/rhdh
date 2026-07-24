@@ -312,6 +312,7 @@ This document defines differentiated testing requirements for RHDH plugins based
 ## References
 
 - **Epic**: RHIDP-13497 — Plugin Testing by Support Level
+- **Parent strategy**: [RHDH .Next() Test Strategy](https://docs.google.com/document/d/1B-Jl1uwX3sdWOGqs9CN9rTFYH743q-o5YVMoAz_yPh8) — this document covers the "Requirements for Plugin Owners" section
 - **Feature**: RHDHPLAN-1258 — RHDH Test Strategy Adoption (2.1+)
 - **E2E layer migration matrix**: [docs/e2e-tests/layer-migration-matrix.md](e2e-tests/layer-migration-matrix.md)
 - **Codecov analysis**: [docs/decisions/codecov-per-support-level-analysis.md](decisions/codecov-per-support-level-analysis.md)
