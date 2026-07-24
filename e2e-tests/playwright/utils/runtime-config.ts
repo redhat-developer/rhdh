@@ -123,8 +123,11 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  *   - upstream.postgresql.enabled
  *
  * Explicit overrides (not inherited):
- *   - global.dynamic — runtime homepage profile (includes: [], DynamicHomePage on /)
- *     so external DB UI checks see "Welcome back!" (same as operator path)
+ *   - global.dynamic — DynamicHomePage on / (same pluginConfig as operator) plus
+ *     includes: ['dynamic-plugins.default.yaml'] so install-dynamic-plugins
+ *     still takes long enough for chart Postgres to become ready. Operator uses
+ *     includes: [] safely; Helm with includes: [] alone races and leaves the
+ *     backend on 503 (ECONNREFUSED :5432) through helm --wait.
  *
  * Arrays (extraVolumes, extraVolumeMounts) include chart-default entries
  * because Helm replaces arrays entirely — we add postgres-crt and change
@@ -142,7 +145,12 @@ export function generateHelmValuesYaml(): string {
   const values = {
     global: {
       lightspeed: { enabled: false },
-      dynamic: createRuntimeDynamicPluginsProfile(),
+      // Homepage route for Welcome UI; keep default includes (unlike operator)
+      // so plugin install does not finish before Postgres is ready.
+      dynamic: {
+        ...createRuntimeDynamicPluginsProfile(),
+        includes: ["dynamic-plugins.default.yaml"],
+      },
     },
     upstream: {
       commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },

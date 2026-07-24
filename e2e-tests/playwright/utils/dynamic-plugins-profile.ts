@@ -53,7 +53,11 @@ export function setPluginEnabled(
   delete plugin.disabled;
 }
 
-/** Runtime operator path: homepage only, no default includes. */
+/**
+ * Runtime homepage profile (DynamicHomePage on `/`).
+ * Operator uses this as-is (`includes: []`). Helm overrides `includes` to
+ * `dynamic-plugins.default.yaml` so install does not race chart Postgres.
+ */
 export function createRuntimeDynamicPluginsProfile(): DynamicPluginsProfile {
   return {
     includes: [],
