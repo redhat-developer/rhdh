@@ -77,6 +77,13 @@ export function getBackstageDeploySelector(): string {
     : BACKSTAGE_DEPLOY_SELECTOR.HELM;
 }
 
+function logStream(label: string, content: unknown): void {
+  if (typeof content !== "string" || content === "") return;
+  for (const line of content.split("\n").filter(Boolean)) {
+    console.log(`  (${label}) ${line}`);
+  }
+}
+
 /** Run a shell command and return stdout. Throws on non-zero exit. */
 export async function run(
   cmd: string,
@@ -85,16 +92,32 @@ export async function run(
 ): Promise<string> {
   const timeout = options?.timeout ?? 300_000;
   console.log(`  $ ${cmd} ${args.join(" ")}`);
-  const { stdout, stderr } = await execFileAsync(cmd, args, {
-    maxBuffer: 10 * 1024 * 1024,
-    timeout,
-  });
-  if (stderr) {
-    for (const line of stderr.split("\n").filter(Boolean)) {
-      console.log(`  (stderr) ${line}`);
+  try {
+    const { stdout, stderr } = await execFileAsync(cmd, args, {
+      maxBuffer: 10 * 1024 * 1024,
+      timeout,
+    });
+    logStream("stderr", stderr);
+    return stdout.trim();
+  } catch (error: unknown) {
+    // execFile attaches the captured streams to the rejection, but the thrown
+    // message keeps only a truncated slice of stderr - so a failure otherwise
+    // reaches the report with the output that would explain it dropped. Log
+    // both streams, then rethrow untouched so callers still see the original.
+    if (typeof error === "object" && error !== null) {
+      logStream("stdout", Reflect.get(error, "stdout"));
+      logStream("stderr", Reflect.get(error, "stderr"));
+      if (Reflect.get(error, "killed") === true) {
+        console.log(
+          `  (killed) ${cmd} exceeded the ${timeout}ms process timeout and was sent ` +
+            `${String(Reflect.get(error, "signal") ?? "a signal")}. Any timeout message ` +
+            `the command would have printed itself is lost - raise the process timeout ` +
+            `above the command's own timeout if you need it.`,
+        );
+      }
     }
+    throw error;
   }
-  return stdout.trim();
 }
 
 /** Discover the cluster router base from the OpenShift console route. */
