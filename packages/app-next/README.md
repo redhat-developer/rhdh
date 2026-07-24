@@ -6,7 +6,7 @@ This package is the Red Hat Developer Hub (RHDH) **NFS** (New Frontend System) a
 
 Most RHDH product UX loads as **dynamic plugins** (sign-in via **app-auth**, global-header, quickstart, …) so those pieces stay swappable — see [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml).
 
-**Homepage exception (temporary):** published OCI homepage overlays are still OFS-shaped for NFS, so this shell statically mounts RHDH `homePageModule` so `/` works for local NFS verification (including homepage cards such as unread notifications). Prefer loading homepage via MF when an NFS-capable overlay exists, or use the [local export](#local-nfs-export-homepage--theme) path below.
+**Homepage exception (temporary):** published OCI homepage overlays are still OFS-shaped for NFS, so this shell statically mounts RHDH `homePageModule` (`@red-hat-developer-hub/backstage-plugin-homepage@1.16.0`) so `/` works for local NFS verification (including homepage cards such as unread notifications). Full DP-first homepage is tracked in [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519) (promote NFS from `/alpha` to stable). Until then, use the [local export](#local-nfs-export-homepage--theme) path to exercise homepage via Module Federation.
 
 ## Prerequisites
 
@@ -180,21 +180,18 @@ Then open `/` and confirm the unread notifications card on the grid.
 
 ## Local NFS export (homepage & theme)
 
-Use this when you need to iterate on homepage/theme from [rhdh-plugins](https://github.com/redhat-developer/rhdh-plugins) as MF remotes (closer to the long-term DP-first model). Full NFS plugin migration is tracked separately; this is the local workaround until overlays ship NFS `alpha`.
+Use this when you need to iterate on homepage/theme from [rhdh-plugins](https://github.com/redhat-developer/rhdh-plugins) as MF remotes (closer to the long-term DP-first model tracked in [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519)).
 
-**Prerequisite — `alpha` must default-export a `FrontendFeature`.** Backstage’s MF remote build only exposes non-`.` package entry points (including `./alpha`) when the default export is a frontend feature. Homepage/theme currently ship NFS pieces as **named** exports only (`homePageModule`, `rhdhThemeModule`), so a plain export produces expose `.` only.
+**Homepage (`./alpha`):** `rhdh-plugins` `main` already `export default homePageModule` (see [rhdh-plugins#3794](https://github.com/redhat-developer/rhdh-plugins/pull/3794)), so a local export emits MF expose `alpha`. Published npm **1.16.0** does **not** include that default yet — use `main` (or upcoming **1.16.1+**) for local NFS MF tests.
 
-In your local `rhdh-plugins` tree, add a temporary default (or land this in the NFS migration epic):
+**Theme:** still needs a temporary default on `./alpha` until theme ships the same pattern:
 
 ```ts
-// workspaces/homepage/plugins/homepage/src/alpha/index.ts
-export default homePageModule;
-
 // workspaces/theme/plugins/theme/src/alpha/index.ts
 export default rhdhThemeModule;
 ```
 
-Then:
+Export:
 
 ```bash
 # from rhdh-plugins (install/build the workspace once if needed)
@@ -213,7 +210,7 @@ npx -y @red-hat-developer-hub/cli plugin export --clean --dev \
 
 ```bash
 python3 -c "import json; m=json.load(open('dynamic-plugins-root/red-hat-developer-hub-backstage-plugin-homepage/dist/mf-manifest.json')); print([e['name'] for e in m['exposes']])"
-# expect: ['.', 'alpha']
+# expect: ['.', 'alpha']  (alpha requires default export of homePageModule)
 ```
 
 **When using the local homepage remote:** remove the static `homePageModule` import from `src/App.tsx` (keep `homePlugin`), rebuild app-next, and restart `start:next`. Keep homepage/theme OCI entries commented so install does not overwrite your export.
@@ -241,15 +238,15 @@ Static features in `src/App.tsx`:
 
 ### Temporary: static `homePageModule`
 
-Published OCI homepage overlays are still **OFS-shaped** (MF expose is only `.`, default is not a `FrontendFeature`). The NFS loader skips them.
+Published OCI homepage overlays are still **OFS-shaped** (MF expose is only `.`; NFS lives under `/alpha` until [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519)). The NFS loader skips OFS `.` remotes.
 
 Until an NFS-capable overlay ships (or you use a [local NFS export](#local-nfs-export-homepage--theme)):
 
 1. Keep `@backstage/plugin-home` (`homePlugin`) in the shell — host for `pluginId: 'home'` widgets.
-2. Keep `homePageModule` from `@red-hat-developer-hub/backstage-plugin-homepage/alpha` static so `/` works for team verification without patching `rhdh-plugins`.
+2. Keep `homePageModule` from `@red-hat-developer-hub/backstage-plugin-homepage/alpha` (**1.16.0**) static so `/` works for team verification without a local export.
 3. Leave homepage (and theme) OCI entries commented in [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml).
 
-**Removal:** when a published NFS overlay works via MF, delete the static `homePageModule` import, enable the OCI entry, and rely on `rhdhDynamicFrontendFeaturesLoader`.
+**Removal (after RHIDP-14519 + NFS OCI):** delete the static `homePageModule` import, enable the OCI entry, and rely on `rhdhDynamicFrontendFeaturesLoader`.
 
 ### Temporary helper: `rhdhDynamicFrontendFeaturesLoader`
 
@@ -270,5 +267,6 @@ Then delete `src/modules/dynamicFeatures/` (loader + `collectLoadableFeatures` h
 ## Related documentation
 
 - [Backstage new frontend system](https://backstage.io/docs/frontend-system/architecture/index)
+- [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519) — promote homepage NFS from `/alpha` to stable
 - [app-defaults: app-auth / app-integrations](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/app-defaults) — intended to load dynamically into RHDH, not statically into this shell
 - [rhdh-plugin-export-overlays default.packages.yaml](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/default.packages.yaml)
