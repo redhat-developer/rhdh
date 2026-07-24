@@ -6,6 +6,13 @@
 # flavours: [] disables default flavours (lightspeed) so the deployment does not
 # pull/start lightspeed-core / init-rag-data sidecars.
 #
+# Do NOT patch container images to $IMAGE_REGISTRY/$IMAGE_REPO:$TAG_NAME.
+# Nightly defaults are quay.io/rhdh-community/rhdh:next, which prepare/IDMS do
+# not mirror (only quay.io/rhdh and registry.redhat.io/rhdh). Leave images to
+# the operator CSV defaults (registry.redhat.io/rhdh/rhdh-hub-rhel9@…) so
+# ImageDigestMirrorSet from prepare-restricted-environment.sh can rewrite pulls
+# to MIRROR_REGISTRY_URL — same hub already mirrored for the operand.
+#
 # CATALOG_INDEX_IMAGE="" clears the operator profile default (quay.io digest).
 # Helm disconnected mirrors that index via oc-mirror; the operator path does not,
 # and install-dynamic-plugins skips catalog extraction when the env is empty.
@@ -16,17 +23,6 @@ metadata:
   name: rhdh
 spec:
   flavours: []
-  deployment:
-    patch:
-      spec:
-        template:
-          spec:
-            containers:
-              - name: backstage-backend
-                image: "$IMAGE_REGISTRY/$IMAGE_REPO:$TAG_NAME"
-            initContainers:
-              - name: install-dynamic-plugins
-                image: "$IMAGE_REGISTRY/$IMAGE_REPO:$TAG_NAME"
   application:
     appConfig:
       configMaps:

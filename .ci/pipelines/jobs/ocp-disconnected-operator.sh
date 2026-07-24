@@ -145,6 +145,13 @@ handle_ocp_disconnected_operator() {
 
   log::section "Backstage CR Deployment"
 
+  # Hub image: do not force IMAGE_REGISTRY/IMAGE_REPO/TAG_NAME onto the CR.
+  # Defaults (quay.io/rhdh-community/rhdh:next) are not in prepare's IDMS
+  # (quay.io/rhdh, registry.redhat.io/rhdh). Operator CSV defaults already use
+  # registry.redhat.io/rhdh/rhdh-hub-rhel9, which prepare mirrored. Helm instead
+  # rewrites upstream.backstage.image.registry to MIRROR_REGISTRY_URL after
+  # oc-mirror; the operator path relies on IDMS rewrite of the CSV image.
+
   # Minimal guest-auth ConfigMap (full rhdh-start.yaml references ConfigMaps/Secrets
   # created by apply_yaml_files(), which this disconnected handler skips).
   oc create configmap app-config-rhdh-disconnected-smoke \
