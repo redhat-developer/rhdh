@@ -151,8 +151,6 @@ export class RuntimeHarness {
   /** Clear session state and sign in as guest after a deployment restart. */
   async verifyGuestSession(page: Page): Promise<void> {
     await page.context().clearCookies();
-    await page.context().clearPermissions();
-    await page.reload({ waitUntil: "domcontentloaded" });
     await signInAsGuest(page);
   }
 }
