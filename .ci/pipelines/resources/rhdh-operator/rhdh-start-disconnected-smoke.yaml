@@ -2,11 +2,20 @@
 # Smoke only needs: guest login → homepage. Avoid ConfigMaps/Secrets that the
 # normal apply_yaml_files() flow creates (app-config-rhdh, dynamic-plugins-*,
 # rhdh-secrets, redis-secret).
+#
+# flavours: [] disables default flavours (lightspeed) so the deployment does not
+# pull/start lightspeed-core / init-rag-data sidecars.
+#
+# CATALOG_INDEX_IMAGE="" clears the operator profile default (quay.io digest).
+# Helm disconnected mirrors that index via oc-mirror; the operator path does not,
+# and install-dynamic-plugins skips catalog extraction when the env is empty.
+# Smoke does not need marketplace/default plugin configs from the index.
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh
 spec:
+  flavours: []
   deployment:
     patch:
       spec:
@@ -31,3 +40,7 @@ spec:
           value: "production"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
+        - name: CATALOG_INDEX_IMAGE
+          value: ""
+          containers:
+            - install-dynamic-plugins
