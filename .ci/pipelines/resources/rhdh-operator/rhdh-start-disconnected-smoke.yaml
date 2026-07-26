@@ -14,6 +14,12 @@
 # oc-mirror and sets upstream.backstage.image.registry=MIRROR; operator does
 # the same with a skopeo copy + deployment patch to MIRROR_REGISTRY_URL.
 #
+# Init-container caveat: strategic merge applies this patch by name, and
+# backstage-backend keeps the mirrored image. install-dynamic-plugins does not
+# stick — DynamicPlugins.getInitContainer() rewrites it to RELATED_IMAGE_backstage
+# (CSV GA). ocp-disconnected-operator.sh therefore also sets RELATED_IMAGE_backstage
+# on the operator Deployment and post-patches the live Deployment.
+#
 # CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator() after
 # ocp-disconnected-operator.sh rewrites it to MIRROR_REGISTRY_URL/… (the index
 # already mirrored by disconnected::mirror_plugins).

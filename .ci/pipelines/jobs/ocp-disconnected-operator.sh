@@ -140,6 +140,9 @@ handle_ocp_disconnected_operator() {
   # hub like Helm's oc-mirror additionalImages, then point the CR at the mirror.
   log::section "Hub Image Mirroring"
   disconnected::mirror_hub_image || return 1
+  # RELATED_IMAGE_backstage overrides install-dynamic-plugins after CR patches
+  # (operator getInitContainer clobber). Must run before the Backstage CR.
+  disconnected::set_operator_related_hub_image "rhdh-operator" || return 1
 
   log::section "Namespace and Secrets"
 
@@ -239,8 +242,19 @@ handle_ocp_disconnected_operator() {
 
   cp "${cr_temp}" "${ARTIFACT_DIR}/disconnected-backstage-cr.yaml" 2> /dev/null || true
 
+  # Re-assert RELATED_IMAGE in case OLM v1 reconciled the operator Deployment
+  # back to the CSV GA value while we prepared the namespace.
+  disconnected::set_operator_related_hub_image "rhdh-operator" || return 1
+
   deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}"
   log::success "Backstage CR deployed in ${NAME_SPACE}"
+
+  # CR deployment.patch sets both images, but the operator re-applies
+  # RELATED_IMAGE_backstage onto install-dynamic-plugins after the merge
+  # (backend patch sticks; init does not). RELATED_IMAGE was set above; also
+  # force-patch the live Deployment before smoke wait in case the first
+  # reconcile raced the operator rollout.
+  disconnected::patch_backstage_hub_images "${NAME_SPACE}" || return 1
 
   log::section "Smoke Test"
 
