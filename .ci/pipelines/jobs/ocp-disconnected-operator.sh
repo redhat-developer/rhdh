@@ -186,24 +186,6 @@ handle_ocp_disconnected_operator() {
     return 1
   }
 
-  # Homepage via OCI dynamic-home-page (already mirrored). Wired into the CR as
-  # spec.application.dynamicPluginsConfigMapName: dynamic-plugins.
-  local dynamic_plugins_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
-  envsubst < "${DIR}/resources/config_map/dynamic-plugins-disconnected-smoke.yaml" \
-    > "${dynamic_plugins_yaml}" || {
-    log::error "Failed to render dynamic-plugins ConfigMap content — aborting"
-    return 1
-  }
-  oc create configmap dynamic-plugins \
-    --from-file="dynamic-plugins.yaml=${dynamic_plugins_yaml}" \
-    --namespace="${NAME_SPACE}" \
-    --dry-run=client -o yaml | oc apply -f - || {
-    log::error "Failed to create dynamic-plugins ConfigMap — aborting"
-    return 1
-  }
-  log::success "ConfigMap dynamic-plugins created in ${NAME_SPACE}"
-  cp "${dynamic_plugins_yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
-
   local rendered_cr
   local auth_secret="${RELEASE_NAME}-dynamic-plugins-registry-auth"
   rendered_cr=$(envsubst < "${DIR}/resources/rhdh-operator/rhdh-start-disconnected-smoke.yaml")
