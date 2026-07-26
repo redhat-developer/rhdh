@@ -135,6 +135,12 @@ handle_ocp_disconnected_operator() {
   fi
   log::info "Using mirrored CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE}"
 
+  # Hub must match the catalog index tag (nightly :next). CSV GA hub lacks the
+  # local homepage path referenced by plugin-catalog-index:next. Mirror the CI
+  # hub like Helm's oc-mirror additionalImages, then point the CR at the mirror.
+  log::section "Hub Image Mirroring"
+  disconnected::mirror_hub_image || return 1
+
   log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
@@ -143,6 +149,19 @@ handle_ocp_disconnected_operator() {
   # from the mirror (registries.conf alone is not enough — TLS verify fails).
   disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
   disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
+
+  # Kubelet pull of ${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME} (CR patch).
+  # Cluster pull-secret is already merged; namespace secret + imagePullSecrets
+  # matches the K8s operator CR pattern and avoids relying on that alone.
+  oc create secret generic mirror-registry-pull \
+    --from-file=.dockerconfigjson="${MIRROR_REGISTRY_PULL_SECRET}" \
+    --type=kubernetes.io/dockerconfigjson \
+    -n "${NAME_SPACE}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create mirror-registry-pull secret — aborting"
+    return 1
+  }
+  log::success "Secret mirror-registry-pull created in ${NAME_SPACE}"
 
   # Operator mounts one volume per extraFiles ConfigMap name. policy.json cannot
   # share rhdh-plugin-mirror-conf or reconcile fails with duplicate volume keys.
@@ -157,13 +176,6 @@ handle_ocp_disconnected_operator() {
 
   log::section "Backstage CR Deployment"
 
-  # Hub image: do not force IMAGE_REGISTRY/IMAGE_REPO/TAG_NAME onto the CR.
-  # Defaults (quay.io/rhdh-community/rhdh:next) are not in prepare's IDMS
-  # (quay.io/rhdh, registry.redhat.io/rhdh). Operator CSV defaults already use
-  # registry.redhat.io/rhdh/rhdh-hub-rhel9, which prepare mirrored. Helm instead
-  # rewrites upstream.backstage.image.registry to MIRROR_REGISTRY_URL after
-  # oc-mirror; the operator path relies on IDMS rewrite of the CSV image.
-
   # Minimal guest-auth ConfigMap (full rhdh-start.yaml references ConfigMaps/Secrets
   # created by apply_yaml_files(), which this disconnected handler skips).
   oc create configmap app-config-rhdh-disconnected-smoke \
@@ -173,6 +185,24 @@ handle_ocp_disconnected_operator() {
     log::error "Failed to create app-config ConfigMap — aborting"
     return 1
   }
+
+  # Homepage via OCI dynamic-home-page (already mirrored). Wired into the CR as
+  # spec.application.dynamicPluginsConfigMapName: dynamic-plugins.
+  local dynamic_plugins_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
+  envsubst < "${DIR}/resources/config_map/dynamic-plugins-disconnected-smoke.yaml" \
+    > "${dynamic_plugins_yaml}" || {
+    log::error "Failed to render dynamic-plugins ConfigMap content — aborting"
+    return 1
+  }
+  oc create configmap dynamic-plugins \
+    --from-file="dynamic-plugins.yaml=${dynamic_plugins_yaml}" \
+    --namespace="${NAME_SPACE}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create dynamic-plugins ConfigMap — aborting"
+    return 1
+  }
+  log::success "ConfigMap dynamic-plugins created in ${NAME_SPACE}"
+  cp "${dynamic_plugins_yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
 
   local rendered_cr
   local auth_secret="${RELEASE_NAME}-dynamic-plugins-registry-auth"
