@@ -286,6 +286,84 @@ disconnected::wait_mcp_updated() {
   log::success "All MachineConfigPools are Updated"
 }
 
+# Mirror the CI hub image (IMAGE_REGISTRY/IMAGE_REPO:TAG_NAME) into the
+# disconnected mirror registry. Operator prepare/IDMS covers
+# registry.redhat.io/rhdh/rhdh-hub-rhel9, not quay.io/rhdh-community/rhdh:next.
+# Helm gets this via oc-mirror additionalImages; operator needs an explicit copy
+# so install-dynamic-plugins can use local plugins from the matching hub.
+disconnected::mirror_hub_image() {
+  common::require_vars IMAGE_REGISTRY IMAGE_REPO TAG_NAME MIRROR_REGISTRY_URL || return 1
+
+  local src="docker://${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
+  local dest="docker://${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
+
+  log::info "Mirroring hub image ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME} → ${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
+  if ! skopeo copy --all --dest-tls-verify=false "${src}" "${dest}"; then
+    log::error "Failed to mirror hub image ${src} → ${dest}"
+    return 1
+  fi
+  log::success "Hub image mirrored to ${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
+}
+
+# Plugin catalog index OCI URL used by mirror_plugins / plugin_registry_ref.
+# Prefers CATALOG_INDEX_IMAGE when set; otherwise GA plugin-catalog-index tag.
+disconnected::plugin_index_oci() {
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    echo "oci://${CATALOG_INDEX_IMAGE}"
+  else
+    echo "oci://registry.access.redhat.com/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
+  fi
+}
+
+# Resolve a plugin's registryReference from the plugin catalog index (index.json).
+# Args:
+#   $1 - plugin key (e.g. red-hat-developer-hub-backstage-plugin-dynamic-home-page)
+# Prints the registry reference (registry.access.redhat.com/rhdh/…@sha256:…).
+disconnected::plugin_registry_ref() {
+  local plugin_key=$1
+  local plugin_index
+  local extract_dir
+  local layer
+  local ref
+
+  if [[ -z "${plugin_key}" ]]; then
+    log::error "disconnected::plugin_registry_ref requires a plugin key"
+    return 1
+  fi
+
+  plugin_index=$(disconnected::plugin_index_oci)
+  extract_dir="${DISCONNECTED_TMPDIR}/plugin-index-$(echo "${plugin_key}" | tr '/:' '__')"
+  rm -rf "${extract_dir}"
+  mkdir -p "${extract_dir}/img" "${extract_dir}/root"
+
+  # Same amd64/linux override CI runners use; local arm64 hosts need it too.
+  if ! skopeo copy --override-os linux --override-arch amd64 \
+    "docker://${plugin_index#oci://}" "dir:${extract_dir}/img"; then
+    log::error "Failed to copy plugin catalog index ${plugin_index}"
+    return 1
+  fi
+
+  for layer in "${extract_dir}/img"/*; do
+    if [[ -f "${layer}" && ! "${layer}" =~ (manifest\.json|version)$ ]]; then
+      tar -xf "${layer}" -C "${extract_dir}/root" 2> /dev/null || true
+    fi
+  done
+
+  if [[ ! -f "${extract_dir}/root/index.json" ]]; then
+    log::error "No index.json in plugin catalog index ${plugin_index}"
+    return 1
+  fi
+
+  ref=$(jq -r --arg key "${plugin_key}" '.[$key].registryReference // empty' \
+    "${extract_dir}/root/index.json")
+  if [[ -z "${ref}" || "${ref}" == "null" ]]; then
+    log::error "Plugin '${plugin_key}' has no registryReference in ${plugin_index}"
+    return 1
+  fi
+
+  echo "${ref}"
+}
+
 # Fetch and run mirror-plugins.sh against the disconnected mirror registry.
 # Uses CATALOG_INDEX_IMAGE when set; otherwise the GA plugin-catalog-index tag.
 disconnected::mirror_plugins() {
@@ -296,10 +374,8 @@ disconnected::mirror_plugins() {
     return 1
   }
 
-  local plugin_index="oci://registry.access.redhat.com/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    plugin_index="oci://${CATALOG_INDEX_IMAGE}"
-  fi
+  local plugin_index
+  plugin_index=$(disconnected::plugin_index_oci)
 
   bash "${mirror_script}" \
     --plugin-index "${plugin_index}" \
@@ -507,6 +583,7 @@ export -f disconnected::setup_auth
 export -f disconnected::fetch_script
 export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
+export -f disconnected::mirror_hub_image
 export -f disconnected::mirror_plugins
 export -f disconnected::apply_plugin_mirror_configmap
 export -f disconnected::create_mirror_registry_ca_configmap

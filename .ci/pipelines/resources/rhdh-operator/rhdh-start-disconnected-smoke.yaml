@@ -6,24 +6,36 @@
 # flavours: [] disables default flavours (lightspeed) so the deployment does not
 # pull/start lightspeed-core / init-rag-data sidecars.
 #
-# Do NOT patch container images to $IMAGE_REGISTRY/$IMAGE_REPO:$TAG_NAME.
-# Nightly defaults are quay.io/rhdh-community/rhdh:next, which prepare/IDMS do
-# not mirror (only quay.io/rhdh and registry.redhat.io/rhdh). Leave images to
-# the operator CSV defaults (registry.redhat.io/rhdh/rhdh-hub-rhel9@…) so
-# ImageDigestMirrorSet from prepare-restricted-environment.sh can rewrite pulls
-# to MIRROR_REGISTRY_URL — same hub already mirrored for the operand.
+# Hub image must match CATALOG_INDEX_IMAGE (both :next for nightly). The :next
+# catalog's dynamic-plugins.default.yaml references local
+# ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-homepage, which
+# exists in quay.io/rhdh-community/rhdh:next but not in the GA CSV hub
+# (registry.redhat.io/rhdh/rhdh-hub-rhel9). Helm mirrors the CI hub via
+# oc-mirror and sets upstream.backstage.image.registry=MIRROR; operator does
+# the same with a skopeo copy + deployment patch to MIRROR_REGISTRY_URL.
 #
 # CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator() after
 # ocp-disconnected-operator.sh rewrites it to MIRROR_REGISTRY_URL/… (the index
-# already mirrored by disconnected::mirror_plugins). That image provides
-# dynamic-plugins.default.yaml — without it, the home-page plugin is missing
-# and guest login lands on a / 404 ("We couldn't find that page").
+# already mirrored by disconnected::mirror_plugins).
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh
 spec:
   flavours: []
+  deployment:
+    patch:
+      spec:
+        template:
+          spec:
+            imagePullSecrets:
+              - name: mirror-registry-pull
+            containers:
+              - name: backstage-backend
+                image: "$MIRROR_REGISTRY_URL/$IMAGE_REPO:$TAG_NAME"
+            initContainers:
+              - name: install-dynamic-plugins
+                image: "$MIRROR_REGISTRY_URL/$IMAGE_REPO:$TAG_NAME"
   application:
     appConfig:
       configMaps:
