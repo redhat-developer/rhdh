@@ -52,8 +52,8 @@ below say "E2E", **Layer 4a is the default**; Layer 4b applies only when the tes
 requires real infrastructure (OAuth providers, Kubernetes API, external databases, operators),
 and that rationale must be documented on the test.
 
-Jest is the test runner for Layers 1-3. The Vitest migration was evaluated and deferred — see
-[docs/decisions/vitest-migration-spike.md](decisions/vitest-migration-spike.md).
+Jest is the test runner for Layers 1-3. A Vitest migration was evaluated and deferred under
+RHIDP-13504, pending Backstage upstream completing its own migration.
 
 ---
 
@@ -245,28 +245,37 @@ Section 5 of the Test Strategy Proposal. Where the two differ, the support-level
 
 ---
 
-## Compliance Verification
+## Compliance Verification (proposal — not yet agreed)
 
-Requirements without a named verifier are self-attestation. This section defines who checks
-what, against which artifact, and at which milestone.
+> **Status**: this section is a proposal from Quality Engineering. It is not agreed policy and
+> creates no obligation for any plugin owner today. Adopting it requires sign-off through the
+> RHDH Plugin Ecosystem RACI — in particular from Productization, Security and Product
+> Management, and explicitly so for 3rd-party plugins, whose owners are outside RHDH
+> Engineering and cannot be bound by a decision taken in this repository alone.
 
-| Milestone | What is verified | Artifact | Verifier | Outcome if it fails |
-|-----------|------------------|----------|----------|---------------------|
+Requirements without a named verifier become self-attestation. The table below proposes who
+would check what, against which artifact, and at which milestone, as a starting point for that
+discussion.
+
+| Milestone | What would be verified | Artifact | Proposed verifier | Proposed outcome if it fails |
+|-----------|------------------------|----------|-------------------|------------------------------|
 | PR merge | Layer 1-2 pass; coverage delta | Codecov PR check | Automated (`codecov.yml`) | PR blocked (GA only) |
-| Feature freeze | Support-level thresholds met | Codecov component report per workspace | Quality | Plugin does not ship at its declared support level |
-| TP to GA promotion | Full GA row of this matrix | Compliance report (below) | Quality (Accountable) | Promotion denied |
-| Every release | Plugin loads in a default RHDH instance | Overlay load-test / smoke result | Quality | Removed from the catalog for that release |
+| Feature freeze | Support-level thresholds met | Codecov component report per workspace | Quality | Plugin ships at the next lower support level |
+| TP to GA promotion | Full GA row of this matrix | Compliance report (below) | Quality | Promotion deferred pending remediation |
+| Every release | Plugin loads in a default RHDH instance | Overlay load-test / smoke result | Quality | Escalated to the plugin owner before release |
 
-**Compliance report**: generated per release from Codecov component data plus the overlay
-load-test results, and published to the ecosystem Slack channel at feature freeze. Manual
-attestation is not accepted as evidence for GA.
+**Compliance report**: would be generated per release from Codecov component data plus the
+overlay load-test results, and shared with plugin owners at feature freeze so gaps are visible
+early rather than at release time.
 
-**Non-compliance**: a GA plugin failing its thresholds at feature freeze is either
-(a) granted a documented exception under the Exception Process above, or
-(b) shipped at the next lower support level for that release.
+**Open questions for the RACI discussion**:
 
-This applies equally to RHDH-owned and 3rd-party plugins. The plugin owner is responsible for
-producing the evidence; Quality is accountable for verifying it.
+- Should verification outcomes be advisory or blocking, and blocking at which milestone?
+- What evidence is acceptable from 3rd-party plugin owners who do not build on RHDH CI?
+- Who arbitrates a disputed result — Quality, Product Management, or the release lead?
+
+These are deliberately left open. Answering them is the point of the discussion, not a
+precondition for it.
 
 ---
 
@@ -325,8 +334,8 @@ producing the evidence; Quality is accountable for verifying it.
 - Overlay E2E improvements: quay (#2873), argocd/topology (#2864), tekton (#2804)
 
 ### Decision Records
-- Vitest migration: DEFER — stay with Jest (docs/decisions/vitest-migration-spike.md)
-- Per-support-level Codecov: ENHANCE existing (docs/decisions/codecov-per-support-level-analysis.md)
+- Vitest migration: DEFER — stay with Jest (RHIDP-13504)
+- Per-support-level Codecov: ENHANCE existing (RHIDP-13511)
 
 ---
 
@@ -357,8 +366,6 @@ producing the evidence; Quality is accountable for verifying it.
 - **Parent strategy**: [RHDH .Next() Test Strategy](https://docs.google.com/document/d/1B-Jl1uwX3sdWOGqs9CN9rTFYH743q-o5YVMoAz_yPh8) — this document covers the "Requirements for Plugin Owners" section
 - **Feature**: RHDHPLAN-1258 — RHDH Test Strategy Adoption (2.1+)
 - **E2E layer migration matrix**: [docs/e2e-tests/layer-migration-matrix.md](e2e-tests/layer-migration-matrix.md)
-- **Codecov analysis**: [docs/decisions/codecov-per-support-level-analysis.md](decisions/codecov-per-support-level-analysis.md)
-- **Vitest spike**: [docs/decisions/vitest-migration-spike.md](decisions/vitest-migration-spike.md)
 - **Test writing guide**: [docs/testing.md](testing.md)
 - **Codecov dashboards**:
   - [rhdh](https://app.codecov.io/gh/redhat-developer/rhdh)
@@ -371,4 +378,4 @@ producing the evidence; Quality is accountable for verifying it.
 
 - **2026-06-17**: Initial draft based on research and industry best practices
 - **2026-07-24**: Updated with verified E2E coverage data, resolved open questions, added governance and recent progress sections
-- **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added Compliance Verification and threshold precedence
+- **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added threshold precedence and a proposed Compliance Verification section (pending RACI sign-off)
