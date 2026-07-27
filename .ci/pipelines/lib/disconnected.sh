@@ -305,21 +305,29 @@ disconnected::mirror_hub_image() {
   log::success "Hub image mirrored to ${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
 }
 
-# Point the operator's RELATED_IMAGE_backstage at the mirrored CI hub.
-#
-# Why: rhdh-operator applies spec.deployment.patch via strategic merge (by
-# container name), so the CR can set backstage-backend.image. But
-# DynamicPlugins.getInitContainer() later force-sets install-dynamic-plugins
-# to RELATED_IMAGE_backstage (CSV GA digest), clobbering the CR init image.
-# Setting RELATED_IMAGE to the mirrored hub makes that override correct.
-#
-# Args:
-#   $1 - optional operator namespace (default: rhdh-operator)
-disconnected::set_operator_related_hub_image() {
+# Resolve the mirrored hub to a digest-pinned ref and export HUB_IMAGE.
+# Call after disconnected::mirror_hub_image. HUB_IMAGE is used by the smoke CR
+# (envsubst) and by RELATED_IMAGE_backstage so init + backend stay exact.
+disconnected::resolve_hub_image() {
   common::require_vars IMAGE_REPO TAG_NAME MIRROR_REGISTRY_URL || return 1
 
+  local ref="${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
+  local digest
+
+  log::info "Resolving digest for mirrored hub ${ref}"
+  digest=$(skopeo inspect --tls-verify=false "docker://${ref}" --format '{{.Digest}}' 2> /dev/null || true)
+  if [[ -z "${digest}" || "${digest}" != sha256:* ]]; then
+    log::error "Failed to resolve digest for docker://${ref}"
+    return 1
+  fi
+
+  export HUB_IMAGE="${MIRROR_REGISTRY_URL}/${IMAGE_REPO}@${digest}"
+  log::success "HUB_IMAGE=${HUB_IMAGE}"
+}
+
+# Locate the rhdh-operator controller Deployment name in a namespace.
+disconnected::_operator_deploy_name() {
   local operator_ns="${1:-rhdh-operator}"
-  local hub_image="${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
   local deploy
 
   deploy=$(oc get deploy -n "${operator_ns}" \
@@ -334,6 +342,28 @@ disconnected::set_operator_related_hub_image() {
     oc get deploy -n "${operator_ns}" || true
     return 1
   fi
+  printf '%s\n' "${deploy}"
+}
+
+# Point the operator's RELATED_IMAGE_backstage at HUB_IMAGE (digest-pinned).
+#
+# Why: rhdh-operator applies spec.deployment.patch via strategic merge (by
+# container name), so the CR can set backstage-backend.image. But
+# DynamicPlugins.getInitContainer() later force-sets install-dynamic-plugins
+# to RELATED_IMAGE_backstage, clobbering the CR init image. RELATED_IMAGE must
+# equal the exact hub ref declared on the CR.
+#
+# Args:
+#   $1 - optional operator namespace (default: rhdh-operator)
+disconnected::set_operator_related_hub_image() {
+  common::require_vars HUB_IMAGE || return 1
+
+  local operator_ns="${1:-rhdh-operator}"
+  local hub_image="${HUB_IMAGE}"
+  local deploy
+  local actual
+
+  deploy=$(disconnected::_operator_deploy_name "${operator_ns}") || return 1
 
   log::info "Setting RELATED_IMAGE_backstage=${hub_image} on deploy/${deploy} (${operator_ns})"
   oc set env "deployment/${deploy}" -n "${operator_ns}" \
@@ -345,64 +375,55 @@ disconnected::set_operator_related_hub_image() {
     log::error "Operator rollout after RELATED_IMAGE_backstage update timed out"
     return 1
   fi
+
+  actual=$(oc get "deployment/${deploy}" -n "${operator_ns}" \
+    -o jsonpath='{range .spec.template.spec.containers[*].env[?(@.name=="RELATED_IMAGE_backstage")]}{.value}{end}' 2> /dev/null || true)
+  if [[ "${actual}" != "${hub_image}" ]]; then
+    log::error "RELATED_IMAGE_backstage on deploy/${deploy} is '${actual}', want '${hub_image}' (OLM may have reverted)"
+    return 1
+  fi
   log::success "Operator RELATED_IMAGE_backstage → ${hub_image}"
 }
 
-# Force both hub containers on the Backstage Deployment to the mirrored CI image.
-#
-# CR-native init image patches do not stick (see set_operator_related_hub_image).
-# RELATED_IMAGE covers subsequent reconciles; this post-apply covers the first
-# Deployment create if the operator pod had not yet picked up the new env.
+# Read-only check that both Backstage hub containers use HUB_IMAGE.
+# Init must match RELATED_IMAGE_backstage (operator getInitContainer); the CR
+# patch alone cannot keep install-dynamic-plugins on a different image.
 #
 # Args:
 #   $1 - Backstage namespace
-disconnected::patch_backstage_hub_images() {
-  common::require_vars IMAGE_REPO TAG_NAME MIRROR_REGISTRY_URL || return 1
+disconnected::verify_backstage_hub_images() {
+  common::require_vars HUB_IMAGE || return 1
 
   local namespace="$1"
-  local hub_image="${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
+  local hub_image="${HUB_IMAGE}"
   local deploy
+  local backend_img init_img
+  local attempt
 
   deploy=$(oc get deployment -n "${namespace}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' \
     | grep -E '^backstage-' | grep -vE 'psql|postgres' | head -1)
   if [[ -z "${deploy}" ]]; then
-    log::error "No backstage Deployment found in ${namespace} to patch hub images"
+    log::error "No backstage Deployment found in ${namespace} to verify hub images"
     oc get deployment -n "${namespace}" || true
     return 1
   fi
 
-  log::info "Patching deploy/${deploy} hub images → ${hub_image}"
-  # Strategic merge matches containers/initContainers by name (same as operator).
-  # oc set image only updates spec.containers, not initContainers.
-  oc patch "deployment/${deploy}" -n "${namespace}" --type=strategic -p "{
-    \"spec\": {
-      \"template\": {
-        \"spec\": {
-          \"containers\": [
-            {\"name\": \"backstage-backend\", \"image\": \"${hub_image}\"}
-          ],
-          \"initContainers\": [
-            {\"name\": \"install-dynamic-plugins\", \"image\": \"${hub_image}\"}
-          ]
-        }
-      }
-    }
-  }" || {
-    log::error "Failed to patch hub images on deploy/${deploy}"
-    return 1
-  }
+  # Allow a short reconcile window after CR apply + RELATED_IMAGE set.
+  for attempt in 1 2 3 4 5 6; do
+    backend_img=$(oc get "deployment/${deploy}" -n "${namespace}" \
+      -o jsonpath='{range .spec.template.spec.containers[?(@.name=="backstage-backend")]}{.image}{end}')
+    init_img=$(oc get "deployment/${deploy}" -n "${namespace}" \
+      -o jsonpath='{range .spec.template.spec.initContainers[?(@.name=="install-dynamic-plugins")]}{.image}{end}')
+    log::info "deploy/${deploy} images (attempt ${attempt}): backstage-backend=${backend_img} install-dynamic-plugins=${init_img}"
+    if [[ "${backend_img}" == "${hub_image}" && "${init_img}" == "${hub_image}" ]]; then
+      log::success "Backstage Deployment hub images match HUB_IMAGE=${hub_image}"
+      return 0
+    fi
+    sleep 5
+  done
 
-  local backend_img init_img
-  backend_img=$(oc get "deployment/${deploy}" -n "${namespace}" \
-    -o jsonpath='{range .spec.template.spec.containers[?(@.name=="backstage-backend")]}{.image}{end}')
-  init_img=$(oc get "deployment/${deploy}" -n "${namespace}" \
-    -o jsonpath='{range .spec.template.spec.initContainers[?(@.name=="install-dynamic-plugins")]}{.image}{end}')
-  log::info "deploy/${deploy} images: backstage-backend=${backend_img} install-dynamic-plugins=${init_img}"
-  if [[ "${backend_img}" != "${hub_image}" || "${init_img}" != "${hub_image}" ]]; then
-    log::error "Hub image patch did not stick (want ${hub_image})"
-    return 1
-  fi
-  log::success "Backstage Deployment hub images set to ${hub_image}"
+  log::error "RELATED_IMAGE_backstage not effective on install-dynamic-plugins (want ${hub_image}; backend=${backend_img}; init=${init_img})"
+  return 1
 }
 
 # Fetch and run mirror-plugins.sh against the disconnected mirror registry.
@@ -627,8 +648,9 @@ export -f disconnected::fetch_script
 export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
 export -f disconnected::mirror_hub_image
+export -f disconnected::resolve_hub_image
 export -f disconnected::set_operator_related_hub_image
-export -f disconnected::patch_backstage_hub_images
+export -f disconnected::verify_backstage_hub_images
 export -f disconnected::mirror_plugins
 export -f disconnected::apply_plugin_mirror_configmap
 export -f disconnected::create_mirror_registry_ca_configmap

@@ -134,9 +134,11 @@ handle_ocp_disconnected_operator() {
 
   # Hub must match the catalog index tag (nightly :next). CSV GA hub lacks the
   # local homepage path referenced by plugin-catalog-index:next. Mirror the CI
-  # hub like Helm's oc-mirror additionalImages, then point the CR at the mirror.
+  # hub like Helm's oc-mirror additionalImages, digest-pin as HUB_IMAGE, then
+  # set RELATED_IMAGE_backstage (authoritative for install-dynamic-plugins).
   log::section "Hub Image Mirroring"
   disconnected::mirror_hub_image || return 1
+  disconnected::resolve_hub_image || return 1
   # RELATED_IMAGE_backstage overrides install-dynamic-plugins after CR patches
   # (operator getInitContainer clobber). Must run before the Backstage CR.
   disconnected::set_operator_related_hub_image "rhdh-operator" || return 1
@@ -150,9 +152,8 @@ handle_ocp_disconnected_operator() {
   disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
   disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
 
-  # Kubelet pull of ${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME} (CR patch).
-  # Cluster pull-secret is already merged; namespace secret + imagePullSecrets
-  # matches the K8s operator CR pattern and avoids relying on that alone.
+  # Kubelet pull of HUB_IMAGE (CR patch). Cluster pull-secret is already merged;
+  # namespace secret + imagePullSecrets matches the K8s operator CR pattern.
   oc create secret generic mirror-registry-pull \
     --from-file=.dockerconfigjson="${MIRROR_REGISTRY_PULL_SECRET}" \
     --type=kubernetes.io/dockerconfigjson \
@@ -188,6 +189,7 @@ handle_ocp_disconnected_operator() {
 
   local rendered_cr
   local auth_secret="${RELEASE_NAME}-dynamic-plugins-registry-auth"
+  # envsubst substitutes HUB_IMAGE into spec.deployment.patch container images.
   rendered_cr=$(envsubst < "${DIR}/resources/rhdh-operator/rhdh-start-disconnected-smoke.yaml")
   # Parity with helm-post-renderer.sh: registries.conf, policy.json, mirror CA.
   # Also mount registry auth.json for authenticated mirror pulls.
@@ -246,12 +248,9 @@ handle_ocp_disconnected_operator() {
   deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}"
   log::success "Backstage CR deployed in ${NAME_SPACE}"
 
-  # CR deployment.patch sets both images, but the operator re-applies
-  # RELATED_IMAGE_backstage onto install-dynamic-plugins after the merge
-  # (backend patch sticks; init does not). RELATED_IMAGE was set above; also
-  # force-patch the live Deployment before smoke wait in case the first
-  # reconcile raced the operator rollout.
-  disconnected::patch_backstage_hub_images "${NAME_SPACE}" || return 1
+  # Init image comes from RELATED_IMAGE_backstage (not the CR patch alone).
+  # Read-only verify both containers match HUB_IMAGE before smoke.
+  disconnected::verify_backstage_hub_images "${NAME_SPACE}" || return 1
 
   log::section "Smoke Test"
 
