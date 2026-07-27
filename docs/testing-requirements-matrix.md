@@ -37,10 +37,23 @@ This document defines differentiated testing requirements for RHDH plugins based
 
 | Layer | Type | Scope | Tools | Execution Time |
 |-------|------|-------|-------|----------------|
-| **Layer 1** | Unit Tests | Individual functions, pure logic | Jest, Vitest | Seconds |
-| **Layer 2** | Integration Tests | Multiple modules, mocked external deps | Jest + mocks | Seconds to minutes |
-| **Layer 3** | Component Tests | React components, test backend | RTL, startTestBackend | Minutes |
-| **Layer 4** | E2E Tests | Full system, real cluster | Playwright, K8s/OCP | Minutes to hours |
+| **Layer 1** | Unit Tests | Individual functions, pure logic | Jest, supertest, `mockServices` | Seconds |
+| **Layer 2** | Integration Tests | Plugin wiring, DB, service-to-service | Jest + `startTestBackend` | Seconds to minutes |
+| **Layer 3** | Component Tests | React components, user interactions | RTL, `@backstage/frontend-test-utils`, jsdom | Minutes |
+| **Layer 4a** | Plugin E2E | Real browser against a local Backstage instance — no cluster | Playwright (local `webServer`) | Minutes |
+| **Layer 4b** | Platform E2E | Full system on a deployed instance | Playwright, K8s/OCP | Minutes to hours |
+
+`startTestBackend` belongs to Layer 2, not Layer 3 — it starts a real Backstage backend
+in-process with in-memory SQLite. Layer 3 renders React with a mocked Backstage context and
+never starts a backend.
+
+Layer 4 is split because not every browser test needs a cluster. Where the requirement tables
+below say "E2E", **Layer 4a is the default**; Layer 4b applies only when the test genuinely
+requires real infrastructure (OAuth providers, Kubernetes API, external databases, operators),
+and that rationale must be documented on the test.
+
+Jest is the test runner for Layers 1-3. The Vitest migration was evaluated and deferred — see
+[docs/decisions/vitest-migration-spike.md](decisions/vitest-migration-spike.md).
 
 ---
 
@@ -57,6 +70,10 @@ This document defines differentiated testing requirements for RHDH plugins based
 | **Code review** | 2 approvals | — | Required |
 | **Security scan** | No high/critical CVEs | — | Blocks release |
 | **Performance** | No regressions | — | Monitored |
+
+**Threshold precedence**: the percentages above are per support level, measured through
+Codecov `components`/`flags`. They are independent of the repository-wide floors defined in
+Section 5 of the Test Strategy Proposal. Where the two differ, the support-level value applies.
 
 **Quality gates**:
 - PR cannot merge without passing Layer 1-2 tests
@@ -228,6 +245,31 @@ This document defines differentiated testing requirements for RHDH plugins based
 
 ---
 
+## Compliance Verification
+
+Requirements without a named verifier are self-attestation. This section defines who checks
+what, against which artifact, and at which milestone.
+
+| Milestone | What is verified | Artifact | Verifier | Outcome if it fails |
+|-----------|------------------|----------|----------|---------------------|
+| PR merge | Layer 1-2 pass; coverage delta | Codecov PR check | Automated (`codecov.yml`) | PR blocked (GA only) |
+| Feature freeze | Support-level thresholds met | Codecov component report per workspace | Quality | Plugin does not ship at its declared support level |
+| TP to GA promotion | Full GA row of this matrix | Compliance report (below) | Quality (Accountable) | Promotion denied |
+| Every release | Plugin loads in a default RHDH instance | Overlay load-test / smoke result | Quality | Removed from the catalog for that release |
+
+**Compliance report**: generated per release from Codecov component data plus the overlay
+load-test results, and published to the ecosystem Slack channel at feature freeze. Manual
+attestation is not accepted as evidence for GA.
+
+**Non-compliance**: a GA plugin failing its thresholds at feature freeze is either
+(a) granted a documented exception under the Exception Process above, or
+(b) shipped at the next lower support level for that release.
+
+This applies equally to RHDH-owned and 3rd-party plugins. The plugin owner is responsible for
+producing the evidence; Quality is accountable for verifying it.
+
+---
+
 ## Quality Metrics Dashboard
 
 ### What We Track
@@ -329,3 +371,4 @@ This document defines differentiated testing requirements for RHDH plugins based
 
 - **2026-06-17**: Initial draft based on research and industry best practices
 - **2026-07-24**: Updated with verified E2E coverage data, resolved open questions, added governance and recent progress sections
+- **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added Compliance Verification and threshold precedence
