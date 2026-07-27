@@ -33,14 +33,12 @@ handle_ocp_disconnected_operator() {
   # mirroring operator/operand images and installing the operator CatalogSource.
   log::section "Operator Mirroring and Installation"
 
-  # TEMPORARY: always fetch prepare-restricted-environment.sh from the current
-  # head of rhdh-operator PR #3259
-  # (https://github.com/redhat-developer/rhdh-operator/pull/3259) so oc-mirror
-  # + OLM v1 uses native cc-*.yaml catalogs. Revert to the branch default once
-  # that PR merges.
+  # Fetch prepare-restricted-environment.sh from RELEASE_BRANCH_NAME (default
+  # main). rhdh-operator#3259 (native oc-mirror cc-* catalogs for OLM v1) is
+  # merged on main.
   local prepare_script_path="${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
   disconnected::fetch_script "prepare-restricted-environment.sh" \
-    "${prepare_script_path}" "pull/3259" || {
+    "${prepare_script_path}" || {
     log::error "Failed to fetch prepare-restricted-environment.sh — aborting"
     return 1
   }
@@ -51,8 +49,7 @@ handle_ocp_disconnected_operator() {
   # CATALOG_INDEX_IMAGE is the plugin catalog index — do not pass it as
   # --index-image (OLM operator catalog). Keep it for mirror-plugins.sh below.
   #
-  # OLM version: leave default (auto). On OCP 4.21+ this selects OLM v1;
-  # the temporary prepare-script pin above fixes the oc-mirror + v1 path.
+  # OLM version: leave default (auto). On OCP 4.21+ this selects OLM v1.
   local filter_versions="${RELEASE_VERSION}"
   if [[ "${filter_versions}" == "next" || "${filter_versions}" == "*" ]]; then
     filter_versions="*"
