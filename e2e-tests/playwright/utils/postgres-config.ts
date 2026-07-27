@@ -223,7 +223,7 @@ export async function clearDatabase(credentials: {
   user: string;
   password: string;
   certificatePath?: string;
-  /** Override SSL: false disables TLS; object allows rejectUnauthorized for Cloud SQL public IP. */
+  /** Override SSL: false disables TLS; object sets rejectUnauthorized without a CA. */
   ssl?: boolean | { rejectUnauthorized?: boolean };
 }): Promise<void> {
   console.log(`Starting database cleanup for ${credentials.host}...`);

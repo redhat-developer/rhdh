@@ -5,7 +5,7 @@ import { test } from "@support/coverage/test";
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
 import { resolveInstallMethod } from "../../utils/helper";
-import { clearDatabase } from "../../utils/postgres-config";
+import { clearDatabase, readCertificateFile } from "../../utils/postgres-config";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 interface CloudSqlConfig {
@@ -24,6 +24,7 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
 
   const cloudSqlUser = process.env.CLOUDSQL_USER;
   const cloudSqlPassword = process.env.CLOUDSQL_PASSWORD;
+  const cloudSqlCertificatesPath = process.env.CLOUDSQL_DB_CERTIFICATES_PATH;
   const serviceAccountJsonPath =
     process.env.CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH ?? "/tmp/secrets/cloudsql-service-account.json";
 
@@ -71,11 +72,13 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
 
     await ensureRuntimeDeployed();
 
+    const cloudSqlCerts = readCertificateFile(cloudSqlCertificatesPath);
     const firstInstance = cloudSqlConfigurations.find((c) =>
       isNonEmpty(c.instanceConnectionName),
     )?.instanceConnectionName;
 
     if (
+      cloudSqlCerts === null ||
       !isNonEmpty(cloudSqlUser) ||
       !isNonEmpty(cloudSqlPassword) ||
       !isNonEmpty(firstInstance) ||
@@ -83,11 +86,13 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
     ) {
       testInfo.skip(
         true,
-        "Cloud SQL environment variables not configured (CLOUDSQL_USER, CLOUDSQL_PASSWORD, CLOUDSQL_INSTANCE_*, cloudsql-service-account.json)",
+        "Cloud SQL environment variables not configured (CLOUDSQL_DB_CERTIFICATES_PATH, CLOUDSQL_USER, CLOUDSQL_PASSWORD, CLOUDSQL_INSTANCE_*, cloudsql-service-account.json) — Cloud SQL tests are opt-in",
       );
       return;
     }
 
+    // App path uses Auth Proxy (localhost + ssl disable). CA PEM is for
+    // clearDatabase over the public host — same pattern as RDS/Azure.
     console.log("Preparing Cloud SQL Auth Proxy sidecar...");
     await runtimeHarness.prepareForCloudSql({
       serviceAccountJsonPath,
@@ -106,6 +111,10 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
           testInfo.skip(true, `CLOUDSQL_INSTANCE_* not set for ${config.name} — skipping`);
           return;
         }
+        if (!isNonEmpty(config.host)) {
+          testInfo.skip(true, `CLOUDSQL_*_HOST not set for ${config.name} — skipping`);
+          return;
+        }
         if (!isNonEmpty(cloudSqlUser) || !isNonEmpty(cloudSqlPassword)) {
           testInfo.skip(true, "CLOUDSQL_USER/PASSWORD not set");
           return;
@@ -115,17 +124,13 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
           description: config.instanceConnectionName.split(":")[2] || "unknown",
         });
 
-        if (isNonEmpty(config.host)) {
-          // Public IP cleanup without a DB CA PEM: tolerate Cloud SQL server cert.
-          await clearDatabase({
-            host: config.host,
-            user: cloudSqlUser,
-            password: cloudSqlPassword,
-            ssl: { rejectUnauthorized: false },
-          });
-        } else {
-          console.warn(`CLOUDSQL_*_HOST not set for ${config.name} — skipping clearDatabase`);
-        }
+        // Public-IP wipe with server CA — same clearDatabase contract as RDS/Azure.
+        await clearDatabase({
+          host: config.host,
+          user: cloudSqlUser,
+          password: cloudSqlPassword,
+          certificatePath: cloudSqlCertificatesPath,
+        });
 
         await runtimeHarness.configureCloudSqlInstance({
           instanceConnectionName: config.instanceConnectionName,
