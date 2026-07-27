@@ -37,10 +37,23 @@ This document defines differentiated testing requirements for RHDH plugins based
 
 | Layer | Type | Scope | Tools | Execution Time |
 |-------|------|-------|-------|----------------|
-| **Layer 1** | Unit Tests | Individual functions, pure logic | Jest, Vitest | Seconds |
-| **Layer 2** | Integration Tests | Multiple modules, mocked external deps | Jest + mocks | Seconds to minutes |
-| **Layer 3** | Component Tests | React components, test backend | RTL, startTestBackend | Minutes |
-| **Layer 4** | E2E Tests | Full system, real cluster | Playwright, K8s/OCP | Minutes to hours |
+| **Layer 1** | Unit Tests | Individual functions, pure logic | Jest, supertest, `mockServices` | Seconds |
+| **Layer 2** | Integration Tests | Plugin wiring, DB, service-to-service | Jest + `startTestBackend` | Seconds to minutes |
+| **Layer 3** | Component Tests | React components, user interactions | RTL, `@backstage/frontend-test-utils`, jsdom | Minutes |
+| **Layer 4a** | Plugin E2E | Real browser against a local Backstage instance — no cluster | Playwright (local `webServer`) | Minutes |
+| **Layer 4b** | Platform E2E | Full system on a deployed instance | Playwright, K8s/OCP | Minutes to hours |
+
+`startTestBackend` belongs to Layer 2, not Layer 3 — it starts a real Backstage backend
+in-process with in-memory SQLite. Layer 3 renders React with a mocked Backstage context and
+never starts a backend.
+
+Layer 4 is split because not every browser test needs a cluster. Where the requirement tables
+below say "E2E", **Layer 4a is the default**; Layer 4b applies only when the test genuinely
+requires real infrastructure (OAuth providers, Kubernetes API, external databases, operators),
+and that rationale must be documented on the test.
+
+Jest is the test runner for Layers 1-3. A Vitest migration was evaluated and deferred under
+RHIDP-13504, pending Backstage upstream completing its own migration.
 
 ---
 
@@ -57,6 +70,10 @@ This document defines differentiated testing requirements for RHDH plugins based
 | **Code review** | 2 approvals | — | Required |
 | **Security scan** | No high/critical CVEs | — | Blocks release |
 | **Performance** | No regressions | — | Monitored |
+
+**Threshold precedence**: the percentages above are per support level, measured through
+Codecov `components`/`flags`. They are independent of the repository-wide floors defined in
+Section 5 of the Test Strategy Proposal. Where the two differ, the support-level value applies.
 
 **Quality gates**:
 - PR cannot merge without passing Layer 1-2 tests
@@ -228,6 +245,40 @@ This document defines differentiated testing requirements for RHDH plugins based
 
 ---
 
+## Compliance Verification (proposal — not yet agreed)
+
+> **Status**: this section is a proposal from Quality Engineering. It is not agreed policy and
+> creates no obligation for any plugin owner today. Adopting it requires sign-off through the
+> RHDH Plugin Ecosystem RACI — in particular from Productization, Security and Product
+> Management, and explicitly so for 3rd-party plugins, whose owners are outside RHDH
+> Engineering and cannot be bound by a decision taken in this repository alone.
+
+Requirements without a named verifier become self-attestation. The table below proposes who
+would check what, against which artifact, and at which milestone, as a starting point for that
+discussion.
+
+| Milestone | What would be verified | Artifact | Proposed verifier | Proposed outcome if it fails |
+|-----------|------------------------|----------|-------------------|------------------------------|
+| PR merge | Layer 1-2 pass; coverage delta | Codecov PR check | Automated (`codecov.yml`) | PR blocked (GA only) |
+| Feature freeze | Support-level thresholds met | Codecov component report per workspace | Quality | Plugin ships at the next lower support level |
+| TP to GA promotion | Full GA row of this matrix | Compliance report (below) | Quality | Promotion deferred pending remediation |
+| Every release | Plugin loads in a default RHDH instance | Overlay load-test / smoke result | Quality | Escalated to the plugin owner before release |
+
+**Compliance report**: would be generated per release from Codecov component data plus the
+overlay load-test results, and shared with plugin owners at feature freeze so gaps are visible
+early rather than at release time.
+
+**Open questions for the RACI discussion**:
+
+- Should verification outcomes be advisory or blocking, and blocking at which milestone?
+- What evidence is acceptable from 3rd-party plugin owners who do not build on RHDH CI?
+- Who arbitrates a disputed result — Quality, Product Management, or the release lead?
+
+These are deliberately left open. Answering them is the point of the discussion, not a
+precondition for it.
+
+---
+
 ## Quality Metrics Dashboard
 
 ### What We Track
@@ -283,8 +334,8 @@ This document defines differentiated testing requirements for RHDH plugins based
 - Overlay E2E improvements: quay (#2873), argocd/topology (#2864), tekton (#2804)
 
 ### Decision Records
-- Vitest migration: DEFER — stay with Jest (docs/decisions/vitest-migration-spike.md)
-- Per-support-level Codecov: ENHANCE existing (docs/decisions/codecov-per-support-level-analysis.md)
+- Vitest migration: DEFER — stay with Jest (RHIDP-13504)
+- Per-support-level Codecov: ENHANCE existing (RHIDP-13511)
 
 ---
 
@@ -312,11 +363,9 @@ This document defines differentiated testing requirements for RHDH plugins based
 ## References
 
 - **Epic**: RHIDP-13497 — Plugin Testing by Support Level
-- **Parent strategy**: [RHDH .Next() Test Strategy](https://docs.google.com/document/d/1B-Jl1uwX3sdWOGqs9CN9rTFYH743q-o5YVMoAz_yPh8) — this document covers the "Requirements for Plugin Owners" section
+- **Parent strategy**: [RHDH Test Strategy Proposal](https://docs.google.com/document/d/1n7jUaOzFLAGANmsyVrOOnFcwI65dAFESHXTsxY2DXhU) — that document defines the test layers; this one defines how much of each layer applies per support level
 - **Feature**: RHDHPLAN-1258 — RHDH Test Strategy Adoption (2.1+)
 - **E2E layer migration matrix**: [docs/e2e-tests/layer-migration-matrix.md](e2e-tests/layer-migration-matrix.md)
-- **Codecov analysis**: [docs/decisions/codecov-per-support-level-analysis.md](decisions/codecov-per-support-level-analysis.md)
-- **Vitest spike**: [docs/decisions/vitest-migration-spike.md](decisions/vitest-migration-spike.md)
 - **Test writing guide**: [docs/testing.md](testing.md)
 - **Codecov dashboards**:
   - [rhdh](https://app.codecov.io/gh/redhat-developer/rhdh)
@@ -329,3 +378,4 @@ This document defines differentiated testing requirements for RHDH plugins based
 
 - **2026-06-17**: Initial draft based on research and industry best practices
 - **2026-07-24**: Updated with verified E2E coverage data, resolved open questions, added governance and recent progress sections
+- **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added threshold precedence and a proposed Compliance Verification section (pending RACI sign-off)
