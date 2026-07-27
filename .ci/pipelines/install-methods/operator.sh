@@ -22,8 +22,12 @@ install_rhdh_operator() {
   fi
 
   rm -f /tmp/install-rhdh-catalog-source.sh
-  if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
-    log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"
+  # TODO(temporary): force install script from rhdh-operator#3284 (OLM v1 readiness wait).
+  # Revert once https://github.com/redhat-developer/rhdh-operator/pull/3284 is merged to main.
+  local install_script_url="${INSTALL_RHDH_CATALOG_SOURCE_URL:-https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/pull/3284/head/.rhdh/scripts/install-rhdh-catalog-source.sh}"
+  log::info "Downloading install-rhdh-catalog-source.sh from: ${install_script_url}"
+  if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "${install_script_url}"; then
+    log::error "Failed to download install-rhdh-catalog-source.sh from ${install_script_url}"
     return 1
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
