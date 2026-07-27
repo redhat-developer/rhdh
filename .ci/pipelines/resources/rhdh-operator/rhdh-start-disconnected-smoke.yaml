@@ -6,19 +6,16 @@
 # flavours: [] disables default flavours (lightspeed) so the deployment does not
 # pull/start lightspeed-core / init-rag-data sidecars.
 #
-# Hub image must match CATALOG_INDEX_IMAGE (both :next for nightly). The :next
-# catalog's dynamic-plugins.default.yaml references local
-# ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-homepage, which
-# exists in quay.io/rhdh-community/rhdh:next but not in the GA CSV hub
-# (registry.redhat.io/rhdh/rhdh-hub-rhel9). Helm mirrors the CI hub via
-# oc-mirror and sets upstream.backstage.image.registry=MIRROR; operator does
-# the same with a skopeo copy + deployment patch to MIRROR_REGISTRY_URL.
+# Exact hub image: $HUB_IMAGE is a digest-pinned mirror ref
+# (${MIRROR_REGISTRY_URL}/${IMAGE_REPO}@sha256:…). It must match
+# CATALOG_INDEX_IMAGE (nightly :next catalog expects local homepage dist from
+# the community hub, not GA rhdh-hub-rhel9).
 #
-# Init-container caveat: strategic merge applies this patch by name, and
-# backstage-backend keeps the mirrored image. install-dynamic-plugins does not
-# stick — DynamicPlugins.getInitContainer() rewrites it to RELATED_IMAGE_backstage
-# (CSV GA). ocp-disconnected-operator.sh therefore also sets RELATED_IMAGE_backstage
-# on the operator Deployment and post-patches the live Deployment.
+# CRD surface: spec.deployment.patch merges containers/initContainers by name
+# (K8s strategic merge / operator merge2). That alone is not enough for
+# install-dynamic-plugins — DynamicPlugins.getInitContainer() re-applies
+# RELATED_IMAGE_backstage after the patch. ocp-disconnected-operator.sh therefore
+# sets RELATED_IMAGE_backstage=$HUB_IMAGE on the operator Deployment as well.
 #
 # CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator() after
 # ocp-disconnected-operator.sh rewrites it to MIRROR_REGISTRY_URL/… (the index
@@ -38,10 +35,10 @@ spec:
               - name: mirror-registry-pull
             containers:
               - name: backstage-backend
-                image: "$MIRROR_REGISTRY_URL/$IMAGE_REPO:$TAG_NAME"
+                image: "$HUB_IMAGE"
             initContainers:
               - name: install-dynamic-plugins
-                image: "$MIRROR_REGISTRY_URL/$IMAGE_REPO:$TAG_NAME"
+                image: "$HUB_IMAGE"
   application:
     appConfig:
       configMaps:
