@@ -363,7 +363,7 @@ precondition for it.
 ## References
 
 - **Epic**: RHIDP-13497 — Plugin Testing by Support Level
-- **Parent strategy**: [RHDH .Next() Test Strategy](https://docs.google.com/document/d/1B-Jl1uwX3sdWOGqs9CN9rTFYH743q-o5YVMoAz_yPh8) — this document covers the "Requirements for Plugin Owners" section
+- **Parent strategy**: [RHDH Test Strategy Proposal](https://docs.google.com/document/d/1n7jUaOzFLAGANmsyVrOOnFcwI65dAFESHXTsxY2DXhU) — that document defines the test layers; this one defines how much of each layer applies per support level
 - **Feature**: RHDHPLAN-1258 — RHDH Test Strategy Adoption (2.1+)
 - **E2E layer migration matrix**: [docs/e2e-tests/layer-migration-matrix.md](e2e-tests/layer-migration-matrix.md)
 - **Test writing guide**: [docs/testing.md](testing.md)
