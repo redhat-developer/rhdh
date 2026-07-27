@@ -79,7 +79,7 @@ clean_directories() {
     if [[ -d "${directory}" ]]; then
       pushd "${directory}" > /dev/null
       rm -rf node_modules
-      yarn cache clean
+      yarn cache clean --all
       echo "Cleaned node_modules and yarn cache in ${directory}"
       popd > /dev/null
     fi

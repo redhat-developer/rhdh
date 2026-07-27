@@ -16,8 +16,8 @@ on:
       - ".github/workflows/e2e-cluster-free.yaml"
   push:
     branches:
-      - "main"
-      - "release-*"
+      - 'main'
+      - 'release-[0-9]+.[0-9]+'
     paths:
       - "e2e-tests/**"
       - "app-config*.yaml"

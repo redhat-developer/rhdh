@@ -61,6 +61,17 @@ import {
   BACKSTAGE_CR_API_VERSION,
 } from "./runtime-config";
 
+/** How long `helm --wait` waits for the release to become ready. */
+const HELM_WAIT_TIMEOUT_MINUTES = 10;
+
+/**
+ * How long we let the helm PROCESS run. Deliberately longer than
+ * HELM_WAIT_TIMEOUT_MINUTES so helm always wins the race and gets to print why
+ * it gave up; killing it at the same instant leaves only a truncated
+ * "Command failed" with none of the diagnosis.
+ */
+const HELM_PROCESS_TIMEOUT_MS = (HELM_WAIT_TIMEOUT_MINUTES + 2) * 60 * 1000;
+
 /**
  * Whether deploy has already run in this process.
  * Safe as a bare boolean because the showcase-runtime project runs with
@@ -292,11 +303,14 @@ export async function upgradeRuntimeHelmRelease(
     ...generateHelmSetArgs(config),
   ];
   if (waitForReady) {
-    args.push("--wait", "--timeout", "10m");
+    args.push("--wait", "--timeout", `${HELM_WAIT_TIMEOUT_MINUTES}m`);
   }
 
   try {
-    await run("helm", args, { timeout: waitForReady ? 600_000 : 180_000 });
+    // Process timeout must stay above helm --timeout so helm can print why it failed.
+    await run("helm", args, {
+      timeout: waitForReady ? HELM_PROCESS_TIMEOUT_MS : 180_000,
+    });
   } finally {
     try {
       fs.unlinkSync(tmpValuesFile);

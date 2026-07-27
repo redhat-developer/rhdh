@@ -1,0 +1,20 @@
+{
+  "name": "plugin-test-mixed-features-dynamic",
+  "version": "0.0.0",
+  "description": "A test frontend plugin with mixed NFS and non-NFS backstage.features",
+  "backstage": {
+    "role": "frontend-dynamic-container",
+    "pluginId": "test-mixed-features",
+    "pluginPackages": [
+      "plugin-test-mixed-features"
+    ],
+    "features": {
+      "./alpha": "@backstage/FrontendPlugin"
+    }
+  },
+  "keywords": [
+    "backstage",
+    "dynamic"
+  ],
+  "main": "remote-entry.js"
+}

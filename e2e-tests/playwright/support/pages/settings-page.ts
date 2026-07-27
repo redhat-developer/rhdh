@@ -59,7 +59,7 @@ export class SettingsPage {
 
   async verifyGuestProfile(): Promise<void> {
     await this.verifyProfileHeading("Guest");
-    await verification.verifyHeading(this.page, "User Entity: guest");
+    await verification.verifyHeading(this.page, "User Entity: Guest User");
   }
 
   async verifySignInPageTitle(): Promise<void> {
