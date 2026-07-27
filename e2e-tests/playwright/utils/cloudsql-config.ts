@@ -1,11 +1,11 @@
 /**
- * Google Cloud SQL Auth Proxy helpers for showcase-runtime external DB tests.
+ * Google Cloud SQL Auth Proxy helpers for showcase-runtime external DB tests (Helm).
  *
  * Installs the Auth Proxy as a native sidecar initContainer (`restartPolicy:
  * Always` + startupProbe) so the DB tunnel is up before backstage-backend
- * starts — matching RHIDP-7007 / RHIDP-12563 and the verified operator CR.
+ * starts — matching RHIDP-7007 / RHIDP-12563. Operator coverage is RHIDP-9141.
  *
- * Reuses runtime-deploy Helm/CR helpers and operator-install-profile ensureRecord.
+ * Reuses runtime-deploy Helm helpers and operator-install-profile ensureRecord.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -16,13 +16,8 @@ import { base64Encode, discoverRouterBase, resolveInstallMethod } from "./helper
 import { deploymentName as resolveDeploymentName } from "./instance-route-identity";
 import { KubeClient, isRecord } from "./kube-client";
 import { ensureRecord, type YamlRecord } from "./operator-install-profile";
-import { pollUntil } from "./poll-until";
-import { generateHelmValuesYaml, resolveConfig, type BackstageCR } from "./runtime-config";
-import {
-  getRuntimeBackstageCr,
-  replaceRuntimeBackstageCr,
-  upgradeRuntimeHelmRelease,
-} from "./runtime-deploy";
+import { generateHelmValuesYaml, resolveConfig } from "./runtime-config";
+import { upgradeRuntimeHelmRelease } from "./runtime-deploy";
 
 export const CLOUD_SQL_PROXY_IMAGE = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.21.3";
 export const CLOUD_SQL_SA_SECRET = "cloud-sql-service-account";
@@ -42,19 +37,6 @@ function upsertNamedRecord(list: YamlRecord[], item: YamlRecord): YamlRecord[] {
     throw new Error("Named pod-spec item requires a string name");
   }
   return [...list.filter((entry) => entry.name !== name), item];
-}
-
-function secretNameRefs(value: unknown): Array<{ name: string }> {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-  const refs: Array<{ name: string }> = [];
-  for (const item of value) {
-    if (isRecord(item) && typeof item.name === "string") {
-      refs.push({ name: item.name });
-    }
-  }
-  return refs;
 }
 
 /** SA key volume mounted by the Auth Proxy sidecar. */
@@ -203,12 +185,6 @@ export function generateCloudSqlHelmValuesOverlay(): string {
   return yaml.stringify(base, { lineWidth: 0 });
 }
 
-function applyProxyToPodSpec(podSpec: YamlRecord, instanceConnectionName: string): void {
-  const { container, volume } = buildCloudSqlProxySidecar(instanceConnectionName);
-  podSpec.initContainers = upsertNamedRecord(asNamedRecordList(podSpec.initContainers), container);
-  podSpec.volumes = upsertNamedRecord(asNamedRecordList(podSpec.volumes), volume);
-}
-
 /**
  * Upsert the Auth Proxy as a native sidecar initContainer on the live Deployment.
  * Ensures the proxy is ready before backstage-backend starts (K8s native sidecars).
@@ -248,61 +224,12 @@ async function upsertCloudSqlProxyOnDeployment(
   );
 }
 
-async function waitForProxyOnDeployment(
-  kubeClient: KubeClient,
-  namespace: string,
-  deploymentName: string,
-  instanceConnectionName: string,
-): Promise<void> {
-  await pollUntil(
-    async () => {
-      const response = await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
-      const initContainers = response.body.spec?.template?.spec?.initContainers ?? [];
-      return initContainers.some(
-        (container) =>
-          container.name === CLOUD_SQL_PROXY_CONTAINER &&
-          (container.args ?? []).includes(instanceConnectionName),
-      );
-    },
-    {
-      timeoutMs: 120_000,
-      intervalMs: 5_000,
-      label: `Cloud SQL Auth Proxy initContainer on ${deploymentName}`,
-    },
-  );
-}
-
-function applyCloudSqlToBackstageCr(cr: BackstageCR, instanceConnectionName: string): BackstageCR {
-  const spec = cr.spec;
-  spec.database = { enableLocalDb: false };
-
-  const application = ensureRecord(spec, "application");
-  const extraEnvs = ensureRecord(application, "extraEnvs");
-  const secrets = secretNameRefs(extraEnvs.secrets);
-  if (!secrets.some((s) => s.name === "postgres-cred")) {
-    secrets.push({ name: "postgres-cred" });
-  }
-  if (!secrets.some((s) => s.name === "rhdh-runtime-config")) {
-    secrets.push({ name: "rhdh-runtime-config" });
-  }
-  extraEnvs.secrets = secrets;
-
-  const deployment = ensureRecord(spec, "deployment");
-  const patch = ensureRecord(deployment, "patch");
-  const patchSpec = ensureRecord(patch, "spec");
-  const template = ensureRecord(patchSpec, "template");
-  const podSpec = ensureRecord(template, "spec");
-  applyProxyToPodSpec(podSpec, instanceConnectionName);
-
-  return cr;
-}
-
 /**
  * Install/update the Auth Proxy native sidecar and disable local Postgres.
- * Helm: values overlay (no `--wait`) + Deployment initContainer patch, then
- * restart. Waiting on helm before the proxy exists leaves the pod unable to
- * reach Postgres and times out CreateContainer/Ready.
- * Operator: Backstage CR patch (reconcile-safe).
+ * Helm-only (RHIDP-9140): values overlay (no `--wait`) + Deployment initContainer
+ * patch, then restart. Waiting on helm before the proxy exists leaves the pod
+ * unable to reach Postgres and times out CreateContainer/Ready.
+ * Operator coverage (RHIDP-9141) is deferred while operator nightly is broken.
  */
 export async function injectCloudSqlSidecar(
   kubeClient: KubeClient,
@@ -311,36 +238,34 @@ export async function injectCloudSqlSidecar(
   instanceConnectionName: string,
 ): Promise<void> {
   const installMethod = resolveInstallMethod();
+  if (installMethod !== "helm") {
+    throw new Error(
+      `Cloud SQL Auth Proxy inject is Helm-only (got install method "${installMethod}")`,
+    );
+  }
   const deploymentName = resolveDeploymentName(installMethod, releaseName);
 
-  if (installMethod === "helm") {
-    const routerBase = process.env.K8S_CLUSTER_ROUTER_BASE ?? (await discoverRouterBase());
-    const config = { ...resolveConfig(routerBase), releaseName, namespace };
-    // Apply overlay without --wait: DB is only reachable after the proxy patch.
-    await upgradeRuntimeHelmRelease(config, generateCloudSqlHelmValuesOverlay(), {
-      wait: false,
-    });
-    await upsertCloudSqlProxyOnDeployment(
-      kubeClient,
-      namespace,
-      deploymentName,
-      instanceConnectionName,
-    );
-  } else {
-    const cr = await getRuntimeBackstageCr(kubeClient, namespace, releaseName);
-    applyCloudSqlToBackstageCr(cr, instanceConnectionName);
-    await replaceRuntimeBackstageCr(kubeClient, namespace, releaseName, cr);
-    await waitForProxyOnDeployment(kubeClient, namespace, deploymentName, instanceConnectionName);
-  }
+  const routerBase = process.env.K8S_CLUSTER_ROUTER_BASE ?? (await discoverRouterBase());
+  const config = { ...resolveConfig(routerBase), releaseName, namespace };
+  // Apply overlay without --wait: DB is only reachable after the proxy patch.
+  await upgradeRuntimeHelmRelease(config, generateCloudSqlHelmValuesOverlay(), {
+    wait: false,
+  });
+  await upsertCloudSqlProxyOnDeployment(
+    kubeClient,
+    namespace,
+    deploymentName,
+    instanceConnectionName,
+  );
 
   // Rollout: native sidecar startupProbe must pass before backstage-backend is Ready.
   await kubeClient.restartDeploymentWithRetry(deploymentName, namespace);
 }
 
 /**
- * Rotate the Auth Proxy target instance. Operator updates the CR (reconcile-safe);
- * Helm patches the live Deployment (postgresql already disabled from prepare).
- * Restart waits until the native sidecar startupProbe passes before RHDH is Ready.
+ * Rotate the Auth Proxy target instance on the live Helm Deployment
+ * (postgresql already disabled from prepare). Restart waits until the native
+ * sidecar startupProbe passes before RHDH is Ready.
  */
 export async function configureCloudSqlProxyInstance(
   kubeClient: KubeClient,
@@ -349,21 +274,19 @@ export async function configureCloudSqlProxyInstance(
   instanceConnectionName: string,
 ): Promise<void> {
   const installMethod = resolveInstallMethod();
-  const deploymentName = resolveDeploymentName(installMethod, releaseName);
-
-  if (installMethod === "operator") {
-    const cr = await getRuntimeBackstageCr(kubeClient, namespace, releaseName);
-    applyCloudSqlToBackstageCr(cr, instanceConnectionName);
-    await replaceRuntimeBackstageCr(kubeClient, namespace, releaseName, cr);
-    await waitForProxyOnDeployment(kubeClient, namespace, deploymentName, instanceConnectionName);
-  } else {
-    await upsertCloudSqlProxyOnDeployment(
-      kubeClient,
-      namespace,
-      deploymentName,
-      instanceConnectionName,
+  if (installMethod !== "helm") {
+    throw new Error(
+      `Cloud SQL Auth Proxy configure is Helm-only (got install method "${installMethod}")`,
     );
   }
+  const deploymentName = resolveDeploymentName(installMethod, releaseName);
+
+  await upsertCloudSqlProxyOnDeployment(
+    kubeClient,
+    namespace,
+    deploymentName,
+    instanceConnectionName,
+  );
 
   await kubeClient.restartDeploymentWithRetry(deploymentName, namespace);
 }

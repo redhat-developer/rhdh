@@ -4,6 +4,7 @@ import { test } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
+import { resolveInstallMethod } from "../../utils/helper";
 import { clearDatabase } from "../../utils/postgres-config";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
@@ -50,7 +51,7 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
   ];
 
   test.beforeAll(async ({}, testInfo) => {
-    // Helm overlay + Auth Proxy patch + restart (no helm --wait until proxy is up).
+    // Helm-only for now (RHIDP-9140). Operator nightly is broken / tracked separately (RHIDP-9141).
     test.setTimeout(900_000);
     test.info().annotations.push(
       {
@@ -62,6 +63,11 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
         description: namespace,
       },
     );
+
+    if (resolveInstallMethod() !== "helm") {
+      testInfo.skip(true, "Cloud SQL Auth Proxy runtime coverage is Helm-only (RHIDP-9140)");
+      return;
+    }
 
     await ensureRuntimeDeployed();
 
