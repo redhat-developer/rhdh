@@ -138,8 +138,8 @@ describe("scanInstalledPlugins", () => {
 
     const { backend, frontend } = scanInstalledPlugins(root);
 
-    expect(frontend.length).toBe(expected === "frontend" ? 1 : 0);
-    expect(backend.length).toBe(expected === "backend" ? 1 : 0);
+    expect(frontend).toHaveLength(expected === "frontend" ? 1 : 0);
+    expect(backend).toHaveLength(expected === "backend" ? 1 : 0);
   });
 
   it("skips directories without a package.json", () => {

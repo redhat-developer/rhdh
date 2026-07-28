@@ -34,6 +34,11 @@ runs:
 
     # Both harnesses boot packages/backend from source, which needs the ROOT
     # workspace dependencies; e2e-tests has its own lockfile.
+    #
+    # Lifecycle scripts stay enabled here (unlike the e2e-tests install below).
+    # The harness backend runs on better-sqlite3, whose native binding is
+    # fetched by its install script, so --mode=skip-build would leave the
+    # backend unable to boot. Same plain `yarn install` the other workflows use.
     - name: Install dependencies (root)
       shell: bash
       run: yarn install
