@@ -13,19 +13,24 @@ runs:
       shell: bash
       run: corepack enable
 
+    # Keyed per job: both cluster-free jobs run in parallel and would otherwise
+    # race to reserve the same cache entry.
     - name: Cache yarn global cache
       uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
       with:
         path: ~/.yarn/berry/cache
-        key: yarn-${{ hashFiles('yarn.lock', 'e2e-tests/yarn.lock') }}
+        key: yarn-${{ github.job }}-${{ hashFiles('yarn.lock', 'e2e-tests/yarn.lock') }}
         restore-keys: |
+          yarn-${{ github.job }}-
           yarn-
 
-    - name: Install skopeo
+    # The Playwright image ships neither: skopeo pulls the plugin images and
+    # catalog-index-refs.sh parses the index manifest with jq.
+    - name: Install skopeo and jq
       shell: bash
       run: |
         apt-get update
-        apt-get install -y --no-install-recommends skopeo
+        apt-get install -y --no-install-recommends skopeo jq
 
     # Both harnesses boot packages/backend from source, which needs the ROOT
     # workspace dependencies; e2e-tests has its own lockfile.

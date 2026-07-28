@@ -33,23 +33,23 @@ source build needed; works from a fresh clone. Requires skopeo (preinstalled in 
 ```
 
 `populate.sh` takes an optional install-config path as its first argument
-(default: the curated harness set above). The plugin sanity check uses that hook
-via `populate-catalog-index.sh`, which generates a config enabling every package
-the catalog index declares — see "Plugin Sanity Check" in
+(default: the curated harness set above). The plugin sanity check drives that
+hook through `populate-catalog-index.sh`, which generates a config enabling every
+package the catalog index declares — see "Plugin Sanity Check" in
 [`e2e-tests/README.md`](../../e2e-tests/README.md). Both flavors share
-`catalog-index-refs.sh` (index parsing + `plugin-sanity-excludes.txt`).
+`populate.sh` for the install itself.
 
 Alternatives:
 
-- **Catalog index** — the index's `dynamic-plugins.default.yaml` references the core
-  plugins by local `./dynamic-plugins/dist/…` paths that only exist after a source
-  build, so on a fresh clone most plugins are skipped. Use only after building
-  `dynamic-plugins` from source (main -> `:latest`; release branches -> the matching
-  `:1.y` tag):
+- **Catalog index** — installs the full index plugin set instead of the curated one.
+  The index still references a few core plugins by local `./dynamic-plugins/dist/…`
+  paths that only exist after a source build, and the CLI skips those; everything
+  else resolves from the public registries. Use `populate-catalog-index.sh`, which
+  also records the breadcrumb the plugin sanity check asserts against:
 
   ```bash
-  CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:latest \
-    npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install dynamic-plugins-root
+  CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
+    ./e2e-tests/local-harness/populate-catalog-index.sh
   ```
 
 - **Offline from-source** (frontend plugins only; requires a reconciled workspace —

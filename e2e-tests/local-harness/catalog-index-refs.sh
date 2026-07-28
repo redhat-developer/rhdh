@@ -32,7 +32,8 @@ skopeo copy --override-os linux --override-arch amd64 \
 # the topmost layer that carries it (an index rebuilt as an overlay keeps a
 # stale copy in a lower layer). Walk top-down and take the first hit.
 default_yaml=""
-for digest in $(jq -r '.layers | reverse | .[].digest' "${workdir}/idx/manifest.json"); do
+layer_digests="$(jq -r '.layers | reverse | .[].digest' "${workdir}/idx/manifest.json")"
+for digest in $layer_digests; do
   layer="${workdir}/idx/${digest#sha256:}"
   [[ -f "$layer" ]] || continue
   if content="$(tar -xOf "$layer" dynamic-plugins.default.yaml 2> /dev/null)" && [[ -n "$content" ]]; then
@@ -48,8 +49,8 @@ fi
 
 # Known failures are extended-regex patterns, one per line. A missing excludes
 # file must fail loudly: silently skipping the filter would install plugins
-# documented as unable to boot, which aborts the whole backend and surfaces only
-# as an opaque webServer timeout.
+# documented as unable to boot, which surfaces only as an opaque webServer
+# timeout.
 excludes_src="$DIR/plugin-sanity-excludes.txt"
 if [[ ! -r "$excludes_src" ]]; then
   echo "excludes file not found or unreadable: ${excludes_src}" >&2

@@ -38,7 +38,7 @@ fi
   done <<< "$refs"
 } > "$workdir/dynamic-plugins.catalog-index.yaml"
 
-echo "Enabling $(echo "$refs" | wc -l | tr -d ' ') package(s) from ${CATALOG_INDEX_IMAGE}"
+echo "Enabling $(echo "$refs" | grep -c '^oci://') OCI package(s) from ${CATALOG_INDEX_IMAGE}"
 
 "$DIR/populate.sh" "$workdir/dynamic-plugins.catalog-index.yaml"
 

@@ -1,10 +1,15 @@
-import { existsSync } from "fs";
-import { resolve } from "path";
-
+import { readCatalogIndexExpectation } from "../utils/plugin-loader";
 import { requireDynamicPluginsPopulated } from "./local-harness-global-setup";
+import { dynamicPluginsRoot } from "./local-harness-servers";
 
-const POPULATE_COMMAND =
-  "CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next ./e2e-tests/local-harness/populate-catalog-index.sh";
+// The default index tracks main; a release branch carries its own version tag,
+// so honour CATALOG_INDEX_IMAGE when the caller already set one.
+const populateCommand = (): string => {
+  const image = process.env.CATALOG_INDEX_IMAGE;
+  const ref =
+    image === undefined || image === "" ? "quay.io/rhdh/plugin-catalog-index:next" : image;
+  return `CATALOG_INDEX_IMAGE=${ref} ./e2e-tests/local-harness/populate-catalog-index.sh`;
+};
 
 /**
  * globalSetup for playwright.plugin-sanity.config.ts.
@@ -15,13 +20,13 @@ const POPULATE_COMMAND =
  * populate-catalog-index.sh writes is required too.
  */
 export default function pluginSanityGlobalSetup(): void {
-  requireDynamicPluginsPopulated("plugin-sanity", POPULATE_COMMAND);
+  requireDynamicPluginsPopulated("e2e:plugin-sanity", populateCommand());
 
-  const refs = resolve(process.cwd(), "..", "dynamic-plugins-root", ".catalog-index-refs");
-  if (!existsSync(refs)) {
+  if (readCatalogIndexExpectation(dynamicPluginsRoot) === null) {
     throw new Error(
       `dynamic-plugins-root was not populated from the catalog index ` +
-        `(${refs} is missing).\n\nRe-populate it with:\n\n  ${POPULATE_COMMAND}\n`,
+        `(${dynamicPluginsRoot}/.catalog-index-refs is missing).\n\n` +
+        `Re-populate it with:\n\n  ${populateCommand()}\n`,
     );
   }
 }

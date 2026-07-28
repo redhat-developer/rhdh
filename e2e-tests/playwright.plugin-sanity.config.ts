@@ -1,6 +1,11 @@
 import { defineConfig } from "@playwright/test";
 
-import { backendUrl, backendWebServer, isCI } from "./playwright/support/local-harness-servers";
+import {
+  backendUrl,
+  backendWebServer,
+  harnessReporters,
+  isCI,
+} from "./playwright/support/local-harness-servers";
 
 /**
  * Cluster-free plugin sanity check (RHIDP-13508) — boots `packages/backend`
@@ -18,20 +23,20 @@ export default defineConfig({
   // retrying re-queries the same state, so retries only mask real failures.
   retries: 0,
   workers: 1,
-  reporter: [
-    ["list"],
-    ["html", { open: "never", outputFolder: "playwright-report-plugin-sanity" }],
-    [
-      "junit",
-      {
-        outputFile: process.env.JUNIT_RESULTS ?? "junit-results-plugin-sanity.xml",
-      },
-    ],
-  ],
+  reporter: harnessReporters("plugin-sanity"),
   use: {
     baseURL: backendUrl,
   },
-  // Dummy values for plugins that abort the backend when their config is
-  // missing; passed last so it wins over generated plugin defaults.
-  webServer: [backendWebServer(["../../app-config.plugin-sanity.yaml"])],
+  webServer: [
+    {
+      // Dummy values for plugins that abort the backend when their config is
+      // missing; passed last so it wins over generated plugin defaults.
+      ...backendWebServer(["../../app-config.plugin-sanity.yaml"]),
+      // Never adopt a backend already on :7007. The spec compares
+      // dynamic-plugins-root against what the RUNNING backend loaded, so a
+      // leftover legacy-local backend (curated plugin set, booted without the
+      // config above) would make it pass while validating nothing current.
+      reuseExistingServer: false,
+    },
+  ],
 });

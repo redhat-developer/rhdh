@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 import {
   backendWebServer,
   harnessConfigArgs,
+  harnessReporters,
   isCI,
   pathWithRepoBin,
 } from "./playwright/support/local-harness-servers";
@@ -70,16 +71,7 @@ export default defineConfig({
   retries: isCI ? 1 : 0,
   // serial: a single shared backend + dev server
   workers: 1,
-  reporter: [
-    ["list"],
-    ["html", { open: "never", outputFolder: "playwright-report-legacy-local" }],
-    [
-      "junit",
-      {
-        outputFile: process.env.JUNIT_RESULTS ?? "junit-results-legacy-local.xml",
-      },
-    ],
-  ],
+  reporter: harnessReporters("legacy-local"),
   use: {
     baseURL: frontendUrl,
     ignoreHTTPSErrors: true,

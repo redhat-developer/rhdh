@@ -1,5 +1,6 @@
 import { readdirSync } from "fs";
-import { resolve } from "path";
+
+import { dynamicPluginsRoot } from "./local-harness-servers";
 
 /**
  * Shared guard for the cluster-free harnesses.
@@ -10,15 +11,12 @@ import { resolve } from "path";
  * harness passes its own populate command, since they use different scripts.
  */
 export function requireDynamicPluginsPopulated(runCommand: string, populateCommand: string): void {
-  // process.cwd() is e2e-tests when Playwright runs; the plugins root is at repo root.
-  const root = resolve(process.cwd(), "..", "dynamic-plugins-root");
-
   // Plugins are installed as one directory each; count only directories so the
   // installer's generated global-config file (written into the same root even when
   // zero plugins install) does not satisfy the guard.
   let pluginCount = 0;
   try {
-    pluginCount = readdirSync(root, { withFileTypes: true }).filter((entry) =>
+    pluginCount = readdirSync(dynamicPluginsRoot, { withFileTypes: true }).filter((entry) =>
       entry.isDirectory(),
     ).length;
   } catch {

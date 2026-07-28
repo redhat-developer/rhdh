@@ -14,6 +14,7 @@ on:
       # the harness relies on the app dev-server proxy defined here
       - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
+      - ".github/actions/setup-cluster-free-harness/**"
   push:
     branches:
       - 'main'
@@ -24,8 +25,11 @@ on:
       # the harness relies on the app dev-server proxy defined here
       - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
+      - ".github/actions/setup-cluster-free-harness/**"
   # The catalog index is built outside this repo and changes on its own, so the
-  # plugin sanity job needs a trigger that is not tied to a commit here.
+  # plugin sanity job needs a trigger that is not tied to a commit here. GitHub
+  # only runs `schedule` from the default branch, so this covers the `next`
+  # index; use the dispatch input below to check a release branch's index.
   schedule:
     - cron: "0 5 * * *"
   workflow_dispatch:
@@ -36,7 +40,7 @@ on:
         type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -46,6 +50,10 @@ jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
+    # The new schedule/dispatch triggers exist for plugin-sanity; paths filters
+    # do not gate those events, so keep this job on its original triggers.
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+    timeout-minutes: 45
     # Playwright image: browsers + OS deps preinstalled, so no browser-install step
     # (which hung on plain ubuntu runners). Keep the tag in sync with the
     # @playwright/test version in e2e-tests/package.json (currently 1.61.1) — a
@@ -83,6 +91,7 @@ jobs:
   plugin-sanity:
     name: plugin-sanity
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     # Request-only (no browser), but the image also carries the OS deps the
     # backend boot needs, and reusing it keeps both jobs on one base.
     container:
@@ -104,6 +113,12 @@ jobs:
           OVERRIDE: ${{ inputs.catalog_index_image }}
         run: |
           if [[ -n "${OVERRIDE}" ]]; then
+            # Shape-check the dispatch input: it reaches GITHUB_OUTPUT, and a
+            # multi-line value there can forge additional step outputs.
+            if [[ ! "${OVERRIDE}" =~ ^[A-Za-z0-9._/-]+(:[A-Za-z0-9._-]+)?(@sha256:[a-f0-9]{64})?$ ]]; then
+              echo "invalid catalog_index_image: ${OVERRIDE}" >&2
+              exit 1
+            fi
             image="${OVERRIDE}"
           elif [[ "${BRANCH}" == release-* ]]; then
             image="quay.io/rhdh/plugin-catalog-index:${BRANCH#release-}"
@@ -119,18 +134,19 @@ jobs:
         run: ./e2e-tests/local-harness/populate-catalog-index.sh
 
       - name: Run the plugin sanity check
+        id: sanity
         working-directory: ./e2e-tests
         env:
           CATALOG_INDEX_IMAGE: ${{ steps.index.outputs.image }}
         run: |
           set -o pipefail
-          yarn plugin-sanity 2>&1 | tee /tmp/plugin-sanity.log
+          yarn e2e:plugin-sanity 2>&1 | tee /tmp/plugin-sanity.log
 
       - name: Report plugin startup failures
         # A plugin that throws during init aborts the whole backend; the cause is
         # in the backend log Playwright pipes into the run above, so pull the
         # culprits onto the run summary instead of leaving them mid-log.
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.sanity.conclusion == 'failure' }}
         run: |
           ./e2e-tests/local-harness/filter-plugin-startup-failures.sh \
             < /tmp/plugin-sanity.log > /tmp/plugin-startup-failures.txt || true
@@ -151,5 +167,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-report-plugin-sanity
-          path: e2e-tests/playwright-report-plugin-sanity
+          path: |
+            e2e-tests/playwright-report-plugin-sanity
+            /tmp/plugin-sanity.log
           retention-days: 7

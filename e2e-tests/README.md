@@ -15,7 +15,7 @@ with the full index set, then run the dedicated Playwright config:
 ```bash
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
   ./local-harness/populate-catalog-index.sh
-yarn plugin-sanity
+yarn e2e:plugin-sanity
 ```
 
 CI runs it as the `plugin-sanity` job of the
@@ -30,12 +30,10 @@ deployment in the nightly OCP job: that one validates the curated plugin set on
 the shipped image, while this validates the full index composition against the
 current backend line, with no cluster and no product image.
 
-A plugin that throws during init aborts the whole backend, so plugins that
-cannot initialize here are excluded in `local-harness/plugin-sanity-excludes.txt`
-(each entry documents why). Prefer a dummy config entry in
-`app-config.plugin-sanity.yaml` over an exclusion whenever the failure is just
-startup config validation. When a plugin does abort the backend, the job pulls
-the culprits onto the run summary via
+Plugins that cannot initialize in a standalone backend are excluded in
+`local-harness/plugin-sanity-excludes.txt`, which documents the rules and the
+reason for each entry. When a plugin does abort the backend, the job pulls the
+culprits onto the run summary via
 `local-harness/filter-plugin-startup-failures.sh`.
 
 ## Local Test Runner

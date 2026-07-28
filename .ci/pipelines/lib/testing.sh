@@ -36,59 +36,6 @@ readonly _TESTING_ERR_MISSING_PARAMS="Missing required parameters"
 #   0 - Tests passed
 #   Non-zero - Tests failed
 # Uses globals: DIR, TAG_NAME, ARTIFACT_DIR, LOGFILE, JUNIT_RESULTS, CI, SHARED_DIR
-# Publishes a JUnit file to SHARED_DIR, gzipped to stay under the Kubernetes
-# Secret 1 MiB limit; an oversized entry is dropped because it would break the
-# downstream Slack reporting for every run in the job.
-# Args:
-#   $1 - artifacts_subdir (names the SHARED_DIR entry)
-#   $2 - path to the JUnit file already copied into ARTIFACT_DIR
-testing::_publish_junit_to_shared_dir() {
-  local artifacts_subdir=$1 junit_in_artifact_dir=$2
-  local target="${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-  local max_size=$((800 * 1024))
-
-  [[ "${CI}" == "true" && -f "${junit_in_artifact_dir}" ]] || return 0
-
-  gzip -c "${junit_in_artifact_dir}" > "${target}"
-  local gz_size
-  # stat is -c on GNU, -f on BSD; CI is GNU, local runs may not be.
-  gz_size=$(stat -c%s "${target}" 2> /dev/null || stat -f%z "${target}")
-  if ((gz_size > max_size)); then
-    echo "[WARNING] $(basename "${target}") is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
-    rm -f "${target}"
-  else
-    echo "[INFO] Copied $(basename "${target}") to SHARED_DIR ($((gz_size / 1024)) KB)"
-  fi
-}
-
-# Echoes the number of failed tests in a JUnit file, or UNKNOWN_FAILURE_COUNT
-# when it cannot be determined. JUnit distinguishes "failures" (assertion
-# failures) from "errors" (exceptions/timeouts) and Playwright reports
-# TimeoutError and crashes as errors, so both are summed from the root
-# <testsuites> element - otherwise the Slack notification under-reports.
-# A zero total after a non-zero exit means the process crashed or timed out
-# globally, so the sentinel is used instead of a misleading "0 tests failed".
-# Args:
-#   $1 - path to the JUnit file
-testing::_count_junit_failures() {
-  local junit_file=$1
-
-  if [[ ! -f "${junit_file}" ]]; then
-    echo "${UNKNOWN_FAILURE_COUNT}"
-    return 0
-  fi
-
-  local failures errors total
-  failures=$(grep -oP 'failures="\K[0-9]+' "${junit_file}" | head -n 1)
-  errors=$(grep -oP 'errors="\K[0-9]+' "${junit_file}" | head -n 1)
-  total=$((${failures:-0} + ${errors:-0}))
-  if [[ "${total}" -eq 0 ]]; then
-    echo "${UNKNOWN_FAILURE_COUNT}"
-  else
-    echo "${total}"
-  fi
-}
-
 testing::run_tests() {
   local release_name=$1
   local namespace=$2
@@ -225,11 +172,58 @@ testing::run_tests() {
   return "$test_result"
 }
 
-# Filters stdin down to the dynamic-plugin startup failures worth reporting.
-# The log shapes live in the shared script so the cluster and cluster-free paths
-# cannot drift apart.
-testing::_filter_plugin_startup_failures() {
-  "${DIR}/../../e2e-tests/local-harness/filter-plugin-startup-failures.sh"
+# Publishes a JUnit file to SHARED_DIR, gzipped to stay under the Kubernetes
+# Secret 1 MiB limit; an oversized entry is dropped because it would break the
+# downstream Slack reporting for every run in the job.
+# Args:
+#   $1 - artifacts_subdir (names the SHARED_DIR entry)
+#   $2 - path to the JUnit file already copied into ARTIFACT_DIR
+testing::_publish_junit_to_shared_dir() {
+  local artifacts_subdir=$1 junit_in_artifact_dir=$2
+  local target="${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+  local max_size=$((800 * 1024))
+
+  [[ "${CI}" == "true" && -f "${junit_in_artifact_dir}" ]] || return 0
+
+  gzip -c "${junit_in_artifact_dir}" > "${target}"
+  local gz_size
+  # stat is -c on GNU, -f on BSD; CI is GNU, local runs may not be.
+  gz_size=$(stat -c%s "${target}" 2> /dev/null || stat -f%z "${target}")
+  if ((gz_size > max_size)); then
+    echo "[WARNING] $(basename "${target}") is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
+    rm -f "${target}"
+  else
+    echo "[INFO] Copied $(basename "${target}") to SHARED_DIR ($((gz_size / 1024)) KB)"
+  fi
+}
+
+# Echoes the number of failed tests in a JUnit file, or UNKNOWN_FAILURE_COUNT
+# when it cannot be determined. JUnit distinguishes "failures" (assertion
+# failures) from "errors" (exceptions/timeouts) and Playwright reports
+# TimeoutError and crashes as errors, so both are summed from the root
+# <testsuites> element - otherwise the Slack notification under-reports.
+# A zero total after a non-zero exit means the process crashed or timed out
+# globally, so the sentinel is used instead of a misleading "0 tests failed".
+# Args:
+#   $1 - path to the JUnit file
+testing::_count_junit_failures() {
+  local junit_file=$1
+
+  if [[ ! -f "${junit_file}" ]]; then
+    log::warn "JUnit results file not found: ${junit_file}" >&2
+    echo "${UNKNOWN_FAILURE_COUNT}"
+    return 0
+  fi
+
+  local failures errors total
+  failures=$(grep -oP 'failures="\K[0-9]+' "${junit_file}" | head -n 1)
+  errors=$(grep -oP 'errors="\K[0-9]+' "${junit_file}" | head -n 1)
+  total=$((${failures:-0} + ${errors:-0}))
+  if [[ "${total}" -eq 0 ]]; then
+    echo "${UNKNOWN_FAILURE_COUNT}"
+  else
+    echo "${total}"
+  fi
 }
 
 # Scans RHDH pod logs in a namespace for dynamic-plugin startup failures and
@@ -243,14 +237,17 @@ testing::report_plugin_startup_failures() {
   local artifacts_subdir=$2
   local out="/tmp/plugin-startup-failures-${namespace}.txt"
 
+  # Collected here rather than reused from save_all_pod_logs: that runs only when
+  # a test fails, and its pod_logs/ directory is not namespace-scoped, so a
+  # leftover copy would report another namespace's failures.
   {
     local pod
-    for pod in $(oc get pods -n "${namespace}" -o name 2> /dev/null | grep -E 'backstage|developer-hub' || true); do
+    for pod in $(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${RELEASE_NAME},redhat-developer-hub,developer-hub)" -o name 2> /dev/null || true); do
       # Current and previous (pre-crash) logs; either may not exist yet.
-      oc logs "${pod}" -n "${namespace}" --all-containers 2> /dev/null || true
-      oc logs "${pod}" -n "${namespace}" --all-containers -p 2> /dev/null || true
+      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers 2> /dev/null || true
+      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers -p 2> /dev/null || true
     done
-  } | testing::_filter_plugin_startup_failures > "${out}" || true
+  } | "${DIR}/../../e2e-tests/local-harness/filter-plugin-startup-failures.sh" > "${out}" || true
 
   if [[ -s "${out}" ]]; then
     log::error "==================== PLUGIN STARTUP FAILURES (${namespace}) ===================="

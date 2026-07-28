@@ -202,6 +202,9 @@ export default defineConfig({
     {
       name: PW_PROJECT.ANY_TEST,
       testMatch: "**/*.spec.ts",
+      // Needs a dynamic-plugins-root populated from the catalog index, which
+      // only playwright.plugin-sanity.config.ts sets up.
+      testIgnore: ["**/playwright/e2e/plugin-dynamic-loading.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,

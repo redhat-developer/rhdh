@@ -1,22 +1,19 @@
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join } from "path";
 
-export type PluginRole = "backend" | "frontend";
-
 export type PluginEntry = {
   name: string;
   version: string;
   dirName: string;
   path: string;
-  role: PluginRole;
 };
 
-export type PluginManifest = {
+export type InstalledPlugins = {
   backend: PluginEntry[];
   frontend: PluginEntry[];
 };
 
-export type PluginError = {
+export type FrontendBundleError = {
   plugin: PluginEntry;
   error: string;
 };
@@ -25,7 +22,7 @@ export type PluginError = {
  * install-dynamic-plugins emits no manifest file, so the plugin set is
  * reconstructed by scanning the install directory for package.json files.
  */
-export function loadManifest(installDir: string): PluginManifest {
+export function scanInstalledPlugins(installDir: string): InstalledPlugins {
   const backend: PluginEntry[] = [];
   const frontend: PluginEntry[] = [];
 
@@ -37,7 +34,14 @@ export function loadManifest(installDir: string): PluginManifest {
     // Skip non-plugin directories (e.g. extracted catalog-entities/)
     if (!existsSync(pkgPath)) continue;
 
-    const pkg: unknown = JSON.parse(readFileSync(pkgPath, "utf8"));
+    let pkg: unknown;
+    try {
+      pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+    } catch (cause) {
+      // A truncated package.json is exactly the broken-install symptom this
+      // check exists to catch; name the file instead of failing anonymously.
+      throw new Error(`Malformed ${pkgPath}`, { cause });
+    }
     let name = entry.name;
     let version = "unknown";
     let role: string | undefined;
@@ -62,15 +66,14 @@ export function loadManifest(installDir: string): PluginManifest {
     const isFrontend =
       role === undefined
         ? existsSync(join(pluginPath, "dist-scalprum")) ||
-          existsSync(join(pluginPath, "dist", "remoteEntry.js"))
-        : !role.includes("backend");
+          existsSync(join(pluginPath, "dist/remoteEntry.js"))
+        : role.startsWith("frontend");
 
     const manifestEntry: PluginEntry = {
       name,
       version,
       dirName: entry.name,
       path: pluginPath,
-      role: isFrontend ? "frontend" : "backend",
     };
     if (isFrontend) {
       frontend.push(manifestEntry);
@@ -150,8 +153,8 @@ export function validateFrontendBundle(plugin: PluginEntry): string | null {
   return null;
 }
 
-export function validateFrontendBundles(plugins: PluginEntry[]): PluginError[] {
-  const errors: PluginError[] = [];
+export function validateFrontendBundles(plugins: PluginEntry[]): FrontendBundleError[] {
+  const errors: FrontendBundleError[] = [];
   for (const plugin of plugins) {
     const error = validateFrontendBundle(plugin);
     if (error !== null) {
