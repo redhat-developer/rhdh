@@ -35,6 +35,14 @@ kubernetes:
           skipTLSVerify: true
           serviceAccountToken: plugin-sanity-dummy
 
+# The githubOrg / github providers resolve their host against the configured
+# integrations; without a matching entry they abort with "There is no GitHub
+# integration that matches". Kept on .invalid so nothing is ever reached.
+integrations:
+  github:
+    - host: github.invalid
+      token: plugin-sanity-dummy
+
 catalog:
   providers:
     # Every provider below validates its connection config at startup and takes
@@ -49,9 +57,15 @@ catalog:
         clientId: plugin-sanity-dummy
         clientSecret: plugin-sanity-dummy
     githubOrg:
+      id: production
       githubUrl: https://github.invalid
+      orgs:
+        - plugin-sanity-dummy
     gitlab:
       default:
+        host: gitlab.invalid
+        orgEnabled: false
+      orgProvider:
         host: gitlab.invalid
         orgEnabled: false
     github:
