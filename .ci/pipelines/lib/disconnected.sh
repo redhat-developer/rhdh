@@ -286,146 +286,6 @@ disconnected::wait_mcp_updated() {
   log::success "All MachineConfigPools are Updated"
 }
 
-# Mirror the CI hub image (IMAGE_REGISTRY/IMAGE_REPO:TAG_NAME) into the
-# disconnected mirror registry. Operator prepare/IDMS covers
-# registry.redhat.io/rhdh/rhdh-hub-rhel9, not quay.io/rhdh-community/rhdh:next.
-# Helm gets this via oc-mirror additionalImages; operator needs an explicit copy
-# so install-dynamic-plugins can use local plugins from the matching hub.
-disconnected::mirror_hub_image() {
-  common::require_vars IMAGE_REGISTRY IMAGE_REPO TAG_NAME MIRROR_REGISTRY_URL || return 1
-
-  local src="docker://${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
-  local dest="docker://${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
-
-  log::info "Mirroring hub image ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME} → ${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
-  if ! skopeo copy --all --dest-tls-verify=false "${src}" "${dest}"; then
-    log::error "Failed to mirror hub image ${src} → ${dest}"
-    return 1
-  fi
-  log::success "Hub image mirrored to ${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
-}
-
-# Resolve the mirrored hub to a digest-pinned ref and export HUB_IMAGE.
-# Call after disconnected::mirror_hub_image. HUB_IMAGE is used by the smoke CR
-# (envsubst) and by RELATED_IMAGE_backstage so init + backend stay exact.
-disconnected::resolve_hub_image() {
-  common::require_vars IMAGE_REPO TAG_NAME MIRROR_REGISTRY_URL || return 1
-
-  local ref="${MIRROR_REGISTRY_URL}/${IMAGE_REPO}:${TAG_NAME}"
-  local digest
-
-  log::info "Resolving digest for mirrored hub ${ref}"
-  digest=$(skopeo inspect --tls-verify=false "docker://${ref}" --format '{{.Digest}}' 2> /dev/null || true)
-  if [[ -z "${digest}" || "${digest}" != sha256:* ]]; then
-    log::error "Failed to resolve digest for docker://${ref}"
-    return 1
-  fi
-
-  export HUB_IMAGE="${MIRROR_REGISTRY_URL}/${IMAGE_REPO}@${digest}"
-  log::success "HUB_IMAGE=${HUB_IMAGE}"
-}
-
-# Locate the rhdh-operator controller Deployment name in a namespace.
-disconnected::_operator_deploy_name() {
-  local operator_ns="${1:-rhdh-operator}"
-  local deploy
-
-  deploy=$(oc get deploy -n "${operator_ns}" \
-    -l app.kubernetes.io/component=backstage-controller \
-    -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
-  if [[ -z "${deploy}" ]]; then
-    deploy=$(oc get deploy -n "${operator_ns}" -o name 2> /dev/null \
-      | grep -E 'rhdh-operator|backstage-controller' | head -1 | sed 's|^deployment.apps/||;s|^deployments.apps/||;s|^deployment/||')
-  fi
-  if [[ -z "${deploy}" ]]; then
-    log::error "Could not find rhdh-operator Deployment in ${operator_ns}"
-    oc get deploy -n "${operator_ns}" || true
-    return 1
-  fi
-  printf '%s\n' "${deploy}"
-}
-
-# Point the operator's RELATED_IMAGE_backstage at HUB_IMAGE (digest-pinned).
-#
-# Why: rhdh-operator applies spec.deployment.patch via strategic merge (by
-# container name), so the CR can set backstage-backend.image. But
-# DynamicPlugins.getInitContainer() later force-sets install-dynamic-plugins
-# to RELATED_IMAGE_backstage, clobbering the CR init image. RELATED_IMAGE must
-# equal the exact hub ref declared on the CR.
-#
-# Args:
-#   $1 - optional operator namespace (default: rhdh-operator)
-disconnected::set_operator_related_hub_image() {
-  common::require_vars HUB_IMAGE || return 1
-
-  local operator_ns="${1:-rhdh-operator}"
-  local hub_image="${HUB_IMAGE}"
-  local deploy
-  local actual
-
-  deploy=$(disconnected::_operator_deploy_name "${operator_ns}") || return 1
-
-  log::info "Setting RELATED_IMAGE_backstage=${hub_image} on deploy/${deploy} (${operator_ns})"
-  oc set env "deployment/${deploy}" -n "${operator_ns}" \
-    "RELATED_IMAGE_backstage=${hub_image}" || {
-    log::error "Failed to set RELATED_IMAGE_backstage on deploy/${deploy}"
-    return 1
-  }
-  if ! oc rollout status "deployment/${deploy}" -n "${operator_ns}" --timeout=300s; then
-    log::error "Operator rollout after RELATED_IMAGE_backstage update timed out"
-    return 1
-  fi
-
-  actual=$(oc get "deployment/${deploy}" -n "${operator_ns}" \
-    -o jsonpath='{range .spec.template.spec.containers[*].env[?(@.name=="RELATED_IMAGE_backstage")]}{.value}{end}' 2> /dev/null || true)
-  if [[ "${actual}" != "${hub_image}" ]]; then
-    log::error "RELATED_IMAGE_backstage on deploy/${deploy} is '${actual}', want '${hub_image}' (OLM may have reverted)"
-    return 1
-  fi
-  log::success "Operator RELATED_IMAGE_backstage → ${hub_image}"
-}
-
-# Read-only check that both Backstage hub containers use HUB_IMAGE.
-# Init must match RELATED_IMAGE_backstage (operator getInitContainer); the CR
-# patch alone cannot keep install-dynamic-plugins on a different image.
-#
-# Args:
-#   $1 - Backstage namespace
-disconnected::verify_backstage_hub_images() {
-  common::require_vars HUB_IMAGE || return 1
-
-  local namespace="$1"
-  local hub_image="${HUB_IMAGE}"
-  local deploy
-  local backend_img init_img
-  local attempt
-
-  deploy=$(oc get deployment -n "${namespace}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' \
-    | grep -E '^backstage-' | grep -vE 'psql|postgres' | head -1)
-  if [[ -z "${deploy}" ]]; then
-    log::error "No backstage Deployment found in ${namespace} to verify hub images"
-    oc get deployment -n "${namespace}" || true
-    return 1
-  fi
-
-  # Allow a short reconcile window after CR apply + RELATED_IMAGE set.
-  for attempt in 1 2 3 4 5 6; do
-    backend_img=$(oc get "deployment/${deploy}" -n "${namespace}" \
-      -o jsonpath='{range .spec.template.spec.containers[?(@.name=="backstage-backend")]}{.image}{end}')
-    init_img=$(oc get "deployment/${deploy}" -n "${namespace}" \
-      -o jsonpath='{range .spec.template.spec.initContainers[?(@.name=="install-dynamic-plugins")]}{.image}{end}')
-    log::info "deploy/${deploy} images (attempt ${attempt}): backstage-backend=${backend_img} install-dynamic-plugins=${init_img}"
-    if [[ "${backend_img}" == "${hub_image}" && "${init_img}" == "${hub_image}" ]]; then
-      log::success "Backstage Deployment hub images match HUB_IMAGE=${hub_image}"
-      return 0
-    fi
-    sleep 5
-  done
-
-  log::error "RELATED_IMAGE_backstage not effective on install-dynamic-plugins (want ${hub_image}; backend=${backend_img}; init=${init_img})"
-  return 1
-}
-
 # Fetch and run mirror-plugins.sh against the disconnected mirror registry.
 # Uses CATALOG_INDEX_IMAGE when set; otherwise the GA plugin-catalog-index tag.
 disconnected::mirror_plugins() {
@@ -447,6 +307,72 @@ disconnected::mirror_plugins() {
     log::error "mirror-plugins.sh failed — aborting"
     return 1
   }
+}
+
+# Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
+# Always emits registry.access.redhat.com/rhdh/… so registries.conf rewrites to the mirror.
+# Exports HOMEPAGE_PLUGIN_PACKAGE.
+disconnected::resolve_homepage_plugin_package() {
+  common::require_vars RELEASE_VERSION MIRROR_REGISTRY_URL || return 1
+
+  local name="red-hat-developer-hub-backstage-plugin-dynamic-home-page"
+  local digest=""
+  local src
+  local candidates=(
+    "docker://registry.access.redhat.com/rhdh/${name}:${RELEASE_VERSION}"
+    "docker://quay.io/rhdh/${name}:${RELEASE_VERSION}"
+    "docker://${MIRROR_REGISTRY_URL}/rhdh/${name}:${RELEASE_VERSION}"
+  )
+
+  for src in "${candidates[@]}"; do
+    local -a inspect_args=()
+    if [[ "${src}" == *"${MIRROR_REGISTRY_URL}"* ]]; then
+      inspect_args+=(--tls-verify=false)
+    fi
+    digest=$(skopeo inspect "${inspect_args[@]}" "${src}" --format '{{.Digest}}' 2> /dev/null || true)
+    if [[ -n "${digest}" && "${digest}" == sha256:* ]]; then
+      export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}@${digest}!${name}"
+      log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from ${src})"
+      return 0
+    fi
+  done
+
+  log::error "Failed to resolve digest for homepage plugin ${name}:${RELEASE_VERSION}"
+  return 1
+}
+
+# Create a minimal dynamic-plugins ConfigMap that enables the homepage OCI plugin.
+# Args:
+#   $1 - namespace
+disconnected::create_homepage_plugins_configmap() {
+  common::require_vars HOMEPAGE_PLUGIN_PACKAGE || return 1
+
+  local namespace=$1
+  local cm_name="dynamic-plugins-disconnected-smoke"
+  local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
+
+  cat > "${tmp_yaml}" << EOF
+plugins:
+  - package: ${HOMEPAGE_PLUGIN_PACKAGE}
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+            dynamicRoutes:
+              - path: /
+                importName: DynamicHomePage
+EOF
+
+  oc create configmap "${cm_name}" \
+    --from-file="dynamic-plugins.yaml=${tmp_yaml}" \
+    -n "${namespace}" \
+    --dry-run=client -o yaml | oc apply -f - || {
+    log::error "Failed to create ${cm_name} ConfigMap — aborting"
+    return 1
+  }
+  cp "${tmp_yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
+  log::success "ConfigMap ${cm_name} created in ${namespace}"
 }
 
 # Apply the shared plugin-mirror registries.conf ConfigMap in a namespace.
@@ -647,11 +573,9 @@ export -f disconnected::setup_auth
 export -f disconnected::fetch_script
 export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
-export -f disconnected::mirror_hub_image
-export -f disconnected::resolve_hub_image
-export -f disconnected::set_operator_related_hub_image
-export -f disconnected::verify_backstage_hub_images
 export -f disconnected::mirror_plugins
+export -f disconnected::resolve_homepage_plugin_package
+export -f disconnected::create_homepage_plugins_configmap
 export -f disconnected::apply_plugin_mirror_configmap
 export -f disconnected::create_mirror_registry_ca_configmap
 export -f disconnected::create_plugin_registry_auth_secret

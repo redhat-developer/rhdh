@@ -6,40 +6,21 @@
 # flavours: [] disables default flavours (lightspeed) so the deployment does not
 # pull/start lightspeed-core / init-rag-data sidecars.
 #
-# Exact hub image: $HUB_IMAGE is a digest-pinned mirror ref
-# (${MIRROR_REGISTRY_URL}/${IMAGE_REPO}@sha256:…). It must match
-# CATALOG_INDEX_IMAGE (nightly :next catalog expects local homepage dist from
-# the community hub, not GA rhdh-hub-rhel9).
+# Hub image: leave CSV RELATED_IMAGE_backstage (GA rhdh-hub-rhel9). prepare +
+# oc-mirror IDMS rewrites pulls for kubelet — do not patch container images or
+# oc set env RELATED_IMAGE (OLM v1 reverts overrides).
 #
-# CRD surface: spec.deployment.patch merges containers/initContainers by name
-# (K8s strategic merge / operator merge2). That alone is not enough for
-# install-dynamic-plugins — DynamicPlugins.getInitContainer() re-applies
-# RELATED_IMAGE_backstage after the patch. ocp-disconnected-operator.sh therefore
-# sets RELATED_IMAGE_backstage=$HUB_IMAGE on the operator Deployment as well.
-#
-# CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator() after
-# ocp-disconnected-operator.sh rewrites it to MIRROR_REGISTRY_URL/… (the index
-# already mirrored by disconnected::mirror_plugins).
+# Homepage: OCI package via dynamicPluginsConfigMapName (not CATALOG_INDEX_IMAGE
+# :next defaults, which expect community local-dist paths). Plugin pulls use
+# registries.conf mounted on install-dynamic-plugins (IDMS does not apply to skopeo).
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh
 spec:
   flavours: []
-  deployment:
-    patch:
-      spec:
-        template:
-          spec:
-            imagePullSecrets:
-              - name: mirror-registry-pull
-            containers:
-              - name: backstage-backend
-                image: "$HUB_IMAGE"
-            initContainers:
-              - name: install-dynamic-plugins
-                image: "$HUB_IMAGE"
   application:
+    dynamicPluginsConfigMapName: dynamic-plugins-disconnected-smoke
     appConfig:
       configMaps:
         - name: app-config-rhdh-disconnected-smoke
