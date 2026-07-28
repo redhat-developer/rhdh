@@ -40,7 +40,16 @@ kubernetes:
 # integration that matches". Kept on .invalid so nothing is ever reached.
 integrations:
   github:
+    # A non-github.com host must spell out both base URLs, or core.urlReader
+    # fails to instantiate and takes catalog/scaffolder/techdocs down with it.
     - host: github.invalid
+      apiBaseUrl: https://api.github.invalid
+      rawBaseUrl: https://raw.github.invalid
+      token: plugin-sanity-dummy
+  gitlab:
+    - host: gitlab.invalid
+      apiBaseUrl: https://gitlab.invalid/api/v4
+      baseUrl: https://gitlab.invalid
       token: plugin-sanity-dummy
 
 catalog:
