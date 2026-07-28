@@ -118,10 +118,10 @@ async function testIngressResources(page: Page, uiHelper: UIhelper) {
       .getByRole("link", { name: "topology-test-route" })
       .first(),
   ).toBeVisible();
-  // Verify code block is visible (pre element containing configuration)
-  await expect(
-    page.getByText(/apiVersion:|kind:|metadata:/).first(),
-  ).toBeVisible();
+  // Verify ingress configuration code block shows service backend (not full K8s YAML)
+  const ingressCode = page.getByTestId("ingress-list").locator("code").first();
+  await expect(ingressCode).toBeVisible();
+  await expect(ingressCode).toContainText("name: topology-test-service");
 }
 
 async function testRouteResources(page: Page, uiHelper: UIhelper) {
