@@ -1,12 +1,3 @@
-/**
- * Plugin Loader Utilities
- *
- * Helpers for the plugin sanity check (plugin-dynamic-loading.spec.ts):
- * enumerate the plugins installed into dynamic-plugins-root by
- * install-dynamic-plugins, validate frontend bundle artifacts, and parse the
- * dynamic-plugins-info loaded-plugins response.
- */
-
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join } from "path";
 
@@ -31,12 +22,8 @@ export type PluginError = {
 };
 
 /**
- * Build the plugin manifest from an install-dynamic-plugins output directory.
- *
- * The CLI does not emit a manifest file - each installed plugin is a
- * directory containing its package.json. Scan those directories and classify
- * plugins by their backstage.role (falling back to bundle layout when the
- * role is absent).
+ * install-dynamic-plugins emits no manifest file, so the plugin set is
+ * reconstructed by scanning the install directory for package.json files.
  */
 export function loadManifest(installDir: string): PluginManifest {
   const backend: PluginEntry[] = [];
@@ -142,11 +129,8 @@ export function readCatalogIndexExpectation(installDir: string): CatalogIndexExp
 }
 
 /**
- * Validate that a frontend plugin has required bundle artifacts
- *
- * Frontend plugins use either:
- * - Modern: dist-scalprum/ with plugin-manifest.json
- * - Legacy: dist/remoteEntry.js (no manifest needed)
+ * Frontend plugins ship either the modern dist-scalprum/ bundle (which carries
+ * a plugin-manifest.json) or the legacy dist/remoteEntry.js one.
  */
 export function validateFrontendBundle(plugin: PluginEntry): string | null {
   const has = (rel: string) => existsSync(join(plugin.path, rel));
@@ -155,12 +139,10 @@ export function validateFrontendBundle(plugin: PluginEntry): string | null {
     return "missing package.json";
   }
 
-  // Must have at least one bundle format
   if (!has("dist-scalprum") && !has("dist/remoteEntry.js")) {
     return "missing both dist-scalprum/ and dist/remoteEntry.js - needs at least one";
   }
 
-  // Modern dist-scalprum format requires plugin-manifest.json
   if (has("dist-scalprum") && !has("dist-scalprum/plugin-manifest.json")) {
     return "dist-scalprum/ found but missing plugin-manifest.json";
   }
@@ -168,9 +150,6 @@ export function validateFrontendBundle(plugin: PluginEntry): string | null {
   return null;
 }
 
-/**
- * Validate bundle artifacts for a list of frontend plugins
- */
 export function validateFrontendBundles(plugins: PluginEntry[]): PluginError[] {
   const errors: PluginError[] = [];
   for (const plugin of plugins) {

@@ -1,24 +1,7 @@
 /**
- * Plugin Dynamic Loading Sanity Check (RHIDP-13508)
- *
- * Validates that every plugin enabled by the catalog index actually loads in
- * the real RHDH backend. Runs cluster-free: Playwright boots
- * `packages/backend` from source (playwright.plugin-sanity.config.ts), with
- * dynamic-plugins-root populated from CATALOG_INDEX_IMAGE by
- * local-harness/populate-catalog-index.sh, so the plugins go through the product's own
- * dynamicPluginsFeatureLoader — same Backstage line, same scanner, same
- * config stack as the shipped backend.
- *
- * Test strategy:
- * 1. Enumerate the installed plugins (directory scan of dynamic-plugins-root)
- * 2. Fetch what the backend really loaded (/api/dynamic-plugins-info/loaded-plugins,
- *    authenticated via the guest provider from app-config.local-e2e.yaml)
- * 3. Fail listing every installed plugin the loader did not load
- * 4. Statically validate frontend plugin bundle artifacts
- *
- * Runs only via the dedicated config (excluded from all cluster projects via
- * testIgnore). CI entrypoint: testing::run_plugin_sanity_check, called by the
- * nightly OCP handler (.ci/pipelines/jobs/ocp-nightly.sh).
+ * Plugin Dynamic Loading Sanity Check (RHIDP-13508).
+ * See "Plugin Sanity Check" in e2e-tests/README.md; runs only via
+ * playwright.plugin-sanity.config.ts.
  */
 
 import { resolve } from "path";
@@ -31,11 +14,6 @@ import {
   readCatalogIndexExpectation,
   validateFrontendBundles,
 } from "../utils/plugin-loader";
-
-// Known failures are handled at install time instead of here: a plugin that
-// throws during init aborts the whole backend, so plugins that cannot load in
-// this harness are filtered out by local-harness/catalog-index-refs.sh via
-// local-harness/plugin-sanity-excludes.txt (each entry documents why).
 
 // populate-catalog-index.sh installs into <repo root>/dynamic-plugins-root;
 // Playwright runs with cwd e2e-tests.
@@ -53,9 +31,6 @@ test.describe("Plugin Dynamic Loading", () => {
     "all catalog index plugins load in the RHDH backend",
     { tag: "@sanity" },
     async ({ request }) => {
-      // Step 1: enumerate what install-dynamic-plugins installed, and check it
-      // covers the WHOLE index - a partial install would otherwise pass this
-      // spec trivially. loadManifest throws when nothing is installed at all.
       const manifest = loadManifest(DYNAMIC_PLUGINS_ROOT);
       console.log(
         `[TEST] Installed: ${manifest.backend.length} backend, ${manifest.frontend.length} frontend plugins`,
@@ -63,6 +38,8 @@ test.describe("Plugin Dynamic Loading", () => {
 
       const expected = [...manifest.backend, ...manifest.frontend];
 
+      // The count check below is what catches a partial install; without it
+      // this spec only asserts "installed ⊆ loaded" and passes trivially.
       // Throw rather than assert-and-return: a bare `return` here would report
       // the test as PASSED without having validated anything.
       const indexExpectation = readCatalogIndexExpectation(DYNAMIC_PLUGINS_ROOT);
@@ -87,7 +64,7 @@ test.describe("Plugin Dynamic Loading", () => {
           `oci:// packages declared by ${indexExpectation.image}`,
       ).toBe(indexExpectation.expectedOciPackages);
 
-      // Step 2: authenticate as guest (loaded-plugins requires user credentials)
+      // loaded-plugins requires user credentials, so authenticate as guest.
       const refresh = await request.get("/api/auth/guest/refresh", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
@@ -105,7 +82,6 @@ test.describe("Plugin Dynamic Loading", () => {
           : undefined;
       expect(token, "guest session should carry a backstage identity token").toBeDefined();
 
-      // Step 3: what the product's dynamic plugin loader actually loaded
       const response = await request.get("/api/dynamic-plugins-info/loaded-plugins", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -113,7 +89,6 @@ test.describe("Plugin Dynamic Loading", () => {
       const loadedNames = parseLoadedPluginNames(await response.json());
       console.log(`[TEST] Backend reports ${loadedNames.size} loaded dynamic plugins`);
 
-      // Step 4: every installed plugin must have been loaded
       const notLoaded = expected.filter((plugin) => !loadedNames.has(plugin.name));
       if (notLoaded.length > 0) {
         console.log(`\n[TEST] Installed but not loaded (${notLoaded.length}):`);
@@ -131,7 +106,6 @@ test.describe("Plugin Dynamic Loading", () => {
         "every installed plugin should be loaded by the backend",
       ).toEqual([]);
 
-      // Step 5: frontend bundle artifacts (static check)
       const frontendErrors = validateFrontendBundles(manifest.frontend);
       if (frontendErrors.length > 0) {
         console.log(`\n[TEST] Frontend bundle errors (${frontendErrors.length}):`);
@@ -144,7 +118,6 @@ test.describe("Plugin Dynamic Loading", () => {
         "every frontend plugin should ship valid bundle artifacts",
       ).toEqual([]);
 
-      // Step 6: summary
       console.log("\n[TEST] Summary:");
       console.log(`   Installed: ${manifest.backend.length + manifest.frontend.length}`);
       console.log(`   - Backend: ${manifest.backend.length}`);

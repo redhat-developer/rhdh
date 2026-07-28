@@ -6,11 +6,8 @@ import { resolve } from "path";
  *
  * Fails fast with an actionable message when `dynamic-plugins-root` has not been
  * populated — otherwise the app boots with no plugins and specs fail with a
- * confusing locator timeout instead of a clear "populate first" error.
- *
- * Each harness passes its OWN populate command: the two harnesses use different
- * scripts (and the plugin-sanity one needs CATALOG_INDEX_IMAGE), so a single
- * hard-coded hint would send half the callers to the wrong script.
+ * confusing locator timeout instead of a clear "populate first" error. Each
+ * harness passes its own populate command, since they use different scripts.
  */
 export function requireDynamicPluginsPopulated(runCommand: string, populateCommand: string): void {
   // process.cwd() is e2e-tests when Playwright runs; the plugins root is at repo root.

@@ -9,14 +9,8 @@
 # cluster. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS).
 #
 # The optional first argument selects the install config (default: the curated
-# harness set used by the legacy-local E2E flow):
-#
-#   # curated harness set (legacy-local E2E)
-#   ./e2e-tests/local-harness/populate.sh
-#
-#   # full catalog index set (plugin sanity check; generates the config)
-#   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
-#     ./e2e-tests/local-harness/populate-catalog-index.sh
+# harness set used by the legacy-local E2E flow). The plugin sanity check drives
+# this hook through populate-catalog-index.sh.
 set -e
 
 # Pinned so local runs install the exact CLI version CI uses.

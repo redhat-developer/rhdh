@@ -9,12 +9,10 @@ const POPULATE_COMMAND =
 /**
  * globalSetup for playwright.plugin-sanity.config.ts.
  *
- * Beyond the shared "is it populated at all" guard, this harness needs
- * dynamic-plugins-root to have been populated from the CATALOG INDEX
- * specifically. A leftover root from the curated `populate.sh` would otherwise
- * satisfy the plugin-count guard and let the sanity check pass green while
- * validating ~10 curated plugins instead of the whole index — so require the
- * breadcrumb that populate-catalog-index.sh writes.
+ * A leftover dynamic-plugins-root from the curated `populate.sh` satisfies the
+ * shared plugin-count guard and would let the check pass green while validating
+ * ~10 curated plugins instead of the whole index, so the breadcrumb that
+ * populate-catalog-index.sh writes is required too.
  */
 export default function pluginSanityGlobalSetup(): void {
   requireDynamicPluginsPopulated("plugin-sanity", POPULATE_COMMAND);

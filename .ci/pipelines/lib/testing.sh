@@ -37,8 +37,8 @@ readonly _TESTING_ERR_MISSING_PARAMS="Missing required parameters"
 #   Non-zero - Tests failed
 # Uses globals: DIR, TAG_NAME, ARTIFACT_DIR, LOGFILE, JUNIT_RESULTS, CI, SHARED_DIR
 # Publishes a JUnit file to SHARED_DIR, gzipped to stay under the Kubernetes
-# Secret 1 MiB limit, dropping it when it is still too large (an oversized entry
-# would break the downstream Slack reporting for every run in the job).
+# Secret 1 MiB limit; an oversized entry is dropped because it would break the
+# downstream Slack reporting for every run in the job.
 # Args:
 #   $1 - artifacts_subdir (names the SHARED_DIR entry)
 #   $2 - path to the JUnit file already copied into ARTIFACT_DIR
@@ -239,10 +239,8 @@ testing::_filter_plugin_startup_failures() {
 }
 
 # Scans RHDH pod logs in a namespace for dynamic-plugin startup failures and
-# prints a loud, grep-free summary naming each failed plugin. Backstage logs
-# "Plugin '<id>' threw an error during startup ..." / "Module <m> in Plugin
-# '<id>' threw an error ..." before the pod exits, so on CrashLoopBackOff the
-# culprit is in the PREVIOUS container logs (-p). Advisory only: never fails.
+# prints a summary naming each failed plugin. On CrashLoopBackOff the culprit is
+# in the PREVIOUS container logs (-p). Advisory only: never fails.
 # Args:
 #   $1 - namespace
 #   $2 - artifacts_subdir: where to save the summary artifact
@@ -270,12 +268,8 @@ testing::report_plugin_startup_failures() {
   fi
 }
 
-# Cluster-free plugin sanity check (RHIDP-13508): boots packages/backend from
-# source with every OCI plugin declared by the catalog index and verifies -
-# via /api/dynamic-plugins-info/loaded-plugins - that the product's dynamic
-# plugin loader loaded all of them. Runs entirely inside the test pod: no
-# cluster deployment and no product image (see
-# e2e-tests/playwright.plugin-sanity.config.ts).
+# Cluster-free plugin sanity check (RHIDP-13508) - runs entirely inside the test
+# pod, no cluster deployment and no product image. See e2e-tests/README.md.
 # Args:
 #   $1 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to plugin-dynamic-loading)
 testing::run_plugin_sanity_check() {
