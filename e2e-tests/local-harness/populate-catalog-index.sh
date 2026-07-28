@@ -21,6 +21,7 @@ workdir="$(mktemp -d)"
 trap 'rm -rf "$workdir"' EXIT
 
 refs="$("$DIR/catalog-index-refs.sh" "$CATALOG_INDEX_IMAGE")"
+excluded_refs="$("$DIR/catalog-index-refs.sh" "$CATALOG_INDEX_IMAGE" --excluded)"
 
 if [[ -z "$refs" ]]; then
   echo "No packages found in dynamic-plugins.default.yaml of ${CATALOG_INDEX_IMAGE}" >&2
@@ -36,6 +37,14 @@ fi
     echo "  - package: \"$ref\""
     echo "    disabled: false"
   done <<< "$refs"
+  # Excluded packages must be disabled EXPLICITLY. The `includes` above pulls in
+  # the index's own list, so simply leaving one out installs it anyway.
+  if [[ -n "$excluded_refs" ]]; then
+    while read -r ref; do
+      echo "  - package: \"$ref\""
+      echo "    disabled: true"
+    done <<< "$excluded_refs"
+  fi
 } > "$workdir/dynamic-plugins.catalog-index.yaml"
 
 echo "Enabling $(echo "$refs" | grep -c '^oci://') OCI package(s) from ${CATALOG_INDEX_IMAGE}"

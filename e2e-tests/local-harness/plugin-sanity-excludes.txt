@@ -8,6 +8,9 @@
 #
 # A plugin that throws during backend init aborts the WHOLE backend, so plugins
 # that cannot initialize in the standalone harness must not be installed.
+# populate-catalog-index.sh writes each match into the generated config as
+# `disabled: true`: the config also `includes` the index's own plugin list, so
+# leaving a package out does NOT keep it from being installed.
 # Every entry documents why, so it can be re-evaluated (and removed) later.
 # Prefer a dummy config entry in app-config.plugin-sanity.yaml over an
 # exclusion whenever the failure is just startup config validation.

@@ -37,10 +37,27 @@ kubernetes:
 
 catalog:
   providers:
-    # The ldapOrg / microsoftGraphOrg providers validate their connection config
-    # at startup. They do reach out once the backend is up, but the .invalid TLD
-    # never resolves, so they fail harmlessly at refresh time (the same thing the
-    # cluster deployment does with its `temp` placeholders) long after boot.
+    # Every provider below validates its connection config at startup and takes
+    # the whole backend down when it is missing. They do reach out once the
+    # backend is up, but the .invalid TLD never resolves, so they fail harmlessly
+    # at refresh time (the same thing the cluster deployment does with its `temp`
+    # placeholders) long after boot.
+    keycloakOrg:
+      default:
+        baseUrl: https://keycloak.invalid/auth
+        realm: plugin-sanity-dummy
+        clientId: plugin-sanity-dummy
+        clientSecret: plugin-sanity-dummy
+    githubOrg:
+      githubUrl: https://github.invalid
+    gitlab:
+      default:
+        host: gitlab.invalid
+        orgEnabled: false
+    github:
+      providerId:
+        organization: plugin-sanity-dummy
+        catalogPath: /catalog-info.yaml
     ldapOrg:
       default:
         target: ldaps://ldap.invalid

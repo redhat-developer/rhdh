@@ -10,9 +10,20 @@
 #
 # Requires skopeo and jq. Usage:
 #   catalog-index-refs.sh quay.io/rhdh/plugin-catalog-index:next
+#   catalog-index-refs.sh quay.io/rhdh/plugin-catalog-index:next --excluded
+#
+# --excluded inverts the filter and prints the refs the excludes file matched.
+# The caller needs those: the generated install config pulls in the index's own
+# dynamic-plugins.default.yaml, so an excluded package installs anyway unless it
+# is explicitly listed as `disabled: true` - omitting it is not enough.
 set -e
 
-IMAGE="${1:?usage: catalog-index-refs.sh <catalog-index-image>}"
+IMAGE="${1:?usage: catalog-index-refs.sh <catalog-index-image> [--excluded]}"
+MODE="${2:-}"
+if [[ -n "$MODE" && "$MODE" != "--excluded" ]]; then
+  echo "unknown argument: ${MODE} (expected --excluded)" >&2
+  exit 1
+fi
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -69,8 +80,10 @@ refs="$(
 )"
 
 # grep -vEf with an empty pattern file is not portable; skip the filter instead.
-if [[ -s "$workdir/excludes.txt" ]]; then
-  echo "$refs" | grep -vEf "$workdir/excludes.txt" || true
+if [[ ! -s "$workdir/excludes.txt" ]]; then
+  [[ "$MODE" == "--excluded" ]] || echo "$refs"
+elif [[ "$MODE" == "--excluded" ]]; then
+  echo "$refs" | grep -Ef "$workdir/excludes.txt" || true
 else
-  echo "$refs"
+  echo "$refs" | grep -vEf "$workdir/excludes.txt" || true
 fi
