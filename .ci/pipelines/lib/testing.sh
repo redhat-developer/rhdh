@@ -226,16 +226,10 @@ testing::run_tests() {
 }
 
 # Filters stdin down to the dynamic-plugin startup failures worth reporting.
-# Backstage emits three fatal shapes (createInitializationResultCollector):
-# "Plugin '<id>' threw an error during startup", "Module '<m>' in Plugin
-# '<id>' threw an error during startup", and "Plugin '<id>' reported failure
-# for module '<m>' during startup". The near-identical variants that end in
-# "boot failure is permitted ... so startup will continue" are NON-fatal and
-# must not be reported as failures.
+# The log shapes live in the shared script so the cluster and cluster-free paths
+# cannot drift apart.
 testing::_filter_plugin_startup_failures() {
-  grep -E "(threw an error|reported failure for module).*during startup|Backend startup failed" \
-    | grep -v "boot failure is permitted" \
-    | sort -u
+  "${DIR}/../../e2e-tests/local-harness/filter-plugin-startup-failures.sh"
 }
 
 # Scans RHDH pod logs in a namespace for dynamic-plugin startup failures and
@@ -266,94 +260,6 @@ testing::report_plugin_startup_failures() {
   else
     log::info "No dynamic-plugin startup failures found in ${namespace} pod logs."
   fi
-}
-
-# Cluster-free plugin sanity check (RHIDP-13508) - runs entirely inside the test
-# pod, no cluster deployment and no product image. See e2e-tests/README.md.
-# Args:
-#   $1 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to plugin-dynamic-loading)
-testing::run_plugin_sanity_check() {
-  local artifacts_subdir="${1:-plugin-dynamic-loading}"
-
-  test_run_tracker::register "$artifacts_subdir"
-  test_run_tracker::mark_deploy_success
-  # Pessimistic default, same rationale as testing::run_tests.
-  test_run_tracker::mark_test_result "false" "${UNKNOWN_FAILURE_COUNT}"
-
-  # Branch-aware nightly index by default; overridable via Gangway
-  # (--catalog-index-image), e.g. for RC verification.
-  export CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}}"
-  log::info "Running cluster-free plugin sanity check against ${CATALOG_INDEX_IMAGE}"
-
-  local repo_root
-  repo_root="$(cd "${DIR}/../.." && pwd)"
-
-  # Booting packages/backend from source needs the ROOT workspace dependencies
-  # (e2e-tests has its own lockfile, installed separately below).
-  if ! (cd "${repo_root}" && yarn install --immutable > /tmp/yarn.install.root.log.txt 2>&1); then
-    log::error "=== ROOT YARN INSTALL FAILED ==="
-    cat /tmp/yarn.install.root.log.txt
-    save_overall_result 1
-    return 1
-  fi
-  log::success "Root yarn install completed successfully."
-
-  "${repo_root}/e2e-tests/local-harness/populate-catalog-index.sh" 2>&1 | tee "/tmp/${LOGFILE}-plugin-sanity-populate"
-  local populate_result=${PIPESTATUS[0]}
-  if [[ "${populate_result}" -ne 0 ]]; then
-    log::error "populate-catalog-index.sh failed (exit ${populate_result})"
-    save_overall_result 1
-    return 1
-  fi
-
-  # `yarn --cwd` rather than `cd`: this function used to leave the shell in
-  # e2e-tests, which is invisible until someone adds a step after it.
-  local e2e_dir="${repo_root}/e2e-tests"
-
-  if ! yarn --cwd "${e2e_dir}" install --immutable > /tmp/yarn.install.log.txt 2>&1; then
-    log::error "=== YARN INSTALL FAILED ==="
-    cat /tmp/yarn.install.log.txt
-    save_overall_result 1
-    return 1
-  fi
-
-  local junit_results="junit-results-plugin-sanity.xml"
-  (
-    set -e
-    JUNIT_RESULTS="${junit_results}" yarn --cwd "${e2e_dir}" plugin-sanity
-  ) 2>&1 | tee "/tmp/${LOGFILE}-plugin-sanity"
-  local test_result=${PIPESTATUS[0]}
-
-  common::save_artifact "${artifacts_subdir}" "${e2e_dir}/${junit_results}" || true
-  testing::_publish_junit_to_shared_dir "${artifacts_subdir}" "${ARTIFACT_DIR}/${artifacts_subdir}/${junit_results}"
-
-  ansi2html < "/tmp/${LOGFILE}-plugin-sanity" > "/tmp/${LOGFILE}-plugin-sanity.html"
-  common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}-plugin-sanity.html" || true
-  common::save_artifact "${artifacts_subdir}" "${e2e_dir}/playwright-report-plugin-sanity/" || true
-
-  echo "Cluster-free plugin sanity check (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
-  local test_passed="true"
-  if [[ "${test_result}" -ne 0 ]]; then
-    save_overall_result 1
-    test_passed="false"
-    # The backend log streams through Playwright's webServer pipe into the run
-    # log; surface the per-plugin startup failures so nobody has to dig.
-    local failures_out="/tmp/plugin-startup-failures-cluster-free.txt"
-    testing::_filter_plugin_startup_failures < "/tmp/${LOGFILE}-plugin-sanity" > "${failures_out}" || true
-    if [[ -s "${failures_out}" ]]; then
-      log::error "==================== PLUGIN STARTUP FAILURES (cluster-free) ===================="
-      cat "${failures_out}"
-      log::error "================================================================================="
-      common::save_artifact "${artifacts_subdir}" "${failures_out}" || true
-    fi
-  fi
-  local failed_tests="0"
-  if [[ "${test_result}" -ne 0 ]]; then
-    failed_tests=$(testing::_count_junit_failures "${e2e_dir}/${junit_results}")
-    echo "Number of failed tests: ${failed_tests}"
-  fi
-  test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
-  return "$test_result"
 }
 
 # ==============================================================================

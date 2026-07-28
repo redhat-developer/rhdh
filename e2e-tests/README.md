@@ -18,20 +18,25 @@ CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
 yarn plugin-sanity
 ```
 
-CI runs it in the nightly OCP job, right after the cluster-based sanity-plugins
-deployment (`testing::run_plugin_sanity_check`); override the index via Gangway
-(`--catalog-index-image`) for RC verification. It is independent of that
-deployment: the cluster job validates the curated plugin set on the shipped
-image, while this validates the index composition against the current backend
-line, with no cluster and no product image.
+CI runs it as the `plugin-sanity` job of the
+[E2E Cluster-free workflow](../.github/workflows/e2e-cluster-free.yaml) — a plain
+GitHub runner, since the check needs no cluster and every index package resolves
+anonymously. The index is built outside this repo and changes on its own, so the
+job also runs on a nightly schedule; for RC verification, run the workflow
+manually and set the `catalog_index_image` input.
+
+This complements, but does not depend on, the cluster-based `sanity-plugins`
+deployment in the nightly OCP job: that one validates the curated plugin set on
+the shipped image, while this validates the full index composition against the
+current backend line, with no cluster and no product image.
 
 A plugin that throws during init aborts the whole backend, so plugins that
 cannot initialize here are excluded in `local-harness/plugin-sanity-excludes.txt`
 (each entry documents why). Prefer a dummy config entry in
 `app-config.plugin-sanity.yaml` over an exclusion whenever the failure is just
-startup config validation. When a plugin does take the pod down, the nightly
-prints a "PLUGIN STARTUP FAILURES" summary naming the culprit (also saved as a
-build artifact).
+startup config validation. When a plugin does abort the backend, the job pulls
+the culprits onto the run summary via
+`local-harness/filter-plugin-startup-failures.sh`.
 
 ## Local Test Runner
 

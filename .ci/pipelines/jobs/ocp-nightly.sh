@@ -74,9 +74,4 @@ run_sanity_plugins_check() {
   # A broken plugin takes the whole pod down and the answer is buried in the
   # pod logs; advisory, prints nothing on healthy runs.
   testing::report_plugin_startup_failures "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}"
-
-  # Cluster-free counterpart (RHIDP-13508) — see e2e-tests/README.md. It records
-  # its own result via test_run_tracker/save_overall_result like
-  # testing::run_tests, so `|| true` marks the job without aborting later steps.
-  testing::run_plugin_sanity_check "plugin-dynamic-loading" || true
 }
