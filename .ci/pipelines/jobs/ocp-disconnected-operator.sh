@@ -47,7 +47,8 @@ handle_ocp_disconnected_operator() {
   # default skopeo/umoci/podman-build path. Nested Podman in this CI pod cannot
   # initialize storage (newuidmap / VFS chown both fail under hostUsers: false).
   # CATALOG_INDEX_IMAGE is the plugin catalog index — do not pass it as
-  # --index-image (OLM operator catalog). Keep it for mirror-plugins.sh below.
+  # --index-image (OLM operator catalog). Used only for mirror-plugins.sh below,
+  # then cleared so deploy does not inject :next defaults onto the GA hub.
   #
   # OLM version: leave default (auto). On OCP 4.21+ this selects OLM v1.
   local filter_versions="${RELEASE_VERSION}"
@@ -120,28 +121,14 @@ handle_ocp_disconnected_operator() {
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
 
-  # Homepage ("Welcome back!") comes from dynamic-plugins.default.yaml inside the
-  # catalog index. Clearing CATALOG_INDEX_IMAGE skips that file and / 404s after
-  # guest login. Rewrite to the index already pushed by mirror_plugins (same
-  # path under MIRROR_REGISTRY_URL). Do this AFTER mirroring so mirror_plugins
-  # still resolves the upstream/index override correctly.
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    export CATALOG_INDEX_IMAGE="${MIRROR_REGISTRY_URL}/${CATALOG_INDEX_IMAGE#*/}"
-  else
-    export CATALOG_INDEX_IMAGE="${MIRROR_REGISTRY_URL}/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
-  fi
-  log::info "Using mirrored CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE}"
+  # Docs-aligned smoke: do not inject CATALOG_INDEX_IMAGE. The :next catalog's
+  # defaults expect community hub local-dist homepage paths that are absent from
+  # the CSV GA hub (RELATED_IMAGE_backstage / IDMS). Homepage is delivered via an
+  # OCI package ConfigMap instead (see create_homepage_plugins_configmap).
+  unset CATALOG_INDEX_IMAGE
+  log::info "CATALOG_INDEX_IMAGE unset for smoke deploy (OCI homepage ConfigMap)"
 
-  # Hub must match the catalog index tag (nightly :next). CSV GA hub lacks the
-  # local homepage path referenced by plugin-catalog-index:next. Mirror the CI
-  # hub like Helm's oc-mirror additionalImages, digest-pin as HUB_IMAGE, then
-  # set RELATED_IMAGE_backstage (authoritative for install-dynamic-plugins).
-  log::section "Hub Image Mirroring"
-  disconnected::mirror_hub_image || return 1
-  disconnected::resolve_hub_image || return 1
-  # RELATED_IMAGE_backstage overrides install-dynamic-plugins after CR patches
-  # (operator getInitContainer clobber). Must run before the Backstage CR.
-  disconnected::set_operator_related_hub_image "rhdh-operator" || return 1
+  disconnected::resolve_homepage_plugin_package || return 1
 
   log::section "Namespace and Secrets"
 
@@ -151,18 +138,7 @@ handle_ocp_disconnected_operator() {
   # from the mirror (registries.conf alone is not enough — TLS verify fails).
   disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
   disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
-
-  # Kubelet pull of HUB_IMAGE (CR patch). Cluster pull-secret is already merged;
-  # namespace secret + imagePullSecrets matches the K8s operator CR pattern.
-  oc create secret generic mirror-registry-pull \
-    --from-file=.dockerconfigjson="${MIRROR_REGISTRY_PULL_SECRET}" \
-    --type=kubernetes.io/dockerconfigjson \
-    -n "${NAME_SPACE}" \
-    --dry-run=client -o yaml | oc apply -f - || {
-    log::error "Failed to create mirror-registry-pull secret — aborting"
-    return 1
-  }
-  log::success "Secret mirror-registry-pull created in ${NAME_SPACE}"
+  disconnected::create_homepage_plugins_configmap "${NAME_SPACE}" || return 1
 
   # Operator mounts one volume per extraFiles ConfigMap name. policy.json cannot
   # share rhdh-plugin-mirror-conf or reconcile fails with duplicate volume keys.
@@ -189,10 +165,10 @@ handle_ocp_disconnected_operator() {
 
   local rendered_cr
   local auth_secret="${RELEASE_NAME}-dynamic-plugins-registry-auth"
-  # envsubst substitutes HUB_IMAGE into spec.deployment.patch container images.
   rendered_cr=$(envsubst < "${DIR}/resources/rhdh-operator/rhdh-start-disconnected-smoke.yaml")
-  # Parity with helm-post-renderer.sh: registries.conf, policy.json, mirror CA.
-  # Also mount registry auth.json for authenticated mirror pulls.
+  # Parity with helm-post-renderer.sh / air-gapped Operator docs: registries.conf,
+  # policy.json, mirror CA on install-dynamic-plugins only. Also mount registry
+  # auth.json for authenticated mirror pulls.
   # CI yq is mikefarah/yq (no --arg); interpolate paths via the shell.
   # shellcheck disable=SC2016
   # Auth: operator secret mounts use subPath and require an existing parent dir.
@@ -241,16 +217,8 @@ handle_ocp_disconnected_operator() {
 
   cp "${cr_temp}" "${ARTIFACT_DIR}/disconnected-backstage-cr.yaml" 2> /dev/null || true
 
-  # Re-assert RELATED_IMAGE in case OLM v1 reconciled the operator Deployment
-  # back to the CSV GA value while we prepared the namespace.
-  disconnected::set_operator_related_hub_image "rhdh-operator" || return 1
-
   deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}"
   log::success "Backstage CR deployed in ${NAME_SPACE}"
-
-  # Init image comes from RELATED_IMAGE_backstage (not the CR patch alone).
-  # Read-only verify both containers match HUB_IMAGE before smoke.
-  disconnected::verify_backstage_hub_images "${NAME_SPACE}" || return 1
 
   log::section "Smoke Test"
 
