@@ -46,6 +46,13 @@ concurrency:
 permissions:
   contents: read
 
+# Both jobs run inside a container, where the default shell is `sh` rather than
+# the `bash` used on the runner host — so `[[ ]]`, `=~` and pipefail are syntax
+# errors unless bash is requested explicitly.
+defaults:
+  run:
+    shell: bash
+
 jobs:
   e2e:
     name: e2e
@@ -140,7 +147,7 @@ jobs:
           CATALOG_INDEX_IMAGE: ${{ steps.index.outputs.image }}
         run: |
           set -o pipefail
-          yarn e2e:plugin-sanity 2>&1 | tee /tmp/plugin-sanity.log
+          yarn e2e:plugin-sanity 2>&1 | tee plugin-sanity.log
 
       - name: Report plugin startup failures
         # A plugin that throws during init aborts the whole backend; the cause is
@@ -149,7 +156,7 @@ jobs:
         if: ${{ failure() && steps.sanity.conclusion == 'failure' }}
         run: |
           ./e2e-tests/local-harness/filter-plugin-startup-failures.sh \
-            < /tmp/plugin-sanity.log > /tmp/plugin-startup-failures.txt || true
+            < e2e-tests/plugin-sanity.log > /tmp/plugin-startup-failures.txt || true
           if [[ -s /tmp/plugin-startup-failures.txt ]]; then
             {
               echo "### Plugin startup failures"
@@ -169,5 +176,5 @@ jobs:
           name: playwright-report-plugin-sanity
           path: |
             e2e-tests/playwright-report-plugin-sanity
-            /tmp/plugin-sanity.log
+            e2e-tests/plugin-sanity.log
           retention-days: 7
