@@ -1,11 +1,13 @@
 /**
- * Google Cloud SQL Auth Proxy helpers for showcase-runtime external DB tests (Helm).
+ * Google Cloud SQL Auth Proxy helpers for showcase-runtime external DB tests.
  *
  * Installs the Auth Proxy as a native sidecar initContainer (`restartPolicy:
  * Always` + startupProbe) so the DB tunnel is up before backstage-backend
- * starts — matching RHIDP-7007 / RHIDP-12563. Operator coverage is RHIDP-9141.
+ * starts — matching RHIDP-7007 / RHIDP-12563.
  *
- * Reuses runtime-deploy Helm helpers and operator-install-profile ensureRecord.
+ * Helm (RHIDP-9140): values overlay + live Deployment JSON patch.
+ * Operator (RHIDP-9141): merge proxy into Backstage CR `deployment.patch` so
+ * reconcile does not wipe a Deployment-only edit.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -16,8 +18,12 @@ import { base64Encode, discoverRouterBase, resolveInstallMethod } from "./helper
 import { deploymentName as resolveDeploymentName } from "./instance-route-identity";
 import { KubeClient, isRecord } from "./kube-client";
 import { ensureRecord, type YamlRecord } from "./operator-install-profile";
-import { generateHelmValuesYaml, resolveConfig } from "./runtime-config";
-import { upgradeRuntimeHelmRelease } from "./runtime-deploy";
+import { generateHelmValuesYaml, resolveConfig, type BackstageCR } from "./runtime-config";
+import {
+  getRuntimeBackstageCr,
+  replaceRuntimeBackstageCr,
+  upgradeRuntimeHelmRelease,
+} from "./runtime-deploy";
 
 export const CLOUD_SQL_PROXY_IMAGE = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.21.3";
 export const CLOUD_SQL_SA_SECRET = "cloud-sql-service-account";
@@ -225,26 +231,42 @@ async function upsertCloudSqlProxyOnDeployment(
 }
 
 /**
- * Install/update the Auth Proxy native sidecar and disable local Postgres.
- * Helm-only (RHIDP-9140): values overlay (no `--wait`) + Deployment initContainer
- * patch, then restart. Waiting on helm before the proxy exists leaves the pod
- * unable to reach Postgres and times out CreateContainer/Ready.
- * Operator coverage (RHIDP-9141) is deferred while operator nightly is broken.
+ * Merge Auth Proxy native sidecar + SA volume into a Backstage CR
+ * `spec.deployment.patch` (preserves install-dynamic-plugins / image / volumes).
  */
-export async function injectCloudSqlSidecar(
+export function mergeCloudSqlProxyIntoBackstageCr(
+  cr: BackstageCR,
+  instanceConnectionName: string,
+): BackstageCR {
+  const next: BackstageCR = structuredClone(cr);
+  const deployment = ensureRecord(next.spec, "deployment");
+  const patch = ensureRecord(deployment, "patch");
+  const patchSpec = ensureRecord(patch, "spec");
+  const template = ensureRecord(patchSpec, "template");
+  const podSpec = ensureRecord(template, "spec");
+
+  const { container, volume } = buildCloudSqlProxySidecar(instanceConnectionName);
+  podSpec.initContainers = upsertNamedRecord(asNamedRecordList(podSpec.initContainers), container);
+  podSpec.volumes = upsertNamedRecord(asNamedRecordList(podSpec.volumes), volume);
+
+  // Keep postgres-cred wired at CR level (mirrors Helm extraEnvVarsSecrets).
+  const application = ensureRecord(next.spec, "application");
+  const extraEnvs = ensureRecord(application, "extraEnvs");
+  const secrets = asNamedRecordList(extraEnvs.secrets);
+  if (!secrets.some((secret) => secret.name === "postgres-cred")) {
+    extraEnvs.secrets = [...secrets, { name: "postgres-cred" }];
+  }
+
+  return next;
+}
+
+async function injectCloudSqlSidecarHelm(
   kubeClient: KubeClient,
   namespace: string,
   releaseName: string,
   instanceConnectionName: string,
 ): Promise<void> {
-  const installMethod = resolveInstallMethod();
-  if (installMethod !== "helm") {
-    throw new Error(
-      `Cloud SQL Auth Proxy inject is Helm-only (got install method "${installMethod}")`,
-    );
-  }
-  const deploymentName = resolveDeploymentName(installMethod, releaseName);
-
+  const deploymentName = resolveDeploymentName("helm", releaseName);
   const routerBase = process.env.K8S_CLUSTER_ROUTER_BASE ?? (await discoverRouterBase());
   const config = { ...resolveConfig(routerBase), releaseName, namespace };
   // Apply overlay without --wait: DB is only reachable after the proxy patch.
@@ -257,15 +279,52 @@ export async function injectCloudSqlSidecar(
     deploymentName,
     instanceConnectionName,
   );
+  await kubeClient.restartDeploymentWithRetry(deploymentName, namespace);
+}
 
+async function injectCloudSqlSidecarOperator(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+  instanceConnectionName: string,
+): Promise<void> {
+  const deploymentName = resolveDeploymentName("operator", releaseName);
+  const cr = await getRuntimeBackstageCr(kubeClient, namespace, releaseName);
+  const merged = mergeCloudSqlProxyIntoBackstageCr(cr, instanceConnectionName);
+  await replaceRuntimeBackstageCr(kubeClient, namespace, releaseName, merged);
+  console.log(`Backstage CR ${releaseName}: Auth Proxy native sidecar → ${instanceConnectionName}`);
   // Rollout: native sidecar startupProbe must pass before backstage-backend is Ready.
   await kubeClient.restartDeploymentWithRetry(deploymentName, namespace);
 }
 
 /**
- * Rotate the Auth Proxy target instance on the live Helm Deployment
- * (postgresql already disabled from prepare). Restart waits until the native
- * sidecar startupProbe passes before RHDH is Ready.
+ * Install/update the Auth Proxy native sidecar for Helm or Operator.
+ * Helm: values overlay (no `--wait`) + Deployment initContainer patch, then restart.
+ * Operator: merge proxy into Backstage CR deployment.patch, then restart.
+ */
+export async function injectCloudSqlSidecar(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+  instanceConnectionName: string,
+): Promise<void> {
+  const installMethod = resolveInstallMethod();
+  if (installMethod === "helm") {
+    await injectCloudSqlSidecarHelm(kubeClient, namespace, releaseName, instanceConnectionName);
+    return;
+  }
+  if (installMethod === "operator") {
+    await injectCloudSqlSidecarOperator(kubeClient, namespace, releaseName, instanceConnectionName);
+    return;
+  }
+  throw new Error(
+    `Cloud SQL Auth Proxy inject unsupported for install method "${String(installMethod)}"`,
+  );
+}
+
+/**
+ * Rotate the Auth Proxy target instance. Helm patches the live Deployment;
+ * Operator updates the Backstage CR so reconcile keeps the sidecar.
  */
 export async function configureCloudSqlProxyInstance(
   kubeClient: KubeClient,
@@ -274,19 +333,27 @@ export async function configureCloudSqlProxyInstance(
   instanceConnectionName: string,
 ): Promise<void> {
   const installMethod = resolveInstallMethod();
-  if (installMethod !== "helm") {
-    throw new Error(
-      `Cloud SQL Auth Proxy configure is Helm-only (got install method "${installMethod}")`,
-    );
-  }
   const deploymentName = resolveDeploymentName(installMethod, releaseName);
 
-  await upsertCloudSqlProxyOnDeployment(
-    kubeClient,
-    namespace,
-    deploymentName,
-    instanceConnectionName,
-  );
+  if (installMethod === "helm") {
+    await upsertCloudSqlProxyOnDeployment(
+      kubeClient,
+      namespace,
+      deploymentName,
+      instanceConnectionName,
+    );
+  } else if (installMethod === "operator") {
+    const cr = await getRuntimeBackstageCr(kubeClient, namespace, releaseName);
+    const merged = mergeCloudSqlProxyIntoBackstageCr(cr, instanceConnectionName);
+    await replaceRuntimeBackstageCr(kubeClient, namespace, releaseName, merged);
+    console.log(
+      `Backstage CR ${releaseName}: Auth Proxy native sidecar → ${instanceConnectionName}`,
+    );
+  } else {
+    throw new Error(
+      `Cloud SQL Auth Proxy configure unsupported for install method "${String(installMethod)}"`,
+    );
+  }
 
   await kubeClient.restartDeploymentWithRetry(deploymentName, namespace);
 }

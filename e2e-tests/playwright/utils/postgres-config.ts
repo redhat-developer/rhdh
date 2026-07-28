@@ -135,21 +135,56 @@ const SYSTEM_DATABASES = [
   "cloudsqladmin",
 ];
 
+/** Optional TLS knobs for `clearDatabase` (merged with `certificatePath` CA). */
+export type ClearDatabaseSslOptions = {
+  rejectUnauthorized?: boolean;
+  servername?: string;
+  /**
+   * Skip hostname verification while still trusting `certificatePath` CA.
+   * Used for Cloud SQL public-IP hosts whose server cert SAN is instance DNS.
+   */
+  checkServerIdentity?: () => undefined;
+};
+
+type PgSslConfig =
+  | boolean
+  | {
+      ca?: string;
+      rejectUnauthorized?: boolean;
+      servername?: string;
+      checkServerIdentity?: () => undefined;
+    };
+
 function buildSslConfig(
   certificatePath: string | undefined,
-  ssl?: boolean | { rejectUnauthorized?: boolean },
-): boolean | { ca: string } | { rejectUnauthorized: boolean } {
+  ssl?: boolean | ClearDatabaseSslOptions,
+): PgSslConfig {
   if (ssl === false) {
     return false;
   }
+
+  const certContent =
+    certificatePath !== undefined && certificatePath !== ""
+      ? readCertificateFile(certificatePath)
+      : null;
+
   if (ssl !== undefined && typeof ssl === "object") {
-    return { rejectUnauthorized: ssl.rejectUnauthorized ?? false };
+    const config: Exclude<PgSslConfig, boolean> = {
+      rejectUnauthorized: ssl.rejectUnauthorized ?? certContent !== null,
+    };
+    if (certContent !== null) {
+      config.ca = certContent;
+    }
+    if (ssl.servername !== undefined && ssl.servername !== "") {
+      config.servername = ssl.servername;
+    }
+    if (ssl.checkServerIdentity !== undefined) {
+      config.checkServerIdentity = ssl.checkServerIdentity;
+    }
+    return config;
   }
-  if (certificatePath === undefined || certificatePath === "") {
-    return true;
-  }
-  const certContent = readCertificateFile(certificatePath);
-  if (certContent === null) {
+
+  if (certificatePath === undefined || certificatePath === "" || certContent === null) {
     return true;
   }
   return { ca: certContent };
@@ -223,8 +258,8 @@ export async function clearDatabase(credentials: {
   user: string;
   password: string;
   certificatePath?: string;
-  /** Override SSL: false disables TLS; object sets rejectUnauthorized without a CA. */
-  ssl?: boolean | { rejectUnauthorized?: boolean };
+  /** Override SSL: false disables TLS; object merges with certificatePath CA when set. */
+  ssl?: boolean | ClearDatabaseSslOptions;
 }): Promise<void> {
   console.log(`Starting database cleanup for ${credentials.host}...`);
 

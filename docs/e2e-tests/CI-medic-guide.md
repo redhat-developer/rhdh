@@ -392,7 +392,7 @@ The most comprehensive nightly job. Runs on OpenShift using ephemeral cluster cl
 **Test suites run (in order)**:
 
 1. **Standard deployment tests** (`showcase`, `showcase-rbac`) -- core functionality with and without RBAC
-2. **Runtime config change tests** (`showcase-runtime`) -- tests that modify RHDH configuration at runtime (config-map, schema-mode, and external DB TLS: RDS, Azure, Google Cloud SQL Auth Proxy on Helm). Cloud SQL uses Vault `CLOUDSQL_*` keys, public hosts for `clearDatabase` with `cloudsql-db-certificates.pem` (same CA wipe pattern as RDS/Azure), plus `cloudsql-service-account.json` for the Auth Proxy. Operator Cloud SQL coverage is deferred (RHIDP-9141).
+2. **Runtime config change tests** (`showcase-runtime`) -- tests that modify RHDH configuration at runtime (config-map, schema-mode, and external DB TLS: RDS, Azure, Google Cloud SQL Auth Proxy on Helm and Operator). Cloud SQL uses Vault `CLOUDSQL_*` keys, public hosts for `clearDatabase` with per-instance `cloudsql-db-certificates.pem` (CA wipe pattern aligned with RDS/Azure; hostname check skipped for IP hosts), plus `cloudsql-service-account.json` for the Auth Proxy sidecar (Helm Deployment patch / Operator Backstage CR `deployment.patch`).
 3. **Sanity plugins check** (`showcase-sanity-plugins`) -- validates plugin loading and basic functionality
 4. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
 

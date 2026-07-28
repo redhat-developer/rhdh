@@ -4,7 +4,6 @@ import { test } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
-import { resolveInstallMethod } from "../../utils/helper";
 import { clearDatabase, readCertificateFile } from "../../utils/postgres-config";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
@@ -52,7 +51,7 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
   ];
 
   test.beforeAll(async ({}, testInfo) => {
-    // Helm-only for now (RHIDP-9140). Operator nightly is broken / tracked separately (RHIDP-9141).
+    // Helm (RHIDP-9140) + Operator (RHIDP-9141) Auth Proxy sidecar coverage.
     test.setTimeout(900_000);
     test.info().annotations.push(
       {
@@ -64,11 +63,6 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
         description: namespace,
       },
     );
-
-    if (resolveInstallMethod() !== "helm") {
-      testInfo.skip(true, "Cloud SQL Auth Proxy runtime coverage is Helm-only (RHIDP-9140)");
-      return;
-    }
 
     await ensureRuntimeDeployed();
 
@@ -124,12 +118,18 @@ test.describe("Verify connection with Google Cloud SQL using Auth Proxy sidecar"
           description: config.instanceConnectionName.split(":")[2] || "unknown",
         });
 
-        // Public-IP wipe with server CA — same clearDatabase contract as RDS/Azure.
+        // Public-IP wipe with server CA. Per-instance CA verifies the leaf;
+        // skip hostname check because CLOUDSQL_*_HOST is an IP while the cert
+        // SAN is the instance DNS name (`.sql.goog`).
         await clearDatabase({
           host: config.host,
           user: cloudSqlUser,
           password: cloudSqlPassword,
           certificatePath: cloudSqlCertificatesPath,
+          ssl: {
+            rejectUnauthorized: true,
+            checkServerIdentity: () => {},
+          },
         });
 
         await runtimeHarness.configureCloudSqlInstance({
