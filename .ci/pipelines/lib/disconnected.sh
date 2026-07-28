@@ -307,38 +307,63 @@ disconnected::mirror_plugins() {
     log::error "mirror-plugins.sh failed — aborting"
     return 1
   }
+
+  # mirror-plugins.sh writes the summary to ORIGINAL_DIR (pwd at script start).
+  local summary_src
+  summary_src="$(pwd)/rhdh-plugin-mirroring-summary.txt"
+  if [[ ! -f "${summary_src}" ]]; then
+    log::error "mirror-plugins.sh succeeded but summary not found at ${summary_src}"
+    return 1
+  fi
+  cp "${summary_src}" "${DISCONNECTED_TMPDIR}/rhdh-plugin-mirroring-summary.txt" || {
+    log::error "Failed to copy plugin mirroring summary to ${DISCONNECTED_TMPDIR}"
+    return 1
+  }
+  cp "${summary_src}" "${ARTIFACT_DIR}/rhdh-plugin-mirroring-summary.txt" || {
+    log::error "Failed to copy plugin mirroring summary to ${ARTIFACT_DIR}"
+    return 1
+  }
+  log::info "Saved plugin mirroring summary to ${DISCONNECTED_TMPDIR} and ${ARTIFACT_DIR}"
 }
 
 # Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
+# Parses the digest from mirror-plugins.sh summary (plugins are digest-only; no :tag).
 # Always emits registry.access.redhat.com/rhdh/… so registries.conf rewrites to the mirror.
 # Exports HOMEPAGE_PLUGIN_PACKAGE.
 disconnected::resolve_homepage_plugin_package() {
-  common::require_vars RELEASE_VERSION MIRROR_REGISTRY_URL || return 1
-
   local name="red-hat-developer-hub-backstage-plugin-dynamic-home-page"
+  local summary="${DISCONNECTED_TMPDIR}/rhdh-plugin-mirroring-summary.txt"
+  local line=""
+  local left=""
   local digest=""
-  local src
-  local candidates=(
-    "docker://registry.access.redhat.com/rhdh/${name}:${RELEASE_VERSION}"
-    "docker://quay.io/rhdh/${name}:${RELEASE_VERSION}"
-    "docker://${MIRROR_REGISTRY_URL}/rhdh/${name}:${RELEASE_VERSION}"
-  )
 
-  for src in "${candidates[@]}"; do
-    local -a inspect_args=()
-    if [[ "${src}" == *"${MIRROR_REGISTRY_URL}"* ]]; then
-      inspect_args+=(--tls-verify=false)
-    fi
-    digest=$(skopeo inspect "${inspect_args[@]}" "${src}" --format '{{.Digest}}' 2> /dev/null || true)
-    if [[ -n "${digest}" && "${digest}" == sha256:* ]]; then
-      export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}@${digest}!${name}"
-      log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from ${src})"
-      return 0
-    fi
-  done
+  if [[ ! -f "${summary}" ]]; then
+    log::error "Plugin mirroring summary not found at ${summary}"
+    log::error "Ensure disconnected::mirror_plugins ran successfully before resolve."
+    return 1
+  fi
 
-  log::error "Failed to resolve digest for homepage plugin ${name}:${RELEASE_VERSION}"
-  return 1
+  line=$(grep -F "${name}" "${summary}" | head -1) || true
+  if [[ -z "${line}" ]]; then
+    log::error "No summary line for homepage plugin ${name} in ${summary}"
+    return 1
+  fi
+
+  # Summary format: <source-ref> → <mirror-ref>
+  left="${line%%→*}"
+  if [[ "${left}" == "${line}" ]]; then
+    log::error "Summary line for ${name} has no → separator: ${line}"
+    return 1
+  fi
+
+  if [[ ! "${left}" =~ @(sha256:[0-9a-f]+) ]]; then
+    log::error "Could not extract @sha256 digest from summary line left side: ${left}"
+    return 1
+  fi
+  digest="${BASH_REMATCH[1]}"
+
+  export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}@${digest}!${name}"
+  log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from mirroring summary)"
 }
 
 # Create a minimal dynamic-plugins ConfigMap that enables the homepage OCI plugin.
