@@ -84,13 +84,23 @@ export function scanInstalledPlugins(installDir: string): InstalledPlugins {
 
   if (backend.length + frontend.length === 0) {
     throw new Error(
-      `No installed plugins found in ${installDir}. ` +
-        `Populate it first (with CATALOG_INDEX_IMAGE set): ` +
-        `./e2e-tests/local-harness/populate-catalog-index.sh`,
+      `No installed plugins found in ${installDir}.\n\nPopulate it with:\n\n  ${catalogIndexPopulateCommand()}\n`,
     );
   }
 
   return { backend, frontend };
+}
+
+/**
+ * The populate command to suggest when dynamic-plugins-root is unusable. The
+ * default index tracks main; a release branch carries its own version tag, so
+ * honour CATALOG_INDEX_IMAGE when the caller already set one.
+ */
+export function catalogIndexPopulateCommand(): string {
+  const image = process.env.CATALOG_INDEX_IMAGE;
+  const ref =
+    image === undefined || image === "" ? "quay.io/rhdh/plugin-catalog-index:next" : image;
+  return `CATALOG_INDEX_IMAGE=${ref} ./e2e-tests/local-harness/populate-catalog-index.sh`;
 }
 
 export type CatalogIndexExpectation = {
@@ -106,8 +116,8 @@ export type CatalogIndexExpectation = {
  * Without it the sanity check only asserts "installed ⊆ loaded", which stays
  * green when the install silently underran (registry hiccup, over-broad
  * exclude pattern, or dynamic-plugins-root left over from the curated
- * `populate.sh`). Returns null when absent so a local curated run fails with a
- * clear message rather than a type error.
+ * `populate.sh`). Returns null when absent; callers that require the breadcrumb
+ * should use requireCatalogIndexExpectation instead of re-deriving the message.
  */
 export function readCatalogIndexExpectation(installDir: string): CatalogIndexExpectation | null {
   const refsPath = join(installDir, ".catalog-index-refs");
@@ -129,6 +139,61 @@ export function readCatalogIndexExpectation(installDir: string): CatalogIndexExp
     throw new Error(`Malformed ${refsPath}: expected 'image=' and 'expected_oci_packages=' lines`);
   }
   return { image, expectedOciPackages };
+}
+
+/**
+ * The breadcrumb, or a fatal error naming how to produce it. Sole owner of the
+ * "populated from the catalog index" invariant, so the global setup and the spec
+ * cannot report the same failure two different ways.
+ */
+export function requireCatalogIndexExpectation(installDir: string): CatalogIndexExpectation {
+  const expectation = readCatalogIndexExpectation(installDir);
+  if (expectation === null) {
+    throw new Error(
+      `dynamic-plugins-root was not populated from the catalog index ` +
+        `(${join(installDir, ".catalog-index-refs")} is missing).\n\n` +
+        `Re-populate it with:\n\n  ${catalogIndexPopulateCommand()}\n`,
+    );
+  }
+  return expectation;
+}
+
+/**
+ * The name a frontend plugin registers with the scalprum backend, read from its
+ * own dist-scalprum/plugin-manifest.json. Differs from the npm package name
+ * (e.g. `backstage-community.plugin-tekton`). Null for legacy remoteEntry-only
+ * plugins, which scalprum does not serve.
+ */
+export function readScalprumName(plugin: PluginEntry): string | null {
+  const manifestPath = join(plugin.path, "dist-scalprum", "plugin-manifest.json");
+  if (!existsSync(manifestPath)) return null;
+
+  let manifest: unknown;
+  try {
+    manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  } catch (cause) {
+    throw new Error(`Malformed ${manifestPath}`, { cause });
+  }
+  if (
+    typeof manifest === "object" &&
+    manifest !== null &&
+    "name" in manifest &&
+    typeof manifest.name === "string"
+  ) {
+    return manifest.name;
+  }
+  throw new Error(`${manifestPath} has no string "name"`);
+}
+
+/**
+ * Parse the /api/scalprum/plugins response (a name -> descriptor map) into the
+ * set of frontend plugins the backend will actually serve to the browser.
+ */
+export function parseScalprumPluginNames(body: unknown): Set<string> {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    throw new Error(`Expected scalprum plugins response to be an object, got: ${typeof body}`);
+  }
+  return new Set(Object.keys(body));
 }
 
 /**

@@ -100,7 +100,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
-        "**/playwright/e2e/plugin-dynamic-loading.spec.ts",
       ],
     },
     {
@@ -143,7 +142,6 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
-        "**/playwright/e2e/plugin-dynamic-loading.spec.ts",
       ],
     },
     {
@@ -169,7 +167,6 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
-        "**/playwright/e2e/plugin-dynamic-loading.spec.ts",
       ],
     },
     {
@@ -202,9 +199,6 @@ export default defineConfig({
     {
       name: PW_PROJECT.ANY_TEST,
       testMatch: "**/*.spec.ts",
-      // Needs a dynamic-plugins-root populated from the catalog index, which
-      // only playwright.plugin-sanity.config.ts sets up.
-      testIgnore: ["**/playwright/e2e/plugin-dynamic-loading.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,

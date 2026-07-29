@@ -98,7 +98,7 @@ jobs:
   plugin-sanity:
     name: plugin-sanity
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     # Request-only (no browser), but the image also carries the OS deps the
     # backend boot needs, and reusing it keeps both jobs on one base.
     container:
@@ -133,7 +133,11 @@ jobs:
             image="quay.io/rhdh/plugin-catalog-index:next"
           fi
           echo "image=${image}" >> "$GITHUB_OUTPUT"
-          echo "Catalog index: ${image}"
+          # The tag is a moving target; record the digest it resolved to so a
+          # later run can be traced back to the exact index it validated.
+          digest=$(skopeo inspect --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
+          echo "Catalog index: ${image} (${digest})"
+          echo "Catalog index: \`${image}\` @ \`${digest}\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Populate dynamic-plugins-root from the catalog index
         env:

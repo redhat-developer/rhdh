@@ -12,7 +12,7 @@
 # `disabled: true`: the config also `includes` the index's own plugin list, so
 # leaving a package out does NOT keep it from being installed.
 # Every entry documents why, so it can be re-evaluated (and removed) later.
-# Prefer a dummy config entry in app-config.plugin-sanity.yaml over an
+# Prefer a dummy config entry in this directory's app-config.plugin-sanity.yaml over an
 # exclusion whenever the failure is just startup config validation.
 
 # orchestrator-backend fails init with "Cannot read properties of undefined

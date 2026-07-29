@@ -16,7 +16,7 @@ import {
 export default defineConfig({
   testDir: "./playwright",
   globalSetup: "./playwright/support/plugin-sanity-global-setup.ts",
-  testMatch: ["e2e/plugin-dynamic-loading.spec.ts"],
+  testMatch: ["cluster-free/plugin-dynamic-loading.spec.ts"],
   timeout: 120 * 1000,
   forbidOnly: isCI,
   // The spec is a deterministic API comparison against a single backend boot;
@@ -31,7 +31,7 @@ export default defineConfig({
     {
       // Dummy values for plugins that abort the backend when their config is
       // missing; passed last so it wins over generated plugin defaults.
-      ...backendWebServer(["../../app-config.plugin-sanity.yaml"]),
+      ...backendWebServer(["../../e2e-tests/local-harness/app-config.plugin-sanity.yaml"]),
       // Never adopt a backend already on :7007. The spec compares
       // dynamic-plugins-root against what the RUNNING backend loaded, so a
       // leftover legacy-local backend (curated plugin set, booted without the

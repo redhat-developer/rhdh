@@ -6,7 +6,10 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   parseLoadedPluginNames,
+  parseScalprumPluginNames,
   readCatalogIndexExpectation,
+  readScalprumName,
+  requireCatalogIndexExpectation,
   scanInstalledPlugins,
   validateFrontendBundle,
   validateFrontendBundles,
@@ -265,6 +268,91 @@ describe("parseLoadedPluginNames", () => {
     "throws on an item without a string name (%s)",
     (body) => {
       expect(() => parseLoadedPluginNames(body)).toThrow(/without a string name/u);
+    },
+  );
+});
+
+describe("requireCatalogIndexExpectation", () => {
+  it("returns the breadcrumb when it is present", () => {
+    const root = rootWith("image=quay.io/x:next\nexpected_oci_packages=31\n");
+
+    expect(requireCatalogIndexExpectation(root)).toEqual({
+      image: "quay.io/x:next",
+      expectedOciPackages: 31,
+    });
+  });
+
+  it("names the populate command when the breadcrumb is missing", () => {
+    // Sole owner of this invariant, so the global setup and the spec cannot
+    // report the same failure two different ways.
+    expect(() => requireCatalogIndexExpectation(rootWith(null))).toThrow(
+      /populate-catalog-index\.sh/u,
+    );
+  });
+});
+
+describe("readScalprumName", () => {
+  function frontendPlugin(files: Record<string, string>): PluginEntry {
+    const root = installDirWith({ p: { pkg: { name: "p" } } });
+    for (const [rel, contents] of Object.entries(files)) {
+      const target = join(root, "p", rel);
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, contents);
+    }
+    return { name: "p", version: "1.0.0", dirName: "p", path: join(root, "p") };
+  }
+
+  it("reads the scalprum name, which differs from the package name", () => {
+    const plugin = frontendPlugin({
+      "dist-scalprum/plugin-manifest.json": JSON.stringify({
+        name: "backstage-community.plugin-tekton",
+      }),
+    });
+
+    expect(readScalprumName(plugin)).toBe("backstage-community.plugin-tekton");
+  });
+
+  it("returns null for a legacy remoteEntry-only plugin", () => {
+    expect(readScalprumName(frontendPlugin({ "dist/remoteEntry.js": "" }))).toBeNull();
+  });
+
+  it("throws when the manifest has no string name", () => {
+    const plugin = frontendPlugin({
+      "dist-scalprum/plugin-manifest.json": JSON.stringify({ loadScripts: [] }),
+    });
+
+    expect(() => readScalprumName(plugin)).toThrow(/no string "name"/u);
+  });
+
+  it("names the file when the manifest is malformed", () => {
+    const plugin = frontendPlugin({ "dist-scalprum/plugin-manifest.json": "{ truncated" });
+
+    expect(() => readScalprumName(plugin)).toThrow(/Malformed .*plugin-manifest\.json/u);
+  });
+});
+
+describe("parseScalprumPluginNames", () => {
+  it("collects the keys of the name -> descriptor map", () => {
+    expect(
+      parseScalprumPluginNames({
+        "backstage-community.plugin-tekton": { name: "backstage-community.plugin-tekton" },
+        "red-hat-developer-hub.plugin-orchestrator": {},
+      }),
+    ).toEqual(
+      new Set(["backstage-community.plugin-tekton", "red-hat-developer-hub.plugin-orchestrator"]),
+    );
+  });
+
+  it("returns an empty set when no plugins are served", () => {
+    expect(parseScalprumPluginNames({})).toEqual(new Set());
+  });
+
+  it.each([[[]], ["a string"], [null], [42]])(
+    "throws when the payload is not an object (%s)",
+    (body) => {
+      expect(() => parseScalprumPluginNames(body)).toThrow(
+        /Expected scalprum plugins response to be an object/u,
+      );
     },
   );
 });

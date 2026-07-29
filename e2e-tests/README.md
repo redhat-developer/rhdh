@@ -18,6 +18,10 @@ CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
 yarn e2e:plugin-sanity
 ```
 
+The spec lives in `playwright/cluster-free/`, outside the `testDir` the cluster
+projects scan, so it needs no per-project `testIgnore`. Put further
+cluster-free-only specs there too.
+
 CI runs it as the `plugin-sanity` job of the
 [E2E Cluster-free workflow](../.github/workflows/e2e-cluster-free.yaml) — a plain
 GitHub runner, since the check needs no cluster and every index package resolves
