@@ -20396,7 +20396,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"copy-to-clipboard@npm:^3.2.0, copy-to-clipboard@npm:^3.3.1":
+"copy-to-clipboard@npm:^3.2.0, copy-to-clipboard@npm:^3.3.1, copy-to-clipboard@npm:^3.3.3":
   version: 3.3.3
   resolution: "copy-to-clipboard@npm:3.3.3"
   dependencies:
@@ -21766,7 +21766,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:^3.3.1, dompurify@npm:^3.4.11":
+"dompurify@npm:^3.3.1, dompurify@npm:^3.4.12":
   version: 3.4.12
   resolution: "dompurify@npm:3.4.12"
   dependencies:
@@ -25515,10 +25515,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immutable@npm:^3.x.x":
-  version: 3.8.3
-  resolution: "immutable@npm:3.8.3"
-  checksum: 3c668e4e92d77876f95081ed695c594f802fc8f88dc888e562ce70d26eb92596c65fbd64caad8fef054358c21990d52c77b28e9dc7bd6c8f53cf44775cfb44f9
+"immutable@npm:^4.3.9":
+  version: 4.3.9
+  resolution: "immutable@npm:4.3.9"
+  checksum: 08cdd3cc993add6ab804e5d4570072fc3139f827fe404277efaae86d5ef890aa1a545f43261ac2b443f422b7c09958c06b244fe39abf82ec1973df75bc81043b
   languageName: node
   linkType: hard
 
@@ -27163,7 +27163,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.1, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.1.1":
   version: 4.1.1
   resolution: "js-yaml@npm:4.1.1"
   dependencies:
@@ -27174,30 +27174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:=4.2.0":
-  version: 4.2.0
-  resolution: "js-yaml@npm:4.2.0"
-  dependencies:
-    argparse: ^2.0.1
-  bin:
-    js-yaml: bin/js-yaml.js
-  checksum: 86bd35548a0c19cd1f5861147c09aa1f52eb0fc9464f34023524d22bbe079c62c30fd00750e63f632e8d12c12ad36ea0dd1e6bec5171c492ecad433d8db295eb
-  languageName: node
-  linkType: hard
-
-"js-yaml@npm:^3.10.0, js-yaml@npm:^3.13.1, js-yaml@npm:^3.6.1, js-yaml@npm:^3.8.3":
-  version: 3.14.1
-  resolution: "js-yaml@npm:3.14.1"
-  dependencies:
-    argparse: ^1.0.7
-    esprima: ^4.0.0
-  bin:
-    js-yaml: bin/js-yaml.js
-  checksum: bef146085f472d44dee30ec34e5cf36bf89164f5d585435a3d3da89e52622dff0b188a580e4ad091c3341889e14cb88cac6e4deb16dc5b1e9623bb0601fc255c
-  languageName: node
-  linkType: hard
-
-"js-yaml@npm:^4.2.0":
+"js-yaml@npm:=4.3.0, js-yaml@npm:^4.1.0, js-yaml@npm:^4.2.0":
   version: 4.3.0
   resolution: "js-yaml@npm:4.3.0"
   dependencies:
@@ -27205,6 +27182,18 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 1268fb22ae8504646cedc0823c18816d4af056029578e855b9a4d3e19bcafc3e9ba9e391f70dea4a29b023bb09f23639766071199cb89e853266b90a6ec25f9a
+  languageName: node
+  linkType: hard
+
+"js-yaml@npm:^3.10.0, js-yaml@npm:^3.13.1, js-yaml@npm:^3.6.1, js-yaml@npm:^3.8.3":
+  version: 3.15.0
+  resolution: "js-yaml@npm:3.15.0"
+  dependencies:
+    argparse: ^1.0.7
+    esprima: ^4.0.0
+  bin:
+    js-yaml: bin/js-yaml.js
+  checksum: 0209830c3ce51cec4c2cefee4b2b68c547b56b36920004efbf7c6a91ae7eee784bf64341738ef1acffa975d16e7882e9b69234b9a4411f455b72b33d4d74771e
   languageName: node
   linkType: hard
 
@@ -32844,15 +32833,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-copy-to-clipboard@npm:5.1.0":
-  version: 5.1.0
-  resolution: "react-copy-to-clipboard@npm:5.1.0"
+"react-copy-to-clipboard@npm:5.1.1":
+  version: 5.1.1
+  resolution: "react-copy-to-clipboard@npm:5.1.1"
   dependencies:
-    copy-to-clipboard: ^3.3.1
+    copy-to-clipboard: ^3.3.3
     prop-types: ^15.8.1
   peerDependencies:
-    react: ^15.3.0 || 16 || 17 || 18
-  checksum: f00a4551b9b63c944a041a6ab46af5ef20ba1106b3bc25173e7ef9bffbfba17a613368682ab8820cfe8d4b3acc5335cd9ce20229145bcc1e6aa8d1db04c512e5
+    react: ">=15.3.0"
+  checksum: 61645d356c19a8d159e31f238441d287ed66a62649913d74793db508cbed4a6b98f4ba757cddb469510c6112549969e5651e852e9a66194167874b0badf707cd
   languageName: node
   linkType: hard
 
@@ -36038,17 +36027,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swagger-client@npm:^3.37.4":
-  version: 3.37.5
-  resolution: "swagger-client@npm:3.37.5"
+"swagger-client@npm:^3.37.7":
+  version: 3.37.7
+  resolution: "swagger-client@npm:3.37.7"
   dependencies:
     "@babel/runtime-corejs3": ^7.22.15
     "@scarf/scarf": =1.4.0
     "@swagger-api/apidom-core": ^1.11.0
     "@swagger-api/apidom-error": ^1.11.0
     "@swagger-api/apidom-json-pointer": ^1.11.0
+    "@swagger-api/apidom-ns-asyncapi-2": ^1.11.3
+    "@swagger-api/apidom-ns-asyncapi-3": ^1.11.3
+    "@swagger-api/apidom-ns-openapi-2": ^1.11.3
     "@swagger-api/apidom-ns-openapi-3-1": ^1.11.0
     "@swagger-api/apidom-ns-openapi-3-2": ^1.11.0
+    "@swagger-api/apidom-parser-adapter-api-design-systems-json": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-api-design-systems-yaml": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-arazzo-json-1": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-arazzo-yaml-1": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-asyncapi-json-2": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-asyncapi-json-3": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-asyncapi-yaml-2": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-asyncapi-yaml-3": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-json": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-json-2": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-json-3-0": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-json-3-1": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-json-3-2": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-2": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-3-0": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-3-1": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-3-2": ^1.11.3
+    "@swagger-api/apidom-parser-adapter-yaml-1-2": ^1.11.3
     "@swagger-api/apidom-reference": ^1.11.0
     "@swaggerexpert/cookie": ^2.0.2
     deepmerge: ~4.3.0
@@ -36060,13 +36070,56 @@ __metadata:
     openapi-server-url-templating: ^1.3.0
     ramda: ^0.30.1
     ramda-adjunct: ^5.1.0
-  checksum: 6f251a73430642f51eea6ba5fffd8011163c39f667403ae0a0d3aeb7f81379368a0df15d8abe76b1af169f66d2e3dd3124dead708035cbc3dea4ba038c01069f
+  dependenciesMeta:
+    "@swagger-api/apidom-ns-asyncapi-2":
+      optional: true
+    "@swagger-api/apidom-ns-asyncapi-3":
+      optional: true
+    "@swagger-api/apidom-ns-openapi-2":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-api-design-systems-json":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-api-design-systems-yaml":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-arazzo-json-1":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-arazzo-yaml-1":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-asyncapi-json-2":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-asyncapi-json-3":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-asyncapi-yaml-2":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-asyncapi-yaml-3":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-json":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-json-2":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-json-3-0":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-json-3-1":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-json-3-2":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-2":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-3-0":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-3-1":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-openapi-yaml-3-2":
+      optional: true
+    "@swagger-api/apidom-parser-adapter-yaml-1-2":
+      optional: true
+  checksum: 5c5da53a16dc0ff5fe7b32deaedd0b96738fcf7f59a5b102d2a39579b2d2b63fa37381e74259ab0f737f2c9e4f0dc01656a399242ab43432735a60a54f1de606
   languageName: node
   linkType: hard
 
 "swagger-ui-react@npm:^5.27.1":
-  version: 5.32.8
-  resolution: "swagger-ui-react@npm:5.32.8"
+  version: 5.32.11
+  resolution: "swagger-ui-react@npm:5.32.11"
   dependencies:
     "@babel/runtime-corejs3": ^7.27.1
     "@scarf/scarf": =1.4.0
@@ -36075,16 +36128,16 @@ __metadata:
     classnames: ^2.5.1
     css.escape: 1.5.1
     deep-extend: 0.6.0
-    dompurify: ^3.4.11
+    dompurify: ^3.4.12
     ieee754: ^1.2.1
-    immutable: ^3.x.x
+    immutable: ^4.3.9
     js-file-download: ^0.4.12
-    js-yaml: =4.2.0
+    js-yaml: =4.3.0
     lodash: ^4.18.1
     prop-types: ^15.8.1
     randexp: ^0.5.3
     randombytes: ^2.1.0
-    react-copy-to-clipboard: 5.1.0
+    react-copy-to-clipboard: 5.1.1
     react-debounce-input: =3.3.0
     react-immutable-proptypes: 2.2.0
     react-immutable-pure-component: ^2.2.0
@@ -36097,7 +36150,7 @@ __metadata:
     reselect: ^5.1.1
     serialize-error: ^8.1.0
     sha.js: ^2.4.12
-    swagger-client: ^3.37.4
+    swagger-client: ^3.37.7
     url-parse: ^1.5.10
     xml: =1.0.1
     xml-but-prettier: ^1.0.1
@@ -36105,7 +36158,7 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0 <20"
     react-dom: ">=16.8.0 <20"
-  checksum: c7c1b8f5cbdf3ea616eed4cb346f75b0221fa138610f9426cc1f2e28cee68d9a31dc62228b119890ac2db36dfd880ae20a3b2ce1f7b6fe59b6f8006c0b6d73e7
+  checksum: 7050f327d13f0a17a6c78674546e6e4cbb5eea22401a940fad89e13db07120d6fcb1a3abb49cc878077bb6b2c69919f2d42cf700b0bd0238d5f5147e91dff2a7
   languageName: node
   linkType: hard
 
