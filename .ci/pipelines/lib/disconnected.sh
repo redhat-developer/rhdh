@@ -328,14 +328,17 @@ disconnected::mirror_plugins() {
 
 # Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
 # Parses the digest from mirror-plugins.sh summary (plugins are digest-only; no :tag).
+# Prefer dynamic-home-page (published on Quay); fall back to homepage after the
+# RHIDP-14515 rename lands (RHDHBUGS-3515 — new repo may still be missing).
 # Always emits registry.access.redhat.com/rhdh/… so registries.conf rewrites to the mirror.
-# Exports HOMEPAGE_PLUGIN_PACKAGE.
+# Exports HOMEPAGE_PLUGIN_PACKAGE and HOMEPAGE_PLUGIN_FRONTEND_ID.
 disconnected::resolve_homepage_plugin_package() {
-  local name="red-hat-developer-hub-backstage-plugin-dynamic-home-page"
   local summary="${DISCONNECTED_TMPDIR}/rhdh-plugin-mirroring-summary.txt"
+  local name=""
   local line=""
   local left=""
   local digest=""
+  local candidate=""
 
   if [[ ! -f "${summary}" ]]; then
     log::error "Plugin mirroring summary not found at ${summary}"
@@ -343,9 +346,18 @@ disconnected::resolve_homepage_plugin_package() {
     return 1
   fi
 
-  line=$(grep -F "${name}" "${summary}" | head -1) || true
-  if [[ -z "${line}" ]]; then
-    log::error "No summary line for homepage plugin ${name} in ${summary}"
+  for candidate in \
+    "red-hat-developer-hub-backstage-plugin-dynamic-home-page" \
+    "red-hat-developer-hub-backstage-plugin-homepage"; do
+    line=$(grep -F "${candidate}" "${summary}" | head -1) || true
+    if [[ -n "${line}" ]]; then
+      name="${candidate}"
+      break
+    fi
+  done
+
+  if [[ -z "${name}" || -z "${line}" ]]; then
+    log::error "No summary line for homepage plugin (dynamic-home-page or homepage) in ${summary}"
     return 1
   fi
 
@@ -363,6 +375,11 @@ disconnected::resolve_homepage_plugin_package() {
   digest="${BASH_REMATCH[1]}"
 
   export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}@${digest}!${name}"
+  if [[ "${name}" == *"-plugin-homepage" ]]; then
+    export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-homepage"
+  else
+    export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-dynamic-home-page"
+  fi
   log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from mirroring summary)"
 }
 
@@ -370,7 +387,7 @@ disconnected::resolve_homepage_plugin_package() {
 # Args:
 #   $1 - namespace
 disconnected::create_homepage_plugins_configmap() {
-  common::require_vars HOMEPAGE_PLUGIN_PACKAGE || return 1
+  common::require_vars HOMEPAGE_PLUGIN_PACKAGE HOMEPAGE_PLUGIN_FRONTEND_ID || return 1
 
   local namespace=$1
   local cm_name="dynamic-plugins-disconnected-smoke"
@@ -383,7 +400,7 @@ plugins:
     pluginConfig:
       dynamicPlugins:
         frontend:
-          red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+          ${HOMEPAGE_PLUGIN_FRONTEND_ID}:
             dynamicRoutes:
               - path: /
                 importName: DynamicHomePage
