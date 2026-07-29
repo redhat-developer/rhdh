@@ -8,9 +8,6 @@ ARG TARGETARCH
 
 # Set environment variables for the container
 ENV CI=1 \
-    QT_X11_NO_MITSHM=1 \
-    _X11_NO_MITSHM=1 \
-    _MITSHM=0 \
     NODE_PATH=/usr/local/lib/node_modules \
     HELM_VERSION="v3.17.2" \
     OC_VERSION="4.22.3" \
