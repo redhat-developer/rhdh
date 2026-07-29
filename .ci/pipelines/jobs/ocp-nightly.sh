@@ -73,5 +73,5 @@ run_sanity_plugins_check() {
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}" "${sanity_plugins_url}"
   # A broken plugin takes the whole pod down and the answer is buried in the
   # pod logs; advisory, prints nothing on healthy runs.
-  testing::report_plugin_startup_failures "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}"
+  testing::report_plugin_startup_failures "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}"
 }

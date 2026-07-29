@@ -4,7 +4,8 @@
 # with the documented known failures (plugin-sanity-excludes.txt) filtered out.
 # Used by populate-catalog-index.sh to build the cluster-free install config.
 #
-# Both ref kinds the index declares are emitted: oci:// refs, and
+# Both ref kinds the index declares are emitted: oci:// refs
+# (oci://registry/name@sha256:... or :tag, with no !plugin-path suffix), and
 # ./dynamic-plugins/dist/<name> ones (built into the product image, so the
 # install CLI skips them outside it).
 #

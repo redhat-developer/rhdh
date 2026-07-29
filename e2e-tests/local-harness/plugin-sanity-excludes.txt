@@ -1,8 +1,9 @@
 # Catalog index packages excluded from the plugin sanity check.
 #
 # Each non-comment line is an extended-regex (grep -E) pattern matched against
-# the full package ref (oci://registry/name@sha256:...!plugin-name or
-# oci://registry/name:tag!plugin-name). Anchor plugin names with `(@|:)` so a
+# the full package ref, which the index publishes as
+# oci://registry/name@sha256:... or oci://registry/name:tag (no !plugin-path
+# suffix). Anchor plugin names with `(@|:)` so a
 # pattern keeps matching when the index flips between digest- and tag-style
 # references, without also matching longer plugin names sharing the prefix.
 #

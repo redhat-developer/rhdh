@@ -104,7 +104,11 @@ catalog:
             minutes: 15
     microsoftGraphOrg:
       providerId:
-        target: https://graph.microsoft.com/v1.0
+        # Both must stay unroutable: @azure/identity authenticates against
+        # `authority` (default login.microsoftonline.com), so a real target here
+        # would have the nightly calling Microsoft with a bogus tenant.
+        target: https://graph.invalid/v1.0
+        authority: https://login.invalid/
         tenantId: plugin-sanity-dummy
         clientId: plugin-sanity-dummy
         clientSecret: plugin-sanity-dummy

@@ -46,9 +46,9 @@ concurrency:
 permissions:
   contents: read
 
-# Both jobs run inside a container, where the default shell is `sh` rather than
-# the `bash` used on the runner host — so `[[ ]]`, `=~` and pipefail are syntax
-# errors unless bash is requested explicitly.
+# Both jobs run inside a container, where steps default to `sh -e {0}` rather
+# than the runner host's bash, so `[[ ]]` and `=~` are syntax errors. Requesting
+# bash also brings `-o pipefail`, which the tee'd test step relies on.
 defaults:
   run:
     shell: bash
@@ -135,7 +135,8 @@ jobs:
           echo "image=${image}" >> "$GITHUB_OUTPUT"
           # The tag is a moving target; record the digest it resolved to so a
           # later run can be traced back to the exact index it validated.
-          digest=$(skopeo inspect --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
+          digest=$(skopeo inspect --no-creds --override-os linux --override-arch amd64 \
+            --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
           echo "Catalog index: ${image} (${digest})"
           echo "Catalog index: \`${image}\` @ \`${digest}\`" >> "$GITHUB_STEP_SUMMARY"
 

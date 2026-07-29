@@ -24,7 +24,10 @@ refs="$("$DIR/catalog-index-refs.sh" "$CATALOG_INDEX_IMAGE")"
 excluded_refs="$("$DIR/catalog-index-refs.sh" "$CATALOG_INDEX_IMAGE" --excluded)"
 
 if [[ -z "$refs" ]]; then
-  echo "No packages found in dynamic-plugins.default.yaml of ${CATALOG_INDEX_IMAGE}" >&2
+  echo "No packages left to install from ${CATALOG_INDEX_IMAGE}" >&2
+  if [[ -n "$excluded_refs" ]]; then
+    echo "every declared package matched $DIR/plugin-sanity-excludes.txt" >&2
+  fi
   exit 1
 fi
 

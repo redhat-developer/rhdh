@@ -230,19 +230,30 @@ testing::_count_junit_failures() {
 # prints a summary naming each failed plugin. On CrashLoopBackOff the culprit is
 # in the PREVIOUS container logs (-p). Advisory only: never fails.
 # Args:
-#   $1 - namespace
-#   $2 - artifacts_subdir: where to save the summary artifact
+#   $1 - release_name: selects the RHDH pods
+#   $2 - namespace
+#   $3 - artifacts_subdir: where to save the summary artifact
 testing::report_plugin_startup_failures() {
-  local namespace=$1
-  local artifacts_subdir=$2
+  local release_name=$1
+  local namespace=$2
+  local artifacts_subdir=$3
   local out="/tmp/plugin-startup-failures-${namespace}.txt"
 
   # Collected here rather than reused from save_all_pod_logs: that runs only when
   # a test fails, and its pod_logs/ directory is not namespace-scoped, so a
   # leftover copy would report another namespace's failures.
+  local pods
+  pods=$(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub)" -o name 2> /dev/null || true)
+  if [[ -z "${pods}" ]]; then
+    # Distinct from "scanned and found nothing": a bad selector must not read as
+    # a clean bill of health.
+    log::warn "No RHDH pods matched in ${namespace}; skipping startup-failure scan."
+    return 0
+  fi
+
   {
     local pod
-    for pod in $(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${RELEASE_NAME},redhat-developer-hub,developer-hub)" -o name 2> /dev/null || true); do
+    for pod in ${pods}; do
       # Current and previous (pre-crash) logs; either may not exist yet.
       timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers 2> /dev/null || true
       timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers -p 2> /dev/null || true
