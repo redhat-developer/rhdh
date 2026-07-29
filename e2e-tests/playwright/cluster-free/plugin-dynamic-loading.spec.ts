@@ -6,20 +6,44 @@
 
 import { test, expect } from "@support/coverage/test";
 
-import { DynamicPluginsApi } from "../support/api/dynamic-plugins-api";
-import { dynamicPluginsRoot } from "../support/local-harness-servers";
+import {
+  fetchScalprumPluginNames,
+  RhdhDynamicPluginsApi,
+} from "../support/api/dynamic-plugins-api";
+import { dynamicPluginsRoot, isCI } from "../support/local-harness-servers";
 import {
   readScalprumName,
   requireCatalogIndexExpectation,
   scanInstalledPlugins,
   validateFrontendBundles,
-} from "../utils/plugin-loader";
+} from "../utils/installed-plugins";
 
 const installed = () => scanInstalledPlugins(dynamicPluginsRoot);
 const allInstalled = () => {
   const { backend, frontend } = installed();
   return [...backend, ...frontend];
 };
+
+/**
+ * Names present in `expected` but missing from `present`, logging each one so
+ * the CI log names the culprits instead of only the assertion diff.
+ */
+function missingFrom<T>(
+  expected: T[],
+  present: Set<string>,
+  lookup: (entry: T) => string,
+  describe: (entry: T) => string,
+  label: string,
+): T[] {
+  const missing = expected.filter((entry) => !present.has(lookup(entry)));
+  if (missing.length > 0) {
+    console.log(`\n[TEST] ${label} (${missing.length}):`);
+    for (const entry of missing) {
+      console.log(`   - ${describe(entry)}`);
+    }
+  }
+  return missing;
+}
 
 test.describe("Plugin Dynamic Loading", () => {
   test.beforeAll(() => {
@@ -33,8 +57,11 @@ test.describe("Plugin Dynamic Loading", () => {
     const expectation = requireCatalogIndexExpectation(dynamicPluginsRoot);
     const requested = process.env.CATALOG_INDEX_IMAGE;
 
+    // Locally the harness may be populated without the env var. In CI it is
+    // always set, and skipping there would leave the breadcrumb unpinned while
+    // the count test below still trusted it.
     test.skip(
-      requested === undefined || requested === "",
+      !isCI && (requested === undefined || requested === ""),
       "CATALOG_INDEX_IMAGE unset - nothing to compare the breadcrumb against",
     );
     expect(
@@ -58,19 +85,16 @@ test.describe("Plugin Dynamic Loading", () => {
 
   test("every installed plugin is loaded by the backend", async ({ request }) => {
     const expected = allInstalled();
-    const loaded = await (await DynamicPluginsApi.build(request)).loadedPluginNames();
+    const api = await RhdhDynamicPluginsApi.build(request);
+    const loaded = await api.loadedPluginNames();
 
-    const notLoaded = expected.filter((plugin) => !loaded.has(plugin.name));
-    if (notLoaded.length > 0) {
-      console.log(`\n[TEST] Installed but not loaded (${notLoaded.length}):`);
-      for (const plugin of notLoaded) {
-        console.log(`   - ${plugin.name}@${plugin.version} (${plugin.dirName})`);
-      }
-      console.log("\nLoaded plugins reported by the backend:");
-      for (const name of [...loaded].toSorted()) {
-        console.log(`   - ${name}`);
-      }
-    }
+    const notLoaded = missingFrom(
+      expected,
+      loaded,
+      (plugin) => plugin.name,
+      (plugin) => `${plugin.name}@${plugin.version} (${plugin.dirName})`,
+      "Installed but not loaded",
+    );
     expect(
       notLoaded.map((plugin) => plugin.name),
       "every installed plugin should be loaded by the backend",
@@ -93,8 +117,8 @@ test.describe("Plugin Dynamic Loading", () => {
   });
 
   test("every scalprum frontend plugin is served by the backend", async ({ request }) => {
-    // Only dist-scalprum plugins are served this way; legacy remoteEntry-only
-    // ones are not registered by the scalprum backend at all.
+    // Only dist-scalprum plugins are served this way; module-federation (NFS)
+    // plugins are not registered by the scalprum backend at all.
     // flatMap rather than map+filter so scalprumName narrows to string.
     const expected = installed().frontend.flatMap((plugin) => {
       const scalprumName = readScalprumName(plugin);
@@ -108,15 +132,15 @@ test.describe("Plugin Dynamic Loading", () => {
       "the index should declare dist-scalprum frontend plugins to check",
     ).toBeGreaterThan(0);
 
-    const served = await (await DynamicPluginsApi.build(request)).scalprumPluginNames();
+    const served = await fetchScalprumPluginNames(request);
 
-    const notServed = expected.filter((entry) => !served.has(entry.scalprumName));
-    if (notServed.length > 0) {
-      console.log(`\n[TEST] Installed but not served by scalprum (${notServed.length}):`);
-      for (const { plugin, scalprumName } of notServed) {
-        console.log(`   - ${plugin.name} (scalprum name: ${scalprumName})`);
-      }
-    }
+    const notServed = missingFrom(
+      expected,
+      served,
+      (entry) => entry.scalprumName,
+      (entry) => `${entry.plugin.name} (scalprum name: ${entry.scalprumName})`,
+      "Installed but not served by scalprum",
+    );
     expect(
       notServed.map((entry) => entry.plugin.name),
       "every dist-scalprum frontend plugin should be served at /api/scalprum/plugins",

@@ -1,7 +1,7 @@
 import {
   catalogIndexPopulateCommand,
   requireCatalogIndexExpectation,
-} from "../utils/plugin-loader";
+} from "../utils/installed-plugins";
 import { requireDynamicPluginsPopulated } from "./local-harness-global-setup";
 import { dynamicPluginsRoot } from "./local-harness-servers";
 

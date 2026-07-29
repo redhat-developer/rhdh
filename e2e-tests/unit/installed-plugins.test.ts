@@ -7,6 +7,9 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   parseLoadedPluginNames,
   parseScalprumPluginNames,
+} from "../playwright/support/api/dynamic-plugins-api";
+import {
+  catalogIndexPopulateCommand,
   readCatalogIndexExpectation,
   readScalprumName,
   requireCatalogIndexExpectation,
@@ -14,7 +17,7 @@ import {
   validateFrontendBundle,
   validateFrontendBundles,
   type PluginEntry,
-} from "../playwright/utils/plugin-loader";
+} from "../playwright/utils/installed-plugins";
 
 const dirs: string[] = [];
 
@@ -32,12 +35,12 @@ function rootWith(contents: string | null): string {
   return dir;
 }
 
-type PluginFixture = { pkg?: unknown; files?: string[] };
+type PluginFixture = { pkg?: unknown; files?: string[] | Record<string, string> };
 
 /**
  * Builds an install directory: each key is a plugin directory, `pkg` is written
- * as its package.json (omit for a non-plugin directory), and `files` are touched
- * relative to it.
+ * as its package.json (omit for a non-plugin directory), and `files` are written
+ * relative to it (empty when given as an array).
  */
 function installDirWith(plugins: Record<string, PluginFixture>): string {
   const root = tempDir("dynamic-plugins-root-");
@@ -47,10 +50,13 @@ function installDirWith(plugins: Record<string, PluginFixture>): string {
     if (pkg !== undefined) {
       writeFileSync(join(pluginDir, "package.json"), JSON.stringify(pkg));
     }
-    for (const file of files) {
+    const entries = Array.isArray(files)
+      ? files.map((file) => [file, ""] as const)
+      : Object.entries(files);
+    for (const [file, contents] of entries) {
       const target = join(pluginDir, file);
       mkdirSync(dirname(target), { recursive: true });
-      writeFileSync(target, "");
+      writeFileSync(target, contents);
     }
   }
   return root;
@@ -80,6 +86,12 @@ describe("readCatalogIndexExpectation", () => {
     });
   });
 
+  it("keeps a value containing '=' intact (the key/value split must re-join)", () => {
+    const root = rootWith("image=quay.io/x:next?sig=abc=def\nexpected_oci_packages=7\n");
+
+    expect(readCatalogIndexExpectation(root)?.image).toBe("quay.io/x:next?sig=abc=def");
+  });
+
   it("keeps digest refs intact ('@' and ':' must survive the key/value split)", () => {
     const root = rootWith(
       "image=quay.io/rhdh/plugin-catalog-index@sha256:abc123\nexpected_oci_packages=7\n",
@@ -99,8 +111,13 @@ describe("readCatalogIndexExpectation", () => {
     ["missing count", "image=quay.io/rhdh/plugin-catalog-index:next\n"],
     ["empty count", "image=quay.io/x:next\nexpected_oci_packages=\n"],
     ["non-numeric count", "image=quay.io/x:next\nexpected_oci_packages=lots\n"],
+    ["zero count", "image=quay.io/x:next\nexpected_oci_packages=0\n"],
+    ["negative count", "image=quay.io/x:next\nexpected_oci_packages=-3\n"],
+    ["fractional count", "image=quay.io/x:next\nexpected_oci_packages=13.9\n"],
   ])("throws on a malformed breadcrumb (%s)", (_label, contents) => {
-    expect(() => readCatalogIndexExpectation(rootWith(contents))).toThrow(/Malformed/u);
+    expect(() => readCatalogIndexExpectation(rootWith(contents))).toThrow(
+      /Malformed .*\.catalog-index-refs/u,
+    );
   });
 });
 
@@ -170,6 +187,23 @@ describe("scanInstalledPlugins", () => {
     const root = installDirWith({ p: { pkg: { name: "p" } } });
 
     expect(scanInstalledPlugins(root).backend[0].version).toBe("unknown");
+  });
+
+  it("falls back to the directory name when package.json has no name", () => {
+    const root = installDirWith({ "some-dir": { pkg: { version: "1.0.0" } } });
+
+    expect(scanInstalledPlugins(root).backend[0]).toMatchObject({
+      name: "some-dir",
+      dirName: "some-dir",
+    });
+  });
+
+  it("ignores plain files in the install root", () => {
+    // .catalog-index-refs and install-dynamic-plugins.lock both live here.
+    const root = installDirWith({ plugin: { pkg: { name: "plugin" } } });
+    writeFileSync(join(root, ".catalog-index-refs"), "image=x\nexpected_oci_packages=1\n");
+
+    expect(scanInstalledPlugins(root).backend.map((p) => p.name)).toEqual(["plugin"]);
   });
 
   it("throws when nothing is installed", () => {
@@ -293,13 +327,7 @@ describe("requireCatalogIndexExpectation", () => {
 
 describe("readScalprumName", () => {
   function frontendPlugin(files: Record<string, string>): PluginEntry {
-    const root = installDirWith({ p: { pkg: { name: "p" } } });
-    for (const [rel, contents] of Object.entries(files)) {
-      const target = join(root, "p", rel);
-      mkdirSync(dirname(target), { recursive: true });
-      writeFileSync(target, contents);
-    }
-    return { name: "p", version: "1.0.0", dirName: "p", path: join(root, "p") };
+    return entryFor(join(installDirWith({ p: { pkg: { name: "p" }, files } }), "p"));
   }
 
   it("reads the scalprum name, which differs from the package name", () => {
@@ -355,4 +383,43 @@ describe("parseScalprumPluginNames", () => {
       );
     },
   );
+});
+
+// This string is what every "populate it first" failure tells the operator to
+// run, so both branches are worth pinning.
+function withEnv(image: string | undefined, run: () => void): void {
+  const previous = process.env.CATALOG_INDEX_IMAGE;
+  if (image === undefined) delete process.env.CATALOG_INDEX_IMAGE;
+  else process.env.CATALOG_INDEX_IMAGE = image;
+  try {
+    run();
+  } finally {
+    if (previous === undefined) delete process.env.CATALOG_INDEX_IMAGE;
+    else process.env.CATALOG_INDEX_IMAGE = previous;
+  }
+}
+
+describe("catalogIndexPopulateCommand", () => {
+  it("defaults to the next index when CATALOG_INDEX_IMAGE is unset", () => {
+    withEnv(undefined, () => {
+      expect(catalogIndexPopulateCommand()).toBe(
+        "CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next " +
+          "./e2e-tests/local-harness/populate-catalog-index.sh",
+      );
+    });
+  });
+
+  it("honours an already-set image, so release branches get the right hint", () => {
+    withEnv("quay.io/rhdh/plugin-catalog-index:1.9", () => {
+      expect(catalogIndexPopulateCommand()).toContain(
+        "CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:1.9",
+      );
+    });
+  });
+
+  it("treats an empty image as unset", () => {
+    withEnv("", () => {
+      expect(catalogIndexPopulateCommand()).toContain("plugin-catalog-index:next");
+    });
+  });
 });

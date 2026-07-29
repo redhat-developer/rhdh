@@ -1,6 +1,31 @@
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join } from "path";
 
+const CATALOG_INDEX_REFS = ".catalog-index-refs";
+const SCALPRUM_MANIFEST = "dist-scalprum/plugin-manifest.json";
+const MF_REMOTE_ENTRY = "dist/remoteEntry.js";
+
+/** Parses a JSON file, naming it on failure rather than throwing anonymously. */
+function readJsonFile(path: string): unknown {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (cause) {
+    throw new Error(`Malformed ${path}`, { cause });
+  }
+}
+
+/** A property of an unknown value, or undefined when the value is not an object. */
+function prop(value: unknown, key: string): unknown {
+  if (typeof value !== "object" || value === null || !(key in value)) return undefined;
+  return Reflect.get(value, key);
+}
+
+/** A string property of an unknown value, or undefined when absent or not a string. */
+function stringProp(value: unknown, key: string): string | undefined {
+  const property = prop(value, key);
+  return typeof property === "string" ? property : undefined;
+}
+
 export type PluginEntry = {
   name: string;
   version: string;
@@ -34,44 +59,20 @@ export function scanInstalledPlugins(installDir: string): InstalledPlugins {
     // Skip non-plugin directories (e.g. extracted catalog-entities/)
     if (!existsSync(pkgPath)) continue;
 
-    let pkg: unknown;
-    try {
-      pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-    } catch (cause) {
-      // A truncated package.json is exactly the broken-install symptom this
-      // check exists to catch; name the file instead of failing anonymously.
-      throw new Error(`Malformed ${pkgPath}`, { cause });
-    }
-    let name = entry.name;
-    let version = "unknown";
-    let role: string | undefined;
-    if (typeof pkg === "object" && pkg !== null) {
-      if ("name" in pkg && typeof pkg.name === "string") {
-        name = pkg.name;
-      }
-      if ("version" in pkg && typeof pkg.version === "string") {
-        version = pkg.version;
-      }
-      if (
-        "backstage" in pkg &&
-        typeof pkg.backstage === "object" &&
-        pkg.backstage !== null &&
-        "role" in pkg.backstage &&
-        typeof pkg.backstage.role === "string"
-      ) {
-        role = pkg.backstage.role;
-      }
-    }
+    // A truncated package.json is exactly the broken-install symptom this check
+    // exists to catch, so readJsonFile names the file.
+    const pkg = readJsonFile(pkgPath);
+    const role = stringProp(prop(pkg, "backstage"), "role");
 
     const isFrontend =
       role === undefined
         ? existsSync(join(pluginPath, "dist-scalprum")) ||
-          existsSync(join(pluginPath, "dist/remoteEntry.js"))
+          existsSync(join(pluginPath, MF_REMOTE_ENTRY))
         : role.startsWith("frontend");
 
     const manifestEntry: PluginEntry = {
-      name,
-      version,
+      name: stringProp(pkg, "name") ?? entry.name,
+      version: stringProp(pkg, "version") ?? "unknown",
       dirName: entry.name,
       path: pluginPath,
     };
@@ -118,9 +119,11 @@ export type CatalogIndexExpectation = {
  * exclude pattern, or dynamic-plugins-root left over from the curated
  * `populate.sh`). Returns null when absent; callers that require the breadcrumb
  * should use requireCatalogIndexExpectation instead of re-deriving the message.
+ *
+ * @internal exported for unit tests.
  */
 export function readCatalogIndexExpectation(installDir: string): CatalogIndexExpectation | null {
-  const refsPath = join(installDir, ".catalog-index-refs");
+  const refsPath = join(installDir, CATALOG_INDEX_REFS);
   if (!existsSync(refsPath)) return null;
 
   let image = "";
@@ -129,14 +132,17 @@ export function readCatalogIndexExpectation(installDir: string): CatalogIndexExp
     const [key, ...rest] = line.split("=");
     const value = rest.join("=").trim();
     if (key === "image") image = value;
-    // Number("") is 0, so an empty value must stay NaN for the check below.
-    if (key === "expected_oci_packages" && value !== "") {
-      expectedOciPackages = Math.trunc(Number(value));
+    // Digits only: Number("") is 0, and Number("13.9")/Number("-1") would give a
+    // count the install can never match.
+    if (key === "expected_oci_packages" && /^\d+$/u.test(value)) {
+      expectedOciPackages = Number(value);
     }
   }
 
-  if (image === "" || Number.isNaN(expectedOciPackages)) {
-    throw new Error(`Malformed ${refsPath}: expected 'image=' and 'expected_oci_packages=' lines`);
+  if (image === "" || Number.isNaN(expectedOciPackages) || expectedOciPackages <= 0) {
+    throw new Error(
+      `Malformed ${refsPath}: expected 'image=' and a positive 'expected_oci_packages=' count`,
+    );
   }
   return { image, expectedOciPackages };
 }
@@ -151,7 +157,7 @@ export function requireCatalogIndexExpectation(installDir: string): CatalogIndex
   if (expectation === null) {
     throw new Error(
       `dynamic-plugins-root was not populated from the catalog index ` +
-        `(${join(installDir, ".catalog-index-refs")} is missing).\n\n` +
+        `(${join(installDir, CATALOG_INDEX_REFS)} is missing).\n\n` +
         `Re-populate it with:\n\n  ${catalogIndexPopulateCommand()}\n`,
     );
   }
@@ -161,57 +167,36 @@ export function requireCatalogIndexExpectation(installDir: string): CatalogIndex
 /**
  * The name a frontend plugin registers with the scalprum backend, read from its
  * own dist-scalprum/plugin-manifest.json. Differs from the npm package name
- * (e.g. `backstage-community.plugin-tekton`). Null for legacy remoteEntry-only
- * plugins, which scalprum does not serve.
+ * (e.g. `backstage-community.plugin-tekton`). Null for module-federation (NFS)
+ * plugins, which the scalprum backend does not register.
  */
 export function readScalprumName(plugin: PluginEntry): string | null {
-  const manifestPath = join(plugin.path, "dist-scalprum", "plugin-manifest.json");
+  const manifestPath = join(plugin.path, SCALPRUM_MANIFEST);
   if (!existsSync(manifestPath)) return null;
 
-  let manifest: unknown;
-  try {
-    manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  } catch (cause) {
-    throw new Error(`Malformed ${manifestPath}`, { cause });
+  const name = stringProp(readJsonFile(manifestPath), "name");
+  if (name === undefined) {
+    throw new Error(`${manifestPath} has no string "name"`);
   }
-  if (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    "name" in manifest &&
-    typeof manifest.name === "string"
-  ) {
-    return manifest.name;
-  }
-  throw new Error(`${manifestPath} has no string "name"`);
+  return name;
 }
 
 /**
- * Parse the /api/scalprum/plugins response (a name -> descriptor map) into the
- * set of frontend plugins the backend will actually serve to the browser.
- */
-export function parseScalprumPluginNames(body: unknown): Set<string> {
-  if (typeof body !== "object" || body === null || Array.isArray(body)) {
-    throw new Error(`Expected scalprum plugins response to be an object, got: ${typeof body}`);
-  }
-  return new Set(Object.keys(body));
-}
-
-/**
- * Frontend plugins ship either the modern dist-scalprum/ bundle (which carries
- * a plugin-manifest.json) or the legacy dist/remoteEntry.js one.
+ * Frontend plugins ship either the scalprum bundle (dist-scalprum/, which
+ * carries a plugin-manifest.json) or the module-federation one used by New
+ * Frontend System plugins (dist/remoteEntry.js).
+ *
+ * @internal validateFrontendBundles is the production entry point; this is
+ * exported for unit tests.
  */
 export function validateFrontendBundle(plugin: PluginEntry): string | null {
   const has = (rel: string) => existsSync(join(plugin.path, rel));
 
-  if (!has("package.json")) {
-    return "missing package.json";
-  }
-
-  if (!has("dist-scalprum") && !has("dist/remoteEntry.js")) {
+  if (!has("dist-scalprum") && !has(MF_REMOTE_ENTRY)) {
     return "missing both dist-scalprum/ and dist/remoteEntry.js - needs at least one";
   }
 
-  if (has("dist-scalprum") && !has("dist-scalprum/plugin-manifest.json")) {
+  if (has("dist-scalprum") && !has(SCALPRUM_MANIFEST)) {
     return "dist-scalprum/ found but missing plugin-manifest.json";
   }
 
@@ -227,40 +212,4 @@ export function validateFrontendBundles(plugins: PluginEntry[]): FrontendBundleE
     }
   }
   return errors;
-}
-
-/**
- * Array.isArray narrows `unknown` to `any[]`; this guard keeps elements typed
- * as `unknown` so downstream access stays type-checked.
- */
-function isUnknownArray(value: unknown): value is unknown[] {
-  return Array.isArray(value);
-}
-
-/**
- * Parse the /api/dynamic-plugins-info/loaded-plugins response into the set of
- * loaded plugin package names. Throws when the payload is not the expected
- * array shape, so schema drift fails loudly instead of as a false mismatch.
- */
-export function parseLoadedPluginNames(body: unknown): Set<string> {
-  if (!isUnknownArray(body)) {
-    throw new Error(`Expected loaded-plugins response to be an array, got: ${typeof body}`);
-  }
-
-  const names = new Set<string>();
-  for (const item of body) {
-    if (
-      typeof item === "object" &&
-      item !== null &&
-      "name" in item &&
-      typeof item.name === "string"
-    ) {
-      names.add(item.name);
-    } else {
-      // Silently dropping a malformed entry would surface later as a
-      // confusing "installed but not loaded" mismatch - fail at the cause.
-      throw new Error(`loaded-plugins item without a string name: ${JSON.stringify(item)}`);
-    }
-  }
-  return names;
 }

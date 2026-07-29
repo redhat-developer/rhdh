@@ -10,7 +10,7 @@ import { dynamicPluginsRoot } from "./local-harness-servers";
  * confusing locator timeout instead of a clear "populate first" error. Each
  * harness passes its own populate command, since they use different scripts.
  */
-export function requireDynamicPluginsPopulated(runCommand: string, populateCommand: string): void {
+export function requireDynamicPluginsPopulated(yarnScript: string, populateCommand: string): void {
   // Plugins are installed as one directory each; count only directories so the
   // installer's generated global-config file (written into the same root even when
   // zero plugins install) does not satisfy the guard.
@@ -25,7 +25,7 @@ export function requireDynamicPluginsPopulated(runCommand: string, populateComma
 
   if (pluginCount === 0) {
     throw new Error(
-      `dynamic-plugins-root has no plugins — populate it before running ${runCommand}:\n\n` +
+      `dynamic-plugins-root has no plugins — populate it before running ${yarnScript}:\n\n` +
         `  ${populateCommand}\n\n` +
         `See docs/e2e-tests/local-e2e-harness.md.`,
     );

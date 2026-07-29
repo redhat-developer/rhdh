@@ -46,8 +46,16 @@ export function parseJsonResponse(response: APIResponse): Promise<unknown> {
   return response.json();
 }
 
+/**
+ * Array.isArray narrows `unknown` to `any[]`; this keeps the elements typed as
+ * `unknown` so downstream access stays type-checked.
+ */
+export function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
 export function toUnknownArray(value: unknown): unknown[] {
-  if (!Array.isArray(value)) {
+  if (!isUnknownArray(value)) {
     throw new TypeError(`Expected array but got ${typeof value}: ${JSON.stringify(value)}`);
   }
   const items: unknown[] = [];
