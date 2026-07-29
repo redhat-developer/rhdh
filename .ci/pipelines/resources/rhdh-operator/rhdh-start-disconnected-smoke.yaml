@@ -10,9 +10,15 @@
 # oc-mirror IDMS rewrites pulls for kubelet — do not patch container images or
 # oc set env RELATED_IMAGE (OLM v1 reverts overrides).
 #
-# Homepage: OCI package via dynamicPluginsConfigMapName (not CATALOG_INDEX_IMAGE
-# :next defaults, which expect community local-dist paths). Plugin pulls use
-# registries.conf mounted on install-dynamic-plugins (IDMS does not apply to skopeo).
+# CATALOG_INDEX_IMAGE="" clears the operator profile default catalog digest.
+# Plain unset is not enough — the hub still extracts its baked-in digest, which
+# is not on the mirror (manifest unknown). Empty skips catalog extraction.
+# Do not inject plugin-catalog-index:next either: 1.11/next defaults reference
+# red-hat-developer-hub-backstage-plugin-homepage, which is missing on Quay
+# (RHDHBUGS-3515). Homepage is delivered via OCI dynamic-home-page ConfigMap.
+#
+# Plugin pulls use registries.conf on install-dynamic-plugins (IDMS does not
+# apply to skopeo).
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
@@ -33,3 +39,7 @@ spec:
           value: "production"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
+        - name: CATALOG_INDEX_IMAGE
+          value: ""
+          containers:
+            - install-dynamic-plugins

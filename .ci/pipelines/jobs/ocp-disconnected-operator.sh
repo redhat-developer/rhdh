@@ -121,12 +121,15 @@ handle_ocp_disconnected_operator() {
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
 
-  # Docs-aligned smoke: do not inject CATALOG_INDEX_IMAGE. The :next catalog's
-  # defaults expect community hub local-dist homepage paths that are absent from
-  # the CSV GA hub (RELATED_IMAGE_backstage / IDMS). Homepage is delivered via an
-  # OCI package ConfigMap instead (see create_homepage_plugins_configmap).
+  # Smoke CR sets CATALOG_INDEX_IMAGE="" to clear the hub profile default digest
+  # (unset alone leaves a baked-in digest that is not on the mirror). Do not
+  # inject plugin-catalog-index:next: 1.11/next defaults reference the missing
+  # quay.io/rhdh/...-plugin-homepage image (RHDHBUGS-3515). Homepage comes from
+  # the OCI dynamic-home-page ConfigMap instead.
+  # Clear any CI-provided CATALOG_INDEX_IMAGE so deploy_rhdh_operator does not
+  # yq-inject a non-empty value over the CR empty env.
   unset CATALOG_INDEX_IMAGE
-  log::info "CATALOG_INDEX_IMAGE unset for smoke deploy (OCI homepage ConfigMap)"
+  log::info "CATALOG_INDEX_IMAGE unset in env; smoke CR clears init catalog extraction"
 
   disconnected::resolve_homepage_plugin_package || return 1
 
