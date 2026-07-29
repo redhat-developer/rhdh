@@ -12405,6 +12405,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.14.4#./.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.14.4-1ab5bcff02.patch::locator=dynamic-plugins-root%40workspace%3A.":
+  version: 0.14.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.14.4#./.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.14.4-1ab5bcff02.patch::version=0.14.4&hash=88bb28&locator=dynamic-plugins-root%40workspace%3A."
+  dependencies:
+    "@backstage/catalog-client": ^1.12.1
+    "@backstage/core-components": ^0.18.3
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/plugin-catalog-react": ^1.21.3
+    "@backstage/plugin-permission-react": ^0.4.38
+    "@backstage/theme": ^0.7.0
+    "@backstage/types": ^1.2.2
+    "@material-table/core": ^6.4.4
+    "@material-ui/core": ^4.12.2
+    "@monaco-editor/react": ^4.7.0
+    "@mui/icons-material": ^5.16.7
+    "@mui/material": ^5.12.2
+    "@mui/styles": 5.18.0
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": ^0.14.4
+    "@scalprum/react-core": 0.11.1
+    "@tanstack/react-query": ^5.60.5
+    monaco-editor: ^0.55.0
+    react-use: ^17.6.0
+    yaml: ^2.7.0
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  checksum: 6d32527323db106c8168482423a276c74d0cd0ee8e9b28311bf0849da062da2e2f61cf21c45c678e8cbd5b11b9d318c78bf316ddff2fceca64c6188de6520d54
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-global-floating-action-button@npm:1.7.3":
   version: 1.7.3
   resolution: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button@npm:1.7.3"
@@ -20573,27 +20604,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:3.2.7":
-  version: 3.2.7
-  resolution: "dompurify@npm:3.2.7"
+"dompurify@npm:3.4.8":
+  version: 3.4.8
+  resolution: "dompurify@npm:3.4.8"
   dependencies:
     "@types/trusted-types": ^2.0.7
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 15958b76e0266f463303b81bc190ab78808c20640e5211dcf7e5071e4fe4396b904c04a8cb68e149e02ab44360defa13a00147e3f23721d41a81ca4bf6d7c983
+  checksum: 77775a7a22a40d6b169ee9dc53c15e48882c88b1c26b634bd10cb804f76328277893791f08a6339105c67e23c205c12fd931d8d986d2b8c15332bf2edcd3c948
   languageName: node
   linkType: hard
 
 "dompurify@npm:^3.2.4":
-  version: 3.4.0
-  resolution: "dompurify@npm:3.4.0"
+  version: 3.4.12
+  resolution: "dompurify@npm:3.4.12"
   dependencies:
     "@types/trusted-types": ^2.0.7
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 8c4286d3d379c6133ff2951d73d946974ef079f5d651d66cf90c1a6e57d8d2d304e7bc18280d27c38835200bbe03877fd93fb22f9f1fb9e086d68ffcd2d5dd16
+  checksum: 477e944e669bac9247c9ebfa55c7ea5c73f3cc6cd6b21ee72e306000e3e53d308e7bdaac89e655a0e2661de2ffbdd877e6a92537d07ba1d70c6c441fcef8c65c
   languageName: node
   linkType: hard
 
@@ -26119,11 +26150,11 @@ __metadata:
   linkType: hard
 
 "linkify-it@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "linkify-it@npm:5.0.0"
+  version: 5.0.2
+  resolution: "linkify-it@npm:5.0.2"
   dependencies:
     uc.micro: ^2.0.0
-  checksum: b0b86cadaf816b64c947a83994ceaad1c15f9fe7e079776ab88699fb71afd7b8fc3fd3d0ae5ebec8c92c1d347be9ba257b8aef338c0ebf81b0d27dcf429a765a
+  checksum: 3ac965e7df2c8788dc5c4c3009aab745f0288dcbc8776ab5bf4317b106c7b7b84fd0f502565d81f9c07f61fa0f0a4150893a6af9d86c36af985aac115bb5c293
   languageName: node
   linkType: hard
 
@@ -27704,13 +27735,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:^0.55.0":
-  version: 0.55.1
-  resolution: "monaco-editor@npm:0.55.1"
+"monaco-editor@npm:0.56.0":
+  version: 0.56.0
+  resolution: "monaco-editor@npm:0.56.0"
   dependencies:
-    dompurify: 3.2.7
+    dompurify: 3.4.8
     marked: 14.0.0
-  checksum: e6f6d9507e2c9cb81fd30370f853a42cd5133236d2d00158ce74e14c19044606c0dfc0465d9af57b7cf164c4f813c9b87572ebb57d10b02d713a61b566b77d56
+  checksum: 398f7af01da302a58c35b29e74170fab1fece20954e3f89e144329753f0e19884910292a4d443ee3e795f1e705c9e28f8c32cccb1475867fa91022f16f5526b9
   languageName: node
   linkType: hard
 
@@ -27757,14 +27788,14 @@ __metadata:
   linkType: hard
 
 "multer@npm:^2.0.2":
-  version: 2.1.1
-  resolution: "multer@npm:2.1.1"
+  version: 2.2.0
+  resolution: "multer@npm:2.2.0"
   dependencies:
     append-field: ^1.0.0
     busboy: ^1.6.0
     concat-stream: ^2.0.0
     type-is: ^1.6.18
-  checksum: 1d2f4ad42a318b3881afe01d3ea2c16af5822c55a65151eaf94b7f807df0e72ac7bb11c174b65b1815bd814f5f60b06f8b95e2a074d77e0af5cb5b6f2a426aff
+  checksum: ed283b3d7ef2a0d1b1d7d6b1688116ca370ba4cfdb0d3f7bb29bd0fdac42199bff87f580b109c559838e38f5af698f77fcf86550ec9240d330405c87912f75c4
   languageName: node
   linkType: hard
 
@@ -33330,15 +33361,15 @@ __metadata:
   linkType: hard
 
 "tar@npm:^7.0.0, tar@npm:^7.4.3, tar@npm:^7.5.2, tar@npm:^7.5.6":
-  version: 7.5.16
-  resolution: "tar@npm:7.5.16"
+  version: 7.5.22
+  resolution: "tar@npm:7.5.22"
   dependencies:
     "@isaacs/fs-minipass": ^4.0.0
     chownr: ^3.0.0
     minipass: ^7.1.2
     minizlib: ^3.1.0
     yallist: ^5.0.0
-  checksum: 9b7f886f5ce8681a7430f80b9b377bfa498e6feb957b9afe6507db08e59d309f8546b7f76a0c2e47bdb54da4602575a5c7519e287fe94de8302e635032fc94f1
+  checksum: e1434f40954410d191ab6d89017bfd40c24869cfd319d19dd74f84db13cbea15370a22bc9b8ecd699d05c2777ec6297f35dac318ed4829b6e776a7cb4f1f7c68
   languageName: node
   linkType: hard
 
