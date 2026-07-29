@@ -78,7 +78,13 @@ test.describe("Plugin Dynamic Loading", () => {
   });
 
   test("every frontend plugin ships valid bundle artifacts", () => {
-    const errors = validateFrontendBundles(installed().frontend);
+    const { frontend } = installed();
+    expect(
+      frontend.length,
+      "the index should declare frontend plugins to validate",
+    ).toBeGreaterThan(0);
+
+    const errors = validateFrontendBundles(frontend);
 
     expect(
       errors.map(({ plugin, error }) => `${plugin.name}: ${error}`),
@@ -94,6 +100,13 @@ test.describe("Plugin Dynamic Loading", () => {
       const scalprumName = readScalprumName(plugin);
       return scalprumName === null ? [] : [{ plugin, scalprumName }];
     });
+
+    // Guard against a green-but-empty pass, the same trap the installed-count
+    // assertion exists for.
+    expect(
+      expected.length,
+      "the index should declare dist-scalprum frontend plugins to check",
+    ).toBeGreaterThan(0);
 
     const served = await (await DynamicPluginsApi.build(request)).scalprumPluginNames();
 
