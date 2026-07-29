@@ -47,7 +47,7 @@
     "@axe-core/playwright": "4.12.1",
     "@playwright/test": "1.61.1",
     "@support/coverage": "portal:./playwright/support/coverage",
-    "@types/node": "24.13.2",
+    "@types/node": "24.13.3",
     "@types/pg": "8.20.0",
     "eslint-plugin-check-file": "3.3.1",
     "eslint-plugin-playwright": "2.10.4",

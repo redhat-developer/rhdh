@@ -76,8 +76,12 @@ run_operator_runtime_config_change_tests() {
   # Subsequent test files reuse the existing deployment (workers: 1).
   #
   # INSTALL_METHOD=operator is already exported in handle_ocp_operator().
-  local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  #
+  # No URL is passed on purpose - see the same note in jobs/ocp-nightly.sh.
+  # A pre-set BASE_URL makes global-setup.ts skip the deploy branch and poll a
+  # route nothing has created yet; ensureRuntimeDeployed() sets BASE_URL itself.
+  export RUNTIME_AUTO_DEPLOY="true"
+  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" || true
 }
 
 handle_ocp_operator() {
@@ -95,12 +99,14 @@ handle_ocp_operator() {
 
   cluster_setup_ocp_operator
 
-  prepare_operator
-
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment"
+    # OSD-GCP internal registry is unreliable under parallel load; reduce
+    # concurrent skopeo pushes and allow retries (RHDHBUGS-1136).
+    export MAX_PARALLEL=3
+    prepare_operator 3
     initiate_operator_deployments_osd_gcp
   else
+    prepare_operator
     initiate_operator_deployments
   fi
 

@@ -87,6 +87,7 @@ auth:
     secret: superSecretSecret
   providers:
     guest:
+      userEntityRef: user:default/guest
       dangerouslyAllowOutsideDevelopment: true
     google:
       development:

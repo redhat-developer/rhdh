@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "main"
-      - "release-*"
+      - 'main'
+      - 'release-[0-9]+.[0-9]+'
     paths:
       - "backstage.json"
       - "packages/app/package.json"

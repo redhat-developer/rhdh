@@ -26,7 +26,7 @@ export type EventStatus = (typeof EVENT_STATUSES)[number];
 const EVENT_SEVERITY_LEVELS = ["low", "medium", "high", "critical"] as const;
 export type EventSeverityLevel = (typeof EVENT_SEVERITY_LEVELS)[number];
 
-const DEFAULT_ACTOR_ID = "user:development/guest";
+const DEFAULT_ACTOR_ID = "user:default/guest";
 
 export class Log {
   actor: LogActor;

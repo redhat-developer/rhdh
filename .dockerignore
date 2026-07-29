@@ -8,10 +8,11 @@ plugins
 !plugins/licensed-users-info-backend
 !plugins/scalprum-backend
 *.local.yaml
+*.local-e2e.yaml
 coverage
 dist-types
 examples
-.ci/images/*
+ci/images/*
 !.ci/images/Dockerfile
 !.yarnrc.yml
 hermeto-cache
@@ -22,4 +23,11 @@ hermeto-cache
 .rulesyncignore
 .pr_agents.toml
 .sonarcloud.properties
+docs
+e2e-tests
+.opencode
+.husky
+.vscode
+.turbo
+.config
 

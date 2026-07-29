@@ -1,0 +1,21 @@
+{
+  "name": "plugin-test-all-nfs-dynamic",
+  "version": "0.0.0",
+  "description": "A test frontend plugin where all backstage.features are NFS types",
+  "backstage": {
+    "role": "frontend-dynamic-container",
+    "pluginId": "test-all-nfs",
+    "pluginPackages": [
+      "plugin-test-all-nfs"
+    ],
+    "features": {
+      ".": "@backstage/FrontendPlugin",
+      "./alpha": "@backstage/FrontendModule"
+    }
+  },
+  "keywords": [
+    "backstage",
+    "dynamic"
+  ],
+  "main": "remote-entry.js"
+}

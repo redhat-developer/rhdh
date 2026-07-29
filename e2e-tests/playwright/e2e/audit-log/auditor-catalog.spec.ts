@@ -48,7 +48,7 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
       "entity-mutate",
-      "user:development/guest",
+      "user:default/guest",
       { method: "POST", url: "/api/catalog/refresh" },
       undefined,
       undefined,
@@ -65,7 +65,7 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
       "location-mutate",
-      "user:development/guest",
+      "user:default/guest",
       { method: "POST", url: "/api/catalog/locations" },
       undefined,
       undefined,
