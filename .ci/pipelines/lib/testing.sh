@@ -79,9 +79,6 @@ testing::run_tests() {
 
   yarn playwright install chromium
 
-  Xvfb :99 &
-  export DISPLAY=:99
-
   # RHIDP-13243: V8 coverage collection for E2E tests (opt-in).
   # Set COLLECT_COVERAGE=true in the job config to enable. When enabled, the
   # coverage fixture wraps page.coverage.startJSCoverage/stopJSCoverage and
@@ -107,8 +104,6 @@ testing::run_tests() {
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local test_result=${PIPESTATUS[0]}
-
-  pkill Xvfb || true
 
   # Use artifacts_subdir for artifact directory to keep artifacts organized
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
