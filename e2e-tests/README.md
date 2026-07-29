@@ -24,10 +24,15 @@ cluster-free-only specs there too.
 
 CI runs it as the `plugin-sanity` job of the
 [E2E Cluster-free workflow](../.github/workflows/e2e-cluster-free.yaml) — a plain
-GitHub runner, since the check needs no cluster and every index package resolves
-anonymously. The index is built outside this repo and changes on its own, so the
-job also runs on a nightly schedule; for RC verification, run the workflow
-manually and set the `catalog_index_image` input.
+GitHub runner with no registry credentials, since the check needs no cluster and
+the index's digest-pinned packages resolve anonymously (the install CLI rewrites
+`registry.access.redhat.com/rhdh/` to `quay.io/rhdh/`). The few packages that are
+not published publicly are listed in `local-harness/plugin-sanity-excludes.txt`.
+
+The index is built outside this repo and changes on its own — it grew from 9 to
+36 declared packages in the space of a week — so the job also runs on a nightly
+schedule; for RC verification, run the workflow manually and set the
+`catalog_index_image` input.
 
 This complements, but does not depend on, the cluster-based `sanity-plugins`
 deployment in the nightly OCP job: that one validates the curated plugin set on

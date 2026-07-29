@@ -6,8 +6,11 @@
 # pattern keeps matching when the index flips between digest- and tag-style
 # references, without also matching longer plugin names sharing the prefix.
 #
-# A plugin that throws during backend init aborts the WHOLE backend, so plugins
-# that cannot initialize in the standalone harness must not be installed.
+# Two things get excluded:
+#   1. plugins that cannot INITIALIZE in a standalone backend - one that throws
+#      during init aborts the WHOLE backend, so it must not be installed;
+#   2. packages that cannot be PULLED anonymously - the harness runs on a plain
+#      GitHub runner with no registry credentials.
 # populate-catalog-index.sh writes each match into the generated config as
 # `disabled: true`: the config also `includes` the index's own plugin list, so
 # leaving a package out does NOT keep it from being installed.
@@ -36,3 +39,18 @@ red-hat-developer-hub-backstage-plugin-orchestrator-backend(@|:)
 # Module on the orchestrator backend plugin - excluded with its host plugin.
 # (Also requires orchestrator.workflowLogProvider.loki.baseUrl at startup.)
 red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki(@|:)
+
+# The three below are not published to any public registry: `skopeo inspect
+# --no-creds` reports "unauthorized" for the whole repository, on quay.io and on
+# registry.access.redhat.com alike. Note these are tag-style refs
+# (:1.11.0--x.y.z); every digest-pinned ref the index declares does resolve
+# anonymously via the CLI's quay.io fallback, so this is about publication, not
+# about the digest-lookup trap described above.
+#
+# Excluding them costs real coverage - homepage in particular is a core plugin.
+# Re-check periodically with:
+#   skopeo inspect --no-creds docker://quay.io/rhdh/<name>:<tag>
+# and delete the entry the moment it resolves.
+red-hat-developer-hub-backstage-plugin-homepage(@|:)
+red-hat-developer-hub-backstage-plugin-intelligent-assistant(@|:)
+red-hat-developer-hub-backstage-plugin-intelligent-assistant-backend(@|:)
