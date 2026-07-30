@@ -40,7 +40,7 @@
     "lint:check": "backstage-cli package lint",
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place",
+    "export-dynamic": "npx --yes @red-hat-developer-hub/cli@latest plugin export",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {

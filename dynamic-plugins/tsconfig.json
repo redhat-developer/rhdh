@@ -1,0 +1,11 @@
+{
+  "extends": "@backstage/cli/config/tsconfig.json",
+  "include": ["wrappers/*/src", "wrappers/*/dev"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "outDir": "dist-types",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "jsx": "preserve"
+  }
+}

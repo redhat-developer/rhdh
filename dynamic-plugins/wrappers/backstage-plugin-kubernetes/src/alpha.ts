@@ -1,5 +1,7 @@
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { kubernetesTranslationRef } from '@backstage/plugin-kubernetes';
+export { default } from "@backstage/plugin-kubernetes/alpha";
+
+import { createTranslationResource } from "@backstage/core-plugin-api/alpha";
+import { kubernetesTranslationRef } from "@backstage/plugin-kubernetes";
 
 export const kubernetesTranslations = createTranslationResource({
   ref: kubernetesTranslationRef,
