@@ -79,8 +79,6 @@
     "@module-federation/enhanced": "2.5.1",
     "@mui/icons-material": "5.18.0",
     "@octokit/rest": "19.0.13",
-    "@red-hat-developer-hub/backstage-plugin-app-react": "0.0.5",
-    "@red-hat-developer-hub/backstage-plugin-homepage": "1.16.0",
     "history": "5.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",

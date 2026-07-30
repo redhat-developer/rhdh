@@ -6,7 +6,7 @@ This package is the Red Hat Developer Hub (RHDH) **NFS** (New Frontend System) a
 
 Most RHDH product UX loads as **dynamic plugins** (sign-in via **app-auth**, global-header, quickstart, …) so those pieces stay swappable — see [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml).
 
-**Homepage exception (temporary):** published OCI homepage overlays are still OFS-shaped for NFS, so this shell statically mounts RHDH `homePageModule` (`@red-hat-developer-hub/backstage-plugin-homepage@1.16.0`) so `/` works for local NFS verification (including homepage cards such as unread notifications). Full DP-first homepage is tracked in [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519) (promote NFS from `/alpha` to stable). Until then, use the [local export](#local-nfs-export-homepage--theme) path to exercise homepage via Module Federation.
+**Homepage:** RHDH layout/widgets load from homepage OCI (`bs_1.52.0__1.17.0`, MF `alpha`). The shell still mounts `@backstage/plugin-home` as the `pluginId: home` host until [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032) embeds `homePagePlugin` in the overlay (then that static dep can drop). App drawer comes from **app-defaults** OCI (`bs_1.52.0__0.0.2`), not a static `@red-hat-developer-hub/backstage-plugin-app-react` dependency.
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ npx -y @red-hat-developer-hub/cli-module-install-dynamic-plugins@0.2.0 \
 
 - Uncomment additional entries in [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml) (sourced from [default.packages.yaml](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/default.packages.yaml)) before copying if you need more plugins.
 - Re-run the install when you change the enabled plugin list.
-- Leave homepage/theme OCI entries **commented** — the shell already provides NFS homepage statically; OCI tags would overwrite a local homepage export with OFS assets.
+- Theme OCI (`bs_1.52.0__1.0.1`) ships NFS on `.`. Homepage + app-defaults OCI are enabled in the example set (layout/widgets + drawer). `@backstage/plugin-home` stays in the shell until [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032).
 
 ### 3. Local config for homepage
 
@@ -58,6 +58,7 @@ app:
     - app-root-wrapper:app/global-header: true
     - app-root-wrapper:app/drawer: true
     - app-drawer-content:quickstart/quickstart: true
+    - gh-menu-item:quickstart/quickstart: true
 
 backend:
   baseUrl: http://localhost:7007
@@ -104,8 +105,8 @@ EXPERIMENTAL_MODULE_FEDERATION=true yarn workspace app-next build
 ## Verifying the shell
 
 1. With app-auth installed, sign in (guest when `auth.environment: development` and `auth.providers.guest` are set).
-2. Open `/` — RHDH homepage layout/widgets should render (`homePlugin` + static `homePageModule`).
-3. With global-header / quickstart installed, confirm those surfaces render.
+2. Open `/` — RHDH homepage layout/widgets should render (`homePlugin` in shell + homepage OCI `alpha`).
+3. With global-header / quickstart / app-defaults installed, confirm header, quickstart drawer, and related surfaces render.
 4. Open `/visualizer/tree` and confirm core extensions (for example `page:catalog`, `page:home`) load.
 
 ## Testing homepage cards (e.g. unread notifications)
@@ -114,9 +115,9 @@ NFS homepage cards are **not** OFS `home.page/cards` mount points. They register
 
 The unread-notifications card lives in a local/patched `@backstage/plugin-notifications` as `notificationsHomeModule` (MF expose `notifications-home-module`). Stock npm / RHDH wrapper OCI builds do **not** include that widget yet.
 
-### A. Keep NFS homepage in the shell (default)
+### A. Shell + homepage OCI (default)
 
-No change needed: `App.tsx` already includes `homePlugin` + `homePageModule`.
+`App.tsx` keeps `homePlugin`; homepage layout/widgets come from the homepage OCI entry in [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml).
 
 ### B. Export notifications (+ signals) into `dynamic-plugins-root`
 
@@ -178,29 +179,15 @@ In `/visualizer/tree`, confirm:
 
 Then open `/` and confirm the unread notifications card on the grid.
 
-## Local NFS export (homepage & theme)
+## Local NFS export (homepage)
 
-Use this when you need to iterate on homepage/theme from [rhdh-plugins](https://github.com/redhat-developer/rhdh-plugins) as MF remotes (closer to the long-term DP-first model tracked in [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519)).
+Use this when you need to iterate on homepage from [rhdh-plugins](https://github.com/redhat-developer/rhdh-plugins) as an MF remote (closer to the long-term DP-first model tracked in [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519)). Theme and app-defaults should prefer published OCI tags (`bs_1.52.0__1.0.1` / `bs_1.52.0__0.0.2`) unless you are iterating on those packages.
 
-**Homepage (`./alpha`):** `rhdh-plugins` `main` already `export default homePageModule` (see [rhdh-plugins#3794](https://github.com/redhat-developer/rhdh-plugins/pull/3794)), so a local export emits MF expose `alpha`. Published npm **1.16.0** does **not** include that default yet — use `main` (or upcoming **1.16.1+**) for local NFS MF tests.
-
-**Theme:** still needs a temporary default on `./alpha` until theme ships the same pattern:
-
-```ts
-// workspaces/theme/plugins/theme/src/alpha/index.ts
-export default rhdhThemeModule;
-```
-
-Export:
+**Homepage (`./alpha`):** published OCI `bs_1.52.0__1.17.0` already `export default homePageModule`. For local source iteration:
 
 ```bash
 # from rhdh-plugins (install/build the workspace once if needed)
 cd workspaces/homepage/plugins/homepage
-yarn build
-npx -y @red-hat-developer-hub/cli plugin export --clean --dev \
-  --dynamic-plugins-root "$HOME/redhat/rhdh/dynamic-plugins-root"
-
-cd ../../../theme/plugins/theme
 yarn build
 npx -y @red-hat-developer-hub/cli plugin export --clean --dev \
   --dynamic-plugins-root "$HOME/redhat/rhdh/dynamic-plugins-root"
@@ -210,10 +197,10 @@ npx -y @red-hat-developer-hub/cli plugin export --clean --dev \
 
 ```bash
 python3 -c "import json; m=json.load(open('dynamic-plugins-root/red-hat-developer-hub-backstage-plugin-homepage/dist/mf-manifest.json')); print([e['name'] for e in m['exposes']])"
-# expect: ['.', 'alpha']  (alpha requires default export of homePageModule)
+# expect: ['.', 'alpha']
 ```
 
-**When using the local homepage remote:** remove the static `homePageModule` import from `src/App.tsx` (keep `homePlugin`), rebuild app-next, and restart `start:next`. Keep homepage/theme OCI entries commented so install does not overwrite your export.
+**When using a local homepage remote:** keep `homePlugin` in `App.tsx`, rebuild app-next, and restart `start:next`. Comment out the homepage OCI entry so install does not overwrite your export.
 
 ## Other commands
 
@@ -231,22 +218,22 @@ Static features in `src/App.tsx`:
 |--------|---------|
 | `navModule` | Sidebar navigation layout |
 | `appVisualizerPlugin` | Extension visualizer (`/visualizer`) |
-| `catalogPlugin` / `homePlugin` / `scaffolderPlugin` / `searchPlugin` / `userSettingsPlugin` | Core Backstage plugins (`home` is required host for RHDH homepage + card widgets) |
-| `homePageModule` | **Temporary** RHDH homepage layout/widgets — see below |
-| `appDrawerModule` | Drawer host for DP content (e.g. quickstart); no app-react overlay yet |
+| `catalogPlugin` / `homePlugin` / `scaffolderPlugin` / `searchPlugin` / `userSettingsPlugin` | Core Backstage plugins (`home` remains until [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032)) |
 | `rhdhDynamicFrontendFeaturesLoader()` | Temporary helper — loads NFS remotes from `dynamic-plugins-root` |
 
-### Temporary: static `homePageModule`
+### Dynamic plugins (not static deps)
 
-Published OCI homepage overlays are still **OFS-shaped** (MF expose is only `.`; NFS lives under `/alpha` until [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519)). The NFS loader skips OFS `.` remotes.
+| Package (OCI) | Purpose |
+|---------------|---------|
+| app-auth / app-integrations | Sign-in + SCM auth APIs |
+| app-defaults (`bs_1.52.0__0.0.2`) | App drawer (`appDefaultsModule`) — replaces static app-react |
+| homepage (`bs_1.52.0__1.17.0`) | RHDH home layout/widgets (`homePageModule` on `alpha`) |
+| theme (`bs_1.52.0__1.0.1`) | RHDH themes (`FrontendModule` on `.`) |
+| global-header / quickstart | Product chrome + onboarding |
 
-Until an NFS-capable overlay ships (or you use a [local NFS export](#local-nfs-export-homepage--theme)):
+**`@backstage/plugin-home`:** intentionally kept in the shell for now. [PR 4921](https://github.com/redhat-developer/rhdh/pull/4921) removed it from the main app; [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032) will make homepage OCI self-sufficient (`homePagePlugin` as alpha default). Until that overlay publishes, keep the host plugin here.
 
-1. Keep `@backstage/plugin-home` (`homePlugin`) in the shell — host for `pluginId: 'home'` widgets.
-2. Keep `homePageModule` from `@red-hat-developer-hub/backstage-plugin-homepage/alpha` (**1.16.0**) static so `/` works for team verification without a local export.
-3. Leave homepage (and theme) OCI entries commented in [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml).
-
-**Removal (after RHIDP-14519 + NFS OCI):** delete the static `homePageModule` import, enable the OCI entry, and rely on `rhdhDynamicFrontendFeaturesLoader`.
+**Quickstart help click (RHDHBUGS-3489):** with global-header **1.22.x**, published quickstart `bs_1.52.0__1.12.2` can leave "Quick start" non-clickable until overlays includes the `forwardRef` fix (`rhdh-plugins` `e9c3e9e13`).
 
 ### Temporary helper: `rhdhDynamicFrontendFeaturesLoader`
 
@@ -268,5 +255,6 @@ Then delete `src/modules/dynamicFeatures/` (loader + `collectLoadableFeatures` h
 
 - [Backstage new frontend system](https://backstage.io/docs/frontend-system/architecture/index)
 - [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519) — promote homepage NFS from `/alpha` to stable
-- [app-defaults: app-auth / app-integrations](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/app-defaults) — intended to load dynamically into RHDH, not statically into this shell
+- [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032) — homepage OCI embeds `homePagePlugin` (drop shell `@backstage/plugin-home`)
+- [app-defaults](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/app-defaults) — app-auth / app-integrations / app-defaults load as dynamic plugins
 - [rhdh-plugin-export-overlays default.packages.yaml](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/default.packages.yaml)
