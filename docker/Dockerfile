@@ -215,7 +215,7 @@ RUN \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.8-1784731524@sha256:69560a2774f1c0bfc5815a5534ea305f26b63721e251ccd3b03a61ac34ed14af AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.8-1785358992@sha256:d7654310a337dbda1958c3615e8277bdb958e85cb0aef94a15fb2dbf0eb34d67 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
