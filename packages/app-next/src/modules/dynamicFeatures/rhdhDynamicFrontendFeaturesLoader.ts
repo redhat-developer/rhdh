@@ -85,6 +85,8 @@ export function rhdhDynamicFrontendFeaturesLoader(
           instance = createInstance(createOptions);
         }
 
+        // Keep options untyped: duplicate @module-federation/runtime-core
+        // copies under enhanced vs host resolve to incompatible UserOptions.
         const userOptions = {
           name: instance.name,
           remotes: frontendPluginRemotes.map(remote => ({
@@ -101,7 +103,7 @@ export function rhdhDynamicFrontendFeaturesLoader(
             ? { shared: options.moduleFederation.shared }
             : {}),
         };
-        instance.initOptions(userOptions);
+        instance.initOptions(userOptions as never);
       } catch (err) {
         error('Failed initializing module federation', err);
         return [];
