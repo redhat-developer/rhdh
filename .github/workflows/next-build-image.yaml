@@ -343,16 +343,13 @@ jobs:
               meta="$META_NEXT_JSON"
             fi
 
-            primary_tag=$(echo "$meta" | jq -r '.tags[0]')
-            DIGEST=$(docker buildx imagetools inspect "$primary_tag" --format '{{println .Digest}}')
-
-            if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
-              echo "::warning::Could not resolve digest for ${primary_tag}, skipping signing"
-              exit 0
-            fi
-
             echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
+              DIGEST=$(docker buildx imagetools inspect "$tag" --format '{{println .Digest}}')
+              if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+                echo "::error::Could not resolve digest for ${tag}"
+                exit 1
+              fi
               echo "Signing ${tag}@${DIGEST}"
               cosign sign --yes "${tag}@${DIGEST}"
             done
