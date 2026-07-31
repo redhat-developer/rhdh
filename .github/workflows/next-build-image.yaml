@@ -333,6 +333,7 @@ jobs:
             echo "Propagation check completed"
 
         - name: Sign the published images
+          if: env.HAS_QUAY_AUTH == 'true'
           env:
             META_RELEASE_JSON: ${{ steps.meta-release.outputs.json }}
             META_NEXT_JSON: ${{ steps.meta-next.outputs.json }}
@@ -343,7 +344,12 @@ jobs:
             fi
 
             primary_tag=$(echo "$meta" | jq -r '.tags[0]')
-            DIGEST=$(docker buildx imagetools inspect --format '{{json .Manifest}}' "$primary_tag" | jq -r '.digest')
+            DIGEST=$(docker buildx imagetools inspect "$primary_tag" --format '{{println .Digest}}')
+
+            if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+              echo "::warning::Could not resolve digest for ${primary_tag}, skipping signing"
+              exit 0
+            fi
 
             echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
