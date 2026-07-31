@@ -345,7 +345,7 @@ jobs:
 
             echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
-              DIGEST=$(docker buildx imagetools inspect "$tag" --format '{{println .Digest}}')
+              DIGEST=$(docker buildx imagetools inspect "$tag" | grep '^Digest:' | awk '{print $2}')
               if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
                 echo "::error::Could not resolve digest for ${tag}"
                 exit 1
