@@ -33,6 +33,10 @@ export const harnessReporters = (suffix: string): ReporterDescription[] => [
  * carries the pluginConfig blocks merged by install-dynamic-plugins, so it must
  * come after the static app-config.dynamic-plugins.yaml to win. `extraConfigs`
  * lands last and wins over everything.
+ *
+ * Paths are REPO-ROOT relative. The backend runs with cwd packages/backend (see
+ * backendWebServer), so everything is prefixed with `../../` here rather than at
+ * the call sites, where a path relative to the backend reads like a mistake.
  */
 export const harnessConfigArgs = (extraConfigs: string[] = []): string =>
   [
@@ -40,7 +44,7 @@ export const harnessConfigArgs = (extraConfigs: string[] = []): string =>
     "--config ../../app-config.dynamic-plugins.yaml",
     "--config ../../app-config.local-e2e.yaml",
     "--config ../../dynamic-plugins-root/app-config.dynamic-plugins.yaml",
-    ...extraConfigs.map((config) => `--config ${config}`),
+    ...extraConfigs.map((config) => `--config ../../${config}`),
   ].join(" ");
 
 // Playwright declares TestConfigWebServer but does not export it, so the item

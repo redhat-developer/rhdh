@@ -15,11 +15,12 @@
 # populate-catalog-index.sh writes each match into the generated config as
 # `disabled: true`: the config also `includes` the index's own plugin list, so
 # leaving a package out does NOT keep it from being installed.
-# Every entry documents why, so it can be re-evaluated (and removed) later.
+# Every entry carries a TODO with its tracking ticket, so exclusions get removed
+# rather than forgotten. Do not add one without a ticket.
 # Prefer a dummy config entry in this directory's app-config.plugin-sanity.yaml over an
 # exclusion whenever the failure is just startup config validation.
 
-# orchestrator-backend fails init with "Cannot read properties of undefined
+# TODO(RHIDP-15961): orchestrator-backend fails init with "Cannot read properties of undefined
 # (reading 'id')" in BackendInitializer.#getInitDeps when loaded into the
 # main-branch backend: it wants the full orchestrator/SonataFlow environment,
 # which a standalone boot does not provide. The orchestrator FRONTEND plugins
@@ -37,11 +38,11 @@
 # class of breakage it exists to catch.
 red-hat-developer-hub-backstage-plugin-orchestrator-backend(@|:)
 
-# Module on the orchestrator backend plugin - excluded with its host plugin.
+# TODO(RHIDP-15961): module on the orchestrator backend plugin - excluded with its host plugin.
 # (Also requires orchestrator.workflowLogProvider.loki.baseUrl at startup.)
 red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki(@|:)
 
-# The three below are not published to any public registry: `skopeo inspect
+# TODO(RHDHBUGS-3515): the three below are not published to any public registry: `skopeo inspect
 # --no-creds` reports "unauthorized" for the whole repository, on quay.io and on
 # registry.access.redhat.com alike. Note these are tag-style refs
 # (:1.11.0--x.y.z); every digest-pinned ref the index declares does resolve

@@ -242,14 +242,31 @@ testing::report_plugin_startup_failures() {
   # Collected here rather than reused from save_all_pod_logs: that runs only when
   # a test fails, and its pod_logs/ directory is not namespace-scoped, so a
   # leftover copy would report another namespace's failures.
-  local pods
-  pods=$(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub)" -o name 2> /dev/null || true)
-  if [[ -z "${pods}" ]]; then
+  #
+  # One query yields both the pod list and whether anything actually crashed, so
+  # a healthy run does not pay for two `oc logs` calls per pod.
+  local pod_status
+  pod_status=$(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub)" \
+    -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.containerStatuses[*]}{.restartCount}{" "}{end}{range .status.initContainerStatuses[*]}{.restartCount}{" "}{end}{"\n"}{end}' 2> /dev/null || true)
+
+  if [[ -z "${pod_status//[[:space:]]/}" ]]; then
     # Distinct from "scanned and found nothing": a bad selector must not read as
     # a clean bill of health.
     log::warn "No RHDH pods matched in ${namespace}; skipping startup-failure scan."
     return 0
   fi
+
+  # A plugin that fails startup fatally takes the backend down, so if every pod
+  # is Running with no restarts there is nothing here to find.
+  local unhealthy
+  unhealthy=$(awk 'NF == 0 { next } $2 != "Running" { print $1; next } { for (i = 3; i <= NF; i++) if ($i != "0") { print $1; next } }' <<< "${pod_status}")
+  if [[ -z "${unhealthy}" ]]; then
+    log::info "All RHDH pods in ${namespace} are Running with no restarts; skipping startup-failure scan."
+    return 0
+  fi
+
+  local pods
+  pods=$(awk 'NF > 0 { print "pod/" $1 }' <<< "${pod_status}")
 
   {
     local pod
