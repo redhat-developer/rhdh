@@ -11,7 +11,7 @@
 set -e
 
 # Pinned so local runs install the exact CLI version CI uses.
-CLI_VERSION="0.2.0"
+CLI_VERSION="0.4.0"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
