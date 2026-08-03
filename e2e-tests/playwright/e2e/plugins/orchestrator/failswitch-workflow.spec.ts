@@ -6,10 +6,15 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { Orchestrator } from "../../../support/pages/orchestrator";
 import { LogUtils } from "../../audit-log/log-utils";
+import { skipIfJobName } from "../../../utils/helper";
+import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
 type EnvEntry = { name: string; value: string };
 
 test.describe("Orchestrator failswitch workflow tests", () => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
+  test.fixme(() => skipIfJobName(JOB_NAME_PATTERNS.OPERATOR));
+
   let uiHelper: UIhelper;
   let common: Common;
   let orchestrator: Orchestrator;
@@ -67,9 +72,9 @@ test.describe("Orchestrator failswitch workflow tests", () => {
     await orchestrator.validateWorkflowStatusDetails("Completed");
   });
 
-  test("Test rerunning from failure point using failswitch workflow", async ({}, testInfo) => {
+  test("Test rerunning from failure point using failswitch workflow", async () => {
     test.setTimeout(240000); // 4 minutes: pod restarts + 60s sleep + failure/recovery time
-    const ns = testInfo.project.name;
+    const ns = process.env.NAME_SPACE;
 
     test.skip(!ns, "NAME_SPACE not set");
 
