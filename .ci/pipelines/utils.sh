@@ -859,9 +859,6 @@ run_tests() {
 
   yarn playwright install chromium
 
-  Xvfb :99 &
-  export DISPLAY=:99
-
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
@@ -870,8 +867,6 @@ run_tests() {
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local RESULT=${PIPESTATUS[0]}
-
-  pkill Xvfb || true
 
   # Use namespace for artifact directory to keep artifacts organized by deployment
   mkdir -p "${ARTIFACT_DIR}/${namespace}/test-results"
