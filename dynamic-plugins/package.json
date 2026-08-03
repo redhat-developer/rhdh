@@ -1,6 +1,6 @@
 {
   "name": "dynamic-plugins-root",
-  "version": "1.10.3",
+  "version": "1.10.4",
   "private": true,
   "engines": {
     "node": "24"
