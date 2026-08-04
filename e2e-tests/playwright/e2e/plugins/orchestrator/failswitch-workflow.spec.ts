@@ -12,7 +12,7 @@ import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 type EnvEntry = { name: string; value: string };
 
 test.describe("Orchestrator failswitch workflow tests", () => {
-  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
+  // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-3555 fix orchestrator tests on Operator deployment
   test.fixme(() => skipIfJobName(JOB_NAME_PATTERNS.OPERATOR));
 
   let uiHelper: UIhelper;
