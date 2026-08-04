@@ -2,7 +2,7 @@
 
 **Epic**: RHIDP-13497 — Plugin Testing by Support Level  
 **Author**: Gustavo Lira e Silva  
-**Date**: 2026-06-17 (updated 2026-07-24)  
+**Date**: 2026-06-17 (updated 2026-08-04)  
 **Status**: PROPOSED (pending team review)
 
 ## Document Governance
@@ -25,11 +25,11 @@ This document defines differentiated testing requirements for RHDH plugins based
 | Level | Description | Commitment | Workspaces |
 |-------|-------------|------------|------------|
 | **Generally Available (GA)** | Production-ready, fully supported by Red Hat | Full support, SLA-backed | 17 |
-| **Tech Preview (TP)** | Beta quality, not production-ready | Limited support, no SLA | 7 |
-| **Community** | Community-maintained | No Red Hat support | 40 |
-| **Dev Preview** | Experimental, under active development | No support, may change | 6 |
+| **Tech Preview (TP)** | Beta quality, not production-ready | Limited support, no SLA | 8 |
+| **Community** | Community-maintained | No Red Hat support | 41 |
+| **Dev Preview** | Experimental, under active development | No support, may change | 5 |
 
-**Total**: 70 workspaces across 4 support levels (some workspaces contain packages at multiple support levels).
+**Total**: 64 distinct workspaces across 4 support levels (some workspaces contain packages at multiple support levels, so the column above sums higher).
 
 **Source of truth**: Support levels are defined in `rhdh-plugin-export-overlays/workspaces/*/metadata/*.yaml` (`spec.support` field).
 
@@ -132,8 +132,9 @@ Section 5 of the Test Strategy Proposal. Where the two differ, the support-level
 
 **Decision (Q1)**: Coverage requirements are enforced only when promoting TP to GA. TP plugins are not blocked on coverage during their TP lifecycle, but must meet GA requirements before promotion. This avoids premature enforcement on experimental work.
 
-**Current state** (verified 2026-07-24):
-- 4/7 TP workspaces have E2E tests (57%)
+**Current state** (verified 2026-08-04):
+- 5/8 TP workspaces have E2E tests (63%)
+- 4/8 have smoke tests
 - TP gaps: `cost-management` (smoke only), `pingidentity` (smoke only), `scaffolder-relation-processor` (no tests)
 
 ---
@@ -146,22 +147,41 @@ Section 5 of the Test Strategy Proposal. Where the two differ, the support-level
 | **Layer 2 (Integration)** | — | — | Not required |
 | **Layer 3 (Component)** | — | — | Not required |
 | **Layer 4 (E2E)** | — | — | Not required |
-| **Load test** | Plugin loads without error | — | Required |
+| **Load test** | Published artifact installs and boots | — | Required |
 | **Config validation** | appConfigExamples are valid | — | Required |
 | **Security scan** | No critical CVEs in dependencies | — | Warning only |
 | **Code review** | — | — | Not required |
 
 **Quality gates**:
-- Plugin must load in default RHDH instance
+- The published artifact must install and boot
 - Configuration examples must not crash the app
 - No blocking requirements on test coverage
 
-**Decision (Q2)**: All Community plugins must pass a load test (plugin loads without error in a default RHDH instance). This is already partially implemented: 22/40 community workspaces have smoke tests in the overlay repo.
+**Decision (Q2)**: All Community plugins must pass a load test. This is already partially implemented: 22/41 community workspaces have smoke tests in the overlay repo.
 
-**Current state** (verified 2026-07-24):
-- 9/40 Community workspaces have E2E tests (23%)
-- 22/40 Community workspaces have smoke tests (55%)
-- 14/40 Community workspaces have neither E2E nor smoke tests
+> **Wording note (2026-08-04)**: this requirement previously read "plugin loads without error in a
+> default RHDH instance". That phrasing no longer maps to this tier — community plugins were
+> removed from `default.packages.yaml` under RHIDP-13262 (2.1.0) to enable multi-arch builds, so
+> there is no default RHDH instance containing them. They exist only as artifacts published by
+> `rhdh-plugin-export-overlays` to ghcr. The operative definition is now **"the published artifact
+> installs and boots"**, verified off-cluster and without Docker by the overlays
+> `smoke-tests-native/` harness.
+
+**Current state** (verified 2026-08-04):
+- 10/41 Community workspaces have E2E tests (24%)
+- 22/41 Community workspaces have smoke tests (54%)
+- 15/41 Community workspaces have neither E2E nor smoke tests
+
+Against the 2026-07-24 snapshot (40 workspaces / 22 smoke / 9 E2E / 14 neither) coverage is
+**static**: one workspace was added and arrived uncovered, one existing workspace gained E2E.
+Hand-written per-workspace coverage does not close this gap on its own, which is the rationale
+for the metadata-driven sweep tracked in RHIDP-13510.
+
+**Scope of the load test** (RHIDP-13510): all 107 community packages get OCI install validation;
+49 of 53 backend packages get a real boot via `startTestBackend`; 4 catalog-extending backend
+modules are install-only (the catalog core does not boot standalone) and stay on the Docker smoke;
+the 54 frontend packages get bundle-layout validation only. Frontend **rendering** is deferred to
+RHIDP-16009, blocked on the new frontend system (RHIDP-15082 / RHIDP-15379).
 
 ---
 
@@ -176,9 +196,9 @@ Section 5 of the Test Strategy Proposal. Where the two differ, the support-level
 
 **Quality gates**: None. Experimental quality, may break.
 
-**Current state** (verified 2026-07-24):
-- 3/6 Dev-Preview workspaces have E2E tests (50%)
-- 3/6 have smoke tests
+**Current state** (verified 2026-08-04):
+- 2/5 Dev-Preview workspaces have E2E tests (40%)
+- 3/5 have smoke tests
 
 ---
 
@@ -214,9 +234,11 @@ Section 5 of the Test Strategy Proposal. Where the two differ, the support-level
 **Goal**: Implement load/sanity checks for Community plugins.
 
 **Tasks**:
-1. Implement Community plugin load-test suite
-2. Add appConfigExamples schema validation
-3. Define quality expectations for community plugins
+1. Implement Community plugin load-test suite — RHIDP-13510, open. Metadata-driven sweep over
+   every `spec.support: community` package, run through the overlays `smoke-tests-native/`
+   harness (no cluster, no Docker). Frontend rendering split out to RHIDP-16009.
+2. Add appConfigExamples schema validation — done (RHIDP-13509, RHIDP-15902, RHIDP-15903)
+3. Define quality expectations for community plugins — done (RHIDP-13512)
 
 ---
 
@@ -290,14 +312,18 @@ precondition for it.
 - Flaky test rate
 - CVE count by severity
 
-**Current baselines** (measured 2026-07-24):
+**Current baselines** (measured 2026-08-04):
 
 | Level | E2E Coverage | Smoke Coverage | Unit Tests (rhdh-plugins) |
 |-------|-------------|----------------|---------------------------|
 | **GA** | 14/17 (82%) | 9/17 (53%) | 5/5 RHDH-owned workspaces |
-| **TP** | 4/7 (57%) | 4/7 (57%) | 3 workspaces |
-| **Community** | 9/40 (23%) | 22/40 (55%) | 3 workspaces |
-| **Dev-Preview** | 3/6 (50%) | 3/6 (50%) | 5 workspaces |
+| **TP** | 5/8 (63%) | 4/8 (50%) | 3 workspaces |
+| **Community** | 10/41 (24%) | 22/41 (54%) | 3 workspaces |
+| **Dev-Preview** | 2/5 (40%) | 3/5 (60%) | 5 workspaces |
+
+Across the overlays repo as a whole: 24 of 64 workspaces have `e2e-tests/` and 33 have
+`smoke-tests/`. Unit-test columns were not re-measured on 2026-08-04 and carry the
+2026-07-24 values.
 
 **Dashboard**: [Codecov rhdh-plugins](https://app.codecov.io/gh/redhat-developer/rhdh-plugins)  
 **Components configured**: GA Plugins, Tech-Preview Plugins, Community Plugins, Dev-Preview Plugins
@@ -330,7 +356,8 @@ precondition for it.
 
 ### Active Test Expansion
 - Orchestrator: 6 test PRs merged in July 2026 (RHIDP-15513) — 105 test files
-- Plugin sanity cluster-free check: rhdh PR #4967 (open)
+- Plugin sanity cluster-free check: rhdh PR #4967 (merged 2026-08-04) — sweeps the
+  29-package catalog index (`quay.io/rhdh/plugin-catalog-index`), all GA
 - Overlay E2E improvements: quay (#2873), argocd/topology (#2864), tekton (#2804)
 
 ### Decision Records
@@ -348,11 +375,20 @@ precondition for it.
 - **RHIDP-13504**: Vitest migration spike (recommendation: stay with Jest)
 - **RHIDP-13233**: Layer 1-2 tests for RHDH-owned backend plugins
 - **RHIDP-13235**: Layer 3 component tests mirroring UI E2E specs
+- **RHIDP-13508**: Cluster-free plugin sanity check for the catalog index (rhdh PR #4967)
+- **RHIDP-13512**: Quality expectations for community-supported plugins
 
 ### In Progress
 
 - **RHIDP-15513**: Orchestrator test coverage expansion
-- **RHIDP-13508**: Cluster-free plugin sanity check
+- **RHIDP-13510**: Community plugin load-test suite — the last open story in RHIDP-13497, and
+  the only `Required` item in this matrix that is still unimplemented. Work lands in
+  `rhdh-plugin-export-overlays` (`smoke-tests-native/`), not in this repo.
+
+### Deferred
+
+- **RHIDP-16009**: Community frontend plugin rendering — blocked on the new frontend system
+  (RHIDP-15082, gated by RHIDP-15379)
 
 ### Blocked
 
@@ -378,4 +414,5 @@ precondition for it.
 
 - **2026-06-17**: Initial draft based on research and industry best practices
 - **2026-07-24**: Updated with verified E2E coverage data, resolved open questions, added governance and recent progress sections
+- **2026-08-04**: Refreshed all support-level counts and coverage baselines against both repos' `main`; reworded the Community load-test requirement from "loads in a default RHDH instance" to "the published artifact installs and boots" (community plugins are no longer in the RHDH image — RHIDP-13262); recorded the RHIDP-13510 scope and its frontend-rendering split into RHIDP-16009
 - **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added threshold precedence and a proposed Compliance Verification section (pending RACI sign-off)
