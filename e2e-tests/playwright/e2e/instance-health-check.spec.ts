@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@support/coverage/test";
 
 test.describe("Application health check", () => {
   test.beforeAll(async () => {
@@ -9,14 +9,27 @@ test.describe("Application health check", () => {
   });
 
   test("Application health check", async ({ request }) => {
-    const healthCheckEndpoint = "/healthcheck";
-
-    const response = await request.get(healthCheckEndpoint);
-
-    const responseBody = await response.json();
-
-    expect(response.status()).toBe(200);
-
-    expect(responseBody).toHaveProperty("status", "ok");
+    // Poll so transient GKE TLS/socket disconnects retry instead of failing once.
+    await expect
+      .poll(
+        async () => {
+          try {
+            const response = await request.get("/healthcheck");
+            if (response.status() !== 200) {
+              return false;
+            }
+            const responseBody = await response.json();
+            return (
+              typeof responseBody === "object" &&
+              responseBody !== null &&
+              Reflect.get(responseBody, "status") === "ok"
+            );
+          } catch {
+            return false;
+          }
+        },
+        { timeout: 120_000, intervals: [2_000] },
+      )
+      .toBe(true);
   });
 });

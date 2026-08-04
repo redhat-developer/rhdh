@@ -73,6 +73,16 @@ testing::run_tests() {
 
   yarn playwright install chromium
 
+  # Re-validate /healthcheck after yarn install so transient GKE TLS blips
+  # between deploy readiness and Playwright start do not fail the suite.
+  if [[ -n "${url}" ]]; then
+    if ! testing::wait_for_rhdh_healthcheck "${url}" 24 5; then
+      save_overall_result 1
+      test_run_tracker::mark_test_result "false" "healthcheck"
+      return 1
+    fi
+  fi
+
   (
     set -e
     log::info "Using PR container image: ${TAG_NAME}"
@@ -136,6 +146,68 @@ testing::run_tests() {
 # Health Checks
 # ==============================================================================
 
+# Probe GET ${url}/healthcheck for a JSON liveness response.
+# Connect/TLS failures and non-OK bodies are treated as not ready (return 1).
+# Args:
+#   $1 - url: Base URL of the RHDH instance (no trailing path required)
+# Returns:
+#   0 - HTTP 200 and body contains "status":"ok"
+#   1 - Not ready
+testing::probe_rhdh_healthcheck() {
+  local url=$1
+  local health_url="${url%/}/healthcheck"
+  local response http_status body
+
+  # Append http_code on its own line so connect/TLS failures can be retried.
+  response=$(curl --insecure -sS -w "\n%{http_code}" "${health_url}" 2> /dev/null || true)
+  if [[ -z "${response}" ]]; then
+    return 1
+  fi
+
+  http_status=$(printf '%s' "${response}" | tail -n 1)
+  body=$(printf '%s' "${response}" | sed '$d')
+
+  if [[ "${http_status}" == "200" ]] && [[ "${body}" =~ \"status\"[[:space:]]*:[[:space:]]*\"ok\" ]]; then
+    return 0
+  fi
+  return 1
+}
+
+# Re-probe /healthcheck for a short budget (default ~2 min) before Playwright.
+# Args:
+#   $1 - url: Base URL of the RHDH instance
+#   $2 - max_attempts: (optional) default 24
+#   $3 - wait_seconds: (optional) default 5
+# Returns:
+#   0 - Ready
+#   1 - Not ready within budget
+testing::wait_for_rhdh_healthcheck() {
+  local url=$1
+  local max_attempts=${2:-24}
+  local wait_seconds=${3:-5}
+  local i
+
+  if [[ -z "${url}" ]]; then
+    log::error "${_TESTING_ERR_MISSING_PARAMS}"
+    log::info "Usage: testing::wait_for_rhdh_healthcheck <url> [max_attempts] [wait_seconds]"
+    return 1
+  fi
+
+  log::info "Waiting for RHDH /healthcheck at ${url%/}/healthcheck (up to $((max_attempts * wait_seconds))s)"
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    if testing::probe_rhdh_healthcheck "${url}"; then
+      log::success "RHDH /healthcheck is ready"
+      return 0
+    fi
+    log::warn "Attempt ${i} of ${max_attempts}: /healthcheck not ready yet"
+    sleep "${wait_seconds}"
+  done
+
+  log::error "RHDH /healthcheck not ready at ${url%/}/healthcheck after ${max_attempts} attempts"
+  return 1
+}
+
 # Check if Backstage is up and running at the given URL
 # Args:
 #   $1 - release_name: The Helm release name
@@ -161,18 +233,16 @@ testing::check_backstage_running() {
     return 1
   fi
 
-  log::info "Checking if Backstage is up and running at ${url}"
+  log::info "Checking if Backstage is up and running at ${url%/}/healthcheck"
 
   for ((i = 1; i <= max_attempts; i++)); do
-    # Check HTTP status
-    local http_status
-    http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}" || echo "000")
-
-    if [[ "${http_status}" -eq 200 ]]; then
+    # GET /healthcheck (not HEAD /) so TLS + JSON liveness match what Playwright uses.
+    # Connect/TLS failures are not-ready and retry within the existing attempt budget.
+    if testing::probe_rhdh_healthcheck "${url}"; then
       log::success "Backstage is up and running!"
       return 0
     else
-      log::warn "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
+      log::warn "Attempt ${i} of ${max_attempts}: Backstage /healthcheck not yet available"
       oc get pods -n "${namespace}"
 
       # Early crash detection: fail fast if RHDH pods are in CrashLoopBackOff
@@ -202,7 +272,7 @@ testing::check_backstage_running() {
     fi
   done
 
-  log::error "Failed to reach Backstage at ${url} after ${max_attempts} attempts."
+  log::error "Failed to reach Backstage /healthcheck at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}" || true
   return 1
