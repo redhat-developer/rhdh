@@ -108,19 +108,7 @@ testing::run_tests() {
   # Use artifacts_subdir for artifact directory to keep artifacts organized
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/test-results/" "test-results" || true
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/${JUNIT_RESULTS}" || true
-  if [[ "${CI}" == "true" && -f "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" ]]; then
-    # Gzip junit before writing to SHARED_DIR to stay under Kubernetes Secret 1 MiB limit
-    gzip -c "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" > "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    local gz_size
-    gz_size=$(stat -c%s "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz" 2> /dev/null || stat -f%z "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz")
-    local max_size=$((800 * 1024))
-    if ((gz_size > max_size)); then
-      echo "[WARNING] junit-results-${artifacts_subdir}.xml.gz is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
-      rm -f "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
-    else
-      echo "[INFO] Copied junit-results-${artifacts_subdir}.xml.gz to SHARED_DIR ($((gz_size / 1024)) KB)"
-    fi
-  fi
+  testing::_publish_junit_to_shared_dir "${artifacts_subdir}" "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}"
 
   common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/screenshots/" "attachments/screenshots" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
@@ -171,31 +159,127 @@ testing::run_tests() {
   local failed_tests
   if [[ "${test_result}" -eq 0 ]]; then
     failed_tests="0"
-  elif [[ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]]; then
-    # JUnit XML distinguishes "failures" (assertion failures) from "errors"
-    # (exceptions/timeouts). Playwright reports TimeoutError, crash, and
-    # similar issues as errors, not failures. Sum both from the root
-    # <testsuites> element so the Slack notification reflects the real count.
-    local _junit_failures _junit_errors
-    _junit_failures=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    _junit_errors=$(grep -oP 'errors="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-    _junit_failures="${_junit_failures:-0}"
-    _junit_errors="${_junit_errors:-0}"
-    failed_tests=$((_junit_failures + _junit_errors))
-    if [[ "${failed_tests}" -eq 0 ]]; then
-      # Playwright exited non-zero but JUnit reports 0 failures and 0 errors —
-      # the process likely crashed or timed out globally. Use the sentinel so
-      # the Slack alert doesn't misleadingly say "0 tests failed".
-      failed_tests="${UNKNOWN_FAILURE_COUNT}"
-    fi
-    echo "Number of failed tests: ${failed_tests}"
   else
-    echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
-    failed_tests="${UNKNOWN_FAILURE_COUNT}"
-    echo "Number of failed tests unknown, saving as ${failed_tests}."
+    failed_tests=$(testing::_count_junit_failures "${e2e_tests_dir}/${JUNIT_RESULTS}")
+    echo "Number of failed tests: ${failed_tests}"
   fi
   test_run_tracker::mark_test_result "$test_passed" "${failed_tests}"
   return "$test_result"
+}
+
+# Publishes a JUnit file to SHARED_DIR, gzipped to stay under the Kubernetes
+# Secret 1 MiB limit; an oversized entry is dropped because it would break the
+# downstream Slack reporting for every run in the job.
+# Args:
+#   $1 - artifacts_subdir (names the SHARED_DIR entry)
+#   $2 - path to the JUnit file already copied into ARTIFACT_DIR
+testing::_publish_junit_to_shared_dir() {
+  local artifacts_subdir=$1 junit_in_artifact_dir=$2
+  local target="${SHARED_DIR}/junit-results-${artifacts_subdir}.xml.gz"
+  local max_size=$((800 * 1024))
+
+  [[ "${CI}" == "true" && -f "${junit_in_artifact_dir}" ]] || return 0
+
+  gzip -c "${junit_in_artifact_dir}" > "${target}"
+  local gz_size
+  # stat is -c on GNU, -f on BSD; CI is GNU, local runs may not be.
+  gz_size=$(stat -c%s "${target}" 2> /dev/null || stat -f%z "${target}")
+  if ((gz_size > max_size)); then
+    echo "[WARNING] $(basename "${target}") is $((gz_size / 1024)) KB, exceeds $((max_size / 1024)) KB limit. Removing from SHARED_DIR."
+    rm -f "${target}"
+  else
+    echo "[INFO] Copied $(basename "${target}") to SHARED_DIR ($((gz_size / 1024)) KB)"
+  fi
+}
+
+# Echoes the number of failed tests in a JUnit file, or UNKNOWN_FAILURE_COUNT
+# when it cannot be determined. JUnit distinguishes "failures" (assertion
+# failures) from "errors" (exceptions/timeouts) and Playwright reports
+# TimeoutError and crashes as errors, so both are summed from the root
+# <testsuites> element - otherwise the Slack notification under-reports.
+# A zero total after a non-zero exit means the process crashed or timed out
+# globally, so the sentinel is used instead of a misleading "0 tests failed".
+# Args:
+#   $1 - path to the JUnit file
+testing::_count_junit_failures() {
+  local junit_file=$1
+
+  if [[ ! -f "${junit_file}" ]]; then
+    log::warn "JUnit results file not found: ${junit_file}" >&2
+    echo "${UNKNOWN_FAILURE_COUNT}"
+    return 0
+  fi
+
+  local failures errors total
+  failures=$(grep -oP 'failures="\K[0-9]+' "${junit_file}" | head -n 1)
+  errors=$(grep -oP 'errors="\K[0-9]+' "${junit_file}" | head -n 1)
+  total=$((${failures:-0} + ${errors:-0}))
+  if [[ "${total}" -eq 0 ]]; then
+    echo "${UNKNOWN_FAILURE_COUNT}"
+  else
+    echo "${total}"
+  fi
+}
+
+# Scans RHDH pod logs in a namespace for dynamic-plugin startup failures and
+# prints a summary naming each failed plugin. On CrashLoopBackOff the culprit is
+# in the PREVIOUS container logs (-p). Advisory only: never fails.
+# Args:
+#   $1 - release_name: selects the RHDH pods
+#   $2 - namespace
+#   $3 - artifacts_subdir: where to save the summary artifact
+testing::report_plugin_startup_failures() {
+  local release_name=$1
+  local namespace=$2
+  local artifacts_subdir=$3
+  local out="/tmp/plugin-startup-failures-${namespace}.txt"
+
+  # Collected here rather than reused from save_all_pod_logs: that runs only when
+  # a test fails, and its pod_logs/ directory is not namespace-scoped, so a
+  # leftover copy would report another namespace's failures.
+  #
+  # One query yields both the pod list and whether anything actually crashed, so
+  # a healthy run does not pay for two `oc logs` calls per pod.
+  local pod_status
+  pod_status=$(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub)" \
+    -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.containerStatuses[*]}{.restartCount}{" "}{end}{range .status.initContainerStatuses[*]}{.restartCount}{" "}{end}{"\n"}{end}' 2> /dev/null || true)
+
+  if [[ -z "${pod_status//[[:space:]]/}" ]]; then
+    # Distinct from "scanned and found nothing": a bad selector must not read as
+    # a clean bill of health.
+    log::warn "No RHDH pods matched in ${namespace}; skipping startup-failure scan."
+    return 0
+  fi
+
+  # A plugin that fails startup fatally takes the backend down, so if every pod
+  # is Running with no restarts there is nothing here to find.
+  local unhealthy
+  unhealthy=$(awk 'NF == 0 { next } $2 != "Running" { print $1; next } { for (i = 3; i <= NF; i++) if ($i != "0") { print $1; next } }' <<< "${pod_status}")
+  if [[ -z "${unhealthy}" ]]; then
+    log::info "All RHDH pods in ${namespace} are Running with no restarts; skipping startup-failure scan."
+    return 0
+  fi
+
+  local pods
+  pods=$(awk 'NF > 0 { print "pod/" $1 }' <<< "${pod_status}")
+
+  {
+    local pod
+    for pod in ${pods}; do
+      # Current and previous (pre-crash) logs; either may not exist yet.
+      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers 2> /dev/null || true
+      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers -p 2> /dev/null || true
+    done
+  } | "${DIR}/../../e2e-tests/local-harness/filter-plugin-startup-failures.sh" > "${out}" || true
+
+  if [[ -s "${out}" ]]; then
+    log::error "==================== PLUGIN STARTUP FAILURES (${namespace}) ===================="
+    cat "${out}"
+    log::error "==============================================================================="
+    common::save_artifact "${artifacts_subdir}" "${out}" || true
+  else
+    log::info "No dynamic-plugin startup failures found in ${namespace} pod logs."
+  fi
 }
 
 # ==============================================================================
