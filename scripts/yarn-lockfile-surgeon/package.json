@@ -11,7 +11,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@yarnpkg/core": "4.9.0",
+    "@yarnpkg/core": "4.9.1",
     "@yarnpkg/parsers": "3.0.3",
     "package-json": "10.0.1",
     "semver": "7.8.5"
