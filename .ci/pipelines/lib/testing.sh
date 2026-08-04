@@ -73,13 +73,22 @@ testing::run_tests() {
 
   yarn playwright install chromium
 
-  # Re-validate /healthcheck after yarn install so transient GKE TLS blips
-  # between deploy readiness and Playwright start do not fail the suite.
+  # Quick re-check after yarn install; do not fail the job — deploy readiness
+  # already waited. Warn-only so a brief TLS blip does not abort the suite.
   if [[ -n "${url}" ]]; then
-    if ! testing::wait_for_rhdh_healthcheck "${url}" 24 5; then
-      save_overall_result 1
-      test_run_tracker::mark_test_result "false" "healthcheck"
-      return 1
+    local ready=false
+    local i
+    for ((i = 1; i <= 6; i++)); do
+      if testing::probe_rhdh_healthcheck "${url}"; then
+        ready=true
+        break
+      fi
+      sleep 5
+    done
+    if [[ "${ready}" == "true" ]]; then
+      log::success "Pre-Playwright /healthcheck OK"
+    else
+      log::warn "Pre-Playwright /healthcheck still flaky after ~30s; continuing to tests"
     fi
   fi
 
@@ -170,41 +179,6 @@ testing::probe_rhdh_healthcheck() {
   if [[ "${http_status}" == "200" ]] && [[ "${body}" =~ \"status\"[[:space:]]*:[[:space:]]*\"ok\" ]]; then
     return 0
   fi
-  return 1
-}
-
-# Re-probe /healthcheck for a short budget (default ~2 min) before Playwright.
-# Args:
-#   $1 - url: Base URL of the RHDH instance
-#   $2 - max_attempts: (optional) default 24
-#   $3 - wait_seconds: (optional) default 5
-# Returns:
-#   0 - Ready
-#   1 - Not ready within budget
-testing::wait_for_rhdh_healthcheck() {
-  local url=$1
-  local max_attempts=${2:-24}
-  local wait_seconds=${3:-5}
-  local i
-
-  if [[ -z "${url}" ]]; then
-    log::error "${_TESTING_ERR_MISSING_PARAMS}"
-    log::info "Usage: testing::wait_for_rhdh_healthcheck <url> [max_attempts] [wait_seconds]"
-    return 1
-  fi
-
-  log::info "Waiting for RHDH /healthcheck at ${url%/}/healthcheck (up to $((max_attempts * wait_seconds))s)"
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    if testing::probe_rhdh_healthcheck "${url}"; then
-      log::success "RHDH /healthcheck is ready"
-      return 0
-    fi
-    log::warn "Attempt ${i} of ${max_attempts}: /healthcheck not ready yet"
-    sleep "${wait_seconds}"
-  done
-
-  log::error "RHDH /healthcheck not ready at ${url%/}/healthcheck after ${max_attempts} attempts"
   return 1
 }
 

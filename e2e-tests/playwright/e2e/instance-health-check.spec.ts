@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test, expect } from "@playwright/test";
 
 test.describe("Application health check", () => {
   test.beforeAll(async () => {
@@ -9,7 +9,7 @@ test.describe("Application health check", () => {
   });
 
   test("Application health check", async ({ request }) => {
-    // Poll so transient GKE TLS/socket disconnects retry instead of failing once.
+    // Short poll: one TLS blip should not fail; deploy readiness already waited.
     await expect
       .poll(
         async () => {
@@ -18,17 +18,17 @@ test.describe("Application health check", () => {
             if (response.status() !== 200) {
               return false;
             }
-            const responseBody = await response.json();
+            const body = await response.json();
             return (
-              typeof responseBody === "object" &&
-              responseBody !== null &&
-              Reflect.get(responseBody, "status") === "ok"
+              typeof body === "object" &&
+              body !== null &&
+              Reflect.get(body, "status") === "ok"
             );
           } catch {
             return false;
           }
         },
-        { timeout: 120_000, intervals: [2_000] },
+        { timeout: 30_000, intervals: [2_000] },
       )
       .toBe(true);
   });
