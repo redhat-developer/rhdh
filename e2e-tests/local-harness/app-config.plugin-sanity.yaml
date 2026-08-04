@@ -1,0 +1,121 @@
+# Config overlay for the cluster-free plugin sanity check
+# (e2e-tests/playwright.plugin-sanity.config.ts).
+#
+# Some plugins validate their config at startup and abort the whole backend when
+# it is missing; every value below is a DUMMY that only exists to satisfy that
+# validation — the sanity check never talks to these services.
+#
+# NOTE: test-only. Never layer this into a production config.
+
+# @roadiehq/backstage-plugin-argo-cd-backend requires at least one instance URL.
+argocd:
+  appLocatorMethods:
+    - type: config
+      instances:
+        - name: plugin-sanity-dummy
+          url: https://argocd.invalid
+
+# @backstage-community/plugin-tech-radar-backend requires a data URL.
+techRadar:
+  url: https://tech-radar.invalid/data.json
+
+# @backstage/plugin-kubernetes-backend. The index ships a pluginConfig pointing
+# these at ${K8S_CLUSTER_NAME} / ${K8S_CLUSTER_URL} / ${K8S_CLUSTER_TOKEN},
+# which only exist in the cluster deployment; off-cluster they expand to empty
+# strings and `name` fails validation. This block replaces that one wholesale.
+kubernetes:
+  serviceLocatorMethod:
+    type: multiTenant
+  clusterLocatorMethods:
+    - type: config
+      clusters:
+        - name: plugin-sanity-dummy
+          url: https://kubernetes.invalid
+          authProvider: serviceAccount
+          skipTLSVerify: true
+          serviceAccountToken: plugin-sanity-dummy
+
+# The githubOrg / github providers resolve their host against the configured
+# integrations; without a matching entry they abort with "There is no GitHub
+# integration that matches". Kept on .invalid so nothing is ever reached.
+integrations:
+  github:
+    # A non-github.com host must spell out both base URLs, or core.urlReader
+    # fails to instantiate and takes catalog/scaffolder/techdocs down with it.
+    - host: github.invalid
+      apiBaseUrl: https://api.github.invalid
+      rawBaseUrl: https://raw.github.invalid
+      token: plugin-sanity-dummy
+  gitlab:
+    - host: gitlab.invalid
+      apiBaseUrl: https://gitlab.invalid/api/v4
+      baseUrl: https://gitlab.invalid
+      token: plugin-sanity-dummy
+
+catalog:
+  providers:
+    # Every provider below validates its connection config at startup and takes
+    # the whole backend down when it is missing. They do reach out once the
+    # backend is up, but the .invalid TLD never resolves, so they fail harmlessly
+    # at refresh time (the same thing the cluster deployment does with its `temp`
+    # placeholders) long after boot.
+    keycloakOrg:
+      default:
+        baseUrl: https://keycloak.invalid/auth
+        realm: plugin-sanity-dummy
+        clientId: plugin-sanity-dummy
+        clientSecret: plugin-sanity-dummy
+    githubOrg:
+      id: production
+      githubUrl: https://github.invalid
+      orgs:
+        - plugin-sanity-dummy
+    gitlab:
+      default:
+        host: gitlab.invalid
+        orgEnabled: false
+      orgProvider:
+        host: gitlab.invalid
+        orgEnabled: false
+    github:
+      providerId:
+        organization: plugin-sanity-dummy
+        catalogPath: /catalog-info.yaml
+    ldapOrg:
+      default:
+        target: ldaps://ldap.invalid
+        bind:
+          dn: cn=plugin-sanity-dummy
+          secret: plugin-sanity-dummy
+        users:
+          - dn: ou=people,dc=invalid
+            options:
+              filter: (uid=*)
+        groups:
+          - dn: ou=groups,dc=invalid
+            options:
+              filter: (objectClass=groupOfUniqueNames)
+        schedule:
+          frequency:
+            hours: 24
+          initialDelay:
+            seconds: 15
+          timeout:
+            minutes: 15
+    microsoftGraphOrg:
+      providerId:
+        # Both must stay unroutable: @azure/identity authenticates against
+        # `authority` (default login.microsoftonline.com), so a real target here
+        # would have the nightly calling Microsoft with a bogus tenant.
+        target: https://graph.invalid/v1.0
+        authority: https://login.invalid/
+        tenantId: plugin-sanity-dummy
+        clientId: plugin-sanity-dummy
+        clientSecret: plugin-sanity-dummy
+        schedule:
+          frequency:
+            hours: 24
+          initialDelay:
+            seconds: 15
+          timeout:
+            minutes: 15
