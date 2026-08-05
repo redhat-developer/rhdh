@@ -131,16 +131,4 @@ export class ScaffolderFlowPage {
     await verification.verifyTextInSelector(this.page, labelSelector, relationLabel);
     await verification.verifyPartialTextInSelector(this.page, nodeSelector, nodePartialText);
   }
-
-  async runHttpRequestTemplateFlow(): Promise<void> {
-    await navigation.openSidebar(this.page, "Catalog");
-    await navigation.selectMuiBox(this.page, "Kind", "Template");
-    await this.fillSearch("Test HTTP Request");
-    await interaction.clickLink(this.page, "Test HTTP Request");
-    await verification.verifyHeading(this.page, "Test HTTP Request");
-    await interaction.clickLink(this.page, "Launch Template");
-    await verification.verifyHeading(this.page, "Self-service");
-    await interaction.clickButton(this.page, "Create");
-    await verification.verifyText(this.page, "200", false);
-  }
 }

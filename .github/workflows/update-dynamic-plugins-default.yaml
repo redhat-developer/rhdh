@@ -20,7 +20,7 @@ on:
   push:
     branches:
       # RHIDP-9862 disable updating the DPDY file in main; only update for 1.9 branch
-      # - 'main'
+      # TODO delete this file when 2.1.0 is live and 1.9 is EOL
       - 'release-1.9'
 
 concurrency:

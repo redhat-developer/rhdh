@@ -311,7 +311,7 @@ scaffolder-relation-processor`.
 - Existing L3 work: [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (merged 2026-06-01; RHIDP-13235) — tests live in `packages/app/src/`.
 - Cluster-free L4a harness: [rhdh#5005](https://github.com/redhat-developer/rhdh/pull/5005) (RHIDP-15075);
   expansion to 10 specs: [rhdh#5057](https://github.com/redhat-developer/rhdh/pull/5057).
-- Plugin load validation (L4a): `e2e-tests/playwright/e2e/plugin-dynamic-loading.spec.ts` (RHIDP-13508, PR #4967).
+- Plugin load validation (L4a): `e2e-tests/playwright/cluster-free/plugin-dynamic-loading.spec.ts` (RHIDP-13508, PR #4967).
 - Overlay-repo native smoke harness (no Docker):
   [overlays#2714](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2714),
   workspace mode [overlays#2731](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2731).

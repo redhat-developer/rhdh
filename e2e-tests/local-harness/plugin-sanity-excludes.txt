@@ -1,0 +1,58 @@
+# Catalog index packages excluded from the plugin sanity check.
+#
+# Each non-comment line is an extended-regex (grep -E) pattern matched against
+# the full package ref, which the index publishes as
+# oci://registry/name@sha256:... or oci://registry/name:tag (no !plugin-path
+# suffix). Anchor plugin names with `(@|:)` so a
+# pattern keeps matching when the index flips between digest- and tag-style
+# references, without also matching longer plugin names sharing the prefix.
+#
+# Two things get excluded:
+#   1. plugins that cannot INITIALIZE in a standalone backend - one that throws
+#      during init aborts the WHOLE backend, so it must not be installed;
+#   2. packages that cannot be PULLED anonymously - the harness runs on a plain
+#      GitHub runner with no registry credentials.
+# populate-catalog-index.sh writes each match into the generated config as
+# `disabled: true`: the config also `includes` the index's own plugin list, so
+# leaving a package out does NOT keep it from being installed.
+# Every entry carries a TODO with its tracking ticket, so exclusions get removed
+# rather than forgotten. Do not add one without a ticket.
+# Prefer a dummy config entry in this directory's app-config.plugin-sanity.yaml over an
+# exclusion whenever the failure is just startup config validation.
+
+# TODO(RHIDP-15961): orchestrator-backend fails init with "Cannot read properties of undefined
+# (reading 'id')" in BackendInitializer.#getInitDeps when loaded into the
+# main-branch backend: it wants the full orchestrator/SonataFlow environment,
+# which a standalone boot does not provide. The orchestrator FRONTEND plugins
+# stay in (they are static assets to the backend and are validated normally).
+#
+# Do NOT try to confirm a ref is broken with a local `skopeo inspect` by digest
+# against registry.access.redhat.com: every package this index declares reports
+# "manifest unknown" that way, including the nine the CI run installs
+# successfully. Local digest lookups against that registry are not a usable
+# signal - an earlier revision of this file drew the wrong conclusion from
+# exactly that check.
+#
+# Re-evaluate when the orchestrator backend gains a standalone-friendly init
+# path: keeping an entry here means the check is being told not to look at the
+# class of breakage it exists to catch.
+red-hat-developer-hub-backstage-plugin-orchestrator-backend(@|:)
+
+# TODO(RHIDP-15961): module on the orchestrator backend plugin - excluded with its host plugin.
+# (Also requires orchestrator.workflowLogProvider.loki.baseUrl at startup.)
+red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki(@|:)
+
+# TODO(RHDHBUGS-3515): the three below are not published to any public registry: `skopeo inspect
+# --no-creds` reports "unauthorized" for the whole repository, on quay.io and on
+# registry.access.redhat.com alike. Note these are tag-style refs
+# (:1.11.0--x.y.z); every digest-pinned ref the index declares does resolve
+# anonymously via the CLI's quay.io fallback, so this is about publication, not
+# about the digest-lookup trap described above.
+#
+# Excluding them costs real coverage - homepage in particular is a core plugin.
+# Re-check periodically with:
+#   skopeo inspect --no-creds docker://quay.io/rhdh/<name>:<tag>
+# and delete the entry the moment it resolves.
+red-hat-developer-hub-backstage-plugin-homepage(@|:)
+red-hat-developer-hub-backstage-plugin-intelligent-assistant(@|:)
+red-hat-developer-hub-backstage-plugin-intelligent-assistant-backend(@|:)
