@@ -9398,7 +9398,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:2.8.0, @opentelemetry/core@npm:^2.0.0":
+"@opentelemetry/core@npm:2.8.0":
   version: 2.8.0
   resolution: "@opentelemetry/core@npm:2.8.0"
   dependencies:
@@ -9409,7 +9409,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:2.9.0":
+"@opentelemetry/core@npm:2.9.0, @opentelemetry/core@npm:^2.0.0":
   version: 2.9.0
   resolution: "@opentelemetry/core@npm:2.9.0"
   dependencies:
