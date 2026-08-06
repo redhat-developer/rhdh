@@ -6,7 +6,6 @@ import {
   dynamicPluginsFrontendServiceRef,
 } from '@backstage/backend-dynamic-feature-service';
 import { createServiceFactory } from '@backstage/backend-plugin-api';
-import { PackageRoles } from '@backstage/cli-node';
 
 import * as path from 'path';
 
@@ -18,6 +17,7 @@ import {
   rbacDynamicPluginsProvider,
 } from './modules';
 import { userSettingsBackend } from './modules/userSettings';
+import { schemaLocator } from './schemaLocator';
 
 // Create a logger to cover logging static initialization tasks
 const staticLogger = WinstonLogger.create({
@@ -39,15 +39,7 @@ defaultServiceFactories.forEach(serviceFactory => {
 
 backend.add(
   dynamicPluginsFeatureLoader({
-    schemaLocator(pluginPackage) {
-      const platform = PackageRoles.getRoleInfo(
-        pluginPackage.manifest.backstage.role,
-      ).platform;
-      return path.join(
-        platform === 'node' ? 'dist' : 'dist-scalprum',
-        'configSchema.json',
-      );
-    },
+    schemaLocator,
 
     moduleLoader: logger =>
       new CommonJSModuleLoader({
