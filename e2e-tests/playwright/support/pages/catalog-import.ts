@@ -33,7 +33,9 @@ export class CatalogImport {
    */
   isComponentAlreadyRegistered(): Promise<boolean> {
     return this.page
-      .getByRole("button", { name: t["catalog-import"][lang]["stepReviewLocation.refresh"] })
+      .getByRole("button", {
+        name: t["catalog-import"][lang]["stepReviewLocation.refresh"],
+      })
       .isVisible();
   }
 
