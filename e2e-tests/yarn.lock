@@ -1075,14 +1075,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.20.0":
-  version: 8.20.0
-  resolution: "@types/pg@npm:8.20.0"
+"@types/pg@npm:8.20.3":
+  version: 8.20.3
+  resolution: "@types/pg@npm:8.20.3"
   dependencies:
     "@types/node": "npm:*"
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
-  checksum: 10c0/c8b5aa794ea074aa20d0c1ef6c721ce0fe16f2c084d0ccc32b7f12909a08ec969e6b01a094ce8e7019cc425381c4b59f261bd0133daf0c6d4aca5c6c492e8312
+  checksum: 10c0/c3582162690a0bd1a5705981825204de071314ce9167bec20c18b8ef8975518cfbf4c8585d744a447dfd41b65cf9a50840b077879d80fbe9ecc69302b844cb23
   languageName: node
   linkType: hard
 
@@ -1992,7 +1992,7 @@ __metadata:
     "@playwright/test": "npm:1.61.1"
     "@support/coverage": "portal:./playwright/support/coverage"
     "@types/node": "npm:24.13.3"
-    "@types/pg": "npm:8.20.0"
+    "@types/pg": "npm:8.20.3"
     eslint-plugin-check-file: "npm:3.3.1"
     eslint-plugin-playwright: "npm:2.10.4"
     ioredis: "npm:5.11.1"
