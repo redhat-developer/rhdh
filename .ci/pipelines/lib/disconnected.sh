@@ -326,6 +326,67 @@ disconnected::mirror_plugins() {
   log::info "Saved plugin mirroring summary to ${DISCONNECTED_TMPDIR} and ${ARTIFACT_DIR}"
 }
 
+# Resolve the mirrored plugin-catalog-index to a digest-pinned CATALOG_INDEX_IMAGE.
+# Hub profile defaults often pin a digest that was never mirrored; inject the digest
+# actually pushed by mirror-plugins so registries.conf can rewrite pulls to the mirror.
+# Exports CATALOG_INDEX_IMAGE=registry.access.redhat.com/rhdh/plugin-catalog-index@sha256:…
+disconnected::resolve_catalog_index_image() {
+  common::require_vars MIRROR_REGISTRY_URL RELEASE_VERSION || return 1
+
+  local summary="${DISCONNECTED_TMPDIR}/rhdh-plugin-mirroring-summary.txt"
+  local name="plugin-catalog-index"
+  local line=""
+  local left=""
+  local right=""
+  local digest=""
+
+  if [[ ! -f "${summary}" ]]; then
+    log::error "Plugin mirroring summary not found at ${summary}"
+    log::error "Ensure disconnected::mirror_plugins ran successfully before resolve."
+    return 1
+  fi
+
+  line=$(grep -F "${name}" "${summary}" | head -1) || true
+  if [[ -z "${line}" ]]; then
+    log::error "No summary line for ${name} in ${summary}"
+    return 1
+  fi
+
+  # Summary format: <source-ref> → <mirror-ref>
+  left="${line%%→*}"
+  right="${line#*→}"
+  right="${right#"${right%%[![:space:]]*}"}"
+
+  if [[ "${left}" =~ @(sha256:[0-9a-f]+) ]]; then
+    digest="${BASH_REMATCH[1]}"
+  elif [[ "${right}" =~ @(sha256:[0-9a-f]+) ]]; then
+    digest="${BASH_REMATCH[1]}"
+  else
+    # Tag-only mapping (e.g. …/plugin-catalog-index:next) — resolve digest from mirror.
+    local tag="${RELEASE_VERSION}"
+    if [[ "${right}" =~ :([^:@/[:space:]]+)[[:space:]]*$ ]]; then
+      tag="${BASH_REMATCH[1]}"
+    elif [[ "${left}" =~ :([^:@/[:space:]]+)[[:space:]]*$ ]]; then
+      tag="${BASH_REMATCH[1]}"
+    fi
+    log::info "Catalog index summary has no digest; inspecting mirror tag :${tag}"
+    digest=$(skopeo inspect --tls-verify=false \
+      "docker://${MIRROR_REGISTRY_URL}/rhdh/${name}:${tag}" \
+      --format '{{.Digest}}') || {
+      log::error "Failed to inspect docker://${MIRROR_REGISTRY_URL}/rhdh/${name}:${tag}"
+      return 1
+    }
+  fi
+
+  if [[ -z "${digest}" || "${digest}" != sha256:* ]]; then
+    log::error "Could not resolve digest for mirrored ${name} (got '${digest}')"
+    return 1
+  fi
+
+  export CATALOG_INDEX_IMAGE="registry.access.redhat.com/rhdh/${name}@${digest}"
+  log::success "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (mirrored catalog digest)"
+}
+
 # Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
 # Parses the digest from mirror-plugins.sh summary (plugins are digest-only; no :tag).
 # Prefer dynamic-home-page (published on Quay); fall back to homepage after the
@@ -616,6 +677,7 @@ export -f disconnected::fetch_script
 export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
 export -f disconnected::mirror_plugins
+export -f disconnected::resolve_catalog_index_image
 export -f disconnected::resolve_homepage_plugin_package
 export -f disconnected::create_homepage_plugins_configmap
 export -f disconnected::apply_plugin_mirror_configmap
