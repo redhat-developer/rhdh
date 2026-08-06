@@ -21,8 +21,9 @@
     "lint": "backstage-cli package lint",
     "lint:check": "backstage-cli package lint",
     "lint:fix": "backstage-cli package lint --fix",
-    "start": "backstage-cli package start --config ../../app-config.yaml",
-    "test": "backstage-cli package test --passWithNoTests --coverage"
+    "start": "backstage-cli package start",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "tsc": "tsc"
   },
   "browserslist": {
     "production": [
@@ -52,6 +53,7 @@
     "@backstage/frontend-plugin-api": "0.17.2",
     "@backstage/integration-react": "1.2.19",
     "@backstage/plugin-app": "0.5.0",
+    "@backstage/plugin-app-react": "0.2.4",
     "@backstage/plugin-app-visualizer": "0.2.5",
     "@backstage/plugin-auth-react": "0.1.28",
     "@backstage/plugin-catalog": "2.0.6",
@@ -72,16 +74,24 @@
     "@material-ui/core": "4.12.4",
     "@material-ui/icons": "4.11.3",
     "@material-ui/lab": "4.0.0-alpha.61",
+    "@mui/icons-material": "5.18.0",
+    "@mui/material": "5.18.0",
     "@octokit/rest": "19.0.13",
+    "@red-hat-developer-hub/backstage-plugin-app-auth": "0.1.0",
+    "@red-hat-developer-hub/backstage-plugin-app-integrations": "0.1.0",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "0.1.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "0.14.7",
     "history": "5.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router": "6.30.4",
     "react-router-dom": "6.30.4",
     "react-use": "17.6.1",
+    "tss-react": "4.9.21",
     "zen-observable": "0.10.0"
   },
   "devDependencies": {
+    "@backstage/frontend-test-utils": "0.6.1",
     "@backstage/test-utils": "1.7.19",
     "@testing-library/dom": "9.3.4",
     "@testing-library/jest-dom": "6.9.1",
@@ -91,6 +101,7 @@
     "@types/react": "18.3.31",
     "@types/react-dom": "18.3.7",
     "@types/zen-observable": "0.8.7",
-    "cross-env": "7.0.3"
+    "cross-env": "7.0.3",
+    "typescript": "5.9.3"
   }
 }

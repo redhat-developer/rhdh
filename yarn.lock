@@ -3807,7 +3807,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-app-react@npm:^0.2.1, @backstage/plugin-app-react@npm:^0.2.4":
+"@backstage/plugin-app-react@npm:0.2.4, @backstage/plugin-app-react@npm:^0.2.1, @backstage/plugin-app-react@npm:^0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-app-react@npm:0.2.4"
   dependencies:
@@ -11309,6 +11309,50 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-app-auth@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-auth@npm:0.1.0"
+  dependencies:
+    "@backstage/core-app-api": "npm:^1.20.2"
+    "@backstage/core-components": "npm:^0.18.11"
+    "@backstage/core-plugin-api": "npm:^1.12.7"
+    "@backstage/frontend-plugin-api": "npm:^0.17.2"
+    "@backstage/plugin-app": "npm:^0.5.0"
+    "@mui/material": "npm:5.18.0"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/966641ff36d3c0ba5ecb885dde7933a7fbabaadf61c0b66360560013d12f993fd45622bc58ef72388615f7096bfba6974d4d0a41d5177255af3737ec817d8e68
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-app-integrations@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-integrations@npm:0.1.0"
+  dependencies:
+    "@backstage/core-plugin-api": "npm:^1.12.7"
+    "@backstage/frontend-plugin-api": "npm:^0.17.2"
+    "@backstage/integration-react": "npm:^1.2.19"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/8853a2abe4bec66a5fe356917215863840bccc8241ab2148afd62f49a102940d8846a9db6ee9295b46d72b474b46051c3203c9e38fbdf1c84163e056c5b9d53e
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-app-react@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.1.0"
+  dependencies:
+    "@backstage/core-plugin-api": "npm:^1.12.7"
+    "@backstage/frontend-plugin-api": "npm:^0.17.2"
+    "@backstage/plugin-app-react": "npm:^0.2.4"
+    "@backstage/version-bridge": "npm:^1.0.12"
+    "@mui/material": "npm:5.18.0"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/5f1448076a831ed77c6c2dc7b3bf600afe87a46f7b6b90a2411238ddd5949687d2a5e19bab4718aedcd80587d7478621f03a460514f15d1f4d37395ee8d797ae
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.7":
   version: 0.14.7
   resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.7"
@@ -15843,8 +15887,10 @@ __metadata:
     "@backstage/frontend-defaults": "npm:0.5.3"
     "@backstage/frontend-dynamic-feature-loader": "npm:0.1.13"
     "@backstage/frontend-plugin-api": "npm:0.17.2"
+    "@backstage/frontend-test-utils": "npm:0.6.1"
     "@backstage/integration-react": "npm:1.2.19"
     "@backstage/plugin-app": "npm:0.5.0"
+    "@backstage/plugin-app-react": "npm:0.2.4"
     "@backstage/plugin-app-visualizer": "npm:0.2.5"
     "@backstage/plugin-auth-react": "npm:0.1.28"
     "@backstage/plugin-catalog": "npm:2.0.6"
@@ -15866,7 +15912,13 @@ __metadata:
     "@material-ui/core": "npm:4.12.4"
     "@material-ui/icons": "npm:4.11.3"
     "@material-ui/lab": "npm:4.0.0-alpha.61"
+    "@mui/icons-material": "npm:5.18.0"
+    "@mui/material": "npm:5.18.0"
     "@octokit/rest": "npm:19.0.13"
+    "@red-hat-developer-hub/backstage-plugin-app-auth": "npm:0.1.0"
+    "@red-hat-developer-hub/backstage-plugin-app-integrations": "npm:0.1.0"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:0.1.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:0.14.7"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:14.3.1"
@@ -15882,6 +15934,8 @@ __metadata:
     react-router: "npm:6.30.4"
     react-router-dom: "npm:6.30.4"
     react-use: "npm:17.6.1"
+    tss-react: "npm:4.9.21"
+    typescript: "npm:5.9.3"
     zen-observable: "npm:0.10.0"
   languageName: unknown
   linkType: soft

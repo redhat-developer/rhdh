@@ -1,0 +1,112 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
+import { rhdhTranslationRef } from './ref';
+
+const rhdhTranslationIt = createTranslationMessages({
+  ref: rhdhTranslationRef,
+  messages: {
+    'menuItem.home': 'Casa',
+    'menuItem.myGroup_one': 'Il mio gruppo',
+    'menuItem.myGroup_other': 'I miei gruppi',
+    'menuItem.catalog': 'Catalogo',
+    'menuItem.apis': 'API',
+    'menuItem.learningPaths': 'Learning Path',
+    'menuItem.selfService': 'Self service',
+    'menuItem.userSettings': 'Impostazioni utente',
+    'menuItem.administration': 'Amministrazione',
+    'menuItem.extensions': 'Estensioni',
+    'menuItem.clusters': 'Cluster',
+    'menuItem.rbac': 'RBAC',
+    'menuItem.bulkImport': 'Importazione in blocco',
+    'menuItem.docs': 'Documenti',
+    'menuItem.lighthouse': 'Lighthouse',
+    'menuItem.techRadar': 'Tech Radar',
+    'menuItem.orchestrator': 'Orchestratore',
+    'menuItem.adoptionInsights': 'Insights adozione',
+    'sidebar.menu': 'Menu',
+    'sidebar.home': 'Casa',
+    'sidebar.homeLogo': 'Logo casa',
+    'signIn.page.title': 'Seleziona un metodo di accesso',
+    'signIn.providers.auth0.title': 'Auth0',
+    'signIn.providers.auth0.message': 'Accedi con Auth0',
+    'signIn.providers.atlassian.title': 'Atlassian',
+    'signIn.providers.atlassian.message': 'Accedi con Atlassian',
+    'signIn.providers.microsoft.title': 'Microsoft',
+    'signIn.providers.microsoft.message': 'Accedi con Microsoft',
+    'signIn.providers.bitbucket.title': 'Bitbucket',
+    'signIn.providers.bitbucket.message': 'Accedi con Bitbucket',
+    'signIn.providers.bitbucketServer.title': 'Bitbucket Server',
+    'signIn.providers.bitbucketServer.message': 'Accedi con Bitbucket Server',
+    'signIn.providers.github.title': 'GitHub',
+    'signIn.providers.github.message': 'Accedi con GitHub',
+    'signIn.providers.gitlab.title': 'GitLab',
+    'signIn.providers.gitlab.message': 'Accedi con GitLab',
+    'signIn.providers.google.title': 'Google',
+    'signIn.providers.google.message': 'Accedi con Google',
+    'signIn.providers.oidc.title': 'OIDC',
+    'signIn.providers.oidc.message': 'Accedi con OIDC',
+    'signIn.providers.okta.title': 'Okta',
+    'signIn.providers.okta.message': 'Accedi con Okta',
+    'signIn.providers.onelogin.title': 'OneLogin',
+    'signIn.providers.onelogin.message': 'Accedi con OneLogin',
+    'signIn.providers.saml.title': 'SAML',
+    'signIn.providers.saml.message': 'Accedi con SAML',
+    'catalog.entityPage.overview.title': 'Panoramica',
+    'catalog.entityPage.topology.title': 'Topologia',
+    'catalog.entityPage.issues.title': 'Problemi',
+    'catalog.entityPage.pullRequests.title': 'Pull/Merge Request',
+    'catalog.entityPage.ci.title': 'CI',
+    'catalog.entityPage.cd.title': 'CD',
+    'catalog.entityPage.kubernetes.title': 'Kubernetes',
+    'catalog.entityPage.imageRegistry.title': 'Registro immagine',
+    'catalog.entityPage.monitoring.title': 'Monitoraggio',
+    'catalog.entityPage.lighthouse.title': 'Lighthouse',
+    'catalog.entityPage.api.title': 'API',
+    'catalog.entityPage.dependencies.title': 'Dipendenze',
+    'catalog.entityPage.docs.title': 'Documenti',
+    'catalog.entityPage.definition.title': 'Definizione',
+    'catalog.entityPage.diagram.title': 'Diagramma di sistema',
+    'catalog.entityPage.workflows.title': 'Flussi di lavoro',
+    'app.search.title': 'Ricerca',
+    'app.search.resultType': 'Tipo di risultato',
+    'app.search.softwareCatalog': 'Catalogo software',
+    'app.search.filters.kind': 'Tipo',
+    'app.search.filters.lifecycle': 'Ciclo di vita',
+    'app.search.filters.component': 'Componente',
+    'app.search.filters.template': 'Modello',
+    'app.search.filters.experimental': 'sperimentale',
+    'app.search.filters.production': 'produzione',
+    'app.learningPaths.title': 'Learning Path',
+    'app.learningPaths.error.title': 'Impossibile estrarre i dati.',
+    'app.learningPaths.error.unknownError': 'Errore sconosciuto',
+    'app.userSettings.infoCard.title': 'Metadati RHDH',
+    'app.userSettings.infoCard.metadataCopied':
+      'Metadati copiati negli appunti',
+    'app.userSettings.infoCard.copyMetadata': 'Copia i metadati negli appunti',
+    'app.userSettings.infoCard.showLess': 'Mostra meno',
+    'app.userSettings.infoCard.showMore': 'Mostra altro',
+    'app.errors.contactSupport': 'Contatta il supporto',
+    'app.errors.goBack': 'Torna indietro',
+    'app.errors.notFound.message': 'Non siamo riusciti a trovare quella pagina',
+    'app.errors.notFound.additionalInfo':
+      'La pagina che stai cercando potrebbe essere stata rimossa, aver cambiato nome o essere temporaneamente non disponibile.',
+  },
+});
+
+export default rhdhTranslationIt;

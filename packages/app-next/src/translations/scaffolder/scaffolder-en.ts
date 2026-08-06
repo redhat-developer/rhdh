@@ -1,0 +1,17 @@
+import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder';
+
+const en = createTranslationMessages({
+  ref: scaffolderTranslationRef,
+  full: false, // False means that this is a partial translation
+  messages: {
+    'templateListPage.title': 'Self-service',
+    'templateListPage.pageTitle': 'Self-service',
+    'templateWizardPage.title': 'Self-service',
+    'templateWizardPage.pageTitle': 'Self-service',
+    'templateListPage.contentHeader.registerExistingButtonTitle':
+      'Import an existing Git repository',
+  },
+});
+
+export default en;
