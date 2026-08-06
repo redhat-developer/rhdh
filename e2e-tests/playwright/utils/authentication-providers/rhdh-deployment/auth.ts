@@ -1,11 +1,14 @@
 import { expect } from "@playwright/test";
 import * as yaml from "yaml";
 
+import { setPluginEnabled } from "../../dynamic-plugins-profile";
 import { RHDHDeploymentState } from "./types";
 
 export interface AuthConfigActions {
   setDynamicPluginEnabled(pluginName: string, enabled: boolean): void;
   setAppConfigProperty(path: string, value: unknown): void;
+  /** Remove a previously set path so leftover keys cannot leak across login cases. */
+  deleteAppConfigProperty(path: string): void;
 }
 
 const OIDC_CALLBACK_URL = "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame";
@@ -331,6 +334,58 @@ export function setGithubResolver(
   ]);
 }
 
+/**
+ * Login cases that are not resolver experiments must pin a known-good resolver
+ * together with any other auth mutation (e.g. sessionDuration). Otherwise an
+ * earlier test's resolver leaks across the shared namespace and breaks login.
+ */
+export function configureGithubSessionDuration(
+  actions: AuthConfigActions,
+  sessionDuration: string,
+): void {
+  setGithubResolver(actions, "usernameMatchingUserEntityName", false);
+  actions.setAppConfigProperty("auth.providers.github.production.sessionDuration", sessionDuration);
+}
+
+export function configureOidcSessionDuration(
+  actions: AuthConfigActions,
+  sessionDuration: string,
+): void {
+  // Prefer emailMatching + Zeus over preferredUsername + Atena: email is stable
+  // across Keycloak profiles and does not depend on the patched preferredUsername resolver.
+  setOIDCResolver(actions, "emailMatchingUserEntityProfileEmail", false);
+  actions.setAppConfigProperty("auth.providers.oidc.production.sessionDuration", sessionDuration);
+}
+
+export function configureMicrosoftSessionDuration(
+  actions: AuthConfigActions,
+  sessionDuration: string,
+): void {
+  setMicrosoftResolver(actions, "emailMatchingUserEntityProfileEmail", false);
+  actions.setAppConfigProperty(
+    "auth.providers.microsoft.production.sessionDuration",
+    sessionDuration,
+  );
+}
+
+/**
+ * Autologout cases must pin a known-good resolver and clear leftover
+ * sessionDuration from earlier tests so cookie lifetime does not fight idle logout.
+ */
+export function configureOidcAutologout(
+  actions: AuthConfigActions,
+  options: { idleTimeoutMinutes: number; promptBeforeIdleSeconds: number },
+): void {
+  setOIDCResolver(actions, "emailMatchingUserEntityProfileEmail", false);
+  actions.deleteAppConfigProperty("auth.providers.oidc.production.sessionDuration");
+  actions.setAppConfigProperty("auth.autologout.enabled", true);
+  actions.setAppConfigProperty("auth.autologout.idleTimeoutMinutes", options.idleTimeoutMinutes);
+  actions.setAppConfigProperty(
+    "auth.autologout.promptBeforeIdleSeconds",
+    options.promptBeforeIdleSeconds,
+  );
+}
+
 export function setGitlabResolver(
   actions: AuthConfigActions,
   resolver: string,
@@ -349,21 +404,7 @@ export function setDynamicPluginEnabled(
   pluginName: string,
   enabled: boolean,
 ): void {
-  const plugin = state.dynamicPluginsConfig.plugins.find((p) => p.package === pluginName);
-  if (plugin === undefined) {
-    state.dynamicPluginsConfig.plugins = [
-      ...state.dynamicPluginsConfig.plugins,
-      {
-        package: pluginName,
-        disabled: !enabled,
-      },
-    ];
-    console.log(
-      `Plugin ${pluginName} has been added to the dynamic plugins config and set to ${enabled ? "enabled" : "disabled"}.`,
-    );
-    return;
-  }
-  plugin.disabled = !enabled;
+  setPluginEnabled(state.dynamicPluginsConfig, pluginName, enabled);
   console.log(`Plugin ${pluginName} has been ${enabled ? "enabled" : "disabled"}.`);
 }
 

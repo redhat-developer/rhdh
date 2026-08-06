@@ -98,6 +98,7 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
       ],
@@ -112,6 +113,9 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
+      // One worker avoids cross-file races on shared IdP app registrations
+      // (Azure redirect URIs) while each describe still owns its own namespace.
+      workers: 1,
       timeout: 600 * 1000,
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
@@ -119,6 +123,7 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/github-happy-path.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
       ],
       retries: 1,
     },
@@ -139,6 +144,7 @@ export default defineConfig({
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
@@ -164,6 +170,7 @@ export default defineConfig({
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
@@ -183,6 +190,7 @@ export default defineConfig({
         "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
       ],
     },
 
@@ -207,7 +215,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_DE,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "de",
       },
@@ -219,7 +226,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_ES,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "es",
       },
@@ -231,7 +237,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "fr",
       },
@@ -243,7 +248,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_IT,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "it",
       },
@@ -255,7 +259,6 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_JA,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
       use: {
         locale: "ja",
       },

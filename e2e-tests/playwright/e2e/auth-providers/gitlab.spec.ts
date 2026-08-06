@@ -1,7 +1,7 @@
 import { test, expect, type BrowserContext } from "@support/coverage/test";
 
 import { AuthProviderSession } from "../../support/auth/provider-auth";
-import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
+import { createAuthProviderHarness } from "../../support/fixtures/auth-provider-playwright";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
 
@@ -13,11 +13,9 @@ GITLAB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-const harness = AuthProviderHarness.create("albarbaro-test-namespace-gitlab");
+const harness = createAuthProviderHarness("albarbaro-test-namespace-gitlab");
 
 test.describe("Configure GitLab Provider", () => {
-  test.use({ baseURL: harness.backstageUrl });
-
   let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let context: BrowserContext;
@@ -101,63 +99,70 @@ test.describe("Configure GitLab Provider", () => {
   });
 
   test(`Ingestion of GitLab users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    await expect
-      .poll(
-        () =>
-          harness.deployment.checkUserIsIngestedInCatalog([
-            "user1",
-            "user2",
-            "user3",
-            "Administrator",
-          ]),
-        { timeout: 120_000 },
-      )
-      .toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsIngestedInCatalog([
+    await expect(
+      harness.deployment.checkUserIsIngestedInCatalog(["user1", "user2", "user3", "Administrator"]),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsIngestedInCatalog([
         "my-org",
         "group1",
         "all",
         "nested",
         "nested_2",
       ]),
-    ).toBe(true);
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkUserIsInGroup("user1", "all")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("user2", "all")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("user3", "all")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("root", "all")).toBe(true);
+    await expect(harness.deployment.checkUserIsInGroup("user1", "all")).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("user2", "all")).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("user3", "all")).resolves.toBeUndefined();
+    await expect(harness.deployment.checkUserIsInGroup("root", "all")).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkUserIsInGroup("root", "group1")).toBe(true);
+    await expect(harness.deployment.checkUserIsInGroup("root", "group1")).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkUserIsInGroup("user1", "group1-nested")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("user2", "group1-nested")).toBe(true);
-    expect(await harness.deployment.checkUserIsInGroup("root", "group1-nested")).toBe(true);
+    await expect(
+      harness.deployment.checkUserIsInGroup("user1", "group1-nested"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("user2", "group1-nested"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("root", "group1-nested"),
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkUserIsInGroup("user3", "group1-nested-nested_2")).toBe(
-      true,
-    );
-    expect(await harness.deployment.checkUserIsInGroup("root", "group1-nested-nested_2")).toBe(
-      true,
-    );
+    await expect(
+      harness.deployment.checkUserIsInGroup("user3", "group1-nested-nested_2"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkUserIsInGroup("root", "group1-nested-nested_2"),
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("group1", "my-org")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("my-org", "group1")).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("group1", "my-org"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("my-org", "group1"),
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("all", "my-org")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("my-org", "all")).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("all", "my-org"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("my-org", "all"),
+    ).resolves.toBeUndefined();
 
-    expect(await harness.deployment.checkGroupIsChildOfGroup("group1-nested", "group1")).toBe(true);
-    expect(await harness.deployment.checkGroupIsParentOfGroup("group1", "group1-nested")).toBe(
-      true,
-    );
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("group1-nested", "group1"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("group1", "group1-nested"),
+    ).resolves.toBeUndefined();
 
-    expect(
-      await harness.deployment.checkGroupIsChildOfGroup("group1-nested-nested_2", "group1-nested"),
-    ).toBe(true);
-    expect(
-      await harness.deployment.checkGroupIsParentOfGroup("group1-nested", "group1-nested-nested_2"),
-    ).toBe(true);
+    await expect(
+      harness.deployment.checkGroupIsChildOfGroup("group1-nested-nested_2", "group1-nested"),
+    ).resolves.toBeUndefined();
+    await expect(
+      harness.deployment.checkGroupIsParentOfGroup("group1-nested", "group1-nested-nested_2"),
+    ).resolves.toBeUndefined();
   });
 
   test.afterAll(async () => {

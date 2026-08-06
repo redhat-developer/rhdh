@@ -1,5 +1,10 @@
 import { type Page } from "@playwright/test";
 
+import {
+  configureCloudSqlProxyInstance,
+  createCloudSqlServiceAccountSecret,
+  injectCloudSqlSidecar,
+} from "../../utils/cloudsql-config";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import { pollUntil } from "../../utils/poll-until";
 import {
@@ -26,6 +31,7 @@ export class RuntimeHarness {
     private readonly namespace: string,
     private readonly deploymentName: string = getRhdhDeploymentName(),
     private readonly kubeClient: KubeClient = new KubeClient(),
+    private readonly releaseName: string = process.env.RELEASE_NAME ?? "rhdh",
   ) {}
 
   async updateConfigMapTitle(configMapName: string, title: string): Promise<void> {
@@ -86,11 +92,65 @@ export class RuntimeHarness {
     await prepareForExternalDatabase(this.kubeClient, this.namespace, this.deploymentName);
   }
 
+  /**
+   * Prepare runtime for Google Cloud SQL via Auth Proxy sidecar.
+   * Creates the SA secret, patches app-config, sets localhost credentials, and
+   * injects the proxy for the first instance connection name.
+   */
+  async prepareForCloudSql(options: {
+    serviceAccountJsonPath: string;
+    initialInstanceConnectionName: string;
+    user: string;
+    password: string;
+  }): Promise<void> {
+    await createCloudSqlServiceAccountSecret(
+      this.kubeClient,
+      this.namespace,
+      options.serviceAccountJsonPath,
+    );
+    await this.prepareForExternalDatabase();
+    // Credentials must be valid before sidecar inject waits on Deployment ready.
+    await this.configurePostgresCredentials({
+      host: "127.0.0.1",
+      user: options.user,
+      password: options.password,
+      sslMode: "disable",
+    });
+    await injectCloudSqlSidecar(
+      this.kubeClient,
+      this.namespace,
+      this.releaseName,
+      options.initialInstanceConnectionName,
+    );
+  }
+
+  /**
+   * Point the Auth Proxy at a Cloud SQL instance and set app credentials for
+   * localhost (proxy) with SSL disabled. One restart waits for the proxy
+   * startupProbe before RHDH becomes Ready.
+   */
+  async configureCloudSqlInstance(options: {
+    instanceConnectionName: string;
+    user: string;
+    password: string;
+  }): Promise<void> {
+    await this.configurePostgresCredentials({
+      host: "127.0.0.1",
+      user: options.user,
+      password: options.password,
+      sslMode: "disable",
+    });
+    await configureCloudSqlProxyInstance(
+      this.kubeClient,
+      this.namespace,
+      this.releaseName,
+      options.instanceConnectionName,
+    );
+  }
+
   /** Clear session state and sign in as guest after a deployment restart. */
   async verifyGuestSession(page: Page): Promise<void> {
     await page.context().clearCookies();
-    await page.context().clearPermissions();
-    await page.reload({ waitUntil: "domcontentloaded" });
     await signInAsGuest(page);
   }
 }

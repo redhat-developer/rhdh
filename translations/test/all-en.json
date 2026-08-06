@@ -24,7 +24,8 @@
       "pinToggle.description": "Prevent the sidebar from collapsing",
       "pinToggle.ariaLabelTitle": "Pin Sidebar Switch",
       "providerSettingsItem.buttonTitle.signIn": "Sign in",
-      "providerSettingsItem.title.signIn": "Sign in to {{title}}"
+      "providerSettingsItem.title.signIn": "Sign in to {{title}}",
+      "providerSettingsItem.title.signOut": "Sign out from {{title}}"
     }
   },
   "catalog": {

@@ -1,4 +1,4 @@
-import { test, expect } from "@support/coverage/test";
+import { test } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
@@ -59,9 +59,10 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
   });
 
   for (const config of azureConfigurations) {
-    test.describe.serial(`Azure DB ${config.name} PostgreSQL version`, () => {
+    // Configure lives in beforeAll so CI retries of Verify do not redeploy.
+    test.describe(`Azure DB ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async ({}, testInfo) => {
-        test.setTimeout(180_000);
+        test.setTimeout(600_000);
         if (config.host === undefined || config.host === "") {
           testInfo.skip(true, `AZURE_DB_*_HOST not set for ${config.name} — skipping`);
           return;
@@ -76,14 +77,6 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
           password: azurePassword!,
           certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH,
         });
-      });
-
-      test("Configure and restart deployment", async ({}, testInfo) => {
-        if (config.host === undefined || config.host === "") {
-          testInfo.skip(true, `AZURE_DB_*_HOST not set for ${config.name}`);
-          return;
-        }
-        test.setTimeout(600_000);
         await runtimeHarness.configureExternalPostgres({
           credentials: {
             host: config.host,
@@ -91,7 +84,6 @@ test.describe("Verify TLS configuration with Azure Database for PostgreSQL healt
             password: azurePassword!,
           },
         });
-        expect(config.host).toBeTruthy();
       });
 
       test("Verify successful DB connection", async ({ page }) => {
