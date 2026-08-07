@@ -254,7 +254,7 @@ disconnected::ensure_local_image_pull_access() {
 
   # oc-mirror push path is <registry>/<project>/... — grant pull across those projects.
   local proj
-  for proj in rhdh-community rhel9 rhdh; do
+  for proj in oc-mirror rhdh-community rhel9 rhdh; do
     if oc get project "${proj}" > /dev/null 2>&1 || oc get namespace "${proj}" > /dev/null 2>&1; then
       if oc adm policy add-role-to-group system:image-puller \
         "system:serviceaccounts:${namespace}" -n "${proj}" > /dev/null; then
@@ -266,6 +266,97 @@ disconnected::ensure_local_image_pull_access() {
   done
 
   log::success "Local image pull access configured for ${namespace}"
+}
+
+# LOCAL_DISCONNECTED: after prepare --to-registry OCP_INTERNAL, catalogd/operator-controller
+# must pull mirrored catalog/bundle images from the oc-mirror project. prepare grants
+# image-puller on namespace "rhdh", not "oc-mirror", so ClusterCatalog stays
+# Progressing with "authentication required". Also rewrite live IDMS/ITMS from the
+# external registry route to the in-cluster service (kubelet/catalogd auth).
+# No-op when LOCAL_DISCONNECTED is unset (CI bastion / external mirror).
+disconnected::ensure_local_ocp_internal_olm_access() {
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+
+  common::require_vars MIRROR_REGISTRY_URL MIRROR_REGISTRY_CLUSTER_URL || return 1
+
+  log::section "Local disconnected: OLM access to OCP internal mirror"
+
+  # prepare may roll the registry (defaultRoute/disableRedirect); wait it out so
+  # catalogd does not flap on connection refused while unpacking.
+  log::info "Waiting for image-registry ClusterOperator Available=True..."
+  if ! oc wait co/image-registry --for=condition=Available=True --timeout=10m; then
+    log::error "image-registry ClusterOperator did not become Available after prepare"
+    return 1
+  fi
+
+  local mirror_ns="oc-mirror"
+  if oc get namespace "${mirror_ns}" > /dev/null 2>&1 || oc get project "${mirror_ns}" > /dev/null 2>&1; then
+    local sa_ns
+    for sa_ns in openshift-catalogd openshift-operator-controller; do
+      if oc adm policy add-role-to-group system:image-puller \
+        "system:serviceaccounts:${sa_ns}" -n "${mirror_ns}" > /dev/null; then
+        log::info "Granted system:image-puller on ${mirror_ns} to system:serviceaccounts:${sa_ns}"
+      else
+        log::warn "Failed to grant image-puller on ${mirror_ns} to ${sa_ns} — continuing"
+      fi
+      # Explicit SA bindings (group grant is enough; SA bind helps older OCP policy UX).
+      local sa
+      case "${sa_ns}" in
+        openshift-catalogd) sa="catalogd-controller-manager" ;;
+        openshift-operator-controller) sa="operator-controller-controller-manager" ;;
+        *) sa="" ;;
+      esac
+      if [[ -n "${sa}" ]]; then
+        oc adm policy add-role-to-user system:image-puller \
+          "system:serviceaccount:${sa_ns}:${sa}" -n "${mirror_ns}" > /dev/null 2>&1 || true
+      fi
+    done
+  else
+    log::warn "Namespace ${mirror_ns} not found — skipping OLM image-puller grants"
+  fi
+
+  disconnected::rewrite_live_mirror_hosts_for_cluster || return 1
+  log::success "LOCAL_DISCONNECTED OLM internal-registry access configured"
+}
+
+# Rewrite applied IDMS/ITMS resources: push-route host → in-cluster registry service.
+# prepare/oc-mirror emit the external default-route; kubelet/catalogd need the svc.
+disconnected::rewrite_live_mirror_hosts_for_cluster() {
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+  if [[ -z "${MIRROR_REGISTRY_URL:-}" || -z "${MIRROR_REGISTRY_CLUSTER_URL:-}" ]]; then
+    return 0
+  fi
+  if [[ "${MIRROR_REGISTRY_URL}" == "${MIRROR_REGISTRY_CLUSTER_URL}" ]]; then
+    return 0
+  fi
+
+  local kind name tmp
+  for kind in imagedigestmirrorset imagetagmirrorset; do
+    while IFS= read -r name; do
+      [[ -n "${name}" ]] || continue
+      tmp=$(mktemp)
+      if ! oc get "${kind}" "${name}" -o yaml > "${tmp}" 2> /dev/null; then
+        rm -f "${tmp}"
+        continue
+      fi
+      if ! grep -qF "${MIRROR_REGISTRY_URL}" "${tmp}"; then
+        rm -f "${tmp}"
+        continue
+      fi
+      sed "s|${MIRROR_REGISTRY_URL}|${MIRROR_REGISTRY_CLUSTER_URL}|g" "${tmp}" \
+        | oc apply -f - > /dev/null || {
+        log::error "Failed to rewrite ${kind}/${name} mirror host for cluster pulls"
+        rm -f "${tmp}"
+        return 1
+      }
+      rm -f "${tmp}"
+      log::info "Rewrote live ${kind}/${name}: ${MIRROR_REGISTRY_URL} → ${MIRROR_REGISTRY_CLUSTER_URL}"
+    done < <(oc get "${kind}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2> /dev/null || true)
+  done
 }
 
 # Host used in IDMS/ITMS/Helm image refs for cluster pulls.
@@ -666,6 +757,93 @@ disconnected::write_digest_plugin_list() {
   log::info "LOCAL_DISCONNECTED: ${count} digest-pinned plugins (tag-only refs skipped)"
 }
 
+# LOCAL_DISCONNECTED: pin CATALOG_INDEX_IMAGE from the Helm chart catalogIndex
+# digest. RELEASE_VERSION=next is not published on registry.access.redhat.com, so
+# mirror_plugins would otherwise abort. No-op when unset LOCAL or already set.
+# Uses HELM_CHART_URL / CHART_VERSION (and IMAGE_REGISTRY for GA vs CI chart).
+disconnected::pin_local_catalog_index_from_chart() {
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    log::info "CATALOG_INDEX_IMAGE already set; skipping chart pin"
+    return 0
+  fi
+
+  common::require_vars DISCONNECTED_TMPDIR HELM_CHART_URL || return 1
+
+  local chart_version="${CHART_VERSION:-}"
+  if [[ -z "${chart_version}" ]]; then
+    log::error "CHART_VERSION is unset; cannot pin catalog index from chart"
+    return 1
+  fi
+
+  local is_ga="false"
+  if [[ "${IMAGE_REGISTRY:-}" == "registry.redhat.io" ]]; then
+    is_ga="true"
+  fi
+
+  local pull_dir="${DISCONNECTED_TMPDIR}/local-catalog-chart"
+  mkdir -p "${pull_dir}"
+  rm -f "${pull_dir}"/*.tgz 2> /dev/null || true
+
+  if [[ "${is_ga}" == "true" ]]; then
+    helm repo add openshift-helm-charts https://charts.openshift.io 2> /dev/null || true
+    helm repo update openshift-helm-charts
+    log::info "Pulling GA chart for catalog pin (version: ${RELEASE_VERSION})"
+    helm pull openshift-helm-charts/redhat-developer-hub \
+      --version "${RELEASE_VERSION}" \
+      -d "${pull_dir}" || {
+      log::error "Failed to pull GA chart for catalog pin"
+      return 1
+    }
+  else
+    log::info "Pulling CI chart for catalog pin from ${HELM_CHART_URL} (version: ${chart_version})"
+    helm pull "${HELM_CHART_URL}" --version "${chart_version}" \
+      -d "${pull_dir}" || {
+      log::error "Failed to pull chart for catalog pin"
+      return 1
+    }
+  fi
+
+  local chart_tgz
+  chart_tgz=$(find "${pull_dir}" -maxdepth 1 -name '*.tgz' | head -1)
+  if [[ -z "${chart_tgz}" ]]; then
+    log::error "No chart .tgz found in ${pull_dir}"
+    return 1
+  fi
+
+  local helm_values
+  helm_values=$(helm show values "${chart_tgz}" 2> /dev/null || true)
+  if [[ -z "${helm_values}" ]]; then
+    log::error "helm show values returned empty for ${chart_tgz}"
+    return 1
+  fi
+
+  local ci_registry ci_repo ci_tag ci_separator
+  ci_registry=$(echo "${helm_values}" | yq '.global.catalogIndex.image.registry' || true)
+  ci_repo=$(echo "${helm_values}" | yq '.global.catalogIndex.image.repository' || true)
+  ci_tag=$(echo "${helm_values}" | yq '.global.catalogIndex.image.tag' || true)
+  ci_registry="${ci_registry:-quay.io}"
+  ci_repo="${ci_repo:-rhdh/plugin-catalog-index}"
+  ci_tag="${ci_tag:-latest}"
+  ci_separator=":"
+  if [[ "${ci_repo}" == *"@"* ]]; then
+    ci_separator="@${ci_repo##*@}:"
+    ci_repo="${ci_repo%@*}"
+  fi
+
+  export CATALOG_INDEX_IMAGE="${ci_registry}/${ci_repo}${ci_separator}${ci_tag}"
+  export CATALOG_INDEX_REGISTRY="${ci_registry}"
+  if [[ "${ci_separator}" == @sha256: ]]; then
+    export CATALOG_INDEX_REPO="${ci_repo}@sha256"
+  else
+    export CATALOG_INDEX_REPO="${ci_repo}"
+  fi
+  export CATALOG_INDEX_TAG="${ci_tag}"
+  log::info "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (from chart values, LOCAL_DISCONNECTED)"
+}
+
 # Fetch and run mirror-plugins.sh against the disconnected mirror registry.
 # Uses CATALOG_INDEX_IMAGE when set; otherwise the GA plugin-catalog-index tag.
 # LOCAL_DISCONNECTED: mirror digest-pinned plugins only (next catalogs can list
@@ -927,7 +1105,8 @@ disconnected::resolve_homepage_plugin_package() {
   for candidate in \
     "red-hat-developer-hub-backstage-plugin-dynamic-home-page" \
     "red-hat-developer-hub-backstage-plugin-homepage"; do
-    line=$(grep -F "${candidate}" "${summary}" | head -1) || true
+    # Match "/<name>@" so homepage does not also hit homepage-backend.
+    line=$(grep -F "/${candidate}@" "${summary}" | head -1) || true
     if [[ -n "${line}" ]]; then
       name="${candidate}"
       break
@@ -972,6 +1151,10 @@ disconnected::create_homepage_plugins_configmap() {
   local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
 
   cat > "${tmp_yaml}" << EOF
+# LOCAL / disconnected smoke: do not include dynamic-plugins.default.yaml from
+# the catalog index. next catalogs can list :tag refs that were not mirrored
+# (digest-only mirror), which CrashLoops install-dynamic-plugins.
+includes: []
 plugins:
   - package: ${HOMEPAGE_PLUGIN_PACKAGE}
     disabled: false
@@ -1192,6 +1375,8 @@ export -f disconnected::require_env
 export -f disconnected::setup_auth
 export -f disconnected::setup_local_ocp_mirror
 export -f disconnected::ensure_local_image_pull_access
+export -f disconnected::ensure_local_ocp_internal_olm_access
+export -f disconnected::rewrite_live_mirror_hosts_for_cluster
 export -f disconnected::cluster_mirror_host
 export -f disconnected::rewrite_mirror_host_for_cluster
 export -f disconnected::ensure_local_amd64_skopeo_shim
@@ -1199,6 +1384,7 @@ export -f disconnected::fetch_script
 export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
 export -f disconnected::write_digest_plugin_list
+export -f disconnected::pin_local_catalog_index_from_chart
 export -f disconnected::mirror_plugins
 export -f disconnected::ensure_local_plugin_imagestream_tags
 export -f disconnected::resolve_catalog_index_image

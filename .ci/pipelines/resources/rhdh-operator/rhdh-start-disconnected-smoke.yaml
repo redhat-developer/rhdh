@@ -14,8 +14,9 @@
 # catalog digest (disconnected::resolve_catalog_index_image) so install-dynamic-
 # plugins does not pull the hub profile default digest missing from the mirror.
 #
-# Homepage: OCI package via dynamicPluginsConfigMapName (catalog defaults alone
-# are not relied on for smoke). Plugin pulls use registries.conf on
+# Homepage: OCI package via dynamicPluginsConfigMapName with includes: [] so
+# install-dynamic-plugins does not merge catalog defaults (tag-only refs are not
+# mirrored on LOCAL_DISCONNECTED). Plugin pulls use registries.conf on
 # install-dynamic-plugins (IDMS does not apply to skopeo).
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha5

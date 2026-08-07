@@ -60,6 +60,19 @@ handle_ocp_disconnected_operator() {
     filter_versions="*"
   fi
 
+  # LOCAL_DISCONNECTED: mirroring every historical RHDH operator version (* /
+  # next) overwhelms the integrated registry (503 / deadline) and is unnecessary
+  # for smoke. Pin to the chart major.minor (e.g. 1.10-123-CI → 1.10). CI bastion
+  # keeps filter-versions=* for next.
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" && "${filter_versions}" == "*" ]]; then
+    local chart_mm=""
+    if [[ -n "${CHART_VERSION:-}" && "${CHART_VERSION}" =~ ^([0-9]+\.[0-9]+) ]]; then
+      chart_mm="${BASH_REMATCH[1]}"
+    fi
+    filter_versions="${chart_mm:-1.10}"
+    log::info "LOCAL_DISCONNECTED=1: filter-versions=${filter_versions} (from CHART_VERSION=${CHART_VERSION:-unset})"
+  fi
+
   # CONTAINER_PLATFORM_VERSION is set by e2e-tests/container-init.sh from the
   # live cluster (oc version → major.minor).
   local ocp_version="${CONTAINER_PLATFORM_VERSION:-}"
@@ -85,6 +98,14 @@ handle_ocp_disconnected_operator() {
     --index-image "${index_image}"
     --filter-versions "${filter_versions}"
   )
+
+  # OCP integrated registry rejects cosign/sigstore .sig attachments
+  # ("writing signatures: ... name unknown"). Same as disconnected::run_oc_mirror.
+  # CI bastion external mirrors keep prepare's default oc-mirror flags.
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    prepare_args+=(--oc-mirror-flags "--remove-signatures")
+    log::info "LOCAL_DISCONNECTED=1: prepare --oc-mirror-flags --remove-signatures"
+  fi
 
   # prepare-restricted-environment.sh skips OLM v1 pull-secret/CA setup for
   # external registries. Catalogd must trust the mirror CA and authenticate
@@ -127,12 +148,32 @@ handle_ocp_disconnected_operator() {
     log::success "Configured mirror pull secret on rhdh-operator-installer SA"
   else
     log::info "LOCAL_DISCONNECTED=1: skipping reg-pull-secret SA patch"
+    # OCP_INTERNAL: grant catalogd/operator-controller pull on oc-mirror and
+    # rewrite route-based IDMS → in-cluster registry service (else Serving never
+    # becomes True → Backstage CRD timeout).
+    disconnected::ensure_local_ocp_internal_olm_access || return 1
   fi
 
   # prepare-restricted-environment.sh applies IDMS/CatalogSource which triggers
   # a MachineConfig update and node rolling. Wait for completion before deploying
   # workloads, same as the Helm path.
   disconnected::wait_mcp_updated
+
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    # Catalogd needs the registry + image-puller grants above before Serving=True.
+    log::info "Waiting for ClusterCatalog/rhdh-catalog Serving=True (LOCAL_DISCONNECTED)..."
+    local catalog_wait=0
+    until [[ "$(oc get clustercatalog rhdh-catalog -o jsonpath='{.status.conditions[?(@.type=="Serving")].status}' 2> /dev/null || true)" == "True" ]]; do
+      if ((catalog_wait >= 600)); then
+        log::error "ClusterCatalog/rhdh-catalog did not become Serving=True within 600s"
+        disconnected::dump_olm_v1_status "rhdh-operator"
+        return 1
+      fi
+      sleep 15
+      catalog_wait=$((catalog_wait + 15))
+    done
+    log::success "ClusterCatalog/rhdh-catalog is Serving=True"
+  fi
 
   # prepare only creates the ClusterExtension; wait until OLM v1 installs the
   # operator and the Backstage CRD appears (dump status on timeout).
@@ -142,6 +183,9 @@ handle_ocp_disconnected_operator() {
   }
 
   log::section "Plugin Mirroring"
+  # LOCAL_DISCONNECTED: chart-pin catalog digest before mirror (RELEASE_VERSION=next
+  # is not on registry.access.redhat.com). CI keeps Gangway/env CATALOG_INDEX_IMAGE.
+  disconnected::pin_local_catalog_index_from_chart || return 1
   disconnected::mirror_plugins || return 1
 
   # Inject the catalog-index digest that mirror-plugins actually pushed. The hub

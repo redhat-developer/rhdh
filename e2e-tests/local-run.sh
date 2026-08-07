@@ -411,10 +411,28 @@ fi
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
-# Login to vault and capture the token
+# Login to vault and capture the token (reuse only if the token can read QE secrets)
 log::section "Vault Login"
-vault login -no-print -method=oidc
-VAULT_TOKEN=$(vault print token)
+vault_token_usable() {
+  local token=${1:-}
+  [[ -n "$token" ]] || return 1
+  VAULT_TOKEN="$token" vault kv get -mount="kv" "selfservice/rhdh-qe/rhdh" > /dev/null 2>&1
+}
+
+if [[ -n "${VAULT_TOKEN:-}" ]] && vault_token_usable "$VAULT_TOKEN"; then
+  log::info "Using existing VAULT_TOKEN from environment"
+elif existing_token=$(vault print token 2>/dev/null) && vault_token_usable "$existing_token"; then
+  VAULT_TOKEN="$existing_token"
+  log::info "Reusing existing vault token from local vault CLI"
+elif [[ -n "${VAULT_TOKEN:-}" ]] || [[ -n "${existing_token:-}" ]]; then
+  log::warn "Existing vault token cannot read QE secrets; falling back to OIDC login"
+  vault login -no-print -method=oidc
+  VAULT_TOKEN=$(vault print token)
+else
+  vault login -no-print -method=oidc
+  VAULT_TOKEN=$(vault print token)
+fi
+export VAULT_TOKEN
 
 # Set up cluster access based on platform (CONTAINER_PLATFORM already derived above)
 log::section "Setting up cluster access"
