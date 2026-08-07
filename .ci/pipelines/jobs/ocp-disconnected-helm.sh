@@ -18,10 +18,14 @@ export INSTALL_METHOD="helm"
 handle_ocp_disconnected_helm() {
   export NAME_SPACE="${NAME_SPACE:-showcase-ci-disconnected}"
 
+  common::oc_login
+
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    disconnected::setup_local_ocp_mirror || return 1
+  fi
+
   disconnected::require_env
   disconnected::setup_auth
-
-  common::oc_login
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
@@ -101,6 +105,22 @@ handle_ocp_disconnected_helm() {
   fi
   log::info "Catalog index from chart: ${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
 
+  # LOCAL_DISCONNECTED only: chart-pinned catalog digest for mirror-plugins
+  # (RELEASE_VERSION=next is not on registry.access.redhat.com). CI keeps the
+  # prior --plugin-index / optional CATALOG_INDEX_IMAGE override path.
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" && -z "${CATALOG_INDEX_IMAGE:-}" && -n "${CI_REGISTRY}" && -n "${CI_REPO}" && -n "${CI_TAG}" ]]; then
+    export CATALOG_INDEX_IMAGE="${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
+    export CATALOG_INDEX_REGISTRY="${CI_REGISTRY}"
+    # Chart digest encoding: repository "…@sha256" + tag "<hash>".
+    if [[ "${CI_SEPARATOR}" == @sha256: ]]; then
+      export CATALOG_INDEX_REPO="${CI_REPO}@sha256"
+    else
+      export CATALOG_INDEX_REPO="${CI_REPO}"
+    fi
+    export CATALOG_INDEX_TAG="${CI_TAG}"
+    log::info "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (from chart values)"
+  fi
+
   echo "${helm_values}" > "${ARTIFACT_DIR}/disconnected-helm-chart-values.yaml" 2> /dev/null || true
 
   log::section "Image Mirroring"
@@ -146,6 +166,9 @@ handle_ocp_disconnected_helm() {
   log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    disconnected::ensure_local_image_pull_access "${NAME_SPACE}" || return 1
+  fi
   disconnected::apply_plugin_mirror_configmap "${NAME_SPACE}" || return 1
 
   # Mirror CA + registry auth for install-dynamic-plugins (skopeo).
@@ -162,15 +185,24 @@ handle_ocp_disconnected_helm() {
   chart_install_path="${OC_MIRROR_CHART_PATH:-${CHART_LOCAL_TGZ}}"
   log::info "Installing chart from: ${chart_install_path}"
 
+  # LOCAL_DISCONNECTED: kubelet pulls via in-cluster registry service; route URL
+  # is only for oc-mirror/skopeo push and plugin registries.conf + CA mounts.
+  local image_registry
+  image_registry=$(disconnected::cluster_mirror_host)
+  log::info "Helm image registry: ${image_registry}"
+
   local helm_set_flags=(
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
-    --set upstream.backstage.image.registry="${MIRROR_REGISTRY_URL}"
+    --set upstream.backstage.image.registry="${image_registry}"
     --set upstream.backstage.image.repository="${IMAGE_REPO}"
     --set upstream.backstage.image.tag="${TAG_NAME}"
-    --set upstream.postgresql.image.registry="${MIRROR_REGISTRY_URL}"
+    --set upstream.postgresql.image.registry="${image_registry}"
   )
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    # Catalog index is pulled by skopeo in install-dynamic-plugins (route CA +
+    # auth.json), not by kubelet. Keep it on MIRROR_REGISTRY_URL; the in-cluster
+    # service CA is not mounted into certs.d and fails x509 verify.
     helm_set_flags+=(
       --set global.catalogIndex.image.registry="${MIRROR_REGISTRY_URL}"
       --set global.catalogIndex.image.repository="${CATALOG_INDEX_REPO}"

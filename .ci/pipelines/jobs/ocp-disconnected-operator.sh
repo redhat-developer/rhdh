@@ -21,10 +21,14 @@ handle_ocp_disconnected_operator() {
   # Force a dedicated namespace (env_variables.sh may already set NAME_SPACE=showcase).
   export NAME_SPACE="showcase-disconnected"
 
+  common::oc_login
+
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    disconnected::setup_local_ocp_mirror || return 1
+  fi
+
   disconnected::require_env
   disconnected::setup_auth
-
-  common::oc_login
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
@@ -66,19 +70,33 @@ handle_ocp_disconnected_operator() {
   local index_image="registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}"
   log::info "Using OCP ${ocp_version} (CONTAINER_PLATFORM_VERSION); index image ${index_image}"
 
+  # Local connected OCP: OCP_INTERNAL sentinel (same as omit-on-OCP). CI bastion
+  # keeps the external MIRROR_REGISTRY_URL. Route URL stays in MIRROR_REGISTRY_URL
+  # for mirror-plugins / registries.conf mounts.
+  local to_registry="${MIRROR_REGISTRY_URL}"
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    to_registry="OCP_INTERNAL"
+    log::info "LOCAL_DISCONNECTED=1: prepare --to-registry OCP_INTERNAL"
+  fi
+
   local prepare_args=(
     --use-oc-mirror true
-    --to-registry "${MIRROR_REGISTRY_URL}"
+    --to-registry "${to_registry}"
     --index-image "${index_image}"
     --filter-versions "${filter_versions}"
   )
 
   # prepare-restricted-environment.sh skips OLM v1 pull-secret/CA setup for
   # external registries. Catalogd must trust the mirror CA and authenticate
-  # before ClusterCatalog can reach Serving=True.
-  disconnected::ensure_olm_mirror_pull_secret || return 1
-  disconnected::ensure_mirror_registry_ca || return 1
-  disconnected::wait_mcp_updated
+  # before ClusterCatalog can reach Serving=True. Skip on LOCAL_DISCONNECTED —
+  # OCP_INTERNAL path configures internal registry trust itself.
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    disconnected::ensure_olm_mirror_pull_secret || return 1
+    disconnected::ensure_mirror_registry_ca || return 1
+    disconnected::wait_mcp_updated
+  else
+    log::info "LOCAL_DISCONNECTED=1: skipping external bastion CA/pull-secret pre-prepare helpers"
+  fi
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
   if ! disconnected::with_unset_registry_auth_file \
@@ -91,20 +109,25 @@ handle_ocp_disconnected_operator() {
   # prepare patches the operator SA with internal-registry secret names that do
   # not exist for an external mirror. Provide a real mirror pull secret and
   # attach it to the OLM v1 installer SA used by ClusterExtension.
-  local operator_ns="rhdh-operator"
-  oc create secret generic reg-pull-secret \
-    --from-file=.dockerconfigjson="${MIRROR_REGISTRY_PULL_SECRET}" \
-    --type=kubernetes.io/dockerconfigjson \
-    -n "${operator_ns}" \
-    --dry-run=client -o yaml | oc apply -f - || {
-    log::error "Failed to create reg-pull-secret in ${operator_ns}"
-    return 1
-  }
-  oc patch serviceaccount rhdh-operator-installer -n "${operator_ns}" --type=merge \
-    -p '{"imagePullSecrets":[{"name":"reg-pull-secret"}]}' || {
-    log::warn "Failed to patch rhdh-operator-installer imagePullSecrets — continuing"
-  }
-  log::success "Configured mirror pull secret on rhdh-operator-installer SA"
+  # Skip on LOCAL_DISCONNECTED — OCP_INTERNAL uses cluster-internal pull secrets.
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    local operator_ns="rhdh-operator"
+    oc create secret generic reg-pull-secret \
+      --from-file=.dockerconfigjson="${MIRROR_REGISTRY_PULL_SECRET}" \
+      --type=kubernetes.io/dockerconfigjson \
+      -n "${operator_ns}" \
+      --dry-run=client -o yaml | oc apply -f - || {
+      log::error "Failed to create reg-pull-secret in ${operator_ns}"
+      return 1
+    }
+    oc patch serviceaccount rhdh-operator-installer -n "${operator_ns}" --type=merge \
+      -p '{"imagePullSecrets":[{"name":"reg-pull-secret"}]}' || {
+      log::warn "Failed to patch rhdh-operator-installer imagePullSecrets — continuing"
+    }
+    log::success "Configured mirror pull secret on rhdh-operator-installer SA"
+  else
+    log::info "LOCAL_DISCONNECTED=1: skipping reg-pull-secret SA patch"
+  fi
 
   # prepare-restricted-environment.sh applies IDMS/CatalogSource which triggers
   # a MachineConfig update and node rolling. Wait for completion before deploying
@@ -131,6 +154,9 @@ handle_ocp_disconnected_operator() {
   log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    disconnected::ensure_local_image_pull_access "${NAME_SPACE}" || return 1
+  fi
   disconnected::apply_plugin_mirror_configmap "${NAME_SPACE}" || return 1
   # Same CA/auth secrets as Helm so skopeo in install-dynamic-plugins can pull
   # from the mirror (registries.conf alone is not enough — TLS verify fails).
