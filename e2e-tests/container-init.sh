@@ -31,7 +31,13 @@ fi
 
 # Fetch and write secrets to /tmp/secrets/
 log::section "Fetching Vault Secrets"
+set -o pipefail
 SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r ".data.data")
+set +o pipefail
+if [[ -z "${SECRETS}" || "${SECRETS}" == "null" ]]; then
+  log::error "Vault returned no secrets for selfservice/rhdh-qe/rhdh"
+  exit 1
+fi
 
 for key in $(echo "$SECRETS" | jq -r "keys[]"); do
   if [[ "$key" == */* ]]; then
