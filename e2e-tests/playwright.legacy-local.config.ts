@@ -3,12 +3,12 @@ import { resolve } from "path";
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Cluster-free local E2E harness for the legacy frontend (`packages/app`) — Tier B.
+ * Cluster-free local E2E harness for the NFS frontend (`packages/app`) — Tier B.
  *
  * RHIDP-13501 (E2E Test Optimization). Runs the EXISTING Playwright specs against a
  * production-faithful RHDH instance with dynamic plugins loaded, without an
  * OpenShift/Kubernetes cluster or container images. Playwright boots the backend and
- * the legacy app dev server itself and drives the browser against them.
+ * the NFS app dev server itself and drives the browser against them.
  *
  *   # one-time: populate dynamic-plugins-root (same script CI uses — OCI, no build;
  *   # alternatives in docs/e2e-tests/local-e2e-harness.md):
@@ -49,7 +49,7 @@ export default defineConfig({
   // spec file here. Validated so far: the full guest-signin spec (home page via the
   // dynamic-home-page OCI plugin; Settings/Sign-out via the global-header OCI plugin
   // with its canonical pluginConfig), the learning-paths spec (static fallback
-  // data bundled with packages/app), and the instance health check (/healthcheck is
+  // data bundled with the legacy OFS frontend), and the instance health check (/healthcheck is
   // proxied to the backend by the app dev server — see packages/app package.json —
   // mirroring the single-origin production container).
   testMatch: [
@@ -61,6 +61,7 @@ export default defineConfig({
     "e2e/plugins/frontend/sidebar.spec.ts",
     "e2e/settings.spec.ts",
     "e2e/plugins/user-settings-info-card.spec.ts",
+    "e2e/plugins/tmp-infocard-check.spec.ts",
     "e2e/plugins/application-provider.spec.ts",
     "e2e/plugins/application-listener.spec.ts",
   ],
@@ -94,10 +95,10 @@ export default defineConfig({
   expect: {
     timeout: 15 * 1000,
   },
-  // backstage-cli / janus-cli live in the repo-root node_modules/.bin, which yarn does
-  // not surface for these workspaces, so both CLIs are invoked directly with the root
-  // .bin prepended to PATH and run from their package directory. The backend command
-  // mirrors packages/backend's `start` script (--require instrumentation) — keep in sync.
+  // backstage-cli lives in the repo-root node_modules/.bin, which yarn does not surface
+  // for these workspaces, so the CLI is invoked directly with the root .bin prepended
+  // to PATH and run from each package directory. The backend command mirrors
+  // packages/backend's `start` script (--require instrumentation) — keep in sync.
   webServer: [
     {
       command: `backstage-cli package start --require ./src/instrumentation.js ${sharedConfigArgs}`,
@@ -106,6 +107,7 @@ export default defineConfig({
         ...process.env,
         PATH: pathWithRepoBin,
         NODE_OPTIONS: "--no-node-snapshot",
+        ENABLE_STANDARD_MODULE_FEDERATION: "true",
       },
       url: backendReadiness,
       reuseExistingServer: !isCI,
@@ -114,7 +116,7 @@ export default defineConfig({
       stderr: "pipe",
     },
     {
-      command: `janus-cli package start ${sharedConfigArgs}`,
+      command: `backstage-cli package start ${sharedConfigArgs}`,
       cwd: "../packages/app",
       env: { ...process.env, PATH: pathWithRepoBin },
       url: frontendUrl,

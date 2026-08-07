@@ -198,7 +198,7 @@ export async function waitForSideBarVisible(page: Page) {
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  // Legacy packages/app sidebar (cluster-free harness) uses plain nav anchors.
+  // Legacy OFS sidebar uses plain nav anchors.
   const legacyLink = page.locator(`nav a:has-text("${navBarText}")`).first();
   try {
     await expect(legacyLink).toBeVisible({ timeout: 3_000 });
@@ -231,7 +231,7 @@ export async function openCatalogSidebar(page: Page, kind: string) {
 }
 
 export async function openSidebarButton(page: Page, navBarButtonLabel: string) {
-  // Legacy packages/app sidebar expands groups via aria-label buttons.
+  // Legacy OFS sidebar expands groups via aria-label buttons.
   const legacyButton = page.locator(`nav button[aria-label="${navBarButtonLabel}"]`);
   try {
     await expect(legacyButton).toBeVisible({ timeout: 3_000 });

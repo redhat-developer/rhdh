@@ -7,13 +7,13 @@ backend dynamic-plugin loader from RHIDP-13508.
 ## Goal
 
 Run real Playwright E2E against RHDH **without** an OpenShift/Kubernetes cluster or
-container images — a single `run` that boots the backend and the legacy frontend dev
+container images — a single `run` that boots the backend and the NFS frontend dev
 server in-process and drives a browser against them.
 
-The harness targets the legacy frontend (`packages/app`, Tier B): it is what RHDH ships
+The harness targets the NFS frontend (`packages/app`, Tier B): it is what RHDH ships
 today, and **the existing Playwright specs already target it**, so they run unmodified.
-Dynamic frontend plugins load through Scalprum exactly as in-cluster (the legacy
-`scalprum-backend` serves the plugin config by default).
+Dynamic frontend plugins load via standard Module Federation when the backend is started
+with `ENABLE_STANDARD_MODULE_FEDERATION=true`.
 
 The guest-auth + in-memory-SQLite overlay `app-config.local-e2e.yaml` is layered on top
 of `app-config.yaml`. Guest sign-in must be configured explicitly — the auth backend
@@ -126,15 +126,12 @@ registry, ghcr), then runs `yarn e2e:legacy-local`. No cluster or container imag
 built. It triggers on `e2e-tests/**` and `app-config*.yaml` changes; the scope can
 widen to `packages/app/**` / `packages/backend/**` once it is proven stable.
 
-## Why the legacy app, not app-next
+## NFS frontend (`packages/app`)
 
-The harness targets the legacy app because **dynamic frontend plugins do not load on
-`packages/app-next` yet**: app-next's `dynamicFrontendFeaturesLoader()` fetches Module
-Federation remotes from the backend, but that endpoint is no-op'd unless
-`ENABLE_STANDARD_MODULE_FEDERATION=true`, and even then RHDH's exported dynamic frontend
-plugins do not contain standard MF assets (see `packages/backend/src/index.ts`). Until
-that lands upstream, app-next can only exercise core/static plugin UIs. An app-next
-harness is tracked as a follow-up (RHIDP-13501 / spike RHIDP-15075).
+The harness targets the NFS frontend (`packages/app`). The backend boots with
+`ENABLE_STANDARD_MODULE_FEDERATION=true` so dynamic frontend plugins load via Module
+Federation remotes from the backend (see `packages/backend/src/index.ts` and
+`playwright.legacy-local.config.ts`).
 
 ## vs. rhdh-local
 

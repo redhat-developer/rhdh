@@ -1,4 +1,4 @@
-# Config overlay for the cluster-free local E2E harness (legacy `packages/app`, Tier B).
+# Config overlay for the cluster-free local E2E harness (NFS `packages/app`, Tier B).
 #
 # Layered on top of app-config.yaml and app-config.dynamic-plugins.yaml to run
 # Playwright E2E without an OpenShift/Kubernetes cluster or container images:

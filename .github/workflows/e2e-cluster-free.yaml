@@ -83,7 +83,7 @@ jobs:
         # after a source build, so we install the OCI-published builds instead.
         run: ./e2e-tests/local-harness/populate.sh
 
-      - name: Run cluster-free E2E (legacy app)
+      - name: Run cluster-free E2E (NFS app)
         working-directory: ./e2e-tests
         run: yarn e2e:legacy-local
 

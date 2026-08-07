@@ -6,30 +6,19 @@ This guide helps **operators and platform administrators** customize Red Hat Dev
 >
 > **Plugin authors** → [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md).
 
-## Transition: the new frontend system is not the default yet
+## Default: new frontend system (NFS)
 
-RHDH still ships the legacy `app` frontend package by default. The new frontend system lives in the `app-next` package and will become the default after the app-shell switch. Until then, enable **both** of the following on your RHDH **backend** deployment (OpenShift, Helm, Operator, [rhdh-local](https://github.com/redhat-developer/rhdh-local), or any environment where the backend runs as a container):
+RHDH ships the Backstage new frontend system (`packages/app`) by default. Enable standard Module Federation on the **backend** deployment so dynamic frontend plugins load correctly (OpenShift, Helm, Operator, [rhdh-local](https://github.com/redhat-developer/rhdh-local), or any environment where the backend runs as a container):
 
 | Setting | How to apply | Purpose |
 | --- | --- | --- |
-| `app.packageName: app-next` | Environment variable `APP_CONFIG_app_packageName=app-next`, **or** in `app-config.yaml` under `app.packageName` | Tells the app backend to serve the `app-next` frontend (new frontend system) instead of `app`. |
-| `ENABLE_STANDARD_MODULE_FEDERATION=true` | Environment variable on the backend container only | Enables the backend to serve standard Module Federation assets for dynamic frontend plugins. Without this, RHDH disables that service because the legacy frontend does not use it. |
+| `ENABLE_STANDARD_MODULE_FEDERATION=true` | Environment variable on the backend container only | Enables the backend to serve standard Module Federation assets for dynamic frontend plugins. Without this, RHDH disables that service. |
 
-Example environment variables for the RHDH backend pod or deployment:
+Example environment variable for the RHDH backend pod or deployment:
 
 ```bash
-APP_CONFIG_app_packageName=app-next
 ENABLE_STANDARD_MODULE_FEDERATION=true
 ```
-
-Equivalent `app-config` fragment (you still need `ENABLE_STANDARD_MODULE_FEDERATION` in the environment):
-
-```yaml
-app:
-  packageName: app-next
-```
-
-These requirements are temporary. Once RHDH completes the switch to `app-next`, they will become the default and this transition note can be removed.
 
 ## Who should read this
 
