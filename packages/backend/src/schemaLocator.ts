@@ -14,7 +14,7 @@ import type { ScannedPluginPackage } from '@backstage/backend-dynamic-feature-se
  * and backend packages, falling back to the legacy per-platform path written
  * by the old janus-idp/cli (Scalprum) toolchain.
  *
- * The legacy fallback should be removed entirely once OFS (`packages/app`)
+ * The legacy fallback should be removed entirely once the legacy OFS frontend
  * is deleted in RHIDP-15078/RHIDP-15079.
  */
 export function schemaLocator(pluginPackage: ScannedPluginPackage): string {
