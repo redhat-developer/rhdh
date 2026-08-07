@@ -443,10 +443,10 @@ disconnected::run_oc_mirror() {
 
   mkdir -p "${workspace_dir}"
 
-  # LOCAL_DISCONNECTED: OpenShift integrated registry rejects cosign/sigstore
-  # .sig attachments ("writing signatures: ... name unknown") and can fail
-  # multi-arch copies with preserve-digests. Strip signatures only then so
-  # bastion CI oc-mirror stays unchanged.
+  # OpenShift's integrated registry rejects cosign/sigstore .sig attachments
+  # ("writing signatures: ... name unknown") and can fail multi-arch copies with
+  # preserve-digests. Strip signatures only for LOCAL_DISCONNECTED (OCP internal
+  # registry). Bastion CI mirrors keep prior oc-mirror behavior.
   local oc_mirror_args=(
     -c "${imageset_config}"
     "docker://${MIRROR_REGISTRY_URL}"
