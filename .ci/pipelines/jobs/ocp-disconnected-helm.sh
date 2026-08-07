@@ -105,9 +105,9 @@ handle_ocp_disconnected_helm() {
   fi
   log::info "Catalog index from chart: ${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
 
-  # LOCAL_DISCONNECTED only: chart-pinned catalog digest for mirror-plugins
-  # (RELEASE_VERSION=next is not on registry.access.redhat.com). CI keeps the
-  # prior --plugin-index / optional CATALOG_INDEX_IMAGE override path.
+  # LOCAL_DISCONNECTED: prefer chart-pinned catalog digest for mirror-plugins
+  # (RELEASE_VERSION=next is not published on registry.access.redhat.com).
+  # CI keeps Gangway/env CATALOG_INDEX_IMAGE or mirror-plugins RELEASE_VERSION default.
   if [[ "${LOCAL_DISCONNECTED:-}" == "1" && -z "${CATALOG_INDEX_IMAGE:-}" && -n "${CI_REGISTRY}" && -n "${CI_REPO}" && -n "${CI_TAG}" ]]; then
     export CATALOG_INDEX_IMAGE="${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
     export CATALOG_INDEX_REGISTRY="${CI_REGISTRY}"
