@@ -106,7 +106,17 @@ For automation or quick runs, use CLI flags to skip interactive prompts:
 
 # Full flags
 ./local-run.sh -j pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm -R registry.redhat.io -r rhdh/rhdh-hub-rhel9 -t next -s
+
+# Disconnected Operator / Helm nightlies (requires a real OpenShift cluster)
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly -r rhdh-community/rhdh -t next -s
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly -r rhdh-community/rhdh -t next -s
 ```
+
+#### Local disconnected OCP smokes
+
+Disconnected Operator and Helm nightlies can be started only via `local-run.sh` against a **real running OpenShift cluster** (connected is fine; no bastion, kind, or mock registry). You must already be logged in with `oc` (cluster-admin or equivalent to expose the image registry and apply IDMS).
+
+`local-run.sh` sets `DISCONNECTED=true` and `LOCAL_DISCONNECTED=1` for `*disconnected*` jobs. The e2e-runner bootstraps `MIRROR_*` **inside the container** under `${SHARED_DIR}/disconnected-mirror/` (worktree mount), using the cluster image registry route. Operator prepare uses `--to-registry OCP_INTERNAL`; Helm oc-mirrors to the exposed registry route. For air-gap prepare semantics, see [rhdh-operator](https://github.com/redhat-developer/rhdh-operator) docs — this path does not duplicate them.
 
 | Flag               | Description                                                          |
 | ------------------ | -------------------------------------------------------------------- |

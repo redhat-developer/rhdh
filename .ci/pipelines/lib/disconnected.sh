@@ -59,6 +59,301 @@ disconnected::setup_auth() {
   log::info "Container auth configured from ${MIRROR_REGISTRY_PULL_SECRET}"
 }
 
+# Bootstrap MIRROR_* for local disconnected runs on a connected OpenShift cluster.
+# Exposes the cluster image registry route and writes auth/CA under
+# ${SHARED_DIR}/disconnected-mirror/ (inside the e2e-runner worktree mount).
+# Call after oc login when LOCAL_DISCONNECTED=1, before require_env/setup_auth.
+disconnected::setup_local_ocp_mirror() {
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+
+  if [[ -z "${SHARED_DIR:-}" ]]; then
+    log::error "SHARED_DIR is unset; cannot write local disconnected mirror credentials"
+    return 1
+  fi
+
+  local mirror_dir="${SHARED_DIR}/disconnected-mirror"
+  mkdir -p "${mirror_dir}"
+
+  log::section "Local disconnected: expose OCP image registry"
+  # defaultRoute for push via ingress; disableRedirect for air-gapped-style push
+  # (same as prepare-restricted-environment.sh on OCP).
+  oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge \
+    -p '{"spec":{"defaultRoute":true,"disableRedirect":true}}' || {
+    log::error "Failed to patch image registry config for defaultRoute/disableRedirect"
+    return 1
+  }
+
+  for _ in $(seq 1 60); do
+    if oc get route default-route -n openshift-image-registry > /dev/null 2>&1; then
+      break
+    fi
+    sleep 5
+  done
+  if ! oc get route default-route -n openshift-image-registry > /dev/null 2>&1; then
+    log::error "default-route not available in openshift-image-registry after wait"
+    return 1
+  fi
+
+  # Patching defaultRoute/disableRedirect restarts the registry Deployment; the
+  # route can exist while pods are still rolling and return HTTP 503.
+  log::info "Waiting for image-registry ClusterOperator Available=True..."
+  if ! oc wait co/image-registry --for=condition=Available=True --timeout=10m; then
+    log::error "image-registry ClusterOperator did not become Available"
+    return 1
+  fi
+
+  export MIRROR_REGISTRY_URL
+  MIRROR_REGISTRY_URL=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}')
+  if [[ -z "${MIRROR_REGISTRY_URL}" ]]; then
+    log::error "Failed to resolve default-route host"
+    return 1
+  fi
+  log::info "MIRROR_REGISTRY_URL=${MIRROR_REGISTRY_URL} (push via ingress route)"
+
+  # Kubelet authenticates to the integrated registry via the in-cluster service,
+  # not the external route (route pulls fail with "authentication required").
+  export MIRROR_REGISTRY_CLUSTER_URL="image-registry.openshift-image-registry.svc:5000"
+  log::info "MIRROR_REGISTRY_CLUSTER_URL=${MIRROR_REGISTRY_CLUSTER_URL} (cluster pulls / IDMS)"
+
+  # Confirm the external route answers (401/200 = up; 503 = still unavailable).
+  log::info "Probing mirror registry route until ready..."
+  local probe_code=""
+  for _ in $(seq 1 60); do
+    probe_code=$(curl -sk -o /dev/null -w '%{http_code}' \
+      "https://${MIRROR_REGISTRY_URL}/v2/" || true)
+    if [[ "${probe_code}" != "000" && "${probe_code}" != "503" ]]; then
+      log::info "Mirror registry route ready (HTTP ${probe_code})"
+      break
+    fi
+    sleep 5
+  done
+  if [[ "${probe_code}" == "000" || "${probe_code}" == "503" ]]; then
+    log::error "Mirror registry route still unavailable after wait (HTTP ${probe_code:-none})"
+    return 1
+  fi
+
+  local ca_path="${mirror_dir}/ca.crt"
+  if ! oc get configmap default-ingress-cert -n openshift-config-managed \
+    -o jsonpath='{.data.ca-bundle\.crt}' > "${ca_path}" 2> /dev/null \
+    || [[ ! -s "${ca_path}" ]]; then
+    if ! oc get secret router-ca -n openshift-ingress-operator \
+      -o jsonpath='{.data.tls\.crt}' | base64 -d > "${ca_path}" 2> /dev/null \
+      || [[ ! -s "${ca_path}" ]]; then
+      log::error "Failed to extract ingress/router CA for mirror registry route"
+      return 1
+    fi
+  fi
+  export MIRROR_REGISTRY_CA="${ca_path}"
+
+  # Pull secret usable as both containers auth.json and K8s .dockerconfigjson.
+  local pull_secret_path="${mirror_dir}/pull-secret.json"
+  local base_json="${mirror_dir}/base-pull-secret.json"
+  if ! oc get secret pull-secret -n openshift-config \
+    -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d > "${base_json}" 2> /dev/null \
+    || [[ ! -s "${base_json}" ]]; then
+    echo '{"auths":{}}' > "${base_json}"
+  fi
+
+  local token user auth_b64 whoami_user
+  token=$(oc whoami -t) || {
+    log::error "Failed to get oc token for registry auth"
+    return 1
+  }
+  # Registry Basic auth is user:password. oc whoami for a ServiceAccount returns
+  # system:serviceaccount:ns:name — colons break parsing (user becomes "system").
+  # Use a colon-free username; the token alone authenticates (same as
+  # `podman login -u unused -p $(oc whoami -t)`).
+  whoami_user=$(oc whoami 2> /dev/null || true)
+  if [[ "${whoami_user}" == system:serviceaccount:* ]]; then
+    user="${whoami_user##*:}"
+  elif [[ -n "${whoami_user}" && "${whoami_user}" != *:* ]]; then
+    user="${whoami_user}"
+  else
+    user="unused"
+  fi
+  auth_b64=$(printf '%s' "${user}:${token}" | base64 -w0 2> /dev/null \
+    || printf '%s' "${user}:${token}" | base64)
+
+  jq -n \
+    --slurpfile base "${base_json}" \
+    --arg host "${MIRROR_REGISTRY_URL}" \
+    --arg cluster_host "${MIRROR_REGISTRY_CLUSTER_URL}" \
+    --arg auth "${auth_b64}" \
+    --arg user "${user}" \
+    --arg token "${token}" \
+    '
+    (($base[0] // {auths:{}}).auths // {}) as $auths |
+    {
+      auths: ($auths + {
+        ($host): {
+          auth: $auth,
+          username: $user,
+          password: $token
+        },
+        ($cluster_host): {
+          auth: $auth,
+          username: $user,
+          password: $token
+        }
+      })
+    }
+    ' > "${pull_secret_path}" || {
+    log::error "Failed to build pull-secret JSON for ${MIRROR_REGISTRY_URL}"
+    return 1
+  }
+
+  # Merge vault/RH dockerconfig-style JSON from /tmp/secrets when present.
+  if [[ -d /tmp/secrets ]]; then
+    local secret_file
+    while IFS= read -r -d '' secret_file; do
+      if jq -e '.auths | type == "object"' "${secret_file}" > /dev/null 2>&1; then
+        jq -s '.[0] * {auths: ((.[0].auths // {}) * (.[1].auths // {}))}' \
+          "${pull_secret_path}" "${secret_file}" > "${pull_secret_path}.tmp" \
+          && mv "${pull_secret_path}.tmp" "${pull_secret_path}"
+      fi
+    done < <(find /tmp/secrets -type f -print0 2> /dev/null || true)
+  fi
+
+  export MIRROR_REGISTRY_PULL_SECRET="${pull_secret_path}"
+  export DISCONNECTED=true
+
+  # Apple Silicon / aarch64 runners: OCP worker nodes and RHDH images are
+  # linux/amd64. mirror-plugins.sh / skopeo default to host arch and fail with
+  # "no image found in manifest list for architecture arm64".
+  disconnected::ensure_local_amd64_skopeo_shim || return 1
+
+  log::success "Local OCP mirror credentials under ${mirror_dir}"
+  log::info "MIRROR_REGISTRY_PULL_SECRET=${MIRROR_REGISTRY_PULL_SECRET}"
+  log::info "MIRROR_REGISTRY_CA=${MIRROR_REGISTRY_CA}"
+}
+
+# Allow the workload namespace to pull mirrored images from the integrated
+# registry projects created by oc-mirror/skopeo (cross-namespace). Also attach
+# a dockerconfig pull secret so kubelet can authenticate. LOCAL_DISCONNECTED only.
+# Args:
+#   $1 - namespace
+disconnected::ensure_local_image_pull_access() {
+  local namespace=$1
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+
+  common::require_vars MIRROR_REGISTRY_PULL_SECRET || return 1
+
+  local secret_name="mirror-registry-pull"
+  local b64
+  b64=$(base64 -w0 < "${MIRROR_REGISTRY_PULL_SECRET}" 2> /dev/null \
+    || base64 < "${MIRROR_REGISTRY_PULL_SECRET}" | tr -d '\n')
+
+  namespace::setup_image_pull_secret "${namespace}" "${secret_name}" "${b64}" || {
+    log::error "Failed to create/link ${secret_name} in ${namespace}"
+    return 1
+  }
+
+  # oc-mirror push path is <registry>/<project>/... — grant pull across those projects.
+  local proj
+  for proj in rhdh-community rhel9 rhdh; do
+    if oc get project "${proj}" > /dev/null 2>&1 || oc get namespace "${proj}" > /dev/null 2>&1; then
+      if oc adm policy add-role-to-group system:image-puller \
+        "system:serviceaccounts:${namespace}" -n "${proj}" > /dev/null; then
+        log::info "Granted system:image-puller on ${proj} to system:serviceaccounts:${namespace}"
+      else
+        log::warn "Failed to grant image-puller on ${proj} — continuing"
+      fi
+    fi
+  done
+
+  log::success "Local image pull access configured for ${namespace}"
+}
+
+# Host used in IDMS/ITMS/Helm image refs for cluster pulls.
+# LOCAL_DISCONNECTED: in-cluster integrated registry service (kubelet auth).
+# CI bastion: external MIRROR_REGISTRY_URL unchanged.
+disconnected::cluster_mirror_host() {
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" && -n "${MIRROR_REGISTRY_CLUSTER_URL:-}" ]]; then
+    printf '%s' "${MIRROR_REGISTRY_CLUSTER_URL}"
+  else
+    printf '%s' "${MIRROR_REGISTRY_URL}"
+  fi
+}
+
+# Rewrite oc-mirror IDMS/ITMS mirror host from the push route to the in-cluster
+# registry service so kubelet can authenticate. No-op unless LOCAL_DISCONNECTED=1.
+# Args:
+#   $1 - yaml file path (IDMS or ITMS)
+disconnected::rewrite_mirror_host_for_cluster() {
+  local file=$1
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+  if [[ -z "${MIRROR_REGISTRY_URL:-}" || -z "${MIRROR_REGISTRY_CLUSTER_URL:-}" ]]; then
+    return 0
+  fi
+  if [[ ! -s "${file}" ]]; then
+    return 0
+  fi
+  if grep -qF "${MIRROR_REGISTRY_URL}" "${file}"; then
+    # Portable in-place rewrite (GNU/BSD sed).
+    local tmp
+    tmp=$(mktemp)
+    sed "s|${MIRROR_REGISTRY_URL}|${MIRROR_REGISTRY_CLUSTER_URL}|g" "${file}" > "${tmp}"
+    mv "${tmp}" "${file}"
+    log::info "Rewrote mirror host in $(basename "${file}"): ${MIRROR_REGISTRY_URL} → ${MIRROR_REGISTRY_CLUSTER_URL}"
+  fi
+}
+
+# When LOCAL_DISCONNECTED=1 on aarch64/arm64, put a skopeo shim first on PATH
+# that forces --override-os linux --override-arch amd64 for copy/inspect/etc.
+# No-op on amd64 hosts and when LOCAL_DISCONNECTED is unset (CI bastion).
+disconnected::ensure_local_amd64_skopeo_shim() {
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+
+  local arch
+  arch=$(uname -m)
+  if [[ "${arch}" != "aarch64" && "${arch}" != "arm64" ]]; then
+    return 0
+  fi
+
+  local real_skopeo
+  real_skopeo=$(command -v skopeo) || {
+    log::error "skopeo not found on PATH; required for local disconnected mirroring"
+    return 1
+  }
+  # Avoid wrapping our own shim if setup_local_ocp_mirror is re-entered.
+  if [[ "${real_skopeo}" == */disconnected-skopeo-shim/* ]]; then
+    return 0
+  fi
+
+  local shim_dir="${DISCONNECTED_TMPDIR}/disconnected-skopeo-shim"
+  mkdir -p "${shim_dir}"
+  cat > "${shim_dir}/skopeo" << EOF
+#!/usr/bin/env bash
+# Auto-generated by disconnected::ensure_local_amd64_skopeo_shim — do not edit.
+set -euo pipefail
+real_skopeo=$(printf '%q' "${real_skopeo}")
+if [[ \$# -lt 1 ]]; then
+  exec "\${real_skopeo}"
+fi
+cmd=\$1
+shift
+case "\${cmd}" in
+  copy | inspect | sync | delete | list-tags | tags | mount)
+    exec "\${real_skopeo}" "\${cmd}" --override-os linux --override-arch amd64 "\$@"
+    ;;
+  *)
+    exec "\${real_skopeo}" "\${cmd}" "\$@"
+    ;;
+esac
+EOF
+  chmod +x "${shim_dir}/skopeo"
+  export PATH="${shim_dir}:${PATH}"
+  log::info "LOCAL_DISCONNECTED on ${arch}: skopeo shim forces linux/amd64 for OCP/RHDH images"
+}
+
 # Build an ImageSetConfiguration for oc-mirror.
 # The configuration is dynamically generated based on IMAGE_REGISTRY:
 #   - registry.redhat.io (GA): uses helm.local with chart pulled from charts.openshift.io
@@ -148,13 +443,23 @@ disconnected::run_oc_mirror() {
 
   mkdir -p "${workspace_dir}"
 
-  log::info "Running oc-mirror --v2 → ${MIRROR_REGISTRY_URL}"
-  if ! disconnected::with_unset_registry_auth_file oc-mirror \
-    -c "${imageset_config}" \
-    "docker://${MIRROR_REGISTRY_URL}" \
-    --dest-tls-verify=false \
-    --v2 \
-    --workspace "file://${workspace_dir}"; then
+  # LOCAL_DISCONNECTED: OpenShift integrated registry rejects cosign/sigstore
+  # .sig attachments ("writing signatures: ... name unknown") and can fail
+  # multi-arch copies with preserve-digests. Strip signatures only then so
+  # bastion CI oc-mirror stays unchanged.
+  local oc_mirror_args=(
+    -c "${imageset_config}"
+    "docker://${MIRROR_REGISTRY_URL}"
+    --dest-tls-verify=false
+    --v2
+    --workspace "file://${workspace_dir}"
+  )
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    oc_mirror_args+=(--remove-signatures)
+  fi
+
+  log::info "Running oc-mirror --v2 → ${MIRROR_REGISTRY_URL} (${oc_mirror_args[*]})"
+  if ! disconnected::with_unset_registry_auth_file oc-mirror "${oc_mirror_args[@]}"; then
     log::error "oc-mirror failed"
     return 1
   fi
@@ -180,6 +485,12 @@ disconnected::run_oc_mirror() {
   OC_MIRROR_CHART_PATH=$(find "${result_dir}/helm/charts" -name '*.tgz' 2> /dev/null | head -1)
   export OC_MIRROR_CHART_PATH
 
+  # Route → in-cluster service for kubelet-authenticated pulls (LOCAL_DISCONNECTED).
+  disconnected::rewrite_mirror_host_for_cluster "${OC_MIRROR_IDMS_FILE}"
+  if [[ -n "${OC_MIRROR_ITMS_FILE}" ]]; then
+    disconnected::rewrite_mirror_host_for_cluster "${OC_MIRROR_ITMS_FILE}"
+  fi
+
   log::success "oc-mirror completed successfully"
   log::info "IDMS: ${OC_MIRROR_IDMS_FILE}"
   [[ -n "${OC_MIRROR_ITMS_FILE}" ]] && log::info "ITMS: ${OC_MIRROR_ITMS_FILE}"
@@ -202,10 +513,13 @@ disconnected::patch_idms() {
 
   log::info "Patching IDMS with cross-registry mirror entries"
 
+  local mirror_host
+  mirror_host=$(disconnected::cluster_mirror_host)
+
   # Add mirror entries for the hub image from both registries
   for source_registry in "quay.io" "registry.redhat.io"; do
     local source="${source_registry}/${IMAGE_REPO}"
-    local mirror="${MIRROR_REGISTRY_URL}/${IMAGE_REPO}"
+    local mirror="${mirror_host}/${IMAGE_REPO}"
 
     # Skip if this source is already in the IDMS
     if yq eval ".spec.imageDigestMirrors[].source" "${idms_file}" 2> /dev/null | grep -qF "${source}"; then
@@ -223,7 +537,7 @@ disconnected::patch_idms() {
   # PG_REPO is already cleaned of @sha256 by the caller (via PG_SEPARATOR).
   if [[ -n "${PG_REGISTRY:-}" && -n "${PG_REPO:-}" ]]; then
     local pg_source="${PG_REGISTRY}/${PG_REPO}"
-    local pg_mirror="${MIRROR_REGISTRY_URL}/${PG_REPO}"
+    local pg_mirror="${mirror_host}/${PG_REPO}"
 
     if ! yq eval ".spec.imageDigestMirrors[].source" "${idms_file}" 2> /dev/null | grep -qF "${pg_source}"; then
       yq eval -i \
@@ -286,8 +600,76 @@ disconnected::wait_mcp_updated() {
   log::success "All MachineConfigPools are Updated"
 }
 
+# Build a plugin-list file of digest-pinned oci:// refs from a catalog index.
+# Skips fragile :tag refs that next catalogs sometimes publish without images.
+# Args:
+#   $1 - plugin_index (oci://...)
+#   $2 - output list file path
+disconnected::write_digest_plugin_list() {
+  local plugin_index=$1
+  local list_file=$2
+  local index_ref="${plugin_index#oci://}"
+  local extract_dir
+  extract_dir=$(mktemp -d)
+
+  log::info "Extracting catalog index for digest-only plugin list: ${plugin_index}"
+  if ! skopeo copy "docker://${index_ref}" "dir:${extract_dir}/idx"; then
+    log::error "Failed to extract catalog index ${index_ref}"
+    rm -rf "${extract_dir}"
+    return 1
+  fi
+
+  local data_dir="${extract_dir}/data"
+  mkdir -p "${data_dir}"
+  local layer
+  for layer in "${extract_dir}/idx"/*; do
+    if [[ -f "${layer}" && ! "${layer}" =~ (manifest\.json|version)$ ]]; then
+      tar -xf "${layer}" -C "${data_dir}" 2> /dev/null || true
+    fi
+  done
+
+  if [[ ! -f "${data_dir}/index.json" ]]; then
+    log::error "No index.json in catalog index image"
+    rm -rf "${extract_dir}"
+    return 1
+  fi
+
+  : > "${list_file}"
+  # Prefer registryReference digests from index.json; also accept oci://…@sha256 from defaults.
+  jq -r '
+    .. | objects | .registryReference? // empty
+  ' "${data_dir}/index.json" 2> /dev/null \
+    | sed -E 's#^(oci://)?#oci://#' \
+    | grep -E '@sha256:[0-9a-f]+' >> "${list_file}" || true
+
+  if [[ -f "${data_dir}/dynamic-plugins.default.yaml" ]]; then
+    grep -oE 'oci://[^[:space:]]+@sha256:[0-9a-f]+[^[:space:]]*' \
+      "${data_dir}/dynamic-plugins.default.yaml" >> "${list_file}" || true
+  fi
+
+  # Deduplicate; strip !package suffix for skopeo (mirror-plugins accepts either).
+  if [[ -s "${list_file}" ]]; then
+    local tmp
+    tmp=$(mktemp)
+    sed -E 's/!.*//' "${list_file}" | sort -u > "${tmp}"
+    mv "${tmp}" "${list_file}"
+  fi
+
+  local count
+  count=$(wc -l < "${list_file}" | tr -d ' ')
+  rm -rf "${extract_dir}"
+
+  if [[ "${count}" -lt 1 ]]; then
+    log::error "No digest-pinned plugins found in catalog index"
+    return 1
+  fi
+  log::info "LOCAL_DISCONNECTED: ${count} digest-pinned plugins (tag-only refs skipped)"
+}
+
 # Fetch and run mirror-plugins.sh against the disconnected mirror registry.
 # Uses CATALOG_INDEX_IMAGE when set; otherwise the GA plugin-catalog-index tag.
+# LOCAL_DISCONNECTED: mirror digest-pinned plugins only (next catalogs can list
+# missing :tag refs that abort mirror-plugins.sh), then mirror the catalog index.
 disconnected::mirror_plugins() {
   local mirror_script="${DISCONNECTED_TMPDIR}/mirror-plugins.sh"
 
@@ -301,12 +683,64 @@ disconnected::mirror_plugins() {
     plugin_index="oci://${CATALOG_INDEX_IMAGE}"
   fi
 
-  bash "${mirror_script}" \
-    --plugin-index "${plugin_index}" \
-    --to-registry "${MIRROR_REGISTRY_URL}" || {
-    log::error "mirror-plugins.sh failed — aborting"
-    return 1
-  }
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    local list_file="${DISCONNECTED_TMPDIR}/local-digest-plugins.txt"
+    disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" || return 1
+
+    # --plugin-list only (not --plugin-index): index mode re-adds fragile tags.
+    # Catalog index is mirrored after plugins so the summary still records it.
+    bash "${mirror_script}" \
+      --plugin-list "${list_file}" \
+      --to-registry "${MIRROR_REGISTRY_URL}" || {
+      log::error "mirror-plugins.sh (digest-only list) failed — aborting"
+      return 1
+    }
+
+    local index_ref="${plugin_index#oci://}"
+    local catalog_dest="${MIRROR_REGISTRY_URL}/rhdh/plugin-catalog-index"
+    if [[ "${index_ref}" =~ @sha256:[0-9a-f]+$ ]]; then
+      catalog_dest="${catalog_dest}@${index_ref##*@}"
+    elif [[ "${index_ref}" =~ :([^:/]+)$ ]]; then
+      catalog_dest="${catalog_dest}:${BASH_REMATCH[1]}"
+    else
+      catalog_dest="${catalog_dest}:latest"
+    fi
+    # Use real skopeo --all (not the amd64 shim): destination @sha256 must stay the
+    # multi-arch list digest; single-arch flatten yields "digest invalid".
+    local real_skopeo=""
+    local candidate
+    for candidate in /usr/bin/skopeo /usr/local/bin/skopeo; do
+      if [[ -x "${candidate}" ]]; then
+        real_skopeo="${candidate}"
+        break
+      fi
+    done
+    if [[ -z "${real_skopeo}" ]]; then
+      real_skopeo=$(type -P skopeo)
+      while [[ "${real_skopeo}" == *disconnected-skopeo-shim* ]]; do
+        real_skopeo=$(PATH="${PATH#${real_skopeo%/*}:}" type -P skopeo) || break
+      done
+    fi
+    log::info "Mirroring catalog index → ${catalog_dest} (skopeo --all)"
+    if ! "${real_skopeo}" copy --all --remove-signatures --dest-tls-verify=false \
+      "docker://${index_ref}" "docker://${catalog_dest}"; then
+      log::error "Failed to mirror catalog index ${index_ref}"
+      return 1
+    fi
+    # Ensure summary includes catalog index for resolve_catalog_index_image.
+    local summary_src
+    summary_src="$(pwd)/rhdh-plugin-mirroring-summary.txt"
+    if [[ -f "${summary_src}" ]] && ! grep -qF 'plugin-catalog-index' "${summary_src}"; then
+      echo "${plugin_index} → oci://${catalog_dest}" >> "${summary_src}"
+    fi
+  else
+    bash "${mirror_script}" \
+      --plugin-index "${plugin_index}" \
+      --to-registry "${MIRROR_REGISTRY_URL}" || {
+      log::error "mirror-plugins.sh failed — aborting"
+      return 1
+    }
+  fi
 
   # mirror-plugins.sh writes the summary to ORIGINAL_DIR (pwd at script start).
   local summary_src
@@ -324,6 +758,89 @@ disconnected::mirror_plugins() {
     return 1
   }
   log::info "Saved plugin mirroring summary to ${DISCONNECTED_TMPDIR} and ${ARTIFACT_DIR}"
+
+  # OpenShift integrated registry only serves pulls through ImageStreams. Digest-only
+  # skopeo pushes leave Image objects without stream tags → HTTP 500/404 on pull.
+  # Re-push each mirrored digest under an explicit tag so ImageStreams stick.
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    disconnected::ensure_local_plugin_imagestream_tags "${summary_src}" || return 1
+  fi
+}
+
+# LOCAL_DISCONNECTED: create ImageStream tags for digest-mirrored plugins by
+# re-pushing each source@digest to <mirror>/<ns>/<name>:sha256-<digest>.
+# Args:
+#   $1 - path to rhdh-plugin-mirroring-summary.txt
+disconnected::ensure_local_plugin_imagestream_tags() {
+  local summary=$1
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    return 0
+  fi
+  if [[ ! -f "${summary}" ]]; then
+    log::error "Plugin mirroring summary not found at ${summary}"
+    return 1
+  fi
+
+  common::require_vars MIRROR_REGISTRY_URL || return 1
+
+  log::section "Ensuring ImageStream tags for mirrored plugins"
+  local line src dest src_ref dest_path name ns digest tag dest_tagged
+  local ok=0 fail=0
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    [[ -z "${line}" || "${line}" != *"→"* && "${line}" != *"->"* ]] && continue
+    # Summary uses either → or -> between source and dest.
+    if [[ "${line}" == *"→"* ]]; then
+      src="${line%%→*}"
+      dest="${line#*→}"
+    else
+      src="${line%%->*}"
+      dest="${line#*->}"
+    fi
+    src=$(echo "${src}" | xargs)
+    dest=$(echo "${dest}" | xargs)
+    src_ref="${src#oci://}"
+    dest="${dest#oci://}"
+    dest="${dest#docker://}"
+    [[ "${src_ref}" != *@sha256:* ]] && continue
+    digest="${src_ref##*@}"
+    [[ "${digest}" =~ ^sha256:[0-9a-f]+$ ]] || continue
+
+    # dest like registry/ns/name@sha256:... or registry/ns/name:tag
+    dest_path="${dest%%@*}"
+    # Drop a trailing :tag if present (host has no port in our local route case;
+    # tagged dests are host/ns/name:tag — strip :tag only from the name segment).
+    if [[ "${dest_path}" == *"/"*":"* ]]; then
+      dest_path="${dest_path%:*}"
+    fi
+    name="${dest_path##*/}"
+    ns="${dest_path%/*}"
+    ns="${ns##*/}"
+    if [[ -z "${ns}" || -z "${name}" || "${ns}" == "${name}" ]]; then
+      log::warn "Skipping unparsable mirror dest: ${dest}"
+      continue
+    fi
+
+    tag="sha256-${digest#sha256:}"
+    dest_tagged="${MIRROR_REGISTRY_URL}/${ns}/${name}:${tag}"
+    log::info "Tagging ${ns}/${name}@${digest} → :${tag}"
+    if skopeo copy --remove-signatures --dest-tls-verify=false \
+      "docker://${src_ref}" "docker://${dest_tagged}"; then
+      ok=$((ok + 1))
+    else
+      log::error "Failed to create ImageStream tag for ${ns}/${name}"
+      fail=$((fail + 1))
+    fi
+  done < "${summary}"
+
+  if [[ "${fail}" -gt 0 ]]; then
+    log::error "ImageStream tagging finished with ${fail} failure(s), ${ok} succeeded"
+    return 1
+  fi
+  if [[ "${ok}" -eq 0 ]]; then
+    log::warn "No digest-pinned plugins found to tag in ${summary}"
+    return 0
+  fi
+  log::success "Created ImageStream tags for ${ok} mirrored plugins"
 }
 
 # Resolve the mirrored plugin-catalog-index to a digest-pinned CATALOG_INDEX_IMAGE.
@@ -673,10 +1190,17 @@ disconnected::wait_operator_crd_olm_v1() {
 # Export functions for subshell usage (e.g., timeout bash -c "...")
 export -f disconnected::require_env
 export -f disconnected::setup_auth
+export -f disconnected::setup_local_ocp_mirror
+export -f disconnected::ensure_local_image_pull_access
+export -f disconnected::cluster_mirror_host
+export -f disconnected::rewrite_mirror_host_for_cluster
+export -f disconnected::ensure_local_amd64_skopeo_shim
 export -f disconnected::fetch_script
 export -f disconnected::with_unset_registry_auth_file
 export -f disconnected::wait_mcp_updated
+export -f disconnected::write_digest_plugin_list
 export -f disconnected::mirror_plugins
+export -f disconnected::ensure_local_plugin_imagestream_tags
 export -f disconnected::resolve_catalog_index_image
 export -f disconnected::resolve_homepage_plugin_package
 export -f disconnected::create_homepage_plugins_configmap
