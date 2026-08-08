@@ -9253,31 +9253,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openshift/dynamic-plugin-sdk@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "@openshift/dynamic-plugin-sdk@npm:5.0.1"
-  dependencies:
-    lodash: "npm:^4.17.21"
-    semver: "npm:^7.3.7"
-    uuid: "npm:^8.3.2"
-    yup: "npm:^0.32.11"
-  peerDependencies:
-    react: ^17 || ^18
-  checksum: 10c0/2793e27abd90b47daabb0a6c97c76d6acfe0f5a102d394e6eeb1c140e38609b1185dc774ce4816e4fe4ed76656b0f2e5d0295ee4529dc921a544a7d81c263c9c
-  languageName: node
-  linkType: hard
-
-"@openshift/dynamic-plugin-sdk@npm:^8.0.0":
-  version: 8.2.0
-  resolution: "@openshift/dynamic-plugin-sdk@npm:8.2.0"
+"@openshift/dynamic-plugin-sdk@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "@openshift/dynamic-plugin-sdk@npm:9.1.0"
   dependencies:
     lodash: "npm:^4.17.23"
     semver: "npm:^7.7.3"
-    uuid: "npm:^8.3.2"
-    yup: "npm:^1.7.1"
+    zod: "npm:^3.25.67"
   peerDependencies:
     react: ^18 || ^19
-  checksum: 10c0/a9e3e1a145014a13310acd4630c7a2b7a7545b6c089e1d41e99ceaec061c1a270051d44bd26ddd09ec61bb02533ecfab55663cedb41a20d63acf824067eb63ab
+  checksum: 10c0/9c34871fe5b26a9230c7581000e6ce05b817ac5cc46c1d97e8c05422c2d4944e4a7bd30a6eb52b5c8d1db9eb4beb83e8bbfb60ff773bf4358d8cf2ae33899f4b
   languageName: node
   linkType: hard
 
@@ -12063,40 +12048,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.9.3":
-  version: 0.9.3
-  resolution: "@scalprum/core@npm:0.9.3"
+"@scalprum/core@npm:0.10.3":
+  version: 0.10.3
+  resolution: "@scalprum/core@npm:0.10.3"
   dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
+    "@openshift/dynamic-plugin-sdk": "npm:^9.1.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/760c3f8d162163cad453d6f4d8494bf61f6b9ae28a624706887176673fe87147a0ed65d3a2e7fd8654b0e75eaf87914bd1357ce041d7c3c28372b24856027304
+  checksum: 10c0/0ffa217f3139488814ec72e05f5244ad70c6fd49b0ea1adeeb1d10f6ecaa68a7c04f58d8d88775cd4b065768219453279eba337368570efb47888b04c55d79ec
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.11.2":
-  version: 0.11.2
-  resolution: "@scalprum/react-core@npm:0.11.2"
+"@scalprum/react-core@npm:0.13.3":
+  version: 0.13.3
+  resolution: "@scalprum/react-core@npm:0.13.3"
   dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    "@scalprum/core": "npm:^0.9.1"
+    "@openshift/dynamic-plugin-sdk": "npm:^9.1.0"
+    "@scalprum/core": "npm:^0.10.3"
     lodash: "npm:^4.17.0"
   peerDependencies:
-    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 10c0/b27209ff4276f8e12c8b5e956def2d4273fa8dee75a1b54a634a58e02682470d8d51bdbce0d55930a699d32383997e189735299f73a86160c00b720a266f3f2b
+    react: ">=17.0.0 <20.0.0"
+    react-dom: ">=17.0.0 <20.0.0"
+  checksum: 10c0/a337d10f2fd3371940ed27e03e51ac967da0454c593c7d046c7c2e5d9e414f742667984533f178ed7de109c3b4741239fc24500c539ff88554ba4b7dabb8d3b9
   languageName: node
   linkType: hard
 
-"@scalprum/react-test-utils@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@scalprum/react-test-utils@npm:0.3.0"
+"@scalprum/react-test-utils@npm:0.3.4":
+  version: 0.3.4
+  resolution: "@scalprum/react-test-utils@npm:0.3.4"
   dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^8.0.0"
-    "@scalprum/core": "npm:^0.10.0"
-    "@scalprum/react-core": "npm:^0.12.0"
+    "@openshift/dynamic-plugin-sdk": "npm:^9.1.0"
+    "@scalprum/core": "npm:^0.10.3"
+    "@scalprum/react-core": "npm:^0.13.3"
     tslib: "npm:^2.6.2"
     whatwg-fetch: "npm:^3.6.0"
-  checksum: 10c0/c8aeb2881c976c8412e4fc234c1168cbf37a738abe7618e4d20bc79f6dec816c50b727c28e616b6ff54d5017da37f7a9914891291ea74af9e37ee44b6c6465f7
+  checksum: 10c0/58460c172e7fcda482a860ddc43b1fc0202dd436eb7f1f3b120ff8be085fc38db2b32e6721fee2eee3dfcf0b2116396e419e3d5ca5cf3c508b02d7e5522ddac1
   languageName: node
   linkType: hard
 
@@ -16016,7 +16001,7 @@ __metadata:
     "@red-hat-developer-hub/plugin-utils": "workspace:*"
     "@scalprum/core": "npm:0.10.1"
     "@scalprum/react-core": "npm:0.13.1"
-    "@scalprum/react-test-utils": "npm:0.3.0"
+    "@scalprum/react-test-utils": "npm:0.3.4"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:14.3.1"
@@ -30565,7 +30550,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"property-expr@npm:^2.0.4, property-expr@npm:^2.0.5":
+"property-expr@npm:^2.0.4":
   version: 2.0.6
   resolution: "property-expr@npm:2.0.6"
   checksum: 10c0/69b7da15038a1146d6447c69c445306f66a33c425271235bb20507f1846dbf9577a8f9dfafe8acbfcb66f924b270157f155248308f026a68758f35fc72265b3c
@@ -32799,7 +32784,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.7.1, semver@npm:^7.7.2, semver@npm:^7.7.3":
+"semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.8, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.7.1, semver@npm:^7.7.2, semver@npm:^7.7.3":
   version: 7.8.5
   resolution: "semver@npm:7.8.5"
   bin:
@@ -34754,13 +34739,6 @@ __metadata:
   dependencies:
     setimmediate: "npm:^1.0.4"
   checksum: 10c0/98e84db1a685bc8827c117a8bc62aac811ad56a995d07938fc7ed8cdc5bf3777bfe2d4e5da868847194e771aac3749a20f6cdd22091300fe889a76fe214a4641
-  languageName: node
-  linkType: hard
-
-"tiny-case@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "tiny-case@npm:1.0.3"
-  checksum: 10c0/c0cbed35884a322265e2cd61ff435168d1ea523f88bf3864ce14a238ae9169e732649776964283a66e4eb882e655992081d4daf8c865042e2233425866111b35
   languageName: node
   linkType: hard
 
@@ -37375,18 +37353,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yup@npm:^1.7.1":
-  version: 1.7.1
-  resolution: "yup@npm:1.7.1"
-  dependencies:
-    property-expr: "npm:^2.0.5"
-    tiny-case: "npm:^1.0.3"
-    toposort: "npm:^2.0.2"
-    type-fest: "npm:^2.19.0"
-  checksum: 10c0/76b8c7fc2ba467a346935d027a25c067f9653bb0413cd60fbe0518e3d62637a56dbfca49979c4bab1a93d8e9a50843ca73d90bdc271e2f5bce1effa7734e5f28
-  languageName: node
-  linkType: hard
-
 "zen-observable@npm:0.10.0, zen-observable@npm:^0.10.0":
   version: 0.10.0
   resolution: "zen-observable@npm:0.10.0"
@@ -37439,7 +37405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.25.76, zod@npm:^3.25.76":
+"zod@npm:3.25.76, zod@npm:^3.25.67, zod@npm:^3.25.76":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
