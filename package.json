@@ -9,7 +9,7 @@
     "prepare": "husky install",
     "start": "NODE_OPTIONS=--no-node-snapshot turbo run start --filter=backend",
     "dev:legacy": "NODE_OPTIONS=--no-node-snapshot turbo run start --filter=backend --filter=app-legacy",
-    "dev": "NODE_OPTIONS=--no-node-snapshot turbo run start --filter=backend --filter=app",
+    "dev": "NODE_OPTIONS=--no-node-snapshot ENABLE_STANDARD_MODULE_FEDERATION=true turbo run start --filter=backend --filter=app",
     "build": "turbo run build",
     "build:dockerfile": "bash ./scripts/update-Dockerfile.sh",
     "tsc": "turbo run tsc",

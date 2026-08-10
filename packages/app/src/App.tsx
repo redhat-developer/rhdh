@@ -5,6 +5,7 @@ import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import searchPlugin from '@backstage/plugin-search/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
+import homePagePlugin from '@backstage/plugin-home/alpha';
 
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
@@ -19,6 +20,7 @@ import { rhdhTranslationsModule } from './translations/translationsModule';
 const app = createApp({
   features: [
     // Upstream Backstage plugins
+    homePagePlugin,
     appVisualizerPlugin,
     catalogPlugin,
     scaffolderPlugin,
