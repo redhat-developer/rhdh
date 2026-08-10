@@ -7,9 +7,6 @@ import searchPlugin from '@backstage/plugin-search/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import homePagePlugin from '@backstage/plugin-home/alpha';
 
-import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
-import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { rhdhApisModule } from './apis/apisModule';
@@ -27,10 +24,6 @@ const app = createApp({
     searchPlugin,
     userSettingsPlugin,
     dynamicFrontendFeaturesLoader(),
-    // RHDH modules (from rhdh-plugins workspace)
-    appAuthModule, // config-driven sign-in page + OIDC/Keycloak/PingFederate/Auth0/SAML auth APIs
-    appIntegrationsModule, // SCM integrations + SCM auth APIs
-    appDrawerModule, // drawer infrastructure (lightspeed, quickstarts, etc.)
     // RHDH modules (local to app)
     navModule, // RHDH-branded sidebar (logo, menu ordering, drawer toggle)
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
