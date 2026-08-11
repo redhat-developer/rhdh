@@ -119,3 +119,28 @@ catalog:
             seconds: 15
           timeout:
             minutes: 15
+    # Catalog index enables pingidentity with incomplete placeholder config;
+    # apiPath/authPath/envId are required at init and abort the backend if missing.
+    pingIdentityOrg:
+      default:
+        apiPath: https://api.pingidentity.invalid
+        authPath: https://auth.pingidentity.invalid
+        envId: plugin-sanity-dummy
+        clientId: plugin-sanity-dummy
+        clientSecret: plugin-sanity-dummy
+        schedule:
+          frequency:
+            hours: 24
+          initialDelay:
+            seconds: 15
+          timeout:
+            minutes: 15
+
+# @backstage/plugin-notifications-backend-module-email requires sender + a
+# transport at init. Use the debug-only `stream` transport so nothing is sent.
+notifications:
+  processors:
+    email:
+      transportConfig:
+        transport: stream
+      sender: plugin-sanity-dummy@invalid
