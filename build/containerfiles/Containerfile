@@ -14,8 +14,8 @@
 # limitations under the License.
 
 # Stage 1 - Build nodejs skeleton
-# https://registry.access.redhat.com/ubi9/nodejs-24
-FROM registry.access.redhat.com/ubi9/nodejs-24:9.8-1786496588@sha256:9888d7957eed90ba331ab94e8775b83b18a8391fdce02c3f6aa4b2b2ff3b9e1d AS skeleton
+# https://registry.access.redhat.com/ubi10/nodejs-24
+FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1786427351@sha256:a35d0e62639a3b678cd1b8dcb027b046fb5493cc4d295648af64cbda61bc697e AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -28,23 +28,23 @@ RUN dnf install -q -y --allowerasing --nobest \
   findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
   glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
   ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
-  libacl libarchive libassuan libattr libblkid libbpf libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libacl libarchive libassuan libattr libblkid libbpf libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdnf libdnf-plugin-subscription-manager \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
-  libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
+  libpipeline libpkgconf libpwquality librepo librhsm libseccomp libselinux libsemanage libsepol libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
   ncurses ncurses-base ncurses-libs nettle npth nss_wrapper-libs openldap \
-  openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre pcre2 pcre2-syntax \
+  openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre2 pcre2-syntax \
   perl perl-AutoLoader perl-B perl-base perl-Carp perl-Class-Struct perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-DynaLoader perl-Encode perl-Errno perl-Error \
   perl-Exporter perl-Fcntl perl-File-Basename perl-File-Find perl-File-Path perl-File-stat perl-File-Temp perl-FileHandle perl-Getopt-Long perl-Getopt-Std perl-Git perl-HTTP-Tiny \
   perl-interpreter perl-IO perl-IO-Socket-IP perl-IO-Socket-SSL perl-IPC-Open3 perl-lib perl-libnet perl-libs perl-MIME-Base64 perl-Mozilla-CA perl-mro perl-NDBM_File perl-Net-SSLeay \
   perl-overload perl-overloading perl-parent perl-PathTools perl-Pod-Escapes perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage perl-podlators perl-POSIX perl-Scalar-List-Utils perl-SelectSaver \
   perl-Socket perl-Storable perl-subs perl-Symbol perl-Term-ANSIColor perl-Term-Cap perl-TermReadKey perl-Text-ParseWords perl-Text-Tabs+Wrap perl-Time-Local perl-URI perl-vars pkgconf \
-  pkgconf-m4 pkgconf-pkg-config popt procps-ng protobuf-c psmisc python-unversioned-command python3 python3-chardet python3-cloud-what python3-dateutil python3-dbus python3-decorator \
+  pkgconf-m4 pkgconf-pkg-config popt procps-ng protobuf-c psmisc python-unversioned-command python3 python3-cloud-what python3-dateutil python3-dbus python3-decorator \
   python3-dnf python3-dnf-plugins-core python3-gobject-base python3-gobject-base-noarch python3-gpg python3-hawkey python3-idna python3-iniparse python3-inotify python3-libcomps \
-  python3-libdnf python3-librepo python3-libs python3-pip python3-pip-wheel python3-pysocks python3-requests python3-rpm python3-setuptools python3-setuptools-wheel python3-six \
+  python3-libdnf python3-librepo python3-libs python3-pip python3-pip-wheel python3-requests python3-rpm python3-setuptools python3-setuptools-wheel python3-six \
   python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils \
-  sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
-  systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yajl yum zlib zlib-devel && \
+  sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
+  systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yum zlib zlib-devel && \
   \
   # '(micro)dnf update -y' not allowed in Konflux+Cachi2: instead use renovate or https://github.com/konflux-ci/rpm-lockfile-prototype to update the rpms.lock.yaml file
   dnf clean all
@@ -259,8 +259,8 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
 # Prevents duplicating the same dependencies in the final minimal image.
 # hadolint ignore=DL3013,DL3041,SC2086
 COPY $EXTERNAL_SOURCE_NESTED/python/ ./python/
-RUN dnf install -y python3.11 python3.11-pip python3.11-devel 1>/dev/null 2>&1 && \
-  python3.11 -m venv /opt/techdocs-venv && \
+RUN dnf install -y python3.12 python3.12-pip python3.12-devel 1>/dev/null 2>&1 && \
+  python3.12 -m venv /opt/techdocs-venv && \
   /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
   /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
   /opt/techdocs-venv/bin/mkdocs --version && \
@@ -274,8 +274,8 @@ RUN rm -rf \
   dist-types packages/app/.webpack-cache
 
 # Stage 5 - Build the runner image
-# https://registry.access.redhat.com/ubi9/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-24-minimal:9.8-1786411410@sha256:9ef91e314a24141d00473a7a89bd4622b61009d17cae81884d54b18558aabc48 AS runner
+# https://registry.access.redhat.com/ubi10/nodejs-24-minimal
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1786428684@sha256:679472268ade9e0438fb09afa7a958e9747b0019727bf203a5c9dc07b7ac7161 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -287,9 +287,9 @@ WORKDIR $CONTAINER_SOURCE/
 #   export PIP_NO_INDEX=true
 
 # Runtime Python for techdocs (interpreter + skopeo only; mkdocs lives in the pre-built venv from techdocs stage)
-RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
-  alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-  alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+RUN microdnf install -y python3.12 skopeo 1>/dev/null 2>&1; \
+  alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
+  alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
   microdnf clean all
 
 # Copy openssl binary from build stage (needed for dynamic plugin integrity verification)
