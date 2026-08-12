@@ -11,11 +11,15 @@ import type { ScannedPluginPackage } from '@backstage/backend-dynamic-feature-se
  *
  * RHIDP-15079 (partial): prefers the modern `dist/.config-schema.json` path
  * written by `@backstage/cli`'s `cli-module-build` bundler for both frontend
- * and backend packages, falling back to the legacy per-platform path written
- * by the old janus-idp/cli (Scalprum) toolchain.
+ * and backend packages, falling back to the legacy `dist/configSchema.json`
+ * path for backend (node) packages predating that bundler.
  *
- * The legacy fallback should be removed entirely once the legacy OFS frontend
- * is deleted in RHIDP-15078/RHIDP-15079.
+ * The legacy `dist-scalprum/configSchema.json` fallback for frontend (web)
+ * packages — the old janus-idp/cli (OFS/Scalprum) toolchain's output — was
+ * removed now that RHDH only ships the new frontend system (`packages/app`).
+ * A frontend dynamic plugin without the modern schema path simply has no
+ * config schema gathered for it (see `gatherDynamicPluginsSchemas`, which
+ * skips missing files gracefully).
  */
 export function schemaLocator(pluginPackage: ScannedPluginPackage): string {
   const pluginLocation = url.fileURLToPath(pluginPackage.location);
@@ -27,8 +31,7 @@ export function schemaLocator(pluginPackage: ScannedPluginPackage): string {
   const platform = PackageRoles.getRoleInfo(
     pluginPackage.manifest.backstage.role,
   ).platform;
-  return path.join(
-    platform === 'node' ? 'dist' : 'dist-scalprum',
-    'configSchema.json',
-  );
+  return platform === 'node'
+    ? path.join('dist', 'configSchema.json')
+    : modernSchemaPath;
 }

@@ -42,11 +42,11 @@ describe('schemaLocator', () => {
     );
   });
 
-  it('falls back to the legacy dist-scalprum/configSchema.json path for frontend (web) plugins', () => {
+  it('does not fall back to the legacy OFS/Scalprum dist-scalprum path for frontend (web) plugins', () => {
     jest.spyOn(fs, 'existsSync').mockReturnValue(false);
 
     expect(schemaLocator(createPluginPackage('frontend-plugin'))).toBe(
-      path.join('dist-scalprum', 'configSchema.json'),
+      path.join('dist', '.config-schema.json'),
     );
   });
 });
