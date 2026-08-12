@@ -2,7 +2,7 @@
 
 # Testing utilities for CI pipelines
 # Handles Playwright test execution, Backstage health checks, and upgrade verification
-# Dependencies: oc, kubectl, yarn, playwright, lib/log.sh
+# Dependencies: oc, kubectl, yarn, playwright, curl, jq, lib/log.sh, lib/common.sh
 
 # Prevent re-sourcing
 if [[ -n "${TESTING_LIB_SOURCED:-}" ]]; then
@@ -12,6 +12,8 @@ readonly TESTING_LIB_SOURCED=1
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
+# shellcheck source=.ci/pipelines/lib/common.sh
+source "${DIR}/lib/common.sh"
 # shellcheck source=.ci/pipelines/lib/test-run-tracker.sh
 source "${DIR}/lib/test-run-tracker.sh"
 
@@ -78,6 +80,17 @@ testing::run_tests() {
   fi
 
   yarn playwright install chromium
+
+  # Quick re-check after yarn install; do not fail the job — deploy readiness
+  # already waited. Warn-only so a brief TLS blip does not abort the suite.
+  local health_retries=6 health_backoff_seconds=5
+  if [[ -n "${url}" ]]; then
+    if common::retry "${health_retries}" "${health_backoff_seconds}" testing::probe_rhdh_healthcheck "${url}"; then
+      log::success "Pre-Playwright /healthcheck OK"
+    else
+      log::warn "Pre-Playwright /healthcheck still flaky after ~$((health_retries * health_backoff_seconds))s; continuing to tests"
+    fi
+  fi
 
   # RHIDP-13243: V8 coverage collection for E2E tests (opt-in).
   # Set COLLECT_COVERAGE=true in the job config to enable. When enabled, the
@@ -286,6 +299,40 @@ testing::report_plugin_startup_failures() {
 # Health Checks
 # ==============================================================================
 
+# Probe GET ${url}/healthcheck for a JSON liveness response.
+# Connect/TLS failures and non-OK bodies are treated as not ready (return 1).
+# Sets _TESTING_LAST_HEALTH_DETAIL for caller logging (e.g. "HTTP 000", "jq status!=ok").
+# Args:
+#   $1 - url: Base URL of the RHDH instance (no trailing path required)
+# Returns:
+#   0 - HTTP 200 and JSON body .status == "ok"
+#   1 - Not ready
+testing::probe_rhdh_healthcheck() {
+  local url=$1
+  local health_url="${url%/}/healthcheck"
+  local response http_status body
+
+  # Append http_code on its own line so connect/TLS failures can be retried.
+  # Connect failures typically yield "\n000"; bounds avoid hung probes.
+  response=$(curl --insecure -s --connect-timeout 5 --max-time 15 -w "\n%{http_code}" "${health_url}" 2> /dev/null || true)
+
+  http_status=$(printf '%s' "${response}" | tail -n 1)
+  body=$(printf '%s' "${response}" | sed '$d')
+
+  if [[ "${http_status}" != "200" ]]; then
+    _TESTING_LAST_HEALTH_DETAIL="HTTP ${http_status:-000}"
+    return 1
+  fi
+
+  if ! printf '%s' "${body}" | jq -e '.status == "ok"' > /dev/null 2>&1; then
+    _TESTING_LAST_HEALTH_DETAIL="jq status!=ok"
+    return 1
+  fi
+
+  _TESTING_LAST_HEALTH_DETAIL="HTTP 200"
+  return 0
+}
+
 # Check if Backstage is up and running at the given URL
 # Args:
 #   $1 - release_name: The Helm release name
@@ -311,18 +358,16 @@ testing::check_backstage_running() {
     return 1
   fi
 
-  log::info "Checking if Backstage is up and running at ${url}"
+  log::info "Checking if Backstage is up and running at ${url%/}/healthcheck"
 
   for ((i = 1; i <= max_attempts; i++)); do
-    # Check HTTP status
-    local http_status
-    http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}" || echo "000")
-
-    if [[ "${http_status}" -eq 200 ]]; then
+    # GET /healthcheck (not HEAD /) so TLS + JSON liveness match what Playwright uses.
+    # Connect/TLS failures are not-ready and retry within the existing attempt budget.
+    if testing::probe_rhdh_healthcheck "${url}"; then
       log::success "Backstage is up and running!"
       return 0
     else
-      log::warn "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
+      log::warn "Attempt ${i} of ${max_attempts}: Backstage /healthcheck not yet available (${_TESTING_LAST_HEALTH_DETAIL:-unknown})"
       oc get pods -n "${namespace}"
 
       # Early crash detection: fail fast if RHDH pods are in CrashLoopBackOff
@@ -352,7 +397,7 @@ testing::check_backstage_running() {
     fi
   done
 
-  log::error "Failed to reach Backstage at ${url} after ${max_attempts} attempts."
+  log::error "Failed to reach Backstage /healthcheck at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   common::save_artifact "${artifacts_subdir}" "/tmp/${LOGFILE}" || true
   return 1
