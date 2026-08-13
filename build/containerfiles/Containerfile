@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-24
-FROM registry.access.redhat.com/ubi9/nodejs-24:9.8-1786338094@sha256:73f84dda4532c7c921be734e973d11c7255e5190f8838b7c861a0b1bea6ee13a AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-24:9.8-1786496588@sha256:9888d7957eed90ba331ab94e8775b83b18a8391fdce02c3f6aa4b2b2ff3b9e1d AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
