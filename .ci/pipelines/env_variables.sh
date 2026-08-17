@@ -55,12 +55,13 @@ IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
 
-# Temporary catalog-index override until the index on :next is fixed.
+# Catalog index: CATALOG_INDEX_IMAGE, then CATALOG_INDEX_IMAGE_OVERRIDE, then :${RELEASE_VERSION}.
+# Temporary pin until the index on :next is fixed.
 # Pin:   CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
-# Unpin: CATALOG_INDEX_IMAGE_OVERRIDE=""
-# Per-run (RC/GA/mirror): set CATALOG_INDEX_IMAGE — it wins over this override.
+# Unpin: CATALOG_INDEX_IMAGE_OVERRIDE=""  → quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}
+# Per-run (RC/GA/mirror): set CATALOG_INDEX_IMAGE — it wins over both.
 CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
-CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-${CATALOG_INDEX_IMAGE_OVERRIDE}}"
+CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-${CATALOG_INDEX_IMAGE_OVERRIDE:-quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}}}"
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
   # Derived components for Helm --set global.catalogIndex.image.{registry,repository,tag}
   CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"
