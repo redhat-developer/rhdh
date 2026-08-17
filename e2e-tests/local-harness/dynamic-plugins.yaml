@@ -42,12 +42,11 @@ plugins:
   # NOTE: application-provider-test / application-listener-test (which exercise
   # plugins/application-provider.spec.ts and plugins/application-listener.spec.ts) are
   # deliberately NOT installed here. Their pinned OCI builds only expose an OFS ("."
-  # Module Federation) entry point — no NFS/alpha extensions — and application/provider
-  # + application/listener are rendered exclusively by packages/app-legacy's
-  # ApplicationProvider.tsx/ApplicationListener.tsx, which packages/app (NFS) has no
-  # equivalent for. Both specs are excluded from playwright.local.config.ts's testMatch
-  # for the same reason; re-add both once NFS support exists for either the fixture
-  # plugins or a generic application/provider+listener renderer in packages/app.
+  # Module Federation) entry point — no NFS/alpha extensions — and packages/app (NFS)
+  # has no application/provider or application/listener renderer yet. Both specs are
+  # excluded from playwright.local.config.ts's testMatch for the same reason; re-add
+  # both once NFS support exists for either the fixture plugins or a generic
+  # application/provider+listener renderer in packages/app.
   # Global header: top bar + profile dropdown (Settings / Sign-out navigation).
   #
   # Installed via its own NFS extensions (gh-component:global-header/*,

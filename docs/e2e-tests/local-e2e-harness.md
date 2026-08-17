@@ -142,12 +142,11 @@ Not enablable yet:
 - `plugins/application-provider` and `plugins/application-listener` — the
   application-provider-test / application-listener-test OCI plugins (pinned in
   `values_showcase.yaml` for cluster-based CI) only publish an OFS ("." Module
-  Federation) entry point, no NFS/alpha extensions. `application/provider` and
-  `application/listener` are rendered exclusively by `packages/app-legacy`'s
-  `ApplicationProvider.tsx`/`ApplicationListener.tsx`, which the NFS `packages/app` has
-  no equivalent for — so neither spec can currently pass here. Not installed in the
-  harness; re-add once NFS support exists for either the fixture plugins or a generic
-  provider/listener renderer in `packages/app`.
+  Federation) entry point, no NFS/alpha extensions. `packages/app` (NFS) has no
+  application/provider or application/listener renderer yet — so neither spec can
+  currently pass here. Not installed in the harness; re-add once NFS support exists
+  for either the fixture plugins or a generic provider/listener renderer in
+  `packages/app`.
 - `plugins/licensed-users-info-backend` — the
   `licensed-users-info-backend` plugin is not published to the overlays OCI registry
 (ghcr) and only exists as a `./dynamic-plugins/dist` source build.
