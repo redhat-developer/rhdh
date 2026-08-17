@@ -38,7 +38,8 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
   // Not @cluster-free-capable: needs a real techdocs-ref entity with buildable/published docs
   // content — e.g. catalog-entities/components/showcase.yaml's "Red Hat Developer Hub"
   // (techdocs-ref: url:...), loaded via catalog-entities/all.yaml (app-config.yaml) in
-  // full CI only. The cluster-free harness's catalog has no such entity, so this can't run there.
+  // full CI only. The cluster-free harness's catalog has no such entity (see above), so
+  // this can't run there.
   test("Verify Docs entity page renders real content", async () => {
     await sidebarPage.openDocs();
     await sidebarPage.openDocsEntity("Red Hat Developer Hub");

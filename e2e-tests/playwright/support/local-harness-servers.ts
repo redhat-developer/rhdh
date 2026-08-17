@@ -1,6 +1,6 @@
 /**
  * Shared pieces of the cluster-free harness Playwright configs
- * (playwright.legacy-local.config.ts and playwright.plugin-sanity.config.ts).
+ * (playwright.local.config.ts and playwright.plugin-sanity.config.ts).
  */
 
 import { resolve } from "path";
@@ -11,9 +11,9 @@ export const backendUrl = "http://localhost:7007";
 const backendReadiness = `${backendUrl}/.backstage/health/v1/readiness`;
 export const isCI = process.env.CI !== undefined && process.env.CI !== "";
 
-// backstage-cli / janus-cli live in the repo-root node_modules/.bin, which
-// yarn does not surface for this workspace, so the CLIs are invoked with the
-// root .bin prepended to PATH and run from their package directory.
+// backstage-cli lives in the repo-root node_modules/.bin, which yarn does not
+// surface for this workspace, so the CLI is invoked with the root .bin prepended
+// to PATH and run from its package directory.
 const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
 export const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
 

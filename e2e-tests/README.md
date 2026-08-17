@@ -243,7 +243,7 @@ letting CI or a local run target a subset.
 | `@blocked`              | Blocked by a known issue; tests are skipped with a Jira reference.                        |
 | `@cluster-free-capable` | Validated to also run on the cluster-free harness.                                        |
 
-`@cluster-free-capable` is what `playwright.legacy-local.config.ts` selects on. It
+`@cluster-free-capable` is what `playwright.local.config.ts` selects on. It
 describes a capability of the test, not how a given run executed: the tag still shows
 in reports of cluster runs, where the project name (e.g. `showcase-sanity-plugins`) is
 what identifies the execution mode.
