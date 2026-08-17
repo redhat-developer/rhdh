@@ -5,6 +5,7 @@ import * as interaction from "../../utils/ui-helper/interaction";
 import * as misc from "../../utils/ui-helper/misc";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
+import { waitForRhdhSignInPage } from "../auth/sign-in-page";
 import { SETTINGS_PAGE_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
@@ -63,10 +64,7 @@ export class SettingsPage {
   }
 
   async verifySignInPageTitle(): Promise<void> {
-    await verification.verifyHeading(
-      this.page,
-      t["rhdh"][getCurrentLanguage()]["signIn.page.title"],
-    );
+    await waitForRhdhSignInPage(this.page, { locale: getCurrentLanguage() });
   }
 
   async verifySignInError(message: string | RegExp): Promise<void> {

@@ -17,6 +17,13 @@ export const isCI = process.env.CI !== undefined && process.env.CI !== "";
 const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
 export const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
 
+/** Env vars for harness webServers (PATH prepends repo-root backstage-cli). */
+export const harnessProcessEnv: { [key: string]: string } = {
+  ...process.env as { [key: string]: string },
+  PATH: pathWithRepoBin,
+  NODE_OPTIONS: "--no-node-snapshot",
+};
+
 // Populated by the local-harness populate scripts at the repo root; Playwright
 // runs with cwd e2e-tests.
 export const dynamicPluginsRoot = resolve(process.cwd(), "..", "dynamic-plugins-root");
@@ -55,11 +62,7 @@ type WebServer = Extract<NonNullable<PlaywrightTestConfig["webServer"]>, unknown
 export const backendWebServer = (extraConfigs: string[] = []): WebServer => ({
   command: `backstage-cli package start --require ./src/instrumentation.js ${harnessConfigArgs(extraConfigs)}`,
   cwd: "../packages/backend",
-  env: {
-    ...process.env,
-    PATH: pathWithRepoBin,
-    NODE_OPTIONS: "--no-node-snapshot",
-  },
+  env: harnessProcessEnv,
   url: backendReadiness,
   reuseExistingServer: !isCI,
   timeout: 180 * 1000,

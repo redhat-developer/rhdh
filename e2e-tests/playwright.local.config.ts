@@ -3,9 +3,9 @@ import { defineConfig, devices } from "@playwright/test";
 import {
   backendWebServer,
   harnessConfigArgs,
+  harnessProcessEnv,
   harnessReporters,
   isCI,
-  pathWithRepoBin,
 } from "./playwright/support/local-harness-servers";
 
 /**
@@ -87,7 +87,7 @@ export default defineConfig({
     {
       command: `backstage-cli package start ${harnessConfigArgs()}`,
       cwd: "../packages/app",
-      env: { ...process.env, PATH: pathWithRepoBin },
+      env: harnessProcessEnv,
       url: frontendUrl,
       reuseExistingServer: !isCI,
       timeout: 240 * 1000,

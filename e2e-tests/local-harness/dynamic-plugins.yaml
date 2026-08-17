@@ -2,6 +2,11 @@
 # install-dynamic-plugins from OCI (quay.io, pulled with skopeo), so no
 # dynamic-plugins/dist source build is needed.
 #
+# Includes the full DPDY catalog, then disables plugins the @cluster-free-capable
+# Playwright specs do not exercise (segment, adoption-insights, extensions dist
+# builds, …). The remaining harness-critical plugins stay enabled via DPDY defaults
+# and are documented explicitly below.
+#
 # app-config.dynamic-plugins.yaml (loaded by the harness) already configures these
 # plugins, so the existing RHDH specs render off-cluster.
 #
@@ -9,9 +14,44 @@
 # resolved against the full dynamic-plugins.default.yaml (repo root by default —
 # same as CI/Helm includes; see populate.sh). Set CATALOG_INDEX_IMAGE to extract
 # the full catalog DPDY from a catalog-index OCI image instead.
+#
+# Re-run populate.sh after editing this file.
 includes:
   - dynamic-plugins.default.yaml
 plugins:
+  # --- Disabled: not needed off-cluster (avoids env-var / dist-path startup failures) ---
+
+  # Segment analytics — pluginConfig references ${SEGMENT_WRITE_KEY}, ${SEGMENT_TEST_MODE}, …
+  - package: oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+    enabled: false
+
+  # Scaffolder regex module — not exercised by cluster-free specs
+  - package: oci://quay.io/rhdh/backstage-community-plugin-scaffolder-backend-module-regex:{{inherit}}
+    enabled: false
+
+  # Adoption Insights stack — analytics + admin routes; needs licensed-users backend in CI
+  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights:{{inherit}}
+    enabled: false
+  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights-backend:{{inherit}}
+    enabled: false
+  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights:{{inherit}}
+    enabled: false
+
+  # Quickstart onboarding panel — not asserted by cluster-free specs
+  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-quickstart:{{inherit}}
+    enabled: false
+
+  # Source-build plugins — require `yarn --cwd dynamic-plugins export-dynamic` and env vars
+  # (${RHDH_EXTENSIONS_DIRECTORY}, …). Disabled so a fresh clone + populate.sh works OCI-only.
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions-dynamic
+    enabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
+    enabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
+    enabled: false
+
+  # --- Enabled for cluster-free E2E (inherits version + pluginConfig from DPDY) ---
+
   # Home page: route / -> page:home (NFS, @backstage/plugin-home bundled in), plus
   # home-page-widget:home/{random-joke,starred-entities,toolkit}. Superseded the older
   # red-hat-developer-hub-backstage-plugin-dynamic-home-page (ghcr, bs_1.49.4__1.13.1),

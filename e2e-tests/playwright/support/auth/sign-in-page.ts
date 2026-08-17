@@ -1,0 +1,30 @@
+import { expect, type Page } from "@playwright/test";
+
+import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/localization/locale";
+
+const t = getTranslations();
+
+/**
+ * Waits for the RHDH app-auth sign-in page to replace the interim upstream NFS shell.
+ *
+ * NFS renders the default @backstage/plugin-app sign-in immediately (heading = app
+ * title, Guest only). The app-auth dynamic plugin hydrates via module federation a few
+ * seconds later and swaps in the RHDH multi-provider page ("Select a sign-in method").
+ */
+export async function waitForRhdhSignInPage(
+  page: Page,
+  options?: { timeout?: number; locale?: Locale },
+): Promise<void> {
+  const lang = options?.locale ?? getCurrentLanguage();
+  const timeout = options?.timeout ?? 120_000;
+  const signInTitle = t["rhdh"][lang]["signIn.page.title"];
+  const guestEnterLabel = t["core-components"][lang]["signIn.guestProvider.enter"];
+
+  const signInHeading = page.getByRole("heading", { name: signInTitle });
+  await signInHeading.waitFor({ state: "visible", timeout });
+  await expect(signInHeading).toBeVisible();
+
+  const guestEnterButton = page.getByRole("button", { name: guestEnterLabel });
+  await guestEnterButton.waitFor({ state: "visible", timeout });
+  await expect(guestEnterButton).toBeVisible();
+}

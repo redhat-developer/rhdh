@@ -73,7 +73,10 @@ yarn --cwd e2e-tests e2e:local
 
 Playwright (`playwright.local.config.ts`) boots the backend and the NFS app dev server
 with `app-config.yaml` + `app-config.dynamic-plugins.yaml` +
-`app-config.local-e2e.yaml`. A `globalSetup` first fails fast with the populate command
+`app-config.local-e2e.yaml` + `dynamic-plugins-root/app-config.dynamic-plugins.yaml`.
+The harness install config (`e2e-tests/local-harness/dynamic-plugins.yaml`) disables
+DPDY plugins that are not needed off-cluster (segment, adoption-insights, extensions,
+…). A `globalSetup` first fails fast with the populate command
 if `dynamic-plugins-root` has no plugins.
 
 The run is scoped to tests tagged `@cluster-free-capable` within the spec files
@@ -183,10 +186,14 @@ just `run`), which is why this harness boots the dev servers directly instead.
   dependency versions), backend dynamic-plugin builds fail with version-mismatch errors
   and yarn may not surface workspace bins. Run `yarn install` first. The
   `install-dynamic-plugins` populate path avoids building from source and is unaffected.
-- **Re-run `populate.sh` after changing the harness plugin set.** Any `pluginConfig`
-  blocks in `e2e-tests/local-harness/dynamic-plugins.yaml` only take effect through the
-  generated `dynamic-plugins-root/app-config.dynamic-plugins.yaml`, which the webServer
-  loads last. A stale populate leaves plugins loaded but unconfigured/outdated.
+- **Re-run `populate.sh` after changing the harness plugin set.** Overrides in
+  `e2e-tests/local-harness/dynamic-plugins.yaml` (`enabled: false` + `{{inherit}}`) only
+  take effect through the generated `dynamic-plugins-root/app-config.dynamic-plugins.yaml`,
+  which the webServer loads last. A stale populate leaves unwanted plugins installed.
+- **Plugin sanity uses a separate config overlay.** Default `populate.sh` disables
+  segment, adoption-insights, extensions (dist), and other plugins not needed for
+  cluster-free specs. If you switch to `populate-catalog-index.sh` (full index), use
+  `app-config.plugin-sanity.yaml` (via `e2e:plugin-sanity`) for provider stubs.
 - **Live-external-service specs** (real k8s cluster, GitHub org, Quay, Tekton, Keycloak)
   still need those services or mocks; this harness covers UI/plugin-rendering scenarios
   that don't require live external infra.
