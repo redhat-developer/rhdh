@@ -233,7 +233,7 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
 
   // CATALOG_INDEX_IMAGE override — mirrors helm::get_image_params() in
   // .ci/pipelines/lib/helm.sh.  When not set, the chart's built-in
-  // global.catalogIndex default takes effect (quay.io/rhdh/plugin-catalog-index:1.10).
+  // global.catalogIndex default takes effect.
   if (config.catalogIndex) {
     args.push(
       "--set",
