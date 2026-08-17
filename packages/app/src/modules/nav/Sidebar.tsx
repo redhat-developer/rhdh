@@ -9,23 +9,9 @@ import {
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
-import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import ChatIcon from '@mui/icons-material/Chat';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { SidebarLogo } from './SidebarLogo';
-
-const ChatDrawerItem = () => {
-  const { toggleDrawer } = useAppDrawer();
-  return (
-    <SidebarItem
-      icon={() => <ChatIcon />}
-      text="Chat"
-      onClick={() => toggleDrawer('lightspeed')}
-    />
-  );
-};
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
@@ -38,7 +24,6 @@ export const SidebarContent = NavContentBlueprint.make({
 
       return (
         <Sidebar>
-          <SidebarLogo />
           <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
             <SidebarSearchModal />
           </SidebarGroup>
@@ -53,8 +38,6 @@ export const SidebarContent = NavContentBlueprint.make({
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
-          <SidebarDivider />
-          <ChatDrawerItem />
           <SidebarDivider />
           <SidebarGroup
             label="Settings"
