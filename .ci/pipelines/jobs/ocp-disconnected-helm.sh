@@ -237,6 +237,10 @@ handle_ocp_disconnected_helm() {
 
   printf '%s\n' "${helm_set_flags[@]}" > "${ARTIFACT_DIR}/disconnected-helm-set-flags.txt" 2> /dev/null || true
 
+  # Hub can start during first-boot Postgres initdb, fail plugin init, and
+  # stay not-ready (liveness 200). Bounce only if still not Available.
+  disconnected::ensure_helm_hub_after_postgres "${NAME_SPACE}" "${RELEASE_NAME}" || return 1
+
   log::section "Smoke Test"
 
   if [[ -n "${HTTPS_PROXY:-}" ]]; then
