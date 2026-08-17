@@ -21,7 +21,6 @@ install_rhdh_operator() {
     log::warn "IMAGE_REGISTRY is set to '${IMAGE_REGISTRY}', but the RHDH operator is always installed from quay.io/rhdh/iib"
   fi
 
-  # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
   if ! curl -fL -o /tmp/install-rhdh-catalog-source.sh "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh"; then
     log::error "Failed to download install-rhdh-catalog-source.sh from branch ${RELEASE_BRANCH_NAME}"

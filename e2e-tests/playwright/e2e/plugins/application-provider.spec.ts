@@ -1,7 +1,7 @@
 import { test } from "@support/coverage/test";
 
+import { waitForLoadingToSettle } from "../../support/auth/app-shell";
 import { ApplicationProviderTestPage } from "../../support/pages/application-provider-test-page";
-import { Common } from "../../utils/common";
 
 test.describe("Test ApplicationProvider", () => {
   test.beforeAll(() => {
@@ -12,24 +12,24 @@ test.describe("Test ApplicationProvider", () => {
   });
 
   let applicationProviderPage: ApplicationProviderTestPage;
-  let common: Common;
 
-  test.beforeEach(async ({ page }) => {
-    common = new Common(page);
-    applicationProviderPage = new ApplicationProviderTestPage(page);
-    await common.loginAsGuest();
+  test.beforeEach(({ guestPage }) => {
+    applicationProviderPage = new ApplicationProviderTestPage(guestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
-  test("Verify that the TestPage is rendered", { tag: "@cluster-free" }, async () => {
-    await applicationProviderPage.open();
-    await common.waitForLoad();
-    await applicationProviderPage.verifyTestPageContent();
-    await applicationProviderPage.verifyContextOneCard();
-    await applicationProviderPage.incrementFirstCardCounter("Context one");
-    await applicationProviderPage.verifySharedCardCount("Context one", "1");
-    await applicationProviderPage.verifyContextTwoCard();
-    await applicationProviderPage.incrementFirstCardCounter("Context two");
-    await applicationProviderPage.verifySharedCardCount("Context two", "1");
-  });
+  test(
+    "Verify that the TestPage is rendered",
+    { tag: "@cluster-free-capable" },
+    async ({ guestPage }) => {
+      await applicationProviderPage.open();
+      await waitForLoadingToSettle(guestPage);
+      await applicationProviderPage.verifyTestPageContent();
+      await applicationProviderPage.verifyContextOneCard();
+      await applicationProviderPage.incrementFirstCardCounter("Context one");
+      await applicationProviderPage.verifySharedCardCount("Context one", "1");
+      await applicationProviderPage.verifyContextTwoCard();
+      await applicationProviderPage.incrementFirstCardCounter("Context two");
+      await applicationProviderPage.verifySharedCardCount("Context two", "1");
+    },
+  );
 });

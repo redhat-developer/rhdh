@@ -1,5 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
-import * as yaml from "js-yaml";
+import * as yaml from "yaml";
 
 import { hasErrorResponse } from "../errors";
 import { APP_CONFIG_NAMES, getKubeApiErrorMessage, isRecord } from "./helpers";
@@ -100,7 +100,7 @@ function applyTitleToConfigMap(
     throw new Error(`Data key '${dataKey}' is empty in ConfigMap '${actualConfigMapName}'`);
   }
 
-  const parsedConfig: unknown = yaml.load(appConfigYaml);
+  const parsedConfig: unknown = yaml.parse(appConfigYaml);
   if (!isRecord(parsedConfig) || !isRecord(parsedConfig.app)) {
     throw new Error(
       `Invalid app-config structure in ConfigMap '${actualConfigMapName}'. Expected 'app' section not found.`,
@@ -113,7 +113,7 @@ function applyTitleToConfigMap(
   appSection.title = newTitle;
   console.log(`New title: ${newTitle}`);
 
-  configMap.data[dataKey] = yaml.dump(parsedConfig);
+  configMap.data[dataKey] = yaml.stringify(parsedConfig);
 
   if (configMap.metadata !== undefined) {
     delete configMap.metadata.creationTimestamp;

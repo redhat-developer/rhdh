@@ -1,9 +1,8 @@
-import { test, expect, Page, BrowserContext } from "@support/coverage/test";
+import { test, expect, type Page, type BrowserContext } from "@support/coverage/test";
 
+import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
-import { Common } from "../../utils/common";
-import { teardownBrowser } from "../../utils/common/browser";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 /* SUPORTED RESOLVERS
@@ -14,17 +13,37 @@ GITHUB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-const harness = await AuthProviderHarness.create("albarbaro-test-namespace-github");
+const harness = AuthProviderHarness.create("albarbaro-test-namespace-github");
 
 test.describe("Configure Github Provider", () => {
   test.use({ baseURL: harness.backstageUrl });
 
-  let common: Common;
+  let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let page: Page;
   let context: BrowserContext;
 
-  test.beforeAll(async ({ rhdhPage, rhdhContext }) => {
+  async function clearSession(): Promise<void> {
+    await authSession.clearAuthState(context);
+  }
+
+  function loginAsGithubAdmin(): Promise<string> {
+    return authSession.loginWithGitHub(
+      "rhdhqeauthadmin",
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
+    );
+  }
+
+  function loginAsGithubUser(): Promise<string> {
+    return authSession.loginWithGitHub(
+      "rhdhqeauth1",
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
+    );
+  }
+
+  test.beforeAll(async ({ rhdhPage, rhdhContext, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
@@ -32,39 +51,35 @@ test.describe("Configure Github Provider", () => {
 
     page = rhdhPage;
     context = rhdhContext;
-    common = new Common(rhdhPage);
+    authSession = rhdhAuthSession;
     settingsPage = new SettingsPage(rhdhPage);
 
-    harness.expectEnvVars([
-      "AUTH_PROVIDERS_GH_ORG_NAME",
-      "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      "AUTH_PROVIDERS_GH_USER_PASSWORD",
-      "AUTH_PROVIDERS_GH_USER_2FA",
-      "AUTH_PROVIDERS_GH_ADMIN_2FA",
-      "AUTH_PROVIDERS_GH_ORG_APP_ID",
-      "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
-      "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
-    ]);
-
-    await harness.loadConfigsAndProvisionNamespace();
-    await harness.addBaseUrlSecretsIfRemote();
-    await harness.addSecretsFromEnv({
-      AUTH_PROVIDERS_GH_ORG_NAME: "AUTH_PROVIDERS_GH_ORG_NAME",
-      AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET: "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
-      AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
-      AUTH_PROVIDERS_GH_ORG_APP_ID: "AUTH_PROVIDERS_GH_ORG_APP_ID",
-      AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY: "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
-      AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET: "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
+    await harness.prepareProvider({
+      requiredEnvVars: [
+        "AUTH_PROVIDERS_GH_ORG_NAME",
+        "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+        "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+        "AUTH_PROVIDERS_GH_USER_PASSWORD",
+        "AUTH_PROVIDERS_GH_USER_2FA",
+        "AUTH_PROVIDERS_GH_ADMIN_2FA",
+        "AUTH_PROVIDERS_GH_ORG_APP_ID",
+        "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
+        "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
+      ],
+      envSecrets: {
+        AUTH_PROVIDERS_GH_ORG_NAME: "AUTH_PROVIDERS_GH_ORG_NAME",
+        AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET: "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+        AUTH_PROVIDERS_GH_ORG_CLIENT_ID: "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+        AUTH_PROVIDERS_GH_ORG_APP_ID: "AUTH_PROVIDERS_GH_ORG_APP_ID",
+        AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY: "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
+        AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET: "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
+      },
+      enableProvider: async (deployment) => {
+        console.log("[TEST] Enabling GitHub login with ingestion...");
+        await deployment.enableGithubLoginWithIngestion();
+        console.log("[TEST] GitHub login with ingestion enabled successfully");
+      },
     });
-    await harness.createSecret();
-
-    console.log("[TEST] Enabling GitHub login with ingestion...");
-    await harness.deployment.enableGithubLoginWithIngestion();
-    await harness.deployment.updateAllConfigs();
-    console.log("[TEST] GitHub login with ingestion enabled successfully");
-
-    await harness.deployAndWait();
   });
 
   test.beforeEach(() => {
@@ -72,106 +87,91 @@ test.describe("Configure Github Provider", () => {
   });
 
   test("Login with Github default resolver", async () => {
-    const login = await common.githubLogin(
-      "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
-    );
-    expect(login).toBe("Login successful");
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("RHDH QE Admin");
-    await common.signOut();
-    await context.clearCookies();
+    await harness.runLoginCase({
+      login: loginAsGithubAdmin,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("RHDH QE Admin");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with Github usernameMatchingUserEntityName resolver", async () => {
-    //A github sign-in resolver that looks up the user using their github username as the entity name.
-    await harness.deployment.setGithubResolver("usernameMatchingUserEntityName", false);
-    await harness.reconcileAfterConfigChange();
-
-    const login = await common.githubLogin(
-      "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
-    );
-    expect(login).toBe("Login successful");
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("RHDH QE Admin");
-    await common.signOut();
-    await context.clearCookies();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setGithubResolver("usernameMatchingUserEntityName", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsGithubAdmin,
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("RHDH QE Admin");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with Github emailMatchingUserEntityProfileEmail resolver", async () => {
-    //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setGithubResolver("emailMatchingUserEntityProfileEmail", false);
-    await harness.reconcileAfterConfigChange();
-
-    const login = await common.githubLogin(
-      "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
-    );
-    expect(login).toBe("Login successful");
-
-    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
-    await context.clearCookies();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setGithubResolver("emailMatchingUserEntityProfileEmail", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsGithubUser,
+      assert: async () => {
+        await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+      },
+      cleanup: clearSession,
+    });
   });
 
   test("Login with Github emailLocalPartMatchingUserEntityName resolver", async () => {
-    //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await harness.deployment.setGithubResolver("emailLocalPartMatchingUserEntityName", false);
-    await harness.reconcileAfterConfigChange();
-
-    const login = await common.githubLogin(
-      "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
-    );
-
-    // Login failed; caused by Error: Login failed, user profile does not contain an email
-
-    expect(login).toBe("Login successful");
-
-    await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
-    await context.clearCookies();
+    await harness.runLoginCase({
+      configure: async () => {
+        await harness.deployment.setGithubResolver("emailLocalPartMatchingUserEntityName", false);
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsGithubUser,
+      assert: async () => {
+        await settingsPage.verifySignInError(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    harness.deployment.setAppConfigProperty(
-      "auth.providers.github.production.sessionDuration",
-      "3days",
-    );
-    await harness.reconcileAfterConfigChange();
+    await harness.runLoginCase({
+      configure: async () => {
+        harness.deployment.setAppConfigProperty(
+          "auth.providers.github.production.sessionDuration",
+          "3days",
+        );
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsGithubAdmin,
+      assert: async () => {
+        await page.reload();
 
-    const login = await common.githubLogin(
-      "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA!,
-    );
-    expect(login).toBe("Login successful");
+        const cookies = await context.cookies();
+        const authCookie = cookies.find((cookie) => cookie.name === "github-refresh-token");
+        expect(authCookie).toBeDefined();
 
-    await page.reload();
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        const tolerance = 3 * 60 * 1000;
+        const actualDuration = authCookie!.expires * 1000 - Date.now();
 
-    const cookies = await context.cookies();
-    const authCookie = cookies.find((cookie) => cookie.name === "github-refresh-token");
-    expect(authCookie).toBeDefined();
+        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
+        expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    // expected duration of 3 days in ms
-    const threeDays = 3 * 24 * 60 * 60 * 1000;
-    // allow for 3 minutes tolerance
-    const tolerance = 3 * 60 * 1000;
-
-    const actualDuration = authCookie!.expires * 1000 - Date.now();
-
-    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-    expect(actualDuration).toBeLessThan(threeDays + tolerance);
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("RHDH QE Admin");
-    await common.signOut();
-    await context.clearCookies();
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("RHDH QE Admin");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
@@ -213,28 +213,25 @@ test.describe("Configure Github Provider", () => {
   });
 
   test("Login with Github as only auth provider with disableIdentityResolution should fail", async () => {
-    harness.deployment.setAppConfigProperty(
-      "auth.providers.github.production.disableIdentityResolution",
-      "true",
-    );
-    await harness.reconcileAfterConfigChange();
-
-    const login = await common.githubLogin(
-      "rhdhqeauth1",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD!,
-      process.env.AUTH_PROVIDERS_GH_USER_2FA!,
-    );
-
-    expect(login).toBe("Login successful");
-
-    await settingsPage.verifySignInError(
-      /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/u,
-    );
-    await context.clearCookies();
+    await harness.runLoginCase({
+      configure: async () => {
+        harness.deployment.setAppConfigProperty(
+          "auth.providers.github.production.disableIdentityResolution",
+          "true",
+        );
+        await harness.reconcileAfterConfigChange();
+      },
+      login: loginAsGithubUser,
+      assert: async () => {
+        await settingsPage.verifySignInError(
+          /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/u,
+        );
+      },
+      cleanup: clearSession,
+    });
   });
 
-  test.afterAll(async ({ rhdhPage }, testInfo) => {
+  test.afterAll(async () => {
     await harness.cleanup();
-    await teardownBrowser(rhdhPage, testInfo);
   });
 });

@@ -14,67 +14,67 @@ on:
       # the harness relies on the app dev-server proxy defined here
       - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
+      - ".github/actions/setup-cluster-free-harness/**"
   push:
     branches:
-      - "main"
-      - "release-*"
+      - 'main'
+      - 'release-[0-9]+.[0-9]+'
     paths:
       - "e2e-tests/**"
       - "app-config*.yaml"
       # the harness relies on the app dev-server proxy defined here
       - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
+      - ".github/actions/setup-cluster-free-harness/**"
+  # The catalog index is built outside this repo and changes on its own, so the
+  # plugin sanity job needs a trigger that is not tied to a commit here. GitHub
+  # only runs `schedule` from the default branch, so this covers the `next`
+  # index; use the dispatch input below to check a release branch's index.
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      catalog_index_image:
+        description: "Catalog index image for the plugin sanity job (default: quay.io/rhdh/plugin-catalog-index:<branch version>). Use this for RC verification."
+        required: false
+        type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
+# Both jobs run inside a container, where steps default to `sh -e {0}` rather
+# than the runner host's bash, so `[[ ]]` and `=~` are syntax errors. Requesting
+# bash also brings `-o pipefail`, which the tee'd test step relies on.
+defaults:
+  run:
+    shell: bash
+
 jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
+    # The new schedule/dispatch triggers exist for plugin-sanity; paths filters
+    # do not gate those events, so keep this job on its original triggers.
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+    timeout-minutes: 45
     # Playwright image: browsers + OS deps preinstalled, so no browser-install step
     # (which hung on plain ubuntu runners). Keep the tag in sync with the
     # @playwright/test version in e2e-tests/package.json (currently 1.61.1) — a
     # mismatch fails with "Executable doesn't exist at /ms-playwright/...".
     container:
-      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Enable Corepack (vendored yarn 4)
-        run: corepack enable
-
-      - name: Cache yarn global cache
-        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
-        with:
-          path: ~/.yarn/berry/cache
-          key: yarn-${{ hashFiles('yarn.lock', 'e2e-tests/yarn.lock') }}
-          restore-keys: |
-            yarn-
-
-      - name: Install skopeo
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends skopeo
-
-      - name: Install dependencies (root)
-        run: yarn install
-
-      - name: Install dependencies (e2e-tests)
-        working-directory: ./e2e-tests
-        run: yarn install --mode=skip-build
+      - name: Set up the cluster-free harness
+        uses: ./.github/actions/setup-cluster-free-harness
 
       - name: Populate dynamic-plugins-root (OCI, no source build)
         # populate.sh resolves {{inherit}} against the full repo-root
@@ -91,4 +91,93 @@ jobs:
         with:
           name: playwright-report-local
           path: e2e-tests/playwright-report-local
+          retention-days: 7
+
+  plugin-sanity:
+    name: plugin-sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Request-only (no browser), but the image also carries the OS deps the
+    # backend boot needs, and reusing it keeps both jobs on one base.
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up the cluster-free harness
+        uses: ./.github/actions/setup-cluster-free-harness
+
+      - name: Resolve the catalog index image
+        id: index
+        env:
+          # `next` tracks main; release branches carry their own version tag.
+          BRANCH: ${{ github.event.pull_request.base.ref || github.ref_name }}
+          OVERRIDE: ${{ inputs.catalog_index_image }}
+        run: |
+          if [[ -n "${OVERRIDE}" ]]; then
+            # Shape-check the dispatch input: it reaches GITHUB_OUTPUT, and a
+            # multi-line value there can forge additional step outputs.
+            if [[ ! "${OVERRIDE}" =~ ^[A-Za-z0-9._/-]+(:[A-Za-z0-9._-]+)?(@sha256:[a-f0-9]{64})?$ ]]; then
+              echo "invalid catalog_index_image: ${OVERRIDE}" >&2
+              exit 1
+            fi
+            image="${OVERRIDE}"
+          elif [[ "${BRANCH}" == release-* ]]; then
+            image="quay.io/rhdh/plugin-catalog-index:${BRANCH#release-}"
+          else
+            image="quay.io/rhdh/plugin-catalog-index:next"
+          fi
+          echo "image=${image}" >> "$GITHUB_OUTPUT"
+          # The tag is a moving target; record the digest it resolved to so a
+          # later run can be traced back to the exact index it validated.
+          digest=$(skopeo inspect --no-creds --override-os linux --override-arch amd64 \
+            --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
+          echo "Catalog index: ${image} (${digest})"
+          echo "Catalog index: \`${image}\` @ \`${digest}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Populate dynamic-plugins-root from the catalog index
+        env:
+          CATALOG_INDEX_IMAGE: ${{ steps.index.outputs.image }}
+        run: ./e2e-tests/local-harness/populate-catalog-index.sh
+
+      - name: Run the plugin sanity check
+        id: sanity
+        working-directory: ./e2e-tests
+        env:
+          CATALOG_INDEX_IMAGE: ${{ steps.index.outputs.image }}
+        run: |
+          set -o pipefail
+          yarn e2e:plugin-sanity 2>&1 | tee plugin-sanity.log
+
+      - name: Report plugin startup failures
+        # A plugin that throws during init aborts the whole backend; the cause is
+        # in the backend log Playwright pipes into the run above, so pull the
+        # culprits onto the run summary instead of leaving them mid-log.
+        if: ${{ failure() && steps.sanity.conclusion == 'failure' }}
+        run: |
+          ./e2e-tests/local-harness/filter-plugin-startup-failures.sh \
+            < e2e-tests/plugin-sanity.log > /tmp/plugin-startup-failures.txt || true
+          if [[ -s /tmp/plugin-startup-failures.txt ]]; then
+            {
+              echo "### Plugin startup failures"
+              echo '```'
+              cat /tmp/plugin-startup-failures.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/plugin-startup-failures.txt
+          else
+            echo "No dynamic-plugin startup failures found in the backend log."
+          fi
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report-plugin-sanity
+          path: |
+            e2e-tests/playwright-report-plugin-sanity
+            e2e-tests/plugin-sanity.log
           retention-days: 7

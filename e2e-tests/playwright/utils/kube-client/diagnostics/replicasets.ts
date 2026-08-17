@@ -3,8 +3,7 @@ import * as k8s from "@kubernetes/client-node";
 import { getKubeApiErrorMessage, podNameOrUnknown } from "../helpers";
 
 function sortReplicaSetsByCreation(replicaSets: k8s.V1ReplicaSet[]): k8s.V1ReplicaSet[] {
-  // oxlint-disable-next-line unicorn/no-array-sort -- es2022 lib has no Array#toSorted
-  return [...replicaSets].sort((a: k8s.V1ReplicaSet, b: k8s.V1ReplicaSet) => {
+  return replicaSets.toSorted((a: k8s.V1ReplicaSet, b: k8s.V1ReplicaSet) => {
     const aTime = a.metadata?.creationTimestamp?.getTime() ?? 0;
     const bTime = b.metadata?.creationTimestamp?.getTime() ?? 0;
     return bTime - aTime;

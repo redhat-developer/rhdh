@@ -1,8 +1,14 @@
 import { Page, expect } from "@playwright/test";
 
+import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
+import * as interaction from "../../utils/ui-helper/interaction";
+import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
 /* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
-import { HOME_PAGE_COMPONENTS, SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
+import { HOME_PAGE_COMPONENTS } from "../selectors/page-selectors";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 export class HomePage {
   private page: Page;
@@ -10,12 +16,39 @@ export class HomePage {
   constructor(page: Page) {
     this.page = page;
   }
-  async verifyQuickSearchBar(text: string) {
-    const searchBar = SEARCH_OBJECTS_COMPONENTS.getSearchInput(this.page);
-    await searchBar.waitFor();
-    await searchBar.fill("");
-    await searchBar.pressSequentially(`${text}\n`);
-    await verification.verifyLink(this.page, text);
+
+  async verifyWelcomeHeading(): Promise<void> {
+    await verification.verifyHeading(this.page, t["plugin.homepage"][lang]["header.welcome"]);
+  }
+
+  async openHomeSidebar(): Promise<void> {
+    await navigation.openSidebar(this.page, "Home");
+  }
+
+  async verifyTextInCard(cardHeading: string, text: string | RegExp, exact = true): Promise<void> {
+    const card = HOME_PAGE_COMPONENTS.getCard(this.page, cardHeading);
+    await expect(card).toBeVisible();
+    if (typeof text === "string") {
+      await expect(card.getByText(text, { exact })).toBeVisible();
+      return;
+    }
+    await expect(card.getByText(text)).toBeVisible();
+  }
+
+  async verifyHeading(heading: string | RegExp): Promise<void> {
+    await verification.verifyHeading(this.page, heading);
+  }
+
+  async verifyDivHasText(text: string | RegExp): Promise<void> {
+    await verification.verifyDivHasText(this.page, text);
+  }
+
+  async clickButton(label: string): Promise<void> {
+    await interaction.clickButton(this.page, label);
+  }
+
+  async verifyMainHeadingVisible(): Promise<void> {
+    await expect(this.page.getByRole("heading", { level: 1 })).toBeVisible();
   }
 
   /** Verifies the home page's "Search" widget (home-page-widget:home/search-bar) renders. */
@@ -34,10 +67,12 @@ export class HomePage {
 
     if (expand) {
       await accordionButton.click();
+      // Intentional divergence: MUI accordion details lack stable roles.
       await expect(sectionLocator.locator('[class*="MuiAccordionDetails-root"]')).toBeVisible();
     }
 
     for (const item of Array.isArray(items) ? items : [items]) {
+      // Intentional divergence: quick-access items use MUI list text nodes, not role=link.
       const itemLocator = sectionLocator
         .locator(`a div[class*="MuiListItemText-root"]`)
         .filter({ hasText: item });
@@ -54,6 +89,7 @@ export class HomePage {
     await expect(sectionLocator).toBeVisible();
 
     const itemLocator = sectionLocator.locator(`li[class*="MuiListItem-root"]`);
+    // Intentional divergence: visited-card list items use MUI class hooks, not role=listitem.
     expect(await itemLocator.count()).toBeGreaterThanOrEqual(0);
   }
 }

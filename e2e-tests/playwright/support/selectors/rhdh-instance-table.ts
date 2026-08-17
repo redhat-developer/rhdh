@@ -12,7 +12,7 @@ export const RHDH_INSTANCE_TABLE = {
 
   getFirstPageButton: (page: Page) => page.getByRole("button", { name: "First Page" }),
 
-  getTableRows: (page: Page) => SemanticSelectors.table(page).getByRole("row"),
+  getTableRows: (page: Page) => SemanticSelectors.table(page).locator("tbody").getByRole("row"),
 
   getTableRow: (page: Page, text: string | RegExp) => SemanticSelectors.tableRow(page, text),
 };

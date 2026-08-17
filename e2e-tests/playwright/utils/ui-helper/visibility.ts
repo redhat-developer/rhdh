@@ -16,17 +16,8 @@ async function isElementVisible(
   }
 }
 
-export function isBtnVisibleByTitle(page: Page, text: string): Promise<boolean> {
-  const locator = `BUTTON[title="${text}"]`;
-  return isElementVisible(page, locator);
-}
-
-export function isBtnVisible(page: Page, text: string): Promise<boolean> {
-  const locator = `button:has-text("${text}")`;
-  return isElementVisible(page, locator);
-}
-
 export function isTextVisible(page: Page, text: string, timeout = 10000): Promise<boolean> {
+  // Intentional divergence: legacy helpers match visible text before role-based locators existed.
   const locator = `:has-text("${text}")`;
   return isElementVisible(page, locator, timeout);
 }

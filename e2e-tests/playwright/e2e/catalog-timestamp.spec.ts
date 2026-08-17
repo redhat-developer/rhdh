@@ -4,37 +4,36 @@ import { getTranslations, getCurrentLanguage } from "../e2e/localization/locale"
 import { CatalogBrowsePage } from "../support/pages/catalog-browse-page";
 import { CatalogImport } from "../support/pages/catalog-import";
 import { SelfServicePage } from "../support/pages/self-service-page";
-import { Common } from "../utils/common";
+import { JOB_NAME_PATTERNS } from "../utils/constants";
+import { skipIfJobName } from "../utils/helper";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
 test.describe("Test timestamp column on Catalog", () => {
   test.skip(
-    () => (process.env.JOB_NAME ?? "").includes("osd-gcp"),
+    () => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP),
     "skipping on OSD-GCP cluster due to RHDHBUGS-555",
   );
 
   let catalogBrowsePage: CatalogBrowsePage;
   let selfServicePage: SelfServicePage;
-  let common: Common;
   let catalogImport: CatalogImport;
 
   const component =
     "https://github.com/janus-qe/custom-catalog-entities/blob/main/timestamp-catalog-info.yaml";
 
-  test.beforeAll(async ({ rhdhPage }) => {
+  test.describe.configure({ mode: "serial" });
+
+  test.beforeAll(({ rhdhGuestPage }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
 
-    common = new Common(rhdhPage);
-    catalogBrowsePage = new CatalogBrowsePage(rhdhPage);
-    selfServicePage = new SelfServicePage(rhdhPage);
-    catalogImport = new CatalogImport(rhdhPage);
-
-    await common.loginAsGuest();
+    catalogBrowsePage = new CatalogBrowsePage(rhdhGuestPage);
+    selfServicePage = new SelfServicePage(rhdhGuestPage);
+    catalogImport = new CatalogImport(rhdhGuestPage);
   });
 
   test.beforeEach(async () => {

@@ -40,7 +40,7 @@ export function getErrorStatusCode(error: unknown): number | undefined {
   return undefined;
 }
 
-export function getErrorBodyMessage(error: unknown): string | undefined {
+function getErrorBodyMessage(error: unknown): string | undefined {
   if (
     hasErrorResponse(error) &&
     typeof error.body?.message === "string" &&
@@ -148,7 +148,7 @@ export function rejectAsError(reject: (reason: Error) => void, err: unknown): vo
   reject(err instanceof Error ? err : new Error(getErrorMessage(err)));
 }
 
-export { sleep, pollUntil } from "../poll-until";
+export { sleep } from "../poll-until";
 
 export function podNameOrUnknown(name: string | undefined): string {
   return name !== undefined && name !== "" ? name : "unknown";

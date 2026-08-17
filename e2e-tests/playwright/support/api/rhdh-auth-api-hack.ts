@@ -1,19 +1,17 @@
 import { Page } from "@playwright/test";
 
-interface BackstageRefreshResponse {
-  backstageIdentity?: {
-    token?: string;
-  };
-}
-
-function parseRefreshToken(body: unknown): string {
-  if (typeof body !== "object" || body === null) {
-    throw new Error("Token not found in response body");
-  }
-
-  const identity = (body as BackstageRefreshResponse).backstageIdentity;
-  if (identity && typeof identity.token === "string") {
-    return identity.token;
+/** Extracts the Backstage identity token from an auth refresh payload. */
+export function parseRefreshToken(body: unknown): string {
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "backstageIdentity" in body &&
+    typeof body.backstageIdentity === "object" &&
+    body.backstageIdentity !== null &&
+    "token" in body.backstageIdentity &&
+    typeof body.backstageIdentity.token === "string"
+  ) {
+    return body.backstageIdentity.token;
   }
 
   throw new Error("Token not found in response body");

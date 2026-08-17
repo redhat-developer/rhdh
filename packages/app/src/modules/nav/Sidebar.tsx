@@ -45,7 +45,6 @@ export const SidebarContent = NavContentBlueprint.make({
             icon={<UserSettingsSignInAvatar />}
             to="/settings"
           >
-            {nav.take('page:app-visualizer')}
             {nav.take('page:user-settings')}
           </SidebarGroup>
         </Sidebar>

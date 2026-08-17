@@ -57,6 +57,11 @@
       "searchBar.title": "Search"
     }
   },
+  "plugin.homepage": {
+    "en": {
+      "header.welcome": "Welcome back!"
+    }
+  },
   "plugin.global-header": {
     "en": {
       "profile.settings": "Settings"

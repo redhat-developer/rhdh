@@ -30,13 +30,6 @@ export const POSTGRES_ENV_KEYS = [
   "POSTGRES_PASSWORD",
 ] as const;
 
-/**
- * Env var keys injected into the deployment by external database tests.
- * Does NOT include POSTGRES_DB — external DB tests don't set it in the
- * postgres-cred secret (Backstage auto-creates per-plugin databases).
- * Schema-mode tests manage their own env vars separately via
- * configureSchemaMode() / schema-mode-setup.ts.
- */
 const postgresCredEnvKeys = [
   "POSTGRES_HOST",
   "POSTGRES_PORT",
@@ -270,36 +263,16 @@ export async function clearDatabase(credentials: {
 /**
  * Prepare the RHDH deployment for external database tests.
  *
- * The runtime deployment starts with an internal (operator-managed or Helm sub-chart)
- * PostgreSQL. This function switches the configuration to use an external database by:
- *
- * 1. Removing any stale POSTGRES_* env var patches left by schema-mode tests
- * 2. Patching the app-config ConfigMap to add backend.database.connection with
- *    env var placeholders (${POSTGRES_HOST}, etc.) so that the postgres-cred
- *    secret values are used for the DB connection
- * 3. Adding POSTGRES_* env vars to the deployment via secretKeyRef from postgres-cred
- *
- * After calling this function, the test should:
- * - Call configurePostgresCertificate() to set the TLS cert
- * - Call configurePostgresCredentials() with real external DB credentials
- * - Call kubeClient.restartDeployment() to apply the changes
- *
- * @param kubeClient - KubeClient instance
- * @param namespace - Kubernetes namespace
- * @param deploymentName - Name of the RHDH deployment
+ * Switches configuration from internal PostgreSQL to external DB placeholders
+ * and ensures POSTGRES_* env vars resolve from the postgres-cred secret.
  */
 export async function prepareForExternalDatabase(
   kubeClient: KubeClient,
   namespace: string,
   deploymentName: string,
 ): Promise<void> {
-  // --- 1. Remove stale POSTGRES_* env vars patched onto the deployment ---
-  // Schema-mode tests may have added individual secretKeyRef env vars pointing
-  // to a *-postgresql secret. These override the bulk envFrom injection from
-  // postgres-cred and must be removed before external DB tests.
   await removeSchemaModePatchedEnvVars(kubeClient, deploymentName, namespace);
 
-  // --- 2. Patch app-config ConfigMap to use external DB connection ---
   console.log("Patching app-config to use external database connection (env var placeholders)...");
   await kubeClient.patchAppConfig(namespace, (appConfig: AppConfigYaml) => {
     appConfig.backend ??= {};
@@ -314,18 +287,9 @@ export async function prepareForExternalDatabase(
   });
   console.log("App-config patched for external database connection");
 
-  // --- 3. Add POSTGRES_* env vars to the deployment via secretKeyRef ---
-  // The deployment starts with internal DB (no postgres-cred env vars).
-  // Add individual env vars pointing to the postgres-cred secret so the
-  // app-config ${POSTGRES_HOST} etc. placeholders resolve correctly.
   await ensurePostgresCredEnvVars(kubeClient, deploymentName, namespace);
 }
 
-/**
- * Remove POSTGRES_* env vars from the deployment that were injected via secretKeyRef
- * by schema-mode tests (pointing to the *-postgresql secret). These override the
- * env vars injected by the operator/helm via extraEnvs/extraEnvVarsSecrets from postgres-cred.
- */
 async function removeSchemaModePatchedEnvVars(
   kubeClient: KubeClient,
   deploymentName: string,
@@ -347,13 +311,6 @@ async function removeSchemaModePatchedEnvVars(
   }
 }
 
-/**
- * Set POSTGRES_* env vars on the deployment via secretKeyRef from the postgres-cred secret.
- * Removes any existing env vars with the same names first (regardless of their source —
- * they may come from Helm chart templates, schema-mode patches, or other sources),
- * then adds fresh secretKeyRef entries pointing to the postgres-cred secret.
- * This ensures the app-config ${POSTGRES_HOST} etc. placeholders resolve from postgres-cred.
- */
 async function ensurePostgresCredEnvVars(
   kubeClient: KubeClient,
   deploymentName: string,

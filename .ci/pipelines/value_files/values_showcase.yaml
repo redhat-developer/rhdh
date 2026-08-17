@@ -47,8 +47,6 @@ global:
         enabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         enabled: true
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
-        enabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         enabled: true
       - package: "@backstage-community/plugin-todo@0.2.42"

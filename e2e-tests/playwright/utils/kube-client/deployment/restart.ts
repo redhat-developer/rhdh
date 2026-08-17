@@ -1,15 +1,25 @@
 import { getKubeApiErrorMessage } from "../helpers";
 
+type ScaleDeploymentFn = (
+  deploymentName: string,
+  namespace: string,
+  replicas: number,
+) => Promise<void>;
+
+type WaitForDeploymentReadyFn = (
+  deploymentName: string,
+  namespace: string,
+  expectedReplicas: number,
+  timeout?: number,
+) => Promise<void>;
+
+type DeploymentNamespaceFn = (deploymentName: string, namespace: string) => Promise<void>;
+
 async function scaleDeploymentDown(
-  scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,
-  waitForDeploymentReady: (
-    deploymentName: string,
-    namespace: string,
-    expectedReplicas: number,
-    timeout?: number,
-  ) => Promise<void>,
-  waitForPodsTerminated: (deploymentName: string, namespace: string) => Promise<void>,
-  logPodConditionsForDeployment: (deploymentName: string, namespace: string) => Promise<void>,
+  scaleDeployment: ScaleDeploymentFn,
+  waitForDeploymentReady: WaitForDeploymentReadyFn,
+  waitForPodsTerminated: DeploymentNamespaceFn,
+  logPodConditionsForDeployment: DeploymentNamespaceFn,
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
@@ -23,13 +33,8 @@ async function scaleDeploymentDown(
 }
 
 async function scaleDeploymentUp(
-  scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,
-  waitForDeploymentReady: (
-    deploymentName: string,
-    namespace: string,
-    expectedReplicas: number,
-    timeout?: number,
-  ) => Promise<void>,
+  scaleDeployment: ScaleDeploymentFn,
+  waitForDeploymentReady: WaitForDeploymentReadyFn,
   deploymentName: string,
   namespace: string,
 ): Promise<void> {
@@ -39,16 +44,11 @@ async function scaleDeploymentUp(
 }
 
 export async function restartDeploymentImpl(
-  scaleDeployment: (deploymentName: string, namespace: string, replicas: number) => Promise<void>,
-  waitForDeploymentReady: (
-    deploymentName: string,
-    namespace: string,
-    expectedReplicas: number,
-    timeout?: number,
-  ) => Promise<void>,
-  waitForPodsTerminated: (deploymentName: string, namespace: string) => Promise<void>,
-  logPodConditionsForDeployment: (deploymentName: string, namespace: string) => Promise<void>,
-  logDeploymentEvents: (deploymentName: string, namespace: string) => Promise<void>,
+  scaleDeployment: ScaleDeploymentFn,
+  waitForDeploymentReady: WaitForDeploymentReadyFn,
+  waitForPodsTerminated: DeploymentNamespaceFn,
+  logPodConditionsForDeployment: DeploymentNamespaceFn,
+  logDeploymentEvents: DeploymentNamespaceFn,
   deploymentName: string,
   namespace: string,
 ): Promise<void> {

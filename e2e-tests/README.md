@@ -6,6 +6,45 @@ The example and bootstraps to create tests are [here](../docs/e2e-tests/examples
 
 ---
 
+## Plugin Sanity Check (cluster-free)
+
+Validates that every plugin enabled by the catalog index loads in the real RHDH
+backend (booted from `packages/backend` source). Populate `dynamic-plugins-root`
+with the full index set, then run the dedicated Playwright config:
+
+```bash
+CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
+  ./local-harness/populate-catalog-index.sh
+yarn e2e:plugin-sanity
+```
+
+The spec lives in `playwright/cluster-free/`, outside the `testDir` the cluster
+projects scan, so it needs no per-project `testIgnore`. Put further
+cluster-free-only specs there too.
+
+CI runs it as the `plugin-sanity` job of the
+[E2E Cluster-free workflow](../.github/workflows/e2e-cluster-free.yaml) — a plain
+GitHub runner with no registry credentials, since the check needs no cluster and
+the index's digest-pinned packages resolve anonymously (the install CLI rewrites
+`registry.access.redhat.com/rhdh/` to `quay.io/rhdh/`). The few packages that are
+not published publicly are listed in `local-harness/plugin-sanity-excludes.txt`.
+
+The index is built outside this repo and changes on its own — it grew from 9 to
+36 declared packages in the space of a week — so the job also runs on a nightly
+schedule; for RC verification, run the workflow manually and set the
+`catalog_index_image` input.
+
+This complements, but does not depend on, the cluster-based `sanity-plugins`
+deployment in the nightly OCP job: that one validates the curated plugin set on
+the shipped image, while this validates the full index composition against the
+current backend line, with no cluster and no product image.
+
+Plugins that cannot initialize in a standalone backend are excluded in
+`local-harness/plugin-sanity-excludes.txt`, which documents the rules and the
+reason for each entry. When a plugin does abort the backend, the job pulls the
+culprits onto the run summary via
+`local-harness/filter-plugin-startup-failures.sh`.
+
 ## Local Test Runner
 
 This directory contains scripts to run e2e tests locally against an OpenShift cluster.
@@ -195,13 +234,19 @@ tag out of the test title, so names stay stable for historical reporting while
 Playwright's `--grep` / `--grep-invert` filters still select tests by tag,
 letting CI or a local run target a subset.
 
-| Tag                  | Meaning                                                                                   |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| `@layer3-equivalent` | A UI behavior in this spec also has a sibling Layer 3 component test (in `packages/app`). |
-| `@smoke`             | Fast, high-signal check suitable to run on every PR.                                      |
-| `@ga-plugin`         | Exercises a generally-available (GA) plugin.                                              |
-| `@non-ga-plugin`     | Exercises a tech-preview / dev-preview (non-GA) plugin.                                   |
-| `@blocked`           | Blocked by a known issue; tests are skipped with a Jira reference.                        |
+| Tag                     | Meaning                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `@layer3-equivalent`    | A UI behavior in this spec also has a sibling Layer 3 component test (in `packages/app`). |
+| `@smoke`                | Fast, high-signal check suitable to run on every PR.                                      |
+| `@ga-plugin`            | Exercises a generally-available (GA) plugin.                                              |
+| `@non-ga-plugin`        | Exercises a tech-preview / dev-preview (non-GA) plugin.                                   |
+| `@blocked`              | Blocked by a known issue; tests are skipped with a Jira reference.                        |
+| `@cluster-free-capable` | Validated to also run on the cluster-free harness.                                        |
+
+`@cluster-free-capable` is what `playwright.legacy-local.config.ts` selects on. It
+describes a capability of the test, not how a given run executed: the tag still shows
+in reports of cluster runs, where the project name (e.g. `showcase-sanity-plugins`) is
+what identifies the execution mode.
 
 ```bash
 # Run only smoke-tagged tests

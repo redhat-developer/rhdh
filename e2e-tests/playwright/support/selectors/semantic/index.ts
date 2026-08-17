@@ -20,6 +20,3 @@ export const SemanticSelectors = {
   ...semanticSelectorsAccessibility,
   ...semanticSelectorsStructure,
 };
-
-export { findTableCell, findTableCellByColumn } from "./table-helpers";
-export { WaitStrategies } from "./wait-strategies";

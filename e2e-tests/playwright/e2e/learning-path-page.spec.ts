@@ -2,7 +2,6 @@ import { test } from "@support/coverage/test";
 
 import { SidebarPage } from "../support/pages/sidebar-page";
 import { runAccessibilityTests } from "../utils/accessibility";
-import { Common } from "../utils/common";
 
 test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
   test.beforeAll(() => {
@@ -12,27 +11,20 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
     });
   });
 
-  let common: Common;
   let sidebarPage: SidebarPage;
 
-  test.beforeEach(async ({ page }) => {
-    sidebarPage = new SidebarPage(page);
-    common = new Common(page);
-    await common.loginAsGuest();
+  test.beforeEach(({ guestPage }) => {
+    sidebarPage = new SidebarPage(guestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
-  //
-  // NFS's sidebar pins Learning Paths in the main menu (see sidebar.spec.ts) — the
-  // legacy "References" nested group no longer exists.
   test(
     "Verify that links in Learning Paths for Backstage opens in a new tab",
-    { tag: "@cluster-free" },
-    async ({ page }, testInfo) => {
+    { tag: "@cluster-free-capable" },
+    async ({ guestPage }, testInfo) => {
       await sidebarPage.openLearningPaths();
       await sidebarPage.verifyLearningPathLinksOpenInNewTab();
 
-      await runAccessibilityTests(page, testInfo);
+      await runAccessibilityTests(guestPage, testInfo);
     },
   );
 });

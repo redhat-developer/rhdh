@@ -1,6 +1,5 @@
 import { createApp } from '@backstage/frontend-defaults';
 import { dynamicFrontendFeaturesLoader } from '@backstage/frontend-dynamic-feature-loader';
-import appVisualizerPlugin from '@backstage/plugin-app-visualizer';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import searchPlugin from '@backstage/plugin-search/alpha';
@@ -19,7 +18,6 @@ const app = createApp({
   features: [
     // Upstream Backstage plugins
     homePagePlugin,
-    appVisualizerPlugin,
     catalogPlugin,
     scaffolderPlugin,
     searchPlugin,

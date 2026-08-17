@@ -1,7 +1,7 @@
 import { test } from "@support/coverage/test";
 
+import { HomePage } from "../../support/pages/home-page";
 import { SettingsPage } from "../../support/pages/settings-page";
-import { Common } from "../../utils/common";
 
 test.describe("Test user settings info card", { tag: "@layer3-equivalent" }, () => {
   test.beforeAll(() => {
@@ -11,18 +11,17 @@ test.describe("Test user settings info card", { tag: "@layer3-equivalent" }, () 
     });
   });
 
+  let homePage: HomePage;
   let settingsPage: SettingsPage;
 
-  test.beforeEach(async ({ page }) => {
-    const common = new Common(page);
-    await common.loginAsGuest();
-
-    settingsPage = new SettingsPage(page);
+  test.beforeEach(({ guestPage }) => {
+    homePage = new HomePage(guestPage);
+    settingsPage = new SettingsPage(guestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
-  test("Check if customized build info is rendered", { tag: "@cluster-free" }, async () => {
-    await settingsPage.open();
+  test("Check if customized build info is rendered", { tag: "@cluster-free-capable" }, async () => {
+    await homePage.openHomeSidebar();
+    await settingsPage.openFromProfile("Guest User");
 
     await settingsPage.verifyBuildInfoCardVisible();
     await settingsPage.verifyBuildInfoText("TechDocs builder: local");

@@ -24,7 +24,8 @@ const TEAMS = [
   "rhdh-ui",
   "rhdh-administrators",
   "rhdh-install",
-  "rhdh-qe"
+  "rhdh-qe",
+  "rhdh-ai"
 ];
 
 const authToken = process.env.GITHUB_TOKEN || "";

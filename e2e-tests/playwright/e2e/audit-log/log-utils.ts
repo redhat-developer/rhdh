@@ -61,6 +61,23 @@ function getLogProperty(log: Record<string, unknown>, key: string): unknown {
   return log[key];
 }
 
+function handleExecCallback(
+  error: Error | null,
+  stdout: string,
+  stderr: string,
+  resolve: (value: string) => void,
+  reject: (reason: Error) => void,
+): void {
+  if (error) {
+    reject(new Error(error.message));
+    return;
+  }
+  if (stderr) {
+    console.warn("stderr warning:", stderr);
+  }
+  resolve(stdout);
+}
+
 /** Parse audit log JSON without applying Log constructor defaults. */
 function parseLogFromJson(text: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(text);
@@ -77,14 +94,7 @@ export const LogUtils = {
   executeCommand(command: string, args: string[] = []): Promise<string> {
     return new Promise((resolve, reject) => {
       execFile(command, args, { encoding: "utf8" }, (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-        if (stderr) {
-          console.warn("stderr warning:", stderr);
-        }
-        resolve(stdout);
+        handleExecCallback(error, stdout, stderr, resolve, reject);
       });
     });
   },
@@ -123,14 +133,7 @@ export const LogUtils = {
   executeShellCommand(command: string): Promise<string> {
     return new Promise((resolve, reject) => {
       exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-        if (stderr) {
-          console.warn("stderr warning:", stderr);
-        }
-        resolve(stdout);
+        handleExecCallback(error, stdout, stderr, resolve, reject);
       });
     });
   },

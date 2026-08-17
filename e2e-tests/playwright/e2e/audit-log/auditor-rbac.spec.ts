@@ -1,7 +1,8 @@
 import { test, expect } from "@support/coverage/test";
 
 import RhdhRbacApi from "../../support/api/rbac-api";
-import { Common } from "../../utils/common";
+import { AuthProviderSession } from "../../support/auth/provider-auth";
+import * as navigation from "../../utils/ui-helper/navigation";
 import {
   RBAC_API,
   ROLE_NAME,
@@ -17,7 +18,7 @@ import {
 
 const auditStatus = (ok: boolean): "succeeded" | "failed" => (ok ? "succeeded" : "failed");
 
-let common: Common;
+let authSession: AuthProviderSession;
 let rbacApi: RhdhRbacApi;
 
 /* ======================================================================== */
@@ -25,15 +26,20 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
-  test.beforeAll(async ({ rhdhPage }) => {
+  test.beforeAll(async ({ rhdhPage, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
       description: "audit-log",
     });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
-    common = new Common(rhdhPage);
-    await common.loginAsKeycloakUser();
+    authSession = rhdhAuthSession;
+    const loginResult = await authSession.loginWithKeycloak(
+      process.env.GH_USER_ID ?? "",
+      process.env.GH_USER_PASS ?? "",
+    );
+    expect(loginResult).not.toBe("");
+    await navigation.waitForSideBarVisible(rhdhPage);
     rbacApi = await RhdhRbacApi.buildRbacApi(rhdhPage);
   });
 

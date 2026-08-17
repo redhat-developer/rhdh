@@ -1,13 +1,9 @@
 import { test } from "@support/coverage/test";
 
 import { HomePage } from "../support/pages/home-page";
-import { RhdhHomePage } from "../support/pages/rhdh-home-page";
 import { runAccessibilityTests } from "../utils/accessibility";
-import { Common } from "../utils/common";
 
 test.describe("Home page customization", () => {
-  let common: Common;
-  let rhdhHomePage: RhdhHomePage;
   let homePage: HomePage;
 
   test.beforeAll(() => {
@@ -17,15 +13,10 @@ test.describe("Home page customization", () => {
     });
   });
 
-  test.beforeEach(async ({ page }) => {
-    rhdhHomePage = new RhdhHomePage(page);
-    common = new Common(page);
-    homePage = new HomePage(page);
-    await common.loginAsGuest();
+  test.beforeEach(({ guestPage }) => {
+    homePage = new HomePage(guestPage);
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
-  //
   // NFS home-page cards are built-in widgets (home-page-widget:home/*, auto-enabled by
   // the homepage plugin — see app.extensions in app-config.local-e2e.yaml / the CI
   // ConfigMap). Arbitrary cards that the legacy OFS dynamicPlugins.frontend mount points
@@ -33,31 +24,31 @@ test.describe("Home page customization", () => {
   // auto-enabled — the widgets below are all NFS-native and render by default.
   test(
     "Verify that home page is customized",
-    { tag: "@cluster-free" },
-    async ({ page }, testInfo) => {
-      await rhdhHomePage.verifyTextInCard("Quick Access", "Quick Access");
+    { tag: "@cluster-free-capable" },
+    async ({ guestPage }, testInfo) => {
+      await homePage.verifyTextInCard("Quick Access", "Quick Access");
 
-      await runAccessibilityTests(page, testInfo);
+      await runAccessibilityTests(guestPage, testInfo);
 
-      await rhdhHomePage.verifyTextInCard("Featured Docs", "Featured Docs");
-      await rhdhHomePage.verifyTextInCard("Starred Catalog Entities", "Starred Catalog Entities");
+      await homePage.verifyTextInCard("Featured Docs", "Featured Docs");
+      await homePage.verifyTextInCard("Starred Catalog Entities", "Starred Catalog Entities");
     },
   );
 
   test(
     "Verify that the Top Visited card in the Home page renders without an error",
-    { tag: "@cluster-free" },
+    { tag: "@cluster-free-capable" },
     async () => {
-      await rhdhHomePage.verifyTextInCard("Top Visited", "Top Visited");
+      await homePage.verifyTextInCard("Top Visited", "Top Visited");
       await homePage.verifyVisitedCardContent("Top Visited");
     },
   );
 
   test(
     "Verify that the Recently Visited card in the Home page renders without an error",
-    { tag: "@cluster-free" },
+    { tag: "@cluster-free-capable" },
     async () => {
-      await rhdhHomePage.verifyTextInCard("Recently Visited", "Recently Visited");
+      await homePage.verifyTextInCard("Recently Visited", "Recently Visited");
       await homePage.verifyVisitedCardContent("Recently Visited");
     },
   );

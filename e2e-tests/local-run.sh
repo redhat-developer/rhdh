@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RUNNER_IMAGE="quay.io/rhdh-community/rhdh-e2e-runner:main"
+RUNNER_IMAGE="${RUNNER_IMAGE:-quay.io/rhdh-community/rhdh-e2e-runner:main}"
 RUN_CONFIG_FILE="$SCRIPT_DIR/.local-test/run-config.env"
 
 # Source logging library
@@ -23,6 +23,8 @@ Options:
   -r, --repo IMAGE_REPO   Image repository (e.g., rhdh/rhdh-hub-rhel9)
   -t, --tag TAG_NAME      Image tag (e.g., next, latest, 1.5)
   -p, --pr PR_NUMBER      PR number (sets repo to rhdh-community/rhdh, tag to pr-<number>)
+  -i, --runner-image IMG  Override the e2e runner container image
+                          (default: quay.io/rhdh-community/rhdh-e2e-runner:main)
   -s, --skip-tests        Deploy only, skip running tests
   -h, --help              Show this help message
 
@@ -44,6 +46,9 @@ Examples:
 
   # Run on GKE
   ./local-run.sh -j periodic-ci-gke-helm-nightly -r rhdh/rhdh-hub-rhel9 -t next -s
+
+  # Use a locally built runner image
+  ./local-run.sh --runner-image localhost/rhdh-e2e-runner:test
 
 EOF
   exit 0
@@ -71,6 +76,10 @@ while [[ $# -gt 0 ]]; do
     -p | --pr)
       CLI_IMAGE_REPO="rhdh-community/rhdh"
       CLI_TAG_NAME="pr-$2"
+      shift 2
+      ;;
+    -i | --runner-image)
+      RUNNER_IMAGE="$2"
       shift 2
       ;;
     -s | --skip-tests)
@@ -357,9 +366,16 @@ if [[ "$CLI_MODE" == "false" ]]; then
   echo ""
 fi
 
-# Pull runner image first (can take a while)
+# Pull runner image (always attempt; fall back to local copy if pull fails)
 log::section "Pulling runner container image"
-podman pull "$RUNNER_IMAGE" --platform=linux/amd64
+if ! podman pull "$RUNNER_IMAGE"; then
+  if podman image exists "$RUNNER_IMAGE" 2>/dev/null; then
+    log::info "Pull failed but image exists locally: $RUNNER_IMAGE"
+  else
+    log::error "Failed to pull image and no local copy: $RUNNER_IMAGE"
+    exit 1
+  fi
+fi
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
@@ -434,9 +450,10 @@ log::info "Container log: $CONTAINER_LOG"
 echo ""
 
 CONTAINER_EXIT_CODE=0
+# no -t: stdout is piped to tee and CI has no TTY
 podman run -v "$WORK_DIR":/tmp/rhdh \
   -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro \
-  -it -u root --privileged \
+  -i -u root --privileged \
   --mount type=tmpfs,destination=/tmp/secrets \
   -e VAULT_ADDR="$VAULT_ADDR" \
   -e VAULT_TOKEN="$VAULT_TOKEN" \

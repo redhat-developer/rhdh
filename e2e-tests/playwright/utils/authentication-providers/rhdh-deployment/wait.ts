@@ -10,6 +10,16 @@ const BACKSTAGE_LABELS = {
 
 const POLL_INTERVAL_MS = 500;
 
+function skipIfRunningLocal(state: RHDHDeploymentState, message?: string): boolean {
+  if (state.isRunningLocal) {
+    if (message !== undefined && message !== "") {
+      console.log(message);
+    }
+    return true;
+  }
+  return false;
+}
+
 function buildLabelSelector(instanceName: string): string {
   const labels = {
     ...BACKSTAGE_LABELS,
@@ -20,9 +30,10 @@ function buildLabelSelector(instanceName: string): string {
     .join(",");
 }
 
-export async function getDeploymentGeneration(state: RHDHDeploymentState): Promise<number> {
-  const labelSelector = buildLabelSelector(state.instanceName);
-
+async function getLabeledDeployment(
+  state: RHDHDeploymentState,
+  labelSelector: string,
+): Promise<k8s.V1Deployment> {
   const deployments = await state.appsV1Api.listNamespacedDeployment(
     state.namespace,
     undefined,
@@ -36,14 +47,20 @@ export async function getDeploymentGeneration(state: RHDHDeploymentState): Promi
     throw new Error(`No deployment found with labels: ${labelSelector}`);
   }
 
-  return deployments.body.items[0].metadata?.generation ?? 0;
+  return deployments.body.items[0];
+}
+
+export async function getDeploymentGeneration(state: RHDHDeploymentState): Promise<number> {
+  const labelSelector = buildLabelSelector(state.instanceName);
+  const deployment = await getLabeledDeployment(state, labelSelector);
+  return deployment.metadata?.generation ?? 0;
 }
 
 export async function waitForConfigReconciled(
   state: RHDHDeploymentState,
   timeoutMs: number = 60000,
 ): Promise<void> {
-  if (state.isRunningLocal) {
+  if (skipIfRunningLocal(state)) {
     return;
   }
 
@@ -73,60 +90,47 @@ function hasRolloutStarted(
   );
 }
 
-function isDeploymentReady(deployment: k8s.V1Deployment, cr: BackstageCr): boolean {
-  const conditions = deployment.status?.conditions ?? [];
-  const currentGeneration = deployment.metadata?.generation ?? 0;
-  const observedGeneration = deployment.status?.observedGeneration ?? 0;
-
-  const isAvailable = conditions.some(
+function isDeploymentAvailable(conditions: k8s.V1DeploymentCondition[]): boolean {
+  return conditions.some(
     (condition) => condition.type === "Available" && condition.status === "True",
   );
+}
 
-  const isProgressingWithRollout = conditions.some(
+function isDeploymentProgressingWithRollout(conditions: k8s.V1DeploymentCondition[]): boolean {
+  return conditions.some(
     (condition) =>
       condition.type === "Progressing" &&
       condition.status === "True" &&
       condition.reason !== "NewReplicaSetAvailable",
   );
+}
 
-  const replicas = deployment.spec?.replicas;
-  const desiredReplicas = cr.spec.replicas ?? 1;
+function deploymentReplicasMatch(deployment: k8s.V1Deployment, desiredReplicas: number): boolean {
   const availableReplicas = deployment.status?.availableReplicas ?? 0;
   const readyReplicas = deployment.status?.readyReplicas ?? 0;
   const updatedReplicas = deployment.status?.updatedReplicas ?? 0;
 
-  const replicasMatch =
+  return (
     availableReplicas === desiredReplicas &&
     readyReplicas === desiredReplicas &&
-    updatedReplicas === desiredReplicas;
-
-  return (
-    isAvailable &&
-    !isProgressingWithRollout &&
-    replicas === desiredReplicas &&
-    replicasMatch &&
-    observedGeneration >= currentGeneration
+    updatedReplicas === desiredReplicas
   );
 }
 
-async function getLabeledDeployment(
-  state: RHDHDeploymentState,
-  labelSelector: string,
-): Promise<k8s.V1Deployment> {
-  const deployments = await state.appsV1Api.listNamespacedDeployment(
-    state.namespace,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    labelSelector,
+function isDeploymentReady(deployment: k8s.V1Deployment, cr: BackstageCr): boolean {
+  const conditions = deployment.status?.conditions ?? [];
+  const currentGeneration = deployment.metadata?.generation ?? 0;
+  const observedGeneration = deployment.status?.observedGeneration ?? 0;
+  const desiredReplicas = cr.spec.replicas ?? 1;
+  const replicas = deployment.spec?.replicas;
+
+  return (
+    isDeploymentAvailable(conditions) &&
+    !isDeploymentProgressingWithRollout(conditions) &&
+    replicas === desiredReplicas &&
+    deploymentReplicasMatch(deployment, desiredReplicas) &&
+    observedGeneration >= currentGeneration
   );
-
-  if (deployments.body.items.length === 0) {
-    throw new Error(`No deployment found with labels: ${labelSelector}`);
-  }
-
-  return deployments.body.items[0];
 }
 
 async function waitForRolloutStart(
@@ -168,11 +172,15 @@ async function waitForRolloutStart(
 
     console.log("[INFO] Rollout detected");
     return { rolloutStarted: true, initialGeneration };
-  } catch {
-    console.log(
-      `[INFO] No rollout detected after ${rolloutStartTimeout}ms, checking if deployment is already ready`,
-    );
-    return { rolloutStarted: true, initialGeneration };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("Deployment rollout start")) {
+      console.log(
+        `[INFO] No rollout detected after ${rolloutStartTimeout}ms, checking if deployment is already ready`,
+      );
+      return { rolloutStarted: true, initialGeneration };
+    }
+    throw error;
   }
 }
 
@@ -207,8 +215,7 @@ export async function waitForDeploymentReady(
   state: RHDHDeploymentState,
   timeoutMs: number = 600000,
 ): Promise<void> {
-  if (state.isRunningLocal) {
-    console.log("Skipping deployment ready check as isRunningLocal is true.");
+  if (skipIfRunningLocal(state, "Skipping deployment ready check as isRunningLocal is true.")) {
     return;
   }
 
@@ -220,8 +227,7 @@ export async function waitForNamespaceActive(
   state: RHDHDeploymentState,
   timeoutMs: number = 30000,
 ): Promise<void> {
-  if (state.isRunningLocal) {
-    console.log("Skipping namespace active check as isRunningLocal is true.");
+  if (skipIfRunningLocal(state, "Skipping namespace active check as isRunningLocal is true.")) {
     return;
   }
 
@@ -246,8 +252,7 @@ export async function ensureBackstageCRIsAvailable(
   state: RHDHDeploymentState,
   timeoutMs: number = 60000,
 ): Promise<void> {
-  if (state.isRunningLocal) {
-    console.log("Skipping CRD check as isRunningLocal is true.");
+  if (skipIfRunningLocal(state, "Skipping CRD check as isRunningLocal is true.")) {
     return;
   }
 
@@ -279,8 +284,7 @@ export async function deleteNamespaceIfExists(
   state: RHDHDeploymentState,
   timeoutMs: number = 60000,
 ): Promise<void> {
-  if (state.isRunningLocal) {
-    console.log("Skipping namespace deletion as isRunningLocal is true.");
+  if (skipIfRunningLocal(state, "Skipping namespace deletion as isRunningLocal is true.")) {
     return;
   }
 

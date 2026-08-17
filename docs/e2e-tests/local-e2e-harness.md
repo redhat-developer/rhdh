@@ -36,8 +36,27 @@ catalog extracted from that image):
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:2.0 ./e2e-tests/local-harness/populate.sh
 ```
 
+`populate.sh` takes an optional install-config path as its first argument
+(default: the curated harness set above). The plugin sanity check drives that
+hook through `populate-catalog-index.sh`, which generates a config enabling every
+package the catalog index declares — see "Plugin Sanity Check" in
+[`e2e-tests/README.md`](../../e2e-tests/README.md). Both flavors share
+`populate.sh` for the install itself.
+
 Alternatives:
 
+- **Catalog index** — installs the full index plugin set instead of the curated one.
+  The index still references a few core plugins by local `./dynamic-plugins/dist/…`
+  paths that only exist after a source build, and the CLI skips those; everything
+  else resolves from the public registries. Use `populate-catalog-index.sh`, which
+  also records the breadcrumb the plugin sanity check asserts against:
+
+  ```bash
+  CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
+    ./e2e-tests/local-harness/populate-catalog-index.sh
+  ```
+
+Alternatives (continued):
 - **Offline from-source** (frontend plugins only; requires a reconciled workspace —
   see "Known issues"):
 
@@ -57,11 +76,12 @@ with `app-config.yaml` + `app-config.dynamic-plugins.yaml` +
 `app-config.local-e2e.yaml`. A `globalSetup` first fails fast with the populate command
 if `dynamic-plugins-root` has no plugins.
 
-The run is scoped to tests tagged `@cluster-free` within the spec files allowlisted in
-`testMatch`. To widen coverage, tag a validated test with `@cluster-free` and add its
-spec file to `testMatch`; if the test needs extra plugins, add them (with their
-`pluginConfig`) to `e2e-tests/local-harness/dynamic-plugins.yaml` and re-run
-`populate.sh` (see "Known issues").
+The run is scoped to tests tagged `@cluster-free-capable` within the spec files
+allowlisted in `testMatch`. To widen coverage, tag a validated test with
+`@cluster-free-capable` and add its spec file to `testMatch`; if the test needs
+extra plugins, add them (with their `pluginConfig`) to
+`e2e-tests/local-harness/dynamic-plugins.yaml` and re-run `populate.sh` (see
+"Known issues").
 
 ### Verified
 
@@ -71,15 +91,14 @@ GlobalHeader — CompanyLogo, Search, StarredDropdown, ApplicationLauncherDropdo
 HelpDropdown, NotificationButton, and ProfileDropdown all render — see "Known issues"
 for how that's wired).
 
-- `guest-signin-happy-path` — the `@cluster-free` test (home page: Welcome heading,
+- `guest-signin-happy-path` — the `@cluster-free-capable` test (home page: Welcome heading,
   Search and Starred Entities, all dynamic-home-page-plugin widgets, plus Settings and
   Sign-out via the GlobalHeader's profile menu). A fourth, untagged test in the same
   file exercises Quick Access against the real `/developer-hub` proxy; it only runs in
   the full cluster-based CI suite (see "Known issues").
-- `learning-path-page` — navigates directly to `/learning-paths` (the route the
-  Onboarding home-page widget's CTA links to) and renders from the static fallback data
-  bundled with the plugin. NFS's sidebar has no config-driven nested group to reach it
-  through (see `plugins/frontend/sidebar` below).
+- `learning-path-page` — navigates via the NFS sidebar flat nav to `/learning-paths`
+  and renders from the static fallback data bundled with the app. See
+  `plugins/frontend/sidebar` for the same sidebar entry.
 - `instance-health-check` — `GET /healthcheck` against the frontend origin. The app dev
   server proxies `/healthcheck` to the backend (`proxy` field in
   `packages/app/package.json`), mirroring the single-origin production container where
@@ -92,17 +111,17 @@ for how that's wired).
   `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml` into
   `app-config.local-e2e.yaml`. NFS home-page cards are a fixed set of built-in widgets
   (`home-page-widget:home/*`) — the legacy Placeholder/Markdown/Random Joke mount-point
-  cards have no NFS equivalent and are no longer asserted. Its `@cluster-free` "Quick
+  cards have no NFS equivalent and are no longer asserted. Its `@cluster-free-capable` "Quick
   Access" assertion only checks the card's title text, not real link data (see "Known
   issues" for why); the file's other, untagged "Verify Customized Quick Access" test
   covers the real link data and only runs in full CI.
-- `plugins/frontend/sidebar` — the `@cluster-free` test only verifies flat-nav behavior:
-  the Docs (TechDocs) sidebar item navigates to the TechDocs index page (NFS
-  `PageBlueprint` title: "Docs", not the legacy OFS `pageWrapper.title`
+- `plugins/frontend/sidebar` — the `@cluster-free-capable` tests verify flat-nav behavior:
+  Docs and Learning Paths sidebar items navigate to the expected pages (NFS
+  `PageBlueprint` title for TechDocs: "Docs", not the legacy OFS `pageWrapper.title`
   "Documentation"). NFS's sidebar (`packages/app/src/modules/nav/Sidebar.tsx`) is a
   fixed, code-defined flat nav with no config-driven nested-group equivalent of the
-  legacy References/Favorites `menuItems`. It stops at the index page — this
-  harness's catalog has no `techdocs-ref`-annotated entities (see "Known issues"),
+  legacy References/Favorites `menuItems`. The Docs test stops at the index page —
+  this harness's catalog has no `techdocs-ref`-annotated entities (see "Known issues"),
   so there's nothing to click into. The file's other, untagged "Verify Docs entity
   page renders real content" test opens a real entity's docs and checks for actual
   content; it only runs in full CI, where `catalog-entities/components/showcase.yaml`/
@@ -172,9 +191,9 @@ just `run`), which is why this harness boots the dev servers directly instead.
 - **Live-external-service specs** (real k8s cluster, GitHub org, Quay, Tekton, Keycloak)
   still need those services or mocks; this harness covers UI/plugin-rendering scenarios
   that don't require live external infra.
-- **`janus-cli` / `backstage-cli`** live in the repo-root `node_modules/.bin`, which yarn
+- **`backstage-cli`** lives in the repo-root `node_modules/.bin`, which yarn
   does not surface for the `app`/`backend` workspaces, so the webServer commands invoke
-  them directly with the root `.bin` prepended to `PATH`.
+  it directly with the root `.bin` prepended to `PATH`.
 - **`VisitsStorageApi` 404s under this config, pre-dating NFS.** `app-config.local-e2e.yaml`
   sets `userSettings.persistence: browser` (added in `#4020`, before the NFS migration,
   to opt CI out of database storage, and mirrored in the CI ConfigMap), which means
@@ -200,7 +219,7 @@ just `run`), which is why this harness boots the dev servers directly instead.
   the widget renders `"Error: Could not fetch data."` instead of real content. Real
   Quick Access link-data coverage (`verifyQuickAccess(...)`) only runs in full CI, via
   the untagged tests in `guest-signin-happy-path.spec.ts` and
-  `home-page-customization.spec.ts`; the `@cluster-free` tests only check that the
+  `home-page-customization.spec.ts`; the `@cluster-free-capable` tests only check that the
   Quick Access card renders (title text), not its content.
 - **GlobalHeader (RESOLVED).** Used to render only CompanyLogo and the header
   SearchComponent, breaking any test that navigates to Settings via the profile menu
@@ -246,7 +265,7 @@ just `run`), which is why this harness boots the dev servers directly instead.
 - **TechDocs index is always empty in this harness.** The catalog only loads
   `e2e-tests/local-harness/guest-ownership-entities.yaml` (a plain User + Group), which
   has no `backstage.io/techdocs-ref` annotation, so `/docs` (TechDocsIndexPage) always
-  shows "No documents to show". `plugins/frontend/sidebar.spec.ts`'s `@cluster-free`
+  shows "No documents to show". `plugins/frontend/sidebar.spec.ts`'s `@cluster-free-capable`
   test only verifies reaching that index page; its untagged "Verify Docs entity page
   renders real content" test needs a real `techdocs-ref` entity and only runs in full
   CI (see "Verified" above).

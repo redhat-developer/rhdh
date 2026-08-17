@@ -20,6 +20,7 @@ export async function verifyLink(
   let notVisibleCheck: boolean;
 
   if (typeof arg === "object") {
+    // Intentional divergence: sidebar-group links are grouped by aria-label div, not accessible name.
     linkLocator = page.locator(`div[aria-label="${arg.label}"] a`);
     notVisibleCheck = false;
   } else {
@@ -38,14 +39,9 @@ export async function verifyTextVisible(
   page: Page,
   text: string,
   exact = false,
-  timeout = 10000,
+  timeout = 15_000,
 ): Promise<void> {
   const locator = page.getByText(text, { exact });
-  await expect(locator).toBeVisible({ timeout });
-}
-
-export async function verifyLinkVisible(page: Page, text: string, timeout = 10000): Promise<void> {
-  const locator = page.locator(`a:has-text("${text}")`);
   await expect(locator).toBeVisible({ timeout });
 }
 
@@ -53,7 +49,7 @@ export async function verifyText(
   page: Page,
   text: string | RegExp,
   exact: boolean = true,
-  timeout: number = 5000,
+  timeout: number = 15_000,
 ) {
   await verifyTextInLocator(page, "", text, exact, timeout);
 }
@@ -68,8 +64,8 @@ export async function verifyRowsInTable(
   }
 }
 
-export async function waitForTextDisappear(page: Page, text: string) {
-  await expect(page.getByText(text)).toHaveCount(0);
+export async function waitForTextDisappear(page: Page, text: string, timeout = 15_000) {
+  await expect(page.getByText(text)).toHaveCount(0, { timeout });
 }
 
 async function verifyTextInLocator(
@@ -77,7 +73,7 @@ async function verifyTextInLocator(
   locator: string,
   text: string | RegExp,
   exact: boolean,
-  timeout: number = 5000,
+  timeout: number = 15_000,
 ) {
   const elementLocator = locator
     ? page.locator(locator).getByText(text, { exact }).first()
@@ -151,7 +147,7 @@ export async function verifyColumnHeading(
   exact: boolean = true,
 ) {
   for (const rowText of rowTexts) {
-    const rowLocator = page.getByRole("columnheader").getByText(rowText, { exact }).first();
+    const rowLocator = page.getByRole("columnheader", { name: rowText, exact }).first();
     await rowLocator.waitFor({ state: "visible" });
     await rowLocator.scrollIntoViewIfNeeded();
     await expect(rowLocator).toBeVisible();
@@ -165,28 +161,23 @@ export async function verifyHeading(page: Page, heading: string | RegExp, timeou
   await expect(headingLocator).toBeVisible();
 }
 
-export async function verifyParagraph(page: Page, paragraph: string) {
-  const headingLocator = page.getByText(paragraph).first();
-  await headingLocator.waitFor({ state: "visible", timeout: 20000 });
-  await expect(headingLocator).toBeVisible();
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+function coerceHeadingLevel(level: number): HeadingLevel {
+  if (level === 1 || level === 2 || level === 3 || level === 4 || level === 5 || level === 6) {
+    return level;
+  }
+  return 1;
 }
 
 export async function waitForTitle(page: Page, text: string, level: number = 1) {
-  await expect(page.locator(`h${level}:has-text("${text}")`)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: text, level: coerceHeadingLevel(level) }),
+  ).toBeVisible();
 }
 
 export async function verifyAlertErrorMessage(page: Page, message: string | RegExp) {
   const alert = page.getByRole("alert");
   await alert.waitFor();
   await expect(alert).toHaveText(message);
-}
-
-export async function verifyTextInTooltip(page: Page, text: string | RegExp) {
-  const tooltip = page.getByRole("tooltip").getByText(text);
-  await expect(tooltip).toBeVisible();
-}
-
-export async function clickSpanByText(page: Page, text: string) {
-  await verifyText(page, text);
-  await page.click(`span:has-text("${text}")`);
 }

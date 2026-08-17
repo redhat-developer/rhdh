@@ -109,10 +109,9 @@ async function fetchPodEventContext(
   const eventsResponse = await coreV1Api.listNamespacedEvent(namespace);
   const podNames = collectPodNames(podsResponse, allPodsResponse);
 
-  const podEvents = [...eventsResponse.body.items]
+  const podEvents = eventsResponse.body.items
     .filter((event) => isRelevantPodEvent(event, podNames))
-    // oxlint-disable-next-line unicorn/no-array-sort -- es2022 lib has no Array#toSorted
-    .sort(
+    .toSorted(
       (a: k8s.CoreV1Event, b: k8s.CoreV1Event) =>
         getEventSortTimestamp(b) - getEventSortTimestamp(a),
     )

@@ -4,10 +4,13 @@
 # source of truth for the populate step (CI, the docs, and the global-setup
 # error message all point here).
 #
-# Installs the plugin set from e2e-tests/local-harness/dynamic-plugins.yaml
-# from the public OCI registry (quay.io) via install-dynamic-plugins + skopeo —
-# no dynamic-plugins/dist source build and no cluster. Requires skopeo
-# (preinstalled in CI; `brew install skopeo` on macOS).
+# Installs a plugin set from the public OCI registry (quay.io) via
+# install-dynamic-plugins + skopeo — no dynamic-plugins/dist source build and no
+# cluster. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS).
+#
+# The optional first argument selects the install config (default: the curated
+# harness set in e2e-tests/local-harness/dynamic-plugins.yaml). The plugin sanity
+# check drives this hook through populate-catalog-index.sh.
 #
 # {{inherit}} tags resolve against the full dynamic-plugins.default.yaml — by
 # default the repo-root file (same as Helm/CI `includes: dynamic-plugins.default.yaml`).
@@ -17,11 +20,25 @@
 set -e
 
 # Pinned so local runs install the exact CLI version CI uses.
-CLI_VERSION="0.2.0"
+CLI_VERSION="0.4.0"
+
+CONFIG_SRC="${1:-e2e-tests/local-harness/dynamic-plugins.yaml}"
 
 HARNESS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${HARNESS_DIR}/../.." && pwd)"
-DPDY_INCLUDE="dynamic-plugins.default.yaml"
+
+# Resolve the config path against the CALLER's cwd before we cd to the repo
+# root, so relative arguments from any directory keep working.
+if [[ "${CONFIG_SRC#/}" == "$CONFIG_SRC" ]]; then
+  if [[ -f "$CONFIG_SRC" ]]; then
+    CONFIG_SRC="$(cd "$(dirname "$CONFIG_SRC")" && pwd)/$(basename "$CONFIG_SRC")"
+  elif [[ ! -f "$REPO_ROOT/$CONFIG_SRC" ]]; then
+    # Report the path the caller actually typed - resolving it against the repo
+    # root first would fail later at `cp` with a path they never mentioned.
+    echo "install config not found: ${CONFIG_SRC} (cwd: $(pwd))" >&2
+    exit 1
+  fi
+fi
 
 # Extract dynamic-plugins.default.yaml from a catalog-index OCI image.
 # Adapted from the overlays wiki unpack helper and
@@ -71,7 +88,7 @@ fi
 mkdir -p dynamic-plugins-root
 # The CLI hardcodes ./dynamic-plugins.yaml (cwd) as its config file; the copy at
 # the repo root is gitignored.
-cp "${HARNESS_DIR}/dynamic-plugins.yaml" dynamic-plugins.yaml
+cp "$CONFIG_SRC" dynamic-plugins.yaml
 
 if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
   sed -i "s|dynamic-plugins.default.yaml|${DPDY_INCLUDE}|" dynamic-plugins.yaml

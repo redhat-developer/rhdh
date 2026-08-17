@@ -11,6 +11,7 @@ import { configureCorporateProxyAgent } from './corporate-proxy';
 import { getDefaultServiceFactories } from './defaultServiceFactories';
 import {
   healthCheckPlugin,
+  nfsModuleFilterPlugin,
   pluginIDProviderService,
   rbacDynamicPluginsProvider,
 } from './modules';
@@ -80,7 +81,10 @@ backend.add(
   }),
 );
 
-
+// RHIDP-15377: when standard module federation is enabled, filter out
+// exposed modules that are not NFS entrypoints based on backstage.features
+// metadata in each frontend plugin's package.json.
+backend.add(nfsModuleFilterPlugin);
 backend.add(healthCheckPlugin);
 
 backend.add(import('@backstage/plugin-app-backend'));

@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 
 import playwrightConfig from "../../../playwright.config";
-import { UIhelper } from "../../utils/ui-helper";
+import * as navigation from "../../utils/ui-helper/navigation";
 
 //https://redhatquickcourses.github.io/devhub-admin/devhub-admin/1/chapter2/rbac.html#_lab_rbac_rest_api
 export class RhdhAuthUiHack {
@@ -27,7 +27,6 @@ export class RhdhAuthUiHack {
   }
 
   private async fetchApiTokenFromPage(page: Page): Promise<string | null> {
-    const uiHelper = new UIhelper(page);
     const baseURL = playwrightConfig.use?.baseURL;
     if (baseURL === undefined || baseURL === "") {
       throw new Error("playwright.config use.baseURL is not defined");
@@ -38,7 +37,7 @@ export class RhdhAuthUiHack {
         request.url() === `${baseURL}/api/search/query?term=` && request.method() === "GET",
       { timeout: 15000 },
     );
-    await uiHelper.openSidebar("Home");
+    await navigation.openSidebar(page, "Home");
     const getRequest = await requestPromise;
     const authToken = await getRequest.headerValue("Authorization");
     return authToken;

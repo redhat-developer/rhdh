@@ -6,6 +6,22 @@ import { getErrorMessage, hasErrorResponse } from "../../errors";
 import { pollUntil } from "../../poll-until";
 import { RHDHDeploymentState, syncedLogRegex } from "./types";
 
+function attachLogMatchHandlers(
+  logStream: stream.PassThrough,
+  searchString: RegExp,
+  onMatch: () => void,
+  onDebug?: (text: string) => void,
+): void {
+  logStream.on("data", (chunk: Buffer | string) => {
+    const text = typeof chunk === "string" ? chunk : chunk.toString();
+    onDebug?.(text);
+    if (searchString.test(text)) {
+      process.stdout.write(chunk);
+      onMatch();
+    }
+  });
+}
+
 async function resolvePodName(
   state: RHDHDeploymentState,
   podName: string | undefined,
@@ -70,12 +86,8 @@ async function streamPodLogsUntilMatch(
   const log = new k8s.Log(state.kc);
   const logStream = new stream.PassThrough();
 
-  logStream.on("data", (chunk: Buffer | string) => {
-    const text = typeof chunk === "string" ? chunk : chunk.toString();
-    if (searchString.test(text)) {
-      process.stdout.write(chunk);
-      found = true;
-    }
+  attachLogMatchHandlers(logStream, searchString, () => {
+    found = true;
   });
 
   logStream.on("error", (error) => {
@@ -86,22 +98,25 @@ async function streamPodLogsUntilMatch(
     console.log("Log stream ended.");
   });
 
-  await log.log(state.namespace, podName, "backstage-backend", logStream, {
-    follow: true,
-    tailLines: 1,
-    pretty: false,
-    timestamps: false,
-  });
+  try {
+    await log.log(state.namespace, podName, "backstage-backend", logStream, {
+      follow: true,
+      tailLines: 1,
+      pretty: false,
+      timestamps: false,
+    });
 
-  await pollUntil(() => Promise.resolve(found), {
-    timeoutMs,
-    intervalMs: 500,
-    label: `Log pattern ${searchString} in pod ${podName}`,
-  });
+    await pollUntil(() => Promise.resolve(found), {
+      timeoutMs,
+      intervalMs: 500,
+      label: `Log pattern ${searchString} in pod ${podName}`,
+    });
 
-  logStream.end();
-  logStream.removeAllListeners();
-  return true;
+    return found;
+  } finally {
+    logStream.end();
+    logStream.removeAllListeners();
+  }
 }
 
 export async function followPodLogs(
@@ -144,20 +159,23 @@ export async function followLocalLogs(
   const logStream = new stream.PassThrough();
   state.runningProcess?.stdout?.pipe(logStream);
 
-  logStream.on("data", (chunk: Buffer | string) => {
-    const text = typeof chunk === "string" ? chunk : chunk.toString();
-    const isLocalDebug =
-      process.env.ISRUNNINGLOCAL === "true" &&
-      process.env.ISRUNNINGLOCALDEBUG !== undefined &&
-      process.env.ISRUNNINGLOCALDEBUG !== "";
-    if (isLocalDebug) {
-      console.log(`\t${text.replaceAll("\n", "\t")}`);
-    }
-    if (searchString.test(text)) {
+  attachLogMatchHandlers(
+    logStream,
+    searchString,
+    () => {
       console.log("Found string in local logs.");
       found = true;
-    }
-  });
+    },
+    (text) => {
+      const isLocalDebug =
+        process.env.ISRUNNINGLOCAL === "true" &&
+        process.env.ISRUNNINGLOCALDEBUG !== undefined &&
+        process.env.ISRUNNINGLOCALDEBUG !== "";
+      if (isLocalDebug) {
+        console.log(`\t${text.replaceAll("\n", "\t")}`);
+      }
+    },
+  );
 
   logStream.on("error", (error) => {
     throw new Error(`Error reading local logs: ${getErrorMessage(error)}`);
@@ -167,13 +185,18 @@ export async function followLocalLogs(
     console.log("Local log stream ended.");
   });
 
-  await pollUntil(() => Promise.resolve(found), {
-    timeoutMs,
-    intervalMs: 500,
-    label: `Log pattern ${searchString} in local process output`,
-  });
+  try {
+    await pollUntil(() => Promise.resolve(found), {
+      timeoutMs,
+      intervalMs: 500,
+      label: `Log pattern ${searchString} in local process output`,
+    });
 
-  return true;
+    return found;
+  } finally {
+    logStream.end();
+    logStream.removeAllListeners();
+  }
 }
 
 export function followLogs(

@@ -344,12 +344,20 @@ class RHDHDeployment implements RHDHDeploymentState {
     return followLogsImpl(this, searchString, timeoutMs);
   }
 
+  getBackstageUrl(): string {
+    return computeBackstageUrlImpl(this);
+  }
+
   computeBackstageUrl(): Promise<string> {
-    return Promise.resolve(computeBackstageUrlImpl(this));
+    return Promise.resolve(this.getBackstageUrl());
+  }
+
+  getBackstageBackendUrl(): string {
+    return computeBackstageBackendUrlImpl(this);
   }
 
   computeBackstageBackendUrl(): Promise<string> {
-    return Promise.resolve(computeBackstageBackendUrlImpl(this));
+    return Promise.resolve(this.getBackstageBackendUrl());
   }
 
   async loadAllConfigs(): Promise<RHDHDeployment> {

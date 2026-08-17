@@ -1,36 +1,31 @@
 import { expect, Page } from "@playwright/test";
 
 import { getCurrentLanguage, getTranslations } from "../../e2e/localization/locale";
-import { UIhelper } from "../../utils/ui-helper";
+import * as navigation from "../../utils/ui-helper/navigation";
+import * as verification from "../../utils/ui-helper/verification";
 
 const t = getTranslations();
-const lang = getCurrentLanguage();
 
 /**
  * Sidebar navigation on the RHDH instance.
  *
- * NFS (packages/app, default) renders a flat, code-defined sidebar
+ * NFS (packages/app) renders a flat, code-defined sidebar
  * (packages/app/src/modules/nav/Sidebar.tsx): Home, Catalog, Learning Paths, and
  * Create are pinned first, everything else (Docs, etc.) is flat and sorted
  * alphabetically by title. There is no config-driven nested grouping (the legacy
- * "References" / "Favorites" menuItems groups have no NFS equivalent), so this class
- * only exposes flat-nav helpers.
+ * "References" / "Favorites" menuItems groups have no NFS equivalent).
  */
 export class SidebarPage {
-  private readonly page: Page;
-  private readonly ui: UIhelper;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.ui = new UIhelper(page);
-  }
+  constructor(private readonly page: Page) {}
 
   async openDocs(): Promise<void> {
-    await this.ui.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
+    const lang = getCurrentLanguage();
+    await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.docs"]);
   }
 
   async openLearningPaths(): Promise<void> {
-    await this.ui.openSidebar(t["rhdh"][lang]["menuItem.learningPaths"]);
+    const lang = getCurrentLanguage();
+    await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.learningPaths"]);
   }
 
   /** Opens a specific entity's TechDocs from the TechDocs index page (must call openDocs() first). */
@@ -39,15 +34,15 @@ export class SidebarPage {
   }
 
   async verifyDocsHeading(): Promise<void> {
-    await this.ui.verifyHeading("Docs");
+    await verification.verifyHeading(this.page, "Docs");
   }
 
   async verifyLearningPathsHeading(): Promise<void> {
-    await this.ui.verifyHeading("Learning Paths");
+    await verification.verifyHeading(this.page, "Learning Paths");
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
-    await this.ui.verifyText(text, exact);
+    await verification.verifyText(this.page, text, exact);
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {

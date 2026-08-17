@@ -1,8 +1,7 @@
 import { test, expect } from "@support/coverage/test";
 
 import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
-import { RhdhHomePage } from "../../support/pages/rhdh-home-page";
-import { Common } from "../../utils/common";
+import { HomePage } from "../../support/pages/home-page";
 
 test.describe("Verify TLS configuration with external Crunchy Postgres DB", () => {
   test.beforeAll(() => {
@@ -18,12 +17,14 @@ test.describe("Verify TLS configuration with external Crunchy Postgres DB", () =
     );
   });
 
-  test("Verify successful DB connection", async ({ page }) => {
-    const rhdhHomePage = new RhdhHomePage(page);
+  test("Verify successful DB connection", async ({ page, authSession }) => {
+    const homePage = new HomePage(page);
     const catalogBrowsePage = new CatalogBrowsePage(page);
-    const common = new Common(page);
-    await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
-    await rhdhHomePage.verifyWelcomeHeading();
+    await authSession.loginWithKeycloak(
+      process.env.GH_USER2_ID ?? "",
+      process.env.GH_USER2_PASS ?? "",
+    );
+    await homePage.verifyWelcomeHeading();
     await page.getByLabel("Catalog").first().click();
     await catalogBrowsePage.selectKind("Component");
     await expect(async () => {

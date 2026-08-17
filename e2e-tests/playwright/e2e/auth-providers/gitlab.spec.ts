@@ -1,10 +1,9 @@
-import { test, expect, BrowserContext } from "@support/coverage/test";
+import { test, expect, type BrowserContext } from "@support/coverage/test";
 
+import { AuthProviderSession } from "../../support/auth/provider-auth";
 import { AuthProviderHarness } from "../../support/fixtures/auth-provider-harness";
 import { SettingsPage } from "../../support/pages/settings-page";
 import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper";
-import { Common } from "../../utils/common";
-import { teardownBrowser } from "../../utils/common/browser";
 
 /* SUPORTED RESOLVERS
 GITLAB:
@@ -14,73 +13,75 @@ GITLAB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-const harness = await AuthProviderHarness.create("albarbaro-test-namespace-gitlab");
+const harness = AuthProviderHarness.create("albarbaro-test-namespace-gitlab");
 
 test.describe("Configure GitLab Provider", () => {
   test.use({ baseURL: harness.backstageUrl });
 
-  let common: Common;
+  let authSession: AuthProviderSession;
   let settingsPage: SettingsPage;
   let context: BrowserContext;
   let gitlabHelper: GitLabHelper;
   let oauthAppId: number | null = null;
+  let oauthClientId = "";
+  let oauthClientSecret = "";
 
-  test.beforeAll(async ({ rhdhPage, rhdhContext }) => {
+  async function clearSession(): Promise<void> {
+    await authSession.clearAuthState(context);
+  }
+
+  test.beforeAll(async ({ rhdhPage, rhdhContext, rhdhAuthSession }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
     });
 
     context = rhdhContext;
-    common = new Common(rhdhPage);
+    authSession = rhdhAuthSession;
     settingsPage = new SettingsPage(rhdhPage);
-
-    harness.expectEnvVars([
-      "AUTH_PROVIDERS_GITLAB_HOST",
-      "AUTH_PROVIDERS_GITLAB_TOKEN",
-      "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
-      "DEFAULT_USER_PASSWORD",
-    ]);
-
-    await harness.loadConfigsAndProvisionNamespace();
 
     gitlabHelper = new GitLabHelper({
       host: process.env.AUTH_PROVIDERS_GITLAB_HOST!,
       personalAccessToken: process.env.AUTH_PROVIDERS_GITLAB_TOKEN!,
     });
 
-    const callbackUrl = `${harness.backstageBackendUrl}/api/auth/gitlab/handler/frame`;
-    const oauthAppName = `rhdh-test-${Date.now()}`;
-    console.log(`[TEST] Creating GitLab OAuth application: ${oauthAppName}`);
-    const oauthApp = await gitlabHelper.createOAuthApplication(
-      oauthAppName,
-      callbackUrl,
-      "api read_user write_repository sudo",
-      // trusted = true to skip UI confirmation
-      true,
-    );
-    oauthAppId = oauthApp.id;
-    console.log(`[TEST] GitLab OAuth application created - ID: ${oauthApp.application_id}`);
-
-    await harness.addBaseUrlSecretsIfRemote();
-    await harness.addSecretsFromEnv({
-      AUTH_PROVIDERS_GITLAB_HOST: "AUTH_PROVIDERS_GITLAB_HOST",
-      AUTH_PROVIDERS_GITLAB_PARENT_ORG: "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
-      AUTH_PROVIDERS_GITLAB_TOKEN: "AUTH_PROVIDERS_GITLAB_TOKEN",
+    await harness.prepareProvider({
+      requiredEnvVars: [
+        "AUTH_PROVIDERS_GITLAB_HOST",
+        "AUTH_PROVIDERS_GITLAB_TOKEN",
+        "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
+        "DEFAULT_USER_PASSWORD",
+      ],
+      beforeSecrets: async () => {
+        const callbackUrl = `${harness.backstageBackendUrl}/api/auth/gitlab/handler/frame`;
+        const oauthAppName = `rhdh-test-${Date.now()}`;
+        console.log(`[TEST] Creating GitLab OAuth application: ${oauthAppName}`);
+        const oauthApp = await gitlabHelper.createOAuthApplication(
+          oauthAppName,
+          callbackUrl,
+          "api read_user write_repository sudo",
+          true,
+        );
+        oauthAppId = oauthApp.id;
+        oauthClientId = oauthApp.application_id;
+        oauthClientSecret = oauthApp.secret;
+        console.log(`[TEST] GitLab OAuth application created: ${oauthAppName}`);
+      },
+      envSecrets: {
+        AUTH_PROVIDERS_GITLAB_HOST: "AUTH_PROVIDERS_GITLAB_HOST",
+        AUTH_PROVIDERS_GITLAB_PARENT_ORG: "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
+        AUTH_PROVIDERS_GITLAB_TOKEN: "AUTH_PROVIDERS_GITLAB_TOKEN",
+      },
+      extraSecrets: () => ({
+        AUTH_PROVIDERS_GITLAB_CLIENT_ID: oauthClientId,
+        AUTH_PROVIDERS_GITLAB_CLIENT_SECRET: oauthClientSecret,
+      }),
+      enableProvider: async (deployment) => {
+        console.log("[TEST] Enabling GitLab login with ingestion...");
+        await deployment.enableGitlabLoginWithIngestion();
+        console.log("[TEST] GitLab login with ingestion enabled successfully");
+      },
     });
-    await harness.deployment.addSecretData(
-      "AUTH_PROVIDERS_GITLAB_CLIENT_ID",
-      oauthApp.application_id,
-    );
-    await harness.deployment.addSecretData("AUTH_PROVIDERS_GITLAB_CLIENT_SECRET", oauthApp.secret);
-    await harness.createSecret();
-
-    console.log("[TEST] Enabling GitLab login with ingestion...");
-    await harness.deployment.enableGitlabLoginWithIngestion();
-    await harness.deployment.updateAllConfigs();
-    console.log("[TEST] GitLab login with ingestion enabled successfully");
-
-    await harness.deployAndWait();
   });
 
   test.beforeEach(() => {
@@ -88,13 +89,15 @@ test.describe("Configure GitLab Provider", () => {
   });
 
   test("Login with GitLab default resolver", async () => {
-    const login = await common.gitlabLogin("user1", process.env.DEFAULT_USER_PASSWORD!);
-    expect(login).toBe("Login successful");
-
-    await settingsPage.open();
-    await settingsPage.verifyProfileHeading("user1");
-    await common.signOut();
-    await context.clearCookies();
+    await harness.runLoginCase({
+      login: () => authSession.loginWithGitLab("user1", process.env.DEFAULT_USER_PASSWORD!),
+      assert: async () => {
+        await settingsPage.open();
+        await settingsPage.verifyProfileHeading("user1");
+        await settingsPage.signOut();
+      },
+      cleanup: clearSession,
+    });
   });
 
   test(`Ingestion of GitLab users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
@@ -157,7 +160,7 @@ test.describe("Configure GitLab Provider", () => {
     ).toBe(true);
   });
 
-  test.afterAll(async ({ rhdhPage }, testInfo) => {
+  test.afterAll(async () => {
     if (oauthAppId !== null) {
       try {
         await gitlabHelper.deleteOAuthApplication(oauthAppId);
@@ -168,6 +171,5 @@ test.describe("Configure GitLab Provider", () => {
     }
 
     await harness.cleanup();
-    await teardownBrowser(rhdhPage, testInfo);
   });
 });

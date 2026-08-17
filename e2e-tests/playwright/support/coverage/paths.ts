@@ -9,9 +9,9 @@
 import path from "node:path";
 
 export const COVERAGE_RAW_DIR =
-  process.env.COVERAGE_OUTPUT_DIR ||
+  process.env.COVERAGE_OUTPUT_DIR ??
   path.join(process.cwd(), "coverage", "e2e-raw");
 
 export const COVERAGE_REPORT_DIR =
-  process.env.COVERAGE_REPORT_DIR ||
+  process.env.COVERAGE_REPORT_DIR ??
   path.join(process.cwd(), "coverage", "e2e");

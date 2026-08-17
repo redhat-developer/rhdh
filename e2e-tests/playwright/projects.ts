@@ -31,6 +31,3 @@ export const PW_PROJECT = projectsJson as {
   readonly SHOWCASE_LOCALIZATION_IT: string;
   readonly SHOWCASE_LOCALIZATION_JA: string;
 };
-
-// Type for project names
-export type PlaywrightProjectName = (typeof PW_PROJECT)[keyof typeof PW_PROJECT];
