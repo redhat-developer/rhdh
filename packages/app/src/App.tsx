@@ -9,6 +9,7 @@ import homePagePlugin from '@backstage/plugin-home/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { rhdhApisModule } from './apis/apisModule';
+import { catalogCreatedAtModule } from './modules/catalog';
 import { learningPathsModule } from './modules/learning-paths';
 import { navModule } from './modules/nav';
 import { userSettingsGeneralModule } from './modules/user-settings';
@@ -19,6 +20,7 @@ const app = createApp({
     // Upstream Backstage plugins
     homePagePlugin,
     catalogPlugin,
+    catalogCreatedAtModule, // Created At column on catalog index
     scaffolderPlugin,
     searchPlugin,
     userSettingsPlugin,
