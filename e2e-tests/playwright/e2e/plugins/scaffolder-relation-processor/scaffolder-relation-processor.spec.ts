@@ -85,7 +85,8 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await catalogBrowsePage.searchCatalog("test-relation-\n");
     await catalogBrowsePage.openEntityLinkByHref("/catalog/default/component/test-relation-");
 
-    await catalogBrowsePage.openDependenciesTab();
+    // NFS has no dedicated Dependencies tab; the relations graph card renders on Overview.
+    await catalogBrowsePage.openOverviewTab();
 
     await scaffolderFlowPage.verifyDependencyGraphLabels(
       'g[data-testid="label"]',

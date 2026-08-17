@@ -19,7 +19,7 @@ test.describe("Test ApplicationListener", () => {
     await common.loginAsGuest();
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
   test(
     "Verify that the LocationListener logs the current location",
     { tag: "@cluster-free" },

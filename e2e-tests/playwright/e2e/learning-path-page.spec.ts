@@ -21,12 +21,15 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
     await common.loginAsGuest();
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
+  //
+  // NFS's sidebar pins Learning Paths in the main menu (see sidebar.spec.ts) — the
+  // legacy "References" nested group no longer exists.
   test(
     "Verify that links in Learning Paths for Backstage opens in a new tab",
     { tag: "@cluster-free" },
     async ({ page }, testInfo) => {
-      await sidebarPage.openReferencesLearningPaths();
+      await sidebarPage.openLearningPaths();
       await sidebarPage.verifyLearningPathLinksOpenInNewTab();
 
       await runAccessibilityTests(page, testInfo);

@@ -6,7 +6,16 @@ import { UIhelper } from "../../utils/ui-helper";
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-/** Sidebar navigation on the RHDH instance. */
+/**
+ * Sidebar navigation on the RHDH instance.
+ *
+ * NFS (packages/app, default) renders a flat, code-defined sidebar
+ * (packages/app/src/modules/nav/Sidebar.tsx): Home, Catalog, Learning Paths, and
+ * Create are pinned first, everything else (Docs, etc.) is flat and sorted
+ * alphabetically by title. There is no config-driven nested grouping (the legacy
+ * "References" / "Favorites" menuItems groups have no NFS equivalent), so this class
+ * only exposes flat-nav helpers.
+ */
 export class SidebarPage {
   private readonly page: Page;
   private readonly ui: UIhelper;
@@ -16,43 +25,29 @@ export class SidebarPage {
     this.ui = new UIhelper(page);
   }
 
-  getSideBarMenuItem(name: string) {
-    return this.ui.getSideBarMenuItem(name);
-  }
-
-  async openSidebar(label: string): Promise<void> {
-    await this.ui.openSidebar(label);
-  }
-
-  async openSidebarButton(label: string): Promise<void> {
-    await this.ui.openSidebarButton(label);
-  }
-
-  async openReferencesLearningPaths(): Promise<void> {
-    await this.ui.openSidebarButton("References");
-    await this.ui.openSidebar("Learning Paths");
-  }
-
-  async openFavoritesDocs(): Promise<void> {
-    await this.ui.openSidebarButton("Favorites");
+  async openDocs(): Promise<void> {
     await this.ui.openSidebar(t["rhdh"][lang]["menuItem.docs"]);
   }
 
-  async verifyDocumentationHeading(): Promise<void> {
-    await this.ui.verifyHeading("Documentation");
+  async openLearningPaths(): Promise<void> {
+    await this.ui.openSidebar(t["rhdh"][lang]["menuItem.learningPaths"]);
+  }
+
+  /** Opens a specific entity's TechDocs from the TechDocs index page (must call openDocs() first). */
+  async openDocsEntity(entityTitle: string): Promise<void> {
+    await this.page.getByRole("link", { name: entityTitle, exact: true }).first().click();
+  }
+
+  async verifyDocsHeading(): Promise<void> {
+    await this.ui.verifyHeading("Docs");
+  }
+
+  async verifyLearningPathsHeading(): Promise<void> {
+    await this.ui.verifyHeading("Learning Paths");
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
     await this.ui.verifyText(text, exact);
-  }
-
-  async verifyLinkHidden(name: string): Promise<void> {
-    await expect(this.page.getByRole("link", { name })).toBeHidden();
-  }
-
-  async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    await this.ui.openSidebarButton(section);
-    await expect(this.page.locator(`nav a:has-text("${itemText}")`).first()).toBeVisible();
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {

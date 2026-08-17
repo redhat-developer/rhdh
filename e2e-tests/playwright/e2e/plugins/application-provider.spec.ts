@@ -20,7 +20,7 @@ test.describe("Test ApplicationProvider", () => {
     await common.loginAsGuest();
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
   test("Verify that the TestPage is rendered", { tag: "@cluster-free" }, async () => {
     await applicationProviderPage.open();
     await common.waitForLoad();

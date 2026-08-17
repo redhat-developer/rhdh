@@ -22,7 +22,7 @@ test.describe("Smoke test", { tag: "@smoke" }, () => {
     await common.loginAsGuest();
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
   test("Verify the RHDH instance homepage renders", { tag: "@cluster-free" }, async () => {
     await rhdhHomePage.verifyWelcomeHeading();
   });

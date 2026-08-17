@@ -26,16 +26,25 @@ test.describe("Guest Signing Happy path", () => {
     await common.loginAsGuest();
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
   test(
-    "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
+    "Verify the Homepage renders with Welcome heading, Search and Starred Entities",
     { tag: "@cluster-free" },
     async () => {
       await rhdhHomePage.verifyWelcomeHeading();
-      await rhdhHomePage.openHomeSidebar();
-      await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+      await homePage.verifySearchWidgetVisible();
+      await rhdhHomePage.verifyTextInCard("Starred Catalog Entities", "Starred Catalog Entities");
     },
   );
+
+  // Not @cluster-free: Quick Access link data comes from the /developer-hub proxy, which
+  // only resolves to real content against the CI cluster's test-backstage-customization-provider
+  // (DH_TARGET_URL); the cluster-free harness has no such target, so this can't run there.
+  test("Verify the Homepage renders with Quick Access", async () => {
+    await rhdhHomePage.verifyWelcomeHeading();
+    await rhdhHomePage.openHomeSidebar();
+    await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+  });
 
   test("Verify Profile is Guest in the Settings page", { tag: "@cluster-free" }, async () => {
     await settingsPage.open();

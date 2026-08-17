@@ -18,6 +18,11 @@ export class HomePage {
     await verification.verifyLink(this.page, text);
   }
 
+  /** Verifies the home page's "Search" widget (home-page-widget:home/search-bar) renders. */
+  async verifySearchWidgetVisible() {
+    await expect(SEARCH_OBJECTS_COMPONENTS.getHomePageSearchWidgetInput(this.page)).toBeVisible();
+  }
+
   async verifyQuickAccess(section: string, items: string | string[], expand = false) {
     const accordionButton = HOME_PAGE_COMPONENTS.getAccordion(this.page, section);
     await expect(accordionButton).toBeVisible();

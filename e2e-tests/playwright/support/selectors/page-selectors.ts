@@ -37,6 +37,19 @@ export const SEARCH_OBJECTS_COMPONENTS = {
     const searchTitle = t["search-react"][lang]["searchBar.title"];
     return page.getByLabel(searchTitle).or(page.getByPlaceholder(searchTitle));
   },
+
+  /**
+   * The home page's "Search" widget (home-page-widget:home/search-bar), scoped to the
+   * main content region. Needed because Playwright's placeholder/label matching is a
+   * case-insensitive substring match by default, and the always-visible global-header
+   * search bar's placeholder ("Search...") would otherwise also match this same query,
+   * making an unscoped locator ambiguous whenever both render on the same page.
+   */
+  getHomePageSearchWidgetInput: (page: Page): Locator => {
+    const searchTitle = t["search-react"][lang]["searchBar.title"];
+    const main = page.getByRole("main");
+    return main.getByLabel(searchTitle).or(main.getByPlaceholder(searchTitle));
+  },
 };
 
 /** Catalog import selectors. */

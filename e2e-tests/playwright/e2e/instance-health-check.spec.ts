@@ -8,7 +8,7 @@ test.describe("Application health check", () => {
     });
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
   test("Application health check", { tag: "@cluster-free" }, async ({ request }) => {
     const healthCheckEndpoint = "/healthcheck";
 

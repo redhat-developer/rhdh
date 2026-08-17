@@ -125,11 +125,10 @@ export class SettingsPage {
 
   async verifyLanguageToggleList(locale: keyof (typeof t)["user-settings"]): Promise<void> {
     const labels = t["user-settings"][locale];
-    await expect(this.page.getByRole("list").first()).toMatchAriaSnapshot(`
-    - listitem:
-      - text: ${labels["languageToggle.title"]}
-      - paragraph: ${labels["languageToggle.description"]}
-    `);
+    const languageListItem = this.page
+      .getByRole("listitem")
+      .filter({ hasText: labels["languageToggle.title"] });
+    await expect(languageListItem).toContainText(labels["languageToggle.description"]);
   }
 
   async verifyLanguageSelectShowsOptions(): Promise<void> {
@@ -177,11 +176,6 @@ export class SettingsPage {
 
   async verifySidebarMenuItemHidden(text: string): Promise<void> {
     await expect(this.page.getByText(text)).toBeHidden();
-  }
-
-  async openFromProfile(userName: string): Promise<void> {
-    await this.page.getByText(userName).click();
-    await this.page.getByRole("menuitem", { name: "Settings" }).click();
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {

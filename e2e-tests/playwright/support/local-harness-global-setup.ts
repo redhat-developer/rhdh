@@ -2,10 +2,10 @@ import { readdirSync } from "fs";
 import { resolve } from "path";
 
 /**
- * globalSetup for the cluster-free legacy harness (playwright.legacy-local.config.ts).
+ * globalSetup for the cluster-free NFS harness (playwright.local.config.ts).
  *
  * Fails fast with an actionable message when `dynamic-plugins-root` has not been
- * populated — otherwise the legacy app boots with no plugins and specs fail with a
+ * populated — otherwise the app boots with no plugins and specs fail with a
  * confusing locator timeout instead of a clear "populate first" error.
  */
 export default function requireDynamicPluginsPopulated(): void {
@@ -26,7 +26,7 @@ export default function requireDynamicPluginsPopulated(): void {
 
   if (pluginCount === 0) {
     throw new Error(
-      `dynamic-plugins-root has no plugins — populate it before running e2e:legacy-local:\n\n` +
+      `dynamic-plugins-root has no plugins — populate it before running e2e:local:\n\n` +
         `  ./e2e-tests/local-harness/populate.sh\n\n` +
         `See docs/e2e-tests/local-e2e-harness.md.`,
     );

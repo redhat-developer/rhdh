@@ -24,7 +24,13 @@ test.describe("Home page customization", () => {
     await common.loginAsGuest();
   });
 
-  // @cluster-free: verified green on the cluster-free harness (playwright.legacy-local.config.ts)
+  // @cluster-free: verified green on the cluster-free harness (playwright.local.config.ts)
+  //
+  // NFS home-page cards are built-in widgets (home-page-widget:home/*, auto-enabled by
+  // the homepage plugin — see app.extensions in app-config.local-e2e.yaml / the CI
+  // ConfigMap). Arbitrary cards that the legacy OFS dynamicPlugins.frontend mount points
+  // used to add (Placeholder, Markdown, Random Joke) have no NFS equivalent or are not
+  // auto-enabled — the widgets below are all NFS-native and render by default.
   test(
     "Verify that home page is customized",
     { tag: "@cluster-free" },
@@ -33,18 +39,8 @@ test.describe("Home page customization", () => {
 
       await runAccessibilityTests(page, testInfo);
 
-      await rhdhHomePage.verifyTextInCard("Your Starred Entities", "Your Starred Entities");
-      await rhdhHomePage.verifyHeading("Placeholder tests");
-      await rhdhHomePage.verifyDivHasText("Home page customization test 1");
-      await rhdhHomePage.verifyDivHasText("Home page customization test 2");
-      await rhdhHomePage.verifyDivHasText("Home page customization test 3");
-      await rhdhHomePage.verifyHeading("Markdown tests");
-      await rhdhHomePage.verifyTextInCard("Company links", "Company links");
-      await rhdhHomePage.verifyHeading("Important company links");
-      await rhdhHomePage.verifyHeading("RHDH");
       await rhdhHomePage.verifyTextInCard("Featured Docs", "Featured Docs");
-      await rhdhHomePage.verifyTextInCard("Random Joke", "Random Joke");
-      await rhdhHomePage.clickButton("Reroll");
+      await rhdhHomePage.verifyTextInCard("Starred Catalog Entities", "Starred Catalog Entities");
     },
   );
 

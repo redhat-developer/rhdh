@@ -60,7 +60,7 @@ test.describe("Verify Redis Cache DB", () => {
       console.log(`Port-forward stdout: ${streamDataToString(data)}`);
     });
 
-    await techDocsPage.openDocFromFavorites("Red Hat Developer Hub");
+    await techDocsPage.openDoc("Red Hat Developer Hub");
 
     // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
     await expect(async () => {
