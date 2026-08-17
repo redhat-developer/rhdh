@@ -125,7 +125,8 @@ Follow the interactive prompts to select:
 1. **Run mode**: Deploy only (default, for headed debugging) or Deploy and run tests
 2. **Job type**: OCP Helm PR tests, Nightly tests, Operator tests, etc.
 3. **Image type**:
-   - **Downstream** (`quay.io/rhdh/rhdh-hub-rhel9`): `next`, `latest`, or release-specific tag
+   - **Downstream RHEL 9** (`quay.io/rhdh/rhdh-hub-rhel9`): `next`, `latest`, or release-specific tag (maintenance branches)
+   - **Downstream RHEL 10** (`quay.io/rhdh/rhdh-hub-rhel10`): `next`, `latest`, or release-specific tag (`main` / 2.y stream)
    - **PR image** (`quay.io/rhdh-community/rhdh`): Enter PR number
 
 After the container finishes, you're back on your host with the cluster still accessible.
@@ -139,6 +140,9 @@ For automation or quick runs, use CLI flags to skip interactive prompts:
 ./local-run.sh --pr 4023 --skip-tests
 
 # Deploy downstream next image
+./local-run.sh --repo rhdh/rhdh-hub-rhel10 --tag next --skip-tests
+
+# RHEL 9 maintenance stream image
 ./local-run.sh --repo rhdh/rhdh-hub-rhel9 --tag next --skip-tests
 
 # Use a custom registry
@@ -162,7 +166,7 @@ Disconnected Operator and Helm nightlies can be started only via `local-run.sh` 
 | ------------------ | -------------------------------------------------------------------- |
 | `-j, --job`        | Job name                                                             |
 | `-R, --registry`   | Image registry (default: `quay.io`)                                  |
-| `-r, --repo`       | Image repository (e.g., `rhdh/rhdh-hub-rhel9`)                       |
+| `-r, --repo`       | Image repository (e.g., `rhdh/rhdh-hub-rhel10` or `rhdh/rhdh-hub-rhel9`) |
 | `-t, --tag`        | Image tag (e.g., `next`, `latest`, `1.5`)                            |
 | `-p, --pr`         | PR number (sets repo to `rhdh-community/rhdh`, tag to `pr-<number>`) |
 | `-s, --skip-tests` | Deploy only, skip running tests                                      |
@@ -304,8 +308,9 @@ All job types are supported as long as you're logged into the target cluster (`o
 | Option | Repository            | Description               |
 | ------ | --------------------- | ------------------------- |
 | 1      | `rhdh-community/rhdh` | Community image (default) |
-| 2      | `rhdh/rhdh-hub-rhel9` | Red Hat official image    |
-| 3      | Custom                | Enter your own repository |
+| 2      | `rhdh/rhdh-hub-rhel10` | Red Hat RHEL 10 image (`main` / 2.y) |
+| 3      | `rhdh/rhdh-hub-rhel9`  | Red Hat RHEL 9 image (maintenance)   |
+| 4      | Custom                | Enter your own repository |
 
 #### Image Tags
 
