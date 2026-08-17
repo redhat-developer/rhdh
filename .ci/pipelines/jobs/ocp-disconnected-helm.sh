@@ -16,7 +16,8 @@ source "$DIR"/lib/disconnected.sh
 export INSTALL_METHOD="helm"
 
 handle_ocp_disconnected_helm() {
-  export NAME_SPACE="${NAME_SPACE:-showcase-ci-disconnected}"
+  # Force a dedicated namespace (env_variables.sh may already set NAME_SPACE=showcase).
+  export NAME_SPACE="showcase-ci-disconnected"
 
   common::oc_login
 
@@ -162,6 +163,7 @@ handle_ocp_disconnected_helm() {
 
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
+  disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"
 
@@ -193,11 +195,18 @@ handle_ocp_disconnected_helm() {
 
   local helm_set_flags=(
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
-    --set upstream.backstage.image.registry="${image_registry}"
-    --set upstream.backstage.image.repository="${IMAGE_REPO}"
-    --set upstream.backstage.image.tag="${TAG_NAME}"
     --set upstream.postgresql.image.registry="${image_registry}"
   )
+
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    log::info "LOCAL_DISCONNECTED: Helm hub image from chart + IDMS (not ${IMAGE_REPO}:${TAG_NAME})"
+  else
+    helm_set_flags+=(
+      --set upstream.backstage.image.registry="${image_registry}"
+      --set upstream.backstage.image.repository="${IMAGE_REPO}"
+      --set upstream.backstage.image.tag="${TAG_NAME}"
+    )
+  fi
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
     # Catalog index is pulled by skopeo in install-dynamic-plugins (route CA +

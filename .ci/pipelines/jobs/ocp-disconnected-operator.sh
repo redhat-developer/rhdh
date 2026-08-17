@@ -120,7 +120,8 @@ handle_ocp_disconnected_operator() {
   fi
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
-  if ! disconnected::with_unset_registry_auth_file \
+  if ! disconnected::retry_on_local_registry 5 \
+    disconnected::with_unset_registry_auth_file \
     bash "${prepare_script_path}" "${prepare_args[@]}"; then
     log::error "prepare-restricted-environment.sh failed — aborting"
     return 1
