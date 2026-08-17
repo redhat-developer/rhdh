@@ -59,6 +59,74 @@ disconnected::setup_auth() {
   log::info "Container auth configured from ${MIRROR_REGISTRY_PULL_SECRET}"
 }
 
+# Wait until https://${MIRROR_REGISTRY_URL}/v2/ answers with something other
+# than connection-failure (000) or HTTP 503. Shared by CI bastion and local
+# integrated-registry modes — a 503 during Recreate/roll is not unique to either.
+disconnected::wait_mirror_registry_route() {
+  local timeout_s="${1:-900}"
+  local interval_s=5
+  local waited=0
+  local probe_code=""
+
+  if [[ -z "${MIRROR_REGISTRY_URL:-}" ]]; then
+    log::error "MIRROR_REGISTRY_URL is unset; cannot probe mirror registry"
+    return 1
+  fi
+
+  log::info "Probing mirror registry route until ready (timeout ${timeout_s}s)..."
+  while ((waited < timeout_s)); do
+    probe_code=$(curl -sk -o /dev/null -w '%{http_code}' \
+      "https://${MIRROR_REGISTRY_URL}/v2/" || true)
+    if [[ "${probe_code}" != "000" && "${probe_code}" != "503" ]]; then
+      log::info "Mirror registry route ready (HTTP ${probe_code})"
+      return 0
+    fi
+    sleep "${interval_s}"
+    waited=$((waited + interval_s))
+  done
+  log::error "Mirror registry route still unavailable after ${timeout_s}s (HTTP ${probe_code:-none})"
+  return 1
+}
+
+# LOCAL_DISCONNECTED: Recreate + RWO PVC (ceph-rbd) leaves the registry route
+# at HTTP 503 for several minutes (Multi-Attach while the old pod releases the
+# volume). ClusterOperator Available can still be True during that window.
+disconnected::wait_local_integrated_registry() {
+  log::info "Waiting for image-registry ClusterOperator Available=True..."
+  if ! oc wait co/image-registry --for=condition=Available=True --timeout=15m; then
+    log::error "image-registry ClusterOperator did not become Available"
+    return 1
+  fi
+  log::info "Waiting for deploy/image-registry Available (Recreate + RWO PVC)..."
+  if ! oc wait -n openshift-image-registry deploy/image-registry \
+    --for=condition=Available --timeout=15m; then
+    log::error "deploy/image-registry did not become Available"
+    return 1
+  fi
+  disconnected::wait_mirror_registry_route 900
+}
+
+# Retry a command after waiting for the integrated registry. Merging the
+# cluster pull-secret (prepare) and Recreate+RWO leave the route at HTTP 503
+# for several minutes. Pass-through when LOCAL_DISCONNECTED is unset.
+disconnected::retry_on_local_registry() {
+  local max_attempts="${1:-5}"
+  shift
+  if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    "$@"
+    return $?
+  fi
+  local attempt
+  for attempt in $(seq 1 "${max_attempts}"); do
+    disconnected::wait_local_integrated_registry || return 1
+    if "$@"; then
+      return 0
+    fi
+    log::warn "attempt ${attempt}/${max_attempts} failed; waiting for integrated registry Recreate then retrying"
+  done
+  return 1
+}
+
 # Bootstrap MIRROR_* for local disconnected runs on a connected OpenShift cluster.
 # Exposes the cluster image registry route and writes auth/CA under
 # ${SHARED_DIR}/disconnected-mirror/ (inside the e2e-runner worktree mount).
@@ -96,14 +164,6 @@ disconnected::setup_local_ocp_mirror() {
     return 1
   fi
 
-  # Patching defaultRoute/disableRedirect restarts the registry Deployment; the
-  # route can exist while pods are still rolling and return HTTP 503.
-  log::info "Waiting for image-registry ClusterOperator Available=True..."
-  if ! oc wait co/image-registry --for=condition=Available=True --timeout=10m; then
-    log::error "image-registry ClusterOperator did not become Available"
-    return 1
-  fi
-
   export MIRROR_REGISTRY_URL
   MIRROR_REGISTRY_URL=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}')
   if [[ -z "${MIRROR_REGISTRY_URL}" ]]; then
@@ -117,22 +177,9 @@ disconnected::setup_local_ocp_mirror() {
   export MIRROR_REGISTRY_CLUSTER_URL="image-registry.openshift-image-registry.svc:5000"
   log::info "MIRROR_REGISTRY_CLUSTER_URL=${MIRROR_REGISTRY_CLUSTER_URL} (cluster pulls / IDMS)"
 
-  # Confirm the external route answers (401/200 = up; 503 = still unavailable).
-  log::info "Probing mirror registry route until ready..."
-  local probe_code=""
-  for _ in $(seq 1 60); do
-    probe_code=$(curl -sk -o /dev/null -w '%{http_code}' \
-      "https://${MIRROR_REGISTRY_URL}/v2/" || true)
-    if [[ "${probe_code}" != "000" && "${probe_code}" != "503" ]]; then
-      log::info "Mirror registry route ready (HTTP ${probe_code})"
-      break
-    fi
-    sleep 5
-  done
-  if [[ "${probe_code}" == "000" || "${probe_code}" == "503" ]]; then
-    log::error "Mirror registry route still unavailable after wait (HTTP ${probe_code:-none})"
-    return 1
-  fi
+  # Patching defaultRoute/disableRedirect restarts the registry Deployment; the
+  # route can exist while pods are still rolling and return HTTP 503.
+  disconnected::wait_local_integrated_registry || return 1
 
   local ca_path="${mirror_dir}/ca.crt"
   if ! oc get configmap default-ingress-cert -n openshift-config-managed \
@@ -471,10 +518,14 @@ EOF
 
   # When the hub image is overridden (different from chart defaults), add it
   # so oc-mirror mirrors the actual image we'll deploy with.
-  if [[ "${IMAGE_REGISTRY}" != "registry.redhat.io" ]]; then
-    # CI/upstream: chart defaults to quay.io/rhdh/rhdh-hub-rhel9@sha256:...,
-    # but we may deploy with a different tag (e.g., rhdh-community/rhdh:next)
+  # LOCAL_DISCONNECTED: skip rhdh-community/rhdh:next. The integrated registry
+  # cannot store that docker manifest list while oc-mirror preserve-digests
+  # ("must be converted to OCI index … Instructed to preserve digests").
+  # The chart already lists rhdh-hub-rhel9@sha256, which mirrors successfully.
+  if [[ "${IMAGE_REGISTRY}" != "registry.redhat.io" && "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
     additional_images+=("${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}")
+  elif [[ "${LOCAL_DISCONNECTED:-}" == "1" && "${IMAGE_REGISTRY}" != "registry.redhat.io" ]]; then
+    log::info "LOCAL_DISCONNECTED: skipping additional image ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME} (use chart hub digest)"
   fi
 
   # PG image: CI charts may use quay.io/fedora/postgresql-15 instead of
@@ -550,7 +601,8 @@ disconnected::run_oc_mirror() {
   fi
 
   log::info "Running oc-mirror --v2 → ${MIRROR_REGISTRY_URL} (${oc_mirror_args[*]})"
-  if ! disconnected::with_unset_registry_auth_file oc-mirror "${oc_mirror_args[@]}"; then
+  if ! disconnected::retry_on_local_registry 5 \
+    disconnected::with_unset_registry_auth_file oc-mirror "${oc_mirror_args[@]}"; then
     log::error "oc-mirror failed"
     return 1
   fi
@@ -867,12 +919,24 @@ disconnected::mirror_plugins() {
 
     # --plugin-list only (not --plugin-index): index mode re-adds fragile tags.
     # Catalog index is mirrored after plugins so the summary still records it.
-    bash "${mirror_script}" \
-      --plugin-list "${list_file}" \
-      --to-registry "${MIRROR_REGISTRY_URL}" || {
-      log::error "mirror-plugins.sh (digest-only list) failed — aborting"
+    # Recreate + RWO often 503s the route after prepare/IDMS; wait and retry.
+    local attempt
+    local max_attempts=5
+    local mirrored=0
+    for attempt in $(seq 1 "${max_attempts}"); do
+      disconnected::wait_local_integrated_registry || return 1
+      if bash "${mirror_script}" \
+        --plugin-list "${list_file}" \
+        --to-registry "${MIRROR_REGISTRY_URL}"; then
+        mirrored=1
+        break
+      fi
+      log::warn "mirror-plugins.sh attempt ${attempt}/${max_attempts} failed (registry 503 during Recreate is typical)"
+    done
+    if [[ "${mirrored}" != "1" ]]; then
+      log::error "mirror-plugins.sh (digest-only list) failed after ${max_attempts} attempts — aborting"
       return 1
-    }
+    fi
 
     local index_ref="${plugin_index#oci://}"
     local catalog_dest="${MIRROR_REGISTRY_URL}/rhdh/plugin-catalog-index"
@@ -900,8 +964,17 @@ disconnected::mirror_plugins() {
       done
     fi
     log::info "Mirroring catalog index → ${catalog_dest} (skopeo --all)"
-    if ! "${real_skopeo}" copy --all --remove-signatures --dest-tls-verify=false \
-      "docker://${index_ref}" "docker://${catalog_dest}"; then
+    local index_copied=0
+    for attempt in $(seq 1 "${max_attempts}"); do
+      disconnected::wait_local_integrated_registry || return 1
+      if "${real_skopeo}" copy --all --remove-signatures --dest-tls-verify=false \
+        "docker://${index_ref}" "docker://${catalog_dest}"; then
+        index_copied=1
+        break
+      fi
+      log::warn "catalog index copy attempt ${attempt}/${max_attempts} failed"
+    done
+    if [[ "${index_copied}" != "1" ]]; then
       log::error "Failed to mirror catalog index ${index_ref}"
       return 1
     fi
@@ -912,6 +985,7 @@ disconnected::mirror_plugins() {
       echo "${plugin_index} → oci://${catalog_dest}" >> "${summary_src}"
     fi
   else
+    disconnected::wait_mirror_registry_route 300 || return 1
     bash "${mirror_script}" \
       --plugin-index "${plugin_index}" \
       --to-registry "${MIRROR_REGISTRY_URL}" || {
@@ -1078,8 +1152,20 @@ disconnected::resolve_catalog_index_image() {
     return 1
   fi
 
-  export CATALOG_INDEX_IMAGE="registry.access.redhat.com/rhdh/${name}@${digest}"
-  log::success "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (mirrored catalog digest)"
+  export CATALOG_INDEX_REGISTRY="registry.access.redhat.com"
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    # Integrated registry ImageStreams are pullable by :sha256-<digest> tags.
+    # Pulling the source multi-arch list digest returns manifest unknown.
+    export CATALOG_INDEX_REPO="rhdh/${name}"
+    export CATALOG_INDEX_TAG="sha256-${digest#sha256:}"
+    export CATALOG_INDEX_IMAGE="${CATALOG_INDEX_REGISTRY}/${CATALOG_INDEX_REPO}:${CATALOG_INDEX_TAG}"
+    log::success "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (ImageStream tag, LOCAL_DISCONNECTED)"
+  else
+    export CATALOG_INDEX_REPO="rhdh/${name}@sha256"
+    export CATALOG_INDEX_TAG="${digest#sha256:}"
+    export CATALOG_INDEX_IMAGE="${CATALOG_INDEX_REGISTRY}/rhdh/${name}@${digest}"
+    log::success "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (mirrored catalog digest)"
+  fi
 }
 
 # Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
@@ -1131,7 +1217,11 @@ disconnected::resolve_homepage_plugin_package() {
   fi
   digest="${BASH_REMATCH[1]}"
 
-  export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}@${digest}!${name}"
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}:sha256-${digest#sha256:}!${name}"
+  else
+    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}@${digest}!${name}"
+  fi
   if [[ "${name}" == *"-plugin-homepage" ]]; then
     export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-homepage"
   else
@@ -1373,6 +1463,9 @@ disconnected::wait_operator_crd_olm_v1() {
 # Export functions for subshell usage (e.g., timeout bash -c "...")
 export -f disconnected::require_env
 export -f disconnected::setup_auth
+export -f disconnected::wait_mirror_registry_route
+export -f disconnected::wait_local_integrated_registry
+export -f disconnected::retry_on_local_registry
 export -f disconnected::setup_local_ocp_mirror
 export -f disconnected::ensure_local_image_pull_access
 export -f disconnected::ensure_local_ocp_internal_olm_access
