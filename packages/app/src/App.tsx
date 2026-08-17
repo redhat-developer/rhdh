@@ -10,6 +10,7 @@ import homePagePlugin from '@backstage/plugin-home/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { rhdhApisModule } from './apis/apisModule';
+import { learningPathsModule } from './modules/learning-paths';
 import { navModule } from './modules/nav';
 import { userSettingsGeneralModule } from './modules/user-settings';
 import { rhdhTranslationsModule } from './translations/translationsModule';
@@ -27,6 +28,7 @@ const app = createApp({
     // RHDH modules (local to app)
     navModule, // RHDH-branded sidebar (logo, menu ordering, drawer toggle)
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
+    learningPathsModule, // Learning Paths page (/learning-paths)
     rhdhApisModule, // storage, learning-path, catalog-graph APIs
     rhdhTranslationsModule, // RHDH + plugin translation overrides (de, es, fr, it, ja)
     rhdhThemeModule, // RHDH light/dark themes

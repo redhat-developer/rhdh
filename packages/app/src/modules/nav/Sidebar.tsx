@@ -31,6 +31,7 @@ export const SidebarContent = NavContentBlueprint.make({
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
             {nav.take('page:home')}
             {nav.take('page:catalog')}
+            {nav.take('page:app/learning-paths')}
             {nav.take('page:scaffolder')}
             <SidebarDivider />
             <SidebarScrollWrapper>
