@@ -103,6 +103,17 @@ common::get_previous_release_version() {
   echo "${major_version}.${previous_minor}"
 }
 
+# Default downstream hub image repository for the current release branch.
+# Maintenance branches (release-1.x) use RHEL 9 images; main / 2.y streams use RHEL 10.
+common::default_hub_image_repo() {
+  local branch="${RELEASE_BRANCH_NAME:-main}"
+  if [[ "$branch" == release-* ]]; then
+    echo "rhdh/rhdh-hub-rhel9"
+  else
+    echo "rhdh/rhdh-hub-rhel10"
+  fi
+}
+
 # Generic polling helper - waits for a condition to become true
 # Args: condition_cmd, max_attempts, wait_interval, description
 # Returns: 0 on success, 1 on timeout
