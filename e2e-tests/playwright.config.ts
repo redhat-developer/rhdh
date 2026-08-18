@@ -4,6 +4,7 @@ import type { ReporterDescription } from "@playwright/test";
 /* oxlint-disable import/no-unassigned-import -- intentional side-effect graph wiring */
 import "./playwright/entry-graph";
 import { PW_PROJECT } from "./playwright/projects";
+import { parseProxy } from "./playwright/utils/proxy";
 
 process.env.JOB_NAME = process.env.JOB_NAME ?? "";
 process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT ?? "";
@@ -61,6 +62,9 @@ export default defineConfig({
     locale: process.env.LOCALE ?? "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
+    // Proxy for disconnected environments where the CI runner reaches the
+    // cluster through a squid proxy (HTTPS_PROXY set by proxy-conf.sh).
+    proxy: parseProxy(process.env.HTTPS_PROXY),
     trace: "retain-on-failure",
     screenshot: "on",
     ...devices["Desktop Chrome"],
