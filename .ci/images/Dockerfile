@@ -1,5 +1,5 @@
 # Base image from Microsoft Playwright (multi-arch: amd64 + arm64)
-# Playwright v1.61.1-noble includes Node 24.14.1
+# Playwright v1.62.1-noble includes Node 24.14.1
 # Pinned to manifest list digest to support both platforms
 FROM mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
 
