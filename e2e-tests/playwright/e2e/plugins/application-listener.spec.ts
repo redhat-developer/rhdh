@@ -16,7 +16,6 @@ test.describe("Test ApplicationListener", () => {
     catalogBrowsePage = new CatalogBrowsePage(guestPage);
   });
 
-
   test(
     "Verify that the LocationListener logs the current location",
     { tag: "@cluster-free-capable" },
