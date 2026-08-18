@@ -63,9 +63,7 @@ main() {
     log::info "Using preset CHART_VERSION (pinned or from env): ${CHART_VERSION}"
   fi
   export CHART_VERSION
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    log::info "Using CATALOG_INDEX_IMAGE: ${CATALOG_INDEX_IMAGE}"
-  fi
+  log::info "Using CATALOG_INDEX_IMAGE: ${CATALOG_INDEX_IMAGE:-}"
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
