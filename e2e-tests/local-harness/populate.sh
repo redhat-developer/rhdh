@@ -15,8 +15,7 @@
 # {{inherit}} tags resolve against the full dynamic-plugins.default.yaml — by
 # default the repo-root file (same as Helm/CI `includes: dynamic-plugins.default.yaml`).
 # Set CATALOG_INDEX_IMAGE to extract the full catalog DPDY from a catalog-index
-# OCI image instead (same technique as production CATALOG_INDEX_IMAGE /
-# update-dynamic-plugins-default.yaml).
+# OCI image instead (same technique as production CATALOG_INDEX_IMAGE).
 set -e
 
 # Pinned so local runs install the exact CLI version CI uses.
@@ -40,9 +39,7 @@ if [[ "${CONFIG_SRC#/}" == "$CONFIG_SRC" ]]; then
   fi
 fi
 
-# Extract dynamic-plugins.default.yaml from a catalog-index OCI image.
-# Adapted from the overlays wiki unpack helper and
-# .github/workflows/update-dynamic-plugins-default.yaml (skopeo, no podman).
+# Extract dynamic-plugins.default.yaml from a catalog-index OCI image (skopeo, no podman).
 extract_catalog_index_dpdy() {
   local image="$1"
   local dest="$2"
@@ -79,7 +76,7 @@ if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
 else
   if [[ ! -f "${REPO_ROOT}/dynamic-plugins.default.yaml" ]]; then
     echo "ERROR: ${REPO_ROOT}/dynamic-plugins.default.yaml not found." >&2
-    echo "Run .github/workflows/update-dynamic-plugins-default.yaml or set CATALOG_INDEX_IMAGE." >&2
+    echo "Set CATALOG_INDEX_IMAGE (e.g. quay.io/rhdh/plugin-catalog-index:next)." >&2
     exit 1
   fi
   echo "======= Using repo-root dynamic-plugins.default.yaml"
