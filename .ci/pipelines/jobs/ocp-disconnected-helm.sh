@@ -164,6 +164,9 @@ handle_ocp_disconnected_helm() {
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
   disconnected::resolve_catalog_index_image || return 1
+  # Same digest-pinned homepage OCI plugin as Operator (includes: [] skips
+  # catalog defaults). Helm consumes it via global.dynamic values overlay.
+  disconnected::resolve_homepage_plugin_package || return 1
 
   log::section "Namespace and Secrets"
 
@@ -222,10 +225,13 @@ handle_ocp_disconnected_helm() {
   # Post-renderer appends disconnected volumes (registries.conf, mirror CA)
   # to the rendered Deployment, avoiding the Helm "array clobber" pitfall.
   local post_renderer="${DIR}/resources/disconnected/helm-post-renderer.sh"
+  local homepage_values="${DISCONNECTED_TMPDIR}/values-homepage.yaml"
+  disconnected::write_homepage_helm_values "${homepage_values}" || return 1
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${chart_install_path}" \
     -f "${DIR}/value_files/values_disconnected-smoke.yaml" \
+    -f "${homepage_values}" \
     --post-renderer "${post_renderer}" \
     --post-renderer-args "${MIRROR_REGISTRY_URL}" \
     "${helm_set_flags[@]}" || {

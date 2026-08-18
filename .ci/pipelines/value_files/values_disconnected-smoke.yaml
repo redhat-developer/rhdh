@@ -1,6 +1,6 @@
 # Minimal Helm values for disconnected smoke test.
 # The smoke test only verifies: login page renders → guest login → homepage.
-# No GitHub integrations, external secrets, dynamic plugins, or OIDC needed.
+# No GitHub integrations, external secrets, or OIDC needed.
 # All optional features (lightspeed, orchestrator) are disabled to avoid
 # pulling extra images and referencing missing ConfigMaps/Secrets.
 #
@@ -8,6 +8,8 @@
 # catalogs can list :tag refs that do not exist on quay (manifest unknown),
 # which CrashLoops install-dynamic-plugins after registries.conf rewrites
 # those pulls to the mirror.
+# Homepage plugin (same YAML as Operator dynamic-plugins-disconnected-smoke)
+# is added at deploy time via disconnected::write_homepage_helm_values.
 global:
   dynamic:
     includes: []
