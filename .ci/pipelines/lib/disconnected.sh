@@ -1230,17 +1230,15 @@ disconnected::resolve_homepage_plugin_package() {
   log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from mirroring summary)"
 }
 
-# Create a minimal dynamic-plugins ConfigMap that enables the homepage OCI plugin.
+# Write the shared homepage-only dynamic-plugins.yaml (includes: [] + OCI plugin).
+# Used by Operator (ConfigMap) and Helm (global.dynamic values overlay).
 # Args:
-#   $1 - namespace
-disconnected::create_homepage_plugins_configmap() {
+#   $1 - destination path
+disconnected::write_homepage_dynamic_plugins_yaml() {
   common::require_vars HOMEPAGE_PLUGIN_PACKAGE HOMEPAGE_PLUGIN_FRONTEND_ID || return 1
 
-  local namespace=$1
-  local cm_name="dynamic-plugins-disconnected-smoke"
-  local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
-
-  cat > "${tmp_yaml}" << EOF
+  local dest=$1
+  cat > "${dest}" << EOF
 # LOCAL / disconnected smoke: do not include dynamic-plugins.default.yaml from
 # the catalog index. next catalogs can list :tag refs that were not mirrored
 # (digest-only mirror), which CrashLoops install-dynamic-plugins.
@@ -1256,6 +1254,17 @@ plugins:
               - path: /
                 importName: DynamicHomePage
 EOF
+}
+
+# Create a minimal dynamic-plugins ConfigMap that enables the homepage OCI plugin.
+# Args:
+#   $1 - namespace
+disconnected::create_homepage_plugins_configmap() {
+  local namespace=$1
+  local cm_name="dynamic-plugins-disconnected-smoke"
+  local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
+
+  disconnected::write_homepage_dynamic_plugins_yaml "${tmp_yaml}" || return 1
 
   oc create configmap "${cm_name}" \
     --from-file="dynamic-plugins.yaml=${tmp_yaml}" \
@@ -1266,6 +1275,24 @@ EOF
   }
   cp "${tmp_yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
   log::success "ConfigMap ${cm_name} created in ${namespace}"
+}
+
+# Wrap the Operator homepage plugin YAML as Helm values (global.dynamic).
+# The chart templates that object into ${RELEASE_NAME}-dynamic-plugins.
+# Args:
+#   $1 - destination Helm values path
+disconnected::write_homepage_helm_values() {
+  local dest=$1
+  local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
+
+  disconnected::write_homepage_dynamic_plugins_yaml "${tmp_yaml}" || return 1
+
+  yq eval '{"global": {"dynamic": .}}' "${tmp_yaml}" > "${dest}" || {
+    log::error "Failed to wrap homepage plugins as Helm values"
+    return 1
+  }
+  cp "${dest}" "${ARTIFACT_DIR}/disconnected-helm-homepage-values.yaml" 2> /dev/null || true
+  log::success "Helm homepage values written to ${dest}"
 }
 
 # Apply the shared plugin-mirror registries.conf ConfigMap in a namespace.
@@ -1559,7 +1586,9 @@ export -f disconnected::mirror_plugins
 export -f disconnected::ensure_local_plugin_imagestream_tags
 export -f disconnected::resolve_catalog_index_image
 export -f disconnected::resolve_homepage_plugin_package
+export -f disconnected::write_homepage_dynamic_plugins_yaml
 export -f disconnected::create_homepage_plugins_configmap
+export -f disconnected::write_homepage_helm_values
 export -f disconnected::apply_plugin_mirror_configmap
 export -f disconnected::create_mirror_registry_ca_configmap
 export -f disconnected::create_plugin_registry_auth_secret
