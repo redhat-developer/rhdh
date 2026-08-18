@@ -145,12 +145,18 @@ an equivalent lane, and `acr`, `github` and `tech-radar` ship a local `packages/
 `test('Access Quick start as Guest or Admin')` and `test('Access Quick start as User')`; the
 overlay suite carries the same describe block and the same two test names.
 
-**These counts are tests that exist, not tests that pass.** Health varies per workspace and only
-two were checked. On 2026-08-18 `global-header` reported `48 passed (1.1m)` on `ubuntu-latest`,
-while `orchestrator`'s step on rhdh-plugins#4371 ran 08:41→11:53 — 3h11m — until the job timed
-out, with real assertion failures. So the lane's *mechanism* is proven cluster-free; its *state*
-is not uniform, and the figure above should not be read as available coverage until each lane's
-CI status is checked.
+**These counts are tests that exist. Swept 2026-08-18 over the last 300 CI runs, 8 of the 10
+lanes are green** — `global-header` 1m34s, `theme` 1m28s, `homepage` 2m24s, `quickstart` 2m52s,
+`extensions` 4m44s, `bulk-import` 4m47s, `scorecard` 13m30s, `intelligent-assistant` 25m35s.
+
+Two are not. `orchestrator` is **persistently red**, not an outlier: three consecutive runs failed
+after 195m, 216m and 191m against the job timeout, so it consumes roughly 3.5 hours of runner time
+per run and never reports a real result. `adoption-insights` has **no signal** — no PR touched it
+in the window.
+
+That last one is a property of the gate rather than the lane, and it matters when reading any of
+these numbers: the CI matrix runs only workspaces a PR changed, so "green" means green the last
+time that workspace changed, not green today.
 
 **This document does not decide what to do about it.** Exact-name matching is a floor, not the
 real overlap — a reworded test will not match — and only the person who owns the plugin and its
