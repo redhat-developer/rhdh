@@ -7,48 +7,57 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 
+import { SidebarLogo } from './SidebarLogo';
+
+const NavSidebar = ({
+  navItems,
+}: {
+  navItems: NavContentNavItems;
+}) => {
+  const nav = navItems.withComponent(item => (
+    <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
+  ));
+
+  nav.take('page:search');
+
+  return (
+    <Sidebar>
+      <SidebarLogo />
+      <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+        <SidebarSearchModal />
+      </SidebarGroup>
+      <SidebarDivider />
+      <SidebarGroup label="Menu" icon={<MenuIcon />}>
+        {nav.take('page:home')}
+        {nav.take('page:catalog')}
+        {nav.take('page:app/learning-paths')}
+        {nav.take('page:scaffolder')}
+        <SidebarDivider />
+        <SidebarScrollWrapper>
+          {nav.rest({ sortBy: 'title' })}
+        </SidebarScrollWrapper>
+      </SidebarGroup>
+      <SidebarSpace />
+      <SidebarDivider />
+      <SidebarGroup
+        label="Settings"
+        icon={<UserSettingsSignInAvatar />}
+        to="/settings"
+      >
+        {nav.take('page:user-settings')}
+      </SidebarGroup>
+    </Sidebar>
+  );
+};
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ navItems }) => {
-      const nav = navItems.withComponent(item => (
-        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
-      ));
-
-      nav.take('page:search');
-
-      return (
-        <Sidebar>
-          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-            <SidebarSearchModal />
-          </SidebarGroup>
-          <SidebarDivider />
-          <SidebarGroup label="Menu" icon={<MenuIcon />}>
-            {nav.take('page:home')}
-            {nav.take('page:catalog')}
-            {nav.take('page:app/learning-paths')}
-            {nav.take('page:scaffolder')}
-            <SidebarDivider />
-            <SidebarScrollWrapper>
-              {nav.rest({ sortBy: 'title' })}
-            </SidebarScrollWrapper>
-          </SidebarGroup>
-          <SidebarSpace />
-          <SidebarDivider />
-          <SidebarGroup
-            label="Settings"
-            icon={<UserSettingsSignInAvatar />}
-            to="/settings"
-          >
-            {nav.take('page:user-settings')}
-          </SidebarGroup>
-        </Sidebar>
-      );
-    },
+    component: ({ navItems }) => <NavSidebar navItems={navItems} />,
   },
 });
