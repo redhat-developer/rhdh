@@ -1,10 +1,9 @@
+import type { ScannedPluginPackage } from '@backstage/backend-dynamic-feature-service';
 import { PackageRoles } from '@backstage/cli-node';
 
 import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
-
-import type { ScannedPluginPackage } from '@backstage/backend-dynamic-feature-service';
 
 /**
  * Locates the config schema file for a scanned dynamic plugin package.
