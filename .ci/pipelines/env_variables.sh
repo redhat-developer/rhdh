@@ -55,13 +55,22 @@ IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
 
-# Catalog index: CATALOG_INDEX_IMAGE, then CATALOG_INDEX_IMAGE_OVERRIDE, then :${RELEASE_VERSION}.
-# Temporary pin until the index on :next is fixed.
-# Pin:   CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
-# Unpin: CATALOG_INDEX_IMAGE_OVERRIDE=""  → quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}
-# Per-run (RC/GA/mirror): set CATALOG_INDEX_IMAGE — it wins over both.
-CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
-CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-${CATALOG_INDEX_IMAGE_OVERRIDE:-quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}}}"
+# Catalog index. Temporary pin until the index on :next is fixed.
+#   Unset OVERRIDE  → CI pin (:1.10)
+#   Empty OVERRIDE="" → quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION} (main → :next)
+#   Non-empty OVERRIDE → that image
+# Per-run CATALOG_INDEX_IMAGE still wins (RC/GA/mirror). Empty CATALOG_INDEX_IMAGE="" disables injection (product defaults).
+# -z "${VAR+x}" is true only when VAR is unset; -z "${VAR}" is true for both unset and "".
+if [[ -z "${CATALOG_INDEX_IMAGE_OVERRIDE+x}" ]]; then
+  CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
+fi
+if [[ -z "${CATALOG_INDEX_IMAGE+x}" ]]; then
+  if [[ -z "${CATALOG_INDEX_IMAGE_OVERRIDE}" ]]; then
+    CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
+  else
+    CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE_OVERRIDE}"
+  fi
+fi
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
   # Derived components for Helm --set global.catalogIndex.image.{registry,repository,tag}
   CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"
@@ -69,6 +78,8 @@ if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
   CATALOG_INDEX_REGISTRY="${_CI_WITHOUT_TAG%%/*}"
   CATALOG_INDEX_REPO="${_CI_WITHOUT_TAG#*/}"
   unset _CI_WITHOUT_TAG
+else
+  unset CATALOG_INDEX_TAG CATALOG_INDEX_REGISTRY CATALOG_INDEX_REPO
 fi
 
 # =============================================================================
