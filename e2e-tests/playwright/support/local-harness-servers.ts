@@ -18,8 +18,18 @@ const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
 export const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
 
 /** Env vars for harness webServers (PATH prepends repo-root backstage-cli). */
-export const harnessProcessEnv: { [key: string]: string } = {
-  ...process.env as { [key: string]: string },
+const baseProcessEnv = Object.entries(process.env).reduce<Record<string, string>>(
+  (env, [key, value]) => {
+    if (value !== undefined) {
+      env[key] = value;
+    }
+    return env;
+  },
+  {},
+);
+
+export const harnessProcessEnv: Record<string, string> = {
+  ...baseProcessEnv,
   PATH: pathWithRepoBin,
   NODE_OPTIONS: "--no-node-snapshot",
 };

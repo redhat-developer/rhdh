@@ -5,7 +5,7 @@ import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
 /* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
-import { HOME_PAGE_COMPONENTS } from "../selectors/page-selectors";
+import { HOME_PAGE_COMPONENTS, SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
