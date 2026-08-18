@@ -56,15 +56,12 @@ IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
 
 # Catalog index. Temporary pin until the index on :next is fixed.
-#   Unset OVERRIDE  → CI pin (:1.10)
-#   Empty OVERRIDE="" → quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION} (main → :next)
-#   Non-empty OVERRIDE → that image
-# Per-run CATALOG_INDEX_IMAGE still wins (RC/GA/mirror). Empty CATALOG_INDEX_IMAGE="" disables injection (product defaults).
-# -z "${VAR+x}" is true only when VAR is unset; -z "${VAR}" is true for both unset and "".
-if [[ -z "${CATALOG_INDEX_IMAGE_OVERRIDE+x}" ]]; then
-  CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
-fi
-if [[ -z "${CATALOG_INDEX_IMAGE+x}" ]]; then
+# Pin:   CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
+# Unpin: CATALOG_INDEX_IMAGE_OVERRIDE=""  → quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}
+# Per-run (RC/GA/mirror): set CATALOG_INDEX_IMAGE before sourcing — it wins.
+# Empty CATALOG_INDEX_IMAGE="" disables Helm --set / Operator extraEnvs (product defaults).
+CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
+if [[ ! -v CATALOG_INDEX_IMAGE ]]; then
   if [[ -z "${CATALOG_INDEX_IMAGE_OVERRIDE}" ]]; then
     CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
   else
