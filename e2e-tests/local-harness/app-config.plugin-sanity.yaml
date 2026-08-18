@@ -7,6 +7,16 @@
 #
 # NOTE: test-only. Never layer this into a production config.
 
+# backstage-plugin-notifications-backend-module-email requires a sender address.
+notifications:
+  processors:
+    email:
+      sender: plugin-sanity-dummy@invalid
+      transportConfig:
+        transport: smtp
+        hostname: smtp.invalid
+        port: 587
+
 # @roadiehq/backstage-plugin-argo-cd-backend requires at least one instance URL.
 argocd:
   appLocatorMethods:
@@ -102,6 +112,13 @@ catalog:
             seconds: 15
           timeout:
             minutes: 15
+    pingIdentityOrg:
+      default:
+        apiPath: https://pingidentity.invalid/api
+        authPath: https://pingidentity.invalid/auth
+        envId: plugin-sanity-dummy
+        clientId: plugin-sanity-dummy
+        clientSecret: plugin-sanity-dummy
     microsoftGraphOrg:
       providerId:
         # Both must stay unroutable: @azure/identity authenticates against
