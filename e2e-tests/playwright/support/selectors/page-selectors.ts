@@ -66,4 +66,6 @@ export const SETTINGS_PAGE_COMPONENTS = {
   getUserSettingsMenu: (page: Page): Locator => page.getByTestId("user-settings-menu"),
 
   getSignOut: (page: Page): Locator => page.getByTestId("sign-out"),
+
+  getBuildInfoCard: (page: Page): Locator => page.getByTestId("rhdh-build-info-card"),
 };

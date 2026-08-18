@@ -21,6 +21,7 @@ describe('InfoCard', () => {
         <InfoCard />
       </TestApiProvider>,
     );
+    expect(renderResult.getByTestId('rhdh-build-info-card')).toBeInTheDocument();
     expect(renderResult.getByText(/RHDH Version/)).toBeInTheDocument();
     expect(renderResult.getByText(/Backstage Version/)).toBeInTheDocument();
   });

@@ -117,9 +117,10 @@ export const InfoCard = () => {
   };
 
   return (
-    <BSInfoCard
-      title={title}
-      action={
+    <div data-testid="rhdh-build-info-card">
+      <BSInfoCard
+        title={title}
+        action={
         // This is a workaround to ensure that the buttons doesn't increase the header size.
         <div style={{ position: 'relative' }}>
           <div
@@ -160,5 +161,6 @@ export const InfoCard = () => {
         {versionInfo}
       </Typography>
     </BSInfoCard>
+    </div>
   );
 };

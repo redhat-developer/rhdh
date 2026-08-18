@@ -178,15 +178,19 @@ export class SettingsPage {
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {
-    await expect(this.page.getByRole("main").getByText("RHDH Build info")).toBeVisible();
+    const card = SETTINGS_PAGE_COMPONENTS.getBuildInfoCard(this.page);
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("RHDH Build info");
   }
 
   async verifyBuildInfoText(text: string): Promise<void> {
-    await expect(this.page.getByText(text)).toBeVisible();
+    await expect(SETTINGS_PAGE_COMPONENTS.getBuildInfoCard(this.page)).toContainText(text);
   }
 
   async expandShowMoreSection(): Promise<void> {
-    await this.page.getByRole("button", { name: "Show more" }).click();
+    await SETTINGS_PAGE_COMPONENTS.getBuildInfoCard(this.page)
+      .getByRole("button", { name: "Show more" })
+      .click();
   }
 
   async verifyGuestSignInMethodNotListed(): Promise<void> {
