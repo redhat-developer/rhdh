@@ -19,6 +19,15 @@ argocd:
 techRadar:
   url: https://tech-radar.invalid/data.json
 
+# @backstage/plugin-notifications-backend-module-email validates sender (and
+# transport) at startup. `stream` disables actual delivery.
+notifications:
+  processors:
+    email:
+      sender: plugin-sanity-dummy@invalid
+      transportConfig:
+        transport: stream
+
 # @backstage/plugin-kubernetes-backend. The index ships a pluginConfig pointing
 # these at ${K8S_CLUSTER_NAME} / ${K8S_CLUSTER_URL} / ${K8S_CLUSTER_TOKEN},
 # which only exist in the cluster deployment; off-cluster they expand to empty
@@ -110,6 +119,20 @@ catalog:
         target: https://graph.invalid/v1.0
         authority: https://login.invalid/
         tenantId: plugin-sanity-dummy
+        clientId: plugin-sanity-dummy
+        clientSecret: plugin-sanity-dummy
+        schedule:
+          frequency:
+            hours: 24
+          initialDelay:
+            seconds: 15
+          timeout:
+            minutes: 15
+    pingIdentityOrg:
+      default:
+        apiPath: https://api.pingidentity.invalid/v1
+        authPath: https://auth.pingidentity.invalid
+        envId: plugin-sanity-dummy
         clientId: plugin-sanity-dummy
         clientSecret: plugin-sanity-dummy
         schedule:
