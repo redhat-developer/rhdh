@@ -120,7 +120,7 @@ Recorded because the rule above — *"where the tables say E2E, Layer 4a is the 
 as aspirational, and it is not. Measured 2026-08-18 for the 10 `rhdh-plugins` workspaces that
 also carry an e2e suite in `rhdh-plugin-export-overlays`:
 
-| Workspace | Layer 4a upstream (no cluster) | Layer 4b in overlays (cluster) | Identical test names |
+| Workspace | Layer 4a in plugin repo (no cluster) | Layer 4b in overlays (cluster) | Identical test names |
 |---|---|---|---|
 | `intelligent-assistant` | 92 | 34 | 7 |
 | `scorecard` | 47 | 15 | 0 |
@@ -144,6 +144,13 @@ an equivalent lane, and `acr`, `github` and `tech-radar` ship a local `packages/
 `quickstart` is the clearest case: upstream has `test.describe('Test Quick Start plugin')` with
 `test('Access Quick start as Guest or Admin')` and `test('Access Quick start as User')`; the
 overlay suite carries the same describe block and the same two test names.
+
+**These counts are tests that exist, not tests that pass.** Health varies per workspace and only
+two were checked. On 2026-08-18 `global-header` reported `48 passed (1.1m)` on `ubuntu-latest`,
+while `orchestrator`'s step on rhdh-plugins#4371 ran 08:41→11:53 — 3h11m — until the job timed
+out, with real assertion failures. So the lane's *mechanism* is proven cluster-free; its *state*
+is not uniform, and the figure above should not be read as available coverage until each lane's
+CI status is checked.
 
 **This document does not decide what to do about it.** Exact-name matching is a floor, not the
 real overlap — a reworded test will not match — and only the person who owns the plugin and its
@@ -661,7 +668,7 @@ Across the overlays repo as a whole: 24 of 64 workspaces have `e2e-tests/` and 3
 
 - **2026-06-17**: Initial draft based on research and industry best practices
 - **2026-07-24**: Updated with verified E2E coverage data, resolved open questions, added governance and recent progress sections
-- **2026-08-18**: Added the Layer 4a mechanism note (no Backstage utility boots an instance; `webServer` is the mechanism) after the parent Test Strategy was corrected on the same point; added "Layer 3 and the new frontend system", recording that 16 of 22 plugins with an overlay e2e suite ship an untested NFS surface, with the three mutation-verified assertions that close it; added "Layer 4a already exists, and overlaps Layer 4b", recording 209 cluster-free upstream tests against 135 overlay cluster tests for the same 10 workspaces, and leaving the keep-or-remove decision with the plugin owner; noted that the community frontend bundle check now validates module-federation remote shape rather than presence
+- **2026-08-18**: Added the Layer 4a mechanism note (no Backstage utility boots an instance; `webServer` is the mechanism) after the parent Test Strategy was corrected on the same point; added "Layer 3 and the new frontend system", recording that 16 of 22 plugins with an overlay e2e suite ship an untested NFS surface, with the three mutation-verified assertions that close it; added "Layer 4a already exists, and overlaps Layer 4b", recording 209 cluster-free tests in the plugin repos against 135 overlay cluster tests for the same 10 workspaces, with the caveat that those are tests which exist rather than tests which pass, and leaving the keep-or-remove decision with the plugin owner; noted that the community frontend bundle check now validates module-federation remote shape rather than presence
 - **2026-08-04**: Refreshed all support-level counts and coverage baselines against both repos' `main`; reworded the Community load-test requirement from "loads in a default RHDH instance" to "the published artifact installs and boots" (community plugins are no longer in the RHDH image — RHIDP-13262); recorded the RHIDP-13510 scope and its frontend-rendering split into RHIDP-16009
 - **2026-08-06**: Added "Getting a Plugin Listed in the Extensions Catalog", stating that the matrix is keyed on the declared support level rather than on plugin ownership, and answering the open question about acceptable evidence from 3rd-party owners with a table of what the overlays pipeline already measures; closed the documentation gap left by RHIDP-13513; corrected the Compliance table's remaining "loads in a default RHDH instance" wording
 - **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added threshold precedence and a proposed Compliance Verification section (pending RACI sign-off)
