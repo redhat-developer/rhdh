@@ -1,0 +1,17 @@
+# Disconnected smoke: homepage-only dynamic plugins.
+# Rendered via envsubst (requires HOMEPAGE_PLUGIN_PACKAGE, HOMEPAGE_PLUGIN_FRONTEND_ID).
+#
+# includes: [] prevents merging dynamic-plugins.default.yaml from the catalog
+# index. next catalogs can list :tag refs that were not mirrored (digest-only
+# mirror), which CrashLoops install-dynamic-plugins.
+includes: []
+plugins:
+  - package: ${HOMEPAGE_PLUGIN_PACKAGE}
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          ${HOMEPAGE_PLUGIN_FRONTEND_ID}:
+            dynamicRoutes:
+              - path: /
+                importName: DynamicHomePage
