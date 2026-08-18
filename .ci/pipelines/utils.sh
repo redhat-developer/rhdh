@@ -637,13 +637,12 @@ initiate_upgrade_deployments() {
 
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
+  # shellcheck disable=SC2046
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
-    --set upstream.backstage.image.repository="${IMAGE_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    $(helm::get_image_params) \
     --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
