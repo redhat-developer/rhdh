@@ -100,8 +100,11 @@ disconnected::ensure_olm_mirror_pull_secret() {
     return 1
   }
 
+  # Preserve all top-level dockerconfigjson fields (e.g. HttpHeaders,
+  # credHelpers) and only merge .auths; // {} guards against either side
+  # lacking an auths object.
   merged=$(jq -n --argjson existing "${existing}" --argjson mirror "${mirror_auth}" \
-    '{auths: ($existing.auths + $mirror.auths)}') || {
+    '$existing * $mirror | .auths = (($existing.auths // {}) + ($mirror.auths // {}))') || {
     log::error "Failed to merge mirror credentials into pull-secret JSON"
     return 1
   }

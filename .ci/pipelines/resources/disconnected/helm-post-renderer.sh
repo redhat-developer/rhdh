@@ -26,13 +26,19 @@ set -euo pipefail
 
 MIRROR_REGISTRY_URL="${1:?Usage: helm-post-renderer.sh <mirror-registry-url>}"
 
+# Note: mikefarah/yq's `==` treats "*" as a glob wildcard for strings (unlike
+# jq's strict equality), so "*-developer-hub" intentionally matches the
+# rhdh-chart's computed fullname (<release>-developer-hub).
+# The initContainer is selected by name rather than index [0] so a future
+# chart reorder (e.g. an additional initContainer inserted ahead of it)
+# cannot silently misdirect the mount injection.
 yq eval "
   (select(.kind == \"Deployment\" and .metadata.name == \"*-developer-hub\") |
     .spec.template.spec.volumes += [
       {\"name\": \"rhdh-plugin-mirror-conf\", \"configMap\": {\"name\": \"rhdh-plugin-mirror-conf\"}},
       {\"name\": \"mirror-registry-ca\", \"configMap\": {\"name\": \"mirror-registry-ca\"}}
     ] |
-    .spec.template.spec.initContainers[0].volumeMounts += [
+    (.spec.template.spec.initContainers[] | select(.name == \"install-dynamic-plugins\")).volumeMounts += [
       {\"mountPath\": \"/etc/containers/registries.conf.d/rhdh-registries.conf\", \"name\": \"rhdh-plugin-mirror-conf\", \"readOnly\": true, \"subPath\": \"rhdh-registries.conf\"},
       {\"mountPath\": \"/etc/containers/policy.json\", \"name\": \"rhdh-plugin-mirror-conf\", \"readOnly\": true, \"subPath\": \"policy.json\"},
       {\"mountPath\": \"/etc/containers/certs.d/${MIRROR_REGISTRY_URL}/ca.crt\", \"name\": \"mirror-registry-ca\", \"readOnly\": true, \"subPath\": \"ca.crt\"}

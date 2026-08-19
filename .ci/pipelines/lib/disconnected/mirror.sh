@@ -257,8 +257,9 @@ disconnected::patch_idms() {
 # Warns and continues on timeout (same behavior as both handlers historically).
 disconnected::wait_mcp_updated() {
   log::info "Waiting for MachineConfigPool updates to complete (up to 20m)..."
-  if ! oc wait machineconfigpool --all --for=condition=Updated=True --timeout=20m; then
+  if oc wait machineconfigpool --all --for=condition=Updated=True --timeout=20m; then
+    log::success "All MachineConfigPools are Updated"
+  else
     log::warn "MachineConfigPool wait timed out -- proceeding anyway"
   fi
-  log::success "All MachineConfigPools are Updated"
 }
