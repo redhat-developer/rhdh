@@ -11,7 +11,7 @@ const AUTH_HYDRATION_TIMEOUT_MS = 20_000;
 /** Reload at most this many times when stuck on the upstream Guest-only shell. */
 const MAX_AUTH_SHELL_RELOADS = 2;
 
-async function isVisible(locator: ReturnType<Page["getByRole"]>): Promise<boolean> {
+function isVisible(locator: ReturnType<Page["getByRole"]>): Promise<boolean> {
   return locator.isVisible().catch(() => false);
 }
 
