@@ -194,8 +194,13 @@ disconnected::resolve_homepage_plugin_package() {
     return 1
   fi
 
-  left="${line%%→*}"
-  if [[ "${left}" == "${line}" ]]; then
+  # mirror-plugins.sh normally emits "→"; accept ASCII "->" too (matches the
+  # separator handling in local.sh's ImageStream tagging loop).
+  if [[ "${line}" == *"→"* ]]; then
+    left="${line%%→*}"
+  elif [[ "${line}" == *"->"* ]]; then
+    left="${line%%->*}"
+  else
     log::error "Summary line for ${name} has no separator: ${line}"
     return 1
   fi
