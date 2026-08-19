@@ -22,6 +22,7 @@ import {
   rootLoggerServiceFactory,
   WinstonLogger,
 } from '@backstage/backend-defaults/rootLogger';
+import { rootSystemMetadataServiceFactory } from '@backstage/backend-defaults/rootSystemMetadata';
 import { schedulerServiceFactory } from '@backstage/backend-defaults/scheduler';
 import { urlReaderServiceFactory } from '@backstage/backend-defaults/urlReader';
 import { userInfoServiceFactory } from '@backstage/backend-defaults/userInfo';
@@ -34,7 +35,7 @@ import { eventsServiceFactory } from '@backstage/plugin-events-node';
  * not exported.
  *
  * Intentionally omitted vs upstream `@backstage/backend-defaults`:
- * - `core.instanceMetadata` (deprecated upstream service)
+ * - `core.instanceMetadata` (deprecated upstream service, replaced by `core.rootSystemMetadata`)
  * - `alpha.core.tracing` (RHDH uses custom OpenTelemetry in `instrumentation.js`)
  */
 export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
@@ -54,6 +55,7 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   rootHttpRouterServiceFactory,
   rootLifecycleServiceFactory,
   rootLoggerServiceFactory,
+  rootSystemMetadataServiceFactory,
   schedulerServiceFactory,
   userInfoServiceFactory,
   urlReaderServiceFactory,
