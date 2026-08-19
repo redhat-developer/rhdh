@@ -86,7 +86,7 @@ Optional overrides (passed as env var overrides to the job):
   -o, --org GITHUB_ORG_NAME    Override the GitHub org (default in job: redhat-developer).
   -r, --repo GITHUB_REPO_NAME  Override the GitHub repo name (default in job: rhdh).
   -b, --branch BRANCH          Override the branch name.
-  --catalog-index-image IMAGE  Override the catalog index image (default: quay.io/rhdh/plugin-catalog-index:<version>).
+  --catalog-index-image IMAGE  Override the catalog index image.
   --chart-version VERSION      Override the Helm chart version (e.g. 1.9-227-CI).
   -S, --send-alerts            Send Slack alerts (default: alerts are skipped).
 

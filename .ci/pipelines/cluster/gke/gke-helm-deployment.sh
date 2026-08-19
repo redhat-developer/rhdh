@@ -33,13 +33,12 @@ initiate_gke_helm_deployment() {
   namespace::setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  # shellcheck disable=SC2046
   if ! helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
-    --set upstream.backstage.image.repository="${IMAGE_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    $(helm::get_image_params) \
     --set upstream.ingress.annotations."ingress\.gcp\.kubernetes\.io/pre-shared-cert"="${GKE_CERT_NAME}"; then
     log::error "Helm upgrade failed for ${RELEASE_NAME} in ${NAME_SPACE}"
     return 1
@@ -64,13 +63,12 @@ initiate_rbac_gke_helm_deployment() {
   namespace::setup_image_pull_secret "${NAME_SPACE_RBAC}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_RBAC}"
+  # shellcheck disable=SC2046
   if ! helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
-    --set upstream.backstage.image.repository="${IMAGE_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    $(helm::get_image_params) \
     --set upstream.ingress.annotations."ingress\.gcp\.kubernetes\.io/pre-shared-cert"="${GKE_CERT_NAME}"; then
     log::error "Helm upgrade failed for ${RELEASE_NAME_RBAC} in ${NAME_SPACE_RBAC}"
     return 1

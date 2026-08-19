@@ -55,6 +55,125 @@ and that rationale must be documented on the test.
 Jest is the test runner for Layers 1-3. A Vitest migration was evaluated and deferred under
 RHIDP-13504, pending Backstage upstream completing its own migration.
 
+Layer 4a's mechanism is Playwright's own `webServer` field. There is no Backstage utility that
+boots an instance for a browser test: `@backstage/e2e-test-utils@0.1.2` exports two functions
+from its `/playwright` entry point — `generateProjects()`, which returns one Playwright project
+per monorepo package containing an `e2e-tests` directory, and `failOnBrowserErrors()`. It starts
+nothing. This is recorded because the parent Test Strategy previously described that package as
+enabling local runs; that text was corrected on 2026-08-18.
+
+---
+
+## Layer 3 and the new frontend system
+
+RHDH is migrating to the new frontend system (NFS), where a plugin contributes through
+extensions built with `Blueprint.make(...)` rather than through the legacy Scalprum
+`mountPoints` configuration. That changes what Layer 3 has to cover, and introduces a coverage
+gap this matrix did not previously name.
+
+**The gap** (measured 2026-08-18 across the 22 plugins that have an e2e suite in
+`rhdh-plugin-export-overlays`, by checking each plugin's upstream tree for an `src/alpha*`
+surface and for a `createExtensionTester` test of it):
+
+| State | Plugins |
+|---|---|
+| NFS surface exists, and a test covers it | **3** — `github` (7 tests), `tech-radar` (1), `scorecard` (1) |
+| NFS surface exists, nothing tests it | **16** |
+| No NFS surface upstream yet | 3 (two are backend-only, so none is due) |
+
+**Why it matters more than the count suggests.** Under NFS a plugin that fails to contribute
+produces a clean boot with nothing on the page — no error, no console warning, exit 0. A test
+that only asserts the app loaded passes against a plugin that contributed nothing. Verifying
+this at Layer 4b means the failure arrives as `heading "X" not found` after a full deploy, in a
+different repository from the code that broke.
+
+**Requirement.** For any plugin declaring an NFS surface, Layer 3 coverage should include at
+least one test that the extension attaches and declares the outputs the app reads. This is
+`createExtensionTester` from `@backstage/frontend-test-utils`, and it needs that package as a
+devDependency — several plugins carry only `@backstage/test-utils`, which does not export it.
+
+Three assertions cover the failure modes, all verified by mutation against
+`community-plugins/workspaces/acr` on 2026-08-18:
+
+| Assertion | Mutation that proves it |
+|---|---|
+| `tester.get(EntityContentBlueprint.dataRefs.title)` | changing the declared tab title is caught |
+| `tester.get(coreExtensionData.routePath)` | changing the route path is caught |
+| the plugin's `extensions[]` contains the extension id | removing it from the plugin is caught |
+
+The third is not optional. `createExtensionTester` instantiates an extension **in isolation**,
+so it cannot see whether the plugin registers it — removing the extension from the plugin's
+`extensions` array leaves the first two assertions green. Assert the plugin's own composition
+separately, and assert `$$type` is `@backstage/FrontendPlugin`, which is what the frontend
+loader dispatches on at runtime.
+
+Note also that `apis` must be passed to `renderInTestApp`, not to `createExtensionTester`, when
+the tester's element is nested inside it; the tester's own `apis` option is ignored in that
+composition and the render fails with `NotImplementedError: No implementation available for
+apiRef{...}`.
+
+---
+
+## Layer 4a already exists, and overlaps Layer 4b
+
+Recorded because the rule above — *"where the tables say E2E, Layer 4a is the default"* — reads
+as aspirational, and it is not. Measured 2026-08-18 for the 10 `rhdh-plugins` workspaces that
+also carry an e2e suite in `rhdh-plugin-export-overlays`:
+
+| Workspace | Layer 4a in plugin repo (no cluster) | Layer 4b in overlays (cluster) | Identical test names |
+|---|---|---|---|
+| `intelligent-assistant` | 92 | 34 | 7 |
+| `scorecard` | 47 | 15 | 0 |
+| `homepage` | 16 | 18 | 1 |
+| `extensions` | 12 | 11 | 5 |
+| `orchestrator` | 11 | 24 | 0 |
+| `adoption-insights` | 10 | 7 | 1 |
+| `global-header` | 8 | 10 | 0 |
+| `bulk-import` | 6 | 9 | 0 |
+| `theme` | 4 | 5 | 1 |
+| `quickstart` | 3 | 2 | 2 (all) |
+| **Total** | **209** | **135** | **17** |
+
+Each of those 10 workspaces has a `playwright.config.ts` with a `webServer` block starting a
+local instance on ports 3000-3002, `testDir: 'e2e-tests'`, and specs named `*.test.ts`. None of
+those directories references `RHDHDeployment`, `oc`, `kubectl`, `helm` or `INSTALLATION_METHOD`,
+so the lane is genuinely cluster-free. `homepage` already parameterises legacy versus NFS in it
+through an `appMode` variable. Six of the 11 `community-plugins` workspaces in the same set have
+an equivalent lane, and `acr`, `github` and `tech-radar` ship a local `packages/app-next` host.
+
+`quickstart` is the clearest case: upstream has `test.describe('Test Quick Start plugin')` with
+`test('Access Quick start as Guest or Admin')` and `test('Access Quick start as User')`; the
+overlay suite carries the same describe block and the same two test names.
+
+**These counts are tests that exist. Swept 2026-08-18 over the last 300 CI runs, 8 of the 10
+lanes are green** — `global-header` 1m34s, `theme` 1m28s, `homepage` 2m24s, `quickstart` 2m52s,
+`extensions` 4m44s, `bulk-import` 4m47s, `scorecard` 13m30s, `intelligent-assistant` 25m35s.
+
+Two are not. `orchestrator` is **persistently red**, not an outlier: three consecutive runs failed
+after 195m, 216m and 191m against the job timeout, so it consumes roughly 3.5 hours of runner time
+per run and never reports a real result. `adoption-insights` has **no signal** — no PR touched it
+in the window.
+
+That last one is a property of the gate rather than the lane, and it matters when reading any of
+these numbers: the CI matrix runs only workspaces a PR changed, so "green" means green the last
+time that workspace changed, not green today.
+
+**This document does not decide what to do about it.** Exact-name matching is a floor, not the
+real overlap — a reworded test will not match — and only the person who owns the plugin and its
+tests can say whether a given 4b test still earns its cluster:
+
+- It may be redundant, and removing it reclaims a namespace.
+- It may look redundant but assert something the local lane cannot: a ConfigMap mount, a real
+  operator, an OCI-published artifact rather than workspace source, or the dynamic-plugin
+  loading path itself. That last one is the substantive difference — the overlay lane exercises
+  the *published artifact*, while the upstream lane exercises *workspace source*. A pair of
+  tests with the same name can therefore be testing genuinely different things.
+- It may be worth keeping while 4a coverage is still being established.
+
+What this matrix does ask is that the choice be **made and recorded**, per the rule above: a 4b
+test should carry its rationale. Where that rationale turns out to be "the upstream lane already
+covers this", the owner decides whether the 4b copy goes.
+
 ---
 
 ## Testing Requirements Matrix
@@ -182,6 +301,14 @@ for the metadata-driven sweep tracked in RHIDP-13510.
 modules are install-only (the catalog core does not boot standalone) and stay on the Docker smoke;
 the 54 frontend packages get bundle-layout validation only. Frontend **rendering** is deferred to
 RHIDP-16009, blocked on the new frontend system (RHIDP-15082 / RHIDP-15379).
+
+Since 2026-08-18 that bundle validation is no longer a presence check: overlays PR #3282
+validates the module-federation remote against the guards the backend's remotes router actually
+applies, and reports whether the artifact exposes the NFS entry points it declares. A manifest
+missing a field the router needs makes the router log and skip it, so
+`GET /.backstage/dynamic-features/remotes` still answers `200 []` and the app boots with no
+plugins and no error — which is why presence was not enough. Of 44 published frontend artifacts,
+35 are servable with an NFS entry point and 9 are servable without one.
 
 ---
 
@@ -547,6 +674,7 @@ Across the overlays repo as a whole: 24 of 64 workspaces have `e2e-tests/` and 3
 
 - **2026-06-17**: Initial draft based on research and industry best practices
 - **2026-07-24**: Updated with verified E2E coverage data, resolved open questions, added governance and recent progress sections
+- **2026-08-18**: Added the Layer 4a mechanism note (no Backstage utility boots an instance; `webServer` is the mechanism) after the parent Test Strategy was corrected on the same point; added "Layer 3 and the new frontend system", recording that 16 of 22 plugins with an overlay e2e suite ship an untested NFS surface, with the three mutation-verified assertions that close it; added "Layer 4a already exists, and overlaps Layer 4b", recording 209 cluster-free tests in the plugin repos against 135 overlay cluster tests for the same 10 workspaces, with the caveat that those are tests which exist rather than tests which pass, and leaving the keep-or-remove decision with the plugin owner; noted that the community frontend bundle check now validates module-federation remote shape rather than presence
 - **2026-08-04**: Refreshed all support-level counts and coverage baselines against both repos' `main`; reworded the Community load-test requirement from "loads in a default RHDH instance" to "the published artifact installs and boots" (community plugins are no longer in the RHDH image — RHIDP-13262); recorded the RHIDP-13510 scope and its frontend-rendering split into RHIDP-16009
 - **2026-08-06**: Added "Getting a Plugin Listed in the Extensions Catalog", stating that the matrix is keyed on the declared support level rather than on plugin ownership, and answering the open question about acceptable evidence from 3rd-party owners with a table of what the overlays pipeline already measures; closed the documentation gap left by RHIDP-13513; corrected the Compliance table's remaining "loads in a default RHDH instance" wording
 - **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added threshold precedence and a proposed Compliance Verification section (pending RACI sign-off)

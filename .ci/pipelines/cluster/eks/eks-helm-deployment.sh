@@ -30,13 +30,12 @@ initiate_eks_helm_deployment() {
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   common::save_artifact "${PW_PROJECT_SHOWCASE_K8S}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  # shellcheck disable=SC2046
   if ! helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
-    --set upstream.backstage.image.repository="${IMAGE_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"; then
+    $(helm::get_image_params); then
     log::error "Helm upgrade failed for ${RELEASE_NAME} in ${NAME_SPACE}"
     return 1
   fi
@@ -62,13 +61,12 @@ initiate_rbac_eks_helm_deployment() {
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
   common::save_artifact "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" # Save the final value-file into the artifacts directory.
   log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_RBAC}"
+  # shellcheck disable=SC2046
   if ! helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" \
     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
-    --set upstream.backstage.image.repository="${IMAGE_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"; then
+    $(helm::get_image_params); then
     log::error "Helm upgrade failed for ${RELEASE_NAME_RBAC} in ${NAME_SPACE_RBAC}"
     return 1
   fi
