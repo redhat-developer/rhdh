@@ -99,6 +99,9 @@ const ScalprumRoot = ({
       pluginSDKOptions={{
         pluginLoaderOptions: {
           transformPluginManifest: manifest => {
+            if (!('loadScripts' in manifest)) {
+              return manifest;
+            }
             return {
               ...manifest,
               loadScripts: manifest.loadScripts.map(
