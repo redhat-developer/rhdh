@@ -59,6 +59,8 @@ config::select_config_map_file() {
 
   if [[ "${project}" == *rbac* ]]; then
     echo "$dir/resources/config_map/app-config-rhdh-rbac.yaml"
+  elif [[ "${project}" == *fips* ]]; then
+    echo "$dir/resources/config_map/app-config-rhdh-fips.yaml"
   else
     echo "$dir/resources/config_map/app-config-rhdh.yaml"
   fi

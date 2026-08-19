@@ -1,0 +1,27 @@
+# This file is for FIPS installation only.
+# It is applied on top of `values_showcase.yaml` via helm::merge_values (overwrite) and only
+# contains complementary differences for FIPS. Note that it overwrites the whole key that is
+# present in this file, so `upstream.backstage.extraEnvVars` must be restated in full even
+# though only NODE_TLS_REJECT_UNAUTHORIZED changes (TLS verification must stay enabled in FIPS mode).
+upstream:
+  backstage:
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
+      - name: POSTGRESQL_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: postgres-password
+            name: "{{ .Release.Name }}-postgresql"
+      # disable telemetry in CI
+      - name: SEGMENT_TEST_MODE
+        value: "true"
+      - name: NODE_TLS_REJECT_UNAUTHORIZED
+        value: "1"
+      - name: NODE_ENV
+        value: "production"
+      - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
+        value: "true"
