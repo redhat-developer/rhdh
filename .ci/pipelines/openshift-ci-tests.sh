@@ -129,6 +129,13 @@ main() {
       log::info "Calling handle_ocp_localization"
       handle_ocp_localization
       ;;
+    *ocp*fips*helm*nightly*)
+      log::info "Sourcing ocp-fips-helm.sh"
+      # shellcheck source=.ci/pipelines/jobs/ocp-fips-helm.sh
+      source "${DIR}/jobs/ocp-fips-helm.sh"
+      log::info "Calling handle_ocp_fips_helm"
+      handle_ocp_fips_helm
+      ;;
     *ocp*helm*nightly*)
       log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ci/pipelines/jobs/ocp-nightly.sh
