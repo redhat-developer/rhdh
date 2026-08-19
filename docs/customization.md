@@ -6,6 +6,8 @@ Plugins can use field `developerHub.flavor` of the `app-config.yaml` to identify
 
 ## Changing the Sidebar Logo
 
+The NFS app (`packages/app`) renders the sidebar logo in the nav module. Default logo comes from `@red-hat-developer-hub/backstage-plugin-theme` (`LogoFull` / `LogoIcon`). When the global-header plugin is enabled, branding stays in the sidebar; the header company-logo slot is hidden by app shell CSS so it does not duplicate the sidebar logo.
+
 The sidebar uses two logos - one for the expanded sidebar and one for the collapsed sidebar.
 
 - To customize the logo for the expanded sidebar, provide a both light and dark mode Base64 encoded images of your logo in the `app.branding.fullLogo` field of the `app-config.yaml`. You may also opt to provide a single Base64 encoded image that will be used for both light and dark modes.
@@ -25,18 +27,21 @@ app:
 ![Default Icon Logo when side bar is collapsed](images/default-collapsed-icon.png)
 ![Default Full Logo when side bar is expanded](images/default-expanded-logo.png)
 
-## Hiding Sidebar search, logo, settings, administration
+## Hiding Sidebar search, settings, administration (legacy OFS only)
+
+The NFS app (`packages/app`) always shows the sidebar logo. Branding is owned by the sidebar; hiding it is not supported because it would leave an empty gap with no replacement in the header.
+
+On the legacy OFS app shell, the flags below can hide sidebar chrome. Search and settings are also available from the global-header toolbar when that plugin is installed.
 
 ```yaml title="app-config.yaml"
 app:
   sidebar:
-    search: false # optional, when set to false hides sidebar search
-    logo: false # optional, when set to false hides sidebar logo
-    settings: false # optional, when set to false hides settings menu item
-    administration: false # # optional, when set to false hides administration menu item
+    search: false # optional — hides sidebar search
+    settings: false # optional — hides settings menu item
+    administration: false # optional — hides administration menu item
 ```
 
-![Hidden Sidebar search, logo, settings, administration](images/sidebar-search-hidden.png)
+![Hidden Sidebar search, settings, and administration](images/sidebar-search-hidden.png)
 
 ## Customizing the Sidebar Menu Items
 

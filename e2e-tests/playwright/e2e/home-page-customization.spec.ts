@@ -17,26 +17,21 @@ test.describe("Home page customization", () => {
     homePage = new HomePage(guestPage);
   });
 
+  // NFS home-page cards are built-in widgets (home-page-widget:home/*, auto-enabled by
+  // the homepage plugin — see app.extensions in app-config.local-e2e.yaml / the CI
+  // ConfigMap). Arbitrary cards that the legacy OFS dynamicPlugins.frontend mount points
+  // used to add (Placeholder, Markdown, Random Joke) have no NFS equivalent or are not
+  // auto-enabled — the widgets below are all NFS-native and render by default.
   test(
     "Verify that home page is customized",
     { tag: "@cluster-free-capable" },
-    async ({ page }, testInfo) => {
+    async ({ guestPage }, testInfo) => {
       await homePage.verifyTextInCard("Quick Access", "Quick Access");
 
-      await runAccessibilityTests(page, testInfo);
+      await runAccessibilityTests(guestPage, testInfo);
 
-      await homePage.verifyTextInCard("Your Starred Entities", "Your Starred Entities");
-      await homePage.verifyHeading("Placeholder tests");
-      await homePage.verifyDivHasText("Home page customization test 1");
-      await homePage.verifyDivHasText("Home page customization test 2");
-      await homePage.verifyDivHasText("Home page customization test 3");
-      await homePage.verifyHeading("Markdown tests");
-      await homePage.verifyTextInCard("Company links", "Company links");
-      await homePage.verifyHeading("Important company links");
-      await homePage.verifyHeading("RHDH");
       await homePage.verifyTextInCard("Featured Docs", "Featured Docs");
-      await homePage.verifyTextInCard("Random Joke", "Random Joke");
-      await homePage.clickButton("Reroll");
+      await homePage.verifyTextInCard("Starred Catalog Entities", "Starred Catalog Entities");
     },
   );
 

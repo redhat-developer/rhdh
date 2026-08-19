@@ -9,7 +9,7 @@ import { waitForRhdhReady } from "./utils/wait-for-rhdh-ready";
  * Deployment modes:
  * - BASE_URL set → wait for that instance (CI or pre-deployed cluster)
  * - BASE_URL unset + RUNTIME_AUTO_DEPLOY=true → deploy showcase-runtime, then wait
- * - Otherwise → no-op (lint-only / legacy-local runs)
+ * - Otherwise → no-op (lint-only / cluster-free local harness runs)
  */
 export default async function globalSetup(): Promise<void> {
   if (

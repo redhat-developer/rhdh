@@ -56,8 +56,16 @@ export class CatalogBrowsePage {
     await interaction.clickLink(this.page, name);
   }
 
-  async openDependenciesTab(): Promise<void> {
-    await interaction.clickTab(this.page, "Dependencies");
+  /**
+   * NFS has no dedicated "Dependencies" entity-content tab (upstream
+   * `@backstage/plugin-catalog`); the same relations render as overview cards
+   * (`entity-card:catalog/depends-on-components`, `entity-card:catalog/depends-on-resources`,
+   * `entity-card:catalog-graph/relations`) on the Overview tab instead. See
+   * "Dependencies tab → overview cards" in
+   * docs/dynamic-plugins/migrating-config-to-new-frontend-system.md.
+   */
+  async openOverviewTab(): Promise<void> {
+    await interaction.clickTab(this.page, "Overview");
   }
 
   async verifyHeading(heading: string | RegExp): Promise<void> {
@@ -145,6 +153,7 @@ export class CatalogBrowsePage {
     await this.page.goto("/catalog?filters%5Bkind%5D=user&filters%5Buser");
   }
 
+  /** Verifies a dependency appears in the "Depends on resources" overview card. */
   async verifyDependencyResource(resource: string): Promise<void> {
     // Intentional divergence: topology graph workspace nodes lack stable roles; keyed by id + text.
     const resourceElement = this.page.locator(`#workspace:has-text("${resource}")`);

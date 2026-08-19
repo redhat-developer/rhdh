@@ -1,6 +1,6 @@
 /**
  * Shared pieces of the cluster-free harness Playwright configs
- * (playwright.legacy-local.config.ts and playwright.plugin-sanity.config.ts).
+ * (playwright.local.config.ts and playwright.plugin-sanity.config.ts).
  */
 
 import { resolve } from "path";
@@ -11,11 +11,28 @@ export const backendUrl = "http://localhost:7007";
 const backendReadiness = `${backendUrl}/.backstage/health/v1/readiness`;
 export const isCI = process.env.CI !== undefined && process.env.CI !== "";
 
-// backstage-cli / janus-cli live in the repo-root node_modules/.bin, which
-// yarn does not surface for this workspace, so the CLIs are invoked with the
-// root .bin prepended to PATH and run from their package directory.
+// backstage-cli lives in the repo-root node_modules/.bin, which yarn does not
+// surface for this workspace, so the CLI is invoked with the root .bin prepended
+// to PATH and run from its package directory.
 const repoRootBin = resolve(process.cwd(), "..", "node_modules", ".bin");
 export const pathWithRepoBin = `${repoRootBin}:${process.env.PATH ?? ""}`;
+
+/** Env vars for harness webServers (PATH prepends repo-root backstage-cli). */
+const baseProcessEnv = Object.entries(process.env).reduce<Record<string, string>>(
+  (env, [key, value]) => {
+    if (value !== undefined) {
+      env[key] = value;
+    }
+    return env;
+  },
+  {},
+);
+
+export const harnessProcessEnv: Record<string, string> = {
+  ...baseProcessEnv,
+  PATH: pathWithRepoBin,
+  NODE_OPTIONS: "--no-node-snapshot",
+};
 
 // Populated by the local-harness populate scripts at the repo root; Playwright
 // runs with cwd e2e-tests.
@@ -55,11 +72,7 @@ type WebServer = Extract<NonNullable<PlaywrightTestConfig["webServer"]>, unknown
 export const backendWebServer = (extraConfigs: string[] = []): WebServer => ({
   command: `backstage-cli package start --require ./src/instrumentation.js ${harnessConfigArgs(extraConfigs)}`,
   cwd: "../packages/backend",
-  env: {
-    ...process.env,
-    PATH: pathWithRepoBin,
-    NODE_OPTIONS: "--no-node-snapshot",
-  },
+  env: harnessProcessEnv,
   url: backendReadiness,
   reuseExistingServer: !isCI,
   timeout: 180 * 1000,

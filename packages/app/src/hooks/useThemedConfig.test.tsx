@@ -14,8 +14,6 @@ import { renderHook } from '@testing-library/react';
 import {
   useAppBarBackgroundScheme,
   useAppBarThemedConfig,
-  useSidebarSelectedBackgroundColor,
-  useSystemThemedConfig,
 } from './useThemedConfig';
 
 const themeWith = (rhdhGeneral?: object) =>
@@ -25,22 +23,6 @@ const themeWith = (rhdhGeneral?: object) =>
           palette: { rhdh: { general: rhdhGeneral } },
         } as unknown as ThemeOptions)
       : {},
-  );
-
-const themeWrapper =
-  (rhdhGeneral?: object) =>
-  ({ children }: PropsWithChildren) => (
-    <ThemeProvider theme={themeWith(rhdhGeneral)}>{children}</ThemeProvider>
-  );
-
-const configWrapper =
-  (brandingData: object) =>
-  ({ children }: PropsWithChildren) => (
-    <TestApiProvider
-      apis={[[configApiRef, mockApis.config({ data: brandingData })]]}
-    >
-      {children}
-    </TestApiProvider>
   );
 
 const makeWrapper = (rhdhGeneral: object | undefined, brandingData: object) => {
@@ -107,76 +89,5 @@ describe('useAppBarThemedConfig', () => {
     );
 
     expect(result.current).toEqual('logo-dark.svg');
-  });
-});
-
-describe('useSidebarSelectedBackgroundColor', () => {
-  it('returns the sidebar selected background color from the theme', () => {
-    const { result } = renderHook(() => useSidebarSelectedBackgroundColor(), {
-      wrapper: themeWrapper({ sidebarItemSelectedBackgroundColor: '#abcdef' }),
-    });
-
-    expect(result.current).toEqual('#abcdef');
-  });
-
-  it("defaults to '' when the theme does not set the color", () => {
-    const { result } = renderHook(() => useSidebarSelectedBackgroundColor(), {
-      wrapper: themeWrapper(),
-    });
-
-    expect(result.current).toEqual('');
-  });
-});
-
-describe('useSystemThemedConfig', () => {
-  const originalMatchMedia = window.matchMedia;
-
-  const mockPrefersDark = (prefersDark: boolean) => {
-    window.matchMedia = jest.fn().mockImplementation((query: string) => ({
-      matches: prefersDark,
-      media: query,
-      onchange: null,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    }));
-  };
-
-  afterEach(() => {
-    window.matchMedia = originalMatchMedia;
-  });
-
-  it('selects the branding variant matching the system color scheme', () => {
-    mockPrefersDark(true);
-
-    const { result } = renderHook(
-      () => useSystemThemedConfig('app.branding.fullLogo'),
-      {
-        wrapper: configWrapper({
-          app: {
-            branding: {
-              fullLogo: { light: 'logo-light.svg', dark: 'logo-dark.svg' },
-            },
-          },
-        }),
-      },
-    );
-
-    expect(result.current).toEqual('logo-dark.svg');
-  });
-
-  it('returns a string branding asset unchanged regardless of scheme', () => {
-    mockPrefersDark(false);
-
-    const { result } = renderHook(
-      () => useSystemThemedConfig('app.branding.fullLogo'),
-      {
-        wrapper: configWrapper({ app: { branding: { fullLogo: 'logo.svg' } } }),
-      },
-    );
-
-    expect(result.current).toEqual('logo.svg');
   });
 });

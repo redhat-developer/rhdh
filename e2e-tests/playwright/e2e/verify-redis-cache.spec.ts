@@ -47,7 +47,7 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
-    await techDocsPage.openDocFromFavorites("Red Hat Developer Hub");
+    await techDocsPage.openDoc("Red Hat Developer Hub");
 
     // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
     await expect(async () => {

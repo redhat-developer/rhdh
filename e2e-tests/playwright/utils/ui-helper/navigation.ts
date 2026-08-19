@@ -23,25 +23,24 @@ let cachedUsesRhdhSidebar: boolean | undefined;
 let cachedSidebarBaseUrl: string | undefined;
 
 async function hasLegacySidebarMarkup(page: Page): Promise<boolean> {
-  // Intentional divergence: packaged-app exposes login-button; cluster RHDH uses global-header nav.
+  // OFS packaged-app exposed login-button; NFS does not — keep this check narrow so
+  // the NFS cluster-free harness (JSON /healthcheck + global-header) uses the rhdh adapter.
   const packagedSidebar = page.getByTestId("login-button");
   if ((await packagedSidebar.count()) > 0) {
     return packagedSidebar.isVisible().catch(() => false);
   }
-
-  const legacyNavButton = page.getByRole("navigation").getByRole("button").first();
-  return legacyNavButton.isVisible().catch(() => false);
+  return false;
 }
 
 async function detectRhdhSidebar(page: Page): Promise<boolean> {
-  // Intentional divergence: cluster-free harness forces legacy adapter (playwright.legacy-local.config.ts).
   if (process.env.E2E_FORCE_LEGACY_SIDEBAR === "true") {
     return false;
   }
-  // Cluster-free legacy harness proxies JSON /healthcheck but keeps legacy nav markup.
   if (await hasLegacySidebarMarkup(page)) {
     return false;
   }
+  // NFS cluster-free harness proxies JSON /healthcheck and loads global-header — same
+  // signal as production RHDH for the rhdh-sidebar-adapter path.
   return hasJsonHealthcheck(page);
 }
 

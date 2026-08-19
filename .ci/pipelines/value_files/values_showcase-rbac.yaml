@@ -209,6 +209,8 @@ upstream:
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml
+      - configMapRef: dynamic-plugins-config
+        filename: dynamic-plugins-config.yaml
     extraEnvVarsSecrets:
       - rhdh-secrets
       - postgres-cred
