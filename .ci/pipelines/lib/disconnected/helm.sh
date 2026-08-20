@@ -9,18 +9,24 @@ readonly _DISCONNECTED_HELM_SOURCED=1
 # the process stays up (liveness 200, readiness 503) so kubelet never restarts
 # it. Wait for Postgres Ready, then bounce the hub only if it is not Available.
 # No-op when the hub becomes Ready after Postgres (typical local timing).
+#
+# The bounce uses a rolling `oc rollout restart deployment` (never `oc delete
+# pod`): a pod-delete restart was observed to coincide with the PostgreSQL
+# StatefulSet pod being rescheduled, which on AWS triggers a slow (~5 min)
+# EBS CSI volume detach/re-attach (FailedAttachVolume) and cascades into a
+# smoke-test timeout. A rollout restart only touches the hub Deployment.
 # Args:
 #   $1 - namespace
 #   $2 - Helm release name (default: rhdh)
 #   $3 - Postgres Ready timeout seconds (default: 600)
-#   $4 - Hub Available grace seconds before restart (default: 30)
-#   $5 - Hub rollout timeout seconds after restart (default: 300)
+#   $4 - Hub Available grace seconds before restart (default: 180)
+#   $5 - Hub rollout timeout seconds after restart (default: 420)
 disconnected::ensure_helm_hub_after_postgres() {
   local namespace=$1
   local release_name=${2:-rhdh}
   local pg_timeout=${3:-600}
-  local hub_grace=${4:-30}
-  local rollout_timeout=${5:-300}
+  local hub_grace=${4:-180}
+  local rollout_timeout=${5:-420}
 
   if [[ -z "${namespace}" ]]; then
     log::error "disconnected::ensure_helm_hub_after_postgres requires a namespace"
@@ -60,16 +66,8 @@ disconnected::ensure_helm_hub_after_postgres() {
 
   log::warn "Hub ${hub_deploy} not Available after Postgres Ready — restarting to recover from DB connect race"
   oc get pods -n "${namespace}" || true
-  local -a hub_pods=()
-  mapfile -t hub_pods < <(oc get pod -n "${namespace}" \
-    -l "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=${release_name}" \
-    -o name 2> /dev/null || true)
-  if [[ ${#hub_pods[@]} -eq 0 || -z "${hub_pods[0]:-}" ]]; then
-    log::error "No hub pods matched app.kubernetes.io/component=backstage in ${namespace}"
-    return 1
-  fi
-  if ! oc delete -n "${namespace}" "${hub_pods[@]}"; then
-    log::error "Failed to delete hub pods in ${namespace}"
+  if ! oc rollout restart "deployment/${hub_deploy}" -n "${namespace}"; then
+    log::error "Failed to restart deployment/${hub_deploy} in ${namespace}"
     return 1
   fi
   if ! oc rollout status "deployment/${hub_deploy}" -n "${namespace}" --timeout="${rollout_timeout}s"; then
