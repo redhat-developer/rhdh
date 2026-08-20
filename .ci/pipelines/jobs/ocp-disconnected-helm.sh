@@ -254,7 +254,10 @@ handle_ocp_disconnected_helm() {
   fi
 
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SMOKE_TEST}" "${url}"
+  # 40 x 30s = 20 min: covers the worst-case AWS EBS CSI volume re-attach
+  # delay (~5 min, see disconnected::ensure_helm_hub_after_postgres) plus
+  # normal disconnected plugin-init time (default window is 15 min).
+  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SMOKE_TEST}" "${url}" 40 30
 
   log::success "Disconnected Helm smoke test completed"
 }
