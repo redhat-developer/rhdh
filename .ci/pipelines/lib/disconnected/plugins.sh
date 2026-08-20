@@ -45,6 +45,28 @@ disconnected::_hook_homepage_package_ref() {
 disconnected::pin_local_catalog_index_from_chart() { :; }
 
 # ---------------------------------------------------------------------------
+# Shared catalog index source ref
+# ---------------------------------------------------------------------------
+
+# The (un-mirrored) OCI ref to pull the plugin catalog index from. Honors
+# CATALOG_INDEX_IMAGE (Gangway override, or the CI pin in env_variables.sh —
+# see CATALOG_INDEX_IMAGE_OVERRIDE); falls back to the product's
+# registry.access.redhat.com ref for RELEASE_VERSION.
+# Used both to mirror the index (mirror_plugins) and to read its contents
+# directly (resolve_homepage_plugin_package): the CI/local runner has direct
+# internet access to this source registry, so no mirror round-trip is needed
+# just to inspect what the index pins.
+# Must be called before disconnected::resolve_catalog_index_image, which
+# overwrites CATALOG_INDEX_IMAGE with a canonical (mirror-consumption) form.
+disconnected::_catalog_index_source_ref() {
+  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
+    echo "${CATALOG_INDEX_IMAGE}"
+  else
+    echo "registry.access.redhat.com/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # mirror_plugins — fetch and run mirror-plugins.sh against the mirror registry
 # ---------------------------------------------------------------------------
 
@@ -57,10 +79,8 @@ disconnected::mirror_plugins() {
     return 1
   }
 
-  local plugin_index="oci://registry.access.redhat.com/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    plugin_index="oci://${CATALOG_INDEX_IMAGE}"
-  fi
+  local plugin_index
+  plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
 
   disconnected::wait_mirror_registry_route 300 || return 1
   bash "${mirror_script}" \
@@ -159,66 +179,78 @@ disconnected::resolve_catalog_index_image() {
 # Homepage plugin helpers
 # ---------------------------------------------------------------------------
 
-# Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
-# Prefer dynamic-home-page (published on Quay); fall back to homepage after the
-# RHIDP-14515 rename lands (RHDHBUGS-3515 — new repo may still be missing).
-# Always emits registry.access.redhat.com/rhdh/... so registries.conf rewrites to the mirror.
+# Resolve the homepage frontend plugin straight from the plugin catalog
+# index content, to a digest-pinned package ref.
+#
+# The frontend package name changed between releases (RHIDP-14515:
+# red-hat-developer-hub-backstage-plugin-dynamic-home-page ->
+# ...-plugin-homepage). Reading whichever one CATALOG_INDEX_IMAGE actually
+# pins — instead of hardcoding a name or grepping the mirroring summary for
+# both candidates — works unmodified whether the index is pinned (e.g.
+# :1.10) or tracks :next, and survives any future rename.
+#
+# Always emits registry.access.redhat.com/rhdh/... (or the local ImageStream
+# tag form — see _hook_homepage_package_ref) so registries.conf/the
+# integrated registry serves the mirrored copy.
+# Must run before disconnected::resolve_catalog_index_image, which
+# overwrites CATALOG_INDEX_IMAGE with a canonical (mirror-consumption) form
+# that is not necessarily pullable directly from its origin registry.
 # Exports HOMEPAGE_PLUGIN_PACKAGE and HOMEPAGE_PLUGIN_FRONTEND_ID.
 disconnected::resolve_homepage_plugin_package() {
-  local summary="${DISCONNECTED_TMPDIR}/rhdh-plugin-mirroring-summary.txt"
-  local name=""
-  local line=""
-  local left=""
-  local digest=""
-  local candidate=""
+  common::require_vars RELEASE_VERSION || return 1
 
-  if [[ ! -f "${summary}" ]]; then
-    log::error "Plugin mirroring summary not found at ${summary}"
-    log::error "Ensure disconnected::mirror_plugins ran successfully before resolve."
+  local index_ref
+  index_ref="$(disconnected::_catalog_index_source_ref)"
+
+  local tmp_dir
+  tmp_dir=$(mktemp -d) || {
+    log::error "Failed to create temp dir to inspect catalog index ${index_ref}"
+    return 1
+  }
+  # shellcheck disable=SC2064 # expand tmp_dir now, not at trap-firing time
+  trap "rm -rf '${tmp_dir}'" RETURN
+
+  if ! skopeo copy --override-os linux --override-arch amd64 \
+    "docker://${index_ref}" "dir:${tmp_dir}/oci" > "${tmp_dir}/skopeo.log" 2>&1; then
+    log::error "Failed to pull catalog index ${index_ref} to resolve the homepage plugin"
+    cat "${tmp_dir}/skopeo.log" >&2 || true
     return 1
   fi
 
-  for candidate in \
-    "red-hat-developer-hub-backstage-plugin-dynamic-home-page" \
-    "red-hat-developer-hub-backstage-plugin-homepage"; do
-    # Match "/<name>@" so homepage does not also hit homepage-backend.
-    line=$(grep -F "/${candidate}@" "${summary}" | head -1) || true
-    if [[ -n "${line}" ]]; then
-      name="${candidate}"
-      break
-    fi
-  done
-
-  if [[ -z "${name}" || -z "${line}" ]]; then
-    log::error "No summary line for homepage plugin (dynamic-home-page or homepage) in ${summary}"
+  local layer_digest
+  layer_digest=$(jq -r '.layers[0].digest' "${tmp_dir}/oci/manifest.json" 2> /dev/null)
+  if [[ -z "${layer_digest}" || "${layer_digest}" == "null" ]]; then
+    log::error "Could not determine content layer digest from ${index_ref} manifest"
     return 1
   fi
 
-  # mirror-plugins.sh normally emits "→"; accept ASCII "->" too (matches the
-  # separator handling in local.sh's ImageStream tagging loop).
-  if [[ "${line}" == *"→"* ]]; then
-    left="${line%%→*}"
-  elif [[ "${line}" == *"->"* ]]; then
-    left="${line%%->*}"
-  else
-    log::error "Summary line for ${name} has no separator: ${line}"
+  mkdir -p "${tmp_dir}/extracted"
+  tar -xzf "${tmp_dir}/oci/${layer_digest#sha256:}" -C "${tmp_dir}/extracted" index.json || {
+    log::error "Failed to extract index.json from catalog index ${index_ref}"
+    return 1
+  }
+
+  # The homepage frontend package is the sole non-backend registryReference
+  # matching *-plugin-homepage or *-plugin-dynamic-home-page (the literal
+  # "-backend" suffix on the backend package's name means it never matches
+  # "...homepage@sha256:" / "...dynamic-home-page@sha256:" directly).
+  local ref
+  ref=$(grep -oE '[^"]*-plugin-(dynamic-home-page|homepage)@sha256:[0-9a-f]+' \
+    "${tmp_dir}/extracted/index.json" | head -1) || true
+  if [[ -z "${ref}" ]]; then
+    log::error "No homepage frontend registryReference found in catalog index ${index_ref}"
     return 1
   fi
 
-  if [[ ! "${left}" =~ @(sha256:[0-9a-f]+) ]]; then
-    log::error "Could not extract @sha256 digest from summary line left side: ${left}"
-    return 1
-  fi
-  digest="${BASH_REMATCH[1]}"
+  local name digest
+  name="${ref%@*}"
+  name="${name##*/}"
+  digest="${ref##*@}"
 
   export HOMEPAGE_PLUGIN_PACKAGE
   HOMEPAGE_PLUGIN_PACKAGE=$(disconnected::_hook_homepage_package_ref "${name}" "${digest}")
-  if [[ "${name}" == *"-plugin-homepage" ]]; then
-    export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-homepage"
-  else
-    export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-dynamic-home-page"
-  fi
-  log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from mirroring summary)"
+  export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-${name#red-hat-developer-hub-backstage-plugin-}"
+  log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from catalog index ${index_ref})"
 }
 
 # Write the shared homepage-only dynamic-plugins.yaml (includes: [] + OCI plugin).
