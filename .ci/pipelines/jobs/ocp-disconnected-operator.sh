@@ -227,7 +227,7 @@ handle_ocp_disconnected_operator() {
   # Minimal guest-auth ConfigMap (full rhdh-start.yaml references ConfigMaps/Secrets
   # created by apply_yaml_files(), which this disconnected handler skips).
   oc create configmap app-config-rhdh-disconnected-smoke \
-    --from-file="app-config-rhdh.yaml=${DIR}/resources/config_map/app-config-rhdh-disconnected-smoke.yaml" \
+    --from-file="app-config-rhdh.yaml=${DIR}/resources/disconnected/app-config-rhdh-disconnected-smoke.yaml" \
     --namespace="${NAME_SPACE}" \
     --dry-run=client -o yaml | oc apply -f - || {
     log::error "Failed to create app-config ConfigMap — aborting"
