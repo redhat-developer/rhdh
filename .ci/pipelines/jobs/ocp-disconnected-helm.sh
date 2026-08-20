@@ -180,26 +180,26 @@ handle_ocp_disconnected_helm() {
     --set upstream.postgresql.image.registry="${image_registry}"
   )
 
+  # Shared image params (helm::get_image_params), with disconnected overrides:
+  #   - backstage image registry -> in-cluster mirror host (kubelet pull)
+  #   - catalog index registry   -> MIRROR_REGISTRY_URL. The index is pulled by
+  #     skopeo in install-dynamic-plugins (route CA + auth.json), not kubelet;
+  #     the in-cluster service CA is not mounted into certs.d and fails x509.
+  #   - LOCAL_DISCONNECTED omits the hub image so the chart + IDMS resolve it
+  #     (not ${IMAGE_REPO}:${TAG_NAME}).
+  local image_param_opts=(--backstage-registry "${image_registry}" --catalog-registry "${MIRROR_REGISTRY_URL}")
   if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
     log::info "LOCAL_DISCONNECTED: Helm hub image from chart + IDMS (not ${IMAGE_REPO}:${TAG_NAME})"
-  else
-    helm_set_flags+=(
-      --set upstream.backstage.image.registry="${image_registry}"
-      --set upstream.backstage.image.repository="${IMAGE_REPO}"
-      --set upstream.backstage.image.tag="${TAG_NAME}"
-    )
+    image_param_opts+=(--omit-backstage-image)
   fi
 
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    # Catalog index is pulled by skopeo in install-dynamic-plugins (route CA +
-    # auth.json), not by kubelet. Keep it on MIRROR_REGISTRY_URL; the in-cluster
-    # service CA is not mounted into certs.d and fails x509 verify.
-    helm_set_flags+=(
-      --set global.catalogIndex.image.registry="${MIRROR_REGISTRY_URL}"
-      --set global.catalogIndex.image.repository="${CATALOG_INDEX_REPO}"
-      --set global.catalogIndex.image.tag="${CATALOG_INDEX_TAG}"
-    )
-  fi
+  local image_params
+  image_params=$(helm::get_image_params "${image_param_opts[@]}") || return 1
+  # get_image_params returns a space-separated --set string; split into the array
+  # (values never contain spaces).
+  local -a image_param_flags
+  read -r -a image_param_flags <<< "${image_params}"
+  helm_set_flags+=("${image_param_flags[@]}")
 
   # Post-renderer appends disconnected volumes (registries.conf, mirror CA)
   # to the rendered Deployment, avoiding the Helm "array clobber" pitfall.
