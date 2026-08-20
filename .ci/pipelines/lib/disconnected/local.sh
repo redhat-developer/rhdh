@@ -336,9 +336,53 @@ disconnected::setup_local_ocp_mirror() {
   # aarch64 runners: OCP worker nodes and RHDH images are linux/amd64.
   disconnected::ensure_local_amd64_skopeo_shim || return 1
 
+  # oc-mirror/skopeo push to <registry>/<project>/... The integrated registry
+  # does not auto-create projects; pushing to a missing namespace uploads blobs
+  # but rejects the manifest write ("denied"). Pre-create the push targets.
+  disconnected::ensure_local_mirror_projects || return 1
+
   log::success "Local OCP mirror credentials under ${mirror_dir}"
   log::info "MIRROR_REGISTRY_PULL_SECRET=${MIRROR_REGISTRY_PULL_SECRET}"
   log::info "MIRROR_REGISTRY_CA=${MIRROR_REGISTRY_CA}"
+}
+
+# Projects that oc-mirror/skopeo push mirrored images into. Kept in sync with
+# the pull-access grants in disconnected::ensure_local_image_pull_access.
+DISCONNECTED_LOCAL_MIRROR_PROJECTS=(oc-mirror rhdh-community rhel9 rhdh rhdh-plugin-export-overlays)
+
+# Ensure a single integrated-registry push-target namespace exists. Idempotent
+# and race-tolerant: an existing namespace (or one that appears between the
+# check and create) is treated as success.
+# Args:
+#   $1 - namespace
+disconnected::ensure_local_mirror_namespace() {
+  local ns=$1
+  if oc get namespace "${ns}" > /dev/null 2>&1; then
+    return 0
+  fi
+  if oc create namespace "${ns}" > /dev/null 2>&1; then
+    log::info "Created mirror push-target project ${ns}"
+    return 0
+  fi
+  # Tolerate a race where the namespace appears between check and create.
+  if oc get namespace "${ns}" > /dev/null 2>&1; then
+    return 0
+  fi
+  log::error "Failed to create mirror push-target project ${ns}"
+  return 1
+}
+
+# Pre-create the known integrated-registry push-target projects. Idempotent:
+# existing projects are left untouched. Without this, the first push to a fresh
+# cluster fails at the manifest write with "denied". Note that plugin pushes may
+# target additional, data-driven namespaces (derived from plugin source paths);
+# those are created lazily in disconnected::ensure_local_plugin_imagestream_tags.
+disconnected::ensure_local_mirror_projects() {
+  local proj
+  for proj in "${DISCONNECTED_LOCAL_MIRROR_PROJECTS[@]}"; do
+    disconnected::ensure_local_mirror_namespace "${proj}" || return 1
+  done
+  log::success "Local mirror push-target projects ready: ${DISCONNECTED_LOCAL_MIRROR_PROJECTS[*]}"
 }
 
 # Allow the workload namespace to pull mirrored images from the integrated
@@ -363,7 +407,7 @@ disconnected::ensure_local_image_pull_access() {
 
   # oc-mirror push path is <registry>/<project>/... -- grant pull across those projects.
   local proj
-  for proj in oc-mirror rhdh-community rhel9 rhdh; do
+  for proj in "${DISCONNECTED_LOCAL_MIRROR_PROJECTS[@]}"; do
     if oc get project "${proj}" > /dev/null 2>&1 || oc get namespace "${proj}" > /dev/null 2>&1; then
       if oc adm policy add-role-to-group system:image-puller \
         "system:serviceaccounts:${namespace}" -n "${proj}" > /dev/null; then
@@ -724,6 +768,15 @@ disconnected::ensure_local_plugin_imagestream_tags() {
       log::warn "Skipping unparsable mirror dest: ${dest}"
       continue
     fi
+
+    # Push targets are data-driven by plugin source paths (e.g. rhdh,
+    # rhdh-plugin-export-overlays). The integrated registry rejects manifest
+    # writes to a missing project ("denied"); create it before pushing.
+    disconnected::ensure_local_mirror_namespace "${ns}" || {
+      log::error "Failed to ensure project ${ns} for ${ns}/${name}"
+      fail=$((fail + 1))
+      continue
+    }
 
     tag="sha256-${digest#sha256:}"
     dest_tagged="${MIRROR_REGISTRY_URL}/${ns}/${name}:${tag}"
