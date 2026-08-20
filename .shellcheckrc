@@ -1,0 +1,16 @@
+# ShellCheck configuration for this repository.
+#
+# The .ci/ and e2e-tests/ pipeline scripts form a heavily cross-sourced
+# dependency graph (see .ci/pipelines/utils.sh and .ci/pipelines/jobs/*.sh).
+# ShellCheck's extended dataflow analysis re-parses the fully resolved
+# transitive `source` graph for every file it checks, which can balloon
+# memory usage into the multiple-gigabyte range for a single job script
+# (e.g. .ci/pipelines/jobs/aks-operator.sh with -x can exceed 2 GB RSS).
+# This is especially costly with IDE extensions that check on every save
+# and follow `# shellcheck source=` directives by default.
+#
+# Disabling extended-analysis keeps source-following, function/variable
+# resolution, and the vast majority of checks intact, while cutting
+# resource usage roughly 9x on the worst offenders. See:
+# https://github.com/koalaman/shellcheck/blob/master/shellcheck.1.md#rc-files
+extended-analysis=false
