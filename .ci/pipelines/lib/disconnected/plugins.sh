@@ -35,16 +35,6 @@ disconnected::_hook_homepage_package_ref() {
 }
 
 # ---------------------------------------------------------------------------
-# CI-safe defaults — called unconditionally by job handlers; local.sh
-# overrides with real logic. Must stay defined in a CI-sourced module.
-# ---------------------------------------------------------------------------
-
-# Pin CATALOG_INDEX_IMAGE from the Helm chart digest (for local dev where
-# Gangway is not available). CI default: no-op (Gangway / env provides
-# CATALOG_INDEX_IMAGE).
-disconnected::pin_local_catalog_index_from_chart() { :; }
-
-# ---------------------------------------------------------------------------
 # Shared catalog index source ref
 # ---------------------------------------------------------------------------
 

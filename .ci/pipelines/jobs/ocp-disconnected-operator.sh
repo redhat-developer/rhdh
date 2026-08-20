@@ -184,9 +184,8 @@ handle_ocp_disconnected_operator() {
   }
 
   log::section "Plugin Mirroring"
-  # LOCAL_DISCONNECTED: chart-pin catalog digest before mirror (RELEASE_VERSION=next
-  # is not on registry.access.redhat.com). CI keeps Gangway/env CATALOG_INDEX_IMAGE.
-  disconnected::pin_local_catalog_index_from_chart || return 1
+  # Both CI and LOCAL_DISCONNECTED consume CATALOG_INDEX_IMAGE (the shared env
+  # contract from env_variables.sh, pinned via CATALOG_INDEX_IMAGE_OVERRIDE).
   disconnected::mirror_plugins || return 1
 
   # Resolve homepage first: it reads CATALOG_INDEX_IMAGE in its pre-mirror

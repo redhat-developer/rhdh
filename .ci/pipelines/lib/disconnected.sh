@@ -81,7 +81,6 @@ export -f disconnected::wait_operator_crd_olm_v1
 export -f disconnected::ensure_helm_hub_after_postgres
 # mirror.sh / plugins.sh CI-safe defaults (always defined; local.sh overrides)
 export -f disconnected::retry_on_local_registry
-export -f disconnected::pin_local_catalog_index_from_chart
 # local.sh (exported only when sourced, but export -f of undefined is harmless)
 export -f disconnected::wait_local_integrated_registry 2> /dev/null || true
 export -f disconnected::setup_local_ocp_mirror 2> /dev/null || true

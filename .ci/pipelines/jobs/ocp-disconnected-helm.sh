@@ -92,37 +92,12 @@ handle_ocp_disconnected_helm() {
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"
 
-  # Resolve catalog index image (same digest encoding as PG).
-  # The init container pulls this by digest; it must be in the mirror.
-  export CI_REGISTRY CI_REPO CI_TAG CI_SEPARATOR
-  CI_REGISTRY=$(echo "${helm_values}" | yq '.global.catalogIndex.image.registry' || true)
-  CI_REPO=$(echo "${helm_values}" | yq '.global.catalogIndex.image.repository' || true)
-  CI_TAG=$(echo "${helm_values}" | yq '.global.catalogIndex.image.tag' || true)
-  CI_REGISTRY="${CI_REGISTRY:-quay.io}"
-  CI_REPO="${CI_REPO:-rhdh/plugin-catalog-index}"
-  CI_TAG="${CI_TAG:-latest}"
-  CI_SEPARATOR=":"
-  if [[ "${CI_REPO}" == *"@"* ]]; then
-    CI_SEPARATOR="@${CI_REPO##*@}:"
-    CI_REPO="${CI_REPO%@*}"
-  fi
-  log::info "Catalog index from chart: ${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
-
-  # LOCAL_DISCONNECTED: prefer chart-pinned catalog digest for mirror-plugins
-  # (RELEASE_VERSION=next is not published on registry.access.redhat.com).
-  # CI keeps Gangway/env CATALOG_INDEX_IMAGE or mirror-plugins RELEASE_VERSION default.
-  if [[ "${LOCAL_DISCONNECTED:-}" == "1" && -z "${CATALOG_INDEX_IMAGE:-}" && -n "${CI_REGISTRY}" && -n "${CI_REPO}" && -n "${CI_TAG}" ]]; then
-    export CATALOG_INDEX_IMAGE="${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
-    export CATALOG_INDEX_REGISTRY="${CI_REGISTRY}"
-    # Chart digest encoding: repository "…@sha256" + tag "<hash>".
-    if [[ "${CI_SEPARATOR}" == @sha256: ]]; then
-      export CATALOG_INDEX_REPO="${CI_REPO}@sha256"
-    else
-      export CATALOG_INDEX_REPO="${CI_REPO}"
-    fi
-    export CATALOG_INDEX_TAG="${CI_TAG}"
-    log::info "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (from chart values)"
-  fi
+  # Catalog index is no longer derived from chart values: both CI and
+  # LOCAL_DISCONNECTED consume CATALOG_INDEX_IMAGE (the shared env contract in
+  # env_variables.sh, pinned via CATALOG_INDEX_IMAGE_OVERRIDE). It is mirrored by
+  # build_imageset_config (mirror.sh additionalImages) and later re-pinned to the
+  # mirrored digest by resolve_catalog_index_image.
+  log::info "Catalog index (env contract): ${CATALOG_INDEX_IMAGE:-<unset>}"
 
   echo "${helm_values}" > "${ARTIFACT_DIR}/disconnected-helm-chart-values.yaml" 2> /dev/null || true
 
