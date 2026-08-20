@@ -75,10 +75,8 @@ disconnected::mirror_plugins() {
     return 1
   }
 
-  local plugin_index="oci://registry.access.redhat.com/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
-  if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    plugin_index="oci://${CATALOG_INDEX_IMAGE}"
-  fi
+  local plugin_index
+  plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
 
   local list_file="${DISCONNECTED_TMPDIR}/local-digest-plugins.txt"
   disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" || return 1

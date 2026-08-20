@@ -189,12 +189,14 @@ handle_ocp_disconnected_operator() {
   disconnected::pin_local_catalog_index_from_chart || return 1
   disconnected::mirror_plugins || return 1
 
-  # Inject the catalog-index digest that mirror-plugins actually pushed. The hub
-  # profile default digest is often absent from the mirror (manifest unknown).
+  # Resolve homepage first: it reads CATALOG_INDEX_IMAGE in its pre-mirror
+  # source form, which resolve_catalog_index_image overwrites below.
   # Homepage still comes from the OCI ConfigMap so we do not depend on catalog
   # default plugin paths (deploy_rhdh_operator injects CATALOG_INDEX_IMAGE).
-  disconnected::resolve_catalog_index_image || return 1
   disconnected::resolve_homepage_plugin_package || return 1
+  # Inject the catalog-index digest that mirror-plugins actually pushed. The hub
+  # profile default digest is often absent from the mirror (manifest unknown).
+  disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"
 

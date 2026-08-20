@@ -163,10 +163,12 @@ handle_ocp_disconnected_helm() {
 
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
-  disconnected::resolve_catalog_index_image || return 1
   # Same digest-pinned homepage OCI plugin as Operator (includes: [] skips
   # catalog defaults). Helm consumes it via global.dynamic values overlay.
+  # Resolve homepage first: it reads CATALOG_INDEX_IMAGE in its pre-mirror
+  # source form, which resolve_catalog_index_image overwrites below.
   disconnected::resolve_homepage_plugin_package || return 1
+  disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"
 
