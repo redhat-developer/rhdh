@@ -70,13 +70,15 @@ handle_ocp_disconnected_helm() {
   local helm_values
   helm_values=$(helm show values "${CHART_LOCAL_TGZ}" 2> /dev/null || true)
 
+  # `// ""` coalesces a missing key (yq prints literal "null") to empty so the
+  # ${:-default} fallback below actually applies.
   export PG_REGISTRY PG_REPO PG_TAG PG_SEPARATOR
-  PG_REGISTRY=$(echo "${helm_values}" | yq '.upstream.postgresql.image.registry' || true)
-  PG_REPO=$(echo "${helm_values}" | yq '.upstream.postgresql.image.repository' || true)
-  PG_TAG=$(echo "${helm_values}" | yq '.upstream.postgresql.image.tag' || true)
-  PG_REGISTRY="${PG_REGISTRY:-registry.redhat.io}"
-  PG_REPO="${PG_REPO:-rhel9/postgresql-15}"
-  PG_TAG="${PG_TAG:-latest}"
+  PG_REGISTRY=$(echo "${helm_values}" | yq '.upstream.postgresql.image.registry // ""' || true)
+  PG_REPO=$(echo "${helm_values}" | yq '.upstream.postgresql.image.repository // ""' || true)
+  PG_TAG=$(echo "${helm_values}" | yq '.upstream.postgresql.image.tag // ""' || true)
+  PG_REGISTRY="${PG_REGISTRY:-${POSTGRESQL_IMAGE_REGISTRY}}"
+  PG_REPO="${PG_REPO:-${POSTGRESQL_IMAGE_REPO}}"
+  PG_TAG="${PG_TAG:-${POSTGRESQL_IMAGE_TAG}}"
 
   # The chart encodes digest refs as repository: "repo@sha256" + tag: "<hash>".
   # Normalize: extract the digest qualifier into PG_SEPARATOR so that:
