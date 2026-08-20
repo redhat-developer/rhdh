@@ -24,6 +24,8 @@ export DISCONNECTED_TMPDIR
 # --- CI modules ---
 # shellcheck source=.ci/pipelines/lib/disconnected/env.sh
 source "${DIR}/lib/disconnected/env.sh"
+# shellcheck source=.ci/pipelines/lib/disconnected/scripts.sh
+source "${DIR}/lib/disconnected/scripts.sh"
 # shellcheck source=.ci/pipelines/lib/disconnected/mirror.sh
 source "${DIR}/lib/disconnected/mirror.sh"
 # shellcheck source=.ci/pipelines/lib/disconnected/plugins.sh
@@ -46,7 +48,7 @@ fi
 export -f disconnected::require_env
 export -f disconnected::setup_auth
 export -f disconnected::with_unset_registry_auth_file
-export -f disconnected::fetch_script
+export -f disconnected::fetch_operator_repo_script
 # mirror.sh
 export -f disconnected::wait_mirror_registry_route
 export -f disconnected::cluster_mirror_host

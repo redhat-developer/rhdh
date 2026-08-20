@@ -64,7 +64,7 @@ disconnected::_catalog_index_source_ref() {
 disconnected::mirror_plugins() {
   local mirror_script="${DISCONNECTED_TMPDIR}/mirror-plugins.sh"
 
-  disconnected::fetch_script "mirror-plugins.sh" "${mirror_script}" || {
+  disconnected::fetch_operator_repo_script "mirror-plugins.sh" "${mirror_script}" || {
     log::error "Failed to fetch mirror-plugins.sh — aborting"
     return 1
   }

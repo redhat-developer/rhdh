@@ -41,7 +41,7 @@ handle_ocp_disconnected_operator() {
   # main). rhdh-operator#3259 (native oc-mirror cc-* catalogs for OLM v1) is
   # merged on main.
   local prepare_script_path="${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
-  disconnected::fetch_script "prepare-restricted-environment.sh" \
+  disconnected::fetch_operator_repo_script "prepare-restricted-environment.sh" \
     "${prepare_script_path}" || {
     log::error "Failed to fetch prepare-restricted-environment.sh — aborting"
     return 1
