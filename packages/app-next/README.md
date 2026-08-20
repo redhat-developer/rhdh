@@ -6,7 +6,7 @@ This package is the Red Hat Developer Hub (RHDH) **NFS** (New Frontend System) a
 
 Most RHDH product UX loads as **dynamic plugins** (sign-in via **app-auth**, global-header, quickstart, …) so those pieces stay swappable — see [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml).
 
-**Homepage:** RHDH layout/widgets load from homepage OCI (`bs_1.52.0__1.17.0`, MF `alpha`). The shell still mounts `@backstage/plugin-home` as the `pluginId: home` host until [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032) embeds `homePagePlugin` in the overlay (then that static dep can drop). App drawer comes from **app-defaults** OCI (`bs_1.52.0__0.0.2`), not a static `@red-hat-developer-hub/backstage-plugin-app-react` dependency.
+**Homepage:** RHDH layout/widgets load from homepage OCI (`bs_1.52.0__1.17.1`, MF `alpha`). The shell still mounts `@backstage/plugin-home` as the `pluginId: home` host until [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032) embeds `homePagePlugin` in the overlay (then that static dep can drop). App drawer comes from **app-defaults** OCI (`bs_1.52.0__0.0.3`), not a static `@red-hat-developer-hub/backstage-plugin-app-react` dependency.
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ npx -y @red-hat-developer-hub/cli-module-install-dynamic-plugins@0.2.0 \
 
 - Uncomment additional entries in [`dynamic-plugins.example.yaml`](./dynamic-plugins.example.yaml) (sourced from [default.packages.yaml](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/default.packages.yaml)) before copying if you need more plugins.
 - Re-run the install when you change the enabled plugin list.
-- Theme OCI (`bs_1.52.0__1.0.1`) ships NFS on `.`. Homepage + app-defaults OCI are enabled in the example set (layout/widgets + drawer). `@backstage/plugin-home` stays in the shell until [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032).
+- Theme OCI (`bs_1.52.0__1.0.2`) ships NFS on `.`. Homepage + app-defaults OCI are enabled in the example set (layout/widgets + drawer). `@backstage/plugin-home` stays in the shell until [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032).
 
 ### 3. Local config for homepage
 
@@ -181,9 +181,9 @@ Then open `/` and confirm the unread notifications card on the grid.
 
 ## Local NFS export (homepage)
 
-Use this when you need to iterate on homepage from [rhdh-plugins](https://github.com/redhat-developer/rhdh-plugins) as an MF remote (closer to the long-term DP-first model tracked in [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519)). Theme and app-defaults should prefer published OCI tags (`bs_1.52.0__1.0.1` / `bs_1.52.0__0.0.2`) unless you are iterating on those packages.
+Use this when you need to iterate on homepage from [rhdh-plugins](https://github.com/redhat-developer/rhdh-plugins) as an MF remote (closer to the long-term DP-first model tracked in [RHIDP-14519](https://redhat.atlassian.net/browse/RHIDP-14519)). Theme and app-defaults should prefer published OCI tags (`bs_1.52.0__1.0.2` / `bs_1.52.0__0.0.3`) unless you are iterating on those packages.
 
-**Homepage (`./alpha`):** published OCI `bs_1.52.0__1.17.0` already `export default homePageModule`. For local source iteration:
+**Homepage (`./alpha`):** published OCI `bs_1.52.0__1.17.1` already `export default homePageModule`. For local source iteration:
 
 ```bash
 # from rhdh-plugins (install/build the workspace once if needed)
@@ -226,14 +226,12 @@ Static features in `src/App.tsx`:
 | Package (OCI) | Purpose |
 |---------------|---------|
 | app-auth / app-integrations | Sign-in + SCM auth APIs |
-| app-defaults (`bs_1.52.0__0.0.2`) | App drawer (`appDefaultsModule`) — replaces static app-react |
-| homepage (`bs_1.52.0__1.17.0`) | RHDH home layout/widgets (`homePageModule` on `alpha`) |
-| theme (`bs_1.52.0__1.0.1`) | RHDH themes (`FrontendModule` on `.`) |
-| global-header / quickstart | Product chrome + onboarding |
+| app-defaults (`bs_1.52.0__0.0.3`) | App drawer (`appDefaultsModule`) — replaces static app-react |
+| homepage (`bs_1.52.0__1.17.1`) | RHDH home layout/widgets (`homePageModule` on `alpha`) |
+| theme (`bs_1.52.0__1.0.2`) | RHDH themes (`FrontendModule` on `.`) |
+| global-header (`bs_1.52.0__2.0.0`) / quickstart (`bs_1.52.0__2.0.1`) | Product chrome + onboarding |
 
 **`@backstage/plugin-home`:** intentionally kept in the shell for now. [PR 4921](https://github.com/redhat-developer/rhdh/pull/4921) removed it from the main app; [rhdh-plugins#4032](https://github.com/redhat-developer/rhdh-plugins/pull/4032) will make homepage OCI self-sufficient (`homePagePlugin` as alpha default). Until that overlay publishes, keep the host plugin here.
-
-**Quickstart help click (RHDHBUGS-3489):** with global-header **1.22.x**, published quickstart `bs_1.52.0__1.12.2` can leave "Quick start" non-clickable until overlays includes the `forwardRef` fix (`rhdh-plugins` `e9c3e9e13`).
 
 ### Temporary helper: `rhdhDynamicFrontendFeaturesLoader`
 
