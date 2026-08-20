@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${UTILS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly UTILS_SOURCED=1
+
 # shellcheck source=.ci/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
 # shellcheck source=.ci/pipelines/lib/log.sh

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${K8S_UTILS_K8S_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly K8S_UTILS_K8S_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 

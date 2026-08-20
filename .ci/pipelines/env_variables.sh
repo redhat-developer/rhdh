@@ -2,6 +2,11 @@
 # shellcheck disable=SC2034
 set -a # Automatically export all variables
 
+if [[ -n "${ENV_VARIABLES_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly ENV_VARIABLES_SOURCED=1
+
 # Define log file names and directories.
 LOGFILE="test-log"
 

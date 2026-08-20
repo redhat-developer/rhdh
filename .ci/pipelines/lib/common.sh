@@ -3,7 +3,6 @@
 # Common utility functions for pipeline scripts
 # Dependencies: oc, kubectl, lib/log.sh
 
-# Prevent re-sourcing
 if [[ -n "${COMMON_LIB_SOURCED:-}" ]]; then
   return 0
 fi
