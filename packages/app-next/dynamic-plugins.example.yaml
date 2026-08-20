@@ -25,39 +25,36 @@ plugins:
 
   # RHDH multi-provider sign-in page + OIDC/Auth0/SAML frontend APIs
   # Tags from rhdh-plugin-export-overlays/workspaces/*/metadata (main / BS 1.52.0).
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-auth:bs_1.52.0__0.1.0!red-hat-developer-hub-backstage-plugin-app-auth
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-auth:bs_1.52.0__0.1.1!red-hat-developer-hub-backstage-plugin-app-auth
     disabled: false
 
   # Default SCM integrations / scmAuth wiring (github, gitlab, azure, bitbucket)
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-integrations:bs_1.52.0__0.1.0!red-hat-developer-hub-backstage-plugin-app-integrations
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-integrations:bs_1.52.0__0.1.1!red-hat-developer-hub-backstage-plugin-app-integrations
     disabled: false
 
   # App drawer host (appDefaultsModule / pluginId app). Replaces a static
   # @red-hat-developer-hub/backstage-plugin-app-react dependency.
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-defaults:bs_1.52.0__0.0.2!red-hat-developer-hub-backstage-plugin-app-defaults
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-defaults:bs_1.52.0__0.0.3!red-hat-developer-hub-backstage-plugin-app-defaults
     disabled: false
 
   # RHDH theme — npm/OCI 1.0.1+ ship NFS FrontendModule on `.` (./alpha removed;
   # OFS helpers live at ./legacy). No app-config themes block needed for NFS.
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-theme:bs_1.52.0__1.0.1!red-hat-developer-hub-backstage-plugin-theme
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-theme:bs_1.52.0__1.0.2!red-hat-developer-hub-backstage-plugin-theme
     disabled: false
 
   # Homepage — NFS `alpha` (homePageModule). Shell keeps @backstage/plugin-home
   # until rhdh-plugins#4032 embeds homePagePlugin in the overlay default.
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage:bs_1.52.0__1.17.0!red-hat-developer-hub-backstage-plugin-homepage
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage:bs_1.52.0__1.17.1!red-hat-developer-hub-backstage-plugin-homepage
     disabled: false
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage-backend:bs_1.52.0__0.4.0!red-hat-developer-hub-backstage-plugin-homepage-backend
     disabled: false
 
   # Global header (@red-hat-developer-hub/backstage-plugin-global-header)
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:bs_1.52.0__1.22.0!red-hat-developer-hub-backstage-plugin-global-header
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header:bs_1.52.0__2.0.0!red-hat-developer-hub-backstage-plugin-global-header
     disabled: false
 
   # Quickstart drawer + help menu item (@red-hat-developer-hub/backstage-plugin-quickstart)
-  # Note: bs_1.52.0__1.12.2 does not yet include RHDHBUGS-3489 (forwardRef on
-  # QuickstartHelpMenuItem). With global-header 1.22.x the help-menu item can be
-  # non-clickable until overlays picks up rhdh-plugins e9c3e9e13 / a newer QS tag.
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-quickstart:bs_1.52.0__1.12.2!red-hat-developer-hub-backstage-plugin-quickstart
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-quickstart:bs_1.52.0__2.0.1!red-hat-developer-hub-backstage-plugin-quickstart
     disabled: false
 
   # --- Additional packages.enabled (from default.packages.yaml) ---
