@@ -12,6 +12,8 @@ source "${DIR}/lib/operators.sh"
 source "${DIR}/lib/k8s-wait.sh"
 # shellcheck source=.ci/pipelines/lib/helm.sh
 source "${DIR}/lib/helm.sh"
+# shellcheck source=.ci/pipelines/lib/postgres.sh
+source "${DIR}/lib/postgres.sh"
 # shellcheck source=.ci/pipelines/lib/namespace.sh
 source "${DIR}/lib/namespace.sh"
 # shellcheck source=.ci/pipelines/lib/config.sh
