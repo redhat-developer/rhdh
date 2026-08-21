@@ -9,11 +9,6 @@
 #   source "${DIR}/playwright-projects.sh"
 #
 
-if [[ -n "${PLAYWRIGHT_PROJECTS_SOURCED:-}" ]]; then
-  return 0
-fi
-readonly PLAYWRIGHT_PROJECTS_SOURCED=1
-
 # Source logging library
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"

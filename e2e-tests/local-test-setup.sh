@@ -21,11 +21,6 @@
 #   yarn install
 #   yarn playwright test --headed
 
-if [[ -n "${LOCAL_TEST_SETUP_SOURCED:-}" ]]; then
-  return 0
-fi
-readonly LOCAL_TEST_SETUP_SOURCED=1
-
 # Get script directory (works even when sourced)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR/.local-test/rhdh"
