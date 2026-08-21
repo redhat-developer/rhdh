@@ -8,8 +8,6 @@
 # NOTE: OCI tags are backstage 1.49.4 (RHDH is on 1.52.0) — bump to matching tags when
 # the overlays repo publishes them.
 plugins:
-  # Guest auth: required after static auth providers were removed (#5258).
-  # Same GHCR tag as .ci/pipelines/value_files/values_showcase.yaml.
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20
     disabled: false
   # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
