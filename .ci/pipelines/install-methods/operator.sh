@@ -5,9 +5,28 @@ source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
 
+# Run install-rhdh-catalog-source.sh with visible logs (common::retry swallows stdout/stderr).
+# Forces OLM v0: auto-detect can pick OLM v1 (ClusterExtension) which returns success without
+# waiting for the operator CSV/CRDs, leaving Backstage CRD missing.
+_install_rhdh_operator_once() {
+  local -a install_args=()
+
+  if [[ "${RELEASE_VERSION}" == "next" ]]; then
+    log::info "Installing RHDH operator with '--next --olm-version v0'"
+    install_args=(--next --olm-version v0 --install-operator rhdh)
+  else
+    log::info "Installing RHDH operator with '-v ${RELEASE_VERSION} --olm-version v0'"
+    install_args=(-v "${RELEASE_VERSION}" --olm-version v0 --install-operator rhdh)
+  fi
+
+  # Stream script output to the CI log; do not capture (common::retry hides failures).
+  bash -x /tmp/install-rhdh-catalog-source.sh "${install_args[@]}"
+}
+
 install_rhdh_operator() {
   local namespace=$1
   local max_attempts=$2
+  local attempt=1
 
   namespace::configure "$namespace"
 
@@ -28,28 +47,84 @@ install_rhdh_operator() {
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
-  if [[ "$RELEASE_VERSION" == "next" ]]; then
-    log::info "Installing RHDH operator with '--next' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh; then
-      log::error "Failed install RHDH Operator after ${max_attempts} attempts."
-      return 1
+  while ((attempt <= max_attempts)); do
+    log::info "Operator install script attempt ${attempt}/${max_attempts}"
+    if _install_rhdh_operator_once; then
+      log::success "Operator install script succeeded on attempt ${attempt}"
+      return 0
     fi
-  else
-    log::info "Installing RHDH operator with '-v $RELEASE_VERSION' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$RELEASE_VERSION" --install-operator rhdh; then
-      log::error "Failed install RHDH Operator after ${max_attempts} attempts."
-      return 1
+    log::warn "Operator install script failed on attempt ${attempt}/${max_attempts}"
+    if ((attempt < max_attempts)); then
+      sleep 10
     fi
-  fi
+    attempt=$((attempt + 1))
+  done
+
+  log::error "Failed install RHDH Operator after ${max_attempts} attempts."
+  return 1
 }
 
-prepare_operator() {
-  local retry_operator_installation="${1:-1}"
-  namespace::configure "${OPERATOR_MANAGER}"
-  install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
+# Dump OLM / operator-manager state when Backstage CRD registration fails.
+_operator_olm_debug_info() {
+  local ns="${OPERATOR_MANAGER:-rhdh-operator}"
+  log::info "OLM/operator diagnostics in namespace: ${ns}"
+  oc get operatorgroup,csv,sub,ip,deploy,pods -n "${ns}" -o wide 2>&1 || true
+  log::info "CatalogSource in openshift-marketplace / olm:"
+  oc get catalogsource -n openshift-marketplace -o wide 2>&1 || true
+  oc get catalogsource -n olm -o wide 2>&1 || true
+  log::info "ClusterExtension / ClusterCatalog (OLM v1), if present:"
+  oc get clusterextension,clustercatalog 2>&1 || true
+  log::info "Backstage CRD:"
+  oc get crd backstages.rhdh.redhat.com -o yaml 2>&1 | head -40 || true
+  oc logs -n "${ns}" -l control-plane=controller-manager --tail=100 2>&1 || true
+  oc get events -n "${ns}" --sort-by='.lastTimestamp' 2>&1 | tail -40 || true
+}
 
-  # Wait for Backstage CRD to be available after operator installation
-  k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || return 1
+# Install the RHDH operator and wait for the Backstage CRD.
+# Retries the *entire* cycle (namespace recreate → install → CRD wait) up to N times.
+# Args:
+#   $1 - max full-cycle attempts (default: 1)
+prepare_operator() {
+  local max_cycles=${1:-1}
+  local attempt=1
+
+  while ((attempt <= max_cycles)); do
+    log::info "Preparing RHDH operator (attempt ${attempt}/${max_cycles})"
+    # install_rhdh_operator calls namespace::configure — avoid a second wipe here.
+    if ! install_rhdh_operator "${OPERATOR_MANAGER}" 1; then
+      log::error "Operator install script failed on attempt ${attempt}/${max_cycles}"
+      _operator_olm_debug_info
+      if ((attempt < max_cycles)); then
+        attempt=$((attempt + 1))
+        continue
+      fi
+      return 1
+    fi
+
+    # Subscription should exist quickly; fail fast with diagnostics if the script
+    # returned 0 without creating OLM v0 resources.
+    if ! oc get subscription rhdh -n "${OPERATOR_MANAGER}" &> /dev/null; then
+      log::error "Subscription/rhdh missing in ${OPERATOR_MANAGER} after install script success"
+      _operator_olm_debug_info
+      if ((attempt < max_cycles)); then
+        attempt=$((attempt + 1))
+        continue
+      fi
+      return 1
+    fi
+
+    if k8s_wait::crd "backstages.rhdh.redhat.com" 300 10; then
+      log::info "Backstage CRD available after operator prepare attempt ${attempt}"
+      return 0
+    fi
+
+    log::error "Backstage CRD not available after install attempt ${attempt}/${max_cycles}"
+    _operator_olm_debug_info
+    attempt=$((attempt + 1))
+  done
+
+  log::error "Failed to prepare RHDH operator after ${max_cycles} full cycle(s)"
+  return 1
 }
 
 # Waits for the Crunchy Data PostgreSQL Operator's PostgresCluster CRD to become available.
