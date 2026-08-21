@@ -47,6 +47,10 @@ Examples:
   # Run on GKE
   ./local-run.sh -j periodic-ci-gke-helm-nightly -r rhdh/rhdh-hub-rhel9 -t next -s
 
+  # Disconnected OCP (requires a real OpenShift cluster; uses internal image registry)
+  ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly -r rhdh-community/rhdh -t next -s
+  ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly -r rhdh-community/rhdh -t next -s
+
   # Use a locally built runner image
   ./local-run.sh --runner-image localhost/rhdh-e2e-runner:test
 
@@ -221,7 +225,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   echo "  6) AKS Helm Nightly (*aks*helm*nightly*)"
   echo "  7) EKS Helm Nightly (*eks*helm*nightly*)"
   echo "  8) GKE Helm Nightly (*gke*helm*nightly*)"
-  echo "  9) Custom job name"
+  echo "  9) OCP Disconnected Operator Nightly (*ocp*disconnected*operator*nightly*)"
+  echo " 10) OCP Disconnected Helm Nightly (*ocp*disconnected*helm*nightly*)"
+  echo " 11) Custom job name"
   echo ""
   read -r -p "Enter choice [1]: " job_choice
   job_choice=${job_choice:-1}
@@ -235,7 +241,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     6) JOB_NAME="periodic-ci-aks-helm-nightly" ;;
     7) JOB_NAME="periodic-ci-eks-helm-nightly" ;;
     8) JOB_NAME="periodic-ci-gke-helm-nightly" ;;
-    9)
+    9) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly" ;;
+    10) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly" ;;
+    11)
       read -r -p "Enter custom JOB_NAME: " JOB_NAME
       ;;
     *) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;
@@ -355,11 +363,35 @@ else
   CONTAINER_PLATFORM="ocp"
 fi
 
+# Disconnected OCP local path: real OpenShift only; runner bootstraps MIRROR_* in-container.
+DISCONNECTED="${DISCONNECTED:-false}"
+LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}"
+if [[ "$JOB_NAME" == *"disconnected"* ]]; then
+  if [[ "$CONTAINER_PLATFORM" != "ocp" && "$CONTAINER_PLATFORM" != "osd-gcp" ]]; then
+    log::error "Disconnected jobs require an OpenShift cluster (JOB_NAME=$JOB_NAME)."
+    exit 1
+  fi
+  if ! oc whoami > /dev/null 2>&1; then
+    log::error "Disconnected jobs require oc login to a live OpenShift cluster before local-run.sh."
+    exit 1
+  fi
+  if ! oc get infrastructures.config.openshift.io cluster > /dev/null 2>&1; then
+    log::error "Current kube context is not an OpenShift API (infrastructures.config.openshift.io missing)."
+    exit 1
+  fi
+  DISCONNECTED="true"
+  LOCAL_DISCONNECTED="1"
+  log::info "Disconnected local mode: DISCONNECTED=true LOCAL_DISCONNECTED=1 (internal image registry)"
+fi
+
 log::section "Configuration Summary"
 log::info "JOB_NAME:    $JOB_NAME"
 log::info "PLATFORM:    $CONTAINER_PLATFORM"
 log::info "IMAGE:       ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
 log::info "SKIP_TESTS:  $SKIP_TESTS"
+if [[ "${DISCONNECTED}" == "true" ]]; then
+  log::info "DISCONNECTED / LOCAL_DISCONNECTED: ${DISCONNECTED} / ${LOCAL_DISCONNECTED}"
+fi
 echo ""
 if [[ "$CLI_MODE" == "false" ]]; then
   read -r -p "Press Enter to continue or Ctrl+C to abort..."
@@ -379,10 +411,28 @@ fi
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
-# Login to vault and capture the token
+# Login to vault and capture the token (reuse only if the token can read QE secrets)
 log::section "Vault Login"
-vault login -no-print -method=oidc
-VAULT_TOKEN=$(vault print token)
+vault_token_usable() {
+  local token=${1:-}
+  [[ -n "$token" ]] || return 1
+  VAULT_TOKEN="$token" vault kv get -mount="kv" "selfservice/rhdh-qe/rhdh" > /dev/null 2>&1
+}
+
+if [[ -n "${VAULT_TOKEN:-}" ]] && vault_token_usable "$VAULT_TOKEN"; then
+  log::info "Using existing VAULT_TOKEN from environment"
+elif existing_token=$(vault print token 2>/dev/null) && vault_token_usable "$existing_token"; then
+  VAULT_TOKEN="$existing_token"
+  log::info "Reusing existing vault token from local vault CLI"
+elif [[ -n "${VAULT_TOKEN:-}" ]] || [[ -n "${existing_token:-}" ]]; then
+  log::warn "Existing vault token cannot read QE secrets; falling back to OIDC login"
+  vault login -no-print -method=oidc
+  VAULT_TOKEN=$(vault print token)
+else
+  vault login -no-print -method=oidc
+  VAULT_TOKEN=$(vault print token)
+fi
+export VAULT_TOKEN
 
 # Set up cluster access based on platform (CONTAINER_PLATFORM already derived above)
 log::section "Setting up cluster access"
@@ -465,6 +515,8 @@ podman run -v "$WORK_DIR":/tmp/rhdh \
   -e IMAGE_REPO="$IMAGE_REPO" \
   -e TAG_NAME="$TAG_NAME" \
   -e SKIP_TESTS="$SKIP_TESTS" \
+  -e DISCONNECTED="$DISCONNECTED" \
+  -e LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}" \
   "$RUNNER_IMAGE" \
   /bin/bash /tmp/container-init.sh 2>&1 | tee "$CONTAINER_LOG"
 CONTAINER_EXIT_CODE=${PIPESTATUS[0]}
