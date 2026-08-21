@@ -58,6 +58,7 @@ These principles are valid for new contributions. Some parts of the codebase may
      - Use `guestPage` for ordinary specs that need a fresh guest login per test (best isolation; default choice).
      - Use `rhdhGuestPage` or `rhdhPage` only when a describe block intentionally shares one browser context/page across tests (for example to avoid repeated guest login or amortize expensive setup).
    - Worker-scoped fixtures (`rhdhPage`, `rhdhGuestPage`, `rhdhContext`, `rhdhAuthSession`) do **not** require `test.describe.configure({ mode: "serial" })` by themselves. With the default Playwright config, tests in a file already run sequentially in one worker.
+   - `test.use({ baseURL })` only affects test-scoped fixtures (built-in `page`). Worker-scoped `rhdhContext` / `rhdhPage` read project `use.baseURL` (`BASE_URL`) unless you also set the worker option. Auth-provider specs should call `createAuthProviderHarness(...)` from `auth-provider-playwright.ts` at **file top level** (it binds `baseURL` + `workerBaseURL`). Do not call it inside `describe` / hooks — Playwright rejects worker-scoped `test.use` there. Prefer that over bare `AuthProviderHarness.create` (no Playwright binding). For other shared-context specs with an empty project `BASE_URL`, call `useRhdhBaseURL(instanceUrl)` at file top level.
    - When sharing a worker-scoped page/context across multiple tests, reset browser state between tests (sign out, `clearCookies`, or a harness `cleanup` callback) so each test stays independent.
    - Use `test.describe.configure({ mode: "serial" })` (or `test.describe.serial`) **only** when a later test depends on side effects from an earlier test in the same file—for example, import an entity in test 1 and verify it in test 2. Do not add serial merely because worker fixtures are present.
 
@@ -84,6 +85,18 @@ These principles are valid for new contributions. Some parts of the codebase may
 
 When contributing new tests or modifying existing ones, please adhere to the guidelines.
 To open a PR, follow the steps described in the [general contribution guide](../../CONTRIBUTING.md)
+
+### Verify Affected CI Jobs Before Merging
+
+Changing e2e specs or shared e2e infrastructure (fixtures, `global-setup.ts`, `playwright.config.ts`, deploy helpers, auth harness, localization) can break nightly or optional jobs that do **not** run automatically on every PR.
+
+On your PR:
+
+1. Comment `/test ?` to list available Prow jobs for that branch.
+2. Comment `/test <job-name>` for each job your change affects (for example `e2e-ocp-helm-nightly`, `e2e-ocp-operator-nightly`, `e2e-ocp-helm-localization-nightly`, `e2e-ocp-operator-auth-providers-nightly`).
+3. Wait for those jobs to finish and confirm they still pass, or are not worse than before.
+
+Do not use `/test all` unless you intentionally need every optional job. Details and job naming are in [CI.md](CI.md).
 
 ### Collaboration and Communication
 

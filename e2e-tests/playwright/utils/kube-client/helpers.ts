@@ -2,6 +2,7 @@ import * as k8s from "@kubernetes/client-node";
 
 import { getErrorMessage, hasErrorResponse, hasStatusCode } from "../errors";
 import { resolveInstallMethod } from "../helper";
+import { deploymentName, resolveReleaseName } from "../instance-route-identity";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -129,19 +130,18 @@ export function getKubeApiErrorMessage(error: unknown): string {
   return message === "" ? "Unknown Kubernetes API error" : message;
 }
 
+/** Wrap a Kubernetes client failure with operation context for CI diagnosis. */
+export function wrapKubernetesError(operation: string, error: unknown): Error {
+  return new Error(`${operation}: ${getKubeApiErrorMessage(error)}`, { cause: error });
+}
+
 /**
  * Returns the RHDH deployment name based on the install method.
  * Uses resolveInstallMethod() which checks INSTALL_METHOD env var first,
  * then falls back to JOB_NAME pattern matching.
  */
 export function getRhdhDeploymentName(): string {
-  const releaseName =
-    process.env.RELEASE_NAME !== undefined && process.env.RELEASE_NAME !== ""
-      ? process.env.RELEASE_NAME
-      : "rhdh";
-  return resolveInstallMethod() === "operator"
-    ? `backstage-${releaseName}`
-    : `${releaseName}-developer-hub`;
+  return deploymentName(resolveInstallMethod(), resolveReleaseName());
 }
 
 export function rejectAsError(reject: (reason: Error) => void, err: unknown): void {

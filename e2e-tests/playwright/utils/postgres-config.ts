@@ -2,7 +2,7 @@
  * PostgreSQL configuration utilities for external database tests.
  * Provides functions to configure TLS certificates and database credentials
  * via Kubernetes secrets for testing with external PostgreSQL instances
- * (Azure Database for PostgreSQL, Amazon RDS, etc.).
+ * (Azure Database for PostgreSQL, Amazon RDS, Google Cloud SQL, etc.).
  *
  * Certificates are loaded from file paths set by CI pipeline (from Vault).
  * File paths are used instead of loading content into env vars to avoid
@@ -101,6 +101,8 @@ export async function configurePostgresCredentials(
     POSTGRES_HOST: base64Encode(credentials.host),
     POSTGRES_PORT: base64Encode(credentials.port ?? "5432"),
     PGSSLMODE: base64Encode(credentials.sslMode ?? "require"),
+    // Kept even for Cloud SQL Auth Proxy (PGSSLMODE=disable); satisfies
+    // ensurePostgresCredEnvVars secretKeyRef keys on the Deployment.
     NODE_EXTRA_CA_CERTS: base64Encode("/opt/app-root/src/postgres-crt.pem"),
   };
 
@@ -130,14 +132,59 @@ const SYSTEM_DATABASES = [
   "rdsadmin",
   "azure_maintenance",
   "azure_sys",
+  "cloudsqladmin",
 ];
 
-function buildSslConfig(certificatePath: string | undefined): { ca: string } | boolean {
-  if (certificatePath === undefined || certificatePath === "") {
-    return true;
+/** Optional TLS knobs for `clearDatabase` (merged with `certificatePath` CA). */
+export type ClearDatabaseSslOptions = {
+  rejectUnauthorized?: boolean;
+  servername?: string;
+  /**
+   * Skip hostname verification while still trusting `certificatePath` CA.
+   * Used for Cloud SQL public-IP hosts whose server cert SAN is instance DNS.
+   */
+  checkServerIdentity?: () => undefined;
+};
+
+type PgSslConfig =
+  | boolean
+  | {
+      ca?: string;
+      rejectUnauthorized?: boolean;
+      servername?: string;
+      checkServerIdentity?: () => undefined;
+    };
+
+function buildSslConfig(
+  certificatePath: string | undefined,
+  ssl?: boolean | ClearDatabaseSslOptions,
+): PgSslConfig {
+  if (ssl === false) {
+    return false;
   }
-  const certContent = readCertificateFile(certificatePath);
-  if (certContent === null) {
+
+  const certContent =
+    certificatePath !== undefined && certificatePath !== ""
+      ? readCertificateFile(certificatePath)
+      : null;
+
+  if (ssl !== undefined && typeof ssl === "object") {
+    const config: Exclude<PgSslConfig, boolean> = {
+      rejectUnauthorized: ssl.rejectUnauthorized ?? certContent !== null,
+    };
+    if (certContent !== null) {
+      config.ca = certContent;
+    }
+    if (ssl.servername !== undefined && ssl.servername !== "") {
+      config.servername = ssl.servername;
+    }
+    if (ssl.checkServerIdentity !== undefined) {
+      config.checkServerIdentity = ssl.checkServerIdentity;
+    }
+    return config;
+  }
+
+  if (certificatePath === undefined || certificatePath === "" || certContent === null) {
     return true;
   }
   return { ca: certContent };
@@ -211,8 +258,10 @@ export async function clearDatabase(credentials: {
   user: string;
   password: string;
   certificatePath?: string;
+  /** Override SSL: false disables TLS; object merges with certificatePath CA when set. */
+  ssl?: boolean | ClearDatabaseSslOptions;
 }): Promise<void> {
-  console.log("Starting database cleanup process...");
+  console.log(`Starting database cleanup for ${credentials.host}...`);
 
   const client = new Client({
     host: credentials.host,
@@ -220,7 +269,7 @@ export async function clearDatabase(credentials: {
     user: credentials.user,
     password: credentials.password,
     database: "postgres",
-    ssl: buildSslConfig(credentials.certificatePath),
+    ssl: buildSslConfig(credentials.certificatePath, credentials.ssl),
     connectionTimeoutMillis: 30 * 1000,
     query_timeout: 120 * 1000,
   });

@@ -31,5 +31,7 @@ handle_auth_providers() {
   export LOGS_FOLDER
 
   log::info "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
-  testing::run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}" "${PW_PROJECT_SHOWCASE_AUTH_PROVIDERS}" "https://${K8S_CLUSTER_ROUTER_BASE}" || true
+  # The auth-provider harness deploys its own test instance, so leave BASE_URL
+  # unset and let Playwright global setup no-op instead of probing the router.
+  testing::run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}" "${PW_PROJECT_SHOWCASE_AUTH_PROVIDERS}" "" || true
 }

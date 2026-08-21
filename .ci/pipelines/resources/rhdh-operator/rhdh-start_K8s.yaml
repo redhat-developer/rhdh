@@ -47,3 +47,7 @@ spec:
       secrets:
         - name: rhdh-secrets
         - name: redis-secret
+  # Disable default flavours (e.g. lightspeed) so install-dynamic-plugins
+  # cannot CrashLoop on operator-injected OCI pulls — same invariant as
+  # OperatorInstallProfile for Playwright-generated CRs.
+  flavours: []
