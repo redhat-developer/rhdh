@@ -60,6 +60,12 @@ jobs:
       contents: read
       packages: write
     steps:
+      - name: Guard against pushing to shared repo from a fork
+        if: github.repository != 'redhat-developer/rhdh' && startsWith(env.REGISTRY_IMAGE, 'rhdh-community/')
+        run: |
+          echo "::error::Forks must set repository variable QUAY_RHDH_IMAGE_REPO to a Quay repo outside the rhdh-community namespace."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -108,12 +114,6 @@ jobs:
             expires_after="14d"  # Short expiry for next builds, feature branches, and other temporary builds
           fi
           echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
-
-      - name: Guard against pushing to shared repo from a fork
-        if: github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh'
-        run: |
-          echo "::error::Forks must set repository variable QUAY_RHDH_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
-          exit 1
 
       - name: Check Quay credentials
         run: |
@@ -187,9 +187,9 @@ jobs:
         HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
       steps:
         - name: Guard against pushing to shared repo from a fork
-          if: github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh'
+          if: github.repository != 'redhat-developer/rhdh' && startsWith(env.REGISTRY_IMAGE, 'rhdh-community/')
           run: |
-            echo "::error::Forks must set repository variable QUAY_RHDH_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
+            echo "::error::Forks must set repository variable QUAY_RHDH_IMAGE_REPO to a Quay repo outside the rhdh-community namespace."
             exit 1
 
         - name: Login to Quay

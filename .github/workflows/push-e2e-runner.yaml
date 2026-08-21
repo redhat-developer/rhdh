@@ -49,6 +49,12 @@ jobs:
       packages: write
 
     steps:
+      - name: Guard against pushing to shared repo from a fork
+        if: github.event_name != 'pull_request' && github.repository != 'redhat-developer/rhdh' && startsWith(env.REGISTRY_IMAGE, 'rhdh-community/')
+        run: |
+          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to a Quay repo outside the rhdh-community namespace."
+          exit 1
+
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -78,12 +84,6 @@ jobs:
           fi
           echo "Use IMAGE_TAG = $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-
-      - name: Guard against pushing to shared repo from a fork
-        if: github.event_name != 'pull_request' && github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh-e2e-runner'
-        run: |
-          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
-          exit 1
 
       - name: Check Quay credentials
         if: github.event_name != 'pull_request'
@@ -150,6 +150,12 @@ jobs:
       packages: write
 
     steps:
+      - name: Guard against pushing to shared repo from a fork
+        if: github.repository != 'redhat-developer/rhdh' && startsWith(env.REGISTRY_IMAGE, 'rhdh-community/')
+        run: |
+          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to a Quay repo outside the rhdh-community namespace."
+          exit 1
+
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -179,12 +185,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
-
-      - name: Guard against pushing to shared repo from a fork
-        if: github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh-e2e-runner'
-        run: |
-          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
-          exit 1
 
       - name: Login to Quay
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0

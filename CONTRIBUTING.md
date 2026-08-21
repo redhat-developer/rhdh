@@ -159,7 +159,7 @@ To test image builds from a fork:
    - `QUAY_RHDH_IMAGE_REPO` = `<your-namespace>/<repo>` for [next-build-image.yaml](.github/workflows/next-build-image.yaml)
    - `QUAY_E2E_RUNNER_IMAGE_REPO` = `<your-namespace>/<repo>` for [push-e2e-runner.yaml](.github/workflows/push-e2e-runner.yaml)
 
-   Do not set either variable to the production path (`rhdh-community/rhdh` or `rhdh-community/rhdh-e2e-runner`). Forks that do so are rejected.
+   Do not set either variable under the `rhdh-community/` namespace. Forks that do so are rejected.
 3. Set secrets `QUAY_USERNAME` and `QUAY_TOKEN` for a robot account scoped to **that** namespace only.
 4. Run the workflow via **Actions → Run workflow** (`workflow_dispatch`), or push/schedule once the variable is set.
 
