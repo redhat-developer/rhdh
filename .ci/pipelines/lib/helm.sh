@@ -211,25 +211,60 @@ helm::uninstall() {
 # Install Operations
 # ==============================================================================
 
-# Get common Helm set parameters for image configuration
+# Get common Helm set parameters for image configuration.
+#
 # Uses global variables: IMAGE_REGISTRY, IMAGE_REPO, TAG_NAME,
 #   CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO, CATALOG_INDEX_TAG (from env_variables.sh)
+#
+# Options (all optional; defaults reproduce the connected-install behavior):
+#   --backstage-registry <r>  Override upstream.backstage.image.registry
+#                             (default: IMAGE_REGISTRY). Disconnected installs
+#                             pass the in-cluster mirror host.
+#   --catalog-registry <r>    Override global.catalogIndex.image.registry
+#                             (default: CATALOG_INDEX_REGISTRY). Disconnected
+#                             installs pass MIRROR_REGISTRY_URL.
+#   --omit-backstage-image    Skip the upstream.backstage.image.* flags entirely
+#                             (LOCAL_DISCONNECTED lets the chart + IDMS resolve
+#                             the hub image instead of pinning it).
 # Returns:
 #   Prints the Helm --set parameters string
+# shellcheck disable=SC2120 # all args optional; callers in other files pass them
 helm::get_image_params() {
+  local backstage_registry="${IMAGE_REGISTRY}"
+  local catalog_registry="${CATALOG_INDEX_REGISTRY:-}"
+  local omit_backstage_image="false"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --backstage-registry)
+        backstage_registry="$2"
+        shift 2
+        ;;
+      --catalog-registry)
+        catalog_registry="$2"
+        shift 2
+        ;;
+      --omit-backstage-image)
+        omit_backstage_image="true"
+        shift
+        ;;
+      *)
+        log::error "helm::get_image_params: unknown option '$1'"
+        return 1
+        ;;
+    esac
+  done
+
   local params=""
 
-  # Add image registry
-  params+="--set upstream.backstage.image.registry=${IMAGE_REGISTRY} "
-
-  # Add image repository
-  params+="--set upstream.backstage.image.repository=${IMAGE_REPO} "
-
-  # Add image tag
-  params+="--set upstream.backstage.image.tag=${TAG_NAME} "
+  if [[ "${omit_backstage_image}" != "true" ]]; then
+    params+="--set upstream.backstage.image.registry=${backstage_registry} "
+    params+="--set upstream.backstage.image.repository=${IMAGE_REPO} "
+    params+="--set upstream.backstage.image.tag=${TAG_NAME} "
+  fi
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    params+="--set global.catalogIndex.image.registry=${CATALOG_INDEX_REGISTRY} "
+    params+="--set global.catalogIndex.image.registry=${catalog_registry} "
     params+="--set global.catalogIndex.image.repository=${CATALOG_INDEX_REPO} "
     params+="--set global.catalogIndex.image.tag=${CATALOG_INDEX_TAG} "
   fi

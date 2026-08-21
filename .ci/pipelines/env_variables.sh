@@ -80,6 +80,15 @@ else
   unset CATALOG_INDEX_TAG CATALOG_INDEX_REGISTRY CATALOG_INDEX_REPO
 fi
 
+# Default PostgreSQL image for RHDH deployments when the source (Helm chart /
+# CR) does not pin one. Matches the showcase value files
+# (value_files/diff-values_showcase-rbac_*.yaml): quay.io/fedora/postgresql-15.
+# The community chart historically defaulted to registry.redhat.io/rhel9/...,
+# which is not pullable without a Red Hat pull secret in every environment.
+POSTGRESQL_IMAGE_REGISTRY="${POSTGRESQL_IMAGE_REGISTRY:-quay.io}"
+POSTGRESQL_IMAGE_REPO="${POSTGRESQL_IMAGE_REPO:-fedora/postgresql-15}"
+POSTGRESQL_IMAGE_TAG="${POSTGRESQL_IMAGE_TAG:-latest}"
+
 # =============================================================================
 # Release and Namespace Configuration
 # These can be overridden by CI environment or local configuration

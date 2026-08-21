@@ -1,0 +1,12 @@
+# Minimal app-config for disconnected operator smoke (guest login only).
+app:
+  title: Red Hat Developer Hub
+auth:
+  environment: development
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+# Hub defaults enable permission/RBAC; without a policy module the backend
+# stays not-ready (readiness 503) even though / can return 200.
+permission:
+  enabled: false
