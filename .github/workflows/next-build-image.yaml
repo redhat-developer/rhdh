@@ -37,11 +37,15 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  REGISTRY_IMAGE: rhdh-community/rhdh
+  # Forks: set repo variable QUAY_RHDH_IMAGE_REPO to your own Quay repo (namespace/repo)
+  # and secrets QUAY_USERNAME/QUAY_TOKEN scoped to that namespace (not rhdh-community).
+  # See CONTRIBUTING.md ("Testing image builds from a fork").
+  REGISTRY_IMAGE: ${{ vars.QUAY_RHDH_IMAGE_REPO || 'rhdh-community/rhdh' }}
 
 jobs:
   build-image:
     name: Build Image
+    if: github.repository == 'redhat-developer/rhdh' || vars.QUAY_RHDH_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch'
     env:
       HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
     strategy:
@@ -105,6 +109,12 @@ jobs:
           fi
           echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
+      - name: Guard against pushing to shared repo from a fork
+        if: github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh'
+        run: |
+          echo "::error::Forks must set repository variable QUAY_RHDH_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
+          exit 1
+
       - name: Check Quay credentials
         run: |
           if [ "$HAS_QUAY_AUTH" != "true" ]; then
@@ -165,6 +175,7 @@ jobs:
           retention-days: 1
 
   merge:
+      if: github.repository == 'redhat-developer/rhdh' || vars.QUAY_RHDH_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch'
       runs-on: ubuntu-latest
       needs:
         - build-image
@@ -175,6 +186,12 @@ jobs:
       env:
         HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
       steps:
+        - name: Guard against pushing to shared repo from a fork
+          if: github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh'
+          run: |
+            echo "::error::Forks must set repository variable QUAY_RHDH_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
+            exit 1
+
         - name: Login to Quay
           uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
           with:

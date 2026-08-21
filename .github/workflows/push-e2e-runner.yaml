@@ -25,11 +25,15 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  REGISTRY_IMAGE: rhdh-community/rhdh-e2e-runner
+  # Forks: set repo variable QUAY_E2E_RUNNER_IMAGE_REPO to your own Quay repo (namespace/repo)
+  # and secrets QUAY_USERNAME/QUAY_TOKEN scoped to that namespace (not rhdh-community).
+  # See CONTRIBUTING.md ("Testing image builds from a fork").
+  REGISTRY_IMAGE: ${{ vars.QUAY_E2E_RUNNER_IMAGE_REPO || 'rhdh-community/rhdh-e2e-runner' }}
 
 jobs:
   build-image:
     name: Build e2e-runner (${{ matrix.os }})
+    if: github.event_name == 'pull_request' || github.repository == 'redhat-developer/rhdh' || vars.QUAY_E2E_RUNNER_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch'
     env:
       HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
     strategy:
@@ -74,6 +78,12 @@ jobs:
           fi
           echo "Use IMAGE_TAG = $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Guard against pushing to shared repo from a fork
+        if: github.event_name != 'pull_request' && github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh-e2e-runner'
+        run: |
+          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
+          exit 1
 
       - name: Check Quay credentials
         if: github.event_name != 'pull_request'
@@ -131,7 +141,7 @@ jobs:
 
   merge:
     name: Create multi-arch manifest
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && (github.repository == 'redhat-developer/rhdh' || vars.QUAY_E2E_RUNNER_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     needs: build-image
@@ -169,6 +179,12 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Guard against pushing to shared repo from a fork
+        if: github.repository != 'redhat-developer/rhdh' && env.REGISTRY_IMAGE == 'rhdh-community/rhdh-e2e-runner'
+        run: |
+          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to their own Quay repo (namespace/repo). Refusing to push to the shared production image."
+          exit 1
 
       - name: Login to Quay
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
