@@ -1,6 +1,7 @@
 {
   "SMOKE_TEST": "smoke-test",
   "SHOWCASE": "showcase",
+  "SHOWCASE_FIPS": "showcase-fips",
   "SHOWCASE_RBAC": "showcase-rbac",
   "ANY_TEST": "any-test",
   "SHOWCASE_K8S": "showcase-k8s",

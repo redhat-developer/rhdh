@@ -15,6 +15,7 @@ import projectsJson from "./projects.json" with { type: "json" };
 export const PW_PROJECT = projectsJson as {
   readonly SMOKE_TEST: string;
   readonly SHOWCASE: string;
+  readonly SHOWCASE_FIPS: string;
   readonly SHOWCASE_RBAC: string;
   readonly ANY_TEST: string;
   readonly SHOWCASE_K8S: string;
