@@ -56,3 +56,10 @@ red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki(@|:)
 red-hat-developer-hub-backstage-plugin-homepage(@|:)
 red-hat-developer-hub-backstage-plugin-intelligent-assistant(@|:)
 red-hat-developer-hub-backstage-plugin-intelligent-assistant-backend(@|:)
+
+# TODO(RHDHBUGS-3515): same publication gap. The next index still declares this
+# as a tag-style ref (`:2.0.0--0.4.0`); `skopeo inspect --no-creds` reports
+# "unauthorized" and populate-catalog-index.sh aborts before the Playwright
+# check starts (e.g. https://github.com/redhat-developer/rhdh/actions/runs/32460104740/job/96705164372).
+# Do not broaden this to catalog-backend-module-keycloak (digest-pinned, public).
+backstage-community-plugin-auth-backend-module-keycloak-provider(@|:)
