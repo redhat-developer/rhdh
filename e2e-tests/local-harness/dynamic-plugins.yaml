@@ -8,6 +8,8 @@
 # NOTE: OCI tags are backstage 1.49.4 (RHDH is on 1.52.0) — bump to matching tags when
 # the overlays repo publishes them.
 plugins:
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20
+    disabled: false
   # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false
