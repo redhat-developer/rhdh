@@ -57,11 +57,5 @@ red-hat-developer-hub-backstage-plugin-homepage(@|:)
 red-hat-developer-hub-backstage-plugin-intelligent-assistant(@|:)
 red-hat-developer-hub-backstage-plugin-intelligent-assistant-backend(@|:)
 
-# TODO(RHDHBUGS-3678): next catalog still declares this as a tag-style ref
-# (`:2.0.0--0.4.0`); `skopeo inspect --no-creds` reports "unauthorized" for the
-# whole repository and populate-catalog-index.sh aborts before Playwright
-# starts (e.g. https://github.com/redhat-developer/rhdh/actions/runs/32460104740/job/96705164372).
-# Does not block PR checks (plugin-sanity is nightly-only). Same publication
-# gap class as RHDHBUGS-3515, different package. Do not broaden this to
-# catalog-backend-module-keycloak (digest-pinned, public).
+# https://redhat.atlassian.net/browse/RHDHBUGS-3678
 backstage-community-plugin-auth-backend-module-keycloak-provider(@|:)
