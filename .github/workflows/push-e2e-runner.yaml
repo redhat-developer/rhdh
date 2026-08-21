@@ -25,11 +25,15 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  REGISTRY_IMAGE: rhdh-community/rhdh-e2e-runner
+  # Forks: set repo variable QUAY_E2E_RUNNER_IMAGE_REPO to your own Quay repo (namespace/repo)
+  # and secrets QUAY_USERNAME/QUAY_TOKEN scoped to that namespace (not rhdh-community).
+  # See CONTRIBUTING.md ("Testing image builds from a fork").
+  REGISTRY_IMAGE: ${{ vars.QUAY_E2E_RUNNER_IMAGE_REPO || 'rhdh-community/rhdh-e2e-runner' }}
 
 jobs:
   build-image:
     name: Build e2e-runner (${{ matrix.os }})
+    if: github.event_name == 'pull_request' || github.repository == 'redhat-developer/rhdh' || vars.QUAY_E2E_RUNNER_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch'
     env:
       HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
     strategy:
@@ -45,6 +49,12 @@ jobs:
       packages: write
 
     steps:
+      - name: Guard against pushing to shared repo from a fork
+        if: github.event_name != 'pull_request' && github.repository != 'redhat-developer/rhdh' && startsWith(env.REGISTRY_IMAGE, 'rhdh-community/')
+        run: |
+          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to a Quay repo outside the rhdh-community namespace."
+          exit 1
+
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -131,7 +141,7 @@ jobs:
 
   merge:
     name: Create multi-arch manifest
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && (github.repository == 'redhat-developer/rhdh' || vars.QUAY_E2E_RUNNER_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     needs: build-image
@@ -140,6 +150,12 @@ jobs:
       packages: write
 
     steps:
+      - name: Guard against pushing to shared repo from a fork
+        if: github.repository != 'redhat-developer/rhdh' && startsWith(env.REGISTRY_IMAGE, 'rhdh-community/')
+        run: |
+          echo "::error::Forks must set repository variable QUAY_E2E_RUNNER_IMAGE_REPO to a Quay repo outside the rhdh-community namespace."
+          exit 1
+
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
