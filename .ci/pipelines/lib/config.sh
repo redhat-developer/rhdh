@@ -4,7 +4,6 @@
 # Handles ConfigMap creation, dynamic plugins, and app configuration
 # Dependencies: oc, yq, lib/log.sh, lib/common.sh
 
-# Prevent re-sourcing
 if [[ -n "${CONFIG_LIB_SOURCED:-}" ]]; then
   return 0
 fi

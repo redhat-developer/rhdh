@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${AKS_OPERATOR_JOBS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly AKS_OPERATOR_JOBS_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/install-methods/operator.sh

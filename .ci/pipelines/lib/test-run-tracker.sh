@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Prevent sourcing multiple times in the same shell.
 if [[ -n "${RHDH_TEST_RUN_TRACKER_LIB_SOURCED:-}" ]]; then
   return 0
 fi
