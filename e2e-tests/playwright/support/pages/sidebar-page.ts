@@ -45,6 +45,12 @@ export class SidebarPage {
     await verification.verifyText(this.page, text, exact);
   }
 
+  /** NFS TechDocs reader uses a "Documentation" heading and entity-specific content. */
+  async verifyDocsEntityContent(): Promise<void> {
+    await verification.verifyHeading(this.page, "Documentation");
+    await verification.verifyText(this.page, "Red Hat Developer Hub", false);
+  }
+
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {
     const learningPathLinks = this.page.getByRole("main").getByRole("link");
 

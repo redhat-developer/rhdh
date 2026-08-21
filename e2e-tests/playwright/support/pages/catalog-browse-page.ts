@@ -97,7 +97,7 @@ export class CatalogBrowsePage {
 
   async openSelfServiceFromCatalog(): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
-    await interaction.clickButton(this.page, "Self-service");
+    await interaction.clickLink(this.page, "Self-service");
   }
 
   async importGitRepositoryFromCatalog(): Promise<void> {

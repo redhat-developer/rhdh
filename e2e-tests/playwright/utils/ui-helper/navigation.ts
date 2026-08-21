@@ -124,7 +124,8 @@ export async function goToSelfServicePage(page: Page) {
   await clickLink(page, {
     ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
   });
-  await verifyHeading(page, t["scaffolder"][lang]["templateListPage.title"]);
+  // NFS scaffolder page title is "Create" (sidebar) with H2 "Templates", not legacy "Self-service".
+  await verifyHeading(page, "Create");
 }
 
 export async function waitForSideBarVisible(page: Page) {

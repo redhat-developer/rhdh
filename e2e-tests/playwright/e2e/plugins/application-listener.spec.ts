@@ -2,7 +2,9 @@ import { expect, test } from "@support/coverage/test";
 
 import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
 
-test.describe("Test ApplicationListener", () => {
+// NFS packages/app has no application/listener renderer; OCI test plugin is OFS-only.
+// See dynamic-plugins.yaml NOTE and docs/e2e-tests/local-e2e-harness.md.
+test.describe.skip("Test ApplicationListener", () => {
   test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",

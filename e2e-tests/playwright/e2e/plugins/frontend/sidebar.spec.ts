@@ -43,6 +43,6 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
   test("Verify Docs entity page renders real content", async () => {
     await sidebarPage.openDocs();
     await sidebarPage.openDocsEntity("Red Hat Developer Hub");
-    await sidebarPage.verifyText("Documentation available in", false);
+    await sidebarPage.verifyDocsEntityContent();
   });
 });
