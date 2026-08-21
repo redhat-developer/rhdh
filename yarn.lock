@@ -15737,6 +15737,7 @@ __metadata:
     "@types/zen-observable": "npm:0.8.7"
     cross-env: "npm:7.0.3"
     history: "npm:5.3.0"
+    material-icons: "npm:^1.13.12"
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     react-router: "npm:6.30.4"
@@ -26478,6 +26479,13 @@ __metadata:
   dependencies:
     escape-string-regexp: "npm:^4.0.0"
   checksum: 10c0/7c90ba780a98542e6db4d1961e82a213f857a4e98b3e76e5f57e5ce19f4f4624e6f23279df397bbe2eed373c707964df93ceba546b80f3863fbb7962daa3a6ea
+  languageName: node
+  linkType: hard
+
+"material-icons@npm:^1.13.12":
+  version: 1.13.14
+  resolution: "material-icons@npm:1.13.14"
+  checksum: 10c0/4c0f9a8ff02545ce7747c621b5ffa1738212628189c9419f4cd2e75f7f8cf9e98ed5f946724a2d7e169cfebc439875df0ba9f79ba94a574e16cbb0c5ce26e55a
   languageName: node
   linkType: hard
 
