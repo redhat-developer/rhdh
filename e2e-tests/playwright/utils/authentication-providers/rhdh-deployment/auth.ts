@@ -18,7 +18,7 @@ export function enableOIDCLoginWithIngestion(actions: AuthConfigActions): void {
   expect(process.env.RHBK_CLIENT_SECRET).toBeDefined();
 
   actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic",
+    "ref://backstage-community-plugin-catalog-backend-module-keycloak",
     true,
   );
   actions.setAppConfigProperty("catalog.providers", {
@@ -76,10 +76,7 @@ export function enableLDAPLoginWithIngestion(actions: AuthConfigActions): void {
   expect(process.env.RHBK_LDAP_CLIENT_ID).toBeDefined();
   expect(process.env.RHBK_LDAP_CLIENT_SECRET).toBeDefined();
 
-  actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic",
-    true,
-  );
+  actions.setDynamicPluginEnabled("ref://backstage-plugin-catalog-backend-module-ldap", true);
   actions.setAppConfigProperty("catalog.providers", {
     ldapOrg: {
       default: {
@@ -133,10 +130,7 @@ export function enableMicrosoftLoginWithIngestion(actions: AuthConfigActions): v
   expect(process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET).toBeDefined();
   expect(process.env.AUTH_PROVIDERS_AZURE_TENANT_ID).toBeDefined();
 
-  actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic",
-    true,
-  );
+  actions.setDynamicPluginEnabled("ref://backstage-plugin-catalog-backend-module-msgraph", true);
   actions.setAppConfigProperty("catalog.providers", {
     microsoftGraphOrg: {
       default: {
@@ -186,10 +180,7 @@ export function enableGithubLoginWithIngestion(
   expect(process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY).toBeDefined();
   expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET).toBeDefined();
 
-  actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
-    true,
-  );
+  actions.setDynamicPluginEnabled("ref://backstage-plugin-catalog-backend-module-github-org", true);
 
   const transformerPluginPath = isRunningLocal
     ? "./dynamic-plugins/dist/@internal/backstage-plugin-catalog-backend-module-github-org-transformer-dynamic"
@@ -247,10 +238,7 @@ export function enableGitlabLoginWithIngestion(actions: AuthConfigActions): void
   expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN).toBeDefined();
   expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG).toBeDefined();
 
-  actions.setDynamicPluginEnabled(
-    "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic",
-    true,
-  );
+  actions.setDynamicPluginEnabled("ref://backstage-plugin-catalog-backend-module-gitlab-org", true);
 
   actions.setAppConfigProperty("catalog.providers", {
     gitlab: {
