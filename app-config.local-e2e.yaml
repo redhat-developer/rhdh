@@ -113,7 +113,7 @@ dynamicPlugins:
           title: Test_i disabled
           priority: 20
           enabled: false
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       mountPoints:
         - mountPoint: application/listener
           importName: VisitListener
@@ -252,8 +252,6 @@ dynamicPlugins:
                 * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
         - mountPoint: home.page/cards
           importName: FeaturedDocsCard
-        - mountPoint: home.page/cards
-          importName: JokeCard
         - mountPoint: home.page/cards
           importName: RecentlyVisitedCard
           config:
