@@ -26,7 +26,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.54.0",
+    "supported-versions": "1.54.4",
     "pluginId": "red-hat-developer-hub-backstage-plugin-quickstart",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-quickstart"
