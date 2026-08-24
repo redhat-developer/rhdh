@@ -44,6 +44,7 @@ const playwrightAssertFunctions = [
   "verifyContextTwoCard",
   "verifyTemplatesHeading",
   "verifyDocsHeading",
+  "verifyDocsEntityContent",
   "verifyLearningPathsHeading",
   "verifyDocHeading",
   "verifyCreateReactAppReviewTableWithGroupOwner",

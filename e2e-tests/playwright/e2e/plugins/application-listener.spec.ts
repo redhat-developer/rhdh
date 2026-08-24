@@ -4,7 +4,12 @@ import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
 
 // NFS packages/app has no application/listener renderer; OCI test plugin is OFS-only.
 // See dynamic-plugins.yaml NOTE and docs/e2e-tests/local-e2e-harness.md.
-test.describe.skip("Test ApplicationListener", () => {
+test.describe("Test ApplicationListener", () => {
+  test.skip(
+    () => true,
+    "NFS packages/app has no application/listener renderer; OCI test plugin is OFS-only",
+  );
+
   test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",
