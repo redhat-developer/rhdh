@@ -2,7 +2,7 @@ global:
   dynamic:
     plugins:
       #  sanity check https://issues.redhat.com/browse/RHIDP-5301
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
+      - package: ref://backstage-plugin-catalog-backend-module-gitlab-org
         enabled: true
         pluginConfig:
           catalog:
@@ -21,7 +21,7 @@ global:
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:bs_1.49.4__3.3.1"
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+      - package: ref://backstage-plugin-scaffolder-backend-module-gitlab
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:bs_1.49.4__7.0.1"
         enabled: true
@@ -78,7 +78,7 @@ global:
                 apiKey: "123456789abcdef0123456789abcedf012"
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube:bs_1.49.4__1.1.0"
         enabled: true
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+      - package: ref://red-hat-developer-hub-backstage-plugin-homepage
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin:bs_1.49.4__0.18.0"
         enabled: false
@@ -95,7 +95,7 @@ global:
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.49.4__4.1.2"
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
+      - package: ref://backstage-community-plugin-scaffolder-backend-module-regex
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-servicenow:bs_1.49.4__2.15.0"
         enabled: false
@@ -139,9 +139,9 @@ global:
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-lighthouse:bs_1.49.4__0.20.0"
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+      - package: ref://backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
+      - package: ref://backstage-plugin-catalog-backend-module-msgraph
         enabled: true
         pluginConfig:
           catalog:
@@ -160,7 +160,7 @@ global:
                       seconds: 15
                     timeout:
                       minutes: 15
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
+      - package: ref://backstage-plugin-catalog-backend-module-ldap
         enabled: true
         pluginConfig:
           catalog:
@@ -187,7 +187,7 @@ global:
                       seconds: 15
                     timeout:
                       minutes: 15
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
+      - package: ref://backstage-community-plugin-catalog-backend-module-pingidentity
         enabled: true
         pluginConfig:
           catalog:

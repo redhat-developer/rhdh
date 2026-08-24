@@ -4,8 +4,10 @@
 # Dependencies: aws, kubectl, jq, nslookup, lib/log.sh
 # Expects $SHARED_DIR/kubeconfig file to exist (for parsing the cluster region)
 
-if [[ -n "${AWS_EKS_LIB_SOURCED:-}" ]]; then return 0; fi
-readonly AWS_EKS_LIB_SOURCED=1
+if [[ -n "${AWS_EKS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly AWS_EKS_SOURCED=1
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"

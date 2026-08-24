@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${GKE_HELM_JOBS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly GKE_HELM_JOBS_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/utils.sh

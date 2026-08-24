@@ -4,7 +4,6 @@
 # Handles Playwright test execution, Backstage health checks, and upgrade verification
 # Dependencies: oc, kubectl, yarn, playwright, curl, jq, lib/log.sh, lib/common.sh
 
-# Prevent re-sourcing
 if [[ -n "${TESTING_LIB_SOURCED:-}" ]]; then
   return 0
 fi

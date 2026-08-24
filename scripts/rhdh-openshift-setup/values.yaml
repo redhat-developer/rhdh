@@ -11,9 +11,9 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `enabled` flag to enable/disable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+      - package: ref://red-hat-developer-hub-backstage-plugin-bulk-import-backend
         enabled: true
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+      - package: ref://red-hat-developer-hub-backstage-plugin-bulk-import
         enabled: true
         pluginConfig:
           dynamicPlugins:
@@ -28,7 +28,7 @@ global:
                     menuItem:
                       icon: bulkImportIcon
                       text: Bulk import
-      # - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+      # - package: ref://backstage-plugin-kubernetes-backend
       #   enabled: true
       #   pluginConfig:
       #     kubernetes:
@@ -55,7 +55,7 @@ global:
       #               authProvider: 'serviceAccount'
       #               skipTLSVerify: true
       #               serviceAccountToken: ${K8S_CLUSTER_TOKEN}
-      # - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+      # - package: ref://backstage-plugin-kubernetes
       #   enabled: true
       #   pluginConfig:
       #     dynamicPlugins:
@@ -71,7 +71,7 @@ global:
       #                   anyOf:
       #                     - hasAnnotation: backstage.io/kubernetes-id
       #                     - hasAnnotation: backstage.io/kubernetes-namespace
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+      # - package: ref://backstage-community-plugin-topology
       #   enabled: true
       #   pluginConfig:
       #     dynamicPlugins:
@@ -88,7 +88,7 @@ global:
       #                   anyOf:
       #                     - hasAnnotation: backstage.io/kubernetes-id
       #                     - hasAnnotation: backstage.io/kubernetes-namespace
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+      - package: ref://backstage-community-plugin-tech-radar
         enabled: true
         pluginConfig:
           dynamicPlugins:
@@ -109,7 +109,7 @@ global:
                       props:
                         width: 1500
                         height: 800
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+      - package: ref://backstage-community-plugin-rbac
         enabled: true
         pluginConfig:
           dynamicPlugins:
@@ -127,7 +127,7 @@ global:
                 dynamicRoutes:
                   - path: /admin/rbac
                     importName: RbacPage
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+      # - package: ref://backstage-community-plugin-catalog-backend-module-keycloak
       #   enabled: true
       #   pluginConfig:
       #     catalog:
@@ -391,7 +391,7 @@ upstream:
     image:
       registry: quay.io
       repository: fedora/postgresql-15
-      tag: latest@sha256:6c3ac776d37bcf03aaa679a0911a463b7ba468ceed6ef7ebbfb6e17814c170f8
+      tag: latest@sha256:b16347ae431606dd71a3bbd3d6bddbc8b5076d15b46118e5df4fb17e634ffdc7
     auth:
       secretKeys:
         adminPasswordKey: postgres-password

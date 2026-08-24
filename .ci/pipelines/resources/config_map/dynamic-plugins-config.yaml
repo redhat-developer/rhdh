@@ -1,7 +1,7 @@
 dynamicPlugins:
   rootDirectory: dynamic-plugins-root
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       mountPoints:
         - mountPoint: application/listener
           importName: VisitListener

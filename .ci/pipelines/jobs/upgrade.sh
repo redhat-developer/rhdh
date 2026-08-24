@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${UPGRADE_JOBS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly UPGRADE_JOBS_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/lib/common.sh
