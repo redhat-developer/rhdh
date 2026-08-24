@@ -57,7 +57,7 @@
     "dist-scalprum"
   ],
   "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-dynamic-home-page",
+    "name": "red-hat-developer-hub.backstage-plugin-homepage",
     "exposedModules": {
       "PluginRoot": "./src/index.ts",
       "Alpha": "./src/alpha.ts"
