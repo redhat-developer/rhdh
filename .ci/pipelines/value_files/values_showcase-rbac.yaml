@@ -12,7 +12,7 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `enabled` flag to enable/disable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
-      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+      - package: ref://backstage-plugin-catalog-backend-module-github
         enabled: true
         pluginConfig:
           catalog:
@@ -34,9 +34,9 @@ global:
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20"
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+      - package: ref://backstage-community-plugin-catalog-backend-module-keycloak
         enabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+      - package: ref://backstage-community-plugin-rbac
         enabled: true
         pluginConfig:
           dynamicPlugins:
