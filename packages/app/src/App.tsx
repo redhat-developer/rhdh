@@ -1,6 +1,7 @@
 import { createApp } from '@backstage/frontend-defaults';
 import { dynamicFrontendFeaturesLoader } from '@backstage/frontend-dynamic-feature-loader';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import catalogGraphPlugin from '@backstage/plugin-catalog-graph/alpha';
 import catalogImportPlugin from '@backstage/plugin-catalog-import/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import searchPlugin from '@backstage/plugin-search/alpha';
@@ -23,6 +24,7 @@ const app = createApp({
     catalogPlugin,
     catalogCreatedAtModule, // Created At column on catalog index
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
+    catalogGraphPlugin, // entity-card:catalog-graph/relations on Overview; page:catalog-graph
     scaffolderPlugin,
     searchPlugin,
     userSettingsPlugin,

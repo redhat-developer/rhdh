@@ -116,7 +116,7 @@ proxy:
     # Other Proxies
     # customize developer hub instance
     "/developer-hub":
-      target: https://${DH_TARGET_URL}
+      target: http://${DH_TARGET_URL}
       changeOrigin: true
       # Change to "false" in case of using self hosted cluster with a self-signed certificate
       secure: false
