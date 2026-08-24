@@ -3,7 +3,6 @@
 # Operator and OLM installation utilities
 # Dependencies: oc, kubectl, operator-sdk
 
-# Prevent re-sourcing
 if [[ -n "${OPERATORS_LIB_SOURCED:-}" ]]; then
   return 0
 fi

@@ -117,24 +117,30 @@ apiRef{...}`.
 ## Layer 4a already exists, and overlaps Layer 4b
 
 Recorded because the rule above — *"where the tables say E2E, Layer 4a is the default"* — reads
-as aspirational, and it is not. Measured 2026-08-18 for the 10 `rhdh-plugins` workspaces that
-also carry an e2e suite in `rhdh-plugin-export-overlays`:
+as aspirational, and it is not. Measured 2026-08-18 for 10 of the 11 `rhdh-plugins` workspaces
+that also carry an e2e suite in `rhdh-plugin-export-overlays` — the eleventh, `app-defaults`,
+has no upstream lane, which is why it is absent from the table:
 
 | Workspace | Layer 4a in plugin repo (no cluster) | Layer 4b in overlays (cluster) | Identical test names |
 |---|---|---|---|
 | `intelligent-assistant` | 92 | 34 | 7 |
-| `scorecard` | 47 | 15 | 0 |
+| `scorecard` | 47 | 16 | 0 |
 | `homepage` | 16 | 18 | 1 |
 | `extensions` | 12 | 11 | 5 |
-| `orchestrator` | 11 | 24 | 0 |
+| `orchestrator` | 11 | 26 | 0 |
 | `adoption-insights` | 10 | 7 | 1 |
 | `global-header` | 8 | 10 | 0 |
 | `bulk-import` | 6 | 9 | 0 |
 | `theme` | 4 | 5 | 1 |
 | `quickstart` | 3 | 2 | 2 (all) |
-| **Total** | **209** | **135** | **17** |
+| **Total** | **209** | **138** | **17** |
 
-Each of those 10 workspaces has a `playwright.config.ts` with a `webServer` block starting a
+Both test columns count statically declared `test()` blocks, so the two sides are comparable
+to each other but are a floor rather than a run count: Playwright expands parametrised tests
+at collection time, and `npx playwright test --list` reports 19 for `scorecard` against the
+16 declared and 32 for `orchestrator` against 26.
+
+Each of those 10 has a `playwright.config.ts` with a `webServer` block starting a
 local instance on ports 3000-3002, `testDir: 'e2e-tests'`, and specs named `*.test.ts`. None of
 those directories references `RHDHDeployment`, `oc`, `kubectl`, `helm` or `INSTALLATION_METHOD`,
 so the lane is genuinely cluster-free. `homepage` already parameterises legacy versus NFS in it
@@ -674,7 +680,8 @@ Across the overlays repo as a whole: 24 of 64 workspaces have `e2e-tests/` and 3
 
 - **2026-06-17**: Initial draft based on research and industry best practices
 - **2026-07-24**: Updated with verified E2E coverage data, resolved open questions, added governance and recent progress sections
-- **2026-08-18**: Added the Layer 4a mechanism note (no Backstage utility boots an instance; `webServer` is the mechanism) after the parent Test Strategy was corrected on the same point; added "Layer 3 and the new frontend system", recording that 16 of 22 plugins with an overlay e2e suite ship an untested NFS surface, with the three mutation-verified assertions that close it; added "Layer 4a already exists, and overlaps Layer 4b", recording 209 cluster-free tests in the plugin repos against 135 overlay cluster tests for the same 10 workspaces, with the caveat that those are tests which exist rather than tests which pass, and leaving the keep-or-remove decision with the plugin owner; noted that the community frontend bundle check now validates module-federation remote shape rather than presence
+- **2026-08-18**: Added the Layer 4a mechanism note (no Backstage utility boots an instance; `webServer` is the mechanism) after the parent Test Strategy was corrected on the same point; added "Layer 3 and the new frontend system", recording that 16 of 22 plugins with an overlay e2e suite ship an untested NFS surface, with the three mutation-verified assertions that close it; added "Layer 4a already exists, and overlaps Layer 4b", recording 209 cluster-free tests in the plugin repos against 138 overlay cluster tests for the same 10 workspaces, with the caveat that those are tests which exist rather than tests which pass, and leaving the keep-or-remove decision with the plugin owner; noted that the community frontend bundle check now validates module-federation remote shape rather than presence
 - **2026-08-04**: Refreshed all support-level counts and coverage baselines against both repos' `main`; reworded the Community load-test requirement from "loads in a default RHDH instance" to "the published artifact installs and boots" (community plugins are no longer in the RHDH image — RHIDP-13262); recorded the RHIDP-13510 scope and its frontend-rendering split into RHIDP-16009
 - **2026-08-06**: Added "Getting a Plugin Listed in the Extensions Catalog", stating that the matrix is keyed on the declared support level rather than on plugin ownership, and answering the open question about acceptable evidence from 3rd-party owners with a table of what the overlays pipeline already measures; closed the documentation gap left by RHIDP-13513; corrected the Compliance table's remaining "loads in a default RHDH instance" wording
+- **2026-08-21**: Corrected the Layer 4a table — `scorecard` is 16 overlay tests and `orchestrator` 26, not 15 and 24, so the total is 138; stated that both columns count statically declared `test()` blocks and are a floor, because Playwright expands parametrised tests (`--list` reports 19 and 32 for those two); and corrected "the 10 `rhdh-plugins` workspaces" to 10 of the 11, naming `app-defaults` as the one with no upstream lane
 - **2026-07-27**: Aligned layer definitions with the Test Strategy Proposal (`startTestBackend` moved from Layer 3 to Layer 2; Layer 4 split into 4a/4b); Jest confirmed as the Layer 1-3 runner per the Vitest spike; added threshold precedence and a proposed Compliance Verification section (pending RACI sign-off)

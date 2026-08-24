@@ -73,6 +73,10 @@ plugins:
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-defaults:{{inherit}}
     disabled: false
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-integrations:{{inherit}}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20
+    disabled: false
+  # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-dynamic-home-page:bs_1.49.4__1.13.1!red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false
   # TechDocs frontend: /docs route (TechDocsIndexPage) + the "Docs" sidebar menu item,
   # exercised by plugins/frontend/sidebar.spec.ts. Route/menu config comes from the

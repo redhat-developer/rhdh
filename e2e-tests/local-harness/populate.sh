@@ -19,7 +19,7 @@
 set -e
 
 # Pinned so local runs install the exact CLI version CI uses.
-CLI_VERSION="0.4.0"
+CLI_VERSION="0.4.1"
 
 CONFIG_SRC="${1:-e2e-tests/local-harness/dynamic-plugins.yaml}"
 

@@ -125,11 +125,11 @@ backend.add(pluginIDProviderService);
 backend.add(rbacDynamicPluginsProvider);
 
 backend.add(import('@backstage/plugin-auth-backend'));
-backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
-if (process.env.ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE !== 'true') {
-  backend.add(import('./modules/authProvidersModule'));
-} else {
-  staticLogger.info(`Default authentication provider module disabled`);
+backend.add(import('./modules/authOwnershipModule'));
+if (process.env.ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE !== undefined) {
+  staticLogger.warn(
+    'ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE is deprecated and ignored. Install all auth providers as dynamic plugins instead.',
+  );
 }
 
 backend.add(import('@internal/plugin-dynamic-plugins-info-backend'));

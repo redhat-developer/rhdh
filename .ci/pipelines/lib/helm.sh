@@ -3,7 +3,6 @@
 # Helm chart operations and value file manipulation utilities
 # Dependencies: helm, yq, curl, jq, lib/log.sh, lib/common.sh
 
-# Prevent re-sourcing
 if [[ -n "${HELM_LIB_SOURCED:-}" ]]; then
   return 0
 fi

@@ -1,5 +1,10 @@
 #!/bin/bash
 # shellcheck disable=SC2034
+if [[ -n "${ENV_VARIABLES_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly ENV_VARIABLES_SOURCED=1
+
 set -a # Automatically export all variables
 
 # Define log file names and directories.

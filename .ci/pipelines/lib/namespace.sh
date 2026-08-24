@@ -4,7 +4,6 @@
 # Description: Kubernetes namespace lifecycle management utilities
 # Dependencies: oc, kubectl, lib/log.sh
 
-# Prevent re-sourcing
 if [[ -n "${NAMESPACE_LIB_SOURCED:-}" ]]; then
   return 0
 fi

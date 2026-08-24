@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${AUTH_PROVIDERS_JOBS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly AUTH_PROVIDERS_JOBS_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/lib/common.sh

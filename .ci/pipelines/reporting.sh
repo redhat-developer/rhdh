@@ -1,10 +1,9 @@
 #!/bin/bash
 
-# Prevent re-sourcing
-if [[ -n "${REPORTING_LIB_SOURCED:-}" ]]; then
+if [[ -n "${REPORTING_SOURCED:-}" ]]; then
   return 0
 fi
-readonly REPORTING_LIB_SOURCED=1
+readonly REPORTING_SOURCED=1
 
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$(dirname "${BASH_SOURCE[0]}")"/lib/log.sh

@@ -110,6 +110,10 @@ jobs:
     name: plugin-sanity
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # The catalog index is built outside this repo, so a PR here cannot change
+    # what this job validates. Keep it on schedule (and dispatch for RC checks);
+    # the e2e job above keeps pull_request/push.
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     # Request-only (no browser), but the image also carries the OS deps the
     # backend boot needs, and reusing it keeps both jobs on one base.
     container:
