@@ -63,38 +63,57 @@ fips_deployment() {
 #   0 - Certificate extracted and configured successfully
 #   1 - Failed to extract certificate
 configure_openshift_ca_for_playwright() {
-  log::info "Extracting OpenShift cluster CA certificate for Playwright..."
+  log::info "Extracting OpenShift cluster CA certificates for Playwright..."
 
   local ca_cert_dir="${ARTIFACT_DIR:-/tmp}/cluster-certs"
-  local ca_cert_file="${ca_cert_dir}/openshift-ca.crt"
+  local ca_cert_file="${ca_cert_dir}/openshift-ca-bundle.crt"
+  local temp_cert_file="${ca_cert_dir}/temp-cert.crt"
+  local extracted_count=0
 
   mkdir -p "${ca_cert_dir}"
+  rm -f "${ca_cert_file}" "${temp_cert_file}"
 
-  # Method 1: Extract CA from the ingress operator's CA secret
-  # This contains the CA that signs the default ingress controller certificates
-  if oc get secret router-ca -n openshift-ingress-operator -o jsonpath='{.data.tls\.crt}' 2> /dev/null | base64 --decode > "${ca_cert_file}" && [[ -s "${ca_cert_file}" ]]; then
-    log::success "Extracted CA from router-ca secret in openshift-ingress-operator"
-  # Method 2: Extract from the ingress controller's serving certificate
-  elif oc get secret router-certs-default -n openshift-ingress -o jsonpath='{.data.tls\.crt}' 2> /dev/null | base64 --decode > "${ca_cert_file}" && [[ -s "${ca_cert_file}" ]]; then
-    log::success "Extracted certificate from router-certs-default secret in openshift-ingress"
-  # Method 3: Use openssl to fetch the certificate chain from a live route
-  elif command -v openssl &> /dev/null && [[ -n "${K8S_CLUSTER_ROUTER_BASE:-}" ]]; then
-    log::warn "Secret extraction failed, attempting to fetch certificate chain from console route..."
-    local console_route="console-openshift-console.${K8S_CLUSTER_ROUTER_BASE}"
-
-    # Extract all certificates from the chain (server cert + intermediates + root CA)
-    # Node.js will use the appropriate CA from the chain for validation
-    if echo | openssl s_client -connect "${console_route}:443" -showcerts 2> /dev/null \
-      | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' > "${ca_cert_file}" && [[ -s "${ca_cert_file}" ]]; then
-      log::success "Extracted certificate chain from console route"
-    else
-      log::error "Failed to extract OpenShift CA certificate using all methods"
-      return 1
-    fi
+  # Source 1: Extract CA bundle from default-ingress-cert configmap
+  if oc get configmap default-ingress-cert -n openshift-config-managed -o jsonpath='{.data.ca-bundle\.crt}' 2> /dev/null > "${temp_cert_file}" && [[ -s "${temp_cert_file}" ]]; then
+    log::success "✓ Extracted CA bundle from default-ingress-cert configmap"
+    cat "${temp_cert_file}" >> "${ca_cert_file}"
+    extracted_count=$((extracted_count + 1))
+    rm -f "${temp_cert_file}"
   else
-    log::error "Failed to extract OpenShift CA certificate - no valid method available"
+    log::info "✗ Could not extract from default-ingress-cert configmap"
+  fi
+
+  # Source 2: Extract from router-ca secret in openshift-ingress-operator
+  if oc get secret router-ca -n openshift-ingress-operator -o jsonpath='{.data.tls\.crt}' 2> /dev/null | base64 --decode > "${temp_cert_file}" && [[ -s "${temp_cert_file}" ]]; then
+    log::success "✓ Extracted CA from router-ca secret"
+    cat "${temp_cert_file}" >> "${ca_cert_file}"
+    extracted_count=$((extracted_count + 1))
+    rm -f "${temp_cert_file}"
+  else
+    log::info "✗ Could not extract from router-ca secret"
+  fi
+
+  # Source 3: Extract certificate chain from console route via openssl
+  if command -v openssl &> /dev/null && [[ -n "${K8S_CLUSTER_ROUTER_BASE:-}" ]]; then
+    local console_route="console-openshift-console.${K8S_CLUSTER_ROUTER_BASE}"
+    if echo | openssl s_client -connect "${console_route}:443" -showcerts 2> /dev/null \
+      | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' > "${temp_cert_file}" && [[ -s "${temp_cert_file}" ]]; then
+      log::success "✓ Extracted certificate chain from console route"
+      cat "${temp_cert_file}" >> "${ca_cert_file}"
+      extracted_count=$((extracted_count + 1))
+      rm -f "${temp_cert_file}"
+    else
+      log::info "✗ Could not extract certificate chain from console route"
+    fi
+  fi
+
+  # Verify we got at least one certificate source
+  if [[ "${extracted_count}" -eq 0 ]]; then
+    log::error "Failed to extract certificates from any source"
     return 1
   fi
+
+  log::success "Successfully merged certificates from ${extracted_count} source(s)"
 
   # Verify the extracted certificate(s) are valid
   if command -v openssl &> /dev/null; then
