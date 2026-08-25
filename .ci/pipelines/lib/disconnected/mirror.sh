@@ -121,9 +121,9 @@ EOF
 
   # Catalog index: the init container pulls it at startup, so it must be
   # mirrored for IDMS to redirect the pull. Mirror the exact ref the hub will
-  # consume (CATALOG_INDEX_IMAGE, the shared env contract from env_variables.sh
-  # -- see CATALOG_INDEX_IMAGE_OVERRIDE), not a chart-derived default, so CI and
-  # LOCAL_DISCONNECTED mirror and consume the same index.
+  # consume (CATALOG_INDEX_IMAGE, the shared env contract from env_variables.sh),
+  # not a chart-derived default, so CI and LOCAL_DISCONNECTED mirror and consume
+  # the same index.
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
     additional_images+=("${CATALOG_INDEX_IMAGE}")
   fi

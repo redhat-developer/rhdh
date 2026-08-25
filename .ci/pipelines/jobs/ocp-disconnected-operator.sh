@@ -185,16 +185,12 @@ handle_ocp_disconnected_operator() {
 
   log::section "Plugin Mirroring"
   # Both CI and LOCAL_DISCONNECTED consume CATALOG_INDEX_IMAGE (the shared env
-  # contract from env_variables.sh, pinned via CATALOG_INDEX_IMAGE_OVERRIDE).
+  # contract from env_variables.sh, derived from RELEASE_VERSION when unset).
   disconnected::mirror_plugins || return 1
 
-  # Resolve homepage first: it reads CATALOG_INDEX_IMAGE in its pre-mirror
-  # source form, which resolve_catalog_index_image overwrites below.
-  # Homepage still comes from the OCI ConfigMap so we do not depend on catalog
-  # default plugin paths (deploy_rhdh_operator injects CATALOG_INDEX_IMAGE).
-  disconnected::resolve_homepage_plugin_package || return 1
-  # Inject the catalog-index digest that mirror-plugins actually pushed. The hub
-  # profile default digest is often absent from the mirror (manifest unknown).
+  # Pin CATALOG_INDEX_IMAGE to the digest actually pushed (hub profile default
+  # digest is often absent from the mirror). Homepage is a static ref:// list
+  # in dynamic-plugins-homepage.yaml, resolved through this index.
   disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"

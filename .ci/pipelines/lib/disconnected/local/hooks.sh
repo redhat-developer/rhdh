@@ -51,9 +51,3 @@ disconnected::_hook_catalog_index_exports() {
   export CATALOG_INDEX_TAG="sha256-${digest#sha256:}"
   export CATALOG_INDEX_IMAGE="${CATALOG_INDEX_REGISTRY}/${CATALOG_INDEX_REPO}:${CATALOG_INDEX_TAG}"
 }
-
-# ImageStream :sha256-<digest> tag format for homepage plugin pulls.
-disconnected::_hook_homepage_package_ref() {
-  local name=$1 digest=$2
-  echo "oci://registry.access.redhat.com/rhdh/${name}:sha256-${digest#sha256:}!${name}"
-}
