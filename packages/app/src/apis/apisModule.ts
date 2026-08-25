@@ -8,6 +8,7 @@ import {
   storageApiRef,
 } from '@backstage/core-plugin-api';
 import { ApiBlueprint, createFrontendModule } from '@backstage/frontend-plugin-api';
+import catalogGraphPlugin from '@backstage/plugin-catalog-graph/alpha';
 import {
   ALL_RELATION_PAIRS,
   ALL_RELATIONS,
@@ -63,36 +64,49 @@ const learningPathApi = ApiBlueprint.make({
     }),
 });
 
-// Catalog Graph API with custom scaffolder relations for @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor
-const catalogGraphApi = ApiBlueprint.make({
-  name: 'catalog-graph',
-  params: defineParams =>
-    defineParams({
-      api: catalogGraphApiRef,
-      deps: {},
-      factory: () =>
-        new DefaultCatalogGraphApi({
-          knownRelations: [
-            ...ALL_RELATIONS,
-            RELATION_SCAFFOLDED_FROM,
-            RELATION_SCAFFOLDER_OF,
-          ],
-          knownRelationPairs: [
-            ...ALL_RELATION_PAIRS,
-            [RELATION_SCAFFOLDER_OF, RELATION_SCAFFOLDED_FROM],
-          ],
-          defaultRelationTypes: { exclude: [] },
-        }),
+/**
+ * Catalog graph plugin with scaffolderOf/scaffoldedFrom pairs for
+ * @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor.
+ * Overrides api:catalog-graph in-plugin so NFS does not see a second factory
+ * from pluginId: 'app' (API_FACTORY_CONFLICT).
+ */
+export const rhdhCatalogGraphPlugin = catalogGraphPlugin.withOverrides({
+  extensions: [
+    catalogGraphPlugin.getExtension('api:catalog-graph').override({
+      factory(originalFactory) {
+        
+        return originalFactory({
+          params: defineParams =>
+            defineParams({
+              api: catalogGraphApiRef,
+              deps: {},
+              factory: () =>
+                new DefaultCatalogGraphApi({
+                  knownRelations: [
+                    ...ALL_RELATIONS,
+                    RELATION_SCAFFOLDED_FROM,
+                    RELATION_SCAFFOLDER_OF,
+                  ],
+                  knownRelationPairs: [
+                    ...ALL_RELATION_PAIRS,
+                    [RELATION_SCAFFOLDER_OF, RELATION_SCAFFOLDED_FROM],
+                  ],
+                  defaultRelationTypes: { exclude: [] },
+                }),
+            }),
+        });
+      },
     }),
+  ],
 });
 
 /**
- * RHDH storage, learning-path, and catalog-graph APIs for `pluginId: 'app'`.
+ * RHDH storage and learning-path APIs for `pluginId: 'app'`.
  * Auth APIs and SCM integrations are provided by `appAuthModule` /
  * `appIntegrationsModule` from `@red-hat-developer-hub/backstage-plugin-app-auth`
  * and `@red-hat-developer-hub/backstage-plugin-app-integrations`.
  */
 export const rhdhApisModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [storageApi, learningPathApi, catalogGraphApi],
+  extensions: [storageApi, learningPathApi],
 });

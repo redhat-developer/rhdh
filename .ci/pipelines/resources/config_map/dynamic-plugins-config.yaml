@@ -31,9 +31,6 @@ app:
         config:
           availableLanguages: [en, de, es, fr, it, ja]
           defaultLanguage: en
-    # catalogGraphPlugin is registered in packages/app. Disable its default API so
-    # rhdhApisModule can supply scaffolderOf/scaffoldedFrom relation pairs.
-    - api:catalog-graph: false
     # customizable: false so `priority` actually governs ordering (with customizable:
     # true, the layout extension keeps the plugin-registration order and ignores
     # priority entirely). Keys must match each widget's `params.name` (not its
