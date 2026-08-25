@@ -104,6 +104,7 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
       ],
     },
     {
@@ -142,6 +143,7 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/github-happy-path.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
       ],
       retries: 1,
     },
@@ -165,6 +167,7 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
       ],
     },
     {
@@ -190,6 +193,7 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
       ],
     },
     {
