@@ -30,7 +30,7 @@ test.describe("FIPS Compliance Validation", () => {
         host,
         {
           servername: host,
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
         },
         () => {
           const cipher = socket.getCipher();
@@ -79,20 +79,16 @@ test.describe("FIPS Compliance Validation", () => {
     const host = parsedUrl.hostname;
     const port = parsedUrl.port === "" ? 443 : Math.trunc(Number(parsedUrl.port));
 
-    const certInfo = await new Promise<{
-      sigAlg: string;
-      subject: string;
-      issuer: string;
-    }>((resolve, reject) => {
+    const certPem = await new Promise<string>((resolve, reject) => {
       const socket = tls.connect(
         port,
         host,
         {
           servername: host,
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
         },
         () => {
-          const cert = socket.getPeerCertificate();
+          const cert = socket.getPeerCertificate(false);
 
           const certKeys = Object.keys(cert);
           if (certKeys.length === 0) {
@@ -101,35 +97,25 @@ test.describe("FIPS Compliance Validation", () => {
             return;
           }
 
-          interface CertWithSigAlg {
-            sigalg?: string;
-            subject?: Record<string, unknown>;
-            issuer?: Record<string, unknown>;
+          const rawCert = cert.raw;
+          if (typeof rawCert !== "object" || rawCert === null) {
+            socket.end();
+            reject(new Error("Certificate raw data not available"));
+            return;
           }
 
-          const certTyped = cert as CertWithSigAlg;
-          const sigAlg = typeof certTyped.sigalg === "string" ? certTyped.sigalg : "unknown";
+          const pemCert = rawCert.toString("base64");
+          const pemLines = pemCert.match(/.{1,64}/gu);
+          if (pemLines === null || pemLines.length === 0) {
+            socket.end();
+            reject(new Error("Failed to format certificate"));
+            return;
+          }
 
-          const subject =
-            typeof certTyped.subject === "object" && certTyped.subject !== null
-              ? Object.entries(certTyped.subject)
-                  .map(([k, v]) => `${k}=${String(v)}`)
-                  .join(", ")
-              : "unknown";
-
-          const issuer =
-            typeof certTyped.issuer === "object" && certTyped.issuer !== null
-              ? Object.entries(certTyped.issuer)
-                  .map(([k, v]) => `${k}=${String(v)}`)
-                  .join(", ")
-              : "unknown";
+          const pem = `-----BEGIN CERTIFICATE-----\n${pemLines.join("\n")}\n-----END CERTIFICATE-----`;
 
           socket.end();
-          resolve({
-            sigAlg: sigAlg,
-            subject: subject,
-            issuer: issuer,
-          });
+          resolve(pem);
         },
       );
 
@@ -144,12 +130,37 @@ test.describe("FIPS Compliance Validation", () => {
       });
     });
 
-    console.log(`[FIPS] Certificate Subject: ${certInfo.subject}`);
-    console.log(`[FIPS] Certificate Issuer: ${certInfo.issuer}`);
-    console.log(`[FIPS] Certificate Signature Algorithm: ${certInfo.sigAlg}`);
+    const { execSync } = await import("child_process");
 
-    expect(certInfo.sigAlg.toLowerCase()).toMatch(/sha(256|384|512)/iu);
-    expect(certInfo.sigAlg.toLowerCase()).not.toMatch(/md5/iu);
-    expect(certInfo.sigAlg.toLowerCase()).not.toMatch(/sha1(?!with)/iu);
+    const sigAlg = execSync("openssl x509 -noout -text", {
+      input: certPem,
+      encoding: "utf-8",
+    })
+      .split("\n")
+      .find((line) => line.trim().startsWith("Signature Algorithm:"))
+      ?.split(":")[1]
+      ?.trim() ?? "unknown";
+
+    const subject = execSync("openssl x509 -noout -subject -nameopt RFC2253", {
+      input: certPem,
+      encoding: "utf-8",
+    })
+      .replace("subject=", "")
+      .trim();
+
+    const issuer = execSync("openssl x509 -noout -issuer -nameopt RFC2253", {
+      input: certPem,
+      encoding: "utf-8",
+    })
+      .replace("issuer=", "")
+      .trim();
+
+    console.log(`[FIPS] Certificate Subject: ${subject}`);
+    console.log(`[FIPS] Certificate Issuer: ${issuer}`);
+    console.log(`[FIPS] Certificate Signature Algorithm: ${sigAlg}`);
+
+    expect(sigAlg.toLowerCase()).toMatch(/sha(256|384|512)/iu);
+    expect(sigAlg.toLowerCase()).not.toMatch(/md5/iu);
+    expect(sigAlg.toLowerCase()).not.toMatch(/sha1(?!with)/iu);
   });
 });
