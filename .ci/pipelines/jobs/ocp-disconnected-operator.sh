@@ -194,7 +194,6 @@ handle_ocp_disconnected_operator() {
   # Homepage still comes from the OCI ConfigMap so we do not depend on catalog
   # default plugin paths (deploy_rhdh_operator injects CATALOG_INDEX_IMAGE).
   disconnected::resolve_catalog_index_image || return 1
-  disconnected::resolve_homepage_plugin_package || return 1
 
   log::section "Namespace and Secrets"
 

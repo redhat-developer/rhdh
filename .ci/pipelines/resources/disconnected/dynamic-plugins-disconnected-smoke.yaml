@@ -1,0 +1,6 @@
+# Disconnected smoke: homepage only via catalog index 2.0 (ref://).
+# includes: [] skips catalog default plugins that may not be mirrored.
+includes: []
+plugins:
+  - package: ref://red-hat-developer-hub-backstage-plugin-homepage
+    disabled: false

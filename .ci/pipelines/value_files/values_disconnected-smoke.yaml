@@ -9,7 +9,8 @@
 # which CrashLoops install-dynamic-plugins after registries.conf rewrites
 # those pulls to the mirror.
 # Homepage plugin (same YAML as Operator dynamic-plugins-disconnected-smoke)
-# is added at deploy time via disconnected::write_homepage_helm_values.
+# is added at deploy time via disconnected::write_homepage_helm_values from
+# resources/disconnected/dynamic-plugins-disconnected-smoke.yaml.
 global:
   dynamic:
     includes: []

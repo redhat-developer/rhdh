@@ -1165,98 +1165,27 @@ disconnected::resolve_catalog_index_image() {
   fi
 }
 
-# Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
-# Catalog index 2.0 pins red-hat-developer-hub-backstage-plugin-homepage
-# (ref:// in showcase values; dynamic-home-page was the pre-2.0 name).
-# Parses the digest from mirror-plugins.sh summary (plugins are digest-only; no :tag).
-# Always emits registry.access.redhat.com/rhdh/… so registries.conf rewrites to the mirror.
-# Exports HOMEPAGE_PLUGIN_PACKAGE and HOMEPAGE_PLUGIN_FRONTEND_ID.
-disconnected::resolve_homepage_plugin_package() {
-  local summary="${DISCONNECTED_TMPDIR}/rhdh-plugin-mirroring-summary.txt"
-  local homepage_name="red-hat-developer-hub-backstage-plugin-homepage"
-  local line=""
-  local left=""
-  local digest=""
-
-  if [[ ! -f "${summary}" ]]; then
-    log::error "Plugin mirroring summary not found at ${summary}"
-    log::error "Ensure disconnected::mirror_plugins ran successfully before resolve."
-    return 1
-  fi
-
-  # Match "/<name>@" so homepage does not also hit homepage-backend.
-  line=$(grep -F "/${homepage_name}@" "${summary}" | head -1) || true
-  if [[ -z "${line}" ]]; then
-    log::error "No summary line for homepage plugin (${homepage_name}) in ${summary}"
-    return 1
-  fi
-
-  # Summary format: <source-ref> → <mirror-ref>
-  left="${line%%→*}"
-  if [[ "${left}" == "${line}" ]]; then
-    log::error "Summary line for ${homepage_name} has no → separator: ${line}"
-    return 1
-  fi
-
-  if [[ ! "${left}" =~ @(sha256:[0-9a-f]+) ]]; then
-    log::error "Could not extract @sha256 digest from summary line left side: ${left}"
-    return 1
-  fi
-  digest="${BASH_REMATCH[1]}"
-
-  export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-homepage"
-  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
-    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${homepage_name}:sha256-${digest#sha256:}!${homepage_name}"
-  else
-    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${homepage_name}@${digest}!${homepage_name}"
-  fi
-  log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from mirroring summary)"
-}
-
-# Write the shared homepage-only dynamic-plugins.yaml (includes: [] + OCI plugin).
-# Used by Operator (ConfigMap) and Helm (global.dynamic values overlay).
-# Args:
-#   $1 - destination path
-disconnected::write_homepage_dynamic_plugins_yaml() {
-  common::require_vars HOMEPAGE_PLUGIN_PACKAGE HOMEPAGE_PLUGIN_FRONTEND_ID || return 1
-
-  local dest=$1
-  cat > "${dest}" << EOF
-# LOCAL / disconnected smoke: do not include dynamic-plugins.default.yaml from
-# the catalog index. next catalogs can list :tag refs that were not mirrored
-# (digest-only mirror), which CrashLoops install-dynamic-plugins.
-includes: []
-plugins:
-  - package: ${HOMEPAGE_PLUGIN_PACKAGE}
-    disabled: false
-    pluginConfig:
-      dynamicPlugins:
-        frontend:
-          ${HOMEPAGE_PLUGIN_FRONTEND_ID}:
-            dynamicRoutes:
-              - path: /
-                importName: DynamicHomePage
-EOF
-}
-
-# Create a minimal dynamic-plugins ConfigMap that enables the homepage OCI plugin.
+# Create a minimal dynamic-plugins ConfigMap that enables the homepage plugin.
 # Args:
 #   $1 - namespace
 disconnected::create_homepage_plugins_configmap() {
   local namespace=$1
   local cm_name="dynamic-plugins-disconnected-smoke"
-  local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
+  local plugins_yaml="${DIR}/resources/disconnected/dynamic-plugins-disconnected-smoke.yaml"
 
-  disconnected::write_homepage_dynamic_plugins_yaml "${tmp_yaml}" || return 1
+  if [[ ! -f "${plugins_yaml}" ]]; then
+    log::error "Disconnected smoke dynamic-plugins YAML not found at ${plugins_yaml}"
+    return 1
+  fi
 
   oc create configmap "${cm_name}" \
-    --from-file="dynamic-plugins.yaml=${tmp_yaml}" \
+    --from-file="dynamic-plugins.yaml=${plugins_yaml}" \
     -n "${namespace}" \
     --dry-run=client -o yaml | oc apply -f - || {
     log::error "Failed to create ${cm_name} ConfigMap — aborting"
     return 1
   }
-  cp "${tmp_yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
+  cp "${plugins_yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
   log::success "ConfigMap ${cm_name} created in ${namespace}"
 }
 
@@ -1266,11 +1195,14 @@ disconnected::create_homepage_plugins_configmap() {
 #   $1 - destination Helm values path
 disconnected::write_homepage_helm_values() {
   local dest=$1
-  local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
+  local plugins_yaml="${DIR}/resources/disconnected/dynamic-plugins-disconnected-smoke.yaml"
 
-  disconnected::write_homepage_dynamic_plugins_yaml "${tmp_yaml}" || return 1
+  if [[ ! -f "${plugins_yaml}" ]]; then
+    log::error "Disconnected smoke dynamic-plugins YAML not found at ${plugins_yaml}"
+    return 1
+  fi
 
-  yq eval '{"global": {"dynamic": .}}' "${tmp_yaml}" > "${dest}" || {
+  yq eval '{"global": {"dynamic": .}}' "${plugins_yaml}" > "${dest}" || {
     log::error "Failed to wrap homepage plugins as Helm values"
     return 1
   }
