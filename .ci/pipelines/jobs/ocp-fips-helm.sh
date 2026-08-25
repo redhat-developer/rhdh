@@ -191,5 +191,13 @@ run_standard_deployment_tests() {
     log::warn "Failed to configure OpenShift CA, tests may fail with certificate errors"
   }
 
+  # Add extracted CA to system trust store so Chromium browser picks it up
+  if [[ -n "${NODE_EXTRA_CA_CERTS}" && -f "${NODE_EXTRA_CA_CERTS}" ]]; then
+    log::info "Adding OpenShift CA to system trust store for Chromium..."
+    cp "${NODE_EXTRA_CA_CERTS}" /usr/local/share/ca-certificates/openshift-ca-bundle.crt
+    update-ca-certificates
+    log::success "System CA trust store updated"
+  fi
+
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_FIPS}" "${url}"
 }
