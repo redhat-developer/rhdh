@@ -1,5 +1,10 @@
 #!/bin/bash
 # shellcheck disable=SC2034
+if [[ -n "${ENV_VARIABLES_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly ENV_VARIABLES_SOURCED=1
+
 set -a # Automatically export all variables
 
 # Define log file names and directories.
@@ -55,19 +60,10 @@ IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
 
-# Catalog index. Temporary pin until the index on :next is fixed.
-# Pin:   CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
-# Unpin: CATALOG_INDEX_IMAGE_OVERRIDE=""  → quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}
+# Catalog index image, derived from RELEASE_VERSION (main → :next, release-1.10 → :1.10).
 # Per-run (RC/GA/mirror): non-empty CATALOG_INDEX_IMAGE wins (Gangway / --catalog-index-image).
-# Empty CATALOG_INDEX_IMAGE is treated as unset: Prow wrappers always export "" when there
-# is no Gangway override (same optional-override contract as CHART_VERSION / TAG_NAME).
-CATALOG_INDEX_IMAGE_OVERRIDE="quay.io/rhdh/plugin-catalog-index:1.10"
 if [[ -z "${CATALOG_INDEX_IMAGE:-}" ]]; then
-  if [[ -z "${CATALOG_INDEX_IMAGE_OVERRIDE}" ]]; then
-    CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
-  else
-    CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE_OVERRIDE}"
-  fi
+  CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
 fi
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
   # Derived components for Helm --set global.catalogIndex.image.{registry,repository,tag}

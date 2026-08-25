@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${OPERATOR_INSTALL_METHODS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly OPERATOR_INSTALL_METHODS_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/utils.sh

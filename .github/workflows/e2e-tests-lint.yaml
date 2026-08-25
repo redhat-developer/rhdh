@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - 'e2e-tests/**'
+      - '.shellcheckrc'
   push:
     branches:
       - 'main'
       - 'release-[0-9]+.[0-9]+'
     paths:
       - 'e2e-tests/**'
+      - '.shellcheckrc'
 
 jobs:
   lint:

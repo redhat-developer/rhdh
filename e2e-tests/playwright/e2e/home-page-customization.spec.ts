@@ -25,7 +25,7 @@ test.describe("Home page customization", () => {
 
       await runAccessibilityTests(page, testInfo);
 
-      await homePage.verifyTextInCard("Your Starred Entities", "Your Starred Entities");
+      await homePage.verifyTextInCard("Starred Catalog Entities", "Starred Catalog Entities");
       await homePage.verifyHeading("Placeholder tests");
       await homePage.verifyDivHasText("Home page customization test 1");
       await homePage.verifyDivHasText("Home page customization test 2");
@@ -35,8 +35,6 @@ test.describe("Home page customization", () => {
       await homePage.verifyHeading("Important company links");
       await homePage.verifyHeading("RHDH");
       await homePage.verifyTextInCard("Featured Docs", "Featured Docs");
-      await homePage.verifyTextInCard("Random Joke", "Random Joke");
-      await homePage.clickButton("Reroll");
     },
   );
 

@@ -1,0 +1,9 @@
+# Repo-wide ShellCheck defaults.
+#
+# The .ci/pipelines scripts form a heavily cross-sourced `source` graph.
+# ShellCheck's extended dataflow analysis re-parses that graph in full for
+# every file checked, which can push memory into the multi-GB range (e.g.
+# .ci/pipelines/jobs/aks-operator.sh with -x exceeds 2 GB RSS). Disabling
+# it keeps source-following and function/variable resolution intact while
+# cutting memory usage roughly 9x.
+extended-analysis=false

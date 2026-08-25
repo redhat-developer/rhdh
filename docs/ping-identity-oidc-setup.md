@@ -1,4 +1,6 @@
-# Ping Identity OIDC Authentication Provider Setup
+# Ping Identity Authentication Provider Setup
+
+Use the [PingFederate auth backend overlay package](https://github.com/orgs/redhat-developer/packages/container/package/rhdh-plugin-export-overlays/backstage-community-plugin-auth-backend-module-pingfederate-provider) (`@backstage-community/plugin-auth-backend-module-pingfederate-provider`). Do not configure Ping Identity under `auth.providers.oidc`.
 
 ### Prerequisite: Configure Ping Identity Application
 
@@ -12,7 +14,7 @@ Navigate to the `Application Overview > Configuration Tab` and click the edit bu
 
 ![Response and Grant Type for Ping Identity Application](./images/response_and_grant_type_ping_identity_app.png)
 
-- Set Redirect URIs to `https://your-backstage.com/api/auth/oidc/handler/frame`.
+- Set Redirect URIs to `https://your-backstage.com/api/auth/pingfederate/handler/frame`.
 
 Navigate to the `Application Overview > Resources Tab` and click the edit button.
 
@@ -26,12 +28,12 @@ Navigate to the `Application Overview > Resources Tab` and click the edit button
 
 ### Configuration
 
-The provider configuration can then be added to your app-config.yaml under the root auth configuration:
+Enable the PingFederate auth dynamic plugin, then add the provider configuration to your app-config.yaml under the root auth configuration:
 
 ```yaml
 auth:
   providers:
-    oidc:
+    pingfederate:
       development:
         metadataUrl: https://auth.pingone.ca/${PING_IDENTITY_ENV_ID}/as/.well-known/openid-configuration
         clientId: ${PING_IDENTITY_CLIENT_ID}
@@ -39,17 +41,19 @@ auth:
         prompt: auto #optional
         signIn:
           resolvers:
-            - resolver: oidcSubClaimMatchingPingIdentityUserId
+            - resolver: subClaimMatchingPingIdentityUserId
 ```
 
-The OIDC provider requires three mandatory configuration keys:
+Set `signInPage: pingfederate`.
+
+The PingFederate provider requires three mandatory configuration keys:
 
 - `clientId`: Copy from `Client ID` under `Configuration` tab.
 - `clientSecret`: Copy from `Client Secret` under `Configuration` tab.
 - `metadataUrl`: Copy from `OIDC Discovery Endpoint` under `Configuration` tab in `URLs` drop down.
 - `prompt` (optional): Recommended to use auto so the browser will request login to the IDP if the user has no active session.
 - `additionalScopes` (optional): List of scopes for the App Registration, to be requested in addition to the required ones.
-- `signIn.resolvers.resolver` (optional): `oidcSubClaimMatchingPingIdentityUserId` is a secure user resolver that matches the `sub` claim from OIDC to the Ping Identity user ID. 
+- `signIn.resolvers.resolver` (optional): `subClaimMatchingPingIdentityUserId` matches the `sub` claim from the IdP to the Ping Identity user ID. `ldapUuidMatchingAnnotation` is also available when users are ingested from LDAP.
 
 #### Known Issues
 

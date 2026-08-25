@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Prevent sourcing multiple times in the same shell.
 if [[ -n "${RHDH_LOG_LIB_SOURCED:-}" ]]; then
   return 0
 fi

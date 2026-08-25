@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -n "${EKS_OPERATOR_DEPLOYMENT_EKS_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly EKS_OPERATOR_DEPLOYMENT_EKS_SOURCED=1
+
 # shellcheck source=.ci/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/lib/common.sh
