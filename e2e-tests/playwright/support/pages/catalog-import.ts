@@ -90,7 +90,7 @@ export class CatalogImport {
     const inspector = this.page
       .getByRole("dialog")
       .filter({ has: this.page.getByRole("heading", { name: "Entity Inspector" }) });
-    
+
     // Toast "Request failed with 404" Close buttons match first(); scope to the inspector.
     await inspector.getByRole("button", { name: "Close" }).click();
     await expect(inspector).toBeHidden();
