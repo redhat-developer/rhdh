@@ -1166,18 +1166,17 @@ disconnected::resolve_catalog_index_image() {
 }
 
 # Resolve the mirrored homepage OCI plugin to a digest-pinned package ref.
+# Catalog index 2.0 pins red-hat-developer-hub-backstage-plugin-homepage
+# (ref:// in showcase values; dynamic-home-page was the pre-2.0 name).
 # Parses the digest from mirror-plugins.sh summary (plugins are digest-only; no :tag).
-# Prefer dynamic-home-page (published on Quay); fall back to homepage after the
-# RHIDP-14515 rename lands (RHDHBUGS-3515 — new repo may still be missing).
 # Always emits registry.access.redhat.com/rhdh/… so registries.conf rewrites to the mirror.
 # Exports HOMEPAGE_PLUGIN_PACKAGE and HOMEPAGE_PLUGIN_FRONTEND_ID.
 disconnected::resolve_homepage_plugin_package() {
   local summary="${DISCONNECTED_TMPDIR}/rhdh-plugin-mirroring-summary.txt"
-  local name=""
+  local homepage_name="red-hat-developer-hub-backstage-plugin-homepage"
   local line=""
   local left=""
   local digest=""
-  local candidate=""
 
   if [[ ! -f "${summary}" ]]; then
     log::error "Plugin mirroring summary not found at ${summary}"
@@ -1185,26 +1184,17 @@ disconnected::resolve_homepage_plugin_package() {
     return 1
   fi
 
-  for candidate in \
-    "red-hat-developer-hub-backstage-plugin-dynamic-home-page" \
-    "red-hat-developer-hub-backstage-plugin-homepage"; do
-    # Match "/<name>@" so homepage does not also hit homepage-backend.
-    line=$(grep -F "/${candidate}@" "${summary}" | head -1) || true
-    if [[ -n "${line}" ]]; then
-      name="${candidate}"
-      break
-    fi
-  done
-
-  if [[ -z "${name}" || -z "${line}" ]]; then
-    log::error "No summary line for homepage plugin (dynamic-home-page or homepage) in ${summary}"
+  # Match "/<name>@" so homepage does not also hit homepage-backend.
+  line=$(grep -F "/${homepage_name}@" "${summary}" | head -1) || true
+  if [[ -z "${line}" ]]; then
+    log::error "No summary line for homepage plugin (${homepage_name}) in ${summary}"
     return 1
   fi
 
   # Summary format: <source-ref> → <mirror-ref>
   left="${line%%→*}"
   if [[ "${left}" == "${line}" ]]; then
-    log::error "Summary line for ${name} has no → separator: ${line}"
+    log::error "Summary line for ${homepage_name} has no → separator: ${line}"
     return 1
   fi
 
@@ -1214,15 +1204,11 @@ disconnected::resolve_homepage_plugin_package() {
   fi
   digest="${BASH_REMATCH[1]}"
 
+  export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-homepage"
   if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
-    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}:sha256-${digest#sha256:}!${name}"
+    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${homepage_name}:sha256-${digest#sha256:}!${homepage_name}"
   else
-    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${name}@${digest}!${name}"
-  fi
-  if [[ "${name}" == *"-plugin-homepage" ]]; then
-    export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-homepage"
-  else
-    export HOMEPAGE_PLUGIN_FRONTEND_ID="red-hat-developer-hub.backstage-plugin-dynamic-home-page"
+    export HOMEPAGE_PLUGIN_PACKAGE="oci://registry.access.redhat.com/rhdh/${homepage_name}@${digest}!${homepage_name}"
   fi
   log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE} (from mirroring summary)"
 }
