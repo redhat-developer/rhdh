@@ -213,7 +213,7 @@ handle_ocp_disconnected_operator() {
   # Operator mounts one volume per extraFiles ConfigMap name. policy.json cannot
   # share rhdh-plugin-mirror-conf or reconcile fails with duplicate volume keys.
   oc create configmap rhdh-plugin-mirror-policy \
-    --from-literal='policy.json={"default":[{"type":"insecureAcceptAnything"}]}' \
+    --from-file=policy.json="${DIR}/resources/disconnected/policy.json" \
     -n "${NAME_SPACE}" \
     --dry-run=client -o yaml | oc apply -f - || {
     log::error "Failed to create rhdh-plugin-mirror-policy ConfigMap — aborting"

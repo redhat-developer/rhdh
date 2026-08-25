@@ -299,15 +299,22 @@ disconnected::write_homepage_helm_values() {
 #   $1 - namespace
 disconnected::apply_plugin_mirror_configmap() {
   local namespace=$1
-  local configmap_template="${DIR}/resources/disconnected/plugin-mirror-configmap.yaml"
+  local registries_template="${DIR}/resources/disconnected/plugin-mirror-registries.conf.tpl"
+  local policy_file="${DIR}/resources/disconnected/policy.json"
+  local tmp_registries="${DISCONNECTED_TMPDIR}/rhdh-registries.conf"
 
-  envsubst < "${configmap_template}" \
-    | oc apply -n "${namespace}" -f - || {
+  envsubst < "${registries_template}" > "${tmp_registries}"
+
+  oc create configmap rhdh-plugin-mirror-conf \
+    --from-file=rhdh-registries.conf="${tmp_registries}" \
+    --from-file=policy.json="${policy_file}" \
+    -n "${namespace}" \
+    --dry-run=client -o yaml | oc apply -f - || {
     log::error "Failed to create registries.conf ConfigMap — aborting"
     return 1
   }
   log::success "ConfigMap rhdh-plugin-mirror-conf created in ${namespace}"
 
-  envsubst < "${configmap_template}" \
+  oc get configmap rhdh-plugin-mirror-conf -n "${namespace}" -o yaml \
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 }
