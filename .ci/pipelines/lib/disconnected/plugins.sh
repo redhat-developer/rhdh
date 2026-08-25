@@ -5,6 +5,10 @@
 [[ -n "${_DISCONNECTED_PLUGINS_SOURCED:-}" ]] && return 0
 readonly _DISCONNECTED_PLUGINS_SOURCED=1
 
+# Smoke only enables this plugin (includes: []). Full-catalog mirroring is RHIDP-13967.
+readonly DISCONNECTED_HOMEPAGE_PLUGIN_NAME="red-hat-developer-hub-backstage-plugin-homepage"
+export DISCONNECTED_HOMEPAGE_PLUGIN_NAME
+
 # ---------------------------------------------------------------------------
 # Hooks — overridable by local.sh (or other consumers) to customise CI-only
 # behaviour for local-disconnected or alternative registry setups.
@@ -44,11 +48,134 @@ disconnected::_catalog_index_source_ref() {
   fi
 }
 
+# Mirror destination for the catalog index (last two path elements: rhdh/plugin-catalog-index).
+# Args:
+#   $1 - catalog index ref (with or without oci://)
+disconnected::_catalog_index_mirror_dest() {
+  local index_ref="${1#oci://}"
+  local catalog_dest="${MIRROR_REGISTRY_URL}/rhdh/plugin-catalog-index"
+  if [[ "${index_ref}" =~ @sha256:[0-9a-f]+$ ]]; then
+    catalog_dest="${catalog_dest}@${index_ref##*@}"
+  elif [[ "${index_ref}" =~ :([^:/]+)$ ]]; then
+    catalog_dest="${catalog_dest}:${BASH_REMATCH[1]}"
+  else
+    catalog_dest="${catalog_dest}:latest"
+  fi
+  printf '%s' "${catalog_dest}"
+}
+
+# Build a plugin-list file of digest-pinned oci:// refs from a catalog index.
+# Skips fragile :tag refs that next catalogs sometimes publish without images.
+# Args:
+#   $1 - plugin_index (oci://...)
+#   $2 - output list file path
+#   $3 - optional name substring; keep only matching refs (e.g. homepage)
+disconnected::write_digest_plugin_list() {
+  local plugin_index=$1
+  local list_file=$2
+  local name_filter=${3:-}
+  local index_ref="${plugin_index#oci://}"
+  local extract_dir
+  extract_dir=$(mktemp -d)
+
+  log::info "Extracting catalog index for digest-only plugin list: ${plugin_index}"
+  if ! skopeo copy "docker://${index_ref}" "dir:${extract_dir}/idx"; then
+    log::error "Failed to extract catalog index ${index_ref}"
+    rm -rf "${extract_dir}"
+    return 1
+  fi
+
+  local data_dir="${extract_dir}/data"
+  mkdir -p "${data_dir}"
+  local layer
+  for layer in "${extract_dir}/idx"/*; do
+    if [[ -f "${layer}" && ! "${layer}" =~ (manifest\.json|version)$ ]]; then
+      tar -xf "${layer}" -C "${data_dir}" 2> /dev/null || true
+    fi
+  done
+
+  if [[ ! -f "${data_dir}/index.json" ]]; then
+    log::error "No index.json in catalog index image"
+    rm -rf "${extract_dir}"
+    return 1
+  fi
+
+  : > "${list_file}"
+  jq -r '
+    .. | objects | .registryReference? // empty
+  ' "${data_dir}/index.json" 2> /dev/null \
+    | sed -E 's#^(oci://)?#oci://#' \
+    | grep -E '@sha256:[0-9a-f]+' >> "${list_file}" || true
+
+  if [[ -f "${data_dir}/dynamic-plugins.default.yaml" ]]; then
+    grep -oE 'oci://[^[:space:]]+@sha256:[0-9a-f]+[^[:space:]]*' \
+      "${data_dir}/dynamic-plugins.default.yaml" >> "${list_file}" || true
+  fi
+
+  # Deduplicate; strip !package suffix for skopeo (mirror-plugins accepts either).
+  if [[ -s "${list_file}" ]]; then
+    local tmp
+    tmp=$(mktemp)
+    sed -E 's/!.*//' "${list_file}" | sort -u > "${tmp}"
+    mv "${tmp}" "${list_file}"
+  fi
+
+  if [[ -n "${name_filter}" && -s "${list_file}" ]]; then
+    local filtered
+    filtered=$(mktemp)
+    grep -F "${name_filter}" "${list_file}" > "${filtered}" || true
+    mv "${filtered}" "${list_file}"
+  fi
+
+  local count
+  count=$(wc -l < "${list_file}" | tr -d ' ')
+  rm -rf "${extract_dir}"
+
+  if [[ "${count}" -lt 1 ]]; then
+    if [[ -n "${name_filter}" ]]; then
+      log::error "No digest-pinned ${name_filter} plugin found in catalog index"
+    else
+      log::error "No digest-pinned plugins found in catalog index"
+    fi
+    return 1
+  fi
+  if [[ -n "${name_filter}" ]]; then
+    log::info "Plugin list filtered to ${name_filter}: ${count} digest-pinned ref(s)"
+  else
+    log::info "${count} digest-pinned plugins (tag-only refs skipped)"
+  fi
+}
+
+# Copy the catalog index to the mirror and record it in the mirroring summary.
+# --plugin-list does not copy the index; ref:// resolution still needs it.
+# Args:
+#   $1 - plugin_index (oci://...)
+disconnected::copy_catalog_index_to_mirror() {
+  local plugin_index=$1
+  local index_ref="${plugin_index#oci://}"
+  local catalog_dest
+  catalog_dest=$(disconnected::_catalog_index_mirror_dest "${index_ref}")
+
+  log::info "Mirroring catalog index -> ${catalog_dest}"
+  skopeo copy --all --dest-tls-verify=false \
+    "docker://${index_ref}" "docker://${catalog_dest}" || {
+    log::error "Failed to mirror catalog index ${index_ref}"
+    return 1
+  }
+
+  local summary_src
+  summary_src="$(pwd)/rhdh-plugin-mirroring-summary.txt"
+  if [[ -f "${summary_src}" ]] && ! grep -qF 'plugin-catalog-index' "${summary_src}"; then
+    echo "${plugin_index} -> oci://${catalog_dest}" >> "${summary_src}"
+  fi
+}
+
 # ---------------------------------------------------------------------------
 # mirror_plugins — fetch and run mirror-plugins.sh against the mirror registry
 # ---------------------------------------------------------------------------
 
-# Uses CATALOG_INDEX_IMAGE when set; otherwise the GA plugin-catalog-index tag.
+# Smoke: homepage plugin only (--plugin-list) plus the catalog index (for ref://).
+# --plugin-index would enumerate every catalog plugin, including unpublished :tag refs.
 disconnected::mirror_plugins() {
   local mirror_script="${DISCONNECTED_TMPDIR}/mirror-plugins.sh"
 
@@ -60,13 +187,19 @@ disconnected::mirror_plugins() {
   local plugin_index
   plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
 
+  local list_file="${DISCONNECTED_TMPDIR}/homepage-plugins.txt"
+  disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
+    "${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}" || return 1
+
   disconnected::wait_mirror_registry_route 300 || return 1
   bash "${mirror_script}" \
-    --plugin-index "${plugin_index}" \
+    --plugin-list "${list_file}" \
     --to-registry "${MIRROR_REGISTRY_URL}" || {
     log::error "mirror-plugins.sh failed — aborting"
     return 1
   }
+
+  disconnected::copy_catalog_index_to_mirror "${plugin_index}" || return 1
 
   # mirror-plugins.sh writes the summary to ORIGINAL_DIR (pwd at script start).
   local summary_src

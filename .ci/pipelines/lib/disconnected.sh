@@ -65,6 +65,10 @@ export -f disconnected::mirror_plugins
 export -f disconnected::resolve_catalog_index_image
 export -f disconnected::create_homepage_plugins_configmap
 export -f disconnected::apply_plugin_mirror_configmap
+export -f disconnected::write_digest_plugin_list
+export -f disconnected::copy_catalog_index_to_mirror
+export -f disconnected::_catalog_index_source_ref
+export -f disconnected::_catalog_index_mirror_dest
 export -f disconnected::_hook_post_mirror_plugins
 export -f disconnected::_hook_catalog_index_exports
 # namespace.sh
@@ -87,5 +91,4 @@ export -f disconnected::ensure_local_ocp_internal_olm_access 2> /dev/null || tru
 export -f disconnected::rewrite_live_mirror_hosts_for_cluster 2> /dev/null || true
 export -f disconnected::rewrite_mirror_host_for_cluster 2> /dev/null || true
 export -f disconnected::ensure_local_amd64_skopeo_shim 2> /dev/null || true
-export -f disconnected::write_digest_plugin_list 2> /dev/null || true
 export -f disconnected::ensure_local_plugin_imagestream_tags 2> /dev/null || true

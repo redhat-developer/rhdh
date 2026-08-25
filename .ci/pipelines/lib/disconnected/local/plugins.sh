@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# LOCAL_DISCONNECTED plugin mirroring: full mirror_plugins override (digest-only
-# list, skopeo catalog copy, imagestream tagging) and its helpers. Sourced only
-# when LOCAL_DISCONNECTED=1.
+# LOCAL_DISCONNECTED plugin mirroring: homepage-only mirror_plugins override
+# (retry loop, skopeo catalog copy, imagestream tagging). Sourced only when
+# LOCAL_DISCONNECTED=1.
 
 [[ -n "${_DISCONNECTED_LOCAL_PLUGINS_SOURCED:-}" ]] && return 0
 readonly _DISCONNECTED_LOCAL_PLUGINS_SOURCED=1
 
-# Full override: digest-only plugin list, retry loop, skopeo catalog copy,
+# Full override: homepage-only plugin list, retry loop, skopeo catalog copy,
 # summary handling, and imagestream tagging.
 disconnected::mirror_plugins() {
   local mirror_script="${DISCONNECTED_TMPDIR}/mirror-plugins.sh"
@@ -19,8 +19,9 @@ disconnected::mirror_plugins() {
   local plugin_index
   plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
 
-  local list_file="${DISCONNECTED_TMPDIR}/local-digest-plugins.txt"
-  disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" || return 1
+  local list_file="${DISCONNECTED_TMPDIR}/homepage-plugins.txt"
+  disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
+    "${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}" || return 1
 
   # --plugin-list only (not --plugin-index): index mode re-adds fragile tags.
   # Catalog index is mirrored after plugins so the summary still records it.
@@ -38,19 +39,13 @@ disconnected::mirror_plugins() {
     log::warn "mirror-plugins.sh attempt ${attempt}/${max_attempts} failed (registry 503 during Recreate is typical)"
   done
   if [[ "${mirrored}" != "1" ]]; then
-    log::error "mirror-plugins.sh (digest-only list) failed after ${max_attempts} attempts -- aborting"
+    log::error "mirror-plugins.sh (homepage plugin list) failed after ${max_attempts} attempts -- aborting"
     return 1
   fi
 
   local index_ref="${plugin_index#oci://}"
-  local catalog_dest="${MIRROR_REGISTRY_URL}/rhdh/plugin-catalog-index"
-  if [[ "${index_ref}" =~ @sha256:[0-9a-f]+$ ]]; then
-    catalog_dest="${catalog_dest}@${index_ref##*@}"
-  elif [[ "${index_ref}" =~ :([^:/]+)$ ]]; then
-    catalog_dest="${catalog_dest}:${BASH_REMATCH[1]}"
-  else
-    catalog_dest="${catalog_dest}:latest"
-  fi
+  local catalog_dest
+  catalog_dest=$(disconnected::_catalog_index_mirror_dest "${index_ref}")
   # Use real skopeo --all (not the amd64 shim): destination @sha256 must stay the
   # multi-arch list digest; single-arch flatten yields "digest invalid".
   local real_skopeo=""
@@ -105,71 +100,6 @@ disconnected::mirror_plugins() {
   log::info "Saved plugin mirroring summary to ${DISCONNECTED_TMPDIR} and ${ARTIFACT_DIR}"
 
   disconnected::ensure_local_plugin_imagestream_tags "${summary_src}" || return 1
-}
-
-# Build a plugin-list file of digest-pinned oci:// refs from a catalog index.
-# Skips fragile :tag refs that next catalogs sometimes publish without images.
-# Args:
-#   $1 - plugin_index (oci://...)
-#   $2 - output list file path
-disconnected::write_digest_plugin_list() {
-  local plugin_index=$1
-  local list_file=$2
-  local index_ref="${plugin_index#oci://}"
-  local extract_dir
-  extract_dir=$(mktemp -d)
-
-  log::info "Extracting catalog index for digest-only plugin list: ${plugin_index}"
-  if ! skopeo copy "docker://${index_ref}" "dir:${extract_dir}/idx"; then
-    log::error "Failed to extract catalog index ${index_ref}"
-    rm -rf "${extract_dir}"
-    return 1
-  fi
-
-  local data_dir="${extract_dir}/data"
-  mkdir -p "${data_dir}"
-  local layer
-  for layer in "${extract_dir}/idx"/*; do
-    if [[ -f "${layer}" && ! "${layer}" =~ (manifest\.json|version)$ ]]; then
-      tar -xf "${layer}" -C "${data_dir}" 2> /dev/null || true
-    fi
-  done
-
-  if [[ ! -f "${data_dir}/index.json" ]]; then
-    log::error "No index.json in catalog index image"
-    rm -rf "${extract_dir}"
-    return 1
-  fi
-
-  : > "${list_file}"
-  jq -r '
-    .. | objects | .registryReference? // empty
-  ' "${data_dir}/index.json" 2> /dev/null \
-    | sed -E 's#^(oci://)?#oci://#' \
-    | grep -E '@sha256:[0-9a-f]+' >> "${list_file}" || true
-
-  if [[ -f "${data_dir}/dynamic-plugins.default.yaml" ]]; then
-    grep -oE 'oci://[^[:space:]]+@sha256:[0-9a-f]+[^[:space:]]*' \
-      "${data_dir}/dynamic-plugins.default.yaml" >> "${list_file}" || true
-  fi
-
-  # Deduplicate; strip !package suffix for skopeo (mirror-plugins accepts either).
-  if [[ -s "${list_file}" ]]; then
-    local tmp
-    tmp=$(mktemp)
-    sed -E 's/!.*//' "${list_file}" | sort -u > "${tmp}"
-    mv "${tmp}" "${list_file}"
-  fi
-
-  local count
-  count=$(wc -l < "${list_file}" | tr -d ' ')
-  rm -rf "${extract_dir}"
-
-  if [[ "${count}" -lt 1 ]]; then
-    log::error "No digest-pinned plugins found in catalog index"
-    return 1
-  fi
-  log::info "LOCAL_DISCONNECTED: ${count} digest-pinned plugins (tag-only refs skipped)"
 }
 
 # Create ImageStream tags for digest-mirrored plugins by re-pushing each
