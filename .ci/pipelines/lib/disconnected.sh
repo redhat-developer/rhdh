@@ -1561,37 +1561,3 @@ disconnected::ensure_helm_hub_after_postgres() {
   fi
   log::success "Hub ${hub_deploy} Available after restart"
 }
-
-# Export functions for subshell usage (e.g., timeout bash -c "...")
-export -f disconnected::require_env
-export -f disconnected::setup_auth
-export -f disconnected::wait_mirror_registry_route
-export -f disconnected::wait_local_integrated_registry
-export -f disconnected::retry_on_local_registry
-export -f disconnected::setup_local_ocp_mirror
-export -f disconnected::ensure_local_image_pull_access
-export -f disconnected::ensure_local_ocp_internal_olm_access
-export -f disconnected::rewrite_live_mirror_hosts_for_cluster
-export -f disconnected::cluster_mirror_host
-export -f disconnected::rewrite_mirror_host_for_cluster
-export -f disconnected::ensure_local_amd64_skopeo_shim
-export -f disconnected::fetch_script
-export -f disconnected::with_unset_registry_auth_file
-export -f disconnected::wait_mcp_updated
-export -f disconnected::write_digest_plugin_list
-export -f disconnected::pin_local_catalog_index_from_chart
-export -f disconnected::mirror_plugins
-export -f disconnected::ensure_local_plugin_imagestream_tags
-export -f disconnected::resolve_catalog_index_image
-export -f disconnected::resolve_homepage_plugin_package
-export -f disconnected::write_homepage_dynamic_plugins_yaml
-export -f disconnected::create_homepage_plugins_configmap
-export -f disconnected::write_homepage_helm_values
-export -f disconnected::apply_plugin_mirror_configmap
-export -f disconnected::create_mirror_registry_ca_configmap
-export -f disconnected::create_plugin_registry_auth_secret
-export -f disconnected::ensure_mirror_registry_ca
-export -f disconnected::ensure_olm_mirror_pull_secret
-export -f disconnected::dump_olm_v1_status
-export -f disconnected::wait_operator_crd_olm_v1
-export -f disconnected::ensure_helm_hub_after_postgres
