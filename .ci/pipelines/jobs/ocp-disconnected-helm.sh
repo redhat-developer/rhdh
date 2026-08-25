@@ -84,17 +84,13 @@ handle_ocp_disconnected_helm() {
   # Normalize: extract the digest qualifier into PG_SEPARATOR so that:
   #   - PG_REPO is always a clean path (usable in IDMS source/mirror fields)
   #   - Full ref is ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}
-  PG_SEPARATOR=":"
-  if [[ "${PG_REPO}" == *"@"* ]]; then
-    PG_SEPARATOR="@${PG_REPO##*@}:" # e.g., "@sha256:"
-    PG_REPO="${PG_REPO%@*}"         # e.g., "rhel9/postgresql-15"
-  fi
+  common::normalize_chart_image_ref PG_REPO PG_SEPARATOR
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"
 
   # Catalog index is no longer derived from chart values: both CI and
   # LOCAL_DISCONNECTED consume CATALOG_INDEX_IMAGE (the shared env contract in
-  # env_variables.sh, pinned via CATALOG_INDEX_IMAGE_OVERRIDE). It is mirrored by
+  # env_variables.sh, derived from RELEASE_VERSION when unset). It is mirrored by
   # build_imageset_config (mirror.sh additionalImages) and later re-pinned to the
   # mirrored digest by resolve_catalog_index_image.
   log::info "Catalog index (env contract): ${CATALOG_INDEX_IMAGE:-<unset>}"

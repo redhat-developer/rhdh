@@ -225,6 +225,24 @@ common::save_artifact() {
   rsync -a "$file" "${target_dir}/"
 }
 
+# Normalize Helm chart image fields when a digest is encoded as
+# repository "repo@sha256" plus tag "<hash>". Updates the named variables in place.
+# Args:
+#   $1 - repository variable name
+#   $2 - separator variable name (set to ":" or "@sha256:")
+# shellcheck disable=SC2034 # namerefs write through to the caller
+common::normalize_chart_image_ref() {
+  local -n out_repo=$1
+  local -n out_separator=$2
+
+  out_separator=":"
+  if [[ "${out_repo}" == *"@"* ]]; then
+    out_separator="@${out_repo##*@}:"
+    out_repo="${out_repo%@*}"
+  fi
+}
+
 # Export functions for subshell usage (e.g., timeout bash -c "...")
 export -f common::base64_encode
 export -f common::require_vars
+export -f common::normalize_chart_image_ref
