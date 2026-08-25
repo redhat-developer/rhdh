@@ -5047,9 +5047,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-backend@npm:4.0.3":
-  version: 4.0.3
-  resolution: "@backstage/plugin-scaffolder-backend@npm:4.0.3"
+"@backstage/plugin-scaffolder-backend@npm:4.0.5":
+  version: 4.0.5
+  resolution: "@backstage/plugin-scaffolder-backend@npm:4.0.5"
   dependencies:
     "@backstage/backend-openapi-utils": "npm:^0.7.1"
     "@backstage/backend-plugin-api": "npm:^1.10.0"
@@ -5074,7 +5074,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     logform: "npm:^2.3.2"
     luxon: "npm:^3.0.0"
-    nunjitsu: "npm:^0.5.0"
+    nunjitsu: "npm:^0.6.1"
     p-queue: "npm:^6.6.2"
     prom-client: "npm:^15.0.0"
     triple-beam: "npm:^1.4.1"
@@ -5084,7 +5084,7 @@ __metadata:
     zen-observable: "npm:^0.10.0"
     zod: "npm:^3.25.76 || ^4.0.0"
     zod-to-json-schema: "npm:^3.25.1"
-  checksum: 10c0/677c1d16b52892cbdad6ee4b268eb5b763bbaf858e5d3e04397c181faf6ff2b4e621cd625e52838ec16c4dfa22a5df95cca8b1984dde927941f12f8540205179
+  checksum: 10c0/5c1fc711a3e6a671488e8d86b89e12bb0bf3b615c7421d1ece34021e28b055c7be10a9d696715aea4a97c7705b88379f15652cacb8e94d9b4bfcdc68bc38c0b6
   languageName: node
   linkType: hard
 
@@ -5363,9 +5363,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-backend@npm:2.1.5":
-  version: 2.1.5
-  resolution: "@backstage/plugin-search-backend@npm:2.1.5"
+"@backstage/plugin-search-backend@npm:2.1.6":
+  version: 2.1.6
+  resolution: "@backstage/plugin-search-backend@npm:2.1.6"
   dependencies:
     "@backstage/backend-openapi-utils": "npm:^0.7.1"
     "@backstage/backend-plugin-api": "npm:^1.10.0"
@@ -5381,7 +5381,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     qs: "npm:^6.15.2"
     zod: "npm:^3.25.76 || ^4.0.0"
-  checksum: 10c0/cfb23f6f342997887c31c7754145e9ec9348ecd7e23d8d181888c05e9e3e43db173d9bdf93b2cf17f70f6af38ead8fbd3927f27b997585f414b16cf7a88c772c
+  checksum: 10c0/7075dbe8d6327bdff0a3051005bd2a1b79e59933664f1b6b55d74c036cb4da52e9d715d734335820cc5192996bdc57da8a64528e0069e2983643c49231ca6a85
   languageName: node
   linkType: hard
 
@@ -17112,8 +17112,8 @@ __metadata:
     "@backstage/plugin-events-node": "npm:0.4.25"
     "@backstage/plugin-permission-backend": "npm:0.7.15"
     "@backstage/plugin-proxy-backend": "npm:0.6.16"
-    "@backstage/plugin-scaffolder-backend": "npm:4.0.3"
-    "@backstage/plugin-search-backend": "npm:2.1.5"
+    "@backstage/plugin-scaffolder-backend": "npm:4.0.5"
+    "@backstage/plugin-search-backend": "npm:2.1.6"
     "@backstage/plugin-search-backend-module-catalog": "npm:0.3.18"
     "@backstage/plugin-search-backend-module-pg": "npm:0.5.58"
     "@backstage/plugin-user-settings-backend": "npm:0.4.6"
@@ -28978,10 +28978,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nunjitsu@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "nunjitsu@npm:0.5.0"
-  checksum: 10c0/8a798fc0648c170490e1e56aa45dbe77dd234b482590263f993c0e7786d127efbca78c0b280a31d99c80107417e7a0016f18f41b76bc3f1f861cbb4ec9d1a022
+"nunjitsu@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "nunjitsu@npm:0.6.1"
+  checksum: 10c0/3a0cc09ec528eb54b9c1d8e74462d9b44782d23cfad4cb084c189c161b10c22218a85257a8ef4e016d6223b70a2b381a4a5411a12c1613bdc0931edf22a548d6
   languageName: node
   linkType: hard
 
