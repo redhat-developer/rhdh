@@ -1300,16 +1300,31 @@ disconnected::write_homepage_helm_values() {
 #   $1 - namespace
 disconnected::apply_plugin_mirror_configmap() {
   local namespace=$1
-  local configmap_template="${DIR}/resources/disconnected/plugin-mirror-configmap.yaml"
+  local policy_file="${DIR}/resources/disconnected/policy.json"
+  local registries_tpl="${DIR}/resources/disconnected/plugin-mirror-registries.conf.tpl"
+  local registries_file="${DISCONNECTED_TMPDIR}/plugin-mirror-registries.conf"
 
-  envsubst < "${configmap_template}" \
-    | oc apply -n "${namespace}" -f - || {
+  if [[ ! -f "${policy_file}" ]]; then
+    log::error "Disconnected policy.json not found at ${policy_file}"
+    return 1
+  fi
+
+  envsubst < "${registries_tpl}" > "${registries_file}" || {
+    log::error "Failed to render plugin mirror registries.conf template"
+    return 1
+  }
+
+  oc create configmap rhdh-plugin-mirror-conf \
+    --from-file="rhdh-registries.conf=${registries_file}" \
+    --from-file="policy.json=${policy_file}" \
+    -n "${namespace}" \
+    --dry-run=client -o yaml | oc apply -f - || {
     log::error "Failed to create registries.conf ConfigMap — aborting"
     return 1
   }
   log::success "ConfigMap rhdh-plugin-mirror-conf created in ${namespace}"
 
-  envsubst < "${configmap_template}" \
+  oc get configmap rhdh-plugin-mirror-conf -n "${namespace}" -o yaml \
     > "${ARTIFACT_DIR}/disconnected-plugin-mirror-configmap.yaml" 2> /dev/null || true
 }
 
