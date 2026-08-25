@@ -197,8 +197,20 @@ disconnected::resolve_homepage_plugin_package() {
     log::error "Failed to create temp dir to inspect catalog index ${index_ref}"
     return 1
   }
-  # shellcheck disable=SC2064 # expand tmp_dir now, not at trap-firing time
-  trap "rm -rf '${tmp_dir}'" RETURN
+
+  local rc=0
+  disconnected::_homepage_plugin_from_oci_dir "${index_ref}" "${tmp_dir}" || rc=$?
+  rm -rf "${tmp_dir}"
+  return "${rc}"
+}
+
+# Pull the catalog index with skopeo, extract index.json, export HOMEPAGE_PLUGIN_*.
+# Args:
+#   $1 - index image ref to copy from
+#   $2 - empty temp dir used for the dir: copy and extraction
+disconnected::_homepage_plugin_from_oci_dir() {
+  local index_ref=$1
+  local tmp_dir=$2
 
   if ! skopeo copy --override-os linux --override-arch amd64 \
     "docker://${index_ref}" "dir:${tmp_dir}/oci" > "${tmp_dir}/skopeo.log" 2>&1; then
@@ -215,7 +227,9 @@ disconnected::resolve_homepage_plugin_package() {
   fi
 
   mkdir -p "${tmp_dir}/extracted"
-  tar -xzf "${tmp_dir}/oci/${layer_digest#sha256:}" -C "${tmp_dir}/extracted" index.json || {
+  # Match local catalog extraction: GNU tar auto-detects gzip, so -xf works for
+  # both compressed and uncompressed OCI layer blobs (tar -xzf does not).
+  tar -xf "${tmp_dir}/oci/${layer_digest#sha256:}" -C "${tmp_dir}/extracted" index.json || {
     log::error "Failed to extract index.json from catalog index ${index_ref}"
     return 1
   }

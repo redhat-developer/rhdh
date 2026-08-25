@@ -2,9 +2,9 @@
  * Parse an HTTP(S) proxy URL into Playwright's proxy config.
  *
  * Playwright's `proxy` option expects `username` and `password` as separate
- * fields, but CI environments typically set a single `HTTPS_PROXY` URL like
- * `http://user:pass@host:3128`. This helper splits the URL into the shape
- * Playwright needs.
+ * fields, but CI environments typically set a single `HTTPS_PROXY` URL
+ * (`http://proxy.example:3128`, optionally with URL userinfo). This helper
+ * splits the URL into the shape Playwright needs.
  *
  * Returns `undefined` when no proxy URL is provided (connected environments).
  */

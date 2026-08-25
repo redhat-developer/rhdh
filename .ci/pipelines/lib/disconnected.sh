@@ -64,6 +64,7 @@ export -f disconnected::_hook_rewrite_mirror_host
 export -f disconnected::mirror_plugins
 export -f disconnected::resolve_catalog_index_image
 export -f disconnected::resolve_homepage_plugin_package
+export -f disconnected::_homepage_plugin_from_oci_dir
 export -f disconnected::write_homepage_dynamic_plugins_yaml
 export -f disconnected::create_homepage_plugins_configmap
 export -f disconnected::write_homepage_helm_values
