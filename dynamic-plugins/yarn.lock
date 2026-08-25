@@ -6363,9 +6363,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-kubernetes-backend@npm:0.21.7":
-  version: 0.21.7
-  resolution: "@backstage/plugin-kubernetes-backend@npm:0.21.7"
+"@backstage/plugin-kubernetes-backend@npm:0.21.9":
+  version: 0.21.9
+  resolution: "@backstage/plugin-kubernetes-backend@npm:0.21.9"
   dependencies:
     "@aws-crypto/sha256-js": "npm:^5.0.0"
     "@aws-sdk/credential-providers": "npm:^3.350.0"
@@ -6391,10 +6391,11 @@ __metadata:
     express-promise-router: "npm:^4.1.0"
     fs-extra: "npm:^11.2.0"
     http-proxy-middleware: "npm:^2.0.6"
+    ipaddr.js: "npm:^2.3.0"
     lodash: "npm:^4.17.21"
     luxon: "npm:^3.0.0"
     node-fetch: "npm:^2.7.0"
-  checksum: 10c0/27d355f1ecb1d67511f7e94ce844aa66f3021829a67f6d38fd84569e01464ec5aea6e2585005a3abcc879d135be864bd2b8d10ef5cdb31ab517a2a6fcf80efec
+  checksum: 10c0/c059c7cb2f04358c3f2aa31ca61629ca3749a1873263c057daf0bbe8fa8cae3644bc454878b535fa0ad5588cabc260cdae2eab7912b7324394e009784b266e11
   languageName: node
   linkType: hard
 
@@ -17835,7 +17836,7 @@ __metadata:
   dependencies:
     "@backstage/cli": "npm:0.36.5"
     "@backstage/cli-defaults": "npm:0.1.5"
-    "@backstage/plugin-kubernetes-backend": "npm:0.21.7"
+    "@backstage/plugin-kubernetes-backend": "npm:0.21.9"
     "@janus-idp/cli": "npm:3.7.0"
     typescript: "npm:5.9.3"
   languageName: unknown
@@ -24444,6 +24445,13 @@ __metadata:
   version: 2.3.0
   resolution: "ipaddr.js@npm:2.3.0"
   checksum: 10c0/084bab99e2f6875d7a62adc3325e1c64b038a12c9521e35fb967b5e263a8b3afb1b8884dd77c276092331f5d63298b767491e10997ef147c62da01b143780bbd
+  languageName: node
+  linkType: hard
+
+"ipaddr.js@npm:^2.3.0":
+  version: 2.5.0
+  resolution: "ipaddr.js@npm:2.5.0"
+  checksum: 10c0/5cef50d91a14f6388c3b5df3568ee7f8b18e07fa18896debc84d3393b78c1096e1b8e3a4f9fa9020c5ca5b556efc28550432f92a34d23c0cd643bd3194eb439d
   languageName: node
   linkType: hard
 
