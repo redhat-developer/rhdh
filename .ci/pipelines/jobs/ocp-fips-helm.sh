@@ -194,6 +194,10 @@ run_standard_deployment_tests() {
   # Add extracted CA to system trust store so Chromium browser picks it up
   if [[ -n "${NODE_EXTRA_CA_CERTS}" && -f "${NODE_EXTRA_CA_CERTS}" ]]; then
     log::info "Adding OpenShift CA to system trust store for Chromium..."
+    log::info "Checking permissions on /usr/local/share/ca-certificates/..."
+    ls -la /usr/local/share/ca-certificates/
+    log::info "Current user: $(whoami)"
+    id
     cp "${NODE_EXTRA_CA_CERTS}" /usr/local/share/ca-certificates/openshift-ca-bundle.crt
     update-ca-certificates
     log::success "System CA trust store updated"
