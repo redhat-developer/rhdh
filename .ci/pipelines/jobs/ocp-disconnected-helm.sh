@@ -78,49 +78,14 @@ handle_ocp_disconnected_helm() {
   PG_REPO="${PG_REPO:-rhel9/postgresql-15}"
   PG_TAG="${PG_TAG:-latest}"
 
-  # The chart encodes digest refs as repository: "repo@sha256" + tag: "<hash>".
-  # Normalize: extract the digest qualifier into PG_SEPARATOR so that:
-  #   - PG_REPO is always a clean path (usable in IDMS source/mirror fields)
-  #   - Full ref is ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}
   PG_SEPARATOR=":"
-  if [[ "${PG_REPO}" == *"@"* ]]; then
-    PG_SEPARATOR="@${PG_REPO##*@}:" # e.g., "@sha256:"
-    PG_REPO="${PG_REPO%@*}"         # e.g., "rhel9/postgresql-15"
-  fi
+  common::normalize_chart_image_ref PG_REPO PG_TAG PG_SEPARATOR
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"
 
-  # Resolve catalog index image (same digest encoding as PG).
-  # The init container pulls this by digest; it must be in the mirror.
-  export CI_REGISTRY CI_REPO CI_TAG CI_SEPARATOR
-  CI_REGISTRY=$(echo "${helm_values}" | yq '.global.catalogIndex.image.registry' || true)
-  CI_REPO=$(echo "${helm_values}" | yq '.global.catalogIndex.image.repository' || true)
-  CI_TAG=$(echo "${helm_values}" | yq '.global.catalogIndex.image.tag' || true)
-  CI_REGISTRY="${CI_REGISTRY:-quay.io}"
-  CI_REPO="${CI_REPO:-rhdh/plugin-catalog-index}"
-  CI_TAG="${CI_TAG:-latest}"
-  CI_SEPARATOR=":"
-  if [[ "${CI_REPO}" == *"@"* ]]; then
-    CI_SEPARATOR="@${CI_REPO##*@}:"
-    CI_REPO="${CI_REPO%@*}"
-  fi
-  log::info "Catalog index from chart: ${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
-
-  # LOCAL_DISCONNECTED: prefer chart-pinned catalog digest for mirror-plugins
-  # (RELEASE_VERSION=next is not published on registry.access.redhat.com).
-  # CI keeps Gangway/env CATALOG_INDEX_IMAGE or mirror-plugins RELEASE_VERSION default.
-  if [[ "${LOCAL_DISCONNECTED:-}" == "1" && -z "${CATALOG_INDEX_IMAGE:-}" && -n "${CI_REGISTRY}" && -n "${CI_REPO}" && -n "${CI_TAG}" ]]; then
-    export CATALOG_INDEX_IMAGE="${CI_REGISTRY}/${CI_REPO}${CI_SEPARATOR}${CI_TAG}"
-    export CATALOG_INDEX_REGISTRY="${CI_REGISTRY}"
-    # Chart digest encoding: repository "…@sha256" + tag "<hash>".
-    if [[ "${CI_SEPARATOR}" == @sha256: ]]; then
-      export CATALOG_INDEX_REPO="${CI_REPO}@sha256"
-    else
-      export CATALOG_INDEX_REPO="${CI_REPO}"
-    fi
-    export CATALOG_INDEX_TAG="${CI_TAG}"
-    log::info "CATALOG_INDEX_IMAGE=${CATALOG_INDEX_IMAGE} (from chart values)"
-  fi
+  # LOCAL_DISCONNECTED: chart-pin catalog digest before mirror (env may set :next).
+  disconnected::pin_local_catalog_index_from_chart || return 1
+  log::info "Catalog index (env contract): ${CATALOG_INDEX_IMAGE:-<unset>}"
 
   echo "${helm_values}" > "${ARTIFACT_DIR}/disconnected-helm-chart-values.yaml" 2> /dev/null || true
 

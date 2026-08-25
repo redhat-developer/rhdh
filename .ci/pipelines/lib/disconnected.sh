@@ -880,10 +880,7 @@ disconnected::pin_local_catalog_index_from_chart() {
   ci_repo="${ci_repo:-rhdh/plugin-catalog-index}"
   ci_tag="${ci_tag:-latest}"
   ci_separator=":"
-  if [[ "${ci_repo}" == *"@"* ]]; then
-    ci_separator="@${ci_repo##*@}:"
-    ci_repo="${ci_repo%@*}"
-  fi
+  common::normalize_chart_image_ref ci_repo ci_tag ci_separator
 
   export CATALOG_INDEX_IMAGE="${ci_registry}/${ci_repo}${ci_separator}${ci_tag}"
   export CATALOG_INDEX_REGISTRY="${ci_registry}"
