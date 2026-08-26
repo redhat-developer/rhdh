@@ -60,17 +60,21 @@ handle_ocp_disconnected_operator() {
     filter_versions="*"
   fi
 
-  # LOCAL_DISCONNECTED: mirroring every historical RHDH operator version (* /
-  # next) overwhelms the integrated registry (503 / deadline) and is unnecessary
-  # for smoke. Pin to the chart major.minor (e.g. 1.10-123-CI → 1.10). CI bastion
-  # keeps filter-versions=* for next.
-  if [[ "${LOCAL_DISCONNECTED:-}" == "1" && "${filter_versions}" == "*" ]]; then
+  # Mirroring every historical RHDH operator version (* / next) is unnecessary
+  # for smoke and flakes on quay CDN EOF (CI) or overwhelms the integrated
+  # registry (local). Pin to the chart major.minor (e.g. 2.0-80-CI → 2.0).
+  # Release branches already pass a concrete version (e.g. 1.9) and skip this.
+  if [[ "${filter_versions}" == "*" ]]; then
     local chart_mm=""
     if [[ -n "${CHART_VERSION:-}" && "${CHART_VERSION}" =~ ^([0-9]+\.[0-9]+) ]]; then
       chart_mm="${BASH_REMATCH[1]}"
     fi
-    filter_versions="${chart_mm:-1.10}"
-    log::info "LOCAL_DISCONNECTED=1: filter-versions=${filter_versions} (from CHART_VERSION=${CHART_VERSION:-unset})"
+    if [[ -z "${chart_mm}" ]]; then
+      log::error "Cannot derive --filter-versions from CHART_VERSION='${CHART_VERSION:-unset}'; expected major.minor prefix (e.g. 2.0-80-CI)"
+      return 1
+    fi
+    filter_versions="${chart_mm}"
+    log::info "filter-versions=${filter_versions} (from CHART_VERSION=${CHART_VERSION})"
   fi
 
   # CONTAINER_PLATFORM_VERSION is set by e2e-tests/container-init.sh from the
