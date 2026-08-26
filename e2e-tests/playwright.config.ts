@@ -100,6 +100,26 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_FIPS,
+      timeout: 180 * 1000,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
+      use: {
+        ignoreHTTPSErrors: false,
+      },
+      testIgnore: [
+        "**/playwright/seed.spec.ts",
+        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
+        "**/playwright/e2e/**/*-rbac.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
+        "**/playwright/e2e/auth-providers/**/*.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
+        "**/playwright/e2e/configuration-test/config-map.spec.ts",
       ],
     },
     {
@@ -119,6 +139,7 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/github-happy-path.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
       ],
       retries: 1,
     },
@@ -142,6 +163,7 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
       ],
     },
     {
@@ -167,6 +189,7 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
+        "**/playwright/e2e/fips-compliance.spec.ts",
       ],
     },
     {
