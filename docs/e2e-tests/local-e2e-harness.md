@@ -46,23 +46,12 @@ package the catalog index declares — see "Plugin Sanity Check" in
 Alternatives:
 
 - **Catalog index** — installs the full index plugin set instead of the curated one.
-  The index still references a few core plugins by local `./dynamic-plugins/dist/…`
-  paths that only exist after a source build, and the CLI skips those; everything
-  else resolves from the public registries. Use `populate-catalog-index.sh`, which
+  Use `populate-catalog-index.sh`, which
   also records the breadcrumb the plugin sanity check asserts against:
 
   ```bash
   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
     ./e2e-tests/local-harness/populate-catalog-index.sh
-  ```
-
-Alternatives (continued):
-- **Offline from-source** (frontend plugins only; requires a reconciled workspace —
-  see "Known issues"):
-
-  ```bash
-  yarn --cwd dynamic-plugins export-dynamic
-  yarn --cwd dynamic-plugins copy-dynamic-plugins ../dynamic-plugins-root
   ```
 
 ### 2. Run
@@ -152,7 +141,7 @@ Not enablable yet:
   `packages/app`.
 - `plugins/licensed-users-info-backend` — the
   `licensed-users-info-backend` plugin is not published to the overlays OCI registry
-(ghcr) and only exists as a `./dynamic-plugins/dist` source build.
+  (ghcr).
 
 ## CI
 
@@ -181,11 +170,6 @@ just `run`), which is why this harness boots the dev servers directly instead.
 
 ## Known issues / limits
 
-- **Workspace must be reconciled for the offline (from-source) populate path.** If
-  `node_modules` is out of sync with `yarn.lock` (e.g. just after a rebase that changed
-  dependency versions), backend dynamic-plugin builds fail with version-mismatch errors
-  and yarn may not surface workspace bins. Run `yarn install` first. The
-  `install-dynamic-plugins` populate path avoids building from source and is unaffected.
 - **Re-run `populate.sh` after changing the harness plugin set.** Overrides in
   `e2e-tests/local-harness/dynamic-plugins.yaml` (`enabled: false` + `{{inherit}}`) only
   take effect through the generated `dynamic-plugins-root/app-config.dynamic-plugins.yaml`,

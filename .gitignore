@@ -13,7 +13,6 @@ lerna-debug.log*
 coverage/
 !e2e-tests/playwright/support/coverage/
 !e2e-tests/playwright/support/coverage/**
-dynamic-plugins/**/coverage/
 packages/*/coverage/
 plugins/*/coverage/
 # Python coverage data (pytest --cov)

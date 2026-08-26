@@ -87,7 +87,7 @@ jobs:
           branch: ${{ github.event.pull_request.base.ref || github.ref_name }}
           catalog_index_image: ${{ inputs.catalog_index_image }}
 
-      - name: Populate dynamic-plugins-root (OCI, no source build)
+      - name: Populate dynamic-plugins-root (OCI)
         # populate.sh resolves {{inherit}} against the catalog index DPDY, then
         # installs the harness plugin set from quay.io.
         env:

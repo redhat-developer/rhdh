@@ -1,6 +1,5 @@
 # Cluster-free harness plugin set — installed by ./populate.sh via
-# install-dynamic-plugins from OCI (quay.io, pulled with skopeo), so no
-# dynamic-plugins/dist source build is needed.
+# install-dynamic-plugins from OCI (quay.io, pulled with skopeo).
 #
 # Includes the full DPDY catalog, then disables plugins the @cluster-free-capable
 # Playwright specs do not exercise (segment, adoption-insights, extensions dist
@@ -41,8 +40,8 @@ plugins:
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-quickstart:{{inherit}}
     enabled: false
 
-  # Source-build plugins — require `yarn --cwd dynamic-plugins export-dynamic` and env vars
-  # (${RHDH_EXTENSIONS_DIRECTORY}, …). Disabled so a fresh clone + populate.sh works OCI-only.
+  # Extensions stack — catalog index DPDY still lists local ./dynamic-plugins/dist paths
+  # for these; disabled so populate.sh works OCI-only off-cluster.
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions-dynamic
     enabled: false
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
