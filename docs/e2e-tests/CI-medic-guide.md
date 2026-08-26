@@ -133,22 +133,25 @@ Small, incremental improvements after each rotation keep this guide accurate and
 
 ### Job Naming Convention
 
-Nightly jobs follow this pattern:
+OpenShift CI job names follow this pattern (see [Naming your CI Jobs](https://docs.ci.openshift.org/how-tos/naming-your-ci-jobs/)):
 
 ```
-periodic-ci-redhat-developer-rhdh-{BRANCH}-e2e-{PLATFORM}-{INSTALL_METHOD}[-{VARIANT}]-nightly
+{JOB_TYPE}-ci-{ORG}-{REPO}-{BRANCH}-e2e-{PLATFORM}-{INSTALL_METHOD}[-{VARIANT}][-nightly]
 ```
 
-Breaking it down:
+After `periodic-ci-` or `pull-ci-`, the next two segments are the GitHub **org** and **repository**. That is how you tell Core jobs (`rhdh`) from overlay jobs (`rhdh-plugin-export-overlays`).
 
 | Segment | Values | Meaning |
 |---------|--------|---------|
+| `{JOB_TYPE}` | `periodic`, `pull` | Nightly (periodic) vs PR check (presubmit) |
+| `{ORG}` | `redhat-developer` | GitHub org |
+| `{REPO}` | `rhdh`, `rhdh-plugin-export-overlays` | GitHub repository |
 | `{BRANCH}` | `main`, `release-1.9`, `release-1.10` | Git branch being tested |
 | `{PLATFORM}` | `ocp`, `ocp-v4-{VER}`, `aks`, `eks`, `gke`, `osd-gcp` | Target platform (OCP versions rotate as new releases come out) |
 | `{INSTALL_METHOD}` | `helm`, `operator` | Installation method |
-| `{VARIANT}` | `auth-providers`, `upgrade` | Optional -- specialized test scenario |
+| `{VARIANT}` | `auth-providers`, `upgrade` | Optional -- specialized test scenario. Overlay nightlies typically have no variant: `e2e-ocp-helm-nightly` |
 
-Examples:
+Examples -- Core (`rhdh`):
 
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly` -- OCP nightly with Helm on main
 - `periodic-ci-redhat-developer-rhdh-release-1.9-e2e-aks-helm-nightly` -- AKS nightly for release 1.9
@@ -156,15 +159,12 @@ Examples:
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-operator-auth-providers-nightly` -- Auth provider tests
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-upgrade-nightly` -- Upgrade scenario tests
 
-PR check jobs use the `pull-ci-` prefix instead of `periodic-ci-`.
+Examples -- Overlay (`rhdh-plugin-export-overlays`):
 
-Those prefixes follow the OpenShift CI convention: after `periodic-ci-` or `pull-ci-` come the GitHub **org** and **repository**, then the branch and test name. See [Naming your CI Jobs](https://docs.ci.openshift.org/how-tos/naming-your-ci-jobs/). The pattern above is `redhat-developer` + `rhdh`. Overlay jobs use the overlay repository instead (`rhdh-plugin-export-overlays`):
+- `periodic-ci-redhat-developer-rhdh-plugin-export-overlays-main-e2e-ocp-helm-nightly` -- overlay OCP Helm nightly on main
+- `periodic-ci-redhat-developer-rhdh-plugin-export-overlays-release-1.10-e2e-ocp-helm-nightly` -- overlay OCP Helm nightly on a release branch
 
-```
-periodic-ci-redhat-developer-rhdh-plugin-export-overlays-{BRANCH}-e2e-ocp-helm-nightly
-```
-
-Example: `periodic-ci-redhat-developer-rhdh-plugin-export-overlays-main-e2e-ocp-helm-nightly`. Overlay PR checks use the same `pull-ci-` prefix. Artifact layout is the same GCS/Prow pattern; start overlay failure triage from the Slack **E2E AI Triage Summary**, not from this section.
+PR check jobs use the `pull-ci-` prefix instead of `periodic-ci-` (and drop the `-nightly` suffix). Artifact layout is the same GCS/Prow pattern. For overlay failures, start triage from the Slack **E2E AI Triage Summary**, not from this section.
 
 ### How the Pipeline Works
 
