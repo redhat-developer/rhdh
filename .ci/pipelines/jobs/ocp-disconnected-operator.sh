@@ -189,8 +189,8 @@ handle_ocp_disconnected_operator() {
   disconnected::mirror_plugins || return 1
 
   # Pin CATALOG_INDEX_IMAGE to the digest actually pushed (hub profile default
-  # digest is often absent from the mirror). Homepage is a static ref:// list
-  # in dynamic-plugins-homepage.yaml, resolved through this index.
+  # digest is often absent from the mirror). Homepage package is the digest-pinned
+  # OCI exported as HOMEPAGE_PLUGIN_PACKAGE (ref:// cannot resolve with includes: []).
   disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"

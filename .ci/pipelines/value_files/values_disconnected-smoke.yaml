@@ -7,13 +7,13 @@
 # Do not include dynamic-plugins.default.yaml from the catalog index: next
 # catalogs can list :tag refs that do not exist on quay (manifest unknown),
 # which CrashLoops install-dynamic-plugins after registries.conf rewrites
-# those pulls to the mirror. Homepage is a static ref:// list resolved through
-# the mirrored catalog index (same plugins as Operator dynamic-plugins-homepage.yaml).
+# those pulls to the mirror. Homepage package is HOMEPAGE_PLUGIN_PACKAGE
+# (digest-pinned OCI from the catalog). ref:// needs includes and cannot be used.
 global:
   dynamic:
     includes: []
     plugins:
-      - package: ref://red-hat-developer-hub-backstage-plugin-homepage
+      - package: ${HOMEPAGE_PLUGIN_PACKAGE}
         enabled: true
         pluginConfig:
           dynamicPlugins:

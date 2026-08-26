@@ -66,6 +66,7 @@ export -f disconnected::resolve_catalog_index_image
 export -f disconnected::create_homepage_plugins_configmap
 export -f disconnected::apply_plugin_mirror_configmap
 export -f disconnected::write_digest_plugin_list
+export -f disconnected::set_homepage_plugin_package_from_list
 export -f disconnected::copy_catalog_index_to_mirror
 export -f disconnected::_catalog_index_source_ref
 export -f disconnected::_catalog_index_mirror_dest

@@ -79,7 +79,10 @@ disconnected::write_digest_plugin_list() {
   extract_dir=$(mktemp -d)
 
   log::info "Extracting catalog index for digest-only plugin list: ${plugin_index}"
-  if ! skopeo copy "docker://${index_ref}" "dir:${extract_dir}/idx"; then
+  # Catalog index is linux/amd64-only; override so this works on darwin/arm64 hosts
+  # as well as in the linux e2e-runner.
+  if ! skopeo copy --override-os linux --override-arch amd64 \
+    "docker://${index_ref}" "dir:${extract_dir}/idx"; then
     log::error "Failed to extract catalog index ${index_ref}"
     rm -rf "${extract_dir}"
     return 1
@@ -123,7 +126,8 @@ disconnected::write_digest_plugin_list() {
   if [[ -n "${name_filter}" && -s "${list_file}" ]]; then
     local filtered
     filtered=$(mktemp)
-    grep -F "${name_filter}" "${list_file}" > "${filtered}" || true
+    # Path-segment match so "...-homepage" does not also keep "...-homepage-backend".
+    grep -E "/${name_filter}(@|:)" "${list_file}" > "${filtered}" || true
     mv "${filtered}" "${list_file}"
   fi
 
@@ -147,7 +151,7 @@ disconnected::write_digest_plugin_list() {
 }
 
 # Copy the catalog index to the mirror and record it in the mirroring summary.
-# --plugin-list does not copy the index; ref:// resolution still needs it.
+# --plugin-list does not copy the index; deploy still injects CATALOG_INDEX_IMAGE.
 # Args:
 #   $1 - plugin_index (oci://...)
 disconnected::copy_catalog_index_to_mirror() {
@@ -170,12 +174,34 @@ disconnected::copy_catalog_index_to_mirror() {
   fi
 }
 
+# Export HOMEPAGE_PLUGIN_PACKAGE from a one-line digest plugin list.
+# Adds !name if the list line has no OCI subpath (install-dynamic-plugins needs it).
+# Args:
+#   $1 - plugin list file from write_digest_plugin_list
+disconnected::set_homepage_plugin_package_from_list() {
+  local list_file=$1
+  local line=""
+  line=$(head -1 "${list_file}" 2> /dev/null || true)
+  line="${line#"${line%%[![:space:]]*}"}"
+  line="${line%"${line##*[![:space:]]}"}"
+  if [[ -z "${line}" ]]; then
+    log::error "Homepage plugin list is empty: ${list_file}"
+    return 1
+  fi
+  if [[ "${line}" != *'!'* ]]; then
+    line="${line}!${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}"
+  fi
+  export HOMEPAGE_PLUGIN_PACKAGE="${line}"
+  log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE}"
+}
+
 # ---------------------------------------------------------------------------
 # mirror_plugins — fetch and run mirror-plugins.sh against the mirror registry
 # ---------------------------------------------------------------------------
 
-# Smoke: homepage plugin only (--plugin-list) plus the catalog index (for ref://).
-# --plugin-index would enumerate every catalog plugin, including unpublished :tag refs.
+# Smoke: homepage plugin only (--plugin-list) plus the catalog index
+# (CATALOG_INDEX_IMAGE). --plugin-index would enumerate every catalog plugin,
+# including unpublished :tag refs.
 disconnected::mirror_plugins() {
   local mirror_script="${DISCONNECTED_TMPDIR}/mirror-plugins.sh"
 
@@ -190,6 +216,7 @@ disconnected::mirror_plugins() {
   local list_file="${DISCONNECTED_TMPDIR}/homepage-plugins.txt"
   disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
     "${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}" || return 1
+  disconnected::set_homepage_plugin_package_from_list "${list_file}" || return 1
 
   disconnected::wait_mirror_registry_route 300 || return 1
   bash "${mirror_script}" \
@@ -290,23 +317,30 @@ disconnected::resolve_catalog_index_image() {
 # Homepage plugin ConfigMap (Operator)
 # ---------------------------------------------------------------------------
 
-# Create a ConfigMap from the static homepage-only dynamic-plugins.yaml
-# (ref:// resolved through the mirrored catalog index).
+# Create a ConfigMap from the homepage-only dynamic-plugins.yaml
+# (digest-pinned OCI package; includes: [] skips catalog defaults).
 # Args:
 #   $1 - namespace
 disconnected::create_homepage_plugins_configmap() {
+  common::require_vars HOMEPAGE_PLUGIN_PACKAGE || return 1
   local namespace=$1
   local cm_name="dynamic-plugins-disconnected-smoke"
-  local yaml="${DIR}/resources/disconnected/dynamic-plugins-homepage.yaml"
+  local template="${DIR}/resources/disconnected/dynamic-plugins-homepage.yaml"
+  local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
+
+  envsubst < "${template}" > "${tmp_yaml}" || {
+    log::error "Failed to render ${template}"
+    return 1
+  }
 
   oc create configmap "${cm_name}" \
-    --from-file="dynamic-plugins.yaml=${yaml}" \
+    --from-file="dynamic-plugins.yaml=${tmp_yaml}" \
     -n "${namespace}" \
     --dry-run=client -o yaml | oc apply -f - || {
     log::error "Failed to create ${cm_name} ConfigMap — aborting"
     return 1
   }
-  cp "${yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
+  cp "${tmp_yaml}" "${ARTIFACT_DIR}/disconnected-dynamic-plugins.yaml" 2> /dev/null || true
   log::success "ConfigMap ${cm_name} created in ${namespace}"
 }
 

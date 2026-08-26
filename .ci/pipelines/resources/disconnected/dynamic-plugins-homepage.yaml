@@ -1,12 +1,10 @@
 # Disconnected smoke: homepage-only dynamic plugins (Operator ConfigMap).
-# ref:// is resolved through the mirrored catalog index (CATALOG_INDEX_IMAGE).
-#
-# includes: [] prevents merging dynamic-plugins.default.yaml from the catalog
-# index. next catalogs can list :tag refs that were not mirrored (digest-only
-# mirror), which CrashLoops install-dynamic-plugins.
+# Rendered via envsubst (requires HOMEPAGE_PLUGIN_PACKAGE).
+# includes: [] skips dynamic-plugins.default.yaml (unpublished :tag refs).
+# package is the digest-pinned OCI from the catalog (ref:// needs includes).
 includes: []
 plugins:
-  - package: ref://red-hat-developer-hub-backstage-plugin-homepage
+  - package: ${HOMEPAGE_PLUGIN_PACKAGE}
     enabled: true
     pluginConfig:
       dynamicPlugins:

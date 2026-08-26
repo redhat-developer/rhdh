@@ -137,8 +137,8 @@ handle_ocp_disconnected_helm() {
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
   # Pin CATALOG_INDEX_IMAGE to the digest actually pushed (hub profile default
-  # digest is often absent from the mirror). Homepage is a static ref:// list
-  # in values_disconnected-smoke.yaml, resolved through this index.
+  # digest is often absent from the mirror). Homepage package is the digest-pinned
+  # OCI exported as HOMEPAGE_PLUGIN_PACKAGE (ref:// cannot resolve with includes: []).
   disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"
@@ -198,10 +198,17 @@ handle_ocp_disconnected_helm() {
   # Post-renderer appends disconnected volumes (registries.conf, mirror CA)
   # to the rendered Deployment, avoiding the Helm "array clobber" pitfall.
   local post_renderer="${DIR}/resources/disconnected/helm-post-renderer.sh"
+  local helm_values="${DISCONNECTED_TMPDIR}/values_disconnected-smoke.yaml"
+  common::require_vars HOMEPAGE_PLUGIN_PACKAGE || return 1
+  envsubst < "${DIR}/value_files/values_disconnected-smoke.yaml" > "${helm_values}" || {
+    log::error "Failed to render disconnected Helm values"
+    return 1
+  }
+  cp "${helm_values}" "${ARTIFACT_DIR}/values_disconnected-smoke.yaml" 2> /dev/null || true
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${chart_install_path}" \
-    -f "${DIR}/value_files/values_disconnected-smoke.yaml" \
+    -f "${helm_values}" \
     --post-renderer "${post_renderer}" \
     --post-renderer-args "${MIRROR_REGISTRY_URL}" \
     "${helm_set_flags[@]}" || {

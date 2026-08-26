@@ -22,6 +22,7 @@ disconnected::mirror_plugins() {
   local list_file="${DISCONNECTED_TMPDIR}/homepage-plugins.txt"
   disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
     "${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}" || return 1
+  disconnected::set_homepage_plugin_package_from_list "${list_file}" || return 1
 
   # --plugin-list only (not --plugin-index): index mode re-adds fragile tags.
   # Catalog index is mirrored after plugins so the summary still records it.
