@@ -216,7 +216,7 @@ function githubHeaders() {
 
 function yamlScalar(text, key) {
   const match = text.match(
-    new RegExp(`^\\s+${key}:\\s*(?:['"]([^'"]+)['"]|(\\S+))`, "m"),
+    new RegExp(String.raw`^\s+${key}:\s*(?:['"]([^'"]+)['"]|(\S+))`, "m"),
   );
   return (match?.[1] ?? match?.[2] ?? "").trim() || undefined;
 }
@@ -454,14 +454,16 @@ async function enrichNpm(row) {
     const lastPublish = meta.time?.[latest] ?? meta.time?.modified;
     const deprecatedMessage =
       meta.deprecated || (latest && meta.versions?.[latest]?.deprecated) || "";
+    let notes = "";
+    if (deprecatedMessage) {
+      notes = `npm deprecated: ${deprecatedMessage}`;
+    } else if (lookupName !== row.name) {
+      notes = `resolved as ${lookupName}`;
+    }
     return {
       lastPublish: lastPublish ? new Date(lastPublish) : undefined,
       deprecated: Boolean(deprecatedMessage),
-      notes: deprecatedMessage
-        ? `npm deprecated: ${deprecatedMessage}`
-        : lookupName !== row.name
-          ? `resolved as ${lookupName}`
-          : "",
+      notes,
     };
   } catch (error) {
     return { notes: `npm lookup failed: ${error.message}` };
@@ -544,9 +546,9 @@ function inMarkdownReport(row) {
 }
 
 function overlayWorkspaces(rows) {
-  return [
-    ...new Set(rows.map((row) => row.workspace).filter(Boolean)),
-  ].sort();
+  return [...new Set(rows.map((row) => row.workspace).filter(Boolean))].sort(
+    (a, b) => a.localeCompare(b),
+  );
 }
 
 function rowsForWorkspace(rows, workspace) {
@@ -568,7 +570,7 @@ function sortInventoryRows(a, b) {
 
 function markdownCell(value) {
   return String(value ?? "")
-    .replaceAll("|", "\\|")
+    .replaceAll("|", String.raw`\|`)
     .replaceAll("\n", " ");
 }
 
@@ -657,35 +659,50 @@ function toMarkdown(rows) {
     `- [RHDH core](#rhdh-core) — ${coreNonOk} non-OK`,
   ];
 
-  if (workspaces.length > 0) {
-    lines.push("- Plugin workspaces");
-    for (const workspace of workspaces) {
-      const grouped = rowsForWorkspace(overlayRows, workspace);
-      const nonOk = grouped.filter((row) => row.status !== "OK").length;
-      lines.push(
-        `  - [${workspace}](#${headingId(workspace)}) — ${nonOk} non-OK`,
-      );
-    }
-  }
+  const tocWorkspaces =
+    workspaces.length > 0
+      ? [
+          "- Plugin workspaces",
+          ...workspaces.map((workspace) => {
+            const grouped = rowsForWorkspace(overlayRows, workspace);
+            const nonOk = grouped.filter((row) => row.status !== "OK").length;
+            return `  - [${workspace}](#${headingId(workspace)}) — ${nonOk} non-OK`;
+          }),
+        ]
+      : [];
 
-  lines.push("", "## RHDH core", "", countLine(statusCounts(coreRows)), "");
-  lines.push(...markdownTable(coreRows, { includePlugin: true }));
+  const workspaceSections =
+    workspaces.length > 0
+      ? [
+          "## Plugin workspaces",
+          "",
+          ...workspaces.flatMap((workspace) => {
+            const grouped = rowsForWorkspace(overlayRows, workspace);
+            const support = [
+              ...new Set(grouped.map((row) => row.support).filter(Boolean)),
+            ].sort((a, b) => a.localeCompare(b));
+            return [
+              `### ${workspace}`,
+              "",
+              ...(support.length > 0 ? [`Support: ${support.join(", ")}`] : []),
+              countLine(statusCounts(grouped)),
+              "",
+              ...markdownTable(grouped, { includePlugin: true }),
+            ];
+          }),
+        ]
+      : [];
 
-  if (workspaces.length > 0) {
-    lines.push("## Plugin workspaces", "");
-    for (const workspace of workspaces) {
-      const grouped = rowsForWorkspace(overlayRows, workspace);
-      const support = [
-        ...new Set(grouped.map((row) => row.support).filter(Boolean)),
-      ].sort();
-      lines.push(`### ${workspace}`, "");
-      if (support.length > 0) {
-        lines.push(`Support: ${support.join(", ")}`);
-      }
-      lines.push(countLine(statusCounts(grouped)), "");
-      lines.push(...markdownTable(grouped, { includePlugin: true }));
-    }
-  }
+  lines.push(
+    ...tocWorkspaces,
+    "",
+    "## RHDH core",
+    "",
+    countLine(statusCounts(coreRows)),
+    "",
+    ...markdownTable(coreRows, { includePlugin: true }),
+    ...workspaceSections,
+  );
 
   return `${lines.filter((line, i, arr) => !(line === "" && arr[i - 1] === "")).join("\n")}\n`;
 }
