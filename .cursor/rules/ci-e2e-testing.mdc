@@ -464,7 +464,6 @@ brew install gnu-sed
 - [Playwright Project Names (Single Source of Truth)](e2e-tests/playwright/projects.json)
 - [Playwright Configuration](e2e-tests/playwright.config.ts)
 - [Package Configuration](e2e-tests/package.json)
-- [Dynamic Plugins Config](dynamic-plugins/package.json)
 - [CI Test Script](.ci/pipelines/openshift-ci-tests.sh)
 
 ### External Resources

@@ -5,7 +5,6 @@
     "plugins/*/src",
     "plugins/*/dev",
     "plugins/*/migrations",
-    "dynamic-plugins/wrappers/*/src",
     "packages/plugin-utils/__tests__",
     "packages/plugin-utils/setupTests.ts"
   ],

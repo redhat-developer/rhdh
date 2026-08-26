@@ -76,11 +76,9 @@ jobs:
       - name: Set up the cluster-free harness
         uses: ./.github/actions/setup-cluster-free-harness
 
-      - name: Populate dynamic-plugins-root (OCI, no source build)
+      - name: Populate dynamic-plugins-root (OCI)
         # install-dynamic-plugins pulls the harness plugin set from the public OCI
-        # registry (ghcr) via skopeo — the core plugins in the catalog index's
-        # default.yaml reference local ./dynamic-plugins/dist paths that only exist
-        # after a source build, so we install the OCI-published builds instead.
+        # registry (ghcr) via skopeo.
         run: ./e2e-tests/local-harness/populate.sh
 
       - name: Run cluster-free E2E (legacy app)

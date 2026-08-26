@@ -146,32 +146,6 @@ RUN echo "=== YARN BUILD ==="; FAILED=0; \
   done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
-WORKDIR $CONTAINER_SOURCE/dynamic-plugins
-
-RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
-  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-  (( FAILED = FAILED + 1 )); \
-  echo; echo $d; \
-  echo "!!! DYNAMIC PLUGIN YARN INSTALL FAILED !!!"; \
-  cat ${d}/build.log; \
-  fi; done; \
-  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
-
-RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; FAILED=0; \
-  "$YARN" export-dynamic || FAILED=1; \
-  for d in $(find . -name yarn-install.log); do \
-  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
-  done; \
-  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
-
-RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
-
-WORKDIR $CONTAINER_SOURCE
-
-# Clean up dynamic plugins sources:
-# Only keep the dist sub-folder in the dynamic-plugins folder
-RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
-
 # dump console logs if they have errors
 RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*  -name build.log || true); do \
   failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
@@ -302,8 +276,6 @@ COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/po
 
 # Production app tree from cleanup stage (excludes monorepo sources/build artifacts)
 COPY --from=cleanup --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
-# Embedded dynamic plugins and techdocs venv are built separately
-COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/dynamic-plugins/ ./dynamic-plugins/
 COPY --from=cleanup --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
 
 ENV PATH="/opt/techdocs-venv/bin:${PATH}"
@@ -314,9 +286,7 @@ COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 # Install the dynamic-plugins installer through yarn instead of fetching the
 # vendored .cjs from this repo. The `@red-hat-developer-hub/cli-module-install-dynamic-plugins`
 # dependency is declared in `packages/backend/package.json` so the bin
-# survives the `=== YARN WORKSPACES FOCUS ===` production install (the
-# earlier `=== DELETE DYNAMIC PLUGINS/* ===` step wipes
-# `dynamic-plugins/node_modules/` to keep only `dist/`). Hermeto already
+# survives the `=== YARN WORKSPACES FOCUS ===` production install. Hermeto
 # prefetches yarn deps for the repo root (the `{"type": "yarn", "path": "."}`
 # entry in the fetch-deps call in scripts/local-hermeto-build.sh), so this
 # works in the hermetic Konflux build with no infra change. The build-time

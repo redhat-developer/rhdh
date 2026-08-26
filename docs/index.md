@@ -77,16 +77,6 @@ global:
         enabled: false
 ```
 
-or using the deprecated wrapper syntax:
-
-```yaml
-global:
-  dynamic:
-    plugins:
-      - package: './dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment'
-        enabled: false
-```
-
 #### Using RHDH Operator
 
 When using RHDH Operator, you must modify the `ConfigMap` file created for dynamic plugin configuration. You specify the name of this `ConfigMap` file in the `dynamicPluginsConfigMapName` field of your `Backstage` custom resource. Usually, the `ConfigMap` file is named as `dynamic-plugins-rhdh`.
@@ -106,22 +96,6 @@ data:
         enabled: false
 ```
 
-or using the deprecated wrapper syntax:
-
-```yaml
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: dynamic-plugins-rhdh
-data:
-  dynamic-plugins.yaml: |
-    includes:
-      - dynamic-plugins.default.yaml
-    plugins:
-      - package: './dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment'
-        enabled: false
-```
-
 Note that as of 1.10, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image, and has been removed from this repo.
 
 See previous section `Inheriting values` for how to fetch this file from the index image.
@@ -137,17 +111,6 @@ dynamicPlugins:
     - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
       enabled: false
 ```
-
-or, using the deprecated wrapper syntax:
-
-```yaml
-dynamicPlugins:
-  plugins:
-    - package: './dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment'
-      enabled: false
-```
-
-If using the deprecated wrapper approach, you should then delete the `dynamic-plugins-root/backstage-community-plugin-analytics-provider-segment` plugin directory, to stop the plugin from loading.
 
 Note that as of 1.10, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image, and has been removed from this repo.
 
@@ -175,16 +138,6 @@ global:
         enabled: true
 ```
 
-or, using the deprecated wrapper syntax:
-
-```yaml
-global:
-  dynamic:
-    plugins:
-      - package: './dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment'
-        enabled: true
-```
-
 #### Using RHDH Operator
 
 If you have created the `dynamic-plugins-rhdh` ConfigMap file, add the `analytics-provider-segment` plugin to the list of plugins and set `enabled: true` to enable telemetry, or `enabled: false` to disable it.
@@ -202,22 +155,6 @@ data:
       - dynamic-plugins.default.yaml
     plugins:
       - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
-        enabled: true
-```
-
-or, using the deprecated wrapper syntax:
-
-```yaml
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: dynamic-plugins-rhdh
-data:
-  dynamic-plugins.yaml: |
-    includes:
-      - dynamic-plugins.default.yaml
-    plugins:
-      - package: './dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment'
         enabled: true
 ```
 
@@ -291,24 +228,14 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 3. Run `yarn install` to install the dependencies
 
-4. In the `dynamic-plugins-root` folder, verify that you have the dynamic plugins you want to load into
-   the backend application. To have all the plugins originally included in the Showcase application,
-   run the following command at the root of the showcase repository:
-
-   ```bash
-   yarn export-dynamic -- -- --dev
-   ```
-
-   **Note:** The `-- --` arguments are required to forward the `--dev` argument to every yarn workspace providing an `export-dynamic` script.
-
-5. Copy the required configuration to the `app-config.local.yaml` file
+4. Copy the required configuration to the `app-config.local.yaml` file
 
 
-6. Start the application using `yarn start`, please note that the frontend will be served from the backend as static assets
+5. Start the application using `yarn start`, please note that the frontend will be served from the backend as static assets
 
-7. Navigate to <http://localhost:7007>
+6. Navigate to <http://localhost:7007>
 
-8.  Alternatively, you can start application using `yarn dev` which would run the frontend using webpack, which allows for hot reloads.
+7.  Alternatively, you can start application using `yarn dev` which would run the frontend using webpack, which allows for hot reloads.
 
     To use `yarn dev`, change the following in your app-config.local.yaml:
 
@@ -328,55 +255,47 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 ## Optional Configuration and Plugins
 
-- Adding a Home Page
-  - Run `yarn export-dynamic` from the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page`:
-  ```bash
-  pushd dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page && yarn export-dynamic && popd
-  ```
-  - Copy-paste the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page` folder into `dynamic-plugins-root`:
-  ```bash
-  cp -r dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page dynamic-plugins-root/
-  ```
-  - Add the following to your `app-config.local.yaml`:
-      ```yaml
-       dynamicPlugins:
-          frontend:
-            red-hat-developer-hub.backstage-plugin-dynamic-home-page:
-              dynamicRoutes:
-                - path: /
-                  importName: DynamicHomePage
-              mountPoints:
-                - mountPoint: home.page/cards
-                  importName: SearchBar
-                  config:
-                    layouts:
-                      xl: { w: 10, h: 1, x: 1 }
-                      lg: { w: 10, h: 1, x: 1 }
-                      md: { w: 10, h: 1, x: 1 }
-                      sm: { w: 10, h: 1, x: 1 }
-                      xs: { w: 12, h: 1 }
-                      xxs: { w: 12, h: 1 }
-                - mountPoint: home.page/cards
-                  importName: QuickAccessCard
-                  config:
-                    layouts:
-                      xl: { w: 7, h: 8 }
-                      lg: { w: 7, h: 8 }
-                      md: { w: 7, h: 8 }
-                      sm: { w: 12, h: 8 }
-                      xs: { w: 12, h: 8 }
-                      xxs: { w: 12, h: 8 }
-                - mountPoint: home.page/cards
-                  importName: CatalogStarredEntitiesCard
-                  config:
-                    layouts:
-                      xl: { w: 5, h: 4, x: 7 }
-                      lg: { w: 5, h: 4, x: 7 }
-                      md: { w: 5, h: 4, x: 7 }
-                      sm: { w: 12, h: 4 }
-                      xs: { w: 12, h: 4 }
-                      xxs: { w: 12, h: 4 }
-      ```
+- Adding a Home Page — add the following to your `app-config.local.yaml`:
+
+```yaml
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-homepage:
+      dynamicRoutes:
+        - path: /
+          importName: DynamicHomePage
+      mountPoints:
+        - mountPoint: home.page/cards
+          importName: SearchBar
+          config:
+            layouts:
+              xl: { w: 10, h: 1, x: 1 }
+              lg: { w: 10, h: 1, x: 1 }
+              md: { w: 10, h: 1, x: 1 }
+              sm: { w: 10, h: 1, x: 1 }
+              xs: { w: 12, h: 1 }
+              xxs: { w: 12, h: 1 }
+        - mountPoint: home.page/cards
+          importName: QuickAccessCard
+          config:
+            layouts:
+              xl: { w: 7, h: 8 }
+              lg: { w: 7, h: 8 }
+              md: { w: 7, h: 8 }
+              sm: { w: 12, h: 8 }
+              xs: { w: 12, h: 8 }
+              xxs: { w: 12, h: 8 }
+        - mountPoint: home.page/cards
+          importName: CatalogStarredEntitiesCard
+          config:
+            layouts:
+              xl: { w: 5, h: 4, x: 7 }
+              lg: { w: 5, h: 4, x: 7 }
+              md: { w: 5, h: 4, x: 7 }
+              sm: { w: 12, h: 4 }
+              xs: { w: 12, h: 4 }
+              xxs: { w: 12, h: 4 }
+```
 
 - Enabling Authentication in Showcase
      - Refer to the [authentication documentation](./auth.md) for the available auth providers and the steps to configure them.
