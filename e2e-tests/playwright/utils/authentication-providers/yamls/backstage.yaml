@@ -1,5 +1,5 @@
 kind: Backstage
-apiVersion: rhdh.redhat.com/v1alpha4
+apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh
 spec:
@@ -15,9 +15,13 @@ spec:
           value: "--no-node-snapshot"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
+        - name: BACKEND_SECRET
+          value: "super-secret-for-tests"
       secrets:
         - name: rhdh-secrets
     extraFiles:
       configMaps:
         - name: rbac-policy
       mountPath: /opt/app-root/src/rbac
+  # Disable default flavours (e.g. lightspeed) — OperatorInstallProfile also enforces this.
+  flavours: []
