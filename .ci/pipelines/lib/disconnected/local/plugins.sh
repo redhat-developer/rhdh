@@ -78,6 +78,36 @@ disconnected::mirror_plugins() {
     log::error "Failed to mirror catalog index ${index_ref}"
     return 1
   fi
+
+  # Integrated registry only serves ImageStreams by tag. Local hook exports
+  # CATALOG_INDEX_IMAGE as :sha256-<digest>; :next alone is not enough.
+  local catalog_digest="" catalog_istag="" catalog_tagged="" catalog_tagged_ok=0
+  # Index is linux/amd64-only; unshimmed inspect on arm64 hosts fails with
+  # "no image found in manifest list for architecture arm64".
+  catalog_digest=$("${real_skopeo}" inspect --tls-verify=false \
+    --override-os linux --override-arch amd64 \
+    "docker://${catalog_dest}" --format '{{.Digest}}') || {
+    log::error "Failed to inspect mirrored catalog index ${catalog_dest}"
+    return 1
+  }
+  catalog_istag="sha256-${catalog_digest#sha256:}"
+  catalog_tagged="${MIRROR_REGISTRY_URL}/rhdh/plugin-catalog-index:${catalog_istag}"
+  log::info "Tagging catalog index -> :${catalog_istag}"
+  for attempt in $(seq 1 "${max_attempts}"); do
+    disconnected::wait_local_integrated_registry || return 1
+    if "${real_skopeo}" copy --remove-signatures --dest-tls-verify=false \
+      --override-os linux --override-arch amd64 \
+      "docker://${catalog_dest}" "docker://${catalog_tagged}"; then
+      catalog_tagged_ok=1
+      break
+    fi
+    log::warn "catalog index ImageStream tag attempt ${attempt}/${max_attempts} failed"
+  done
+  if [[ "${catalog_tagged_ok}" != "1" ]]; then
+    log::error "Failed to create ImageStream tag ${catalog_tagged}"
+    return 1
+  fi
+
   # Ensure summary includes catalog index for resolve_catalog_index_image.
   local summary_src
   summary_src="$(pwd)/rhdh-plugin-mirroring-summary.txt"
@@ -120,7 +150,7 @@ disconnected::ensure_local_plugin_imagestream_tags() {
 
   log::section "Ensuring ImageStream tags for mirrored plugins"
   local line src dest src_ref dest_path name ns digest tag dest_tagged
-  local ok=0 fail=0
+  local ok=0 fail=0 tagged=0 tag_attempt
   while IFS= read -r line || [[ -n "${line}" ]]; do
     [[ -z "${line}" || "${line}" != *"→"* && "${line}" != *"->"* ]] && continue
     if [[ "${line}" == *"→"* ]]; then
@@ -165,8 +195,17 @@ disconnected::ensure_local_plugin_imagestream_tags() {
     tag="sha256-${digest#sha256:}"
     dest_tagged="${MIRROR_REGISTRY_URL}/${ns}/${name}:${tag}"
     log::info "Tagging ${ns}/${name}@${digest} -> :${tag}"
-    if skopeo copy --remove-signatures --dest-tls-verify=false \
-      "docker://${src_ref}" "docker://${dest_tagged}"; then
+    tagged=0
+    for tag_attempt in $(seq 1 5); do
+      disconnected::wait_local_integrated_registry || return 1
+      if skopeo copy --remove-signatures --dest-tls-verify=false \
+        "docker://${src_ref}" "docker://${dest_tagged}"; then
+        tagged=1
+        break
+      fi
+      log::warn "ImageStream tag attempt ${tag_attempt}/5 failed for ${ns}/${name} (registry EOF/503 during Recreate is typical)"
+    done
+    if [[ "${tagged}" == "1" ]]; then
       ok=$((ok + 1))
     else
       log::error "Failed to create ImageStream tag for ${ns}/${name}"
