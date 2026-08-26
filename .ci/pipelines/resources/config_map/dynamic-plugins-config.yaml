@@ -31,6 +31,10 @@ app:
         config:
           availableLanguages: [en, de, es, fr, it, ja]
           defaultLanguage: en
+    # Backstage 1.54 added home-page-widget:search/search-bar on @backstage/plugin-search.
+    # The RHDH homepage plugin already provides home-page-widget:home/search-bar; leaving
+    # both enabled duplicates the Search input and fails guest-signin-happy-path.spec.ts.
+    - home-page-widget:search/search-bar: false
     # customizable: false so `priority` actually governs ordering (with customizable:
     # true, the layout extension keeps the plugin-registration order and ignores
     # priority entirely). Keys must match each widget's `params.name` (not its
