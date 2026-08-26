@@ -42,22 +42,12 @@ package the catalog index declares — see "Plugin Sanity Check" in
 Alternatives:
 
 - **Catalog index** — installs the full index plugin set instead of the curated one.
-  The index still references a few core plugins by local `./dynamic-plugins/dist/…`
-  paths that only exist after a source build, and the CLI skips those; everything
-  else resolves from the public registries. Use `populate-catalog-index.sh`, which
+  Use `populate-catalog-index.sh`, which
   also records the breadcrumb the plugin sanity check asserts against:
 
   ```bash
   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
     ./e2e-tests/local-harness/populate-catalog-index.sh
-  ```
-
-- **Offline from-source** (frontend plugins only; requires a reconciled workspace —
-  see "Known issues"):
-
-  ```bash
-  yarn --cwd dynamic-plugins export-dynamic
-  yarn --cwd dynamic-plugins copy-dynamic-plugins ../dynamic-plugins-root
   ```
 
 ### 2. Run
@@ -123,7 +113,7 @@ existing specs **pass unmodified**:
 
 Not enablable yet: `plugins/licensed-users-info-backend` — the
 `licensed-users-info-backend` plugin is not published to the overlays OCI registry
-(ghcr) and only exists as a `./dynamic-plugins/dist` source build.
+(ghcr).
 
 ## CI
 

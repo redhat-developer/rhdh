@@ -64,7 +64,6 @@ ignore:
   - "**/build/**"
   - "**/node_modules/**"
   - "e2e-tests/**"
-  - "dynamic-plugins/wrappers/**"
   - ".claude/**"
   - "docs/**"
 
@@ -100,10 +99,6 @@ component_management:
       name: Plugin utils
       paths:
         - packages/plugin-utils/src/**
-    - component_id: dynamic_plugins_utils
-      name: Dynamic plugins utils
-      paths:
-        - dynamic-plugins/_utils/src/**
 
 flag_management:
   default_rules:
@@ -123,7 +118,6 @@ flag_management:
         - packages/app/src/**
         - packages/backend/src/**
         - packages/plugin-utils/src/**
-        - dynamic-plugins/_utils/src/**
       carryforward: true
     # Paths intentionally mirror the rhdh flag — both measure the same source
     # from different test types. Isolation relies on --flag at upload time,
@@ -134,5 +128,4 @@ flag_management:
         - packages/app/src/**
         - packages/backend/src/**
         - packages/plugin-utils/src/**
-        - dynamic-plugins/_utils/src/**
       carryforward: true

@@ -30,4 +30,4 @@ flowchart TB
   end
 ```
 
-Step-by-step detail, troubleshooting, and **dynamic-plugins** (second Yarn project) are in [`SKILL.md`](./SKILL.md).
+Step-by-step detail and troubleshooting are in [`SKILL.md`](./SKILL.md).

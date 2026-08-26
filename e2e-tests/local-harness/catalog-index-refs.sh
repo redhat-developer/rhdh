@@ -4,10 +4,8 @@
 # with the documented known failures (plugin-sanity-excludes.txt) filtered out.
 # Used by populate-catalog-index.sh to build the cluster-free install config.
 #
-# Both ref kinds the index declares are emitted: oci:// refs
-# (oci://registry/name@sha256:... or :tag, with no !plugin-path suffix), and
-# ./dynamic-plugins/dist/<name> ones (built into the product image, so the
-# install CLI skips them outside it).
+# Emits every oci:// ref the index declares
+# (oci://registry/name@sha256:... or :tag, with no !plugin-path suffix).
 #
 # Requires skopeo and jq. Usage:
 #   catalog-index-refs.sh quay.io/rhdh/plugin-catalog-index:next
@@ -75,7 +73,7 @@ grep -Ev '^[[:space:]]*(#|$)' "$excludes_src" > "$workdir/excludes.txt" || true
 # entries count, or the install would pull packages the index does not declare.
 refs="$(
   echo "$default_yaml" \
-    | grep -E '^[[:space:]]*-[[:space:]]+package:[[:space:]]*"?(oci://|\./dynamic-plugins/dist/)' \
+    | grep -E '^[[:space:]]*-[[:space:]]+package:[[:space:]]*"?oci://' \
     | sed -E 's/^[[:space:]]*-[[:space:]]+package:[[:space:]]*"?//; s/"[[:space:]]*$//' \
     | sort -u
 )"

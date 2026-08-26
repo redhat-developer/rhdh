@@ -1,6 +1,6 @@
 import { glob } from "glob";
 import { execSync } from "node:child_process";
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import semver from "semver";
@@ -11,7 +11,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const ROOT_DIR = join(__dirname, "..");
-const DYNAMIC_PLUGINS_DIR = join(ROOT_DIR, "dynamic-plugins/wrappers");
 const BACKSTAGE_JSON_PATH = join(ROOT_DIR, "backstage.json");
 const BUILD_METADATA_PATH = join(
   ROOT_DIR,
@@ -63,53 +62,6 @@ function pinDependencies() {
 }
 
 /**
- * Updates the version of a dynamic plugin in its package.json file.
- *
- * @param {string} pluginDir - The path to the dynamic plugin directory.
- */
-function updateDynamicPluginVersion(pluginDir) {
-  try {
-    const packageJsonPath = join(pluginDir, "package.json");
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-    const { name, dependencies } = packageJson;
-
-    for (const [depName, depVersion] of Object.entries(dependencies)) {
-      const modifiedDepName = depName.replace(/^@/, "").replace(/\//g, "-");
-      if (modifiedDepName === name) {
-        console.log(`Updating ${name} to ${depVersion}...`);
-        packageJson.version = depVersion;
-      }
-    }
-
-    writeFileSync(
-      packageJsonPath,
-      JSON.stringify(packageJson, null, 2) + "\n",
-      "utf8",
-    );
-  } catch (error) {
-    console.error(`Error updating plugin version in ${pluginDir}:`, error);
-  }
-}
-
-/**
- * Updates the versions of all dynamic plugins in the dynamic-plugins directory.
- */
-function updateDynamicPluginVersions() {
-  try {
-    process.chdir(DYNAMIC_PLUGINS_DIR);
-    for (const dir of readdirSync(".", { withFileTypes: true })) {
-      if (dir.isDirectory()) {
-        updateDynamicPluginVersion(join(DYNAMIC_PLUGINS_DIR, dir.name));
-      }
-    }
-  } catch (error) {
-    console.error("Error updating dynamic plugin versions:", error);
-  } finally {
-    process.chdir(ROOT_DIR);
-  }
-}
-
-/**
  * Fetches the latest Backstage version from the GitHub API.
  *
  * @returns {Promise<string>} The latest Backstage version.
@@ -145,39 +97,6 @@ function updateBackstageVersionFile(version) {
     );
   } catch (error) {
     console.error("Error updating Backstage version file:", error);
-  }
-}
-
-/**
- * Updates the `backstage.supported-versions` field in package.json files under the `DYNAMIC_PLUGINS_DIR`.
- *
- * @param {string} backstageVersion - The Backstage version to set.
- */
-function updateSupportedBackstageVersions(backstageVersion) {
-  const packageJsonFiles = glob.sync(PACKAGE_JSON_GLOB, {
-    cwd: DYNAMIC_PLUGINS_DIR, // Search only within DYNAMIC_PLUGINS_DIR
-    ignore: IGNORE_GLOB,
-  });
-
-  for (const packageJsonFile of packageJsonFiles) {
-    try {
-      const packageJsonPath = join(DYNAMIC_PLUGINS_DIR, packageJsonFile);
-      const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-
-      // Update backstage.supported-versions
-      packageJson["backstage"] = {
-        ...packageJson["backstage"],
-        "supported-versions": backstageVersion,
-      };
-
-      writeFileSync(
-        packageJsonPath,
-        JSON.stringify(packageJson, null, 2) + "\n",
-        "utf8",
-      );
-    } catch (error) {
-      console.error(`Error processing ${packageJsonFile}:`, error);
-    }
   }
 }
 
@@ -309,13 +228,9 @@ async function main() {
 
     console.log("Bumping version...");
     execSync(bumpCommand, { stdio: "inherit" });
-    execSync(bumpCommand, { stdio: "inherit", cwd: join(ROOT_DIR, "dynamic-plugins") });
 
     console.log("Pinning all dependencies...");
     pinDependencies();
-
-    console.log("Updating wrapper versions...");
-    updateDynamicPluginVersions();
 
     const backstageVersion = await determineBackstageVersion(
       hasReleaseFlag,
@@ -324,14 +239,8 @@ async function main() {
       pattern,
     );
 
-    console.log(
-      `Updating wrappers supported versions to ${backstageVersion}...`,
-    );
-    updateSupportedBackstageVersions(backstageVersion);
-
     console.log("Updating lockfile...");
     execSync("yarn install --no-immutable", { stdio: "inherit" });
-    execSync("yarn install --no-immutable", { stdio: "inherit", cwd: join(ROOT_DIR, "dynamic-plugins") });
 
     console.log("Deduping lockfile...");
     execSync("yarn dedupe", { stdio: "inherit" });

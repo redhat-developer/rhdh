@@ -168,10 +168,7 @@ export function enableMicrosoftLoginWithIngestion(actions: AuthConfigActions): v
   actions.setAppConfigProperty("signInPage", "microsoft");
 }
 
-export function enableGithubLoginWithIngestion(
-  actions: AuthConfigActions,
-  isRunningLocal: boolean,
-): void {
+export function enableGithubLoginWithIngestion(actions: AuthConfigActions): void {
   console.log("Enabling Github login with ingestion...");
   expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME).toBeDefined();
   expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
@@ -182,11 +179,10 @@ export function enableGithubLoginWithIngestion(
 
   actions.setDynamicPluginEnabled("ref://backstage-plugin-catalog-backend-module-github-org", true);
 
-  const transformerPluginPath = isRunningLocal
-    ? "./dynamic-plugins/dist/@internal/backstage-plugin-catalog-backend-module-github-org-transformer-dynamic"
-    : "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.3.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer";
-
-  actions.setDynamicPluginEnabled(transformerPluginPath, true);
+  actions.setDynamicPluginEnabled(
+    "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.3.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer",
+    true,
+  );
 
   actions.setAppConfigProperty("catalog.providers", {
     githubOrg: [

@@ -31,8 +31,6 @@ More details about publishing dynamic plugins is in the [Packaging Dynamic Plugi
 
 [Debugging Dynamic Plugins](debugging.md)
 
-[Wrapping a third-party backend plugin to add dynamic plugin support](wrapping-plugins.md)
-
 ## Installing external Backstage plugins into RHDH
 
 1. Get the source code of the plugin.

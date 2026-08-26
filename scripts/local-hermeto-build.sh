@@ -64,7 +64,7 @@ get_target_arch() {
 TARGET_ARCH="$(get_target_arch)"
 
 #######################################
-# Cleans node_modules and yarn cache in the root and dynamic-plugins directory
+# Cleans node_modules and yarn cache in the component directory
 # Globals:
 #   None
 # Arguments:
@@ -74,17 +74,13 @@ TARGET_ARCH="$(get_target_arch)"
 #######################################
 clean_directories() {
   local component_dir="$1"
-  local directories=("${component_dir}" "${component_dir}/dynamic-plugins")
-  for directory in "${directories[@]}"; do
-    if [[ -d "${directory}" ]]; then
-      pushd "${directory}" > /dev/null
-      rm -rf node_modules
-      yarn cache clean --all
-      echo "Cleaned node_modules and yarn cache in ${directory}"
-      popd > /dev/null
-    fi
-  done
-  return 
+  if [[ -d "${component_dir}" ]]; then
+    pushd "${component_dir}" > /dev/null
+    rm -rf node_modules
+    yarn cache clean --all
+    echo "Cleaned node_modules and yarn cache in ${component_dir}"
+    popd > /dev/null
+  fi
 }
 
 #######################################
@@ -108,7 +104,7 @@ Options:
                           Required to build image unless --no-image is specified
   --no-cache              Skip cache build (use existing cache). Script will build the cache by default this is is specified.
   --no-image              Skip image build (only build cache)
-  --clean                 Automatically remove node_modules and yarn cache in the root/dynamic-plugins directory
+  --clean                 Automatically remove node_modules and yarn cache
   -h, --help              Show this help message
 
 Environment variables:
@@ -120,16 +116,14 @@ Examples (assume you are in the root of the rhdh repository):
   $0 -d . --no-image                                # Build cache only (build cache by default unless --no-cache is specified)
   $0 -d . -i quay.io/example/image:tag              # Builds cache and image
   $0 -d . -i quay.io/example/image:tag --no-cache   # Build image only (hermeto cache must exist)
-  $0 -d . --clean                                   # Clean node_modules and yarn cache in the root/dynamic-plugins directory
+  $0 -d . --clean                                   # Clean node_modules and yarn cache
 
 Cross-platform build (ARM on x86), requires \`qemu-user-static\` to be installed:
   TARGET_PLATFORM=linux/arm64 $0 -d . -i quay.io/example/image:tag
 
 Notes:
   - Please remove all \`node_modules\` and run \`yarn cache clean\` in the root
-    and ./dynamic-plugins directories before running the script.
-  - Remove any folders with additional \`yarn.lock\` files outside of the main \`yarn.lock\`
-    files in the root and \`./dynamic-plugins\` directories.
+    directory before running the script.
   - After building the cache, you should revert any changes to the
     \`python/requirements*.txt\` files before running the script again.
 EOF
@@ -211,7 +205,7 @@ build_cache() {
     fetch-deps --dev-package-managers \
     --source . \
     --output /cachi2/output \
-    '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "yarn","path": "./dynamic-plugins"}, {"type": "pip","path": "./python", "allow_binary": "false"}]'
+    '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "pip","path": "./python", "allow_binary": "false"}]'
 
   podman run --rm -ti \
     "${platform_args[@]}" \
@@ -359,7 +353,7 @@ main() {
   if [[ "${clean}" == true ]]; then
     clean_directories "${component_dir}"
   else
-    read -p "This script requires removal of node_modules and yarn cache in the root/dynamic-plugins directory. Continue? (y/n) " -n 1 -r
+    read -p "This script requires removal of node_modules and yarn cache. Continue? (y/n) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
       echo "Exiting..."

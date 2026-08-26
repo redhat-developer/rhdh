@@ -91,7 +91,7 @@ runs:
           fetch-deps --dev-package-managers \
           --source . \
           --output /cachi2/output \
-          '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "yarn","path": "./dynamic-plugins"}, {"type": "pip","path": "./python", "allow_binary": "false"}]'  || echo "Fetch-deps failed"
+          '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "pip","path": "./python", "allow_binary": "false"}]'  || echo "Fetch-deps failed"
         echo "::endgroup::"
         
         if [ -d ${{ env.LOCAL_CACHE_DIR }}/output ]; then

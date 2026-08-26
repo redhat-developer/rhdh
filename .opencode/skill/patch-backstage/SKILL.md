@@ -18,7 +18,7 @@ Ship a fix on an RHDH **`release-*`** line **without** bumping published Backsta
 
 | Repo | Role |
 |------|------|
-| **redhat-developer/rhdh** | Patches live here. Sync **`release-<VERSION>`**; run **`yarn patch`** here (root and/or **`dynamic-plugins/`**). |
+| **redhat-developer/rhdh** | Patches live here. Sync **`release-<VERSION>`**; run **`yarn patch`** here. |
 | **redhat-developer/backstage** | Maintenance fork: **`patch/release-<VERSION>`**, optional cherry-pick, **`yarn build`** per package **`cd`**, copy **`dist/`** into RHDH patch temps. PRs from your fork. |
 | **backstage/backstage** | Upstream object source only: remote on the **same** maintenance clone, **`git fetch`** for **`COMMITS`**. **Do not** use a second upstream checkout as the build tree. |
 
@@ -76,7 +76,7 @@ cd <RHDH_ROOT> && HUSKY=0 git fetch <RHDH_CORE_REMOTE> release-<V> && HUSKY=0 gi
 1. **Pre-flight:** Clean trees and remotes (**Step 1** opening + **Git remotes**); set **`RHDH_CORE_REMOTE`**, **`BACKSTAGE_UPSTREAM_REMOTE`**, optional **`FORK_REMOTE`** (your Backstage fork for PRs).
 2. **RHDH:** **`HUSKY=0`** fetch/checkout/pull **`release-<RHDH_VERSION>`**.
 3. **Maintenance:** Fetch **`patch/release-*`** from redhat-developer; **`HUSKY=0 checkout -B`**; **`git fetch <BACKSTAGE_UPSTREAM_REMOTE> master`** (upstream integration branch for **`COMMITS`**); **pre-check**; cherry-pick **or** patch-only path; **`yarn build`** per **`PACKAGES`** (**`cd` + `yarn build`**, not root **`yarn workspace … build`**).
-4. **RHDH:** Remove stale **`.patch`** + **`resolutions`** for targets; **`yarn why`** → versions; **`yarn patch`** / replace **`dist`** / **`patch-commit`**; **clean up `resolutions`**; **`yarn install`** (root and **`dynamic-plugins/`** as needed).
+4. **RHDH:** Remove stale **`.patch`** + **`resolutions`** for targets; **`yarn why`** → versions; **`yarn patch`** / replace **`dist`** / **`patch-commit`**; **clean up `resolutions`**; **`yarn install`**.
 5. **Verify:** **`@patch:`** in each relevant **`yarn.lock`**; **`yarn why`** shows **`via patch:`**; commit artifacts.
 
 ---
@@ -133,14 +133,12 @@ For each package: **`cd`** **`plugins/<id>/`** or **`packages/<id>/`** → **`ya
 
 ## Step 3: Prepare RHDH
 
-**`dynamic-plugins/`** is a **separate** Yarn project: its **`yarn.lock`** and **`resolutions`** are independent of the root.
-
-1. Remove prior **`.patch`** files and matching **`resolutions`** entries for the packages you are refreshing (search **both** root and **`dynamic-plugins/package.json`**).
-2. **`yarn why @backstage/<pkg>`** from **RHDH root**; if empty, run from **`dynamic-plugins/`**. Record **PACKAGE_VERSION** for Step 4.
+1. Remove prior **`.patch`** files and matching **`resolutions`** entries for the packages you are refreshing.
+2. **`yarn why @backstage/<pkg>`** from **RHDH root**. Record **PACKAGE_VERSION** for Step 4.
 
 ## Step 4: Generate patches
 
-Run from **RHDH root** or **`dynamic-plugins/`** depending on where the dependency resolves.
+Run from **RHDH root**.
 
 **Temp folder:** Each **`yarn patch …`** prints a **new** path—use it immediately for **`rm`**, **`cp`**, **`yarn patch-commit -s`** (same shell or paste path). Do not reuse an old temp. Sandboxes may need **`all`** for **`cp`** into system temp.
 
@@ -150,30 +148,28 @@ Run from **RHDH root** or **`dynamic-plugins/`** depending on where the dependen
 2. **`rm -rf <PATCH_TEMP>/dist`** && **`cp -r <backstage-clone>/<plugins|packages>/.../dist <PATCH_TEMP>/dist`**
 3. **`yarn patch-commit -s <PATCH_TEMP>`** in that workspace.
 
-If a package resolves in **both** trees at the **same** version, patch **both** places (or mirror the **`patch:`** resolution into **`dynamic-plugins/package.json`** and run **`yarn install`** there too).
-
 ### After **`yarn patch-commit`** (cleanup — required)
 
 1. **Replace** any bare **`"@backstage/foo": "1.2.3"`** in **`resolutions`** with the **single** **`patch:`** locator Yarn printed—**do not** leave bare semver beside new patch keys (patch may not apply; Step 5 will show plain **`@npm:`**).
-2. **Delete** spurious range keys **`patch-commit`** added (e.g. **`@backstage/foo@^1.6.0`** → patch built from **`@npm:1.5.0`**), which mis-resolve other workspaces (**`dynamic-plugins/`** may need **`@backstage/backend-plugin-api@1.6.0`** untouched by root).
-3. **Install:** **`yarn install`** at root and/or **`dynamic-plugins/`**;
+2. **Delete** spurious range keys **`patch-commit`** added (e.g. **`@backstage/foo@^1.6.0`** → patch built from **`@npm:1.5.0`**).
+3. **Install:** **`yarn install`**.
 
 ## Step 5: Verify (required)
 
 Incomplete until every patched package shows a **patch locator** in **`yarn.lock`** and **`yarn why`**.
 
 1. **`yarn install`** in each touched project.
-2. **`grep '@backstage/<pkg>@patch' yarn.lock`** (run inside **`dynamic-plugins/`** for packages resolved only there).
+2. **`grep '@backstage/<pkg>@patch' yarn.lock`**.
 3. **`yarn why @backstage/<pkg>`** in the same directory: must include **`via patch:`** / **`@…@patch:`**, not only **`via npm:<version>`**.
 
 **Optional:** Spot-check **`node_modules/@backstage/<pkg>/dist/`**.
 
-**Commit:** **`.yarn/patches/*.patch`**, **`package.json`** **`resolutions`**, **`yarn.lock`** (root and/or **`dynamic-plugins/`**); PR to RHDH.
+**Commit:** **`.yarn/patches/*.patch`**, **`package.json`** **`resolutions`**, **`yarn.lock`**; PR to RHDH.
 
 ### Final summary
 
 1. Links: `https://github.com/backstage/backstage/commit/<SHA>` for each **`COMMITS`** entry.
-2. **`PACKAGES`**, patch locations (root vs **`dynamic-plugins/`**), notable **`resolutions`** keys.
+2. **`PACKAGES`**, patch locations, notable **`resolutions`** keys.
 3. Cherry-pick skipped vs applied; conflicts/aborts if any.
 4. **`MAINTENANCE_BRANCH`**, optional Backstage PR link; RHDH PR intent.
 5. **`RHDH_VERSION`**.

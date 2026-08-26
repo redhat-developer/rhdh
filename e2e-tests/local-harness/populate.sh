@@ -5,8 +5,8 @@
 # error message all point here).
 #
 # Installs a plugin set from the public OCI registries via
-# install-dynamic-plugins + skopeo — no dynamic-plugins/dist source build and no
-# cluster. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS).
+# install-dynamic-plugins + skopeo. No cluster required.
+# Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS).
 #
 # The optional first argument selects the install config (default: the curated
 # harness set used by the legacy-local E2E flow). The plugin sanity check drives
