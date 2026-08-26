@@ -57,8 +57,10 @@ The same Slack channels receive both Core and overlay nightlies. Use the Prow jo
 |---|---|---|
 | **Prow job name** | `periodic-ci-redhat-developer-rhdh-{BRANCH}-e2e-...` | `periodic-ci-redhat-developer-rhdh-plugin-export-overlays-{BRANCH}-e2e-...` |
 | **Automated triage** | **AI Test Triager** (`@Nightly Test Alerts`) -- inline Slack analysis | **Fullsend only** -- the **E2E AI Triage Summary** GitHub comment in the alert. The AI Test Triager is not configured for overlay. |
-| **Tracking** | Jira with the **`ci-fail`** label | GitHub issues titled `[fullsend] E2E: ...` |
+| **Automated tracking** | Jira with the **`ci-fail`** label | GitHub issues titled `[fullsend] E2E: ...` |
 | **Auto-fix** | No -- you file Jira and skip with `test.fixme` if the failure blocks PRs | Yes -- fullsend opens GitHub issues and PRs for `test_fix` and `product_bug` |
+
+Fullsend's GitHub issues are the automated overlay tracker. For overlay bugs that fullsend does not close -- especially `product_bug` and `environment` -- still create a Jira issue with the **`ci-fail`** label, same as Core.
 
 ### Two Types of CI Jobs
 
@@ -156,7 +158,7 @@ Examples:
 
 PR check jobs use the `pull-ci-` prefix instead of `periodic-ci-`.
 
-**Overlay jobs** insert `plugin-export-overlays` after the org/repo segment:
+Those prefixes follow the OpenShift CI convention: after `periodic-ci-` or `pull-ci-` come the GitHub **org** and **repository**, then the branch and test name. See [Naming your CI Jobs](https://docs.ci.openshift.org/how-tos/naming-your-ci-jobs/). The pattern above is `redhat-developer` + `rhdh`. Overlay jobs use the overlay repository instead (`rhdh-plugin-export-overlays`):
 
 ```
 periodic-ci-redhat-developer-rhdh-plugin-export-overlays-{BRANCH}-e2e-ocp-helm-nightly
@@ -674,13 +676,13 @@ Once the PR is merged, close the GitHub issue.
 The bug is in plugin or product code, which the overlay repository does not contain. Fullsend will not "fix" the product; it skips the test in nightly mode so the suite stops failing for the same reason every night.
 
 1. Review the skip PR. The skip should be gated on `E2E_NIGHTLY_MODE` so PR checks still exercise the test where that is useful.
-2. **File a Jira bug** for the underlying product defect and assign it to the owning team. Link the Jira from the GitHub issue and the skip PR.
+2. **File a Jira bug** with the **`ci-fail`** label for the underlying product defect and assign it to the owning team. Link the Jira from the GitHub issue and the skip PR.
 3. **Merge the skip PR** so upcoming overlay nightlies do not keep alerting on a known product bug.
 4. Keep the GitHub issue open (or comment with the Jira key) until the product bug is fixed and the skip can come out.
 
 #### `environment` and `infra_flake`
 
-- **`environment`:** the issue is the tracker. Fix the CI environment (Vault secrets, expired cloud keys, quota) or escalate. There will not be a useful test-code PR.
+- **`environment`:** the GitHub issue is the tracker. Fix the CI environment (Vault secrets, expired cloud keys, quota) or escalate. There will not be a useful test-code PR. If it is a standing failure, also file a Jira **`ci-fail`** issue.
 - **`infra_flake`:** transient cluster/DNS/network. A typical example is global setup failing with `EAI_AGAIN` and zero tests executed. Re-trigger if you want confirmation; do not open test issues.
 
 ### When the analysis is wrong
