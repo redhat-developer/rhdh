@@ -57,100 +57,6 @@ fips_deployment() {
     $(helm::get_image_params)
 }
 
-# Extract OpenShift cluster CA certificate and configure Playwright to trust it
-# This is required for FIPS-enabled clusters to avoid ERR_CERT_AUTHORITY_INVALID
-# Returns:
-#   0 - Certificate extracted and configured successfully
-#   1 - Failed to extract certificate
-configure_openshift_ca_for_playwright() {
-  log::info "Extracting OpenShift cluster CA certificates for Playwright..."
-
-  local ca_cert_dir="${ARTIFACT_DIR:-/tmp}/cluster-certs"
-  local ca_cert_file="${ca_cert_dir}/openshift-ca-bundle.crt"
-  local temp_cert_file="${ca_cert_dir}/temp-cert.crt"
-  local extracted_count=0
-
-  mkdir -p "${ca_cert_dir}"
-  rm -f "${ca_cert_file}" "${temp_cert_file}"
-
-  # Source 1: Extract CA bundle from default-ingress-cert configmap
-  if oc get configmap default-ingress-cert -n openshift-config-managed -o jsonpath='{.data.ca-bundle\.crt}' 2> /dev/null > "${temp_cert_file}" && [[ -s "${temp_cert_file}" ]]; then
-    log::success "✓ Extracted CA bundle from default-ingress-cert configmap"
-    cat "${temp_cert_file}" >> "${ca_cert_file}"
-    extracted_count=$((extracted_count + 1))
-    rm -f "${temp_cert_file}"
-  else
-    log::info "✗ Could not extract from default-ingress-cert configmap"
-  fi
-
-  # Source 2: Extract from router-ca secret in openshift-ingress-operator
-  if oc get secret router-ca -n openshift-ingress-operator -o jsonpath='{.data.tls\.crt}' 2> /dev/null | base64 --decode > "${temp_cert_file}" && [[ -s "${temp_cert_file}" ]]; then
-    log::success "✓ Extracted CA from router-ca secret"
-    cat "${temp_cert_file}" >> "${ca_cert_file}"
-    extracted_count=$((extracted_count + 1))
-    rm -f "${temp_cert_file}"
-  else
-    log::info "✗ Could not extract from router-ca secret"
-  fi
-
-  # Source 3: Extract certificate chain from console route via openssl
-  if command -v openssl &> /dev/null && [[ -n "${K8S_CLUSTER_ROUTER_BASE:-}" ]]; then
-    local console_route="console-openshift-console.${K8S_CLUSTER_ROUTER_BASE}"
-    if echo | openssl s_client -connect "${console_route}:443" -showcerts 2> /dev/null \
-      | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' > "${temp_cert_file}" && [[ -s "${temp_cert_file}" ]]; then
-      log::success "✓ Extracted certificate chain from console route"
-      cat "${temp_cert_file}" >> "${ca_cert_file}"
-      extracted_count=$((extracted_count + 1))
-      rm -f "${temp_cert_file}"
-    else
-      log::info "✗ Could not extract certificate chain from console route"
-    fi
-  fi
-
-  # Verify we got at least one certificate source
-  if [[ "${extracted_count}" -eq 0 ]]; then
-    log::error "Failed to extract certificates from any source"
-    return 1
-  fi
-
-  log::success "Successfully merged certificates from ${extracted_count} source(s)"
-
-  # Verify the extracted certificate(s) are valid
-  if command -v openssl &> /dev/null; then
-    # Count how many certificates are in the file
-    local cert_count
-    cert_count=$(grep -c "BEGIN CERTIFICATE" "${ca_cert_file}" 2> /dev/null || echo "0")
-
-    if [[ "${cert_count}" -eq 0 ]]; then
-      log::error "No valid certificates found in extracted file"
-      return 1
-    fi
-
-    log::info "Found ${cert_count} certificate(s) in chain"
-
-    # Validate the first certificate (openssl x509 reads the first cert by default)
-    if ! openssl x509 -in "${ca_cert_file}" -text -noout > /dev/null 2>&1; then
-      log::error "Certificate validation failed"
-      return 1
-    fi
-
-    # Log details of the first certificate for debugging
-    local cert_subject cert_issuer
-    cert_subject=$(openssl x509 -in "${ca_cert_file}" -noout -subject 2> /dev/null | sed 's/subject=//')
-    cert_issuer=$(openssl x509 -in "${ca_cert_file}" -noout -issuer 2> /dev/null | sed 's/issuer=//')
-    log::info "First certificate - Subject: ${cert_subject}"
-    log::info "First certificate - Issuer: ${cert_issuer}"
-
-    log::success "Certificate validation passed"
-  fi
-
-  # Export NODE_EXTRA_CA_CERTS so Node.js (and Playwright) trusts this CA
-  export NODE_EXTRA_CA_CERTS="${ca_cert_file}"
-  log::success "Set NODE_EXTRA_CA_CERTS=${NODE_EXTRA_CA_CERTS}"
-
-  return 0
-}
-
 # Verify that the OpenShift cluster has FIPS mode enabled
 # Returns:
 #   0 - FIPS is enabled
@@ -186,10 +92,138 @@ run_standard_deployment_tests() {
     return 1
   }
 
-  # Configure OpenShift CA certificate for Playwright
-  configure_openshift_ca_for_playwright || {
-    log::warn "Failed to configure OpenShift CA, tests may fail with certificate errors"
-  }
-
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_FIPS}" "${url}"
+}
+
+# Configure custom CA certificate for OpenShift Ingress Controller
+# This function generates a wildcard certificate signed by a custom root CA
+# and patches the default IngressController to use it.
+#
+# Required environment variables:
+#   FIPS_ROOT_CA_CERT - Base64-encoded root CA certificate (PEM format)
+#   FIPS_ROOT_CA_KEY  - Base64-encoded root CA private key (PEM format)
+#   K8S_CLUSTER_ROUTER_BASE - Cluster router base domain (e.g., apps.example.com)
+#
+# Returns:
+#   0 - Success
+#   1 - Failure (missing vars, cert generation failed, or patch failed)
+fips_configure_custom_ca_ingress() {
+  log::info "Configuring custom CA certificate for OpenShift Ingress..."
+
+  # Verify required environment variables
+  if [[ -z "${FIPS_ROOT_CA_CERT:-}" ]] || [[ -z "${FIPS_ROOT_CA_KEY:-}" ]]; then
+    log::warning "FIPS_ROOT_CA_CERT or FIPS_ROOT_CA_KEY not set - skipping custom CA configuration"
+    return 0
+  fi
+
+  if [[ -z "${K8S_CLUSTER_ROUTER_BASE:-}" ]]; then
+    log::error "K8S_CLUSTER_ROUTER_BASE is not set - cannot determine cluster domain"
+    return 1
+  fi
+
+  local wildcard_domain="*.${K8S_CLUSTER_ROUTER_BASE}"
+  local secret_name="custom-certs-default"
+  local ingress_namespace="openshift-ingress"
+  local tmpdir
+  tmpdir=$(mktemp -d)
+
+  # Ensure cleanup on exit
+  trap 'rm -rf "${tmpdir}"' EXIT
+
+  log::info "Generating wildcard certificate for domain: ${wildcard_domain}"
+
+  # Write CA cert and key to temporary files
+  echo "${FIPS_ROOT_CA_CERT}" | base64 -d > "${tmpdir}/rootCA.crt"
+  echo "${FIPS_ROOT_CA_KEY}" | base64 -d > "${tmpdir}/rootCA.key"
+
+  # Generate ECDSA P-256 key for wildcard certificate (FIPS-compliant)
+  openssl ecparam -name prime256v1 -genkey -noout -out "${tmpdir}/wildcard.key"
+
+  # Generate CSR
+  openssl req -new -key "${tmpdir}/wildcard.key" \
+    -out "${tmpdir}/wildcard.csr" \
+    -subj "/O=CI-FIPS-Testing/CN=FIPS CI Ingress"
+
+  # Create extensions file for v3 certificate
+  cat > "${tmpdir}/wildcard_ext.cnf" << EOF
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = issuer
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = ${wildcard_domain}
+DNS.2 = ${K8S_CLUSTER_ROUTER_BASE}
+EOF
+
+  # Sign the CSR with the Root CA
+  openssl x509 -req -in "${tmpdir}/wildcard.csr" \
+    -CA "${tmpdir}/rootCA.crt" -CAkey "${tmpdir}/rootCA.key" -CAcreateserial \
+    -out "${tmpdir}/wildcard.crt" -days 30 -sha256 \
+    -extfile "${tmpdir}/wildcard_ext.cnf" -extensions v3_req
+
+  if [[ ! -f "${tmpdir}/wildcard.crt" ]]; then
+    log::error "Failed to generate wildcard certificate"
+    return 1
+  fi
+
+  log::success "✓ Wildcard certificate generated successfully"
+
+  # Verify the certificate
+  local cert_subject
+  cert_subject=$(openssl x509 -in "${tmpdir}/wildcard.crt" -noout -subject)
+  log::info "Certificate subject: ${cert_subject}"
+
+  # Create TLS secret in openshift-ingress namespace
+  log::info "Creating TLS secret '${secret_name}' in namespace '${ingress_namespace}'"
+
+  # Delete existing secret if it exists
+  oc delete secret "${secret_name}" -n "${ingress_namespace}" --ignore-not-found=true
+
+  # Create new secret
+  oc create secret tls "${secret_name}" \
+    -n "${ingress_namespace}" \
+    --cert="${tmpdir}/wildcard.crt" \
+    --key="${tmpdir}/wildcard.key"
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to create TLS secret in ${ingress_namespace}"
+    return 1
+  fi
+
+  log::success "✓ TLS secret '${secret_name}' created in namespace '${ingress_namespace}'"
+
+  # Clean up temporary files immediately
+  rm -rf "${tmpdir}"
+  trap - EXIT
+
+  # Patch the default IngressController to use the custom certificate
+  log::info "Patching default IngressController to use custom certificate..."
+
+  oc patch ingresscontroller.operator default \
+    -n openshift-ingress-operator \
+    --type=merge \
+    -p "{\"spec\":{\"defaultCertificate\":{\"name\":\"${secret_name}\"}}}"
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to patch IngressController"
+    return 1
+  fi
+
+  log::success "✓ IngressController patched successfully"
+
+  # Wait for the router deployment to roll out with new certificates
+  log::info "Waiting for router pods to restart with new certificates..."
+
+  if ! oc rollout status deployment/router-default -n "${ingress_namespace}" --timeout=5m; then
+    log::warning "Router rollout did not complete within timeout - continuing anyway"
+  else
+    log::success "✓ Router pods restarted successfully"
+  fi
+
+  log::success "Custom CA ingress configuration completed successfully"
+  return 0
 }
