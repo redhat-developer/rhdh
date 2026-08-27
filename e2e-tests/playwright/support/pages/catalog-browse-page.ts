@@ -60,12 +60,19 @@ export class CatalogBrowsePage {
    * NFS has no dedicated "Dependencies" entity-content tab (upstream
    * `@backstage/plugin-catalog`); the same relations render as overview cards
    * (`entity-card:catalog/depends-on-components`, `entity-card:catalog/depends-on-resources`,
-   * `entity-card:catalog-graph/relations`) on the Overview tab instead. See
+   * `entity-card:catalog-graph/relations`) on Overview instead. See
    * "Dependencies tab → overview cards" in
    * docs/dynamic-plugins/migrating-config-to-new-frontend-system.md.
+   *
+   * Entity contents are links in `navigation[name="Content navigation"]`, not
+   * ARIA tabs (legacy OFS `EntityLayout` used `role="tab"`).
    */
   async openOverviewTab(): Promise<void> {
-    await interaction.clickTab(this.page, "Overview");
+    const overviewLink = this.page
+      .getByRole("navigation", { name: "Content navigation" })
+      .getByRole("link", { name: "Overview", exact: true });
+    await expect(overviewLink).toBeVisible();
+    await overviewLink.click();
   }
 
   async verifyHeading(heading: string | RegExp): Promise<void> {
