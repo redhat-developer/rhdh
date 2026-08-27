@@ -16,7 +16,6 @@ import {
   rbacDynamicPluginsProvider,
 } from './modules';
 import { userSettingsBackend } from './modules/userSettings';
-import { schemaLocator } from './schemaLocator';
 
 // Create a logger to cover logging static initialization tasks
 const staticLogger = WinstonLogger.create({
@@ -38,7 +37,7 @@ defaultServiceFactories.forEach(serviceFactory => {
 
 backend.add(
   dynamicPluginsFeatureLoader({
-    schemaLocator,
+    schemaLocator: () => path.join('dist', '.config-schema.json'),
 
     moduleLoader: logger =>
       new CommonJSModuleLoader({
