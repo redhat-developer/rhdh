@@ -5,14 +5,14 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
-"@axe-core/playwright@npm:4.12.1":
-  version: 4.12.1
-  resolution: "@axe-core/playwright@npm:4.12.1"
+"@axe-core/playwright@npm:4.13.0":
+  version: 4.13.0
+  resolution: "@axe-core/playwright@npm:4.13.0"
   dependencies:
-    axe-core: "npm:~4.12.1"
+    axe-core: "npm:~4.13.0"
   peerDependencies:
     playwright-core: ">= 1.0.0"
-  checksum: 10c0/7a52498c8a09f7427581473ee9253b986efca7c61870187f5c64a1d04c4e4db43d4f26b0cf7650f75840ce7a7d69c7d07547ef76eb93704fa927a4fcf4020139
+  checksum: 10c0/0938f24f3955bfa11c77c326300646a4f1dcd513389320ace9985d68486a622c443b2a34cd86f6002f617a3395623ad1e99a622450830873166aaa7e0312aa68
   languageName: node
   linkType: hard
 
@@ -1237,12 +1237,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.11.0, acorn@npm:^8.15.0, acorn@npm:^8.16.0":
+"acorn@npm:^8.11.0, acorn@npm:^8.15.0":
   version: 8.17.0
   resolution: "acorn@npm:8.17.0"
   bin:
     acorn: bin/acorn
   checksum: 10c0/5dcefea5f8f023b6cc24cbe71fb5a8112b601d36c4fa07d14e4e6ffc2ee47383332c46b36c766d9437725aa6660156eae50efa0c838719823b50d7c327c4ed42
+  languageName: node
+  linkType: hard
+
+"acorn@npm:^8.18.0":
+  version: 8.18.0
+  resolution: "acorn@npm:8.18.0"
+  bin:
+    acorn: bin/acorn
+  checksum: 10c0/be771be2135cc07910cf76f444ad514d7dcfd6d4a8026e597e93155275abc8ef61eee12211d52146e9d962874269b634f397464942087be013c89d0c54c5f8e5
   languageName: node
   linkType: hard
 
@@ -1400,10 +1409,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:~4.12.1":
-  version: 4.12.1
-  resolution: "axe-core@npm:4.12.1"
-  checksum: 10c0/03438bd98cef38ad57554feea0d8de21705001db2655c27e0c33ff55e16dd7d6f49c28fb420dc93f7532e68ff363c0953056a5836e6f47068f193eb1765c7db7
+"axe-core@npm:~4.13.0":
+  version: 4.13.0
+  resolution: "axe-core@npm:4.13.0"
+  checksum: 10c0/0e3be8be10eea64beddefd3007e1425424ff60c26c5f4d5f748ec48c2825356839c02ad4167fc1f03a6d84ecd82108f49fb2846ab7fe949273787391745561ca
   languageName: node
   linkType: hard
 
@@ -1981,7 +1990,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-tests@workspace:."
   dependencies:
-    "@axe-core/playwright": "npm:4.12.1"
+    "@axe-core/playwright": "npm:4.13.0"
     "@azure/arm-network": "npm:34.2.0"
     "@azure/identity": "npm:4.13.1"
     "@backstage/catalog-model": "npm:1.9.0"
@@ -1997,7 +2006,7 @@ __metadata:
     eslint-plugin-playwright: "npm:2.10.4"
     ioredis: "npm:5.11.1"
     isomorphic-fetch: "npm:3.0.0"
-    monocart-coverage-reports: "npm:2.12.12"
+    monocart-coverage-reports: "npm:2.13.0"
     otplib: "npm:12.0.1"
     oxfmt: "npm:0.56.0"
     oxlint: "npm:1.71.0"
@@ -3460,11 +3469,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:2.12.12":
-  version: 2.12.12
-  resolution: "monocart-coverage-reports@npm:2.12.12"
+"monocart-coverage-reports@npm:2.13.0":
+  version: 2.13.0
+  resolution: "monocart-coverage-reports@npm:2.13.0"
   dependencies:
-    acorn: "npm:^8.16.0"
+    acorn: "npm:^8.18.0"
     acorn-loose: "npm:^8.5.2"
     acorn-walk: "npm:^8.3.5"
     commander: "npm:^14.0.3"
@@ -3478,7 +3487,7 @@ __metadata:
     monocart-locator: "npm:^1.0.3"
   bin:
     mcr: lib/cli.js
-  checksum: 10c0/71c9a2f6bb330fd1f0ec4628bb1a943828a8647a68c4286dcdc05b901a38da4834d37f6acf3883d9db2cfb2558a75250245cd4e9ca81d24c5565f71851b520cd
+  checksum: 10c0/719fefe9aa173060be096531a554fbabf58e09a9e890294b0b92cbce9e8479cd165e77f8c10cb54f90094d68631423533edfac550c0aff025029684e12a9036f
   languageName: node
   linkType: hard
 
