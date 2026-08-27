@@ -42,5 +42,8 @@ cleanup() {
         ;;
     esac
   fi
+  if [[ -n "${DISCONNECTED_TMPDIR:-}" && -d "${DISCONNECTED_TMPDIR}" ]]; then
+    rm -rf "${DISCONNECTED_TMPDIR}"
+  fi
   rm -rf ~/tmpbin
 }
