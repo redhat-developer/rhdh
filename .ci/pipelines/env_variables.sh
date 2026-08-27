@@ -334,4 +334,10 @@ GITHUB_APP_CLIENT_SECRET_RBAC_5=$(cat /tmp/secrets/GITHUB_APP_CLIENT_SECRET_HELM
 GITHUB_APP_WEBHOOK_URL_RBAC_5=$(cat /tmp/secrets/GITHUB_APP_WEBHOOK_URL_HELM_PR_3)
 GITHUB_APP_WEBHOOK_SECRET_RBAC_5=$(cat /tmp/secrets/GITHUB_APP_WEBHOOK_SECRET_HELM_PR_3)
 
+# FIPS Custom CA Certificate (from Vault)
+# Base64-encoded PEM certificate and private key for custom ingress certificates
+# Used only by the FIPS job to configure custom CA-signed certificates for cluster ingress
+FIPS_ROOT_CA_CERT=$(cat /tmp/secrets/FIPS_ROOT_CA_CERT)
+FIPS_ROOT_CA_KEY=$(cat /tmp/secrets/FIPS_ROOT_CA_KEY)
+
 set +a # Stop automatically exporting variables
