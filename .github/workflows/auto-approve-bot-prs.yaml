@@ -18,10 +18,21 @@ name: Auto-Approve Bot PRs
 # - Created by rhdh-bot (via RHDH GitHub App)
 # - Branch name matches specific patterns (base image updates, version bumps, etc.)
 # - Adds lgtm and approved labels if not present
+#
+# pull_request_target runs this file from the *base* branch, so every release-*
+# line needs the same debounce. updateBaseImages.sh opens the PR on the first
+# image bump and pushes another commit seconds later; Prow then strips lgtm.
+# Wait 10s after the triggering commit and skip if HEAD moved. A later
+# synchronize run (with cancel-in-progress) applies lgtm 10s after the last push.
+# labeled is omitted so adding lgtm/approved does not retrigger this workflow.
 
 on:
   pull_request_target:
-    types: [opened, reopened, labeled, ready_for_review]
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: auto-approve-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -39,10 +50,10 @@ jobs:
     steps:
       - name: Check PR eligibility
         id: check-eligibility
+        env:
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
         run: |
-          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
-          PR_DRAFT="${{ github.event.pull_request.draft }}"
-
           # Don't auto-approve draft PRs
           if [[ "$PR_DRAFT" == "true" ]]; then
             echo "eligible=false" >> $GITHUB_OUTPUT
@@ -72,17 +83,41 @@ jobs:
             echo "eligible=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Wait until HEAD is stable
+        id: debounce
+        if: steps.check-eligibility.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          DEBOUNCE_SECONDS=10
+          echo "Waiting ${DEBOUNCE_SECONDS}s after ${EVENT_SHA} so later commits can land and Prow can process synchronize."
+          sleep "${DEBOUNCE_SECONDS}"
+
+          CURRENT_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)
+          if [[ "${CURRENT_SHA}" != "${EVENT_SHA}" ]]; then
+            echo "HEAD moved during debounce (${EVENT_SHA} -> ${CURRENT_SHA}); skipping so the newer run can label."
+            echo "stable=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "HEAD unchanged for ${DEBOUNCE_SECONDS}s: ${CURRENT_SHA}"
+          echo "stable=true" >> "$GITHUB_OUTPUT"
 
       - name: Add required labels and approve PR
-        if: steps.check-eligibility.outputs.eligible == 'true'
+        if: steps.check-eligibility.outputs.eligible == 'true' && steps.debounce.outputs.stable == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           # Add the required labels if not already present
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "lgtm,approved" --repo ${{ github.repository }}
+          gh pr edit "$PR_NUMBER" --add-label "lgtm,approved" --repo "$GITHUB_REPOSITORY"
 
           # Auto-approve the PR
-          gh pr review ${{ github.event.pull_request.number }} \
+          gh pr review "$PR_NUMBER" \
             --approve \
-            --repo ${{ github.repository }} \
+            --repo "$GITHUB_REPOSITORY" \
             --body "**Auto-Approved**
 
           This PR has been automatically approved by the auto-approve workflow.
@@ -90,6 +125,3 @@ jobs:
           /override ci/prow/e2e-ocp-helm
 
           **Labels Added:** \`lgtm\`, \`approved\`"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
