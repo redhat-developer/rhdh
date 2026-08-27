@@ -95,20 +95,20 @@ arches:
     name: cpp
     evr: 11.5.0-14.el9
     sourcerpm: gcc-11.5.0-14.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/criu-3.19-3.el9.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/criu-3.19-4.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 555523
-    checksum: sha256:376aca78a8d78a052503fc4406ee84e4d0607c047e8486190b06ed3acd19a6c7
+    size: 552955
+    checksum: sha256:2f4934b17b8fb4bca5f418f383075c37ab3485f2db4e83d78bee808865e5bbd8
     name: criu
-    evr: 3.19-3.el9
-    sourcerpm: criu-3.19-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/criu-libs-3.19-3.el9.aarch64.rpm
+    evr: 3.19-4.el9_8
+    sourcerpm: criu-3.19-4.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/criu-libs-3.19-4.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 31064
-    checksum: sha256:34b7c037743e730a07117d9627725517d60ed356f945c9f42880573f552b7c4f
+    size: 36419
+    checksum: sha256:0c636b32a97822573321095b02d113735b93701d9ccbd3f12bd66dc7c0eee807
     name: criu-libs
-    evr: 3.19-3.el9
-    sourcerpm: criu-3.19-3.el9.src.rpm
+    evr: 3.19-4.el9_8
+    sourcerpm: criu-3.19-4.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/c/crun-1.27-1.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 251772
@@ -3419,12 +3419,12 @@ arches:
     checksum: sha256:1618129f9bd64bc73721761717845ddb071a05f6d6124208fedf013fb3c9bf86
     name: containers-common
     evr: 5:5.8-1.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/c/criu-3.19-3.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/c/criu-3.19-4.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
-    size: 1397598
-    checksum: sha256:935cde45890eee106b48c5a17fcce9a359bbc33e5867c7433012a28fdc095e90
+    size: 1412074
+    checksum: sha256:0101c5777b555b732bc0e6386cf50fdb47e32442c452ac7a6f3512a382080157
     name: criu
-    evr: 3.19-3.el9
+    evr: 3.19-4.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/c/crun-1.27-1.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
     size: 908484
@@ -5271,20 +5271,20 @@ arches:
     name: cpp
     evr: 11.5.0-14.el9
     sourcerpm: gcc-11.5.0-14.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/criu-3.19-3.el9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/criu-3.19-4.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 569988
-    checksum: sha256:991367e0ca6f3b1672f98ffccc32d43c2b959bf8b82562b79e9f9ff5be23642b
+    size: 575825
+    checksum: sha256:8b5d9ead51b4543ed5368b969ad0764f463a5ab448f552610c44cd8e4cde3acf
     name: criu
-    evr: 3.19-3.el9
-    sourcerpm: criu-3.19-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/criu-libs-3.19-3.el9.x86_64.rpm
+    evr: 3.19-4.el9_8
+    sourcerpm: criu-3.19-4.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/criu-libs-3.19-4.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 31913
-    checksum: sha256:37144e6c13da6a622fb1f15d0ff3a36fc359477db916a157fefb5d1934881614
+    size: 37299
+    checksum: sha256:3a9f645c6d495fc465fd65bfe02170e93552567bb45745bc6b8bf1402cd35464
     name: criu-libs
-    evr: 3.19-3.el9
-    sourcerpm: criu-3.19-3.el9.src.rpm
+    evr: 3.19-4.el9_8
+    sourcerpm: criu-3.19-4.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/c/crun-1.27-1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 268116
@@ -7616,13 +7616,13 @@ arches:
     name: acl
     evr: 2.4.0-1.el9_8
     sourcerpm: acl-2.4.0-1.el9_8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/a/attr-2.5.1-3.el9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/a/attr-2.6.0-1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 66700
-    checksum: sha256:49f7baeb53e07a4b9b5739e36932f17f014abb765b3fa6c0c0f8af6a8ebf4d9b
+    size: 73979
+    checksum: sha256:80ae38186d5639729e127c0b4fea589b3f979d7ebe6aabbf0cd708d0bd37ad14
     name: attr
-    evr: 2.5.1-3.el9
-    sourcerpm: attr-2.5.1-3.el9.src.rpm
+    evr: 2.6.0-1.el9_8
+    sourcerpm: attr-2.6.0-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/a/avahi-libs-0.8-23.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 68898
@@ -7889,6 +7889,13 @@ arches:
     name: less
     evr: 590-6.el9
     sourcerpm: less-590-6.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libattr-2.6.0-1.el9_8.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 23752
+    checksum: sha256:9e37537f690c748f7f05faa80966072f118ec722e38ef332fe19cf22b087349f
+    name: libattr
+    evr: 2.6.0-1.el9_8
+    sourcerpm: attr-2.6.0-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libbpf-1.5.0-3.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 188749
@@ -8588,12 +8595,12 @@ arches:
     checksum: sha256:1618129f9bd64bc73721761717845ddb071a05f6d6124208fedf013fb3c9bf86
     name: containers-common
     evr: 5:5.8-1.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/c/criu-3.19-3.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/c/criu-3.19-4.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 1397598
-    checksum: sha256:935cde45890eee106b48c5a17fcce9a359bbc33e5867c7433012a28fdc095e90
+    size: 1412074
+    checksum: sha256:0101c5777b555b732bc0e6386cf50fdb47e32442c452ac7a6f3512a382080157
     name: criu
-    evr: 3.19-3.el9
+    evr: 3.19-4.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/c/crun-1.27-1.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 908484
@@ -9746,12 +9753,12 @@ arches:
     checksum: sha256:b140deb68f46517b0093e18969d8fb42a17216064fb2ee5783e9316d786430db
     name: acl
     evr: 2.4.0-1.el9_8
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/a/attr-2.5.1-3.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/a/attr-2.6.0-1.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 482234
-    checksum: sha256:5171534e7de11df197f3c5e08658544983198288e04624c739b5c3d9db07b59c
+    size: 389805
+    checksum: sha256:9bdd2e605e0ddc9818382bd95644594fa8b8eedfe08048303093db13cde9963c
     name: attr
-    evr: 2.5.1-3.el9
+    evr: 2.6.0-1.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/a/avahi-0.8-23.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 1629599
