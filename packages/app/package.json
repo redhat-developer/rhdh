@@ -33,7 +33,9 @@
     "lint:fix": "backstage-cli package lint --fix",
     "start": "backstage-cli package start",
     "test": "backstage-cli package test --passWithNoTests --coverage",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "browserslist": {
     "production": [
@@ -110,6 +112,7 @@
     "@types/react-dom": "18.3.7",
     "@types/zen-observable": "0.8.7",
     "cross-env": "7.0.3",
+    "prettier": "3.9.6",
     "typescript": "5.9.3"
   }
 }
