@@ -64,8 +64,20 @@ if [[ ! "$BASTION_NAME" =~ ^[A-Za-z0-9-]{1,64}$ ]]; then
   exit 1
 fi
 
+if [[ ! "$BASTION_SOURCE_ADDRESS_PREFIX" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?$ ]]; then
+  printf 'BASTION_SOURCE_ADDRESS_PREFIX must be an IPv4 address or CIDR: %s\n' \
+    "$BASTION_SOURCE_ADDRESS_PREFIX" >&2
+  exit 1
+fi
+
+if [[ "$SSH_KEY_NAME" == */* || ! "$SSH_KEY_NAME" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  printf 'SSH_KEY_NAME must be a simple filename; generated keys are stored under .local/: %s\n' \
+    "$SSH_KEY_NAME" >&2
+  exit 1
+fi
+
 PULL_SECRET_FILE=$(resolve_path "$PULL_SECRET_FILE")
-SSH_KEY_NAME=$(resolve_path "$SSH_KEY_NAME")
+SSH_KEY_NAME="${SCRIPT_DIR}/.local/${SSH_KEY_NAME}"
 ACCESS_INFORMATION_FILE="${SCRIPT_DIR}/${BASE_NAME}_access-information.txt"
 FIREWALL_ALLOWED_LIST_BASE_ARRAY=()
 FIREWALL_ALLOWED_LIST_INSTALL_ARRAY=()
@@ -144,7 +156,7 @@ az network public-ip create \
   --resource-group "$RESOURCEGROUP" \
   --allocation-method static \
   --sku standard
-az extension add --name azure-firewall
+az extension add --name azure-firewall --upgrade
 az network firewall create \
   --resource-group "$RESOURCEGROUP" \
   --name "$FIREWALL_NAME" \
@@ -294,6 +306,7 @@ chmod 600 "$ACCESS_INFORMATION_FILE"
   printf 'CONSOLE_URL=%s\n' "$CONSOLE_URL"
   printf 'API_SERVER=%s\n' "$API_SERVER"
   printf 'KUBEADMIN_PASSWORD=%s\n' "$KUBEADMIN_PASSWORD"
+  printf 'OPENSHIFT_VERSION=%s\n' "$OPENSHIFT_VERSION"
 } > "$ACCESS_INFORMATION_FILE"
 
 printf 'Access information written to protected file: %s\n' "$ACCESS_INFORMATION_FILE"

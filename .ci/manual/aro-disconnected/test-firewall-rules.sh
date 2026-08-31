@@ -76,6 +76,16 @@ while IFS= read -r line; do
 done < "$TEST_DIR/overwrite.log"
 [[ "$delete_count" -eq 1 ]]
 
+overwrite_create_count=0
+while IFS= read -r line; do
+  case "$line" in
+    network\ firewall\ application-rule\ create\ *)
+      overwrite_create_count=$((overwrite_create_count + 1))
+      ;;
+  esac
+done < "$TEST_DIR/overwrite.log"
+[[ "$overwrite_create_count" -eq "${#expected_rules[@]}" ]]
+
 for rule_name in "${expected_rules[@]}"; do
   found=0
   while IFS= read -r line; do

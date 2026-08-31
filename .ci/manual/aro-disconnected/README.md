@@ -60,17 +60,28 @@ order. If the collection already exists, it asks before replacing it.
 
 ### 3. Set up the bastion
 
-SSH to the bastion using the protected access information file. Export the two values in the bastion
-shell without committing or logging them:
+Copy the setup script to the bastion, then SSH to it using the protected access information file.
+Replace the placeholders with the values from that file:
+
+```bash
+scp -i <SSH_KEY_PATH> setup-bastion.sh azureuser@<BASTION_PUBLIC_IP>:~/setup-bastion.sh
+ssh -i <SSH_KEY_PATH> azureuser@<BASTION_PUBLIC_IP>
+```
+
+Export the cluster values in the bastion shell without committing or logging them:
 
 ```bash
 export API_SERVER='https://...'
 export KUBEADMIN_PASSWORD='...'
-./setup-bastion.sh
+export OPENSHIFT_VERSION='4.19.20'
+chmod 700 ~/setup-bastion.sh
+~/setup-bastion.sh
 ```
 
-The script installs `oc`, Helm, Podman, Skopeo, `opm`, and `umoci`, enables the OpenShift internal
-registry, and resizes the bastion partitions.
+The script installs version-pinned `oc`, Helm, and `opm` binaries, verifies their published SHA-256
+manifests, installs the pinned `umoci` release after checksum verification, enables the OpenShift
+internal registry, and resizes the bastion partitions. The default Helm and umoci versions can be
+overridden with `HELM_VERSION` and `UMOCI_VERSION`.
 
 ## Cleanup
 
