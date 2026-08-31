@@ -75,4 +75,16 @@ export interface Config {
      */
     overrideBuildInfo?: boolean;
   };
+
+  /**
+   * Configuration options for your user settings.
+   * @deepVisibility frontend
+   */
+  userSettings?: {
+    /**
+     * The persistence mode for user settings.
+     * @visibility frontend
+     */
+    persistence: 'browser' | 'database';
+  };
 }

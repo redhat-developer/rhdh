@@ -129,7 +129,7 @@ export const InfoCard = () => {
             <CopyTextButton
               text={clipboardText}
               tooltipText={t('app.userSettings.infoCard.metadataCopied')}
-              arial-label={t('app.userSettings.infoCard.copyMetadata')}
+              aria-label={t('app.userSettings.infoCard.copyMetadata')}
             />
             <IconButton
               title={
