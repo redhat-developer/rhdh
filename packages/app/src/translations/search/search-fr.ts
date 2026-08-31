@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { searchTranslationRef } from "@backstage/plugin-search";
 
 export default createTranslationMessages({
   ref: searchTranslationRef,
   full: false,
   messages: {
-    'sidebarSearchModal.title': 'Rechercher',
-    'searchModal.viewFullResults': 'Voir les résultats complets',
-    'searchType.allResults': 'Tous les résultats',
-    'searchType.tabs.allTitle': 'Tous',
-    'searchType.accordion.allTitle': 'Tous',
-    'searchType.accordion.collapse': 'Effondrement',
-    'searchType.accordion.numberOfResults': '{{number}} résultats',
+    "sidebarSearchModal.title": "Rechercher",
+    "searchModal.viewFullResults": "Voir les résultats complets",
+    "searchType.allResults": "Tous les résultats",
+    "searchType.tabs.allTitle": "Tous",
+    "searchType.accordion.allTitle": "Tous",
+    "searchType.accordion.collapse": "Effondrement",
+    "searchType.accordion.numberOfResults": "{{number}} résultats",
   },
 });

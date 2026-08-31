@@ -1,14 +1,14 @@
-import '@backstage/cli/asset-types';
-import { sidebarConfig } from '@backstage/core-components';
-import ReactDOM from 'react-dom/client';
-import app from './App';
-import '@backstage/ui/css/styles.css';
-import 'material-icons/iconfont/outlined.css';
+import "@backstage/cli/asset-types";
+import { sidebarConfig } from "@backstage/core-components";
+import ReactDOM from "react-dom/client";
+import app from "./App";
+import "@backstage/ui/css/styles.css";
+import "material-icons/iconfont/outlined.css";
 
 const { drawerWidthOpen, drawerWidthClosed } = sidebarConfig;
 
 // Disable Logo from global header plugin (if it's installed/enabled)
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
   #global-header {
     width: auto;
@@ -36,4 +36,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-ReactDOM.createRoot(document.getElementById('root')!).render(app);
+ReactDOM.createRoot(document.getElementById("root")!).render(app);

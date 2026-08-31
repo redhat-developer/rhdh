@@ -2,8 +2,8 @@ import {
   createFrontendModule,
   createRouteRef,
   PageBlueprint,
-} from '@backstage/frontend-plugin-api';
-import SchoolIcon from '@mui/icons-material/School';
+} from "@backstage/frontend-plugin-api";
+import SchoolIcon from "@mui/icons-material/School";
 
 /**
  * RHDH Learning Paths page at `/learning-paths`.
@@ -14,18 +14,18 @@ import SchoolIcon from '@mui/icons-material/School';
 const learningPathsRouteRef = createRouteRef();
 
 const learningPathsPage = PageBlueprint.make({
-  name: 'learning-paths',
+  name: "learning-paths",
   params: {
-    path: '/learning-paths',
+    path: "/learning-paths",
     routeRef: learningPathsRouteRef,
-    title: 'Learning Paths',
+    title: "Learning Paths",
     icon: <SchoolIcon />,
     loader: () =>
-      import('./LearningPathsPage').then(m => <m.LearningPaths />),
+      import("./LearningPathsPage").then((m) => <m.LearningPaths />),
   },
 });
 
 export const learningPathsModule = createFrontendModule({
-  pluginId: 'app',
+  pluginId: "app",
   extensions: [learningPathsPage],
 });

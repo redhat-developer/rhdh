@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
+import { useCallback, useEffect, useState } from "react";
+import useAsync from "react-use/lib/useAsync";
 
-import { useApi } from '@backstage/core-plugin-api';
+import { useApi } from "@backstage/core-plugin-api";
 
 import {
   learningPathApiRef,
   LearningPathLink,
-} from '../../apis/LearningPathApiClient';
+} from "../../apis/LearningPathApiClient";
 
 export const useLearningPathData = (): {
   data: LearningPathLink[] | undefined;
@@ -26,7 +26,7 @@ export const useLearningPathData = (): {
   });
 
   const fetchData = useCallback(async () => {
-    const res = await fetch('/learning-paths/data.json');
+    const res = await fetch("/learning-paths/data.json");
     const qsData = await res.json();
     setData(qsData);
     setError(undefined);
@@ -37,7 +37,7 @@ export const useLearningPathData = (): {
   useEffect(() => {
     if (apiError) {
       setError(apiError);
-      fetchData().catch(err => {
+      fetchData().catch((err) => {
         setError(err);
         setIsLoading(false);
       });

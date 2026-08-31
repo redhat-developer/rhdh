@@ -1,19 +1,19 @@
-import type { ComponentType } from 'react';
+import type { ComponentType } from "react";
 
 import {
   Link,
   sidebarConfig,
   useSidebarOpenState,
-} from '@backstage/core-components';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
+} from "@backstage/core-components";
+import { configApiRef, useApi } from "@backstage/core-plugin-api";
 import {
   LogoFull,
   LogoIcon,
-} from '@red-hat-developer-hub/backstage-plugin-theme';
-import Box from '@mui/material/Box';
+} from "@red-hat-developer-hub/backstage-plugin-theme";
+import Box from "@mui/material/Box";
 
-import { useAppBarThemedConfig } from '../../hooks/useThemedConfig';
-import { useTranslation } from '../../hooks/useTranslation';
+import { useAppBarThemedConfig } from "../../hooks/useThemedConfig";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const LogoRender = ({
   base64Logo,
@@ -22,7 +22,7 @@ const LogoRender = ({
   altText,
 }: {
   base64Logo: string | undefined;
-  DefaultLogo: ComponentType<React.ComponentProps<'svg'>>;
+  DefaultLogo: ComponentType<React.ComponentProps<"svg">>;
   width: string | number;
   altText: string;
 }) => {
@@ -42,11 +42,11 @@ export const SidebarLogo = () => {
     ? sidebarConfig.drawerWidthOpen
     : sidebarConfig.drawerWidthClosed;
 
-  const logoFullBase64URI = useAppBarThemedConfig('app.branding.fullLogo');
-  const logoIconBase64URI = useAppBarThemedConfig('app.branding.iconLogo');
+  const logoFullBase64URI = useAppBarThemedConfig("app.branding.fullLogo");
+  const logoIconBase64URI = useAppBarThemedConfig("app.branding.iconLogo");
 
   const fullLogoWidth = configApi.getOptional<string | number>(
-    'app.branding.fullLogoWidth',
+    "app.branding.fullLogoWidth",
   );
 
   return (
@@ -54,16 +54,16 @@ export const SidebarLogo = () => {
       sx={{
         width: drawerWidth,
         height: 3 * sidebarConfig.logoHeight,
-        display: 'flex',
-        flexFlow: 'row nowrap',
-        alignItems: 'center',
-        mb: '-14px',
+        display: "flex",
+        flexFlow: "row nowrap",
+        alignItems: "center",
+        mb: "-14px",
       }}
     >
       <Link
         to="/"
         underline="none"
-        aria-label={t('sidebar.home')}
+        aria-label={t("sidebar.home")}
         style={{
           width: drawerWidth,
           marginLeft: 24,
@@ -74,14 +74,14 @@ export const SidebarLogo = () => {
             base64Logo={logoFullBase64URI}
             DefaultLogo={LogoFull}
             width={fullLogoWidth ?? 170}
-            altText={t('sidebar.homeLogo')}
+            altText={t("sidebar.homeLogo")}
           />
         ) : (
           <LogoRender
             base64Logo={logoIconBase64URI}
             DefaultLogo={LogoIcon}
             width={28}
-            altText={t('sidebar.homeLogo')}
+            altText={t("sidebar.homeLogo")}
           />
         )}
       </Link>

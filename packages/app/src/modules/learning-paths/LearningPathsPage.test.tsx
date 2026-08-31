@@ -6,17 +6,17 @@
 import {
   renderInTestApp,
   TestApiProvider,
-} from '@backstage/frontend-test-utils';
-import { searchApiRef } from '@backstage/plugin-search-react';
+} from "@backstage/frontend-test-utils";
+import { searchApiRef } from "@backstage/plugin-search-react";
 
-import { screen } from '@testing-library/react';
+import { screen } from "@testing-library/react";
 
-import { LearningPaths } from './LearningPathsPage';
-import { useLearningPathData } from './useLearningPathData';
+import { LearningPaths } from "./LearningPathsPage";
+import { useLearningPathData } from "./useLearningPathData";
 
-jest.mock('./useLearningPathData');
+jest.mock("./useLearningPathData");
 
-jest.mock('../../hooks/useTranslation', () => ({
+jest.mock("../../hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -31,12 +31,12 @@ const renderPage = () =>
     </TestApiProvider>,
   );
 
-describe('LearningPaths', () => {
+describe("LearningPaths", () => {
   // clearAllMocks (not resetAllMocks) so the module-scoped searchApiMock keeps
   // its resolved implementation across tests; only call history is cleared.
   afterEach(() => jest.clearAllMocks());
 
-  it('shows a progress indicator while loading', async () => {
+  it("shows a progress indicator while loading", async () => {
     mockUseLearningPathData.mockReturnValue({
       data: undefined,
       error: undefined,
@@ -45,16 +45,16 @@ describe('LearningPaths', () => {
 
     await renderPage();
 
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
-  it('renders a card with an external link for each learning path', async () => {
+  it("renders a card with an external link for each learning path", async () => {
     mockUseLearningPathData.mockReturnValue({
       data: [
         {
-          label: 'Building Operators on OpenShift',
-          description: 'Learn about k8s API fundamentals',
-          url: 'https://developers.redhat.com/learn/openshift/operators',
+          label: "Building Operators on OpenShift",
+          description: "Learn about k8s API fundamentals",
+          url: "https://developers.redhat.com/learn/openshift/operators",
           hours: 1,
           minutes: 20,
           paths: 6,
@@ -67,26 +67,26 @@ describe('LearningPaths', () => {
     await renderPage();
 
     expect(
-      screen.getByText('Building Operators on OpenShift'),
+      screen.getByText("Building Operators on OpenShift"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Learn about k8s API fundamentals'),
+      screen.getByText("Learn about k8s API fundamentals"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('1 hour 20 minutes | 6 learning paths'),
+      screen.getByText("1 hour 20 minutes | 6 learning paths"),
     ).toBeInTheDocument();
 
-    const link = screen.getByRole('link', {
+    const link = screen.getByRole("link", {
       name: /Building Operators on OpenShift/,
     });
     expect(link).toHaveAttribute(
-      'href',
-      'https://developers.redhat.com/learn/openshift/operators',
+      "href",
+      "https://developers.redhat.com/learn/openshift/operators",
     );
-    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute("target", "_blank");
   });
 
-  it('shows an error report when no learning paths are returned', async () => {
+  it("shows an error report when no learning paths are returned", async () => {
     mockUseLearningPathData.mockReturnValue({
       data: undefined,
       error: undefined,
@@ -100,10 +100,10 @@ describe('LearningPaths', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows the underlying error message when loading fails', async () => {
+  it("shows the underlying error message when loading fails", async () => {
     mockUseLearningPathData.mockReturnValue({
       data: undefined,
-      error: new Error('Boom'),
+      error: new Error("Boom"),
       isLoading: false,
     });
 

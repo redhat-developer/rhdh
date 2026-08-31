@@ -1,4 +1,4 @@
-import { WebStorage } from '@backstage/core-app-api';
+import { WebStorage } from "@backstage/core-app-api";
 import {
   configApiRef,
   discoveryApiRef,
@@ -6,29 +6,32 @@ import {
   fetchApiRef,
   identityApiRef,
   storageApiRef,
-} from '@backstage/core-plugin-api';
-import { ApiBlueprint, createFrontendModule } from '@backstage/frontend-plugin-api';
-import catalogGraphPlugin from '@backstage/plugin-catalog-graph/alpha';
+} from "@backstage/core-plugin-api";
+import {
+  ApiBlueprint,
+  createFrontendModule,
+} from "@backstage/frontend-plugin-api";
+import catalogGraphPlugin from "@backstage/plugin-catalog-graph/alpha";
 import {
   ALL_RELATION_PAIRS,
   ALL_RELATIONS,
   catalogGraphApiRef,
   DefaultCatalogGraphApi,
-} from '@backstage/plugin-catalog-graph';
-import { UserSettingsStorage } from '@backstage/plugin-user-settings';
+} from "@backstage/plugin-catalog-graph";
+import { UserSettingsStorage } from "@backstage/plugin-user-settings";
 
 import {
   LearningPathApiClient,
   learningPathApiRef,
-} from './LearningPathApiClient';
+} from "./LearningPathApiClient";
 
 // Custom relations from @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor
-const RELATION_SCAFFOLDED_FROM = 'scaffoldedFrom';
-const RELATION_SCAFFOLDER_OF = 'scaffolderOf';
+const RELATION_SCAFFOLDED_FROM = "scaffoldedFrom";
+const RELATION_SCAFFOLDER_OF = "scaffolderOf";
 
 const storageApi = ApiBlueprint.make({
-  name: 'storage',
-  params: defineParams =>
+  name: "storage",
+  params: (defineParams) =>
     defineParams({
       api: storageApiRef,
       deps: {
@@ -38,11 +41,11 @@ const storageApi = ApiBlueprint.make({
         identityApi: identityApiRef,
         configApi: configApiRef,
       },
-      factory: deps => {
+      factory: (deps) => {
         const persistence =
-          deps.configApi.getOptionalString('userSettings.persistence') ??
-          'database';
-        return persistence === 'browser'
+          deps.configApi.getOptionalString("userSettings.persistence") ??
+          "database";
+        return persistence === "browser"
           ? WebStorage.create(deps)
           : UserSettingsStorage.create(deps);
       },
@@ -50,8 +53,8 @@ const storageApi = ApiBlueprint.make({
 });
 
 const learningPathApi = ApiBlueprint.make({
-  name: 'learning-path',
-  params: defineParams =>
+  name: "learning-path",
+  params: (defineParams) =>
     defineParams({
       api: learningPathApiRef,
       deps: {
@@ -72,11 +75,10 @@ const learningPathApi = ApiBlueprint.make({
  */
 export const rhdhCatalogGraphPlugin = catalogGraphPlugin.withOverrides({
   extensions: [
-    catalogGraphPlugin.getExtension('api:catalog-graph').override({
+    catalogGraphPlugin.getExtension("api:catalog-graph").override({
       factory(originalFactory) {
-        
         return originalFactory({
-          params: defineParams =>
+          params: (defineParams) =>
             defineParams({
               api: catalogGraphApiRef,
               deps: {},
@@ -107,6 +109,6 @@ export const rhdhCatalogGraphPlugin = catalogGraphPlugin.withOverrides({
  * and `@red-hat-developer-hub/backstage-plugin-app-integrations`.
  */
 export const rhdhApisModule = createFrontendModule({
-  pluginId: 'app',
+  pluginId: "app",
   extensions: [storageApi, learningPathApi],
 });

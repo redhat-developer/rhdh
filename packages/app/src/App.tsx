@@ -1,20 +1,20 @@
-import { createApp } from '@backstage/frontend-defaults';
-import { dynamicFrontendFeaturesLoader } from '@backstage/frontend-dynamic-feature-loader';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import catalogImportPlugin from '@backstage/plugin-catalog-import/alpha';
-import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
-import searchPlugin from '@backstage/plugin-search/alpha';
-import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
-import homePagePlugin from '@backstage/plugin-home/alpha';
+import { createApp } from "@backstage/frontend-defaults";
+import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
+import catalogPlugin from "@backstage/plugin-catalog/alpha";
+import catalogImportPlugin from "@backstage/plugin-catalog-import/alpha";
+import scaffolderPlugin from "@backstage/plugin-scaffolder/alpha";
+import searchPlugin from "@backstage/plugin-search/alpha";
+import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
+import homePagePlugin from "@backstage/plugin-home/alpha";
 
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import { rhdhThemeModule } from "@red-hat-developer-hub/backstage-plugin-theme/alpha";
 
-import { rhdhApisModule, rhdhCatalogGraphPlugin } from './apis/apisModule';
-import { catalogCreatedAtModule } from './modules/catalog';
-import { learningPathsModule } from './modules/learning-paths';
-import { navModule } from './modules/nav';
-import { userSettingsGeneralModule } from './modules/user-settings';
-import { rhdhTranslationsModule } from './translations/translationsModule';
+import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
+import { catalogCreatedAtModule } from "./modules/catalog";
+import { learningPathsModule } from "./modules/learning-paths";
+import { navModule } from "./modules/nav";
+import { userSettingsGeneralModule } from "./modules/user-settings";
+import { rhdhTranslationsModule } from "./translations/translationsModule";
 
 const app = createApp({
   features: [

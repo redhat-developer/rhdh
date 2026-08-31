@@ -2,11 +2,11 @@ import {
   UserSettingsAppearanceCard,
   UserSettingsIdentityCard,
   UserSettingsProfileCard,
-} from '@backstage/plugin-user-settings';
+} from "@backstage/plugin-user-settings";
 
-import Grid from '@mui/material/Grid';
+import Grid from "@mui/material/Grid";
 
-import { InfoCard } from './InfoCard';
+import { InfoCard } from "./InfoCard";
 
 export const GeneralPage = () => {
   return (

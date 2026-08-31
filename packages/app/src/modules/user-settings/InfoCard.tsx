@@ -1,37 +1,37 @@
-import { KeyboardEvent, MouseEvent, useState } from 'react';
+import { KeyboardEvent, MouseEvent, useState } from "react";
 
 import {
   InfoCard as BSInfoCard,
   CopyTextButton,
-} from '@backstage/core-components';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
+} from "@backstage/core-components";
+import { configApiRef, useApi } from "@backstage/core-plugin-api";
 
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 
-import buildMetadata from '../../build-metadata.json';
-import { useTranslation } from '../../hooks/useTranslation';
-import { BuildInfo } from './types';
+import buildMetadata from "../../build-metadata.json";
+import { useTranslation } from "../../hooks/useTranslation";
+import { BuildInfo } from "./types";
 
 export const InfoCard = () => {
   const config = useApi(configApiRef);
   const { t } = useTranslation();
-  const buildInfo: BuildInfo | undefined = config.getOptional('buildInfo');
+  const buildInfo: BuildInfo | undefined = config.getOptional("buildInfo");
 
   const [showBuildInformation, setShowBuildInformation] = useState<boolean>(
     () =>
-      localStorage.getItem('rhdh-infocard-show-build-information') === 'true',
+      localStorage.getItem("rhdh-infocard-show-build-information") === "true",
   );
 
   const toggleBuildInformation = () => {
     setShowBuildInformation(!showBuildInformation);
     try {
       if (showBuildInformation) {
-        localStorage.removeItem('rhdh-infocard-show-build-information');
+        localStorage.removeItem("rhdh-infocard-show-build-information");
       } else {
-        localStorage.setItem('rhdh-infocard-show-build-information', 'true');
+        localStorage.setItem("rhdh-infocard-show-build-information", "true");
       }
     } catch (e) {
       // ignore
@@ -68,8 +68,8 @@ export const InfoCard = () => {
       : (buildInfo?.card ?? buildMetadata?.card),
   ).map(([key, value]) => `${key}: ${value}`);
   if (buildDetails?.length) {
-    clipboardText += '\n\n';
-    buildDetails.forEach(text => {
+    clipboardText += "\n\n";
+    buildDetails.forEach((text) => {
       clipboardText += `${text}\n`;
     });
   }
@@ -79,15 +79,15 @@ export const InfoCard = () => {
       return buildDetails.slice(0, 2);
     }
     return buildDetails.filter(
-      text =>
-        text.startsWith('RHDH Version') || text.startsWith('Backstage Version'),
+      (text) =>
+        text.startsWith("RHDH Version") || text.startsWith("Backstage Version"),
     );
   };
 
   const filteredCards = showBuildInformation ? buildDetails : filteredContent();
   // Ensure that we show always some information
   const versionInfo =
-    filteredCards.length > 0 ? filteredCards.join('\n') : buildDetails[0];
+    filteredCards.length > 0 ? filteredCards.join("\n") : buildDetails[0];
 
   /**
    * Show all build information and automatically select them
@@ -107,9 +107,9 @@ export const InfoCard = () => {
    */
   const onKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
     if (
-      event.key === ' ' ||
-      (event.key === 'c' && event.ctrlKey) ||
-      (event.key === 'C' && event.ctrlKey)
+      event.key === " " ||
+      (event.key === "c" && event.ctrlKey) ||
+      (event.key === "C" && event.ctrlKey)
     ) {
       setShowBuildInformation(true);
       window.getSelection()?.selectAllChildren(event.target as Node);
@@ -121,46 +121,51 @@ export const InfoCard = () => {
       <BSInfoCard
         title={title}
         action={
-        // This is a workaround to ensure that the buttons doesn't increase the header size.
-        <div style={{ position: 'relative' }}>
-          <div
-            style={{ position: 'absolute', top: -2, right: 0, display: 'flex' }}
-          >
-            <CopyTextButton
-              text={clipboardText}
-              tooltipText={t('app.userSettings.infoCard.metadataCopied')}
-              aria-label={t('app.userSettings.infoCard.copyMetadata')}
-            />
-            <IconButton
-              title={
-                showBuildInformation
-                  ? t('app.userSettings.infoCard.showLess')
-                  : t('app.userSettings.infoCard.showMore')
-              }
-              onClick={toggleBuildInformation}
-              style={{ width: 48 }}
+          // This is a workaround to ensure that the buttons doesn't increase the header size.
+          <div style={{ position: "relative" }}>
+            <div
+              style={{
+                position: "absolute",
+                top: -2,
+                right: 0,
+                display: "flex",
+              }}
             >
-              {showBuildInformation ? <UnfoldLessIcon /> : <UnfoldMoreIcon />}
-            </IconButton>
+              <CopyTextButton
+                text={clipboardText}
+                tooltipText={t("app.userSettings.infoCard.metadataCopied")}
+                aria-label={t("app.userSettings.infoCard.copyMetadata")}
+              />
+              <IconButton
+                title={
+                  showBuildInformation
+                    ? t("app.userSettings.infoCard.showLess")
+                    : t("app.userSettings.infoCard.showMore")
+                }
+                onClick={toggleBuildInformation}
+                style={{ width: 48 }}
+              >
+                {showBuildInformation ? <UnfoldLessIcon /> : <UnfoldMoreIcon />}
+              </IconButton>
+            </div>
           </div>
-        </div>
-      }
-    >
-      <Typography
-        variant="subtitle1"
-        // Allow the user to select the text with the keyboard.
-        tabIndex={0}
-        onMouseUp={onMouseUp}
-        onKeyDown={onKeyDown}
-        style={{
-          whiteSpace: 'pre-line',
-          wordWrap: 'break-word',
-          lineHeight: '2.1rem',
-        }}
+        }
       >
-        {versionInfo}
-      </Typography>
-    </BSInfoCard>
+        <Typography
+          variant="subtitle1"
+          // Allow the user to select the text with the keyboard.
+          tabIndex={0}
+          onMouseUp={onMouseUp}
+          onKeyDown={onKeyDown}
+          style={{
+            whiteSpace: "pre-line",
+            wordWrap: "break-word",
+            lineHeight: "2.1rem",
+          }}
+        >
+          {versionInfo}
+        </Typography>
+      </BSInfoCard>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import {
   createFrontendModule,
   SubPageBlueprint,
-} from '@backstage/frontend-plugin-api';
+} from "@backstage/frontend-plugin-api";
 
 /**
  * Overrides the upstream `sub-page:user-settings/general` extension to add
@@ -14,15 +14,15 @@ import {
  * for the equivalent rationale applied to the nav module.
  */
 const userSettingsGeneral = SubPageBlueprint.make({
-  name: 'general',
+  name: "general",
   params: {
-    path: 'general',
-    title: 'General',
-    loader: () => import('./GeneralPage').then(m => <m.GeneralPage />),
+    path: "general",
+    title: "General",
+    loader: () => import("./GeneralPage").then((m) => <m.GeneralPage />),
   },
 });
 
 export const userSettingsGeneralModule = createFrontendModule({
-  pluginId: 'user-settings',
+  pluginId: "user-settings",
   extensions: [userSettingsGeneral],
 });

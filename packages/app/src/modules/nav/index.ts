@@ -1,5 +1,5 @@
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { SidebarContent } from './Sidebar';
+import { createFrontendModule } from "@backstage/frontend-plugin-api";
+import { SidebarContent } from "./Sidebar";
 
 /**
  * RHDH-branded sidebar (logo, search, menu ordering, drawer toggle, settings).
@@ -11,6 +11,6 @@ import { SidebarContent } from './Sidebar';
  * the future-upstream follow-up.
  */
 export const navModule = createFrontendModule({
-  pluginId: 'app',
+  pluginId: "app",
   extensions: [SidebarContent],
 });

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { catalogTranslationRef } from '@backstage/plugin-catalog';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { catalogTranslationRef } from "@backstage/plugin-catalog";
 
 export default createTranslationMessages({
   ref: catalogTranslationRef,
   full: false,
   messages: {
-    'indexPage.createButtonTitle': 'セルフサービス',
+    "indexPage.createButtonTitle": "セルフサービス",
   },
 });

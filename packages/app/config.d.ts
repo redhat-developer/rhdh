@@ -85,6 +85,6 @@ export interface Config {
      * The persistence mode for user settings.
      * @visibility frontend
      */
-    persistence: 'browser' | 'database';
+    persistence: "browser" | "database";
   };
 }

@@ -1,16 +1,16 @@
-import { configApiRef } from '@backstage/core-plugin-api';
+import { configApiRef } from "@backstage/core-plugin-api";
 import {
   mockApis,
   renderInTestApp,
   TestApiProvider,
-} from '@backstage/frontend-test-utils';
+} from "@backstage/frontend-test-utils";
 
-import { userEvent } from '@testing-library/user-event';
+import { userEvent } from "@testing-library/user-event";
 
-import { InfoCard } from './InfoCard';
+import { InfoCard } from "./InfoCard";
 
-describe('InfoCard', () => {
-  it('should render essential versions by default', async () => {
+describe("InfoCard", () => {
+  it("should render essential versions by default", async () => {
     const mockConfig = mockApis.config({
       data: {
         buildInfo: {},
@@ -21,12 +21,14 @@ describe('InfoCard', () => {
         <InfoCard />
       </TestApiProvider>,
     );
-    expect(renderResult.getByTestId('rhdh-build-info-card')).toBeInTheDocument();
+    expect(
+      renderResult.getByTestId("rhdh-build-info-card"),
+    ).toBeInTheDocument();
     expect(renderResult.getByText(/RHDH Version/)).toBeInTheDocument();
     expect(renderResult.getByText(/Backstage Version/)).toBeInTheDocument();
   });
 
-  it('should hide the build time by default and show it on click', async () => {
+  it("should hide the build time by default and show it on click", async () => {
     const mockConfig = mockApis.config({
       data: {
         buildInfo: {},
@@ -42,15 +44,15 @@ describe('InfoCard', () => {
     expect(renderResult.getByText(/Last Commit/)).toBeInTheDocument();
   });
 
-  it('should render the customized values when build info is configured', async () => {
+  it("should render the customized values when build info is configured", async () => {
     const mockConfig = mockApis.config({
       data: {
         buildInfo: {
-          title: 'RHDH Build info',
+          title: "RHDH Build info",
           card: {
-            'TechDocs builder': 'local',
-            'Authentication provider': 'Github',
-            RBAC: 'disabled',
+            "TechDocs builder": "local",
+            "Authentication provider": "Github",
+            RBAC: "disabled",
           },
         },
       },
@@ -69,15 +71,15 @@ describe('InfoCard', () => {
     expect(renderResult.queryByText(/Last Commit/)).not.toBeInTheDocument();
   });
 
-  it('should append the customized values along with RHDH versions when build info is configured with `full` set to false', async () => {
+  it("should append the customized values along with RHDH versions when build info is configured with `full` set to false", async () => {
     const mockConfig = mockApis.config({
       data: {
         buildInfo: {
-          title: 'RHDH Build info',
+          title: "RHDH Build info",
           card: {
-            'TechDocs builder': 'local',
-            'Authentication provider': 'Github',
-            RBAC: 'disabled',
+            "TechDocs builder": "local",
+            "Authentication provider": "Github",
+            RBAC: "disabled",
           },
           overrideBuildInfo: false,
         },
@@ -98,15 +100,15 @@ describe('InfoCard', () => {
     expect(renderResult.queryByText(/RHDH Version/)).toBeInTheDocument();
   });
 
-  it('should display only the customized values when build info is configured with full set to true, without appending RHDH versions', async () => {
+  it("should display only the customized values when build info is configured with full set to true, without appending RHDH versions", async () => {
     const mockConfig = mockApis.config({
       data: {
         buildInfo: {
-          title: 'RHDH Build info',
+          title: "RHDH Build info",
           card: {
-            'TechDocs builder': 'local',
-            'Authentication provider': 'Github',
-            RBAC: 'disabled',
+            "TechDocs builder": "local",
+            "Authentication provider": "Github",
+            RBAC: "disabled",
           },
           overrideBuildInfo: true,
         },
@@ -126,11 +128,11 @@ describe('InfoCard', () => {
     expect(renderResult.queryByText(/Last Commit/)).not.toBeInTheDocument();
   });
 
-  it('should fallback to default json if the customized card value is empty', async () => {
+  it("should fallback to default json if the customized card value is empty", async () => {
     const mockConfig = mockApis.config({
       data: {
         buildInfo: {
-          title: 'RHDH Build info',
+          title: "RHDH Build info",
           card: undefined,
         },
       },
@@ -150,15 +152,15 @@ describe('InfoCard', () => {
   // Mirrors e2e-tests/.../user-settings-info-card.spec.ts: asserts the card
   // title and the "key: value" lines (collapsed shows the first two, expanding
   // reveals the rest) — behavior the key-only assertions above did not cover.
-  it('renders the build info title and key/value lines, revealing the rest on expand', async () => {
+  it("renders the build info title and key/value lines, revealing the rest on expand", async () => {
     const mockConfig = mockApis.config({
       data: {
         buildInfo: {
-          title: 'RHDH Build info',
+          title: "RHDH Build info",
           card: {
-            'TechDocs builder': 'local',
-            'Authentication provider': 'Github',
-            RBAC: 'disabled',
+            "TechDocs builder": "local",
+            "Authentication provider": "Github",
+            RBAC: "disabled",
           },
         },
       },
