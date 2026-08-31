@@ -23,9 +23,11 @@ Run these commands in this directory:
 cp .env.example .env
 ```
 
-Edit at least `SUFFIX`, `LOCATION`, and `OPENSHIFT_VERSION`. Place `pull-secret.txt` in this
-directory, or set `PULL_SECRET_FILE` to an absolute path. The configuration contains names and
-network allow-lists only; it must not contain registry passwords, tokens, or other secret values.
+Edit at least `SUFFIX`, `LOCATION`, `OPENSHIFT_VERSION`, and `BASTION_SOURCE_ADDRESS_PREFIX`. Set
+the latter to the public IP address or CIDR of the workstation that will SSH to the bastion, for
+example `198.51.100.10/32`. Place `pull-secret.txt` in this directory, or set `PULL_SECRET_FILE` to
+an absolute path. The configuration contains names and network allow-lists only; it must not contain
+registry passwords, tokens, or other secret values.
 
 ## Workflow
 
@@ -38,9 +40,9 @@ Run on the local workstation:
 ```
 
 This creates the resource group, VNet, master and worker subnets, Azure Firewall, routes, private
-ARO cluster, and bastion VM. The script creates an SSH key pair and writes the SSH command, API
-server, console URL, and kubeadmin credentials to a `*_access-information.txt` file with mode
-`0600`. The file is ignored by git.
+ARO cluster, and bastion VM. The bastion allows SSH only from `BASTION_SOURCE_ADDRESS_PREFIX`. The
+script creates an SSH key pair and writes the SSH command, API server, console URL, and kubeadmin
+credentials to a `*_access-information.txt` file with mode `0600`. The file is ignored by git.
 
 The installer firewall rule is removed after ARO creation. Use the next step to add the outbound
 rules needed by the workloads you run.

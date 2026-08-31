@@ -107,7 +107,7 @@ check_existing_rule_collection() {
   fi
 
   print_status "Removing existing rule collection: ${RULE_COLLECTION_NAME}"
-  yes | az network firewall application-rule collection delete \
+  az network firewall application-rule collection delete \
     --resource-group "$RESOURCE_GROUP" \
     --firewall-name "$FIREWALL_NAME" \
     --collection-name "$RULE_COLLECTION_NAME"

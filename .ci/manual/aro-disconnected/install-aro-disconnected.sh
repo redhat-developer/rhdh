@@ -50,6 +50,7 @@ required_variables=(
   PULL_SECRET_FILE
   OPENSHIFT_VERSION
   BASTION_NAME
+  BASTION_SOURCE_ADDRESS_PREFIX
 )
 for variable_name in "${required_variables[@]}"; do
   if [[ -z "${!variable_name:-}" ]]; then
@@ -57,6 +58,11 @@ for variable_name in "${required_variables[@]}"; do
     exit 1
   fi
 done
+
+if [[ ! "$BASTION_NAME" =~ ^[A-Za-z0-9-]{1,64}$ ]]; then
+  printf 'BASTION_NAME must contain only letters, numbers, and hyphens: %s\n' "$BASTION_NAME" >&2
+  exit 1
+fi
 
 PULL_SECRET_FILE=$(resolve_path "$PULL_SECRET_FILE")
 SSH_KEY_NAME=$(resolve_path "$SSH_KEY_NAME")
@@ -230,6 +236,21 @@ ssh-keygen -m PEM -t rsa -b 4096 -N '' -f "$SSH_KEY_NAME"
 chmod 600 "$SSH_KEY_NAME"
 
 printf '%s\n' 'Creating bastion host VM'
+BASTION_NSG_NAME="${BASTION_NAME}-nsg"
+az network nsg create \
+  --resource-group "$RESOURCEGROUP" \
+  --name "$BASTION_NSG_NAME" \
+  --location "$LOCATION"
+az network nsg rule create \
+  --resource-group "$RESOURCEGROUP" \
+  --nsg-name "$BASTION_NSG_NAME" \
+  --name allow-ssh-from-workstation \
+  --priority 100 \
+  --source-address-prefixes "$BASTION_SOURCE_ADDRESS_PREFIX" \
+  --destination-port-ranges 22 \
+  --access Allow \
+  --protocol Tcp \
+  --direction Inbound
 az vm create \
   --name "$BASTION_NAME" \
   --resource-group "$RESOURCEGROUP" \
@@ -238,6 +259,7 @@ az vm create \
   --public-ip-address bastion-pub-ip \
   --vnet-name "$VNET_NAME" \
   --subnet public-subnet \
+  --nsg "$BASTION_NSG_NAME" \
   --admin-username azureuser \
   --ssh-key-values "${SSH_KEY_NAME}.pub"
 

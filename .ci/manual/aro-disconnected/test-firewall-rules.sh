@@ -20,7 +20,8 @@ printf '%s\n' '#!/usr/bin/env bash' \
   'case "${1:-}:${2:-}:${3:-}:${4:-}:${5:-}" in' \
   '  account:show::::) exit 0 ;;' \
   '  network:firewall:show::::) exit 0 ;;' \
-  '  network:firewall:application-rule:collection:show) exit 1 ;;' \
+  '  network:firewall:application-rule:collection:show)' \
+  '    [[ "${EXISTING_COLLECTION:-0}" -eq 1 ]] && exit 0 || exit 1 ;;' \
   '  network:firewall:application-rule:create:*) exit 0 ;;' \
   'esac' \
   'exit 0' > "$TEST_DIR/bin/az"
@@ -50,6 +51,9 @@ while IFS= read -r line; do
       create_count=$((create_count + 1))
       if [[ -z "$first_create" ]]; then
         first_create="$line"
+      else
+        [[ "$line" != *'--action '* ]]
+        [[ "$line" != *'--priority '* ]]
       fi
       [[ "$line" == *'--collection-name azure_ms '* ]]
       ;;
@@ -58,6 +62,19 @@ done < "$TEST_DIR/az.log"
 
 [[ "$create_count" -eq "${#expected_rules[@]}" ]]
 [[ "$first_create" == *'--action Allow'*'--priority 200'* ]]
+
+printf 'y' | PATH="$TEST_DIR/bin:$PATH" EXISTING_COLLECTION=1 AZ_LOG="$TEST_DIR/overwrite.log" \
+  bash "$TEST_DIR/create-azure-firewall-rules.sh"
+
+delete_count=0
+while IFS= read -r line; do
+  case "$line" in
+    network\ firewall\ application-rule\ collection\ delete\ *)
+      delete_count=$((delete_count + 1))
+      ;;
+  esac
+done < "$TEST_DIR/overwrite.log"
+[[ "$delete_count" -eq 1 ]]
 
 for rule_name in "${expected_rules[@]}"; do
   found=0
