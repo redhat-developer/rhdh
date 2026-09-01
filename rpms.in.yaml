@@ -9,23 +9,21 @@ arches:
 allowerasing: true
 contentOrigin:
   repos:
-    - repoid: ubi-9-for-$basearch-appstream-rpms
-      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/appstream/os/
-    - repoid: ubi-9-for-$basearch-appstream-source-rpms
-      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/appstream/source/SRPMS
-    - repoid: ubi-9-for-$basearch-baseos-rpms
-      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/baseos/os/
-    - repoid: ubi-9-for-$basearch-baseos-source-rpms
-      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/baseos/source/SRPMS
-    # - repoid: codeready-builder-for-ubi-9-$basearch-rpms
-    #   baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/os/
-    #   # gpgcheck: 0
-    # - repoid: codeready-builder-for-ubi-9-$basearch-source-rpms
-    #   baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/source/SRPMS
-    #   # gpgcheck: 0
+    - repoid: ubi-10-for-$basearch-appstream-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/appstream/os/
+    - repoid: ubi-10-for-$basearch-appstream-source-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/appstream/source/SRPMS
+    - repoid: ubi-10-for-$basearch-baseos-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/baseos/os/
+    - repoid: ubi-10-for-$basearch-baseos-source-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/baseos/source/SRPMS
+    - repoid: codeready-builder-for-ubi-10-$basearch-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/codeready-builder/os/
+      # gpgcheck: 0
+    - repoid: codeready-builder-for-ubi-10-$basearch-source-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/codeready-builder/source/SRPMS
+      # gpgcheck: 0
 
-moduleEnable:
-  - nodejs:24
 packages:
   - acl
   - alsa-lib
@@ -132,7 +130,6 @@ packages:
   - libcom_err
   - libcomps
   - libcurl-minimal
-  - libdb
   - libdnf
   - libdnf-plugin-subscription-manager
   - libdrm
@@ -159,13 +156,11 @@ packages:
   - libpkgconf
   - libpwquality
   - librepo
-  - libreport-filesystem
   - librhsm
   - libseccomp
   - libselinux
   - libsemanage
   - libsepol
-  - libsigsegv
   - libslirp
   - libsmartcols
   - libsolv
@@ -218,7 +213,6 @@ packages:
   - pam
   - pango
   - passwd
-  - pcre
   - pcre2
   - pcre2-syntax
   - perl
@@ -291,7 +285,6 @@ packages:
   - procps-ng
   - protobuf-c
   - psmisc
-  - python3-chardet
   - python3-cloud-what
   - python3-dateutil
   - python3-dbus
@@ -309,18 +302,17 @@ packages:
   - python3-librepo
   - python3-pip
   - python3-rpm
+  - python3-setuptools-wheel
   - python3-subscription-manager-rhsm
   - python3-systemd
-  - python3.11
-  - python3.11-devel
-  - python3.11-idna
-  - python3.11-pip
-  - python3.11-pip-wheel
-  - python3.11-pysocks
-  - python3.11-requests
-  - python3.11-setuptools
-  - python3.11-setuptools-wheel
-  - python3.11-urllib3
+  - python3.12
+  - python3.12-devel
+  - python3.12-idna
+  - python3.12-pip
+  - python3.12-pip-wheel
+  - python3.12-requests
+  - python3.12-setuptools
+  - python3.12-urllib3
   - readline
   - redhat-release
   - rootfiles
@@ -337,7 +329,6 @@ packages:
   - setup
   - shadow-utils
   - skopeo
-  - slirp4netns
   - sqlite-libs
   - subscription-manager
   - subscription-manager-rhsm-certificates
@@ -359,7 +350,6 @@ packages:
   - which
   - xz
   - xz-libs
-  - yajl
   - yum
   - zlib
   - zlib-devel
