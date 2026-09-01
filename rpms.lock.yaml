@@ -2657,13 +2657,13 @@ arches:
     name: groff-base
     evr: 1.22.4-10.el9
     sourcerpm: groff-1.22.4-10.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/g/gzip-1.12-1.el9.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/g/gzip-1.12-2.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 169809
-    checksum: sha256:45710df49b439ddc4a2848fd3877367761b574234ae28b6be46f1cf54f3fcdca
+    size: 171305
+    checksum: sha256:efafc848fdaa3a8e5e77baddc07abc7d800dc973efd44ecf492bc64dca4fabe6
     name: gzip
-    evr: 1.12-1.el9
-    sourcerpm: gzip-1.12-1.el9.src.rpm
+    evr: 1.12-2.el9_8
+    sourcerpm: gzip-1.12-2.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/h/harfbuzz-2.7.4-10.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 643882
@@ -2720,13 +2720,6 @@ arches:
     name: libatomic
     evr: 11.5.0-14.el9
     sourcerpm: gcc-11.5.0-14.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libattr-2.6.0-1.el9_8.aarch64.rpm
-    repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 23276
-    checksum: sha256:ec08036348dbe2ee41645bdb96eb485b9db5121ec0524258b0639426a22a49bc
-    name: libattr
-    evr: 2.6.0-1.el9_8
-    sourcerpm: attr-2.6.0-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libbpf-1.5.0-3.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 188694
@@ -4739,12 +4732,12 @@ arches:
     checksum: sha256:16d1628338ede3c55a795782f05848112d47816ba073978af6fcd90ecce08f5c
     name: groff
     evr: 1.22.4-10.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/g/gzip-1.12-2.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 856147
-    checksum: sha256:a05f582ec42e89258ee5e10af96dee4300bcb2a6a69a76bfb5b46f79e6a6a47b
+    size: 859023
+    checksum: sha256:f28fcbe8f3de2ec7dcdb51b1f51f03f61d0afa18c9fef10d210f40ff0c71f3a0
     name: gzip
-    evr: 1.12-1.el9
+    evr: 1.12-2.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/h/harfbuzz-2.7.4-10.el9.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 9551851
@@ -7826,13 +7819,13 @@ arches:
     name: groff-base
     evr: 1.22.4-10.el9
     sourcerpm: groff-1.22.4-10.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/g/gzip-1.12-1.el9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/g/gzip-1.12-2.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 171206
-    checksum: sha256:c8b3e0414d55b1eedb0185a564ac6cb2368bee2fd5f995447d045f6a714488ac
+    size: 172571
+    checksum: sha256:a87bdcce45011f232758c01bd99c564b5f6b549d391646cc573a132d22604b85
     name: gzip
-    evr: 1.12-1.el9
-    sourcerpm: gzip-1.12-1.el9.src.rpm
+    evr: 1.12-2.el9_8
+    sourcerpm: gzip-1.12-2.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/h/harfbuzz-2.7.4-10.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 643610
@@ -7889,13 +7882,6 @@ arches:
     name: less
     evr: 590-6.el9
     sourcerpm: less-590-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libattr-2.6.0-1.el9_8.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 23752
-    checksum: sha256:9e37537f690c748f7f05faa80966072f118ec722e38ef332fe19cf22b087349f
-    name: libattr
-    evr: 2.6.0-1.el9_8
-    sourcerpm: attr-2.6.0-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libbpf-1.5.0-3.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 188749
@@ -9915,12 +9901,12 @@ arches:
     checksum: sha256:16d1628338ede3c55a795782f05848112d47816ba073978af6fcd90ecce08f5c
     name: groff
     evr: 1.22.4-10.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/g/gzip-1.12-2.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 856147
-    checksum: sha256:a05f582ec42e89258ee5e10af96dee4300bcb2a6a69a76bfb5b46f79e6a6a47b
+    size: 859023
+    checksum: sha256:f28fcbe8f3de2ec7dcdb51b1f51f03f61d0afa18c9fef10d210f40ff0c71f3a0
     name: gzip
-    evr: 1.12-1.el9
+    evr: 1.12-2.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/h/harfbuzz-2.7.4-10.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 9551851
