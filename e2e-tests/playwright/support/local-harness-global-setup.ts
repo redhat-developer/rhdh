@@ -33,5 +33,8 @@ export function requireDynamicPluginsPopulated(yarnScript: string, populateComma
 
 /** globalSetup for playwright.local.config.ts (NFS cluster-free harness). */
 export default function nfsLocalGlobalSetup(): void {
-  requireDynamicPluginsPopulated("e2e:local", "./e2e-tests/local-harness/populate.sh");
+  requireDynamicPluginsPopulated(
+    "e2e:local",
+    "CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next ./e2e-tests/local-harness/populate.sh",
+  );
 }

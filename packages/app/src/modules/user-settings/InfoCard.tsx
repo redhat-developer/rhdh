@@ -21,8 +21,16 @@ export const InfoCard = () => {
   const buildInfo: BuildInfo | undefined = config.getOptional("buildInfo");
 
   const [showBuildInformation, setShowBuildInformation] = useState<boolean>(
-    () =>
-      localStorage.getItem("rhdh-infocard-show-build-information") === "true",
+    () => {
+      try {
+        return (
+          localStorage.getItem('rhdh-infocard-show-build-information') ===
+          'true'
+        );
+      } catch {
+        return false;
+      }
+    },
   );
 
   const toggleBuildInformation = () => {

@@ -6,7 +6,7 @@ import {
 
 /**
  * Overrides the upstream catalog index page to add the RHDH "Created At"
- * column
+ * column and OR-logic tag filtering.
  */
 const catalogPage = PageBlueprint.make({
   params: {
@@ -16,7 +16,14 @@ const catalogPage = PageBlueprint.make({
       const { CatalogIndexPage } =
         await import("@backstage/plugin-catalog/alpha");
       const { createdAtColumnsFunc } = await import("./createdAtColumns");
-      return <CatalogIndexPage pagination columns={createdAtColumnsFunc} />;
+      const { CustomCatalogFilters } = await import("./CustomCatalogFilters");
+      return (
+        <CatalogIndexPage
+          pagination
+          columns={createdAtColumnsFunc}
+          filters={<CustomCatalogFilters />}
+        />
+      );
     },
   },
 });

@@ -5,11 +5,7 @@ import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/loca
 const t = getTranslations();
 
 /**
- * Waits for the RHDH app-auth sign-in page to replace the interim upstream NFS shell.
- *
- * NFS renders the default @backstage/plugin-app sign-in immediately (heading = app
- * title, Guest only). The app-auth dynamic plugin hydrates via module federation and
- * swaps in the RHDH multi-provider page ("Select a sign-in method").
+ * Waits for the RHDH app-auth sign-in page ("Select a sign-in method").
  */
 export async function waitForRhdhSignInPage(
   page: Page,

@@ -2,6 +2,7 @@ import { createApp } from "@backstage/frontend-defaults";
 import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
 import catalogPlugin from "@backstage/plugin-catalog/alpha";
 import catalogImportPlugin from "@backstage/plugin-catalog-import/alpha";
+import catalogUnprocessedEntitiesPlugin from "@backstage/plugin-catalog-unprocessed-entities/alpha";
 import scaffolderPlugin from "@backstage/plugin-scaffolder/alpha";
 import searchPlugin from "@backstage/plugin-search/alpha";
 import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
@@ -23,6 +24,7 @@ const app = createApp({
     catalogPlugin,
     catalogCreatedAtModule, // Created At column on catalog index
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
+    catalogUnprocessedEntitiesPlugin,
     rhdhCatalogGraphPlugin, // catalog-graph UI + scaffolderOf/scaffoldedFrom API override
     scaffolderPlugin,
     searchPlugin,

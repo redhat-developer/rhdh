@@ -34,11 +34,16 @@ export class SidebarPage {
   }
 
   async verifyDocsHeading(): Promise<void> {
-    await verification.verifyHeading(this.page, "Docs");
+    const lang = getCurrentLanguage();
+    await verification.verifyHeading(this.page, t["rhdh"][lang]["menuItem.docs"]);
   }
 
   async verifyLearningPathsHeading(): Promise<void> {
-    await verification.verifyHeading(this.page, "Learning Paths");
+    const lang = getCurrentLanguage();
+    await verification.verifyHeading(
+      this.page,
+      t["rhdh"][lang]["menuItem.learningPaths"],
+    );
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {

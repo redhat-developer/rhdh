@@ -2,7 +2,7 @@ name: E2E Cluster-free
 
 # Runs the cluster-free local E2E harness (RHIDP-13501 / RHIDP-15075): boots the
 # backend and the NFS app (packages/app) dev server in-process and drives Playwright
-# against them, with dynamic plugins installed from the public OCI registry (ghcr) via
+# against them, with dynamic plugins installed from the public OCI registry (quay.io) via
 # the install-dynamic-plugins CLI (skopeo). No OpenShift/Kubernetes cluster or
 # image. See docs/e2e-tests/local-e2e-harness.md.
 

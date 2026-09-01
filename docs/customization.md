@@ -2,7 +2,7 @@
 
 To customize the look of your showcase instance, you can edit the `app-config.yaml` file in the root of this repository. The customizations used to configure the app are loaded by the backstage app at startup, with certain values being queried by the app at runtime.
 
-Plugins can use field `developerHub.flavor` of the `app-config.yaml` to identify which Backstage flavor they are running on (e.g `backstage`, `rhdh` or `rhtap`).
+> **NFS default:** RHDH ships the Backstage new frontend system (`packages/app`). For NFS-specific configuration, see [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](dynamic-plugins/migrating-config-to-new-frontend-system.md). Sections below marked **legacy OFS only** do not apply to the default NFS app shell.
 
 ## Changing the Sidebar Logo
 
@@ -43,7 +43,9 @@ app:
 
 ![Hidden Sidebar search, settings, and administration](images/sidebar-search-hidden.png)
 
-## Customizing the Sidebar Menu Items
+## Customizing the Sidebar Menu Items (legacy OFS only — obsolete for NFS)
+
+> **Obsolete for NFS.** The default NFS app (`packages/app`) uses a code-defined flat sidebar in `packages/app/src/modules/nav/Sidebar.tsx`. The `dynamicPlugins.frontend.default.main-menu-items` configuration below only applied to the legacy OFS app shell and has no effect on NFS. For NFS navigation, see [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](dynamic-plugins/migrating-config-to-new-frontend-system.md).
 
 Order and parent-children relationship of sidebar main menu items can be customized using the `dynamicPlugins.frontend.default.main-menu-items.menuItems` field in the `app-config.yaml`. To ensure the menu item is recognized as a main menu item, the key must be prefixed with `default.`.
 
@@ -67,18 +69,9 @@ dynamicPlugins:
 
 See [Menu items](dynamic-plugins/frontend-plugin-wiring.md#menu-items) from dynamic-plugins documentation for more details.
 
-See [DefaultMainMenuItems](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/consts.ts#L1) for a list of main menu items, including their default priorities.
-
 ## Changing the favicon and tab title
 
-Currently, the favicon customization utilizes the same Base64 encoded image as the icon logo provided via `app.branding.iconLogo` in the `app-config.yaml`
-Currently the favicon is only loaded once at startup, so if any changes need to be made to the favicon, the app will need to be restarted.
-
-```yaml title="app-config.yaml"
-app:
-  branding:
-    iconLogo: ${BASE64_EMBEDDED_ICON_LOGO}
-```
+> **Favicon from `iconLogo` (legacy OFS only):** The legacy OFS app shell could update the favicon from `app.branding.iconLogo` at runtime. The NFS app uses static favicon assets in `packages/app/public/` and does not apply `iconLogo` to the tab icon.
 
 To customize the tab title, provide a string value to the `app.title` field in the `app-config.yaml`:
 
@@ -448,7 +441,7 @@ proxy:
         '/developer-hub':
         target: https://raw.githubusercontent.com/ # i.e https://raw.githubusercontent.com/
         pathRewrite:
-            '^/api/proxy/developer-hub$': <path-to-your>.json # i.e /redhat-developer/rhdh/main/packages/app/public/homepage/data.json
+            '^/api/proxy/developer-hub$': <path-to-your>.json # e.g. a hosted JSON file for Quick Access card data
         changeOrigin: true
         secure: true
 ```

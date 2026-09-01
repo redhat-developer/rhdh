@@ -10,9 +10,9 @@
 # plugins, so the existing RHDH specs render off-cluster.
 #
 # NOTE: every package below uses `{{inherit}}` rather than a hardcoded tag/digest,
-# resolved against the full dynamic-plugins.default.yaml (repo root by default —
-# same as CI/Helm includes; see populate.sh). Set CATALOG_INDEX_IMAGE to extract
-# the full catalog DPDY from a catalog-index OCI image instead.
+# resolved against dynamic-plugins.default.yaml extracted from a catalog-index
+# OCI image. Set CATALOG_INDEX_IMAGE (required — see populate.sh and
+# docs/e2e-tests/local-e2e-harness.md) before running populate.sh.
 #
 # Re-run populate.sh after editing this file.
 includes:
@@ -73,9 +73,6 @@ plugins:
     disabled: false
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-integrations:{{inherit}}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20
-    disabled: false
-  # Home page: route / -> DynamicHomePage, SearchBar, QuickAccessCard, Starred Entities.
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage:bs_1.52.0__1.17.1!red-hat-developer-hub-backstage-plugin-homepage
     disabled: false
   # TechDocs frontend: /docs route (TechDocsIndexPage) + the "Docs" sidebar menu item,
   # exercised by plugins/frontend/sidebar.spec.ts. Route/menu config comes from the

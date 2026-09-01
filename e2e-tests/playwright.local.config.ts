@@ -18,7 +18,7 @@ import {
  *
  *   # one-time: populate dynamic-plugins-root (same script CI uses — OCI, no build;
  *   # alternatives in docs/e2e-tests/local-e2e-harness.md):
- *   ./e2e-tests/local-harness/populate.sh
+ *   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next ./e2e-tests/local-harness/populate.sh
  *
  *   yarn --cwd e2e-tests e2e:local
  *

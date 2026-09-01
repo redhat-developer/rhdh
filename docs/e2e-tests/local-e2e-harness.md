@@ -19,18 +19,18 @@ sign in."_
 
 Run the same script CI uses — it installs the harness plugin set
 (`e2e-tests/local-harness/dynamic-plugins.yaml`) from the public OCI registry (quay.io)
-via `install-dynamic-plugins` + skopeo, with `{{inherit}}` resolved against the full
-`dynamic-plugins.default.yaml` at the repo root (same as Helm/CI `includes`). Set
-`CATALOG_INDEX_IMAGE` to extract the full catalog DPDY from a catalog-index OCI image
-instead. Pinned to the same CLI version as CI. No source build needed; works from a
-fresh clone. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS):
+via `install-dynamic-plugins` + skopeo, with `{{inherit}}` resolved against
+`dynamic-plugins.default.yaml` extracted from a catalog-index OCI image.
+**`CATALOG_INDEX_IMAGE` is required** to extract the full catalog DPDY from a catalog-index OCI image
+`dynamic-plugins.default.yaml`. Pinned to the same CLI version as CI. No source build
+needed; works from a fresh clone. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS):
 
 ```bash
-./e2e-tests/local-harness/populate.sh
+CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
+  ./e2e-tests/local-harness/populate.sh
 ```
 
-Extract from a specific catalog index image (overrides repo-root DPDY with the full
-catalog extracted from that image):
+Use a specific catalog index image (for example a release branch tag):
 
 ```bash
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:2.0 ./e2e-tests/local-harness/populate.sh
@@ -132,12 +132,11 @@ for how that's wired).
 Not enablable yet:
 
 - `plugins/application-provider` and `plugins/application-listener` — the
-  application-provider-test / application-listener-test OCI plugins (pinned in
-  `values_showcase.yaml` for cluster-based CI) only publish an OFS ("." Module
-  Federation) entry point, no NFS/alpha extensions. `packages/app` (NFS) has no
-  application/provider or application/listener renderer yet — so neither spec can
-  currently pass here. Not installed in the harness; re-add once NFS support exists
-  for either the fixture plugins or a generic provider/listener renderer in
+  application-provider-test / application-listener-test OCI plugins only publish an
+  OFS ("." Module Federation) entry point, no NFS/alpha extensions. `packages/app`
+  (NFS) has no application/provider or application/listener renderer yet — so neither
+  spec can currently pass here. Not installed in the harness; re-add once NFS support
+  exists for either the fixture plugins or a generic provider/listener renderer in
   `packages/app`.
 - `plugins/licensed-users-info-backend` — the
   `licensed-users-info-backend` plugin is not published to the overlays OCI registry
@@ -146,9 +145,9 @@ Not enablable yet:
 ## CI
 
 `.github/workflows/e2e-cluster-free.yaml` runs this harness on GitHub Actions in a
-cluster-free phase: it installs deps + skopeo, populates `dynamic-plugins-root` via
-`./e2e-tests/local-harness/populate.sh` (full repo-root `dynamic-plugins.default.yaml`
-+ harness plugin set from quay.io), then runs `yarn e2e:local`. No cluster or container
+cluster-free phase: it installs deps + skopeo, resolves a catalog index image, populates
+`dynamic-plugins-root` via `CATALOG_INDEX_IMAGE=… ./e2e-tests/local-harness/populate.sh`
+(harness plugin set from quay.io), then runs `yarn e2e:local`. No cluster or container
 image is built. It triggers on `e2e-tests/**` and `app-config*.yaml` changes; the scope
 can widen to `packages/app/**` / `packages/backend/**` once it is proven stable.
 
