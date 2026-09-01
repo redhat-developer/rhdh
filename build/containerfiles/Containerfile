@@ -14,7 +14,6 @@
 # limitations under the License.
 
 # Stage 1 - Build nodejs skeleton
-# https://registry.access.redhat.com/ubi10/nodejs-24
 FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1786427351@sha256:a35d0e62639a3b678cd1b8dcb027b046fb5493cc4d295648af64cbda61bc697e AS skeleton
 # hadolint ignore=DL3002
 USER 0

@@ -86,62 +86,64 @@ export interface Config {
        */
       administration?: boolean;
     };
-    quickstart?: Array</**
-     * @visibility frontend
-     */
-    {
+    quickstart?: Array<
       /**
-       * The title of quickstart.
        * @visibility frontend
        */
-      title: string;
-      /**
-       * Optional translation key for the title.
-       * @visibility frontend
-       */
-      titleKey?: string;
-      /**
-       * The roles associated with the quickstart.
-       * @visibility frontend
-       */
-      roles?: Array<string>;
-      /**
-       * Optional icon for quickstart.
-       * @visibility frontend
-       */
-      icon?: string;
-      /**
-       * The description of quickstart.
-       * @visibility frontend
-       */
-      description: string;
-      /**
-       * Optional translation key for the description.
-       * @visibility frontend
-       */
-      descriptionKey?: string;
-      /**
-       * Optional action item for quickstart.
-       * @visibility frontend
-       */
-      cta?: {
+      {
         /**
-         * Action item text.
+         * The title of quickstart.
          * @visibility frontend
          */
-        text: string;
+        title: string;
         /**
-         * Optional translation key for the action text.
+         * Optional translation key for the title.
          * @visibility frontend
          */
-        textKey?: string;
+        titleKey?: string;
         /**
-         * Action item link.
+         * The roles associated with the quickstart.
          * @visibility frontend
          */
-        link: string;
-      };
-    }>;
+        roles?: Array<string>;
+        /**
+         * Optional icon for quickstart.
+         * @visibility frontend
+         */
+        icon?: string;
+        /**
+         * The description of quickstart.
+         * @visibility frontend
+         */
+        description: string;
+        /**
+         * Optional translation key for the description.
+         * @visibility frontend
+         */
+        descriptionKey?: string;
+        /**
+         * Optional action item for quickstart.
+         * @visibility frontend
+         */
+        cta?: {
+          /**
+           * Action item text.
+           * @visibility frontend
+           */
+          text: string;
+          /**
+           * Optional translation key for the action text.
+           * @visibility frontend
+           */
+          textKey?: string;
+          /**
+           * Action item link.
+           * @visibility frontend
+           */
+          link: string;
+        };
+      }
+    >;
   };
   /** @deepVisibility frontend */
   dynamicPlugins: {

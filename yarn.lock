@@ -7226,7 +7226,7 @@ __metadata:
     express: "npm:4.22.2"
     msw: "npm:1.3.5"
     node-fetch: "npm:2.7.0"
-    prettier: "npm:3.8.4"
+    prettier: "npm:3.9.6"
     supertest: "npm:6.3.4"
     typescript: "npm:5.9.3"
     winston: "npm:3.14.2"
@@ -7260,7 +7260,7 @@ __metadata:
     luxon: "npm:3.7.2"
     msw: "npm:1.3.5"
     node-fetch: "npm:2.7.0"
-    prettier: "npm:3.8.4"
+    prettier: "npm:3.9.6"
     supertest: "npm:6.3.4"
     typescript: "npm:5.9.3"
   languageName: unknown
@@ -7284,7 +7284,7 @@ __metadata:
     mock-fs: "npm:5.5.0"
     msw: "npm:1.3.5"
     node-fetch: "npm:2.7.0"
-    prettier: "npm:3.8.4"
+    prettier: "npm:3.9.6"
     supertest: "npm:6.3.4"
     typescript: "npm:5.9.3"
     winston: "npm:3.14.2"
@@ -11966,7 +11966,7 @@ __metadata:
     "@types/node": "npm:24.13.3"
     "@types/react": "npm:18.3.31"
     "@types/react-dom": "npm:18.3.7"
-    prettier: "npm:3.8.4"
+    prettier: "npm:3.9.6"
     react: "npm:18.3.1"
     typescript: "npm:5.9.3"
   peerDependencies:
@@ -14254,44 +14254,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turbo/darwin-64@npm:2.10.4":
-  version: 2.10.4
-  resolution: "@turbo/darwin-64@npm:2.10.4"
+"@turbo/darwin-64@npm:2.10.11":
+  version: 2.10.11
+  resolution: "@turbo/darwin-64@npm:2.10.11"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/darwin-arm64@npm:2.10.4":
-  version: 2.10.4
-  resolution: "@turbo/darwin-arm64@npm:2.10.4"
+"@turbo/darwin-arm64@npm:2.10.11":
+  version: 2.10.11
+  resolution: "@turbo/darwin-arm64@npm:2.10.11"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/linux-64@npm:2.10.4":
-  version: 2.10.4
-  resolution: "@turbo/linux-64@npm:2.10.4"
-  conditions: os=linux & cpu=x64
+"@turbo/linux-64@npm:2.10.11":
+  version: 2.10.11
+  resolution: "@turbo/linux-64@npm:2.10.11"
+  conditions: (os=android | os=linux) & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/linux-arm64@npm:2.10.4":
-  version: 2.10.4
-  resolution: "@turbo/linux-arm64@npm:2.10.4"
-  conditions: os=linux & cpu=arm64
+"@turbo/linux-arm64@npm:2.10.11":
+  version: 2.10.11
+  resolution: "@turbo/linux-arm64@npm:2.10.11"
+  conditions: (os=android | os=linux) & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/windows-64@npm:2.10.4":
-  version: 2.10.4
-  resolution: "@turbo/windows-64@npm:2.10.4"
+"@turbo/windows-64@npm:2.10.11":
+  version: 2.10.11
+  resolution: "@turbo/windows-64@npm:2.10.11"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/windows-arm64@npm:2.10.4":
-  version: 2.10.4
-  resolution: "@turbo/windows-arm64@npm:2.10.4"
+"@turbo/windows-arm64@npm:2.10.11":
+  version: 2.10.11
+  resolution: "@turbo/windows-arm64@npm:2.10.11"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -16501,7 +16501,7 @@ __metadata:
     "@types/react-dom": "npm:18.3.7"
     eslint-plugin-unused-imports: "npm:4.4.1"
     lodash: "npm:4.18.1"
-    prettier: "npm:3.8.4"
+    prettier: "npm:3.9.6"
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     react-router-dom: "npm:6.30.6"
@@ -17143,7 +17143,7 @@ __metadata:
     better-sqlite3: "npm:12.11.1"
     global-agent: "npm:3.0.0"
     mongodb: "npm:7.5.0"
-    prettier: "npm:3.8.4"
+    prettier: "npm:3.9.6"
     typescript: "npm:5.9.3"
     undici: "npm:7.29.0"
     winston: "npm:3.14.2"
@@ -30695,12 +30695,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.8.4":
-  version: 3.8.4
-  resolution: "prettier@npm:3.8.4"
+"prettier@npm:3.9.6":
+  version: 3.9.6
+  resolution: "prettier@npm:3.9.6"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/b90a0cbe75b88ac0af9c13fe0f359bd19926fabccd88483227b21f71f0c1cc42da056fc1ac3a361e665577c568371d5ccfb2c62c31c8a1186f8d1bd531a063e9
+  checksum: 10c0/9f7ddae234035868f3daab3dc34e6de7e54622185afb017378029f0c09a9c023248ccf6f34def0b17a0538e18c47aa1b3188bab72965d1bf735919baa0747e99
   languageName: node
   linkType: hard
 
@@ -32760,7 +32760,7 @@ __metadata:
     node-gyp: "npm:10.3.1"
     rulesync: "npm:7.30.0"
     sherif: "npm:1.13.0"
-    turbo: "npm:2.10.4"
+    turbo: "npm:2.10.11"
   dependenciesMeta:
     keytar:
       built: false
@@ -35557,16 +35557,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo@npm:2.10.4":
-  version: 2.10.4
-  resolution: "turbo@npm:2.10.4"
+"turbo@npm:2.10.11":
+  version: 2.10.11
+  resolution: "turbo@npm:2.10.11"
   dependencies:
-    "@turbo/darwin-64": "npm:2.10.4"
-    "@turbo/darwin-arm64": "npm:2.10.4"
-    "@turbo/linux-64": "npm:2.10.4"
-    "@turbo/linux-arm64": "npm:2.10.4"
-    "@turbo/windows-64": "npm:2.10.4"
-    "@turbo/windows-arm64": "npm:2.10.4"
+    "@turbo/darwin-64": "npm:2.10.11"
+    "@turbo/darwin-arm64": "npm:2.10.11"
+    "@turbo/linux-64": "npm:2.10.11"
+    "@turbo/linux-arm64": "npm:2.10.11"
+    "@turbo/windows-64": "npm:2.10.11"
+    "@turbo/windows-arm64": "npm:2.10.11"
   dependenciesMeta:
     "@turbo/darwin-64":
       optional: true
@@ -35582,7 +35582,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10c0/2d5d3b9de35c1ce8d442bd208f9076da41cfe0fd1add6d8f6ce1e3927ee188c2f4b81a48c70dabdbd2b1e982505e80272befa91556c03a64d39ad24cf7045bca
+  checksum: 10c0/685e8241c72ae8e1dffa33a6625ffbb4d6b2a2fb6ae8cc288c0203bbe6ac045fd27709880df28da16ccf01821e98332c007f3311436c48ebbd1b649f25f1d2a2
   languageName: node
   linkType: hard
 
