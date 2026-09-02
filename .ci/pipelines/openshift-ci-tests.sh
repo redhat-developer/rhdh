@@ -57,11 +57,10 @@ main() {
   log::info "Log file: ${LOGFILE}"
   log::info "JOB_NAME : $JOB_NAME"
 
-  if [[ -z "${CHART_VERSION:-}" ]]; then
-    CHART_VERSION=$(helm::get_chart_version)
-  else
-    log::info "Using preset CHART_VERSION (pinned or from env): ${CHART_VERSION}"
-  fi
+  # HARDCODED: 1.10.4 RC verification. Chart version is pinned in env_variables.sh
+  # and never resolved from the branch.
+  CHART_VERSION="1.10-170-CI"
+  log::info "Using hardcoded CHART_VERSION: ${CHART_VERSION}"
   export CHART_VERSION
 
   case "$JOB_NAME" in
