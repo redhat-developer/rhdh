@@ -5,6 +5,8 @@ import {
   dynamicPluginsFeatureLoader,
 } from '@backstage/backend-dynamic-feature-service';
 
+import path from 'node:path';
+
 import { configureCorporateProxyAgent } from './corporate-proxy';
 import { getDefaultServiceFactories } from './defaultServiceFactories';
 import {
