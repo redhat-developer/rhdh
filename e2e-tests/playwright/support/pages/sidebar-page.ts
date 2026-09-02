@@ -40,10 +40,7 @@ export class SidebarPage {
 
   async verifyLearningPathsHeading(): Promise<void> {
     const lang = getCurrentLanguage();
-    await verification.verifyHeading(
-      this.page,
-      t["rhdh"][lang]["menuItem.learningPaths"],
-    );
+    await verification.verifyHeading(this.page, t["rhdh"][lang]["menuItem.learningPaths"]);
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
