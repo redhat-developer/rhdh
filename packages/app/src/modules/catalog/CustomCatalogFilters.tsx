@@ -6,9 +6,9 @@ import {
   EntityProcessingStatusPicker,
   EntityTypePicker,
   UserListPicker,
-} from '@backstage/plugin-catalog-react';
+} from "@backstage/plugin-catalog-react";
 
-import { CustomEntityTagPicker } from './CustomEntityTagPicker';
+import { CustomEntityTagPicker } from "./CustomEntityTagPicker";
 
 /**
  * Custom filters component that provides enhanced tag filtering with OR logic

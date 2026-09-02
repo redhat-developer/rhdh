@@ -24,8 +24,8 @@ export const InfoCard = () => {
     () => {
       try {
         return (
-          localStorage.getItem('rhdh-infocard-show-build-information') ===
-          'true'
+          localStorage.getItem("rhdh-infocard-show-build-information") ===
+          "true"
         );
       } catch {
         return false;

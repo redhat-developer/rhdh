@@ -1,11 +1,11 @@
-import type { FC } from 'react';
+import type { FC } from "react";
 
-import { Entity } from '@backstage/catalog-model';
-import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
+import { Entity } from "@backstage/catalog-model";
+import { useTranslationRef } from "@backstage/core-plugin-api/alpha";
 import {
   catalogReactTranslationRef,
   EntityAutocompletePicker,
-} from '@backstage/plugin-catalog-react';
+} from "@backstage/plugin-catalog-react";
 
 // Custom EntityTagFilter with OR logic instead of AND logic
 export class CustomEntityTagFilter {
@@ -26,7 +26,7 @@ export class CustomEntityTagFilter {
     }
 
     // OR logic: return true if entity has ANY of the selected tags
-    return this.values.some(value => tags.includes(value));
+    return this.values.some((value) => tags.includes(value));
   }
 
   toQueryValue(): string[] {
@@ -35,7 +35,7 @@ export class CustomEntityTagFilter {
 
   getCatalogFilters(): Record<string, string | string[]> {
     return {
-      'metadata.tags': this.values,
+      "metadata.tags": this.values,
     };
   }
 }
@@ -57,7 +57,7 @@ const CustomEntityTagPicker: FC<CustomEntityTagPickerProps> = ({
 
   return (
     <EntityAutocompletePicker
-      label={t('entityTagPicker.title')}
+      label={t("entityTagPicker.title")}
       name="tags"
       path="metadata.tags"
       Filter={CustomEntityTagFilter}
