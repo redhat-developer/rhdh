@@ -1027,6 +1027,7 @@ def verify_package_integrity(plugin: dict, archive: str) -> None:
 # outlives the container and every later one waits on it forever.
 LOCK_HEARTBEAT_SECONDS = 10
 LOCK_STALE_SECONDS = 60
+LOCK_FILE_NAME = 'install-dynamic-plugins.lock'
 
 # Keep refreshing the lock's mtime so waiters can tell a running install from an
 # abandoned lock. Daemon thread: it must not keep the interpreter alive.
@@ -1051,10 +1052,15 @@ def create_lock(lock_file_path):
       except FileExistsError:
         wait_for_lock_release(lock_file_path)
 
-# Remove the lock file
+# Remove the lock file. dynamic_plugins_root comes from argv, so validate the
+# basename and rebuild the path from its directory before touching the file
+# system: this only ever deletes a lock file, whatever it is handed.
 def remove_lock(lock_file_path):
+   directory, name = os.path.split(lock_file_path)
+   if name != LOCK_FILE_NAME:
+     raise InstallException(f'Refusing to remove {lock_file_path}: not a {LOCK_FILE_NAME} file')
    try:
-     os.remove(lock_file_path)
+     os.remove(os.path.join(directory, LOCK_FILE_NAME))
    except FileNotFoundError:
      # Either this process never acquired the lock, or a waiter already broke it
      # as stale. Nothing to clean up.
@@ -1071,10 +1077,7 @@ def wait_for_lock_release(lock_file_path):
        break
      if age > LOCK_STALE_SECONDS:
        print(f"======= Lock file has not been refreshed for {int(age)}s; assuming its holder was killed and removing it", flush=True)
-       try:
-         os.remove(lock_file_path)
-       except FileNotFoundError:
-         pass
+       remove_lock(lock_file_path)
        break
      time.sleep(1)
    print("======= Lock released.")
@@ -1419,7 +1422,7 @@ def main():
 
     dynamic_plugins_root = sys.argv[1]
 
-    lock_file_path = os.path.join(dynamic_plugins_root, 'install-dynamic-plugins.lock')
+    lock_file_path = os.path.join(dynamic_plugins_root, LOCK_FILE_NAME)
     atexit.register(remove_lock, lock_file_path)
     atexit.register(cleanup_catalog_index_temp_dir, dynamic_plugins_root)
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
