@@ -52,9 +52,9 @@ HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
 CHART_VERSION="1.10-170-CI" # HARDCODED: 1.10.4 RC verification
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
-IMAGE_REGISTRY="quay.io" # HARDCODED: 1.10.4 RC verification
+IMAGE_REGISTRY="quay.io"         # HARDCODED: 1.10.4 RC verification
 IMAGE_REPO="rhdh/rhdh-hub-rhel9" # HARDCODED: 1.10.4 RC verification
-QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
+QUAY_REPO="${IMAGE_REPO}"        # Keep QUAY_REPO in sync for backward compatibility
 
 # Catalog index image reference.
 # Override via Gangway for RC (e.g., --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9-60) or
