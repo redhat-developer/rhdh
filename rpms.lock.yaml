@@ -2384,13 +2384,6 @@ arches:
     name: cracklib-dicts
     evr: 2.9.11-8.el10
     sourcerpm: cracklib-2.9.11-8.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/c/crypto-policies-20260216-1.git0e54016.el10_2.2.noarch.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 103561
-    checksum: sha256:470edc6e83c8b7c29527982b643ffb77d54472a29505dd366b4197183a91c82e
-    name: crypto-policies
-    evr: 20260216-1.git0e54016.el10_2.2
-    sourcerpm: crypto-policies-20260216-1.git0e54016.el10_2.2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/c/crypto-policies-scripts-20260216-1.git0e54016.el10_2.2.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 138469
@@ -2755,13 +2748,6 @@ arches:
     name: libatomic
     evr: 14.3.1-4.4.el10
     sourcerpm: gcc-14.3.1-4.4.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/l/libattr-2.6.0-1.el10_2.aarch64.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 23860
-    checksum: sha256:e9a1c3b6f1a27abb914814f708db75c6d10e6abb28a94d717916ac601993415c
-    name: libattr
-    evr: 2.6.0-1.el10_2
-    sourcerpm: attr-2.6.0-1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/l/libbpf-1.7.0-1.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 197607
@@ -3040,13 +3026,6 @@ arches:
     size: 611166
     checksum: sha256:6c0f13a2734c624b97e6d11d255f7e83976fc8eb327f5e97dcb6089c2a924f76
     name: pam
-    evr: 1.6.1-9.el10_2.1
-    sourcerpm: pam-1.6.1-9.el10_2.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/p/pam-libs-1.6.1-9.el10_2.1.aarch64.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 63446
-    checksum: sha256:6300f006fd59db4b2d2ffd8f8a2f829b251738aa68bf0a6b1611140939190e01
-    name: pam-libs
     evr: 1.6.1-9.el10_2.1
     sourcerpm: pam-1.6.1-9.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/p/pkgconf-2.1.0-3.el10.aarch64.rpm
@@ -7702,13 +7681,6 @@ arches:
     name: cracklib-dicts
     evr: 2.9.11-8.el10
     sourcerpm: cracklib-2.9.11-8.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/c/crypto-policies-20260216-1.git0e54016.el10_2.2.noarch.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 103561
-    checksum: sha256:470edc6e83c8b7c29527982b643ffb77d54472a29505dd366b4197183a91c82e
-    name: crypto-policies
-    evr: 20260216-1.git0e54016.el10_2.2
-    sourcerpm: crypto-policies-20260216-1.git0e54016.el10_2.2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/c/crypto-policies-scripts-20260216-1.git0e54016.el10_2.2.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 138469
@@ -8066,13 +8038,6 @@ arches:
     name: libassuan
     evr: 2.5.6-6.el10
     sourcerpm: libassuan-2.5.6-6.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/l/libattr-2.6.0-1.el10_2.x86_64.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 24436
-    checksum: sha256:54955655d65785b1b1cccebccb47fa460c72741bc077b6aa8b41b0b406877939
-    name: libattr
-    evr: 2.6.0-1.el10_2
-    sourcerpm: attr-2.6.0-1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/l/libbpf-1.7.0-1.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 197769
@@ -8351,13 +8316,6 @@ arches:
     size: 606013
     checksum: sha256:bb4410454b465a1fca90ffe22816b811c9b09f3bc451ea945332d8a4a5203823
     name: pam
-    evr: 1.6.1-9.el10_2.1
-    sourcerpm: pam-1.6.1-9.el10_2.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/p/pam-libs-1.6.1-9.el10_2.1.x86_64.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 64026
-    checksum: sha256:3344c1cbb8ab88cf9cc94f9ea0588ee4cdfa4701299d907dd1f44e4864bf95ba
-    name: pam-libs
     evr: 1.6.1-9.el10_2.1
     sourcerpm: pam-1.6.1-9.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/p/pkgconf-2.1.0-3.el10.x86_64.rpm
