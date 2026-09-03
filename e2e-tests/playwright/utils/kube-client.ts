@@ -830,7 +830,7 @@ export class KubeClient {
       console.log(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
       await this.logPodConditionsForDeployment(deploymentName, namespace);
       await this.scaleDeployment(deploymentName, namespace, 0);
-      await this.waitForDeploymentReady(deploymentName, namespace, 0, 300000); // 5 minutes for scale down
+      await this.waitForDeploymentReady(deploymentName, namespace, 0, 120000); // 2 minutes for scale down
 
       // Wait a bit for pods to be fully terminated
       console.log("Waiting for pods to be fully terminated...");
@@ -840,7 +840,10 @@ export class KubeClient {
       console.log(`Scaling up deployment ${deploymentName} to 1 replica.`);
       await this.scaleDeployment(deploymentName, namespace, 1);
 
-      await this.waitForDeploymentReady(deploymentName, namespace, 1, 600000); // 10 minutes for scale up
+      // 2m + 10s + 7m fits inside the 10 minute timeout callers set for a
+      // restart, so a slow rollout fails through the catch below instead of
+      // having the worker killed mid-restart.
+      await this.waitForDeploymentReady(deploymentName, namespace, 1, 420000); // 7 minutes for scale up
 
       console.log(
         `Restart of deployment ${deploymentName} completed successfully.`,
