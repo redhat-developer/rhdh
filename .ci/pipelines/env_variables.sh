@@ -11,7 +11,7 @@ LOGFILE="test-log"
 # https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
 # https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
 JOB_NAME="${JOB_NAME:-unknown-job}"
-TAG_NAME="${TAG_NAME:-}"
+TAG_NAME="1.10-170" # HARDCODED: 1.10.4 RC verification
 OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 REPO_OWNER="${REPO_OWNER:-redhat-developer}"
 REPO_NAME="${REPO_NAME:-rhdh}"
@@ -50,15 +50,16 @@ HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plug
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
+CHART_VERSION="1.10-170-CI" # HARDCODED: 1.10.4 RC verification
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
-IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
-IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
-QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
+IMAGE_REGISTRY="quay.io"         # HARDCODED: 1.10.4 RC verification
+IMAGE_REPO="rhdh/rhdh-hub-rhel9" # HARDCODED: 1.10.4 RC verification
+QUAY_REPO="${IMAGE_REPO}"        # Keep QUAY_REPO in sync for backward compatibility
 
 # Catalog index image reference.
 # Override via Gangway for RC (e.g., --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9-60) or
 # GA verification (e.g., --catalog-index-image registry.access.redhat.com/rhdh/plugin-catalog-index:1.9.4).
-CATALOG_INDEX_IMAGE="${CATALOG_INDEX_IMAGE:-}"
+CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:1.10-102" # HARDCODED: 1.10.4 RC verification
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
   # Derived components for Helm chart (requires separate registry/repository/tag)
   CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"

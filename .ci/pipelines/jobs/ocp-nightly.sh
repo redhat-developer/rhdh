@@ -75,8 +75,14 @@ run_runtime_config_change_tests() {
   fi
 
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  # Run tests - allow failures since schema-mode tests are opt-in
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  # Wait for the initial rollout before starting the tests. The first
+  # showcase-runtime test scales the deployment to 0; doing that while
+  # install-dynamic-plugins is still running kills the init container mid-install
+  # and leaves install-dynamic-plugins.lock behind on the dynamic-plugins-root
+  # PVC. Every pod created afterwards blocks forever waiting for that lock, so
+  # the job burns its entire budget here and never reaches the sanity checks.
+  # check_and_test gates on /healthcheck and collects pod logs when tests fail.
+  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"
 }
 
 run_sanity_plugins_check() {
