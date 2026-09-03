@@ -28,6 +28,7 @@ import binascii
 import atexit
 import time
 import signal
+import threading
 import re
 
 """
@@ -1018,26 +1019,62 @@ def verify_package_integrity(plugin: dict, archive: str) -> None:
     if hash_digest != output.decode('utf-8').strip():
       raise InstallException(f'{package}: The hash of the downloaded package {output.decode("utf-8").strip()} does not match the provided integrity hash {hash_digest} provided in the configuration file')
 
+# How often the process holding the lock refreshes its modification time, and
+# the age at which a waiter treats the lock as abandoned. install-dynamic-plugins.sh
+# forwards SIGTERM (RHDHBUGS-3449) so the lock is released on a graceful shutdown,
+# but a hard kill - grace period expiry, eviction, OOM, node failure - skips the
+# atexit handler. On a persistent dynamic-plugins-root volume the lock file then
+# outlives the container and every later one waits on it forever.
+LOCK_HEARTBEAT_SECONDS = 10
+LOCK_STALE_SECONDS = 60
+
+# Keep refreshing the lock's mtime so waiters can tell a running install from an
+# abandoned lock. Daemon thread: it must not keep the interpreter alive.
+def start_lock_heartbeat(lock_file_path):
+    def heartbeat():
+      while True:
+        time.sleep(LOCK_HEARTBEAT_SECONDS)
+        try:
+          os.utime(lock_file_path, None)
+        except OSError:
+          return
+    threading.Thread(target=heartbeat, daemon=True).start()
+
 # Create the lock file, so that other instances of the script will wait for this one to finish
 def create_lock(lock_file_path):
     while True:
       try:
         with open(lock_file_path, 'x'):
           print(f"======= Created lock file: {lock_file_path}")
+          start_lock_heartbeat(lock_file_path)
           return
       except FileExistsError:
         wait_for_lock_release(lock_file_path)
 
 # Remove the lock file
 def remove_lock(lock_file_path):
-   os.remove(lock_file_path)
+   try:
+     os.remove(lock_file_path)
+   except FileNotFoundError:
+     # Either this process never acquired the lock, or a waiter already broke it
+     # as stale. Nothing to clean up.
+     return
    print(f"======= Removed lock file: {lock_file_path}")
 
-# Wait for the lock file to be released
+# Wait for the lock file to be released, or break it when its holder is gone
 def wait_for_lock_release(lock_file_path):
    print(f"======= Waiting for lock release (file: {lock_file_path})...", flush=True)
    while True:
-     if not os.path.exists(lock_file_path):
+     try:
+       age = time.time() - os.path.getmtime(lock_file_path)
+     except FileNotFoundError:
+       break
+     if age > LOCK_STALE_SECONDS:
+       print(f"======= Lock file has not been refreshed for {int(age)}s; assuming its holder was killed and removing it", flush=True)
+       try:
+         os.remove(lock_file_path)
+       except FileNotFoundError:
+         pass
        break
      time.sleep(1)
    print("======= Lock released.")

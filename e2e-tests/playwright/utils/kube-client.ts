@@ -830,7 +830,7 @@ export class KubeClient {
       console.log(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
       await this.logPodConditionsForDeployment(deploymentName, namespace);
       await this.scaleDeployment(deploymentName, namespace, 0);
-      await this.waitForDeploymentReady(deploymentName, namespace, 0, 300000); // 5 minutes for scale down
+      await this.waitForDeploymentReady(deploymentName, namespace, 0, 120000); // 2 minutes for scale down
 
       // Wait a bit for pods to be fully terminated
       console.log("Waiting for pods to be fully terminated...");
@@ -840,7 +840,12 @@ export class KubeClient {
       console.log(`Scaling up deployment ${deploymentName} to 1 replica.`);
       await this.scaleDeployment(deploymentName, namespace, 1);
 
-      await this.waitForDeploymentReady(deploymentName, namespace, 1, 600000); // 10 minutes for scale up
+      // The budgets above sum to 9m10s so they stay inside the 10 minute test
+      // timeout callers set for a restart. When they exceeded it, Playwright
+      // killed the worker mid-restart: the catch below never ran, so the run
+      // lost its pod conditions and events, and the retry immediately scaled
+      // the deployment down again on top of a rollout that was still starting.
+      await this.waitForDeploymentReady(deploymentName, namespace, 1, 420000); // 7 minutes for scale up
 
       console.log(
         `Restart of deployment ${deploymentName} completed successfully.`,
