@@ -177,7 +177,7 @@ helm::get_chart_version() {
   local version
   version=$(curl -sSfX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" \
     -H "Content-Type: application/json" \
-    | jq -r '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI') || {
+    | jq -r '[.tags[] | select(.name | test("^[0-9]+\\.[0-9]+-[0-9]+-CI$"))] | max_by(.start_ts) | .name') || {
     log::error "Failed to resolve chart version for ${chart_major_version}"
     return 1
   }
