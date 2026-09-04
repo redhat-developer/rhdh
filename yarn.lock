@@ -7255,7 +7255,7 @@ __metadata:
     "@types/supertest": "npm:6.0.3"
     express: "npm:4.22.2"
     express-promise-router: "npm:4.1.1"
-    json-2-csv: "npm:5.5.11"
+    json-2-csv: "npm:5.6.0"
     knex: "npm:3.3.0"
     luxon: "npm:3.7.2"
     msw: "npm:1.3.5"
@@ -17142,7 +17142,7 @@ __metadata:
     app-next: "workspace:*"
     better-sqlite3: "npm:12.11.1"
     global-agent: "npm:3.0.0"
-    mongodb: "npm:7.5.0"
+    mongodb: "npm:7.6.0"
     prettier: "npm:3.9.6"
     typescript: "npm:5.9.3"
     undici: "npm:7.29.0"
@@ -25871,13 +25871,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-2-csv@npm:5.5.11":
-  version: 5.5.11
-  resolution: "json-2-csv@npm:5.5.11"
+"json-2-csv@npm:5.6.0":
+  version: 5.6.0
+  resolution: "json-2-csv@npm:5.6.0"
   dependencies:
     deeks: "npm:3.2.1"
     doc-path: "npm:4.1.4"
-  checksum: 10c0/d83a3494f791e5018778d3ce05f4bd20a190f40ea217ebf19e66e22be373fd56890b3100369549ac9814dee1bc9b431a0971f136434dc5468e2355d9fb324818
+  checksum: 10c0/4205d7e12f902ced3f3c23ee5f996537f83069feaedea217364419a02e161d6e7e01b18778e721e5c330552050d41227ff7b32960f79b00cfae320a9223605c2
   languageName: node
   linkType: hard
 
@@ -28240,9 +28240,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:7.5.0":
-  version: 7.5.0
-  resolution: "mongodb@npm:7.5.0"
+"mongodb@npm:7.6.0":
+  version: 7.6.0
+  resolution: "mongodb@npm:7.6.0"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.4.11"
     bson: "npm:^7.2.0"
@@ -28270,7 +28270,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10c0/468db2b24fa3e497d6212bc3073c008b46ebffdace1197be5982c976d61e962e85727ac4443c6c8b59a9baed10d14ed589b6ea9234e87727469d7a19e82f9cd0
+  checksum: 10c0/91f45d49aaa17af40b1dbd4f5eff85fd11f12c7df993cadbe51e96c31f40c74596b2d979f7eeebb376889a1397deb9081db10cbb0e8904853c80b1f2fcddf7d0
   languageName: node
   linkType: hard
 
