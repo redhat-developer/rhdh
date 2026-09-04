@@ -72,18 +72,32 @@ common::sed_inplace() {
   return $?
 }
 
-# Print the highest release-X.Y branch for a given major version.
+# Print the highest release stream published as a branch under a given major.
 # Args:
 #   $1 - major_version: e.g. "1"
 # Returns:
-#   Prints the version (e.g. "1.10"), or nothing if no such branch exists
-common::highest_release_branch_for_major() {
+#   Prints the stream (e.g. "1.10"), or nothing if no such branch exists
+#   Non-zero if the remote could not be read at all
+common::highest_release_stream_for_major() {
   local major=$1
-  git ls-remote --heads "https://github.com/${REPO_OWNER:-redhat-developer}/${REPO_NAME:-rhdh}" \
-    "refs/heads/release-${major}.*" 2> /dev/null \
+  if [[ ! "$major" =~ ^[0-9]+$ ]]; then
+    log::error "Major version must be numeric (got: '${major}')"
+    return 1
+  fi
+
+  # Capture before filtering: piping straight into sed would discard git's
+  # status, making an unreachable remote look like "no such branch".
+  local refs
+  if ! refs=$(git ls-remote --heads "https://github.com/${REPO_OWNER:-redhat-developer}/${REPO_NAME:-rhdh}" \
+    "refs/heads/release-${major}.*" 2> /dev/null); then
+    log::error "Failed to list release branches from the remote"
+    return 1
+  fi
+
+  printf '%s' "$refs" \
     | sed 's|.*refs/heads/release-||' \
     | grep -E "^${major}\.[0-9]+$" \
-    | sort -t. -k1,1n -k2,2n \
+    | sort -uV \
     | tail -1
 }
 
@@ -126,7 +140,7 @@ common::get_previous_release_version() {
   fi
 
   local previous_version
-  previous_version=$(common::highest_release_branch_for_major "$previous_major")
+  previous_version=$(common::highest_release_stream_for_major "$previous_major")
 
   if [[ -z "$previous_version" ]]; then
     log::error "Cannot calculate previous version for ${version}: no release-${previous_major}.x branch found"
