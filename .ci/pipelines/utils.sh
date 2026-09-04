@@ -1510,7 +1510,7 @@ get_previous_release_version() {
 get_chart_version() {
   local chart_major_version=$1
   curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" -H "Content-Type: application/json" \
-    | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
+    | jq -r '[.tags[] | select(.name | test("^[0-9]+\\.[0-9]+-[0-9]+-CI$"))] | max_by(.start_ts) | .name // empty'
 }
 
 # Helper function to get dynamic value file path based on previous release version
