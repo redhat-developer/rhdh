@@ -22,8 +22,8 @@
 #     --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \
 #     --image-repo rhdh/rhdh-hub-rhel9 \
 #     --tag 1.9-227 \
-#     --catalog-index-tag 1.9 \
-#     --chart-version 1.9-227-CI
+#     --catalog-index-tag 1.9
+#   # --chart-version is inferred from --tag; pass it only to pair a different chart.
 #
 #   # Trigger GA verification (released images from registry.access.redhat.com):
 #   ./trigger-nightly-job.sh \
@@ -101,7 +101,9 @@ Examples:
   # RC verification (productized image + matching catalog index + chart):
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \\
     --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9-227 \\
-    --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9 --chart-version 1.9-227-CI
+    --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9
+  # The chart is inferred from --tag (1.9-227 -> 1.9-227-CI, 1.9.4 -> 1.9.4).
+  # Pass --chart-version only to pair the image with a different chart.
 
   # GA verification (released images from Red Hat registries):
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \\

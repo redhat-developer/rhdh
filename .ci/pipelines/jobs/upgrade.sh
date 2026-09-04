@@ -25,7 +25,7 @@ handle_ocp_helm_upgrade() {
 
   # Dynamically determine the previous release version and chart version
   local current_release_version
-  current_release_version=$(helm::get_chart_major_version)
+  current_release_version=$(helm::get_chart_stream)
   if [[ -z "$current_release_version" ]]; then
     log::error "Failed to determine current release version. Exiting."
     save_overall_result 1
