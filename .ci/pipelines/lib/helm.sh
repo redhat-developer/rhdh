@@ -122,6 +122,25 @@ helm::get_previous_release_values() {
 # Chart Operations
 # ==============================================================================
 
+# Print the newest CI chart tag for a major.minor stream, or nothing if none exist.
+# Args:
+#   $1 - chart_major_version: e.g. "1.10"
+helm::_latest_chart_tag() {
+  curl -sSfX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${1}-" \
+    -H "Content-Type: application/json" \
+    | jq -r '[.tags[] | select(.name | test("^[0-9]+\\.[0-9]+-[0-9]+-CI$"))] | max_by(.start_ts) | .name // empty'
+}
+
+# Print the highest major.minor stream that has any chart published.
+helm::_highest_published_chart_major() {
+  curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&limit=100" \
+    -H "Content-Type: application/json" \
+    | jq -r '.tags[].name' \
+    | grep -oE '^[0-9]+\.[0-9]+' \
+    | sort -t. -k1,1n -k2,2n \
+    | uniq | tail -1
+}
+
 # Get the chart major.minor version based on RELEASE_BRANCH_NAME or an optional override.
 # Uses RELEASE_BRANCH_NAME: 'main' -> highest major.minor from Quay; 'release-x.y' -> extract x.y.
 # Args:
@@ -142,15 +161,15 @@ helm::get_chart_major_version() {
   fi
 
   if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
+    # main carries no version in its name, so read the one the branch declares.
+    # The published tags cannot answer this: they hold every stream anyone has
+    # pushed, so "the highest version on quay" silently follows whichever stream
+    # happens to be ahead rather than the one this checkout belongs to.
     local chart_major_version
-    chart_major_version=$(curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&limit=100" \
-      -H "Content-Type: application/json" \
-      | jq -r '.tags[].name' \
-      | grep -oE '^[0-9]+\.[0-9]+' \
-      | sort -t. -k1,1n -k2,2n \
-      | uniq | tail -1)
+    chart_major_version=$(jq -r '.version // empty' "${DIR}/../../package.json" 2> /dev/null \
+      | grep -oE '^[0-9]+\.[0-9]+')
     if [[ -z "$chart_major_version" ]]; then
-      log::error "Failed to determine highest chart version from tags"
+      log::error "Failed to read the version from package.json"
       return 1
     fi
     echo "$chart_major_version"
@@ -175,12 +194,27 @@ helm::get_chart_version() {
   fi
 
   local version
-  version=$(curl -sSfX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" \
-    -H "Content-Type: application/json" \
-    | jq -r '[.tags[] | select(.name | test("^[0-9]+\\.[0-9]+-[0-9]+-CI$"))] | max_by(.start_ts) | .name') || {
+  version=$(helm::_latest_chart_tag "${chart_major_version}") || {
     log::error "Failed to resolve chart version for ${chart_major_version}"
     return 1
   }
+
+  # Between a version bump and the first chart built from it, no tag exists for
+  # the version package.json declares. Fall back to the newest published stream
+  # so the run continues rather than failing on a gap that closes by itself.
+  if [[ -z "$version" || "$version" == "null" ]]; then
+    local fallback_major
+    fallback_major=$(helm::_highest_published_chart_major)
+    if [[ -n "$fallback_major" && "$fallback_major" != "$chart_major_version" ]]; then
+      log::warn "No chart published for ${chart_major_version} yet; falling back to ${fallback_major}"
+      version=$(helm::_latest_chart_tag "${fallback_major}")
+    fi
+  fi
+
+  if [[ -z "$version" || "$version" == "null" ]]; then
+    log::error "Failed to resolve chart version for ${chart_major_version}"
+    return 1
+  fi
   echo "$version"
 }
 
