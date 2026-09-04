@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
+import { createTranslationRef } from "@backstage/core-plugin-api/alpha";
 
 /**
  * Messages object containing all English translations.
@@ -23,180 +23,180 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 export const rhdhMessages = {
   menuItem: {
     // Default main menu items from consts.ts
-    home: 'Home',
-    myGroup_one: 'My Group',
-    myGroup_other: 'My Groups',
-    catalog: 'Catalog',
-    apis: 'APIs',
-    learningPaths: 'Learning Paths',
-    selfService: 'Self-service',
-    userSettings: 'User Settings',
-    administration: 'Administration',
-    extensions: 'Extensions',
+    home: "Home",
+    myGroup_one: "My Group",
+    myGroup_other: "My Groups",
+    catalog: "Catalog",
+    apis: "APIs",
+    learningPaths: "Learning Paths",
+    selfService: "Self-service",
+    userSettings: "User Settings",
+    administration: "Administration",
+    extensions: "Extensions",
 
     // dynamic-plugins.default.main-menu-items
-    clusters: 'Clusters',
-    rbac: 'RBAC',
-    bulkImport: 'Bulk import',
-    docs: 'Docs',
-    lighthouse: 'Lighthouse',
-    techRadar: 'Tech Radar',
-    orchestrator: 'Orchestrator',
-    adoptionInsights: 'Adoption Insights',
+    clusters: "Clusters",
+    rbac: "RBAC",
+    bulkImport: "Bulk import",
+    docs: "Docs",
+    lighthouse: "Lighthouse",
+    techRadar: "Tech Radar",
+    orchestrator: "Orchestrator",
+    adoptionInsights: "Adoption Insights",
   },
   sidebar: {
-    menu: 'Menu',
-    home: 'Home',
-    homeLogo: 'Home logo',
+    menu: "Menu",
+    home: "Home",
+    homeLogo: "Home logo",
   },
   signIn: {
     page: {
-      title: 'Select a sign-in method',
+      title: "Select a sign-in method",
     },
     providers: {
       auth0: {
-        title: 'Auth0',
-        message: 'Sign in using Auth0',
+        title: "Auth0",
+        message: "Sign in using Auth0",
       },
       atlassian: {
-        title: 'Atlassian',
-        message: 'Sign in using Atlassian',
+        title: "Atlassian",
+        message: "Sign in using Atlassian",
       },
       microsoft: {
-        title: 'Microsoft',
-        message: 'Sign in using Microsoft',
+        title: "Microsoft",
+        message: "Sign in using Microsoft",
       },
       bitbucket: {
-        title: 'Bitbucket',
-        message: 'Sign in using Bitbucket',
+        title: "Bitbucket",
+        message: "Sign in using Bitbucket",
       },
       bitbucketServer: {
-        title: 'Bitbucket Server',
-        message: 'Sign in using Bitbucket Server',
+        title: "Bitbucket Server",
+        message: "Sign in using Bitbucket Server",
       },
       github: {
-        title: 'GitHub',
-        message: 'Sign in using GitHub',
+        title: "GitHub",
+        message: "Sign in using GitHub",
       },
       gitlab: {
-        title: 'GitLab',
-        message: 'Sign in using GitLab',
+        title: "GitLab",
+        message: "Sign in using GitLab",
       },
       google: {
-        title: 'Google',
-        message: 'Sign in using Google',
+        title: "Google",
+        message: "Sign in using Google",
       },
       oidc: {
-        title: 'OIDC',
-        message: 'Sign in using OIDC',
+        title: "OIDC",
+        message: "Sign in using OIDC",
       },
       okta: {
-        title: 'Okta',
-        message: 'Sign in using Okta',
+        title: "Okta",
+        message: "Sign in using Okta",
       },
       onelogin: {
-        title: 'OneLogin',
-        message: 'Sign in using OneLogin',
+        title: "OneLogin",
+        message: "Sign in using OneLogin",
       },
       saml: {
-        title: 'SAML',
-        message: 'Sign in using SAML',
+        title: "SAML",
+        message: "Sign in using SAML",
       },
     },
   },
   catalog: {
     entityPage: {
       overview: {
-        title: 'Overview',
+        title: "Overview",
       },
       topology: {
-        title: 'Topology',
+        title: "Topology",
       },
       issues: {
-        title: 'Issues',
+        title: "Issues",
       },
       pullRequests: {
-        title: 'Pull/Merge Requests',
+        title: "Pull/Merge Requests",
       },
       ci: {
-        title: 'CI',
+        title: "CI",
       },
       cd: {
-        title: 'CD',
+        title: "CD",
       },
       kubernetes: {
-        title: 'Kubernetes',
+        title: "Kubernetes",
       },
       imageRegistry: {
-        title: 'Image Registry',
+        title: "Image Registry",
       },
       monitoring: {
-        title: 'Monitoring',
+        title: "Monitoring",
       },
       lighthouse: {
-        title: 'Lighthouse',
+        title: "Lighthouse",
       },
       api: {
-        title: 'API',
+        title: "API",
       },
       dependencies: {
-        title: 'Dependencies',
+        title: "Dependencies",
       },
       docs: {
-        title: 'Docs',
+        title: "Docs",
       },
       definition: {
-        title: 'Definition',
+        title: "Definition",
       },
       diagram: {
-        title: 'System Diagram',
+        title: "System Diagram",
       },
       workflows: {
-        title: 'Workflows',
+        title: "Workflows",
       },
     },
   },
   app: {
     search: {
-      title: 'Search',
-      resultType: 'Result Type',
-      softwareCatalog: 'Software Catalog',
+      title: "Search",
+      resultType: "Result Type",
+      softwareCatalog: "Software Catalog",
       filters: {
-        kind: 'Kind',
-        lifecycle: 'Lifecycle',
-        component: 'Component',
-        template: 'Template',
-        experimental: 'experimental',
-        production: 'production',
+        kind: "Kind",
+        lifecycle: "Lifecycle",
+        component: "Component",
+        template: "Template",
+        experimental: "experimental",
+        production: "production",
       },
     },
     learningPaths: {
-      title: 'Learning Paths',
+      title: "Learning Paths",
       error: {
-        title: 'Could not fetch data.',
-        unknownError: 'Unknown error',
+        title: "Could not fetch data.",
+        unknownError: "Unknown error",
       },
     },
     userSettings: {
       infoCard: {
-        title: 'RHDH Metadata',
-        metadataCopied: 'Metadata copied to clipboard',
-        copyMetadata: 'Copy metadata to your clipboard',
-        showLess: 'Show less',
-        showMore: 'Show more',
+        title: "RHDH Metadata",
+        metadataCopied: "Metadata copied to clipboard",
+        copyMetadata: "Copy metadata to your clipboard",
+        showLess: "Show less",
+        showMore: "Show more",
       },
     },
     errors: {
-      contactSupport: 'Contact support',
-      goBack: 'Go back',
+      contactSupport: "Contact support",
+      goBack: "Go back",
       notFound: {
         message: "We couldn't find that page",
         additionalInfo:
-          'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.',
+          "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
       },
     },
     table: {
-      createdAt: 'Created At',
+      createdAt: "Created At",
     },
   },
 };
@@ -206,6 +206,6 @@ export const rhdhMessages = {
  * @public
  */
 export const rhdhTranslationRef = createTranslationRef({
-  id: 'rhdh',
+  id: "rhdh",
   messages: rhdhMessages,
 });

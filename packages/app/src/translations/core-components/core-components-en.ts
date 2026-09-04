@@ -1,5 +1,5 @@
-import { coreComponentsTranslationRef } from '@backstage/core-components';
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+import { coreComponentsTranslationRef } from "@backstage/core-components";
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
 
 const en = createTranslationMessages({
   ref: coreComponentsTranslationRef,
@@ -29,26 +29,26 @@ const en = createTranslationMessages({
     // We track that change here: https://issues.redhat.com/browse/RHIDP-8836
     //
     // Added in Backstage 1.37
-    'table.filter.placeholder': 'All results',
-    'table.body.emptyDataSourceMessage': 'No records to display',
-    'table.pagination.firstTooltip': 'First Page',
-    'table.pagination.labelDisplayedRows': '{from}-{to} of {count}',
-    'table.pagination.labelRowsSelect': 'rows',
-    'table.pagination.lastTooltip': 'Last Page',
-    'table.pagination.nextTooltip': 'Next Page',
-    'table.pagination.previousTooltip': 'Previous Page',
-    'table.toolbar.search': 'Filter',
+    "table.filter.placeholder": "All results",
+    "table.body.emptyDataSourceMessage": "No records to display",
+    "table.pagination.firstTooltip": "First Page",
+    "table.pagination.labelDisplayedRows": "{from}-{to} of {count}",
+    "table.pagination.labelRowsSelect": "rows",
+    "table.pagination.lastTooltip": "Last Page",
+    "table.pagination.nextTooltip": "Next Page",
+    "table.pagination.previousTooltip": "Previous Page",
+    "table.toolbar.search": "Filter",
 
     // Changed in Backstage 1.38
-    'alertDisplay.message_one': '({{ count }} newer message)',
-    'alertDisplay.message_other': '({{ count }} newer messages)',
+    "alertDisplay.message_one": "({{ count }} newer message)",
+    "alertDisplay.message_other": "({{ count }} newer messages)",
 
     // Added in Backstage 1.40
-    'table.header.actions': 'Actions',
+    "table.header.actions": "Actions",
 
     // Added in Backstage 1.41
-    'oauthRequestDialog.message':
-      'Sign-in to allow {{appTitle}} access to {{provider}} APIs and identities.',
+    "oauthRequestDialog.message":
+      "Sign-in to allow {{appTitle}} access to {{provider}} APIs and identities.",
   } as any,
 });
 

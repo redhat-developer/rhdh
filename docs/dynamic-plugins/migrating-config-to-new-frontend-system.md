@@ -6,30 +6,13 @@ This guide helps **operators and platform administrators** customize Red Hat Dev
 >
 > **Plugin authors** → [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md).
 
-## Transition: the new frontend system is not the default yet
+## Default: new frontend system (NFS)
 
-RHDH still ships the legacy `app` frontend package by default. The new frontend system lives in the `app-next` package and will become the default after the app-shell switch. Until then, enable **both** of the following on your RHDH **backend** deployment (OpenShift, Helm, Operator, [rhdh-local](https://github.com/redhat-developer/rhdh-local), or any environment where the backend runs as a container):
-
-| Setting | How to apply | Purpose |
-| --- | --- | --- |
-| `app.packageName: app-next` | Environment variable `APP_CONFIG_app_packageName=app-next`, **or** in `app-config.yaml` under `app.packageName` | Tells the app backend to serve the `app-next` frontend (new frontend system) instead of `app`. |
-| `ENABLE_STANDARD_MODULE_FEDERATION=true` | Environment variable on the backend container only | Enables the backend to serve standard Module Federation assets for dynamic frontend plugins. Without this, RHDH disables that service because the legacy frontend does not use it. |
-
-Example environment variables for the RHDH backend pod or deployment:
-
-```bash
-APP_CONFIG_app_packageName=app-next
-ENABLE_STANDARD_MODULE_FEDERATION=true
-```
-
-Equivalent `app-config` fragment (you still need `ENABLE_STANDARD_MODULE_FEDERATION` in the environment):
-
-```yaml
-app:
-  packageName: app-next
-```
-
-These requirements are temporary. Once RHDH completes the switch to `app-next`, they will become the default and this transition note can be removed.
+RHDH ships the Backstage new frontend system (`packages/app`) by default. The backend
+serves standard Module Federation assets for dynamic frontend plugins out of the box —
+no configuration needed (OpenShift, Helm, Operator,
+[rhdh-local](https://github.com/redhat-developer/rhdh-local), or any environment where
+the backend runs as a container).
 
 ## Who should read this
 
@@ -39,7 +22,7 @@ These requirements are temporary. Once RHDH completes the switch to `app-next`, 
 
 ## Prerequisites
 
-- RHDH is running with the new frontend system enabled — see [Transition: the new frontend system is not the default yet](#transition-the-new-frontend-system-is-not-the-default-yet) above.
+- RHDH is running with the new frontend system — see [Default: new frontend system (NFS)](#default-new-frontend-system-nfs) above.
 - You understand where your deployment stores `dynamic-plugins.yaml` and `app-config` — see [Installing Plugins](installing-plugins.md) and the [Red Hat product documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/) for Helm and Operator paths.
 - Installed plugins support the new frontend system. Configuration alone cannot add UI that a plugin does not register as an extension.
 

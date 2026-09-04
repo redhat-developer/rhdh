@@ -1,43 +1,33 @@
-import { lazy, Suspense } from 'react';
+import { renderWithEffects } from "@backstage/test-utils";
 
-import { removeScalprum } from '@scalprum/core';
-import { mockPluginData } from '@scalprum/react-test-utils';
-import { render, waitFor } from '@testing-library/react';
+jest.setTimeout(30_000);
 
-import TestRoot from './utils/test/TestRoot';
-
-const AppBase = lazy(() => import('./components/AppBase'));
-
-describe('App', () => {
-  beforeEach(() => {
-    removeScalprum();
-  });
-  it('should render', async () => {
-    const { TestScalprumProvider } = mockPluginData({}, {});
+describe("App", () => {
+  it("should render", async () => {
     process.env = {
-      NODE_ENV: 'test',
+      NODE_ENV: "test",
       APP_CONFIG: [
         {
           data: {
-            app: { title: 'Test' },
-            backend: { baseUrl: 'http://localhost:7007' },
-            auth: { environment: 'development' },
+            app: {
+              title: "Test",
+              support: { url: "http://localhost:7007/support" },
+            },
+            backend: { baseUrl: "http://localhost:7007" },
+            lighthouse: {
+              baseUrl: "http://localhost:3003",
+            },
+            techdocs: {
+              storageUrl: "http://localhost:7007/api/techdocs/static/docs",
+            },
           },
-          context: 'test',
+          context: "test",
         },
       ] as any,
     };
 
-    const rendered = render(
-      <TestScalprumProvider>
-        <TestRoot>
-          <Suspense fallback={null}>
-            <AppBase />
-          </Suspense>
-        </TestRoot>
-      </TestScalprumProvider>,
-    );
-
-    await waitFor(() => expect(rendered.baseElement).toBeInTheDocument());
-  }, 100000);
+    const { default: app } = await import("./App");
+    const rendered = await renderWithEffects(app);
+    expect(rendered.baseElement).toBeInTheDocument();
+  });
 });

@@ -1,8 +1,8 @@
 name: E2E Cluster-free
 
 # Runs the cluster-free local E2E harness (RHIDP-13501 / RHIDP-15075): boots the
-# backend and the legacy app dev server in-process and drives Playwright against
-# them, with dynamic plugins installed from the public OCI registry (ghcr) via
+# backend and the NFS app (packages/app) dev server in-process and drives Playwright
+# against them, with dynamic plugins installed from the public OCI registry (quay.io) via
 # the install-dynamic-plugins CLI (skopeo). No OpenShift/Kubernetes cluster or
 # image. See docs/e2e-tests/local-e2e-harness.md.
 
@@ -15,6 +15,8 @@ on:
       - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
       - ".github/actions/setup-cluster-free-harness/**"
+      - ".github/actions/resolve-catalog-index-image/**"
+      - "e2e-tests/local-harness/resolve-catalog-index-image.sh"
   push:
     branches:
       - 'main'
@@ -26,6 +28,8 @@ on:
       - "packages/app/package.json"
       - ".github/workflows/e2e-cluster-free.yaml"
       - ".github/actions/setup-cluster-free-harness/**"
+      - ".github/actions/resolve-catalog-index-image/**"
+      - "e2e-tests/local-harness/resolve-catalog-index-image.sh"
   # The catalog index is built outside this repo and changes on its own, so the
   # plugin sanity job needs a trigger that is not tied to a commit here. GitHub
   # only runs `schedule` from the default branch, so this covers the `next`
@@ -76,21 +80,30 @@ jobs:
       - name: Set up the cluster-free harness
         uses: ./.github/actions/setup-cluster-free-harness
 
+      - name: Resolve the catalog index image
+        id: index
+        uses: ./.github/actions/resolve-catalog-index-image
+        with:
+          branch: ${{ github.event.pull_request.base.ref || github.ref_name }}
+          catalog_index_image: ${{ inputs.catalog_index_image }}
+
       - name: Populate dynamic-plugins-root (OCI)
-        # install-dynamic-plugins pulls the harness plugin set from the public OCI
-        # registry (ghcr) via skopeo.
+        # populate.sh resolves {{inherit}} against the catalog index DPDY, then
+        # installs the harness plugin set from quay.io.
+        env:
+          CATALOG_INDEX_IMAGE: ${{ steps.index.outputs.image }}
         run: ./e2e-tests/local-harness/populate.sh
 
-      - name: Run cluster-free E2E (legacy app)
+      - name: Run cluster-free E2E (NFS app)
         working-directory: ./e2e-tests
-        run: yarn e2e:legacy-local
+        run: yarn e2e:local
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: playwright-report-legacy-local
-          path: e2e-tests/playwright-report-legacy-local
+          name: playwright-report-local
+          path: e2e-tests/playwright-report-local
           retention-days: 7
 
   plugin-sanity:
@@ -116,31 +129,10 @@ jobs:
 
       - name: Resolve the catalog index image
         id: index
-        env:
-          # `next` tracks main; release branches carry their own version tag.
-          BRANCH: ${{ github.event.pull_request.base.ref || github.ref_name }}
-          OVERRIDE: ${{ inputs.catalog_index_image }}
-        run: |
-          if [[ -n "${OVERRIDE}" ]]; then
-            # Shape-check the dispatch input: it reaches GITHUB_OUTPUT, and a
-            # multi-line value there can forge additional step outputs.
-            if [[ ! "${OVERRIDE}" =~ ^[A-Za-z0-9._/-]+(:[A-Za-z0-9._-]+)?(@sha256:[a-f0-9]{64})?$ ]]; then
-              echo "invalid catalog_index_image: ${OVERRIDE}" >&2
-              exit 1
-            fi
-            image="${OVERRIDE}"
-          elif [[ "${BRANCH}" == release-* ]]; then
-            image="quay.io/rhdh/plugin-catalog-index:${BRANCH#release-}"
-          else
-            image="quay.io/rhdh/plugin-catalog-index:next"
-          fi
-          echo "image=${image}" >> "$GITHUB_OUTPUT"
-          # The tag is a moving target; record the digest it resolved to so a
-          # later run can be traced back to the exact index it validated.
-          digest=$(skopeo inspect --no-creds --override-os linux --override-arch amd64 \
-            --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
-          echo "Catalog index: ${image} (${digest})"
-          echo "Catalog index: \`${image}\` @ \`${digest}\`" >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/resolve-catalog-index-image
+        with:
+          branch: ${{ github.event.pull_request.base.ref || github.ref_name }}
+          catalog_index_image: ${{ inputs.catalog_index_image }}
 
       - name: Populate dynamic-plugins-root from the catalog index
         env:

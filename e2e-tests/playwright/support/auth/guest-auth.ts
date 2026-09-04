@@ -3,8 +3,8 @@ import { type Page } from "@playwright/test";
 import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/localization/locale";
 import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
-import * as verification from "../../utils/ui-helper/verification";
 import { waitForAppReady } from "./app-shell";
+import { waitForRhdhSignInPage } from "./sign-in-page";
 
 const t = getTranslations();
 
@@ -23,7 +23,7 @@ export async function signInAsGuest(
     await dialog.accept();
   });
 
-  await verification.verifyHeading(page, t["rhdh"][lang]["signIn.page.title"], timeout);
+  await waitForRhdhSignInPage(page, { timeout, locale: lang });
   await interaction.clickButton(page, t["core-components"][lang]["signIn.guestProvider.enter"]);
   await navigation.waitForSideBarVisible(page);
 }
