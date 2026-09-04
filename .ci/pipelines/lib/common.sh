@@ -72,8 +72,24 @@ common::sed_inplace() {
   return $?
 }
 
+# Print the highest release-X.Y branch for a given major version.
+# Args:
+#   $1 - major_version: e.g. "1"
+# Returns:
+#   Prints the version (e.g. "1.10"), or nothing if no such branch exists
+common::highest_release_branch_for_major() {
+  local major=$1
+  git ls-remote --heads "https://github.com/${REPO_OWNER:-redhat-developer}/${REPO_NAME:-rhdh}" \
+    "refs/heads/release-${major}.*" 2> /dev/null \
+    | sed 's|.*refs/heads/release-||' \
+    | grep -E "^${major}\.[0-9]+$" \
+    | sort -t. -k1,1n -k2,2n \
+    | tail -1
+}
+
 # Calculate previous release version from current version
 # Usage: prev=$(common::get_previous_release_version "1.6") # Returns: "1.5"
+#        prev=$(common::get_previous_release_version "2.0") # Returns: "1.10"
 common::get_previous_release_version() {
   local version=$1
 
@@ -92,14 +108,32 @@ common::get_previous_release_version() {
   local minor_version
   minor_version=$(echo "$version" | cut -d'.' -f2)
 
-  local previous_minor=$((minor_version - 1))
+  if [[ $minor_version -gt 0 ]]; then
+    echo "${major_version}.$((minor_version - 1))"
+    return 0
+  fi
 
-  if [[ $previous_minor -lt 0 ]]; then
+  # Major rollover. The number of minors in the preceding major is not fixed, so
+  # look it up rather than computing it. Ask the release branches, not the chart
+  # tags: streams are published from main before their branch is cut, so when
+  # main became 2.0 the newest 1.x chart tag was 1.11 while the newest
+  # release-1.x branch was 1.10. Callers fetch value files from
+  # release-<version> on GitHub, so a version without a branch is unusable.
+  local previous_major=$((major_version - 1))
+  if [[ $previous_major -lt 1 ]]; then
     log::error "Cannot calculate previous version for $version"
     return 1
   fi
 
-  echo "${major_version}.${previous_minor}"
+  local previous_version
+  previous_version=$(common::highest_release_branch_for_major "$previous_major")
+
+  if [[ -z "$previous_version" ]]; then
+    log::error "Cannot calculate previous version for ${version}: no release-${previous_major}.x branch found"
+    return 1
+  fi
+
+  echo "$previous_version"
 }
 
 # Generic polling helper - waits for a condition to become true
