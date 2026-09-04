@@ -110,7 +110,9 @@ run_operator_runtime_config_change_tests() {
     fi
   fi
 
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}" || true
+  # Gate on /healthcheck: a test that scales the deployment to 0 mid-rollout
+  # kills install-dynamic-plugins and orphans its lock on the PVC.
+  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"
 }
 
 handle_ocp_operator() {
