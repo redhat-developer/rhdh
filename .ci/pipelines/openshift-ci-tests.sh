@@ -64,6 +64,11 @@ main() {
     # a later build.
     CHART_VERSION="${TAG_NAME}-CI"
     log::info "Derived CHART_VERSION from pinned TAG_NAME: ${CHART_VERSION}"
+  elif [[ "${TAG_NAME:-}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # A GA verification pins the image to x.y.z and passes no --chart-version.
+    # The chart repo publishes the same x.y.z tag, so map it straight across.
+    CHART_VERSION="${TAG_NAME}"
+    log::info "Derived CHART_VERSION from pinned GA TAG_NAME: ${CHART_VERSION}"
   else
     CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   fi
