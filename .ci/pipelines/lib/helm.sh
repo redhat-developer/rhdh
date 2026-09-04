@@ -137,8 +137,7 @@ helm::_highest_published_chart_major() {
     -H "Content-Type: application/json" \
     | jq -r '.tags[].name' \
     | grep -oE '^[0-9]+\.[0-9]+' \
-    | sort -t. -k1,1n -k2,2n \
-    | uniq | tail -1
+    | sort -uV | tail -1
 }
 
 # Get the chart major.minor version based on RELEASE_BRANCH_NAME or an optional override.
