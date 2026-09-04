@@ -7,7 +7,7 @@ For more information, see [Installing Dynamic Plugins with the Red Hat Developer
 
 Plugins are defined in the `plugins` array in the `dynamic-plugins.yaml` file. Each plugin is defined as an object with the following properties:
 
-- `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path. For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag to inherit the version from an included configuration. Additionally, when using single-plugin OCI images, the plugin path can also be omitted.
+- `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path. You can also use `ref://plugin-name` to reference a plugin by name from an included configuration (see [Plugin References](#plugin-references)). For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag to inherit the version from an included configuration. Additionally, when using single-plugin OCI images, the plugin path can also be omitted.
 - `enabled`: A boolean value that determines whether the plugin is enabled (`true`) or disabled (`false`). The legacy `disabled` field is still accepted for backward compatibility; when both are present, `enabled` takes precedence.
 - `integrity`: The integrity hash of the package. This is required for `tgz` archives and npm packages.
 - `pluginConfig`: The configuration for the plugin. For backend plugins this is optional and can be used to pass configuration to the plugin. For frontend plugins this is required, see [Frontend Plugin Wiring](frontend-plugin-wiring.md) for more information on how to configure bindings and routes. This is a fragment of the `app-config.yaml` file. Anything that is added to this object will be merged into a `app-config.dynamic-plugins.yaml` file whose config can be merged with the main `app-config.yaml` config when launching RHDH.
@@ -24,13 +24,23 @@ On application start, for each plugin that is not enabled, the `install-dynamic-
 ======= Skipping disabled dynamic plugin oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment
 ```
 
-To activate this plugin, simply add a package with the same name and set `enabled: true`.
+To activate this plugin, reference it by name using `ref://` and set `enabled: true`.
+
+```yaml
+plugins:
+  - enabled: true
+    package: ref://backstage-community-plugin-analytics-provider-segment
+```
+
+This is equivalent to specifying the full OCI URL with `{{inherit}}`, but avoids repeating the registry path:
 
 ```yaml
 plugins:
   - enabled: true
     package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
 ```
+
+See [Plugin References](#plugin-references) for more details on `ref://` syntax.
 
 While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file (now delivered via the catalog index image; see [Using a Catalog Index Image](#using-a-catalog-index-image-for-default-plugin-configurations) below), you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
 
@@ -170,6 +180,31 @@ plugins:
 When the path is omitted, the installer will inspect the OCI image manifest for the `io.backstage.dynamic-packages` annotation and automatically extract the plugin path. This ONLY works for images containing a single plugin, please explicitly define the plugin path for multi-plugin images.
 
 Images MUST be packaged with the `@red-hat-developer-hub/cli` to ensure the proper `io.backstage.dynamic-packages` annotation is applied.
+
+#### Plugin References
+
+When overriding plugins from an included configuration (such as the default catalog), you can reference them by name instead of repeating the full OCI registry path. This is the recommended approach for enabling or configuring default plugins, as it decouples your configuration from specific registry URLs and image digests.
+
+##### Ref Reference (`ref://`)
+
+Use `ref://plugin-name` to look up a plugin by name from the included configuration and use its full package URL. The plugin name is the last path segment of the OCI image (e.g., `backstage-plugin-catalog` from `oci://quay.io/rhdh/backstage-plugin-catalog@sha256:abc123`).
+
+```yaml
+plugins:
+  - enabled: true
+    package: ref://backstage-plugin-catalog
+    pluginConfig:
+      catalog:
+        # your config overrides
+```
+
+This resolves to the full package URL from the included configuration, so you do not need to know the registry, path, or version.
+
+`ref://` supports OCI, HTTP(S), and local path targets. NPM package references are not supported as `ref://` targets.
+
+##### Version Inheritance (`{{inherit}}`)
+
+For OCI packages specifically, you can use `{{inherit}}` as the tag to inherit the version from an included configuration while still specifying the full registry path. See [OCI Package Version Inheritance](#oci-package-version-inheritance) for details.
 
 #### OCI Package Version Inheritance
 
