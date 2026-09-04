@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@azure/arm-network": "34.2.0",
-    "@azure/identity": "4.13.1",
+    "@azure/identity": "4.13.2",
     "@backstage/catalog-model": "1.9.0",
     "@backstage/types": "1.2.2",
     "@keycloak/keycloak-admin-client": "25.0.6",
@@ -41,7 +41,7 @@
     "@microsoft/microsoft-graph-client": "3.0.7",
     "isomorphic-fetch": "3.0.0",
     "pg": "8.22.0",
-    "uuid": "14.0.1",
+    "uuid": "14.0.2",
     "yaml": "2.9.0"
   },
   "devDependencies": {
