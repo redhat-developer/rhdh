@@ -124,10 +124,8 @@ helm::get_previous_release_values() {
 # Chart Operations
 # ==============================================================================
 
-# Fetch a page of chart tags from Quay.
-# Piping curl straight into jq loses curl's status, which makes a 5xx or a
-# timeout indistinguishable from an empty result. Capture the body first so a
-# transport failure is reported rather than read as "no tags published".
+# Fetch a page of chart tags from Quay. Captures the body first: piping curl
+# into jq loses curl's status, so a 5xx would read as "no tags published".
 # Args:
 #   $1 - query: extra query string, e.g. "filter_tag_name=like:1.10-"
 helm::_fetch_chart_tags() {
@@ -154,9 +152,8 @@ helm::_latest_chart_tag() {
     | jq -r '[.tags[] | select(.name | test("^[0-9]+\\.[0-9]+-[0-9]+-CI$"))] | max_by(.start_ts) | .name // empty'
 }
 
-# Print the highest major.minor stream that has any chart published.
-# Reads only the first page, which Quay returns newest-first, so the newest
-# stream is present even though the listing is not exhaustive.
+# Print the highest stream with any chart published. Reads the first page only,
+# which Quay returns newest-first.
 helm::_highest_published_chart_stream() {
   helm::_fetch_chart_tags "limit=100" \
     | jq -r '.tags[].name' \
@@ -164,13 +161,9 @@ helm::_highest_published_chart_stream() {
     | sort -uV | tail -1
 }
 
-# Resolve the chart version for this run, in precedence order:
-#   1. an explicit CHART_VERSION (--chart-version, or the environment)
-#   2. a pinned TAG_NAME, since the image and the chart are published together
-#   3. the newest chart on the stream this checkout belongs to
-#
-# Owning all three here keeps the tag/chart naming convention in one place
-# instead of spreading it between the dispatcher and this library.
+# Resolve the chart version: an explicit CHART_VERSION wins, then a pinned
+# TAG_NAME (image and chart ship together), then the newest chart on this
+# checkout's stream.
 # Uses globals: CHART_VERSION, TAG_NAME
 helm::resolve_chart_version() {
   if [[ -n "${CHART_VERSION:-}" ]]; then
@@ -179,9 +172,8 @@ helm::resolve_chart_version() {
     return 0
   fi
 
-  # An RC image is tagged x.y-N and its chart x.y-N-CI; a GA image is tagged
-  # x.y.z and its chart carries the same x.y.z. Both shapes appear in the
-  # documented verification flows, so both have to map.
+  # RC images are tagged x.y-N with chart x.y-N-CI; GA images x.y.z with chart
+  # x.y.z. Both shapes appear in the verification flows, so both have to map.
   if [[ "${TAG_NAME:-}" =~ ^[0-9]+\.[0-9]+-[0-9]+$ ]]; then
     log::info "Derived CHART_VERSION from pinned TAG_NAME: ${TAG_NAME}-CI" >&2
     echo "${TAG_NAME}-CI"
@@ -197,11 +189,9 @@ helm::resolve_chart_version() {
   helm::get_chart_version
 }
 
-# Get the release stream this run belongs to: a major.minor pair such as "1.10",
-# not a bare major. Named a stream because that is what the chart tags are
-# grouped by.
-# Uses RELEASE_BRANCH_NAME: 'main' -> the version package.json declares;
-# 'release-x.y' -> x.y from the branch name.
+# Get the release stream this run belongs to: a major.minor pair like "1.10",
+# not a bare major. 'main' takes it from package.json; 'release-x.y' from the
+# branch name.
 # Args:
 #   $1 - (optional) version_override: Specific stream to use (e.g., "1.8" for upgrade base)
 # Returns:
@@ -220,10 +210,9 @@ helm::get_chart_stream() {
   fi
 
   if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
-    # main carries no version in its name, so read the one the branch declares.
-    # The published tags cannot answer this: they hold every stream anyone has
-    # pushed, so "the highest version on quay" silently follows whichever stream
-    # happens to be ahead rather than the one this checkout belongs to.
+    # main carries no version in its name. The published tags cannot answer
+    # this either - they hold every stream anyone pushed, so "highest on quay"
+    # follows whichever stream is ahead, not this checkout's.
     local package_json="${DIR}/../../package.json"
     if [[ ! -f "$package_json" ]]; then
       log::error "Cannot determine the chart stream: ${package_json} not found"
@@ -257,21 +246,15 @@ helm::get_chart_version() {
     return 1
   fi
 
-  # The helpers end in a pipe, so their exit status is jq's and a failed curl
-  # still returns 0. Empty output is the only reliable signal that no tag was
-  # resolved, so branch on that rather than on the status.
+  # The helpers end in a pipe, so their status is jq's and a failed curl still
+  # returns 0. Empty output is the only reliable signal.
   local version
   version=$(helm::_latest_chart_tag "${chart_stream}")
 
-  # Between a version bump and the first chart built from it, no tag exists for
-  # the version package.json declares. Fall back to the newest published stream
-  # so the run continues through a gap that closes on the next chart build.
-  #
-  # That gap only exists on main, where the version is read from package.json
-  # and can run ahead of the published charts. On a release branch the version
-  # comes from the branch name, and on an explicit override the caller named the
-  # stream it wants: silently resolving a different one there would hide the
-  # mistake behind a passing run.
+  # Right after a version bump, package.json can name a stream with no chart
+  # built yet. Fall back so the run survives that one-build gap - but only on
+  # main, where the gap exists. A release branch or an explicit override named
+  # the stream it wants, and quietly serving another would hide the mistake.
   if [[ -z "$version" && -z "${1:-}" && "${RELEASE_BRANCH_NAME:-}" == "main" ]]; then
     local fallback_stream
     fallback_stream=$(helm::_highest_published_chart_stream)
