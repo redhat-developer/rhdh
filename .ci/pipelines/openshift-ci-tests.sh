@@ -57,18 +57,7 @@ main() {
   log::info "Log file: ${LOGFILE}"
   log::info "JOB_NAME : $JOB_NAME"
 
-  if [[ -n "${CHART_VERSION:-}" ]]; then
-    log::info "Using preset CHART_VERSION (pinned or from env): ${CHART_VERSION}"
-  elif [[ "${TAG_NAME:-}" =~ ^[0-9]+\.[0-9]+-[0-9]+$ ]]; then
-    # The image and the chart are published together under the same build
-    # number, so a pinned TAG_NAME already determines the chart. Resolving the
-    # newest chart here instead would pair a pinned RC image with a chart from
-    # a later build.
-    CHART_VERSION="${TAG_NAME}-CI"
-    log::info "Derived CHART_VERSION from pinned TAG_NAME: ${CHART_VERSION}"
-  else
-    CHART_VERSION=$(helm::get_chart_version)
-  fi
+  CHART_VERSION=$(helm::resolve_chart_version)
   export CHART_VERSION
   log::info "Using CATALOG_INDEX_IMAGE: ${CATALOG_INDEX_IMAGE:-}"
 
