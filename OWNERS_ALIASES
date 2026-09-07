@@ -4,6 +4,7 @@
 aliases:
   rhdh:
     - 04kash
+    - AdamBrez
     - albarbaro
     - alizard0
     - AndrienkoAleksandr
@@ -55,7 +56,6 @@ aliases:
     - pabel-rh
     - PatAKnight
     - polasudo
-    - rajin-kichannagari
     - rh-tokeefe
     - rm3l
     - rohitkrai03
@@ -72,6 +72,7 @@ aliases:
     - zdrapela
   rhdh-cope:
     - 04kash
+    - AdamBrez
     - davidfestal
     - hopehadfield
     - jonkoops
@@ -145,3 +146,14 @@ aliases:
     - subhashkhileri
     - teknaS47
     - zdrapela
+  rhdh-ai:
+    - elsony
+    - gabemontero
+    - HusneShabbir
+    - Jdubrick
+    - johnmcollier
+    - JslYoon
+    - maysunfaisal
+    - michael-valdron
+    - thepetk
+    - yangcao77
