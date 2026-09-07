@@ -256,13 +256,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.0-1.el10
     sourcerpm: go-rpm-macros-3.8.0-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.50.1.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.51.1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 3670893
-    checksum: sha256:d90bb9b0f581bdb19c6c7fc26127b52fbdfe4329f511a29a99e9b223fba6178f
+    size: 3671425
+    checksum: sha256:a1a29f87c3f6a48664c2bb910623b42e22a3476948c4d4a6875d0a20eb4a3b15
     name: kernel-headers
-    evr: 6.12.0-211.50.1.el10_2
-    sourcerpm: kernel-6.12.0-211.50.1.el10_2.src.rpm
+    evr: 6.12.0-211.51.1.el10_2
+    sourcerpm: kernel-6.12.0-211.51.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-27.el10.noarch.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 9009
@@ -5567,13 +5567,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.0-1.el10
     sourcerpm: go-rpm-macros-3.8.0-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-211.50.1.el10_2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-211.51.1.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 3709069
-    checksum: sha256:51f567665b5c40b41a2899c6a77b7101097c7cc610b8aca42968f8e8856ab888
+    size: 3709621
+    checksum: sha256:5b5026365d898e6c41330fb31e77f70deaed8f60d8706fedfc53dbf9902ce8c2
     name: kernel-headers
-    evr: 6.12.0-211.50.1.el10_2
-    sourcerpm: kernel-6.12.0-211.50.1.el10_2.src.rpm
+    evr: 6.12.0-211.51.1.el10_2
+    sourcerpm: kernel-6.12.0-211.51.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-27.el10.noarch.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 9009
