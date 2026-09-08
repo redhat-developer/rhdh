@@ -23,7 +23,16 @@ set -e
 if ! command -v vault &> /dev/null; then
   VAULT_VERSION="${VAULT_VERSION:-1.15.4}"
   log::info "Installing vault ${VAULT_VERSION}..."
-  VAULT_ARCH=$(dpkg --print-architecture)
+  # uname is portable where dpkg is Debian-only, but its names are not the ones
+  # HashiCorp publishes: vault_*_linux_x86_64.zip and _aarch64.zip both 404.
+  case "$(uname -m)" in
+    x86_64 | amd64) VAULT_ARCH=amd64 ;;
+    aarch64 | arm64) VAULT_ARCH=arm64 ;;
+    *)
+      log::error "Unsupported architecture for the vault download: $(uname -m)"
+      exit 1
+      ;;
+  esac
   curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o /tmp/vault.zip
   unzip -q /tmp/vault.zip -d /usr/local/bin/
   rm /tmp/vault.zip
