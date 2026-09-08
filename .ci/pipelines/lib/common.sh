@@ -152,9 +152,10 @@ common::get_previous_release_version() {
 
 # Default downstream hub image repository for the current release branch.
 # Maintenance branches (release-1.x) use RHEL 9 images; main / 2.y streams use RHEL 10.
+# Remove this if/else and only use RHEL10 once we have EOL'd RHDH 1.10 (after 2.2 is live, or after all the SUPPORTEX tickets expire)
 common::default_hub_image_repo() {
   local branch="${RELEASE_BRANCH_NAME:-main}"
-  if [[ "$branch" == release-* ]]; then
+  if [[ "$branch" == release-1.* ]]; then
     echo "rhdh/rhdh-hub-rhel9"
   else
     echo "rhdh/rhdh-hub-rhel10"

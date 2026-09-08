@@ -309,7 +309,7 @@ All job types are supported as long as you're logged into the target cluster (`o
 | ------ | ---------------------- | ------------------------------------ |
 | 1      | `rhdh-community/rhdh`  | Community image (default)            |
 | 2      | `rhdh/rhdh-hub-rhel10` | Red Hat RHEL 10 image (`main` / 2.y) |
-| 3      | `rhdh/rhdh-hub-rhel9`  | Red Hat RHEL 9 image (maintenance)   |
+| 3      | `rhdh/rhdh-hub-rhel9`  | Red Hat RHEL 9 image (1.y only)   |
 | 4      | Custom                 | Enter your own repository            |
 
 #### Image Tags
