@@ -20,7 +20,7 @@ Options:
   -j, --job JOB_NAME      Job name (e.g., pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm)
                           Platform is derived from job name (*ocp*, *aks*, *eks*, *gke*, *osd*)
   -R, --registry REGISTRY Image registry (default: quay.io)
-  -r, --repo IMAGE_REPO   Image repository (e.g., rhdh/rhdh-hub-rhel9)
+  -r, --repo IMAGE_REPO   Image repository (e.g., rhdh/rhdh-hub-rhel9 or rhdh/rhdh-hub-rhel10)
   -t, --tag TAG_NAME      Image tag (e.g., next, latest, 1.5)
   -p, --pr PR_NUMBER      PR number (sets repo to rhdh-community/rhdh, tag to pr-<number>)
   -i, --runner-image IMG  Override the e2e runner container image
@@ -32,7 +32,10 @@ Examples:
   # Interactive mode (default)
   ./local-run.sh
 
-  # Deploy downstream next image on OCP, skip tests
+  # Deploy downstream RHEL 10 next image on OCP, skip tests
+  ./local-run.sh --repo rhdh/rhdh-hub-rhel10 --tag next --skip-tests
+
+  # Deploy downstream RHEL 9 next image on OCP, skip tests
   ./local-run.sh --repo rhdh/rhdh-hub-rhel9 --tag next --skip-tests
 
   # Test a PR image on OCP
@@ -253,17 +256,19 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
 
   # Image selection - Downstream vs PR vs Released vs Custom
   echo "Select image type:"
-  echo "  1) Downstream image (quay.io/rhdh/rhdh-hub-rhel9)"
-  echo "  2) PR image (quay.io/rhdh-community/rhdh)"
-  echo "  3) Released image (registry.redhat.io/rhdh/rhdh-hub-rhel9)"
-  echo "  4) Custom registry image"
+  echo "  1) Downstream RHEL 9 image (quay.io/rhdh/rhdh-hub-rhel9)"
+  echo "  2) Downstream RHEL 10 image (quay.io/rhdh/rhdh-hub-rhel10)"
+  echo "  3) PR image (quay.io/rhdh-community/rhdh)"
+  echo "  4) Released RHEL 9 image (registry.redhat.io/rhdh/rhdh-hub-rhel9)"
+  echo "  5) Released RHEL 10 image (registry.redhat.io/rhdh/rhdh-hub-rhel10)"
+  echo "  6) Custom registry image"
   echo ""
-  read -r -p "Enter choice [1]: " image_type_choice
-  image_type_choice=${image_type_choice:-1}
+  read -r -p "Enter choice [2]: " image_type_choice
+  image_type_choice=${image_type_choice:-2}
 
   case "$image_type_choice" in
     1)
-      # Downstream image
+      # Downstream RHEL 9 image
       IMAGE_REGISTRY="quay.io"
       IMAGE_REPO="rhdh/rhdh-hub-rhel9"
       echo ""
@@ -285,6 +290,28 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
       esac
       ;;
     2)
+      # Downstream RHEL 10 image
+      IMAGE_REGISTRY="quay.io"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel10"
+      echo ""
+      echo "Select image tag (quay.io/rhdh/rhdh-hub-rhel10):"
+      echo "  1) next (latest development build)"
+      echo "  2) latest (latest stable release)"
+      echo "  3) Release-specific tag (e.g., 2.1, 2.0)"
+      echo ""
+      read -r -p "Enter choice [1]: " tag_choice
+      tag_choice=${tag_choice:-1}
+
+      case "$tag_choice" in
+        1) TAG_NAME="next" ;;
+        2) TAG_NAME="latest" ;;
+        3)
+          read -r -p "Enter release tag (e.g., 2.1): " TAG_NAME
+          ;;
+        *) TAG_NAME="next" ;;
+      esac
+      ;;
+    3)
       # PR image
       IMAGE_REGISTRY="quay.io"
       IMAGE_REPO="rhdh-community/rhdh"
@@ -292,23 +319,30 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
       read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
       TAG_NAME="pr-${PR_NUMBER}"
       ;;
-    3)
-      # Released image
+    4)
+      # Released RHEL 9 image
       IMAGE_REGISTRY="registry.redhat.io"
       IMAGE_REPO="rhdh/rhdh-hub-rhel9"
       echo ""
       read -r -p "Enter version tag (e.g., 1.5, 1.4): " TAG_NAME
       ;;
-    4)
+    5)
+      # Released RHEL 10 image
+      IMAGE_REGISTRY="registry.redhat.io"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel10"
+      echo ""
+      read -r -p "Enter version tag (e.g., 2.1, 2.0): " TAG_NAME
+      ;;
+    6)
       # Custom registry image
       echo ""
       read -r -p "Enter image registry (e.g., registry.example.com): " IMAGE_REGISTRY
-      read -r -p "Enter image repository (e.g., rhdh/rhdh-hub-rhel9): " IMAGE_REPO
-      read -r -p "Enter image tag (e.g., 1.5): " TAG_NAME
+      read -r -p "Enter image repository (e.g., rhdh/rhdh-hub-rhel10): " IMAGE_REPO
+      read -r -p "Enter image tag (e.g., 2.1): " TAG_NAME
       ;;
     *)
       IMAGE_REGISTRY="quay.io"
-      IMAGE_REPO="rhdh/rhdh-hub-rhel9"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel10"
       TAG_NAME="next"
       ;;
   esac
