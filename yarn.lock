@@ -12550,7 +12550,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.10.3, @scalprum/core@npm:^0.10.0, @scalprum/core@npm:^0.10.1":
+"@scalprum/core@npm:0.10.3, @scalprum/core@npm:^0.10.0, @scalprum/core@npm:^0.10.3":
   version: 0.10.3
   resolution: "@scalprum/core@npm:0.10.3"
   dependencies:
@@ -12560,17 +12560,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.13.1":
-  version: 0.13.1
-  resolution: "@scalprum/react-core@npm:0.13.1"
+"@scalprum/react-core@npm:0.13.3":
+  version: 0.13.3
+  resolution: "@scalprum/react-core@npm:0.13.3"
   dependencies:
-    "@openshift/dynamic-plugin-sdk": "npm:^8.0.0"
-    "@scalprum/core": "npm:^0.10.1"
+    "@openshift/dynamic-plugin-sdk": "npm:^9.1.0"
+    "@scalprum/core": "npm:^0.10.3"
     lodash: "npm:^4.17.0"
   peerDependencies:
     react: ">=17.0.0 <20.0.0"
     react-dom: ">=17.0.0 <20.0.0"
-  checksum: 10c0/a1366ab36c820023104974173c7bb3a3fe6036444cffb71f605e719859664e408304782810f6eb4971efd63fdde92e5ef14cb5b037d9cc0eee58402a2a8c86d0
+  checksum: 10c0/a337d10f2fd3371940ed27e03e51ac967da0454c593c7d046c7c2e5d9e414f742667984533f178ed7de109c3b4741239fc24500c539ff88554ba4b7dabb8d3b9
   languageName: node
   linkType: hard
 
@@ -16489,7 +16489,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.3.1"
     "@red-hat-developer-hub/plugin-utils": "workspace:*"
     "@scalprum/core": "npm:0.10.3"
-    "@scalprum/react-core": "npm:0.13.1"
+    "@scalprum/react-core": "npm:0.13.3"
     "@scalprum/react-test-utils": "npm:0.3.0"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
