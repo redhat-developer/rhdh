@@ -23,14 +23,21 @@ set -e
 if ! command -v vault &> /dev/null; then
   VAULT_VERSION="${VAULT_VERSION:-1.15.4}"
   log::info "Installing vault ${VAULT_VERSION}..."
-  curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip" -o /tmp/vault.zip
+  VAULT_ARCH=$(dpkg --print-architecture)
+  curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o /tmp/vault.zip
   unzip -q /tmp/vault.zip -d /usr/local/bin/
   rm /tmp/vault.zip
 fi
 
 # Fetch and write secrets to /tmp/secrets/
 log::section "Fetching Vault Secrets"
+set -o pipefail
 SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r ".data.data")
+set +o pipefail
+if [[ -z "${SECRETS}" || "${SECRETS}" == "null" ]]; then
+  log::error "Vault returned no secrets for selfservice/rhdh-qe/rhdh"
+  exit 1
+fi
 
 for key in $(echo "$SECRETS" | jq -r "keys[]"); do
   if [[ "$key" == */* ]]; then
