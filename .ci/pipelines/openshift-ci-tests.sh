@@ -55,7 +55,23 @@ main() {
   log::info "Log file: ${LOGFILE}"
   log::info "JOB_NAME : $JOB_NAME"
 
-  CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
+  if [[ -n "${CHART_VERSION:-}" ]]; then
+    log::info "Using preset CHART_VERSION (pinned or from env): ${CHART_VERSION}"
+  elif [[ "${TAG_NAME:-}" =~ ^[0-9]+\.[0-9]+-[0-9]+$ ]]; then
+    # The image and the chart are published together under the same build
+    # number, so a pinned TAG_NAME already determines the chart. Resolving the
+    # newest chart here instead would pair a pinned RC image with a chart from
+    # a later build.
+    CHART_VERSION="${TAG_NAME}-CI"
+    log::info "Derived CHART_VERSION from pinned TAG_NAME: ${CHART_VERSION}"
+  elif [[ "${TAG_NAME:-}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # A GA verification pins the image to x.y.z and passes no --chart-version.
+    # The chart repo publishes the same x.y.z tag, so map it straight across.
+    CHART_VERSION="${TAG_NAME}"
+    log::info "Derived CHART_VERSION from pinned GA TAG_NAME: ${CHART_VERSION}"
+  else
+    CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
+  fi
   export CHART_VERSION
 
   case "$JOB_NAME" in

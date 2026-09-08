@@ -1507,10 +1507,17 @@ get_previous_release_version() {
   echo "${major_version}.${previous_minor}"
 }
 
+# Get the newest CI chart tag for a release stream.
+# Args:
+#   $1 - chart_major_version: despite the name, this is a major.minor pair -
+#        the release stream, e.g. "1.9" - not a bare major. CHART_MAJOR_VERSION
+#        in env_variables.sh carries the same shape.
+# Returns:
+#   Prints the tag (e.g. "1.9-247-CI"), or nothing when the stream has none.
 get_chart_version() {
   local chart_major_version=$1
   curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" -H "Content-Type: application/json" \
-    | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
+    | jq -r '[.tags[] | select(.name | test("^[0-9]+\\.[0-9]+-[0-9]+-CI$"))] | max_by(.start_ts) | .name // empty'
 }
 
 # Helper function to get dynamic value file path based on previous release version
