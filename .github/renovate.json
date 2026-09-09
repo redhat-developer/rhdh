@@ -157,6 +157,14 @@
       "groupName": "yarn updates"
     },
     {
+      "description": "Keep GitHub Actions updates in a separate PR",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "GitHub Actions (non-major)",
+      "additionalBranchPrefix": "github-actions-",
+      "automerge": false
+    },
+    {
       "description": "ignore updates to all backstage updates and 3rd party plugins",
       "groupName": "Backstage packages",
       "dependencyDashboardApproval": true,
