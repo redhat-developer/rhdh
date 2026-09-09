@@ -179,9 +179,11 @@
       "automerge": false
     },
     {
-      "description": "Align Playwright Docker release age with npm minimumReleaseAge",
+      "description": "Age Playwright Docker via GitHub Releases (MCR has no releaseTimestamp)",
       "matchPackageNames": ["mcr.microsoft.com/playwright"],
       "matchDatasources": ["docker"],
+      "overrideDatasource": "github-releases",
+      "overridePackageName": "microsoft/playwright",
       "minimumReleaseAge": "3 day"
     },
     {
