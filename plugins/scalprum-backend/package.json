@@ -31,7 +31,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/backend-defaults": "0.16.0",
+    "@backstage/backend-defaults": "patch:@backstage/backend-defaults@npm%3A0.16.0#~/.yarn/patches/@backstage-backend-defaults-npm-0.16.0-fd2a9c89a9.patch",
     "@backstage/backend-dynamic-feature-service": "0.8.0",
     "@backstage/backend-plugin-api": "1.8.0",
     "@backstage/config": "1.3.6",

@@ -71,7 +71,8 @@
     "zod@^3.25.76": "3.25.76",
     "zod@^3.25.76 || ^4.0.0": "3.25.76",
     "zod@^3.25 || ^4.0": "3.25.76",
-    "infinispan": "0.13.0"
+    "infinispan": "0.13.0",
+    "@backstage/backend-defaults@npm:^0.16.0": "patch:@backstage/backend-defaults@npm%3A0.16.0#~/.yarn/patches/@backstage-backend-defaults-npm-0.16.0-fd2a9c89a9.patch"
   },
   "jest": {
     "testTimeout": 20000
