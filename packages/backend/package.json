@@ -64,7 +64,7 @@
     "@red-hat-developer-hub/cli-module-install-dynamic-plugins": "0.4.1",
     "app": "workspace:*",
     "app-next": "workspace:*",
-    "better-sqlite3": "12.11.1",
+    "better-sqlite3": "13.0.3",
     "global-agent": "3.0.0",
     "mongodb": "7.5.0",
     "undici": "7.29.0",
