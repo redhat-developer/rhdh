@@ -73,7 +73,8 @@ const learningPathApi = ApiBlueprint.make({
  * Overrides api:catalog-graph in-plugin so NFS does not see a second factory
  * from pluginId: 'app' (API_FACTORY_CONFLICT).
  */
-export const rhdhCatalogGraphPlugin = catalogGraphPlugin.withOverrides({
+export const rhdhCatalogGraphPlugin: typeof catalogGraphPlugin =
+  catalogGraphPlugin.withOverrides({
   extensions: [
     catalogGraphPlugin.getExtension("api:catalog-graph").override({
       factory(originalFactory) {
