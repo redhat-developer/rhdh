@@ -157,6 +157,36 @@
       "groupName": "yarn updates"
     },
     {
+      "description": "Keep GitHub Actions updates in a separate PR",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchPackageNames": ["!mcr.microsoft.com/playwright"],
+      "groupName": "GitHub Actions (non-major)",
+      "additionalBranchPrefix": "github-actions-",
+      "automerge": false
+    },
+    {
+      "description": "Group Playwright npm and Docker image updates together so browsers stay in sync",
+      "matchPackageNames": [
+        "@playwright/test",
+        "playwright",
+        "playwright-core",
+        "mcr.microsoft.com/playwright"
+      ],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "Playwright (non-major)",
+      "additionalBranchPrefix": "playwright-",
+      "automerge": false
+    },
+    {
+      "description": "Age Playwright Docker via GitHub Releases (MCR has no releaseTimestamp)",
+      "matchPackageNames": ["mcr.microsoft.com/playwright"],
+      "matchDatasources": ["docker"],
+      "overrideDatasource": "github-releases",
+      "overridePackageName": "microsoft/playwright",
+      "minimumReleaseAge": "3 day"
+    },
+    {
       "description": "ignore updates to all backstage updates and 3rd party plugins",
       "groupName": "Backstage packages",
       "dependencyDashboardApproval": true,
