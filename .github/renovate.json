@@ -15,6 +15,12 @@
   "reviewers": ["team:rhdh-security"],
   "packageRules": [
     {
+      "description": "require dashboard approval for .nvmrc Node version bumps",
+      "matchManagers": ["nvm"],
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    },
+    {
       "description": "exclude rpm-lockfile updates",
       "matchFileNames": [".github/workflows/update-rpm-lockfile.yaml"],
       "enabled": false
@@ -146,6 +152,11 @@
       "matchUpdateTypes": ["minor"]
     },
     {
+      "description": "disable scalprum updates (handled manually to keep @scalprum packages in sync)",
+      "matchPackageNames": ["/^@scalprum//"],
+      "enabled": false
+    },
+    {
       "description": "react-router-dom: group all dependencies",
       "matchPackageNames": ["react-router-dom"],
       "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
@@ -179,12 +190,9 @@
       "automerge": false
     },
     {
-      "description": "Age Playwright Docker via GitHub Releases (MCR has no releaseTimestamp)",
-      "matchPackageNames": ["mcr.microsoft.com/playwright"],
-      "matchDatasources": ["docker"],
-      "overrideDatasource": "github-releases",
-      "overridePackageName": "microsoft/playwright",
-      "minimumReleaseAge": "3 day"
+      "description": "Skip npm minimumReleaseAge for Playwright so npm and MCR image bumps clear together (MCR has no releaseTimestamp for aging)",
+      "matchPackageNames": ["@playwright/test", "playwright", "playwright-core"],
+      "minimumReleaseAge": "0 days"
     },
     {
       "description": "ignore updates to all backstage updates and 3rd party plugins",
@@ -207,10 +215,9 @@
       "matchPackageNames": ["@janus-idp/cli"],
       "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
       "matchUpdateTypes": ["patch", "minor"]
-  }
+    }
   ],
   "ignorePaths": ["**/dist-dynamic/**"],
   "vulnerabilityAlerts": {"enabled": true, "addLabels": ["kind/security"]},
   "osvVulnerabilityAlerts": false
-       
 }
