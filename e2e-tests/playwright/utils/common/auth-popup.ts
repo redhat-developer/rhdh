@@ -71,11 +71,11 @@ async function findGitlabAuthorizeButton(popup: Page): Promise<Locator> {
 
   let buttonToClick: Locator | undefined;
   await expect(async () => {
-    if (await authorization.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await authorization.isVisible().catch(() => false)) {
       buttonToClick = authorization;
       return true;
     }
-    if (await authorizationByText.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await authorizationByText.isVisible().catch(() => false)) {
       buttonToClick = authorizationByText;
       return true;
     }
@@ -132,7 +132,11 @@ export async function handleGitlabPopupLogin(
     await popup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => {});
 
     const twoFactorInput = popup.locator("#user_otp_attempt");
-    if (await twoFactorInput.isVisible({ timeout: 5000 })) {
+    const hasTwoFactor = await twoFactorInput
+      .waitFor({ state: "visible", timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    if (hasTwoFactor) {
       await popup.waitForEvent("close", { timeout: 20000 });
       return "Login successful";
     }

@@ -12,11 +12,7 @@ export async function runAccessibilityTests(
   // persistent (determinate bars) or match multiple elements in strict mode.
   await waitForLoadingToSettle(page, 60_000);
 
-  // Type mismatch between Playwright's Page and AxeBuilder's expected type
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- @axe-core/playwright Page type differs from @playwright/test
-  const accessibilityScanResults = await new AxeBuilder({ page } as unknown as {
-    page: typeof page;
-  })
+  const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .disableRules([
       "color-contrast",
