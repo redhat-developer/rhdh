@@ -1,6 +1,8 @@
+import type { IconElement } from '@backstage/frontend-plugin-api';
 import { createApp } from '@backstage/frontend-defaults';
 import appVisualizerPlugin from '@backstage/plugin-app-visualizer';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import catalogImportBase from '@backstage/plugin-catalog-import/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import searchPlugin from '@backstage/plugin-search/alpha';
@@ -21,11 +23,19 @@ import { rhdhDynamicFrontendFeaturesLoader } from './modules/dynamicFeatures/rhd
 // Homepage host: keep `@backstage/plugin-home` until rhdh-plugins#4032 lands
 // (homePagePlugin as alpha default embeds the home plugin). RHDH layout/widgets
 // and the app drawer come from OCI (homepage + app-defaults), not npm deps.
+
+// Keep the /catalog-import route for scaffolder, but hide it from the sidebar.
+const catalogImportPlugin = catalogImportBase.withOverrides({
+  title: '',
+  icon: false as unknown as IconElement,
+});
+
 const app = createApp({
   features: [
     navModule,
     appVisualizerPlugin,
     catalogPlugin,
+    catalogImportPlugin,
     homePlugin,
     scaffolderPlugin,
     searchPlugin,
