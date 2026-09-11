@@ -1,11 +1,12 @@
 ---
 targets:
-  - '*'
+  - "*"
 description: >-
   Autonomously investigate and fix a failing RHDH E2E CI test. Accepts a Prow
   job URL or Jira ticket ID. Deploys RHDH, reproduces the failure, fixes the
   test using Playwright agents, and submits a PR with Qodo review.
 ---
+
 # Fix E2E CI Failure
 
 Autonomous workflow to investigate, reproduce, fix, and submit a PR for a failing RHDH E2E test.
@@ -13,12 +14,14 @@ Autonomous workflow to investigate, reproduce, fix, and submit a PR for a failin
 ## Input
 
 `$ARGUMENTS` — A failure URL or ticket, optionally followed by `--no-qodo`:
+
 - **Prow URL**: `https://prow.ci.openshift.org/view/gs/...`
 - **Playwright report URL**: `https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/.../index.html[#?testId=...]`
 - **Jira ticket ID**: `RHIDP-XXXX`
 - **Jira URL**: `https://redhat.atlassian.net/browse/RHIDP-XXXX`
 
 **Options**:
+
 - `--no-qodo` — Skip Qodo agentic review (steps 5-7 in Phase 7). Use this to avoid depleting a limited Qodo quota.
 
 ## Workflow
@@ -30,6 +33,7 @@ Execute the following phases in order. Load each skill as needed for detailed in
 **Skill**: `e2e-parse-ci-failure`
 
 Parse the input to extract:
+
 - Failing test name and spec file path
 - Playwright project name
 - Release branch (main, release-1.9, etc.)
@@ -41,6 +45,7 @@ Parse the input to extract:
 **Decision gate**: If the input cannot be parsed (invalid URL, inaccessible Jira ticket), report the error and ask the user for clarification.
 
 **Multiple failures**: If the job has more than one failing test:
+
 1. Present all failures in a table with test name, spec file, error type, and consistency (e.g., "failed 3/3" vs "failed 1/3")
 2. Group failures that likely share a root cause (same spec file, same error pattern, same page object)
 3. **Ask the user** which failure(s) to focus on
@@ -55,10 +60,12 @@ git branch --show-current
 ```
 
 - **On `main` or `release-*`**: You're on a base branch — create a feature branch using the skill:
+
   ```bash
-  git fetch upstream <release-branch>
-  git checkout -b fix/e2e-<test-description> upstream/<release-branch>
+  git fetch upstream "$RELEASE_BRANCH"
+  git checkout -b "fix/e2e-${TEST_DESCRIPTION}" "upstream/${RELEASE_BRANCH}"
   ```
+
   If a Jira ticket was provided, include the ticket ID in the branch name:
   `fix/RHIDP-XXXX-e2e-<test-description>`
 
@@ -73,24 +80,28 @@ git branch --show-current
 Deploy RHDH to a cluster using `e2e-tests/local-run.sh`. CLI mode requires **all three** flags (`-j`, `-r`, `-t`):
 
 **OCP jobs** — use `-s` (deploy-only) to skip automated test execution so you can run the specific failing test manually:
+
 ```bash
 cd e2e-tests
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag> -s
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG" -s
 ```
 
 **K8s jobs (AKS, EKS, GKE)** — do **not** use `-s`. These jobs require the full execution pipeline and do not support deploy-only mode:
+
 ```bash
 cd e2e-tests
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag>
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG"
 ```
 
 Use the **full Prow CI job name** for `-j` (not shortened names).
 
 Derive the image repo (`-r`) and tag (`-t`) from the release branch — see the `e2e-fix-workflow` rule for the derivation logic.
 
-After deployment completes, set up the local test environment:
+After deployment completes, unlock Bitwarden and use the URL printed by the deployment:
+
 ```bash
-source e2e-tests/local-test-setup.sh <showcase|rbac>
+export BW_SESSION=$(bw unlock --raw)
+export BASE_URL=https://deployed-rhdh.example.com
 ```
 
 **Decision gate**: Before attempting deployment, verify cluster connectivity (`oc whoami`). If no cluster is available, **ask the user for explicit approval** before skipping this phase — do not skip silently. If deployment fails, the `e2e-deploy-rhdh` skill has error recovery procedures. If deployment cannot be recovered after investigation, report the deployment issue and stop.
@@ -102,15 +113,15 @@ source e2e-tests/local-test-setup.sh <showcase|rbac>
 Run the specific failing test to confirm it reproduces locally. Use `--project=any-test` to avoid running the smoke test dependency — it matches any spec file without extra overhead:
 
 ```bash
-cd e2e-tests
-yarn playwright test <spec-file> --project=any-test --retries=0 --workers=1
+e2e-tests/local-test.sh -- --project=any-test --retries=0 --workers=1 "$SPEC_FILE"
 ```
 
 **Decision gates**:
+
 - **No cluster or deployment available**: If Phase 3 was skipped or no running RHDH instance exists, **ask the user for explicit approval** before skipping reproduction — do not skip silently.
 - **Consistent failure**: Proceed to Phase 5
 - **Flaky** (fails sometimes): Proceed to Phase 5, focus on reliability
-- **Cannot reproduce** (passes every time after 10 runs): Before giving up, try running the entire CI project with `CI=true yarn playwright test --project=<ci-project> --retries=0` to simulate CI conditions (3 workers, full test suite). If that also passes, report the results and **ask the user for explicit approval** before proceeding.
+- **Cannot reproduce** (passes every time after 10 runs): Before giving up, try running the entire CI project with `CI=true e2e-tests/local-test.sh -- --project=<ci-project> --retries=0` to simulate CI conditions (3 workers, full test suite). If that also passes, report the results and **ask the user for explicit approval** before proceeding.
 
 ### Phase 5: Diagnose and Fix
 
@@ -124,11 +135,12 @@ Analyze the failure and implement a fix:
 4. **Cross-repo investigation**: If the issue is in deployment config, search `rhdh-operator` and `rhdh-chart` repos. Use Sourcebot or Context7 if available; otherwise fall back to `gh search code` or clone the repo locally and grep
 
 **Decision gate**: If the analysis reveals a product bug (not a test issue), you must be **absolutely certain** before marking a test with `test.fixme()`. The Playwright healer agent must have confirmed the test is correct and the application behavior is wrong. Ask the user for confirmation before proceeding. Then:
+
 1. File or update a Jira bug in the `RHDHBUGS` project
 2. Mark the test with `// TODO:` linking to the Jira ticket, followed by `test.fixme()`:
    ```typescript
    // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-XXXX
-   test.fixme('Description of the product bug');
+   test.fixme("Description of the product bug");
    ```
 3. Proceed to Phase 6 with the `test.fixme()` change
 
@@ -137,9 +149,10 @@ Analyze the failure and implement a fix:
 **Skill**: `e2e-verify-fix`
 
 Verify the fix:
+
 1. Run the fixed test once — must pass
 2. Run 5 times — must pass 5/5
-3. Run code quality checks: `yarn tsc:check`, `yarn lint:check`, `yarn prettier:check`
+3. Run code quality checks: `yarn lint` and `yarn fmt:check`
 4. Fix any lint/formatting issues
 
 **Decision gate**: If the test still fails or is flaky, return to Phase 5 and iterate. If verification cannot be run (no cluster, environment issues), **ask the user for explicit approval** before proceeding without it.
