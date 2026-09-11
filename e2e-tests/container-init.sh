@@ -19,43 +19,9 @@ trap handle_error ERR
 
 set -e
 
-# Install vault if not present
-if ! command -v vault &> /dev/null; then
-  VAULT_VERSION="${VAULT_VERSION:-1.15.4}"
-  log::info "Installing vault ${VAULT_VERSION}..."
-  # uname is portable where dpkg is Debian-only, but its names are not the ones
-  # HashiCorp publishes: vault_*_linux_x86_64.zip and _aarch64.zip both 404.
-  case "$(uname -m)" in
-    x86_64 | amd64) VAULT_ARCH=amd64 ;;
-    aarch64 | arm64) VAULT_ARCH=arm64 ;;
-    *)
-      log::error "Unsupported architecture for the vault download: $(uname -m)"
-      exit 1
-      ;;
-  esac
-  curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o /tmp/vault.zip
-  unzip -q /tmp/vault.zip -d /usr/local/bin/
-  rm /tmp/vault.zip
-fi
-
-# Fetch and write secrets to /tmp/secrets/
-log::section "Fetching Vault Secrets"
-set -o pipefail
-SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r ".data.data")
-set +o pipefail
-if [[ -z "${SECRETS}" || "${SECRETS}" == "null" ]]; then
-  log::error "Vault returned no secrets for selfservice/rhdh-qe/rhdh"
-  exit 1
-fi
-
-for key in $(echo "$SECRETS" | jq -r "keys[]"); do
-  if [[ "$key" == */* ]]; then
-    mkdir -p "/tmp/secrets/$(dirname "$key")"
-  fi
-  echo "$SECRETS" | jq -r --arg k "$key" '.[$k]' > "/tmp/secrets/$key"
-done
-
-log::success "Secrets written to /tmp/secrets/"
+# Secret values are injected into this container by local-run.sh. CI keeps its
+# existing mounted-secret path and does not use this local initializer.
+log::section "Using host-provided secret environment"
 
 # Login using service account token from host
 log::section "Cluster Service Account and Token Management"
@@ -90,6 +56,11 @@ log::info "SHARED_DIR=${SHARED_DIR}"
 export ARTIFACT_DIR="/tmp/rhdh/.local-test/artifact_dir"
 mkdir -p "$ARTIFACT_DIR"
 log::info "ARTIFACT_DIR=${ARTIFACT_DIR}"
+
+export RHDH_SECRET_RUNTIME_DIR="/run/rhdh-secrets"
+mkdir -p "$RHDH_SECRET_RUNTIME_DIR"
+chmod 700 "$RHDH_SECRET_RUNTIME_DIR"
+log::info "RHDH_SECRET_RUNTIME_DIR=${RHDH_SECRET_RUNTIME_DIR}"
 
 # Set IS_OPENSHIFT based on platform
 if [[ "$CONTAINER_PLATFORM" == "ocp" || "$CONTAINER_PLATFORM" == "osd-gcp" ]]; then

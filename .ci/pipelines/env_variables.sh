@@ -130,12 +130,14 @@ if [[ -d "/tmp/secrets" ]] \
   export RDS_DB_CERTIFICATES_PATH
 elif [[ -n "${rds_db_certificates_pem+x}" ]]; then
   if RDS_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${SHARED_DIR}/.rhdh-secrets" rds_db_certificates_pem rds-db-certificates.pem); then
+    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
+    rds_db_certificates_pem rds-db-certificates.pem); then
     export RDS_DB_CERTIFICATES_PATH
   fi
 elif [[ -n "${rds_db_certificates__dot__pem+x}" ]]; then
   if RDS_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${SHARED_DIR}/.rhdh-secrets" rds_db_certificates__dot__pem rds-db-certificates.pem); then
+    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
+    rds_db_certificates__dot__pem rds-db-certificates.pem); then
     export RDS_DB_CERTIFICATES_PATH
   fi
 fi
@@ -146,12 +148,14 @@ if [[ -d "/tmp/secrets" ]] \
   export AZURE_DB_CERTIFICATES_PATH
 elif [[ -n "${azure_db_certificates_pem+x}" ]]; then
   if AZURE_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${SHARED_DIR}/.rhdh-secrets" azure_db_certificates_pem azure-db-certificates.pem); then
+    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
+    azure_db_certificates_pem azure-db-certificates.pem); then
     export AZURE_DB_CERTIFICATES_PATH
   fi
 elif [[ -n "${azure_db_certificates__dot__pem+x}" ]]; then
   if AZURE_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${SHARED_DIR}/.rhdh-secrets" azure_db_certificates__dot__pem azure-db-certificates.pem); then
+    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
+    azure_db_certificates__dot__pem azure-db-certificates.pem); then
     export AZURE_DB_CERTIFICATES_PATH
   fi
 fi

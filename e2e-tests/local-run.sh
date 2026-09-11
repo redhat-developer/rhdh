@@ -4,10 +4,14 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNNER_IMAGE="${RUNNER_IMAGE:-quay.io/rhdh-community/rhdh-e2e-runner:main}"
 RUN_CONFIG_FILE="$SCRIPT_DIR/.local-test/run-config.env"
+SECRET_PROFILE="$SCRIPT_DIR/e2e-secrets.profile.json"
+LOCAL_RUN_ARGS=("$@")
 
 # Source logging library
 # shellcheck source=../.ci/pipelines/lib/log.sh
 source "$SCRIPT_DIR/../.ci/pipelines/lib/log.sh"
+# shellcheck source=e2e-tests/local-secrets.sh
+source "$SCRIPT_DIR/local-secrets.sh"
 
 # ========== CLI Flags ==========
 show_help() {
@@ -104,13 +108,35 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Local secrets are supplied by the shared Bitwarden CLI. The inner invocation
+# receives only the selected environment names, which are later forwarded to
+# Podman without placing secret values in command arguments.
+if [[ "${RHDH_LOCAL_SECRETS_WRAPPED:-}" != "1" ]]; then
+  local_secrets::resolve_cli "$SCRIPT_DIR" || exit 1
+  local_secrets::require_metadata_support || exit 1
+  if [[ -z "${BW_SESSION:-}" ]]; then
+    log::error "BW_SESSION is required. Unlock Bitwarden before running local-run.sh."
+    exit 1
+  fi
+  if [[ ! -f "$SECRET_PROFILE" ]]; then
+    log::error "Secret profile not found: $SECRET_PROFILE"
+    exit 1
+  fi
+
+  export RHDH_LOCAL_SECRETS_WRAPPED=1
+  exec "${LOCAL_SECRETS_CLI[@]}" exec \
+    --profile "$SECRET_PROFILE" \
+    --expose-secret-names \
+    -- "$0" "${LOCAL_RUN_ARGS[@]}"
+fi
+
 # ========== Prerequisites Check ==========
 PREREQ_FAILED=false
 MISSING_CMDS=""
 
 # Check required binaries
 # Note: kubectl is needed for AKS/EKS, oc is needed for OCP
-for cmd in podman oc kubectl vault jq curl rsync; do
+for cmd in podman oc kubectl node jq curl rsync; do
   if ! command -v "$cmd" &> /dev/null; then
     MISSING_CMDS="$MISSING_CMDS $cmd"
     PREREQ_FAILED=true
@@ -156,7 +182,7 @@ if [[ -n "$MISSING_CMDS" ]]; then
   if [[ "$HOST_OS" == "Darwin" ]]; then
     log::info "    brew install podman jq rsync openshift-cli kubernetes-cli"
     log::info "    (bc is pre-installed on macOS, install via 'brew install bc' if missing)"
-    log::info "    brew tap hashicorp/tap && brew install hashicorp/tap/vault"
+    log::info "    brew install node"
   else
     log::info "    Install the missing tools using your package manager"
   fi
@@ -165,6 +191,13 @@ fi
 if [[ "$PREREQ_FAILED" == "true" ]]; then
   exit 1
 fi
+
+local_secrets::validate_secret_names "${RHDH_E2E_SECRET_NAMES:-}" || exit 1
+SECRET_ENV_ARGS=()
+while IFS= read -r secret_name; do
+  SECRET_ENV_ARGS+=(--env "$secret_name")
+done < <(printf '%s' "$RHDH_E2E_SECRET_NAMES" | jq -r '.[]')
+unset RHDH_E2E_SECRET_NAMES
 
 # ========== Interactive Configuration ==========
 log::section "RHDH Local Test Runner"
@@ -443,31 +476,6 @@ if ! podman pull "$RUNNER_IMAGE"; then
   fi
 fi
 
-export VAULT_ADDR='https://vault.ci.openshift.org'
-
-# Login to vault and capture the token (reuse only if the token can read QE secrets)
-log::section "Vault Login"
-vault_token_usable() {
-  local token=${1:-}
-  [[ -n "$token" ]] || return 1
-  VAULT_TOKEN="$token" vault kv get -mount="kv" "selfservice/rhdh-qe/rhdh" > /dev/null 2>&1
-}
-
-if [[ -n "${VAULT_TOKEN:-}" ]] && vault_token_usable "$VAULT_TOKEN"; then
-  log::info "Using existing VAULT_TOKEN from environment"
-elif existing_token=$(vault print token 2>/dev/null) && vault_token_usable "$existing_token"; then
-  VAULT_TOKEN="$existing_token"
-  log::info "Reusing existing vault token from local vault CLI"
-elif [[ -n "${VAULT_TOKEN:-}" ]] || [[ -n "${existing_token:-}" ]]; then
-  log::warn "Existing vault token cannot read QE secrets; falling back to OIDC login"
-  vault login -no-print -method=oidc
-  VAULT_TOKEN=$(vault print token)
-else
-  vault login -no-print -method=oidc
-  VAULT_TOKEN=$(vault print token)
-fi
-export VAULT_TOKEN
-
 # Set up cluster access based on platform (CONTAINER_PLATFORM already derived above)
 log::section "Setting up cluster access"
 log::info "CONTAINER_PLATFORM: $CONTAINER_PLATFORM"
@@ -510,6 +518,7 @@ else
   K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=8h)
   log::info "Acquired short-lived token for the service account"
 fi
+export K8S_CLUSTER_TOKEN
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
 
 # Copy repo to work directory (keeps original repo clean)
@@ -521,7 +530,7 @@ mkdir -p "$WORK_DIR"
 rsync -a --exclude='node_modules' --exclude='.local-test' --exclude='playwright-report' --exclude='test-results' "$REPO_ROOT/" "$WORK_DIR/"
 log::info "Work copy created at: $WORK_DIR"
 
-# Run container with vault credentials and OC token
+# Run container with Bitwarden-provided environment and cluster token
 log::section "Starting Container (rhdh-e2e-runner)"
 log::info "Running container (rhdh-e2e-runner)..."
 log::info "This will deploy RHDH to your cluster and run tests (if enabled)."
@@ -537,12 +546,11 @@ CONTAINER_EXIT_CODE=0
 # no -t: stdout is piped to tee and CI has no TTY
 podman run -v "$WORK_DIR":/tmp/rhdh \
   -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro \
-  -i -u root --privileged \
-  --mount type=tmpfs,destination=/tmp/secrets \
-  -e VAULT_ADDR="$VAULT_ADDR" \
-  -e VAULT_TOKEN="$VAULT_TOKEN" \
+  -i -u root --privileged --rm \
+  --mount type=tmpfs,destination=/run/rhdh-secrets,tmpfs-mode=0700 \
+  "${SECRET_ENV_ARGS[@]}" \
   -e K8S_CLUSTER_URL="$K8S_CLUSTER_URL" \
-  -e K8S_CLUSTER_TOKEN="$K8S_CLUSTER_TOKEN" \
+  --env K8S_CLUSTER_TOKEN \
   -e CONTAINER_PLATFORM="$CONTAINER_PLATFORM" \
   -e JOB_NAME="$JOB_NAME" \
   -e IMAGE_REGISTRY="$IMAGE_REGISTRY" \

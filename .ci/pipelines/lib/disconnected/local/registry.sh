@@ -166,6 +166,18 @@ disconnected::setup_local_ocp_mirror() {
     done < <(find /tmp/secrets -type f -print0 2> /dev/null || true)
   fi
 
+  # Local Bitwarden runs receive the Red Hat pull secret as an environment
+  # value. Merge it without materializing the source value under the worktree.
+  if [[ -n "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON:-}" ]] \
+    && jq -e '.auths | type == "object"' \
+      <<< "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}" > /dev/null 2>&1; then
+    jq -s '.[0] * {auths: ((.[0].auths // {}) * (.[1].auths // {}))}' \
+      "${pull_secret_path}" \
+      <(printf '%s' "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}") \
+      > "${pull_secret_path}.tmp" \
+      && mv "${pull_secret_path}.tmp" "${pull_secret_path}"
+  fi
+
   export MIRROR_REGISTRY_PULL_SECRET="${pull_secret_path}"
   export DISCONNECTED=true
 
