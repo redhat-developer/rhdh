@@ -440,7 +440,7 @@ app:
 
 - `EntityCardBlueprint` replaces `createEntityCardExtension` / mount-point card wiring.
 - Layout grid positioning from RHDH `config.layout` is not a standard blueprint config — implement layout inside your card component or use extension overrides for advanced cases.
-- Filter predicates use the filter predicate schema in config (not the RHDH `isKind`/`isType` shorthand, though similar concepts apply).
+- Filter predicates use the [filter predicate](https://backstage.io/api/stable/modules/_backstage_filter-predicates.html) schema in config (not the RHDH `isKind`/`isType` shorthand, though similar concepts apply).
 
 ---
 
