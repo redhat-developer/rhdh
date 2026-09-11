@@ -168,7 +168,7 @@ PR check jobs use the `pull-ci-` prefix instead of `periodic-ci-` (and drop the 
 
 ### How the Pipeline Works
 
-[Prow](https://docs.ci.openshift.org/docs/architecture/prow/) is the CI scheduler. It triggers [ci-operator](https://docs.ci.openshift.org/docs/architecture/ci-operator/), which orchestrates the entire workflow:
+[Prow](https://docs.ci.openshift.org/docs/architecture/) is the CI scheduler. It triggers [ci-operator](https://docs.ci.openshift.org/docs/architecture/ci-operator/), which orchestrates the entire workflow:
 
 ```
 Prow (scheduler)
@@ -455,7 +455,6 @@ Tests authentication provider integrations. Has a completely different deploymen
 **Key differences**:
 - Uses RHDH **Operator** for deployment (not Helm)
 - TypeScript-based test configuration (not Bash scripts) -- see [auth-providers test directory](../../e2e-tests/playwright/e2e/auth-providers/)
-- Dedicated values file: [`values_showcase-auth-providers.yaml`](../../.ci/pipelines/value_files/values_showcase-auth-providers.yaml)
 - Only **1 retry** (vs 2 for other projects) -- due to complex auth setup/teardown
 - Dedicated logs folder: `e2e-tests/auth-providers-logs`
 - Requires specific plugins: `keycloak-dynamic`, `github-org-dynamic`, `msgraph-dynamic`, `rbac`

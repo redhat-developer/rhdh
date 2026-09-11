@@ -431,5 +431,5 @@ See this nice article from GitLab highlighting some of the subtle differences th
 For reference, the following resources can help understand how the packages we use here handle such settings:
 - Undici's proxy agent tests: https://github.com/nodejs/undici/blob/v6.19.8/test/env-http-proxy-agent.js
 - global-agent tests:
-  - https://github.com/gajus/global-agent/blob/master/test/global-agent/factories/createGlobalProxyAgent.ts
-  - and specifically on the `NO_PROXY` handling: https://github.com/gajus/global-agent/blob/master/test/global-agent/utilities/isUrlMatchingNoProxy.ts
+  - https://github.com/gajus/global-agent — see its tests for `createGlobalProxyAgent`
+  - and specifically for the `NO_PROXY` handling, `isUrlMatchingNoProxy`
