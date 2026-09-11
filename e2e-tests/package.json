@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
-    "@playwright/test": "1.62.1",
+    "@playwright/test": "1.63.0",
     "@support/coverage": "portal:./playwright/support/coverage",
     "@types/node": "24.13.3",
     "@types/pg": "8.23.1",
