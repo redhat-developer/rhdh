@@ -255,46 +255,39 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 ## Optional Configuration and Plugins
 
-- Adding a Home Page — add the following to your `app-config.local.yaml`:
+- Adding a Home Page — add the following to your `app-config.local.yaml`. NFS only places cards that plugins register as `home-page-widget:*` extensions. Legacy OFS `mountPoints` cards such as Placeholder, Markdown, Headline, and JokeCard have no NFS equivalent. See [Homepage cards](dynamic-plugins/migrating-config-to-new-frontend-system.md#homepage-cards).
 
 ```yaml
-dynamicPlugins:
-  frontend:
-    red-hat-developer-hub.backstage-plugin-homepage:
-      dynamicRoutes:
-        - path: /
-          importName: DynamicHomePage
-      mountPoints:
-        - mountPoint: home.page/cards
-          importName: SearchBar
-          config:
-            layouts:
-              xl: { w: 10, h: 1, x: 1 }
-              lg: { w: 10, h: 1, x: 1 }
-              md: { w: 10, h: 1, x: 1 }
-              sm: { w: 10, h: 1, x: 1 }
-              xs: { w: 12, h: 1 }
-              xxs: { w: 12, h: 1 }
-        - mountPoint: home.page/cards
-          importName: QuickAccessCard
-          config:
-            layouts:
-              xl: { w: 7, h: 8 }
-              lg: { w: 7, h: 8 }
-              md: { w: 7, h: 8 }
-              sm: { w: 12, h: 8 }
-              xs: { w: 12, h: 8 }
-              xxs: { w: 12, h: 8 }
-        - mountPoint: home.page/cards
-          importName: CatalogStarredEntitiesCard
-          config:
-            layouts:
-              xl: { w: 5, h: 4, x: 7 }
-              lg: { w: 5, h: 4, x: 7 }
-              md: { w: 5, h: 4, x: 7 }
-              sm: { w: 12, h: 4 }
-              xs: { w: 12, h: 4 }
-              xxs: { w: 12, h: 4 }
+app:
+  extensions:
+    - page:home:
+        config:
+          path: /
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    # Upstream search also ships a homepage search bar; disable it so it does
+    # not duplicate home-page-widget:home/search-bar from the RHDH homepage plugin.
+    - home-page-widget:search/search-bar: false
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: false
+          widgetLayout:
+            "Quick Access Card":
+              breakpoints:
+                xl: { w: 6, h: 8, x: 6 }
+                lg: { w: 6, h: 8, x: 6 }
+                md: { w: 6, h: 8, x: 6 }
+                sm: { w: 12, h: 8 }
+                xs: { w: 12, h: 8 }
+                xxs: { w: 12, h: 8 }
+            "Catalog starred":
+              breakpoints:
+                xl: { w: 6, h: 4 }
+                lg: { w: 6, h: 4 }
+                md: { w: 6, h: 4 }
+                sm: { w: 12, h: 4 }
+                xs: { w: 12, h: 4 }
+                xxs: { w: 12, h: 4 }
 ```
 
 - Enabling Authentication in Showcase

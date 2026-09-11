@@ -221,7 +221,32 @@ buildInfo:
 
 ## Customizing the Language dropdown
 
-To customize the language dropdown in the User settings page, configure the list of locales your app should support in the `app-config.yaml` file.
+The NFS app (`packages/app`) does **not** read `i18n.locales`, `i18n.defaultLocale`, or `i18n.overrides`. Available languages and the Settings language toggle come from the Backstage `AppLanguageApi` extension.
+
+Configure supported locales in `app-config.yaml`:
+
+```yaml title="app-config.yaml"
+app:
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: [en, de, es, fr, it, ja]
+          defaultLanguage: en
+```
+
+- List at least two languages or `UserSettingsLanguageToggle` hides itself (`languages.length <= 1`).
+- Available languages should match the translation resources shipped in `packages/app/src/translations/` (currently `en`, `de`, `es`, `fr`, `it`, `ja`).
+- `i18n.*` keys are **legacy OFS only** — see [Language and translation overrides (legacy OFS only)](#language-and-translation-overrides-legacy-ofs-only) below.
+
+### Overriding translation strings (NFS)
+
+There is **no** NFS app-config path equivalent to `i18n.overrides` JSON files or ConfigMap-mounted `/translations` files. To add or override messages, register additional `TranslationBlueprint`s from an app frontend module or a dynamic plugin module with `pluginId: 'app'`. See [Migrating Plugins to the New Frontend System](dynamic-plugins/migrating-plugins-to-new-frontend-system.md) and the [Backstage i18n frontend-system documentation](https://backstage.io/docs/frontend-system/building-plugins/internationalization/).
+
+## Language and translation overrides (legacy OFS only)
+
+> **Legacy OFS only.** The following `i18n.locales`, `i18n.defaultLocale`, `i18n.overrides`, `/translations` JSON mounting, and default-language priority that cites `i18n.defaultLocale` apply only to the legacy OFS app shell. They have no effect on the default NFS app (`packages/app`).
+
+To customize the language dropdown on the legacy OFS app, configure the list of locales in the `app-config.yaml` file.
 
 Example configuration:
 
@@ -262,7 +287,7 @@ Example of JSON translation file, where the top-level key is the plugin translat
 }
 ```
 
-### Translation priority order
+### Translation priority order (legacy OFS only)
 
 Translations are resolved in this order (highest priority first):
 
@@ -273,7 +298,7 @@ Translations are resolved in this order (highest priority first):
 
 Levels 2–4 are for internal management only; only level 1 is user-configurable.
 
-### Customizing Translations
+### Customizing Translations (legacy OFS only)
 
 In a translation override JSON file, you can:
 
@@ -281,7 +306,7 @@ In a translation override JSON file, you can:
 2. **Add Other Languages**: Add new language sections (e.g., `"de"`, `"fr"`, `"es"`) to support additional locales by translating the English keys
 3. **Add Custom Keys**: Add new translation keys for custom components or plugins
 
-### Example Translation Override File
+### Example Translation Override File (legacy OFS only)
 
 You can add other languages as needed:
 
@@ -304,7 +329,7 @@ You can add other languages as needed:
 }
 ```
 
-### Applying Translation Overrides
+### Applying Translation Overrides (legacy OFS only)
 
 To apply your custom translations:
 
@@ -383,7 +408,7 @@ i18n:
 
 4. **Apply the ConfigMap and deployment** for changes to take effect
 
-### Default Language Selection Priority
+### Default Language Selection Priority (legacy OFS only)
 
 Default language selection follows this priority order:
 
@@ -424,11 +449,33 @@ When users change the language in the UI:
 1. Change language using any language selector in the UI
 2. Language setting will automatically be saved and restored
 
+## Homepage cards (NFS)
+
+The default NFS app (`packages/app`) only places homepage cards that plugins register as `home-page-widget:*` extensions. You cannot attach an arbitrary OFS `importName` (for example `Headline`, `Placeholder`, `Markdown`, `MarkdownCard`, or `WorldClock`) through `dynamicPlugins.frontend.*.mountPoints`.
+
+Enable the home route, visit tracking, and layout under `app.extensions`. `widgetLayout` keys must match each widget's **`params.name`**, not its blueprint id. Full mapping, disable examples, and OFS → NFS equivalents are in [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](dynamic-plugins/migrating-config-to-new-frontend-system.md#homepage-cards).
+
+| OFS `importName` | NFS extension | Status |
+| --- | --- | --- |
+| `OnboardingSection` | `home-page-widget:home/rhdh-onboarding-section` | Equivalent |
+| `EntitySection` | `home-page-widget:home/rhdh-entity-section` | Equivalent |
+| `TemplateSection` | `home-page-widget:home/rhdh-template-section` | Equivalent |
+| `QuickAccessCard` | `home-page-widget:home/quick-access-card` | Equivalent |
+| `SearchBar` | `home-page-widget:home/search-bar` | Equivalent |
+| `FeaturedDocsCard` | `home-page-widget:home/featured-docs-card` | Equivalent |
+| `CatalogStarredEntitiesCard` | `home-page-widget:home/starred-entities` | Equivalent |
+| `RecentlyVisitedCard` | `home-page-widget:home/recently-visited` | Equivalent |
+| `TopVisitedCard` | `home-page-widget:home/top-visited` | Equivalent |
+| `Headline`, `Placeholder`, `Markdown` / `MarkdownCard`, `WorldClock` | — | **No NFS widget** |
+| `JokeCard` | `home-page-widget:home/random-joke` | Upstream widget; **disabled** by the RHDH homepage plugin |
+
+Third-party homepage cards appear only if that plugin ships a `home-page-widget:*` extension.
+
 ## Customizing QuickAccess card icons on the Homepage
 
 1. Add the JSON Data source
 
-The QuickAccess Cards on the Homepage supports loading data from a JSON file. This JSON file in your GitHub repository or any accessible endpoint can be hosted.
+The QuickAccess card (`home-page-widget:home/quick-access-card`) on the Homepage supports loading data from a JSON file. This JSON file in your GitHub repository or any accessible endpoint can be hosted.
 
 2. Configure the Proxy in `app-config.yaml`
 

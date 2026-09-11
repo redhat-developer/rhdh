@@ -17,34 +17,20 @@ import { userSettingsTranslations } from "./user-settings/user-settings";
  */
 export const rhdhTranslationsModule = createFrontendModule({
   pluginId: "app",
-  extensions: [
+  extensions: (
+    [
+      ["rhdh", rhdhTranslations],
+      ["catalog", catalogTranslations],
+      ["catalog-import", catalogImportTranslations],
+      ["scaffolder", scaffolderTranslations],
+      ["search", searchTranslations],
+      ["user-settings", userSettingsTranslations],
+      ["core-components", coreComponentsTranslations],
+    ] as const
+  ).map(([name, resource]) =>
     TranslationBlueprint.make({
-      name: "rhdh",
-      params: { resource: rhdhTranslations },
+      name,
+      params: { resource },
     }),
-    TranslationBlueprint.make({
-      name: "catalog",
-      params: { resource: catalogTranslations },
-    }),
-    TranslationBlueprint.make({
-      name: "catalog-import",
-      params: { resource: catalogImportTranslations },
-    }),
-    TranslationBlueprint.make({
-      name: "scaffolder",
-      params: { resource: scaffolderTranslations },
-    }),
-    TranslationBlueprint.make({
-      name: "search",
-      params: { resource: searchTranslations },
-    }),
-    TranslationBlueprint.make({
-      name: "user-settings",
-      params: { resource: userSettingsTranslations },
-    }),
-    TranslationBlueprint.make({
-      name: "core-components",
-      params: { resource: coreComponentsTranslations },
-    }),
-  ],
+  ),
 });

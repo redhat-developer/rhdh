@@ -75,33 +75,33 @@ const learningPathApi = ApiBlueprint.make({
  */
 export const rhdhCatalogGraphPlugin: typeof catalogGraphPlugin =
   catalogGraphPlugin.withOverrides({
-  extensions: [
-    catalogGraphPlugin.getExtension("api:catalog-graph").override({
-      factory(originalFactory) {
-        return originalFactory({
-          params: (defineParams) =>
-            defineParams({
-              api: catalogGraphApiRef,
-              deps: {},
-              factory: () =>
-                new DefaultCatalogGraphApi({
-                  knownRelations: [
-                    ...ALL_RELATIONS,
-                    RELATION_SCAFFOLDED_FROM,
-                    RELATION_SCAFFOLDER_OF,
-                  ],
-                  knownRelationPairs: [
-                    ...ALL_RELATION_PAIRS,
-                    [RELATION_SCAFFOLDER_OF, RELATION_SCAFFOLDED_FROM],
-                  ],
-                  defaultRelationTypes: { exclude: [] },
-                }),
-            }),
-        });
-      },
-    }),
-  ],
-});
+    extensions: [
+      catalogGraphPlugin.getExtension("api:catalog-graph").override({
+        factory(originalFactory) {
+          return originalFactory({
+            params: (defineParams) =>
+              defineParams({
+                api: catalogGraphApiRef,
+                deps: {},
+                factory: () =>
+                  new DefaultCatalogGraphApi({
+                    knownRelations: [
+                      ...ALL_RELATIONS,
+                      RELATION_SCAFFOLDED_FROM,
+                      RELATION_SCAFFOLDER_OF,
+                    ],
+                    knownRelationPairs: [
+                      ...ALL_RELATION_PAIRS,
+                      [RELATION_SCAFFOLDER_OF, RELATION_SCAFFOLDED_FROM],
+                    ],
+                    defaultRelationTypes: { exclude: [] },
+                  }),
+              }),
+          });
+        },
+      }),
+    ],
+  });
 
 /**
  * RHDH storage and learning-path APIs for `pluginId: 'app'`.
