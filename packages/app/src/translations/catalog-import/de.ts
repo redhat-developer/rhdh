@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { catalogImportTranslationRef } from "@backstage/plugin-catalog-import";
 
 const de = createTranslationMessages({
   ref: catalogImportTranslationRef,
   full: false,
   messages: {
-    'defaultImportPage.headerTitle': 'Vorhandenes Git-Repository importieren',
-    'importInfoCard.title': 'Vorhandenes Git-Repository importieren',
+    "defaultImportPage.headerTitle": "Vorhandenes Git-Repository importieren",
+    "importInfoCard.title": "Vorhandenes Git-Repository importieren",
   },
 });
 

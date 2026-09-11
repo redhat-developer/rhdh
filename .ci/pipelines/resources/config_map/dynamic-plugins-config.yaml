@@ -1,208 +1,231 @@
+# RHDH serves the Backstage new frontend system (packages/app) by default, which reads
+# `app.extensions` below. See docs/dynamic-plugins/migrating-config-to-new-frontend-system.md
+# for the full OFS -> NFS config mapping and known RHDH-specific gaps.
+app:
+  extensions:
+    # Home page (red-hat-developer-hub.backstage-plugin-dynamic-home-page NFS export).
+    # `page:home` is disabled by default upstream (@backstage/plugin-home) and must be
+    # explicitly enabled — see the plugin's README ("New Frontend System" section) —
+    # otherwise "/" 404s even though the plugin's widget/layout extensions load fine via
+    # Module Federation. NFS home-page cards are a fixed set of built-in widgets
+    # (home-page-widget:home/*) auto-enabled by the plugin — arbitrary cards
+    # (Placeholder/Markdown/JokeCard/Headline) that the old OFS mountPoints used to add
+    # have no NFS equivalent, so home-page-customization.spec.ts only asserts the
+    # widgets that still exist: Quick Access, Featured Docs, Recently Visited, Top
+    # Visited. Search and Starred Catalog Entities are also still-existing widgets;
+    # they're asserted by guest-signin-happy-path.spec.ts instead.
+    - page:home:
+        config:
+          path: /
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    # Global header: wrapper + translations attach to the core `app` plugin and must be
+    # explicitly enabled. The plugin's own NFS extensions (gh-component:global-header/*,
+    # gh-menu-item:global-header/*) are enabled by default — no pluginConfig needed.
+    - app-root-wrapper:app/global-header
+    - translation:app/global-header-translations
+    # NFS AppLanguageApi reads availableLanguages here — not from i18n.locales in
+    # app-config-rhdh.yaml. Without this, UserSettingsLanguageToggle hides itself
+    # (languages.length <= 1).
+    - api:app/app-language:
+        config:
+          availableLanguages: [en, de, es, fr, it, ja]
+          defaultLanguage: en
+    # Backstage 1.54 added home-page-widget:search/search-bar on @backstage/plugin-search.
+    # The RHDH homepage plugin already provides home-page-widget:home/search-bar; leaving
+    # both enabled duplicates the Search input and fails guest-signin-happy-path.spec.ts.
+    - home-page-widget:search/search-bar: false
+    # customizable: false so `priority` actually governs ordering (with customizable:
+    # true, the layout extension keeps the plugin-registration order and ignores
+    # priority entirely). Keys must match each widget's `params.name` (not its
+    # blueprint `name`) — see
+    # rhdh-plugins/workspaces/homepage/plugins/homepage/src/alpha/extensions/homePageCards.tsx.
+    # Breakpoints mirror app-config.local.yaml so the default NFS widgets render in a
+    # stable layout for home-page-customization.spec.ts and guest-signin-happy-path.spec.ts.
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: false
+          widgetLayout:
+            "Red Hat Developer Hub - Explore templates":
+              priority: 300
+              breakpoints:
+                xl:
+                  w: 12
+                  h: 5
+                lg:
+                  w: 12
+                  h: 5
+                md:
+                  w: 12
+                  h: 5
+                sm:
+                  w: 12
+                  h: 5
+                xs:
+                  w: 12
+                  h: 7.5
+                xxs:
+                  w: 12
+                  h: 13.5
+            "Red Hat Developer Hub - Software Catalog":
+              priority: 200
+              breakpoints:
+                xl:
+                  w: 12
+                  h: 7
+                lg:
+                  w: 12
+                  h: 7
+                md:
+                  w: 12
+                  h: 8
+                sm:
+                  w: 12
+                  h: 9
+                xs:
+                  w: 12
+                  h: 11
+                xxs:
+                  w: 12
+                  h: 15
+            "Red Hat Developer Hub - Onboarding":
+              priority: 100
+              breakpoints:
+                xl:
+                  w: 12
+                  h: 6
+                lg:
+                  w: 12
+                  h: 6
+                md:
+                  w: 12
+                  h: 7
+                sm:
+                  w: 12
+                  h: 8
+                xs:
+                  w: 12
+                  h: 9
+                xxs:
+                  w: 12
+                  h: 14
+            "Quick Access Card":
+              priority: 90
+              breakpoints:
+                xl:
+                  w: 6
+                  h: 8
+                  x: 6
+                lg:
+                  w: 6
+                  h: 8
+                  x: 6
+                md:
+                  w: 6
+                  h: 8
+                  x: 6
+                sm:
+                  w: 12
+                  h: 8
+                  x: 6
+                xs:
+                  w: 12
+                  h: 8
+                  x: 6
+                xxs:
+                  w: 12
+                  h: 8
+                  x: 6
+            "Featured docs":
+              priority: 80
+              breakpoints:
+                xl:
+                  w: 6
+                  h: 4
+                lg:
+                  w: 6
+                  h: 4
+                md:
+                  w: 6
+                  h: 4
+                sm:
+                  w: 12
+                  h: 4
+                xs:
+                  w: 12
+                  h: 4
+                xxs:
+                  w: 12
+                  h: 4
+            "Catalog starred":
+              priority: 70
+              breakpoints:
+                xl:
+                  w: 6
+                  h: 4
+                lg:
+                  w: 6
+                  h: 4
+                md:
+                  w: 6
+                  h: 4
+                sm:
+                  w: 12
+                  h: 4
+                xs:
+                  w: 12
+                  h: 4
+                xxs:
+                  w: 12
+                  h: 4
+            "Recently visited":
+              priority: 60
+              breakpoints:
+                xl:
+                  w: 6
+                  h: 4
+                lg:
+                  w: 6
+                  h: 4
+                md:
+                  w: 6
+                  h: 4
+                sm:
+                  w: 12
+                  h: 4
+                xs:
+                  w: 12
+                  h: 4
+                xxs:
+                  w: 12
+                  h: 4
+            "Top visited":
+              priority: 50
+              breakpoints:
+                xl:
+                  w: 6
+                  h: 4
+                lg:
+                  w: 6
+                  h: 4
+                md:
+                  w: 6
+                  h: 4
+                sm:
+                  w: 12
+                  h: 4
+                xs:
+                  w: 12
+                  h: 4
+                xxs:
+                  w: 12
+                  h: 4
+    # Nested sidebar menu groups (e.g. "References" > APIs/Learning Paths, "Favorites" >
+    # Docs) have no NFS equivalent: the app's sidebar
+    # (packages/app/src/modules/nav/Sidebar.tsx) is a fixed, code-defined
+    # NavContentBlueprint (Search / Menu / Settings groups, with Catalog and Create
+    # pinned and everything else flat, sorted by title) — it does not read menuItems
+    # config at all. See sidebar.spec.ts for the flat-nav assertions this drives
+    # instead.
 dynamicPlugins:
   rootDirectory: dynamic-plugins-root
-  frontend:
-    red-hat-developer-hub.backstage-plugin-homepage:
-      mountPoints:
-        - mountPoint: application/listener
-          importName: VisitListener
-        - mountPoint: home.page/cards
-          importName: SearchBar
-          config:
-            layouts:
-              xl: { w: 10, h: 1, x: 1 }
-              lg: { w: 10, h: 1, x: 1 }
-              md: { w: 10, h: 1, x: 1 }
-              sm: { w: 10, h: 1, x: 1 }
-              xs: { w: 12, h: 1 }
-              xxs: { w: 12, h: 1 }
-        - mountPoint: home.page/cards
-          importName: QuickAccessCard
-          config:
-            layouts:
-              xl: { w: 7, h: 8 }
-              lg: { w: 7, h: 8 }
-              md: { w: 7, h: 8 }
-              sm: { w: 12, h: 8 }
-              xs: { w: 12, h: 8 }
-              xxs: { w: 12, h: 8 }
-        - mountPoint: home.page/cards
-          importName: CatalogStarredEntitiesCard
-          config:
-            layouts:
-              xl: { w: 5, h: 4, x: 7 }
-              lg: { w: 5, h: 4, x: 7 }
-              md: { w: 5, h: 4, x: 7 }
-              sm: { w: 12, h: 4 }
-              xs: { w: 12, h: 4 }
-              xxs: { w: 12, h: 4 }
-
-        - mountPoint: home.page/cards
-          importName: Headline
-          config:
-            layouts:
-              xl: { w: 12, h: 1 }
-              lg: { w: 12, h: 1 }
-              md: { w: 12, h: 1 }
-              sm: { w: 12, h: 1 }
-              xs: { w: 12, h: 1 }
-              xxs: { w: 12, h: 1 }
-            props:
-              title: Placeholder tests
-              align: center
-
-        - mountPoint: home.page/cards
-          importName: Placeholder
-          config:
-            layouts:
-              xl: { x: 1, y: 0, w: 10, h: 1 }
-              lg: { x: 1, y: 0, w: 10, h: 1 }
-              md: { x: 1, y: 0, w: 10, h: 1 }
-              sm: { x: 0, y: 0, w: 12, h: 1 }
-              xs: { x: 0, y: 0, w: 12, h: 1 }
-              xxs: { x: 0, y: 0, w: 12, h: 1 }
-            props:
-              showBorder: true
-              debugContent: Home page customization test 1
-        - mountPoint: home.page/cards
-          importName: Placeholder
-          config:
-            layouts:
-              xl: { x: 0, y: 0, w: 7, h: 4 }
-              lg: { x: 0, y: 0, w: 7, h: 4 }
-              md: { x: 0, y: 0, w: 7, h: 4 }
-              sm: { x: 0, y: 0, w: 12, h: 4 }
-              xs: { x: 0, y: 0, w: 12, h: 4 }
-              xxs: { x: 0, y: 0, w: 12, h: 4 }
-            props:
-              showBorder: true
-              debugContent: Home page customization test 2
-        - mountPoint: home.page/cards
-          importName: Placeholder
-          config:
-            layouts:
-              xl: { x: 7, y: 0, w: 5, h: 4 }
-              lg: { x: 7, y: 0, w: 5, h: 4 }
-              md: { x: 7, y: 0, w: 5, h: 4 }
-              sm: { x: 0, y: 0, w: 12, h: 4 }
-              xs: { x: 0, y: 0, w: 12, h: 4 }
-              xxs: { x: 0, y: 0, w: 12, h: 4 }
-            props:
-              showBorder: true
-              debugContent: Home page customization test 3
-        - mountPoint: home.page/cards
-          importName: Headline
-          config:
-            layouts:
-              xl: { w: 12, h: 1 }
-              lg: { w: 12, h: 1 }
-              md: { w: 12, h: 1 }
-              sm: { w: 12, h: 1 }
-              xs: { w: 12, h: 1 }
-              xxs: { w: 12, h: 1 }
-            props:
-              title: Markdown tests
-              align: center
-
-        - mountPoint: home.page/cards
-          importName: MarkdownCard
-          config:
-            layouts:
-              xl: { w: 6, h: 4 }
-              lg: { w: 6, h: 4 }
-              md: { w: 6, h: 4 }
-              sm: { w: 6, h: 4 }
-              xs: { w: 6, h: 4 }
-              xxs: { w: 6, h: 4 }
-            props:
-              title: Company links
-              content: |
-                ### RHDH
-
-                * [Website](https://developers.redhat.com/rhdh/overview)
-                * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
-                * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
-                * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
-        - mountPoint: home.page/cards
-          importName: Markdown
-          config:
-            layouts:
-              xl: { w: 6, h: 4, x: 6 }
-              lg: { w: 6, h: 4, x: 6 }
-              md: { w: 6, h: 4, x: 6 }
-              sm: { w: 6, h: 4, x: 6 }
-              xs: { w: 6, h: 4, x: 6 }
-              xxs: { w: 6, h: 4, x: 6 }
-            props:
-              title: Important company links
-              content: |
-                ### RHDH
-
-                * [Website](https://developers.redhat.com/rhdh/overview)
-                * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
-                * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
-                * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
-        - mountPoint: home.page/cards
-          importName: FeaturedDocsCard
-        - mountPoint: home.page/cards
-          importName: JokeCard
-        - mountPoint: home.page/cards
-          importName: RecentlyVisitedCard
-          config:
-            layouts:
-              xl: { w: 6, h: 4, x: 6 }
-              lg: { w: 6, h: 4, x: 6 }
-              md: { w: 6, h: 4, x: 6 }
-              sm: { w: 6, h: 4, x: 6 }
-              xs: { w: 6, h: 4, x: 6 }
-              xxs: { w: 6, h: 4, x: 6 }
-        - mountPoint: home.page/cards
-          importName: TopVisitedCard
-          config:
-            layouts:
-              xl: { w: 6, h: 4 }
-              lg: { w: 6, h: 4 }
-              md: { w: 6, h: 4 }
-              sm: { w: 6, h: 4 }
-              xs: { w: 6, h: 4 }
-              xxs: { w: 6, h: 4 }
-
-    default.main-menu-items:
-      menuItems:
-        default.list:
-          title: References
-          icon: bookmarks
-        default.apis:
-          parent: default.list
-        default.learning-path:
-          parent: default.list
-        default.test_enabled:
-          title: Test enabled
-          enabled: true
-        default.test_nested_enabled:
-          parent: default.test_enabled
-          title: Test nested enabled
-          enabled: true
-        default.test_nested_disabled:
-          parent: default.test_enabled
-          title: Test nested disabled
-          enabled: false
-        default.test_disabled:
-          title: Test disabled
-          enabled: false
-    backstage.plugin-techdocs:
-      menuItems:
-        favorites:
-          title: Favorites
-          icon: star
-          priority: 10
-        docs:
-          parent: favorites
-          priority: 1
-        test_i_enabled:
-          title: Test_i enabled
-          priority: 20
-          enabled: true
-        test_i_disabled:
-          title: Test_i disabled
-          priority: 20
-          enabled: false

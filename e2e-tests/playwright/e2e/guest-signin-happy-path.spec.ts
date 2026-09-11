@@ -20,14 +20,23 @@ test.describe("Guest Signing Happy path", () => {
   });
 
   test(
-    "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
+    "Verify the Homepage renders with Welcome heading, Search and Starred Entities",
     { tag: "@cluster-free-capable" },
     async () => {
       await homePage.verifyWelcomeHeading();
-      await homePage.openHomeSidebar();
-      await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+      await homePage.verifySearchWidgetVisible();
+      await homePage.verifyTextInCard("Starred Catalog Entities", "Starred Catalog Entities");
     },
   );
+
+  // Not @cluster-free-capable: Quick Access link data comes from the /developer-hub proxy, which
+  // only resolves to real content against the CI cluster's test-backstage-customization-provider
+  // (DH_TARGET_URL); the cluster-free harness has no such target, so this can't run there.
+  test("Verify the Homepage renders with Quick Access", async () => {
+    await homePage.verifyWelcomeHeading();
+    await homePage.openHomeSidebar();
+    await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+  });
 
   test(
     "Verify Profile is Guest in the Settings page",

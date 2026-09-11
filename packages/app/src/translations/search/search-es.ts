@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { searchTranslationRef } from "@backstage/plugin-search";
 
 const es = createTranslationMessages({
   ref: searchTranslationRef,
   full: false,
   messages: {
-    'sidebarSearchModal.title': 'Buscar',
+    "sidebarSearchModal.title": "Buscar",
   },
 });
 

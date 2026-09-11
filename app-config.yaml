@@ -1,8 +1,13 @@
-developerHub:
-  flavor: rhdh
 app:
   title: Red Hat Developer Hub
   baseUrl: http://localhost:3000
+  extensions:
+    # @backstage/plugin-home disables page:home by default; enable it for the NFS shell.
+    - page:home:
+        config:
+          path: /
+    # Backstage 1.54 search plugin duplicates RHDH homepage's search bar widget.
+    - home-page-widget:search/search-bar: false
   branding:
     fullLogoWidth: ${FULL_LOGO_WIDTH}
     theme:

@@ -5,6 +5,7 @@ import * as interaction from "../../utils/ui-helper/interaction";
 import * as misc from "../../utils/ui-helper/misc";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
+import { waitForRhdhSignInPage } from "../auth/sign-in-page";
 import { SETTINGS_PAGE_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
@@ -63,10 +64,7 @@ export class SettingsPage {
   }
 
   async verifySignInPageTitle(): Promise<void> {
-    await verification.verifyHeading(
-      this.page,
-      t["rhdh"][getCurrentLanguage()]["signIn.page.title"],
-    );
+    await waitForRhdhSignInPage(this.page, { locale: getCurrentLanguage() });
   }
 
   async verifySignInError(message: string | RegExp): Promise<void> {
@@ -113,11 +111,10 @@ export class SettingsPage {
 
   async verifyLanguageToggleList(locale: keyof (typeof t)["user-settings"]): Promise<void> {
     const labels = t["user-settings"][locale];
-    await expect(this.page.getByRole("list").first()).toMatchAriaSnapshot(`
-    - listitem:
-      - text: ${labels["languageToggle.title"]}
-      - paragraph: ${labels["languageToggle.description"]}
-    `);
+    const languageListItem = this.page
+      .getByRole("listitem")
+      .filter({ hasText: labels["languageToggle.title"] });
+    await expect(languageListItem).toContainText(labels["languageToggle.description"]);
   }
 
   async verifyLanguageSelectShowsOptions(): Promise<void> {
@@ -181,15 +178,19 @@ export class SettingsPage {
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {
-    await expect(this.page.getByRole("main").getByText("RHDH Build info")).toBeVisible();
+    const card = SETTINGS_PAGE_COMPONENTS.getBuildInfoCard(this.page);
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("RHDH Build info");
   }
 
   async verifyBuildInfoText(text: string): Promise<void> {
-    await expect(this.page.getByText(text)).toBeVisible();
+    await expect(SETTINGS_PAGE_COMPONENTS.getBuildInfoCard(this.page)).toContainText(text);
   }
 
   async expandShowMoreSection(): Promise<void> {
-    await this.page.getByRole("button", { name: "Show more" }).click();
+    await SETTINGS_PAGE_COMPONENTS.getBuildInfoCard(this.page)
+      .getByRole("button", { name: "Show more" })
+      .click();
   }
 
   async verifyGuestSignInMethodNotListed(): Promise<void> {

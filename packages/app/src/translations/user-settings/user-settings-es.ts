@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { userSettingsTranslationRef } from "@backstage/plugin-user-settings";
 
 const es = createTranslationMessages({
   ref: userSettingsTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Configuración',
+    sidebarTitle: "Configuración",
   },
 });
 

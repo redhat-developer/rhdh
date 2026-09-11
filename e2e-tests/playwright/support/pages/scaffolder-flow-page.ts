@@ -30,11 +30,11 @@ export class ScaffolderFlowPage {
 
   async openSelfServiceFromCatalog(): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
-    await interaction.clickButton(this.page, "Self-service");
+    await interaction.clickLink(this.page, "Self-service");
   }
 
   async verifySelfServiceHeading(): Promise<void> {
-    await verification.verifyHeading(this.page, "Self-service");
+    await verification.verifyHeading(this.page, "Create");
   }
 
   async clickImportGitRepository(): Promise<void> {

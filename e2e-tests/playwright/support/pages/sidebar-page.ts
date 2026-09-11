@@ -6,46 +6,51 @@ import * as verification from "../../utils/ui-helper/verification";
 
 const t = getTranslations();
 
-/** Sidebar navigation on the RHDH instance. */
+/**
+ * Sidebar navigation on the RHDH instance.
+ *
+ * NFS (packages/app) renders a flat, code-defined sidebar
+ * (packages/app/src/modules/nav/Sidebar.tsx): Home, Catalog, Learning Paths, and
+ * Create are pinned first, everything else (Docs, etc.) is flat and sorted
+ * alphabetically by title. There is no config-driven nested grouping (the legacy
+ * "References" / "Favorites" menuItems groups have no NFS equivalent).
+ */
 export class SidebarPage {
   constructor(private readonly page: Page) {}
 
-  async openSidebar(label: string): Promise<void> {
-    await navigation.openSidebar(this.page, label);
+  async openDocs(): Promise<void> {
+    const lang = getCurrentLanguage();
+    await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.docs"]);
   }
 
-  async openSidebarButton(label: string, childItemText?: string): Promise<void> {
-    await navigation.openSidebarButton(this.page, label, childItemText);
+  async openLearningPaths(): Promise<void> {
+    const lang = getCurrentLanguage();
+    await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.learningPaths"]);
   }
 
-  async openReferencesLearningPaths(): Promise<void> {
-    const learningPaths = t["rhdh"][getCurrentLanguage()]["menuItem.learningPaths"];
-    await navigation.openSidebarButton(this.page, "References", learningPaths);
-    await this.openSidebar(learningPaths);
+  /** Opens a specific entity's TechDocs from the TechDocs index page (must call openDocs() first). */
+  async openDocsEntity(entityTitle: string): Promise<void> {
+    await this.page.getByRole("link", { name: entityTitle, exact: true }).first().click();
   }
 
-  async openFavoritesDocs(): Promise<void> {
-    const docs = t["rhdh"][getCurrentLanguage()]["menuItem.docs"];
-    await this.openSidebarButton("Favorites", docs);
-    await this.openSidebar(docs);
+  async verifyDocsHeading(): Promise<void> {
+    const lang = getCurrentLanguage();
+    await verification.verifyHeading(this.page, t["rhdh"][lang]["menuItem.docs"]);
   }
 
-  async verifyDocumentationHeading(): Promise<void> {
-    await verification.verifyHeading(this.page, "Documentation");
+  async verifyLearningPathsHeading(): Promise<void> {
+    const lang = getCurrentLanguage();
+    await verification.verifyHeading(this.page, t["rhdh"][lang]["menuItem.learningPaths"]);
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
     await verification.verifyText(this.page, text, exact);
   }
 
-  async verifyLinkHidden(name: string): Promise<void> {
-    await expect(this.page.getByRole("link", { name })).toBeHidden();
-  }
-
-  async verifyMenuItemInSection(section: string, itemText: string): Promise<void> {
-    await navigation.openSidebarButton(this.page, section, itemText);
-    // Intentional divergence: nested menu items are nav links, not login-button text descendants.
-    await expect(this.page.locator(`nav a:has-text("${itemText}")`).first()).toBeVisible();
+  /** NFS TechDocs reader uses a "Documentation" heading and entity-specific content. */
+  async verifyDocsEntityContent(): Promise<void> {
+    await verification.verifyHeading(this.page, "Documentation");
+    await verification.verifyText(this.page, "Red Hat Developer Hub", false);
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {

@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-import { coreComponentsTranslationRef } from '@backstage/core-components';
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+import { coreComponentsTranslationRef } from "@backstage/core-components";
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
 
 export default createTranslationMessages({
   ref: coreComponentsTranslationRef,
   full: false,
   messages: {
-    'table.filter.placeholder': 'Tutti i risultati',
-    'table.body.emptyDataSourceMessage': 'Nessun record da visualizzare',
-    'table.pagination.firstTooltip': 'Prima pagina',
-    'table.pagination.labelDisplayedRows': '{from}-{to} di {count}',
-    'table.pagination.labelRowsSelect': 'righe',
-    'table.pagination.lastTooltip': 'Ultima pagina',
-    'table.pagination.nextTooltip': 'Pagina successiva',
-    'table.pagination.previousTooltip': 'Pagina precedente',
-    'table.toolbar.search': 'Filtra',
-    'alertDisplay.message_one': '({{ count }} messaggio più recente)',
-    'alertDisplay.message_other': '({{ count }} messaggi più recenti)',
-    'table.header.actions': 'Azioni',
-    'oauthRequestDialog.message':
-      'Accedere per consentire a {{appTitle}} di accedere alle API e alle identità di {{provider}}.',
+    "table.filter.placeholder": "Tutti i risultati",
+    "table.body.emptyDataSourceMessage": "Nessun record da visualizzare",
+    "table.pagination.firstTooltip": "Prima pagina",
+    "table.pagination.labelDisplayedRows": "{from}-{to} di {count}",
+    "table.pagination.labelRowsSelect": "righe",
+    "table.pagination.lastTooltip": "Ultima pagina",
+    "table.pagination.nextTooltip": "Pagina successiva",
+    "table.pagination.previousTooltip": "Pagina precedente",
+    "table.toolbar.search": "Filtra",
+    "alertDisplay.message_one": "({{ count }} messaggio più recente)",
+    "alertDisplay.message_other": "({{ count }} messaggi più recenti)",
+    "table.header.actions": "Azioni",
+    "oauthRequestDialog.message":
+      "Accedere per consentire a {{appTitle}} di accedere alle API e alle identità di {{provider}}.",
   },
 });

@@ -6,30 +6,13 @@ This guide helps **operators and platform administrators** customize Red Hat Dev
 >
 > **Plugin authors** → [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md).
 
-## Transition: the new frontend system is not the default yet
+## Default: new frontend system (NFS)
 
-RHDH still ships the legacy `app` frontend package by default. The new frontend system lives in the `app-next` package and will become the default after the app-shell switch. Until then, enable **both** of the following on your RHDH **backend** deployment (OpenShift, Helm, Operator, [rhdh-local](https://github.com/redhat-developer/rhdh-local), or any environment where the backend runs as a container):
-
-| Setting | How to apply | Purpose |
-| --- | --- | --- |
-| `app.packageName: app-next` | Environment variable `APP_CONFIG_app_packageName=app-next`, **or** in `app-config.yaml` under `app.packageName` | Tells the app backend to serve the `app-next` frontend (new frontend system) instead of `app`. |
-| `ENABLE_STANDARD_MODULE_FEDERATION=true` | Environment variable on the backend container only | Enables the backend to serve standard Module Federation assets for dynamic frontend plugins. Without this, RHDH disables that service because the legacy frontend does not use it. |
-
-Example environment variables for the RHDH backend pod or deployment:
-
-```bash
-APP_CONFIG_app_packageName=app-next
-ENABLE_STANDARD_MODULE_FEDERATION=true
-```
-
-Equivalent `app-config` fragment (you still need `ENABLE_STANDARD_MODULE_FEDERATION` in the environment):
-
-```yaml
-app:
-  packageName: app-next
-```
-
-These requirements are temporary. Once RHDH completes the switch to `app-next`, they will become the default and this transition note can be removed.
+RHDH ships the Backstage new frontend system (`packages/app`) by default. The backend
+serves standard Module Federation assets for dynamic frontend plugins out of the box —
+no configuration needed (OpenShift, Helm, Operator,
+[rhdh-local](https://github.com/redhat-developer/rhdh-local), or any environment where
+the backend runs as a container).
 
 ## Who should read this
 
@@ -39,7 +22,7 @@ These requirements are temporary. Once RHDH completes the switch to `app-next`, 
 
 ## Prerequisites
 
-- RHDH is running with the new frontend system enabled — see [Transition: the new frontend system is not the default yet](#transition-the-new-frontend-system-is-not-the-default-yet) above.
+- RHDH is running with the new frontend system — see [Default: new frontend system (NFS)](#default-new-frontend-system-nfs) above.
 - You understand where your deployment stores `dynamic-plugins.yaml` and `app-config` — see [Installing Plugins](installing-plugins.md) and the [Red Hat product documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/) for Helm and Operator paths.
 - Installed plugins support the new frontend system. Configuration alone cannot add UI that a plugin does not register as an extension.
 
@@ -50,6 +33,7 @@ These requirements are temporary. Once RHDH completes the switch to `app-next`, 
 | Who declares UI placement | **You** in YAML (`mountPoints`, `dynamicRoutes`, `importName`) | **Plugins** declare defaults; you **override** via config |
 | Plugin registration | Per-plugin block under `dynamicPlugins.frontend` | Plugin installed + auto-discovered; `app.packages` controls discovery |
 | Entity cards | `mountPoints` on `entity.page.*` | `entity-card:*` extensions on overview |
+| Homepage cards | `mountPoints` on `home.page/cards` (and `home.page/widgets`) | `home-page-widget:*` extensions declared by plugins |
 | Entity tabs | `entityTabs` + mount point names | `entity-content:*` extensions + `page:catalog/entity` groups |
 | Cross-plugin links | `routeBindings` | `app.routes.bindings` |
 | Disable a feature | Remove YAML or set `enabled: false` | `app.extensions: [<extension-id>: false]` |
@@ -65,6 +49,8 @@ These requirements are temporary. Once RHDH completes the switch to `app-next`, 
 | Add a new entity tab | Configure an existing `entity-content:*` extension | Plugin update (see [plugins migration guide](migrating-plugins-to-new-frontend-system.md)) |
 | Add a card to entity overview | Enable/configure `entity-card:*` | Plugin update (see [plugins migration guide](migrating-plugins-to-new-frontend-system.md)) |
 | Hide a default card or page | `app.extensions: [<id>: false]` | — |
+| Add a homepage card | Enable/configure an existing `home-page-widget:*` | Plugin update that exports `HomePageWidgetBlueprint` |
+| Hide a homepage card | `home-page-widget:*: false` | — |
 | Change tab title or group | `entity-content:*` or `page:catalog/entity` config | Sensible defaults in plugin |
 | Replace entire settings page | `page:user-settings` override (limited today) | Full page extension |
 
@@ -246,6 +232,79 @@ Sidebar navigation is derived from each page's `title` and `icon`. To enforce na
 
 Nested sidebar menu groups (`menuItems.parent`) from RHDH dynamic plugins do not have a direct upstream equivalent — see [RHDH-specific gaps](#rhdh-specific-gaps) below.
 
+### Homepage cards
+
+**Legacy:** Cards targeted `home.page/cards` (always shown) and `home.page/widgets` (optional add-widget catalog) with an `importName` and optional `config.layouts` / `config.props`. Any component the homepage plugin exported could be mounted that way.
+
+```yaml
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-homepage:
+      dynamicRoutes:
+        - path: /
+          importName: DynamicHomePage
+      mountPoints:
+        - mountPoint: home.page/cards
+          importName: QuickAccessCard
+          config:
+            layouts:
+              xl: { w: 7, h: 8 }
+```
+
+**New:** NFS only places cards that a plugin registers as `home-page-widget:*` extensions. You cannot attach an arbitrary `importName` from YAML. Layout is tuned with `home-page-layout:home/dynamic-homepage-layout`; `widgetLayout` keys must match each widget's **`params.name`** (for example `"Quick Access Card"`), not the blueprint id (`quick-access-card`).
+
+```yaml
+app:
+  extensions:
+    # `page:home` is disabled by default upstream and must be enabled or "/" 404s.
+    - page:home:
+        config:
+          path: /
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    # Upstream search also ships a homepage search bar; disable it so it does
+    # not duplicate home-page-widget:home/search-bar from the RHDH homepage plugin.
+    - home-page-widget:search/search-bar: false
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: false
+          widgetLayout:
+            "Quick Access Card":
+              priority: 90
+              breakpoints:
+                xl: { w: 6, h: 8, x: 6 }
+                lg: { w: 6, h: 8, x: 6 }
+                md: { w: 6, h: 8, x: 6 }
+                sm: { w: 12, h: 8 }
+                xs: { w: 12, h: 8 }
+                xxs: { w: 12, h: 8 }
+    - home-page-widget:home/featured-docs-card: false  # hide a default widget
+```
+
+With `customizable: true` (the homepage plugin default), users can rearrange cards in the UI and `priority` is ignored. Set `customizable: false` when `priority` must govern order.
+
+| OFS `importName` | NFS extension | Status |
+| --- | --- | --- |
+| `OnboardingSection` | `home-page-widget:home/rhdh-onboarding-section` | Equivalent |
+| `EntitySection` | `home-page-widget:home/rhdh-entity-section` | Equivalent |
+| `TemplateSection` | `home-page-widget:home/rhdh-template-section` | Equivalent |
+| `QuickAccessCard` | `home-page-widget:home/quick-access-card` | Equivalent |
+| `SearchBar` | `home-page-widget:home/search-bar` | Equivalent |
+| `FeaturedDocsCard` | `home-page-widget:home/featured-docs-card` | Equivalent |
+| `CatalogStarredEntitiesCard` | `home-page-widget:home/starred-entities` | Equivalent (override of upstream) |
+| `RecentlyVisitedCard` | `home-page-widget:home/recently-visited` | Equivalent |
+| `TopVisitedCard` | `home-page-widget:home/top-visited` | Equivalent |
+| `Headline` | — | **No NFS widget** |
+| `Placeholder` | — | **No NFS widget** |
+| `Markdown` / `MarkdownCard` | — | **No NFS widget** |
+| `WorldClock` | — | **No NFS widget** |
+| `JokeCard` | `home-page-widget:home/random-joke` | Upstream widget exists; the RHDH homepage plugin **disables** it |
+| Toolkit | `home-page-widget:home/toolkit` | Upstream demo; **disabled** |
+
+Third-party homepage cards (for example GitHub pull-request cards from a Roadie plugin) appear on NFS only if that plugin publishes a `home-page-widget:*` extension. `mountPoints` + `importName` have no effect on the default NFS app.
+
+See also [Customizing the look of your showcase instance](../customization.md#homepage-cards-nfs) for Quick Access icon/data customization.
+
 ### Entity page cards (mount points)
 
 **Legacy:** Cards target `entity.page.*/cards` mount points with `importName` and optional `config.if` / `config.layout`.
@@ -285,6 +344,8 @@ app:
 | `search.page.results` | `search-result-list-item:*` |
 | `search.page.filters` | `search-filter:*` |
 | `search.page.types` | `search-filter-result-type:*` |
+| `home.page/cards` | `home-page-widget:*` — see [Homepage cards](#homepage-cards) |
+| `home.page/widgets` | Same widgets; NFS has no separate add-widget mount point |
 
 `config.layout` grid positioning from RHDH mount points is **not** available in `app.extensions`. Layout is determined by the overview layout (`info` vs `content` card types) or by the plugin component.
 
@@ -421,16 +482,38 @@ app:
 
 If a plugin still relies on legacy `apiFactories` YAML only, it needs a plugin update — see [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md).
 
-### Translation resources
+### Translation resources and language selection
 
 **Legacy:**
 
 ```yaml
 translationResources:
   - importName: myPluginTranslations
+
+i18n:
+  locales: [en, de, fr]
+  defaultLocale: en
+  overrides:
+    - translations/custom-overrides.json
 ```
 
-**New:** Translations are `translation:*` extensions, usually auto-discovered. Override messages via extension config where the plugin supports it. See the plugin's documentation for supported override keys.
+**New:**
+
+- **Language dropdown / available locales** are configured on `api:app/app-language`, not `i18n.locales` / `i18n.defaultLocale`. The Settings language toggle hides itself when fewer than two languages are listed.
+
+```yaml
+app:
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: [en, de, es, fr, it, ja]
+          defaultLanguage: en
+```
+
+- **Translation messages** are `translation:*` extensions (`TranslationBlueprint`), usually auto-discovered with the plugin or registered by a frontend module with `pluginId: 'app'`. There is **no** NFS equivalent of `i18n.overrides` JSON files or ConfigMap-mounted `/translations` override files. To override strings, ship additional `TranslationBlueprint`s — see [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md) and the [Backstage i18n frontend-system docs](https://backstage.io/docs/frontend-system/building-plugins/internationalization/).
+- `i18n.*` in `app-config` is **legacy OFS only** and is ignored by `packages/app`.
+
+Language preference persistence still uses `userSettings.persistence` (`database` or `browser`). See [Customizing the look of your showcase instance](../customization.md#customizing-the-language-dropdown).
 
 ### Themes
 
@@ -646,7 +729,9 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 | Rename sidebar item | `menuItem.text` | `page:my-plugin` → `config.title` |
 | Reorder sidebar | `menuItems.*.priority` | Order in `app.extensions` |
 | Hide entity overview card | Remove mount point entry | `entity-card:*: false` |
+| Add / hide a homepage card | `home.page/cards` `importName` | Enable a `home-page-widget:*` or set it `false` |
 | Change card visibility filter | `mountPoints[].config.if` | `entity-card:*` → `config.filter` |
+| Select UI languages | `i18n.locales` / `i18n.defaultLocale` | `api:app/app-language` → `availableLanguages` / `defaultLanguage` |
 | Rename entity tab | `entityTabs[].title` | `entity-content:*` → `config.title` |
 | Reorder / group entity tabs | `entityTabs` + `priority` | `page:catalog/entity` → `config.groups` |
 | Hide entity tab | Negative `entityTabs` priority | `entity-content:*: false` |
@@ -658,8 +743,10 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 ## What you cannot do from configuration alone
 
 - **Attach arbitrary exported components** to mount points without a matching NFS extension from the plugin.
-- **Replicate `mountPoints[].config.layout`** grid column positioning — use card `type: info|content` or ask the plugin vendor to adjust the component layout.
+- **Mount arbitrary homepage cards** (`Headline`, `Placeholder`, `Markdown` / `MarkdownCard`, `WorldClock`, or any other `importName` that is not a `home-page-widget:*`). NFS only renders widgets plugins register as `home-page-widget:*`.
+- **Replicate `mountPoints[].config.layout`** grid column positioning — use card `type: info|content` or ask the plugin vendor to adjust the component layout. Homepage layout uses `home-page-layout:home/dynamic-homepage-layout` `widgetLayout` instead.
 - **Add a new entity tab** without a plugin that exports `entity-content:*`.
+- **Override translation strings from `i18n.overrides` JSON** — NFS has no app-config JSON override path; use `TranslationBlueprint`.
 - **Add cards to General settings** until upstream exposes extension inputs on `sub-page:user-settings/general`.
 - **Use RHDH-only mount points** (some global header slots) until equivalent NFS extensions exist. Application drawers have `AppDrawerContentBlueprint` — see the [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer).
 
@@ -668,6 +755,9 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 | Feature | Status on new frontend system |
 | --- | --- |
 | Nested sidebar menu groups (`menuItems.parent`) | No direct equivalent — flat nav from pages |
+| Arbitrary homepage `mountPoints` (`Headline`, `Placeholder`, `Markdown`, `WorldClock`) | No NFS widgets — only `home-page-widget:*` from plugins |
+| Random Joke / Toolkit homepage cards | Upstream widgets exist; RHDH homepage plugin disables them |
+| `i18n.locales` / `i18n.overrides` JSON translation files | Ignored by NFS; use `api:app/app-language` and `TranslationBlueprint` |
 | Application drawer mount points | `AppDrawerContentBlueprint` available — requires plugin update (see [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer)) |
 | `global.header/help` and similar header slots | Migrating in RHDH global-header plugins |
 | `mountPoints[].config.layout` (MUI grid) | Not configurable via YAML |
@@ -701,6 +791,13 @@ Plugin-side changes are covered in [Migrating Plugins to the New Frontend System
 ### Catalog page missing Dependencies or Diagram tab
 
 - Expected on the new frontend system — see [Catalog entity page changes](#catalog-entity-page-changes). Cards moved to Overview; system diagram uses the catalog-graph card and page.
+
+### Homepage is missing cards that existed on OFS
+
+- Expected unless the card has a `home-page-widget:*` equivalent — see [Homepage cards](#homepage-cards). `Headline`, `Placeholder`, `Markdown` / `MarkdownCard`, and `WorldClock` have no NFS widgets. Random Joke and Toolkit are disabled by the RHDH homepage plugin.
+- Confirm `page:home` is enabled with `config.path: /`.
+- Confirm `widgetLayout` keys match each widget's `params.name`, not the blueprint id.
+- Third-party cards need the plugin to publish a `home-page-widget:*` extension; OFS `mountPoints` are ignored.
 
 ---
 
