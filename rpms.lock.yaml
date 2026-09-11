@@ -256,13 +256,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.0-1.el10
     sourcerpm: go-rpm-macros-3.8.0-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.54.1.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.53.1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 3679849
-    checksum: sha256:c75a97ef2e6400b39c9b47443481a122f72b7073efca1de04eef3e38568b80a5
+    size: 3679773
+    checksum: sha256:bcea75bff24bcba5450957d6e9c8165f1cbc4dbdc2f2a56070bc84100f17d18e
     name: kernel-headers
-    evr: 6.12.0-211.54.1.el10_2
-    sourcerpm: kernel-6.12.0-211.54.1.el10_2.src.rpm
+    evr: 6.12.0-211.53.1.el10_2
+    sourcerpm: kernel-6.12.0-211.53.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-27.el10.noarch.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 9009
@@ -3413,27 +3413,27 @@ arches:
     name: util-linux-core
     evr: 2.40.2-18.el10
     sourcerpm: util-linux-2.40.2-18.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-data-9.1.083-9.el10_2.20.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-data-9.1.083-9.el10_2.12.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 25961
-    checksum: sha256:f2a108350bf34c74cb7c7aa454c7a0d007b005302b437eefc455ad5215799b1e
+    size: 24775
+    checksum: sha256:51411d5f6591332d88c24f37a7bad0bea2d44ef84a47a9bb5a3354a3bbfce10f
     name: vim-data
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-filesystem-9.1.083-9.el10_2.20.noarch.rpm
+    evr: 2:9.1.083-9.el10_2.12
+    sourcerpm: vim-9.1.083-9.el10_2.12.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-filesystem-9.1.083-9.el10_2.12.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 25112
-    checksum: sha256:ee748848a45733ffc7b402cb38c42f5cf550c56acee34e744921820f2f0ca0cc
+    size: 23988
+    checksum: sha256:cc77ce5d52ddcc1ba66aca79f4ba3548cf123379382c41d69fa1e679eb47d3c3
     name: vim-filesystem
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-minimal-9.1.083-9.el10_2.20.aarch64.rpm
+    evr: 2:9.1.083-9.el10_2.12
+    sourcerpm: vim-9.1.083-9.el10_2.12.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-minimal-9.1.083-9.el10_2.12.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 792515
-    checksum: sha256:da358bead6f9ae8556511841de1c5670cda53f2b68d3c968cb87ba0584304645
+    size: 791498
+    checksum: sha256:aa7ac0ec2e16b2ff3937229941d9e0ca64922f846f281f7daa3851850613fa80
     name: vim-minimal
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
+    evr: 2:9.1.083-9.el10_2.12
+    sourcerpm: vim-9.1.083-9.el10_2.12.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/virt-what-1.27-3.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 40598
@@ -3446,6 +3446,13 @@ arches:
     size: 498391
     checksum: sha256:21f1763d6d49e73e38a42011fb200b60ad4611b88337dfdb4e0d735ed9afdf4d
     name: xz
+    evr: 1:5.6.2-4.el10_2.1
+    sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/x/xz-libs-5.6.2-4.el10_2.1.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 117209
+    checksum: sha256:80c0fe151e6ca150a67e5a3e48711178a8735bd2f914d1fad247359e410b6ccb
+    name: xz-libs
     evr: 1:5.6.2-4.el10_2.1
     sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/y/yum-4.20.0-22.el10_2.noarch.rpm
@@ -5282,12 +5289,12 @@ arches:
     checksum: sha256:665f63918b6019e3a2b668259f3b70a6345bb71699cbcdb7fc6ba2029c76114f
     name: util-linux
     evr: 2.40.2-18.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/vim-9.1.083-9.el10_2.20.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/vim-9.1.083-9.el10_2.12.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 14737078
-    checksum: sha256:4d34e2ccf06e1a75330764c98f9b923ba530bbb9ad0b9fc4513782a1c23d444d
+    size: 14718168
+    checksum: sha256:500f3f1f75a5dd274525537d4f2b11ab13493f972e310d77f1ccc157c45d50de
     name: vim
-    evr: 2:9.1.083-9.el10_2.20
+    evr: 2:9.1.083-9.el10_2.12
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/virt-what-1.27-3.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 590774
@@ -5567,13 +5574,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.0-1.el10
     sourcerpm: go-rpm-macros-3.8.0-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-211.54.1.el10_2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-211.53.1.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 3718077
-    checksum: sha256:a7c90ce4c499b865c507583354ed6731aeeba286408dd7195e30b16e8cfebeac
+    size: 3717961
+    checksum: sha256:2e5e1e96c39d2886b554ab812b0fc52f9aa29d31a07ec9936f0ddeaddf2a6aab
     name: kernel-headers
-    evr: 6.12.0-211.54.1.el10_2
-    sourcerpm: kernel-6.12.0-211.54.1.el10_2.src.rpm
+    evr: 6.12.0-211.53.1.el10_2
+    sourcerpm: kernel-6.12.0-211.53.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-27.el10.noarch.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 9009
@@ -8703,27 +8710,27 @@ arches:
     name: util-linux-core
     evr: 2.40.2-18.el10
     sourcerpm: util-linux-2.40.2-18.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-data-9.1.083-9.el10_2.20.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-data-9.1.083-9.el10_2.12.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 25961
-    checksum: sha256:f2a108350bf34c74cb7c7aa454c7a0d007b005302b437eefc455ad5215799b1e
+    size: 24775
+    checksum: sha256:51411d5f6591332d88c24f37a7bad0bea2d44ef84a47a9bb5a3354a3bbfce10f
     name: vim-data
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-filesystem-9.1.083-9.el10_2.20.noarch.rpm
+    evr: 2:9.1.083-9.el10_2.12
+    sourcerpm: vim-9.1.083-9.el10_2.12.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-filesystem-9.1.083-9.el10_2.12.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 25112
-    checksum: sha256:ee748848a45733ffc7b402cb38c42f5cf550c56acee34e744921820f2f0ca0cc
+    size: 23988
+    checksum: sha256:cc77ce5d52ddcc1ba66aca79f4ba3548cf123379382c41d69fa1e679eb47d3c3
     name: vim-filesystem
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-minimal-9.1.083-9.el10_2.20.x86_64.rpm
+    evr: 2:9.1.083-9.el10_2.12
+    sourcerpm: vim-9.1.083-9.el10_2.12.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-minimal-9.1.083-9.el10_2.12.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 826656
-    checksum: sha256:af62e84bf8fd6b79f84dc4b19573b3866f04924bfd80112ebac9b17bca793750
+    size: 825450
+    checksum: sha256:45d0c9aa377e35799ba2a7260a72ee9fa89e1cd033c2b079cda070f1ae1dc093
     name: vim-minimal
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
+    evr: 2:9.1.083-9.el10_2.12
+    sourcerpm: vim-9.1.083-9.el10_2.12.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/virt-what-1.27-3.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 42128
@@ -8736,6 +8743,13 @@ arches:
     size: 498643
     checksum: sha256:397ad3bdfe024aafd9f22c821a287c77befe430f32720105ae4b4506dcd10574
     name: xz
+    evr: 1:5.6.2-4.el10_2.1
+    sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/x/xz-libs-5.6.2-4.el10_2.1.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 120170
+    checksum: sha256:02dc4d009c501fe7c4bd1e2174071fcd08b8d1133697777dce5726b43fee4998
+    name: xz-libs
     evr: 1:5.6.2-4.el10_2.1
     sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/y/yum-4.20.0-22.el10_2.noarch.rpm
@@ -10572,12 +10586,12 @@ arches:
     checksum: sha256:665f63918b6019e3a2b668259f3b70a6345bb71699cbcdb7fc6ba2029c76114f
     name: util-linux
     evr: 2.40.2-18.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/v/vim-9.1.083-9.el10_2.20.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/v/vim-9.1.083-9.el10_2.12.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 14737078
-    checksum: sha256:4d34e2ccf06e1a75330764c98f9b923ba530bbb9ad0b9fc4513782a1c23d444d
+    size: 14718168
+    checksum: sha256:500f3f1f75a5dd274525537d4f2b11ab13493f972e310d77f1ccc157c45d50de
     name: vim
-    evr: 2:9.1.083-9.el10_2.20
+    evr: 2:9.1.083-9.el10_2.12
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/v/virt-what-1.27-3.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 590774
