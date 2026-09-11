@@ -287,3 +287,52 @@ secrets::alias() {
   # shellcheck disable=SC2163
   export "$__RHDH_SECRETS_TARGET"
 }
+
+secrets::apply_common_aliases() {
+  secrets::alias RHBK_BASE_URL AUTH_PROVIDERS_RHBK_BASE_URL
+  secrets::alias RHBK_CLIENT_SECRET AUTH_PROVIDERS_RHBK_CLIENT_SECRET
+  secrets::alias RHBK_CLIENT_ID AUTH_PROVIDERS_RHBK_CLIENT_ID
+  secrets::alias RHBK_REALM AUTH_PROVIDERS_RHBK_REALM
+  secrets::alias DEFAULT_USER_PASSWORD AUTH_PROVIDERS_DEFAULT_USER_PASSWORD
+  secrets::alias DEFAULT_USER_PASSWORD_2 AUTH_PROVIDERS_DEFAULT_USER_PASSWORD_2
+}
+
+secrets::prepare_database_certificates() {
+  local __RHDH_SECRETS_MOUNT_DIRECTORY=${1:?"Secret mount directory is required"}
+  local __RHDH_SECRETS_RUNTIME_DIRECTORY=${2:?"Secret runtime directory is required"}
+  local __RHDH_SECRETS_CERTIFICATE_PATH
+
+  if [[ -d "$__RHDH_SECRETS_MOUNT_DIRECTORY" ]] \
+    && __RHDH_SECRETS_CERTIFICATE_PATH=$(secrets::file_path \
+      "$__RHDH_SECRETS_MOUNT_DIRECTORY" rds-db-certificates.pem); then
+    RDS_DB_CERTIFICATES_PATH=$__RHDH_SECRETS_CERTIFICATE_PATH
+    export RDS_DB_CERTIFICATES_PATH
+  elif [[ -n "${rds_db_certificates_pem+x}" ]]; then
+    RDS_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
+      "$__RHDH_SECRETS_RUNTIME_DIRECTORY" rds_db_certificates_pem \
+      rds-db-certificates.pem)
+    export RDS_DB_CERTIFICATES_PATH
+  elif [[ -n "${rds_db_certificates__dot__pem+x}" ]]; then
+    RDS_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
+      "$__RHDH_SECRETS_RUNTIME_DIRECTORY" rds_db_certificates__dot__pem \
+      rds-db-certificates.pem)
+    export RDS_DB_CERTIFICATES_PATH
+  fi
+
+  if [[ -d "$__RHDH_SECRETS_MOUNT_DIRECTORY" ]] \
+    && __RHDH_SECRETS_CERTIFICATE_PATH=$(secrets::file_path \
+      "$__RHDH_SECRETS_MOUNT_DIRECTORY" azure-db-certificates.pem); then
+    AZURE_DB_CERTIFICATES_PATH=$__RHDH_SECRETS_CERTIFICATE_PATH
+    export AZURE_DB_CERTIFICATES_PATH
+  elif [[ -n "${azure_db_certificates_pem+x}" ]]; then
+    AZURE_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
+      "$__RHDH_SECRETS_RUNTIME_DIRECTORY" azure_db_certificates_pem \
+      azure-db-certificates.pem)
+    export AZURE_DB_CERTIFICATES_PATH
+  elif [[ -n "${azure_db_certificates__dot__pem+x}" ]]; then
+    AZURE_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
+      "$__RHDH_SECRETS_RUNTIME_DIRECTORY" azure_db_certificates__dot__pem \
+      azure-db-certificates.pem)
+    export AZURE_DB_CERTIFICATES_PATH
+  fi
+}

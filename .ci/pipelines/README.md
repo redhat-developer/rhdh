@@ -70,10 +70,10 @@ ephemeral cluster claimed by a CI job for investigation.
 
 ### Prerequisites
 
-- [`vault`](https://developer.hashicorp.com/vault/downloads), `oc`, and `jq` CLIs installed
-- Access to `selfservice/rhdh-qe/ephemeral_cluster` in
-  [vault.ci.openshift.org](https://vault.ci.openshift.org) (request access in
+- `bw`, `rhdh-e2e-secrets`, `oc`, and `jq` CLIs installed
+- Access to the `ephemeral_cluster/` items in the Bitwarden `rhdh-qe` collection (request access in
   [#rhdh-e2e-tests](https://redhat-internal.slack.com/archives/rhdh-e2e-tests) if needed)
+- An unlocked Bitwarden session: `export BW_SESSION=$(bw unlock --raw)`
 - For **PR-triggered jobs**: add `[debug]` to your PR title to enable the HTPasswd identity
   provider, then re-trigger the job with `/test e2e-ocp-helm`
 
@@ -86,8 +86,8 @@ ephemeral cluster claimed by a CI job for investigation.
 2. Provide the Prow log URL when prompted, for example:
    `https://prow.ci.openshift.org/view/gs/test-platform-results/logs/periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly/<BUILD_ID>`
 3. The script will:
-   - Authenticate to Vault via OIDC and fetch cluster credentials from
-     `selfservice/rhdh-qe/ephemeral_cluster`.
+   - Load cluster credentials through the `ephemeral-cluster-secrets.profile.json` Bitwarden
+     profile.
    - Log in directly to the ephemeral cluster API.
    - Prompt to open the OCP web console in the browser (password copied to clipboard).
 4. Note:
@@ -113,7 +113,7 @@ ephemeral cluster claimed by a CI job for investigation.
 
 - URL:
   [Keycloak Admin Console](https://keycloak-rhsso.rhdh-pr-os-a9805650830b22c3aee243e51d79565d-0000.us-east.containers.appdomain.cloud/auth/admin/master/console/#/realms/rhdh-login-test)
-- Credentials: These can be found in the RHDH-QE Vault under the following keys:
+- Credentials are stored in the Bitwarden `rhdh-qe` collection under the following keys:
   - `KEYCLOAK_AUTH_BASE_URL`
   - `KEYCLOAK_AUTH_CLIENTID`
   - `KEYCLOAK_AUTH_CLIENT_SECRET`
