@@ -147,7 +147,7 @@ yarn rulesync:import:cursor
 
 ### Scenario 2: Rules Already Exist in `.claude`
 
-If you have existing rules in `.claude/memories/*.md`:
+If you have existing rules in `.claude/rules/*.md`:
 
 ```bash
 # 1. Import all rules from Claude
@@ -266,10 +266,10 @@ vim .rulesync/rules/my-rule.md
 # 2. Stage and commit
 git add .rulesync/rules/my-rule.md
 git commit -m "docs: update my-rule"
-# ✨ Auto-generates .cursor/.claude on commit
+# ✨ Auto-generates .cursor/.claude/.opencode on commit
 ```
 
-### If You Edited .cursor or .claude Directly
+### If You Edited .cursor, .claude, or .opencode Directly
 
 ```bash
 # 1. Commit your changes (you'll see a notification)

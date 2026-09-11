@@ -150,7 +150,8 @@ class CatalogPage {
 yarn playwright codegen http://localhost:7007
 
 # Debug tests step-by-step
-yarn playwright test --debug
+cd e2e-tests
+./local-test.sh -- --project="$PLAYWRIGHT_PROJECT" --debug
 
 # Or pause in test
 await page.pause();
