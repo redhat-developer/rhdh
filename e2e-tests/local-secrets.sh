@@ -18,8 +18,8 @@ local_secrets::resolve_cli() {
     fi
   elif [[ -x "${script_dir}/node_modules/.bin/rhdh-e2e-secrets" ]]; then
     LOCAL_SECRETS_CLI=("${script_dir}/node_modules/.bin/rhdh-e2e-secrets")
-  elif [[ -f "${script_dir}/../../rhdh-e2e-test-utils/dist/secrets/cli.js" ]] && \
-    local_cli=$(command -v node 2> /dev/null); then
+  elif [[ -f "${script_dir}/../../rhdh-e2e-test-utils/dist/secrets/cli.js" ]] \
+    && local_cli=$(command -v node 2> /dev/null); then
     LOCAL_SECRETS_CLI=(
       "${local_cli}"
       "${script_dir}/../../rhdh-e2e-test-utils/dist/secrets/cli.js"
@@ -47,6 +47,44 @@ local_secrets::require_metadata_support() {
   fi
 }
 
+local_secrets::reexec_with_profile() {
+  local script_dir=${1:?"Script directory is required"}
+  local profile=${2:?"Secret profile is required"}
+  local wrapped_variable=${3:?"Wrapper environment name is required"}
+  shift 3
+
+  [[ "$wrapped_variable" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || {
+    printf 'Invalid wrapper environment name\n' >&2
+    return 1
+  }
+  if [[ "${!wrapped_variable:-}" == "1" ]]; then
+    return 0
+  fi
+
+  local_secrets::resolve_cli "$script_dir" || return 1
+  local_secrets::require_metadata_support || return 1
+  if [[ -z "${BW_SESSION:-}" ]]; then
+    printf 'BW_SESSION is required. Unlock Bitwarden before running this command.\n' >&2
+    return 1
+  fi
+  if [[ ! -f "$profile" ]]; then
+    printf 'Secret profile not found: %s\n' "$profile" >&2
+    return 1
+  fi
+  if [[ $# -eq 0 ]]; then
+    printf 'Wrapped command is required\n' >&2
+    return 1
+  fi
+
+  printf -v "$wrapped_variable" '%s' 1
+  # shellcheck disable=SC2163
+  export "$wrapped_variable"
+  exec "${LOCAL_SECRETS_CLI[@]}" exec \
+    --profile "$profile" \
+    --expose-secret-names \
+    -- "$@"
+}
+
 local_secrets::validate_secret_names() {
   local metadata=${1:?"Secret metadata is required"}
   local name
@@ -64,7 +102,7 @@ local_secrets::validate_secret_names() {
       return 1
     fi
     case "$name" in
-      BW_* | VAULT* | RHDH_E2E_SECRET_NAMES)
+      BW_* | VAULT* | RHDH_E2E_SECRET_NAMES | RHDH_*_SECRETS_WRAPPED)
         printf 'Provider environment name is not allowed in metadata\n' >&2
         return 1
         ;;
