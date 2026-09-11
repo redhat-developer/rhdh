@@ -123,43 +123,8 @@ K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
 ## Azure Database for PostgreSQL credentials
 # Database TLS certificates remain file paths to avoid loading PEM content into
 # the process environment.
-RHDH_RDS_CERTIFICATE_PATH_CANDIDATE=""
-if [[ -d "/tmp/secrets" ]] \
-  && RHDH_RDS_CERTIFICATE_PATH_CANDIDATE=$(secrets::file_path "/tmp/secrets" rds-db-certificates.pem); then
-  RDS_DB_CERTIFICATES_PATH="${RHDH_RDS_CERTIFICATE_PATH_CANDIDATE}"
-  export RDS_DB_CERTIFICATES_PATH
-elif [[ -n "${rds_db_certificates_pem+x}" ]]; then
-  if RDS_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
-    rds_db_certificates_pem rds-db-certificates.pem); then
-    export RDS_DB_CERTIFICATES_PATH
-  fi
-elif [[ -n "${rds_db_certificates__dot__pem+x}" ]]; then
-  if RDS_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
-    rds_db_certificates__dot__pem rds-db-certificates.pem); then
-    export RDS_DB_CERTIFICATES_PATH
-  fi
-fi
-RHDH_AZURE_CERTIFICATE_PATH_CANDIDATE=""
-if [[ -d "/tmp/secrets" ]] \
-  && RHDH_AZURE_CERTIFICATE_PATH_CANDIDATE=$(secrets::file_path "/tmp/secrets" azure-db-certificates.pem); then
-  AZURE_DB_CERTIFICATES_PATH="${RHDH_AZURE_CERTIFICATE_PATH_CANDIDATE}"
-  export AZURE_DB_CERTIFICATES_PATH
-elif [[ -n "${azure_db_certificates_pem+x}" ]]; then
-  if AZURE_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
-    azure_db_certificates_pem azure-db-certificates.pem); then
-    export AZURE_DB_CERTIFICATES_PATH
-  fi
-elif [[ -n "${azure_db_certificates__dot__pem+x}" ]]; then
-  if AZURE_DB_CERTIFICATES_PATH=$(secrets::file_from_environment \
-    "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}" \
-    azure_db_certificates__dot__pem azure-db-certificates.pem); then
-    export AZURE_DB_CERTIFICATES_PATH
-  fi
-fi
-unset RHDH_RDS_CERTIFICATE_PATH_CANDIDATE RHDH_AZURE_CERTIFICATE_PATH_CANDIDATE
+secrets::prepare_database_certificates "/tmp/secrets" \
+  "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}"
 
 JUNIT_RESULTS="junit-results.xml"
 
@@ -173,12 +138,7 @@ REDIS_PASSWORD_ENCODED=$(printf "%s" $REDIS_PASSWORD | base64 | tr -d '\n')
 # EKS variables
 
 # authentication providers variables
-secrets::alias RHBK_BASE_URL AUTH_PROVIDERS_RHBK_BASE_URL
-secrets::alias RHBK_CLIENT_SECRET AUTH_PROVIDERS_RHBK_CLIENT_SECRET
-secrets::alias RHBK_CLIENT_ID AUTH_PROVIDERS_RHBK_CLIENT_ID
-secrets::alias RHBK_REALM AUTH_PROVIDERS_RHBK_REALM
-secrets::alias DEFAULT_USER_PASSWORD AUTH_PROVIDERS_DEFAULT_USER_PASSWORD
-secrets::alias DEFAULT_USER_PASSWORD_2 AUTH_PROVIDERS_DEFAULT_USER_PASSWORD_2
+secrets::apply_common_aliases
 
 IS_OPENSHIFT="${IS_OPENSHIFT:-true}"
 CONTAINER_PLATFORM="${CONTAINER_PLATFORM:-unknown}"
