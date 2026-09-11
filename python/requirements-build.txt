@@ -129,6 +129,8 @@ click==8.1.7 \
     # via
     #   -r requirements-build.in
     #   mkdocs
+    #   mkdocs-techdocs-core
+    #   properdocs
 colorama==0.4.6 \
     --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
     --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
@@ -193,6 +195,7 @@ ghp-import==2.1.0 \
     # via
     #   -r requirements-build.in
     #   mkdocs
+    #   properdocs
 hatch-nodejs-version==0.3.2 \
     --hash=sha256:8a7828d817b71e50bbbbb01c9bfc0b329657b7900c56846489b9c958de15b54c \
     --hash=sha256:d73e728f1a262d214afe9c0a40e161013ef0b7a6c78ff843293880f6a46ede79
@@ -205,9 +208,9 @@ hatch-vcs==0.4.0 \
     --hash=sha256:093810748fe01db0d451fabcf2c1ac2688caefd232d4ede967090b1c1b07d9f7 \
     --hash=sha256:b8a2b6bee54cf6f9fc93762db73890017ae59c9081d1038a41f16235ceaf8b2c
     # via -r requirements-build.in
-hatchling==1.25.0 \
-    --hash=sha256:7064631a512610b52250a4d3ff1bd81551d6d1431c4eb7b72e734df6c74f4262 \
-    --hash=sha256:b47948e45d4d973034584dd4cb39c14b6a70227cf287ab7ec0ad7983408a882c
+hatchling==1.27.0 \
+    --hash=sha256:971c296d9819abb3811112fc52c7a9751c8d381898f36533bb16f9791e941fd6 \
+    --hash=sha256:d3a2f3567c4f926ea39849cdf924c7e99e6686c9c8e288ae1037c8fa2a5d937b
     # via
     #   -r requirements-build.in
     #   hatch-nodejs-version
@@ -226,6 +229,7 @@ jinja2==3.1.6 \
     #   -r requirements-build.in
     #   mkdocs
     #   mkdocs-material
+    #   properdocs
 markdown==3.10.2 \
     --hash=sha256:994d51325d25ad8aa7ce4ebaec003febcce822c3f8c911e3b17c52f7f589f950 \
     --hash=sha256:e91464b71ae3ee7afd3017d9f358ef0baf158fd9a298db92f1d4761133824c36
@@ -237,7 +241,7 @@ markdown==3.10.2 \
     #   mkdocs
     #   mkdocs-material
     #   mkdocs-techdocs-core
-    #   plantuml-markdown
+    #   properdocs
     #   pymdown-extensions
 markdown-graphviz-inline==1.1.3 \
     --hash=sha256:3571f7da594533b6c2c9ef08a6ce582396b64f778e47ac3678f00e75b2652909 \
@@ -312,6 +316,7 @@ markupsafe==2.1.5 \
     #   -r requirements-build.in
     #   jinja2
     #   mkdocs
+    #   properdocs
 mdx-truly-sane-lists==1.3 \
     --hash=sha256:b661022df7520a1e113af7c355c62216b384c867e4f59fb8ee7ad511e6e77f45 \
     --hash=sha256:b9546a4c40ff8f1ab692f77cee4b6bfe8ddf9cccf23f0a24e71f3716fe290a37
@@ -330,6 +335,7 @@ mkdocs==1.6.0 \
     --hash=sha256:a73f735824ef83a4f3bcb7a231dcab23f5a838f88b7efc54a0eef5fbdbc3c512
     # via
     #   -r requirements-build.in
+    #   mkdocs-github-admonitions-plugin
     #   mkdocs-material
     #   mkdocs-monorepo-plugin
     #   mkdocs-redirects
@@ -338,9 +344,13 @@ mkdocs-get-deps==0.2.0 \
     --hash=sha256:162b3d129c7fad9b19abfdcb9c1458a651628e4b1dea628ac68790fb3061c60c \
     --hash=sha256:2bf11d0b133e77a0dd036abeeb06dec8775e46efa526dc70667d8863eefc6134
     # via mkdocs
-mkdocs-material==9.7.1 \
-    --hash=sha256:3f6100937d7d731f87f1e3e3b021c97f7239666b9ba1151ab476cabb96c60d5c \
-    --hash=sha256:89601b8f2c3e6c6ee0a918cc3566cb201d40bf37c3cd3c2067e26fadb8cce2b8
+mkdocs-github-admonitions-plugin==0.1.1 \
+    --hash=sha256:7f81520a0681b9955952d73b21ce99b923921830b6b6d1ace9b3fb95cd1fb61f \
+    --hash=sha256:824dc821764171943c1043c88218d4af0329693870ba9be657f890d484a0aa85
+    # via mkdocs-techdocs-core
+mkdocs-material==9.7.7 \
+    --hash=sha256:8ea9bb1737a5b524a5f9dcf2e1b4ebda8274ae3008aa7845720a97083bef708f \
+    --hash=sha256:c0649c065b1b0512d60aad8c10f947f8e455284475239b364b610f2deb4d0855
     # via
     #   -r requirements-build.in
     #   mkdocs-techdocs-core
@@ -356,22 +366,23 @@ mkdocs-monorepo-plugin==1.1.2 \
     # via
     #   -r requirements-build.in
     #   mkdocs-techdocs-core
-mkdocs-redirects==1.2.2 \
-    --hash=sha256:3094981b42ffab29313c2c1b8ac3969861109f58b2dd58c45fc81cd44bfa0095 \
-    --hash=sha256:7dbfa5647b79a3589da4401403d69494bd1f4ad03b9c15136720367e1f340ed5
+mkdocs-redirects==1.2.3 \
+    --hash=sha256:5e980330999299729a2d6a125347d1af78023d68a23681a4de3053ce7dfe2e51 \
+    --hash=sha256:ec7312fff462d03ec16395d0c001006a418f8d0c21cdf2b47ff11cf839dc3ce0
     # via mkdocs-techdocs-core
-mkdocs-techdocs-core==1.6.1 \
-    --hash=sha256:6e6b39d07b6e9680dc26f110ced579fcef87f700a32a6ad77ec36636a7c5f801 \
-    --hash=sha256:a27fc10c3aa7d21832a4b0ab22096e7fd13f83809570e3729ec405f22679a4ea
+mkdocs-techdocs-core==1.7.1 \
+    --hash=sha256:61c9b42d32641ee768c5c2814f08a8d0470bb822b82789f3187ed8c7c197df62 \
+    --hash=sha256:6fb29ff01608ea7652af2f93d4ac559f33a498bbcced36cc11c7b3024973fb67
     # via -r requirements-build.in
-packaging==24.1 \
-    --hash=sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002 \
-    --hash=sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124
+packaging==26.3 \
+    --hash=sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79 \
+    --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
     # via
     #   -r requirements-build.in
     #   hatch-requirements-txt
     #   hatchling
     #   mkdocs
+    #   properdocs
     #   setuptools-scm
     #   wheel
 paginate==0.5.7 \
@@ -385,8 +396,10 @@ pathspec==0.12.1 \
     #   -r requirements-build.in
     #   hatchling
     #   mkdocs
-plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip \
-    --hash=sha256:adb7dd7f1aa90a0fdb279f3ad58ede6cdc9eb826adc9d1405b02d4491e492df0
+    #   properdocs
+plantuml-markdown==3.11.2 \
+    --hash=sha256:45eb97fed669cc23c90593ae1d42122809bfc3693970a6edb0004c0dc20cde27 \
+    --hash=sha256:700a6ebf5c265da488aafa3c376f27e23d604dc4a151ff811fc3aec156ed51a3
     # via
     #   -r requirements-build.in
     #   mkdocs-techdocs-core
@@ -396,22 +409,27 @@ platformdirs==3.11.0 \
     # via
     #   -r requirements-build.in
     #   mkdocs-get-deps
+    #   properdocs
 pluggy==1.5.0 \
     --hash=sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1 \
     --hash=sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669
     # via
     #   -r requirements-build.in
     #   hatchling
-pygments==2.19.2 \
-    --hash=sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887 \
-    --hash=sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b
+properdocs==1.6.7 \
+    --hash=sha256:6fa0cfa2e01bf338f684892c8a506cf70ea88ae7f3479c933b6fa20168101cbd \
+    --hash=sha256:adc7b16e562890af0e098a7e5b02e3a81c20894a87d6a28d345c9300de73c26e
+    # via mkdocs-redirects
+pygments==2.21.0 \
+    --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
+    --hash=sha256:610ca751c9bc2492b38eb9a38a7fbc93edbbb2d7182edaf34e66ae493dee5c8c
     # via
     #   -r requirements-build.in
     #   mkdocs-material
     #   mkdocs-techdocs-core
-pymdown-extensions==10.19.1 \
-    --hash=sha256:4969c691009a389fb1f9712dd8e7bd70dcc418d15a0faf70acb5117d022f7de8 \
-    --hash=sha256:e8698a66055b1dc0dca2a7f2c9d0ea6f5faa7834a9c432e3535ab96c0c4e509b
+pymdown-extensions==11.0.1 \
+    --hash=sha256:db3943a62bab7e03af1364f0c4083e64b91fb097675a4b6cceccfbe9a77e5eb2 \
+    --hash=sha256:dd2905ae6fc5b75582fafb139a1266ffc754705efa902aa50067fa7ff4f94ec0
     # via
     #   -r requirements-build.in
     #   mkdocs-material
@@ -484,6 +502,7 @@ pyyaml==6.0.1 \
     #   -r requirements-build.in
     #   mkdocs
     #   mkdocs-get-deps
+    #   properdocs
     #   pymdown-extensions
     #   pyyaml-env-tag
 pyyaml-env-tag==0.1 \
@@ -492,6 +511,7 @@ pyyaml-env-tag==0.1 \
     # via
     #   -r requirements-build.in
     #   mkdocs
+    #   properdocs
 regex==2023.12.25 \
     --hash=sha256:0694219a1d54336fd0445ea382d49d36882415c0134ee1e8332afd1529f0baa5 \
     --hash=sha256:086dd15e9435b393ae06f96ab69ab2d333f5d65cbe65ca5a3ef0ec9564dfe770 \
@@ -593,7 +613,6 @@ requests==2.32.4 \
     # via
     #   -r requirements-build.in
     #   mkdocs-material
-    #   plantuml-markdown
 setuptools-scm==7.1.0 \
     --hash=sha256:6c508345a771aad7d56ebff0e70628bf2b0ec7573762be9960214730de278f27 \
     --hash=sha256:73988b6d848709e2af142aa48c986ea29592bbcfca5375678064708205253d8e
@@ -605,7 +624,6 @@ six==1.16.0 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
     # via
     #   -r requirements-build.in
-    #   plantuml-markdown
     #   python-dateutil
 text-unidecode==1.3 \
     --hash=sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8 \
@@ -666,6 +684,7 @@ watchdog==3.0.0 \
     # via
     #   -r requirements-build.in
     #   mkdocs
+    #   properdocs
 wheel==0.46.3 \
     --hash=sha256:4b399d56c9d9338230118d705d9737a2a468ccca63d5e813e2a4fc7815d8bc4d \
     --hash=sha256:e3e79874b07d776c40bd6033f8ddf76a7dad46a7b8aa1b2787a83083519a1803
