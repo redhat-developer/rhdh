@@ -111,24 +111,8 @@ done
 # Local secrets are supplied by the shared Bitwarden CLI. The inner invocation
 # receives only the selected environment names, which are later forwarded to
 # Podman without placing secret values in command arguments.
-if [[ "${RHDH_LOCAL_SECRETS_WRAPPED:-}" != "1" ]]; then
-  local_secrets::resolve_cli "$SCRIPT_DIR" || exit 1
-  local_secrets::require_metadata_support || exit 1
-  if [[ -z "${BW_SESSION:-}" ]]; then
-    log::error "BW_SESSION is required. Unlock Bitwarden before running local-run.sh."
-    exit 1
-  fi
-  if [[ ! -f "$SECRET_PROFILE" ]]; then
-    log::error "Secret profile not found: $SECRET_PROFILE"
-    exit 1
-  fi
-
-  export RHDH_LOCAL_SECRETS_WRAPPED=1
-  exec "${LOCAL_SECRETS_CLI[@]}" exec \
-    --profile "$SECRET_PROFILE" \
-    --expose-secret-names \
-    -- "$0" "${LOCAL_RUN_ARGS[@]}"
-fi
+local_secrets::reexec_with_profile "$SCRIPT_DIR" "$SECRET_PROFILE" \
+  RHDH_LOCAL_SECRETS_WRAPPED "$0" "${LOCAL_RUN_ARGS[@]}" || exit 1
 
 # ========== Prerequisites Check ==========
 PREREQ_FAILED=false
@@ -468,7 +452,7 @@ fi
 # Pull runner image (always attempt; fall back to local copy if pull fails)
 log::section "Pulling runner container image"
 if ! podman pull "$RUNNER_IMAGE"; then
-  if podman image exists "$RUNNER_IMAGE" 2>/dev/null; then
+  if podman image exists "$RUNNER_IMAGE" 2> /dev/null; then
     log::info "Pull failed but image exists locally: $RUNNER_IMAGE"
   else
     log::error "Failed to pull image and no local copy: $RUNNER_IMAGE"
@@ -527,7 +511,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 WORK_DIR="$SCRIPT_DIR/.local-test/rhdh"
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"
-rsync -a --exclude='node_modules' --exclude='.local-test' --exclude='playwright-report' --exclude='test-results' "$REPO_ROOT/" "$WORK_DIR/"
+rsync -a --exclude='node_modules' --exclude='.env' --exclude='.local-test' --exclude='playwright-report' --exclude='test-results' "$REPO_ROOT/" "$WORK_DIR/"
 log::info "Work copy created at: $WORK_DIR"
 
 # Run container with Bitwarden-provided environment and cluster token
@@ -594,31 +578,30 @@ fi
 if [[ "$SKIP_TESTS" == "true" ]]; then
   log::section "Next Steps: Run Tests Locally (headed mode)"
   echo ""
-  log::info "1. Setup environment variables:"
-  echo "   source local-test-setup.sh           # For Showcase tests"
-  echo "   source local-test-setup.sh rbac      # For RBAC tests"
+  log::info "1. Unlock Bitwarden if needed:"
+  echo '   export BW_SESSION=$(bw unlock --raw)'
   echo ""
-  log::info "2. Install dependencies and run tests:"
+  log::info "2. Install dependencies and run tests against the URL printed above:"
   echo "   yarn install"
-  echo "   yarn playwright test --headed"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed"
   echo ""
   log::info "Useful Playwright commands:"
   echo ""
   echo "   # Run all tests for a project"
-  echo "   yarn playwright test --headed --project=showcase"
-  echo "   yarn playwright test --headed --project=showcase-rbac"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed"
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --headed"
   echo ""
   echo "   # Run a specific test file (use --workers=1 for sequential execution)"
-  echo "   yarn playwright test --headed --project=showcase-rbac --workers=1 playwright/e2e/plugins/rbac/rbac.spec.ts"
-  echo "   yarn playwright test --headed --project=showcase --workers=1 playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts"
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --headed --workers=1 playwright/e2e/plugins/rbac/rbac.spec.ts"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed --workers=1 playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts"
   echo ""
   echo "   # Run tests matching a pattern"
-  echo "   yarn playwright test --headed --project=showcase-rbac --workers=1 -g \"guest user\""
-  echo "   yarn playwright test --headed --project=showcase --workers=1 -g \"catalog\""
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --headed --workers=1 -g \"guest user\""
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed --workers=1 -g \"catalog\""
   echo ""
   echo "   # Interactive UI mode"
-  echo "   yarn playwright test --ui --project=showcase"
-  echo "   yarn playwright test --ui --project=showcase-rbac"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --ui"
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --ui"
   echo ""
 else
   log::section "Tests Completed"
@@ -628,7 +611,6 @@ else
   echo "   npx playwright show-report .local-test/rhdh/.local-test/artifact_dir/showcase"
   echo ""
   log::info "To re-run tests locally (headed mode):"
-  echo "   source local-test-setup.sh"
-  echo "   yarn playwright test --headed"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed"
   echo ""
 fi
