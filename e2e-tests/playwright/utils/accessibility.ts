@@ -1,4 +1,4 @@
-import AxeBuilder from "@axe-core/playwright";
+import { AxeBuilder } from "@axe-core/playwright";
 import { Page, TestInfo } from "@playwright/test";
 
 import { waitForLoadingToSettle } from "../support/auth/app-shell";

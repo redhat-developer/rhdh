@@ -1,6 +1,6 @@
 # CI Medic Guide
 
-A practical guide for investigating test failures in RHDH Core (`redhat-developer/rhdh`) nightly jobs and PR checks.
+A practical guide for investigating test failures in RHDH Core (`redhat-developer/rhdh`) and overlay (`redhat-developer/rhdh-plugin-export-overlays`) nightly jobs and PR checks.
 
 ## Table of Contents
 
@@ -12,6 +12,7 @@ A practical guide for investigating test failures in RHDH Core (`redhat-develope
 - [Job Types Reference](#job-types-reference)
 - [Identifying Failure Types](#identifying-failure-types)
 - [Finding Past Failures](#finding-past-failures)
+- [Overlay Nightly Failures (Fullsend)](#overlay-nightly-failures-fullsend)
 - [Useful Links and Tools](#useful-links-and-tools)
 - [AI Test Triager](#ai-test-triager-nightly-test-alerts)
 
@@ -28,21 +29,38 @@ The CI medic is a **weekly rotating role** responsible for maintaining the healt
 1. **Monitor PR Checks**: Keep an eye on the status and the queue to ensure they remain passing.
 2. **Monitor Nightly Jobs**: Watch the `#rhdh-e2e-alerts` Slack channel and dedicated release channels.
 3. **Triage Failures**:
-   - Use the **AI Test Triager** (`@Nightly Test Alerts` Slack app) as your starting point -- it automatically analyzes failed nightly jobs and provides root cause analysis, screenshot interpretation, and links to similar Jira issues. You can also invoke it manually by tagging `@Nightly Test Alerts` in Slack.
-   - Check [Jira](https://redhat.atlassian.net/jira/dashboards/21388#v=1&d=21388&rf=acef7fac-ada0-4363-b3fb-9aad7ae021f0&static=f0579c09-f63e-45aa-87b9-05e042eee707&g=60993:view@0a7ec296-c2fd-4ddc-b7cb-64de0540e8ba) for existing issues with the **`ci-fail`** label.
-   - If it's a **new issue**, create a bug and assign it to the responsible team or person. The AI triager can also create Jira bugs directly.
-   - If the failure **blocks PRs**, mark the test as skipped (`test.fixme`) until it is fixed.
+   - **RHDH Core** (`redhat-developer/rhdh`):
+     - Use the **AI Test Triager** (`@Nightly Test Alerts` Slack app) as your starting point -- it automatically analyzes failed nightly jobs and provides root cause analysis, screenshot interpretation, and links to similar Jira issues. You can also invoke it manually by tagging `@Nightly Test Alerts` in Slack.
+     - Check [Jira](https://redhat.atlassian.net/jira/dashboards/21388#v=1&d=21388&rf=acef7fac-ada0-4363-b3fb-9aad7ae021f0&static=f0579c09-f63e-45aa-87b9-05e042eee707&g=60993:view@0a7ec296-c2fd-4ddc-b7cb-64de0540e8ba) for existing issues with the **`ci-fail`** label.
+     - If it's a **new issue**, create a bug and assign it to the responsible team or person. The AI triager can also create Jira bugs directly.
+     - If the failure **blocks PRs**, mark the test as skipped (`test.fixme`) until it is fixed.
+   - **Overlay** (`redhat-developer/rhdh-plugin-export-overlays`): Open the **E2E AI Triage Summary** link in the Slack alert. Fullsend has already classified each workspace failure, reused or created GitHub issues, and opened fix PRs where it can. Your job is to validate that work -- see [Overlay Nightly Failures (Fullsend)](#overlay-nightly-failures-fullsend).
 4. **Monitor Infrastructure**: Watch `#announce-testplatform` for general OpenShift CI outages and issues. Get help at `#forum-ocp-testplatform`.
 5. **Quality Cabal Call**: Attend the call and provide a status update of the CI.
 
 ### Where Do Alerts Come In?
 
 - **Main branch**: `#rhdh-e2e-alerts` Slack channel
-- **Release branches**: Dedicated channels like `#rhdh-e2e-alerts-1-8`, `#rhdh-e2e-alerts-1-9`, etc.
+- **Release branches**: Dedicated channels like `#rhdh-e2e-alerts-1-9`, `#rhdh-e2e-alerts-1-10`, etc.
 - **Infrastructure announcements**: `#announce-testplatform` (general OpenShift CI status)
 - **Getting help**: `#forum-ocp-testplatform` (ask questions about CI platform issues, or see if others face similar issues)
 
 Each alert includes links to the job logs, artifacts, and a summary of which deployments/tests passed or failed. Check the bookmarks/folders in the `#rhdh-e2e-alerts` channel for additional resources.
+
+**Overlay nightly alerts** include an `:ai-generated: E2E AI Triage Summary` link. That is the overlay analysis -- a GitHub comment on the nightly trigger issue (titled `[fullsend] E2E nightly failure: <branch> (<date>)`). The **AI Test Triager** (`@Nightly Test Alerts`) is not configured for overlay; fullsend is the only automated triage for those jobs.
+
+### Which repo is this alert from?
+
+The same Slack channels receive both Core and overlay nightlies. Use the Prow job name and the alert body to tell them apart:
+
+| | RHDH Core | Overlay |
+|---|---|---|
+| **Prow job name** | `periodic-ci-redhat-developer-rhdh-{BRANCH}-e2e-...` | `periodic-ci-redhat-developer-rhdh-plugin-export-overlays-{BRANCH}-e2e-...` |
+| **Automated triage** | **AI Test Triager** (`@Nightly Test Alerts`) -- inline Slack analysis | **Fullsend only** -- the **E2E AI Triage Summary** GitHub comment in the alert. The AI Test Triager is not configured for overlay. |
+| **Automated tracking** | Jira with the **`ci-fail`** label | GitHub issues titled `[fullsend] E2E: ...` |
+| **Auto-fix** | No -- you file Jira and skip with `test.fixme` if the failure blocks PRs | Yes -- fullsend opens GitHub issues and PRs for `test_fix` and `product_bug` |
+
+Fullsend's GitHub issues are the automated overlay tracker. For overlay bugs that fullsend does not close -- especially `product_bug` and `environment` -- still create a Jira issue with the **`ci-fail`** label, same as Core.
 
 ### Two Types of CI Jobs
 
@@ -55,6 +73,8 @@ Each alert includes links to the job logs, artifacts, and a summary of which dep
 | **Alert channel** | `#rhdh-e2e-alerts` / `#rhdh-e2e-alerts-{version}` | PR status checks on GitHub |
 
 **Triggering jobs on a PR**: All nightly job variants can also be triggered on a PR by commenting `/test <job-name>`. Use `/test ?` to list all available jobs for that PR. This is useful for verifying a fix against a specific platform or install method before merging.
+
+The table above describes **RHDH Core** jobs. Overlay nightlies (`e2e-ocp-helm-nightly` in `rhdh-plugin-export-overlays`) also post to the same Slack channels; triage for those is covered in [Overlay Nightly Failures (Fullsend)](#overlay-nightly-failures-fullsend).
 
 ---
 
@@ -69,7 +89,8 @@ When your rotation begins:
 1. **Read the [Overview](#overview)** above to understand the role and where alerts come in.
 2. **Familiarize yourself with the [Useful Links and Tools](#useful-links-and-tools)** section -- open the Prow dashboards, join the Slack channels, and make sure you have access.
 3. **Review the [Internal Resources doc](https://docs.google.com/document/d/1yiMU-u2v8_rC-TBawcaJwV5jAvWcbTjhspuTe3KNcCo/edit?usp=sharing)** -- it covers Vault secrets, ReportPortal dashboards, DevLake analytics, and how to unredact artifacts. These are internal tools you'll need during triage.
-4. **Try the [AI Test Triager](#ai-test-triager-nightly-test-alerts)** on a recent failure in `#rhdh-e2e-alerts` to see how it works. It will handle most of the initial analysis for you.
+4. **Try the [AI Test Triager](#ai-test-triager-nightly-test-alerts)** on a recent **RHDH Core** failure in `#rhdh-e2e-alerts` to see how it works. It will handle most of the initial Core analysis for you.
+5. **Open a recent overlay alert** and follow its **E2E AI Triage Summary** link. Skim the classification table so you know what fullsend produces before your first real overlay failure. See [Overlay Nightly Failures (Fullsend)](#overlay-nightly-failures-fullsend).
 
 That's enough to start triaging.
 
@@ -83,6 +104,8 @@ Use the rest of the guide on demand as you encounter specific situations:
 | You can't tell *where* in the pipeline it broke | [Job Lifecycle and Failure Points](#job-lifecycle-and-failure-points) |
 | You need to understand what a specific job does | [Job Types Reference](#job-types-reference) |
 | You're unsure if it's infra, deployment, or a test bug | [Identifying Failure Types](#identifying-failure-types) |
+| An overlay nightly failed in Slack | [Overlay Nightly Failures (Fullsend)](#overlay-nightly-failures-fullsend) |
+| You disagree with a fullsend PR or want it changed | [Redirecting a fullsend PR (`/fs-fix`)](#redirecting-a-fullsend-pr-fs-fix) |
 | You need to re-trigger a job or access a cluster | [Useful Links and Tools](#useful-links-and-tools) |
 
 ### Understanding the CI Scripts
@@ -110,22 +133,25 @@ Small, incremental improvements after each rotation keep this guide accurate and
 
 ### Job Naming Convention
 
-Nightly jobs follow this pattern:
+OpenShift CI job names follow this pattern (see [Naming your CI Jobs](https://docs.ci.openshift.org/how-tos/naming-your-ci-jobs/)):
 
 ```
-periodic-ci-redhat-developer-rhdh-{BRANCH}-e2e-{PLATFORM}-{INSTALL_METHOD}[-{VARIANT}]-nightly
+{JOB_TYPE}-ci-{ORG}-{REPO}-{BRANCH}-e2e-{PLATFORM}-{INSTALL_METHOD}[-{VARIANT}][-nightly]
 ```
 
-Breaking it down:
+After `periodic-ci-` or `pull-ci-`, the next two segments are the GitHub **org** and **repository**. That is how you tell Core jobs (`rhdh`) from overlay jobs (`rhdh-plugin-export-overlays`).
 
 | Segment | Values | Meaning |
 |---------|--------|---------|
+| `{JOB_TYPE}` | `periodic`, `pull` | Nightly (periodic) vs PR check (presubmit) |
+| `{ORG}` | `redhat-developer` | GitHub org |
+| `{REPO}` | `rhdh`, `rhdh-plugin-export-overlays` | GitHub repository |
 | `{BRANCH}` | `main`, `release-1.9`, `release-1.10` | Git branch being tested |
 | `{PLATFORM}` | `ocp`, `ocp-v4-{VER}`, `aks`, `eks`, `gke`, `osd-gcp` | Target platform (OCP versions rotate as new releases come out) |
 | `{INSTALL_METHOD}` | `helm`, `operator` | Installation method |
-| `{VARIANT}` | `auth-providers`, `upgrade` | Optional -- specialized test scenario |
+| `{VARIANT}` | `auth-providers`, `upgrade` | Optional -- specialized test scenario. Overlay nightlies typically have no variant: `e2e-ocp-helm-nightly` |
 
-Examples:
+Examples -- Core (`rhdh`):
 
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly` -- OCP nightly with Helm on main
 - `periodic-ci-redhat-developer-rhdh-release-1.9-e2e-aks-helm-nightly` -- AKS nightly for release 1.9
@@ -133,7 +159,12 @@ Examples:
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-operator-auth-providers-nightly` -- Auth provider tests
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-upgrade-nightly` -- Upgrade scenario tests
 
-PR check jobs use the `pull-ci-` prefix instead of `periodic-ci-`.
+Examples -- Overlay (`rhdh-plugin-export-overlays`):
+
+- `periodic-ci-redhat-developer-rhdh-plugin-export-overlays-main-e2e-ocp-helm-nightly` -- overlay OCP Helm nightly on main
+- `periodic-ci-redhat-developer-rhdh-plugin-export-overlays-release-1.10-e2e-ocp-helm-nightly` -- overlay OCP Helm nightly on a release branch
+
+PR check jobs use the `pull-ci-` prefix instead of `periodic-ci-` (and drop the `-nightly` suffix). Artifact layout is the same GCS/Prow pattern. For overlay failures, start triage from the Slack **E2E AI Triage Summary**, not from this section.
 
 ### How the Pipeline Works
 
@@ -558,11 +589,17 @@ RHDH deployed successfully, but one or more Playwright tests failed.
 
 ## Finding Past Failures
 
-Instead of maintaining a static cheat sheet that goes stale, use these two sources to find how similar failures were investigated and resolved in the past:
+Instead of maintaining a static cheat sheet that goes stale, use these sources to find how similar failures were investigated and resolved in the past:
 
-### AI Test Triager
+### AI Test Triager (RHDH Core)
 
-The **AI Test Triager** (`@Nightly Test Alerts` Slack app) is your first stop for any failure. It automatically analyzes failed nightly jobs, provides root cause analysis, and searches Jira for similar existing issues. See [AI Test Triager](#ai-test-triager-nightly-test-alerts) for details.
+The **AI Test Triager** (`@Nightly Test Alerts` Slack app) is your first stop for **RHDH Core** failures. It automatically analyzes failed Core nightly jobs, provides root cause analysis, and searches Jira for similar existing issues. It is **not configured for overlay**. See [AI Test Triager](#ai-test-triager-nightly-test-alerts) for details.
+
+### Overlay GitHub issues (fullsend)
+
+Previous overlay nightly failures are tracked as GitHub issues on [`rhdh-plugin-export-overlays`](https://github.com/redhat-developer/rhdh-plugin-export-overlays/issues?q=is%3Aissue+%5Bfullsend%5D+E2E), titled `[fullsend] E2E: ...`. Search open and closed issues for the workspace name or a root-cause slug (for example `oidc-auth-module-disabled`) before assuming a failure is new. Fullsend already does this dedup -- if an issue already exists, today's **E2E AI Triage Summary** will point at it instead of opening a duplicate.
+
+Comments on those issues matter. If a past analysis was wrong, a correction on the issue is what the next nightly's triage will read.
 
 ### Resolved Jira `ci-fail` Issues
 
@@ -574,15 +611,132 @@ When investigating a failure, search these resolved issues for keywords from the
 
 ---
 
+## Overlay Nightly Failures (Fullsend)
+
+Overlay E2E lives in [`redhat-developer/rhdh-plugin-export-overlays`](https://github.com/redhat-developer/rhdh-plugin-export-overlays), not in this repo. Plugin source is not in that repository either -- only workspace metadata, overlays, patches, and `workspaces/<name>/e2e-tests/`.
+
+When an overlay nightly fails, **fullsend** is the only automated triage. It analyzes the run, classifies each workspace, files or updates GitHub issues, and opens PRs for the categories it can act on. The Core **AI Test Triager** is not configured for overlay. Your medic job is to validate that fullsend output, merge or redirect the right PRs, and stop the same failures from alerting again the next night.
+
+The rest of this guide (job anatomy, artifact layout, Core job types) still applies when you need to inspect overlay Prow artifacts by hand. Start with the Slack summary, not a from-scratch investigation.
+
+### How a failed overlay nightly shows up
+
+1. The overlay job fails (`periodic-ci-redhat-developer-rhdh-plugin-export-overlays-{BRANCH}-e2e-ocp-helm-nightly`).
+2. `@Nightly Test Alerts` posts in `#rhdh-e2e-alerts` (main) or `#rhdh-e2e-alerts-1-10` (and similar release channels).
+3. The alert includes an `:ai-generated: E2E AI Triage Summary` link. That is a GitHub comment on the trigger issue, for example [issue #3382](https://github.com/redhat-developer/rhdh-plugin-export-overlays/issues/3382#issuecomment-5406665655).
+4. Fullsend then reuses existing `[fullsend] E2E: ...` issues or creates new ones, and the code agent opens PRs where the category allows it.
+
+The trigger issue title is `[fullsend] E2E nightly failure: <branch> (<date>)`. Per-failure issues are titled `[fullsend] E2E: <workspace-or-slug> — <short description>`.
+
+### What the E2E AI Triage Summary contains
+
+Open that comment first. It is a table of the run, plus a short analysis:
+
+| Column | What it tells you |
+|--------|-------------------|
+| **Workspace** | Overlay workspace (or a shared root-cause slug when many workspaces failed the same way) |
+| **Category** | `test_fix`, `product_bug`, `environment`, or `infra_flake` |
+| **Root Cause** | Short slug for the mechanism (for example `oidc-auth-module-disabled`) |
+| **Tests** | How many tests failed for that row |
+| **Issue** | GitHub issue fullsend reused or created. `—` means no issue (typical for `infra_flake`) |
+
+If the same failure was already open, fullsend **comments on the existing issue** instead of duplicating it. If that issue has no open PR, it re-triggers the code agent. When three or more workspaces share a root cause, you get one umbrella issue and one PR rather than a pile of siblings.
+
+### Classification → what you do
+
+| Category | What fullsend does | What you do |
+|----------|--------------------|-------------|
+| `test_fix` | Files a GitHub issue (`e2e-failure` + `ready-to-code`) and the code agent opens a PR that changes test code or e2e config | Validate the analysis and the PR. Merge obvious fixes yourself. Otherwise ping the workspace owners. Use `/fs-fix` if the approach is wrong. Close the issue after merge. |
+| `product_bug` | Files a GitHub issue and opens a PR that skips the test in nightly mode only (`test.skip(!!process.env.E2E_NIGHTLY_MODE, "...")`) | File a Jira bug for the product defect, get the skip PR merged so the next nightlies stay quiet, and leave the skip in place until the underlying bug is fixed. |
+| `environment` | Files a GitHub issue **without** `ready-to-code` (no auto-PR) | Human work: rotate expired credentials, restore missing secrets, or escalate. Example: Azure AD client keys expired. |
+| `infra_flake` | Summary only -- no GitHub issue | Note it and move on. Re-trigger if the run never got to tests. Do not file test bugs. |
+
+### Recommended workflow
+
+When an overlay nightly fails:
+
+1. **Open the Slack alert** in `#rhdh-e2e-alerts` or the matching release channel.
+2. **Click E2E AI Triage Summary.** Read the table and the analysis. Confirm the categories look reasonable -- fullsend is a starting point, not an approved diagnosis.
+3. **Open each linked GitHub issue.** Check the classification, failed tests, root cause, and remediation. Linked PRs show up on the issue.
+4. **Act by category** using the table above (details in the subsections).
+5. **Close the GitHub issues** once the PR is merged or the environment/infra follow-up is done. Leave a comment if you are waiting on a Jira product bug.
+
+#### `test_fix`
+
+The PR changes files under `workspaces/<name>/e2e-tests/` (or shared e2e config). Bot PRs come from `fullsend-ai-coder` and often need `/ok-to-test` before OpenShift CI runs.
+
+- **Genuine, obvious, and small** (wrong selector, missing plugin in `dynamic-plugins.yaml`, one-line timeout that matches existing patterns): **approve and merge it yourself.** You do not need to ping the workspace owner.
+- **Larger, less obvious, or you are not sure:** look up the workspace in [`.github/CODEOWNERS`](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/.github/CODEOWNERS) (`/workspaces/<name>`) and ask the owners to review. For an umbrella issue, ping every affected workspace's owners.
+- **Wrong approach or you want a different implementation:** do not fight the existing diff by hand first -- use [`/fs-fix`](#redirecting-a-fullsend-pr-fs-fix) to have the fix agent update the PR.
+
+Once the PR is merged, close the GitHub issue.
+
+#### `product_bug`
+
+The bug is in plugin or product code, which the overlay repository does not contain. Fullsend will not "fix" the product; it skips the test in nightly mode so the suite stops failing for the same reason every night.
+
+1. Review the skip PR. The skip should be gated on `E2E_NIGHTLY_MODE` so PR checks still exercise the test where that is useful.
+2. **File a Jira bug** with the **`ci-fail`** label for the underlying product defect and assign it to the owning team. Link the Jira from the GitHub issue and the skip PR.
+3. **Merge the skip PR** so upcoming overlay nightlies do not keep alerting on a known product bug.
+4. Keep the GitHub issue open (or comment with the Jira key) until the product bug is fixed and the skip can come out.
+
+#### `environment` and `infra_flake`
+
+- **`environment`:** the GitHub issue is the tracker. Fix the CI environment (Vault secrets, expired cloud keys, quota) or escalate. There will not be a useful test-code PR. If it is a standing failure, also file a Jira **`ci-fail`** issue.
+- **`infra_flake`:** transient cluster/DNS/network. A typical example is global setup failing with `EAI_AGAIN` and zero tests executed. Re-trigger if you want confirmation; do not open test issues.
+
+### When the analysis is wrong
+
+Treat fullsend's root cause as a **hypothesis**. If it is completely off:
+
+1. Comment on the GitHub issue(s) it created or reused. Say what the actual mechanism is, and why the proposed remediation is wrong.
+2. That comment is what the next similar run will see. Fullsend searches existing `[fullsend] E2E:` issues and their bodies/comments when it dedups -- a correction now gives the next occurrence the right context.
+3. Close or recategorize the issue if it should not stay open as a test fix. Use `/fs-fix-stop` on a bad PR if you need the fix agent to leave it alone.
+
+### Redirecting a fullsend PR (`/fs-fix`)
+
+Slash commands on overlay issues and PRs are restricted to org members and collaborators.
+
+| Command | Where | What it does |
+|---------|-------|----------------|
+| `/fs-fix <instruction>` | On the PR | Runs the fix agent on the existing PR branch. Your instruction takes precedence over the original remediation. |
+| `/fs-fix-stop` | On the PR | Disables the fix agent (`fullsend-no-fix` label). Remove the label or comment `/fs-fix` to re-enable. |
+
+Example:
+
+```
+/fs-fix Do not increase the timeout. Wait for the heading to be visible before asserting the table rows.
+```
+
+Use this when you agree a change is needed but disagree with *how* fullsend implemented it.
+
+### Finding workspace owners
+
+Owners of overlay e2e tests are the CODEOWNERS of that workspace:
+
+- File: [`rhdh-plugin-export-overlays/.github/CODEOWNERS`](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/.github/CODEOWNERS)
+- Pattern: `/workspaces/<name>`
+
+Ping them in Slack or on the PR when the `test_fix` is not an obvious one-liner. For `product_bug`, they (or the product team) own the Jira; you still own getting the skip merged.
+
+### Agent configuration (optional)
+
+You do not need this during a normal rotation. If you want to see how classification, issue filing, and `/fs-fix` are wired:
+
+- [Overlay fullsend docs](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/docs/fullsend.md)
+- [E2E nightly fix conventions](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/AGENTS.md) (what the code agent is allowed to change, and the `product_bug` skip pattern)
+
+---
+
 ## Useful Links and Tools
 
 ### AI Test Triager (`@Nightly Test Alerts`)
 
-The **AI Test Triager** is an automated analysis tool integrated into the `@Nightly Test Alerts` Slack app. It significantly speeds up the triage process by doing much of the investigation work for you.
+The **AI Test Triager** is an automated analysis tool integrated into the `@Nightly Test Alerts` Slack app. It is configured for **RHDH Core** only. Overlay nightlies are not analyzed by this tool -- use fullsend's **E2E AI Triage Summary** instead. See [Overlay Nightly Failures (Fullsend)](#overlay-nightly-failures-fullsend).
 
-**How it works**:
-- **Automatically triggered** on every failed nightly job -- the analysis appears alongside the failure alert in Slack.
-- **Manually invoked** by tagging `@Nightly Test Alerts` in Slack when you want to analyze a specific failure.
+**How it works** (RHDH Core):
+- **Automatically triggered** on every failed **RHDH Core** nightly job -- the analysis appears alongside the failure alert in Slack.
+- **Manually invoked** by tagging `@Nightly Test Alerts` in Slack when you want to analyze a specific **Core** failure.
 
 **What it does**:
 
@@ -595,11 +749,25 @@ The **AI Test Triager** is an automated analysis tool integrated into the `@Nigh
 | **Duplicate detection** | Searches Jira for semantically similar existing issues to avoid duplicates |
 | **Bug creation** | Can create or update Jira bug tickets with detailed findings |
 
-**Recommended workflow**:
+**Recommended workflow** (RHDH Core):
 1. A nightly job fails and the alert appears in Slack with the AI analysis.
 2. Review the AI triager's root cause analysis and similar Jira issues.
 3. If it's a known issue, confirm and move on.
 4. If it's a new issue, use the triager's output to create a Jira bug (it can do this for you) or investigate further manually.
+
+Do not use this workflow for overlay jobs (`rhdh-plugin-export-overlays`). The AI Test Triager is not configured for them. Use [Overlay Nightly Failures (Fullsend)](#overlay-nightly-failures-fullsend).
+
+### Overlay fullsend (plugin-export-overlays)
+
+| Link | Description |
+|------|-------------|
+| [Overlay nightly jobs](https://prow.ci.openshift.org/?type=periodic&job=periodic-ci-redhat-developer-rhdh-plugin-export-overlays-*-e2e-*) | Overlay periodic jobs |
+| [Overlay nightly history (main Helm)](https://prow.ci.openshift.org/job-history/gs/test-platform-results/logs/periodic-ci-redhat-developer-rhdh-plugin-export-overlays-main-e2e-ocp-helm-nightly) | Historical overlay Helm nightlies on main |
+| [Configured overlay jobs](https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh-plugin-export-overlays) | All configured jobs for the overlay repo |
+| [`[fullsend] E2E` issues](https://github.com/redhat-developer/rhdh-plugin-export-overlays/issues?q=is%3Aissue+%5Bfullsend%5D+E2E) | Trigger issues and per-failure issues |
+| [PRs by `fullsend-ai-coder`](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pulls?q=author%3Aapp%2Ffullsend-ai-coder) | Auto-opened test-fix and skip PRs |
+| [Overlay CODEOWNERS](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/.github/CODEOWNERS) | Workspace test owners |
+| [Overlay fullsend docs](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/docs/fullsend.md) | Agent triggers and slash commands |
 
 ### Prow Dashboard
 
@@ -633,3 +801,5 @@ Use [`.ci/pipelines/trigger-nightly-job.sh`](../../.ci/pipelines/trigger-nightly
 - [`.ci/pipelines/lib/README.md`](../../.ci/pipelines/lib/README.md) -- full list of pipeline library modules and function signatures
 - [`CI.md`](CI.md) -- CI testing processes, job definitions, openshift/release repo links
 - [OpenShift CI Documentation](https://docs.ci.openshift.org/) -- Prow, ci-operator, cluster pools, artifacts
+- [Overlay fullsend docs](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/docs/fullsend.md) -- overlay E2E triage, code, and fix agents
+- [Overlay AGENTS.md](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/AGENTS.md) -- overlay repo conventions and E2E nightly fix rules

@@ -1,0 +1,66 @@
+# Minimal Backstage CR for disconnected operator smoke test.
+# Rendered via envsubst (requires MIRROR_REGISTRY_URL, RELEASE_NAME).
+#
+# Guest login + homepage only. flavours: [] disables default flavours
+# (lightspeed) to avoid extra sidecar images.
+#
+# Hub image: CSV RELATED_IMAGE_backstage (GA rhdh-hub-rhel9). prepare +
+# oc-mirror IDMS rewrites pulls for kubelet.
+#
+# CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator from the mirrored
+# catalog digest so install-dynamic-plugins does not pull the hub profile
+# default digest missing from the mirror.
+#
+# extraFiles mounts on install-dynamic-plugins only:
+#   registries.conf  — redirects plugin pulls to the mirror registry
+#   policy.json      — permissive signature policy (RH signature server unreachable)
+#   ca.crt           — mirror registry TLS trust
+#   auth.json        — registry credentials (mounted to /tmp because the image
+#                      lacks /opt/app-root/src/.config/containers)
+kind: Backstage
+apiVersion: rhdh.redhat.com/v1alpha5
+metadata:
+  name: rhdh
+spec:
+  flavours: []
+  application:
+    dynamicPluginsConfigMapName: dynamic-plugins-disconnected-smoke
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh-disconnected-smoke
+      mountPath: /opt/app-root/src
+    extraEnvs:
+      envs:
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
+        - name: NODE_ENV
+          value: "production"
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+        - name: REGISTRY_AUTH_FILE
+          value: "/tmp/auth.json"
+          containers:
+            - install-dynamic-plugins
+    extraFiles:
+      configMaps:
+        - name: rhdh-plugin-mirror-conf
+          key: rhdh-registries.conf
+          mountPath: /etc/containers/registries.conf.d
+          containers:
+            - install-dynamic-plugins
+        - name: rhdh-plugin-mirror-policy
+          key: policy.json
+          mountPath: /etc/containers
+          containers:
+            - install-dynamic-plugins
+        - name: mirror-registry-ca
+          key: ca.crt
+          mountPath: /etc/containers/certs.d/${MIRROR_REGISTRY_URL}
+          containers:
+            - install-dynamic-plugins
+      secrets:
+        - name: ${RELEASE_NAME}-dynamic-plugins-registry-auth
+          key: auth.json
+          mountPath: /tmp
+          containers:
+            - install-dynamic-plugins

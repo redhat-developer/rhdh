@@ -86,6 +86,17 @@ cd e2e-tests
 ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-eks-helm-nightly -r rhdh-community/rhdh -t next
 ```
 
+**Example — disconnected OCP nightlies** (requires a real OpenShift cluster; connected is fine; no bastion):
+```bash
+cd e2e-tests
+# Operator: prepare uses --to-registry OCP_INTERNAL; MIRROR_* bootstrapped in-container
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly -r rhdh-community/rhdh -t next -s
+# Helm: oc-mirror to the cluster image registry route
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly -r rhdh-community/rhdh -t next -s
+```
+
+`local-run.sh` refuses disconnected jobs unless `oc` is logged into OpenShift. It passes `DISCONNECTED=true` and `LOCAL_DISCONNECTED=1`; the runner writes mirror auth/CA under `${SHARED_DIR}/disconnected-mirror/` (not on the host). Prefer Operator first when validating `OCP_INTERNAL`, then Helm. Air-gap prepare details live in rhdh-operator — do not paste them here.
+
 **Parameters:**
 - `-j / --job`: The **full Prow CI job name** extracted from the Prow URL. The `openshift-ci-tests.sh` handler uses bash glob patterns (like `*ocp*helm*nightly*`) to match, so the full name works correctly. Example: `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4-20-helm-nightly`
 - `-r / --repo`: Image repository (**required** for CLI mode — without it the script enters interactive mode)

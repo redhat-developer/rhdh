@@ -20,7 +20,7 @@ Options:
   -j, --job JOB_NAME      Job name (e.g., pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm)
                           Platform is derived from job name (*ocp*, *aks*, *eks*, *gke*, *osd*)
   -R, --registry REGISTRY Image registry (default: quay.io)
-  -r, --repo IMAGE_REPO   Image repository (e.g., rhdh/rhdh-hub-rhel9)
+  -r, --repo IMAGE_REPO   Image repository (e.g., rhdh/rhdh-hub-rhel9 or rhdh/rhdh-hub-rhel10)
   -t, --tag TAG_NAME      Image tag (e.g., next, latest, 1.5)
   -p, --pr PR_NUMBER      PR number (sets repo to rhdh-community/rhdh, tag to pr-<number>)
   -i, --runner-image IMG  Override the e2e runner container image
@@ -32,7 +32,10 @@ Examples:
   # Interactive mode (default)
   ./local-run.sh
 
-  # Deploy downstream next image on OCP, skip tests
+  # Deploy downstream RHEL 10 next image on OCP, skip tests
+  ./local-run.sh --repo rhdh/rhdh-hub-rhel10 --tag next --skip-tests
+
+  # Deploy downstream RHEL 9 next image on OCP, skip tests
   ./local-run.sh --repo rhdh/rhdh-hub-rhel9 --tag next --skip-tests
 
   # Test a PR image on OCP
@@ -46,6 +49,10 @@ Examples:
 
   # Run on GKE
   ./local-run.sh -j periodic-ci-gke-helm-nightly -r rhdh/rhdh-hub-rhel9 -t next -s
+
+  # Disconnected OCP (requires a real OpenShift cluster; uses internal image registry)
+  ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly -r rhdh-community/rhdh -t next -s
+  ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly -r rhdh-community/rhdh -t next -s
 
   # Use a locally built runner image
   ./local-run.sh --runner-image localhost/rhdh-e2e-runner:test
@@ -221,7 +228,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   echo "  6) AKS Helm Nightly (*aks*helm*nightly*)"
   echo "  7) EKS Helm Nightly (*eks*helm*nightly*)"
   echo "  8) GKE Helm Nightly (*gke*helm*nightly*)"
-  echo "  9) Custom job name"
+  echo "  9) OCP Disconnected Operator Nightly (*ocp*disconnected*operator*nightly*)"
+  echo " 10) OCP Disconnected Helm Nightly (*ocp*disconnected*helm*nightly*)"
+  echo " 11) Custom job name"
   echo ""
   read -r -p "Enter choice [1]: " job_choice
   job_choice=${job_choice:-1}
@@ -235,7 +244,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     6) JOB_NAME="periodic-ci-aks-helm-nightly" ;;
     7) JOB_NAME="periodic-ci-eks-helm-nightly" ;;
     8) JOB_NAME="periodic-ci-gke-helm-nightly" ;;
-    9)
+    9) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly" ;;
+    10) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly" ;;
+    11)
       read -r -p "Enter custom JOB_NAME: " JOB_NAME
       ;;
     *) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;
@@ -245,17 +256,19 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
 
   # Image selection - Downstream vs PR vs Released vs Custom
   echo "Select image type:"
-  echo "  1) Downstream image (quay.io/rhdh/rhdh-hub-rhel9)"
-  echo "  2) PR image (quay.io/rhdh-community/rhdh)"
-  echo "  3) Released image (registry.redhat.io/rhdh/rhdh-hub-rhel9)"
-  echo "  4) Custom registry image"
+  echo "  1) Downstream RHEL 9 image (quay.io/rhdh/rhdh-hub-rhel9)"
+  echo "  2) Downstream RHEL 10 image (quay.io/rhdh/rhdh-hub-rhel10)"
+  echo "  3) PR image (quay.io/rhdh-community/rhdh)"
+  echo "  4) Released RHEL 9 image (registry.redhat.io/rhdh/rhdh-hub-rhel9)"
+  echo "  5) Released RHEL 10 image (registry.redhat.io/rhdh/rhdh-hub-rhel10)"
+  echo "  6) Custom registry image"
   echo ""
-  read -r -p "Enter choice [1]: " image_type_choice
-  image_type_choice=${image_type_choice:-1}
+  read -r -p "Enter choice [2]: " image_type_choice
+  image_type_choice=${image_type_choice:-2}
 
   case "$image_type_choice" in
     1)
-      # Downstream image
+      # Downstream RHEL 9 image
       IMAGE_REGISTRY="quay.io"
       IMAGE_REPO="rhdh/rhdh-hub-rhel9"
       echo ""
@@ -277,6 +290,28 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
       esac
       ;;
     2)
+      # Downstream RHEL 10 image
+      IMAGE_REGISTRY="quay.io"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel10"
+      echo ""
+      echo "Select image tag (quay.io/rhdh/rhdh-hub-rhel10):"
+      echo "  1) next (latest development build)"
+      echo "  2) latest (latest stable release)"
+      echo "  3) Release-specific tag (e.g., 2.1, 2.0)"
+      echo ""
+      read -r -p "Enter choice [1]: " tag_choice
+      tag_choice=${tag_choice:-1}
+
+      case "$tag_choice" in
+        1) TAG_NAME="next" ;;
+        2) TAG_NAME="latest" ;;
+        3)
+          read -r -p "Enter release tag (e.g., 2.1): " TAG_NAME
+          ;;
+        *) TAG_NAME="next" ;;
+      esac
+      ;;
+    3)
       # PR image
       IMAGE_REGISTRY="quay.io"
       IMAGE_REPO="rhdh-community/rhdh"
@@ -284,23 +319,30 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
       read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
       TAG_NAME="pr-${PR_NUMBER}"
       ;;
-    3)
-      # Released image
+    4)
+      # Released RHEL 9 image
       IMAGE_REGISTRY="registry.redhat.io"
       IMAGE_REPO="rhdh/rhdh-hub-rhel9"
       echo ""
       read -r -p "Enter version tag (e.g., 1.5, 1.4): " TAG_NAME
       ;;
-    4)
+    5)
+      # Released RHEL 10 image
+      IMAGE_REGISTRY="registry.redhat.io"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel10"
+      echo ""
+      read -r -p "Enter version tag (e.g., 2.1, 2.0): " TAG_NAME
+      ;;
+    6)
       # Custom registry image
       echo ""
       read -r -p "Enter image registry (e.g., registry.example.com): " IMAGE_REGISTRY
-      read -r -p "Enter image repository (e.g., rhdh/rhdh-hub-rhel9): " IMAGE_REPO
-      read -r -p "Enter image tag (e.g., 1.5): " TAG_NAME
+      read -r -p "Enter image repository (e.g., rhdh/rhdh-hub-rhel10): " IMAGE_REPO
+      read -r -p "Enter image tag (e.g., 2.1): " TAG_NAME
       ;;
     *)
       IMAGE_REGISTRY="quay.io"
-      IMAGE_REPO="rhdh/rhdh-hub-rhel9"
+      IMAGE_REPO="rhdh/rhdh-hub-rhel10"
       TAG_NAME="next"
       ;;
   esac
@@ -355,11 +397,35 @@ else
   CONTAINER_PLATFORM="ocp"
 fi
 
+# Disconnected OCP local path: real OpenShift only; runner bootstraps MIRROR_* in-container.
+DISCONNECTED="${DISCONNECTED:-false}"
+LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}"
+if [[ "$JOB_NAME" == *"disconnected"* ]]; then
+  if [[ "$CONTAINER_PLATFORM" != "ocp" && "$CONTAINER_PLATFORM" != "osd-gcp" ]]; then
+    log::error "Disconnected jobs require an OpenShift cluster (JOB_NAME=$JOB_NAME)."
+    exit 1
+  fi
+  if ! oc whoami > /dev/null 2>&1; then
+    log::error "Disconnected jobs require oc login to a live OpenShift cluster before local-run.sh."
+    exit 1
+  fi
+  if ! oc get infrastructures.config.openshift.io cluster > /dev/null 2>&1; then
+    log::error "Current kube context is not an OpenShift API (infrastructures.config.openshift.io missing)."
+    exit 1
+  fi
+  DISCONNECTED="true"
+  LOCAL_DISCONNECTED="1"
+  log::info "Disconnected local mode: DISCONNECTED=true LOCAL_DISCONNECTED=1 (internal image registry)"
+fi
+
 log::section "Configuration Summary"
 log::info "JOB_NAME:    $JOB_NAME"
 log::info "PLATFORM:    $CONTAINER_PLATFORM"
 log::info "IMAGE:       ${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
 log::info "SKIP_TESTS:  $SKIP_TESTS"
+if [[ "${DISCONNECTED}" == "true" ]]; then
+  log::info "DISCONNECTED / LOCAL_DISCONNECTED: ${DISCONNECTED} / ${LOCAL_DISCONNECTED}"
+fi
 echo ""
 if [[ "$CLI_MODE" == "false" ]]; then
   read -r -p "Press Enter to continue or Ctrl+C to abort..."
@@ -379,10 +445,28 @@ fi
 
 export VAULT_ADDR='https://vault.ci.openshift.org'
 
-# Login to vault and capture the token
+# Login to vault and capture the token (reuse only if the token can read QE secrets)
 log::section "Vault Login"
-vault login -no-print -method=oidc
-VAULT_TOKEN=$(vault print token)
+vault_token_usable() {
+  local token=${1:-}
+  [[ -n "$token" ]] || return 1
+  VAULT_TOKEN="$token" vault kv get -mount="kv" "selfservice/rhdh-qe/rhdh" > /dev/null 2>&1
+}
+
+if [[ -n "${VAULT_TOKEN:-}" ]] && vault_token_usable "$VAULT_TOKEN"; then
+  log::info "Using existing VAULT_TOKEN from environment"
+elif existing_token=$(vault print token 2>/dev/null) && vault_token_usable "$existing_token"; then
+  VAULT_TOKEN="$existing_token"
+  log::info "Reusing existing vault token from local vault CLI"
+elif [[ -n "${VAULT_TOKEN:-}" ]] || [[ -n "${existing_token:-}" ]]; then
+  log::warn "Existing vault token cannot read QE secrets; falling back to OIDC login"
+  vault login -no-print -method=oidc
+  VAULT_TOKEN=$(vault print token)
+else
+  vault login -no-print -method=oidc
+  VAULT_TOKEN=$(vault print token)
+fi
+export VAULT_TOKEN
 
 # Set up cluster access based on platform (CONTAINER_PLATFORM already derived above)
 log::section "Setting up cluster access"
@@ -465,6 +549,8 @@ podman run -v "$WORK_DIR":/tmp/rhdh \
   -e IMAGE_REPO="$IMAGE_REPO" \
   -e TAG_NAME="$TAG_NAME" \
   -e SKIP_TESTS="$SKIP_TESTS" \
+  -e DISCONNECTED="$DISCONNECTED" \
+  -e LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}" \
   "$RUNNER_IMAGE" \
   /bin/bash /tmp/container-init.sh 2>&1 | tee "$CONTAINER_LOG"
 CONTAINER_EXIT_CODE=${PIPESTATUS[0]}

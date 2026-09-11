@@ -1,0 +1,15 @@
+# Disconnected smoke: homepage-only dynamic plugins (Operator ConfigMap).
+# Rendered via envsubst (requires HOMEPAGE_PLUGIN_PACKAGE).
+# includes: [] skips dynamic-plugins.default.yaml (unpublished :tag refs).
+# package is the digest-pinned OCI from the catalog (ref:// needs includes).
+includes: []
+plugins:
+  - package: ${HOMEPAGE_PLUGIN_PACKAGE}
+    enabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-homepage:
+            dynamicRoutes:
+              - path: /
+                importName: DynamicHomePage

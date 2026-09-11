@@ -73,8 +73,7 @@ export type MountPoint = {
   Component: React.ComponentType<React.PropsWithChildren>;
   config?: MountPointConfig;
   staticJSXContent?:
-    | React.ReactNode
-    | ((config: DynamicRootConfig) => React.ReactNode);
+    React.ReactNode | ((config: DynamicRootConfig) => React.ReactNode);
 };
 
 export type EntityTabOverrides = Record<

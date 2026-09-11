@@ -20,10 +20,10 @@
 #   # Trigger with a custom image (e.g. RC verification):
 #   ./trigger-nightly-job.sh \
 #     --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \
-#     --image-repo rhdh/rhdh-hub-rhel9 \
+#     --image-repo rhdh/rhdh-hub-rhel10 \
 #     --tag 1.9-227 \
-#     --catalog-index-tag 1.9 \
-#     --chart-version 1.9-227-CI
+#     --catalog-index-tag 1.9
+#   # --chart-version is inferred from --tag; pass it only to pair a different chart.
 #
 #   # Trigger GA verification (released images from registry.access.redhat.com):
 #   ./trigger-nightly-job.sh \
@@ -81,7 +81,7 @@ Required:
 
 Optional overrides (passed as env var overrides to the job):
   -I, --image-registry IMAGE_REGISTRY  Override the image registry (default: quay.io).
-  -q, --image-repo IMAGE_REPO  Override the image repository (e.g. rhdh/rhdh-hub-rhel9). Requires --tag to be set.
+  -q, --image-repo IMAGE_REPO  Override the image repository (e.g. rhdh/rhdh-hub-rhel9 or rhdh/rhdh-hub-rhel10). Requires --tag to be set.
   -t, --tag TAG_NAME           Override the image tag (e.g. 1.9-227).
   -o, --org GITHUB_ORG_NAME    Override the GitHub org (default in job: redhat-developer).
   -r, --repo GITHUB_REPO_NAME  Override the GitHub repo name (default in job: rhdh).
@@ -101,7 +101,9 @@ Examples:
   # RC verification (productized image + matching catalog index + chart):
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \\
     --image-repo rhdh/rhdh-hub-rhel9 --tag 1.9-227 \\
-    --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9 --chart-version 1.9-227-CI
+    --catalog-index-image quay.io/rhdh/plugin-catalog-index:1.9
+  # The chart is inferred from --tag (1.9-227 -> 1.9-227-CI, 1.9.4 -> 1.9.4).
+  # Pass --chart-version only to pair the image with a different chart.
 
   # GA verification (released images from Red Hat registries):
   $(basename "$0") --job periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly \\
