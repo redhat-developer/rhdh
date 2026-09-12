@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: pg-upgrade-data-proof
+  title: PG Upgrade Data Proof
+  description: RHIDP-14594 persistence proof seeded before PostgreSQL major upgrade
+  tags:
+    - pg-upgrade-proof
+    - rhidp-14594
+spec:
+  type: service
+  lifecycle: experimental
+  owner: guests

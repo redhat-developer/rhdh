@@ -18,6 +18,8 @@ export type PortForwardOptions = {
   stopTimeoutMs?: number;
 };
 
+const SPAWN_STDIO = ["ignore", "pipe", "pipe"] as const;
+
 export class PortForwardSession {
   private child: ChildProcessByStdio<null, Readable, Readable> | null = null;
   private readonly output: string[] = [];
@@ -35,14 +37,16 @@ export class PortForwardSession {
 
     this.output.length = 0;
     this.outputBuffer = "";
+    // detached: true makes the child a process-group leader so stop() can kill
+    // kubectl (or other) grandchildren started via shellCommand.
+    const spawnOpts = {
+      stdio: SPAWN_STDIO,
+      detached: true,
+    } as const;
     const child =
       "shellCommand" in this.command
-        ? spawn("/bin/sh", ["-c", this.command.shellCommand], {
-            stdio: ["ignore", "pipe", "pipe"],
-          })
-        : spawn(this.command.command, this.command.args, {
-            stdio: ["ignore", "pipe", "pipe"],
-          });
+        ? spawn("/bin/sh", ["-c", this.command.shellCommand], spawnOpts)
+        : spawn(this.command.command, this.command.args, spawnOpts);
 
     this.child = child;
 
@@ -113,16 +117,34 @@ export class PortForwardSession {
       return;
     }
 
+    const pid = child.pid;
+    if (pid === undefined || pid === 0) {
+      return;
+    }
+
     const stopTimeoutMs = this.options.stopTimeoutMs ?? 5_000;
     const killTimeout = setTimeout(() => {
       if (child.exitCode === null && child.signalCode === null) {
-        child.kill("SIGKILL");
+        PortForwardSession.killProcessGroup(pid, "SIGKILL");
       }
     }, stopTimeoutMs);
 
-    child.kill("SIGTERM");
+    PortForwardSession.killProcessGroup(pid, "SIGTERM");
     await once(child, "exit");
     clearTimeout(killTimeout);
+  }
+
+  private static killProcessGroup(pid: number, signal: NodeJS.Signals): void {
+    try {
+      // Negative PID kills the whole process group (shell + kubectl children).
+      process.kill(-pid, signal);
+    } catch {
+      try {
+        process.kill(pid, signal);
+      } catch {
+        // Already exited.
+      }
+    }
   }
 }
 
