@@ -1,0 +1,22 @@
+# PROTOTYPE — clang/cmake/scriptc toolchain for coverage against the monorepo.
+FROM docker.io/library/node:24-bookworm
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+  && curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key \
+    | gpg --dearmor -o /usr/share/keyrings/llvm.gpg \
+  && echo "deb [signed-by=/usr/share/keyrings/llvm.gpg] http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm-18 main" \
+    > /etc/apt/sources.list.d/llvm.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends clang-18 cmake build-essential \
+  && ln -sf /usr/bin/clang-18 /usr/local/bin/clang \
+  && ln -sf /usr/bin/clang++-18 /usr/local/bin/clang++ \
+  && rm -rf /var/lib/apt/lists/*
+
+# Pre-seed scriptc so coverage runs do not need a registry hit if npm cache is cold.
+WORKDIR /opt/scriptc
+COPY package.json ./
+RUN npm install \
+  && ln -sf /opt/scriptc/node_modules/.bin/scriptc /usr/local/bin/scriptc
+
+WORKDIR /work

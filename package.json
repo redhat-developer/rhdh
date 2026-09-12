@@ -29,11 +29,16 @@
     "rulesync:generate": "rulesync generate",
     "rulesync:import:cursor": "rulesync import --targets cursor",
     "rulesync:import:claude": "rulesync import --targets claudecode",
-    "rulesync:import:opencode": "rulesync import --targets opencode"
+    "rulesync:import:opencode": "rulesync import --targets opencode",
+    "prototype:scriptc": "bash ./packages/backend-scriptc/compare.sh",
+    "prototype:scriptc:image": "bash ./packages/backend-scriptc/image.sh",
+    "prototype:scriptc:coverage": "bash ./packages/backend-scriptc/coverage-inventory.sh",
+    "prototype:scriptc:bench": "bash ./packages/backend-scriptc/benchmark.sh"
   },
   "workspaces": {
     "packages": [
       "packages/*",
+      "!packages/backend-scriptc",
       "plugins/*"
     ]
   },
