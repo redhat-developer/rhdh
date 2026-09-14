@@ -28,8 +28,8 @@ Functions: `k8s_wait::deployment`, `k8s_wait::job`, `k8s_wait::service`, `k8s_wa
 Operator and OLM installations.
 
 Functions: `operator::install_subscription`, `operator::check_status`,
-`operator::install_postgres_ocp`, `operator::install_postgres_k8s`, `operator::install_pipelines`,
-`operator::install_olm`, `operator::uninstall_olm`
+`operator::install_postgres_ocp`, `operator::install_postgres_k8s`, `operator::install_olm`,
+`operator::uninstall_olm`
 
 ### `helm.sh`
 

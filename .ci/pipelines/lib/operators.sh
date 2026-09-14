@@ -71,29 +71,6 @@ operator::install_postgres_ocp() {
   return 0
 }
 
-# Install Red Hat OpenShift Pipelines operator if not present
-operator::install_pipelines() {
-  local display_name="Red Hat OpenShift Pipelines"
-
-  if oc get csv -n "${OPERATOR_NAMESPACE}" | grep -q "${display_name}"; then
-    log::info "Red Hat OpenShift Pipelines operator is already installed."
-    return 0
-  fi
-
-  log::info "Red Hat OpenShift Pipelines operator is not installed. Installing..."
-  operator::install_subscription openshift-pipelines-operator "${OPERATOR_NAMESPACE}" latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
-
-  # Wait for Tekton Pipelines CRDs to be available
-  log::info "Waiting for Tekton Pipelines CRDs to be created..."
-  k8s_wait::crd "tasks.tekton.dev" 300 10 || return 1
-  k8s_wait::crd "pipelines.tekton.dev" 300 10 || return 1
-
-  # Note: Calling script should still wait for deployment readiness:
-  # k8s_wait::deployment "openshift-operators" "pipelines" 30 10
-  # k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10
-  return 0
-}
-
 # Install Tekton Pipelines (alternative to OpenShift Pipelines for Kubernetes)
 operator::install_tekton() {
   local display_name="tekton-pipelines-webhook"
