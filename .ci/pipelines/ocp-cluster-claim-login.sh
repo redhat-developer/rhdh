@@ -8,6 +8,8 @@ SECRET_PROFILE="${SCRIPT_DIR}/../../e2e-tests/ephemeral-cluster-secrets.profile.
 source "${SCRIPT_DIR}/lib/log.sh"
 # shellcheck source=e2e-tests/local-secrets.sh
 source "${SCRIPT_DIR}/../../e2e-tests/local-secrets.sh"
+# shellcheck source=.ci/pipelines/lib/secrets.sh
+source "${SCRIPT_DIR}/lib/secrets.sh"
 
 # Check if prow log URL is provided as parameter, otherwise prompt for it
 if [[ $# -eq 0 ]]; then
@@ -16,10 +18,23 @@ else
   input_url="$1"
 fi
 
-local_secrets::reexec_with_profile "${SCRIPT_DIR}/../../e2e-tests" \
+# The stream decoder below requires Node, so validate it before secret setup.
+for cmd in curl oc node; do
+  if ! command -v "$cmd" > /dev/null 2>&1; then
+    log::error "'$cmd' CLI not found. Please install it before running this script."
+    exit 1
+  fi
+done
+
+local_secrets::reexec_with_stream "${SCRIPT_DIR}/../../e2e-tests" \
   "$SECRET_PROFILE" RHDH_CLUSTER_CLAIM_SECRETS_WRAPPED "$0" "$input_url" || exit 1
-local_secrets::validate_secret_names "${RHDH_E2E_SECRET_NAMES:-}" || exit 1
-unset RHDH_E2E_SECRET_NAMES BW_SESSION BW_CLIENTID BW_CLIENTSECRET
+SECRET_RUNTIME_DIR=$(mktemp -d "${TMPDIR:-.}/rhdh-cluster-claim-secrets.XXXXXX")
+trap 'rm -rf "$SECRET_RUNTIME_DIR"' EXIT
+node "${SCRIPT_DIR}/../../e2e-tests/decode-secret-stream.mjs" \
+  "$SECRET_RUNTIME_DIR" <&3
+exec 3<&-
+secrets::load_directory "$SECRET_RUNTIME_DIR"
+unset RHDH_E2E_SECRET_FD BW_SESSION BW_CLIENTID BW_CLIENTSECRET
 
 id=$(echo "$input_url" | awk -F'/' '{print $NF}')
 job=$(echo "$input_url" | awk -F'/' '{print $(NF-1)}')
@@ -39,13 +54,6 @@ elif [[ ! "$namespace" =~ ^rhdh-[0-9]+-[0-9]+-us-east-2 ]]; then
 fi
 
 # ── Bitwarden credentials ─────────────────────────────────────────────────────
-
-for cmd in curl oc; do
-  if ! command -v "$cmd" > /dev/null 2>&1; then
-    log::error "'$cmd' CLI not found. Please install it before running this script."
-    exit 1
-  fi
-done
 
 CLUSTER_ADMIN_USERNAME=${EPHEMERAL_CLUSTER_ADMIN_USERNAME:-}
 CLUSTER_ADMIN_PASSWORD=${EPHEMERAL_CLUSTER_ADMIN_PASSWORD:-}

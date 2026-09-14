@@ -112,7 +112,7 @@ GITHUB_ORG_2=amFudXMtdGVzdA==
 # Import mounted CI secrets once. Local Bitwarden runs inject the same names
 # into the environment, so the loader is intentionally a no-op without the
 # mounted directory.
-secrets::load_directory "/tmp/secrets"
+secrets::load_directory "${RHDH_SECRET_MOUNT_DIR:-/tmp/secrets}"
 
 ENCODED_CLUSTER_NAME=$(echo "my-cluster" | base64)
 K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
@@ -123,7 +123,7 @@ K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
 ## Azure Database for PostgreSQL credentials
 # Database TLS certificates remain file paths to avoid loading PEM content into
 # the process environment.
-secrets::prepare_database_certificates "/tmp/secrets" \
+secrets::prepare_database_certificates "${RHDH_SECRET_MOUNT_DIR:-/tmp/secrets}" \
   "${RHDH_SECRET_RUNTIME_DIR:-${SHARED_DIR}/.rhdh-secrets}"
 
 JUNIT_RESULTS="junit-results.xml"

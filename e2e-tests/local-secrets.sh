@@ -34,35 +34,26 @@ local_secrets::resolve_cli() {
   fi
 }
 
-local_secrets::require_metadata_support() {
+local_secrets::require_stream_support() {
   local help
 
   if ! help=$("${LOCAL_SECRETS_CLI[@]}" --help 2>&1); then
     printf 'Unable to query rhdh-e2e-secrets capabilities\n' >&2
     return 1
   fi
-  if [[ "$help" != *"--expose-secret-names"* ]]; then
-    printf 'rhdh-e2e-secrets must support --expose-secret-names\n' >&2
+  if [[ "$help" != *"--stream-secrets"* ]]; then
+    printf 'rhdh-e2e-secrets must support --stream-secrets\n' >&2
     return 1
   fi
 }
 
-local_secrets::reexec_with_profile() {
-  local script_dir=${1:?"Script directory is required"}
-  local profile=${2:?"Secret profile is required"}
-  local wrapped_variable=${3:?"Wrapper environment name is required"}
-  shift 3
-
-  [[ "$wrapped_variable" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || {
-    printf 'Invalid wrapper environment name\n' >&2
-    return 1
-  }
-  if [[ "${!wrapped_variable:-}" == "1" ]]; then
-    return 0
-  fi
+local_secrets::exec_with_stream() {
+  local script_dir=${1:?'Script directory is required'}
+  local profile=${2:?'Secret profile is required'}
+  shift 2
 
   local_secrets::resolve_cli "$script_dir" || return 1
-  local_secrets::require_metadata_support || return 1
+  local_secrets::require_stream_support || return 1
   if [[ -z "${BW_SESSION:-}" ]]; then
     printf 'BW_SESSION is required. Unlock Bitwarden before running this command.\n' >&2
     return 1
@@ -76,36 +67,28 @@ local_secrets::reexec_with_profile() {
     return 1
   fi
 
-  printf -v "$wrapped_variable" '%s' 1
-  # shellcheck disable=SC2163
-  export "$wrapped_variable"
   exec "${LOCAL_SECRETS_CLI[@]}" exec \
     --profile "$profile" \
-    --expose-secret-names \
+    --stream-secrets \
     -- "$@"
 }
 
-local_secrets::validate_secret_names() {
-  local metadata=${1:?"Secret metadata is required"}
-  local name
+local_secrets::reexec_with_stream() {
+  local script_dir=${1:?'Script directory is required'}
+  local profile=${2:?'Secret profile is required'}
+  local wrapped_variable=${3:?'Wrapper environment name is required'}
+  shift 3
 
-  if ! printf '%s' "$metadata" | jq -e \
-    'type == "array" and length > 0 and all(.[]; type == "string") and (length == (unique | length))' \
-    > /dev/null; then
-    printf 'RHDH_E2E_SECRET_NAMES must be a non-empty JSON array of unique names\n' >&2
+  [[ "$wrapped_variable" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || {
+    printf 'Invalid wrapper environment name\n' >&2
     return 1
+  }
+  if [[ "${!wrapped_variable:-}" == "1" ]]; then
+    return 0
   fi
 
-  while IFS= read -r name; do
-    if [[ ! "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
-      printf 'Invalid secret environment name in metadata\n' >&2
-      return 1
-    fi
-    case "$name" in
-      BW_* | VAULT* | RHDH_E2E_SECRET_NAMES | RHDH_*_SECRETS_WRAPPED)
-        printf 'Provider environment name is not allowed in metadata\n' >&2
-        return 1
-        ;;
-    esac
-  done < <(printf '%s' "$metadata" | jq -r '.[]')
+  printf -v "$wrapped_variable" '%s' 1
+  # shellcheck disable=SC2163
+  export "$wrapped_variable"
+  local_secrets::exec_with_stream "$script_dir" "$profile" "$@"
 }

@@ -175,11 +175,10 @@ secrets::load_directory() {
   local __RHDH_SECRETS_INDEX
   if [[ "${#__RHDH_SECRETS_FILES[@]}" -gt 0 ]]; then
     for __RHDH_SECRETS_INDEX in "${!__RHDH_SECRETS_FILES[@]}"; do
-      if ! __RHDH_SECRETS_VALUE=$(< "${__RHDH_SECRETS_FILES[__RHDH_SECRETS_INDEX]}"); then
-        printf 'Unable to read Secret file: %s\n' \
-          "${__RHDH_SECRETS_FILES[__RHDH_SECRETS_INDEX]##*/}" >&2
-        return 1
-      fi
+      # Secret stream values cannot contain NUL bytes. Unlike command
+      # substitution, read preserves trailing newlines until that delimiter.
+      IFS= read -r -d '' __RHDH_SECRETS_VALUE \
+        < "${__RHDH_SECRETS_FILES[__RHDH_SECRETS_INDEX]}" || true
       __RHDH_SECRETS_VALUES+=("$__RHDH_SECRETS_VALUE")
     done
 
