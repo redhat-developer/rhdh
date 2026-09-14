@@ -883,7 +883,7 @@ dynamicPlugins:
           importName: darkThemeProvider
 ```
 
-The required options mirror the [AppTheme](https://backstage.io/docs/reference/core-plugin-api.apptheme/) interface:
+The required options mirror the [AppTheme](https://backstage.io/api/stable/modules/_backstage_core-plugin-api.html) interface:
 
 - `id` A required ID value for the theme; use values of `light` or `dark` to replace the default provided themes.
 - `title` The theme name displayed to the user on the Settings page.
