@@ -3448,6 +3448,13 @@ arches:
     name: xz
     evr: 1:5.6.2-4.el10_2.1
     sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/x/xz-libs-5.6.2-4.el10_2.1.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 117209
+    checksum: sha256:80c0fe151e6ca150a67e5a3e48711178a8735bd2f914d1fad247359e410b6ccb
+    name: xz-libs
+    evr: 1:5.6.2-4.el10_2.1
+    sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/y/yum-4.20.0-22.el10_2.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 94830
@@ -8736,6 +8743,13 @@ arches:
     size: 498643
     checksum: sha256:397ad3bdfe024aafd9f22c821a287c77befe430f32720105ae4b4506dcd10574
     name: xz
+    evr: 1:5.6.2-4.el10_2.1
+    sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/x/xz-libs-5.6.2-4.el10_2.1.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 120170
+    checksum: sha256:02dc4d009c501fe7c4bd1e2174071fcd08b8d1133697777dce5726b43fee4998
+    name: xz-libs
     evr: 1:5.6.2-4.el10_2.1
     sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/y/yum-4.20.0-22.el10_2.noarch.rpm
