@@ -437,10 +437,10 @@ This opens an interactive UI where you can select individual tests, watch them r
    - Uses `rhdh-e2e-secrets` to select secrets from Bitwarden
    - Creates a service account on the cluster with cluster-admin role
    - Copies repo to `e2e-tests/.local-test/rhdh` (keeps original clean)
-   - Runs the container with only the selected secret environment names
+   - Streams selected Bitwarden values through an inherited file descriptor; values are materialized only in the container's private tmpfs
 
 2. **container-init.sh** (inside container):
-   - Uses secrets injected by `local-run.sh`; it does not contact a secret provider
+   - Reads and validates the secret stream from stdin; it does not contact a secret provider
    - Logs into OpenShift cluster
    - Sets up environment variables
    - Runs deployment via `openshift-ci-tests.sh`
@@ -501,8 +501,8 @@ The script verifies the image exists on quay.io before proceeding (verification 
 
 ### Security Notes
 
-- Local secrets are selected from Bitwarden and exported only to the runner process
-- Database certificates are materialized with restrictive permissions and removed after host-side tests
+- Local secrets are selected from Bitwarden without putting their values in command arguments or process environments
+- Container secrets are materialized with restrictive permissions in a private tmpfs; host-side certificate files are removed after tests
 - `local-test.sh` never generates or stores `K8S_CLUSTER_TOKEN`
 - The repo is copied to `e2e-tests/.local-test/rhdh` so the original stays clean
 - Service account tokens have a 48-hour duration

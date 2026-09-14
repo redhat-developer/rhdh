@@ -19,9 +19,19 @@ trap handle_error ERR
 
 set -e
 
-# Secret values are injected into this container by local-run.sh. CI keeps its
-# existing mounted-secret path and does not use this local initializer.
-log::section "Using host-provided secret environment"
+# Secret values are streamed by local-run.sh and materialized in the private
+# tmpfs mounted at /run/rhdh-secrets.
+log::section "Reading host-provided secrets"
+export RHDH_SECRET_MOUNT_DIR="/run/rhdh-secrets"
+mkdir -p "$RHDH_SECRET_MOUNT_DIR"
+chmod 700 "$RHDH_SECRET_MOUNT_DIR"
+node /tmp/rhdh/e2e-tests/decode-secret-stream.mjs "$RHDH_SECRET_MOUNT_DIR"
+# local-run.sh supplies fresh service-account credentials directly. Never let
+# an optional profile value override them when env_variables.sh loads secrets.
+rm -f "$RHDH_SECRET_MOUNT_DIR/K8S_CLUSTER_URL" \
+  "$RHDH_SECRET_MOUNT_DIR/K8S_CLUSTER_TOKEN"
+exec 0</dev/null
+log::success "Secret stream decoded"
 
 # Login using service account token from host
 log::section "Cluster Service Account and Token Management"
@@ -57,7 +67,7 @@ export ARTIFACT_DIR="/tmp/rhdh/.local-test/artifact_dir"
 mkdir -p "$ARTIFACT_DIR"
 log::info "ARTIFACT_DIR=${ARTIFACT_DIR}"
 
-export RHDH_SECRET_RUNTIME_DIR="/run/rhdh-secrets"
+export RHDH_SECRET_RUNTIME_DIR="$RHDH_SECRET_MOUNT_DIR"
 mkdir -p "$RHDH_SECRET_RUNTIME_DIR"
 chmod 700 "$RHDH_SECRET_RUNTIME_DIR"
 log::info "RHDH_SECRET_RUNTIME_DIR=${RHDH_SECRET_RUNTIME_DIR}"

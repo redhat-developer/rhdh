@@ -5,7 +5,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNNER_IMAGE="${RUNNER_IMAGE:-quay.io/rhdh-community/rhdh-e2e-runner:main}"
 RUN_CONFIG_FILE="$SCRIPT_DIR/.local-test/run-config.env"
 SECRET_PROFILE="$SCRIPT_DIR/e2e-secrets.profile.json"
-LOCAL_RUN_ARGS=("$@")
 
 # Source logging library
 # shellcheck source=../.ci/pipelines/lib/log.sh
@@ -108,12 +107,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Local secrets are supplied by the shared Bitwarden CLI. The inner invocation
-# receives only the selected environment names, which are later forwarded to
-# Podman without placing secret values in command arguments.
-local_secrets::reexec_with_profile "$SCRIPT_DIR" "$SECRET_PROFILE" \
-  RHDH_LOCAL_SECRETS_WRAPPED "$0" "${LOCAL_RUN_ARGS[@]}" || exit 1
-
 # ========== Prerequisites Check ==========
 PREREQ_FAILED=false
 MISSING_CMDS=""
@@ -175,13 +168,6 @@ fi
 if [[ "$PREREQ_FAILED" == "true" ]]; then
   exit 1
 fi
-
-local_secrets::validate_secret_names "${RHDH_E2E_SECRET_NAMES:-}" || exit 1
-SECRET_ENV_ARGS=()
-while IFS= read -r secret_name; do
-  SECRET_ENV_ARGS+=(--env "$secret_name")
-done < <(printf '%s' "$RHDH_E2E_SECRET_NAMES" | jq -r '.[]')
-unset RHDH_E2E_SECRET_NAMES
 
 # ========== Interactive Configuration ==========
 log::section "RHDH Local Test Runner"
@@ -514,7 +500,7 @@ mkdir -p "$WORK_DIR"
 rsync -a --exclude='node_modules' --exclude='.env' --exclude='.local-test' --exclude='playwright-report' --exclude='test-results' "$REPO_ROOT/" "$WORK_DIR/"
 log::info "Work copy created at: $WORK_DIR"
 
-# Run container with Bitwarden-provided environment and cluster token
+# Run container with the Bitwarden secret stream and cluster token
 log::section "Starting Container (rhdh-e2e-runner)"
 log::info "Running container (rhdh-e2e-runner)..."
 log::info "This will deploy RHDH to your cluster and run tests (if enabled)."
@@ -528,23 +514,28 @@ echo ""
 
 CONTAINER_EXIT_CODE=0
 # no -t: stdout is piped to tee and CI has no TTY
-podman run -v "$WORK_DIR":/tmp/rhdh \
-  -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro \
-  -i -u root --privileged --rm \
-  --mount type=tmpfs,destination=/run/rhdh-secrets,tmpfs-mode=0700 \
-  "${SECRET_ENV_ARGS[@]}" \
-  -e K8S_CLUSTER_URL="$K8S_CLUSTER_URL" \
-  --env K8S_CLUSTER_TOKEN \
-  -e CONTAINER_PLATFORM="$CONTAINER_PLATFORM" \
-  -e JOB_NAME="$JOB_NAME" \
-  -e IMAGE_REGISTRY="$IMAGE_REGISTRY" \
-  -e IMAGE_REPO="$IMAGE_REPO" \
-  -e TAG_NAME="$TAG_NAME" \
-  -e SKIP_TESTS="$SKIP_TESTS" \
-  -e DISCONNECTED="$DISCONNECTED" \
-  -e LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}" \
-  "$RUNNER_IMAGE" \
-  /bin/bash /tmp/container-init.sh 2>&1 | tee "$CONTAINER_LOG"
+PODMAN_ARGS=(
+  run
+  -v "$WORK_DIR":/tmp/rhdh
+  -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro
+  -i -u root --privileged --rm
+  --mount "type=tmpfs,destination=/run/rhdh-secrets,tmpfs-mode=0700"
+  -e K8S_CLUSTER_URL="$K8S_CLUSTER_URL"
+  --env K8S_CLUSTER_TOKEN
+  -e CONTAINER_PLATFORM="$CONTAINER_PLATFORM"
+  -e JOB_NAME="$JOB_NAME"
+  -e IMAGE_REGISTRY="$IMAGE_REGISTRY"
+  -e IMAGE_REPO="$IMAGE_REPO"
+  -e TAG_NAME="$TAG_NAME"
+  -e SKIP_TESTS="$SKIP_TESTS"
+  -e DISCONNECTED="$DISCONNECTED"
+  -e LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}"
+  "$RUNNER_IMAGE"
+  /bin/bash /tmp/container-init.sh
+)
+local_secrets::exec_with_stream "$SCRIPT_DIR" "$SECRET_PROFILE" \
+  bash -c 'exec podman "$@" 0<&3' -- "${PODMAN_ARGS[@]}" \
+  2>&1 | tee "$CONTAINER_LOG"
 CONTAINER_EXIT_CODE=${PIPESTATUS[0]}
 
 # Container has exited - show next steps

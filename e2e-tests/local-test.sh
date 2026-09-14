@@ -59,20 +59,40 @@ if [[ "$PROJECT_SELECTED" != true ]]; then
   exit 2
 fi
 
-local_secrets::reexec_with_profile "$SCRIPT_DIR" "$SECRET_PROFILE" \
-  RHDH_LOCAL_TEST_SECRETS_WRAPPED "$0" "${LOCAL_TEST_ARGS[@]}" || exit 1
+if [[ "${RHDH_LOCAL_TEST_SECRETS_WRAPPED:-}" != "1" ]]; then
+  if [[ "${K8S_CLUSTER_URL+x}" == "x" ]]; then
+    export RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_URL="$K8S_CLUSTER_URL"
+  fi
+  if [[ "${K8S_CLUSTER_TOKEN+x}" == "x" ]]; then
+    export RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_TOKEN="$K8S_CLUSTER_TOKEN"
+  fi
+fi
 
-local_secrets::validate_secret_names "${RHDH_E2E_SECRET_NAMES:-}" || exit 1
-secrets::apply_common_aliases
+local_secrets::reexec_with_stream "$SCRIPT_DIR" "$SECRET_PROFILE" \
+  RHDH_LOCAL_TEST_SECRETS_WRAPPED "$0" "${LOCAL_TEST_ARGS[@]}" || exit 1
 
 mkdir -p "${SCRIPT_DIR}/.local-test"
 chmod 700 "${SCRIPT_DIR}/.local-test"
 SECRET_RUNTIME_DIR=$(mktemp -d "${SCRIPT_DIR}/.local-test/secrets.XXXXXX")
 trap 'rm -rf "$SECRET_RUNTIME_DIR"' EXIT
+node "${SCRIPT_DIR}/decode-secret-stream.mjs" "$SECRET_RUNTIME_DIR" <&3
+exec 3<&-
+secrets::load_directory "$SECRET_RUNTIME_DIR"
+secrets::apply_common_aliases
+export REDIS_USERNAME=temp
+export REDIS_PASSWORD=test123
+
+if [[ "${RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_URL+x}" == "x" ]]; then
+  export K8S_CLUSTER_URL="$RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_URL"
+fi
+if [[ "${RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_TOKEN+x}" == "x" ]]; then
+  export K8S_CLUSTER_TOKEN="$RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_TOKEN"
+fi
+unset RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_URL RHDH_LOCAL_TEST_CALLER_K8S_CLUSTER_TOKEN
 
 secrets::prepare_database_certificates \
-  "${SECRET_RUNTIME_DIR}/mounted" "$SECRET_RUNTIME_DIR"
-unset RHDH_E2E_SECRET_NAMES BW_SESSION BW_CLIENTID BW_CLIENTSECRET
+  "$SECRET_RUNTIME_DIR" "$SECRET_RUNTIME_DIR"
+unset BW_SESSION BW_CLIENTID BW_CLIENTSECRET RHDH_E2E_SECRET_FD
 unset rds_db_certificates_pem rds_db_certificates__dot__pem
 unset azure_db_certificates_pem azure_db_certificates__dot__pem
 
