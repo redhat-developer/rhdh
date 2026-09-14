@@ -25,7 +25,6 @@ source "${DIR}/lib/config.sh"
 source "${DIR}/lib/testing.sh"
 
 # Constants
-PIPELINES_OPERATOR_WEBHOOK="tekton-pipelines-webhook"
 
 # Override GitHub App env vars (showcase and RBAC) with prefixed versions for the same pair index.
 # Usage: override_github_app_env_with_prefix <PREFIX>
@@ -397,24 +396,10 @@ uninstall_olm() { operator::uninstall_olm "$@"; }
 # ==============================================================================
 
 cluster_setup_ocp_helm() {
-  operator::install_pipelines
-
-  # Wait for OpenShift Pipelines to be ready before proceeding
-  log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
-
   operator::install_postgres_ocp
 }
 
 cluster_setup_ocp_operator() {
-  operator::install_pipelines
-
-  # Wait for OpenShift Pipelines to be ready before proceeding
-  log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
-
   operator::install_postgres_ocp
 }
 
