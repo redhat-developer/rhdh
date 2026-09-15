@@ -254,7 +254,8 @@ spec:
     // reloads until it shows up (RHDHBUGS-3754).
     await expect(async () => {
       await page.reload();
-      await common.waitForLoad();
+      // Bounded so a hung attempt cannot eat the whole toPass budget
+      await common.waitForLoad(30_000);
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
       await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [

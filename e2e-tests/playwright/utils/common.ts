@@ -97,14 +97,23 @@ export class Common {
   }
 
   async logintoKeycloak(popup: Page, userid: string, password: string) {
-    await popup.waitForLoadState("domcontentloaded");
-
     // Keycloak may still hold an SSO session from a previous login and close
-    // the popup right away without showing the login form.
+    // the popup on its own without showing the login form, possibly a few
+    // seconds after bouncing through the OIDC callback redirect.
     try {
+      await popup.waitForLoadState("domcontentloaded");
       await popup.locator("#username").waitFor({ timeout: 15000 });
     } catch (error) {
       if (popup.isClosed()) {
+        return;
+      }
+      const closedLate = await popup
+        .waitForEvent("close", { timeout: 3000 })
+        .then(
+          () => true,
+          () => false,
+        );
+      if (closedLate) {
         return;
       }
       throw error;
@@ -128,20 +137,27 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    // Wait for the OIDC provider card to render on the "Select a sign-in
-    // method" page, so the click below opens the Keycloak popup instead of
-    // hitting a not-yet-wired button (RHDHBUGS-3756).
-    await this.page
-      .waitForSelector(
-        `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
-        { timeout: 15000 },
-      )
-      .catch(() => {});
+    // Click "Sign In" inside the OIDC provider card of the "Select a sign-in
+    // method" page, so a page listing several providers cannot route the
+    // login to the wrong one (RHDHBUGS-3756). The innermost div containing
+    // both the OIDC message and a Sign In button is the provider card.
+    const signInTitle = t["core-components"][lang]["signIn.title"];
+    const oidcCard = this.page
+      .locator("div")
+      .filter({
+        has: this.page.getByText(
+          t["rhdh"][lang]["signIn.providers.oidc.message"],
+          { exact: true },
+        ),
+      })
+      .filter({ has: this.page.getByRole("button", { name: signInTitle }) })
+      .last();
+    await oidcCard.waitFor({ timeout: 30000 });
     // Register the popup listener before clicking, otherwise the popup can
     // open before the listener is attached and the login never proceeds.
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
-      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
+      oidcCard.getByRole("button", { name: signInTitle }).click(),
     ]);
     await this.logintoKeycloak(popup, userid, password);
     await this.uiHelper.waitForSideBarVisible();
