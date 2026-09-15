@@ -977,7 +977,7 @@ Fields are auto-discovered via `formFieldsApiRef` when the plugin is installed. 
 
 ---
 
-### Provide custom TechDocs addons (`techdocsAddons`)
+### Provide custom TechDocs addons
 
 **RHDH wiring:**
 
@@ -988,6 +988,8 @@ techdocsAddons:
       props: ...
 ```
 
+This is the legacy dynamic-plugin wiring format. It remains available for legacy plugins, but it is not used by the new frontend system.
+
 **New approach — plugin code:**
 
 ```tsx
@@ -996,6 +998,7 @@ import { AddonBlueprint } from '@backstage/plugin-techdocs-react/alpha';
 const exampleAddon = AddonBlueprint.make({
   name: 'example',
   params: {
+    name: 'ExampleAddon',
     location: TechDocsAddonLocations.Content,
     component: ExampleTestAddon,
   },
@@ -1004,9 +1007,25 @@ const exampleAddon = AddonBlueprint.make({
 
 Addons are collected via `techdocsAddonsApiRef` and merged into TechDocs reader and entity content extensions automatically.
 
+For dynamic plugins, export each addon as an individual package subpath whose default export is a `FrontendModule`. The addon is then enabled or disabled using its NFS extension ID in `app.extensions`:
+
+```yaml
+app:
+  extensions:
+    - addon:techdocs/example: false
+```
+
+The contributed TechDocs addon package uses these extension IDs:
+
+- `addon:techdocs/expandable-navigation`
+- `addon:techdocs/report-issue`
+- `addon:techdocs/text-size`
+- `addon:techdocs/light-box`
+
 **Notes:**
 
 - The older pattern of injecting addons through `staticJSXContent` in dynamic plugin exports (see [Export Derived Package](export-derived-package.md)) is specific to the legacy dynamic plugin host. Prefer `AddonBlueprint` for new development.
+- The `app.extensions` entries configure extensions that the package exports; they do not replace the package's individual NFS subpath exports.
 
 ---
 
