@@ -2,7 +2,8 @@
   "ignorePatterns": [
     { "pattern": "^http://localhost:7007" },
     { "pattern": "^https://pkgs.devel.redhat.com" },
-    { "pattern": "^https://gitlab.cee.redhat.com" }
+    { "pattern": "^https://gitlab.cee.redhat.com" },
+    { "pattern": "^https://prow\\.ci\\.openshift\\.org" }
   ],
   "retryOn429": true,
   "retry-after": "30s",
