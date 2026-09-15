@@ -36,9 +36,14 @@ log::success "Secret stream decoded"
 # Login using service account token from host
 log::section "Cluster Service Account and Token Management"
 
-# K8S_CLUSTER_URL, K8S_CLUSTER_TOKEN, and CONTAINER_PLATFORM are passed from local-run.sh
+# K8S_CLUSTER_URL, RHDH_LOCAL_TEST_CLUSTER_TOKEN, and CONTAINER_PLATFORM are passed from local-run.sh
 export K8S_CLUSTER_URL
-export K8S_CLUSTER_TOKEN
+if [[ -z "${RHDH_LOCAL_TEST_CLUSTER_TOKEN:-}" ]]; then
+  log::error "Generated cluster token was not provided by the host"
+  exit 1
+fi
+export K8S_CLUSTER_TOKEN="$RHDH_LOCAL_TEST_CLUSTER_TOKEN"
+unset RHDH_LOCAL_TEST_CLUSTER_TOKEN
 export CONTAINER_PLATFORM
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
 log::info "CONTAINER_PLATFORM: $CONTAINER_PLATFORM"

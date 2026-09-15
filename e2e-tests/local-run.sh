@@ -489,6 +489,7 @@ else
   log::info "Acquired short-lived token for the service account"
 fi
 export K8S_CLUSTER_TOKEN
+export RHDH_LOCAL_TEST_CLUSTER_TOKEN="$K8S_CLUSTER_TOKEN"
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
 
 # Copy repo to work directory (keeps original repo clean)
@@ -521,7 +522,7 @@ PODMAN_ARGS=(
   -i -u root --privileged --rm
   --mount "type=tmpfs,destination=/run/rhdh-secrets,tmpfs-mode=0700"
   -e K8S_CLUSTER_URL="$K8S_CLUSTER_URL"
-  --env K8S_CLUSTER_TOKEN
+  --env RHDH_LOCAL_TEST_CLUSTER_TOKEN
   -e CONTAINER_PLATFORM="$CONTAINER_PLATFORM"
   -e JOB_NAME="$JOB_NAME"
   -e IMAGE_REGISTRY="$IMAGE_REGISTRY"
