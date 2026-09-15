@@ -256,13 +256,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.1-1.el9
     sourcerpm: go-rpm-macros-3.8.1-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-687.46.1.el9_8.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-headers-5.14.0-687.47.1.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 2882381
-    checksum: sha256:c99d6e379176e2617942bbb1b429f58377a74930af88ed24e9d85f3d53d75fb0
+    size: 2891257
+    checksum: sha256:67a169443a19a51b7595fa94f461d2b26552780ffda230f246495406164cc2f7
     name: kernel-headers
-    evr: 5.14.0-687.46.1.el9_8
-    sourcerpm: kernel-5.14.0-687.46.1.el9_8.src.rpm
+    evr: 5.14.0-687.47.1.el9_8
+    sourcerpm: kernel-5.14.0-687.47.1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 14098
@@ -585,13 +585,13 @@ arches:
     name: openblas-srpm-macros
     evr: 2-11.el9
     sourcerpm: openblas-srpm-macros-2-11.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/o/openssl-devel-3.5.5-6.el9_8.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/o/openssl-devel-3.5.8-1.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 5028889
-    checksum: sha256:c92e750163820a817ca5562935010872f8db5ca5712a517b01beafcb87221670
+    size: 5039228
+    checksum: sha256:49aec716fb44d8a07528f59a635d40a47a847b05e6cf57735994e9c2430efa12
     name: openssl-devel
-    evr: 1:3.5.5-6.el9_8
-    sourcerpm: openssl-3.5.5-6.el9_8.src.rpm
+    evr: 1:3.5.8-1.el9_8
+    sourcerpm: openssl-3.5.8-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/pango-1.48.7-3.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 307718
@@ -599,13 +599,13 @@ arches:
     name: pango
     evr: 1.48.7-3.el9
     sourcerpm: pango-1.48.7-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-5.32.1-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-5.32.1-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 8405
-    checksum: sha256:334764f25cb0e1a7b4efcc8b6d74cbee0e815c9d45148556ec6359762b588037
+    size: 15097
+    checksum: sha256:3f282f753794506a70d565c99d9dd983d5e3f014c9ce7371f5e179b82498e576
     name: perl
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Algorithm-Diff-1.2010-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 52041
@@ -627,41 +627,41 @@ arches:
     name: perl-Archive-Zip
     evr: 1.68-6.el9
     sourcerpm: perl-Archive-Zip-1.68-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Attribute-Handlers-1.01-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Attribute-Handlers-1.01-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 27731
-    checksum: sha256:95ee8b22f5c962b56b95dc3e74280ed1471c17bb2031995d3efd431478e40aac
+    size: 33160
+    checksum: sha256:6e663385bd50256b66c7f0ca8e92192aae51849f52fb06dafd29eafa5a0b3a0a
     name: perl-Attribute-Handlers
-    evr: 1.01-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-AutoLoader-5.74-481.1.el9_6.noarch.rpm
+    evr: 1.01-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-AutoLoader-5.74-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 21344
-    checksum: sha256:b4557d853be8048aaefde5c4083c43fa34375e224731e93e584e4e3d5db46ac3
+    size: 26763
+    checksum: sha256:181fab877b5029078c11eeff5221fcf5c5a686e1c9d2b82e30cd6a84584d426e
     name: perl-AutoLoader
-    evr: 5.74-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-AutoSplit-5.74-481.1.el9_6.noarch.rpm
+    evr: 5.74-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-AutoSplit-5.74-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 21714
-    checksum: sha256:de53b7057da078864d27f4acddf37594d40ee4d5f710d129c40cfb5c6097ceb0
+    size: 27119
+    checksum: sha256:1e7e3b8bcd71089e19b967b8db9fae179cfe75c91634ca3a432d4561d8dd82cb
     name: perl-AutoSplit
-    evr: 5.74-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-B-1.80-481.1.el9_6.aarch64.rpm
+    evr: 5.74-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-B-1.80-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 184600
-    checksum: sha256:f7f82b51c586f075eff5f7fb04b96827425974effee364199844dfdc9b3f5a9b
+    size: 191291
+    checksum: sha256:cd25f1164c78b63098fe8da97b4ae640cc18aa01465dce6a9557db01fb64b0f2
     name: perl-B
-    evr: 1.80-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Benchmark-1.23-481.1.el9_6.noarch.rpm
+    evr: 1.80-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Benchmark-1.23-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 27055
-    checksum: sha256:690cc6ca69fd267f025ddc18116d8f10dff6693645ff949820c83ed7776aa454
+    size: 32455
+    checksum: sha256:88e7e3a5b86f76e4f2cd79f9efc434af8a1ce652413d894ffd30233e4e932ede
     name: perl-Benchmark
-    evr: 1.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-CPAN-2.29-5.el9_6.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 589480
@@ -704,13 +704,13 @@ arches:
     name: perl-Carp
     evr: 1.50-460.el9
     sourcerpm: perl-Carp-1.50-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Class-Struct-0.66-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Class-Struct-0.66-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 22220
-    checksum: sha256:d35ff343bd718fbd8531995a8aedb866c6d37fac6a688fcf9a458017781bf058
+    size: 27621
+    checksum: sha256:c4f4e8db14364830c7a38d26097c8629bdaafe6a5492ddf7728ce92eae745014
     name: perl-Class-Struct
-    evr: 0.66-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.66-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Compress-Bzip2-2.28-5.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 74691
@@ -739,13 +739,13 @@ arches:
     name: perl-Compress-Raw-Zlib
     evr: 2.101-5.el9
     sourcerpm: perl-Compress-Raw-Zlib-2.101-5.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Config-Extensions-0.03-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Config-Extensions-0.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12128
-    checksum: sha256:86695c36cd0bd3516cdb72d9f30ddec6aef47eb48432a76b71d15372e86549a6
+    size: 17529
+    checksum: sha256:136b34b71b0421ff652a77e6df6f326f348e4ae8c303d6888e82f9d19c6dbb6d
     name: perl-Config-Extensions
-    evr: 0.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Config-Perl-V-0.33-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 24943
@@ -753,13 +753,13 @@ arches:
     name: perl-Config-Perl-V
     evr: 0.33-4.el9
     sourcerpm: perl-Config-Perl-V-0.33-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-DBM_Filter-0.06-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-DBM_Filter-0.06-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 32009
-    checksum: sha256:2ea4092322228a400fe8ad6c19302878e46771cbc1a2d623371c49732ad5e018
+    size: 37567
+    checksum: sha256:72fe28ade7ce75412ea901232bd7a6cdd27a0c3b6b77fe2a258c1519e89406c9
     name: perl-DBM_Filter
-    evr: 0.06-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.06-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-DB_File-1.855-4.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 85113
@@ -795,20 +795,20 @@ arches:
     name: perl-Devel-PPPort
     evr: 3.62-4.el9
     sourcerpm: perl-Devel-PPPort-3.62-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Devel-Peek-1.28-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Devel-Peek-1.28-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 31959
-    checksum: sha256:93e9bb94fe8ce391149ce2f0fb6fb90851d6f16b9c2c0dd1f63c47cbb129b9d5
+    size: 37359
+    checksum: sha256:aeaf9cad89a642f31887de8af88daac820348be6b5ef4d4fde9309225fdf82a1
     name: perl-Devel-Peek
-    evr: 1.28-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Devel-SelfStubber-1.06-481.1.el9_6.noarch.rpm
+    evr: 1.28-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Devel-SelfStubber-1.06-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14231
-    checksum: sha256:703faaef6ca5a65ed4c3cbdb256da9612eed842bd77620a2d527ca8d0fa8a7d2
+    size: 19638
+    checksum: sha256:6e5a1a75527e53dab17f9691116e830a5070729ddc6f0a5adb3e32650a905090
     name: perl-Devel-SelfStubber
-    evr: 1.06-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.06-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Devel-Size-0.83-10.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 34781
@@ -844,27 +844,27 @@ arches:
     name: perl-Digest-SHA1
     evr: 2.13-34.el9
     sourcerpm: perl-Digest-SHA1-2.13-34.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-DirHandle-1.05-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-DirHandle-1.05-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12337
-    checksum: sha256:2c79a7d1c783c4eb4305e7b15c885c7afc5e2612ab4b1245f4f9ef8dcff4804f
+    size: 17737
+    checksum: sha256:aeddb3d2719f1e1a36aa7860b42bb3053ae6bad97a0e7eaa4f7c2c12476c0122
     name: perl-DirHandle
-    evr: 1.05-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Dumpvalue-2.27-481.1.el9_6.noarch.rpm
+    evr: 1.05-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Dumpvalue-2.27-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 18343
-    checksum: sha256:7659f1dab24e96da4be5624f90a3ac04b383071a96a32e185b196bc527377e1c
+    size: 23748
+    checksum: sha256:6dc155fbec3e3d272e6318b0e5a92b2704ff34ef0e5736c1890e98aed53b5a98
     name: perl-Dumpvalue
-    evr: 2.27-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-DynaLoader-1.47-481.1.el9_6.aarch64.rpm
+    evr: 2.27-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-DynaLoader-1.47-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 25913
-    checksum: sha256:cddb0b2e16a10b80b6b3ffd6409b210aeba404acc589a958f280cac24d12403f
+    size: 31319
+    checksum: sha256:9ea9679d8757801cdda78829883915af346cf56ba4b3be84e85bfc1aab6c3db1
     name: perl-DynaLoader
-    evr: 1.47-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.47-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Encode-3.08-462.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 1825541
@@ -886,13 +886,13 @@ arches:
     name: perl-Encode-devel
     evr: 4:3.08-462.el9
     sourcerpm: perl-Encode-3.08-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-English-1.11-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-English-1.11-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13497
-    checksum: sha256:04a48f25493933a3ae04eac446efefa1d4c092e323db1561e7653e4f570987da
+    size: 18915
+    checksum: sha256:6a6101557ce855361a2e35db5d41f6729bb909e1171691f93cf5b2868ddf20ee
     name: perl-English
-    evr: 1.11-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.11-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Env-1.04-460.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 22160
@@ -900,13 +900,13 @@ arches:
     name: perl-Env
     evr: 1.04-460.el9
     sourcerpm: perl-Env-1.04-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Errno-1.30-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Errno-1.30-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14826
-    checksum: sha256:be31dbcae3e58ea4094719bf3882aa3c35599a152341cb48d2aec1aba787d877
+    size: 20222
+    checksum: sha256:ea73bc910b4a9689b32ebed51e7a7608446109f15d34db508dd25744e0377c53
     name: perl-Errno
-    evr: 1.30-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.30-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Error-0.17029-7.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 47552
@@ -935,20 +935,20 @@ arches:
     name: perl-ExtUtils-Command
     evr: 2:7.60-3.el9
     sourcerpm: perl-ExtUtils-MakeMaker-7.60-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-Constant-0.25-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-Constant-0.25-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 47285
-    checksum: sha256:f10abe9f8d9f26c2ef2f278baf37a98e7a654cf192521d72bb797a3ef2131698
+    size: 52681
+    checksum: sha256:0bd313997281ce5daaac6d90beac6b35fce9bd8e98b522572defdce9a2b58d6c
     name: perl-ExtUtils-Constant
-    evr: 0.25-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-Embed-1.35-481.1.el9_6.noarch.rpm
+    evr: 0.25-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-Embed-1.35-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 17684
-    checksum: sha256:10fa80d9248c159ad12cce5222d3d1b82953ddfc7c4123ca0b14b5d5340e1421
+    size: 23085
+    checksum: sha256:46b641c6112697796adc83578378ae8c94310d68920600824b1429a4905aa410
     name: perl-ExtUtils-Embed
-    evr: 1.35-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.35-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-Install-2.20-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 48441
@@ -977,13 +977,13 @@ arches:
     name: perl-ExtUtils-Manifest
     evr: 1:1.73-4.el9
     sourcerpm: perl-ExtUtils-Manifest-1.73-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-Miniperl-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-Miniperl-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 15171
-    checksum: sha256:6b00fb367aea4654a14495802d46daa87d2e51ee203a8b0e207edae507773edc
+    size: 20571
+    checksum: sha256:b5cbccccb5aa4c4d0b77498138a2ba14f23aa86dd14106db1fca28d92428017e
     name: perl-ExtUtils-Miniperl
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ExtUtils-ParseXS-3.40-460.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 194711
@@ -991,41 +991,41 @@ arches:
     name: perl-ExtUtils-ParseXS
     evr: 1:3.40-460.el9
     sourcerpm: perl-ExtUtils-ParseXS-3.40-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Fcntl-1.13-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Fcntl-1.13-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 20270
-    checksum: sha256:2dcec56d48812e21c75b6e23a5ee613e7b68aa0d6136e5f9f37bc841592bae97
+    size: 25653
+    checksum: sha256:154c3e6ea4265b69a09aced070a532444ed134af95759d63738057391476c254
     name: perl-Fcntl
-    evr: 1.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Basename-2.85-481.1.el9_6.noarch.rpm
+    evr: 1.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Basename-2.85-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 17211
-    checksum: sha256:e39dcc13a24d3b5a7ba11288e63b22a055a8e1061743b8a409858d98ebd794e4
+    size: 22610
+    checksum: sha256:59974fcefb40376a76afc52193e39537bd543748447f47aa49224b40a65b7c1d
     name: perl-File-Basename
-    evr: 2.85-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Compare-1.100.600-481.1.el9_6.noarch.rpm
+    evr: 2.85-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Compare-1.100.600-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13166
-    checksum: sha256:0dd800746b848a84fce73dcef035c4241e6aa90262c821a0ad295a7756ca1a4c
+    size: 18567
+    checksum: sha256:945b71f2d98fda49283e7b133f532e67728e1fe12205dcab2df753cde61315cd
     name: perl-File-Compare
-    evr: 1.100.600-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Copy-2.34-481.1.el9_6.noarch.rpm
+    evr: 1.100.600-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Copy-2.34-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 20143
-    checksum: sha256:165816db79e88e63c96bdafaf0c3bfee95b6feedb78e40da3a6dcc196a15a186
+    size: 25552
+    checksum: sha256:ceccabb63b0fb0c9f3137365f7612e6c0b0943eb6996df1487551431a58c69d9
     name: perl-File-Copy
-    evr: 2.34-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-DosGlob-1.12-481.1.el9_6.aarch64.rpm
+    evr: 2.34-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-DosGlob-1.12-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 19467
-    checksum: sha256:e5d1f8546e60d9b815667a44d9140bb3270cbf5d46d8fc9e8d3ca148e9af98db
+    size: 24864
+    checksum: sha256:6f35f91745c7772dcc34da7dd58333d10226d1da5db29bc781604b0b7636f70c
     name: perl-File-DosGlob
-    evr: 1.12-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.12-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Fetch-1.00-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 33372
@@ -1033,13 +1033,13 @@ arches:
     name: perl-File-Fetch
     evr: 1.00-4.el9
     sourcerpm: perl-File-Fetch-1.00-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Find-1.37-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-Find-1.37-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 25551
-    checksum: sha256:002ec6d107fff6949f1a88965fb31b0a4efe6ce663395ab47e0cb939e3920c08
+    size: 30949
+    checksum: sha256:56ef52466512d4553aa8fe4560e1e945672c465a9b1c387f1c0aa4c57842ce33
     name: perl-File-Find
-    evr: 1.37-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.37-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-HomeDir-1.006-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 65857
@@ -1068,27 +1068,27 @@ arches:
     name: perl-File-Which
     evr: 1.23-10.el9
     sourcerpm: perl-File-Which-1.23-10.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-stat-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-File-stat-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 17117
-    checksum: sha256:b235134c1961e9b57f86bddc02e874607c17c155d2aa5ad78cc3ed9c8fd9c95b
+    size: 22517
+    checksum: sha256:219bbe53605f31c4d12ad7bcc7c20ea31fd426ce2f8dcc322fb64bf9f5575d67
     name: perl-File-stat
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-FileCache-1.10-481.1.el9_6.noarch.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-FileCache-1.10-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14640
-    checksum: sha256:0b0ab9a79395bb7a926ec674b66f42845580903f514c511da156ffd497205f42
+    size: 20046
+    checksum: sha256:fc83a474a1dd7908fb3202b4538bfc93e247900f85171063b94e9212da3235c7
     name: perl-FileCache
-    evr: 1.10-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-FileHandle-2.03-481.1.el9_6.noarch.rpm
+    evr: 1.10-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-FileHandle-2.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 15452
-    checksum: sha256:c2139abdb9b3335f592aa2835ef6d6fcde1e89232eb3d3c5a15f7cc1d0829f8d
+    size: 20860
+    checksum: sha256:1d4cf1d3a79893cfebb6664c4bff1ce537c2585d1e53f0a7f275f9dd217c7a3b
     name: perl-FileHandle
-    evr: 2.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Filter-1.60-4.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 97366
@@ -1103,20 +1103,20 @@ arches:
     name: perl-Filter-Simple
     evr: 0.96-460.el9
     sourcerpm: perl-Filter-Simple-0.96-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-FindBin-1.51-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-FindBin-1.51-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13872
-    checksum: sha256:44f9c97a57dafae68f8183d1ca2682a8308b68f1a399ab333a3dd52836bb6b17
+    size: 19282
+    checksum: sha256:a26015430425d0d6b26c78b6f59880838b549f61a04bcc800ddacf00294d9450
     name: perl-FindBin
-    evr: 1.51-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-GDBM_File-1.18-481.1.el9_6.aarch64.rpm
+    evr: 1.51-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-GDBM_File-1.18-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 22062
-    checksum: sha256:790bdbbd82ee60e4da98866d6c584c7ec3f730c0dd6eb261e7fcd429f1435b32
+    size: 27450
+    checksum: sha256:1194bedafe1f7e3397914e886522b6c8aa689218bb3ab5256062e858f12393b9
     name: perl-GDBM_File
-    evr: 1.18-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.18-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Getopt-Long-2.52-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 65144
@@ -1124,13 +1124,13 @@ arches:
     name: perl-Getopt-Long
     evr: 1:2.52-4.el9
     sourcerpm: perl-Getopt-Long-2.52-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Getopt-Std-1.12-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Getopt-Std-1.12-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 15551
-    checksum: sha256:49bd8381823d680d17c37f3bebfd97dd92bfbf59e8019f15c7606f41dca02a7d
+    size: 20932
+    checksum: sha256:98ed0c76b8ded1569b350a14dddb45f6980a4b7fa2aea63620da2c27b987b5d3
     name: perl-Getopt-Std
-    evr: 1.12-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.12-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Git-2.52.0-1.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 44211
@@ -1145,48 +1145,48 @@ arches:
     name: perl-HTTP-Tiny
     evr: 0.076-462.el9
     sourcerpm: perl-HTTP-Tiny-0.076-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Hash-Util-0.23-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Hash-Util-0.23-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 34401
-    checksum: sha256:2654a95b9ab0669d739ebbf6ef1c7469dd6a1947af648e8c8d8c29aab92608e4
+    size: 39785
+    checksum: sha256:b782395876cfb634623e0d5ef46c6255022ec8dc2aa8a831e933d0119d57e0ac
     name: perl-Hash-Util
-    evr: 0.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Hash-Util-FieldHash-1.20-481.1.el9_6.aarch64.rpm
+    evr: 0.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Hash-Util-FieldHash-1.20-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 38300
-    checksum: sha256:1f797de78b5d8b994210126debb29a3aed4264f7fbbf763733772b988f751a3e
+    size: 43696
+    checksum: sha256:0b32d63fe7005ecdc060c22d88bb7ca5bafbaa0ca77a10d9f7f77d4c0490a0e1
     name: perl-Hash-Util-FieldHash
-    evr: 1.20-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-I18N-Collate-1.02-481.1.el9_6.noarch.rpm
+    evr: 1.20-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-I18N-Collate-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14091
-    checksum: sha256:82a82eb1e6765c7b4ec245a624f34e73d6a7b2c9c15a90007bcbb64113332793
+    size: 19492
+    checksum: sha256:15e099e300728fdd1fa92ab738eeb120670a52fd30f9e6427021bdd0d4cbc043
     name: perl-I18N-Collate
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-I18N-LangTags-0.44-481.1.el9_6.noarch.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-I18N-LangTags-0.44-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 55212
-    checksum: sha256:f0849fe10730cf503bebfbd82e3dfb39d64ef87667ee9a1a073df8fd231878d6
+    size: 60614
+    checksum: sha256:538130b61006f310e9000b15085b125a9d09ea7bbc45309e34d7aebb6720818c
     name: perl-I18N-LangTags
-    evr: 0.44-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-I18N-Langinfo-0.19-481.1.el9_6.aarch64.rpm
+    evr: 0.44-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-I18N-Langinfo-0.19-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 22366
-    checksum: sha256:9a2b8266d39fb9307edd88e26335fe39cd5526c7ae2c24ee291e539dafccceb0
+    size: 27774
+    checksum: sha256:22f2bb5b77b54b85667b66833d36babbd77dd846cc051451639e86b06c38d0aa
     name: perl-I18N-Langinfo
-    evr: 0.19-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-IO-1.43-481.1.el9_6.aarch64.rpm
+    evr: 0.19-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-IO-1.43-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 90373
-    checksum: sha256:eb00f890b53bb5335be0d35994869e8855ad62668ef5199688ab951ffd8c76b6
+    size: 97076
+    checksum: sha256:1b89c07c7b8a559f5fe9b72ffc11f839136ab8fbba777c9c613d96e380fcbc90
     name: perl-IO
-    evr: 1.43-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.43-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-IO-Compress-2.102-4.el9_8.1.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 282018
@@ -1229,13 +1229,13 @@ arches:
     name: perl-IPC-Cmd
     evr: 2:1.04-461.el9
     sourcerpm: perl-IPC-Cmd-1.04-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-IPC-Open3-1.21-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-IPC-Open3-1.21-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 22968
-    checksum: sha256:7ea36dcf28da3fc7250eb041ba19f99c87543c0870f5da67da614f5ca8d18b92
+    size: 28366
+    checksum: sha256:03895c87199410c4bdec501b3f3dc361f476cd1135cf9f1fe2aaff51c924b1d1
     name: perl-IPC-Open3
-    evr: 1.21-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.21-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-IPC-SysV-2.09-4.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 48827
@@ -1271,13 +1271,13 @@ arches:
     name: perl-Locale-Maketext
     evr: 1.29-461.el9
     sourcerpm: perl-Locale-Maketext-1.29-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Locale-Maketext-Simple-0.21-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Locale-Maketext-Simple-0.21-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 17604
-    checksum: sha256:206fca125c5520e6e0723c6f8ee4c9b56d5bec95c7d71e4b54fdad36ddf20980
+    size: 23016
+    checksum: sha256:2faac8b844f63cec420fa3b7c8d55b08dca04d7dc27947540f04aed3a0825548
     name: perl-Locale-Maketext-Simple
-    evr: 1:0.21-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1:0.21-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-MIME-Base64-3.16-4.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 35080
@@ -1320,20 +1320,20 @@ arches:
     name: perl-Math-BigRat
     evr: 0.2614-460.el9
     sourcerpm: perl-Math-BigRat-0.2614-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Math-Complex-1.59-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Math-Complex-1.59-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 47421
-    checksum: sha256:754d5798c9a2bb21714671fdf0236e5937511bf59c473fdef8117c512410e8b5
+    size: 52827
+    checksum: sha256:95888ffe92fb97a1761c4a918242991f7b47d7065531f0d6d297f6ae86468e0e
     name: perl-Math-Complex
-    evr: 1.59-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Memoize-1.03-481.1.el9_6.noarch.rpm
+    evr: 1.59-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Memoize-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 57798
-    checksum: sha256:f668ee6ce94bab8e3a926587a1ab2f4ed3a4490d911c2e7fc1b2fe074a6cfdcc
+    size: 63692
+    checksum: sha256:b9ab746899fc8fc8316d749bb818078e6b2d12fc390585b7e28e2a4ebebe6373
     name: perl-Memoize
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Module-Build-0.42.31-9.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 274094
@@ -1369,13 +1369,13 @@ arches:
     name: perl-Module-Load-Conditional
     evr: 0.74-4.el9
     sourcerpm: perl-Module-Load-Conditional-0.74-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Module-Loaded-0.08-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Module-Loaded-0.08-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13245
-    checksum: sha256:5873834f46d56066cab07a5386daccf8b4db7ccf23344967dcdc31a893907778
+    size: 18647
+    checksum: sha256:a743847d8f93a30a8b2d7a69e290522307f4c1472745168b025056e1e4283ea1
     name: perl-Module-Loaded
-    evr: 1:0.08-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1:0.08-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Module-Metadata-1.000037-460.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 39221
@@ -1397,27 +1397,27 @@ arches:
     name: perl-Mozilla-CA
     evr: 20200520-6.el9
     sourcerpm: perl-Mozilla-CA-20200520-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-NDBM_File-1.15-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-NDBM_File-1.15-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 21832
-    checksum: sha256:6a03c4415b13ab8b960e9b1c5440058d006f159c113abdca1c7c4cbec4e2cd58
+    size: 27131
+    checksum: sha256:173b53f76776af47f21de1826b659428708b5e16dd91c2ac45b2cf745efe3d2b
     name: perl-NDBM_File
-    evr: 1.15-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-NEXT-0.67-481.1.el9_6.noarch.rpm
+    evr: 1.15-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-NEXT-0.67-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 21043
-    checksum: sha256:30c7f7f97f369fb9264c0c01f7f12fe1791c99e920aebdf149d71f945f814ec6
+    size: 26443
+    checksum: sha256:24052bd119e349b793b7b0169996dceee22bb7c6fa41cee446432a562ecaab44
     name: perl-NEXT
-    evr: 0.67-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Net-1.02-481.1.el9_6.noarch.rpm
+    evr: 0.67-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Net-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 25539
-    checksum: sha256:2bb0dceeec12a995caf29411056c2108a6f09b6bbe6d31090114fa4cbec53454
+    size: 30968
+    checksum: sha256:6fd3508ef90539f5b8763ede4b2fd8d8a5849d6320f39d0b44c8583e6deaf807
     name: perl-Net
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Net-Ping-2.74-5.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 53027
@@ -1432,13 +1432,13 @@ arches:
     name: perl-Net-SSLeay
     evr: 1.94-3.el9
     sourcerpm: perl-Net-SSLeay-1.94-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ODBM_File-1.16-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ODBM_File-1.16-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 21824
-    checksum: sha256:6c8c69acef6ae0a6f7ce1853061798cac6107ec6a459e102e6e0e23e09b51b4d
+    size: 27124
+    checksum: sha256:592a72c19299b4cf9ef8d42b6d592e2462e336f57998a8f7bb385d4f55732091
     name: perl-ODBM_File
-    evr: 1.16-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.16-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Object-HashBase-0.009-7.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 28938
@@ -1446,20 +1446,20 @@ arches:
     name: perl-Object-HashBase
     evr: 0.009-7.el9
     sourcerpm: perl-Object-HashBase-0.009-7.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Opcode-1.48-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Opcode-1.48-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 36640
-    checksum: sha256:ec91248e4ff688b0850651d3dc6dce6c7716fe00adc7ab71692703cbc425ca3b
+    size: 42052
+    checksum: sha256:1e058cfec04b0d318094f44174b7913ffb25f57500cdd6be305cfd6f579c002e
     name: perl-Opcode
-    evr: 1.48-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-POSIX-1.94-481.1.el9_6.aarch64.rpm
+    evr: 1.48-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-POSIX-1.94-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 98493
-    checksum: sha256:1afecd9468a279bcf9c4e2d7d37f09cc3779f7b869a26ba3d0dcef78f7b9c0af
+    size: 103879
+    checksum: sha256:d9aff89cd1e179c1f0594e07ac5ec7f56d34750d912cc1465c7eb1b742e7aa28
     name: perl-POSIX
-    evr: 1.94-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.94-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Package-Generator-1.106-23.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 26822
@@ -1516,20 +1516,20 @@ arches:
     name: perl-Pod-Escapes
     evr: 1:1.07-460.el9
     sourcerpm: perl-Pod-Escapes-1.07-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Pod-Functions-1.13-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Pod-Functions-1.13-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13531
-    checksum: sha256:8afc31372f05f71a11054c7d7318301d3d65547abc7eac3ed56d428843edae0c
+    size: 18931
+    checksum: sha256:af8c6ad5b0c8c0078a2718d93712fa49f30fe69ac93deb5733569a0017a9cc11
     name: perl-Pod-Functions
-    evr: 1.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Pod-Html-1.25-481.1.el9_6.noarch.rpm
+    evr: 1.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Pod-Html-1.25-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 26780
-    checksum: sha256:f692dea024e6ced870a5f792db9e76e06d810dfce9846bb59e5b4442b28820e6
+    size: 32195
+    checksum: sha256:5148da4557c486a5486b22e0e13130d4d9b18e96d636d377c65551b7fd741bc5
     name: perl-Pod-Html
-    evr: 1.25-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.25-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Pod-Perldoc-3.28.01-461.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 93727
@@ -1551,13 +1551,13 @@ arches:
     name: perl-Pod-Usage
     evr: 4:2.01-4.el9
     sourcerpm: perl-Pod-Usage-2.01-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Safe-2.41-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Safe-2.41-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 25188
-    checksum: sha256:ca9095157a26e3ee611c9b9ef6c075086a2381571fccc1a45ade5f8f88c5a78e
+    size: 30590
+    checksum: sha256:69cedceb1f0e76d5f65f881de2886925fa20a5c17257c23912404c903c37c76d
     name: perl-Safe
-    evr: 2.41-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.41-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Scalar-List-Utils-1.56-462.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 76001
@@ -1565,27 +1565,27 @@ arches:
     name: perl-Scalar-List-Utils
     evr: 4:1.56-462.el9
     sourcerpm: perl-Scalar-List-Utils-1.56-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Search-Dict-1.07-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Search-Dict-1.07-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12900
-    checksum: sha256:f57497238bbc4edb96b24f88084e5d21f4e3aebab5d33a6db5e79a2ea53ce70d
+    size: 18305
+    checksum: sha256:f163f15d68dcc473d715da6478a69995450c85d60fd7a98106f5b61a6b35013e
     name: perl-Search-Dict
-    evr: 1.07-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-SelectSaver-1.02-481.1.el9_6.noarch.rpm
+    evr: 1.07-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-SelectSaver-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 11553
-    checksum: sha256:8ec404df551d6cc4750efa34b9897d2288d07a26d49cd3d3d2315584976932b0
+    size: 16960
+    checksum: sha256:0e89d08090ebe81521f481571de6e4f608d06ee7ab3d8ceffaa40db7a26106ea
     name: perl-SelectSaver
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-SelfLoader-1.26-481.1.el9_6.noarch.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-SelfLoader-1.26-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 21729
-    checksum: sha256:18a1b56a5a1097748cc998cb5305f5d77e253a05bae807b418694805fc413c8e
+    size: 27137
+    checksum: sha256:99e849ddf0d4e4fe2bfd27e4d882dc9e091c66b800cb15d7d5ff11d77e26eea2
     name: perl-SelfLoader
-    evr: 1.26-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.26-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Socket-2.031-4.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 59426
@@ -1621,20 +1621,20 @@ arches:
     name: perl-Sub-Install
     evr: 0.928-28.el9
     sourcerpm: perl-Sub-Install-0.928-28.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Symbol-1.08-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Symbol-1.08-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14061
-    checksum: sha256:aa9942be4c837c024c6a0a376b13f9563e16ee8b66631ad6c5ff35cd0124728d
+    size: 19465
+    checksum: sha256:e291efcb344bcb5ce7ee0598dd9b0f8a24cc57287d0c849bc65bc02d99c5f209
     name: perl-Symbol
-    evr: 1.08-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Sys-Hostname-1.23-481.1.el9_6.aarch64.rpm
+    evr: 1.08-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Sys-Hostname-1.23-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 16947
-    checksum: sha256:92c9db4a5b34f6f57c858cf6265e62a7102b8fa8f3612a85a2f4226f349e775a
+    size: 22339
+    checksum: sha256:93bde24706bfa1c87dbc20f67066db47509b450453ba561efb579102b7afb481
     name: perl-Sys-Hostname
-    evr: 1.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Sys-Syslog-0.36-461.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 52646
@@ -1656,20 +1656,20 @@ arches:
     name: perl-Term-Cap
     evr: 1.17-460.el9
     sourcerpm: perl-Term-Cap-1.17-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Term-Complete-1.403-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Term-Complete-1.403-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12886
-    checksum: sha256:fe5f8688a2a28327a35be1caa35a9d7b8718531120ddfdb10da6f80d6b577059
+    size: 18282
+    checksum: sha256:d68afeac4d32492e8a7b9f4e525f152c76b8a48373411ae7e9371121bc4c64c4
     name: perl-Term-Complete
-    evr: 1.403-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Term-ReadLine-1.17-481.1.el9_6.noarch.rpm
+    evr: 1.403-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Term-ReadLine-1.17-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 19061
-    checksum: sha256:506c2fb3304f36ce437696dea9fb8772424a08345c765b25ac7278e429df1dcf
+    size: 24458
+    checksum: sha256:6558d145b8f6075c937fc9b4ad1c5327c98d57bec1406c6da832e5fdf26cb197
     name: perl-Term-ReadLine
-    evr: 1.17-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.17-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Term-Size-Any-0.002-35.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 16309
@@ -1698,13 +1698,13 @@ arches:
     name: perl-TermReadKey
     evr: 2.38-11.el9
     sourcerpm: perl-TermReadKey-2.38-11.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Test-1.31-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Test-1.31-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 28830
-    checksum: sha256:879484e27419a62c5eb942327570be90f246334000d9e3af1e052155b6e08661
+    size: 34232
+    checksum: sha256:f06201543d45319bac26381c5d97426cc2a2a779d6dfcae03967c7efc3dadeb2
     name: perl-Test
-    evr: 1.31-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.31-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Test-Harness-3.42-461.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 306138
@@ -1719,13 +1719,13 @@ arches:
     name: perl-Test-Simple
     evr: 3:1.302183-4.el9
     sourcerpm: perl-Test-Simple-1.302183-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Text-Abbrev-1.02-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Text-Abbrev-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12026
-    checksum: sha256:7671d9b159be320b1725a11b9ba5a9d15b809ec22ba13e0ae5cacf5ed09fdec1
+    size: 17432
+    checksum: sha256:3e93024f36201367f338ccc89e6bbe39285d87fbc2ba9be7385e81ae82834e5c
     name: perl-Text-Abbrev
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Text-Balanced-2.04-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 51500
@@ -1768,13 +1768,13 @@ arches:
     name: perl-Text-Template
     evr: 1.59-5.el9
     sourcerpm: perl-Text-Template-1.59-5.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Thread-3.05-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Thread-3.05-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 18018
-    checksum: sha256:0caef6e47205d0035b3f692010e9f7dcd710e7832da77a2a5abbe930440f7e48
+    size: 23430
+    checksum: sha256:b48ee3660b7acbed70eef8d9d88877e6d82c69a2cfc40a12dffccb706e385be9
     name: perl-Thread
-    evr: 3.05-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 3.05-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Thread-Queue-3.14-460.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 24804
@@ -1782,34 +1782,34 @@ arches:
     name: perl-Thread-Queue
     evr: 3.14-460.el9
     sourcerpm: perl-Thread-Queue-3.14-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Thread-Semaphore-2.13-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Thread-Semaphore-2.13-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 15604
-    checksum: sha256:136b09ee2841a1b6655f0a29759fe353b7f4b12ea3e559bafd39d4c508644925
+    size: 21007
+    checksum: sha256:e3cafcbc5d9af76c7afabe4fa76a0b35503c4610981862c00beb4c696d4f0e81
     name: perl-Thread-Semaphore
-    evr: 2.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Tie-4.6-481.1.el9_6.noarch.rpm
+    evr: 2.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Tie-4.6-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 31837
-    checksum: sha256:7144466ebb0d8dc2b7af2deac1dddd8caa23b35bcc0d42829c9b242b18f39d6c
+    size: 37234
+    checksum: sha256:d09a68c28793186a5a70744b76cb148bdbd102466749a2dbc9eceaff03983076
     name: perl-Tie
-    evr: 4.6-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Tie-File-1.06-481.1.el9_6.noarch.rpm
+    evr: 4.6-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Tie-File-1.06-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 43818
-    checksum: sha256:f99032921dc45c8a77f91909b5329a95fc4bade37815e2e866c70bf6f39a7c82
+    size: 49219
+    checksum: sha256:156e7e01b16260ae6a9bed1bf8aee6e3d20c447f960bf55429ad484fd5da7a57
     name: perl-Tie-File
-    evr: 1.06-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Tie-Memoize-1.1-481.1.el9_6.noarch.rpm
+    evr: 1.06-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Tie-Memoize-1.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14038
-    checksum: sha256:1f3395cf1a045adfabf0e9b82bc4676f0dd1d76a985afedb3e069e6e9128c677
+    size: 19437
+    checksum: sha256:29e9f46c21d0ab094ea6d01da690052f16773ebe3c9814d3832541dafb64738a
     name: perl-Tie-Memoize
-    evr: 1.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Tie-RefHash-1.40-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 26260
@@ -1817,13 +1817,13 @@ arches:
     name: perl-Tie-RefHash
     evr: 1.40-4.el9
     sourcerpm: perl-Tie-RefHash-1.40-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Time-1.03-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Time-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 18651
-    checksum: sha256:e23d1ba4c2e8d4283e757a7af563a24038b5829ed55c9bc90b4bae8c498ec5d7
+    size: 24038
+    checksum: sha256:cc3948fc9a1c5be3372a31cfd4515568dd5cc037b6b178603abfcd8c2366062b
     name: perl-Time
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Time-HiRes-1.9764-462.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 62449
@@ -1838,13 +1838,13 @@ arches:
     name: perl-Time-Local
     evr: 2:1.300-7.el9
     sourcerpm: perl-Time-Local-1.300-7.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Time-Piece-1.3401-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Time-Piece-1.3401-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 40806
-    checksum: sha256:f2efe674294a89db9aabe8add3d6b55ec0b17771707f7e21e839a8c085540fa5
+    size: 46210
+    checksum: sha256:bb024016b1d83ecf0406e0a85c2b07bdc134002a5779668e1ce4196c4392513e
     name: perl-Time-Piece
-    evr: 1.3401-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.3401-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-URI-5.09-3.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 128279
@@ -1873,20 +1873,20 @@ arches:
     name: perl-Unicode-Normalize
     evr: 1.27-461.el9
     sourcerpm: perl-Unicode-Normalize-1.27-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Unicode-UCD-0.75-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-Unicode-UCD-0.75-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 79927
-    checksum: sha256:208f347f513df7c59ab77d90b54d3c9ed4cf67e733887783354a2c6ebeaf6409
+    size: 85340
+    checksum: sha256:fe19d5ef06938b651a016ac044ad02dae6e287252b9df91194e1857186d8bbbf
     name: perl-Unicode-UCD
-    evr: 0.75-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-User-pwent-1.03-481.1.el9_6.noarch.rpm
+    evr: 0.75-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-User-pwent-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 20597
-    checksum: sha256:f131ac194a35b3b17f5ff6961e9bb9eb031fd5c7d0055e05a438c11b53931263
+    size: 26005
+    checksum: sha256:8136432e143fdf8b9a158948ce15d0aafe73bc283085590f18791bb7c05857c0
     name: perl-User-pwent
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-autodie-2.34-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 103286
@@ -1894,20 +1894,20 @@ arches:
     name: perl-autodie
     evr: 2.34-4.el9
     sourcerpm: perl-autodie-2.34-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-autouse-1.11-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-autouse-1.11-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13668
-    checksum: sha256:c2502f538edef3d9b9ad20cdc8c0f8e971ac651df6c07f8555aa315b602c085a
+    size: 19074
+    checksum: sha256:9b64a4f4f4a9663d9cc71620a68c2bd62d18c51f7db74ba2e538f015f984e7cd
     name: perl-autouse
-    evr: 1.11-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-base-2.27-481.1.el9_6.noarch.rpm
+    evr: 1.11-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-base-2.27-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 16220
-    checksum: sha256:0be44f055107893b011ed0e88f39ff202ba451db8a94351ad4472d350c780d0d
+    size: 21601
+    checksum: sha256:9086f78e466260aca5228b4e0f0e69d1dec5fa081cefc87c185e48ae0653b4d2
     name: perl-base
-    evr: 2.27-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.27-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-bignum-0.51-460.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 48635
@@ -1915,13 +1915,13 @@ arches:
     name: perl-bignum
     evr: 0.51-460.el9
     sourcerpm: perl-bignum-0.51-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-blib-1.07-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-blib-1.07-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12267
-    checksum: sha256:50560de5f252c718728c45cb7af3742252581416e0acb9cfacd686dad58c0028
+    size: 17678
+    checksum: sha256:a22f4b3d0910b3e2453910885869502904aed18fbbce08634ae4bf7246670a60
     name: perl-blib
-    evr: 1.07-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.07-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-constant-1.33-461.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 25865
@@ -1929,41 +1929,41 @@ arches:
     name: perl-constant
     evr: 1.33-461.el9
     sourcerpm: perl-constant-1.33-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-debugger-1.56-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-debugger-1.56-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 136515
-    checksum: sha256:0b96f38c73512a61ce84171578bc9fcc5a957ff1fb267749f3af18bc7d1ce1bd
+    size: 141930
+    checksum: sha256:aecd269f8bc7a23d9923df04ab2d251e94cf8eccb5d3bb87b4f1acf71bc27698
     name: perl-debugger
-    evr: 1.56-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-deprecate-0.04-481.1.el9_6.noarch.rpm
+    evr: 1.56-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-deprecate-0.04-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14490
-    checksum: sha256:033aae2f09a7f78be08ae590f95cbce8025e5d5574cdab2bc77b554ad6e81575
+    size: 19892
+    checksum: sha256:991f80cbbd1cc05a350e791e8eb53c17f0376502845fa3dec921c8632c5555b1
     name: perl-deprecate
-    evr: 0.04-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-devel-5.32.1-481.1.el9_6.aarch64.rpm
+    evr: 0.04-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-devel-5.32.1-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 692078
-    checksum: sha256:5dba8e84824236c205e420fc5aed86f3177c8e78937b08eed6b4bb7c06feaa8e
+    size: 698686
+    checksum: sha256:7f292e04295000b901674d9e0c9de2720d16528f6709f25ccad91c8e86ab18a6
     name: perl-devel
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-diagnostics-1.37-481.1.el9_6.noarch.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-diagnostics-1.37-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 215534
-    checksum: sha256:19c65175b0df9d6142bf08d6566b8f10c331735c8b95690adbc300b670a692c4
+    size: 220691
+    checksum: sha256:79814557fee87018862417ae9dbcc1b7751c57bcbf54d1a8fb869ca7a58424f6
     name: perl-diagnostics
-    evr: 1.37-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-doc-5.32.1-481.1.el9_6.noarch.rpm
+    evr: 1.37-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-doc-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 4798228
-    checksum: sha256:d9eb81a356338df906db80c853c092a1fb0de745726e82db44fb343d267b4091
+    size: 4805949
+    checksum: sha256:75ca91361f5e75cbda64f5bc7c411bc29aaff15ca7fc3eef9eb71b265b6919c9
     name: perl-doc
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-encoding-3.00-462.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 65958
@@ -1971,13 +1971,13 @@ arches:
     name: perl-encoding
     evr: 4:3.00-462.el9
     sourcerpm: perl-Encode-3.08-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-encoding-warnings-0.13-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-encoding-warnings-0.13-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 16539
-    checksum: sha256:897e244bb8f8800a3ed23d669df746b0bb3672cd6929b06e04e5da63b04a5aa3
+    size: 21941
+    checksum: sha256:471c182de9e2498cdde4f5710c8091825e41d1bfb9cac2ffc3438f3150b22ce9
     name: perl-encoding-warnings
-    evr: 0.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-experimental-0.022-6.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 24376
@@ -1985,27 +1985,27 @@ arches:
     name: perl-experimental
     evr: 0.022-6.el9
     sourcerpm: perl-experimental-0.022-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-fields-2.27-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-fields-2.27-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 16096
-    checksum: sha256:c2f5157686257ca7b67e566b4d7e86116c6c8b9f590023adf84fde78d35d3ea9
+    size: 21503
+    checksum: sha256:3427aa1ec9061a7a787caa15446100785b51f897749ad5cc21e5dc9dde5a145e
     name: perl-fields
-    evr: 2.27-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-filetest-1.03-481.1.el9_6.noarch.rpm
+    evr: 2.27-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-filetest-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14556
-    checksum: sha256:4556ac1a93588b9b3e3722867ef73680028e53b3aae4af87165a1a70c79530b8
+    size: 19965
+    checksum: sha256:e00cfb277926680b828ed4b884fdc9f7a50cbd6dcc3a0bc6eee7c6c8b69ba89c
     name: perl-filetest
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-if-0.60.800-481.1.el9_6.noarch.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-if-0.60.800-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13876
-    checksum: sha256:ae3ce80bee55e1057ed004ec03a0e826b0cdd90ace4c0784ab2f569a2d81d40c
+    size: 19277
+    checksum: sha256:183535bacd47eaadf8e9a9616a5989fc8a6be13bae51136604f88dabd89e26e9
     name: perl-if
-    evr: 0.60.800-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.60.800-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-inc-latest-0.500-20.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 27665
@@ -2013,27 +2013,27 @@ arches:
     name: perl-inc-latest
     evr: 2:0.500-20.el9
     sourcerpm: perl-inc-latest-0.500-20.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-interpreter-5.32.1-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-interpreter-5.32.1-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 71956
-    checksum: sha256:8f17e4683b342e5d0e97406a4c464f6ba7a9b9deaf6e39ff36b5b1459daea162
+    size: 77376
+    checksum: sha256:4ff7c5ae36260783e6cd09585f6b3398635b8abc3039cc3d607e5144922fdf94
     name: perl-interpreter
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-less-0.03-481.1.el9_6.noarch.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-less-0.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13074
-    checksum: sha256:8c69534a3a191e28647b5c201dce163f2fa30f0813d54ace2345bbab830d7a9b
+    size: 18473
+    checksum: sha256:c8ff1323638b306dfabc7769d349d73bf5f80e855fa4071c9e9750a8d0ac8be9
     name: perl-less
-    evr: 0.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-lib-0.65-481.1.el9_6.aarch64.rpm
+    evr: 0.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-lib-0.65-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14815
-    checksum: sha256:ac5fca3480c9429a1c86b7a781a0713776a75719b9337297f602cfb9cd2eeb12
+    size: 20214
+    checksum: sha256:f7a478f76b48a32c1c590aa42011ab03bbc46179bcf7136154d74aa6efda0e57
     name: perl-lib
-    evr: 0.65-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.65-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-libnet-3.13-4.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 137289
@@ -2041,20 +2041,20 @@ arches:
     name: perl-libnet
     evr: 3.13-4.el9
     sourcerpm: perl-libnet-3.13-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-libnetcfg-5.32.1-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-libnetcfg-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 16266
-    checksum: sha256:fcb262ee807d950b902ca12744cb2645c52de5aae0d9380a7ff4dd5574aec7fd
+    size: 21666
+    checksum: sha256:cd175a98e7869417383b610f054284607edf022ab3efada4d20db80daa510c08
     name: perl-libnetcfg
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-libs-5.32.1-481.1.el9_6.aarch64.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-libs-5.32.1-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 2255446
-    checksum: sha256:63434fb3f9efb3417bb263c8b9e1590384e7124a094855e82d64655161eaff21
+    size: 2261315
+    checksum: sha256:d2af02df8c234fb7ce05f544539137a9ca33557fef83b00a823085dadf150dd4
     name: perl-libs
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-local-lib-2.000024-13.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 73510
@@ -2062,55 +2062,55 @@ arches:
     name: perl-local-lib
     evr: 2.000024-13.el9
     sourcerpm: perl-local-lib-2.000024-13.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-locale-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-locale-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13543
-    checksum: sha256:6b81563677505210a973fd4416f5991bf729c03f3082ac139460290643daef33
+    size: 18954
+    checksum: sha256:3701bdbba744bd8636f2b6a2b0cfa67b09b2bb875725622fce58a581edf744c2
     name: perl-locale
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-macros-5.32.1-481.1.el9_6.noarch.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-macros-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 10568
-    checksum: sha256:e499fae237cea4dcec9480576b64c69afe91c09875a8dfcf9b4daebdbeb9f197
+    size: 15964
+    checksum: sha256:29703892b479f6eb8788ea9b0de1a9f35afa781f538042b2f99ee2a2a8fc6213
     name: perl-macros
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-meta-notation-5.32.1-481.1.el9_6.noarch.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-meta-notation-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 9577
-    checksum: sha256:0b7fb715954c7f67719f00bc7323d4a12453aab37acadba5106758f864c8535a
+    size: 14981
+    checksum: sha256:f3ab3b98ccb48ed4a0d13a27814e7f5c3377a14c7c55891e13c0604f7ccc4108
     name: perl-meta-notation
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-mro-1.23-481.1.el9_6.aarch64.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-mro-1.23-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 27780
-    checksum: sha256:10e9c630c9628d189ff2d705f280498c83bc407a1fb03b11f4251973b7e46b51
+    size: 33178
+    checksum: sha256:cf5d5ecbc736ec75ca89fc32fe2d6e14274bd8fa1e046628c06c650e9c0df70e
     name: perl-mro
-    evr: 1.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-open-1.12-481.1.el9_6.noarch.rpm
+    evr: 1.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-open-1.12-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 16407
-    checksum: sha256:f3e192485674a0681320f38c4163460ce0bf4855b7e825f75c371f3b3a7c778f
+    size: 21791
+    checksum: sha256:935a3dc5d2588a195ee53fdbb911d288ac225991ea42798b5f1fa06341c86d62
     name: perl-open
-    evr: 1.12-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-overload-1.31-481.1.el9_6.noarch.rpm
+    evr: 1.12-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-overload-1.31-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 46157
-    checksum: sha256:f172df7417780cb61b879effe60ce6b7b4399773c46cb9896a5edf2bfba6dbda
+    size: 51563
+    checksum: sha256:19d19110b121b52be2f7f5473c8c62f60eabcbec1086b574ec0d4313466082b7
     name: perl-overload
-    evr: 1.31-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-overloading-0.02-481.1.el9_6.noarch.rpm
+    evr: 1.31-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-overloading-0.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12747
-    checksum: sha256:4aae487e802df60e1e2d778b264592290ad492078877784771299561d45dfd47
+    size: 18148
+    checksum: sha256:9d9199225389a4393fd6f4c7b3e81b43c0962ee8cfc168aae2093fb5df301a96
     name: perl-overloading
-    evr: 0.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-parent-0.238-460.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 16286
@@ -2125,13 +2125,13 @@ arches:
     name: perl-perlfaq
     evr: 5.20210520-1.el9
     sourcerpm: perl-perlfaq-5.20210520-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ph-5.32.1-481.1.el9_6.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-ph-5.32.1-484.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 41462
-    checksum: sha256:36d34c290cb0bf2ce127d5eeda3a2091c6e669bf47b5230f454879a241c00dc0
+    size: 48168
+    checksum: sha256:1e44a88f1e5bbfbd147c8d515aa7d2eae36b3adbdec5343176e8b8ce341c6b86
     name: perl-ph
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-podlators-4.14-460.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 121317
@@ -2139,20 +2139,20 @@ arches:
     name: perl-podlators
     evr: 1:4.14-460.el9
     sourcerpm: perl-podlators-4.14-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-sigtrap-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-sigtrap-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 15624
-    checksum: sha256:5b7215d5421f381137e867678492848574c2ceb58e56d47d7833d182923e92c6
+    size: 21034
+    checksum: sha256:78caf0d63e44ef8340535ce1be8f5b1c82e6ff96b2778249562e070bb2a88476
     name: perl-sigtrap
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-sort-2.04-481.1.el9_6.noarch.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-sort-2.04-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 13408
-    checksum: sha256:554155e6ff38d091ea388b1f19fc0b0950522b4c4ffe87cfee3676c4f03c046d
+    size: 18808
+    checksum: sha256:8bc110227e6f18e57271730201b9eece3da512c57e0957aec531fcc023426113
     name: perl-sort
-    evr: 2.04-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.04-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-srpm-macros-1-41.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 9639
@@ -2160,13 +2160,13 @@ arches:
     name: perl-srpm-macros
     evr: 1-41.el9
     sourcerpm: perl-srpm-macros-1-41.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-subs-1.03-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-subs-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 11525
-    checksum: sha256:0a7ef4a9a174ab981949d27a4acdc8cec87fd3513e9e607f5869851dc1c74deb
+    size: 16927
+    checksum: sha256:bac1aeb9c06c7a4b1dbae98d0bc92ef68a503f677e10988272a0efb4fc956430
     name: perl-subs
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-threads-2.25-460.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 61254
@@ -2181,20 +2181,20 @@ arches:
     name: perl-threads-shared
     evr: 1.61-460.el9
     sourcerpm: perl-threads-shared-1.61-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-utils-5.32.1-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-utils-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 55943
-    checksum: sha256:5c21992a23a63139c0c73ce0b9866cd9064ab2efc8d9414bb45edc6c72996162
+    size: 61353
+    checksum: sha256:2c30b84a5e9f35892c93f427489c9b4079efe54670c4beb7a5a609f5d7079f47
     name: perl-utils
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-vars-1.05-481.1.el9_6.noarch.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-vars-1.05-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 12885
-    checksum: sha256:5d3c58094c0158b6193d7f4ba7a4bb7ae06a78738393b31255da8b7aadb10e38
+    size: 18287
+    checksum: sha256:c1043f8cbbe89b502c4490423376cd144800801b7e338c2a306b8f5ee60fbb31
     name: perl-vars
-    evr: 1.05-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.05-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-version-0.99.28-4.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 67978
@@ -2202,13 +2202,13 @@ arches:
     name: perl-version
     evr: 7:0.99.28-4.el9
     sourcerpm: perl-version-0.99.28-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-vmsish-1.04-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/perl-vmsish-1.04-484.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 14031
-    checksum: sha256:af9db38df1c1843277ebd8c6bb8d766017be043eea28246252788b055f19764d
+    size: 19446
+    checksum: sha256:c96622608c31098f15e2041f953552a4d0b890eb40f9e0b329a42796b0af0368
     name: perl-vmsish
-    evr: 1.04-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.04-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/pixman-0.40.0-6.el9_3.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 173063
@@ -2909,13 +2909,20 @@ arches:
     name: openssh-clients
     evr: 9.9p1-9.el9_8
     sourcerpm: openssh-9.9p1-9.el9_8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/o/openssl-3.5.5-6.el9_8.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/o/openssl-3.5.8-1.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 1541002
-    checksum: sha256:9f10be36d0d532c65a3f9a41f7d0cd3190b0b908f60850862cc24cab06cd1101
+    size: 1546056
+    checksum: sha256:1ef4001b9a9df4695c80e986d3c8ceb7900bb6925f86fde09d16aff9f8d733f5
     name: openssl
-    evr: 1:3.5.5-6.el9_8
-    sourcerpm: openssl-3.5.5-6.el9_8.src.rpm
+    evr: 1:3.5.8-1.el9_8
+    sourcerpm: openssl-3.5.8-1.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/o/openssl-libs-3.5.8-1.el9_8.aarch64.rpm
+    repoid: ubi-9-for-aarch64-baseos-rpms
+    size: 2294194
+    checksum: sha256:23134af6ea097b94d8261367db01f91604ef3b508654caf4f7399e5c142abcc8
+    name: openssl-libs
+    evr: 1:3.5.8-1.el9_8
+    sourcerpm: openssl-3.5.8-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/p/pam-1.5.1-28.el9_8.1.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 642233
@@ -3210,13 +3217,13 @@ arches:
     name: rpm-sign-libs
     evr: 4.16.1.3-40.el9
     sourcerpm: rpm-4.16.1.3-40.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/r/rsync-3.2.5-7.el9_8.2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/r/rsync-3.2.7-1.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 425538
-    checksum: sha256:1e1fa89a9a4b843862fb9436295f187c55d314a9eb23d4bb8d6b07b2f41ba067
+    size: 466719
+    checksum: sha256:77ba6761d7316c4842a350af8bb3da69941634f9253bcbbfeaa7f79237b78261
     name: rsync
-    evr: 3.2.5-7.el9_8.2
-    sourcerpm: rsync-3.2.5-7.el9_8.2.src.rpm
+    evr: 3.2.7-1.el9_8
+    sourcerpm: rsync-3.2.7-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-38.1.75-2.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 47589
@@ -3670,12 +3677,12 @@ arches:
     checksum: sha256:4efddadb4bf304a47e2cce96d6d63d1643f5bdcb06dace3c04f8d37410f8bc22
     name: pango
     evr: 1.48.7-3.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/p/perl-5.32.1-481.1.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/p/perl-5.32.1-484.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
-    size: 12786537
-    checksum: sha256:cef69403d27b100525c0e630fb17d1ef1d598c608241ea07ba0975b559a42858
+    size: 12794649
+    checksum: sha256:bf61d23a7a195d75b8a62234f769eccfb50f8dac9ea187b85b8f0c3e7ebe8126
     name: perl
-    evr: 4:5.32.1-481.1.el9_6
+    evr: 4:5.32.1-484.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/p/perl-Algorithm-Diff-1.2010-4.el9.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
     size: 43626
@@ -4924,12 +4931,12 @@ arches:
     checksum: sha256:38b311178cf42e1611eb250747dee0780e19c41afbdc3b1cd189ddf5d5897acd
     name: openssh
     evr: 9.9p1-9.el9_8
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/o/openssl-3.5.5-6.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/o/openssl-3.5.8-1.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 53369050
-    checksum: sha256:b79f08d2d04536fdb6801b6ba7da7174942d174dd2b7969316402c737689d735
+    size: 53429735
+    checksum: sha256:393e8694b8161826f67f149cd7dde6b63da96f02efc050fda651d265907f2c20
     name: openssl
-    evr: 1:3.5.5-6.el9_8
+    evr: 1:3.5.8-1.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/p/pam-1.5.1-28.el9_8.1.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 1142205
@@ -5074,12 +5081,12 @@ arches:
     checksum: sha256:311266f11a616acecfdcfca63214f91dc3ea88409098cf2ffec6c5e9cfc686ef
     name: rpm
     evr: 4.16.1.3-40.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/r/rsync-3.2.5-7.el9_8.2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/r/rsync-3.2.7-1.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 1358189
-    checksum: sha256:37d0ee99d570df9eadf8244580dc078258ae4c9833ca3458cb6dc5851a7c37ca
+    size: 1594371
+    checksum: sha256:f0ea5966a6b8652c2116d84d6cde915ffec6455104c3aa12f2017dc28dc4c022
     name: rsync
-    evr: 3.2.5-7.el9_8.2
+    evr: 3.2.7-1.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.75-2.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 1177308
@@ -5432,13 +5439,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.1-1.el9
     sourcerpm: go-rpm-macros-3.8.1-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-687.46.1.el9_8.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-687.47.1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 2921665
-    checksum: sha256:a33898add57c43e68cc37c0cfb99d8b96cbc0be46b47e58d69b2e9738b9ad998
+    size: 2930517
+    checksum: sha256:3792c2da1dc9bdf4502825c29017d60d3a9dfd076c90018c9708f2cd98271db3
     name: kernel-headers
-    evr: 5.14.0-687.46.1.el9_8
-    sourcerpm: kernel-5.14.0-687.46.1.el9_8.src.rpm
+    evr: 5.14.0-687.47.1.el9_8
+    sourcerpm: kernel-5.14.0-687.47.1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 14098
@@ -5747,13 +5754,13 @@ arches:
     name: openblas-srpm-macros
     evr: 2-11.el9
     sourcerpm: openblas-srpm-macros-2-11.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/o/openssl-devel-3.5.5-6.el9_8.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/o/openssl-devel-3.5.8-1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 5029526
-    checksum: sha256:84e54b3467ecfe70c75688f28dbc0e071e268d845db17b28a1f35a35d45640cd
+    size: 5039851
+    checksum: sha256:8042a4b1134610ef06c27b7314a5fcd4ce887d1065d4b9e861bc3f647d7fb792
     name: openssl-devel
-    evr: 1:3.5.5-6.el9_8
-    sourcerpm: openssl-3.5.5-6.el9_8.src.rpm
+    evr: 1:3.5.8-1.el9_8
+    sourcerpm: openssl-3.5.8-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/pango-1.48.7-3.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 313015
@@ -5761,13 +5768,13 @@ arches:
     name: pango
     evr: 1.48.7-3.el9
     sourcerpm: pango-1.48.7-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-5.32.1-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-5.32.1-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 8429
-    checksum: sha256:74d2e4262c902dd95287455934c265d9a406fc316b490f37c72deda9adefc5e7
+    size: 15137
+    checksum: sha256:b84bff5dab10a1c0bae4035e390854424836828fe4274fca9fdd45250f524153
     name: perl
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Algorithm-Diff-1.2010-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 52041
@@ -5789,41 +5796,41 @@ arches:
     name: perl-Archive-Zip
     evr: 1.68-6.el9
     sourcerpm: perl-Archive-Zip-1.68-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Attribute-Handlers-1.01-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Attribute-Handlers-1.01-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 27731
-    checksum: sha256:95ee8b22f5c962b56b95dc3e74280ed1471c17bb2031995d3efd431478e40aac
+    size: 33160
+    checksum: sha256:6e663385bd50256b66c7f0ca8e92192aae51849f52fb06dafd29eafa5a0b3a0a
     name: perl-Attribute-Handlers
-    evr: 1.01-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-AutoLoader-5.74-481.1.el9_6.noarch.rpm
+    evr: 1.01-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-AutoLoader-5.74-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 21344
-    checksum: sha256:b4557d853be8048aaefde5c4083c43fa34375e224731e93e584e4e3d5db46ac3
+    size: 26763
+    checksum: sha256:181fab877b5029078c11eeff5221fcf5c5a686e1c9d2b82e30cd6a84584d426e
     name: perl-AutoLoader
-    evr: 5.74-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-AutoSplit-5.74-481.1.el9_6.noarch.rpm
+    evr: 5.74-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-AutoSplit-5.74-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 21714
-    checksum: sha256:de53b7057da078864d27f4acddf37594d40ee4d5f710d129c40cfb5c6097ceb0
+    size: 27119
+    checksum: sha256:1e7e3b8bcd71089e19b967b8db9fae179cfe75c91634ca3a432d4561d8dd82cb
     name: perl-AutoSplit
-    evr: 5.74-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-B-1.80-481.1.el9_6.x86_64.rpm
+    evr: 5.74-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-B-1.80-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 183818
-    checksum: sha256:8b5a3d27f69cce8dd4c237510c2aaa2d01b3e884452e5da467d9c41015372c6a
+    size: 190655
+    checksum: sha256:47b89238cde3fac5c89e2e4a078a5c53ae2e5f7f11f91dff1bbc86d81273dfac
     name: perl-B
-    evr: 1.80-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Benchmark-1.23-481.1.el9_6.noarch.rpm
+    evr: 1.80-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Benchmark-1.23-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 27055
-    checksum: sha256:690cc6ca69fd267f025ddc18116d8f10dff6693645ff949820c83ed7776aa454
+    size: 32455
+    checksum: sha256:88e7e3a5b86f76e4f2cd79f9efc434af8a1ce652413d894ffd30233e4e932ede
     name: perl-Benchmark
-    evr: 1.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-CPAN-2.29-5.el9_6.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 589480
@@ -5866,13 +5873,13 @@ arches:
     name: perl-Carp
     evr: 1.50-460.el9
     sourcerpm: perl-Carp-1.50-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Class-Struct-0.66-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Class-Struct-0.66-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 22220
-    checksum: sha256:d35ff343bd718fbd8531995a8aedb866c6d37fac6a688fcf9a458017781bf058
+    size: 27621
+    checksum: sha256:c4f4e8db14364830c7a38d26097c8629bdaafe6a5492ddf7728ce92eae745014
     name: perl-Class-Struct
-    evr: 0.66-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.66-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Compress-Bzip2-2.28-5.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 75359
@@ -5901,13 +5908,13 @@ arches:
     name: perl-Compress-Raw-Zlib
     evr: 2.101-5.el9
     sourcerpm: perl-Compress-Raw-Zlib-2.101-5.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Config-Extensions-0.03-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Config-Extensions-0.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12128
-    checksum: sha256:86695c36cd0bd3516cdb72d9f30ddec6aef47eb48432a76b71d15372e86549a6
+    size: 17529
+    checksum: sha256:136b34b71b0421ff652a77e6df6f326f348e4ae8c303d6888e82f9d19c6dbb6d
     name: perl-Config-Extensions
-    evr: 0.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Config-Perl-V-0.33-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 24943
@@ -5915,13 +5922,13 @@ arches:
     name: perl-Config-Perl-V
     evr: 0.33-4.el9
     sourcerpm: perl-Config-Perl-V-0.33-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-DBM_Filter-0.06-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-DBM_Filter-0.06-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 32009
-    checksum: sha256:2ea4092322228a400fe8ad6c19302878e46771cbc1a2d623371c49732ad5e018
+    size: 37567
+    checksum: sha256:72fe28ade7ce75412ea901232bd7a6cdd27a0c3b6b77fe2a258c1519e89406c9
     name: perl-DBM_Filter
-    evr: 0.06-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.06-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-DB_File-1.855-4.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 86215
@@ -5957,20 +5964,20 @@ arches:
     name: perl-Devel-PPPort
     evr: 3.62-4.el9
     sourcerpm: perl-Devel-PPPort-3.62-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Devel-Peek-1.28-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Devel-Peek-1.28-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 32411
-    checksum: sha256:a8618c242704beebdc36e9ef6f9d797822ae16ff6ce195dc8192b68358cdc5e9
+    size: 37841
+    checksum: sha256:cae67fd1c7ce0f1b3fa9048120851cf300a740e0bea30c714244181e29001bd5
     name: perl-Devel-Peek
-    evr: 1.28-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Devel-SelfStubber-1.06-481.1.el9_6.noarch.rpm
+    evr: 1.28-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Devel-SelfStubber-1.06-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14231
-    checksum: sha256:703faaef6ca5a65ed4c3cbdb256da9612eed842bd77620a2d527ca8d0fa8a7d2
+    size: 19638
+    checksum: sha256:6e5a1a75527e53dab17f9691116e830a5070729ddc6f0a5adb3e32650a905090
     name: perl-Devel-SelfStubber
-    evr: 1.06-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.06-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Devel-Size-0.83-10.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 35096
@@ -6006,27 +6013,27 @@ arches:
     name: perl-Digest-SHA1
     evr: 2.13-34.el9
     sourcerpm: perl-Digest-SHA1-2.13-34.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-DirHandle-1.05-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-DirHandle-1.05-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12337
-    checksum: sha256:2c79a7d1c783c4eb4305e7b15c885c7afc5e2612ab4b1245f4f9ef8dcff4804f
+    size: 17737
+    checksum: sha256:aeddb3d2719f1e1a36aa7860b42bb3053ae6bad97a0e7eaa4f7c2c12476c0122
     name: perl-DirHandle
-    evr: 1.05-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Dumpvalue-2.27-481.1.el9_6.noarch.rpm
+    evr: 1.05-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Dumpvalue-2.27-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 18343
-    checksum: sha256:7659f1dab24e96da4be5624f90a3ac04b383071a96a32e185b196bc527377e1c
+    size: 23748
+    checksum: sha256:6dc155fbec3e3d272e6318b0e5a92b2704ff34ef0e5736c1890e98aed53b5a98
     name: perl-Dumpvalue
-    evr: 2.27-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-DynaLoader-1.47-481.1.el9_6.x86_64.rpm
+    evr: 2.27-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-DynaLoader-1.47-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 25958
-    checksum: sha256:937d31c9fc324bfa7434e8455cf1828afd46e4502f661566a7286853d8d46bf1
+    size: 31371
+    checksum: sha256:966ad16b3f1801336f4f53a9a3af773c82fd757cc7f0f9ab37482b364fd8f939
     name: perl-DynaLoader
-    evr: 1.47-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.47-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Encode-3.08-462.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 1802386
@@ -6048,13 +6055,13 @@ arches:
     name: perl-Encode-devel
     evr: 4:3.08-462.el9
     sourcerpm: perl-Encode-3.08-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-English-1.11-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-English-1.11-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13497
-    checksum: sha256:04a48f25493933a3ae04eac446efefa1d4c092e323db1561e7653e4f570987da
+    size: 18915
+    checksum: sha256:6a6101557ce855361a2e35db5d41f6729bb909e1171691f93cf5b2868ddf20ee
     name: perl-English
-    evr: 1.11-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.11-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Env-1.04-460.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 22160
@@ -6062,13 +6069,13 @@ arches:
     name: perl-Env
     evr: 1.04-460.el9
     sourcerpm: perl-Env-1.04-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Errno-1.30-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Errno-1.30-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14862
-    checksum: sha256:9c03ad1166d9f8e6d2affb52185f59d625468d160f7c749e3d53a844d5129d4c
+    size: 20280
+    checksum: sha256:176f2894b124b67beda3a398724b14422d793775194cbba63d0fd730d5a30584
     name: perl-Errno
-    evr: 1.30-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.30-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Error-0.17029-7.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 47552
@@ -6097,20 +6104,20 @@ arches:
     name: perl-ExtUtils-Command
     evr: 2:7.60-3.el9
     sourcerpm: perl-ExtUtils-MakeMaker-7.60-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-Constant-0.25-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-Constant-0.25-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 47285
-    checksum: sha256:f10abe9f8d9f26c2ef2f278baf37a98e7a654cf192521d72bb797a3ef2131698
+    size: 52681
+    checksum: sha256:0bd313997281ce5daaac6d90beac6b35fce9bd8e98b522572defdce9a2b58d6c
     name: perl-ExtUtils-Constant
-    evr: 0.25-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-Embed-1.35-481.1.el9_6.noarch.rpm
+    evr: 0.25-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-Embed-1.35-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 17684
-    checksum: sha256:10fa80d9248c159ad12cce5222d3d1b82953ddfc7c4123ca0b14b5d5340e1421
+    size: 23085
+    checksum: sha256:46b641c6112697796adc83578378ae8c94310d68920600824b1429a4905aa410
     name: perl-ExtUtils-Embed
-    evr: 1.35-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.35-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-Install-2.20-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 48441
@@ -6139,13 +6146,13 @@ arches:
     name: perl-ExtUtils-Manifest
     evr: 1:1.73-4.el9
     sourcerpm: perl-ExtUtils-Manifest-1.73-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-Miniperl-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-Miniperl-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 15171
-    checksum: sha256:6b00fb367aea4654a14495802d46daa87d2e51ee203a8b0e207edae507773edc
+    size: 20571
+    checksum: sha256:b5cbccccb5aa4c4d0b77498138a2ba14f23aa86dd14106db1fca28d92428017e
     name: perl-ExtUtils-Miniperl
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ExtUtils-ParseXS-3.40-460.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 194711
@@ -6153,41 +6160,41 @@ arches:
     name: perl-ExtUtils-ParseXS
     evr: 1:3.40-460.el9
     sourcerpm: perl-ExtUtils-ParseXS-3.40-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Fcntl-1.13-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Fcntl-1.13-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 20397
-    checksum: sha256:72587bf21b26885361ec991d153e1b4db26e9b117c1c70b92cc2891cecae4575
+    size: 25800
+    checksum: sha256:539e477059c1caa2b4fa9ec71ad0b9215222b7bb50bc706f8f6a69eb65596650
     name: perl-Fcntl
-    evr: 1.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Basename-2.85-481.1.el9_6.noarch.rpm
+    evr: 1.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Basename-2.85-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 17211
-    checksum: sha256:e39dcc13a24d3b5a7ba11288e63b22a055a8e1061743b8a409858d98ebd794e4
+    size: 22610
+    checksum: sha256:59974fcefb40376a76afc52193e39537bd543748447f47aa49224b40a65b7c1d
     name: perl-File-Basename
-    evr: 2.85-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Compare-1.100.600-481.1.el9_6.noarch.rpm
+    evr: 2.85-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Compare-1.100.600-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13166
-    checksum: sha256:0dd800746b848a84fce73dcef035c4241e6aa90262c821a0ad295a7756ca1a4c
+    size: 18567
+    checksum: sha256:945b71f2d98fda49283e7b133f532e67728e1fe12205dcab2df753cde61315cd
     name: perl-File-Compare
-    evr: 1.100.600-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Copy-2.34-481.1.el9_6.noarch.rpm
+    evr: 1.100.600-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Copy-2.34-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 20143
-    checksum: sha256:165816db79e88e63c96bdafaf0c3bfee95b6feedb78e40da3a6dcc196a15a186
+    size: 25552
+    checksum: sha256:ceccabb63b0fb0c9f3137365f7612e6c0b0943eb6996df1487551431a58c69d9
     name: perl-File-Copy
-    evr: 2.34-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-DosGlob-1.12-481.1.el9_6.x86_64.rpm
+    evr: 2.34-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-DosGlob-1.12-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 19610
-    checksum: sha256:d1414f1a77b939a24f8d1ed1a982d6090620232e626e0aab25e40d8c562e9c07
+    size: 25022
+    checksum: sha256:5e510ba77aacb1ec4a96bdc9281fed3edfedcf88b5dfb5fae588745845d06843
     name: perl-File-DosGlob
-    evr: 1.12-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.12-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Fetch-1.00-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 33372
@@ -6195,13 +6202,13 @@ arches:
     name: perl-File-Fetch
     evr: 1.00-4.el9
     sourcerpm: perl-File-Fetch-1.00-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Find-1.37-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-Find-1.37-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 25551
-    checksum: sha256:002ec6d107fff6949f1a88965fb31b0a4efe6ce663395ab47e0cb939e3920c08
+    size: 30949
+    checksum: sha256:56ef52466512d4553aa8fe4560e1e945672c465a9b1c387f1c0aa4c57842ce33
     name: perl-File-Find
-    evr: 1.37-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.37-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-HomeDir-1.006-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 65857
@@ -6230,27 +6237,27 @@ arches:
     name: perl-File-Which
     evr: 1.23-10.el9
     sourcerpm: perl-File-Which-1.23-10.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-stat-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-File-stat-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 17117
-    checksum: sha256:b235134c1961e9b57f86bddc02e874607c17c155d2aa5ad78cc3ed9c8fd9c95b
+    size: 22517
+    checksum: sha256:219bbe53605f31c4d12ad7bcc7c20ea31fd426ce2f8dcc322fb64bf9f5575d67
     name: perl-File-stat
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-FileCache-1.10-481.1.el9_6.noarch.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-FileCache-1.10-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14640
-    checksum: sha256:0b0ab9a79395bb7a926ec674b66f42845580903f514c511da156ffd497205f42
+    size: 20046
+    checksum: sha256:fc83a474a1dd7908fb3202b4538bfc93e247900f85171063b94e9212da3235c7
     name: perl-FileCache
-    evr: 1.10-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-FileHandle-2.03-481.1.el9_6.noarch.rpm
+    evr: 1.10-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-FileHandle-2.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 15452
-    checksum: sha256:c2139abdb9b3335f592aa2835ef6d6fcde1e89232eb3d3c5a15f7cc1d0829f8d
+    size: 20860
+    checksum: sha256:1d4cf1d3a79893cfebb6664c4bff1ce537c2585d1e53f0a7f275f9dd217c7a3b
     name: perl-FileHandle
-    evr: 2.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Filter-1.60-4.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 97662
@@ -6265,20 +6272,20 @@ arches:
     name: perl-Filter-Simple
     evr: 0.96-460.el9
     sourcerpm: perl-Filter-Simple-0.96-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-FindBin-1.51-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-FindBin-1.51-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13872
-    checksum: sha256:44f9c97a57dafae68f8183d1ca2682a8308b68f1a399ab333a3dd52836bb6b17
+    size: 19282
+    checksum: sha256:a26015430425d0d6b26c78b6f59880838b549f61a04bcc800ddacf00294d9450
     name: perl-FindBin
-    evr: 1.51-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-GDBM_File-1.18-481.1.el9_6.x86_64.rpm
+    evr: 1.51-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-GDBM_File-1.18-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 22466
-    checksum: sha256:c7659709e0958edc4837e42dde09b861c1605020e50b82152ff56dda55141e2d
+    size: 27884
+    checksum: sha256:5a12d7267ba7e37bf01a8f5bd696336148e6f14455d84396c63b90d470392ff9
     name: perl-GDBM_File
-    evr: 1.18-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.18-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Getopt-Long-2.52-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 65144
@@ -6286,13 +6293,13 @@ arches:
     name: perl-Getopt-Long
     evr: 1:2.52-4.el9
     sourcerpm: perl-Getopt-Long-2.52-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Getopt-Std-1.12-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Getopt-Std-1.12-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 15551
-    checksum: sha256:49bd8381823d680d17c37f3bebfd97dd92bfbf59e8019f15c7606f41dca02a7d
+    size: 20932
+    checksum: sha256:98ed0c76b8ded1569b350a14dddb45f6980a4b7fa2aea63620da2c27b987b5d3
     name: perl-Getopt-Std
-    evr: 1.12-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.12-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Git-2.52.0-1.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 44211
@@ -6307,48 +6314,48 @@ arches:
     name: perl-HTTP-Tiny
     evr: 0.076-462.el9
     sourcerpm: perl-HTTP-Tiny-0.076-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Hash-Util-0.23-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Hash-Util-0.23-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 34584
-    checksum: sha256:f587cd7123b8b38acffa99b85b4d27726f0f715749be338fc6e3877b3497480d
+    size: 39903
+    checksum: sha256:1e6d6e5d251374fcd8769012db81263a554368986c754dc4ed7a63de3d46d817
     name: perl-Hash-Util
-    evr: 0.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Hash-Util-FieldHash-1.20-481.1.el9_6.x86_64.rpm
+    evr: 0.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Hash-Util-FieldHash-1.20-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 38321
-    checksum: sha256:5e7ffdcf78c697892faaa5dae07a84d5a7f012f2e7929e767a2ab4e5fd47b734
+    size: 43739
+    checksum: sha256:945b258a3ec8940c8cd14b442a88f3442f4216bf3b1849395e589f658bda0f5f
     name: perl-Hash-Util-FieldHash
-    evr: 1.20-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-I18N-Collate-1.02-481.1.el9_6.noarch.rpm
+    evr: 1.20-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-I18N-Collate-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14091
-    checksum: sha256:82a82eb1e6765c7b4ec245a624f34e73d6a7b2c9c15a90007bcbb64113332793
+    size: 19492
+    checksum: sha256:15e099e300728fdd1fa92ab738eeb120670a52fd30f9e6427021bdd0d4cbc043
     name: perl-I18N-Collate
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-I18N-LangTags-0.44-481.1.el9_6.noarch.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-I18N-LangTags-0.44-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 55212
-    checksum: sha256:f0849fe10730cf503bebfbd82e3dfb39d64ef87667ee9a1a073df8fd231878d6
+    size: 60614
+    checksum: sha256:538130b61006f310e9000b15085b125a9d09ea7bbc45309e34d7aebb6720818c
     name: perl-I18N-LangTags
-    evr: 0.44-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-I18N-Langinfo-0.19-481.1.el9_6.x86_64.rpm
+    evr: 0.44-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-I18N-Langinfo-0.19-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 22566
-    checksum: sha256:57c2c2ffc107be695c5ce4f011d54a4e16274c53aaaad09247c954cfe0385061
+    size: 27957
+    checksum: sha256:8c6990c4c3f398ea6c7fc2110d171c9395ca15b386de35a8cdab3d6af0e359ac
     name: perl-I18N-Langinfo
-    evr: 0.19-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-IO-1.43-481.1.el9_6.x86_64.rpm
+    evr: 0.19-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-IO-1.43-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 90423
-    checksum: sha256:e29f5b38c643882a6b9ab9ddbb77bdd476d1a55e3ab649e886e99dd726b3c822
+    size: 97123
+    checksum: sha256:8a4ca4ab7b4bb73e0085f8baa3938b9b994088d7083bae3480e284ee692d8a84
     name: perl-IO
-    evr: 1.43-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.43-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-IO-Compress-2.102-4.el9_8.1.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 282018
@@ -6391,13 +6398,13 @@ arches:
     name: perl-IPC-Cmd
     evr: 2:1.04-461.el9
     sourcerpm: perl-IPC-Cmd-1.04-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-IPC-Open3-1.21-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-IPC-Open3-1.21-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 22968
-    checksum: sha256:7ea36dcf28da3fc7250eb041ba19f99c87543c0870f5da67da614f5ca8d18b92
+    size: 28366
+    checksum: sha256:03895c87199410c4bdec501b3f3dc361f476cd1135cf9f1fe2aaff51c924b1d1
     name: perl-IPC-Open3
-    evr: 1.21-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.21-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-IPC-SysV-2.09-4.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 48576
@@ -6433,13 +6440,13 @@ arches:
     name: perl-Locale-Maketext
     evr: 1.29-461.el9
     sourcerpm: perl-Locale-Maketext-1.29-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Locale-Maketext-Simple-0.21-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Locale-Maketext-Simple-0.21-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 17604
-    checksum: sha256:206fca125c5520e6e0723c6f8ee4c9b56d5bec95c7d71e4b54fdad36ddf20980
+    size: 23016
+    checksum: sha256:2faac8b844f63cec420fa3b7c8d55b08dca04d7dc27947540f04aed3a0825548
     name: perl-Locale-Maketext-Simple
-    evr: 1:0.21-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1:0.21-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-MIME-Base64-3.16-4.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 35058
@@ -6482,20 +6489,20 @@ arches:
     name: perl-Math-BigRat
     evr: 0.2614-460.el9
     sourcerpm: perl-Math-BigRat-0.2614-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Math-Complex-1.59-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Math-Complex-1.59-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 47421
-    checksum: sha256:754d5798c9a2bb21714671fdf0236e5937511bf59c473fdef8117c512410e8b5
+    size: 52827
+    checksum: sha256:95888ffe92fb97a1761c4a918242991f7b47d7065531f0d6d297f6ae86468e0e
     name: perl-Math-Complex
-    evr: 1.59-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Memoize-1.03-481.1.el9_6.noarch.rpm
+    evr: 1.59-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Memoize-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 57798
-    checksum: sha256:f668ee6ce94bab8e3a926587a1ab2f4ed3a4490d911c2e7fc1b2fe074a6cfdcc
+    size: 63692
+    checksum: sha256:b9ab746899fc8fc8316d749bb818078e6b2d12fc390585b7e28e2a4ebebe6373
     name: perl-Memoize
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Module-Build-0.42.31-9.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 274094
@@ -6531,13 +6538,13 @@ arches:
     name: perl-Module-Load-Conditional
     evr: 0.74-4.el9
     sourcerpm: perl-Module-Load-Conditional-0.74-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Module-Loaded-0.08-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Module-Loaded-0.08-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13245
-    checksum: sha256:5873834f46d56066cab07a5386daccf8b4db7ccf23344967dcdc31a893907778
+    size: 18647
+    checksum: sha256:a743847d8f93a30a8b2d7a69e290522307f4c1472745168b025056e1e4283ea1
     name: perl-Module-Loaded
-    evr: 1:0.08-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1:0.08-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Module-Metadata-1.000037-460.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 39221
@@ -6559,27 +6566,27 @@ arches:
     name: perl-Mozilla-CA
     evr: 20200520-6.el9
     sourcerpm: perl-Mozilla-CA-20200520-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-NDBM_File-1.15-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-NDBM_File-1.15-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 22193
-    checksum: sha256:1c340352c349ee46ad071436947a1fa1bd353e984fb3d8d3328f2c287c8c5421
+    size: 27598
+    checksum: sha256:b259c91e0cb141f651b6123a43c86bd5043eae9b7828f558405fbe462855eb5a
     name: perl-NDBM_File
-    evr: 1.15-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-NEXT-0.67-481.1.el9_6.noarch.rpm
+    evr: 1.15-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-NEXT-0.67-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 21043
-    checksum: sha256:30c7f7f97f369fb9264c0c01f7f12fe1791c99e920aebdf149d71f945f814ec6
+    size: 26443
+    checksum: sha256:24052bd119e349b793b7b0169996dceee22bb7c6fa41cee446432a562ecaab44
     name: perl-NEXT
-    evr: 0.67-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Net-1.02-481.1.el9_6.noarch.rpm
+    evr: 0.67-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Net-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 25539
-    checksum: sha256:2bb0dceeec12a995caf29411056c2108a6f09b6bbe6d31090114fa4cbec53454
+    size: 30968
+    checksum: sha256:6fd3508ef90539f5b8763ede4b2fd8d8a5849d6320f39d0b44c8583e6deaf807
     name: perl-Net
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Net-Ping-2.74-5.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 53027
@@ -6594,13 +6601,13 @@ arches:
     name: perl-Net-SSLeay
     evr: 1.94-3.el9
     sourcerpm: perl-Net-SSLeay-1.94-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ODBM_File-1.16-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ODBM_File-1.16-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 22488
-    checksum: sha256:f74b5145fd7c8b37e7f9cc77adf5e8f7cac1be2690e32d00a2c7ca7e43222bf0
+    size: 27901
+    checksum: sha256:ed5efac435e463033f5b0b4333dbfcfba01b42ffa3710ccb643cac55c92bb115
     name: perl-ODBM_File
-    evr: 1.16-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.16-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Object-HashBase-0.009-7.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 28938
@@ -6608,20 +6615,20 @@ arches:
     name: perl-Object-HashBase
     evr: 0.009-7.el9
     sourcerpm: perl-Object-HashBase-0.009-7.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Opcode-1.48-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Opcode-1.48-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 36570
-    checksum: sha256:974b83adfbc32831b70041353fa13ecda7834c59d186148eeda4a29687810d25
+    size: 41975
+    checksum: sha256:7143839d86578420657bafaa1cb8e4c3ee83e020dac88bf8426449ab960557b0
     name: perl-Opcode
-    evr: 1.48-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-POSIX-1.94-481.1.el9_6.x86_64.rpm
+    evr: 1.48-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-POSIX-1.94-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 98084
-    checksum: sha256:434ef22a697f38f3dda351db9ab427e02e7a1220b2dcbc3046087bd9129b742e
+    size: 103493
+    checksum: sha256:d417ecfb1acab088aa42b0b5f576de3baa2985f9337aa1afd2600e1dacc2812f
     name: perl-POSIX
-    evr: 1.94-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.94-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Package-Generator-1.106-23.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 26822
@@ -6678,20 +6685,20 @@ arches:
     name: perl-Pod-Escapes
     evr: 1:1.07-460.el9
     sourcerpm: perl-Pod-Escapes-1.07-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Pod-Functions-1.13-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Pod-Functions-1.13-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13531
-    checksum: sha256:8afc31372f05f71a11054c7d7318301d3d65547abc7eac3ed56d428843edae0c
+    size: 18931
+    checksum: sha256:af8c6ad5b0c8c0078a2718d93712fa49f30fe69ac93deb5733569a0017a9cc11
     name: perl-Pod-Functions
-    evr: 1.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Pod-Html-1.25-481.1.el9_6.noarch.rpm
+    evr: 1.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Pod-Html-1.25-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 26780
-    checksum: sha256:f692dea024e6ced870a5f792db9e76e06d810dfce9846bb59e5b4442b28820e6
+    size: 32195
+    checksum: sha256:5148da4557c486a5486b22e0e13130d4d9b18e96d636d377c65551b7fd741bc5
     name: perl-Pod-Html
-    evr: 1.25-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.25-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Pod-Perldoc-3.28.01-461.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 93727
@@ -6713,13 +6720,13 @@ arches:
     name: perl-Pod-Usage
     evr: 4:2.01-4.el9
     sourcerpm: perl-Pod-Usage-2.01-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Safe-2.41-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Safe-2.41-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 25188
-    checksum: sha256:ca9095157a26e3ee611c9b9ef6c075086a2381571fccc1a45ade5f8f88c5a78e
+    size: 30590
+    checksum: sha256:69cedceb1f0e76d5f65f881de2886925fa20a5c17257c23912404c903c37c76d
     name: perl-Safe
-    evr: 2.41-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.41-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Scalar-List-Utils-1.56-462.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 77262
@@ -6727,27 +6734,27 @@ arches:
     name: perl-Scalar-List-Utils
     evr: 4:1.56-462.el9
     sourcerpm: perl-Scalar-List-Utils-1.56-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Search-Dict-1.07-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Search-Dict-1.07-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12900
-    checksum: sha256:f57497238bbc4edb96b24f88084e5d21f4e3aebab5d33a6db5e79a2ea53ce70d
+    size: 18305
+    checksum: sha256:f163f15d68dcc473d715da6478a69995450c85d60fd7a98106f5b61a6b35013e
     name: perl-Search-Dict
-    evr: 1.07-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-SelectSaver-1.02-481.1.el9_6.noarch.rpm
+    evr: 1.07-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-SelectSaver-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 11553
-    checksum: sha256:8ec404df551d6cc4750efa34b9897d2288d07a26d49cd3d3d2315584976932b0
+    size: 16960
+    checksum: sha256:0e89d08090ebe81521f481571de6e4f608d06ee7ab3d8ceffaa40db7a26106ea
     name: perl-SelectSaver
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-SelfLoader-1.26-481.1.el9_6.noarch.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-SelfLoader-1.26-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 21729
-    checksum: sha256:18a1b56a5a1097748cc998cb5305f5d77e253a05bae807b418694805fc413c8e
+    size: 27137
+    checksum: sha256:99e849ddf0d4e4fe2bfd27e4d882dc9e091c66b800cb15d7d5ff11d77e26eea2
     name: perl-SelfLoader
-    evr: 1.26-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.26-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Socket-2.031-4.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 59776
@@ -6783,20 +6790,20 @@ arches:
     name: perl-Sub-Install
     evr: 0.928-28.el9
     sourcerpm: perl-Sub-Install-0.928-28.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Symbol-1.08-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Symbol-1.08-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14061
-    checksum: sha256:aa9942be4c837c024c6a0a376b13f9563e16ee8b66631ad6c5ff35cd0124728d
+    size: 19465
+    checksum: sha256:e291efcb344bcb5ce7ee0598dd9b0f8a24cc57287d0c849bc65bc02d99c5f209
     name: perl-Symbol
-    evr: 1.08-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Sys-Hostname-1.23-481.1.el9_6.x86_64.rpm
+    evr: 1.08-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Sys-Hostname-1.23-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 16928
-    checksum: sha256:f4ebce9dc84861b5d77a3a4a81a2b3a7275eedc0bda60430ad3e4a7fce3791f6
+    size: 22429
+    checksum: sha256:ff2858e2832d251407ac9a441a5d12eca9539ce46e8ab303d2cf25dee2dbace1
     name: perl-Sys-Hostname
-    evr: 1.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Sys-Syslog-0.36-461.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 52721
@@ -6818,20 +6825,20 @@ arches:
     name: perl-Term-Cap
     evr: 1.17-460.el9
     sourcerpm: perl-Term-Cap-1.17-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Term-Complete-1.403-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Term-Complete-1.403-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12886
-    checksum: sha256:fe5f8688a2a28327a35be1caa35a9d7b8718531120ddfdb10da6f80d6b577059
+    size: 18282
+    checksum: sha256:d68afeac4d32492e8a7b9f4e525f152c76b8a48373411ae7e9371121bc4c64c4
     name: perl-Term-Complete
-    evr: 1.403-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Term-ReadLine-1.17-481.1.el9_6.noarch.rpm
+    evr: 1.403-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Term-ReadLine-1.17-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 19061
-    checksum: sha256:506c2fb3304f36ce437696dea9fb8772424a08345c765b25ac7278e429df1dcf
+    size: 24458
+    checksum: sha256:6558d145b8f6075c937fc9b4ad1c5327c98d57bec1406c6da832e5fdf26cb197
     name: perl-Term-ReadLine
-    evr: 1.17-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.17-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Term-Size-Any-0.002-35.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 16309
@@ -6860,13 +6867,13 @@ arches:
     name: perl-TermReadKey
     evr: 2.38-11.el9
     sourcerpm: perl-TermReadKey-2.38-11.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Test-1.31-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Test-1.31-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 28830
-    checksum: sha256:879484e27419a62c5eb942327570be90f246334000d9e3af1e052155b6e08661
+    size: 34232
+    checksum: sha256:f06201543d45319bac26381c5d97426cc2a2a779d6dfcae03967c7efc3dadeb2
     name: perl-Test
-    evr: 1.31-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.31-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Test-Harness-3.42-461.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 306138
@@ -6881,13 +6888,13 @@ arches:
     name: perl-Test-Simple
     evr: 3:1.302183-4.el9
     sourcerpm: perl-Test-Simple-1.302183-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Text-Abbrev-1.02-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Text-Abbrev-1.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12026
-    checksum: sha256:7671d9b159be320b1725a11b9ba5a9d15b809ec22ba13e0ae5cacf5ed09fdec1
+    size: 17432
+    checksum: sha256:3e93024f36201367f338ccc89e6bbe39285d87fbc2ba9be7385e81ae82834e5c
     name: perl-Text-Abbrev
-    evr: 1.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Text-Balanced-2.04-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 51500
@@ -6930,13 +6937,13 @@ arches:
     name: perl-Text-Template
     evr: 1.59-5.el9
     sourcerpm: perl-Text-Template-1.59-5.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Thread-3.05-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Thread-3.05-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 18018
-    checksum: sha256:0caef6e47205d0035b3f692010e9f7dcd710e7832da77a2a5abbe930440f7e48
+    size: 23430
+    checksum: sha256:b48ee3660b7acbed70eef8d9d88877e6d82c69a2cfc40a12dffccb706e385be9
     name: perl-Thread
-    evr: 3.05-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 3.05-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Thread-Queue-3.14-460.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 24804
@@ -6944,34 +6951,34 @@ arches:
     name: perl-Thread-Queue
     evr: 3.14-460.el9
     sourcerpm: perl-Thread-Queue-3.14-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Thread-Semaphore-2.13-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Thread-Semaphore-2.13-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 15604
-    checksum: sha256:136b09ee2841a1b6655f0a29759fe353b7f4b12ea3e559bafd39d4c508644925
+    size: 21007
+    checksum: sha256:e3cafcbc5d9af76c7afabe4fa76a0b35503c4610981862c00beb4c696d4f0e81
     name: perl-Thread-Semaphore
-    evr: 2.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Tie-4.6-481.1.el9_6.noarch.rpm
+    evr: 2.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Tie-4.6-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 31837
-    checksum: sha256:7144466ebb0d8dc2b7af2deac1dddd8caa23b35bcc0d42829c9b242b18f39d6c
+    size: 37234
+    checksum: sha256:d09a68c28793186a5a70744b76cb148bdbd102466749a2dbc9eceaff03983076
     name: perl-Tie
-    evr: 4.6-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Tie-File-1.06-481.1.el9_6.noarch.rpm
+    evr: 4.6-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Tie-File-1.06-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 43818
-    checksum: sha256:f99032921dc45c8a77f91909b5329a95fc4bade37815e2e866c70bf6f39a7c82
+    size: 49219
+    checksum: sha256:156e7e01b16260ae6a9bed1bf8aee6e3d20c447f960bf55429ad484fd5da7a57
     name: perl-Tie-File
-    evr: 1.06-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Tie-Memoize-1.1-481.1.el9_6.noarch.rpm
+    evr: 1.06-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Tie-Memoize-1.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14038
-    checksum: sha256:1f3395cf1a045adfabf0e9b82bc4676f0dd1d76a985afedb3e069e6e9128c677
+    size: 19437
+    checksum: sha256:29e9f46c21d0ab094ea6d01da690052f16773ebe3c9814d3832541dafb64738a
     name: perl-Tie-Memoize
-    evr: 1.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Tie-RefHash-1.40-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 26260
@@ -6979,13 +6986,13 @@ arches:
     name: perl-Tie-RefHash
     evr: 1.40-4.el9
     sourcerpm: perl-Tie-RefHash-1.40-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Time-1.03-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Time-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 18651
-    checksum: sha256:e23d1ba4c2e8d4283e757a7af563a24038b5829ed55c9bc90b4bae8c498ec5d7
+    size: 24038
+    checksum: sha256:cc3948fc9a1c5be3372a31cfd4515568dd5cc037b6b178603abfcd8c2366062b
     name: perl-Time
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Time-HiRes-1.9764-462.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 62596
@@ -7000,13 +7007,13 @@ arches:
     name: perl-Time-Local
     evr: 2:1.300-7.el9
     sourcerpm: perl-Time-Local-1.300-7.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Time-Piece-1.3401-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Time-Piece-1.3401-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 41138
-    checksum: sha256:493671a8b07c0c5b6c82b6fc25ad041b386b40b613e3e1af9c649d950daa0aca
+    size: 46531
+    checksum: sha256:c545944fc2d6d4fe4ca0817d57181cdb3dfaf6c5d2fb7b5ea43807788ec0ddf2
     name: perl-Time-Piece
-    evr: 1.3401-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.3401-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-URI-5.09-3.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 128279
@@ -7035,20 +7042,20 @@ arches:
     name: perl-Unicode-Normalize
     evr: 1.27-461.el9
     sourcerpm: perl-Unicode-Normalize-1.27-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Unicode-UCD-0.75-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-Unicode-UCD-0.75-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 79927
-    checksum: sha256:208f347f513df7c59ab77d90b54d3c9ed4cf67e733887783354a2c6ebeaf6409
+    size: 85340
+    checksum: sha256:fe19d5ef06938b651a016ac044ad02dae6e287252b9df91194e1857186d8bbbf
     name: perl-Unicode-UCD
-    evr: 0.75-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-User-pwent-1.03-481.1.el9_6.noarch.rpm
+    evr: 0.75-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-User-pwent-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 20597
-    checksum: sha256:f131ac194a35b3b17f5ff6961e9bb9eb031fd5c7d0055e05a438c11b53931263
+    size: 26005
+    checksum: sha256:8136432e143fdf8b9a158948ce15d0aafe73bc283085590f18791bb7c05857c0
     name: perl-User-pwent
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-autodie-2.34-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 103286
@@ -7056,20 +7063,20 @@ arches:
     name: perl-autodie
     evr: 2.34-4.el9
     sourcerpm: perl-autodie-2.34-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-autouse-1.11-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-autouse-1.11-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13668
-    checksum: sha256:c2502f538edef3d9b9ad20cdc8c0f8e971ac651df6c07f8555aa315b602c085a
+    size: 19074
+    checksum: sha256:9b64a4f4f4a9663d9cc71620a68c2bd62d18c51f7db74ba2e538f015f984e7cd
     name: perl-autouse
-    evr: 1.11-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-base-2.27-481.1.el9_6.noarch.rpm
+    evr: 1.11-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-base-2.27-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 16220
-    checksum: sha256:0be44f055107893b011ed0e88f39ff202ba451db8a94351ad4472d350c780d0d
+    size: 21601
+    checksum: sha256:9086f78e466260aca5228b4e0f0e69d1dec5fa081cefc87c185e48ae0653b4d2
     name: perl-base
-    evr: 2.27-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.27-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-bignum-0.51-460.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 48635
@@ -7077,13 +7084,13 @@ arches:
     name: perl-bignum
     evr: 0.51-460.el9
     sourcerpm: perl-bignum-0.51-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-blib-1.07-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-blib-1.07-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12267
-    checksum: sha256:50560de5f252c718728c45cb7af3742252581416e0acb9cfacd686dad58c0028
+    size: 17678
+    checksum: sha256:a22f4b3d0910b3e2453910885869502904aed18fbbce08634ae4bf7246670a60
     name: perl-blib
-    evr: 1.07-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.07-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-constant-1.33-461.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 25865
@@ -7091,41 +7098,41 @@ arches:
     name: perl-constant
     evr: 1.33-461.el9
     sourcerpm: perl-constant-1.33-461.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-debugger-1.56-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-debugger-1.56-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 136515
-    checksum: sha256:0b96f38c73512a61ce84171578bc9fcc5a957ff1fb267749f3af18bc7d1ce1bd
+    size: 141930
+    checksum: sha256:aecd269f8bc7a23d9923df04ab2d251e94cf8eccb5d3bb87b4f1acf71bc27698
     name: perl-debugger
-    evr: 1.56-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-deprecate-0.04-481.1.el9_6.noarch.rpm
+    evr: 1.56-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-deprecate-0.04-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14490
-    checksum: sha256:033aae2f09a7f78be08ae590f95cbce8025e5d5574cdab2bc77b554ad6e81575
+    size: 19892
+    checksum: sha256:991f80cbbd1cc05a350e791e8eb53c17f0376502845fa3dec921c8632c5555b1
     name: perl-deprecate
-    evr: 0.04-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-devel-5.32.1-481.1.el9_6.x86_64.rpm
+    evr: 0.04-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-devel-5.32.1-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 692014
-    checksum: sha256:8e5928c563c256c62ea09b78b6ac2c90e9e37013e09af1fe120acac64fd84d23
+    size: 698926
+    checksum: sha256:be86f77c56f0af5a3b17d6146f6f956591d6d249888630f66124a2d6951d33f0
     name: perl-devel
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-diagnostics-1.37-481.1.el9_6.noarch.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-diagnostics-1.37-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 215534
-    checksum: sha256:19c65175b0df9d6142bf08d6566b8f10c331735c8b95690adbc300b670a692c4
+    size: 220691
+    checksum: sha256:79814557fee87018862417ae9dbcc1b7751c57bcbf54d1a8fb869ca7a58424f6
     name: perl-diagnostics
-    evr: 1.37-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-doc-5.32.1-481.1.el9_6.noarch.rpm
+    evr: 1.37-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-doc-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 4798228
-    checksum: sha256:d9eb81a356338df906db80c853c092a1fb0de745726e82db44fb343d267b4091
+    size: 4805949
+    checksum: sha256:75ca91361f5e75cbda64f5bc7c411bc29aaff15ca7fc3eef9eb71b265b6919c9
     name: perl-doc
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-encoding-3.00-462.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 66000
@@ -7133,13 +7140,13 @@ arches:
     name: perl-encoding
     evr: 4:3.00-462.el9
     sourcerpm: perl-Encode-3.08-462.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-encoding-warnings-0.13-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-encoding-warnings-0.13-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 16539
-    checksum: sha256:897e244bb8f8800a3ed23d669df746b0bb3672cd6929b06e04e5da63b04a5aa3
+    size: 21941
+    checksum: sha256:471c182de9e2498cdde4f5710c8091825e41d1bfb9cac2ffc3438f3150b22ce9
     name: perl-encoding-warnings
-    evr: 0.13-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.13-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-experimental-0.022-6.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 24376
@@ -7147,27 +7154,27 @@ arches:
     name: perl-experimental
     evr: 0.022-6.el9
     sourcerpm: perl-experimental-0.022-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-fields-2.27-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-fields-2.27-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 16096
-    checksum: sha256:c2f5157686257ca7b67e566b4d7e86116c6c8b9f590023adf84fde78d35d3ea9
+    size: 21503
+    checksum: sha256:3427aa1ec9061a7a787caa15446100785b51f897749ad5cc21e5dc9dde5a145e
     name: perl-fields
-    evr: 2.27-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-filetest-1.03-481.1.el9_6.noarch.rpm
+    evr: 2.27-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-filetest-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14556
-    checksum: sha256:4556ac1a93588b9b3e3722867ef73680028e53b3aae4af87165a1a70c79530b8
+    size: 19965
+    checksum: sha256:e00cfb277926680b828ed4b884fdc9f7a50cbd6dcc3a0bc6eee7c6c8b69ba89c
     name: perl-filetest
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-if-0.60.800-481.1.el9_6.noarch.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-if-0.60.800-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13876
-    checksum: sha256:ae3ce80bee55e1057ed004ec03a0e826b0cdd90ace4c0784ab2f569a2d81d40c
+    size: 19277
+    checksum: sha256:183535bacd47eaadf8e9a9616a5989fc8a6be13bae51136604f88dabd89e26e9
     name: perl-if
-    evr: 0.60.800-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.60.800-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-inc-latest-0.500-20.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 27665
@@ -7175,27 +7182,27 @@ arches:
     name: perl-inc-latest
     evr: 2:0.500-20.el9
     sourcerpm: perl-inc-latest-0.500-20.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-interpreter-5.32.1-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-interpreter-5.32.1-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 72173
-    checksum: sha256:92959263a20ad89d33bc92826cdfed32f507652ff08d0c18b50b604fa5f9f594
+    size: 77577
+    checksum: sha256:8c0d094034d1367be28247f254976da5bf691b2fc3192245b9934a3165878d13
     name: perl-interpreter
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-less-0.03-481.1.el9_6.noarch.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-less-0.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13074
-    checksum: sha256:8c69534a3a191e28647b5c201dce163f2fa30f0813d54ace2345bbab830d7a9b
+    size: 18473
+    checksum: sha256:c8ff1323638b306dfabc7769d349d73bf5f80e855fa4071c9e9750a8d0ac8be9
     name: perl-less
-    evr: 0.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-lib-0.65-481.1.el9_6.x86_64.rpm
+    evr: 0.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-lib-0.65-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14847
-    checksum: sha256:badc59793f32fa6e98fd705101af0b879720db5e0811b46755640d3d64165715
+    size: 20268
+    checksum: sha256:1f39a916a6ab536a90126ba8f2d9db4435f0fab665021a498d4771bd572cec48
     name: perl-lib
-    evr: 0.65-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.65-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-libnet-3.13-4.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 137289
@@ -7203,20 +7210,20 @@ arches:
     name: perl-libnet
     evr: 3.13-4.el9
     sourcerpm: perl-libnet-3.13-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-libnetcfg-5.32.1-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-libnetcfg-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 16266
-    checksum: sha256:fcb262ee807d950b902ca12744cb2645c52de5aae0d9380a7ff4dd5574aec7fd
+    size: 21666
+    checksum: sha256:cd175a98e7869417383b610f054284607edf022ab3efada4d20db80daa510c08
     name: perl-libnetcfg
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-libs-5.32.1-481.1.el9_6.x86_64.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-libs-5.32.1-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 2303689
-    checksum: sha256:aa0e9b31c82b50de7ace1b7e4b85a26ac9572cc77b8ded88866c06915748ccd7
+    size: 2307993
+    checksum: sha256:77d0d0557752e11c9c7e7b7bc7da174c1f4e9a185d396ecb11a9dcbe719c914f
     name: perl-libs
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-local-lib-2.000024-13.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 73510
@@ -7224,55 +7231,55 @@ arches:
     name: perl-local-lib
     evr: 2.000024-13.el9
     sourcerpm: perl-local-lib-2.000024-13.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-locale-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-locale-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13543
-    checksum: sha256:6b81563677505210a973fd4416f5991bf729c03f3082ac139460290643daef33
+    size: 18954
+    checksum: sha256:3701bdbba744bd8636f2b6a2b0cfa67b09b2bb875725622fce58a581edf744c2
     name: perl-locale
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-macros-5.32.1-481.1.el9_6.noarch.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-macros-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 10568
-    checksum: sha256:e499fae237cea4dcec9480576b64c69afe91c09875a8dfcf9b4daebdbeb9f197
+    size: 15964
+    checksum: sha256:29703892b479f6eb8788ea9b0de1a9f35afa781f538042b2f99ee2a2a8fc6213
     name: perl-macros
-    evr: 4:5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-meta-notation-5.32.1-481.1.el9_6.noarch.rpm
+    evr: 4:5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-meta-notation-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 9577
-    checksum: sha256:0b7fb715954c7f67719f00bc7323d4a12453aab37acadba5106758f864c8535a
+    size: 14981
+    checksum: sha256:f3ab3b98ccb48ed4a0d13a27814e7f5c3377a14c7c55891e13c0604f7ccc4108
     name: perl-meta-notation
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-mro-1.23-481.1.el9_6.x86_64.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-mro-1.23-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 28410
-    checksum: sha256:4ed671f36290bc6c15f37d550f67ce33ced1c27a3e2ea24f0a37038d45d1805a
+    size: 33818
+    checksum: sha256:90fdf344f2c3ddd7627db0115dc5af52489625b918db6b44d929ae545b9c705e
     name: perl-mro
-    evr: 1.23-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-open-1.12-481.1.el9_6.noarch.rpm
+    evr: 1.23-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-open-1.12-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 16407
-    checksum: sha256:f3e192485674a0681320f38c4163460ce0bf4855b7e825f75c371f3b3a7c778f
+    size: 21791
+    checksum: sha256:935a3dc5d2588a195ee53fdbb911d288ac225991ea42798b5f1fa06341c86d62
     name: perl-open
-    evr: 1.12-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-overload-1.31-481.1.el9_6.noarch.rpm
+    evr: 1.12-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-overload-1.31-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 46157
-    checksum: sha256:f172df7417780cb61b879effe60ce6b7b4399773c46cb9896a5edf2bfba6dbda
+    size: 51563
+    checksum: sha256:19d19110b121b52be2f7f5473c8c62f60eabcbec1086b574ec0d4313466082b7
     name: perl-overload
-    evr: 1.31-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-overloading-0.02-481.1.el9_6.noarch.rpm
+    evr: 1.31-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-overloading-0.02-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12747
-    checksum: sha256:4aae487e802df60e1e2d778b264592290ad492078877784771299561d45dfd47
+    size: 18148
+    checksum: sha256:9d9199225389a4393fd6f4c7b3e81b43c0962ee8cfc168aae2093fb5df301a96
     name: perl-overloading
-    evr: 0.02-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 0.02-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-parent-0.238-460.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 16286
@@ -7287,13 +7294,13 @@ arches:
     name: perl-perlfaq
     evr: 5.20210520-1.el9
     sourcerpm: perl-perlfaq-5.20210520-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ph-5.32.1-481.1.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-ph-5.32.1-484.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 45698
-    checksum: sha256:6f29f5eff09005371dda94e8ba980af8e8db07446d2a039f4aba2dc6856cb1f4
+    size: 52396
+    checksum: sha256:0ca034fa6314e8c6c073e4e80feaa2970c585deeefbc2d748d03d94871392dc9
     name: perl-ph
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-podlators-4.14-460.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 121317
@@ -7301,20 +7308,20 @@ arches:
     name: perl-podlators
     evr: 1:4.14-460.el9
     sourcerpm: perl-podlators-4.14-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-sigtrap-1.09-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-sigtrap-1.09-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 15624
-    checksum: sha256:5b7215d5421f381137e867678492848574c2ceb58e56d47d7833d182923e92c6
+    size: 21034
+    checksum: sha256:78caf0d63e44ef8340535ce1be8f5b1c82e6ff96b2778249562e070bb2a88476
     name: perl-sigtrap
-    evr: 1.09-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-sort-2.04-481.1.el9_6.noarch.rpm
+    evr: 1.09-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-sort-2.04-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 13408
-    checksum: sha256:554155e6ff38d091ea388b1f19fc0b0950522b4c4ffe87cfee3676c4f03c046d
+    size: 18808
+    checksum: sha256:8bc110227e6f18e57271730201b9eece3da512c57e0957aec531fcc023426113
     name: perl-sort
-    evr: 2.04-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 2.04-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-srpm-macros-1-41.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 9639
@@ -7322,13 +7329,13 @@ arches:
     name: perl-srpm-macros
     evr: 1-41.el9
     sourcerpm: perl-srpm-macros-1-41.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-subs-1.03-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-subs-1.03-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 11525
-    checksum: sha256:0a7ef4a9a174ab981949d27a4acdc8cec87fd3513e9e607f5869851dc1c74deb
+    size: 16927
+    checksum: sha256:bac1aeb9c06c7a4b1dbae98d0bc92ef68a503f677e10988272a0efb4fc956430
     name: perl-subs
-    evr: 1.03-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.03-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-threads-2.25-460.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 62702
@@ -7343,20 +7350,20 @@ arches:
     name: perl-threads-shared
     evr: 1.61-460.el9
     sourcerpm: perl-threads-shared-1.61-460.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-utils-5.32.1-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-utils-5.32.1-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 55943
-    checksum: sha256:5c21992a23a63139c0c73ce0b9866cd9064ab2efc8d9414bb45edc6c72996162
+    size: 61353
+    checksum: sha256:2c30b84a5e9f35892c93f427489c9b4079efe54670c4beb7a5a609f5d7079f47
     name: perl-utils
-    evr: 5.32.1-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-vars-1.05-481.1.el9_6.noarch.rpm
+    evr: 5.32.1-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-vars-1.05-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12885
-    checksum: sha256:5d3c58094c0158b6193d7f4ba7a4bb7ae06a78738393b31255da8b7aadb10e38
+    size: 18287
+    checksum: sha256:c1043f8cbbe89b502c4490423376cd144800801b7e338c2a306b8f5ee60fbb31
     name: perl-vars
-    evr: 1.05-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.05-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-version-0.99.28-4.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 68996
@@ -7364,13 +7371,13 @@ arches:
     name: perl-version
     evr: 7:0.99.28-4.el9
     sourcerpm: perl-version-0.99.28-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-vmsish-1.04-481.1.el9_6.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/perl-vmsish-1.04-484.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 14031
-    checksum: sha256:af9db38df1c1843277ebd8c6bb8d766017be043eea28246252788b055f19764d
+    size: 19446
+    checksum: sha256:c96622608c31098f15e2041f953552a4d0b890eb40f9e0b329a42796b0af0368
     name: perl-vmsish
-    evr: 1.04-481.1.el9_6
-    sourcerpm: perl-5.32.1-481.1.el9_6.src.rpm
+    evr: 1.04-484.el9_8
+    sourcerpm: perl-5.32.1-484.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/pixman-0.40.0-6.el9_3.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 277483
@@ -8078,13 +8085,20 @@ arches:
     name: openssh-clients
     evr: 9.9p1-9.el9_8
     sourcerpm: openssh-9.9p1-9.el9_8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.5.5-6.el9_8.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.5.8-1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 1564334
-    checksum: sha256:1c502507f42674119318b66b111448f618efe2767a55edde5fadddcecb47ac64
+    size: 1569041
+    checksum: sha256:2e0d5017032a48c23d4efa43afbe98d45179365eaec16f38e93c271b7728a67a
     name: openssl
-    evr: 1:3.5.5-6.el9_8
-    sourcerpm: openssl-3.5.5-6.el9_8.src.rpm
+    evr: 1:3.5.8-1.el9_8
+    sourcerpm: openssl-3.5.8-1.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-libs-3.5.8-1.el9_8.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 2430624
+    checksum: sha256:3abe1f190415d91d4dc51db74cf2ad7e06b1e5ca5f63dac978fe58d8fd14e493
+    name: openssl-libs
+    evr: 1:3.5.8-1.el9_8
+    sourcerpm: openssl-3.5.8-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/p/pam-1.5.1-28.el9_8.1.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 645147
@@ -8379,13 +8393,13 @@ arches:
     name: rpm-sign-libs
     evr: 4.16.1.3-40.el9
     sourcerpm: rpm-4.16.1.3-40.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/r/rsync-3.2.5-7.el9_8.2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/r/rsync-3.2.7-1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 430699
-    checksum: sha256:73c95e6404602b407a3cced5f1ae769a2c32b5b4ce9d646fc42617941863082c
+    size: 471331
+    checksum: sha256:c56921bb5c0304fc0e9b7bb8ea1b95cc66a789d2e8c0d1f1ec078433cac4c78f
     name: rsync
-    evr: 3.2.5-7.el9_8.2
-    sourcerpm: rsync-3.2.5-7.el9_8.2.src.rpm
+    evr: 3.2.7-1.el9_8
+    sourcerpm: rsync-3.2.7-1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-38.1.75-2.el9_8.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 47589
@@ -8839,12 +8853,12 @@ arches:
     checksum: sha256:4efddadb4bf304a47e2cce96d6d63d1643f5bdcb06dace3c04f8d37410f8bc22
     name: pango
     evr: 1.48.7-3.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/p/perl-5.32.1-481.1.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/p/perl-5.32.1-484.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 12786537
-    checksum: sha256:cef69403d27b100525c0e630fb17d1ef1d598c608241ea07ba0975b559a42858
+    size: 12794649
+    checksum: sha256:bf61d23a7a195d75b8a62234f769eccfb50f8dac9ea187b85b8f0c3e7ebe8126
     name: perl
-    evr: 4:5.32.1-481.1.el9_6
+    evr: 4:5.32.1-484.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/p/perl-Algorithm-Diff-1.2010-4.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 43626
@@ -10105,12 +10119,12 @@ arches:
     checksum: sha256:38b311178cf42e1611eb250747dee0780e19c41afbdc3b1cd189ddf5d5897acd
     name: openssh
     evr: 9.9p1-9.el9_8
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.5.5-6.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.5.8-1.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 53369050
-    checksum: sha256:b79f08d2d04536fdb6801b6ba7da7174942d174dd2b7969316402c737689d735
+    size: 53429735
+    checksum: sha256:393e8694b8161826f67f149cd7dde6b63da96f02efc050fda651d265907f2c20
     name: openssl
-    evr: 1:3.5.5-6.el9_8
+    evr: 1:3.5.8-1.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/p/pam-1.5.1-28.el9_8.1.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 1142205
@@ -10255,12 +10269,12 @@ arches:
     checksum: sha256:311266f11a616acecfdcfca63214f91dc3ea88409098cf2ffec6c5e9cfc686ef
     name: rpm
     evr: 4.16.1.3-40.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/r/rsync-3.2.5-7.el9_8.2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/r/rsync-3.2.7-1.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 1358189
-    checksum: sha256:37d0ee99d570df9eadf8244580dc078258ae4c9833ca3458cb6dc5851a7c37ca
+    size: 1594371
+    checksum: sha256:f0ea5966a6b8652c2116d84d6cde915ffec6455104c3aa12f2017dc28dc4c022
     name: rsync
-    evr: 3.2.5-7.el9_8.2
+    evr: 3.2.7-1.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.75-2.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 1177308
