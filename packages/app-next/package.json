@@ -48,7 +48,7 @@
     "@backstage/core-plugin-api": "1.12.9",
     "@backstage/frontend-app-api": "0.16.7",
     "@backstage/frontend-defaults": "0.5.5",
-    "@backstage/frontend-dynamic-feature-loader": "0.1.15",
+    "@backstage/frontend-dynamic-feature-loader": "patch:@backstage/frontend-dynamic-feature-loader@npm%3A0.1.15#~/.yarn/patches/@backstage-frontend-dynamic-feature-loader-npm-0.1.15-de44b039a1.patch",
     "@backstage/frontend-plugin-api": "0.18.0",
     "@backstage/integration-react": "1.2.21",
     "@backstage/plugin-app": "0.5.2",

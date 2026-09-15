@@ -13,6 +13,7 @@ import * as path from 'node:path';
 const NFS_FEATURE_TYPES = new Set([
   '@backstage/FrontendPlugin',
   '@backstage/FrontendModule',
+  '@backstage/FrontendFeatureLoader',
 ]);
 
 export const nfsModuleFilterPlugin = createBackendPlugin({

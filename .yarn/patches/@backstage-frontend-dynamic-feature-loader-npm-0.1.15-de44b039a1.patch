@@ -1,0 +1,22 @@
+diff --git a/dist/loader.esm.js b/dist/loader.esm.js
+index 7084db67916c8bc8e2cd089f03e9f7b39d6a1d62..fe45424503f35b10b5d34b59b7271f09035628c7 100644
+--- a/dist/loader.esm.js
++++ b/dist/loader.esm.js
+@@ -111,7 +111,7 @@ function dynamicFrontendFeaturesLoader(options) {
+               const defaultEntry = module.default;
+               if (!isLoadable(defaultEntry)) {
+                 console.debug(
+-                  `Skipping dynamic plugin remote module '${remote}' since it doesn't export a new 'FrontendFeature' as default export.`
++                  `Skipping dynamic plugin remote module '${remoteModuleName}' since it doesn't export a new 'FrontendFeature' or 'FrontendFeatureLoader' as default export.`
+                 );
+                 return void 0;
+               }
+@@ -127,7 +127,7 @@ function dynamicFrontendFeaturesLoader(options) {
+ }
+ function isLoadable(obj) {
+   if (obj !== null && typeof obj === "object" && "$$type" in obj) {
+-    return obj.$$type === "@backstage/FrontendPlugin" || obj.$$type === "@backstage/FrontendModule";
++    return obj.$$type === "@backstage/FrontendPlugin" || obj.$$type === "@backstage/FrontendModule" || obj.$$type === "@backstage/FrontendFeatureLoader";
+   }
+   return false;
+ }

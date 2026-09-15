@@ -10,7 +10,7 @@
     ],
     "features": {
       ".": "@backstage/FrontendPlugin",
-      "./alpha": "@backstage/FrontendModule"
+      "./alpha": "@backstage/FrontendFeatureLoader"
     }
   },
   "keywords": [
