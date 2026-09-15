@@ -19536,7 +19536,7 @@ __metadata:
     "@types/global-agent": "npm:2.1.3"
     app: "workspace:*"
     app-next: "workspace:*"
-    better-sqlite3: "npm:^12.0.0"
+    better-sqlite3: "npm:13.0.3"
     global-agent: "npm:3.0.0"
     jose: "npm:5.10.0"
     prettier: "npm:3.8.1"
@@ -19719,6 +19719,16 @@ __metadata:
   version: 4.0.0
   resolution: "before-after-hook@npm:4.0.0"
   checksum: 10c0/9f8ae8d1b06142bcfb9ef6625226b5e50348bb11210f266660eddcf9734e0db6f9afc4cb48397ee3f5ac0a3728f3ae401cdeea88413f7bed748a71db84657be2
+  languageName: node
+  linkType: hard
+
+"better-sqlite3@npm:13.0.3":
+  version: 13.0.3
+  resolution: "better-sqlite3@npm:13.0.3"
+  dependencies:
+    node-addon-api: "npm:^8.0.0"
+    node-gyp: "npm:latest"
+  checksum: 10c0/3daaad4fbd39b3ebddd9840c1aab0a7ccc94a01054fb03f6660ec2c226422b5daf3eb8e55a14103eddb84c2cd16f8e70ae9d41f0e2892b58c8c6152ee7ff09c0
   languageName: node
   linkType: hard
 
