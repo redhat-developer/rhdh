@@ -1,0 +1,19 @@
+{
+  "name": "@internal/backend-scriptc",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PROTOTYPE — trimmed ScriptC Linux PoC (not the production RHDH backend)",
+  "type": "module",
+  "scripts": {
+    "compare": "bash ./compare.sh",
+    "image": "bash ./image.sh"
+  },
+  "dependencies": {
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "scriptc": "0.0.23",
+    "typescript": "5.9.3"
+  }
+}

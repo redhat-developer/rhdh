@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PROTOTYPE — ScriptC PoC for RHDH</title>
+    <style>
+      :root {
+        --bg: #f6f3ee;
+        --ink: #1c1a17;
+        --muted: #5c564c;
+        --panel: #fffdf8;
+        --line: #d9d0c3;
+        --accent: #0b6e4f;
+        --warn: #9a3412;
+        --chip: #e8e1d5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          16px/1.5 "Iowan Old Style",
+          "Palatino Linotype",
+          Palatino,
+          Georgia,
+          serif;
+        color: var(--ink);
+        background:
+          radial-gradient(
+            1200px 600px at 10% -10%,
+            #e7efe9 0%,
+            transparent 55%
+          ),
+          radial-gradient(900px 500px at 100% 0%, #efe6d8 0%, transparent 50%),
+          var(--bg);
+        padding: 2rem clamp(1rem, 4vw, 3rem) 4rem;
+      }
+      h1 {
+        font-size: 1.75rem;
+        margin: 0 0 0.35rem;
+        letter-spacing: -0.02em;
+      }
+      .sub {
+        color: var(--muted);
+        max-width: 62ch;
+        margin-bottom: 1.5rem;
+      }
+      .badge {
+        display: inline-block;
+        font:
+          12px/1 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        background: var(--chip);
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        margin-bottom: 0.75rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem 1.1rem;
+      }
+      .panel h2 {
+        font-size: 0.95rem;
+        margin: 0 0 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      .state dl {
+        margin: 0;
+        display: grid;
+        gap: 0.55rem;
+      }
+      .state dt {
+        font:
+          12px/1.2 ui-sans-serif,
+          system-ui,
+          sans-serif;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .state dd {
+        margin: 0.15rem 0 0;
+        font-size: 1.05rem;
+      }
+      .changed {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .warn {
+        color: var(--warn);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+      }
+      button {
+        font:
+          14px/1.2 ui-sans-serif,
+          system-ui,
+          sans-serif;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 0.55rem 0.75rem;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--accent);
+      }
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+      }
+      .tabs button[aria-selected="true"] {
+        background: var(--ink);
+        color: #fff;
+        border-color: var(--ink);
+      }
+      .scenario p {
+        margin: 0 0 0.75rem;
+        color: var(--muted);
+        max-width: 60ch;
+      }
+      .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        align-items: flex-start;
+      }
+      .note {
+        margin-top: 1rem;
+        font:
+          13px/1.45 ui-sans-serif,
+          system-ui,
+          sans-serif;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9em;
+      }
+      .sizes {
+        display: grid;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+      }
+      .sizes div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13px;
+        padding: 0.35rem 0.45rem;
+        background: #f3eee6;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="badge">Prototype · throwaway · not production</div>
+    <h1>Enable ScriptC as an RHDH PoC?</h1>
+    <p class="sub">
+      Question this demo answers:
+      <strong
+        >what must be true before we can compare a Node deploy with a ScriptC
+        binary for RHDH,</strong
+      >
+      and what size comparison is even meaningful before the full backend
+      compiles.
+    </p>
+
+    <div class="grid">
+      <section class="panel state" aria-live="polite">
+        <h2>Current PoC state</h2>
+        <dl id="state"></dl>
+        <div class="sizes" id="sizes"></div>
+        <p class="note" id="delta"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Free play</h2>
+        <div class="actions" id="freeplay"></div>
+        <p class="note">
+          Each click updates the state panel. Nothing is persisted.
+        </p>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top: 1rem">
+      <h2>Guided walkthroughs</h2>
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="scenario" id="scenario"></div>
+    </section>
+
+    <p class="note">
+      Run the real size comparison (Linux container via Podman/Docker):
+      <code>yarn prototype:scriptc</code>
+      then paste numbers from
+      <code>packages/backend-scriptc/out/size-report.txt</code> using
+      <em>Load measured sizes</em>.
+    </p>
+
+    <script>
+      /**
+       * Liftable decision model for the ScriptC PoC.
+       * Pure reducer — no DOM. Answers: which PoC stage are we in, and what size story is honest?
+       */
+      const INITIAL = {
+        host: "windows-dev", // windows-dev | linux-or-macos
+        toolchain: "missing", // missing | ready
+        fixtureStatic: "unbuilt", // unbuilt | built | failed
+        fixtureDynamic: "unbuilt",
+        coverageBackend: "not-run", // not-run | blocked | promising
+        sizeStory: "none", // none | slice-only | misleading-full-backend
+        measured: null, // { staticScriptc, staticNode, dynamicScriptc, dynamicNode } bytes
+        lastChange: "PoC not started",
+      };
+
+      function reduce(state, action) {
+        switch (action.type) {
+          case "RESET":
+            return { ...INITIAL, lastChange: "Reset to start" };
+          case "SET_HOST_LINUX":
+            return {
+              ...state,
+              host: "linux-or-macos",
+              lastChange:
+                "Host set to Linux/macOS (required for HTTP servers + --dynamic)",
+            };
+          case "SET_HOST_WINDOWS":
+            return {
+              ...state,
+              host: "windows-dev",
+              toolchain: "missing",
+              lastChange:
+                "Windows can install the CLI, but servers/--dynamic need Linux/macOS (or a container)",
+            };
+          case "INSTALL_TOOLCHAIN":
+            if (state.host === "windows-dev") {
+              return {
+                ...state,
+                toolchain: "missing",
+                lastChange:
+                  "Blocked: use Podman/Docker Linux image (compare.sh) instead of native Windows clang",
+              };
+            }
+            return {
+              ...state,
+              toolchain: "ready",
+              lastChange: "clang + scriptc ready",
+            };
+          case "BUILD_STATIC_FIXTURE":
+            if (state.toolchain !== "ready" && state.host === "windows-dev") {
+              return {
+                ...state,
+                fixtureStatic: "failed",
+                lastChange:
+                  "Static fixture needs Linux/macOS host or container",
+              };
+            }
+            return {
+              ...state,
+              toolchain:
+                state.toolchain === "missing" ? "ready" : state.toolchain,
+              fixtureStatic: "built",
+              sizeStory: "slice-only",
+              lastChange:
+                "Static health HTTP fixture built — first honest Node vs binary size line",
+            };
+          case "BUILD_DYNAMIC_FIXTURE":
+            if (state.fixtureStatic !== "built") {
+              return {
+                ...state,
+                lastChange:
+                  "Build the static fixture first so you have a baseline without the engine",
+              };
+            }
+            return {
+              ...state,
+              fixtureDynamic: "built",
+              sizeStory: "slice-only",
+              lastChange:
+                "Dynamic fixture built (--dynamic embeds quickjs-ng ~620KB + npm JS)",
+            };
+          case "RUN_BACKEND_COVERAGE":
+            return {
+              ...state,
+              coverageBackend: "blocked",
+              sizeStory:
+                state.fixtureStatic === "built"
+                  ? "slice-only"
+                  : "misleading-full-backend",
+              lastChange:
+                "Expected: backend coverage hits SC2013 (npm), native addons, dynamic require — full binary size is not comparable yet",
+            };
+          case "CLAIM_FULL_BACKEND_SIZE":
+            return {
+              ...state,
+              sizeStory: "misleading-full-backend",
+              lastChange:
+                "Rejected: claiming full RHDH backend binary size before coverage is green would lie",
+            };
+          case "LOAD_MEASURED":
+            return {
+              ...state,
+              measured: action.measured,
+              sizeStory: "slice-only",
+              fixtureStatic: "built",
+              fixtureDynamic: action.measured.dynamicScriptc
+                ? "built"
+                : state.fixtureDynamic,
+              lastChange: "Loaded measured bytes from compare harness",
+            };
+          default:
+            return state;
+        }
+      }
+
+      function verdict(state) {
+        if (state.sizeStory === "misleading-full-backend") {
+          return {
+            tone: "warn",
+            text: "Do not publish a full-backend size number yet.",
+          };
+        }
+        if (
+          state.fixtureStatic === "built" &&
+          state.fixtureDynamic === "built"
+        ) {
+          return {
+            tone: "ok",
+            text: "PoC gate met for slice comparison. Next: inventory packages/backend with scriptc coverage --dynamic.",
+          };
+        }
+        if (state.host === "windows-dev" && state.toolchain === "missing") {
+          return {
+            tone: "warn",
+            text: "On this Windows workstation: run yarn prototype:scriptc (Podman Linux) rather than native scriptc servers.",
+          };
+        }
+        return {
+          tone: "ok",
+          text: "Keep going — size claims stay slice-scoped until backend coverage is clean.",
+        };
+      }
+
+      function fmt(bytes) {
+        if (bytes == null) return "—";
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+      }
+
+      // --- page shell ---
+      let state = { ...INITIAL };
+
+      const ACTIONS = [
+        { type: "SET_HOST_LINUX", label: "Use Linux/macOS host" },
+        { type: "SET_HOST_WINDOWS", label: "Stay on Windows + container" },
+        { type: "INSTALL_TOOLCHAIN", label: "Install clang + scriptc" },
+        { type: "BUILD_STATIC_FIXTURE", label: "Build static HTTP fixture" },
+        { type: "BUILD_DYNAMIC_FIXTURE", label: "Build --dynamic fixture" },
+        { type: "RUN_BACKEND_COVERAGE", label: "Run backend coverage" },
+        { type: "CLAIM_FULL_BACKEND_SIZE", label: "Claim full backend size" },
+        { type: "RESET", label: "Reset" },
+      ];
+
+      const SCENARIOS = [
+        {
+          id: "happy",
+          name: "Honest slice comparison",
+          blurb:
+            "Path that produces a publishable Node vs binary size number without lying about the full Hub image.",
+          steps: [
+            { type: "RESET", label: "Start clean" },
+            { type: "SET_HOST_LINUX", label: "Host can build servers" },
+            { type: "INSTALL_TOOLCHAIN", label: "Toolchain ready" },
+            { type: "BUILD_STATIC_FIXTURE", label: "Static fixture" },
+            { type: "BUILD_DYNAMIC_FIXTURE", label: "Dynamic fixture" },
+          ],
+        },
+        {
+          id: "windows",
+          name: "Windows workstation (this machine)",
+          blurb:
+            "Primary platform for scriptc is macOS arm64; Windows has no server stack yet. Use the Podman harness.",
+          steps: [
+            { type: "RESET", label: "Start clean" },
+            { type: "SET_HOST_WINDOWS", label: "Acknowledge Windows limits" },
+            {
+              type: "INSTALL_TOOLCHAIN",
+              label: "Try native install (should block)",
+            },
+            { type: "BUILD_STATIC_FIXTURE", label: "Attempt local build" },
+          ],
+        },
+        {
+          id: "trap",
+          name: "Trap: full backend size too early",
+          blurb:
+            "What goes wrong if someone asks for “the RHDH binary size” before coverage.",
+          steps: [
+            { type: "RESET", label: "Start clean" },
+            { type: "CLAIM_FULL_BACKEND_SIZE", label: "Claim full size now" },
+            { type: "RUN_BACKEND_COVERAGE", label: "Then look at coverage" },
+          ],
+        },
+      ];
+
+      let activeScenario = 0;
+      let stepIndex = 0;
+
+      function dispatch(action) {
+        state = reduce(state, action);
+        render();
+      }
+
+      function render() {
+        const v = verdict(state);
+        const el = document.getElementById("state");
+        el.innerHTML = `
+        <div><dt>Host</dt><dd class="${state.lastChange.includes("Host") ? "changed" : ""}">${state.host}</dd></div>
+        <div><dt>Toolchain</dt><dd>${state.toolchain}</dd></div>
+        <div><dt>Static fixture</dt><dd>${state.fixtureStatic}</dd></div>
+        <div><dt>Dynamic fixture</dt><dd>${state.fixtureDynamic}</dd></div>
+        <div><dt>Backend coverage</dt><dd>${state.coverageBackend}</dd></div>
+        <div><dt>Size story</dt><dd class="${state.sizeStory === "misleading-full-backend" ? "warn" : ""}">${state.sizeStory}</dd></div>
+        <div><dt>Last change</dt><dd class="changed">${state.lastChange}</dd></div>
+        <div><dt>Verdict</dt><dd class="${v.tone === "warn" ? "warn" : "changed"}">${v.text}</dd></div>
+      `;
+
+        const sizes = document.getElementById("sizes");
+        const m = state.measured;
+        sizes.innerHTML = m
+          ? `
+        <div><span>static scriptc</span><span>${fmt(m.staticScriptc)}</span></div>
+        <div><span>static node deploy</span><span>${fmt(m.staticNode)}</span></div>
+        <div><span>dynamic scriptc</span><span>${fmt(m.dynamicScriptc)}</span></div>
+        <div><span>dynamic node deploy</span><span>${fmt(m.dynamicNode)}</span></div>
+      `
+          : `<div><span>measured sizes</span><span>not loaded</span></div>`;
+
+        document.getElementById("delta").textContent = m
+          ? `Static: Node is ${(m.staticNode / m.staticScriptc).toFixed(1)}× the binary. Dynamic: Node is ${(m.dynamicNode / m.dynamicScriptc).toFixed(1)}× the binary.`
+          : "Measured sizes appear after yarn prototype:scriptc (or paste via Load measured sizes).";
+
+        const fp = document.getElementById("freeplay");
+        fp.innerHTML = "";
+        ACTIONS.forEach((a) => {
+          const b = document.createElement("button");
+          b.textContent = a.label;
+          if (a.type === "RESET") b.className = "primary";
+          b.onclick = () => dispatch({ type: a.type });
+          fp.appendChild(b);
+        });
+        const load = document.createElement("button");
+        load.textContent = "Load measured sizes";
+        load.onclick = () => {
+          const raw = prompt(
+            "Paste JSON from out/size-report.json fixtures (or leave blank for demo sample)",
+            "",
+          );
+          if (raw === null) return;
+          if (!raw.trim()) {
+            // Defaults from a successful yarn prototype:scriptc run (Linux/podman).
+            dispatch({
+              type: "LOAD_MEASURED",
+              measured: {
+                staticScriptc: 550_464,
+                staticNode: 125_990_742,
+                dynamicScriptc: 1_713_704,
+                dynamicNode: 134_380_541,
+              },
+            });
+            return;
+          }
+          try {
+            const j = JSON.parse(raw);
+            const f = j.fixtures || j;
+            dispatch({
+              type: "LOAD_MEASURED",
+              measured: {
+                staticScriptc: f.httpHealth.scriptcBinaryBytes,
+                staticNode: f.httpHealth.nodeDeployBytes,
+                dynamicScriptc: f.httpWithDep.scriptcBinaryBytes,
+                dynamicNode: f.httpWithDep.nodeDeployBytes,
+              },
+            });
+          } catch (e) {
+            alert("Could not parse JSON");
+          }
+        };
+        fp.appendChild(load);
+
+        const tabs = document.getElementById("tabs");
+        tabs.innerHTML = "";
+        SCENARIOS.forEach((s, i) => {
+          const b = document.createElement("button");
+          b.textContent = s.name;
+          b.setAttribute("aria-selected", String(i === activeScenario));
+          b.onclick = () => {
+            activeScenario = i;
+            stepIndex = 0;
+            state = reduce(state, { type: "RESET" });
+            render();
+          };
+          tabs.appendChild(b);
+        });
+
+        const sc = SCENARIOS[activeScenario];
+        const box = document.getElementById("scenario");
+        box.innerHTML = `<p>${sc.blurb}</p>`;
+        const steps = document.createElement("div");
+        steps.className = "steps";
+        sc.steps.forEach((step, i) => {
+          const b = document.createElement("button");
+          b.textContent = `${i + 1}. ${step.label}`;
+          b.disabled = i !== stepIndex;
+          if (i === stepIndex) b.className = "primary";
+          b.onclick = () => {
+            dispatch({ type: step.type });
+            stepIndex = Math.min(stepIndex + 1, sc.steps.length);
+            render();
+          };
+          steps.appendChild(b);
+        });
+        box.appendChild(steps);
+      }
+
+      render();
+    </script>
+  </body>
+</html>
