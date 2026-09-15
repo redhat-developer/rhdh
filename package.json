@@ -56,6 +56,9 @@
     "turbo": "2.10.12"
   },
   "dependenciesMeta": {
+    "better-sqlite3": {
+      "built": false
+    },
     "keytar": {
       "built": false
     }

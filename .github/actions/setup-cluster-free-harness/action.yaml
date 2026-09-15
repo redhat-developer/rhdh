@@ -36,9 +36,10 @@ runs:
     # workspace dependencies; e2e-tests has its own lockfile.
     #
     # Lifecycle scripts stay enabled here (unlike the e2e-tests install below).
-    # The harness backend runs on better-sqlite3, whose native binding is
-    # fetched by its install script, so --mode=skip-build would leave the
-    # backend unable to boot. Same plain `yarn install` the other workflows use.
+    # better-sqlite3 13 ships platform prebuilds; root package.json sets
+    # dependenciesMeta.better-sqlite3.built=false so Yarn does not run node-gyp
+    # against binding.gyp (see WiseLibs/better-sqlite3#1503). --mode=skip-build
+    # would still skip other packages' scripts, so use plain yarn install.
     - name: Install dependencies (root)
       shell: bash
       run: yarn install
