@@ -96,24 +96,30 @@ export class Common {
     await this.page.waitForTimeout(3_000);
   }
 
-  async logintoKeycloak(userid: string, password: string) {
-    await new Promise<void>((resolve) => {
-      this.page.once("popup", async (popup) => {
-        await popup.waitForLoadState();
-        await popup.locator("#username").fill(userid);
-        await popup.locator("#password").fill(password);
-        // Handle popup close during navigation (popup may close before navigation completes)
-        try {
-          await popup.locator("#kc-login").click({ timeout: 5000 });
-        } catch (error) {
-          // Popup likely closed - this is expected behavior
-          if (!error.message?.includes("Target closed")) {
-            throw error;
-          }
-        }
-        resolve();
-      });
-    });
+  async logintoKeycloak(popup: Page, userid: string, password: string) {
+    await popup.waitForLoadState("domcontentloaded");
+
+    // Keycloak may still hold an SSO session from a previous login and close
+    // the popup right away without showing the login form.
+    try {
+      await popup.locator("#username").waitFor({ timeout: 15000 });
+    } catch (error) {
+      if (popup.isClosed()) {
+        return;
+      }
+      throw error;
+    }
+
+    await popup.locator("#username").fill(userid);
+    await popup.locator("#password").fill(password);
+    // Handle popup close during navigation (popup may close before navigation completes)
+    try {
+      await popup.locator("#kc-login").click({ timeout: 10000 });
+    } catch (error) {
+      if (!popup.isClosed()) {
+        throw error;
+      }
+    }
   }
 
   async loginAsKeycloakUser(
@@ -122,8 +128,22 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
-    await this.logintoKeycloak(userid, password);
+    // Wait for the OIDC provider card to render on the "Select a sign-in
+    // method" page, so the click below opens the Keycloak popup instead of
+    // hitting a not-yet-wired button (RHDHBUGS-3756).
+    await this.page
+      .waitForSelector(
+        `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
+        { timeout: 15000 },
+      )
+      .catch(() => {});
+    // Register the popup listener before clicking, otherwise the popup can
+    // open before the listener is attached and the login never proceeds.
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
+    ]);
+    await this.logintoKeycloak(popup, userid, password);
     await this.uiHelper.waitForSideBarVisible();
   }
 

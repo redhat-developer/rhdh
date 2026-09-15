@@ -246,13 +246,25 @@ spec:
   });
 
   test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
+    test.setTimeout(150_000);
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "other",
-      "unknown",
-    ]);
+
+    // The catalog processing loop may take longer than a single locator
+    // timeout to materialize the imported component, so poll with page
+    // reloads until it shows up (RHDHBUGS-3754).
+    await expect(async () => {
+      await page.reload();
+      await common.waitForLoad();
+      await uiHelper.selectMuiBox("Kind", "Component");
+      await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+      await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+        "other",
+        "unknown",
+      ]);
+    }).toPass({
+      intervals: [5_000, 10_000, 15_000],
+      timeout: 120_000,
+    });
   });
 
   test.afterAll(async () => {
