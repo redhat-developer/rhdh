@@ -26,6 +26,7 @@
     "repo:fix": "backstage-cli repo fix --publish",
     "versions:metadata": "node ./scripts/update-metadata.mjs",
     "versions:bump": "node ./scripts/update-backstage.mjs",
+    "eol-inventory": "node ./scripts/eol-inventory/index.mjs",
     "rulesync:generate": "rulesync generate",
     "rulesync:import:cursor": "rulesync import --targets cursor",
     "rulesync:import:claude": "rulesync import --targets claudecode",
