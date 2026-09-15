@@ -56,19 +56,15 @@ Before running, ensure you have:
 
 1. **Podman** installed and running with at least **8GB RAM** and **4 CPUs**
 2. **oc CLI** installed and logged into your OpenShift cluster (`oc login`)
-3. **Vault CLI** installed (for fetching secrets)
-4. **jq** installed (for JSON parsing)
-5. Access to the OpenShift CI vault (`https://vault.ci.openshift.org/ui/vault/secrets/kv/list/selfservice/rhdh-qe/`) - if you don't have access, reach out to @rhdh-qe in the team-rhdh channel.
+3. **Bitwarden CLI** installed and access to the `rhdh-qe` collection
+4. **rhdh-e2e-secrets** installed, or an adjacent built `rhdh-e2e-test-utils` checkout
+5. **jq** installed (for JSON parsing)
 
 #### Installing Prerequisites (macOS)
 
 ```bash
 # Install tools via Homebrew
-brew install podman jq rsync openshift-cli
-
-# Install HashiCorp Vault (requires tap)
-brew tap hashicorp/tap
-brew install hashicorp/tap/vault
+brew install podman jq rsync openshift-cli bitwarden-cli
 
 # Setup Podman machine (first time only)
 podman machine init --memory 8192 --cpus 4
@@ -77,7 +73,15 @@ podman machine start
 
 #### Installing Prerequisites (Linux)
 
-Install `podman`, `oc`, `kubectl`, `vault`, `jq`, `rsync`, and `curl` using your distribution's package manager.
+Install `podman`, `oc`, `kubectl`, `bw`, `jq`, `rsync`, and `curl` using your distribution's package manager.
+
+Unlock Bitwarden before using either local runner:
+
+```bash
+export BW_SESSION=$(bw unlock --raw)
+```
+
+Set `RHDH_E2E_SECRETS_BIN` when the secrets CLI is not installed globally. The scripts also discover `node_modules/.bin/rhdh-e2e-secrets` and an adjacent built `rhdh-e2e-test-utils` checkout automatically.
 
 ### Getting a Cluster
 
@@ -107,11 +111,11 @@ Use any OpenShift cluster you have access to. Simply login with `oc login` befor
 
 ### Scripts
 
-| Script                | Description                                                     |
-| --------------------- | --------------------------------------------------------------- |
-| `local-run.sh`        | Main script - deploys RHDH to cluster and optionally runs tests |
-| `container-init.sh`   | Runs inside the container (called by local-run.sh)              |
-| `local-test-setup.sh` | Sets up environment for running tests locally in headed mode    |
+| Script              | Description                                                     |
+| ------------------- | --------------------------------------------------------------- |
+| `local-run.sh`      | Main script - deploys RHDH to cluster and optionally runs tests |
+| `container-init.sh` | Runs inside the container (called by local-run.sh)              |
+| `local-test.sh`     | Runs Playwright on the host against an existing deployment      |
 
 ### Quick Start
 
@@ -188,42 +192,36 @@ cd e2e-tests
 
 The container will deploy RHDH and exit. You'll see next steps printed in the terminal.
 
-#### Step 2: Setup environment
+#### Step 2: Run tests on the host
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh # For Showcase tests
-# or: source local-test-setup.sh rbac  # For RBAC tests
-```
-
-#### Step 3: Run tests with visible browser
-
-```bash
 yarn install
-yarn playwright test --headed
+BASE_URL=https://your-showcase-url \
+  ./local-test.sh -- --project=showcase --headed
 ```
 
 #### Useful Playwright Commands
 
 ```bash
 # Run all tests
-yarn playwright test --headed
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --headed
 
 # Run a specific test file (use --project to specify which project)
-yarn playwright test playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts --headed --project=showcase
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --headed playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts
 
-# Run RBAC tests (requires RBAC URL - use: source local-test-setup.sh rbac)
-yarn playwright test playwright/e2e/plugins/rbac/rbac.spec.ts --headed --project=showcase-rbac
+# Run RBAC tests against the RBAC deployment URL
+BASE_URL=https://your-rbac-url ./local-test.sh -- --project=showcase-rbac --headed playwright/e2e/plugins/rbac/rbac.spec.ts
 
 # Run tests matching a pattern (by test name)
-yarn playwright test --headed -g "guest user"
-yarn playwright test --headed -g "catalog"
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --headed -g "guest user"
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --headed -g "catalog"
 
 # Run with trace for debugging
-yarn playwright test --headed --trace on
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --headed --trace on
 
 # Run in UI mode (interactive debugging with time-travel)
-yarn playwright test --ui
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --ui
 
 # View the last test report
 npx playwright show-report .local-test/rhdh/.local-test/artifact_dir/showcase
@@ -265,10 +263,10 @@ what identifies the execution mode.
 
 ```bash
 # Run only smoke-tagged tests
-yarn playwright test --project=showcase --grep "@smoke"
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --grep "@smoke"
 
 # Run everything except specs that already have a Layer 3 equivalent
-yarn playwright test --project=showcase --grep-invert "@layer3-equivalent"
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --grep-invert "@layer3-equivalent"
 ```
 
 In CI, set the `PLAYWRIGHT_GREP` environment variable (consumed by
@@ -352,11 +350,9 @@ cd e2e-tests
 #   Tag: 1 (next)
 #   Run: 2 (Deploy only)
 
-# Keep container running, open new terminal:
-cd e2e-tests
-source local-test-setup.sh
-yarn install
-yarn playwright test --headed -g "guest user"
+# Use the URL printed by local-run.sh:
+BASE_URL=https://your-showcase-url \
+  ./local-test.sh -- --project=showcase --headed -g "guest user"
 ```
 
 #### Example 3: Test Red Hat image with nightly job
@@ -383,11 +379,9 @@ cd e2e-tests
 ./local-run.sh
 # Select: Deploy only
 
-# New terminal:
-cd e2e-tests
-source local-test-setup.sh rbac # Use RBAC URL
-yarn install
-yarn playwright test --headed --project=showcase-rbac
+# Use the RBAC URL printed by local-run.sh:
+BASE_URL=https://your-rbac-url \
+  ./local-test.sh -- --project=showcase-rbac --headed
 ```
 
 #### Example 5: Test on AKS/EKS/GKE cluster
@@ -414,27 +408,24 @@ cd e2e-tests
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh
 yarn install
-yarn playwright test playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts --headed --project=showcase
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --headed \
+  playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts
 ```
 
 #### Example 7: Run tests with trace for debugging
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh
-yarn install
-yarn playwright test --headed --trace on -g "catalog"
+BASE_URL=https://your-showcase-url ./local-test.sh -- \
+  --project=showcase --headed --trace on -g "catalog"
 ```
 
 #### Example 8: Interactive debugging with UI mode
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh
-yarn install
-yarn playwright test --ui
+BASE_URL=https://your-showcase-url ./local-test.sh -- --project=showcase --ui
 ```
 
 This opens an interactive UI where you can select individual tests, watch them run in real-time, and step through actions with time-travel debugging.
@@ -443,45 +434,41 @@ This opens an interactive UI where you can select individual tests, watch them r
 
 1. **local-run.sh**:
    - Pulls the e2e-runner container image
-   - Logs into Vault (OIDC) and gets secrets token
+   - Uses `rhdh-e2e-secrets` to select secrets from Bitwarden
    - Creates a service account on the cluster with cluster-admin role
    - Copies repo to `e2e-tests/.local-test/rhdh` (keeps original clean)
-   - Runs container with all credentials
+   - Streams selected Bitwarden values through an inherited file descriptor; values are materialized only in the container's private tmpfs
 
 2. **container-init.sh** (inside container):
-   - Installs Vault CLI if needed
-   - Fetches secrets from Vault and writes to `/tmp/secrets/`
+   - Reads and validates the secret stream from stdin; it does not contact a secret provider
    - Logs into OpenShift cluster
    - Sets up environment variables
    - Runs deployment via `openshift-ci-tests.sh`
    - If tests are skipped, outputs URLs and saves config
 
-3. **local-test-setup.sh** (for headed tests):
-   - Reads config from `e2e-tests/.local-test/rhdh/.local-test/config.env`
-   - Exports secrets as environment variables (not stored on disk)
-   - Gets fresh K8S_CLUSTER_TOKEN from cluster
-   - Sets BASE_URL for Playwright
+3. **local-test.sh** (for host-side tests):
+   - Requires the caller to set `BASE_URL` and choose a Playwright project
+   - Uses the same Bitwarden profile as `local-run.sh`
+   - Runs Playwright directly from `e2e-tests/`
+   - Preserves caller-supplied `K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN`
+   - Does not deploy RHDH, read `config.env`, generate tokens, or write `.env`
 
 ### Environment Variables
 
-After running `local-test-setup.sh`, these variables are set:
+Set the required connection variables before invoking `local-test.sh`. Treat `BW_SESSION` and
+`K8S_CLUSTER_TOKEN` as secrets and never persist them in files:
 
-| Variable                    | Description                                                                                    |
-| --------------------------- | ---------------------------------------------------------------------------------------------- |
-| `BASE_URL`                  | URL of the deployed RHDH instance (Playwright uses this as the test base URL)                  |
-| `SHOWCASE_URL`              | Legacy name for the standard RHDH deployment URL (same value as `BASE_URL` for showcase tests) |
-| `SHOWCASE_RBAC_URL`         | Legacy name for the RBAC deployment URL                                                        |
-| `K8S_CLUSTER_URL`           | OpenShift API server URL                                                                       |
-| `K8S_CLUSTER_TOKEN`         | Service account token (48-hour duration)                                                       |
-| `JOB_NAME`                  | Selected job name                                                                              |
-| `IMAGE_REGISTRY`            | Image registry (default: `quay.io`)                                                            |
-| `IMAGE_REPO`                | Image repository (fallback: `QUAY_REPO`)                                                       |
-| `TAG_NAME`                  | Image tag                                                                                      |
-| Plus all secrets from Vault | (exported with `-`, `.`, `/` replaced by `_`)                                                  |
+| Variable               | Description                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `BASE_URL`             | URL of the deployed RHDH instance (Playwright uses this as the test base URL) |
+| `K8S_CLUSTER_URL`      | Cluster API server URL; required only by cluster-aware tests                  |
+| `K8S_CLUSTER_TOKEN`    | Existing cluster token; required only by cluster-aware tests                  |
+| `BW_SESSION`           | Unlocked Bitwarden session used only while loading secrets                    |
+| `RHDH_E2E_SECRETS_BIN` | Optional path or command override for `rhdh-e2e-secrets`                      |
 
 > **Note:** `BASE_URL` is the canonical Playwright base URL for the RHDH instance under test.
-> `SHOWCASE_URL` and `SHOWCASE_RBAC_URL` are legacy names retained by `local-test-setup.sh` and
-> deployment scripts; `local-test-setup.sh` sets `BASE_URL` from the appropriate legacy URL.
+> `local-test.sh` does not infer `BASE_URL` from deployment state. Use the standard or RBAC URL
+> printed by the deployment, according to the selected Playwright project.
 > Yarn scripts such as `yarn showcase`, `yarn showcase-rbac`, and `yarn test:stability` still use
 > the `showcase` Playwright project name for historical reasons.
 
@@ -491,7 +478,7 @@ Test artifacts are saved to `e2e-tests/.local-test/rhdh/.local-test/`:
 
 - `artifact_dir/` - Test artifacts, screenshots, traces
 - `shared_dir/` - Shared data between test runs
-- `config.env` - Configuration for local-test-setup.sh
+- `config.env` - Deployment configuration retained for deployment troubleshooting
 
 ### Troubleshooting
 
@@ -499,13 +486,14 @@ Test artifacts are saved to `e2e-tests/.local-test/rhdh/.local-test/`:
 
 The container will drop into an interactive shell for debugging. Check logs, run commands, and investigate.
 
-#### Error: Config file not found
-
-Run `./local-run.sh` first with "Deploy only" option to create the config.
-
 #### Error: Not logged into OpenShift
 
-Run `oc login` before running local-test-setup.sh.
+Run `oc login` before `local-run.sh`. For cluster-aware host tests, explicitly set
+`K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN` when running `local-test.sh`.
+
+#### Error: BW_SESSION is required
+
+Unlock Bitwarden and export the returned session: `export BW_SESSION=$(bw unlock --raw)`.
 
 #### Error: Image does not exist
 
@@ -513,8 +501,9 @@ The script verifies the image exists on quay.io before proceeding (verification 
 
 ### Security Notes
 
-- Secrets are fetched from Vault and exported as environment variables at runtime (not stored in files locally)
-- K8S_CLUSTER_TOKEN is generated fresh each time (not stored)
+- Local secrets are selected from Bitwarden without putting their values in command arguments or process environments
+- Container secrets are materialized with restrictive permissions in a private tmpfs; host-side certificate files are removed after tests
+- `local-test.sh` never generates or stores `K8S_CLUSTER_TOKEN`
 - The repo is copied to `e2e-tests/.local-test/rhdh` so the original stays clean
 - Service account tokens have a 48-hour duration
 

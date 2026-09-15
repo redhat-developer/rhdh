@@ -19,50 +19,31 @@ trap handle_error ERR
 
 set -e
 
-# Install vault if not present
-if ! command -v vault &> /dev/null; then
-  VAULT_VERSION="${VAULT_VERSION:-1.15.4}"
-  log::info "Installing vault ${VAULT_VERSION}..."
-  # uname is portable where dpkg is Debian-only, but its names are not the ones
-  # HashiCorp publishes: vault_*_linux_x86_64.zip and _aarch64.zip both 404.
-  case "$(uname -m)" in
-    x86_64 | amd64) VAULT_ARCH=amd64 ;;
-    aarch64 | arm64) VAULT_ARCH=arm64 ;;
-    *)
-      log::error "Unsupported architecture for the vault download: $(uname -m)"
-      exit 1
-      ;;
-  esac
-  curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o /tmp/vault.zip
-  unzip -q /tmp/vault.zip -d /usr/local/bin/
-  rm /tmp/vault.zip
-fi
-
-# Fetch and write secrets to /tmp/secrets/
-log::section "Fetching Vault Secrets"
-set -o pipefail
-SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r ".data.data")
-set +o pipefail
-if [[ -z "${SECRETS}" || "${SECRETS}" == "null" ]]; then
-  log::error "Vault returned no secrets for selfservice/rhdh-qe/rhdh"
-  exit 1
-fi
-
-for key in $(echo "$SECRETS" | jq -r "keys[]"); do
-  if [[ "$key" == */* ]]; then
-    mkdir -p "/tmp/secrets/$(dirname "$key")"
-  fi
-  echo "$SECRETS" | jq -r --arg k "$key" '.[$k]' > "/tmp/secrets/$key"
-done
-
-log::success "Secrets written to /tmp/secrets/"
+# Secret values are streamed by local-run.sh and materialized in the private
+# tmpfs mounted at /run/rhdh-secrets.
+log::section "Reading host-provided secrets"
+export RHDH_SECRET_MOUNT_DIR="/run/rhdh-secrets"
+mkdir -p "$RHDH_SECRET_MOUNT_DIR"
+chmod 700 "$RHDH_SECRET_MOUNT_DIR"
+node /tmp/rhdh/e2e-tests/decode-secret-stream.mjs "$RHDH_SECRET_MOUNT_DIR"
+# local-run.sh supplies fresh service-account credentials directly. Never let
+# an optional profile value override them when env_variables.sh loads secrets.
+rm -f "$RHDH_SECRET_MOUNT_DIR/K8S_CLUSTER_URL" \
+  "$RHDH_SECRET_MOUNT_DIR/K8S_CLUSTER_TOKEN"
+exec 0</dev/null
+log::success "Secret stream decoded"
 
 # Login using service account token from host
 log::section "Cluster Service Account and Token Management"
 
-# K8S_CLUSTER_URL, K8S_CLUSTER_TOKEN, and CONTAINER_PLATFORM are passed from local-run.sh
+# K8S_CLUSTER_URL, RHDH_LOCAL_TEST_CLUSTER_TOKEN, and CONTAINER_PLATFORM are passed from local-run.sh
 export K8S_CLUSTER_URL
-export K8S_CLUSTER_TOKEN
+if [[ -z "${RHDH_LOCAL_TEST_CLUSTER_TOKEN:-}" ]]; then
+  log::error "Generated cluster token was not provided by the host"
+  exit 1
+fi
+export K8S_CLUSTER_TOKEN="$RHDH_LOCAL_TEST_CLUSTER_TOKEN"
+unset RHDH_LOCAL_TEST_CLUSTER_TOKEN
 export CONTAINER_PLATFORM
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
 log::info "CONTAINER_PLATFORM: $CONTAINER_PLATFORM"
@@ -90,6 +71,11 @@ log::info "SHARED_DIR=${SHARED_DIR}"
 export ARTIFACT_DIR="/tmp/rhdh/.local-test/artifact_dir"
 mkdir -p "$ARTIFACT_DIR"
 log::info "ARTIFACT_DIR=${ARTIFACT_DIR}"
+
+export RHDH_SECRET_RUNTIME_DIR="$RHDH_SECRET_MOUNT_DIR"
+mkdir -p "$RHDH_SECRET_RUNTIME_DIR"
+chmod 700 "$RHDH_SECRET_RUNTIME_DIR"
+log::info "RHDH_SECRET_RUNTIME_DIR=${RHDH_SECRET_RUNTIME_DIR}"
 
 # Set IS_OPENSHIFT based on platform
 if [[ "$CONTAINER_PLATFORM" == "ocp" || "$CONTAINER_PLATFORM" == "osd-gcp" ]]; then

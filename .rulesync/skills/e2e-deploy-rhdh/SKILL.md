@@ -4,8 +4,9 @@ description: >-
   Deploy RHDH to an OpenShift cluster using local-run.sh for E2E test execution,
   with autonomous error recovery for deployment failures
 targets:
-  - '*'
+  - "*"
 ---
+
 # Deploy RHDH
 
 Deploy Red Hat Developer Hub to a cluster for E2E test execution using the existing `local-run.sh` workflow.
@@ -20,14 +21,15 @@ Before running the deployment, verify these tools are installed:
 
 ```bash
 # Required tools (local-run.sh checks these automatically)
-podman --version        # Container runtime
-oc version              # OpenShift CLI
+podman --version         # Container runtime
+oc version               # OpenShift CLI
 kubectl version --client # Kubernetes CLI
-vault --version         # HashiCorp Vault (for secrets)
-jq --version            # JSON processor
-curl --version          # HTTP client
-rsync --version         # File sync
-bc --version            # Calculator (for resource checks)
+bw --version             # Bitwarden CLI (for local secrets)
+rhdh-e2e-secrets --help  # Shared secret profile CLI
+jq --version             # JSON processor
+curl --version           # HTTP client
+rsync --version          # File sync
+bc --version             # Calculator (for resource checks)
 ```
 
 ### Podman Machine Requirements
@@ -40,6 +42,7 @@ podman machine inspect | jq '.Resources'
 ```
 
 If resources are insufficient:
+
 ```bash
 podman machine stop
 podman machine set --memory 8192 --cpus 4
@@ -48,8 +51,8 @@ podman machine start
 
 ## Deployment Using local-run.sh
 
-The primary deployment method uses `e2e-tests/local-run.sh`, which handles everything:
-Vault authentication, cluster service account setup, RHDH deployment, and test execution.
+The primary deployment method uses `e2e-tests/local-run.sh`, which handles Bitwarden secret
+selection, cluster service account setup, RHDH deployment, and test execution.
 
 ### Execution Rules
 
@@ -75,22 +78,25 @@ Vault authentication, cluster service account setup, RHDH deployment, and test e
 
 ```bash
 cd e2e-tests
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag> [-s]
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG"
 ```
 
 **Example — OCP job** (deploy-only with `-s`):
+
 ```bash
 cd e2e-tests
 ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4-20-helm-nightly -r rhdh-community/rhdh -t next -s
 ```
 
 **Example — K8s job (AKS/EKS/GKE)** (full execution, no `-s`):
+
 ```bash
 cd e2e-tests
 ./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-eks-helm-nightly -r rhdh-community/rhdh -t next
 ```
 
 **Example — disconnected OCP nightlies** (requires a real OpenShift cluster; connected is fine; no bastion):
+
 ```bash
 cd e2e-tests
 # Operator: prepare uses --to-registry OCP_INTERNAL; MIRROR_* bootstrapped in-container
@@ -102,6 +108,7 @@ cd e2e-tests
 `local-run.sh` refuses disconnected jobs unless `oc` is logged into OpenShift. It passes `DISCONNECTED=true` and `LOCAL_DISCONNECTED=1`; the runner writes mirror auth/CA under `${SHARED_DIR}/disconnected-mirror/` (not on the host). Prefer Operator first when validating `OCP_INTERNAL`, then Helm. Air-gap prepare details live in rhdh-operator — do not paste them here.
 
 **Parameters:**
+
 - `-j / --job`: The **full Prow CI job name** extracted from the Prow URL. The `openshift-ci-tests.sh` handler uses bash glob patterns (like `*ocp*helm*nightly*`) to match, so the full name works correctly. Example: `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4-20-helm-nightly`
 - `-r / --repo`: Image repository (**required** for CLI mode — without it the script enters interactive mode)
 - `-t / --tag`: Image tag (e.g., `1.9`, `next`)
@@ -118,7 +125,7 @@ Refer to the `e2e-fix-workflow` rule for the release branch to image repo/tag ma
 For OCP jobs, deploy without running tests so you can run specific tests manually:
 
 ```bash
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <tag> -s
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG" -s
 ```
 
 **Note**: K8s jobs (AKS, EKS, GKE) do not support deploy-only mode. They require the full execution pipeline — run without `-s`.
@@ -128,33 +135,34 @@ For OCP jobs, deploy without running tests so you can run specific tests manuall
 1. **Validates prerequisites**: Checks all required tools and podman resources
 2. **Verifies the image**: Checks the image exists on quay.io via the Quay API
 3. **Pulls the runner image**: `quay.io/rhdh-community/rhdh-e2e-runner:main`
-4. **Authenticates to Vault**: OIDC-based login for secrets
+4. **Loads Bitwarden secrets**: Uses the `rhdh-qe` collection through `rhdh-e2e-secrets`
 5. **Sets up cluster access**: Creates `rhdh-local-tester` service account with cluster-admin, generates 48h token
 6. **Copies the repo**: Syncs the local repo to `.local-test/rhdh/` (excludes node_modules)
 7. **Runs a Podman container**: Executes `container-init.sh` inside the runner image, which:
-   - Fetches all Vault secrets to `/tmp/secrets/`
+   - Receives only the profile-selected secrets from the host environment
    - Logs into the cluster
    - Sets platform-specific environment variables
    - Runs `.ci/pipelines/openshift-ci-tests.sh` for deployment
 
 ### Post-Deployment: Setting Up for Manual Testing
 
-After `local-run.sh` completes (with `-s` for OCP jobs, or after full execution for K8s jobs), set up the environment for headed Playwright testing:
+After `local-run.sh` completes (with `-s` for OCP jobs, or after full execution for K8s jobs), run Playwright on the host against the URL printed by the deployment:
 
 ```bash
-# Source the test setup (choose 'showcase' or 'rbac')
-source e2e-tests/local-test-setup.sh showcase
+export BW_SESSION=$(bw unlock --raw)
+export BASE_URL=https://showcase.example.com
+e2e-tests/local-test.sh -- --project=showcase --headed
 # or
-source e2e-tests/local-test-setup.sh rbac
+export BASE_URL=https://showcase-rbac.example.com
+e2e-tests/local-test.sh -- --project=showcase-rbac --headed
 ```
 
-This exports:
-- `BASE_URL` — The RHDH instance URL
-- `K8S_CLUSTER_URL` — Cluster API server URL
-- `K8S_CLUSTER_TOKEN` — Fresh service account token
-- All Vault secrets as environment variables
+`local-test.sh` loads the Bitwarden profile only for its Playwright child. Set
+`K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN` explicitly for cluster-aware projects; the script does
+not generate them or read deployment configuration.
 
 Verify RHDH is accessible:
+
 ```bash
 curl -sSk "$BASE_URL" -o /dev/null -w "%{http_code}"
 # Should return 200
@@ -169,16 +177,18 @@ curl -sSk "$BASE_URL" -o /dev/null -w "%{http_code}"
 **Symptoms**: Pod repeatedly crashes and restarts.
 
 **Investigation**:
+
 ```bash
 # Check pod status
-oc get pods -n <namespace>
+oc get pods -n "$NAMESPACE"
 # Check pod logs
-oc logs -n <namespace> <pod-name> --previous
+oc logs -n "$NAMESPACE" "$POD_NAME" --previous
 # Check events
-oc get events -n <namespace> --sort-by=.lastTimestamp
+oc get events -n "$NAMESPACE" --sort-by=.lastTimestamp
 ```
 
 **Common causes and fixes**:
+
 1. **Missing ConfigMap**: The app-config ConfigMap wasn't created → check `.ci/pipelines/resources/config_map/` for the correct template
 2. **Bad plugin configuration**: A dynamic plugin is misconfigured → check `dynamic-plugins-config` ConfigMap against `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml`
 3. **Missing secrets**: Required secrets not mounted → verify secrets exist in the namespace
@@ -187,30 +197,35 @@ oc get events -n <namespace> --sort-by=.lastTimestamp
 #### ImagePullBackOff
 
 **Investigation**:
+
 ```bash
-oc describe pod -n <namespace> <pod-name> | grep -A5 "Events"
+oc describe pod -n "$NAMESPACE" "$POD_NAME" | grep -A5 "Events"
 ```
 
 **Common causes**:
-1. **Image doesn't exist**: Verify on quay.io: `curl -s 'https://quay.io/api/v1/repository/rhdh/rhdh-hub-rhel9/tag/?filter_tag_name=like:<tag>'`
+
+1. **Image doesn't exist**: Verify on quay.io: `curl -s "https://quay.io/api/v1/repository/rhdh/rhdh-hub-rhel9/tag/?filter_tag_name=like:${IMAGE_TAG}"`
 2. **Pull secret missing**: Check `namespace::setup_image_pull_secret` in `.ci/pipelines/lib/namespace.sh`
 3. **Registry auth**: Ensure the pull secret has correct credentials
 
 #### Helm Install Failure
 
 **Investigation**:
+
 ```bash
 helm list -n <namespace>
 helm status <release-name> -n <namespace>
 ```
 
 **Common causes**:
+
 1. **Values file error**: Check merged values against `.ci/pipelines/value_files/values_showcase.yaml`
 2. **Chart version mismatch**: Verify chart version with `helm::get_chart_version` from `.ci/pipelines/lib/helm.sh`
 
 #### Operator Deployment Failure
 
 **Investigation**:
+
 ```bash
 oc get backstage -n <namespace>
 oc describe backstage <name> -n <namespace>
@@ -218,6 +233,7 @@ oc get csv -n <namespace>  # Check operator subscription status
 ```
 
 **Common causes**:
+
 1. **Backstage CR misconfigured**: Compare against `.ci/pipelines/resources/rhdh-operator/rhdh-start.yaml`
 2. **Operator not installed**: Check CatalogSource and Subscription
 3. **CRD not ready**: Wait for CRD with `k8s_wait::crd` pattern from `.ci/pipelines/lib/k8s-wait.sh`
@@ -232,6 +248,7 @@ When deployment issues stem from the operator or chart, search the relevant repo
 4. **Fallback — local clone**: clone the repo into a temp directory and grep for the pattern
 
 Key areas to look for:
+
 - **rhdh-operator**: Backstage CR configuration, CatalogSource setup, operator installation scripts
 - **rhdh-chart**: Helm values schema, chart templates, default configurations
 

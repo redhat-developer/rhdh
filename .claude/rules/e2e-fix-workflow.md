@@ -59,8 +59,8 @@ BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | s
 
 Use the **full Prow CI job name** directly as the `-j` parameter. Do NOT use shortened names.
 
-**OCP** (deploy-only with `-s`): `./local-run.sh -j <full-job-name> -r <repo> -t <tag> -s`
-**K8s** (full execution, no `-s`): `./local-run.sh -j <full-job-name> -r <repo> -t <tag>`
+**OCP** (deploy-only with `-s`): `./local-run.sh -j "$JOB_NAME" -r "$REPO" -t "$TAG" -s`
+**K8s** (full execution, no `-s`): `./local-run.sh -j "$JOB_NAME" -r "$REPO" -t "$TAG"`
 
 ### Release Branch → Image Repo and Tag
 

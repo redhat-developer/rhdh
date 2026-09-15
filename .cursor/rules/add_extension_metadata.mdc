@@ -98,25 +98,23 @@ Create `catalog-entities/extensions/plugins/{plugin-name}.yaml`:
 # Navigate to extensions directory
 cd catalog-entities/extensions
 
-# Download schemas to temp directory (ajv doesn't support remote schemas well)
-mkdir -p /tmp/rhdh-schemas
+# Download schemas to a private temporary directory (ajv doesn't support remote schemas well)
+SCHEMA_DIR=$(mktemp -d "${TMPDIR:-.}/rhdh-schemas.XXXXXX")
+trap 'rm -rf "$SCHEMA_DIR"' EXIT
 curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/packages.json" \
-  -o /tmp/rhdh-schemas/packages.json
+  -o "$SCHEMA_DIR/packages.json"
 curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/plugins.json" \
-  -o /tmp/rhdh-schemas/plugins.json
+  -o "$SCHEMA_DIR/plugins.json"
 
 # Convert YAML to JSON and validate Package against local schema
 echo "Validating packages/{plugin-name}.yaml..."
-yq eval packages/{plugin-name}.yaml -o json > /tmp/rhdh-schemas/package-temp.json
-ajv validate -s /tmp/rhdh-schemas/packages.json -d /tmp/rhdh-schemas/package-temp.json
+yq eval packages/{plugin-name}.yaml -o json > "$SCHEMA_DIR/package-temp.json"
+ajv validate -s "$SCHEMA_DIR/packages.json" -d "$SCHEMA_DIR/package-temp.json"
 
 # Convert YAML to JSON and validate Plugin against local schema
 echo "Validating plugins/{plugin-name}.yaml..."
-yq eval plugins/{plugin-name}.yaml -o json > /tmp/rhdh-schemas/plugin-temp.json
-ajv validate -s /tmp/rhdh-schemas/plugins.json -d /tmp/rhdh-schemas/plugin-temp.json
-
-# Clean up temp files
-rm /tmp/rhdh-schemas/package-temp.json /tmp/rhdh-schemas/plugin-temp.json
+yq eval plugins/{plugin-name}.yaml -o json > "$SCHEMA_DIR/plugin-temp.json"
+ajv validate -s "$SCHEMA_DIR/plugins.json" -d "$SCHEMA_DIR/plugin-temp.json"
 ```
 
 **Note**: This uses the Go-based `yq` syntax (`yq eval file.yaml -o json`). If validation fails, check that you have the correct yq version installed.

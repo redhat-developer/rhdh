@@ -1,8 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SECRET_PROFILE="${SCRIPT_DIR}/../../e2e-tests/ephemeral-cluster-secrets.profile.json"
+
 # shellcheck source=.ci/pipelines/lib/log.sh
-source "$(dirname "${BASH_SOURCE[0]}")"/lib/log.sh
+source "${SCRIPT_DIR}/lib/log.sh"
+# shellcheck source=e2e-tests/local-secrets.sh
+source "${SCRIPT_DIR}/../../e2e-tests/local-secrets.sh"
+# shellcheck source=.ci/pipelines/lib/secrets.sh
+source "${SCRIPT_DIR}/lib/secrets.sh"
 
 # Check if prow log URL is provided as parameter, otherwise prompt for it
 if [[ $# -eq 0 ]]; then
@@ -10,6 +17,24 @@ if [[ $# -eq 0 ]]; then
 else
   input_url="$1"
 fi
+
+# The stream decoder below requires Node, so validate it before secret setup.
+for cmd in curl oc node; do
+  if ! command -v "$cmd" > /dev/null 2>&1; then
+    log::error "'$cmd' CLI not found. Please install it before running this script."
+    exit 1
+  fi
+done
+
+local_secrets::reexec_with_stream "${SCRIPT_DIR}/../../e2e-tests" \
+  "$SECRET_PROFILE" RHDH_CLUSTER_CLAIM_SECRETS_WRAPPED "$0" "$input_url" || exit 1
+SECRET_RUNTIME_DIR=$(mktemp -d "${TMPDIR:-.}/rhdh-cluster-claim-secrets.XXXXXX")
+trap 'rm -rf "$SECRET_RUNTIME_DIR"' EXIT
+node "${SCRIPT_DIR}/../../e2e-tests/decode-secret-stream.mjs" \
+  "$SECRET_RUNTIME_DIR" <&3
+exec 3<&-
+secrets::load_directory "$SECRET_RUNTIME_DIR"
+unset RHDH_E2E_SECRET_FD BW_SESSION BW_CLIENTID BW_CLIENTSECRET
 
 id=$(echo "$input_url" | awk -F'/' '{print $NF}')
 job=$(echo "$input_url" | awk -F'/' '{print $(NF-1)}')
@@ -28,40 +53,18 @@ elif [[ ! "$namespace" =~ ^rhdh-[0-9]+-[0-9]+-us-east-2 ]]; then
   exit 1
 fi
 
-# ── Vault credentials ─────────────────────────────────────────────────────────
+# ── Bitwarden credentials ─────────────────────────────────────────────────────
 
-VAULT_ADDR="${VAULT_ADDR:-https://vault.ci.openshift.org}"
-VAULT_BASE_PATH="${VAULT_BASE_PATH:-selfservice/rhdh-qe}"
-export VAULT_ADDR
-
-for cmd in vault oc jq; do
-  if ! command -v "$cmd" > /dev/null 2>&1; then
-    log::error "'$cmd' CLI not found. Please install it before running this script."
-    exit 1
-  fi
-done
-
-if ! vault token lookup > /dev/null 2>&1; then
-  log::info "Vault: not logged in, starting OIDC login..."
-  vault login -no-print -method=oidc
-  if ! vault token lookup > /dev/null 2>&1; then
-    log::error "Vault login failed. Try manually: export VAULT_ADDR='${VAULT_ADDR}' && vault login -method=oidc"
-    exit 1
-  fi
-fi
-
-log::info "Fetching cluster credentials from Vault..."
-vault_creds=$(vault kv get -format=json -mount=kv "${VAULT_BASE_PATH}/ephemeral_cluster" 2> /dev/null || true)
-
-CLUSTER_ADMIN_USERNAME=$(echo "$vault_creds" | jq -r '.data.data.EPHEMERAL_CLUSTER_ADMIN_USERNAME // empty')
-CLUSTER_ADMIN_PASSWORD=$(echo "$vault_creds" | jq -r '.data.data.EPHEMERAL_CLUSTER_ADMIN_PASSWORD // empty')
+CLUSTER_ADMIN_USERNAME=${EPHEMERAL_CLUSTER_ADMIN_USERNAME:-}
+CLUSTER_ADMIN_PASSWORD=${EPHEMERAL_CLUSTER_ADMIN_PASSWORD:-}
+unset EPHEMERAL_CLUSTER_ADMIN_USERNAME EPHEMERAL_CLUSTER_ADMIN_PASSWORD
 
 if [[ -z "$CLUSTER_ADMIN_USERNAME" ]]; then
-  log::error "CLUSTER_ADMIN_USERNAME not found in Vault at ${VAULT_BASE_PATH}/ephemeral_cluster"
+  log::error "EPHEMERAL_CLUSTER_ADMIN_USERNAME not found in Bitwarden profile"
   exit 1
 fi
 if [[ -z "$CLUSTER_ADMIN_PASSWORD" ]]; then
-  log::error "CLUSTER_ADMIN_PASSWORD not found in Vault at ${VAULT_BASE_PATH}/ephemeral_cluster"
+  log::error "EPHEMERAL_CLUSTER_ADMIN_PASSWORD not found in Bitwarden profile"
   exit 1
 fi
 
