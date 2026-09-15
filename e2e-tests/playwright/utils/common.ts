@@ -96,24 +96,61 @@ export class Common {
     await this.page.waitForTimeout(3_000);
   }
 
-  async logintoKeycloak(userid: string, password: string) {
-    await new Promise<void>((resolve) => {
-      this.page.once("popup", async (popup) => {
-        await popup.waitForLoadState();
-        await popup.locator("#username").fill(userid);
-        await popup.locator("#password").fill(password);
-        // Handle popup close during navigation (popup may close before navigation completes)
-        try {
-          await popup.locator("#kc-login").click({ timeout: 5000 });
-        } catch (error) {
-          // Popup likely closed - this is expected behavior
-          if (!error.message?.includes("Target closed")) {
-            throw error;
-          }
-        }
-        resolve();
-      });
-    });
+  private async submitKeycloakCredentials(
+    popup: Page,
+    userid: string,
+    password: string,
+  ) {
+    // Keycloak may still hold an SSO session from a previous login and close
+    // the popup on its own without showing the login form, possibly a few
+    // seconds after bouncing through the OIDC callback redirect.
+    try {
+      await popup.waitForLoadState("domcontentloaded");
+      await popup.locator("#username").waitFor({ timeout: 15_000 });
+    } catch (error) {
+      if (popup.isClosed()) {
+        return;
+      }
+      const closedLate = await popup
+        .waitForEvent("close", { timeout: 3_000 })
+        .then(
+          () => true,
+          () => false,
+        );
+      if (closedLate) {
+        return;
+      }
+      throw error;
+    }
+
+    await popup.locator("#username").fill(userid);
+    await popup.locator("#password").fill(password);
+    // Handle popup close during navigation (popup may close before navigation completes)
+    try {
+      await popup.locator("#kc-login").click({ timeout: 10_000 });
+    } catch (error) {
+      if (!popup.isClosed()) {
+        throw error;
+      }
+      return;
+    }
+
+    // A rejected password leaves the popup open on the login form. Without this
+    // the helper returns as if it had signed in and the failure surfaces later
+    // as a bare sidebar timeout, with Keycloak's reason nowhere in the report.
+    try {
+      await popup.waitForEvent("close", { timeout: 30_000 });
+    } catch (error) {
+      const reason = await popup
+        .locator("#input-error")
+        .textContent({ timeout: 1_000 })
+        .catch(() => null);
+      throw new Error(
+        reason
+          ? `Keycloak rejected the sign-in: ${reason.trim()}`
+          : `Keycloak did not complete the sign-in: the popup stayed open (${error})`,
+      );
+    }
   }
 
   async loginAsKeycloakUser(
@@ -122,8 +159,23 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
-    await this.logintoKeycloak(userid, password);
+    // Scope the Sign In click to the OIDC provider card, so a page listing
+    // several providers cannot route the login to the wrong one
+    // (RHDHBUGS-3756). Each card is a list item in the provider grid.
+    const signInTitle = t["core-components"][lang]["signIn.title"];
+    const oidcCard = this.page
+      .getByRole("listitem")
+      .filter({ hasText: t["rhdh"][lang]["signIn.providers.oidc.message"] })
+      .filter({ has: this.page.getByRole("button", { name: signInTitle }) });
+    await oidcCard.waitFor({ timeout: 30_000 });
+    // Register the popup listener before clicking: the provider opens it
+    // synchronously, so a listener attached afterwards misses the event and
+    // the login hangs until the test times out.
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup", { timeout: 30_000 }),
+      oidcCard.getByRole("button", { name: signInTitle }).click(),
+    ]);
+    await this.submitKeycloakCredentials(popup, userid, password);
     await this.uiHelper.waitForSideBarVisible();
   }
 
