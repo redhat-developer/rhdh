@@ -19,6 +19,8 @@ handle_ocp_fips_helm() {
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
 
+  fips_configure_custom_ca_ingress
+
   cluster_setup_ocp_helm
 
   fips_deployment "${PW_PROJECT_SHOWCASE_FIPS}"
