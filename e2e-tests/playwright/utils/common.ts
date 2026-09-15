@@ -96,19 +96,23 @@ export class Common {
     await this.page.waitForTimeout(3_000);
   }
 
-  async logintoKeycloak(popup: Page, userid: string, password: string) {
+  private async submitKeycloakCredentials(
+    popup: Page,
+    userid: string,
+    password: string,
+  ) {
     // Keycloak may still hold an SSO session from a previous login and close
     // the popup on its own without showing the login form, possibly a few
     // seconds after bouncing through the OIDC callback redirect.
     try {
       await popup.waitForLoadState("domcontentloaded");
-      await popup.locator("#username").waitFor({ timeout: 15000 });
+      await popup.locator("#username").waitFor({ timeout: 15_000 });
     } catch (error) {
       if (popup.isClosed()) {
         return;
       }
       const closedLate = await popup
-        .waitForEvent("close", { timeout: 3000 })
+        .waitForEvent("close", { timeout: 3_000 })
         .then(
           () => true,
           () => false,
@@ -123,11 +127,29 @@ export class Common {
     await popup.locator("#password").fill(password);
     // Handle popup close during navigation (popup may close before navigation completes)
     try {
-      await popup.locator("#kc-login").click({ timeout: 10000 });
+      await popup.locator("#kc-login").click({ timeout: 10_000 });
     } catch (error) {
       if (!popup.isClosed()) {
         throw error;
       }
+      return;
+    }
+
+    // A rejected password leaves the popup open on the login form. Without this
+    // the helper returns as if it had signed in and the failure surfaces later
+    // as a bare sidebar timeout, with Keycloak's reason nowhere in the report.
+    try {
+      await popup.waitForEvent("close", { timeout: 30_000 });
+    } catch (error) {
+      const reason = await popup
+        .locator("#input-error")
+        .textContent({ timeout: 1_000 })
+        .catch(() => null);
+      throw new Error(
+        reason
+          ? `Keycloak rejected the sign-in: ${reason.trim()}`
+          : `Keycloak did not complete the sign-in: the popup stayed open (${error})`,
+      );
     }
   }
 
@@ -137,29 +159,23 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    // Click "Sign In" inside the OIDC provider card of the "Select a sign-in
-    // method" page, so a page listing several providers cannot route the
-    // login to the wrong one (RHDHBUGS-3756). The innermost div containing
-    // both the OIDC message and a Sign In button is the provider card.
+    // Scope the Sign In click to the OIDC provider card, so a page listing
+    // several providers cannot route the login to the wrong one
+    // (RHDHBUGS-3756). Each card is a list item in the provider grid.
     const signInTitle = t["core-components"][lang]["signIn.title"];
     const oidcCard = this.page
-      .locator("div")
-      .filter({
-        has: this.page.getByText(
-          t["rhdh"][lang]["signIn.providers.oidc.message"],
-          { exact: true },
-        ),
-      })
-      .filter({ has: this.page.getByRole("button", { name: signInTitle }) })
-      .last();
-    await oidcCard.waitFor({ timeout: 30000 });
-    // Register the popup listener before clicking, otherwise the popup can
-    // open before the listener is attached and the login never proceeds.
+      .getByRole("listitem")
+      .filter({ hasText: t["rhdh"][lang]["signIn.providers.oidc.message"] })
+      .filter({ has: this.page.getByRole("button", { name: signInTitle }) });
+    await oidcCard.waitFor({ timeout: 30_000 });
+    // Register the popup listener before clicking: the provider opens it
+    // synchronously, so a listener attached afterwards misses the event and
+    // the login hangs until the test times out.
     const [popup] = await Promise.all([
-      this.page.waitForEvent("popup"),
+      this.page.waitForEvent("popup", { timeout: 30_000 }),
       oidcCard.getByRole("button", { name: signInTitle }).click(),
     ]);
-    await this.logintoKeycloak(popup, userid, password);
+    await this.submitKeycloakCredentials(popup, userid, password);
     await this.uiHelper.waitForSideBarVisible();
   }
 

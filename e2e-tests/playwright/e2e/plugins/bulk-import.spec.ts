@@ -246,7 +246,9 @@ spec:
   });
 
   test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
-    test.setTimeout(150_000);
+    // toPass only checks its deadline between attempts, so an attempt that
+    // starts just under 120s still runs to completion on top of it.
+    test.setTimeout(240_000);
     await uiHelper.openSidebar("Catalog");
 
     // The catalog processing loop may take longer than a single locator
@@ -254,7 +256,7 @@ spec:
     // reloads until it shows up (RHDHBUGS-3754).
     await expect(async () => {
       await page.reload();
-      // Bounded so a hung attempt cannot eat the whole toPass budget
+      // Shorter than the default so a stuck spinner does not dominate an attempt
       await common.waitForLoad(30_000);
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
