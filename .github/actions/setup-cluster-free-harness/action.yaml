@@ -26,11 +26,11 @@ runs:
 
     # The Playwright image ships neither: skopeo pulls the plugin images and
     # catalog-index-refs.sh parses the index manifest with jq.
-    - name: Install skopeo, jq, and native build tools
+    - name: Install skopeo and jq
       shell: bash
       run: |
         apt-get update
-        apt-get install -y --no-install-recommends skopeo jq build-essential python3
+        apt-get install -y --no-install-recommends skopeo jq
 
     # Both harnesses boot packages/backend from source, which needs the ROOT
     # workspace dependencies; e2e-tests has its own lockfile.
