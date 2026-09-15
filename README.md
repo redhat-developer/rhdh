@@ -20,15 +20,15 @@ Today, we have several plugins integrated into RHDH as a way to demonstrate the 
 
 Our current list of plugins include:
 
-- [ArgoCD plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/redhat-argocd/plugins/argocd)
+- [ArgoCD plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/argocd/plugins/argocd)
 - [OCM plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/ocm/plugins/ocm)
 - [Quay plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/quay/plugins/quay)
 - [Kubernetes plugin](https://github.com/backstage/backstage/tree/master/plugins/kubernetes)
 - [Topology plugin](https://github.com/backstage/community-plugins/blob/main/workspaces/topology/plugins/topology/README.md)
 - [GitHub Insights plugin](https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/frontend/backstage-plugin-github-insights)
-- [GitHub Pull Requests plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github-pull-requests-board/plugins/github-pull-requests-board)
-- [GitHub Actions plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github-actions/plugins/github-actions)
-- [GitHub Issues plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github-issues/plugins/github-issues)
+- [GitHub Pull Requests plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github/plugins/github-pull-requests-board)
+- [GitHub Actions plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github/plugins/github-actions)
+- [GitHub Issues plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github/plugins/github-issues)
 - [GitHub Discovery](https://backstage.io/docs/integrations/github/discovery) & [Org Data](https://backstage.io/docs/integrations/github/org)
 - [Security Insights plugin](https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/frontend/backstage-plugin-security-insights)
 - [Keycloak plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/keycloak/plugins/catalog-backend-module-keycloak)

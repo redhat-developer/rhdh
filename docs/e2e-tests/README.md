@@ -24,13 +24,6 @@ From the root of the project directory, navigate to the `e2e-tests` directory:
 ```bash
 cd e2e-tests
 yarn install
-```
-
-## Install Playwright Browsers
-
-The Playwright browsers should be installed automatically via the `postinstall` script in `package.json`. If not, you can manually install them:
-
-```bash
 yarn playwright install chromium
 ```
 
@@ -55,7 +48,7 @@ To run the tests, ensure you have:
 
 - **Node.js** (minimum version 18)
 - An instance of the application to run the tests against
-- [Playwright browsers installed](#install-playwright-browsers)
+- [Playwright browsers installed](#navigate-to-the-e2e-tests-directory-and-install-dependencies)
 
 #### macOS Users
 

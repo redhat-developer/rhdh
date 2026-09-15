@@ -202,12 +202,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 1. Copy `app-config.example.yaml` and rename it as `app-config.local.yaml`.
 
-2. Ensure you have the following developer tools installed:
-
-   - If you are on a Fedora/Red Hat Linux distribution run: `sudo dnf install python3 make g++ zlib-devel brotli-devel openssl-devel libuv-devel`
-   - If you are on a Debian/Ubuntu Linux distribution run: `sudo apt-get install python3 g++ build-essential`
-   - If you are on Windows, then follow the [instructions](https://github.com/nodejs/node-gyp#on-windows) in `node-gyp` for Windows
-   - If you are on macOS, then follow the [instructions](https://github.com/nodejs/node-gyp#on-macos) in `node-gyp` for macOS
+2. Use the Node.js version from `.nvmrc` and enable Corepack (`corepack enable`) so the Yarn version pinned in `package.json` is used.
 
 3. Run `yarn install` to install the dependencies
 
@@ -219,12 +214,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 1. Create an `app-config.local.yaml` file that will be used for storing the environment variables that the showcase app needs
 
-2. Ensure you have the following developer tools installed:
-
-   - If you are on a Fedora/Red Hat Linux distribution run: `sudo dnf install python3 make g++ zlib-devel brotli-devel openssl-devel libuv-devel`
-   - If you are on a Debian/Ubuntu Linux distribution run: `sudo apt-get install python3 g++ build-essential`
-   - If you are on Windows, then follow the [instructions](https://github.com/nodejs/node-gyp#on-windows) in `node-gyp` for Windows
-   - If you are on macOS, then follow the [instructions](https://github.com/nodejs/node-gyp#on-macos) in `node-gyp` for macOS
+2. Use the Node.js version from `.nvmrc` and enable Corepack (`corepack enable`) so the Yarn version pinned in `package.json` is used.
 
 3. Run `yarn install` to install the dependencies
 
