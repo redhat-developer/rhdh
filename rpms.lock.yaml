@@ -256,13 +256,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.0-1.el10
     sourcerpm: go-rpm-macros-3.8.0-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.54.1.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.55.1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 3679849
-    checksum: sha256:c75a97ef2e6400b39c9b47443481a122f72b7073efca1de04eef3e38568b80a5
+    size: 3693157
+    checksum: sha256:c8b909c83e6b8ed1af0c95a9543e6e1e751d30f885ce219f86d1b620b84796de
     name: kernel-headers
-    evr: 6.12.0-211.54.1.el10_2
-    sourcerpm: kernel-6.12.0-211.54.1.el10_2.src.rpm
+    evr: 6.12.0-211.55.1.el10_2
+    sourcerpm: kernel-6.12.0-211.55.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-27.el10.noarch.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 9009
@@ -3301,13 +3301,13 @@ arches:
     name: rpm-sign-libs
     evr: 4.19.1.1-23.el10
     sourcerpm: rpm-4.19.1.1-23.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rsync-3.4.4-1.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rsync-3.5.0-3.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 435030
-    checksum: sha256:221d3a758faa133d357797f6807a82d840ada4281347b1b99b86c5409d4c0d58
+    size: 477268
+    checksum: sha256:40440ac2388f6b51d0e3dcfaf0d26813ea97d83c64d609fef29060045432adb0
     name: rsync
-    evr: 3.4.4-1.el10_2
-    sourcerpm: rsync-3.4.4-1.el10_2.src.rpm
+    evr: 3.5.0-3.el10_2
+    sourcerpm: rsync-3.5.0-3.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/s/selinux-policy-42.1.18-4.el10_2.3.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 62248
@@ -5224,12 +5224,12 @@ arches:
     checksum: sha256:d50ad8dbd7a06cae6c068ed5a695f5e433ce7cbaacb273d6bd7dac09bb126322
     name: rpm
     evr: 4.19.1.1-23.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/r/rsync-3.4.4-1.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/r/rsync-3.5.0-3.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 1284875
-    checksum: sha256:1cce801926a1ca7a75520ae0ec1b238d657d0e744bb6e6cc928b320781639b94
+    size: 1967336
+    checksum: sha256:4df6621312ce2620f5ab03dc202cf35a1731852e362cedea8cfa7eb343376ee9
     name: rsync
-    evr: 3.4.4-1.el10_2
+    evr: 3.5.0-3.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-42.1.18-4.el10_2.3.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 1304975
@@ -7555,13 +7555,13 @@ arches:
     name: rpm-plugin-systemd-inhibit
     evr: 4.19.1.1-23.el10
     sourcerpm: rpm-4.19.1.1-23.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/r/rust-toolset-srpm-macros-1.92.0-1.el10.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/r/rust-toolset-srpm-macros-1.92.0-2.el10_2.noarch.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 17383
-    checksum: sha256:48760e39d22fdc63ca8e9eed2820c15430349e34f05b8898f227566acffe8960
+    size: 16242
+    checksum: sha256:148c972e92d46589405d43eae49d6dde4d11e360e361638664dd9c2be7a195df
     name: rust-toolset-srpm-macros
-    evr: 1.92.0-1.el10
-    sourcerpm: rust-1.92.0-1.el10.src.rpm
+    evr: 1.92.0-2.el10_2
+    sourcerpm: rust-1.92.0-2.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/s/scl-utils-2.0.3-5.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 43075
@@ -8605,13 +8605,13 @@ arches:
     name: rpm-sign-libs
     evr: 4.19.1.1-23.el10
     sourcerpm: rpm-4.19.1.1-23.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rsync-3.4.4-1.el10_2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rsync-3.5.0-3.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 441167
-    checksum: sha256:b91fd5a05ad72423e2a99535f53ac875aa1f7a4f3c7d4193cac8ee03c0464d26
+    size: 485287
+    checksum: sha256:819e954c8b453406f638a446f0c074938d73d1a3b5d2e9d22b22ca6bfc46e2cb
     name: rsync
-    evr: 3.4.4-1.el10_2
-    sourcerpm: rsync-3.4.4-1.el10_2.src.rpm
+    evr: 3.5.0-3.el10_2
+    sourcerpm: rsync-3.5.0-3.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/s/selinux-policy-42.1.18-4.el10_2.3.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 62248
@@ -9844,12 +9844,12 @@ arches:
     checksum: sha256:491d73aa97997b21f2d79d1961ca2560994ddaee74d3ca1e5f82a43fc8906871
     name: redhat-rpm-config
     evr: 295-1.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/r/rust-1.92.0-1.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/r/rust-1.92.0-2.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
-    size: 273527499
-    checksum: sha256:178652fe8740338d698b20fb906e44981460879e9b46595976d4af26ab9dd620
+    size: 273528008
+    checksum: sha256:55849643331ef5994c8eff2fde6657300fc445e3fcd1485da1bbd9a87fa3357f
     name: rust
-    evr: 1.92.0-1.el10
+    evr: 1.92.0-2.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/r/rust-podman-sequoia-0.4.0~pqc.3-1.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
     size: 32650910
@@ -10528,12 +10528,12 @@ arches:
     checksum: sha256:d50ad8dbd7a06cae6c068ed5a695f5e433ce7cbaacb273d6bd7dac09bb126322
     name: rpm
     evr: 4.19.1.1-23.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/r/rsync-3.4.4-1.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/r/rsync-3.5.0-3.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 1284875
-    checksum: sha256:1cce801926a1ca7a75520ae0ec1b238d657d0e744bb6e6cc928b320781639b94
+    size: 1967336
+    checksum: sha256:4df6621312ce2620f5ab03dc202cf35a1731852e362cedea8cfa7eb343376ee9
     name: rsync
-    evr: 3.4.4-1.el10_2
+    evr: 3.5.0-3.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-42.1.18-4.el10_2.3.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 1304975
