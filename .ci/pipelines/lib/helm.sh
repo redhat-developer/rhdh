@@ -229,8 +229,21 @@ helm::get_chart_stream() {
   elif echo "$RELEASE_BRANCH_NAME" | grep -qE '^release-[0-9]+\.[0-9]+$'; then
     echo "$RELEASE_BRANCH_NAME" | grep -oE '[0-9]+\.[0-9]+'
   else
-    log::error "Invalid RELEASE_BRANCH_NAME: $RELEASE_BRANCH_NAME (expected 'main' or 'release-x.y')"
-    return 1
+    # Non-standard branch (e.g., feature/fips-testing): treat like main, use package.json version
+    log::warn "Non-standard branch '$RELEASE_BRANCH_NAME' detected, using main versioning from package.json"
+    local package_json="${DIR}/../../package.json"
+    if [[ ! -f "$package_json" ]]; then
+      log::error "Cannot determine the chart stream: ${package_json} not found"
+      return 1
+    fi
+
+    local chart_stream
+    chart_stream=$(jq -r '.version // empty' "$package_json" | grep -oE '^[0-9]+\.[0-9]+')
+    if [[ -z "$chart_stream" ]]; then
+      log::error "Cannot determine the chart stream: no usable .version in ${package_json}"
+      return 1
+    fi
+    echo "$chart_stream"
   fi
 }
 
