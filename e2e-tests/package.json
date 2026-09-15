@@ -25,7 +25,6 @@
     "showcase-localization-ja": "LOCALE=ja playwright test --project=showcase-localization-ja",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . \"playwright/**/*.{ts,js}\" --fix",
-    "postinstall": "playwright install chromium",
     "tsc": "tsc",
     "tsc:check": "tsc -p tsconfig.json",
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
