@@ -149,7 +149,7 @@ export class Common {
     // as a bare sidebar timeout, with Keycloak's reason nowhere in the report.
     try {
       await popupClosed;
-    } catch (error) {
+    } catch {
       const reason = await popup
         .locator("#input-error")
         .textContent({ timeout: 1_000 })
