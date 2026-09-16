@@ -38,9 +38,9 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "0.36.5",
-    "@backstage/cli-defaults": "0.1.5",
-    "@backstage/frontend-test-utils": "0.6.3",
+    "@backstage/cli": "0.36.6",
+    "@backstage/cli-defaults": "0.1.6",
+    "@backstage/frontend-test-utils": "0.6.4",
     "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@jest/environment-jsdom-abstract": "30.4.1",
     "@manypkg/cli": "0.25.1",
