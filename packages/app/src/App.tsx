@@ -1,7 +1,8 @@
+import type { IconElement } from "@backstage/frontend-plugin-api";
 import { createApp } from "@backstage/frontend-defaults";
 import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
 import catalogPlugin from "@backstage/plugin-catalog/alpha";
-import catalogImportPlugin from "@backstage/plugin-catalog-import/alpha";
+import catalogImportBase from "@backstage/plugin-catalog-import/alpha";
 import catalogUnprocessedEntitiesPlugin from "@backstage/plugin-catalog-unprocessed-entities/alpha";
 import scaffolderPlugin from "@backstage/plugin-scaffolder/alpha";
 import searchPlugin from "@backstage/plugin-search/alpha";
@@ -16,6 +17,12 @@ import { learningPathsModule } from "./modules/learning-paths";
 import { navModule } from "./modules/nav";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
+
+// Keep the /catalog-import route for scaffolder, but hide it from the sidebar.
+const catalogImportPlugin = catalogImportBase.withOverrides({
+  title: "",
+  icon: false as unknown as IconElement,
+});
 
 const app = createApp({
   features: [
