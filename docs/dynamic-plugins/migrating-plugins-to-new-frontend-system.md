@@ -440,7 +440,7 @@ app:
 
 - `EntityCardBlueprint` replaces `createEntityCardExtension` / mount-point card wiring.
 - Layout grid positioning from RHDH `config.layout` is not a standard blueprint config — implement layout inside your card component or use extension overrides for advanced cases.
-- Filter predicates use the [filter predicate](https://backstage.io/docs/reference/filter-predicates) schema in config (not the RHDH `isKind`/`isType` shorthand, though similar concepts apply).
+- Filter predicates use the [filter predicate](https://backstage.io/api/stable/modules/_backstage_filter-predicates.html) schema in config (not the RHDH `isKind`/`isType` shorthand, though similar concepts apply).
 
 ---
 
@@ -977,7 +977,7 @@ Fields are auto-discovered via `formFieldsApiRef` when the plugin is installed. 
 
 ---
 
-### Provide custom TechDocs addons (`techdocsAddons`)
+### Provide custom TechDocs addons
 
 **RHDH wiring:**
 
@@ -988,6 +988,8 @@ techdocsAddons:
       props: ...
 ```
 
+This is the legacy dynamic-plugin wiring format. It remains available for legacy plugins, but it is not used by the new frontend system.
+
 **New approach — plugin code:**
 
 ```tsx
@@ -996,6 +998,7 @@ import { AddonBlueprint } from '@backstage/plugin-techdocs-react/alpha';
 const exampleAddon = AddonBlueprint.make({
   name: 'example',
   params: {
+    name: 'ExampleAddon',
     location: TechDocsAddonLocations.Content,
     component: ExampleTestAddon,
   },
@@ -1004,9 +1007,25 @@ const exampleAddon = AddonBlueprint.make({
 
 Addons are collected via `techdocsAddonsApiRef` and merged into TechDocs reader and entity content extensions automatically.
 
+For dynamic plugins, export each addon as an individual package subpath whose default export is a `FrontendModule`. The addon is then enabled or disabled using its NFS extension ID in `app.extensions`:
+
+```yaml
+app:
+  extensions:
+    - addon:techdocs/example: false
+```
+
+The contributed TechDocs addon package uses these extension IDs:
+
+- `addon:techdocs/expandable-navigation`
+- `addon:techdocs/report-issue`
+- `addon:techdocs/text-size`
+- `addon:techdocs/light-box`
+
 **Notes:**
 
 - The older pattern of injecting addons through `staticJSXContent` in dynamic plugin exports (see [Export Derived Package](export-derived-package.md)) is specific to the legacy dynamic plugin host. Prefer `AddonBlueprint` for new development.
+- The `app.extensions` entries configure extensions that the package exports; they do not replace the package's individual NFS subpath exports.
 
 ---
 
@@ -1225,7 +1244,7 @@ Real-world migration PRs from the `rhdh-plugins` repository:
 | Feature | Status |
 | --- | --- |
 | Nested sidebar menu groups (`menuItems.parent`) | RHDH dynamic plugins only — use `NavContentBlueprint` for custom nav upstream |
-| Application drawer mount points | `AppDrawerContentBlueprint` in `@red-hat-developer-hub/backstage-plugin-app-react/alpha` — see [drawer section](#adding-application-drawers-applicationinternaldrawer) |
+| Application drawer mount points | `AppDrawerContentBlueprint` in `@red-hat-developer-hub/backstage-plugin-app-react/alpha` — see [drawer section](#adding-application-drawers-applicationinternaldrawer-) |
 | `global.header/help` and similar RHDH header slots | Being migrated in `rhdh-plugins` global-header workspace |
 | RHDH `mountPoints[].config.layout` grid SX | Implement in component CSS or card wrapper |
 | `staticJSXContent` dynamic plugin pattern | Legacy dynamic host — replace with extension inputs / Utility APIs |
