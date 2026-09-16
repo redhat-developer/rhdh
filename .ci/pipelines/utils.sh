@@ -157,17 +157,20 @@ wait_for_deployment() {
   log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
 
   for ((i = 1; i <= max_attempts; i++)); do
-    # Get the first pod name matching the resource name
+    # Only consider Running pods: during a rolling update the old ReplicaSet's
+    # pod lingers in Terminating and picking it makes the readiness query below
+    # race its deletion (Error from server (NotFound): pods "..." not found).
     local pod_name
-    pod_name=$(oc get pods -n "$namespace" | grep "$resource_name" | awk '{print $1}' | head -n 1)
+    pod_name=$(oc get pods -n "$namespace" --field-selector=status.phase=Running 2> /dev/null | grep "$resource_name" | awk '{print $1}' | head -n 1)
 
     if [[ -n "$pod_name" ]]; then
-      # Check if pod's Ready condition is True
+      # Tolerate the pod disappearing between listing and this query: a
+      # NotFound here means "not ready yet, retry", not a fatal error. Without
+      # the guard the failed command substitution aborts the whole run under
+      # 'set -e'.
       local is_ready
-      is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
-      # Verify pod is both Ready and Running
-      if [[ "$is_ready" == "True" ]] \
-        && oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
+      is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null || echo "")
+      if [[ "$is_ready" == "True" ]]; then
         log::success "Pod '$pod_name' is running and ready"
         return 0
       else
