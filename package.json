@@ -27,6 +27,7 @@
     "versions:metadata": "node ./scripts/update-metadata.mjs",
     "versions:bump": "node ./scripts/update-backstage.mjs",
     "rulesync:generate": "rulesync generate",
+    "rulesync:check": "rulesync doctor --strict && rulesync generate --check",
     "rulesync:import:cursor": "rulesync import --targets cursor",
     "rulesync:import:claude": "rulesync import --targets claudecode",
     "rulesync:import:opencode": "rulesync import --targets opencode"
