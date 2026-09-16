@@ -3,7 +3,7 @@
     { "pattern": "^http://localhost:7007" },
     { "pattern": "^https://pkgs.devel.redhat.com" },
     { "pattern": "^https://gitlab.cee.redhat.com" },
-    { "pattern": "^https://docs\\.google\\.com/document/d/1B-Jl1uwX3sdWOGqs9CN9rTFYH743q-o5YVMoAz_yPh8/edit$" },
+    { "pattern": "^https://docs\\.google\\.com" },
     { "pattern": "^https://docs.redhat.com" },
     { "pattern": "^https://developers.redhat.com" },
     { "pattern": "^https://devservices.dpp.openshift.com" }
