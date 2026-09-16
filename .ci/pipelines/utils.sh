@@ -1689,27 +1689,26 @@ deploy_orchestrator_workflows() {
     log::info "Patching '$workflow' with persistence config..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$persistence_json"
 
-    # Wait for SonataFlow operator to reconcile and create the deployment
+    # Wait for the SonataFlow operator to reconcile the CR into a Deployment.
+    # On a loaded cluster this can take well over a minute, and the previous 60s
+    # cap let the loop fall through to `oc rollout status` before the Deployment
+    # existed — which aborts the whole run under 'set -e' with
+    # "deployments.apps <workflow> not found". Wait for the Deployment to exist
+    # (the real signal that reconciliation happened) with a generous timeout,
+    # and fail loudly if it never appears instead of racing rollout status.
     log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
-    local timeout_secs=60
+    local reconcile_timeout=300
     local start_time
     start_time=$(date +%s)
-    while true; do
-      local current_time
-      current_time=$(date +%s)
-      local elapsed=$((current_time - start_time))
-      if [[ $elapsed -ge $timeout_secs ]]; then
-        log::warn "Timeout waiting for operator reconciliation of '$workflow' after ${timeout_secs}s"
-        break
+    while ! oc get deployment "$workflow" -n "$namespace" &> /dev/null; do
+      local elapsed=$(($(date +%s) - start_time))
+      if [[ $elapsed -ge $reconcile_timeout ]]; then
+        log::error "SonataFlow operator did not create the '$workflow' deployment within ${reconcile_timeout}s"
+        return 1
       fi
-      local ready
-      ready=$(oc get deployment "$workflow" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2> /dev/null || echo "")
-      if [[ "$ready" == "True" ]]; then
-        log::info "SonataFlow operator reconciled '$workflow' deployment"
-        break
-      fi
-      sleep 2
+      sleep 5
     done
+    log::info "SonataFlow operator created the '$workflow' deployment"
 
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
@@ -1805,27 +1804,26 @@ EOF
     log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
 
-    # Wait for SonataFlow operator to reconcile and create the deployment
+    # Wait for the SonataFlow operator to reconcile the CR into a Deployment.
+    # On a loaded cluster this can take well over a minute, and the previous 60s
+    # cap let the loop fall through to `oc rollout status` before the Deployment
+    # existed — which aborts the whole run under 'set -e' with
+    # "deployments.apps <workflow> not found". Wait for the Deployment to exist
+    # (the real signal that reconciliation happened) with a generous timeout,
+    # and fail loudly if it never appears instead of racing rollout status.
     log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
-    local timeout_secs=60
+    local reconcile_timeout=300
     local start_time
     start_time=$(date +%s)
-    while true; do
-      local current_time
-      current_time=$(date +%s)
-      local elapsed=$((current_time - start_time))
-      if [[ $elapsed -ge $timeout_secs ]]; then
-        log::warn "Timeout waiting for operator reconciliation of '$workflow' after ${timeout_secs}s"
-        break
+    while ! oc get deployment "$workflow" -n "$namespace" &> /dev/null; do
+      local elapsed=$(($(date +%s) - start_time))
+      if [[ $elapsed -ge $reconcile_timeout ]]; then
+        log::error "SonataFlow operator did not create the '$workflow' deployment within ${reconcile_timeout}s"
+        return 1
       fi
-      local ready
-      ready=$(oc get deployment "$workflow" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2> /dev/null || echo "")
-      if [[ "$ready" == "True" ]]; then
-        log::info "SonataFlow operator reconciled '$workflow' deployment"
-        break
-      fi
-      sleep 2
+      sleep 5
     done
+    log::info "SonataFlow operator created the '$workflow' deployment"
 
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
