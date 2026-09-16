@@ -748,7 +748,7 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 - **Add a new entity tab** without a plugin that exports `entity-content:*`.
 - **Override translation strings from `i18n.overrides` JSON** — NFS has no app-config JSON override path; use `TranslationBlueprint`.
 - **Add cards to General settings** until upstream exposes extension inputs on `sub-page:user-settings/general`.
-- **Use RHDH-only mount points** (some global header slots) until equivalent NFS extensions exist. Application drawers have `AppDrawerContentBlueprint` — see the [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer).
+- **Use RHDH-only mount points** (some global header slots) until equivalent NFS extensions exist. Application drawers have `AppDrawerContentBlueprint` — see the [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer-).
 
 ## RHDH-specific gaps
 
@@ -758,7 +758,7 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 | Arbitrary homepage `mountPoints` (`Headline`, `Placeholder`, `Markdown`, `WorldClock`) | No NFS widgets — only `home-page-widget:*` from plugins |
 | Random Joke / Toolkit homepage cards | Upstream widgets exist; RHDH homepage plugin disables them |
 | `i18n.locales` / `i18n.overrides` JSON translation files | Ignored by NFS; use `api:app/app-language` and `TranslationBlueprint` |
-| Application drawer mount points | `AppDrawerContentBlueprint` available — requires plugin update (see [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer)) |
+| Application drawer mount points | `AppDrawerContentBlueprint` available — requires plugin update (see [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer-)) |
 | `global.header/help` and similar header slots | Migrating in RHDH global-header plugins |
 | `mountPoints[].config.layout` (MUI grid) | Not configurable via YAML |
 | Legacy `staticJSXContent` pattern | Requires a plugin update |

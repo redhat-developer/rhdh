@@ -819,6 +819,26 @@ A plugin can specify multiple field extensions, in which case each field extensi
 
 The Backstage TechDocs component supports specifying [custom addons](https://backstage.io/docs/features/techdocs/addons/) to extend TechDocs functionality, like rendering a component or accessing and manipulating TechDocs's DOM.
 
+### New frontend system
+
+For plugins using the new frontend system, each TechDocs addon should be exported as an individual package subpath whose default export is a `FrontendModule`. Addons are then enabled or disabled through their extension IDs in `app.extensions`:
+
+```yaml
+app:
+  extensions:
+    - addon:techdocs/report-issue
+    - addon:techdocs/light-box: false
+```
+
+The contributed TechDocs addon package uses these extension IDs:
+
+- `addon:techdocs/expandable-navigation`
+- `addon:techdocs/report-issue`
+- `addon:techdocs/text-size`
+- `addon:techdocs/light-box`
+
+Do not use the legacy `dynamicPlugins.frontend.<package>.techdocsAddons` configuration for NFS addons. That configuration is only for legacy dynamic plugin wiring.
+
 Here is an example of creating an addon:
 
 ```typescript
@@ -887,7 +907,7 @@ dynamicPlugins:
           importName: darkThemeProvider
 ```
 
-The required options mirror the [AppTheme](https://backstage.io/docs/reference/core-plugin-api.apptheme/) interface:
+The required options mirror the [AppTheme](https://backstage.io/api/stable/modules/_backstage_core-plugin-api.html) interface:
 
 - `id` A required ID value for the theme; use values of `light` or `dark` to replace the default provided themes.
 - `title` The theme name displayed to the user on the Settings page.

@@ -19,13 +19,14 @@ This document provides guidelines for creating, importing, and managing AI assis
 
 ## 🤖 Automated Checks
 
-A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automatically validates that generated files in `.cursor`, `.claude`, and `.opencode` are in sync with `.rulesync` on:
+A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automatically validates that generated files in `.cursor`, `.claude`, `.opencode`, and `opencode.jsonc` are in sync with `.rulesync` on:
 - All pull requests
 - Pushes to main and release branches
 
 **What it checks:**
-- Runs `yarn rulesync:generate`
-- Compares generated files with committed files
+- Runs `yarn rulesync:check`
+- Validates the configuration with `rulesync doctor --strict`
+- Uses `rulesync generate --check` without modifying the checkout
 - Fails if there are differences
 
 **If the check fails, run the appropriate command based on what you edited:**
@@ -33,7 +34,7 @@ A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automaticall
 ```bash
 # If you forgot to generate from .rulesync
 yarn rulesync:generate
-git add .cursor .claude .opencode
+git add .cursor .claude .opencode opencode.jsonc
 
 # If you edited .cursor files directly
 yarn rulesync:import:cursor
@@ -147,7 +148,7 @@ yarn rulesync:import:cursor
 
 ### Scenario 2: Rules Already Exist in `.claude`
 
-If you have existing rules in `.claude/memories/*.md`:
+If you have existing rules in `.claude/rules/*.md`:
 
 ```bash
 # 1. Import all rules from Claude
@@ -231,7 +232,7 @@ Execute the following steps:
 
 ## 🚫 What NOT to Do
 
-### ❌ Don't Edit Generated Files in `.cursor`, `.claude`, and `.opencode` Directly
+### ❌ Don't Edit Generated Files in `.cursor`, `.claude`, `.opencode`, and `opencode.jsonc` Directly
 
 Instead, edit the source in `.rulesync/` and then regenerate them:
 
