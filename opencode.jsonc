@@ -1,4 +1,5 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "instructions": [
     ".opencode/memories/add_extension_metadata.md",
     ".opencode/memories/ci-e2e-testing.md",
@@ -6,6 +7,6 @@
     ".opencode/memories/e2e-fix-workflow.md",
     ".opencode/memories/github-workflows-security.md",
     ".opencode/memories/managing-ai-rules.md",
-    ".opencode/memories/playwright-locators.md"
-  ]
+    ".opencode/memories/playwright-locators.md",
+  ],
 }
