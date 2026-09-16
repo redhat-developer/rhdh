@@ -157,17 +157,14 @@ wait_for_deployment() {
   log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
 
   for ((i = 1; i <= max_attempts; i++)); do
-    # Only consider Running pods: during a rolling update the old ReplicaSet's
-    # pod lingers in Terminating and picking it makes the readiness query below
-    # race its deletion (Error from server (NotFound): pods "..." not found).
+    # Running only: a rolling update's old Terminating pod would otherwise be
+    # picked and race its deletion in the readiness query below.
     local pod_name
     pod_name=$(oc get pods -n "$namespace" --field-selector=status.phase=Running 2> /dev/null | grep "$resource_name" | awk '{print $1}' | head -n 1)
 
     if [[ -n "$pod_name" ]]; then
-      # Tolerate the pod disappearing between listing and this query: a
-      # NotFound here means "not ready yet, retry", not a fatal error. Without
-      # the guard the failed command substitution aborts the whole run under
-      # 'set -e'.
+      # Tolerate the pod vanishing between listing and this query (retry, not a
+      # 'set -e' abort on the failed command substitution).
       local is_ready
       is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null || echo "")
       if [[ "$is_ready" == "True" ]]; then
@@ -1165,15 +1162,10 @@ base_deployment() {
 }
 
 # Guarantees the 'sonataflow' database exists on the external Crunchy Postgres.
-#
-# The chart's create-sonataflow-database job connects over TCP as janus-idp, but
-# its wait-for-db initContainer only checks that the port is open, not that the
-# role's password has been synced. The Crunchy operator opens the port before it
-# applies the janus-idp password, so the job can fail authentication and still
-# exit 0 ("WARNING: Could not create database"), leaving the database missing
-# until the SonataFlow data-index crashes minutes later with
-# 'database "sonataflow" does not exist'. Create it directly on the primary via
-# local trust auth (no password or SSL), which is idempotent and race-free.
+# The chart's create-db job only waits for the port to open, not for the
+# janus-idp password to sync, so it can fail auth yet exit 0 ("Could not create
+# database") — the DB then stays missing until data-index crashes on it. Create
+# it directly on the primary via local trust auth (no password/SSL); idempotent.
 ensure_sonataflow_database() {
   local pg_namespace=$1
   local cluster="postgress-external-db"
@@ -1198,6 +1190,7 @@ ensure_sonataflow_database() {
   fi
 
   log::info "Ensuring the 'sonataflow' database exists on '$primary_pod'..."
+  # Local socket connection: initdb sets it to trust, so no password or SSL.
   local exists
   exists=$(oc exec -n "$pg_namespace" "$primary_pod" -c database -- \
     psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='sonataflow'" 2> /dev/null || echo "")
@@ -1233,9 +1226,8 @@ rbac_deployment() {
     echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
     return 1
   fi
-  # The job above can report success while its psql step silently failed auth
-  # against the still-provisioning Crunchy Postgres, so confirm the database is
-  # really there before the SonataFlow services start.
+  # The job can report success while its psql step silently failed auth, so
+  # confirm the database is really there before the SonataFlow services start.
   if ! ensure_sonataflow_database "${NAME_SPACE_POSTGRES_DB}"; then
     echo "❌ sonataflow database is missing after the create-db job. Aborting RBAC deployment."
     return 1
@@ -1689,13 +1681,9 @@ deploy_orchestrator_workflows() {
     log::info "Patching '$workflow' with persistence config..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$persistence_json"
 
-    # Wait for the SonataFlow operator to reconcile the CR into a Deployment.
-    # On a loaded cluster this can take well over a minute, and the previous 60s
-    # cap let the loop fall through to `oc rollout status` before the Deployment
-    # existed — which aborts the whole run under 'set -e' with
-    # "deployments.apps <workflow> not found". Wait for the Deployment to exist
-    # (the real signal that reconciliation happened) with a generous timeout,
-    # and fail loudly if it never appears instead of racing rollout status.
+    # Wait for the operator to create the Deployment (can take over a minute on
+    # a loaded cluster). Running rollout status before it exists aborts under
+    # 'set -e' with "deployments.apps <workflow> not found".
     log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
     local reconcile_timeout=300
     local start_time
@@ -1710,9 +1698,8 @@ deploy_orchestrator_workflows() {
     done
     log::info "SonataFlow operator created the '$workflow' deployment"
 
-    # Informational only — the wait_for_deployment gate below is authoritative
-    # and tolerant, so a slow or re-reconciling rollout must not abort the run
-    # under 'set -e'.
+    # Informational: wait_for_deployment below is the authoritative, tolerant
+    # gate, so a slow rollout must not abort under 'set -e'.
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
       || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
   done
@@ -1808,13 +1795,9 @@ EOF
     log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
 
-    # Wait for the SonataFlow operator to reconcile the CR into a Deployment.
-    # On a loaded cluster this can take well over a minute, and the previous 60s
-    # cap let the loop fall through to `oc rollout status` before the Deployment
-    # existed — which aborts the whole run under 'set -e' with
-    # "deployments.apps <workflow> not found". Wait for the Deployment to exist
-    # (the real signal that reconciliation happened) with a generous timeout,
-    # and fail loudly if it never appears instead of racing rollout status.
+    # Wait for the operator to create the Deployment (can take over a minute on
+    # a loaded cluster). Running rollout status before it exists aborts under
+    # 'set -e' with "deployments.apps <workflow> not found".
     log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
     local reconcile_timeout=300
     local start_time
@@ -1829,9 +1812,8 @@ EOF
     done
     log::info "SonataFlow operator created the '$workflow' deployment"
 
-    # Informational only — the wait_for_deployment gate below is authoritative
-    # and tolerant, so a slow or re-reconciling rollout must not abort the run
-    # under 'set -e'.
+    # Informational: wait_for_deployment below is the authoritative, tolerant
+    # gate, so a slow rollout must not abort under 'set -e'.
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
       || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
   done

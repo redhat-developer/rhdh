@@ -246,17 +246,15 @@ spec:
   });
 
   test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
-    // toPass only checks its deadline between attempts, so an attempt that
-    // starts just under 120s still runs to completion on top of it.
+    // Headroom for a toPass attempt that starts just under the 120s deadline.
     test.setTimeout(240_000);
     await uiHelper.openSidebar("Catalog");
 
-    // The catalog processing loop may take longer than a single locator
-    // timeout to materialize the imported component, so poll with page
-    // reloads until it shows up (RHDHBUGS-3754).
+    // The catalog can take a while to materialize the imported component, so
+    // poll with page reloads until it shows up (RHDHBUGS-3754).
     await expect(async () => {
       await page.reload();
-      // Shorter than the default so a stuck spinner does not dominate an attempt
+      // Bounded so a stuck spinner does not dominate an attempt.
       await common.waitForLoad(30_000);
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);

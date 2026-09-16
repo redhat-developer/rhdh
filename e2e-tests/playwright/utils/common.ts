@@ -101,9 +101,8 @@ export class Common {
     userid: string,
     password: string,
   ) {
-    // Keycloak may still hold an SSO session from a previous login and close
-    // the popup on its own without showing the login form, possibly a few
-    // seconds after bouncing through the OIDC callback redirect.
+    // An existing SSO session can close the popup on its own (sometimes a few
+    // seconds after the OIDC callback redirect) without showing the form.
     try {
       await popup.waitForLoadState("domcontentloaded");
       await popup.locator("#username").waitFor({ timeout: 15_000 });
@@ -125,15 +124,13 @@ export class Common {
 
     await popup.locator("#username").fill(userid);
     await popup.locator("#password").fill(password);
-    // The popup closing is the real success signal, so register the listener
-    // before submitting. A plain click waits for the OIDC redirect navigation
-    // to finish, and that wait races the popup teardown — the flaky #kc-login
-    // timeout seen across the suite when the redirect ran long. Fire the click
-    // and treat a "target closed" rejection (popup gone mid-redirect) as the
-    // expected end; the close event below decides success.
+    // The popup closing is the success signal. Register the listener before
+    // submitting, since a plain click waits for the OIDC redirect and that wait
+    // races the popup teardown (the flaky #kc-login timeout); a "target closed"
+    // rejection just means the popup went away mid-redirect.
     const popupClosed = popup.waitForEvent("close", { timeout: 30_000 });
-    // Registered above but only awaited below: if the click rethrows, nothing is
-    // waiting on it and it rejects unhandled 30s later.
+    // Keep it settled: it is only awaited below, so a rethrown click would
+    // otherwise leave it to reject unhandled 30s later.
     popupClosed.catch(() => {});
     await popup
       .locator("#kc-login")
@@ -144,9 +141,8 @@ export class Common {
         }
       });
 
-    // A rejected password leaves the popup open on the login form. Without this
-    // the helper returns as if it had signed in and the failure surfaces later
-    // as a bare sidebar timeout, with Keycloak's reason nowhere in the report.
+    // A rejected password leaves the popup open; surface Keycloak's own reason
+    // instead of failing later on a bare sidebar timeout.
     try {
       await popupClosed;
     } catch {
@@ -168,19 +164,17 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    // Scope the Sign In click to the OIDC provider card. Today the guest card's
-    // button reads "Enter", so an unscoped click already resolved here — this
-    // keeps it right if `signInPage` ever lists two providers that both read
-    // "Sign In". Each card is a list item in the provider grid.
+    // Scope the Sign In click to the OIDC provider card (a list item in the
+    // grid), so it stays correct if signInPage ever lists two providers whose
+    // buttons both read "Sign In".
     const signInTitle = t["core-components"][lang]["signIn.title"];
     const oidcCard = this.page
       .getByRole("listitem")
       .filter({ hasText: t["rhdh"][lang]["signIn.providers.oidc.message"] })
       .filter({ has: this.page.getByRole("button", { name: signInTitle }) });
     await oidcCard.waitFor({ timeout: 30_000 });
-    // Register the popup listener before clicking: the provider opens it
-    // synchronously, so a listener attached afterwards misses the event and
-    // the login hangs until the test times out.
+    // The provider opens the popup synchronously, so attach the listener
+    // before clicking or the event is missed and the login hangs.
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup", { timeout: 30_000 }),
       oidcCard.getByRole("button", { name: signInTitle }).click(),

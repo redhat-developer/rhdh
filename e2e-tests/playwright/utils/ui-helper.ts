@@ -349,9 +349,8 @@ export class UIhelper {
   }
 
   async waitForSideBarVisible() {
-    // Generous: this is the final gate after the Keycloak popup closes and the
-    // app redirects through the OIDC callback, which can take a while to render
-    // the nav on a loaded cluster. A tight timeout here shows up as login flake.
+    // Generous: the nav render after the post-login OIDC callback can be slow on
+    // a loaded cluster, and a tight timeout here reads as a login flake.
     await this.page.waitForSelector("nav a", { timeout: 30_000 });
   }
 
