@@ -52,6 +52,8 @@ for ((argument_index = 0; argument_index < ${#PLAYWRIGHT_ARGS[@]}; argument_inde
         PROJECT_SELECTED=true
       fi
       ;;
+    *)
+      ;;
   esac
 done
 if [[ "$PROJECT_SELECTED" != true ]]; then
