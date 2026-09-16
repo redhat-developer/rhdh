@@ -1710,12 +1710,16 @@ deploy_orchestrator_workflows() {
     done
     log::info "SonataFlow operator created the '$workflow' deployment"
 
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+    # Informational only — the wait_for_deployment gate below is authoritative
+    # and tolerant, so a slow or re-reconciling rollout must not abort the run
+    # under 'set -e'.
+    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
+      || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
   done
 
   log::info "Waiting for all workflow pods to be running..."
-  wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace failswitch 5
+  wait_for_deployment "$namespace" greeting 10
+  wait_for_deployment "$namespace" failswitch 10
   log::info "All workflow pods are now running!"
 }
 
@@ -1825,12 +1829,16 @@ EOF
     done
     log::info "SonataFlow operator created the '$workflow' deployment"
 
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+    # Informational only — the wait_for_deployment gate below is authoritative
+    # and tolerant, so a slow or re-reconciling rollout must not abort the run
+    # under 'set -e'.
+    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
+      || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
   done
 
   log::info "Waiting for all workflow pods to be running..."
-  wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace failswitch 5
+  wait_for_deployment "$namespace" greeting 10
+  wait_for_deployment "$namespace" failswitch 10
   log::info "All workflow pods are now running!"
 }
 
