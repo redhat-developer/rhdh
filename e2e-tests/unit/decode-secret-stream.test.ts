@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-const decoder = fileURLToPath(new URL("../decode-secret-stream.mjs", import.meta.url));
+const decoder = fileURLToPath(new URL("../decode-secret-stream.ts", import.meta.url));
 
 function encode(entries: Array<{ name: string; value: string }>): Buffer {
   const sorted = entries.toSorted((left, right) => left.name.localeCompare(right.name));

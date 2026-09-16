@@ -11,41 +11,43 @@ import {
 import { constants } from "node:fs";
 import { resolve, join } from "node:path";
 
-const HEADER = Buffer.from("RHDHSEC1");
-const FOOTER = Buffer.from("RHDHEND1");
+type SecretEntry = { name: string; value: string };
+
+const HEADER: Buffer = Buffer.from("RHDHSEC1");
+const FOOTER: Buffer = Buffer.from("RHDHEND1");
 const MAX_ENTRIES = 65535;
 const MAX_FIELD_BYTES = 8 * 1024 * 1024;
 const MAX_STREAM_BYTES = 64 * 1024 * 1024;
 const ENVIRONMENT_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/u;
-const CERTIFICATE_FILES = new Map([
+const CERTIFICATE_FILES = new Map<string, string>([
   ["rds_db_certificates_pem", "rds-db-certificates.pem"],
   ["rds_db_certificates__dot__pem", "rds-db-certificates--dot--pem"],
   ["azure_db_certificates_pem", "azure-db-certificates.pem"],
   ["azure_db_certificates__dot__pem", "azure-db-certificates--dot--pem"],
 ]);
 
-function fail(message) {
+function fail(message: string): never {
   throw new Error(message);
 }
 
-function sameBytes(input, offset, expected) {
+function sameBytes(input: Buffer, offset: number, expected: Buffer): boolean {
   return input.subarray(offset, offset + expected.length).equals(expected);
 }
 
-function readUint32(input, offset) {
+function readUint32(input: Buffer, offset: number): number {
   if (offset + 4 > input.length) fail("Secret stream is truncated");
   return input.readUInt32BE(offset);
 }
 
-function decodeUtf8(input) {
+function decodeUtf8(input: Buffer): string {
   try {
     return new TextDecoder("utf-8", { fatal: true }).decode(input);
   } catch {
-    fail("Secret stream contains invalid UTF-8");
+    return fail("Secret stream contains invalid UTF-8");
   }
 }
 
-function decode(input) {
+function decode(input: Buffer): SecretEntry[] {
   if (input.length > MAX_STREAM_BYTES) fail("Secret stream is too large");
   if (input.length < HEADER.length + 4) fail("Secret stream header is truncated");
   if (!sameBytes(input, 0, HEADER)) fail("Invalid secret stream header");
@@ -55,8 +57,8 @@ function decode(input) {
   offset += 4;
   if (count > MAX_ENTRIES) fail("Secret stream contains too many entries");
 
-  const entries = [];
-  const names = new Set();
+  const entries: SecretEntry[] = [];
+  const names = new Set<string>();
   for (let index = 0; index < count; index++) {
     const nameLength = readUint32(input, offset);
     const valueLength = readUint32(input, offset + 4);
@@ -72,11 +74,7 @@ function decode(input) {
     offset += nameLength;
     const value = decodeUtf8(input.subarray(offset, offset + valueLength));
     offset += valueLength;
-    if (
-      !ENVIRONMENT_NAME.test(name) ||
-      name.includes("\0") ||
-      value.includes("\0")
-    ) {
+    if (!ENVIRONMENT_NAME.test(name) || name.includes("\0") || value.includes("\0")) {
       fail("Secret stream contains an invalid entry");
     }
     if (names.has(name)) fail("Secret stream contains duplicate entries");
@@ -93,7 +91,7 @@ function decode(input) {
   return entries;
 }
 
-function readStreamInput() {
+function readStreamInput(): Buffer {
   const input = Buffer.allocUnsafe(MAX_STREAM_BYTES + 1);
   let offset = 0;
   while (offset < input.length) {
@@ -105,14 +103,11 @@ function readStreamInput() {
   return input.subarray(0, offset);
 }
 
-function writeSecret(directory, name, value) {
+function writeSecret(directory: string, name: string, value: string): void {
   const filename = CERTIFICATE_FILES.get(name) ?? name;
   const path = join(directory, filename);
   const flags =
-    constants.O_WRONLY |
-    constants.O_CREAT |
-    constants.O_TRUNC |
-    (constants.O_NOFOLLOW ?? 0);
+    constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | (constants.O_NOFOLLOW ?? 0);
   let fileDescriptor;
   try {
     fileDescriptor = openSync(path, flags, 0o600);
@@ -127,7 +122,7 @@ function writeSecret(directory, name, value) {
   }
 }
 
-function main() {
+function main(): void {
   const directory = process.argv[2];
   if (!directory) fail("Secret output directory is required");
   const resolvedDirectory = resolve(directory);

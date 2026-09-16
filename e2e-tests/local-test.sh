@@ -75,7 +75,7 @@ mkdir -p "${SCRIPT_DIR}/.local-test"
 chmod 700 "${SCRIPT_DIR}/.local-test"
 SECRET_RUNTIME_DIR=$(mktemp -d "${SCRIPT_DIR}/.local-test/secrets.XXXXXX")
 trap 'rm -rf "$SECRET_RUNTIME_DIR"' EXIT
-node "${SCRIPT_DIR}/decode-secret-stream.mjs" "$SECRET_RUNTIME_DIR" <&3
+node "${SCRIPT_DIR}/decode-secret-stream.ts" "$SECRET_RUNTIME_DIR" <&3
 exec 3<&-
 secrets::load_directory "$SECRET_RUNTIME_DIR"
 secrets::apply_common_aliases

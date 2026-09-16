@@ -30,7 +30,7 @@ local_secrets::reexec_with_stream "${SCRIPT_DIR}/../../e2e-tests" \
   "$SECRET_PROFILE" RHDH_CLUSTER_CLAIM_SECRETS_WRAPPED "$0" "$input_url" || exit 1
 SECRET_RUNTIME_DIR=$(mktemp -d "${TMPDIR:-.}/rhdh-cluster-claim-secrets.XXXXXX")
 trap 'rm -rf "$SECRET_RUNTIME_DIR"' EXIT
-node "${SCRIPT_DIR}/../../e2e-tests/decode-secret-stream.mjs" \
+node "${SCRIPT_DIR}/../../e2e-tests/decode-secret-stream.ts" \
   "$SECRET_RUNTIME_DIR" <&3
 exec 3<&-
 secrets::load_directory "$SECRET_RUNTIME_DIR"

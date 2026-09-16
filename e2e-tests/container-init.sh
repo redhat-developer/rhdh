@@ -25,7 +25,7 @@ log::section "Reading host-provided secrets"
 export RHDH_SECRET_MOUNT_DIR="/run/rhdh-secrets"
 mkdir -p "$RHDH_SECRET_MOUNT_DIR"
 chmod 700 "$RHDH_SECRET_MOUNT_DIR"
-node /tmp/rhdh/e2e-tests/decode-secret-stream.mjs "$RHDH_SECRET_MOUNT_DIR"
+node /tmp/rhdh/e2e-tests/decode-secret-stream.ts "$RHDH_SECRET_MOUNT_DIR"
 # local-run.sh supplies fresh service-account credentials directly. Never let
 # an optional profile value override them when env_variables.sh loads secrets.
 rm -f "$RHDH_SECRET_MOUNT_DIR/K8S_CLUSTER_URL" \
