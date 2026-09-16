@@ -349,7 +349,10 @@ export class UIhelper {
   }
 
   async waitForSideBarVisible() {
-    await this.page.waitForSelector("nav a", { timeout: 10_000 });
+    // Generous: this is the final gate after the Keycloak popup closes and the
+    // app redirects through the OIDC callback, which can take a while to render
+    // the nav on a loaded cluster. A tight timeout here shows up as login flake.
+    await this.page.waitForSelector("nav a", { timeout: 30_000 });
   }
 
   async openSidebar(navBarText: SidebarTabs) {

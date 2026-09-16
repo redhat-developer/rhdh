@@ -125,21 +125,27 @@ export class Common {
 
     await popup.locator("#username").fill(userid);
     await popup.locator("#password").fill(password);
-    // Handle popup close during navigation (popup may close before navigation completes)
-    try {
-      await popup.locator("#kc-login").click({ timeout: 10_000 });
-    } catch (error) {
-      if (!popup.isClosed()) {
-        throw error;
-      }
-      return;
-    }
+    // The popup closing is the real success signal, so register the listener
+    // before submitting. A plain click waits for the OIDC redirect navigation
+    // to finish, and that wait races the popup teardown — the flaky #kc-login
+    // timeout seen across the suite when the redirect ran long. Fire the click
+    // and treat a "target closed" rejection (popup gone mid-redirect) as the
+    // expected end; the close event below decides success.
+    const popupClosed = popup.waitForEvent("close", { timeout: 30_000 });
+    await popup
+      .locator("#kc-login")
+      .click({ timeout: 30_000 })
+      .catch((error) => {
+        if (!popup.isClosed()) {
+          throw error;
+        }
+      });
 
     // A rejected password leaves the popup open on the login form. Without this
     // the helper returns as if it had signed in and the failure surfaces later
     // as a bare sidebar timeout, with Keycloak's reason nowhere in the report.
     try {
-      await popup.waitForEvent("close", { timeout: 30_000 });
+      await popupClosed;
     } catch (error) {
       const reason = await popup
         .locator("#input-error")
