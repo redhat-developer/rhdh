@@ -1164,6 +1164,58 @@ base_deployment() {
   deploy_orchestrator_workflows "${NAME_SPACE}" "${RELEASE_NAME}"
 }
 
+# Guarantees the 'sonataflow' database exists on the external Crunchy Postgres.
+#
+# The chart's create-sonataflow-database job connects over TCP as janus-idp, but
+# its wait-for-db initContainer only checks that the port is open, not that the
+# role's password has been synced. The Crunchy operator opens the port before it
+# applies the janus-idp password, so the job can fail authentication and still
+# exit 0 ("WARNING: Could not create database"), leaving the database missing
+# until the SonataFlow data-index crashes minutes later with
+# 'database "sonataflow" does not exist'. Create it directly on the primary via
+# local trust auth (no password or SSL), which is idempotent and race-free.
+ensure_sonataflow_database() {
+  local pg_namespace=$1
+  local cluster="postgress-external-db"
+
+  local primary_pod=""
+  local attempt
+  for ((attempt = 1; attempt <= 30; attempt++)); do
+    primary_pod=$(oc get pods -n "$pg_namespace" \
+      -l "postgres-operator.crunchydata.com/cluster=${cluster},postgres-operator.crunchydata.com/role=master" \
+      --field-selector=status.phase=Running \
+      -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || echo "")
+    if [[ -n "$primary_pod" ]]; then
+      break
+    fi
+    log::debug "Waiting for the external Postgres primary pod... (${attempt}/30)"
+    sleep 10
+  done
+
+  if [[ -z "$primary_pod" ]]; then
+    log::error "Could not find a Running external Postgres primary pod in '$pg_namespace'"
+    return 1
+  fi
+
+  log::info "Ensuring the 'sonataflow' database exists on '$primary_pod'..."
+  local exists
+  exists=$(oc exec -n "$pg_namespace" "$primary_pod" -c database -- \
+    psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='sonataflow'" 2> /dev/null || echo "")
+  if [[ "$exists" == "1" ]]; then
+    log::success "'sonataflow' database already present"
+    return 0
+  fi
+
+  if oc exec -n "$pg_namespace" "$primary_pod" -c database -- \
+    psql -U postgres -c "CREATE DATABASE sonataflow"; then
+    log::success "Created the 'sonataflow' database"
+    return 0
+  fi
+
+  log::error "Failed to create the 'sonataflow' database on '$primary_pod'"
+  return 1
+}
+
 rbac_deployment() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
@@ -1179,6 +1231,13 @@ rbac_deployment() {
   # Wait for the sonataflow database creation job to complete with robust error handling
   if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
     echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
+    return 1
+  fi
+  # The job above can report success while its psql step silently failed auth
+  # against the still-provisioning Crunchy Postgres, so confirm the database is
+  # really there before the SonataFlow services start.
+  if ! ensure_sonataflow_database "${NAME_SPACE_POSTGRES_DB}"; then
+    echo "❌ sonataflow database is missing after the create-db job. Aborting RBAC deployment."
     return 1
   fi
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
