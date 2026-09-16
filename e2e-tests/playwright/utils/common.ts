@@ -132,6 +132,9 @@ export class Common {
     // and treat a "target closed" rejection (popup gone mid-redirect) as the
     // expected end; the close event below decides success.
     const popupClosed = popup.waitForEvent("close", { timeout: 30_000 });
+    // Registered above but only awaited below: if the click rethrows, nothing is
+    // waiting on it and it rejects unhandled 30s later.
+    popupClosed.catch(() => {});
     await popup
       .locator("#kc-login")
       .click({ timeout: 30_000 })
@@ -154,7 +157,7 @@ export class Common {
       throw new Error(
         reason
           ? `Keycloak rejected the sign-in: ${reason.trim()}`
-          : `Keycloak did not complete the sign-in: the popup stayed open (${error})`,
+          : "Keycloak did not complete the sign-in: the popup stayed open",
       );
     }
   }
@@ -165,9 +168,10 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    // Scope the Sign In click to the OIDC provider card, so a page listing
-    // several providers cannot route the login to the wrong one
-    // (RHDHBUGS-3756). Each card is a list item in the provider grid.
+    // Scope the Sign In click to the OIDC provider card. Today the guest card's
+    // button reads "Enter", so an unscoped click already resolved here — this
+    // keeps it right if `signInPage` ever lists two providers that both read
+    // "Sign In". Each card is a list item in the provider grid.
     const signInTitle = t["core-components"][lang]["signIn.title"];
     const oidcCard = this.page
       .getByRole("listitem")
