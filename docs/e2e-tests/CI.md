@@ -55,7 +55,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces. Different sets of tests are executed for both the **non-RBAC RHDH instance** and the **RBAC RHDH instance**, each deployed in separate namespaces.
-- **Access:** In order to access the environment, you can run the bash at `.ci/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you have claimed a cluster, this script will forward the cluster web console url along with the credentials.
+- **Access:** In order to access the environment, you can run the bash at `.ci/pipelines/ocp-cluster-claim-login.sh`. You will be prompted for the Prow URL (the URL from the OpenShift agent, which looks like https://prow.ci.openshift.org/...). Once you have claimed a cluster, this script will forward the cluster web console URL along with the credentials.
 - **Steps:**
   1. **Detection:** OpenShift-CI detects the PR event.
   2. **Environment Setup:** The test environment is set up using the `openshift-ci-tests.sh` script (see the [High-Level Overview](#high-level-overview-of-openshift-ci-testssh)).
