@@ -51,7 +51,7 @@
     "jest": "30.4.2",
     "jsdom": "27.4.0",
     "lint-staged": "15.5.2",
-    "rulesync": "16.30.0",
+    "rulesync": "16.34.2",
     "sherif": "1.13.0",
     "turbo": "2.10.12"
   },
