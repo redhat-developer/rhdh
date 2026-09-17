@@ -46,6 +46,65 @@ install_rhdh_operator() {
       return 1
     fi
   fi
+
+  override_operator_backstage_image "$namespace"
+}
+
+# The operator bundle CSV pins RELATED_IMAGE_backstage to the hub image digest
+# captured when the bundle was built, which can lag the floating tag by weeks.
+# The operator applies that env to the install-dynamic-plugins init container
+# even when the Backstage CR deployment.patch overrides the main container, so
+# tests would exercise a stale installer image. Point the CSV at the image
+# under test; OLM propagates the change to the operator deployment.
+override_operator_backstage_image() {
+  local namespace=$1
+  local image="${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
+  local csv_name
+
+  csv_name=$(oc get csv -n "$namespace" -o name 2> /dev/null | grep -E '/rhdh(-operator)?\.' | head -1)
+  if [[ -z "$csv_name" ]]; then
+    log::warn "No RHDH CSV found in namespace '$namespace'; skipping backstage image override"
+    return 0
+  fi
+
+  local patch
+  patch=$(oc get "$csv_name" -n "$namespace" -o json | jq --arg img "$image" -c '
+    [ .spec.install.spec.deployments as $ds
+      | range(0; $ds | length) as $d
+      | $ds[$d].spec.template.spec.containers as $cs
+      | range(0; $cs | length) as $c
+      | ($cs[$c].env // []) as $es
+      | range(0; $es | length) as $e
+      | select($es[$e].name == "RELATED_IMAGE_backstage")
+      | { op: "replace",
+          path: "/spec/install/spec/deployments/\($d)/spec/template/spec/containers/\($c)/env/\($e)/value",
+          value: $img } ]')
+  if [[ -z "$patch" || "$patch" == "[]" ]]; then
+    log::warn "RELATED_IMAGE_backstage not found in ${csv_name}; skipping backstage image override"
+    return 0
+  fi
+
+  log::info "Overriding RELATED_IMAGE_backstage in ${csv_name} with '${image}'"
+  if ! oc patch "$csv_name" -n "$namespace" --type=json -p "$patch"; then
+    log::error "Failed to patch ${csv_name} with backstage image override"
+    return 1
+  fi
+
+  # OLM reconciles the operator deployment from the CSV; wait for the new env
+  # to land and for the operator pod to restart with it.
+  local operator_deployment
+  operator_deployment=$(oc get deployment -n "$namespace" -l control-plane=controller-manager -o jsonpath='{.items[0].metadata.name}' 2> /dev/null)
+  if [[ -z "$operator_deployment" ]]; then
+    log::warn "No operator deployment found in namespace '$namespace'; not waiting for image override rollout"
+    return 0
+  fi
+  if ! common::poll_until \
+    "oc get deployment '$operator_deployment' -n '$namespace' -o json | jq -e --arg img '$image' '[.spec.template.spec.containers[].env // [] | .[] | select(.name == \"RELATED_IMAGE_backstage\")] | any(.value == \$img)'" \
+    30 5 "Operator deployment picked up backstage image override"; then
+    log::error "Operator deployment did not pick up the backstage image override"
+    return 1
+  fi
+  oc rollout status "deployment/${operator_deployment}" -n "$namespace" --timeout=300s
 }
 
 prepare_operator() {
