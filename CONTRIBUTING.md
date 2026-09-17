@@ -150,20 +150,23 @@ If you want to submit code changes to the project, here are some guidelines:
 
 ### Testing image builds from a fork
 
-The image-push workflows default to `quay.io/rhdh-community/rhdh` and `quay.io/rhdh-community/rhdh-e2e-runner`. Forks that set `QUAY_USERNAME`/`QUAY_TOKEN` without retargeting those repos can overwrite shared tags such as `:next`.
+The image-push workflows default to `quay.io/rhdh-community/rhdh` (production), `quay.io/rhdh-community/rhdh-pr` (PR previews), and `quay.io/rhdh-community/rhdh-e2e-runner`. Forks that set push credentials without retargeting those repos can overwrite shared tags.
 
 To test image builds from a fork:
 
 1. Create a Quay repository in **your** namespace (not `rhdh-community`).
 2. Set a repository variable (Settings → Secrets and variables → Actions → Variables):
    - `QUAY_RHDH_IMAGE_REPO` = `<your-namespace>/<repo>` for [next-build-image.yaml](.github/workflows/next-build-image.yaml)
+   - `QUAY_PR_IMAGE_REPO` = `<your-namespace>/<repo>` for [pr-build-image.yaml](.github/workflows/pr-build-image.yaml)
    - `QUAY_E2E_RUNNER_IMAGE_REPO` = `<your-namespace>/<repo>` for [push-e2e-runner.yaml](.github/workflows/push-e2e-runner.yaml)
 
-   Do not set either variable under the `rhdh-community/` namespace. Forks that do so are rejected.
-3. Set secrets `QUAY_USERNAME` and `QUAY_TOKEN` for a robot account scoped to **that** namespace only.
-4. Run the workflow via **Actions → Run workflow** (`workflow_dispatch`), or push/schedule once the variable is set.
+   Do not set any variable under the `rhdh-community/` namespace. Forks that do so are rejected.
+3. Set secrets for a robot account scoped to **that** namespace only:
+   - `QUAY_USERNAME` and `QUAY_TOKEN` for production/e2e-runner workflows
+   - `RHDH_PR_BOT_USER` and `RHDH_PR_BOT_TOKEN` for PR preview image pushes
+4. Run the workflow via **Actions → Run workflow** (`workflow_dispatch`), or open a pull request once the variable and secrets are set.
 
-Without `QUAY_RHDH_IMAGE_REPO` / `QUAY_E2E_RUNNER_IMAGE_REPO`, scheduled and push runs on a fork are skipped. A manual run without the variable fails with an error rather than pushing to the shared production image.
+Without `QUAY_RHDH_IMAGE_REPO` / `QUAY_PR_IMAGE_REPO` / `QUAY_E2E_RUNNER_IMAGE_REPO`, scheduled and push runs on a fork are skipped. A manual run without the variable fails with an error rather than pushing to the shared production image.
 
 ## Commit Messages
 
