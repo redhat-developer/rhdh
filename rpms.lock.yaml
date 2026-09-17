@@ -60,13 +60,13 @@ arches:
     name: bsdtar
     evr: 3.7.7-10.el10_2
     sourcerpm: libarchive-3.7.7-10.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/c/cairo-1.18.2-2.el10.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/c/cairo-1.18.2-2.el10_2.1.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 718878
-    checksum: sha256:436f763f892284b6f185f22b081ffc0f17a4cf0920b3757aa6f267df564ca387
+    size: 722371
+    checksum: sha256:5f001d0210f8a5e75d30982334a29cdc89c6ae35106c2534e2f07d363c8d0e95
     name: cairo
-    evr: 1.18.2-2.el10
-    sourcerpm: cairo-1.18.2-2.el10.src.rpm
+    evr: 1.18.2-2.el10_2.1
+    sourcerpm: cairo-1.18.2-2.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/c/cmake-3.31.8-1.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 8626677
@@ -256,13 +256,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.0-1.el10
     sourcerpm: go-rpm-macros-3.8.0-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.55.1.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.56.1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 3693157
-    checksum: sha256:c8b909c83e6b8ed1af0c95a9543e6e1e751d30f885ce219f86d1b620b84796de
+    size: 3699933
+    checksum: sha256:081d95821ff549e1cc45127ff5d09923371d85bd9d601c1579c2d43417bf382d
     name: kernel-headers
-    evr: 6.12.0-211.55.1.el10_2
-    sourcerpm: kernel-6.12.0-211.55.1.el10_2.src.rpm
+    evr: 6.12.0-211.56.1.el10_2
+    sourcerpm: kernel-6.12.0-211.56.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-srpm-macros-1.0-27.el10.noarch.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 9009
@@ -2783,13 +2783,13 @@ arches:
     name: libedit
     evr: 3.1-52.20230828cvs.el10
     sourcerpm: libedit-3.1-52.20230828cvs.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/l/libevent-2.1.12-16.el10.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/l/libevent-2.1.13-1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 265967
-    checksum: sha256:8a78f16b56ae118519cd559d6ce6c4fad6f8adb4bfcebe0e5d5d34ed9f1ceba9
+    size: 269129
+    checksum: sha256:7a223d3446546cb3f1791df9edb96daba309661cdce0c0e76ddf1dece35f120a
     name: libevent
-    evr: 2.1.12-16.el10
-    sourcerpm: libevent-2.1.12-16.el10.src.rpm
+    evr: 2.1.13-1.el10_2
+    sourcerpm: libevent-2.1.13-1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/l/libfdisk-2.40.2-18.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 166348
@@ -3019,13 +3019,6 @@ arches:
     size: 1314667
     checksum: sha256:6fd8f1eae449c55f46acaa3907310d1081739584ba03069811b8ff280494b9a7
     name: openssl
-    evr: 1:3.5.8-1.el10_2
-    sourcerpm: openssl-3.5.8-1.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/o/openssl-libs-3.5.8-1.el10_2.aarch64.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 2236883
-    checksum: sha256:0a54176e12e019ecff62f41f28e2dbc5cbd31f7577f3b4ec86967b82a667f23b
-    name: openssl-libs
     evr: 1:3.5.8-1.el10_2
     sourcerpm: openssl-3.5.8-1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/p/pam-1.6.1-9.el10_2.1.aarch64.rpm
@@ -3455,13 +3448,6 @@ arches:
     name: xz
     evr: 1:5.6.2-4.el10_2.1
     sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/x/xz-libs-5.6.2-4.el10_2.1.aarch64.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 117209
-    checksum: sha256:80c0fe151e6ca150a67e5a3e48711178a8735bd2f914d1fad247359e410b6ccb
-    name: xz-libs
-    evr: 1:5.6.2-4.el10_2.1
-    sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/y/yum-4.20.0-22.el10_2.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 94830
@@ -3508,12 +3494,12 @@ arches:
     checksum: sha256:402d9833ab44a1492fb9c43eb366aa9a477652821efb476d51b6d3c695571f79
     name: at-spi2-core
     evr: 2.56.1-1.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/c/cairo-1.18.2-2.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/c/cairo-1.18.2-2.el10_2.1.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
-    size: 32618388
-    checksum: sha256:f73b077ea421edc450d1e3db3a12d9be42c6df89f32baaac9aa943b4fdea095d
+    size: 32625933
+    checksum: sha256:2f60b6fe56d0a3c0bcc75aa0b1fb101555dcc29b3d33b3eb38577946252a28af
     name: cairo
-    evr: 1.18.2-2.el10
+    evr: 1.18.2-2.el10_2.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/c/cmake-3.31.8-1.el10.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
     size: 11779039
@@ -4900,12 +4886,12 @@ arches:
     checksum: sha256:3ae3bffbac4d27d6b41deede6c1246391f0174e1f06f2afceac5c041bf92a8ec
     name: libedit
     evr: 3.1-52.20230828cvs.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/l/libevent-2.1.12-16.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/l/libevent-2.1.13-1.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 1144998
-    checksum: sha256:5e59fb2304228caf5238d5b603ac5151cc990299f5cd8e736cef230e73c6f785
+    size: 1174446
+    checksum: sha256:f8f0a7f920ab0d18531f6fb60d06ba1000941895c395b8c3264361f7ecc823c8
     name: libevent
-    evr: 2.1.12-16.el10
+    evr: 2.1.13-1.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/l/libfido2-1.14.0-7.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 903585
@@ -5385,13 +5371,13 @@ arches:
     name: bsdtar
     evr: 3.7.7-10.el10_2
     sourcerpm: libarchive-3.7.7-10.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/c/cairo-1.18.2-2.el10.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/c/cairo-1.18.2-2.el10_2.1.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 734038
-    checksum: sha256:7f7f501b3748fcab74597c4f50c96e1437d551fe6bbf2c9ee5fa1e3d3e10fd15
+    size: 739747
+    checksum: sha256:5f10aab2ab12b9cff6d32897dcd137726f6873045f181294592e3a8b65476883
     name: cairo
-    evr: 1.18.2-2.el10
-    sourcerpm: cairo-1.18.2-2.el10.src.rpm
+    evr: 1.18.2-2.el10_2.1
+    sourcerpm: cairo-1.18.2-2.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/c/cmake-3.31.8-1.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 13236770
@@ -5581,13 +5567,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.0-1.el10
     sourcerpm: go-rpm-macros-3.8.0-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-211.54.1.el10_2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-211.55.1.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 3718077
-    checksum: sha256:a7c90ce4c499b865c507583354ed6731aeeba286408dd7195e30b16e8cfebeac
+    size: 3731329
+    checksum: sha256:0a38e481e5e4b5f642639625bef1b9c02d80d2ab4984e1ca280a88be29a65885
     name: kernel-headers
-    evr: 6.12.0-211.54.1.el10_2
-    sourcerpm: kernel-6.12.0-211.54.1.el10_2.src.rpm
+    evr: 6.12.0-211.55.1.el10_2
+    sourcerpm: kernel-6.12.0-211.55.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-27.el10.noarch.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 9009
@@ -8087,13 +8073,13 @@ arches:
     name: libedit
     evr: 3.1-52.20230828cvs.el10
     sourcerpm: libedit-3.1-52.20230828cvs.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/l/libevent-2.1.12-16.el10.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/l/libevent-2.1.13-1.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 271480
-    checksum: sha256:0cfcc4c1b669d1b334e416230aa3b3e1a91531b96892e52e724242a89d1e75fa
+    size: 274092
+    checksum: sha256:ab7d30edcca15aacf17962e25430fad1bdb172c2ab05f27e67ca9f7ed14fdb03
     name: libevent
-    evr: 2.1.12-16.el10
-    sourcerpm: libevent-2.1.12-16.el10.src.rpm
+    evr: 2.1.13-1.el10_2
+    sourcerpm: libevent-2.1.13-1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/l/libfdisk-2.40.2-18.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 171123
@@ -8323,13 +8309,6 @@ arches:
     size: 1337332
     checksum: sha256:b3e0a119be23f061ffcb13263de6bc91026c27bd62d5d93778a8241c9d9c3cb6
     name: openssl
-    evr: 1:3.5.8-1.el10_2
-    sourcerpm: openssl-3.5.8-1.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/o/openssl-libs-3.5.8-1.el10_2.x86_64.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 2374781
-    checksum: sha256:f7a77a5c5897d4bf6e3abcf536c6d92bb60cf698db4e2334908dabdbac54486a
-    name: openssl-libs
     evr: 1:3.5.8-1.el10_2
     sourcerpm: openssl-3.5.8-1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/p/pam-1.6.1-9.el10_2.1.x86_64.rpm
@@ -8759,13 +8738,6 @@ arches:
     name: xz
     evr: 1:5.6.2-4.el10_2.1
     sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/x/xz-libs-5.6.2-4.el10_2.1.x86_64.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 120170
-    checksum: sha256:02dc4d009c501fe7c4bd1e2174071fcd08b8d1133697777dce5726b43fee4998
-    name: xz-libs
-    evr: 1:5.6.2-4.el10_2.1
-    sourcerpm: xz-5.6.2-4.el10_2.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/y/yum-4.20.0-22.el10_2.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 94830
@@ -8812,12 +8784,12 @@ arches:
     checksum: sha256:402d9833ab44a1492fb9c43eb366aa9a477652821efb476d51b6d3c695571f79
     name: at-spi2-core
     evr: 2.56.1-1.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/c/cairo-1.18.2-2.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/c/cairo-1.18.2-2.el10_2.1.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
-    size: 32618388
-    checksum: sha256:f73b077ea421edc450d1e3db3a12d9be42c6df89f32baaac9aa943b4fdea095d
+    size: 32625933
+    checksum: sha256:2f60b6fe56d0a3c0bcc75aa0b1fb101555dcc29b3d33b3eb38577946252a28af
     name: cairo
-    evr: 1.18.2-2.el10
+    evr: 1.18.2-2.el10_2.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/c/cmake-3.31.8-1.el10.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
     size: 11779039
@@ -10204,12 +10176,12 @@ arches:
     checksum: sha256:3ae3bffbac4d27d6b41deede6c1246391f0174e1f06f2afceac5c041bf92a8ec
     name: libedit
     evr: 3.1-52.20230828cvs.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/l/libevent-2.1.12-16.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/l/libevent-2.1.13-1.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 1144998
-    checksum: sha256:5e59fb2304228caf5238d5b603ac5151cc990299f5cd8e736cef230e73c6f785
+    size: 1174446
+    checksum: sha256:f8f0a7f920ab0d18531f6fb60d06ba1000941895c395b8c3264361f7ecc823c8
     name: libevent
-    evr: 2.1.12-16.el10
+    evr: 2.1.13-1.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/l/libfido2-1.14.0-7.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 903585
