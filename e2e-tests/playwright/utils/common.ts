@@ -110,16 +110,12 @@ export class Common {
       if (popup.isClosed()) {
         return;
       }
-      const closedLate = await popup
-        .waitForEvent("close", { timeout: 3_000 })
-        .then(
-          () => true,
-          () => false,
-        );
-      if (closedLate) {
-        return;
-      }
-      throw error;
+      // Give the popup a moment to close late (post-callback); if it does not,
+      // rethrow the original error.
+      await popup.waitForEvent("close", { timeout: 3_000 }).catch(() => {
+        throw error;
+      });
+      return;
     }
 
     await popup.locator("#username").fill(userid);

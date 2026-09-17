@@ -1627,6 +1627,30 @@ checkout_serverless_workflows_ref() {
   log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
 }
 
+# Wait for the operator to create the workflow Deployment (can take over a
+# minute on a loaded cluster), then wait for its rollout. Running rollout status
+# before the Deployment exists aborts under 'set -e' with
+# "deployments.apps <workflow> not found".
+wait_for_workflow_rollout() {
+  local workflow=$1
+  local namespace=$2
+  local reconcile_timeout=300
+  local start_time
+  start_time=$(date +%s)
+  log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
+  while ! oc get deployment "$workflow" -n "$namespace" &> /dev/null; do
+    if [[ $(($(date +%s) - start_time)) -ge $reconcile_timeout ]]; then
+      log::error "SonataFlow operator did not create the '$workflow' deployment within ${reconcile_timeout}s"
+      return 1
+    fi
+    sleep 5
+  done
+  log::info "SonataFlow operator created the '$workflow' deployment"
+  # Informational: the wait_for_deployment gate afterwards is authoritative.
+  oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
+    || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
+}
+
 # Helper function to deploy workflows for orchestrator testing
 deploy_orchestrator_workflows() {
   local namespace=$1
@@ -1681,27 +1705,7 @@ deploy_orchestrator_workflows() {
     log::info "Patching '$workflow' with persistence config..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$persistence_json"
 
-    # Wait for the operator to create the Deployment (can take over a minute on
-    # a loaded cluster). Running rollout status before it exists aborts under
-    # 'set -e' with "deployments.apps <workflow> not found".
-    log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
-    local reconcile_timeout=300
-    local start_time
-    start_time=$(date +%s)
-    while ! oc get deployment "$workflow" -n "$namespace" &> /dev/null; do
-      local elapsed=$(($(date +%s) - start_time))
-      if [[ $elapsed -ge $reconcile_timeout ]]; then
-        log::error "SonataFlow operator did not create the '$workflow' deployment within ${reconcile_timeout}s"
-        return 1
-      fi
-      sleep 5
-    done
-    log::info "SonataFlow operator created the '$workflow' deployment"
-
-    # Informational: wait_for_deployment below is the authoritative, tolerant
-    # gate, so a slow rollout must not abort under 'set -e'.
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
-      || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
+    wait_for_workflow_rollout "$workflow" "$namespace" || return 1
   done
 
   log::info "Waiting for all workflow pods to be running..."
@@ -1795,27 +1799,7 @@ EOF
     log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
 
-    # Wait for the operator to create the Deployment (can take over a minute on
-    # a loaded cluster). Running rollout status before it exists aborts under
-    # 'set -e' with "deployments.apps <workflow> not found".
-    log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
-    local reconcile_timeout=300
-    local start_time
-    start_time=$(date +%s)
-    while ! oc get deployment "$workflow" -n "$namespace" &> /dev/null; do
-      local elapsed=$(($(date +%s) - start_time))
-      if [[ $elapsed -ge $reconcile_timeout ]]; then
-        log::error "SonataFlow operator did not create the '$workflow' deployment within ${reconcile_timeout}s"
-        return 1
-      fi
-      sleep 5
-    done
-    log::info "SonataFlow operator created the '$workflow' deployment"
-
-    # Informational: wait_for_deployment below is the authoritative, tolerant
-    # gate, so a slow rollout must not abort under 'set -e'.
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
-      || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
+    wait_for_workflow_rollout "$workflow" "$namespace" || return 1
   done
 
   log::info "Waiting for all workflow pods to be running..."
