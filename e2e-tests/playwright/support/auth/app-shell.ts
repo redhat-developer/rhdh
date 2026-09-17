@@ -8,12 +8,60 @@ const LOADING_INDICATOR_SELECTORS = [
   '[class*="MuiCircularProgress-root"]',
 ] as const;
 
+// Grace period after an uncaught page error before declaring the bootstrap dead.
+const PAGE_ERROR_GRACE_MS = 10_000;
+const LOADING_POLL_INTERVAL_MS = 250;
+
+const pageErrorLogs = new WeakMap<Page, Error[]>();
+
+/**
+ * Collect uncaught page errors so `waitForLoadingToSettle` can fail fast with
+ * the real JS error when the app bootstrap crashes and the loading spinner
+ * never clears. Attach before `page.goto` to capture bootstrap-time errors.
+ * Errors are reset on every main-frame navigation so stale errors from a
+ * previous page cannot fail a later wait.
+ */
+export function watchPageErrors(page: Page): void {
+  if (pageErrorLogs.has(page)) {
+    return;
+  }
+  const errors: Error[] = [];
+  pageErrorLogs.set(page, errors);
+  page.on("pageerror", (error) => errors.push(error));
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) {
+      errors.length = 0;
+    }
+  });
+}
+
 export async function waitForLoadingToSettle(page: Page, timeout = 120_000): Promise<void> {
+  watchPageErrors(page);
+  const pageErrors = pageErrorLogs.get(page) ?? [];
   for (const selector of LOADING_INDICATOR_SELECTORS) {
     const indicator = page.locator(selector).first();
-    const visible = await indicator.isVisible().catch(() => false);
-    if (visible) {
-      await expect(indicator).toBeHidden({ timeout });
+    const deadline = Date.now() + timeout;
+    let visible = await indicator.isVisible().catch(() => false);
+    while (visible) {
+      if (pageErrors.length > 0) {
+        // A crashed bootstrap never clears the spinner; surface the real JS
+        // error instead of burning the full toBeHidden timeout.
+        await page.waitForTimeout(PAGE_ERROR_GRACE_MS);
+        visible = await indicator.isVisible().catch(() => false);
+        if (visible) {
+          throw new Error(
+            `App failed to render (loading indicator "${selector}" still visible) ` +
+              `after uncaught page error(s): ${pageErrors.map((error) => error.message).join("; ")}`,
+          );
+        }
+        break;
+      }
+      if (Date.now() >= deadline) {
+        await expect(indicator).toBeHidden({ timeout: 1_000 });
+        break;
+      }
+      await page.waitForTimeout(LOADING_POLL_INTERVAL_MS);
+      visible = await indicator.isVisible().catch(() => false);
     }
   }
 }
