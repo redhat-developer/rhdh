@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { scaffolderTranslationRef } from "@backstage/plugin-scaffolder";
 
 export default createTranslationMessages({
   ref: scaffolderTranslationRef,
   full: false,
   messages: {
-    'templateListPage.title': 'Self-service',
-    'templateListPage.pageTitle': 'Self-service',
-    'templateWizardPage.title': 'Self-service',
-    'templateWizardPage.pageTitle': 'Self-service',
-    'templateListPage.contentHeader.registerExistingButtonTitle':
-      'Importa un repository Git esistente',
+    "templateListPage.title": "Self-service",
+    "templateListPage.pageTitle": "Self-service",
+    "templateWizardPage.title": "Self-service",
+    "templateWizardPage.pageTitle": "Self-service",
+    "templateListPage.contentHeader.registerExistingButtonTitle":
+      "Importa un repository Git esistente",
   },
 });

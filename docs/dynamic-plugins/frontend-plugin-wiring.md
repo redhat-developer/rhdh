@@ -406,7 +406,9 @@ Each global header entry requires the following attributes:
 
 Users can configure multiple global headers at different positions by adding entries to the `mountPoints` field.
 
-### Adding application listeners
+### Adding application listeners (legacy OFS only — obsolete for NFS)
+
+> **Obsolete for NFS.** The `application/listener` mount point was part of the legacy OFS app shell. The default NFS app (`packages/app`) has no application/listener renderer. See [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](migrating-config-to-new-frontend-system.md).
 
 The users can add application listeners using the `application/listener` mount point. Below is an example that uses the aforesaid mount point:
 
@@ -422,7 +424,9 @@ dynamicPlugins:
 
 Users can configure multiple application listeners by adding entries to the `mountPoints` field.
 
-### Adding application providers
+### Adding application providers (legacy OFS only — obsolete for NFS)
+
+> **Obsolete for NFS.** The `application/provider` mount point was part of the legacy OFS app shell. The default NFS app (`packages/app`) has no application/provider renderer. See [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](migrating-config-to-new-frontend-system.md).
 
 The users can add application providers using the `application/provider` mount point. Below is an example that uses the aforesaid mount point to configure a context provider:
 

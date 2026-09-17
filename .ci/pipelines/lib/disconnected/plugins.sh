@@ -111,8 +111,7 @@ disconnected::write_digest_plugin_list() {
     | grep -E '@sha256:[0-9a-f]+' >> "${list_file}" || true
 
   if [[ -f "${data_dir}/dynamic-plugins.default.yaml" ]]; then
-    grep -oE 'oci://[^[:space:]]+@sha256:[0-9a-f]+[^[:space:]]*' \
-      "${data_dir}/dynamic-plugins.default.yaml" >> "${list_file}" || true
+    grep -oE 'oci://[^[:space:]]+@sha256:[0-9a-f]+[^[:space:]]*' "${data_dir}/dynamic-plugins.default.yaml" >> "${list_file}" || true # notsecret
   fi
 
   # Deduplicate; strip !package suffix for skopeo (mirror-plugins accepts either).

@@ -16,27 +16,6 @@ global:
         enabled: true
       - package: ref://backstage-plugin-catalog-backend-module-github
         enabled: true
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-application-provider-test:
-                dynamicRoutes:
-                  - path: /application-provider-test-page
-                    importName: TestPage
-                mountPoints:
-                  - mountPoint: application/provider
-                    importName: TestProviderOne
-                  - mountPoint: application/provider
-                    importName: TestProviderTwo
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-listener-test:bs_1.45.3__0.6.0
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-application-listener-test:
-                mountPoints:
-                  - mountPoint: application/listener
-                    importName: LocationListener
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.49.4__3.7.0"
         enabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-oidc-provider:bs_1.52.0__0.4.17"
