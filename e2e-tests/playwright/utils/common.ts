@@ -96,24 +96,62 @@ export class Common {
     await this.page.waitForTimeout(3_000);
   }
 
-  async logintoKeycloak(userid: string, password: string) {
-    await new Promise<void>((resolve) => {
-      this.page.once("popup", async (popup) => {
-        await popup.waitForLoadState();
-        await popup.locator("#username").fill(userid);
-        await popup.locator("#password").fill(password);
-        // Handle popup close during navigation (popup may close before navigation completes)
-        try {
-          await popup.locator("#kc-login").click({ timeout: 5000 });
-        } catch (error) {
-          // Popup likely closed - this is expected behavior
-          if (!error.message?.includes("Target closed")) {
-            throw error;
-          }
-        }
-        resolve();
+  private async submitKeycloakCredentials(
+    popup: Page,
+    userid: string,
+    password: string,
+  ) {
+    // An existing SSO session can close the popup on its own (sometimes a few
+    // seconds after the OIDC callback redirect) without showing the form.
+    try {
+      await popup.waitForLoadState("domcontentloaded");
+      await popup.locator("#username").waitFor({ timeout: 15_000 });
+    } catch (error) {
+      if (popup.isClosed()) {
+        return;
+      }
+      // Give the popup a moment to close late (post-callback); if it does not,
+      // rethrow the original error.
+      await popup.waitForEvent("close", { timeout: 3_000 }).catch(() => {
+        throw error;
       });
-    });
+      return;
+    }
+
+    await popup.locator("#username").fill(userid);
+    await popup.locator("#password").fill(password);
+    // The popup closing is the success signal. Register the listener before
+    // submitting, since a plain click waits for the OIDC redirect and that wait
+    // races the popup teardown (the flaky #kc-login timeout); a "target closed"
+    // rejection just means the popup went away mid-redirect.
+    const popupClosed = popup.waitForEvent("close", { timeout: 30_000 });
+    // Keep it settled: it is only awaited below, so a rethrown click would
+    // otherwise leave it to reject unhandled 30s later.
+    popupClosed.catch(() => {});
+    await popup
+      .locator("#kc-login")
+      .click({ timeout: 30_000 })
+      .catch((error) => {
+        if (!popup.isClosed()) {
+          throw error;
+        }
+      });
+
+    // A rejected password leaves the popup open; surface Keycloak's own reason
+    // instead of failing later on a bare sidebar timeout.
+    try {
+      await popupClosed;
+    } catch {
+      const reason = await popup
+        .locator("#input-error")
+        .textContent({ timeout: 1_000 })
+        .catch(() => null);
+      throw new Error(
+        reason
+          ? `Keycloak rejected the sign-in: ${reason.trim()}`
+          : "Keycloak did not complete the sign-in: the popup stayed open",
+      );
+    }
   }
 
   async loginAsKeycloakUser(
@@ -122,8 +160,22 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
-    await this.logintoKeycloak(userid, password);
+    // Scope the Sign In click to the OIDC provider card (a list item in the
+    // grid), so it stays correct if signInPage ever lists two providers whose
+    // buttons both read "Sign In".
+    const signInTitle = t["core-components"][lang]["signIn.title"];
+    const oidcCard = this.page
+      .getByRole("listitem")
+      .filter({ hasText: t["rhdh"][lang]["signIn.providers.oidc.message"] })
+      .filter({ has: this.page.getByRole("button", { name: signInTitle }) });
+    await oidcCard.waitFor({ timeout: 30_000 });
+    // The provider opens the popup synchronously, so attach the listener
+    // before clicking or the event is missed and the login hangs.
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup", { timeout: 30_000 }),
+      oidcCard.getByRole("button", { name: signInTitle }).click(),
+    ]);
+    await this.submitKeycloakCredentials(popup, userid, password);
     await this.uiHelper.waitForSideBarVisible();
   }
 

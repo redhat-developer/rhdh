@@ -349,7 +349,9 @@ export class UIhelper {
   }
 
   async waitForSideBarVisible() {
-    await this.page.waitForSelector("nav a", { timeout: 10_000 });
+    // Generous: the nav render after the post-login OIDC callback can be slow on
+    // a loaded cluster, and a tight timeout here reads as a login flake.
+    await this.page.waitForSelector("nav a", { timeout: 30_000 });
   }
 
   async openSidebar(navBarText: SidebarTabs) {

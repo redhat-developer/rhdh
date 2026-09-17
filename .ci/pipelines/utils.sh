@@ -157,17 +157,17 @@ wait_for_deployment() {
   log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
 
   for ((i = 1; i <= max_attempts; i++)); do
-    # Get the first pod name matching the resource name
+    # Running only: a rolling update's old Terminating pod would otherwise be
+    # picked and race its deletion in the readiness query below.
     local pod_name
-    pod_name=$(oc get pods -n "$namespace" | grep "$resource_name" | awk '{print $1}' | head -n 1)
+    pod_name=$(oc get pods -n "$namespace" --field-selector=status.phase=Running 2> /dev/null | grep "$resource_name" | awk '{print $1}' | head -n 1)
 
     if [[ -n "$pod_name" ]]; then
-      # Check if pod's Ready condition is True
+      # Tolerate the pod vanishing between listing and this query (retry, not a
+      # 'set -e' abort on the failed command substitution).
       local is_ready
-      is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
-      # Verify pod is both Ready and Running
-      if [[ "$is_ready" == "True" ]] \
-        && oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
+      is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null || echo "")
+      if [[ "$is_ready" == "True" ]]; then
         log::success "Pod '$pod_name' is running and ready"
         return 0
       else
@@ -1161,6 +1161,54 @@ base_deployment() {
   deploy_orchestrator_workflows "${NAME_SPACE}" "${RELEASE_NAME}"
 }
 
+# Guarantees the 'sonataflow' database exists on the external Crunchy Postgres.
+# The chart's create-db job only waits for the port to open, not for the
+# janus-idp password to sync, so it can fail auth yet exit 0 ("Could not create
+# database") — the DB then stays missing until data-index crashes on it. Create
+# it directly on the primary via local trust auth (no password/SSL); idempotent.
+ensure_sonataflow_database() {
+  local pg_namespace=$1
+  local cluster="postgress-external-db"
+
+  local primary_pod=""
+  local attempt
+  for ((attempt = 1; attempt <= 30; attempt++)); do
+    primary_pod=$(oc get pods -n "$pg_namespace" \
+      -l "postgres-operator.crunchydata.com/cluster=${cluster},postgres-operator.crunchydata.com/role=master" \
+      --field-selector=status.phase=Running \
+      -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || echo "")
+    if [[ -n "$primary_pod" ]]; then
+      break
+    fi
+    log::debug "Waiting for the external Postgres primary pod... (${attempt}/30)"
+    sleep 10
+  done
+
+  if [[ -z "$primary_pod" ]]; then
+    log::error "Could not find a Running external Postgres primary pod in '$pg_namespace'"
+    return 1
+  fi
+
+  log::info "Ensuring the 'sonataflow' database exists on '$primary_pod'..."
+  # Local socket connection: initdb sets it to trust, so no password or SSL.
+  local exists
+  exists=$(oc exec -n "$pg_namespace" "$primary_pod" -c database -- \
+    psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='sonataflow'" 2> /dev/null || echo "")
+  if [[ "$exists" == "1" ]]; then
+    log::success "'sonataflow' database already present"
+    return 0
+  fi
+
+  if oc exec -n "$pg_namespace" "$primary_pod" -c database -- \
+    psql -U postgres -c "CREATE DATABASE sonataflow"; then
+    log::success "Created the 'sonataflow' database"
+    return 0
+  fi
+
+  log::error "Failed to create the 'sonataflow' database on '$primary_pod'"
+  return 1
+}
+
 rbac_deployment() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
@@ -1176,6 +1224,12 @@ rbac_deployment() {
   # Wait for the sonataflow database creation job to complete with robust error handling
   if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
     echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
+    return 1
+  fi
+  # The job can report success while its psql step silently failed auth, so
+  # confirm the database is really there before the SonataFlow services start.
+  if ! ensure_sonataflow_database "${NAME_SPACE_POSTGRES_DB}"; then
+    echo "❌ sonataflow database is missing after the create-db job. Aborting RBAC deployment."
     return 1
   fi
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
@@ -1573,6 +1627,30 @@ checkout_serverless_workflows_ref() {
   log::info "Checked out serverless-workflows commit: $(git -C "${workflow_dir}" rev-parse --short HEAD)"
 }
 
+# Wait for the operator to create the workflow Deployment (can take over a
+# minute on a loaded cluster), then wait for its rollout. Running rollout status
+# before the Deployment exists aborts under 'set -e' with
+# "deployments.apps <workflow> not found".
+wait_for_workflow_rollout() {
+  local workflow=$1
+  local namespace=$2
+  local reconcile_timeout=300
+  local start_time
+  start_time=$(date +%s)
+  log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
+  while ! oc get deployment "$workflow" -n "$namespace" &> /dev/null; do
+    if [[ $(($(date +%s) - start_time)) -ge $reconcile_timeout ]]; then
+      log::error "SonataFlow operator did not create the '$workflow' deployment within ${reconcile_timeout}s"
+      return 1
+    fi
+    sleep 5
+  done
+  log::info "SonataFlow operator created the '$workflow' deployment"
+  # Informational: the wait_for_deployment gate afterwards is authoritative.
+  oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s \
+    || log::warn "rollout status for '$workflow' did not settle; verifying pod readiness next"
+}
+
 # Helper function to deploy workflows for orchestrator testing
 deploy_orchestrator_workflows() {
   local namespace=$1
@@ -1627,34 +1705,12 @@ deploy_orchestrator_workflows() {
     log::info "Patching '$workflow' with persistence config..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$persistence_json"
 
-    # Wait for SonataFlow operator to reconcile and create the deployment
-    log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
-    local timeout_secs=60
-    local start_time
-    start_time=$(date +%s)
-    while true; do
-      local current_time
-      current_time=$(date +%s)
-      local elapsed=$((current_time - start_time))
-      if [[ $elapsed -ge $timeout_secs ]]; then
-        log::warn "Timeout waiting for operator reconciliation of '$workflow' after ${timeout_secs}s"
-        break
-      fi
-      local ready
-      ready=$(oc get deployment "$workflow" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2> /dev/null || echo "")
-      if [[ "$ready" == "True" ]]; then
-        log::info "SonataFlow operator reconciled '$workflow' deployment"
-        break
-      fi
-      sleep 2
-    done
-
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+    wait_for_workflow_rollout "$workflow" "$namespace" || return 1
   done
 
   log::info "Waiting for all workflow pods to be running..."
-  wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace failswitch 5
+  wait_for_deployment "$namespace" greeting 10
+  wait_for_deployment "$namespace" failswitch 10
   log::info "All workflow pods are now running!"
 }
 
@@ -1743,34 +1799,12 @@ EOF
     log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
 
-    # Wait for SonataFlow operator to reconcile and create the deployment
-    log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
-    local timeout_secs=60
-    local start_time
-    start_time=$(date +%s)
-    while true; do
-      local current_time
-      current_time=$(date +%s)
-      local elapsed=$((current_time - start_time))
-      if [[ $elapsed -ge $timeout_secs ]]; then
-        log::warn "Timeout waiting for operator reconciliation of '$workflow' after ${timeout_secs}s"
-        break
-      fi
-      local ready
-      ready=$(oc get deployment "$workflow" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2> /dev/null || echo "")
-      if [[ "$ready" == "True" ]]; then
-        log::info "SonataFlow operator reconciled '$workflow' deployment"
-        break
-      fi
-      sleep 2
-    done
-
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+    wait_for_workflow_rollout "$workflow" "$namespace" || return 1
   done
 
   log::info "Waiting for all workflow pods to be running..."
-  wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace failswitch 5
+  wait_for_deployment "$namespace" greeting 10
+  wait_for_deployment "$namespace" failswitch 10
   log::info "All workflow pods are now running!"
 }
 
