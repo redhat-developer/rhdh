@@ -255,8 +255,9 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
     await rhdhInstance.verifyPRRowsPerPage(20, allPRs);
   });
 
-  test("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
-    await catalogBrowsePage.openDependenciesTab();
+  // NFS has no dedicated Dependencies tab; the same relations render as overview cards.
+  test("Verify that all the relations are listed on the Overview tab", async () => {
+    await catalogBrowsePage.openOverviewTab();
     for (const resource of RESOURCES) {
       await catalogBrowsePage.verifyDependencyResource(resource);
     }

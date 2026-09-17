@@ -1,5 +1,3 @@
-developerHub:
-  flavor: rhdh
 app:
   baseUrl: ${BASE_URL:-http://localhost:3000}
   title: Red Hat Developer Hub

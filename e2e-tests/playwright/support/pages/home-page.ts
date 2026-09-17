@@ -5,7 +5,7 @@ import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
 /* oxlint-disable playwright/no-raw-locators -- MUI home page layout selectors */
-import { HOME_PAGE_COMPONENTS } from "../selectors/page-selectors";
+import { HOME_PAGE_COMPONENTS, SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -49,6 +49,11 @@ export class HomePage {
 
   async verifyMainHeadingVisible(): Promise<void> {
     await expect(this.page.getByRole("heading", { level: 1 })).toBeVisible();
+  }
+
+  /** Verifies the home page's "Search" widget (home-page-widget:home/search-bar) renders. */
+  async verifySearchWidgetVisible() {
+    await expect(SEARCH_OBJECTS_COMPONENTS.getHomePageSearchWidgetInput(this.page)).toBeVisible();
   }
 
   async verifyQuickAccess(section: string, items: string | string[], expand = false) {
