@@ -37,7 +37,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apache2-utils \
     gettext \
     curl wget jq colorized-logs \
-    unzip dnsutils && \
+    unzip dnsutils \
+    libnss3-tools && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     echo "Node: $(node -v)\nNPM: $(npm -v)\nYarn: $(yarn -v)\nTypeScript: $(tsc -v)"
 
