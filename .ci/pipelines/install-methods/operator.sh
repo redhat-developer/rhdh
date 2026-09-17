@@ -61,16 +61,38 @@ override_operator_backstage_image() {
   local image="${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
   local csv_name
 
+  # OLM v1 installs (install-rhdh-catalog-source.sh auto-detects it and uses a
+  # ClusterExtension) have no CSV to patch.
+  if oc get clusterextension rhdh &> /dev/null; then
+    log::info "RHDH installed via OLM v1 ClusterExtension; skipping CSV backstage image override"
+    return 0
+  fi
+
+  # install-rhdh-catalog-source.sh returns right after creating the
+  # Subscription, so the CSV may not exist yet — wait for it.
+  if ! common::poll_until \
+    "oc get csv -n '$namespace' -o name 2> /dev/null | grep -qE '/rhdh(-operator)?\\.'" \
+    30 10 "RHDH CSV present in namespace '$namespace'"; then
+    log::warn "No RHDH CSV appeared in namespace '$namespace'; skipping backstage image override"
+    return 0
+  fi
   # `|| true` guards: the script runs with `set -o errexit`, and an empty grep
-  # or a missing resource must fall through to the skip guards, not abort.
+  # or a missing resource must fall through to the guards, not abort.
   csv_name=$(oc get csv -n "$namespace" -o name 2> /dev/null | grep -E '/rhdh(-operator)?\.' | head -1 || true)
   if [[ -z "$csv_name" ]]; then
     log::warn "No RHDH CSV found in namespace '$namespace'; skipping backstage image override"
     return 0
   fi
 
+  local csv_json
+  csv_json=$(oc get "$csv_name" -n "$namespace" -o json 2> /dev/null || true)
+  if [[ -z "$csv_json" ]]; then
+    log::error "Failed to read ${csv_name} in namespace '$namespace'"
+    return 1
+  fi
+
   local patch
-  patch=$(oc get "$csv_name" -n "$namespace" -o json 2> /dev/null | jq --arg img "$image" -c '
+  patch=$(jq --arg img "$image" -c '
     [ .spec.install.spec.deployments as $ds
       | range(0; $ds | length) as $d
       | $ds[$d].spec.template.spec.containers as $cs
@@ -80,7 +102,7 @@ override_operator_backstage_image() {
       | select($es[$e].name == "RELATED_IMAGE_backstage")
       | { op: "replace",
           path: "/spec/install/spec/deployments/\($d)/spec/template/spec/containers/\($c)/env/\($e)/value",
-          value: $img } ]')
+          value: $img } ]' <<< "$csv_json" || true)
   if [[ -z "$patch" || "$patch" == "[]" ]]; then
     log::warn "RELATED_IMAGE_backstage not found in ${csv_name}; skipping backstage image override"
     return 0
@@ -106,7 +128,10 @@ override_operator_backstage_image() {
     log::error "Operator deployment did not pick up the backstage image override"
     return 1
   fi
-  oc rollout status "deployment/${operator_deployment}" -n "$namespace" --timeout=300s
+  if ! oc rollout status "deployment/${operator_deployment}" -n "$namespace" --timeout=300s; then
+    log::error "Operator deployment '${operator_deployment}' did not finish rolling out after the backstage image override"
+    return 1
+  fi
 }
 
 prepare_operator() {
