@@ -61,14 +61,16 @@ override_operator_backstage_image() {
   local image="${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
   local csv_name
 
-  csv_name=$(oc get csv -n "$namespace" -o name 2> /dev/null | grep -E '/rhdh(-operator)?\.' | head -1)
+  # `|| true` guards: the script runs with `set -o errexit`, and an empty grep
+  # or a missing resource must fall through to the skip guards, not abort.
+  csv_name=$(oc get csv -n "$namespace" -o name 2> /dev/null | grep -E '/rhdh(-operator)?\.' | head -1 || true)
   if [[ -z "$csv_name" ]]; then
     log::warn "No RHDH CSV found in namespace '$namespace'; skipping backstage image override"
     return 0
   fi
 
   local patch
-  patch=$(oc get "$csv_name" -n "$namespace" -o json | jq --arg img "$image" -c '
+  patch=$(oc get "$csv_name" -n "$namespace" -o json 2> /dev/null | jq --arg img "$image" -c '
     [ .spec.install.spec.deployments as $ds
       | range(0; $ds | length) as $d
       | $ds[$d].spec.template.spec.containers as $cs
@@ -93,7 +95,7 @@ override_operator_backstage_image() {
   # OLM reconciles the operator deployment from the CSV; wait for the new env
   # to land and for the operator pod to restart with it.
   local operator_deployment
-  operator_deployment=$(oc get deployment -n "$namespace" -l control-plane=controller-manager -o jsonpath='{.items[0].metadata.name}' 2> /dev/null)
+  operator_deployment=$(oc get deployment -n "$namespace" -l control-plane=controller-manager -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
   if [[ -z "$operator_deployment" ]]; then
     log::warn "No operator deployment found in namespace '$namespace'; not waiting for image override rollout"
     return 0
