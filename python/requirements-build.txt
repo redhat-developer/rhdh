@@ -4,6 +4,10 @@
 #
 #    pip-compile --allow-unsafe --generate-hashes --no-index --output-file=requirements-build.txt --strip-extras requirements-build.in
 #
+calver==2025.10.20 \
+    --hash=sha256:c98b376c2424642224d456b2f70c51402343e008c63d204634665e1a2a2835f5 \
+    --hash=sha256:d7d75224eed9d9263f4fb30008487615196d208d14752bfd93fea7af2c84f508
+    # via -r requirements-build.in
 cython==3.3.0 \
     --hash=sha256:03056533fe4fdbc4f1d34a39178f9a4937ff35196f8bcdde2a67b5b5809c61fe \
     --hash=sha256:03bc5333932f5dda3ba9315298ecdd21daa1b58410bb1f8ce04c78ec8337130a \
@@ -81,10 +85,12 @@ pathspec==1.1.1 \
     --hash=sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a \
     --hash=sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189
     # via hatchling
-pluggy==1.6.0 \
-    --hash=sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3 \
-    --hash=sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746
-    # via hatchling
+pluggy==1.5.0 \
+    --hash=sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1 \
+    --hash=sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669
+    # via
+    #   -r requirements-build.in
+    #   hatchling
 poetry-core==2.4.1 \
     --hash=sha256:89dceb6c10e9c6d8650a16183400e3c9ff9ddee13b0a81023b5575334a2b3744 \
     --hash=sha256:acf06f9537cd2625bdaec926d95d90b557ba15353bc71d27a3a8a441042b5316
