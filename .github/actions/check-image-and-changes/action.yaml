@@ -81,18 +81,22 @@ runs:
       env:
         PR_NUMBER: ${{ github.event.number }}
         IMAGE_REGISTRY: ${{ env.REGISTRY }}
+        IMAGE_REPO: ${{ env.REGISTRY_IMAGE }}
       run: |
+        # PR preview images live in a dedicated Quay repo (default: rhdh-community/rhdh-pr).
+        REPO="${IMAGE_REPO:-rhdh-community/rhdh-pr}"
+
         # First check the PR base tag (most important for skipping builds)
         IMAGE_TAG_PR="pr-${PR_NUMBER}"
-        IMAGE_NAME_PR="${IMAGE_REGISTRY}/rhdh-community/rhdh:${IMAGE_TAG_PR}"
+        IMAGE_NAME_PR="${IMAGE_REGISTRY}/${REPO}:${IMAGE_TAG_PR}"
 
-        IMAGE_EXISTS_PR=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_PR" '.tags[] | select(.name == $tag) | .name')
+        IMAGE_EXISTS_PR=$(curl -s "https://quay.io/api/v1/repository/${REPO}/tag/" | jq -r --arg tag "$IMAGE_TAG_PR" '.tags[] | select(.name == $tag) | .name')
 
         # For safety, also check commit-specific tag
         IMAGE_TAG_COMMIT="pr-${PR_NUMBER}-${SHORT_SHA}"
-        IMAGE_NAME_COMMIT="${IMAGE_REGISTRY}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
+        IMAGE_NAME_COMMIT="${IMAGE_REGISTRY}/${REPO}:${IMAGE_TAG_COMMIT}"
 
-        IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
+        IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/${REPO}/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
 
         # Set image_exists to true if PR tag exists (primary) or commit tag exists (secondary)
         if [ -n "$IMAGE_EXISTS_PR" ]; then

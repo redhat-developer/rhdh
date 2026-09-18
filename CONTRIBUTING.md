@@ -150,9 +150,15 @@ If you want to submit code changes to the project, here are some guidelines:
 
 ### Testing image builds from a fork
 
-The image-push workflows default to `quay.io/rhdh-community/rhdh` and `quay.io/rhdh-community/rhdh-e2e-runner`. Forks that set `QUAY_USERNAME`/`QUAY_TOKEN` without retargeting those repos can overwrite shared tags such as `:next`.
+The image-push workflows default to `quay.io/rhdh-community/rhdh` (production), `quay.io/rhdh-community/rhdh-pr` (PR previews), and `quay.io/rhdh-community/rhdh-e2e-runner`. Forks that set push credentials without retargeting those repos can overwrite shared tags.
 
-To test image builds from a fork:
+#### Pull requests targeting `redhat-developer/rhdh`
+
+[pr-build-image.yaml](.github/workflows/pr-build-image.yaml) runs in the **base** repository. Vars/secrets set on your fork are **not** used. Repository secrets (`RHDH_PR_BOT_*`) are also unavailable to fork `pull_request` workflows, so preview images are **built but not published** to Quay. Same-repo PRs (or a maintainer re-run from a branch in this repo) can push to `rhdh-pr`.
+
+#### Production / e2e-runner builds on your fork
+
+To test [next-build-image.yaml](.github/workflows/next-build-image.yaml) or [push-e2e-runner.yaml](.github/workflows/push-e2e-runner.yaml) **on your fork** (`push` / `workflow_dispatch`):
 
 1. Create a Quay repository in **your** namespace (not `rhdh-community`).
 2. Set a repository variable (Settings → Secrets and variables → Actions → Variables):

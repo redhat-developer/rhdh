@@ -22,7 +22,7 @@ Options:
   -R, --registry REGISTRY Image registry (default: quay.io)
   -r, --repo IMAGE_REPO   Image repository (e.g., rhdh/rhdh-hub-rhel9 or rhdh/rhdh-hub-rhel10)
   -t, --tag TAG_NAME      Image tag (e.g., next, latest, 1.5)
-  -p, --pr PR_NUMBER      PR number (sets repo to rhdh-community/rhdh, tag to pr-<number>)
+  -p, --pr PR_NUMBER      PR number (sets repo to rhdh-community/rhdh-pr, tag to pr-<number>)
   -i, --runner-image IMG  Override the e2e runner container image
                           (default: quay.io/rhdh-community/rhdh-e2e-runner:main)
   -s, --skip-tests        Deploy only, skip running tests
@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     -p | --pr)
-      CLI_IMAGE_REPO="rhdh-community/rhdh"
+      CLI_IMAGE_REPO="rhdh-community/rhdh-pr"
       CLI_TAG_NAME="pr-$2"
       shift 2
       ;;
@@ -258,7 +258,7 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   echo "Select image type:"
   echo "  1) Downstream RHEL 9 image (quay.io/rhdh/rhdh-hub-rhel9)"
   echo "  2) Downstream RHEL 10 image (quay.io/rhdh/rhdh-hub-rhel10)"
-  echo "  3) PR image (quay.io/rhdh-community/rhdh)"
+  echo "  3) PR image (quay.io/rhdh-community/rhdh-pr)"
   echo "  4) Released RHEL 9 image (registry.redhat.io/rhdh/rhdh-hub-rhel9)"
   echo "  5) Released RHEL 10 image (registry.redhat.io/rhdh/rhdh-hub-rhel10)"
   echo "  6) Custom registry image"
@@ -314,9 +314,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     3)
       # PR image
       IMAGE_REGISTRY="quay.io"
-      IMAGE_REPO="rhdh-community/rhdh"
+      IMAGE_REPO="rhdh-community/rhdh-pr"
       echo ""
-      read -r -p "Enter PR number (quay.io/rhdh-community/rhdh:pr-<number>): " PR_NUMBER
+      read -r -p "Enter PR number (quay.io/rhdh-community/rhdh-pr:pr-<number>): " PR_NUMBER
       TAG_NAME="pr-${PR_NUMBER}"
       ;;
     4)

@@ -127,7 +127,7 @@ Follow the interactive prompts to select:
 3. **Image type**:
    - **Downstream RHEL 9** (`quay.io/rhdh/rhdh-hub-rhel9`): `next`, `latest`, or release-specific tag (maintenance branches)
    - **Downstream RHEL 10** (`quay.io/rhdh/rhdh-hub-rhel10`): `next`, `latest`, or release-specific tag (`main` / 2.y stream)
-   - **PR image** (`quay.io/rhdh-community/rhdh`): Enter PR number
+   - **PR image** (`quay.io/rhdh-community/rhdh-pr`): Enter PR number
 
 After the container finishes, you're back on your host with the cluster still accessible.
 
@@ -168,7 +168,7 @@ Disconnected Operator and Helm nightlies can be started only via `local-run.sh` 
 | `-R, --registry`   | Image registry (default: `quay.io`)                                      |
 | `-r, --repo`       | Image repository (e.g., `rhdh/rhdh-hub-rhel10` or `rhdh/rhdh-hub-rhel9`) |
 | `-t, --tag`        | Image tag (e.g., `next`, `latest`, `1.5`)                                |
-| `-p, --pr`         | PR number (sets repo to `rhdh-community/rhdh`, tag to `pr-<number>`)     |
+| `-p, --pr`         | PR number (sets repo to `rhdh-community/rhdh-pr`, tag to `pr-<number>`)  |
 | `-s, --skip-tests` | Deploy only, skip running tests                                          |
 | `-h, --help`       | Show help message                                                        |
 
@@ -333,8 +333,7 @@ cd e2e-tests
 
 # Select:
 #   Job: 1 (OCP Helm PR tests)
-#   Repo: 1 (rhdh-community/rhdh)
-#   Tag: 3 (PR image) → Enter: 4020
+#   Image: 3 (PR image) → Enter: 4020
 #   Run: 1 (Deploy and run tests)
 ```
 
