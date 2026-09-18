@@ -142,120 +142,13 @@ handle_ocp_disconnected_operator() {
     log::info "LOCAL_DISCONNECTED=1: skipping external bastion CA/pull-secret pre-prepare helpers"
   fi
 
-  if [[ "${OPENSHIFT_CI:-false}" == "true" ]]; then
-    local prepare_max_parallel="${PREPARE_MAX_PARALLEL:-2}"
-    if ! [[ "${prepare_max_parallel}" =~ ^[1-9][0-9]*$ ]]; then
-      log::error "PREPARE_MAX_PARALLEL must be a positive integer, got '${prepare_max_parallel}'"
-      return 1
-    fi
-
-    local preflight_export_dir="${DISCONNECTED_TMPDIR}/legacy-export"
-    local preflight_render="${preflight_export_dir}/rhdh/rhdh/render.yaml"
-    local preflight_dockerfile="${preflight_export_dir}/rhdh/rhdh.Dockerfile"
-    local preflight_summary="${ARTIFACT_DIR}/disconnected-operator-legacy-export-summary.txt"
-    local preflight_summary_tmp="${DISCONNECTED_TMPDIR}/disconnected-operator-legacy-export-summary.txt"
-    local preflight_start_time
-    local preflight_end_time
-    local preflight_elapsed_seconds
-    local preflight_failed=0
-    local validation_failed=0
-    local selected_bundle_count=0
-    local exported_bundle_index_count=0
-
-    log::section "Legacy Export Preflight"
-    log::info "Measuring official legacy export preflight with max-parallel=${prepare_max_parallel}"
-    preflight_start_time=$(date +%s)
-    local preflight_args=(
-      --use-oc-mirror false
-      --to-dir "${preflight_export_dir}"
-      --index-image "${index_image}"
-      --filter-versions "${filter_versions}"
-      --max-parallel "${prepare_max_parallel}"
-      --install-operator false
-    )
-    if ! disconnected::with_unset_registry_auth_file bash "${prepare_script_path}" "${preflight_args[@]}"; then
-      preflight_failed=1
-      log::error "Legacy export preflight failed"
-    fi
-    preflight_end_time=$(date +%s)
-    preflight_elapsed_seconds=$((preflight_end_time - preflight_start_time))
-
-    if [[ ! -f "${preflight_render}" ]]; then
-      validation_failed=1
-      log::error "Legacy export preflight missing ${preflight_render}"
-    else
-      if ! selected_bundle_count=$(yq eval-all '[select(.schema == "olm.bundle" and .package == "rhdh")] | length' "${preflight_render}"); then
-        selected_bundle_count=0
-        validation_failed=1
-        log::error "Failed to count rhdh olm.bundle entries in ${preflight_render}"
-      fi
-      if ! [[ "${selected_bundle_count}" =~ ^[0-9]+$ ]]; then
-        selected_bundle_count=0
-        validation_failed=1
-        log::error "Invalid rhdh olm.bundle count in ${preflight_render}"
-      fi
-      if ((selected_bundle_count == 0)); then
-        validation_failed=1
-        log::error "Legacy export source render has no rhdh olm.bundle entries"
-      fi
-    fi
-
-    if [[ ! -f "${preflight_dockerfile}" ]]; then
-      validation_failed=1
-      log::error "Legacy export preflight missing ${preflight_dockerfile}"
-    fi
-
-    if [[ -d "${preflight_export_dir}/bundles" ]]; then
-      if ! exported_bundle_index_count=$(find "${preflight_export_dir}/bundles" -type f -path '*/src/index.json' | wc -l | tr -d ' '); then
-        validation_failed=1
-        log::error "Failed to count exported bundle src/index.json files"
-        exported_bundle_index_count=0
-      fi
-    fi
-    if ! [[ "${exported_bundle_index_count}" =~ ^[0-9]+$ ]]; then
-      validation_failed=1
-      log::error "Invalid exported bundle count: ${exported_bundle_index_count}"
-      exported_bundle_index_count=0
-    fi
-    if ((exported_bundle_index_count != selected_bundle_count)); then
-      validation_failed=1
-      log::error "Exported bundle count ${exported_bundle_index_count} differs from selected bundle count ${selected_bundle_count}"
-    fi
-
-    if ! printf '%s\n' \
-      "status=$([[ ${preflight_failed} -eq 0 && ${validation_failed} -eq 0 ]] && printf passed || printf failed)" \
-      "preflight_failed=${preflight_failed}" \
-      "validation_failed=${validation_failed}" \
-      "source_commit=${prepare_script_commit}" \
-      "script_sha256=${actual_prepare_script_checksum}" \
-      "index_image=${index_image}" \
-      "filter_versions=${filter_versions}" \
-      "max_parallel=${prepare_max_parallel}" \
-      "timing_scope=legacy-export-preflight-only" \
-      "legacy_export_preflight_elapsed_seconds=${preflight_elapsed_seconds}" \
-      "render_yaml=$([[ -f ${preflight_render} ]] && printf present || printf missing)" \
-      "dockerfile=$([[ -f ${preflight_dockerfile} ]] && printf present || printf missing)" \
-      "selected_bundle_count=${selected_bundle_count}" \
-      "exported_bundle_src_index_count=${exported_bundle_index_count}" \
-      > "${preflight_summary_tmp}"; then
-      log::error "Failed to write legacy export preflight summary"
-      return 1
-    elif ! mv -f "${preflight_summary_tmp}" "${preflight_summary}"; then
-      log::error "Failed to publish legacy export preflight summary"
-      return 1
-    fi
-
-    if [[ -d "${preflight_export_dir}" ]] && ! rm -rf "${preflight_export_dir}"; then
-      log::error "Failed to remove legacy export directory ${preflight_export_dir}"
-      return 1
-    fi
-
-    if ((preflight_failed || validation_failed)); then
-      log::error "Legacy export preflight did not pass; aborting before oc-mirror install"
-      return 1
-    fi
-    log::success "Legacy export preflight passed in ${preflight_elapsed_seconds}s"
+  local prepare_max_parallel="${PREPARE_MAX_PARALLEL:-2}"
+  if ! [[ "${prepare_max_parallel}" =~ ^[1-9][0-9]*$ ]]; then
+    log::error "PREPARE_MAX_PARALLEL must be a positive integer, got '${prepare_max_parallel}'"
+    return 1
   fi
+
+  prepare_args+=(--max-parallel "${prepare_max_parallel}")
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
   if ! disconnected::retry_on_local_registry 5 \
