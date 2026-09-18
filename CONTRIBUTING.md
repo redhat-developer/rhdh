@@ -152,21 +152,24 @@ If you want to submit code changes to the project, here are some guidelines:
 
 The image-push workflows default to `quay.io/rhdh-community/rhdh` (production), `quay.io/rhdh-community/rhdh-pr` (PR previews), and `quay.io/rhdh-community/rhdh-e2e-runner`. Forks that set push credentials without retargeting those repos can overwrite shared tags.
 
-To test image builds from a fork:
+#### Pull requests targeting `redhat-developer/rhdh`
+
+[pr-build-image.yaml](.github/workflows/pr-build-image.yaml) runs in the **base** repository. Vars/secrets set on your fork are **not** used. Repository secrets (`RHDH_PR_BOT_*`) are also unavailable to fork `pull_request` workflows, so preview images are **built but not published** to Quay. Same-repo PRs (or a maintainer re-run from a branch in this repo) can push to `rhdh-pr`.
+
+#### Production / e2e-runner builds on your fork
+
+To test [next-build-image.yaml](.github/workflows/next-build-image.yaml) or [push-e2e-runner.yaml](.github/workflows/push-e2e-runner.yaml) **on your fork** (`push` / `workflow_dispatch`):
 
 1. Create a Quay repository in **your** namespace (not `rhdh-community`).
 2. Set a repository variable (Settings → Secrets and variables → Actions → Variables):
    - `QUAY_RHDH_IMAGE_REPO` = `<your-namespace>/<repo>` for [next-build-image.yaml](.github/workflows/next-build-image.yaml)
-   - `QUAY_PR_IMAGE_REPO` = `<your-namespace>/<repo>` for [pr-build-image.yaml](.github/workflows/pr-build-image.yaml)
    - `QUAY_E2E_RUNNER_IMAGE_REPO` = `<your-namespace>/<repo>` for [push-e2e-runner.yaml](.github/workflows/push-e2e-runner.yaml)
 
-   Do not set any variable under the `rhdh-community/` namespace. Forks that do so are rejected.
-3. Set secrets for a robot account scoped to **that** namespace only:
-   - `QUAY_USERNAME` and `QUAY_TOKEN` for production/e2e-runner workflows
-   - `RHDH_PR_BOT_USER` and `RHDH_PR_BOT_TOKEN` for PR preview image pushes
-4. Run the workflow via **Actions → Run workflow** (`workflow_dispatch`), or open a pull request once the variable and secrets are set.
+   Do not set either variable under the `rhdh-community/` namespace. Forks that do so are rejected.
+3. Set secrets `QUAY_USERNAME` and `QUAY_TOKEN` for a robot account scoped to **that** namespace only.
+4. Run the workflow via **Actions → Run workflow** (`workflow_dispatch`), or push/schedule once the variable is set.
 
-Without `QUAY_RHDH_IMAGE_REPO` / `QUAY_PR_IMAGE_REPO` / `QUAY_E2E_RUNNER_IMAGE_REPO`, scheduled and push runs on a fork are skipped. A manual run without the variable fails with an error rather than pushing to the shared production image.
+Without `QUAY_RHDH_IMAGE_REPO` / `QUAY_E2E_RUNNER_IMAGE_REPO`, scheduled and push runs on a fork are skipped. A manual run without the variable fails with an error rather than pushing to the shared production image.
 
 ## Commit Messages
 

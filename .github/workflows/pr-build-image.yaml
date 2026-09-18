@@ -23,25 +23,24 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  # Forks: set repo variable QUAY_PR_IMAGE_REPO to your own Quay repo (namespace/repo)
-  # and secrets RHDH_PR_BOT_USER/RHDH_PR_BOT_TOKEN scoped to that namespace (not rhdh-community).
-  # See CONTRIBUTING.md ("Testing image builds from a fork").
+  # Default preview repo. Override only when this workflow runs on a fork of the
+  # GitHub repo (not for PRs targeting redhat-developer/rhdh — those use base-repo
+  # vars/secrets; fork PRs cannot push). See CONTRIBUTING.md.
   REGISTRY_IMAGE: ${{ vars.QUAY_PR_IMAGE_REPO || 'rhdh-community/rhdh-pr' }}
 
 jobs:
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
+    # Fork PRs into upstream run in the base repo context: github.repository is
+    # redhat-developer/rhdh, and repository secrets are not available. Detect via
+    # head repo, not github.repository.
+    env:
+      IS_FORK_PR: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
     permissions:
       contents: read
       pull-requests: write
     steps:
-      - name: Guard against pushing to shared repo from a fork
-        if: github.repository != 'redhat-developer/rhdh' && startsWith(env.REGISTRY_IMAGE, 'rhdh-community/')
-        run: |
-          echo "::error::Forks must set repository variable QUAY_PR_IMAGE_REPO to a Quay repo outside the rhdh-community namespace."
-          exit 1
-
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
@@ -63,11 +62,12 @@ jobs:
           echo "SHORT_SHA: $SHORT_SHA"
           echo "PR Number: $PR_NUMBER"
           echo "Registry image: $REGISTRY_IMAGE"
+          echo "Is fork PR: $IS_FORK_PR"
           echo "Base Tag: pr-$PR_NUMBER"
           echo "Commit Tag: pr-$PR_NUMBER-$SHORT_SHA"
 
       - name: Check PR bot credentials
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
         env:
           HAS_PR_BOT_AUTH: ${{ secrets.RHDH_PR_BOT_USER != '' && secrets.RHDH_PR_BOT_TOKEN != '' }}
         run: |
@@ -100,7 +100,7 @@ jobs:
           skipArtifactUpload: true
 
       - name: Push Image to Registry
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
         id: push-image
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
         with:
@@ -130,8 +130,30 @@ jobs:
               body: body
             });
 
+      - name: Comment fork PR build without publish
+        if: ${{ success() && steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR == 'true' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+          BUILD_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+
+            const body = `The container image was [built](${buildUrl}) successfully but **not published** to Quay.\n\n` +
+              `Fork pull requests cannot use repository secrets (\`RHDH_PR_BOT_*\`), so preview images are only pushed for same-repo PRs. ` +
+              `If you need a Quay tag, ask a maintainer to open or re-run the build from a branch in this repository.\n`;
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
       - name: Comment the image pull link
-        if: ${{ success() && steps.check-image.outputs.is_skipped != 'true' }}
+        if: ${{ success() && steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           PR_NUMBER: ${{ github.event.number }}
