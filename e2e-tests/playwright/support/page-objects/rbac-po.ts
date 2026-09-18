@@ -390,6 +390,26 @@ export class RbacPo extends PageObject {
     }
   }
 
+  /**
+   * Advance the edit wizard from the permission-policies step to the review
+   * step. The stepper re-renders between steps, so a single click on the
+   * "nextButton-2" test id can land on a stale node and silently not advance;
+   * retry the click until the review step's Save button is visible.
+   */
+  async advanceFromPermissionsToReview(): Promise<void> {
+    const saveButton = this.page.getByRole("button", { name: "Save" });
+    await expect(async () => {
+      if (!(await saveButton.isVisible().catch(() => false))) {
+        const next = this.page.getByTestId("nextButton-2").first();
+        if (await next.isEnabled().catch(() => false)) {
+          await next.click().catch(() => {});
+        }
+      }
+      await expect(saveButton).toBeVisible({ timeout: 3_000 });
+      await expect(saveButton).toBeEnabled({ timeout: 3_000 });
+    }).toPass({ timeout: 30_000, intervals: [1_000, 2_000] });
+  }
+
   async tryDeleteRole(name: string) {
     try {
       await this.deleteRole(name);
