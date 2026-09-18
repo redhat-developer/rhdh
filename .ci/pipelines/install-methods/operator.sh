@@ -5,6 +5,29 @@ source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
 
+# The install script patches the cluster image registry to expose it and
+# immediately reads the default-route, which OpenShift takes a few seconds to
+# create — a known race (RHDHBUGS-3758). Expose the registry up front and wait
+# for the route so the script's own read finds it. Warn-only on timeout: the
+# install retry loop still gets its chance.
+ensure_registry_default_route() {
+  if [[ "${IS_OPENSHIFT}" != "true" ]]; then
+    return 0
+  fi
+  if ! oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge -p '{"spec":{"defaultRoute":true}}'; then
+    log::warn "Could not patch the image registry to expose the default route"
+    return 0
+  fi
+  for _ in $(seq 1 24); do
+    if oc get route default-route -n openshift-image-registry &> /dev/null; then
+      log::info "Image registry default-route is ready"
+      return 0
+    fi
+    sleep 5
+  done
+  log::warn "Image registry default-route did not appear within 120s; continuing"
+}
+
 install_rhdh_operator() {
   local namespace=$1
   local max_attempts=$2
@@ -18,6 +41,8 @@ install_rhdh_operator() {
   rm -f /tmp/install-rhdh-catalog-source.sh
   curl -L "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh" > /tmp/install-rhdh-catalog-source.sh
   chmod +x /tmp/install-rhdh-catalog-source.sh
+
+  ensure_registry_default_route
   if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
     log::info "Installing RHDH operator with '--next' flag"
     for ((i = 1; i <= max_attempts; i++)); do
