@@ -4,14 +4,10 @@ import { dirname, join } from "path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  parseLoadedPluginNames,
-  parseScalprumPluginNames,
-} from "../playwright/support/api/dynamic-plugins-api";
+import { parseLoadedPluginNames } from "../playwright/support/api/dynamic-plugins-api";
 import {
   catalogIndexPopulateCommand,
   readCatalogIndexExpectation,
-  readScalprumName,
   requireCatalogIndexExpectation,
   scanInstalledPlugins,
   validateFrontendBundle,
@@ -150,8 +146,7 @@ describe("scanInstalledPlugins", () => {
   });
 
   it.each([
-    ["dist-scalprum", ["dist-scalprum/plugin-manifest.json"], "frontend"],
-    ["legacy remoteEntry", ["dist/remoteEntry.js"], "frontend"],
+    ["remoteEntry", ["dist/remoteEntry.js"], "frontend"],
     ["no bundle", [], "backend"],
   ])("falls back to bundle layout when the role is absent (%s)", (_label, files, expected) => {
     const root = installDirWith({ p: { pkg: { name: "p" }, files } });
@@ -220,38 +215,78 @@ describe("scanInstalledPlugins", () => {
 });
 
 describe("validateFrontendBundle", () => {
-  it("accepts a dist-scalprum bundle with its manifest", () => {
+  const manifest = JSON.stringify({
+    name: "plugin",
+    metaData: { remoteEntry: { name: "remoteEntry.js" } },
+    exposes: [{ name: "." }],
+  });
+
+  it("accepts a valid module-federation manifest and remote entry", () => {
     const root = installDirWith({
-      p: { pkg: { name: "p" }, files: ["dist-scalprum/plugin-manifest.json"] },
+      p: {
+        pkg: { name: "p" },
+        files: {
+          "dist/mf-manifest.json": manifest,
+          "dist/remoteEntry.js": "",
+        },
+      },
     });
 
     expect(validateFrontendBundle(entryFor(join(root, "p")))).toBeNull();
   });
 
-  it("accepts a legacy remoteEntry bundle", () => {
+  it("rejects a plugin without a module-federation manifest", () => {
     const root = installDirWith({ p: { pkg: { name: "p" }, files: ["dist/remoteEntry.js"] } });
 
-    expect(validateFrontendBundle(entryFor(join(root, "p")))).toBeNull();
+    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(
+      /missing dist\/mf-manifest\.json/u,
+    );
   });
 
-  it("rejects a plugin shipping neither bundle format", () => {
-    const root = installDirWith({ p: { pkg: { name: "p" } } });
+  it("rejects a manifest whose declared remote entry is missing", () => {
+    const root = installDirWith({
+      p: { pkg: { name: "p" }, files: { "dist/mf-manifest.json": manifest } },
+    });
 
-    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(/missing both/u);
+    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(
+      /missing remote entry asset dist\/remoteEntry\.js/u,
+    );
   });
 
-  it("rejects a dist-scalprum bundle without its manifest", () => {
-    const root = installDirWith({ p: { pkg: { name: "p" }, files: ["dist-scalprum/main.js"] } });
+  it("rejects a manifest without exposes", () => {
+    const root = installDirWith({
+      p: {
+        pkg: { name: "p" },
+        files: {
+          "dist/mf-manifest.json": JSON.stringify({
+            name: "plugin",
+            metaData: { remoteEntry: { name: "remoteEntry.js" } },
+          }),
+          "dist/remoteEntry.js": "",
+        },
+      },
+    });
 
-    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(/missing plugin-manifest/u);
+    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(/missing valid exposes/u);
   });
 });
 
 describe("validateFrontendBundles", () => {
-  it("returns no errors when every plugin ships a bundle", () => {
+  it("returns no errors when every plugin ships a valid bundle", () => {
+    const manifest = JSON.stringify({
+      name: "plugin",
+      metaData: { remoteEntry: { name: "remoteEntry.js" } },
+      exposes: [{ name: "." }],
+    });
     const root = installDirWith({
-      a: { pkg: { name: "a" }, files: ["dist/remoteEntry.js"] },
-      b: { pkg: { name: "b" }, files: ["dist-scalprum/plugin-manifest.json"] },
+      a: {
+        pkg: { name: "a" },
+        files: { "dist/mf-manifest.json": manifest, "dist/remoteEntry.js": "" },
+      },
+      b: {
+        pkg: { name: "b" },
+        files: { "dist/mf-manifest.json": manifest, "dist/remoteEntry.js": "" },
+      },
     });
 
     expect(validateFrontendBundles([entryFor(join(root, "a")), entryFor(join(root, "b"))])).toEqual(
@@ -260,8 +295,16 @@ describe("validateFrontendBundles", () => {
   });
 
   it("reports one entry per broken plugin and omits the valid ones", () => {
+    const manifest = JSON.stringify({
+      name: "good",
+      metaData: { remoteEntry: { name: "remoteEntry.js" } },
+      exposes: [{ name: "." }],
+    });
     const root = installDirWith({
-      good: { pkg: { name: "good" }, files: ["dist/remoteEntry.js"] },
+      good: {
+        pkg: { name: "good" },
+        files: { "dist/mf-manifest.json": manifest, "dist/remoteEntry.js": "" },
+      },
       bad: { pkg: { name: "bad" } },
     });
     const broken = entryFor(join(root, "bad"));
@@ -270,7 +313,7 @@ describe("validateFrontendBundles", () => {
 
     expect(errors).toHaveLength(1);
     expect(errors[0].plugin).toBe(broken);
-    expect(errors[0].error).toMatch(/missing both/u);
+    expect(errors[0].error).toMatch(/missing dist\/mf-manifest\.json/u);
   });
 });
 
@@ -323,66 +366,6 @@ describe("requireCatalogIndexExpectation", () => {
       /populate-catalog-index\.sh/u,
     );
   });
-});
-
-describe("readScalprumName", () => {
-  function frontendPlugin(files: Record<string, string>): PluginEntry {
-    return entryFor(join(installDirWith({ p: { pkg: { name: "p" }, files } }), "p"));
-  }
-
-  it("reads the scalprum name, which differs from the package name", () => {
-    const plugin = frontendPlugin({
-      "dist-scalprum/plugin-manifest.json": JSON.stringify({
-        name: "backstage-community.plugin-tekton",
-      }),
-    });
-
-    expect(readScalprumName(plugin)).toBe("backstage-community.plugin-tekton");
-  });
-
-  it("returns null for a legacy remoteEntry-only plugin", () => {
-    expect(readScalprumName(frontendPlugin({ "dist/remoteEntry.js": "" }))).toBeNull();
-  });
-
-  it("throws when the manifest has no string name", () => {
-    const plugin = frontendPlugin({
-      "dist-scalprum/plugin-manifest.json": JSON.stringify({ loadScripts: [] }),
-    });
-
-    expect(() => readScalprumName(plugin)).toThrow(/no string "name"/u);
-  });
-
-  it("names the file when the manifest is malformed", () => {
-    const plugin = frontendPlugin({ "dist-scalprum/plugin-manifest.json": "{ truncated" });
-
-    expect(() => readScalprumName(plugin)).toThrow(/Malformed .*plugin-manifest\.json/u);
-  });
-});
-
-describe("parseScalprumPluginNames", () => {
-  it("collects the keys of the name -> descriptor map", () => {
-    expect(
-      parseScalprumPluginNames({
-        "backstage-community.plugin-tekton": { name: "backstage-community.plugin-tekton" },
-        "red-hat-developer-hub.plugin-orchestrator": {},
-      }),
-    ).toEqual(
-      new Set(["backstage-community.plugin-tekton", "red-hat-developer-hub.plugin-orchestrator"]),
-    );
-  });
-
-  it("returns an empty set when no plugins are served", () => {
-    expect(parseScalprumPluginNames({})).toEqual(new Set());
-  });
-
-  it.each([[[]], ["a string"], [null], [42]])(
-    "throws when the payload is not an object (%s)",
-    (body) => {
-      expect(() => parseScalprumPluginNames(body)).toThrow(
-        /Expected scalprum plugins response to be an object/u,
-      );
-    },
-  );
 });
 
 // This string is what every "populate it first" failure tells the operator to
