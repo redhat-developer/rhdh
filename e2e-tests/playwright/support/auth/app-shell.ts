@@ -20,9 +20,6 @@ const capturedPageErrors = new WeakMap<Page, Error[]>();
  * Collect uncaught page errors so `waitForLoadingToSettle` can fail fast with
  * the real JS error when the app bootstrap crashes and the loading spinner
  * never clears. Attach before `page.goto` to capture bootstrap-time errors.
- * Errors reset when a new document loads ("domcontentloaded", which does not
- * fire for client-side route changes) so a previous document's errors cannot
- * fail a later wait.
  */
 export function watchPageErrors(page: Page): Error[] {
   const existing = capturedPageErrors.get(page);
@@ -32,9 +29,20 @@ export function watchPageErrors(page: Page): Error[] {
   const errors: Error[] = [];
   capturedPageErrors.set(page, errors);
   page.on("pageerror", (error) => errors.push(error));
-  page.on("domcontentloaded", () => {
-    errors.length = 0;
-  });
+  return errors;
+}
+
+/**
+ * Forget previously captured errors and keep watching. Call right before a
+ * `page.goto` so a previous document's errors cannot fail the next wait.
+ * Deliberately not tied to navigation events: "domcontentloaded" would wipe
+ * errors thrown while the new document is still loading, and "framenavigated"
+ * also fires for client-side route changes, which would wipe a just-captured
+ * bootstrap crash mid-wait.
+ */
+export function resetPageErrors(page: Page): Error[] {
+  const errors = watchPageErrors(page);
+  errors.length = 0;
   return errors;
 }
 

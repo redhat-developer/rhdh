@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   failFastOnPageError,
   formatPageErrors,
+  resetPageErrors,
   watchPageErrors,
 } from "../playwright/support/auth/app-shell";
 
@@ -73,14 +74,31 @@ describe("watchPageErrors", () => {
     expect(first).toHaveLength(1);
   });
 
-  it("resets on document load but keeps errors raised afterwards", () => {
+  it("keeps errors raised while the new document is still loading", () => {
+    const { page, emit } = fakePage();
+    const errors = resetPageErrors(page);
+    emit("pageerror", new Error("crash before domcontentloaded"));
+    emit("domcontentloaded");
+    expect(errors.map((error) => error.message)).toEqual(["crash before domcontentloaded"]);
+  });
+
+  it("keeps errors across client-side navigations", () => {
+    const { page, emit } = fakePage();
+    const errors = watchPageErrors(page);
+    emit("pageerror", new Error("bootstrap crash"));
+    emit("framenavigated");
+    expect(errors.map((error) => error.message)).toEqual(["bootstrap crash"]);
+  });
+
+  it("resetPageErrors clears previous errors and keeps watching", () => {
     const { page, emit } = fakePage();
     const errors = watchPageErrors(page);
     emit("pageerror", new Error("stale, from previous document"));
-    emit("domcontentloaded");
+    const same = resetPageErrors(page);
+    expect(same).toBe(errors);
     expect(errors).toHaveLength(0);
-    emit("pageerror", new Error("bootstrap crash"));
-    expect(errors.map((error) => error.message)).toEqual(["bootstrap crash"]);
+    emit("pageerror", new Error("fresh crash"));
+    expect(errors.map((error) => error.message)).toEqual(["fresh crash"]);
   });
 });
 
