@@ -40,7 +40,6 @@ node_modules/
 dist
 !**/__fixtures__/**/dist
 dist-types
-dist-scalprum
 dist-dynamic
 
 # Temporary change files created by Vim

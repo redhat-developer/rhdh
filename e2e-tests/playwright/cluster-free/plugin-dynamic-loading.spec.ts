@@ -6,13 +6,9 @@
 
 import { test, expect } from "@support/coverage/test";
 
-import {
-  fetchScalprumPluginNames,
-  RhdhDynamicPluginsApi,
-} from "../support/api/dynamic-plugins-api";
+import { RhdhDynamicPluginsApi } from "../support/api/dynamic-plugins-api";
 import { dynamicPluginsRoot, isCI } from "../support/local-harness-servers";
 import {
-  readScalprumName,
   requireCatalogIndexExpectation,
   scanInstalledPlugins,
   validateFrontendBundles,
@@ -113,37 +109,6 @@ test.describe("Plugin Dynamic Loading", () => {
     expect(
       errors.map(({ plugin, error }) => `${plugin.name}: ${error}`),
       "every frontend plugin should ship valid bundle artifacts",
-    ).toEqual([]);
-  });
-
-  test("every scalprum frontend plugin is served by the backend", async ({ request }) => {
-    // Only dist-scalprum plugins are served this way; module-federation (NFS)
-    // plugins are not registered by the scalprum backend at all.
-    // flatMap rather than map+filter so scalprumName narrows to string.
-    const expected = installed().frontend.flatMap((plugin) => {
-      const scalprumName = readScalprumName(plugin);
-      return scalprumName === null ? [] : [{ plugin, scalprumName }];
-    });
-
-    // Guard against a green-but-empty pass, the same trap the installed-count
-    // assertion exists for.
-    expect(
-      expected.length,
-      "the index should declare dist-scalprum frontend plugins to check",
-    ).toBeGreaterThan(0);
-
-    const served = await fetchScalprumPluginNames(request);
-
-    const notServed = missingFrom(
-      expected,
-      served,
-      (entry) => entry.scalprumName,
-      (entry) => `${entry.plugin.name} (scalprum name: ${entry.scalprumName})`,
-      "Installed but not served by scalprum",
-    );
-    expect(
-      notServed.map((entry) => entry.plugin.name),
-      "every dist-scalprum frontend plugin should be served at /api/scalprum/plugins",
     ).toEqual([]);
   });
 });

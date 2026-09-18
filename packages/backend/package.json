@@ -51,7 +51,6 @@
     "@backstage/plugin-user-settings-backend": "0.4.6",
     "@internal/plugin-dynamic-plugins-info-backend": "workspace:*",
     "@internal/plugin-licensed-users-info-backend": "workspace:*",
-    "@internal/plugin-scalprum-backend": "workspace:*",
     "@opentelemetry/api": "1.9.1",
     "@opentelemetry/auto-instrumentations-node": "0.78.0",
     "@opentelemetry/core": "2.8.0",

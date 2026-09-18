@@ -2,7 +2,6 @@ import { readFileSync, readdirSync, existsSync } from "fs";
 import { join } from "path";
 
 const CATALOG_INDEX_REFS = ".catalog-index-refs";
-const SCALPRUM_MANIFEST = "dist-scalprum/plugin-manifest.json";
 const MF_REMOTE_ENTRY = "dist/remoteEntry.js";
 
 /** Parses a JSON file, naming it on failure rather than throwing anonymously. */
@@ -66,8 +65,7 @@ export function scanInstalledPlugins(installDir: string): InstalledPlugins {
 
     const isFrontend =
       role === undefined
-        ? existsSync(join(pluginPath, "dist-scalprum")) ||
-          existsSync(join(pluginPath, MF_REMOTE_ENTRY))
+        ? existsSync(join(pluginPath, MF_REMOTE_ENTRY))
         : role.startsWith("frontend");
 
     const manifestEntry: PluginEntry = {
@@ -165,41 +163,16 @@ export function requireCatalogIndexExpectation(installDir: string): CatalogIndex
 }
 
 /**
- * The name a frontend plugin registers with the scalprum backend, read from its
- * own dist-scalprum/plugin-manifest.json. Differs from the npm package name
- * (e.g. `backstage-community.plugin-tekton`). Null for module-federation (NFS)
- * plugins, which the scalprum backend does not register.
- */
-export function readScalprumName(plugin: PluginEntry): string | null {
-  const manifestPath = join(plugin.path, SCALPRUM_MANIFEST);
-  if (!existsSync(manifestPath)) return null;
-
-  const name = stringProp(readJsonFile(manifestPath), "name");
-  if (name === undefined) {
-    throw new Error(`${manifestPath} has no string "name"`);
-  }
-  return name;
-}
-
-/**
- * Frontend plugins ship either the scalprum bundle (dist-scalprum/, which
- * carries a plugin-manifest.json) or the module-federation one used by New
- * Frontend System plugins (dist/remoteEntry.js).
+ * Frontend plugins ship the module-federation bundle used by New Frontend
+ * System plugins at dist/remoteEntry.js.
  *
  * @internal validateFrontendBundles is the production entry point; this is
  * exported for unit tests.
  */
 export function validateFrontendBundle(plugin: PluginEntry): string | null {
-  const has = (rel: string) => existsSync(join(plugin.path, rel));
-
-  if (!has("dist-scalprum") && !has(MF_REMOTE_ENTRY)) {
-    return "missing both dist-scalprum/ and dist/remoteEntry.js - needs at least one";
+  if (!existsSync(join(plugin.path, MF_REMOTE_ENTRY))) {
+    return "missing dist/remoteEntry.js";
   }
-
-  if (has("dist-scalprum") && !has(SCALPRUM_MANIFEST)) {
-    return "dist-scalprum/ found but missing plugin-manifest.json";
-  }
-
   return null;
 }
 

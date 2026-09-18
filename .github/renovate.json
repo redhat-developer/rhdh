@@ -153,11 +153,6 @@
       "matchUpdateTypes": ["minor"]
     },
     {
-      "description": "disable scalprum updates (handled manually to keep @scalprum packages in sync)",
-      "matchPackageNames": ["/^@scalprum//"],
-      "enabled": false
-    },
-    {
       "description": "react-router-dom: group all dependencies",
       "matchPackageNames": ["react-router-dom"],
       "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
