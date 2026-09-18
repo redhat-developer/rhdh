@@ -3,7 +3,7 @@ import { type Page } from "@playwright/test";
 import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/localization/locale";
 import * as interaction from "../../utils/ui-helper/interaction";
 import * as navigation from "../../utils/ui-helper/navigation";
-import { waitForAppReady } from "./app-shell";
+import { resetPageErrors, waitForAppReady } from "./app-shell";
 import { waitForRhdhSignInPage } from "./sign-in-page";
 
 const t = getTranslations();
@@ -15,6 +15,7 @@ export async function signInAsGuest(
   const lang = options?.locale ?? getCurrentLanguage();
   const timeout = options?.timeout ?? 120_000;
 
+  resetPageErrors(page);
   await page.goto("/");
   await waitForAppReady(page, timeout);
 
