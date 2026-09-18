@@ -162,7 +162,7 @@ RDS_DB_CERTIFICATES_PATH="/tmp/secrets/rds-db-certificates.pem"
 # cannot hold the full global bundle, RHDHBUGS-3744), which fails TLS with
 # SELF_SIGNED_CERT_IN_CHAIN. Merge in the official AWS global trust bundle;
 # fall back to the Vault copy alone when the download fails.
-if curl -fsSL --retry 3 --max-time 30 -o /tmp/rds-global-bundle.pem "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"; then
+if curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 --max-time 30 -o /tmp/rds-global-bundle.pem "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"; then
   # Keep the Vault path if writing the merged file fails entirely (errexit-safe).
   if cat /tmp/rds-global-bundle.pem "$RDS_DB_CERTIFICATES_PATH" > /tmp/rds-db-certificates-merged.pem 2> /dev/null \
     || cp /tmp/rds-global-bundle.pem /tmp/rds-db-certificates-merged.pem; then
