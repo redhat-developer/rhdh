@@ -23,11 +23,31 @@ ensure_registry_default_route() {
     log::warn "Could not patch the image registry to expose the default route"
     return 0
   fi
-  if ! common::poll_until \
-    "oc get route default-route -n openshift-image-registry &> /dev/null" \
-    24 5 "Image registry default-route is ready"; then
+  local registry_host=""
+  for _ in $(seq 1 24); do
+    registry_host=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}' 2> /dev/null || true)
+    if [[ -n "$registry_host" ]]; then
+      break
+    fi
+    sleep 5
+  done
+  if [[ -z "$registry_host" ]]; then
     log::warn "Image registry default-route did not appear within 120s; continuing"
+    return 0
   fi
+  # The Route object existing is not enough: right after creation the router/
+  # registry data path can still refuse uploads (EOF on blob push,
+  # RHDHBUGS-3759). Probe the registry API through the route until it answers.
+  local code=""
+  for _ in $(seq 1 24); do
+    code=$(curl -ks -o /dev/null -w '%{http_code}' --max-time 10 "https://${registry_host}/v2/" || true)
+    if [[ "$code" == "200" || "$code" == "401" ]]; then
+      log::info "Image registry is serving through the default route"
+      return 0
+    fi
+    sleep 5
+  done
+  log::warn "Image registry route is not serving yet (last HTTP status: ${code:-none}); continuing"
 }
 
 install_rhdh_operator() {
