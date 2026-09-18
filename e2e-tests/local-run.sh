@@ -4,10 +4,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNNER_IMAGE="${RUNNER_IMAGE:-quay.io/rhdh-community/rhdh-e2e-runner:main}"
 RUN_CONFIG_FILE="$SCRIPT_DIR/.local-test/run-config.env"
+SECRET_PROFILE="$SCRIPT_DIR/e2e-secrets.profile.json"
 
 # Source logging library
 # shellcheck source=../.ci/pipelines/lib/log.sh
 source "$SCRIPT_DIR/../.ci/pipelines/lib/log.sh"
+# shellcheck source=e2e-tests/local-secrets.sh
+source "$SCRIPT_DIR/local-secrets.sh"
 
 # ========== CLI Flags ==========
 show_help() {
@@ -110,7 +113,7 @@ MISSING_CMDS=""
 
 # Check required binaries
 # Note: kubectl is needed for AKS/EKS, oc is needed for OCP
-for cmd in podman oc kubectl vault jq curl rsync; do
+for cmd in podman oc kubectl node jq curl rsync; do
   if ! command -v "$cmd" &> /dev/null; then
     MISSING_CMDS="$MISSING_CMDS $cmd"
     PREREQ_FAILED=true
@@ -156,7 +159,7 @@ if [[ -n "$MISSING_CMDS" ]]; then
   if [[ "$HOST_OS" == "Darwin" ]]; then
     log::info "    brew install podman jq rsync openshift-cli kubernetes-cli"
     log::info "    (bc is pre-installed on macOS, install via 'brew install bc' if missing)"
-    log::info "    brew tap hashicorp/tap && brew install hashicorp/tap/vault"
+    log::info "    brew install node"
   else
     log::info "    Install the missing tools using your package manager"
   fi
@@ -435,38 +438,13 @@ fi
 # Pull runner image (always attempt; fall back to local copy if pull fails)
 log::section "Pulling runner container image"
 if ! podman pull "$RUNNER_IMAGE"; then
-  if podman image exists "$RUNNER_IMAGE" 2>/dev/null; then
+  if podman image exists "$RUNNER_IMAGE" 2> /dev/null; then
     log::info "Pull failed but image exists locally: $RUNNER_IMAGE"
   else
     log::error "Failed to pull image and no local copy: $RUNNER_IMAGE"
     exit 1
   fi
 fi
-
-export VAULT_ADDR='https://vault.ci.openshift.org'
-
-# Login to vault and capture the token (reuse only if the token can read QE secrets)
-log::section "Vault Login"
-vault_token_usable() {
-  local token=${1:-}
-  [[ -n "$token" ]] || return 1
-  VAULT_TOKEN="$token" vault kv get -mount="kv" "selfservice/rhdh-qe/rhdh" > /dev/null 2>&1
-}
-
-if [[ -n "${VAULT_TOKEN:-}" ]] && vault_token_usable "$VAULT_TOKEN"; then
-  log::info "Using existing VAULT_TOKEN from environment"
-elif existing_token=$(vault print token 2>/dev/null) && vault_token_usable "$existing_token"; then
-  VAULT_TOKEN="$existing_token"
-  log::info "Reusing existing vault token from local vault CLI"
-elif [[ -n "${VAULT_TOKEN:-}" ]] || [[ -n "${existing_token:-}" ]]; then
-  log::warn "Existing vault token cannot read QE secrets; falling back to OIDC login"
-  vault login -no-print -method=oidc
-  VAULT_TOKEN=$(vault print token)
-else
-  vault login -no-print -method=oidc
-  VAULT_TOKEN=$(vault print token)
-fi
-export VAULT_TOKEN
 
 # Set up cluster access based on platform (CONTAINER_PLATFORM already derived above)
 log::section "Setting up cluster access"
@@ -510,6 +488,8 @@ else
   K8S_CLUSTER_TOKEN=$(kubectl create token "$SA_NAME" -n "$SA_NAMESPACE" --duration=8h)
   log::info "Acquired short-lived token for the service account"
 fi
+export K8S_CLUSTER_TOKEN
+export RHDH_LOCAL_TEST_CLUSTER_TOKEN="$K8S_CLUSTER_TOKEN"
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
 
 # Copy repo to work directory (keeps original repo clean)
@@ -518,10 +498,10 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 WORK_DIR="$SCRIPT_DIR/.local-test/rhdh"
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"
-rsync -a --exclude='node_modules' --exclude='.local-test' --exclude='playwright-report' --exclude='test-results' "$REPO_ROOT/" "$WORK_DIR/"
+rsync -a --exclude='node_modules' --exclude='.env' --exclude='.local-test' --exclude='playwright-report' --exclude='test-results' "$REPO_ROOT/" "$WORK_DIR/"
 log::info "Work copy created at: $WORK_DIR"
 
-# Run container with vault credentials and OC token
+# Run container with the Bitwarden secret stream and cluster token
 log::section "Starting Container (rhdh-e2e-runner)"
 log::info "Running container (rhdh-e2e-runner)..."
 log::info "This will deploy RHDH to your cluster and run tests (if enabled)."
@@ -535,24 +515,28 @@ echo ""
 
 CONTAINER_EXIT_CODE=0
 # no -t: stdout is piped to tee and CI has no TTY
-podman run -v "$WORK_DIR":/tmp/rhdh \
-  -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro \
-  -i -u root --privileged \
-  --mount type=tmpfs,destination=/tmp/secrets \
-  -e VAULT_ADDR="$VAULT_ADDR" \
-  -e VAULT_TOKEN="$VAULT_TOKEN" \
-  -e K8S_CLUSTER_URL="$K8S_CLUSTER_URL" \
-  -e K8S_CLUSTER_TOKEN="$K8S_CLUSTER_TOKEN" \
-  -e CONTAINER_PLATFORM="$CONTAINER_PLATFORM" \
-  -e JOB_NAME="$JOB_NAME" \
-  -e IMAGE_REGISTRY="$IMAGE_REGISTRY" \
-  -e IMAGE_REPO="$IMAGE_REPO" \
-  -e TAG_NAME="$TAG_NAME" \
-  -e SKIP_TESTS="$SKIP_TESTS" \
-  -e DISCONNECTED="$DISCONNECTED" \
-  -e LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}" \
-  "$RUNNER_IMAGE" \
-  /bin/bash /tmp/container-init.sh 2>&1 | tee "$CONTAINER_LOG"
+PODMAN_ARGS=(
+  run
+  -v "$WORK_DIR":/tmp/rhdh
+  -v "$SCRIPT_DIR/container-init.sh":/tmp/container-init.sh:ro
+  -i -u root --privileged --rm
+  --mount "type=tmpfs,destination=/run/rhdh-secrets,tmpfs-mode=0700"
+  -e K8S_CLUSTER_URL="$K8S_CLUSTER_URL"
+  --env RHDH_LOCAL_TEST_CLUSTER_TOKEN
+  -e CONTAINER_PLATFORM="$CONTAINER_PLATFORM"
+  -e JOB_NAME="$JOB_NAME"
+  -e IMAGE_REGISTRY="$IMAGE_REGISTRY"
+  -e IMAGE_REPO="$IMAGE_REPO"
+  -e TAG_NAME="$TAG_NAME"
+  -e SKIP_TESTS="$SKIP_TESTS"
+  -e DISCONNECTED="$DISCONNECTED"
+  -e LOCAL_DISCONNECTED="${LOCAL_DISCONNECTED:-}"
+  "$RUNNER_IMAGE"
+  /bin/bash /tmp/container-init.sh
+)
+local_secrets::exec_with_stream "$SCRIPT_DIR" "$SECRET_PROFILE" \
+  bash -c 'exec podman "$@" 0<&3' -- "${PODMAN_ARGS[@]}" \
+  2>&1 | tee "$CONTAINER_LOG"
 CONTAINER_EXIT_CODE=${PIPESTATUS[0]}
 
 # Container has exited - show next steps
@@ -586,31 +570,30 @@ fi
 if [[ "$SKIP_TESTS" == "true" ]]; then
   log::section "Next Steps: Run Tests Locally (headed mode)"
   echo ""
-  log::info "1. Setup environment variables:"
-  echo "   source local-test-setup.sh           # For Showcase tests"
-  echo "   source local-test-setup.sh rbac      # For RBAC tests"
+  log::info "1. Unlock Bitwarden if needed:"
+  echo '   export BW_SESSION=$(bw unlock --raw)'
   echo ""
-  log::info "2. Install dependencies and run tests:"
+  log::info "2. Install dependencies and run tests against the URL printed above:"
   echo "   yarn install"
-  echo "   yarn playwright test --headed"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed"
   echo ""
   log::info "Useful Playwright commands:"
   echo ""
   echo "   # Run all tests for a project"
-  echo "   yarn playwright test --headed --project=showcase"
-  echo "   yarn playwright test --headed --project=showcase-rbac"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed"
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --headed"
   echo ""
   echo "   # Run a specific test file (use --workers=1 for sequential execution)"
-  echo "   yarn playwright test --headed --project=showcase-rbac --workers=1 playwright/e2e/plugins/rbac/rbac.spec.ts"
-  echo "   yarn playwright test --headed --project=showcase --workers=1 playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts"
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --headed --workers=1 playwright/e2e/plugins/rbac/rbac.spec.ts"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed --workers=1 playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts"
   echo ""
   echo "   # Run tests matching a pattern"
-  echo "   yarn playwright test --headed --project=showcase-rbac --workers=1 -g \"guest user\""
-  echo "   yarn playwright test --headed --project=showcase --workers=1 -g \"catalog\""
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --headed --workers=1 -g \"guest user\""
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed --workers=1 -g \"catalog\""
   echo ""
   echo "   # Interactive UI mode"
-  echo "   yarn playwright test --ui --project=showcase"
-  echo "   yarn playwright test --ui --project=showcase-rbac"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --ui"
+  echo "   BASE_URL=<rbac-url> ./local-test.sh -- --project=showcase-rbac --ui"
   echo ""
 else
   log::section "Tests Completed"
@@ -620,7 +603,6 @@ else
   echo "   npx playwright show-report .local-test/rhdh/.local-test/artifact_dir/showcase"
   echo ""
   log::info "To re-run tests locally (headed mode):"
-  echo "   source local-test-setup.sh"
-  echo "   yarn playwright test --headed"
+  echo "   BASE_URL=<showcase-url> ./local-test.sh -- --project=showcase --headed"
   echo ""
 fi

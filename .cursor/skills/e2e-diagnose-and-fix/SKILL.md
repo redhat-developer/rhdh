@@ -39,7 +39,7 @@ After a successful cherry-pick (with or without conflict resolution), proceed to
 
 **The Playwright healer agent MUST be used for ALL test failures, regardless of failure category.** Do not attempt manual diagnosis without first running the healer. The healer can run the test, debug it step-by-step, inspect the live UI, generate correct locators, and edit the code — often resolving the issue end-to-end without manual intervention.
 
-> **Note**: The Playwright healer agent is currently supported in **OpenCode** and **Claude Code** only. In **Cursor** or other tools without Playwright agent support, skip the healer initialization and proceed directly to the "Failure Pattern Recognition" section below. Use manual diagnosis with direct test execution (`yarn playwright test ...`) and headed/debug mode (`--headed`, `--debug`) for live UI inspection.
+> **Note**: The Playwright healer agent is currently supported in **OpenCode** and **Claude Code** only. In **Cursor** or other tools without Playwright agent support, skip the healer initialization and proceed directly to the "Failure Pattern Recognition" section below. Use `local-test.sh` with headed/debug mode (`--headed`, `--debug`) for live UI inspection.
 
 ### Healer Initialization
 
@@ -59,14 +59,16 @@ See https://playwright.dev/docs/test-agents for the full list of supported tools
 
 ### Environment Setup for Healer
 
-The healer agent needs a `.env` file in `e2e-tests/` with all required environment variables (BASE_URL, K8S_CLUSTER_TOKEN, vault secrets, etc.). Generate it by passing the `--env` flag to `local-test-setup.sh`:
+Export `BASE_URL` and an unlocked `BW_SESSION` in the agent environment. Cluster-aware tests also
+require caller-provided `K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN`. Run tests through
+`local-test.sh` so secrets stay in the Playwright child environment:
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh <showcase|rbac> --env
+./local-test.sh -- --project=any-test --retries=0 --workers=1 "$SPEC_FILE"
 ```
 
-The `.env` file is gitignored — never commit it. To regenerate (e.g. after token expiry), re-run the command above.
+Do not generate a `.env` file containing secrets.
 
 ### Invoking the Healer
 
@@ -76,10 +78,11 @@ Invoke the healer agent via the Task tool with `subagent_type: general`:
 Task: "You are the Playwright Test Healer agent. Run the failing test, debug it, inspect the UI, and fix the code.
 Working directory: <path>/e2e-tests
 Test: <spec-file> --project=any-test -g '<test-name>'
-Run command: set -a && source .env && set +a && npx playwright test <spec-file> --project=any-test --retries=0 --workers=1 -g '<test-name>'"
+Run command: ./local-test.sh -- --project=any-test --retries=0 --workers=1 "$SPEC_FILE" -g "$TEST_NAME""
 ```
 
 The healer will autonomously:
+
 1. Run the test and identify the failure
 2. Examine error screenshots and error-context.md
 3. Debug the test step-by-step using Playwright Inspector
@@ -91,6 +94,7 @@ The healer will autonomously:
 ### When to Supplement with Manual Diagnosis
 
 After the healer has run, supplement with manual investigation only for:
+
 - **Data dependency failures** (category 4): The healer may not know how to create missing test data
 - **Platform-specific failures** (category 5): The healer doesn't have context about platform differences
 - **Deployment configuration issues** (category 6): The healer cannot modify ConfigMaps or Helm values
@@ -105,6 +109,7 @@ After the healer has run, supplement with manual investigation only for:
 **Cause**: The UI has changed and selectors no longer match.
 
 **Fix approach**:
+
 - Invoke the Playwright healer agent (`@playwright-test-healer`) — it will replay the test, inspect the current UI via page snapshots, generate updated locators, and edit the code automatically
 - If the healer cannot resolve it, manually update to semantic role-based locators (see project rules)
 - Verify the updated locator works by re-running the test
@@ -116,12 +121,13 @@ After the healer has run, supplement with manual investigation only for:
 **Cause**: Test acts before the UI is ready, or waits are insufficient.
 
 **Fix approach**:
+
 - Invoke the Playwright healer agent first — it can identify timing issues by stepping through the test and observing UI state transitions
 - If manual fixes are needed: replace `page.waitForTimeout()` with proper waits: `expect(locator).toBeVisible()`, `page.waitForLoadState()`
 - Use `expect().toPass()` with retry intervals for inherently async checks:
   ```typescript
   await expect(async () => {
-    const text = await page.locator('.count').textContent();
+    const text = await page.locator(".count").textContent();
     expect(Number(text)).toBeGreaterThan(0);
   }).toPass({ intervals: [1000, 2000, 5000], timeout: 30_000 });
   ```
@@ -135,6 +141,7 @@ After the healer has run, supplement with manual investigation only for:
 **Cause**: The expected value has changed due to a product change, data change, or environment difference.
 
 **Fix approach**:
+
 - Determine if the change is intentional (check recent commits to the release branch)
 - If intentional: update the expected value in the test or test data
 - If unintentional: this may be a product bug — but you must first exhaust all other possibilities using the Playwright healer agent. Only after the healer confirms the test is correct and the application behavior is wrong should you mark it with `test.fixme()` (see the "Decision: Product Bug vs Test Issue" section below)
@@ -146,6 +153,7 @@ After the healer has run, supplement with manual investigation only for:
 **Cause**: Test data assumptions no longer hold (GitHub repos deleted, Keycloak users changed, catalog entities removed).
 
 **Fix approach**:
+
 - Update test data in `e2e-tests/playwright/support/test-data/` or `e2e-tests/playwright/data/`
 - Ensure test creates its own data in `beforeAll`/`beforeEach` and cleans up in `afterAll`/`afterEach`
 - Use `APIHelper` for programmatic setup (GitHub API, Backstage catalog API)
@@ -157,13 +165,14 @@ After the healer has run, supplement with manual investigation only for:
 **Cause**: Platform differences (Routes vs Ingress, different auth, different network policies).
 
 **Fix approach**:
+
 - Add conditional skip if the test is inherently platform-specific:
   ```typescript
-  import { skipIfJobName, skipIfIsOpenShift } from '../utils/helper';
+  import { skipIfJobName, skipIfIsOpenShift } from "../utils/helper";
   // Skip on GKE
   skipIfJobName(constants.GKE_JOBS);
   // Skip on non-OpenShift
-  skipIfIsOpenShift('false');
+  skipIfIsOpenShift("false");
   ```
 - Or add platform-specific logic within the test using `process.env.IS_OPENSHIFT`, `process.env.CONTAINER_PLATFORM`
 
@@ -174,6 +183,7 @@ After the healer has run, supplement with manual investigation only for:
 **Cause**: ConfigMap or Helm values are incorrect for this test scenario.
 
 **Fix approach**:
+
 - Check the ConfigMaps: `.ci/pipelines/resources/config_map/app-config-rhdh.yaml` and `app-config-rhdh-rbac.yaml`
 - Check Helm values: `.ci/pipelines/value_files/`
 - Check dynamic plugins config: `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml`
@@ -239,16 +249,19 @@ When the issue is in RHDH deployment/config rather than test code, search the re
 4. **Fallback — local clone**: clone the repo into a temp directory and grep
 
 ### rhdh-operator (`redhat-developer/rhdh-operator`)
+
 - Backstage CR specification and defaults
 - CatalogSource configuration
 - Operator installation scripts (especially `install-rhdh-catalog-source.sh`)
 
 ### rhdh-chart (`redhat-developer/rhdh-chart`)
+
 - Helm values.yaml schema and defaults
 - Chart templates for Deployments, Services, ConfigMaps
 - Default dynamic plugin configurations
 
 ### Other Repositories
+
 - **backstage/backstage**: For upstream Backstage API changes
 - **redhat-developer/red-hat-developers-documentation-rhdh**: For documentation on expected behavior
 
@@ -267,7 +280,7 @@ Only after all of the above confirm a product bug:
 2. **Mark the test with `test.fixme()`**, preceded by a `// TODO:` comment linking to the Jira ticket:
    ```typescript
    // TODO: https://redhat.atlassian.net/browse/RHDHBUGS-XXXX
-   test.fixme('Button no longer visible after version upgrade');
+   test.fixme("Button no longer visible after version upgrade");
    ```
 3. **Do not change the test assertions** to match broken behavior
 4. **Proceed to `e2e-submit-and-review`** with the `test.fixme()` change
