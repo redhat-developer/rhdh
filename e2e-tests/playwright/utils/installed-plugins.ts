@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, existsSync } from "fs";
 import { join } from "path";
 
 const CATALOG_INDEX_REFS = ".catalog-index-refs";
+const MF_MANIFEST = "dist/mf-manifest.json";
 const MF_REMOTE_ENTRY = "dist/remoteEntry.js";
 
 /** Parses a JSON file, naming it on failure rather than throwing anonymously. */
@@ -163,15 +164,36 @@ export function requireCatalogIndexExpectation(installDir: string): CatalogIndex
 }
 
 /**
- * Frontend plugins ship the module-federation bundle used by New Frontend
- * System plugins at dist/remoteEntry.js.
+ * Frontend plugins ship a module-federation manifest and the remote-entry
+ * asset declared by that manifest.
  *
  * @internal validateFrontendBundles is the production entry point; this is
  * exported for unit tests.
  */
 export function validateFrontendBundle(plugin: PluginEntry): string | null {
-  if (!existsSync(join(plugin.path, MF_REMOTE_ENTRY))) {
-    return "missing dist/remoteEntry.js";
+  const manifestPath = join(plugin.path, MF_MANIFEST);
+  if (!existsSync(manifestPath)) {
+    return `missing ${MF_MANIFEST}`;
+  }
+
+  const manifest = readJsonFile(manifestPath);
+  if (stringProp(manifest, "name") === undefined) {
+    return `missing string name in ${MF_MANIFEST}`;
+  }
+
+  const remoteEntry = prop(prop(manifest, "metaData"), "remoteEntry");
+  const remoteEntryName = stringProp(remoteEntry, "name");
+  if (remoteEntryName === undefined) {
+    return `missing string metaData.remoteEntry.name in ${MF_MANIFEST}`;
+  }
+
+  const exposes = prop(manifest, "exposes");
+  if (!Array.isArray(exposes) || !exposes.every((item) => stringProp(item, "name") !== undefined)) {
+    return `missing valid exposes in ${MF_MANIFEST}`;
+  }
+
+  if (!existsSync(join(plugin.path, "dist", remoteEntryName))) {
+    return `missing remote entry asset dist/${remoteEntryName}`;
   }
   return null;
 }

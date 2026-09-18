@@ -215,24 +215,78 @@ describe("scanInstalledPlugins", () => {
 });
 
 describe("validateFrontendBundle", () => {
-  it("accepts a legacy remoteEntry bundle", () => {
-    const root = installDirWith({ p: { pkg: { name: "p" }, files: ["dist/remoteEntry.js"] } });
+  const manifest = JSON.stringify({
+    name: "plugin",
+    metaData: { remoteEntry: { name: "remoteEntry.js" } },
+    exposes: [{ name: "." }],
+  });
+
+  it("accepts a valid module-federation manifest and remote entry", () => {
+    const root = installDirWith({
+      p: {
+        pkg: { name: "p" },
+        files: {
+          "dist/mf-manifest.json": manifest,
+          "dist/remoteEntry.js": "",
+        },
+      },
+    });
 
     expect(validateFrontendBundle(entryFor(join(root, "p")))).toBeNull();
   });
 
-  it("rejects a plugin without a remoteEntry bundle", () => {
-    const root = installDirWith({ p: { pkg: { name: "p" } } });
+  it("rejects a plugin without a module-federation manifest", () => {
+    const root = installDirWith({ p: { pkg: { name: "p" }, files: ["dist/remoteEntry.js"] } });
 
-    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(/missing dist\/remoteEntry/u);
+    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(
+      /missing dist\/mf-manifest\.json/u,
+    );
+  });
+
+  it("rejects a manifest whose declared remote entry is missing", () => {
+    const root = installDirWith({
+      p: { pkg: { name: "p" }, files: { "dist/mf-manifest.json": manifest } },
+    });
+
+    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(
+      /missing remote entry asset dist\/remoteEntry\.js/u,
+    );
+  });
+
+  it("rejects a manifest without exposes", () => {
+    const root = installDirWith({
+      p: {
+        pkg: { name: "p" },
+        files: {
+          "dist/mf-manifest.json": JSON.stringify({
+            name: "plugin",
+            metaData: { remoteEntry: { name: "remoteEntry.js" } },
+          }),
+          "dist/remoteEntry.js": "",
+        },
+      },
+    });
+
+    expect(validateFrontendBundle(entryFor(join(root, "p")))).toMatch(/missing valid exposes/u);
   });
 });
 
 describe("validateFrontendBundles", () => {
-  it("returns no errors when every plugin ships a bundle", () => {
+  it("returns no errors when every plugin ships a valid bundle", () => {
+    const manifest = JSON.stringify({
+      name: "plugin",
+      metaData: { remoteEntry: { name: "remoteEntry.js" } },
+      exposes: [{ name: "." }],
+    });
     const root = installDirWith({
-      a: { pkg: { name: "a" }, files: ["dist/remoteEntry.js"] },
-      b: { pkg: { name: "b" }, files: ["dist/remoteEntry.js"] },
+      a: {
+        pkg: { name: "a" },
+        files: { "dist/mf-manifest.json": manifest, "dist/remoteEntry.js": "" },
+      },
+      b: {
+        pkg: { name: "b" },
+        files: { "dist/mf-manifest.json": manifest, "dist/remoteEntry.js": "" },
+      },
     });
 
     expect(validateFrontendBundles([entryFor(join(root, "a")), entryFor(join(root, "b"))])).toEqual(
@@ -241,8 +295,16 @@ describe("validateFrontendBundles", () => {
   });
 
   it("reports one entry per broken plugin and omits the valid ones", () => {
+    const manifest = JSON.stringify({
+      name: "good",
+      metaData: { remoteEntry: { name: "remoteEntry.js" } },
+      exposes: [{ name: "." }],
+    });
     const root = installDirWith({
-      good: { pkg: { name: "good" }, files: ["dist/remoteEntry.js"] },
+      good: {
+        pkg: { name: "good" },
+        files: { "dist/mf-manifest.json": manifest, "dist/remoteEntry.js": "" },
+      },
       bad: { pkg: { name: "bad" } },
     });
     const broken = entryFor(join(root, "bad"));
@@ -251,7 +313,7 @@ describe("validateFrontendBundles", () => {
 
     expect(errors).toHaveLength(1);
     expect(errors[0].plugin).toBe(broken);
-    expect(errors[0].error).toMatch(/missing dist\/remoteEntry/u);
+    expect(errors[0].error).toMatch(/missing dist\/mf-manifest\.json/u);
   });
 });
 

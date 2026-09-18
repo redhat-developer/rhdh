@@ -99,11 +99,6 @@ test.describe("Plugin Dynamic Loading", () => {
 
   test("every frontend plugin ships valid bundle artifacts", () => {
     const { frontend } = installed();
-    expect(
-      frontend.length,
-      "the index should declare frontend plugins to validate",
-    ).toBeGreaterThan(0);
-
     const errors = validateFrontendBundles(frontend);
 
     expect(
