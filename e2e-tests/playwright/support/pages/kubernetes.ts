@@ -21,7 +21,19 @@ export class KubernetesPage {
 
   async verifyPodLogs(text: string, heading: string, allowed?: boolean) {
     await this.verifyDeployment(text);
-    const pods = this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(4);
+    // Scope the pods chip to the deployment's own accordion summary: the
+    // page-wide set of "Status ok" chips varies with cluster contents and
+    // the user's RBAC visibility, so a positional nth() breaks whenever a
+    // resource appears or disappears (RHDHBUGS-3775).
+    const deploymentSummary = this.page
+      .getByRole("button", {
+        name: `${text} Deployment namespace: ${process.env.NAME_SPACE_RBAC}`,
+      })
+      .first();
+    const pods = deploymentSummary
+      .locator(KUBERNETES_COMPONENTS.statusOk)
+      .filter({ hasText: /\d+ pods?/ })
+      .first();
     await pods.scrollIntoViewIfNeeded();
     await expect(pods).toHaveText(/1 pods?/);
     await pods.click();
