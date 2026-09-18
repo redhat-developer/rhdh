@@ -691,19 +691,11 @@ apply_yaml_files() {
     --namespace="${project}" \
     --dry-run=client -o yaml | oc apply -f -
 
-  if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
-    oc create configmap rbac-policy \
-      --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
-      --from-file="conditional-policies.yaml"="/tmp/conditional-policies.yaml" \
-      --namespace="$project" \
-      --dry-run=client -o yaml | oc apply -f -
-  else
-    oc create configmap rbac-policy \
-      --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
-      --from-file="conditional-policies.yaml"="$dir/resources/config_map/conditional-policies.yaml" \
-      --namespace="$project" \
-      --dry-run=client -o yaml | oc apply -f -
-  fi
+  oc create configmap rbac-policy \
+    --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
+    --from-file="conditional-policies.yaml"="$dir/resources/config_map/conditional-policies.yaml" \
+    --namespace="$project" \
+    --dry-run=client -o yaml | oc apply -f -
 
   # configuration for testing global floating action button.
   oc create configmap dynamic-global-floating-action-button-config \
@@ -815,12 +807,6 @@ wait_for_operator_rollout() {
   kubectl rollout status deployment/"$deployment_name" -n "$namespace" --timeout="${max_wait}s" 2> /dev/null || true
   log::info "Deployment '$deployment_name' rollout stabilized"
   return 0
-}
-
-create_conditional_policies_operator() {
-  local destination_file=$1
-  yq '.upstream.backstage.initContainers[0].command[2]' "${DIR}/value_files/values_showcase-rbac.yaml" | head -n -4 | tail -n +2 > $destination_file
-  sed -i 's/\\\$/\$/g' $destination_file
 }
 
 prepare_operator_app_config() {
