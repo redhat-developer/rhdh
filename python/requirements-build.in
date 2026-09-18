@@ -10,6 +10,8 @@ hatch-nodejs-version>=0.3.0
 hatch-requirements-txt
 hatch-vcs==0.4.0
 hatchling>=1.27,<2
+# tomlkit (via hatchling) builds with poetry-core; required for hermetic sdist installs
+poetry-core>=1.0.0
 setuptools>=77,<84.1
 setuptools_scm>=6.4,<8
 trove-classifiers>=2023.10.18
