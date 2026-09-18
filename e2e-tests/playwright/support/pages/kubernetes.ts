@@ -25,10 +25,15 @@ export class KubernetesPage {
     // page-wide set of "Status ok" chips varies with cluster contents and
     // the user's RBAC visibility, so a positional nth() breaks whenever a
     // resource appears or disappears (RHDHBUGS-3775).
+    const podCountChip = this.page
+      .locator(KUBERNETES_COMPONENTS.statusOk)
+      .filter({ hasText: /\d+ pods?/ });
     const deploymentSummary = this.page
       .getByRole("button", {
         name: `${text} Deployment namespace: ${process.env.NAME_SPACE_RBAC}`,
+        exact: true,
       })
+      .filter({ has: podCountChip })
       .first();
     const pods = deploymentSummary
       .locator(KUBERNETES_COMPONENTS.statusOk)
