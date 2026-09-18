@@ -35,13 +35,19 @@ install_rhdh_operator() {
 
   if [[ "$RELEASE_VERSION" == "next" ]]; then
     log::info "Installing RHDH operator with '--next' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh; then
+    # --olm-version v0: keep the CSV-based install path. On clusters that ship
+    # the OLM v1 CRDs (OCP/OSD >= 4.18) the script would auto-detect v1 and
+    # install via ClusterExtension, which has no CSV for
+    # override_operator_backstage_image to patch — leaving the stale
+    # RELATED_IMAGE_backstage digest in effect. OLM v1 coverage has its own
+    # dedicated flows (e.g. the disconnected jobs).
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --olm-version v0 --next --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
   else
     log::info "Installing RHDH operator with '-v $RELEASE_VERSION' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$RELEASE_VERSION" --install-operator rhdh; then
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --olm-version v0 -v "$RELEASE_VERSION" --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
