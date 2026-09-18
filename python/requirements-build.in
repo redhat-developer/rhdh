@@ -3,13 +3,17 @@
 #
 # Build-system requires for sdist installs (see python/hermeto_*.json allow_binary=false).
 # Keep setuptools_scm in the 6.4–7.x range to match python-dateutil and hatch-vcs 0.4.
+# pluggy>=1.6 needs setuptools-scm>=8 to build from sdist — pin below that.
 
 Cython
+calver
 flit_core>=3.12,<4
 hatch-nodejs-version>=0.3.0
 hatch-requirements-txt
 hatch-vcs==0.4.0
 hatchling>=1.27,<2
+# hatchling runtime dep; 1.6+ needs setuptools-scm>=8 for sdist builds
+pluggy>=1.0,<1.6
 # tomlkit (via hatchling) builds with poetry-core; required for hermetic sdist installs
 poetry-core>=1.0.0
 setuptools>=77,<84.1
