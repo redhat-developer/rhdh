@@ -6,6 +6,7 @@ The authentication providers tests are currently running for the following provi
 - Microsoft using oauth2 provider
 - Github
 - GitLab
+
 <!--- - LDAP using Active Directory -->
 
 For each providers the tests verify:
