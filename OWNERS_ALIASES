@@ -4,10 +4,12 @@
 aliases:
   rhdh:
     - 04kash
+    - AdamBrez
     - albarbaro
     - alizard0
     - AndrienkoAleksandr
     - benwilcock
+    - cedarsch
     - christoph-jerolimov
     - ciiay
     - davidfestal
@@ -49,13 +51,13 @@ aliases:
     - Lucifergene
     - maysunfaisal
     - michael-valdron
+    - NiallTwomey2
     - nickboldt
     - Omar-AlJaljuli
     - OpinionatedHeron
     - pabel-rh
     - PatAKnight
     - polasudo
-    - rajin-kichannagari
     - rh-tokeefe
     - rm3l
     - rohitkrai03
@@ -72,6 +74,7 @@ aliases:
     - zdrapela
   rhdh-cope:
     - 04kash
+    - AdamBrez
     - davidfestal
     - hopehadfield
     - jonkoops
@@ -130,6 +133,7 @@ aliases:
   rhdh-install:
     - Fortune-Ndlovu
     - gazarenkov
+    - NiallTwomey2
     - OpinionatedHeron
     - rm3l
     - subhashkhileri
@@ -145,3 +149,15 @@ aliases:
     - subhashkhileri
     - teknaS47
     - zdrapela
+  rhdh-ai:
+    - cedarsch
+    - elsony
+    - gabemontero
+    - HusneShabbir
+    - Jdubrick
+    - johnmcollier
+    - JslYoon
+    - maysunfaisal
+    - michael-valdron
+    - thepetk
+    - yangcao77
