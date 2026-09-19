@@ -19,14 +19,23 @@ test.describe("Verify Redis Cache DB", () => {
   let redis: Redis;
 
   test.beforeAll(async () => {
+    const namespace = process.env.NAME_SPACE;
+    if (!namespace) {
+      throw new Error("NAME_SPACE must be set for redis port-forward");
+    }
+
     console.log("Starting port-forward process...");
+    // Direct kubectl args (CI already logged in). Avoid shell wrappers so stop()
+    // can tear down the port-forward cleanly between multi-phase Playwright runs.
     portForward = new PortForwardHarness(
       {
-        shellCommand: `
-          oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
-          kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
-          kubectl port-forward service/redis ${REDIS_LOCAL_PORT}:6379 --namespace="${process.env.NAME_SPACE}"
-        `,
+        command: "kubectl",
+        args: [
+          "port-forward",
+          `service/redis`,
+          `${REDIS_LOCAL_PORT}:6379`,
+          `--namespace=${namespace}`,
+        ],
       },
       {
         readyPattern: /Forwarding from/u,
