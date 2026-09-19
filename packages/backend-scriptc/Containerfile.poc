@@ -1,0 +1,38 @@
+# PROTOTYPE — trimmed ScriptC Linux runtime image (not the full RHDH backend).
+# yarn prototype:scriptc:image
+
+FROM docker.io/library/node:24-bookworm AS toolchain
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+  && curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key \
+    | gpg --dearmor -o /usr/share/keyrings/llvm.gpg \
+  && echo "deb [signed-by=/usr/share/keyrings/llvm.gpg] http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm-18 main" \
+    > /etc/apt/sources.list.d/llvm.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends clang-18 cmake build-essential \
+  && ln -sf /usr/bin/clang-18 /usr/local/bin/clang \
+  && ln -sf /usr/bin/clang++-18 /usr/local/bin/clang++ \
+  && rm -rf /var/lib/apt/lists/*
+
+FROM toolchain AS build
+WORKDIR /poc
+COPY package.json tsconfig.json ./
+RUN npm install
+COPY src/main.ts ./src/main.ts
+RUN mkdir -p /out \
+  && ./node_modules/.bin/scriptc coverage src/main.ts --dynamic \
+  && ./node_modules/.bin/scriptc build src/main.ts --dynamic --backend c -o /out/rhdh-poc \
+  && ./node_modules/.bin/scriptc coverage src/main.ts --dynamic > /out/coverage.txt \
+  && ls -la /out/rhdh-poc
+
+FROM docker.io/library/debian:bookworm-slim AS runtime
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+COPY --from=build /out/rhdh-poc /usr/local/bin/rhdh-poc
+COPY --from=build /out/coverage.txt /usr/local/share/rhdh-poc-coverage.txt
+ENV PORT=7007
+EXPOSE 7007
+USER 65532:65532
+ENTRYPOINT ["/usr/local/bin/rhdh-poc"]
