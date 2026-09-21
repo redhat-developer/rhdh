@@ -29,7 +29,7 @@ runs:
         GET_SHA_OUTPUT: ${{ steps.get-sha.outputs.short_sha }}
         PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         # pull_request checkout is a merge commit; only inspect the PR head
-        # range so unrelated main commits (e.g. chore … [skip-build]) do not
+        # range so unrelated main commits that carry a skip-build trailer do not
         # skip this PR's image build.
         PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
@@ -46,10 +46,11 @@ runs:
         echo "Changed files:"
         echo "$CHANGED_FILES"
 
-        # Check for [skip-build] tag in PR commit messages only
+        # Intentional skip trailer must appear as its own token in a subject line
+        # (avoids false positives from commit bodies that merely discuss the tag).
         SKIP_BUILD_TAG=false
-        if git log --format=%B "$BASE_COMMIT".."$PR_HEAD_SHA" | grep -qF "[skip-build]"; then
-          echo "Found [skip-build] tag in commit messages."
+        if git log --format=%s "$BASE_COMMIT".."$PR_HEAD_SHA" | grep -qE '(^|[[:space:]])\[skip-build\]([[:space:]]|$)'; then
+          echo "Found skip-build trailer in PR commit subject(s)."
           SKIP_BUILD_TAG=true
         fi
 
