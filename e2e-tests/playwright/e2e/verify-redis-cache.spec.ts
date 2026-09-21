@@ -3,9 +3,14 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
+import { ensureShowcaseEntityIngested } from "../utils/catalog-precondition";
 
 test.describe("Verify Redis Cache DB", () => {
   test.beforeAll(async () => {
+    // The suite depends on the showcase entity; with a 24h catalog
+    // processingInterval a transient ingestion failure would otherwise fail
+    // every test here identically on all retries.
+    await ensureShowcaseEntityIngested();
     test.info().annotations.push({
       type: "component",
       description: "core",
