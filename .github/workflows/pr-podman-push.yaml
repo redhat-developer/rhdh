@@ -167,11 +167,9 @@ jobs:
           echo "Full tags from metadata:"
           printf '%s\n' "$TAGS_LIST"
         
-          # SECURITY: tags.txt is produced by the untrusted pull_request job (the
-          # fork author controls ./.github/actions/docker-build). Reject anything
-          # that is not exactly quay.io/rhdh-community/rhdh:pr-<this PR number>[-suffix]
-          # so a poisoned artifact cannot overwrite :next / :latest / :release-* tags.
-          ALLOWED_RE="^quay\.io/rhdh-community/rhdh:pr-${PR_NUMBER}(-[A-Za-z0-9._-]+)?$"
+          # SECURITY: tags.txt is produced by the untrusted pull_request job.
+          # Allow only pr-<N> tags on rhdh (legacy) or rhdh-pr (preview repo).
+          ALLOWED_RE="^quay\.io/rhdh-community/(rhdh|rhdh-pr):pr-${PR_NUMBER}(-[A-Za-z0-9._-]+)?$"
           while IFS= read -r tag; do
             [ -z "$tag" ] && continue
             if ! [[ "$tag" =~ $ALLOWED_RE ]]; then
@@ -180,13 +178,28 @@ jobs:
             fi
           done <<< "$TAGS_LIST"
 
+          if grep -q 'rhdh-community/rhdh-pr:' <<< "$TAGS_LIST"; then
+            echo "use_pr_bot=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "use_pr_bot=false" >> "$GITHUB_OUTPUT"
+          fi
+
           # SECURITY: Use a random delimiter to prevent output injection from artifact poisoning
           DELIMITER=$(openssl rand -hex 16)
           echo "tags<<$DELIMITER" >> $GITHUB_OUTPUT
           printf '%s\n' "$TAGS_LIST" >> $GITHUB_OUTPUT
           echo "$DELIMITER" >> $GITHUB_OUTPUT
-      - name: Push Images
-        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
+      - name: Push Images (rhdh-pr bot)
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' && steps.prepare.outputs.use_pr_bot == 'true' }}
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        env:
+          PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
+        with:
+          tags: ${{ env.PUSHED_TAGS }}
+          username: ${{ secrets.RHDH_PR_BOT_USER }}
+          password: ${{ secrets.RHDH_PR_BOT_TOKEN }}
+      - name: Push Images (legacy Quay)
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' && steps.prepare.outputs.use_pr_bot != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
         env:
           PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
