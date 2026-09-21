@@ -45,18 +45,18 @@ helm::merge_values() {
     step_1_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step1-XXXXXX.yaml")
     step_2_file=$(mktemp "${TMPDIR:-/tmp}/helm-merge-step2-XXXXXX.yaml")
 
-    # Step 1: Merge files, excluding the .global.dynamic.plugins key
+    # Step 1: Merge files, excluding the .dynamicPlugins.plugins key
     # Values from `diff_file` override those in `base_file`
     yq eval-all '
       select(fileIndex == 0) * select(fileIndex == 1) |
-      del(.global.dynamic.plugins)
+      del(.dynamicPlugins.plugins)
     ' "${base_file}" "${diff_file}" > "${step_1_file}"
 
-    # Step 2: Merge files, combining the .global.dynamic.plugins key
+    # Step 2: Merge files, combining the .dynamicPlugins.plugins key
     # Values from `diff_file` take precedence; plugins are merged and deduplicated by the .package field
     yq eval-all '
       select(fileIndex == 0) *+ select(fileIndex == 1) |
-      .global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)
+      .dynamicPlugins.plugins |= (reverse | unique_by(.package) | reverse)
     ' "${base_file}" "${diff_file}" > "${step_2_file}"
 
     # Step 3: Combine results from the previous steps and remove null values
@@ -303,13 +303,13 @@ helm::uninstall() {
 #   CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO, CATALOG_INDEX_TAG (from env_variables.sh)
 #
 # Options (all optional; defaults reproduce the connected-install behavior):
-#   --backstage-registry <r>  Override upstream.backstage.image.registry
+#   --backstage-registry <r>  Override image.registry
 #                             (default: IMAGE_REGISTRY). Disconnected installs
 #                             pass the in-cluster mirror host.
-#   --catalog-registry <r>    Override global.catalogIndex.image.registry
+#   --catalog-registry <r>    Override catalogIndex.image.registry
 #                             (default: CATALOG_INDEX_REGISTRY). Disconnected
 #                             installs pass MIRROR_REGISTRY_URL.
-#   --omit-backstage-image    Skip the upstream.backstage.image.* flags entirely
+#   --omit-backstage-image    Skip the image.* flags entirely
 #                             (LOCAL_DISCONNECTED lets the chart + IDMS resolve
 #                             the hub image instead of pinning it).
 # Returns:
@@ -344,15 +344,15 @@ helm::get_image_params() {
   local params=""
 
   if [[ "${omit_backstage_image}" != "true" ]]; then
-    params+="--set upstream.backstage.image.registry=${backstage_registry} "
-    params+="--set upstream.backstage.image.repository=${IMAGE_REPO} "
-    params+="--set upstream.backstage.image.tag=${TAG_NAME} "
+    params+="--set image.registry=${backstage_registry} "
+    params+="--set image.repository=${IMAGE_REPO} "
+    params+="--set image.tag=${TAG_NAME} "
   fi
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-    params+="--set global.catalogIndex.image.registry=${catalog_registry} "
-    params+="--set global.catalogIndex.image.repository=${CATALOG_INDEX_REPO} "
-    params+="--set global.catalogIndex.image.tag=${CATALOG_INDEX_TAG} "
+    params+="--set catalogIndex.image.registry=${catalog_registry} "
+    params+="--set catalogIndex.image.repository=${CATALOG_INDEX_REPO} "
+    params+="--set catalogIndex.image.tag=${CATALOG_INDEX_TAG} "
   fi
 
   echo "${params}"
@@ -385,6 +385,6 @@ helm::install() {
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(helm::get_image_params)
 }
