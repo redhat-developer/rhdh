@@ -95,10 +95,6 @@ component_management:
       name: Frontend app
       paths:
         - packages/app/src/**
-    - component_id: plugin_utils
-      name: Plugin utils
-      paths:
-        - packages/plugin-utils/src/**
 
 flag_management:
   default_rules:
@@ -117,7 +113,6 @@ flag_management:
         - plugins/*/src/**
         - packages/app/src/**
         - packages/backend/src/**
-        - packages/plugin-utils/src/**
       carryforward: true
     # Paths intentionally mirror the rhdh flag — both measure the same source
     # from different test types. Isolation relies on --flag at upload time,
@@ -127,5 +122,4 @@ flag_management:
         - plugins/*/src/**
         - packages/app/src/**
         - packages/backend/src/**
-        - packages/plugin-utils/src/**
       carryforward: true
