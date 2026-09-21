@@ -1250,24 +1250,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-backend@npm:7.12.5":
-  version: 7.12.5
-  resolution: "@backstage-community/plugin-rbac-backend@npm:7.12.5"
+"@backstage-community/plugin-rbac-backend@npm:8.1.2":
+  version: 8.1.2
+  resolution: "@backstage-community/plugin-rbac-backend@npm:8.1.2"
   dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^1.26.1"
-    "@backstage-community/plugin-rbac-node": "npm:^1.20.1"
-    "@backstage/backend-defaults": "npm:^0.16.0"
-    "@backstage/backend-plugin-api": "npm:^1.8.0"
-    "@backstage/catalog-client": "npm:^1.14.0"
-    "@backstage/catalog-model": "npm:^1.7.7"
-    "@backstage/config": "npm:^1.3.6"
-    "@backstage/errors": "npm:^1.2.7"
-    "@backstage/plugin-permission-common": "npm:^0.9.7"
-    "@backstage/plugin-permission-node": "npm:^0.10.11"
+    "@backstage-community/plugin-rbac-common": "npm:^2.1.1"
+    "@backstage-community/plugin-rbac-node": "npm:^2.1.1"
+    "@backstage/backend-defaults": "npm:^0.17.8"
+    "@backstage/backend-plugin-api": "npm:^1.10.0"
+    "@backstage/catalog-client": "npm:^1.16.1"
+    "@backstage/catalog-model": "npm:^1.10.0"
+    "@backstage/config": "npm:^1.3.8"
+    "@backstage/errors": "npm:^1.3.1"
+    "@backstage/plugin-permission-common": "npm:^0.9.10"
+    "@backstage/plugin-permission-node": "npm:^0.11.3"
     "@dagrejs/graphlib": "npm:^4.0.0"
     casbin: "npm:^5.27.1"
     chokidar: "npm:^3.6.0"
-    csv-parse: "npm:^6.0.0"
+    csv-parse: "npm:^7.0.0"
     express: "npm:^4.18.2"
     express-promise-router: "npm:^4.1.0"
     js-yaml: "npm:^4.1.0"
@@ -1275,47 +1275,27 @@ __metadata:
     lodash: "npm:^4.17.21"
     typeorm-adapter: "npm:^1.6.1"
     zod: "npm:^4.3.6"
-  checksum: 10c0/ee2b60a75568241d808fbc8f79e0c823bc832bf57ac01b0364c8056a0107b8b62f69c9321abf88cb7e8a1d2ccf13065f392f205dbb662fb5ff151f6070e7710c
+  checksum: 10c0/9bf968d4a160b28ca80acc5d6f93c2a13ecf2ae380726a3530977a06f1740a2c784529de33dc681054773131f6a37dee0ff5ec53500d20487e711eda662f6a2b
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-common@npm:1.26.1":
-  version: 1.26.1
-  resolution: "@backstage-community/plugin-rbac-common@npm:1.26.1"
+"@backstage-community/plugin-rbac-common@npm:2.1.1, @backstage-community/plugin-rbac-common@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@backstage-community/plugin-rbac-common@npm:2.1.1"
   peerDependencies:
-    "@backstage/errors": ^1.2.7
-    "@backstage/plugin-permission-common": ^0.9.7
-  checksum: 10c0/2bcc754768100bd7c56d2e8545f72081c6c9e3d41ffd480bddd74c0264e365dfd5899af60af4b6644e4b1a3d3c5662765ed02587cda4cf2a531e182bfe6ce9e5
+    "@backstage/errors": ^1.3.1
+    "@backstage/plugin-permission-common": ^0.9.10
+  checksum: 10c0/531263896c0e428bd0d73c8aec9d9099deb500ae2e3b641ca515d1c5bc5b31c2db809931f431fc5dcb09b056a6476a0488cd14309a5ea19aa0a04b78fe6c3b4c
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-common@npm:^1.26.1, @backstage-community/plugin-rbac-common@npm:^1.27.0":
-  version: 1.27.0
-  resolution: "@backstage-community/plugin-rbac-common@npm:1.27.0"
-  peerDependencies:
-    "@backstage/errors": ^1.3.0
-    "@backstage/plugin-permission-common": ^0.9.8
-  checksum: 10c0/198593041500f78b742760e20b39e2e8b97caf7dc84d1894e377d4bef83db8792bee63e164f513a22c50147e0cbf333ed8321c86143d7dee181c4ec99f73a109
-  languageName: node
-  linkType: hard
-
-"@backstage-community/plugin-rbac-node@npm:1.20.1":
-  version: 1.20.1
-  resolution: "@backstage-community/plugin-rbac-node@npm:1.20.1"
+"@backstage-community/plugin-rbac-node@npm:2.1.1, @backstage-community/plugin-rbac-node@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@backstage-community/plugin-rbac-node@npm:2.1.1"
   dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^1.26.1"
-    "@backstage/backend-plugin-api": "npm:^1.8.0"
-  checksum: 10c0/936f95a638841c1da0a3fd73ac50daf03ba777d829312c05fadedb431f92b5412e71fbd67412411241bb964a659593260ecc94dec8adf788d6fa8aba3c969bb7
-  languageName: node
-  linkType: hard
-
-"@backstage-community/plugin-rbac-node@npm:^1.20.1":
-  version: 1.21.0
-  resolution: "@backstage-community/plugin-rbac-node@npm:1.21.0"
-  dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^1.27.0"
-    "@backstage/backend-plugin-api": "npm:^1.9.0"
-  checksum: 10c0/d24cc070ef0da213746844c6127cef2c1c2a49e2d13cd744bb5cd414b97f42bc112a18ef247223f94cae458b49288c0a75e44d369eced585d17a90c283f02b91
+    "@backstage-community/plugin-rbac-common": "npm:^2.1.1"
+    "@backstage/backend-plugin-api": "npm:^1.10.0"
+  checksum: 10c0/962161977e4565611e85462b4d9d19f09250e4a48a80dc76f096b1cb447bb841f8349db1716b7a87d28f326141f1d931b821e331148e8f741d308a5a1562b058
   languageName: node
   linkType: hard
 
@@ -1370,7 +1350,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-defaults@npm:0.17.8, @backstage/backend-defaults@npm:^0.17.7":
+"@backstage/backend-defaults@npm:0.17.8, @backstage/backend-defaults@npm:^0.17.7, @backstage/backend-defaults@npm:^0.17.8":
   version: 0.17.8
   resolution: "@backstage/backend-defaults@npm:0.17.8"
   dependencies:
@@ -5015,7 +4995,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/plugin-licensed-users-info-backend@workspace:plugins/licensed-users-info-backend"
   dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:1.26.1"
+    "@backstage-community/plugin-rbac-common": "npm:2.1.1"
     "@backstage/backend-defaults": "npm:0.17.8"
     "@backstage/backend-plugin-api": "npm:1.10.0"
     "@backstage/backend-test-utils": "npm:1.11.6"
@@ -12519,8 +12499,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage-community/plugin-rbac-backend": "npm:7.12.5"
-    "@backstage-community/plugin-rbac-node": "npm:1.20.1"
+    "@backstage-community/plugin-rbac-backend": "npm:8.1.2"
+    "@backstage-community/plugin-rbac-node": "npm:2.1.1"
     "@backstage-community/plugin-scaffolder-backend-module-annotator": "npm:2.20.0"
     "@backstage/backend-app-api": "npm:1.7.3"
     "@backstage/backend-defaults": "npm:0.17.8"
@@ -14669,10 +14649,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csv-parse@npm:^6.0.0":
-  version: 6.2.1
-  resolution: "csv-parse@npm:6.2.1"
-  checksum: 10c0/8b6f14b244ca62476d4217aac721131ba0ada3e4ed7614e43ebc99203807564dcb054144d1de4ef22ee8b0c63b431640f75d46a0e1e0f72853a954b279ba1c61
+"csv-parse@npm:^7.0.0":
+  version: 7.0.2
+  resolution: "csv-parse@npm:7.0.2"
+  checksum: 10c0/52ffaafbf7be37201ad782ec3eda37bc24ee0ec6e8967b5a68d5ad2973f10b4154fd11a5b90a002615ef98395c4cd699a13d13509b10067297795b9d3c9320e9
   languageName: node
   linkType: hard
 
