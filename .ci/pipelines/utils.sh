@@ -538,18 +538,25 @@ uninstall_helmchart() {
 configure_namespace() {
   local project=$1
   log::warn "Deleting and recreating namespace: $project"
-  delete_namespace $project
-
-  if ! oc create namespace "${project}"; then
-    log::error "Error: Failed to create namespace ${project}" >&2
-    exit 1
-  fi
-  if ! oc config set-context --current --namespace="${project}"; then
-    log::error "Error: Failed to set context for namespace ${project}" >&2
-    exit 1
-  fi
-
-  echo "Namespace ${project} is ready."
+  # A transient API/DNS blip can make the delete silently no-op (it is
+  # fire-and-forget) and the create then dies on AlreadyExists; retry the
+  # whole delete+create cycle instead of failing the job on one blip.
+  local attempt
+  for attempt in 1 2 3; do
+    delete_namespace $project
+    if oc create namespace "${project}"; then
+      if ! oc config set-context --current --namespace="${project}"; then
+        log::error "Error: Failed to set context for namespace ${project}" >&2
+        exit 1
+      fi
+      echo "Namespace ${project} is ready."
+      return 0
+    fi
+    log::warn "Failed to create namespace ${project} (attempt ${attempt}/3); retrying in 10s..."
+    sleep 10
+  done
+  log::error "Error: Failed to create namespace ${project}" >&2
+  exit 1
 }
 
 delete_namespace() {
