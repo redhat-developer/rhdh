@@ -5,7 +5,6 @@
 plugins
 !plugins/dynamic-plugins-info-backend
 !plugins/licensed-users-info-backend
-!plugins/scalprum-backend
 *.local.yaml
 *.local-e2e.yaml
 coverage

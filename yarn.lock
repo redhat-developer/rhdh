@@ -5024,31 +5024,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/plugin-scalprum-backend@workspace:*, @internal/plugin-scalprum-backend@workspace:plugins/scalprum-backend":
-  version: 0.0.0-use.local
-  resolution: "@internal/plugin-scalprum-backend@workspace:plugins/scalprum-backend"
-  dependencies:
-    "@backstage/backend-defaults": "npm:0.17.8"
-    "@backstage/backend-dynamic-feature-service": "npm:0.8.6"
-    "@backstage/backend-plugin-api": "npm:1.10.0"
-    "@backstage/backend-test-utils": "npm:1.11.6"
-    "@backstage/cli": "npm:0.36.5"
-    "@backstage/cli-defaults": "npm:0.1.5"
-    "@backstage/config": "npm:1.3.8"
-    "@types/express": "npm:4.17.25"
-    "@types/mock-fs": "npm:4.13.4"
-    "@types/supertest": "npm:6.0.3"
-    express: "npm:4.22.2"
-    mock-fs: "npm:5.5.0"
-    msw: "npm:1.3.5"
-    node-fetch: "npm:2.7.0"
-    prettier: "npm:3.9.6"
-    supertest: "npm:6.3.4"
-    typescript: "npm:5.9.3"
-    winston: "npm:3.14.2"
-  languageName: unknown
-  linkType: soft
-
 "@internationalized/date@npm:^3.12.0, @internationalized/date@npm:^3.12.1, @internationalized/date@npm:^3.12.2":
   version: 3.12.2
   resolution: "@internationalized/date@npm:3.12.2"
@@ -10510,15 +10485,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mock-fs@npm:4.13.4":
-  version: 4.13.4
-  resolution: "@types/mock-fs@npm:4.13.4"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/687c8e36d91031529924fd89011b7a87167ea33a1b92a9d845f0feb1a5157f168412c62ee308e57b9a71fd938197b4c71ca1784eb44e8a7cbdd816011ffd7f65
-  languageName: node
-  linkType: hard
-
 "@types/ms@npm:*":
   version: 2.1.0
   resolution: "@types/ms@npm:2.1.0"
@@ -12534,7 +12500,6 @@ __metadata:
     "@backstage/plugin-user-settings-backend": "npm:0.4.6"
     "@internal/plugin-dynamic-plugins-info-backend": "workspace:*"
     "@internal/plugin-licensed-users-info-backend": "workspace:*"
-    "@internal/plugin-scalprum-backend": "workspace:*"
     "@opentelemetry/api": "npm:1.9.1"
     "@opentelemetry/auto-instrumentations-node": "npm:0.78.0"
     "@opentelemetry/core": "npm:2.8.0"
@@ -22513,13 +22478,6 @@ __metadata:
   bin:
     mkdirp: dist/cjs/src/bin.js
   checksum: 10c0/9f2b975e9246351f5e3a40dcfac99fcd0baa31fbfab615fe059fb11e51f10e4803c63de1f384c54d656e4db31d000e4767e9ef076a22e12a641357602e31d57d
-  languageName: node
-  linkType: hard
-
-"mock-fs@npm:5.5.0":
-  version: 5.5.0
-  resolution: "mock-fs@npm:5.5.0"
-  checksum: 10c0/56539c9ab1d29b72c4b3b54f003808c7c51e5c82454a80fc46fd811f40401652da32412bbf26daa4eabff0e44a08eeafbeb6c885c60c1111b5429a4279efbda4
   languageName: node
   linkType: hard
 

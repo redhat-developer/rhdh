@@ -38,10 +38,8 @@ driving it with `supertest`, without booting a backend.
 Utilities: `mockServices`, `createMockDirectory` from `@backstage/backend-test-utils`;
 `express`; `supertest`.
 
-Worked example:
-[`plugins/scalprum-backend/src/service/router.test.ts`](../plugins/scalprum-backend/src/service/router.test.ts)
-— table-driven cases over `createRouter`, with a mock directory standing in for
-plugin content on disk.
+For a router, add table-driven cases over the router factory, with a mock directory
+standing in for plugin content on disk.
 
 ## Layer 2 — backend integration
 
@@ -59,9 +57,6 @@ const { server } = await startTestBackend({
 });
 const response = await request(server).get('/api/my-plugin/things');
 ```
-
-Worked example:
-[`plugins/scalprum-backend/src/service/router.integration.test.ts`](../plugins/scalprum-backend/src/service/router.integration.test.ts)
 
 **Assert the HTTP contract** — status codes, response shape, what an unauthenticated
 caller receives. **Do not assert the wiring itself**; that the plugin booted at all is

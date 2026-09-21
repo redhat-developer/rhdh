@@ -5,13 +5,13 @@ How to run: [README.md](./README.md).
 
 - **Unmaintained:** no release in 18 months, or npm deprecated
 - **Impact:** high / medium / low — lookup of usage vs outdatedness, not a CVE score. See [README.md](./README.md).
-- **Totals (CSV):** unmaintained: 127 · OK: 1612 · unknown: 0
+- **Totals (CSV):** unmaintained: 124 · OK: 1612 · unknown: 0
 - Plugin workspace tables omit overlay `devDependencies` (those rows stay in the CSV).
 - Workspace non-OK counts are not additive; the same package can appear in more than one workspace.
 
 ## Contents
 
-- [RHDH core](#rhdh-core) — 18 non-OK
+- [RHDH core](#rhdh-core) — 15 non-OK
 - Plugin workspaces
   - [adoption-insights](#adoption-insights) — 2 non-OK
   - [analytics](#analytics) — 0 non-OK
@@ -39,7 +39,7 @@ How to run: [README.md](./README.md).
 
 ## RHDH core
 
-unmaintained: 18 · OK: 251 · unknown: 0
+unmaintained: 15 · OK: 251 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -51,7 +51,6 @@ unmaintained: 18 · OK: 251 · unknown: 0
 | high | unmaintained | `dynamic-plugins-info-backend` | `node-fetch` | 2.7.0 | runtime-prod | 2023-07-25 |
 | high | unmaintained | `licensed-users-info-backend` | `express-promise-router` | 4.1.1 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `licensed-users-info-backend` | `node-fetch` | 2.7.0 | runtime-prod | 2023-07-25 |
-| high | unmaintained | `scalprum-backend` | `node-fetch` | 2.7.0 | runtime-prod | 2023-07-25 |
 | medium | unmaintained | `app` | `@emotion/react` | 11.14.0 | runtime-prod | 2024-12-09 |
 | low | unmaintained | `app` | `@janus-idp/cli` | patch:@janus-idp/cli@npm%3A3.7.0#~/.yarn/patches/@janus-idp-cli-npm-3.7.0-f225cddfdb.patch | build | 2026-01-20 |
 | low | unmaintained | `app` | `@testing-library/react-hooks` | 8.0.1 | test-only | 2022-06-18 |
@@ -59,8 +58,6 @@ unmaintained: 18 · OK: 251 · unknown: 0
 | low | unmaintained | `app-next` | `@types/zen-observable` | 0.8.7 | test-only | 2023-11-22 |
 | low | unmaintained | `backend` | `@types/global-agent` | 2.1.3 | test-only | 2025-02-21 |
 | low | unmaintained | `root` | `husky` | 8.0.3 | build | 2024-11-18 |
-| low | unmaintained | `scalprum-backend` | `@types/mock-fs` | 4.13.4 | test-only | 2023-11-07 |
-| low | unmaintained | `scalprum-backend` | `mock-fs` | 5.5.0 | build | 2025-02-06 |
 
 ## Plugin workspaces
 
