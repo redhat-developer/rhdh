@@ -8,14 +8,18 @@ const refreshIntervalMs = 30000;
 
 async function guestAuthHeaders(): Promise<Record<string, string>> {
   const ctx = await request.newContext();
-  const response = await ctx.post("/api/auth/guest/refresh");
-  if (!response.ok()) {
-    throw new Error(
-      `Guest auth refresh failed with status ${response.status()}`,
-    );
+  try {
+    const response = await ctx.post("/api/auth/guest/refresh");
+    if (!response.ok()) {
+      throw new Error(
+        `Guest auth refresh failed with status ${response.status()}`,
+      );
+    }
+    const data = await response.json();
+    return { Authorization: `Bearer ${data.backstageIdentity.token}` };
+  } finally {
+    await ctx.dispose();
   }
-  const data = await response.json();
-  return { Authorization: `Bearer ${data.backstageIdentity.token}` };
 }
 
 /**
@@ -35,6 +39,18 @@ export async function ensureShowcaseEntityIngested(
 ): Promise<void> {
   const headers = await guestAuthHeaders();
   const ctx = await request.newContext();
+  try {
+    await pollForEntity(ctx, headers, timeoutMs);
+  } finally {
+    await ctx.dispose();
+  }
+}
+
+async function pollForEntity(
+  ctx: Awaited<ReturnType<typeof request.newContext>>,
+  headers: Record<string, string>,
+  timeoutMs: number,
+): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   let lastRefreshAt = 0;
   let lastStatus = 0;
