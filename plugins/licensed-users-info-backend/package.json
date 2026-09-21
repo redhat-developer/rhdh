@@ -41,7 +41,7 @@
     "@backstage/plugin-auth-backend": "0.30.0",
     "@backstage/plugin-permission-common": "0.9.10",
     "@backstage/types": "1.2.2",
-    "express": "4.22.2",
+    "express": "4.22.3",
     "express-promise-router": "4.1.1",
     "json-2-csv": "5.6.0",
     "knex": "3.3.0",
