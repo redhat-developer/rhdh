@@ -9,7 +9,7 @@ import searchPlugin from "@backstage/plugin-search/alpha";
 import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
 import homePagePlugin from "@backstage/plugin-home/alpha";
 
-import { rhdhThemeModule } from "@red-hat-developer-hub/backstage-plugin-theme/alpha";
+import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { catalogCreatedAtModule } from "./modules/catalog";
