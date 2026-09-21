@@ -9,30 +9,27 @@
 # which CrashLoops install-dynamic-plugins after registries.conf rewrites
 # those pulls to the mirror. Homepage package is HOMEPAGE_PLUGIN_PACKAGE
 # (digest-pinned OCI from the catalog). ref:// needs includes and cannot be used.
-global:
-  dynamic:
-    includes: []
-    plugins:
-      - package: ${HOMEPAGE_PLUGIN_PACKAGE}
-        enabled: true
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-homepage:
-                dynamicRoutes:
-                  - path: /
-                    importName: DynamicHomePage
-  lightspeed:
-    enabled: false
+dynamicPlugins:
+  includes: []
+  plugins:
+    - package: ${HOMEPAGE_PLUGIN_PACKAGE}
+      enabled: true
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-homepage:
+              dynamicRoutes:
+                - path: /
+                  importName: DynamicHomePage
+intelligentAssistant:
+  enabled: false
 orchestrator:
   enabled: false
-upstream:
-  backstage:
-    image:
-      pullPolicy: Always
-    appConfig:
-      auth:
-        environment: development
-        providers:
-          guest:
-            dangerouslyAllowOutsideDevelopment: true
+image:
+  pullPolicy: Always
+appConfig:
+  auth:
+    environment: development
+    providers:
+      guest:
+        dangerouslyAllowOutsideDevelopment: true

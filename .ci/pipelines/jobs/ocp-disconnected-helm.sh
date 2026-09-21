@@ -73,9 +73,9 @@ handle_ocp_disconnected_helm() {
   # `// ""` coalesces a missing key (yq prints literal "null") to empty so the
   # ${:-default} fallback below actually applies.
   export PG_REGISTRY PG_REPO PG_TAG PG_SEPARATOR
-  PG_REGISTRY=$(echo "${helm_values}" | yq '.upstream.postgresql.image.registry // ""' || true)
-  PG_REPO=$(echo "${helm_values}" | yq '.upstream.postgresql.image.repository // ""' || true)
-  PG_TAG=$(echo "${helm_values}" | yq '.upstream.postgresql.image.tag // ""' || true)
+  PG_REGISTRY=$(echo "${helm_values}" | yq '.postgresql.image.registry // ""' || true)
+  PG_REPO=$(echo "${helm_values}" | yq '.postgresql.image.repository // ""' || true)
+  PG_TAG=$(echo "${helm_values}" | yq '.postgresql.image.tag // ""' || true)
   PG_REGISTRY="${PG_REGISTRY:-${POSTGRESQL_IMAGE_REGISTRY}}"
   PG_REPO="${PG_REPO:-${POSTGRESQL_IMAGE_REPO}}"
   PG_TAG="${PG_TAG:-${POSTGRESQL_IMAGE_TAG}}"
@@ -170,8 +170,8 @@ handle_ocp_disconnected_helm() {
   log::info "Helm image registry: ${image_registry}"
 
   local helm_set_flags=(
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
-    --set upstream.postgresql.image.registry="${image_registry}"
+    --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
+    --set postgresql.image.registry="${image_registry}"
   )
 
   # Shared image params (helm::get_image_params), with disconnected overrides:

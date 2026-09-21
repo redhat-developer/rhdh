@@ -610,10 +610,10 @@ initiate_upgrade_base_deployments() {
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${previous_release_value_file}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.registry="${IMAGE_REGISTRY}" \
-    --set upstream.backstage.image.repository="${IMAGE_REPO_BASE}" \
-    --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+    --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set image.registry="${IMAGE_REGISTRY}" \
+    --set image.repository="${IMAGE_REPO_BASE}" \
+    --set image.tag="${TAG_NAME_BASE}"
 }
 
 initiate_upgrade_deployments() {
@@ -631,7 +631,7 @@ initiate_upgrade_deployments() {
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(helm::get_image_params) \
     --wait --timeout=${wait_upgrade}
 
@@ -655,7 +655,7 @@ initiate_sanity_plugin_checks_deployment() {
   helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(helm::get_image_params)
 }
 
