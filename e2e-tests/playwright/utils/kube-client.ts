@@ -819,6 +819,65 @@ export class KubeClient {
     );
   }
 
+  /**
+   * A pod killed mid-install (for example by a restart retry) leaves
+   * /dynamic-plugins-root/install-dynamic-plugins.lock behind on the shared
+   * volume, and the next pod's init container waits on it forever. While the
+   * deployment is scaled to a single pod that pod is the only possible lock
+   * owner, so once its init container has been running well past a normal
+   * install the lock it waits on is orphaned and deleting it is safe.
+   */
+  private startDynamicPluginsLockBreaker(
+    deploymentName: string,
+    namespace: string,
+  ): { stop: () => void } {
+    const stuckThresholdMs = 180000; // 3 minutes of Init is not a normal install here
+    const interval = setInterval(() => {
+      void (async () => {
+        try {
+          const selector = await this.getDeploymentPodSelector(
+            deploymentName,
+            namespace,
+          );
+          const pods = await this.coreV1Api.listNamespacedPod(
+            namespace,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            selector,
+          );
+          for (const pod of pods.body.items) {
+            const init = pod.status?.initContainerStatuses?.find(
+              (c) => c.name === "install-dynamic-plugins",
+            );
+            const startedAt = init?.state?.running?.startedAt;
+            if (!startedAt) continue;
+            const runningMs = Date.now() - new Date(startedAt).getTime();
+            if (runningMs < stuckThresholdMs) continue;
+            console.warn(
+              `Pod ${pod.metadata?.name} has been initializing for ${Math.round(runningMs / 1000)}s; clearing a stale dynamic-plugins lock`,
+            );
+            await this.execPodCommand(
+              pod.metadata?.name ?? "",
+              namespace,
+              "install-dynamic-plugins",
+              [
+                "rm",
+                "-f",
+                "/dynamic-plugins-root/install-dynamic-plugins.lock",
+              ],
+              15000,
+            ).catch(() => undefined);
+          }
+        } catch {
+          // best-effort: the regular readiness timeout still reports failures
+        }
+      })();
+    }, 60000);
+    return { stop: () => clearInterval(interval) };
+  }
+
   async restartDeployment(deploymentName: string, namespace: string) {
     try {
       console.log(
@@ -842,7 +901,15 @@ export class KubeClient {
 
       // 2m + 10s + 7m fits the 10 minute test timeout, so a slow rollout fails
       // through the catch below instead of the worker being killed mid-restart.
-      await this.waitForDeploymentReady(deploymentName, namespace, 1, 420000); // 7 minutes for scale up
+      const lockBreaker = this.startDynamicPluginsLockBreaker(
+        deploymentName,
+        namespace,
+      );
+      try {
+        await this.waitForDeploymentReady(deploymentName, namespace, 1, 420000); // 7 minutes for scale up
+      } finally {
+        lockBreaker.stop();
+      }
 
       console.log(
         `Restart of deployment ${deploymentName} completed successfully.`,
