@@ -142,7 +142,7 @@ handle_ocp_disconnected_operator() {
     log::info "LOCAL_DISCONNECTED=1: skipping external bastion CA/pull-secret pre-prepare helpers"
   fi
 
-  local prepare_max_parallel="${PREPARE_MAX_PARALLEL:-2}"
+  local prepare_max_parallel="${PREPARE_MAX_PARALLEL:-10}"
   if ! [[ "${prepare_max_parallel}" =~ ^[1-9][0-9]*$ ]]; then
     log::error "PREPARE_MAX_PARALLEL must be a positive integer, got '${prepare_max_parallel}'"
     return 1
