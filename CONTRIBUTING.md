@@ -154,7 +154,9 @@ The image-push workflows default to `quay.io/rhdh-community/rhdh` (production), 
 
 #### Pull requests targeting `redhat-developer/rhdh`
 
-[pr-build-image.yaml](.github/workflows/pr-build-image.yaml) runs in the **base** repository. Vars/secrets set on your fork are **not** used. Repository secrets (`RHDH_PR_BOT_*`) are also unavailable to fork `pull_request` workflows, so preview images are **built but not published** to Quay. Same-repo PRs (or a maintainer re-run from a branch in this repo) can push to `rhdh-pr`.
+[pr-build-image.yaml](.github/workflows/pr-build-image.yaml) runs in the **base** repository and builds the preview image without Quay secrets (so forks and same-repo PRs share the same untrusted builder). [pr-podman-push.yaml](.github/workflows/pr-podman-push.yaml) then runs as a trusted `workflow_run` publisher with `RHDH_PR_BOT_*` and pushes only to `quay.io/rhdh-community/rhdh-pr` using tags derived from the trusted PR number and `head_sha`. Fork PRs into upstream therefore get Quay preview tags the same way same-repo PRs do.
+
+Vars/secrets set on your fork are **not** used for PRs targeting this repository.
 
 #### Production / e2e-runner builds on your fork
 

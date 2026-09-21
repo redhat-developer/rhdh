@@ -23,23 +23,18 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  # Default preview repo. Override only when this workflow runs on a fork of the
-  # GitHub repo (not for PRs targeting redhat-developer/rhdh — those use base-repo
-  # vars/secrets; fork PRs cannot push). See CONTRIBUTING.md.
+  # Preview images are published to rhdh-pr by the trusted workflow_run
+  # publisher (pr-podman-push.yaml). Build tags use this repo so skip-check
+  # and artifacts stay consistent. Override only when this workflow runs on a
+  # fork of the GitHub repo (not for PRs targeting redhat-developer/rhdh).
   REGISTRY_IMAGE: ${{ vars.QUAY_PR_IMAGE_REPO || 'rhdh-community/rhdh-pr' }}
 
 jobs:
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
-    # Fork PRs into upstream run in the base repo context: github.repository is
-    # redhat-developer/rhdh, and repository secrets are not available. Detect via
-    # head repo, not github.repository.
-    env:
-      IS_FORK_PR: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -50,6 +45,23 @@ jobs:
       - name: Check Image and Relevant Changes
         id: check-image
         uses: ./.github/actions/check-image-and-changes
+
+      - name: Store isSkipped status
+        env:
+          IS_SKIPPED: ${{ steps.check-image.outputs.is_skipped }}
+        run: |
+          mkdir -p ./rhdh-skip-artifacts
+          echo "$IS_SKIPPED" > ./rhdh-skip-artifacts/isSkipped.txt
+
+      - name: Upload isSkipped status
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        env:
+          ARTIFACT_NAME: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-isSkipped
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ./rhdh-skip-artifacts/isSkipped.txt
+          retention-days: 1
+          if-no-files-found: error
 
       - name: Debug outputs
         env:
@@ -62,19 +74,8 @@ jobs:
           echo "SHORT_SHA: $SHORT_SHA"
           echo "PR Number: $PR_NUMBER"
           echo "Registry image: $REGISTRY_IMAGE"
-          echo "Is fork PR: $IS_FORK_PR"
           echo "Base Tag: pr-$PR_NUMBER"
           echo "Commit Tag: pr-$PR_NUMBER-$SHORT_SHA"
-
-      - name: Check PR bot credentials
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
-        env:
-          HAS_PR_BOT_AUTH: ${{ secrets.RHDH_PR_BOT_USER != '' && secrets.RHDH_PR_BOT_TOKEN != '' }}
-        run: |
-          if [ "$HAS_PR_BOT_AUTH" != "true" ]; then
-            echo "::error::Missing RHDH_PR_BOT_USER or RHDH_PR_BOT_TOKEN secrets"
-            exit 1
-          fi
 
       - name: Get the latest commits from base branch
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -88,7 +89,6 @@ jobs:
 
       - name: Build Image (Hermetic)
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        id: build-image
         uses: ./.github/actions/docker-build
         with:
           imageName: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
@@ -97,104 +97,3 @@ jobs:
             pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
           imageLabels: quay.expires-after=14d
           platform: linux/amd64
-          skipArtifactUpload: true
-
-      - name: Push Image to Registry
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
-        id: push-image
-        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
-        with:
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
-          username: ${{ secrets.RHDH_PR_BOT_USER }}
-          password: ${{ secrets.RHDH_PR_BOT_TOKEN }}
-
-      - name: Comment skip status
-        if: ${{ success() && steps.check-image.outputs.is_skipped == 'true' }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        env:
-          PR_NUMBER: ${{ github.event.number }}
-          BUILD_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          script: |
-            const prNumber = process.env.PR_NUMBER;
-            const buildUrl = process.env.BUILD_WORKFLOW_URL;
-
-            const body = `The container image [build workflow](${buildUrl}) was skipped (either due to [skip-build] tag or no relevant changes with existing image).\n`;
-
-            github.rest.issues.createComment({
-              issue_number: parseInt(prNumber),
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
-
-      - name: Comment fork PR build without publish
-        if: ${{ success() && steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR == 'true' }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        env:
-          PR_NUMBER: ${{ github.event.number }}
-          BUILD_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          script: |
-            const prNumber = process.env.PR_NUMBER;
-            const buildUrl = process.env.BUILD_WORKFLOW_URL;
-
-            const body = `The container image was [built](${buildUrl}) successfully but **not published** to Quay.\n\n` +
-              `Fork pull requests cannot use repository secrets (\`RHDH_PR_BOT_*\`), so preview images are only pushed for same-repo PRs. ` +
-              `If you need a Quay tag, ask a maintainer to open or re-run the build from a branch in this repository.\n`;
-
-            github.rest.issues.createComment({
-              issue_number: parseInt(prNumber),
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
-
-      - name: Comment the image pull link
-        if: ${{ success() && steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        env:
-          PR_NUMBER: ${{ github.event.number }}
-          IMAGE_TAG_PR: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}
-          IMAGE_TAG_SHA: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
-          BUILD_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          script: |
-            const prNumber = process.env.PR_NUMBER;
-            const buildUrl = process.env.BUILD_WORKFLOW_URL;
-            const tags = [process.env.IMAGE_TAG_PR, process.env.IMAGE_TAG_SHA].filter(Boolean);
-
-            const tagLinks = tags.map(fullTag => {
-              return `* [\`${fullTag}\`](https://${fullTag})`;
-            }).join('\n');
-
-            const body = `Image was [built and published](${buildUrl}) successfully. It is available at:\n\n${tagLinks}\n`;
-
-            github.rest.issues.createComment({
-              issue_number: parseInt(prNumber),
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
-
-      - name: Comment build failure
-        if: ${{ failure() }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        env:
-          PR_NUMBER: ${{ github.event.number }}
-          BUILD_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          script: |
-            const prNumber = process.env.PR_NUMBER;
-            const buildUrl = process.env.BUILD_WORKFLOW_URL;
-
-            const body = `The container image [build workflow](${buildUrl}) finished with status: \`failure\`.\n\n`;
-
-            github.rest.issues.createComment({
-              issue_number: parseInt(prNumber),
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });

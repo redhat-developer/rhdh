@@ -57,7 +57,16 @@ HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
-IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
+# PR preview images are published to rhdh-pr; non-PR defaults stay on rhdh (:next).
+if [[ -z "${IMAGE_REPO:-${QUAY_REPO:-}}" ]]; then
+  if [[ -n "${PULL_NUMBER:-}" || -n "${GIT_PR_NUMBER:-}" ]]; then
+    IMAGE_REPO="rhdh-community/rhdh-pr"
+  else
+    IMAGE_REPO="rhdh-community/rhdh"
+  fi
+else
+  IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO}}"
+fi
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
 
 # Catalog index image, derived from RELEASE_VERSION (main → :next, release-1.10 → :1.10).
