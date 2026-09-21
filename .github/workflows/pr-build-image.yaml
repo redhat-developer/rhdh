@@ -23,18 +23,24 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  # Preview images are published to rhdh-pr by the trusted workflow_run
-  # publisher (pr-podman-push.yaml). Build tags use this repo so skip-check
-  # and artifacts stay consistent. Override only when this workflow runs on a
-  # fork of the GitHub repo (not for PRs targeting redhat-developer/rhdh).
+  # Preview images are published to rhdh-pr. Same-repo PRs also push inline
+  # (secrets available); fork PRs rely on the trusted workflow_run publisher
+  # once that workflow is on the default branch. Override only when this
+  # workflow runs on a fork of the GitHub repo.
   REGISTRY_IMAGE: ${{ vars.QUAY_PR_IMAGE_REPO || 'rhdh-community/rhdh-pr' }}
 
 jobs:
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
+    # Fork PRs into upstream run in the base repo context: github.repository is
+    # redhat-developer/rhdh, and repository secrets are not available. Detect via
+    # head repo, not github.repository.
+    env:
+      IS_FORK_PR: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
     permissions:
       contents: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -74,8 +80,19 @@ jobs:
           echo "SHORT_SHA: $SHORT_SHA"
           echo "PR Number: $PR_NUMBER"
           echo "Registry image: $REGISTRY_IMAGE"
+          echo "Is fork PR: $IS_FORK_PR"
           echo "Base Tag: pr-$PR_NUMBER"
           echo "Commit Tag: pr-$PR_NUMBER-$SHORT_SHA"
+
+      - name: Check PR bot credentials
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
+        env:
+          HAS_PR_BOT_AUTH: ${{ secrets.RHDH_PR_BOT_USER != '' && secrets.RHDH_PR_BOT_TOKEN != '' }}
+        run: |
+          if [ "$HAS_PR_BOT_AUTH" != "true" ]; then
+            echo "::error::Missing RHDH_PR_BOT_USER or RHDH_PR_BOT_TOKEN secrets"
+            exit 1
+          fi
 
       - name: Get the latest commits from base branch
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -89,6 +106,7 @@ jobs:
 
       - name: Build Image (Hermetic)
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        id: build-image
         uses: ./.github/actions/docker-build
         with:
           imageName: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
@@ -97,3 +115,64 @@ jobs:
             pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
           imageLabels: quay.expires-after=14d
           platform: linux/amd64
+
+      # Same-repo PRs can push here (secrets available). Fork PRs upload
+      # artifacts only; the trusted workflow_run publisher (on default branch)
+      # publishes them to rhdh-pr after this workflow lands on main.
+      - name: Push Image to Registry
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' }}
+        id: push-image
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        with:
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
+          username: ${{ secrets.RHDH_PR_BOT_USER }}
+          password: ${{ secrets.RHDH_PR_BOT_TOKEN }}
+
+      - name: Comment the image pull link
+        if: ${{ success() && steps.check-image.outputs.is_skipped != 'true' && env.IS_FORK_PR != 'true' && steps.push-image.outcome == 'success' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+          IMAGE_TAG_PR: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}
+          IMAGE_TAG_SHA: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
+          BUILD_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const tags = [process.env.IMAGE_TAG_PR, process.env.IMAGE_TAG_SHA].filter(Boolean);
+
+            const tagLinks = tags.map(fullTag => {
+              return `* [\`${fullTag}\`](https://${fullTag})`;
+            }).join('\n');
+
+            const body = `Image was [built and published](${buildUrl}) successfully. It is available at:\n\n${tagLinks}\n`;
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Comment build failure
+        if: ${{ failure() }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+          BUILD_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+
+            const body = `The container image [build workflow](${buildUrl}) finished with status: \`failure\`.\n\n`;
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
