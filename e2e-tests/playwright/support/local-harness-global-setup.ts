@@ -3,12 +3,11 @@ import { readdirSync } from "fs";
 import { dynamicPluginsRoot } from "./local-harness-servers";
 
 /**
- * Shared guard for the cluster-free harnesses.
+ * Shared guard for the cluster-free NFS harness (playwright.local.config.ts).
  *
  * Fails fast with an actionable message when `dynamic-plugins-root` has not been
  * populated — otherwise the app boots with no plugins and specs fail with a
- * confusing locator timeout instead of a clear "populate first" error. Each
- * harness passes its own populate command, since they use different scripts.
+ * confusing locator timeout instead of a clear "populate first" error.
  */
 export function requireDynamicPluginsPopulated(yarnScript: string, populateCommand: string): void {
   // Plugins are installed as one directory each; count only directories so the
@@ -32,7 +31,10 @@ export function requireDynamicPluginsPopulated(yarnScript: string, populateComma
   }
 }
 
-/** globalSetup for playwright.legacy-local.config.ts. */
-export default function legacyLocalGlobalSetup(): void {
-  requireDynamicPluginsPopulated("e2e:legacy-local", "./e2e-tests/local-harness/populate.sh");
+/** globalSetup for playwright.local.config.ts (NFS cluster-free harness). */
+export default function nfsLocalGlobalSetup(): void {
+  requireDynamicPluginsPopulated(
+    "e2e:local",
+    "CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next ./e2e-tests/local-harness/populate.sh",
+  );
 }

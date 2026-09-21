@@ -3,7 +3,14 @@ import { test } from "@support/coverage/test";
 import { waitForLoadingToSettle } from "../../support/auth/app-shell";
 import { ApplicationProviderTestPage } from "../../support/pages/application-provider-test-page";
 
+// NFS packages/app has no application/provider renderer; OCI test plugin is OFS-only.
+// See dynamic-plugins.yaml NOTE and docs/e2e-tests/local-e2e-harness.md.
 test.describe("Test ApplicationProvider", () => {
+  test.skip(
+    () => true,
+    "NFS packages/app has no application/provider renderer; OCI test plugin is OFS-only",
+  );
+
   test.beforeAll(() => {
     test.info().annotations.push({
       type: "component",

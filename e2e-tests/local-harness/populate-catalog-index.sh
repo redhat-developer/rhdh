@@ -41,7 +41,6 @@ if [[ "$oci_count" -eq 0 ]]; then
   # breadcrumb - pointing at the breadcrumb instead of at the cause.
   echo "No oci:// packages left to install from ${CATALOG_INDEX_IMAGE}" >&2
   echo "no installable refs found; check $DIR/plugin-sanity-excludes.txt" >&2
-  echo "outside the product image; check $DIR/plugin-sanity-excludes.txt" >&2
   exit 1
 fi
 
