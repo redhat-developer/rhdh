@@ -347,12 +347,14 @@ helm::get_image_params() {
     params+="--set image.registry=${backstage_registry} "
     params+="--set image.repository=${IMAGE_REPO} "
     params+="--set image.tag=${TAG_NAME} "
+    params+="--set image.digest= "
   fi
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
     params+="--set catalogIndex.image.registry=${catalog_registry} "
     params+="--set catalogIndex.image.repository=${CATALOG_INDEX_REPO} "
     params+="--set catalogIndex.image.tag=${CATALOG_INDEX_TAG} "
+    params+="--set catalogIndex.image.digest= "
   fi
 
   echo "${params}"
