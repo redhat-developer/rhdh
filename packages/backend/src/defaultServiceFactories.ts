@@ -29,6 +29,8 @@ import { userInfoServiceFactory } from '@backstage/backend-defaults/userInfo';
 import type { ServiceFactory } from '@backstage/backend-plugin-api';
 import { eventsServiceFactory } from '@backstage/plugin-events-node';
 
+import { dynamicRemotesStaticCacheMiddleware } from './middleware/dynamicRemotesStaticCache';
+
 /**
  * Service factories that are added to the backend statically by default.  This
  * should be kept up to date with the upstream package code, which is currently
@@ -52,7 +54,14 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   permissionsServiceFactory,
   permissionsRegistryServiceFactory,
   rootHealthServiceFactory,
-  rootHttpRouterServiceFactory,
+  // Custom configure so hashed remotes `/static/` get long-lived Cache-Control.
+  // Re-include dynamicRemotesStaticCacheMiddleware if replacing core.rootHttpRouter.
+  rootHttpRouterServiceFactory({
+    configure({ app, applyDefaults }) {
+      app.use(dynamicRemotesStaticCacheMiddleware);
+      applyDefaults();
+    },
+  }),
   rootLifecycleServiceFactory,
   rootLoggerServiceFactory,
   rootSystemMetadataServiceFactory,
