@@ -38,6 +38,11 @@
     <title>
       <%= config.getOptionalString('app.title') ?? 'Red Hat Developer Hub' %>
     </title>
+    <script
+      defer
+      fetchpriority="high"
+      src="/.backstage/dynamic-features-preload/preload.js"
+    ></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

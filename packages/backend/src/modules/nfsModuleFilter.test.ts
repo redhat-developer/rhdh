@@ -1,125 +1,133 @@
-import {
-  CommonJSModuleLoader,
-  dynamicPluginsFeatureLoader,
-} from '@backstage/backend-dynamic-feature-service';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import { JsonObject } from '@backstage/types';
 
 import { resolve as resolvePath } from 'node:path';
 
-import { nfsModuleFilterPlugin } from './nfsModuleFilter';
+import {
+  filterNfsExposedModules,
+  readBackstageFeatures,
+} from './nfsModuleFilter';
 
-jest.setTimeout(60_000);
-
-async function testModuleLoader(logger: LoggerService) {
-  const loader = new CommonJSModuleLoader({ logger });
-  (loader as any).module = await loader.load('node:module');
-  loader.bootstrap = async () => {};
-  return loader;
-}
-
-const dynamicPluginsRootDirectory = resolvePath(
+const fixturesRoot = resolvePath(
   __dirname,
-  '__fixtures__/dynamic-plugins-root-for-nfs-filter',
+  './__fixtures__/dynamic-plugins-root-for-nfs-filter',
 );
 
-const REMOTES_URL = '/.backstage/dynamic-features/remotes';
-
-function findPlugin(remotes: any[], packageName: string) {
-  return remotes.find((r: any) => r.packageName === packageName);
+function createMockLogger(): LoggerService {
+  return {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    child: jest.fn().mockReturnThis(),
+  } as unknown as LoggerService;
 }
 
-describe('nfsModuleFilterPlugin', () => {
-  it('should keep only NFS modules and filter out unlisted ones when backstage.features is present', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        mockServices.rootConfig.factory({
-          data: {
-            dynamicPlugins: {
-              rootDirectory: dynamicPluginsRootDirectory,
-            },
-            backend: {
-              baseUrl: 'http://localhost:0',
-            },
-          },
-        }),
-        dynamicPluginsFeatureLoader({
-          moduleLoader: logger => testModuleLoader(logger),
-        }),
-        nfsModuleFilterPlugin,
-      ],
-    });
+const emptyManifest: JsonObject = {};
 
-    const res = await fetch(`http://localhost:${server.port()}${REMOTES_URL}`);
-    expect(res.ok).toBe(true);
-    const remotes = await res.json();
-
-    const mixedPlugin = findPlugin(
-      remotes,
+describe('readBackstageFeatures', () => {
+  it('returns features map when backstage.features exists', () => {
+    const logger = createMockLogger();
+    const features = readBackstageFeatures(
       'plugin-test-mixed-features-dynamic',
+      resolvePath(fixturesRoot, 'test-mixed-features-dynamic'),
+      logger,
     );
-    expect(mixedPlugin).toBeDefined();
-    expect(mixedPlugin.exposedModules).toEqual(['alpha']);
+    expect(features).toEqual({ './alpha': '@backstage/FrontendPlugin' });
   });
 
-  it('should keep all modules when backstage.features is absent (backwards compat)', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        mockServices.rootConfig.factory({
-          data: {
-            dynamicPlugins: {
-              rootDirectory: dynamicPluginsRootDirectory,
-            },
-            backend: {
-              baseUrl: 'http://localhost:0',
-            },
-          },
-        }),
-        dynamicPluginsFeatureLoader({
-          moduleLoader: logger => testModuleLoader(logger),
-        }),
-        nfsModuleFilterPlugin,
-      ],
-    });
-
-    const res = await fetch(`http://localhost:${server.port()}${REMOTES_URL}`);
-    expect(res.ok).toBe(true);
-    const remotes = await res.json();
-
-    const noFeaturesPlugin = findPlugin(
-      remotes,
+  it('returns undefined when backstage.features is absent', () => {
+    const logger = createMockLogger();
+    const features = readBackstageFeatures(
       'plugin-test-no-features-dynamic',
+      resolvePath(fixturesRoot, 'test-no-features-dynamic'),
+      logger,
     );
-    expect(noFeaturesPlugin).toBeDefined();
-    expect(noFeaturesPlugin.exposedModules).toEqual(['.', 'alpha']);
+    expect(features).toBeUndefined();
   });
 
-  it('should keep all modules when all backstage.features are NFS types', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        mockServices.rootConfig.factory({
-          data: {
-            dynamicPlugins: {
-              rootDirectory: dynamicPluginsRootDirectory,
-            },
-            backend: {
-              baseUrl: 'http://localhost:0',
-            },
-          },
-        }),
-        dynamicPluginsFeatureLoader({
-          moduleLoader: logger => testModuleLoader(logger),
-        }),
-        nfsModuleFilterPlugin,
-      ],
+  it('returns features map when all features are NFS types', () => {
+    const logger = createMockLogger();
+    const features = readBackstageFeatures(
+      'plugin-test-all-nfs-dynamic',
+      resolvePath(fixturesRoot, 'test-all-nfs-dynamic'),
+      logger,
+    );
+    expect(features).toEqual({
+      '.': '@backstage/FrontendPlugin',
+      './alpha': '@backstage/FrontendModule',
     });
+  });
 
-    const res = await fetch(`http://localhost:${server.port()}${REMOTES_URL}`);
-    expect(res.ok).toBe(true);
-    const remotes = await res.json();
+  it('returns undefined and logs warning when package.json does not exist', () => {
+    const logger = createMockLogger();
+    const features = readBackstageFeatures(
+      'nonexistent-plugin',
+      resolvePath(fixturesRoot, 'nonexistent'),
+      logger,
+    );
+    expect(features).toBeUndefined();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('failed to read package.json'),
+    );
+  });
+});
 
-    const allNfsPlugin = findPlugin(remotes, 'plugin-test-all-nfs-dynamic');
-    expect(allNfsPlugin).toBeDefined();
-    expect(allNfsPlugin.exposedModules).toEqual(['.', 'alpha']);
+describe('filterNfsExposedModules', () => {
+  it('keeps only NFS modules when features are present', () => {
+    const logger = createMockLogger();
+    const features = { './alpha': '@backstage/FrontendPlugin' };
+    const result = filterNfsExposedModules(
+      'test-plugin',
+      ['.', 'alpha'],
+      emptyManifest,
+      features,
+      logger,
+    );
+    expect(result).toEqual(['alpha']);
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining('filtered out [.]'),
+    );
+  });
+
+  it('keeps all modules when features is undefined (backwards compat)', () => {
+    const logger = createMockLogger();
+    const result = filterNfsExposedModules(
+      'test-plugin',
+      ['.', 'alpha'],
+      emptyManifest,
+      undefined,
+      logger,
+    );
+    expect(result).toEqual(['.', 'alpha']);
+  });
+
+  it('keeps all modules when all are NFS types', () => {
+    const logger = createMockLogger();
+    const features = {
+      '.': '@backstage/FrontendPlugin',
+      './alpha': '@backstage/FrontendModule',
+    };
+    const result = filterNfsExposedModules(
+      'test-plugin',
+      ['.', 'alpha'],
+      emptyManifest,
+      features,
+      logger,
+    );
+    expect(result).toEqual(['.', 'alpha']);
+  });
+
+  it('handles modules already prefixed with ./', () => {
+    const logger = createMockLogger();
+    const features = { './alpha': '@backstage/FrontendPlugin' };
+    const result = filterNfsExposedModules(
+      'test-plugin',
+      ['./alpha', './beta'],
+      emptyManifest,
+      features,
+      logger,
+    );
+    expect(result).toEqual(['./alpha']);
   });
 });
