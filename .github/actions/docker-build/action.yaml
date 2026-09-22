@@ -177,7 +177,7 @@ runs:
         MAX_ATTEMPTS=3
         mapfile -t BASE_IMAGES < <(
           grep -E '^FROM[[:space:]]+[^[:space:]]+' "$CONTAINERFILE_PATH" \
-            | awk '{print $2}' \
+            | awk '{for(i=2;i<=NF;i++) if($i !~ /^-/){print $i; next}}' \
             | grep -E '^[^/]+(/[^/]+)+' \
             | grep -vE '^(skeleton|deps|build|cleanup|runner)$' \
             | sort -u

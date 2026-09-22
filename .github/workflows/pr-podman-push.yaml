@@ -28,8 +28,11 @@ on:
       - completed
 
 concurrency:
+  # head_repository + head_branch identify the PR head on their own. Do not add
+  # workflow_run.pull_requests here: it is empty for fork PRs, so the fallback
+  # would make the group unique per run and cancel-in-progress a no-op for them.
   group: >-
-    ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.id }}
+    ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 env:
@@ -68,7 +71,16 @@ jobs:
           SHORT_SHA=$(echo "${FULL_SHA}" | cut -c1-8)
           # Need to use gh cli instead of `events.workflow_run.pull_requests` because the latter doesn't work for PRs from forks
           # Refer to https://github.com/orgs/community/discussions/25220
-          PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number')
+          # Capture the failure instead of letting set -e abort here, or the
+          # error handling below never runs.
+          if ! PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number'); then
+            PR_NUMBER=""
+          fi
+
+          if ! [[ "$PR_NUMBER" =~ ^[0-9]*$ ]]; then
+            echo "::error::Non-numeric PR number: $PR_NUMBER"
+            exit 1
+          fi
 
           if [ -n "$PR_NUMBER" ]; then
             echo "Found PR number: $PR_NUMBER"
@@ -196,6 +208,12 @@ jobs:
           SOURCE_REF=""
           if [ -f "./rhdh-podman-artifacts/tags.txt" ]; then
             SOURCE_REF=$(head -n1 ./rhdh-podman-artifacts/tags.txt | tr -d '\r')
+            # tags.txt is written by the untrusted pull_request job, so it can be
+            # anything -- including a leading `-` that podman would read as a flag.
+            if [ -n "$SOURCE_REF" ] && ! [[ "$SOURCE_REF" =~ ^[a-z0-9][a-z0-9._/-]*(:[A-Za-z0-9._-]+)?(@sha256:[a-f0-9]{64})?$ ]]; then
+              echo "::error::Invalid source ref from artifact: $SOURCE_REF"
+              exit 1
+            fi
           fi
           if [ -z "$SOURCE_REF" ]; then
             SOURCE_REF=$(echo "$LOAD_OUT" | sed -n 's/.*Loaded image(s): //p' | awk -F',' '{print $1}' | tr -d ' ')
@@ -211,6 +229,8 @@ jobs:
 
           # SECURITY: ignore artifact destination names. Derive push tags only
           # from trusted workflow_run PR number + head_sha, and only to rhdh.
+          # The allowlist below asserts that invariant over values this step just
+          # built; it is not validation of untrusted input (see SOURCE_REF above).
           TRUSTED_PR="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}"
           TRUSTED_SHA="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}-${SHORT_SHA}"
 
