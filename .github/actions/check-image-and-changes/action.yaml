@@ -28,23 +28,29 @@ runs:
       env:
         GET_SHA_OUTPUT: ${{ steps.get-sha.outputs.short_sha }}
         PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        # pull_request checkout is a merge commit; only inspect the PR head
+        # range so unrelated main commits that carry a skip-build trailer do not
+        # skip this PR's image build.
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
         # Ensure that SHORT_SHA is available for subsequent steps in this context
         echo "SHORT_SHA=${SHORT_SHA:-$GET_SHA_OUTPUT}" >> $GITHUB_ENV
 
-        # Get base commit for comparison
-        BASE_COMMIT=$(git merge-base "$PR_BASE_SHA" HEAD)
+        # Get base commit for comparison against the PR head (not the merge commit)
+        BASE_COMMIT=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
         echo "BASE_COMMIT=$BASE_COMMIT"
+        echo "PR_HEAD_SHA=$PR_HEAD_SHA"
 
-        # Get list of changed files
-        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" HEAD)
+        # Get list of changed files on the PR only
+        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$PR_HEAD_SHA")
         echo "Changed files:"
         echo "$CHANGED_FILES"
 
-        # Check for [skip-build] tag in commit messages
+        # Intentional skip trailer must appear as its own token in a subject line
+        # (avoids false positives from commit bodies that merely discuss the tag).
         SKIP_BUILD_TAG=false
-        if git log --format=%B "$BASE_COMMIT"..HEAD | grep -qF "[skip-build]"; then
-          echo "Found [skip-build] tag in commit messages."
+        if git log --format=%s "$BASE_COMMIT".."$PR_HEAD_SHA" | grep -qE '(^|[[:space:]])\[skip-build\]([[:space:]]|$)'; then
+          echo "Found skip-build trailer in PR commit subject(s)."
           SKIP_BUILD_TAG=true
         fi
 
