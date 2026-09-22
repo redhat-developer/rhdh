@@ -28,8 +28,11 @@ on:
       - completed
 
 concurrency:
+  # Keyed on the PR head branch. Do not add workflow_run.pull_requests here: it
+  # is empty for fork PRs, which would make the group unique per run and
+  # cancel-in-progress a no-op for exactly them.
   group: >-
-    ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.id }}
+    ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 env:
@@ -68,7 +71,14 @@ jobs:
           SHORT_SHA=$(echo "${FULL_SHA}" | cut -c1-8)
           # Need to use gh cli instead of `events.workflow_run.pull_requests` because the latter doesn't work for PRs from forks
           # Refer to https://github.com/orgs/community/discussions/25220
-          PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number')
+          # Capture the failure instead of letting set -e abort here, or the
+          # error handling below never runs.
+          if ! PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number'); then
+            PR_NUMBER=""
+          elif ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "gh returned a non-numeric PR number: $PR_NUMBER"
+            PR_NUMBER=""
+          fi
 
           if [ -n "$PR_NUMBER" ]; then
             echo "Found PR number: $PR_NUMBER"
@@ -204,6 +214,12 @@ jobs:
             echo "::error::Could not determine loaded image reference to retag"
             exit 1
           fi
+          # Both sources are the untrusted build job's artifact. Not a reference
+          # grammar on purpose -- this only rules out flags and metacharacters.
+          if ! [[ "$SOURCE_REF" =~ ^[A-Za-z0-9][A-Za-z0-9._:/@-]*$ ]]; then
+            echo "::error::Invalid source ref: $SOURCE_REF"
+            exit 1
+          fi
 
           echo "Source ref from artifact: $SOURCE_REF"
           echo "Loaded images:"
@@ -211,6 +227,7 @@ jobs:
 
           # SECURITY: ignore artifact destination names. Derive push tags only
           # from trusted workflow_run PR number + head_sha, and only to rhdh.
+          # The allowlist below re-checks locally built values; not input validation.
           TRUSTED_PR="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}"
           TRUSTED_SHA="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}-${SHORT_SHA}"
 

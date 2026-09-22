@@ -176,8 +176,9 @@ runs:
         set -euo pipefail
         MAX_ATTEMPTS=3
         mapfile -t BASE_IMAGES < <(
+          # awk takes the first non-flag token after FROM, skipping --platform=...
           grep -E '^FROM[[:space:]]+[^[:space:]]+' "$CONTAINERFILE_PATH" \
-            | awk '{print $2}' \
+            | awk '{for(i=2;i<=NF;i++) if($i !~ /^-/){print $i; next}}' \
             | grep -E '^[^/]+(/[^/]+)+' \
             | grep -vE '^(skeleton|deps|build|cleanup|runner)$' \
             | sort -u
