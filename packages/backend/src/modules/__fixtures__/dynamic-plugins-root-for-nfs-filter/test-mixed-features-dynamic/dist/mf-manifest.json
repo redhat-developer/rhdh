@@ -25,5 +25,29 @@
   },
   "shared": [],
   "remotes": [],
-  "exposes": [{"name": "."}, {"name": "alpha"}]
+  "exposes": [
+    {
+      "name": ".",
+      "assets": {
+        "js": {
+          "sync": ["static/1000.abc12345.chunk.js"],
+          "async": ["static/2000.def67890.chunk.js"]
+        },
+        "css": { "sync": [], "async": [] }
+      }
+    },
+    {
+      "name": "alpha",
+      "assets": {
+        "js": {
+          "sync": ["static/3000.aaa11111.chunk.js", "static/4000.bbb22222.chunk.js"],
+          "async": ["static/5000.ccc33333.chunk.js"]
+        },
+        "css": {
+          "sync": ["static/alpha.ddd44444.css"],
+          "async": []
+        }
+      }
+    }
+  ]
 }
