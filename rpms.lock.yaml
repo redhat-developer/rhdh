@@ -3245,13 +3245,6 @@ arches:
     name: python3-rpm
     evr: 4.19.1.1-23.el10
     sourcerpm: rpm-4.19.1.1-23.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/p/python3-setuptools-69.0.3-12.el10_0.noarch.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 1658419
-    checksum: sha256:820393ba86601e0bb0b79d27c1603cf8ae5ac05287628f9d4e628f4382ce2e29
-    name: python3-setuptools
-    evr: 69.0.3-12.el10_0
-    sourcerpm: python-setuptools-69.0.3-12.el10_0.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/p/python3-six-1.16.0-16.el10.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 46083
@@ -8542,13 +8535,6 @@ arches:
     name: python3-rpm
     evr: 4.19.1.1-23.el10
     sourcerpm: rpm-4.19.1.1-23.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/p/python3-setuptools-69.0.3-12.el10_0.noarch.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 1658419
-    checksum: sha256:820393ba86601e0bb0b79d27c1603cf8ae5ac05287628f9d4e628f4382ce2e29
-    name: python3-setuptools
-    evr: 69.0.3-12.el10_0
-    sourcerpm: python-setuptools-69.0.3-12.el10_0.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/p/python3-six-1.16.0-16.el10.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 46083
