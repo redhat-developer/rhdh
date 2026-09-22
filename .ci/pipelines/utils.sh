@@ -356,6 +356,10 @@ apply_yaml_files() {
     "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
     "conditional-policies.yaml=$dir/resources/config_map/conditional-policies.yaml"
 
+  # The chart's default-deny NetworkPolicies block the plain-HTTP proxy targets
+  # CI relies on; add a CI-only egress allowance for the backend pod.
+  oc apply -f "$dir/resources/network_policy/netpol-ci-allow-backend-egress.yaml" --namespace="${project}"
+
   rm -rf "${tmpdir}"
 }
 
