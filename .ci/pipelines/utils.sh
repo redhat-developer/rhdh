@@ -653,7 +653,7 @@ initiate_upgrade_deployments() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params) \
+    $(helm::get_image_params --internal-postgresql-image) \
     --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
@@ -677,7 +677,7 @@ initiate_sanity_plugin_checks_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
+    $(helm::get_image_params --internal-postgresql-image)
 }
 
 # ==============================================================================

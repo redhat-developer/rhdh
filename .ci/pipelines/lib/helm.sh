@@ -297,10 +297,12 @@ helm::uninstall() {
 # Install Operations
 # ==============================================================================
 
-# Get common Helm set parameters for image configuration.
+# Get common Helm image parameters.
 #
 # Uses global variables: IMAGE_REGISTRY, IMAGE_REPO, TAG_NAME,
-#   CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO, CATALOG_INDEX_TAG (from env_variables.sh)
+#   CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO, CATALOG_INDEX_TAG,
+#   POSTGRESQL_IMAGE_REGISTRY, POSTGRESQL_IMAGE_REPO, POSTGRESQL_IMAGE_TAG
+#   (from env_variables.sh)
 #
 # Options (all optional; defaults reproduce the connected-install behavior):
 #   --backstage-registry <r>  Override image.registry
@@ -309,15 +311,19 @@ helm::uninstall() {
 #   --catalog-registry <r>    Override catalogIndex.image.registry
 #                             (default: CATALOG_INDEX_REGISTRY). Disconnected
 #                             installs pass MIRROR_REGISTRY_URL.
+#   --internal-postgresql-image
+#                             Set the integrated PostgreSQL image from the
+#                             shared POSTGRESQL_IMAGE_* environment variables.
 #   --omit-backstage-image    Skip the image.* flags entirely
 #                             (LOCAL_DISCONNECTED lets the chart + IDMS resolve
 #                             the hub image instead of pinning it).
 # Returns:
-#   Prints the Helm --set parameters string
+#   Prints the Helm image parameter string
 # shellcheck disable=SC2120 # all args optional; callers in other files pass them
 helm::get_image_params() {
   local backstage_registry="${IMAGE_REGISTRY}"
   local catalog_registry="${CATALOG_INDEX_REGISTRY:-}"
+  local internal_postgresql_image="false"
   local omit_backstage_image="false"
 
   while [[ $# -gt 0 ]]; do
@@ -329,6 +335,10 @@ helm::get_image_params() {
       --catalog-registry)
         catalog_registry="$2"
         shift 2
+        ;;
+      --internal-postgresql-image)
+        internal_postgresql_image="true"
+        shift
         ;;
       --omit-backstage-image)
         omit_backstage_image="true"
@@ -348,6 +358,12 @@ helm::get_image_params() {
     params+="--set image.repository=${IMAGE_REPO} "
     params+="--set image.tag=${TAG_NAME} "
     params+="--set image.digest= "
+  fi
+
+  if [[ "${internal_postgresql_image}" == "true" ]]; then
+    params+="--set postgresql.image.registry=${POSTGRESQL_IMAGE_REGISTRY} "
+    params+="--set postgresql.image.repository=${POSTGRESQL_IMAGE_REPO} "
+    params+="--set postgresql.image.tag=${POSTGRESQL_IMAGE_TAG} "
   fi
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
@@ -388,5 +404,5 @@ helm::install() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
+    $(helm::get_image_params --internal-postgresql-image)
 }

@@ -3,8 +3,8 @@ kind: PostgresCluster
 metadata:
   name: postgress-external-db
 spec:
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547
-  postgresVersion: 17
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-18.1-2547
+  postgresVersion: 18
   instances:
     - name: instance1
       dataVolumeClaimSpec:
