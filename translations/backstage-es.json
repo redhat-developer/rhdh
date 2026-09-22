@@ -60,10 +60,10 @@
   "catalog-import": {
     "es": {
       "buttons.back": "Atrás",
-      "defaultImportPage.headerTitle": "Registrar un componente existente",
+      "defaultImportPage.headerTitle": "Importar un repositorio Git existente",
       "defaultImportPage.contentHeaderTitle": "Comience a hacer un seguimiento de su componente en {{appTitle}}",
       "defaultImportPage.supportTitle": "Agregue su componente al catálogo de software y comience hacer el seguimiento de este en {{appTitle}}.",
-      "importInfoCard.title": "Registrar un componente existente",
+      "importInfoCard.title": "Importar un repositorio Git existente",
       "importInfoCard.deepLinkTitle": "Aprenda más sobre el Catálogo de software",
       "importInfoCard.linkDescription": "Ingrese la URL de su repositorio de código fuente para agregarlo a {{appTitle}}.",
       "importInfoCard.fileLinkTitle": "Enlace a un archivo de entidad existente",
@@ -216,7 +216,11 @@
       "missingAnnotationEmptyState.readMore": "Leer más",
       "missingAnnotationEmptyState.annotationYaml": "Agregue la anotación a su YAML {{entityKind}} como se muestra en el ejemplo a continuación:",
       "missingAnnotationEmptyState.generateDescription_one": "Falta la anotación {{annotations}}. Debe agregar la anotación a su {{entityKind}} si desea habilitar esta herramienta.",
-      "missingAnnotationEmptyState.generateDescription_other": "Faltan las anotaciones {{annotations}}. Debe agregar las anotaciones a su {{entityKind}} si desea habilitar esta herramienta."
+      "missingAnnotationEmptyState.generateDescription_other": "Faltan las anotaciones {{annotations}}. Debe agregar las anotaciones a su {{entityKind}} si desea habilitar esta herramienta.",
+      "inspectEntityDialog.colocatedPage.entityListAriaLabel": "Entidades ubicadas",
+      "inspectEntityDialog.overviewPage.copiedStatus": "Copiado",
+      "inspectEntityDialog.overviewPage.copyAriaLabel": "Copiar {{label}}",
+      "inspectEntityDialog.overviewPage.helpLinkAriaLabel": "Aprenda más"
     }
   },
   "home-react": {
@@ -253,7 +257,11 @@
       "featuredDocsCard.learnMoreTitle": "APRENDA MÁS",
       "featuredDocsCard.empty.title": "No hay documentos para mostrar",
       "featuredDocsCard.empty.description": "Cree su propio documento. Consulte nuestra información para empezar",
-      "featuredDocsCard.empty.learnMoreLinkTitle": "DOCUMENTOS"
+      "featuredDocsCard.empty.learnMoreLinkTitle": "DOCUMENTOS",
+      "addWidgetDialog.noAvailableWidgets": "Todos los widgets disponibles se agregaron al panel de control.",
+      "visitList.disabled.description": "Habilite el seguimiento de visitas en app-config.yaml para ver aquí las páginas más visitadas y las visitadas recientemente.",
+      "visitList.disabled.title": "El seguimiento de visitas no está habilitado.",
+      "widgetSettingsOverlay.editSettingsTooltip": "Modificar configuración"
     }
   },
   "kubernetes-cluster": {
@@ -403,7 +411,8 @@
       "settings.noSettingsAvailable": "No hay configuración de notificaciones disponible; vuelva a consultar más tarde",
       "settings.table.origin": "Origen",
       "settings.table.topic": "Tema",
-      "settings.errors.useNotificationFormat": "useNotificationFormat debe usarse dentro de un NotificationFormatProvider"
+      "settings.errors.useNotificationFormat": "useNotificationFormat debe usarse dentro de un NotificationFormatProvider",
+      "table.confirmDialog.cancel": "Cancelar"
     }
   },
   "org": {
@@ -609,17 +618,17 @@
       "templateEditorPage.templateEditorTextArea.refreshIconTooltip": "Volver a cargar archivo",
       "templateEditorPage.templateEditorTextArea.emptyStateParagraph": "Seleccione una acción en el menú de archivo.",
       "templateEditorPage.templateFormPreviewer.title": "Cargar plantilla existente",
-      "templateListPage.title": "Crear un nuevo componente",
+      "templateListPage.title": "Autoservicio",
       "templateListPage.subtitle": "Crear nuevos componentes de software mediante plantillas estándar de su organización",
-      "templateListPage.pageTitle": "Crear un nuevo componente",
+      "templateListPage.pageTitle": "Autoservicio",
       "templateListPage.templateGroups.defaultTitle": "Plantillas",
       "templateListPage.templateGroups.otherTitle": "Otras plantillas",
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Registrar componente existente",
+      "templateListPage.contentHeader.registerExistingButtonTitle": "Importar un repositorio Git existente",
       "templateListPage.contentHeader.supportButtonTitle": "Cree nuevos componentes de software mediante plantillas estándar. Diferentes plantillas crean diferentes tipos de componentes (servicios, sitios web, documentación, etc.).",
       "templateListPage.additionalLinksForEntity.viewTechDocsTitle": "Ver TechDocs",
-      "templateWizardPage.title": "Crear un nuevo componente",
+      "templateWizardPage.title": "Autoservicio",
       "templateWizardPage.subtitle": "Crear nuevos componentes de software mediante plantillas estándar de su organización",
-      "templateWizardPage.pageTitle": "Crear un nuevo componente",
+      "templateWizardPage.pageTitle": "Autoservicio",
       "templateWizardPage.templateWithTitle": "Crear nuevo {{templateTitle}}",
       "templateWizardPage.pageContextMenu.editConfigurationTitle": "Modificar configuración",
       "templateEditorToolbar.customFieldExplorerTooltip": "Explorador de campos personalizados",
@@ -635,7 +644,8 @@
       "templateEditorToolbarFileMenu.options.openDirectory": "Abrir directorio de plantillas",
       "templateEditorToolbarFileMenu.options.createDirectory": "Crear directorio de plantillas",
       "templateEditorToolbarFileMenu.options.closeEditor": "Cerrar editor de plantillas",
-      "templateEditorToolbarTemplatesMenu.button": "Plantillas"
+      "templateEditorToolbarTemplatesMenu.button": "Plantillas",
+      "renderSchema.tableCell.value": "Valor"
     }
   },
   "search-react": {
@@ -666,7 +676,46 @@
   },
   "techdocs": {
     "es": {
-      "aboutCard.viewTechdocs": "Ver TechDocs"
+      "aboutCard.viewTechdocs": "Ver TechDocs",
+      "buildLogs.closeDrawer": "Cerrar el panel",
+      "buildLogs.showBuildLogs": "Mostrar registros de compilación",
+      "buildLogs.title": "Detalles de compilación",
+      "buildLogs.waitingForLogs": "Esperando los registros…",
+      "entityContent.title": "TechDocs",
+      "error.couldNotLoad": "No se pudo cargar la documentación disponible.",
+      "home.supportButton": "Descubra la documentación en su ecosistema.",
+      "nav.title": "Documentos",
+      "notFound.builderNote": "Tenga en cuenta que techdocs.builder no está configurado como \"local\" en su archivo de configuración, lo que significa que esta aplicación de Backstage no generará documentación si no la encuentra. Asegúrese de que la documentación del proyecto se genere y publique mediante algún proceso externo (p. ej., una tubería de CI/CD). O bien, cambie techdocs.builder a \"local\" para generar la documentación desde esta instancia de Backstage.",
+      "notFound.title": "No se encontró la documentación",
+      "pageWrapper.subtitle": "Documentación disponible en {{orgName}}",
+      "pageWrapper.title": "Documentación",
+      "reader.settings": "Configuración",
+      "readerPageHeader.lifecycle": "Ciclo de vida",
+      "readerPageHeader.owner": "Propietario",
+      "readerPageHeader.source": "Fuente",
+      "redirectNotification.redirectNow": "Redirigir ahora",
+      "search.noResults": "No se encontraron resultados",
+      "search.placeholder": "Buscar documentos de {{entityTitle}}",
+      "stateIndicator.contentStaleError.message": "No se pudo compilar una versión más reciente de esta documentación.",
+      "stateIndicator.contentStaleReady.message": "Ya está disponible una versión más reciente de esta documentación; actualice la página para verla.",
+      "stateIndicator.contentStaleReady.refreshButton": "Actualizar",
+      "stateIndicator.contentStaleRefreshing.message": "Se está preparando una versión más reciente de esta documentación, que estará disponible en pocos minutos.",
+      "stateIndicator.initialBuild.message": "Se accede a la documentación por primera vez y se está preparando. Las cargas posteriores son mucho más rápidas.",
+      "table.actions.addToFavorites": "Agregar a favoritos",
+      "table.actions.copyDocsUrl": "Hacer clic para copiar el enlace de la documentación al portapapeles",
+      "table.actions.removeFromFavorites": "Eliminar de favoritos",
+      "table.body.emptyDataSourceMessage": "No hay registros para mostrar",
+      "table.columns.document": "Documento",
+      "table.columns.kind": "Tipo",
+      "table.columns.owner": "Propietario",
+      "table.columns.type": "Tipo",
+      "table.emptyState.description": "Cree su propio documento. Consulte nuestra información para empezar",
+      "table.emptyState.docsButton": "DOCUMENTOS",
+      "table.emptyState.title": "No hay documentos para mostrar",
+      "table.header.actions": "Acciones",
+      "table.pagination.labelRowsSelect": "filas",
+      "table.title.all": "Todos",
+      "table.toolbar.searchPlaceholder": "Filtrar"
     }
   },
   "user-settings": {
@@ -726,7 +775,7 @@
   "catalog": {
     "es": {
       "indexPage.title": "Catálogo de {{orgName}}",
-      "indexPage.createButtonTitle": "Crear",
+      "indexPage.createButtonTitle": "Autoservicio",
       "indexPage.supportButtonContent": "Todas las entidades de su catálogo de software",
       "entityPage.notFoundMessage": "No existe ningún {{kind}} con el {{link}} solicitado.",
       "entityPage.notFoundLinkText": "tipo, espacio de nombre y nombre",
@@ -815,7 +864,20 @@
       "systemDiagramCard.description": "Utilice las funciones de pellizco y zoom para moverse por el diagrama.",
       "systemDiagramCard.edgeLabels.partOf": "parte de",
       "systemDiagramCard.edgeLabels.provides": "proporciona",
-      "systemDiagramCard.edgeLabels.dependsOn": "depende de"
+      "systemDiagramCard.edgeLabels.dependsOn": "depende de",
+      "aboutCard.kindField.label": "Tipo",
+      "catalogExportButton.cancelButtonTitle": "Cancelar",
+      "catalogExportButton.columnsLabel": "Columnas",
+      "catalogExportButton.confirmButtonTitle": "Confirmar",
+      "catalogExportButton.dialogTitle": "Exportar selección de catálogo",
+      "catalogExportButton.errorMessage": "No se pudo exportar el catálogo: {{errorMessage}}",
+      "catalogExportButton.exportingButtonTitle": "Exportando…",
+      "catalogExportButton.formatLabel": "Formato",
+      "catalogExportButton.successMessage": "Catálogo exportado correctamente",
+      "catalogExportButton.triggerButtonTitle": "Exportar selección",
+      "entityLabels.domainLabel": "Dominio",
+      "entityLabels.partOfLabel": "Parte de",
+      "entityLabels.systemLabel": "Sistema"
     }
   },
   "kubernetes": {
