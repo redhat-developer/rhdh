@@ -40,12 +40,13 @@ CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:2.0 ./e2e-tests/local-harn
 
 The `:next` tag is rebuilt upstream several times a day, so the PR/push `e2e` job
 resolves the digest pinned in `e2e-tests/local-harness/catalog-index.lock` instead —
-one bad rebuild would otherwise turn every open PR red at once. Renovate opens a daily
-PR bumping that pin, and the job runs against the new digest on that PR before anyone
-merges it. To reproduce a CI run exactly:
+one bad rebuild would otherwise turn every open PR red at once. Renovate checks that pin
+daily and opens a PR when the digest moves, and the job runs against the new digest on
+that PR before anyone merges it. To reproduce a CI run exactly:
 
 ```bash
-CATALOG_INDEX_IMAGE="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh main "" --pinned)" \
+CATALOG_INDEX_IMAGE="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh \
+  "$(git rev-parse --abbrev-ref HEAD)" "" --pinned)" \
   ./e2e-tests/local-harness/populate.sh
 ```
 

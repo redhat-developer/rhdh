@@ -49,10 +49,16 @@ if [[ ! -r "${lock}" ]]; then
   exit 1
 fi
 
-# `|| true`: an all-comment lock file must reach the error below, not die on pipefail.
-pin="$(grep -Ev '^[[:space:]]*(#|$)' "${lock}" | head -n 1 || true)"
+# `|| true`: an empty result must reach the errors below, not die on pipefail. Taking
+# the first line silently would hide a bad edit that appended a second pin.
+# No mapfile: this script also runs on the bash 3.2 that ships with macOS.
+pin="$(grep -Ev '^[[:space:]]*(#|$)' "${lock}" || true)"
+if [[ -z "${pin}" || "${pin}" == *$'\n'* ]]; then
+  echo "expected exactly one uncommented line in ${lock}" >&2
+  exit 1
+fi
 if [[ ! "${pin}" =~ ^[A-Za-z0-9._/-]+:[A-Za-z0-9._-]+@sha256:[a-f0-9]{64}$ ]]; then
-  echo "invalid pin in ${lock}: ${pin:-<empty>}" >&2
+  echo "invalid pin in ${lock}: ${pin}" >&2
   exit 1
 fi
 

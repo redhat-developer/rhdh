@@ -17,9 +17,8 @@
       "description": "digest pinned for the cluster-free E2E catalog index",
       "managerFilePatterns": ["/^e2e-tests/local-harness/catalog-index\\.lock$/"],
       "matchStrings": [
-        "(?<depName>quay\\.io/rhdh/plugin-catalog-index):(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
-      ],
-      "datasourceTemplate": "docker"
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\s+\\S+:(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ]
     }
   ],
   "major": {"dependencyDashboardApproval": true},
