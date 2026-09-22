@@ -638,22 +638,29 @@ initiate_upgrade_base_deployments() {
 }
 
 initiate_upgrade_deployments() {
-  local _release_name=$1 # unused, kept for interface compatibility
+  local release_name=$1
   local namespace=$2
   local _url=$3 # unused, kept for interface compatibility
+  local backstage_replicas=${4:-}
   local wait_upgrade="10m"
+  local -a extra_params=()
+
+  if [[ -n "${backstage_replicas}" ]]; then
+    extra_params+=(--set "replicas=${backstage_replicas}")
+  fi
 
   log::info "Initiating upgrade deployment"
   cd "${DIR}" || return 1
 
-  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${namespace}"
 
   # shellcheck disable=SC2046
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(helm::get_image_params --internal-postgresql-image) \
+    "${extra_params[@]}" \
     --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
