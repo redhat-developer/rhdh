@@ -613,7 +613,8 @@ initiate_upgrade_base_deployments() {
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set image.registry="${IMAGE_REGISTRY}" \
     --set image.repository="${IMAGE_REPO_BASE}" \
-    --set image.tag="${TAG_NAME_BASE}"
+    --set image.tag="${TAG_NAME_BASE}" \
+    --set image.digest=
 }
 
 initiate_upgrade_deployments() {

@@ -20,4 +20,4 @@ K8S_CLUSTER_ROUTER_BASE=$(oc get ingresses.config/cluster -o jsonpath='{.spec.do
 
 oc apply -f "./postgres-crt-secrets.yaml"
 oc apply -f "./postgress-cred-secret.yaml"
-helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" -f "./values.yaml" --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set image.tag="next"
+helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" -f "./values.yaml" --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set image.tag="next" --set image.digest=
