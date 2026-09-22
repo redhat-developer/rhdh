@@ -49,9 +49,9 @@ if [[ ! -r "${lock}" ]]; then
   exit 1
 fi
 
-# `|| true`: an empty result must reach the errors below, not die on pipefail. Taking
-# the first line silently would hide a bad edit that appended a second pin.
-# No mapfile: this script also runs on the bash 3.2 that ships with macOS.
+# `|| true`: an empty result must reach the errors below, not die on pipefail. CR and
+# trailing space are normalised rather than rejected, since both are invisible in the
+# "invalid pin" message they would otherwise produce.
 pin="$(grep -Ev '^[[:space:]]*(#|$)' "${lock}" | tr -d '\r' | sed 's/[[:space:]]*$//' || true)"
 if [[ -z "${pin}" || "${pin}" == *$'\n'* ]]; then
   echo "expected exactly one uncommented line in ${lock}" >&2

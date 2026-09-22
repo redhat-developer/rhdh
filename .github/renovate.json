@@ -223,11 +223,11 @@
       "matchUpdateTypes": ["patch", "minor"]
     },
     {
-      "description": "cluster-free E2E catalog index: docker digests are disabled repo-wide, and this pin is the one that has to keep moving; daily so the moving tag does not spam PRs",
+      "description": "cluster-free E2E catalog index: group and schedule the digest bump. `digest.enabled` is belt-and-braces -- the repo-wide docker digest opt-out matches manager categories, and a custom regex manager reports `custom`, so it should not reach this dep. UTC, after the 05:00 plugin-sanity run has vetted the index.",
       "matchFileNames": ["e2e-tests/local-harness/catalog-index.lock"],
       "digest": {"enabled": true},
       "groupName": "cluster-free E2E catalog index",
-      "schedule": ["after 5am and before 7am"],
+      "schedule": ["after 7am and before 9am"],
       "automerge": false
     }
   ],

@@ -37,9 +37,13 @@ runs:
         esac
         image="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh "$BRANCH" "$OVERRIDE" "$pin_flag")"
         echo "image=${image}" >> "$GITHUB_OUTPUT"
-        # Record the digest, so a floating-tag run (plugin-sanity) can be traced
-        # back to the exact index it validated; a pinned run just echoes its pin.
-        digest=$(skopeo inspect --no-creds --override-os linux --override-arch amd64 \
-          --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
+        # Record the digest, so a floating-tag run (plugin-sanity) can be traced back
+        # to the exact index it validated. A pinned ref already carries it.
+        if [[ "$image" == *@sha256:* ]]; then
+          digest="${image#*@}"
+        else
+          digest=$(skopeo inspect --no-creds --override-os linux --override-arch amd64 \
+            --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
+        fi
         echo "Catalog index: ${image} (${digest})"
         echo "Catalog index: \`${image}\` @ \`${digest}\`" >> "$GITHUB_STEP_SUMMARY"

@@ -36,33 +36,6 @@ Use a specific catalog index image (for example a release branch tag):
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:2.0 ./e2e-tests/local-harness/populate.sh
 ```
 
-### Which index CI uses
-
-The `:next` tag is rebuilt upstream several times a day, so the PR/push `e2e` job
-resolves the digest pinned in `e2e-tests/local-harness/catalog-index.lock` instead —
-one bad rebuild would otherwise turn every open PR red at once. Renovate checks that pin
-daily and opens a PR when the digest moves, and the job runs against the new digest on
-that PR before anyone merges it. To reproduce a CI run exactly:
-
-```bash
-CATALOG_INDEX_IMAGE="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh \
-  "$(git rev-parse --abbrev-ref HEAD)" "" --pinned)" \
-  ./e2e-tests/local-harness/populate.sh
-```
-
-The scheduled `plugin-sanity` job keeps following the floating tag — validating the
-moving index is what it is for.
-
-The lock records `<repo>:<tag>@<digest>` because Renovate needs the tag to know which
-one to follow, but skopeo rejects a reference carrying both, so the resolver emits the
-digest-only form.
-
-**Cutting a release branch:** the new branch inherits main's lock, whose tag is `next`,
-and the resolver fails until the lock is retagged to that branch's version — deliberately,
-so a release branch cannot keep testing the previous stream's index. Renovate only bumps
-the pin on the default branch (no `baseBranches` is configured), so a release branch's pin
-stays where the cut left it unless someone moves it.
-
 `populate.sh` takes an optional install-config path as its first argument
 (default: the curated harness set above). The plugin sanity check drives that
 hook through `populate-catalog-index.sh`, which generates a config enabling every
@@ -101,6 +74,40 @@ allowlisted in `testMatch`. To widen coverage, tag a validated test with
 extra plugins, add them (with their `pluginConfig`) to
 `e2e-tests/local-harness/dynamic-plugins.yaml` and re-run `populate.sh` (see
 "Known issues").
+
+### Which index CI uses
+
+The `:next` tag is rebuilt upstream several times a day, so the PR/push `e2e` job
+resolves the digest pinned in `e2e-tests/local-harness/catalog-index.lock` instead —
+one bad rebuild would otherwise turn every open PR red at once. Renovate checks that pin
+daily and opens a PR when the digest moves, and the job runs against the new digest on
+that PR before anyone merges it. To reproduce a CI run exactly:
+
+```bash
+CATALOG_INDEX_IMAGE="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh main "" --pinned)" \
+  ./e2e-tests/local-harness/populate.sh
+```
+
+Pass the base branch your PR targets (`main` or `release-X.Y`), not the branch you are on:
+the job resolves `github.event.pull_request.base.ref`, and the resolver checks the pinned
+tag against it.
+
+The scheduled `plugin-sanity` job keeps following the floating tag — validating the
+moving index is what it is for.
+
+The lock records `<repo>:<tag>@<digest>` because Renovate needs the tag to know which
+one to follow, but skopeo rejects a reference carrying both, so the resolver emits the
+digest-only form.
+
+When moving the pin by hand, confirm the `e2e` job passes on the new digest first — the
+"runs against the new digest before anyone merges it" gate above is automatic only for
+Renovate's own PR.
+
+**Cutting a release branch:** the new branch inherits main's lock, whose tag is `next`,
+and the resolver fails until the lock is retagged to that branch's version — deliberately,
+so a release branch cannot keep testing the previous stream's index. Renovate only bumps
+the pin on the default branch (no `baseBranches` is configured), so a release branch's pin
+stays where the cut left it unless someone moves it.
 
 ### Verified
 
