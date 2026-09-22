@@ -25,6 +25,7 @@ const esRhdh = loadTranslationJson("rhdh-es.json");
 const frRhdh = loadTranslationJson("rhdh-fr.json");
 const itRhdh = loadTranslationJson("rhdh-it.json");
 const jaRhdh = loadTranslationJson("rhdh-ja.json");
+// rhdh-plugins locale bundles live in the rhdh-plugins repo, not translations/.
 const en = loadTranslationJson("test/all-en.json");
 
 const de = {
