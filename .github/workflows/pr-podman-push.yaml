@@ -28,8 +28,9 @@ on:
       - completed
 
 concurrency:
-  # Do not add workflow_run.pull_requests here: it is empty for fork PRs, which
-  # would make the group unique per run and cancel-in-progress a no-op for them.
+  # Keyed on the PR head branch. Do not add workflow_run.pull_requests here: it
+  # is empty for fork PRs, which would make the group unique per run and
+  # cancel-in-progress a no-op for exactly them.
   group: >-
     ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
@@ -74,11 +75,9 @@ jobs:
           # error handling below never runs.
           if ! PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number'); then
             PR_NUMBER=""
-          fi
-
-          if ! [[ "$PR_NUMBER" =~ ^[0-9]*$ ]]; then
-            echo "::error::Non-numeric PR number: $PR_NUMBER"
-            exit 1
+          elif ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "gh returned a non-numeric PR number: $PR_NUMBER"
+            PR_NUMBER=""
           fi
 
           if [ -n "$PR_NUMBER" ]; then
@@ -207,18 +206,18 @@ jobs:
           SOURCE_REF=""
           if [ -f "./rhdh-podman-artifacts/tags.txt" ]; then
             SOURCE_REF=$(head -n1 ./rhdh-podman-artifacts/tags.txt | tr -d '\r')
-            # tags.txt comes from the untrusted pull_request job. Not a reference
-            # grammar on purpose -- this only rules out flags and metacharacters.
-            if [ -n "$SOURCE_REF" ] && ! [[ "$SOURCE_REF" =~ ^[A-Za-z0-9][A-Za-z0-9._:/@-]*$ ]]; then
-              echo "::error::Invalid source ref from artifact: $SOURCE_REF"
-              exit 1
-            fi
           fi
           if [ -z "$SOURCE_REF" ]; then
             SOURCE_REF=$(echo "$LOAD_OUT" | sed -n 's/.*Loaded image(s): //p' | awk -F',' '{print $1}' | tr -d ' ')
           fi
           if [ -z "$SOURCE_REF" ]; then
             echo "::error::Could not determine loaded image reference to retag"
+            exit 1
+          fi
+          # Both sources are the untrusted build job's artifact. Not a reference
+          # grammar on purpose -- this only rules out flags and metacharacters.
+          if ! [[ "$SOURCE_REF" =~ ^[A-Za-z0-9][A-Za-z0-9._:/@-]*$ ]]; then
+            echo "::error::Invalid source ref: $SOURCE_REF"
             exit 1
           fi
 
@@ -228,8 +227,7 @@ jobs:
 
           # SECURITY: ignore artifact destination names. Derive push tags only
           # from trusted workflow_run PR number + head_sha, and only to rhdh.
-          # The allowlist below asserts that invariant over values this step just
-          # built; it is not validation of untrusted input (see SOURCE_REF above).
+          # The allowlist below re-checks locally built values; not input validation.
           TRUSTED_PR="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}"
           TRUSTED_SHA="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}-${SHORT_SHA}"
 
