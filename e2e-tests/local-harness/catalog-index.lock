@@ -6,4 +6,4 @@
 # annotation below. The tag must match the one the resolver derives for this branch.
 #
 # renovate: datasource=docker depName=quay.io/rhdh/plugin-catalog-index
-quay.io/rhdh/plugin-catalog-index:next@sha256:8ad2b49bf6a423ace504f28da44d6309241a10bddef05364389e6903e8d86790
+quay.io/rhdh/plugin-catalog-index:next@sha256:8cb76f427d3a2cb111090c6dcee627360a8834ca3c909e39b547cfc97b6a65cb
