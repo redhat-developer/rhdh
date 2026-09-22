@@ -3462,13 +3462,6 @@ arches:
     name: zip
     evr: 3.0-45.el10
     sourcerpm: zip-3.0-45.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/codeready-builder/os/Packages/p/python3-setuptools-wheel-69.0.3-12.el10_0.noarch.rpm
-    repoid: codeready-builder-for-ubi-10-aarch64-rpms
-    size: 693755
-    checksum: sha256:2671f601e378f51e538432d5e356fff131524da5ef882390f5f5056cb63ae6bd
-    name: python3-setuptools-wheel
-    evr: 69.0.3-12.el10_0
-    sourcerpm: python-setuptools-69.0.3-12.el10_0.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/a/aardvark-dns-1.17.1-1.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
@@ -5174,12 +5167,6 @@ arches:
     checksum: sha256:0dfa0c98c635691726ee7a9ad0cfa2e17544bd5209d3ea86540fb60ed2206f9e
     name: python-requests
     evr: 2.32.4-1.el10_0
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/p/python-setuptools-69.0.3-12.el10_0.src.rpm
-    repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 2295950
-    checksum: sha256:504b848b7a1a2b86dbbdac4cae3120f8262434a0b1baa42f4836a56ecc1eddc3
-    name: python-setuptools
-    evr: 69.0.3-12.el10_0
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/p/python-six-1.16.0-16.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 66382
@@ -8752,13 +8739,6 @@ arches:
     name: zip
     evr: 3.0-45.el10
     sourcerpm: zip-3.0-45.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/codeready-builder/os/Packages/p/python3-setuptools-wheel-69.0.3-12.el10_0.noarch.rpm
-    repoid: codeready-builder-for-ubi-10-x86_64-rpms
-    size: 693755
-    checksum: sha256:2671f601e378f51e538432d5e356fff131524da5ef882390f5f5056cb63ae6bd
-    name: python3-setuptools-wheel
-    evr: 69.0.3-12.el10_0
-    sourcerpm: python-setuptools-69.0.3-12.el10_0.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/a/aardvark-dns-1.17.1-1.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
@@ -10464,12 +10444,6 @@ arches:
     checksum: sha256:0dfa0c98c635691726ee7a9ad0cfa2e17544bd5209d3ea86540fb60ed2206f9e
     name: python-requests
     evr: 2.32.4-1.el10_0
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/p/python-setuptools-69.0.3-12.el10_0.src.rpm
-    repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 2295950
-    checksum: sha256:504b848b7a1a2b86dbbdac4cae3120f8262434a0b1baa42f4836a56ecc1eddc3
-    name: python-setuptools
-    evr: 69.0.3-12.el10_0
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/p/python-six-1.16.0-16.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 66382

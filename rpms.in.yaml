@@ -302,7 +302,6 @@ packages:
   - python3-librepo
   - python3-pip
   - python3-rpm
-  - python3-setuptools-wheel
   - python3-subscription-manager-rhsm
   - python3-systemd
   - python3.12
