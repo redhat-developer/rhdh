@@ -1,3 +1,15 @@
+# The chart replaces Bitnami's PostgreSQL image with Red Hat's
+# registry.redhat.io/rhel9/postgresql-15; the Bitnami common chart refuses
+# unrecognized images unless this flag is set (bitnami/charts#30850).
+global:
+  security:
+    allowInsecureImages: true
+
+# The chart enables the intelligent-assistant flavour by default, which adds a
+# lightspeed-core sidecar these lanes do not test.
+intelligentAssistant:
+  enabled: false
+
 dynamicPlugins:
   # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
   # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
@@ -113,9 +125,6 @@ extraEnvFrom:
       name: rhdh-secrets
   - secretRef:
       name: redis-secret
-
-ingress:
-  host: "{{ .Values.host }}"
 
 service:
   extraPorts:
