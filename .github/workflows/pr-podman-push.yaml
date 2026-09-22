@@ -28,8 +28,7 @@ on:
       - completed
 
 concurrency:
-  # head_repository + head_branch identify the PR head on their own. Do not add
-  # workflow_run.pull_requests here: it is empty for fork PRs, so the fallback
+  # Do not add workflow_run.pull_requests here: it is empty for fork PRs, which
   # would make the group unique per run and cancel-in-progress a no-op for them.
   group: >-
     ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
@@ -208,9 +207,9 @@ jobs:
           SOURCE_REF=""
           if [ -f "./rhdh-podman-artifacts/tags.txt" ]; then
             SOURCE_REF=$(head -n1 ./rhdh-podman-artifacts/tags.txt | tr -d '\r')
-            # tags.txt is written by the untrusted pull_request job, so it can be
-            # anything -- including a leading `-` that podman would read as a flag.
-            if [ -n "$SOURCE_REF" ] && ! [[ "$SOURCE_REF" =~ ^[a-z0-9][a-z0-9._/-]*(:[A-Za-z0-9._-]+)?(@sha256:[a-f0-9]{64})?$ ]]; then
+            # tags.txt comes from the untrusted pull_request job. Not a reference
+            # grammar on purpose -- this only rules out flags and metacharacters.
+            if [ -n "$SOURCE_REF" ] && ! [[ "$SOURCE_REF" =~ ^[A-Za-z0-9][A-Za-z0-9._:/@-]*$ ]]; then
               echo "::error::Invalid source ref from artifact: $SOURCE_REF"
               exit 1
             fi
