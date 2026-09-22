@@ -5,7 +5,7 @@
 # `next` tracks main; release branches carry their own version tag. An optional
 # override wins when set (validated so it cannot forge multi-line GITHUB_OUTPUT).
 # With --pinned, the digest recorded in catalog-index.lock is used instead of the
-# floating tag, so an index rebuilt upstream cannot change what a PR job tests.
+# floating tag. See "Which index CI uses" in docs/e2e-tests/local-e2e-harness.md.
 #
 # Usage:
 #   ./e2e-tests/local-harness/resolve-catalog-index-image.sh [branch] [override] [--pinned]
@@ -15,10 +15,10 @@ set -euo pipefail
 
 BRANCH="${1:-}"
 OVERRIDE="${2:-}"
-PINNED="${3:-}"
+MODE="${3:-}"
 
-if [[ -n "${PINNED}" && "${PINNED}" != "--pinned" ]]; then
-  echo "unknown argument: ${PINNED} (expected --pinned)" >&2
+if [[ -n "${MODE}" && "${MODE}" != "--pinned" ]]; then
+  echo "unknown argument: ${MODE} (expected --pinned)" >&2
   exit 1
 fi
 
@@ -38,7 +38,7 @@ if [[ -n "${OVERRIDE}" ]]; then
   exit 0
 fi
 
-if [[ "${PINNED}" != "--pinned" ]]; then
+if [[ "${MODE}" != "--pinned" ]]; then
   echo "${image}"
   exit 0
 fi
@@ -52,7 +52,7 @@ fi
 # `|| true`: an empty result must reach the errors below, not die on pipefail. Taking
 # the first line silently would hide a bad edit that appended a second pin.
 # No mapfile: this script also runs on the bash 3.2 that ships with macOS.
-pin="$(grep -Ev '^[[:space:]]*(#|$)' "${lock}" || true)"
+pin="$(grep -Ev '^[[:space:]]*(#|$)' "${lock}" | tr -d '\r' | sed 's/[[:space:]]*$//' || true)"
 if [[ -z "${pin}" || "${pin}" == *$'\n'* ]]; then
   echo "expected exactly one uncommented line in ${lock}" >&2
   exit 1
@@ -69,4 +69,8 @@ if [[ "${pin%@*}" != "${image}" ]]; then
   exit 1
 fi
 
-echo "${pin}"
+# The lock carries `<repo>:<tag>@<digest>` because Renovate needs the tag to know
+# which one to follow, but skopeo rejects a reference carrying both ("Docker
+# references with both a tag and digest are currently not supported"), so emit
+# the digest-only form the callers actually pull.
+echo "${image%:*}@${pin#*@}"

@@ -223,10 +223,9 @@
       "matchUpdateTypes": ["patch", "minor"]
     },
     {
-      "description": "cluster-free E2E catalog index: docker digests are disabled repo-wide, but this pin exists to be bumped; daily so the moving tag does not spam PRs",
+      "description": "cluster-free E2E catalog index: docker digests are disabled repo-wide, and this pin is the one that has to keep moving; daily so the moving tag does not spam PRs",
       "matchFileNames": ["e2e-tests/local-harness/catalog-index.lock"],
-      "matchUpdateTypes": ["digest"],
-      "enabled": true,
+      "digest": {"enabled": true},
       "groupName": "cluster-free E2E catalog index",
       "schedule": ["after 5am and before 7am"],
       "automerge": false

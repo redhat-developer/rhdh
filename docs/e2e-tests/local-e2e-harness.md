@@ -51,8 +51,17 @@ CATALOG_INDEX_IMAGE="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh 
 ```
 
 The scheduled `plugin-sanity` job keeps following the floating tag — validating the
-moving index is what it is for. A release branch carries its own lock file; the script
-fails if the pinned tag does not match the branch.
+moving index is what it is for.
+
+The lock records `<repo>:<tag>@<digest>` because Renovate needs the tag to know which
+one to follow, but skopeo rejects a reference carrying both, so the resolver emits the
+digest-only form.
+
+**Cutting a release branch:** the new branch inherits main's lock, whose tag is `next`,
+and the resolver fails until the lock is retagged to that branch's version — deliberately,
+so a release branch cannot keep testing the previous stream's index. Renovate only bumps
+the pin on the default branch (no `baseBranches` is configured), so a release branch's pin
+stays where the cut left it unless someone moves it.
 
 `populate.sh` takes an optional install-config path as its first argument
 (default: the curated harness set above). The plugin sanity check drives that

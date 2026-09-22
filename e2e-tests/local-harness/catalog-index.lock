@@ -1,11 +1,9 @@
-# Catalog index pinned for the cluster-free E2E job, so an index rebuilt
-# upstream cannot red every open PR at once. Renovate bumps the digest, and
-# that PR runs this job against it. The scheduled plugin-sanity job ignores
-# this file on purpose: following the moving tag is its whole point.
+# Catalog index pinned for the cluster-free E2E job. Renovate bumps the digest.
+# Why, and how to use it locally: "Which index CI uses" in
+# docs/e2e-tests/local-e2e-harness.md.
 #
 # Exactly one uncommented line, `<image>:<tag>@sha256:<digest>`, preceded by the
-# renovate annotation below. The tag must match the one
-# resolve-catalog-index-image.sh derives for this branch.
+# annotation below. The tag must match the one the resolver derives for this branch.
 #
 # renovate: datasource=docker depName=quay.io/rhdh/plugin-catalog-index
 quay.io/rhdh/plugin-catalog-index:next@sha256:8ad2b49bf6a423ace504f28da44d6309241a10bddef05364389e6903e8d86790
