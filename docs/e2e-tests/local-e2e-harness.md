@@ -36,6 +36,23 @@ Use a specific catalog index image (for example a release branch tag):
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:2.0 ./e2e-tests/local-harness/populate.sh
 ```
 
+### Which index CI uses
+
+The `:next` tag is rebuilt upstream several times a day, so the PR/push `e2e` job
+resolves the digest pinned in `e2e-tests/local-harness/catalog-index.lock` instead —
+one bad rebuild would otherwise turn every open PR red at once. Renovate opens a daily
+PR bumping that pin, and the job runs against the new digest on that PR before anyone
+merges it. To reproduce a CI run exactly:
+
+```bash
+CATALOG_INDEX_IMAGE="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh main "" --pinned)" \
+  ./e2e-tests/local-harness/populate.sh
+```
+
+The scheduled `plugin-sanity` job keeps following the floating tag — validating the
+moving index is what it is for. A release branch carries its own lock file; the script
+fails if the pinned tag does not match the branch.
+
 `populate.sh` takes an optional install-config path as its first argument
 (default: the curated harness set above). The plugin sanity check drives that
 hook through `populate-catalog-index.sh`, which generates a config enabling every

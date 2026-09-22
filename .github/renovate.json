@@ -11,6 +11,17 @@
   "labels": ["kind/dependency upgrade"],
   "npm": {"minimumReleaseAge": "3 day"},
   "pip_requirements": {"managerFilePatterns": ["/requirements.*\\.in/"]},
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "digest pinned for the cluster-free E2E catalog index",
+      "managerFilePatterns": ["/^e2e-tests/local-harness/catalog-index\\.lock$/"],
+      "matchStrings": [
+        "(?<depName>quay\\.io/rhdh/plugin-catalog-index):(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
   "major": {"dependencyDashboardApproval": true},
   "reviewers": ["team:rhdh-security"],
   "packageRules": [
@@ -211,6 +222,15 @@
       "matchPackageNames": ["@janus-idp/cli"],
       "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
       "matchUpdateTypes": ["patch", "minor"]
+    },
+    {
+      "description": "cluster-free E2E catalog index: docker digests are disabled repo-wide, but this pin exists to be bumped; daily so the moving tag does not spam PRs",
+      "matchFileNames": ["e2e-tests/local-harness/catalog-index.lock"],
+      "matchUpdateTypes": ["digest"],
+      "enabled": true,
+      "groupName": "cluster-free E2E catalog index",
+      "schedule": ["after 5am and before 7am"],
+      "automerge": false
     }
   ],
   "ignorePaths": ["**/dist-dynamic/**"],

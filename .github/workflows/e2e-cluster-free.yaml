@@ -86,6 +86,10 @@ jobs:
         with:
           branch: ${{ github.event.pull_request.base.ref || github.ref_name }}
           catalog_index_image: ${{ inputs.catalog_index_image }}
+          # Pin to catalog-index.lock: the index is rebuilt upstream several
+          # times a day, and on the floating tag one bad rebuild reds every
+          # open PR at once. Renovate bumps the pin, and that PR runs this job.
+          pinned: "true"
 
       - name: Populate dynamic-plugins-root (OCI)
         # populate.sh resolves {{inherit}} against the catalog index DPDY, then
