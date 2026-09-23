@@ -337,6 +337,9 @@ dynamicPlugins:
               allOf:
                 - isTektonCIAvailable
     backstage-community.plugin-topology:
+      translationResources:
+        - importName: topologyTranslations
+          ref: topologyTranslationRef
       mountPoints:
         - mountPoint: entity.page.topology/cards
           importName: TopologyPage

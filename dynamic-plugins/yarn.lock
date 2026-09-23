@@ -3230,9 +3230,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-topology@npm:2.12.3":
-  version: 2.12.3
-  resolution: "@backstage-community/plugin-topology@npm:2.12.3"
+"@backstage-community/plugin-topology@npm:2.12.4":
+  version: 2.12.4
+  resolution: "@backstage-community/plugin-topology@npm:2.12.4"
   dependencies:
     "@backstage-community/plugin-tekton-react": "npm:^0.5.0"
     "@backstage/catalog-model": "npm:^1.7.7"
@@ -3267,7 +3267,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/92ea8bf7b3570a5e2e244366117dffe421ee375ceeb707a8797184a824921dc9d25919a766a0e8396b5cdfef5b3911315b497dd27a0ed4988d9d4f772eb356c1
+  checksum: 10c0/e31f37aac11823f7d078b67bf0c69c93c1dbd8ded130ccd11411174c667027321a5ec959b78ee24519d0f5c48b9206942d3f371b72bdb270f6390a6d34d9be43
   languageName: node
   linkType: hard
 
@@ -16203,7 +16203,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-topology@workspace:wrappers/backstage-community-plugin-topology"
   dependencies:
-    "@backstage-community/plugin-topology": "npm:2.12.3"
+    "@backstage-community/plugin-topology": "npm:2.12.4"
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
