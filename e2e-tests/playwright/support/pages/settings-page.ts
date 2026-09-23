@@ -167,13 +167,13 @@ export class SettingsPage {
 
   async verifySidebarItemCollapsed(linkName: string): Promise<void> {
     await expect(this.page.getByRole("link", { name: linkName })).toHaveClass(
-      /BackstageSidebarItem-closed/,
+      /BackstageSidebarItem-closed/u,
     );
   }
 
   async verifySidebarItemExpanded(linkName: string): Promise<void> {
     await expect(this.page.getByRole("link", { name: linkName })).toHaveClass(
-      /BackstageSidebarItem-open/,
+      /BackstageSidebarItem-open/u,
     );
   }
 

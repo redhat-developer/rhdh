@@ -35,7 +35,7 @@ export class SidebarPage {
 
   async verifyDocsHeading(): Promise<void> {
     const lang = getCurrentLanguage();
-    await expect(this.page).toHaveURL(/\/docs(\?|$)/);
+    await expect(this.page).toHaveURL(/\/docs(\?|$)/u);
     // With no techdocs entities (cluster-free harness) the index renders only its
     // empty state, without the "Docs" page header.
     const docsHeading = this.page.getByRole("heading", { name: t["rhdh"][lang]["menuItem.docs"] });
