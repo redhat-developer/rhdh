@@ -11166,9 +11166,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.17.1"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.17.2"
   dependencies:
     "@backstage/backend-dynamic-feature-service": "npm:^0.8.0"
     "@backstage/backend-plugin-api": "npm:^1.8.0"
@@ -11179,12 +11179,12 @@ __metadata:
     "@backstage/plugin-catalog-common": "npm:^1.1.8"
     "@backstage/plugin-catalog-node": "npm:^2.1.0"
     "@backstage/types": "npm:^1.2.2"
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.1"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.2"
     find-root: "npm:^1.1.0"
     glob: "npm:^8.1.0"
     js-yaml: "npm:^4.1.0"
     semver: "npm:^7.6.3"
-  checksum: 10c0/5e65bf04ec5472948ebaaeec89fab434a1f13398e6023583d8b8d2bc1cb9188eb9fe7f48af73238a92ab0f84c1453497796e1d82d9d8960869a623854d158818
+  checksum: 10c0/940109f19499ee0df48a5e60309ae866365bfb72a70aa1027bb00ce2a64ae82138aafcb0b5e3c77a880d59957af88d8bc6e61c421371bdf0e5fc1fa4dee9914c
   languageName: node
   linkType: hard
 
@@ -11219,9 +11219,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.17.1"
+"@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.17.2"
   dependencies:
     "@backstage/backend-defaults": "npm:^0.16.0"
     "@backstage/backend-dynamic-feature-service": "npm:^0.8.0"
@@ -11232,18 +11232,18 @@ __metadata:
     "@backstage/plugin-catalog-node": "npm:^2.1.0"
     "@backstage/plugin-permission-common": "npm:^0.9.7"
     "@backstage/plugin-permission-node": "npm:^0.10.11"
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.1"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.2"
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
     yaml: "npm:^2.7.1"
     zod: "npm:^3.22.4"
-  checksum: 10c0/6291083b496f92aaac1045f0637d79c0b5a854ba61e7507d7efe8d6d8a83c5bed866e6d05ef749377c4833116fba22a307ed8794afa36592818efd9f4c537989
+  checksum: 10c0/53477228c0398bc4112965834e2d075649a7cc3300737c12580079224787e5cf1211c57a8d58622d04a4b33bb2d21f71e1bc6b9e877bf4089b9f5d24c4607d2b
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.17.1, @red-hat-developer-hub/backstage-plugin-extensions-common@npm:^0.17.1":
-  version: 0.17.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.17.1"
+"@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.17.2, @red-hat-developer-hub/backstage-plugin-extensions-common@npm:^0.17.2":
+  version: 0.17.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.17.2"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.8.0"
     "@backstage/catalog-client": "npm:^1.14.0"
@@ -11253,13 +11253,13 @@ __metadata:
   peerDependencies:
     "@backstage/backend-plugin-api": ^1.8.0
     "@backstage/types": ^1.2.2
-  checksum: 10c0/0b55eaa21ba17c65d629f1c93e872ae427cd9e2db7632755edfde104c7bad13fd1521072dfbb6d81bea3aa934e2ff258d3b390b28f5610465ee0b64c4a952a62
+  checksum: 10c0/66b159b56cb6bed02157c4995c3ed7f7750710b687d478d7faf50d01bcfe2a8ec12f17f178644ae480e3f8904ecf03fcfe6f5f1641b7f64c5f4f7eb557140422
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-extensions@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@npm:0.17.1"
+"@red-hat-developer-hub/backstage-plugin-extensions@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@npm:0.17.2"
   dependencies:
     "@backstage/catalog-client": "npm:^1.14.0"
     "@backstage/core-compat-api": "npm:^0.5.9"
@@ -11277,7 +11277,7 @@ __metadata:
     "@monaco-editor/react": "npm:^4.7.0"
     "@mui/icons-material": "npm:^5.16.7"
     "@mui/material": "npm:^5.12.2"
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.1"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.2"
     "@tanstack/react-query": "npm:^5.60.5"
     monaco-editor: "npm:^0.55.0"
     yaml: "npm:^2.7.0"
@@ -11285,13 +11285,13 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 10c0/28d47fc741d2820c78fef9507e4f3d3740c969836fa3b2930c43c7113fe6bea0a3e27d5eefd3c01b9d00071418dad649e9097a7d0802aeedb238c57f753f3432
+  checksum: 10c0/e3bff03c817b2d2f6e1b2f64a52f60c7bcfd076b15e28959063f2119b1ed8bd6bcee6fdd96872df37ed1d546ae8e7d4f6a405f8a6b61852b51adc95a6aa882d0
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.1#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.1-ea480f3404.patch":
-  version: 0.17.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.1#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.1-ea480f3404.patch::version=0.17.1&hash=f013a1"
+"@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.2#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.2-ea480f3404.patch":
+  version: 0.17.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.2#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.2-ea480f3404.patch::version=0.17.2&hash=b7ef0f"
   dependencies:
     "@backstage/catalog-client": "npm:^1.14.0"
     "@backstage/core-compat-api": "npm:^0.5.9"
@@ -11309,7 +11309,7 @@ __metadata:
     "@monaco-editor/react": "npm:^4.7.0"
     "@mui/icons-material": "npm:^5.16.7"
     "@mui/material": "npm:^5.12.2"
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.1"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:^0.17.2"
     "@tanstack/react-query": "npm:^5.60.5"
     monaco-editor: "npm:^0.55.0"
     yaml: "npm:^2.7.0"
@@ -11317,7 +11317,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 10c0/03e908b592ba508664907879b8b163f00e66df41a2a2cd93ef423e911502a390aa725d0f9bdca93db91804d71ead74f07e8443d643511a146e588a551fb3e574
+  checksum: 10c0/3025c541623b507f1282092094de34290fedeb3c3bbbc31cfa3f85508c72321abe1a8a72b0bc1445add49351e0cbf5fc61bc1b00ddcb1c9cee6d8ee8b1b1c4a7
   languageName: node
   linkType: hard
 
@@ -29230,8 +29230,8 @@ __metadata:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions": "npm:0.17.1"
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:0.17.1"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions": "npm:0.17.2"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:0.17.2"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
@@ -29256,8 +29256,8 @@ __metadata:
     "@backstage/cli": "npm:0.36.0"
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
-    "@red-hat-developer-hub/backstage-plugin-extensions-backend": "npm:0.17.1"
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:0.17.1"
+    "@red-hat-developer-hub/backstage-plugin-extensions-backend": "npm:0.17.2"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "npm:0.17.2"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
@@ -29270,7 +29270,7 @@ __metadata:
     "@backstage/cli-defaults": "npm:0.1.0"
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-extensions": "npm:0.17.1"
+    "@red-hat-developer-hub/backstage-plugin-extensions": "npm:0.17.2"
     typescript: "npm:5.9.3"
   languageName: unknown
   linkType: soft
