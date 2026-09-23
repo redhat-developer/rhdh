@@ -80,16 +80,16 @@ handle_ocp_disconnected_helm() {
   pg_digest=$(echo "${helm_values}" | yq '.postgresql.image.digest // ""' || true)
   PG_REGISTRY="${PG_REGISTRY:-${POSTGRESQL_IMAGE_REGISTRY}}"
   PG_REPO="${PG_REPO:-${POSTGRESQL_IMAGE_REPO}}"
+  PG_TAG="${PG_TAG:-${POSTGRESQL_IMAGE_TAG}}"
 
   # Full ref is ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}, with PG_REPO kept
-  # a clean path for the IDMS source/mirror fields. Chart 2.y pins the image in
+  # a clean path for the IDMS source/mirror fields. Chart 1.x encodes a digest as
+  # repository "repo@sha256" + tag "<hash>"; chart 2.y pins it in
   # postgresql.image.digest ("sha256:<hash>"), which wins over the tag.
+  common::normalize_chart_image_ref PG_REPO PG_SEPARATOR
   if [[ -n "${pg_digest}" ]]; then
     PG_SEPARATOR="@${pg_digest%%:*}:"
     PG_TAG="${pg_digest#*:}"
-  else
-    PG_TAG="${PG_TAG:-${POSTGRESQL_IMAGE_TAG}}"
-    common::normalize_chart_image_ref PG_REPO PG_SEPARATOR
   fi
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"

@@ -9,11 +9,6 @@
 # which CrashLoops install-dynamic-plugins after registries.conf rewrites
 # those pulls to the mirror. Homepage package is HOMEPAGE_PLUGIN_PACKAGE
 # (digest-pinned OCI from the catalog). ref:// needs includes and cannot be used.
-# The chart replaces Bitnami's PostgreSQL image with Red Hat's; the Bitnami common
-# chart refuses unrecognized images unless this flag is set (bitnami/charts#30850).
-global:
-  security:
-    allowInsecureImages: true
 dynamicPlugins:
   includes: []
   plugins:
@@ -30,6 +25,11 @@ intelligentAssistant:
   enabled: false
 orchestrator:
   enabled: false
+# The chart replaces Bitnami's PostgreSQL image with Red Hat's; the Bitnami common
+# chart refuses unrecognized images unless this flag is set (bitnami/charts#30850).
+global:
+  security:
+    allowInsecureImages: true
 image:
   pullPolicy: Always
 appConfig:
