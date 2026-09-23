@@ -23,7 +23,7 @@ handle_ocp_helm_upgrade() {
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-${NAME_SPACE}-postgres-external-db}"
   export DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-${RELEASE_NAME}-developer-hub}"
 
-  # Dynamically determine the previous release version and chart version
+  # Resolve the previous release's chart and values for the baseline deployment.
   local current_release_version
   current_release_version=$(helm::get_chart_stream)
   if [[ -z "$current_release_version" ]]; then
@@ -42,12 +42,17 @@ handle_ocp_helm_upgrade() {
   if [[ -z "${CHART_VERSION_BASE:-}" ]]; then
     CHART_VERSION_BASE=$(helm::get_chart_version "$previous_release_version")
     if [[ -z "$CHART_VERSION_BASE" ]]; then
-      log::error "Failed to determine correct chart version for $previous_release_version. Exiting."
+      log::error "Failed to determine chart version for $previous_release_version. Exiting."
       save_overall_result 1
       exit 1
     fi
   else
     log::info "Using preset CHART_VERSION_BASE: ${CHART_VERSION_BASE}"
+  fi
+  if [[ "${CHART_VERSION_BASE%%.*}" != "${previous_release_version%%.*}" ]]; then
+    log::error "Base chart ${CHART_VERSION_BASE} does not match previous release ${previous_release_version}"
+    save_overall_result 1
+    exit 1
   fi
   export CHART_VERSION_BASE
   log::info "Using previous release version: ${previous_release_version} and chart version: ${CHART_VERSION_BASE}"

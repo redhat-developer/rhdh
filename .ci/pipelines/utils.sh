@@ -606,35 +606,34 @@ initiate_upgrade_base_deployments() {
   apply_yaml_files "${DIR}" "${namespace}" "${url}"
   log::info "Deploying image from base repository: ${IMAGE_REGISTRY}/${IMAGE_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
 
-  # Get dynamic value file path based on previous release version
   local previous_release_value_file
-  previous_release_value_file=$(helm::get_previous_release_values "showcase")
-  echo "Using dynamic value file: ${previous_release_value_file}"
+  previous_release_value_file=$(helm::get_previous_release_values "showcase") || return 1
 
-  # The base is the previous release's chart; 1.x and 2.y read different value
-  # paths and silently ignore the other layout's.
-  local base_params=()
-  if [[ "${CHART_VERSION_BASE%%.*}" == "1" ]]; then
-    base_params=(
-      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
-      --set upstream.backstage.image.registry="${IMAGE_REGISTRY}"
-      --set upstream.backstage.image.repository="${IMAGE_REPO_BASE}"
-      --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+  local -a chart_params
+  if [[ "${CHART_VERSION_BASE}" == 1.* ]]; then
+    chart_params=(
+      --set "global.clusterRouterBase=${K8S_CLUSTER_ROUTER_BASE}"
+      --set "upstream.backstage.image.registry=${IMAGE_REGISTRY}"
+      --set "upstream.backstage.image.repository=${IMAGE_REPO_BASE}"
+      --set "upstream.backstage.image.tag=${TAG_NAME_BASE}"
     )
   else
-    base_params=(
-      --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
-      --set image.registry="${IMAGE_REGISTRY}"
-      --set image.repository="${IMAGE_REPO_BASE}"
-      --set image.tag="${TAG_NAME_BASE}"
+    chart_params=(
+      --set "openshift.clusterRouterBase=${K8S_CLUSTER_ROUTER_BASE}"
+      --set "image.registry=${IMAGE_REGISTRY}"
+      --set "image.repository=${IMAGE_REPO_BASE}"
+      --set "image.tag=${TAG_NAME_BASE}"
       --set image.digest=
     )
   fi
 
+  local status=0
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${previous_release_value_file}" \
-    "${base_params[@]}"
+    "${chart_params[@]}" || status=$?
+  rm -f "${previous_release_value_file}"
+  return "${status}"
 }
 
 initiate_upgrade_deployments() {
@@ -646,7 +645,7 @@ initiate_upgrade_deployments() {
   local -a extra_params=()
 
   if [[ -n "${backstage_replicas}" ]]; then
-    extra_params+=(--set "replicas=${backstage_replicas}")
+    extra_params+=(--set "replicaCount=${backstage_replicas}")
   fi
 
   log::info "Initiating upgrade deployment"

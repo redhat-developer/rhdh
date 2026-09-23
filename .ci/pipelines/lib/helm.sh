@@ -77,47 +77,27 @@ helm::merge_values() {
   fi
 }
 
-# Get the previous release value file from GitHub
+# Get the previous release's chart values for the upgrade baseline.
 # Args:
-#   $1 - value_file_type: Type of value file (default: "showcase", can be "showcase-rbac")
-# Returns:
-#   Prints the path to the downloaded value file
+#   $1 - value_file_type: Type of value file (default: "showcase")
 helm::get_previous_release_values() {
-  local value_file_type=${1:-"showcase"}
-
-  local current_release_version
-  current_release_version=$(helm::get_chart_stream)
-  if [[ -z "$current_release_version" ]]; then
+  local value_file_type=${1:-showcase}
+  if [[ -z "${previous_release_version:-}" ]]; then
+    log::error "Previous release version is not set"
     return 1
   fi
 
-  # Get the previous release version
-  local previous_release_version
-  previous_release_version=$(common::get_previous_release_version "$current_release_version")
-
-  if [[ -z "$previous_release_version" ]]; then
-    log::error "Failed to determine previous release version."
-    return 1
-  fi
-
-  log::info "Using previous release version: ${previous_release_version}" >&2
-
-  # Construct the GitHub URL for the value file
   local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ci/pipelines/value_files/values_${value_file_type}.yaml"
+  local temp_value_file
+  temp_value_file=$(mktemp "${TMPDIR:-${DIR}}/values_${value_file_type}_${previous_release_version}.XXXXXX.yaml") || return 1
 
-  # Create a temporary file path for the downloaded value file
-  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_version}.yaml"
-
-  log::info "Fetching value file from: ${github_url}" >&2
-
-  # Download the value file from GitHub
-  if curl -fsSL "${github_url}" -o "${temp_value_file}"; then
-    log::success "Successfully downloaded value file to: ${temp_value_file}" >&2
-    echo "${temp_value_file}"
-  else
-    log::error "Failed to download value file from GitHub."
+  log::info "Fetching previous release values from: ${github_url}" >&2
+  if ! curl -fsSL "${github_url}" -o "${temp_value_file}"; then
+    rm -f "${temp_value_file}"
+    log::error "Failed to download previous release values" >&2
     return 1
   fi
+  printf '%s\n' "${temp_value_file}"
 }
 
 # ==============================================================================
@@ -364,6 +344,7 @@ helm::get_image_params() {
     params+="--set postgresql.image.registry=${POSTGRESQL_IMAGE_REGISTRY} "
     params+="--set postgresql.image.repository=${POSTGRESQL_IMAGE_REPO} "
     params+="--set postgresql.image.tag=${POSTGRESQL_IMAGE_TAG} "
+    params+="--set postgresql.image.digest= "
   fi
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
