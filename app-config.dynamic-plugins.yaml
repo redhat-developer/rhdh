@@ -272,6 +272,9 @@ dynamicPlugins:
         - mountPoint: application/listener
           importName: DynamicGlobalFloatingActionButton
     red-hat-developer-hub.backstage-plugin-quickstart:
+      translationResources:
+        - importName: quickstartTranslations
+          ref: quickstartTranslationRef
       mountPoints:
         - mountPoint: application/provider
           importName: QuickstartDrawerProvider
