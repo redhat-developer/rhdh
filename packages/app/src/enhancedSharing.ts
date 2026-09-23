@@ -105,9 +105,11 @@ const additionalSharedDependencies = [
 ];
 
 export function addRuntimeSharedDependencies() {
-  const sharedDependencies = (window as {
-    [BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL]?: RuntimeSharedDependenciesGlobal;
-  })[BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL];
+  const sharedDependencies = (
+    window as {
+      [BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL]?: RuntimeSharedDependenciesGlobal;
+    }
+  )[BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL];
 
   // Hosts without shared runtime dependencies cannot be enhanced.
   if (!sharedDependencies) {
