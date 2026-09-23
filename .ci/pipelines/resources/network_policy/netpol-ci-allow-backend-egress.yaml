@@ -1,0 +1,18 @@
+# The chart ships default-deny NetworkPolicies that only allow DNS, HTTPS,
+# Redis and PostgreSQL egress from the backend pod. CI proxies traffic to
+# plain-HTTP routes (test-backstage-customization-provider, add-test-header),
+# so restore full egress for the backend in CI namespaces. NetworkPolicies are
+# additive, so this does not weaken the chart's ingress rules.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rhdh-ci-allow-backend-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: developer-hub
+      app.kubernetes.io/component: backstage
+  policyTypes:
+    - Egress
+  egress:
+    - {}
