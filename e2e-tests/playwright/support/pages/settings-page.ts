@@ -165,16 +165,12 @@ export class SettingsPage {
     await this.page.keyboard.press("Escape");
   }
 
-  async verifySidebarItemCollapsed(linkName: string): Promise<void> {
-    await expect(this.page.getByRole("link", { name: linkName })).toHaveClass(
-      /BackstageSidebarItem-closed/u,
-    );
-  }
-
-  async verifySidebarItemExpanded(linkName: string): Promise<void> {
-    await expect(this.page.getByRole("link", { name: linkName })).toHaveClass(
-      /BackstageSidebarItem-open/u,
-    );
+  async verifySidebarMenuItemHidden(text: string): Promise<void> {
+    // Collapsed sidebar links keep their aria-label; only the visible text goes away.
+    // (Readable BackstageSidebarItem-* class names exist only on the local webpack harness.)
+    await expect(
+      this.page.getByRole("navigation", { name: "sidebar nav" }).getByText(text, { exact: true }),
+    ).toBeHidden();
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {

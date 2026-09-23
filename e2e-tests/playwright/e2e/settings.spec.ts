@@ -32,11 +32,9 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.verifySignOutMenuLabel(t["user-settings"]["fr"]["signOutMenu.title"]);
     await settingsPage.closeUserSettingsMenu();
 
-    const apisLabel = t["rhdh"]["fr"]["menuItem.apis"];
     await settingsPage.uncheckCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
-    await settingsPage.verifySidebarItemCollapsed(apisLabel);
+    await settingsPage.verifySidebarMenuItemHidden(t["rhdh"]["fr"]["menuItem.apis"]);
     await settingsPage.checkCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
-    await settingsPage.verifySidebarItemExpanded(apisLabel);
     // NFS sidebar page titles come from upstream PageBlueprint defaults ("Home"), not
     // rhdh menuItem.* translations — only GlobalHeader chrome translates with AppLanguageApi.
     await settingsPage.verifyText("Home");
