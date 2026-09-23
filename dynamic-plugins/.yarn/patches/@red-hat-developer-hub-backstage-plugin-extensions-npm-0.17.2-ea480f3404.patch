@@ -2,11 +2,17 @@ diff --git a/dist/components/CodeEditor.esm.js b/dist/components/CodeEditor.esm.
 index d397757630057c4d2c5e8a70eb67ddc2dec19d64..4310fb4bfd45e84e437fd6458379131753c3d5dc 100644
 --- a/dist/components/CodeEditor.esm.js
 +++ b/dist/components/CodeEditor.esm.js
-@@ -10,2 +10,2 @@
+@@ -7,8 +7,8 @@ import Typography from '@mui/material/Typography';
+ import { useTheme } from '@mui/material/styles';
+ import Editor, { loader } from '@monaco-editor/react';
+ import { useCodeEditor } from './CodeEditorContext.esm.js';
 -import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution';
 -import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 +import 'monaco-editor/languages/definitions/yaml/register';
 +import * as monacoEditor from 'monaco-editor/editor';
+ 
+ loader.config({ monaco: monacoEditor });
+ const defaultOptions = {
 diff --git a/dist/components/CodeEditor.esm.js.map b/dist/components/CodeEditor.esm.js.map
 index fbb48ad0c7c15bfd5d9f8850bbe34bc8987ad23c..b4b7c22752e323c24c60f357aed9f6b0e7ca9b38 100644
 --- a/dist/components/CodeEditor.esm.js.map

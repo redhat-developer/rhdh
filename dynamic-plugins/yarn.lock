@@ -11291,7 +11291,7 @@ __metadata:
 
 "@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.2#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.2-ea480f3404.patch":
   version: 0.17.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.2#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.2-ea480f3404.patch::version=0.17.2&hash=b7ef0f"
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.2#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.2-ea480f3404.patch::version=0.17.2&hash=f013a1"
   dependencies:
     "@backstage/catalog-client": "npm:^1.14.0"
     "@backstage/core-compat-api": "npm:^0.5.9"
