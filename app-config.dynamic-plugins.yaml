@@ -252,6 +252,9 @@ dynamicPlugins:
               anyOf:
                 - isQuayAvailable
     red-hat-developer-hub.backstage-plugin-bulk-import:
+      translationResources:
+        - importName: bulkImportTranslations
+          ref: bulkImportTranslationRef
       appIcons:
         - name: bulkImportIcon
           importName: BulkImportIcon
