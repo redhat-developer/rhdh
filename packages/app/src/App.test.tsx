@@ -1,8 +1,4 @@
 import { renderWithEffects } from "@backstage/test-utils";
-import {
-  BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL,
-  type RuntimeSharedDependenciesGlobal,
-} from "@backstage/module-federation-common";
 
 jest.setTimeout(30_000);
 
@@ -29,11 +25,6 @@ describe("App", () => {
         },
       ] as any,
     };
-
-    // Jest has no CLI-seeded MF shared-deps global; seed the v1 shape the app expects.
-    (window as unknown as Record<string, RuntimeSharedDependenciesGlobal>)[
-      BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL
-    ] = { version: "v1", items: [] };
 
     const { default: app } = await import("./App");
     const rendered = await renderWithEffects(app);

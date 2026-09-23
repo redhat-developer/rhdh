@@ -105,16 +105,20 @@ const additionalSharedDependencies = [
 ];
 
 export function addRuntimeSharedDependencies() {
-  const { items = [], version } =
-    (
-      window as {
-        [BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL]?: RuntimeSharedDependenciesGlobal;
-      }
-    )[BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL] ?? {};
-  if (version !== "v1") {
+  const sharedDependencies = (window as {
+    [BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL]?: RuntimeSharedDependenciesGlobal;
+  })[BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL];
+
+  // Hosts without shared runtime dependencies cannot be enhanced.
+  if (!sharedDependencies) {
+    return;
+  }
+
+  if (sharedDependencies.version !== "v1") {
     throw new Error(
-      `Unsupported version of the runtime shared dependencies: ${version}`,
+      `Unsupported version of the runtime shared dependencies: ${sharedDependencies.version}`,
     );
   }
-  items.push(...additionalSharedDependencies);
+
+  sharedDependencies.items.push(...additionalSharedDependencies);
 }
