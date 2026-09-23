@@ -35,7 +35,12 @@ export class SidebarPage {
 
   async verifyDocsHeading(): Promise<void> {
     const lang = getCurrentLanguage();
-    await verification.verifyHeading(this.page, t["rhdh"][lang]["menuItem.docs"]);
+    await expect(this.page).toHaveURL(/\/docs(\?|$)/);
+    // With no techdocs entities (cluster-free harness) the index renders only its
+    // empty state, without the "Docs" page header.
+    const docsHeading = this.page.getByRole("heading", { name: t["rhdh"][lang]["menuItem.docs"] });
+    const emptyState = this.page.getByText("No documentation available", { exact: true });
+    await expect(docsHeading.or(emptyState).first()).toBeVisible({ timeout: 20_000 });
   }
 
   async verifyLearningPathsHeading(): Promise<void> {
