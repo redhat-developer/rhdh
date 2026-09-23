@@ -66,7 +66,7 @@ if [[ -z "${CATALOG_INDEX_IMAGE:-}" ]]; then
   CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
 fi
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
-  # Derived components for Helm --set global.catalogIndex.image.{registry,repository,tag}
+  # Derived components for Helm --set catalogIndex.image.{registry,repository,tag}
   CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"
   _CI_WITHOUT_TAG="${CATALOG_INDEX_IMAGE%:*}"
   CATALOG_INDEX_REGISTRY="${_CI_WITHOUT_TAG%%/*}"
@@ -158,6 +158,19 @@ AZURE_DB_4_HOST=$(cat /tmp/secrets/AZURE_DB_4_HOST)
 # Database TLS certificates (file paths to PEM files from Vault)
 # Store paths instead of content to avoid "Argument list too long" shell errors
 RDS_DB_CERTIFICATES_PATH="/tmp/secrets/rds-db-certificates.pem"
+# The Vault copy of the RDS bundle goes stale when AWS rotates CAs (and GSM
+# cannot hold the full global bundle, RHDHBUGS-3744), which fails TLS with
+# SELF_SIGNED_CERT_IN_CHAIN. Merge in the official AWS global trust bundle;
+# fall back to the Vault copy alone when the download fails.
+if curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 --max-time 30 -o /tmp/rds-global-bundle.pem "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"; then
+  # Keep the Vault path if writing the merged file fails entirely (errexit-safe).
+  if cat /tmp/rds-global-bundle.pem "$RDS_DB_CERTIFICATES_PATH" > /tmp/rds-db-certificates-merged.pem 2> /dev/null \
+    || cp /tmp/rds-global-bundle.pem /tmp/rds-db-certificates-merged.pem; then
+    RDS_DB_CERTIFICATES_PATH="/tmp/rds-db-certificates-merged.pem"
+  fi
+else
+  echo "WARNING: could not download the AWS RDS global certificate bundle; using the Vault copy only"
+fi
 AZURE_DB_CERTIFICATES_PATH="/tmp/secrets/azure-db-certificates.pem"
 
 JUNIT_RESULTS="junit-results.xml"

@@ -53,13 +53,13 @@ arches:
     name: atk
     evr: 2.56.1-1.el10
     sourcerpm: at-spi2-core-2.56.1-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/b/bsdtar-3.7.7-10.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/b/bsdtar-3.7.7-11.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 71315
-    checksum: sha256:ffe808850c75b5aa09b5aa87f3065997c164ce81f98570726325a12e86fbcb77
+    size: 71412
+    checksum: sha256:f544d87be3d4cd949562442c08c9d45ca2255ef7a6ce6da1e817d93534eaadd1
     name: bsdtar
-    evr: 3.7.7-10.el10_2
-    sourcerpm: libarchive-3.7.7-10.el10_2.src.rpm
+    evr: 3.7.7-11.el10_2
+    sourcerpm: libarchive-3.7.7-11.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/c/cairo-1.18.2-2.el10_2.1.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 722371
@@ -2734,6 +2734,13 @@ arches:
     name: less
     evr: 661-3.el10
     sourcerpm: less-661-3.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/l/libarchive-3.7.7-11.el10_2.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 422419
+    checksum: sha256:4ab48661917879611996d7fdba0722f7365bd19c4ccdf695748987bf8d9f0a55
+    name: libarchive
+    evr: 3.7.7-11.el10_2
+    sourcerpm: libarchive-3.7.7-11.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/l/libassuan-2.5.6-6.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 71812
@@ -4844,12 +4851,12 @@ arches:
     checksum: sha256:4bf400256a10a8d052ee7abffdc43cba7d40f72a3d3f8f73da69f877676f2644
     name: less
     evr: 661-3.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/l/libarchive-3.7.7-10.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/l/libarchive-3.7.7-11.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 7791852
-    checksum: sha256:658e38518b6564f3aed252c496944444d719862642baff7e9895df0b4c31dcb9
+    size: 7796935
+    checksum: sha256:5e11087269631d84b60d75dfdce56cc89e7b31d3b7e9d86e5277403e813637a8
     name: libarchive
-    evr: 3.7.7-10.el10_2
+    evr: 3.7.7-11.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/l/libassuan-2.5.6-6.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 609571
@@ -5364,13 +5371,13 @@ arches:
     name: atk
     evr: 2.56.1-1.el10
     sourcerpm: at-spi2-core-2.56.1-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/b/bsdtar-3.7.7-10.el10_2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/b/bsdtar-3.7.7-11.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 72061
-    checksum: sha256:3b92c532991306a2043860bfab44963aac8207d3deaf036b15a60e8125553a04
+    size: 72160
+    checksum: sha256:96e9712d66494249d3eee8f0ac6da04bb463bc3454277957f116a2989cc54643
     name: bsdtar
-    evr: 3.7.7-10.el10_2
-    sourcerpm: libarchive-3.7.7-10.el10_2.src.rpm
+    evr: 3.7.7-11.el10_2
+    sourcerpm: libarchive-3.7.7-11.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/c/cairo-1.18.2-2.el10_2.1.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 739747
@@ -8031,6 +8038,13 @@ arches:
     name: less
     evr: 661-3.el10
     sourcerpm: less-661-3.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/l/libarchive-3.7.7-11.el10_2.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 430083
+    checksum: sha256:558bde64fece0035815971b98ef9a1debe00e8813d75a658d265170c0597467e
+    name: libarchive
+    evr: 3.7.7-11.el10_2
+    sourcerpm: libarchive-3.7.7-11.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/l/libassuan-2.5.6-6.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 73193
@@ -10134,12 +10148,12 @@ arches:
     checksum: sha256:4bf400256a10a8d052ee7abffdc43cba7d40f72a3d3f8f73da69f877676f2644
     name: less
     evr: 661-3.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/l/libarchive-3.7.7-10.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/l/libarchive-3.7.7-11.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 7791852
-    checksum: sha256:658e38518b6564f3aed252c496944444d719862642baff7e9895df0b4c31dcb9
+    size: 7796935
+    checksum: sha256:5e11087269631d84b60d75dfdce56cc89e7b31d3b7e9d86e5277403e813637a8
     name: libarchive
-    evr: 3.7.7-10.el10_2
+    evr: 3.7.7-11.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/l/libassuan-2.5.6-6.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 609571
