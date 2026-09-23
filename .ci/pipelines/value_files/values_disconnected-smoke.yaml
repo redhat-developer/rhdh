@@ -25,6 +25,11 @@ intelligentAssistant:
   enabled: false
 orchestrator:
   enabled: false
+# The chart replaces Bitnami's PostgreSQL image with Red Hat's; the Bitnami common
+# chart refuses unrecognized images unless this flag is set (bitnami/charts#30850).
+global:
+  security:
+    allowInsecureImages: true
 image:
   pullPolicy: Always
 appConfig:

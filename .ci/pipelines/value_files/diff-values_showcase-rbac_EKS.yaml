@@ -5,6 +5,13 @@
 openshift:
   route:
     enabled: false
+# The base config points ssl at Crunchy certs that are not mounted here, and the
+# bundled Fedora postgres has no TLS. The merge drops null keys, removing ssl.
+appConfig:
+  backend:
+    database:
+      connection:
+        ssl: null
 extraEnv:
   - name: SEGMENT_TEST_MODE
     value: "true"
@@ -36,6 +43,8 @@ postgresql:
     registry: quay.io
     repository: fedora/postgresql-15
     tag: latest
+    # The chart pins the RHEL image by digest; clear it or the digest wins over the tag.
+    digest: ""
   auth:
     secretKeys:
       adminPasswordKey: postgres-password

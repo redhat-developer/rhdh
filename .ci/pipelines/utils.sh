@@ -611,14 +611,30 @@ initiate_upgrade_base_deployments() {
   previous_release_value_file=$(helm::get_previous_release_values "showcase")
   echo "Using dynamic value file: ${previous_release_value_file}"
 
+  # The base is the previous release's chart; 1.x and 2.y read different value
+  # paths and silently ignore the other layout's.
+  local base_params=()
+  if [[ "${CHART_VERSION_BASE%%.*}" == "1" ]]; then
+    base_params=(
+      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
+      --set upstream.backstage.image.registry="${IMAGE_REGISTRY}"
+      --set upstream.backstage.image.repository="${IMAGE_REPO_BASE}"
+      --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+    )
+  else
+    base_params=(
+      --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
+      --set image.registry="${IMAGE_REGISTRY}"
+      --set image.repository="${IMAGE_REPO_BASE}"
+      --set image.tag="${TAG_NAME_BASE}"
+      --set image.digest=
+    )
+  fi
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${previous_release_value_file}" \
-    --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set image.registry="${IMAGE_REGISTRY}" \
-    --set image.repository="${IMAGE_REPO_BASE}" \
-    --set image.tag="${TAG_NAME_BASE}" \
-    --set image.digest=
+    "${base_params[@]}"
 }
 
 initiate_upgrade_deployments() {

@@ -73,18 +73,24 @@ handle_ocp_disconnected_helm() {
   # `// ""` coalesces a missing key (yq prints literal "null") to empty so the
   # ${:-default} fallback below actually applies.
   export PG_REGISTRY PG_REPO PG_TAG PG_SEPARATOR
+  local pg_digest
   PG_REGISTRY=$(echo "${helm_values}" | yq '.postgresql.image.registry // ""' || true)
   PG_REPO=$(echo "${helm_values}" | yq '.postgresql.image.repository // ""' || true)
   PG_TAG=$(echo "${helm_values}" | yq '.postgresql.image.tag // ""' || true)
+  pg_digest=$(echo "${helm_values}" | yq '.postgresql.image.digest // ""' || true)
   PG_REGISTRY="${PG_REGISTRY:-${POSTGRESQL_IMAGE_REGISTRY}}"
   PG_REPO="${PG_REPO:-${POSTGRESQL_IMAGE_REPO}}"
   PG_TAG="${PG_TAG:-${POSTGRESQL_IMAGE_TAG}}"
 
-  # The chart encodes digest refs as repository: "repo@sha256" + tag: "<hash>".
-  # Normalize: extract the digest qualifier into PG_SEPARATOR so that:
-  #   - PG_REPO is always a clean path (usable in IDMS source/mirror fields)
-  #   - Full ref is ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}
+  # Full ref is ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}, with PG_REPO kept
+  # a clean path for the IDMS source/mirror fields. Chart 1.x encodes a digest as
+  # repository "repo@sha256" + tag "<hash>"; chart 2.y pins it in
+  # postgresql.image.digest ("sha256:<hash>"), which wins over the tag.
   common::normalize_chart_image_ref PG_REPO PG_SEPARATOR
+  if [[ -n "${pg_digest}" ]]; then
+    PG_SEPARATOR="@${pg_digest%%:*}:"
+    PG_TAG="${pg_digest#*:}"
+  fi
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"
 
