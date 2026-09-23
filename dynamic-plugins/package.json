@@ -39,7 +39,7 @@
     "infinispan": "0.13.0",
     "react-use": "17.6.1",
     "monaco-editor": "0.56.0",
-    "@red-hat-developer-hub/backstage-plugin-extensions": "patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.1#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.1-ea480f3404.patch"
+    "@red-hat-developer-hub/backstage-plugin-extensions": "patch:@red-hat-developer-hub/backstage-plugin-extensions@npm%3A0.17.2#~/.yarn/patches/@red-hat-developer-hub-backstage-plugin-extensions-npm-0.17.2-ea480f3404.patch"
   },
   "packageManager": "yarn@4.12.0"
 }

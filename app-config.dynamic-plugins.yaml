@@ -605,6 +605,9 @@ dynamicPlugins:
           parent: admin
           icon: rbacIcon
     red-hat-developer-hub.backstage-plugin-extensions:
+      translationResources:
+        - importName: extensionsTranslations
+          ref: extensionsTranslationRef
       appIcons:
         - name: extensions
           importName: ExtensionsIcon
