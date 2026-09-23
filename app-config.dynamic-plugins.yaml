@@ -585,6 +585,9 @@ dynamicPlugins:
       analyticsApiExtensions:
         - importName: SegmentAnalytics
     backstage-community.plugin-rbac:
+      translationResources:
+        - importName: rbacTranslations
+          ref: rbacTranslationRef
       appIcons:
         - name: rbacIcon
           importName: RbacIcon
