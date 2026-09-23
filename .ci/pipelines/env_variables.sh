@@ -66,7 +66,7 @@ if [[ -z "${CATALOG_INDEX_IMAGE:-}" ]]; then
   CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
 fi
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
-  # Derived components for Helm --set global.catalogIndex.image.{registry,repository,tag}
+  # Derived components for Helm --set catalogIndex.image.{registry,repository,tag}
   CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"
   _CI_WITHOUT_TAG="${CATALOG_INDEX_IMAGE%:*}"
   CATALOG_INDEX_REGISTRY="${_CI_WITHOUT_TAG%%/*}"

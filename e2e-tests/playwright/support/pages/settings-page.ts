@@ -166,15 +166,11 @@ export class SettingsPage {
   }
 
   async verifySidebarMenuItemHidden(text: string): Promise<void> {
-    await expect(this.page.getByRole("link", { name: text })).toBeHidden();
-  }
-
-  async openFromProfile(userName: string): Promise<void> {
-    const header = interaction.getGlobalHeader(this.page);
-    await expect(header).toBeVisible();
-    const profileName = userName.endsWith(" User") ? userName : `${userName} User`;
-    await header.getByRole("button", { name: profileName, exact: true }).click();
-    await this.page.getByRole("menuitem", { name: "Settings" }).click();
+    // Collapsed sidebar links keep their aria-label; only the visible text goes away.
+    // (Readable BackstageSidebarItem-* class names exist only on the local webpack harness.)
+    await expect(
+      this.page.getByRole("navigation", { name: "sidebar nav" }).getByText(text, { exact: true }),
+    ).toBeHidden();
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {

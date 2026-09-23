@@ -227,5 +227,37 @@ app:
     # pinned and everything else flat, sorted by title) — it does not read menuItems
     # config at all. See sidebar.spec.ts for the flat-nav assertions this drives
     # instead.
+    # The runtime catalog-graph API (app-defaults plugin override) does not know the
+    # scaffolder-relation-processor pair, so the Overview "Relations" card drops the
+    # scaffoldedFrom edge. Set relations and pairs on the card directly
+    # (scaffolder-relation-processor.spec.ts asserts the merged label).
+    - entity-card:catalog-graph/relations:
+        config:
+          relations:
+            - apiConsumedBy
+            - apiProvidedBy
+            - childOf
+            - consumesApi
+            - dependencyOf
+            - dependsOn
+            - hasMember
+            - hasPart
+            - memberOf
+            - ownedBy
+            - ownerOf
+            - parentOf
+            - partOf
+            - providesApi
+            - scaffoldedFrom
+            - scaffolderOf
+          relationPairs:
+            - [ownerOf, ownedBy]
+            - [consumesApi, apiConsumedBy]
+            - [apiProvidedBy, providesApi]
+            - [hasPart, partOf]
+            - [parentOf, childOf]
+            - [hasMember, memberOf]
+            - [dependsOn, dependencyOf]
+            - [scaffolderOf, scaffoldedFrom]
 dynamicPlugins:
   rootDirectory: dynamic-plugins-root
