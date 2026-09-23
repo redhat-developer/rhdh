@@ -22,8 +22,6 @@ handle_ocp_helm_upgrade() {
   export NAME_SPACE="${NAME_SPACE:-showcase-upgrade-nightly}"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-${NAME_SPACE}-postgres-external-db}"
   export DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-${RELEASE_NAME}-developer-hub}"
-  export IMAGE_REPO_BASE="${IMAGE_REPO_BASE:-${QUAY_REPO_BASE:-$(common::default_hub_image_repo)}}"
-  export QUAY_REPO_BASE="${IMAGE_REPO_BASE}" # Keep QUAY_REPO_BASE in sync for backward compatibility
 
   # Dynamically determine the previous release version and chart version
   local current_release_version
@@ -39,6 +37,8 @@ handle_ocp_helm_upgrade() {
     save_overall_result 1
     exit 1
   fi
+  export IMAGE_REPO_BASE="${IMAGE_REPO_BASE:-${QUAY_REPO_BASE:-$(common::default_hub_image_repo "release-${previous_release_version}")}}"
+  export QUAY_REPO_BASE="${IMAGE_REPO_BASE}" # Keep QUAY_REPO_BASE in sync for backward compatibility
   if [[ -z "${CHART_VERSION_BASE:-}" ]]; then
     CHART_VERSION_BASE=$(helm::get_chart_version "$previous_release_version")
     if [[ -z "$CHART_VERSION_BASE" ]]; then
@@ -67,6 +67,8 @@ handle_ocp_helm_upgrade() {
   postgres::wait_ready "${NAME_SPACE}" "${RELEASE_NAME}"
   if ! testing::check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "showcase-upgrade-base"; then
     log::error "Previous RHDH deployment did not become ready"
+    oc describe "deployment/${DEPLOYMENT_NAME}" -n "${NAME_SPACE}" || true
+    oc get events -n "${NAME_SPACE}" --sort-by='.lastTimestamp' || true
     return 1
   fi
 

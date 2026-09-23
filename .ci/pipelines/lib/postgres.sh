@@ -121,6 +121,14 @@ postgres::quiesce_application() {
   local deployment_name=$2
   local timeout=${3:-300}
   local start=$SECONDS
+  local selector
+
+  selector=$(oc get "deployment/${deployment_name}" -n "${namespace}" -o json \
+    | jq -r '.spec.selector.matchLabels | to_entries | map("\(.key)=\(.value)") | join(",")')
+  if [[ -z "${selector}" ]]; then
+    log::error "Deployment ${deployment_name} has no pod selector"
+    return 1
+  fi
 
   log::info "Scaling deployment/${deployment_name} to zero before PostgreSQL dump"
   oc scale "deployment/${deployment_name}" -n "${namespace}" --replicas=0
@@ -129,8 +137,25 @@ postgres::quiesce_application() {
     local replicas
     if replicas=$(oc get "deployment/${deployment_name}" -n "${namespace}" -o jsonpath='{.status.replicas}' 2> /dev/null); then
       if [[ "${replicas:-0}" == "0" ]]; then
-        log::success "Deployment ${deployment_name} is quiesced"
-        return 0
+        local remaining=$((timeout - (SECONDS - start)))
+        if ((remaining <= 0)); then
+          break
+        fi
+        local selected_pods
+        if ! selected_pods=$(oc get pods -l "${selector}" -n "${namespace}" -o name); then
+          log::warn "Failed to list pods for deployment ${deployment_name}; retrying"
+          sleep 5
+          continue
+        fi
+        if [[ -z "${selected_pods}" ]]; then
+          log::success "Deployment ${deployment_name} is quiesced"
+          return 0
+        fi
+        if oc wait --for=delete pod -l "${selector}" -n "${namespace}" --timeout="${remaining}s"; then
+          log::success "Deployment ${deployment_name} is quiesced"
+          return 0
+        fi
+        break
       fi
     fi
     sleep 5
@@ -210,7 +235,7 @@ postgres::restore_all() {
 
   local unexpected_errors
   unexpected_errors=$(grep -E 'ERROR:' "${restore_log}" \
-    | grep -Ev 'ERROR: +(role|database) ".*" already exists$' || true)
+    | grep -Ev 'ERROR: +(role|database) "postgres" already exists$' || true)
   if [[ -n "${unexpected_errors}" ]]; then
     log::error "PostgreSQL restore reported unexpected SQL errors:"
     echo "${unexpected_errors}"
