@@ -3,13 +3,18 @@ import {
   BACKSTAGE_RUNTIME_SHARED_DEPENDENCIES_GLOBAL,
 } from "@backstage/module-federation-common";
 
-const loadAdditionalSharedDependencies = async () => [
+import { version as coreComponentsVersion } from "@backstage/core-components/package.json";
+import { version as frontendPluginApiVersion } from "@backstage/frontend-plugin-api/package.json";
+import { version as corePluginApiVersion } from "@backstage/core-plugin-api/package.json";
+import { version as zodVersion } from "zod/package.json";
+import { version as lodashVersion } from "lodash/package.json";
+import { version as materialUiCoreVersion } from "@material-ui/core/package.json";
+import { dependencies as appDependencies } from "../package.json";
+
+const additionalSharedDependencies = [
   {
     name: "@backstage/core-components",
-    version: extract(
-      await import("@backstage/core-components/package.json"),
-      "version",
-    ),
+    version: coreComponentsVersion,
     lib: () => import("@backstage/core-components"),
     shareConfig: {
       singleton: false,
@@ -19,10 +24,7 @@ const loadAdditionalSharedDependencies = async () => [
   },
   {
     name: "@backstage/frontend-plugin-api",
-    version: extract(
-      await import("@backstage/frontend-plugin-api/package.json"),
-      "version",
-    ),
+    version: frontendPluginApiVersion,
     lib: () => import("@backstage/frontend-plugin-api"),
     shareConfig: {
       singleton: false,
@@ -32,10 +34,7 @@ const loadAdditionalSharedDependencies = async () => [
   },
   {
     name: "@backstage/core-plugin-api",
-    version: extract(
-      await import("@backstage/core-plugin-api/package.json"),
-      "version",
-    ),
+    version: corePluginApiVersion,
     lib: () => import("@backstage/core-plugin-api"),
     shareConfig: {
       singleton: false,
@@ -45,74 +44,67 @@ const loadAdditionalSharedDependencies = async () => [
   },
   {
     name: "zod",
-    version: extract(await import("zod/package.json"), "version"),
+    version: zodVersion,
     lib: () => import("zod"),
     shareConfig: {
       singleton: false,
-      requiredVersion: extract(await import("../package.json"), "dependencies")
-        .zod,
+      requiredVersion: appDependencies.zod,
       eager: false,
     },
   },
   {
     name: "zod/v3",
-    version: extract(await import("zod/package.json"), "version"),
+    version: zodVersion,
     lib: () => import("zod/v3"),
     shareConfig: {
       singleton: false,
-      requiredVersion: extract(await import("../package.json"), "dependencies")
-        .zod,
+      requiredVersion: appDependencies.zod,
       eager: false,
     },
   },
   {
     name: "zod/v4",
-    version: extract(await import("zod/package.json"), "version"),
+    version: zodVersion,
     lib: () => import("zod/v4"),
     shareConfig: {
       singleton: false,
-      requiredVersion: extract(await import("../package.json"), "dependencies")
-        .zod,
+      requiredVersion: appDependencies.zod,
       eager: false,
     },
   },
   {
     name: "zod/v4/core",
-    version: extract(await import("zod/package.json"), "version"),
+    version: zodVersion,
     lib: () => import("zod/v4/core"),
     shareConfig: {
       singleton: false,
-      requiredVersion: extract(await import("../package.json"), "dependencies")
-        .zod,
+      requiredVersion: appDependencies.zod,
       eager: false,
     },
   },
   {
     name: "lodash",
-    version: extract(await import("lodash/package.json"), "version"),
+    version: lodashVersion,
     lib: () => import("lodash"),
     shareConfig: {
       singleton: false,
-      requiredVersion: extract(await import("../package.json"), "dependencies")
-        .lodash,
+      requiredVersion: appDependencies.lodash,
       eager: false,
     },
   },
   {
     name: "@material-ui/core",
-    version: extract(await import("@material-ui/core/package.json"), "version"),
+    version: materialUiCoreVersion,
     lib: () => import("@material-ui/core"),
     shareConfig: {
       singleton: false,
-      requiredVersion: extract(await import("../package.json"), "dependencies")[
-        "@material-ui/core"
-      ],
+      requiredVersion: appDependencies["@material-ui/core"],
       eager: false,
     },
   },
 ];
 
-export async function addRuntimeSharedDependencies() {
+export function addRuntimeSharedDependencies() {
   const { items = [], version } =
     (
       window as {
@@ -124,17 +116,5 @@ export async function addRuntimeSharedDependencies() {
       `Unsupported version of the runtime shared dependencies: ${version}`,
     );
   }
-  const additionalSharedDependencies = await loadAdditionalSharedDependencies();
   items.push(...additionalSharedDependencies);
-}
-
-function extract<TObject extends object, K extends keyof TObject>(
-  imp: { default?: TObject } | TObject,
-  field: K,
-): TObject[K] {
-  const resolved =
-    typeof imp === "object" && imp !== null && "default" in imp && imp.default
-      ? imp.default
-      : (imp as TObject);
-  return resolved[field];
 }

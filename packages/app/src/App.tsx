@@ -1,7 +1,4 @@
-import {
-  createFrontendFeatureLoader,
-  type IconElement,
-} from "@backstage/frontend-plugin-api";
+import type { IconElement } from "@backstage/frontend-plugin-api";
 import { createApp } from "@backstage/frontend-defaults";
 import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
 import catalogPlugin from "@backstage/plugin-catalog/alpha";
@@ -20,7 +17,6 @@ import { learningPathsModule } from "./modules/learning-paths";
 import { navModule } from "./modules/nav";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
-
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
 
 // Keep the /catalog-import route for scaffolder, but hide it from the sidebar.
@@ -28,6 +24,9 @@ const catalogImportPlugin = catalogImportBase.withOverrides({
   title: "",
   icon: false as unknown as IconElement,
 });
+
+// Avoid shipping duplicate copies of common libraries inside every dynamic plugin.
+addRuntimeSharedDependencies();
 
 const app = createApp({
   features: [
@@ -41,12 +40,7 @@ const app = createApp({
     scaffolderPlugin,
     searchPlugin,
     userSettingsPlugin,
-    createFrontendFeatureLoader({
-      async *loader() {
-        await addRuntimeSharedDependencies();
-        yield dynamicFrontendFeaturesLoader();
-      },
-    }),
+    dynamicFrontendFeaturesLoader(),
     // RHDH modules (local to app)
     navModule, // RHDH-branded sidebar (logo, menu ordering, drawer toggle)
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
