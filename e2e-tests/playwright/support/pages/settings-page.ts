@@ -165,20 +165,16 @@ export class SettingsPage {
     await this.page.keyboard.press("Escape");
   }
 
-  async verifySidebarMenuItemHidden(text: string): Promise<void> {
-    // Collapsed sidebar links keep their aria-label; only the visible text goes away.
-    await expect(
-      this.page.getByRole("navigation", { name: "sidebar nav" }).getByText(text, { exact: true }),
-    ).toBeHidden();
+  async verifySidebarItemCollapsed(linkName: string): Promise<void> {
+    await expect(this.page.getByRole("link", { name: linkName })).toHaveClass(
+      /BackstageSidebarItem-closed/,
+    );
   }
 
-  async openFromProfile(userName: string): Promise<void> {
-    const header = interaction.getGlobalHeader(this.page);
-    await expect(header).toBeVisible();
-    const profileName = userName.endsWith(" User") ? userName : `${userName} User`;
-    // The profile button's accessible name is "Settings"; the user name is its text.
-    await header.getByRole("button").filter({ hasText: profileName }).click();
-    await this.page.getByRole("menuitem", { name: "Settings" }).click();
+  async verifySidebarItemExpanded(linkName: string): Promise<void> {
+    await expect(this.page.getByRole("link", { name: linkName })).toHaveClass(
+      /BackstageSidebarItem-open/,
+    );
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {
