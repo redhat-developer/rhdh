@@ -117,8 +117,9 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  *
  * System volumes/mounts (dynamic-plugins-root, dynamic-plugins, npmcacache,
  * extensions-catalog, temp) are auto-managed by the chart and omitted here.
- * Only user-specific entries (postgres-crt, dynamic-plugins-root PVC override)
- * are specified.
+ * The dynamic-plugins-root volume is switched to PVC via
+ * `dynamicPlugins.volume.type` (not extraVolumes, which would duplicate it).
+ * Only user-specific entries (postgres-crt) are in extraVolumes.
  */
 const tpl = (expr: string) => `{{ ${expr} }}`;
 
@@ -133,6 +134,14 @@ export function generateHelmValuesYaml(): string {
     intelligentAssistant: { enabled: false },
     commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },
     image: { pullPolicy: "Always" },
+    dynamicPlugins: {
+      volume: {
+        type: "pvc",
+        pvc: {
+          claimName: printfRelease("dynamic-plugins-root"),
+        },
+      },
+    },
     appConfig: {
       app: { title: appTitle },
       auth: {
@@ -150,14 +159,6 @@ export function generateHelmValuesYaml(): string {
       },
     ],
     extraVolumes: [
-      // PVC instead of chart-default ephemeral — persists plugins across
-      // deployment restarts (config-map and schema-mode tests both restart RHDH)
-      {
-        name: "dynamic-plugins-root",
-        persistentVolumeClaim: {
-          claimName: printfRelease("dynamic-plugins-root"),
-        },
-      },
       {
         name: "postgres-crt",
         secret: { secretName: "postgres-crt", optional: true },
