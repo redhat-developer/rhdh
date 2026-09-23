@@ -114,9 +114,6 @@ extraEnvFrom:
   - secretRef:
       name: redis-secret
 
-ingress:
-  host: "{{ .Values.host }}"
-
 service:
   extraPorts:
     - name: http-metrics

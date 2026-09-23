@@ -96,4 +96,3 @@ postgresql:
 ingress:
   enabled: true
   className: webapprouting.kubernetes.azure.com
-  host: ""

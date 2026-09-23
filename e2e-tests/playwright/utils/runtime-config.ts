@@ -11,7 +11,7 @@
  *     specified in full because Helm replaces arrays rather than merging them.
  *   - Operator ConfigMaps / Backstage CR are generated programmatically.
  *   - CATALOG_INDEX_IMAGE opt-in override: Helm uses
- *     `global.catalogIndex.image.*` --set flags; Operator pushes an env var
+ *     `catalogIndex.image.*` --set flags; Operator pushes an env var
  *     with `containers: ["install-dynamic-plugins"]`.
  */
 
@@ -110,16 +110,15 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  * differ from the chart defaults.
  *
  * Values omitted (inherited from chart defaults):
- *   - global.dynamic.{includes, plugins}
- *   - upstream.nameOverride
- *   - upstream.backstage.appConfig.{app.baseUrl, backend.baseUrl, cors, externalAccess}
- *   - upstream.backstage.extraEnvVars (BACKEND_SECRET, POSTGRESQL_ADMIN_PASSWORD)
- *   - upstream.backstage.installDir
- *   - upstream.postgresql.enabled
+ *   - dynamicPlugins.{includes, plugins}
+ *   - appConfig.{app.baseUrl, backend.baseUrl, cors, externalAccess}
+ *   - extraEnv (BACKEND_SECRET, POSTGRESQL_ADMIN_PASSWORD are auto-injected)
+ *   - postgresql.enabled
  *
- * Arrays (extraVolumes, extraVolumeMounts) include chart-default entries
- * because Helm replaces arrays entirely — we add postgres-crt and change
- * dynamic-plugins-root from ephemeral to PVC.
+ * System volumes/mounts (dynamic-plugins-root, dynamic-plugins, npmcacache,
+ * extensions-catalog, temp) are auto-managed by the chart and omitted here.
+ * Only user-specific entries (postgres-crt, dynamic-plugins-root PVC override)
+ * are specified.
  */
 const tpl = (expr: string) => `{{ ${expr} }}`;
 
@@ -131,83 +130,39 @@ export function generateHelmValuesYaml(): string {
   const printfRelease = (suffix: string) => tpl(`printf "%s-${suffix}" .Release.Name`);
 
   const values = {
-    global: {
-      lightspeed: { enabled: false },
-    },
-    upstream: {
-      commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },
-      backstage: {
-        image: { pullPolicy: "Always" },
-        appConfig: {
-          app: { title: appTitle },
-          auth: {
-            environment: "development",
-            providers: {
-              guest: { dangerouslyAllowOutsideDevelopment: true },
-            },
-          },
+    intelligentAssistant: { enabled: false },
+    commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },
+    image: { pullPolicy: "Always" },
+    appConfig: {
+      app: { title: appTitle },
+      auth: {
+        environment: "development",
+        providers: {
+          guest: { dangerouslyAllowOutsideDevelopment: true },
         },
-        // Volume mounts — chart defaults + postgres-crt
-        extraVolumeMounts: [
-          {
-            name: "dynamic-plugins-root",
-            mountPath: "/opt/app-root/src/dynamic-plugins-root",
-          },
-          { name: "extensions-catalog", mountPath: "/extensions" },
-          { name: "temp", mountPath: "/tmp" },
-          // Runtime addition: postgres certificate for external DB tests
-          {
-            name: "postgres-crt",
-            mountPath: "/opt/app-root/src/postgres-crt.pem",
-            subPath: "postgres-crt.pem",
-          },
-        ],
-        // Volumes — PVC for dynamic-plugins-root + chart defaults + postgres-crt
-        extraVolumes: [
-          // PVC instead of chart-default ephemeral — persists plugins across
-          // deployment restarts (config-map and schema-mode tests both restart RHDH)
-          {
-            name: "dynamic-plugins-root",
-            persistentVolumeClaim: {
-              claimName: printfRelease("dynamic-plugins-root"),
-            },
-          },
-          // Chart defaults (must repeat because Helm replaces arrays)
-          {
-            name: "dynamic-plugins",
-            configMap: {
-              defaultMode: 420,
-              name: printfRelease("dynamic-plugins"),
-              optional: true,
-            },
-          },
-          {
-            name: "dynamic-plugins-npmrc",
-            secret: {
-              defaultMode: 420,
-              optional: true,
-              secretName: printfRelease("dynamic-plugins-npmrc"),
-            },
-          },
-          {
-            name: "dynamic-plugins-registry-auth",
-            secret: {
-              defaultMode: 416,
-              optional: true,
-              secretName: printfRelease("dynamic-plugins-registry-auth"),
-            },
-          },
-          // Runtime addition
-          {
-            name: "postgres-crt",
-            secret: { secretName: "postgres-crt", optional: true },
-          },
-          { name: "npmcacache", emptyDir: {} },
-          { name: "extensions-catalog", emptyDir: {} },
-          { name: "temp", emptyDir: {} },
-        ],
       },
     },
+    extraVolumeMounts: [
+      {
+        name: "postgres-crt",
+        mountPath: "/opt/app-root/src/postgres-crt.pem",
+        subPath: "postgres-crt.pem",
+      },
+    ],
+    extraVolumes: [
+      // PVC instead of chart-default ephemeral — persists plugins across
+      // deployment restarts (config-map and schema-mode tests both restart RHDH)
+      {
+        name: "dynamic-plugins-root",
+        persistentVolumeClaim: {
+          claimName: printfRelease("dynamic-plugins-root"),
+        },
+      },
+      {
+        name: "postgres-crt",
+        secret: { secretName: "postgres-crt", optional: true },
+      },
+    ],
   };
 
   return yaml.stringify(values, { lineWidth: 0 });
@@ -222,26 +177,27 @@ export function generateHelmValuesYaml(): string {
 export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
   const args: string[] = [
     "--set",
-    `global.clusterRouterBase=${config.routerBase}`,
+    `openshift.clusterRouterBase=${config.routerBase}`,
     "--set",
-    `upstream.backstage.image.registry=${config.image.registry}`,
+    `image.registry=${config.image.registry}`,
     "--set",
-    `upstream.backstage.image.repository=${config.image.repository}`,
+    `image.repository=${config.image.repository}`,
     "--set",
-    `upstream.backstage.image.tag=${config.image.tag}`,
+    `image.tag=${config.image.tag}`,
+    "--set",
+    "image.digest=",
   ];
 
-  // CATALOG_INDEX_IMAGE override — mirrors helm::get_image_params() in
-  // .ci/pipelines/lib/helm.sh.  When not set, the chart's built-in
-  // global.catalogIndex default takes effect.
   if (config.catalogIndex) {
     args.push(
       "--set",
-      `global.catalogIndex.image.registry=${config.catalogIndex.registry}`,
+      `catalogIndex.image.registry=${config.catalogIndex.registry}`,
       "--set",
-      `global.catalogIndex.image.repository=${config.catalogIndex.repository}`,
+      `catalogIndex.image.repository=${config.catalogIndex.repository}`,
       "--set",
-      `global.catalogIndex.image.tag=${config.catalogIndex.tag}`,
+      `catalogIndex.image.tag=${config.catalogIndex.tag}`,
+      "--set",
+      "catalogIndex.image.digest=",
     );
   }
 

@@ -65,7 +65,6 @@ service:
   type: NodePort
 ingress:
   enabled: true
-  host: ""
   annotations:
     kubernetes.io/ingress.class: gce
     kubernetes.io/ingress.global-static-ip-name: rhdh-static-ip
