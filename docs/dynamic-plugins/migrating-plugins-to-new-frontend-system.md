@@ -88,7 +88,8 @@ We recommend a three-phase approach:
 
 1. Create `src/alpha.tsx` with `createFrontendPlugin` and extension blueprints.
 2. Export `./alpha` from `package.json`.
-3. Verify the plugin builds (`yarn tsc`) and unit tests pass.
+3. Keep the alpha entry lightweight: blueprints and loaders with real `import()` — do not statically import page UI into the entry (see [Keep the NFS entry lightweight](#keep-the-nfs-entry-lightweight-lazy-loading)).
+4. Verify the plugin builds (`yarn tsc`) and unit tests pass.
 
 The legacy `PluginRoot` export can remain the entry point for the current RHDH dynamic plugin host.
 
@@ -195,6 +196,215 @@ export default createFrontendPlugin({
   }
 }
 ```
+
+---
+
+## Keep the NFS entry lightweight (lazy loading)
+
+In RHDH dynamic plugin mode, each frontend plugin is a Module Federation remote. The bundler starts from the expose entry (package root or `./alpha`) and places every module reachable through a **static** `import` into **sync chunks**. Those chunks download and parse before the plugin can register its extensions.
+
+| Term | Meaning |
+| --- | --- |
+| Sync chunk | JavaScript loaded eagerly when the remote entry is evaluated (startup path) |
+| Async chunk | JavaScript loaded only when `import()` runs at runtime |
+| Expose entry | The Module Federation entry (often the package default export or `./alpha`) |
+
+**Key rule:** `loader: async () => <MyComponent />` does **not** lazy-load `MyComponent` if it was statically imported in the same file. The bundler resolves static imports at build time and includes them in the sync graph.
+
+Keep the NFS entry limited to blueprints, routes, API factories, extension definitions, and types. Load heavy React trees, form libraries, charts, and large component graphs with `import()` inside blueprint loaders (or other explicit lazy boundaries).
+
+### Patterns that matter during migration
+
+#### 1. Use real `import()` in loaders — never a static import of the same component
+
+```tsx
+// Wrong — SignInPage lands in the sync chunk despite the async loader
+import { SignInPage } from './components/SignInPage';
+
+SignInPageBlueprint.make({
+  params: {
+    loader: async () => props => <SignInPage {...props} />,
+  },
+});
+
+// Correct — only the dynamic import references the component
+SignInPageBlueprint.make({
+  params: {
+    loader: () =>
+      import('./components/SignInPage').then(m => m.SignInPage),
+  },
+});
+```
+
+Also avoid re-exporting heavy UI from the NFS entry (`export { SignInPage } from './components/SignInPage'`).
+
+#### 2. `Promise.resolve` is not lazy-loading
+
+Returning `Promise.resolve({ Content: AlreadyImportedComponent })` looks async but does not create an async chunk. The `components` callback (for example on `HomePageWidgetBlueprint`) must call `import()`:
+
+```tsx
+components: async () => {
+  const { ScorecardHomepageCardWithProvider } = await import(
+    '../../components/ScorecardHomepageSection'
+  );
+  return {
+    Content: () => (
+      <ScorecardHomepageCardWithProvider metricId="jira.openIssues" />
+    ),
+  };
+},
+```
+
+#### 3. Move page and layout imports into blueprint loaders
+
+Extension registration files should not statically import routers, layouts, or tab content:
+
+```tsx
+PageBlueprint.make({
+  params: {
+    path: '/my-plugin',
+    loader: () => import('./components/Router').then(m => <m.Router />),
+  },
+});
+```
+
+The same applies to layout overrides — `await import(...)` inside the loader, then return the layout component.
+
+#### 4. Defer heavy work behind API factories
+
+`ApiBlueprint` registration is synchronous. If an API implementation needs a large UI module (for example RJSF widgets), keep a thin API shell and load the heavy module with `import()`, caching the promise:
+
+```tsx
+this.contentPromise ??= import('./FormDecoratorContent');
+```
+
+#### 5. Prefer blueprint `loader` over sync `component`
+
+When a blueprint accepts both `component` and `loader`, prefer `loader` so UI stays out of the sync graph. Data-driven params (icon name + title + link) are even better when the blueprint supports them — no custom React import required.
+
+#### 6. Split heavy building blocks onto a secondary export
+
+If your plugin exposes reusable UI for other plugins, keep the package root to plugin, module, blueprints, types, and defaults. Publish React building blocks on a secondary entry (for example `./components`) and document that consumers must dynamic-import it:
+
+```tsx
+loader: async () => {
+  const { GlobalHeaderDropdown } = await import(
+    '@my-org/plugin-global-header/components'
+  );
+  return () => <GlobalHeaderDropdown target="help" />;
+},
+```
+
+Treat another plugin's `/components` subpath as a heavy optional dependency. Prefer thin `/blueprints` imports plus a local stub when visual parity does not require the full building-block tree.
+
+#### 7. Keep icons and helpers free of page UI
+
+Icons and nav metadata referenced from sync extension definitions must not import from files that also pull in permission hooks, sidebar utilities, or page components. Split icons and URL helpers into small modules with minimal dependencies.
+
+#### 8. Conditional `import()` for mutually exclusive paths
+
+```tsx
+loader: async () => {
+  if (layouts.length > 0) {
+    const { LayoutSwitcher } = await import('../components/LayoutSwitcher');
+    return <LayoutSwitcher layouts={layouts} />;
+  }
+  const { EntityContent } = await import('../components/EntityContent');
+  return <EntityContent />;
+},
+```
+
+#### 9. Thin lazy shells when a blueprint requires a sync `element`
+
+Some blueprints (`AppDrawerContentBlueprint`, certain root elements) take a sync `element` or `component`. Wrap heavy UI in a tiny module that only exports a `React.lazy` + `Suspense` shell, and import that shell from the entry — not the real drawer/chat tree:
+
+```tsx
+// lazyDrawerUi.tsx — only this is imported from alpha/index
+const LazyDrawerContent = lazy(() =>
+  import('./DrawerContent').then(m => ({ default: m.DrawerContent })),
+);
+
+export const DrawerContentElement = (
+  <Suspense fallback={null}>
+    <LazyDrawerContent />
+  </Suspense>
+);
+
+// alpha.tsx
+params: { id: MY_DRAWER_ID, element: DrawerContentElement }
+```
+
+Prefer a blueprint `loader` when the API supports it.
+
+### Blueprint lazy-loading support
+
+| Blueprint / API | Lazy loading? | Guidance |
+| --- | --- | --- |
+| `PageBlueprint` `loader` | Yes | Preferred for route content |
+| `PageBlueprint` `icon` | Limited | Icon JSX is evaluated at registration — keep icons minimal |
+| `EntityContentBlueprint` `loader` | Yes | Preferred for entity tab content |
+| `SignInPageBlueprint` `loader` | Yes | Component must come from `import()` |
+| `HomePageLayoutBlueprint` loader | Yes | Dynamic-import the layout inside the loader |
+| `HomePageWidgetBlueprint` `components` | Yes | Must use `import()`, not `Promise.resolve` |
+| `NavItemBlueprint` | Limited | Prefer page `title`/`icon`; icon must be a sync `IconComponent` |
+| `AppRootWrapperBlueprint` | Limited | Wrappers run at startup — keep them thin |
+| `AppDrawerContentBlueprint` / `AppRootElementBlueprint` | Partial | Sync `element` — use thin lazy + `Suspense` shells |
+| `ApiBlueprint` | Partial | Factory is sync; defer heavy modules inside API methods |
+| Custom header blueprints (`loader`) | Yes | Prefer `loader` / data-driven params over sync `component` |
+
+### What you cannot fully optimize at plugin level
+
+| Limitation | Guidance |
+| --- | --- |
+| Nav / page icons | Use minimal SVGs or small icon components; full deferral may need upstream API changes |
+| App shell wrappers | Must be available at startup; only child contributions should be lazy |
+| Zod in blueprint `configSchema` | Can appear in sync chunks; shared MF dependency config is a platform concern |
+| Duplicate React / MUI across remotes | Fixed by Module Federation `shared` config, not by lazy loading alone |
+| Peer `/components` graphs | Importing another plugin's building blocks pulls that UI into **your** async chunk |
+
+### Validate sync vs async chunks
+
+Goal: minimize JavaScript on the **startup** path (sync size), not merely total bundle size. Successful refactors often lower sync size and raise async size.
+
+1. From the plugin package, build the Module Federation bundle before and after changes:
+
+   ```bash
+   cd plugins/<your-plugin>
+   yarn backstage-cli package bundle
+   ```
+
+2. Compare the NFS expose you care about (package root or `./alpha`) using `mf-manifest.json` and chunk files under `dist-dynamic/` (or the CLI's equivalent output). Confirm heavy libraries moved out of sync chunks.
+
+3. Report results in a short table:
+
+   | Metric | BEFORE | AFTER | Δ |
+   | --- | --- | --- | --- |
+   | Sync chunks | … | … | … |
+   | Sync size | … KB | … KB | … KB (…%) |
+   | Async chunks | … | … | … |
+   | Async size | … KB | … KB | … KB |
+
+4. Smoke-test: open plugin routes, lazy menus/dropdowns, icons, translations, and sign-in. Watch for blank UI or missing nav items.
+
+### Do / don't
+
+**Do**
+
+- Keep NFS extension files limited to blueprints, routes, API factories, and types
+- Use `import()` inside loaders for any component not needed at registration
+- Cache repeated dynamic imports (`??=`) when the same module is requested often
+- Split optional UI onto secondary package/MF exports; import registration APIs from thin subpaths when available
+- Use thin `React.lazy` + `Suspense` shells when a blueprint requires a sync `element`
+- Inspect `mf-manifest.json` after migration and compare sync metrics
+
+**Don't**
+
+- Assume an `async` loader lazy-loads a statically imported component
+- Use `Promise.resolve(...)` as a substitute for `import()`
+- Statically import page routers, layouts, or heavy widgets in entry/extension definition modules
+- Call `import()` at module scope in files that are statically imported from registration code
+- Re-export heavy UI from the NFS root when consumers only need registration APIs
+- Import peer-plugin `/components` building blocks when a local stub or `/blueprints` + `loader` is enough
 
 ---
 
@@ -685,25 +895,27 @@ RHDH provides `AppDrawerContentBlueprint` from `@red-hat-developer-hub/backstage
 
 ```tsx
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { DrawerContentElement } from './lazyDrawerUi'; // thin React.lazy + Suspense shell
 
 const myDrawer = AppDrawerContentBlueprint.make({
   name: 'my-drawer',
   params: {
     id: MY_DRAWER_ID,
-    element: <DrawerContent />,
+    element: DrawerContentElement, // do not statically import the real drawer tree here
     resizable: true,
     defaultWidth: 400,
   },
 });
 ```
 
-Register in your plugin's `extensions` array.
+Register in your plugin's `extensions` array. See [thin lazy shells](#9-thin-lazy-shells-when-a-blueprint-requires-a-sync-element) for the shell pattern.
 
 > **Init logic:** Drawer content mounts/unmounts with the drawer. Persistent initialization (auto-open triggers, event listeners) must go in a separate `AppRootElementBlueprint` via `createFrontendModule({ pluginId: 'app' })`.
 
 **Notes:**
 
 - `AppDrawerContentBlueprint` is RHDH-specific — not available in upstream Backstage.
+- Prefer a blueprint `loader` when available; for sync `element` params, export only a lazy + `Suspense` shell from the registration path.
 - See [lightspeed #2721](https://github.com/redhat-developer/rhdh-plugins/pull/2721) and [quickstart #2842](https://github.com/redhat-developer/rhdh-plugins/pull/2842) for real migration examples.
 
 ---
@@ -941,6 +1153,7 @@ const customSignInPage = SignInPageBlueprint.make({
 **Notes:**
 
 - Only one sign-in page extension can be active. Installing multiple replaces based on extension override rules.
+- Do not statically import the sign-in component in the same file as the blueprint — the `loader` must be the only reference (see [Keep the NFS entry lightweight](#keep-the-nfs-entry-lightweight-lazy-loading)).
 - See [Migrating Apps — Sign-in page](https://backstage.io/docs/frontend-system/building-apps/migrating/).
 
 ---
@@ -1165,6 +1378,8 @@ Use this checklist before declaring migration complete:
 - [ ] Sign-in and provider settings use `SignInPageBlueprint` / auth settings extensions (if applicable)
 - [ ] Plugin works when added as dependency to `packages/app` with `app.packages: all`
 - [ ] Adopter overrides tested via `app.extensions` (title, filter, disable)
+- [ ] NFS entry has no static imports of page routers, layouts, or heavy UI; loaders use real `import()`
+- [ ] Sync vs async chunks reviewed in `mf-manifest.json` after `yarn backstage-cli package bundle` (see [Validate sync vs async chunks](#validate-sync-vs-async-chunks))
 - [ ] Dynamic plugin OCI image rebuilt and smoke-tested in RHDH (if still distributing as dynamic plugin)
 
 ---
@@ -1219,6 +1434,10 @@ export const myPlugin = createFrontendPlugin({ pluginId: 'my-plugin', ... });
 // Correct
 export default createFrontendPlugin({ pluginId: 'my-plugin', ... });
 ```
+
+### Static import inside an async loader is still sync
+
+`loader: async () => <MyPage />` does not lazy-load `MyPage` if `MyPage` was imported with a static `import` at the top of the file. Use `import()` as the only reference to heavy UI from extension definition modules. See [Keep the NFS entry lightweight](#keep-the-nfs-entry-lightweight-lazy-loading).
 
 ---
 
