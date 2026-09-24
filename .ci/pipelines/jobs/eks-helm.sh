@@ -19,6 +19,8 @@ source "$DIR"/cluster/k8s/k8s-utils.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ci/pipelines/lib/http2-caddy.sh
+source "$DIR"/lib/http2-caddy.sh
 
 handle_eks_helm() {
   log::info "Starting EKS Helm deployment"
@@ -28,6 +30,8 @@ handle_eks_helm() {
 
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
+  # WIP RHIDP-15792 Path A: enable Caddy HTTP/2 verification on this branch only.
+  export ENABLE_HTTP2_CADDY_CHECK="${ENABLE_HTTP2_CADDY_CHECK:-true}"
 
   common::kubectl_login
 
@@ -41,6 +45,14 @@ handle_eks_helm() {
 
   initiate_eks_helm_deployment
   aws::configure_ingress_and_dns "${NAME_SPACE}" "${RELEASE_NAME}-developer-hub" "${EKS_INSTANCE_DOMAIN_NAME}"
+
+  if [[ "${ENABLE_HTTP2_CADDY_CHECK}" == "true" ]]; then
+    http2_caddy::deploy_and_verify \
+      "${NAME_SPACE}" \
+      "${RELEASE_NAME}-developer-hub" \
+      "rhdh-h2.${EKS_INSTANCE_DOMAIN_NAME}"
+  fi
+
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   aws::cleanup_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   namespace::delete "${NAME_SPACE}"
