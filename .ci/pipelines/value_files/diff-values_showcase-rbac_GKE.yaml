@@ -63,7 +63,7 @@ postgresql:
             key: postgres-password
             name: "{{ .Release.Name }}-postgresql"
   volumePermissions:
-    enabled: true
+    enabled: false
 service:
   type: NodePort
 ingress:
