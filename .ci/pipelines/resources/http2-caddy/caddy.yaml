@@ -34,7 +34,7 @@ spec:
           command:
             - caddy
             - run
-            - '--config'
+            - "--config"
             - /etc/caddy/Caddyfile
           ports:
             - containerPort: 8080

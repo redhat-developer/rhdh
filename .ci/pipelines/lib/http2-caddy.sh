@@ -102,12 +102,12 @@ http2_caddy::deploy_and_verify() {
   fi
 
   alpn="$(openssl s_client -connect "${ip}:443" -servername "${caddy_host}" \
-    -alpn h2,http/1.1 </dev/null 2>&1 | awk '/ALPN protocol:/{print $3; exit}')"
+    -alpn h2,http/1.1 < /dev/null 2>&1 | awk '/ALPN protocol:/{print $3; exit}')"
   log::info "ALPN negotiated: ${alpn:-<none>}"
   if [[ "${alpn}" != "h2" ]]; then
     log::error "Expected ALPN protocol h2, got '${alpn}'"
     openssl s_client -connect "${ip}:443" -servername "${caddy_host}" \
-      -alpn h2,http/1.1 </dev/null 2>&1 | tail -40 || true
+      -alpn h2,http/1.1 < /dev/null 2>&1 | tail -40 || true
     return 1
   fi
 
