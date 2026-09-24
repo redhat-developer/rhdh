@@ -227,7 +227,8 @@ jobs:
           echo "Base snapshot from $BASE_TREE"
           git worktree add --detach "$RUNNER_TEMP/base" "$BASE_TREE"
           cd "$RUNNER_TEMP/base"
-          yarn install --immutable
+          # Only .d.ts files and config:check are needed; skip dependency scripts.
+          yarn install --immutable --mode=skip-build
           node "$GITHUB_WORKSPACE/scripts/backstage-bump-check/index.mjs" snapshot "$RUNNER_TEMP/bump/base"
 
       - name: Compare snapshots

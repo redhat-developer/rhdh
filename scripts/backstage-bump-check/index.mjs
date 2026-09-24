@@ -54,6 +54,39 @@ function imageConfigFiles(rootDir) {
   return files;
 }
 
+// Declarations are stored per resolved version, since workspaces may differ.
+function snapshotDeclarations(rootDir, outDir) {
+  const versions = {};
+  const deps = collectDirectDeps(listWorkspaceDirs(rootDir));
+  for (const [name, workspaceDirs] of deps) {
+    const resolved = new Set();
+    for (const workspaceDir of workspaceDirs) {
+      const packageDir = resolvePackageDir(rootDir, workspaceDir, name);
+      if (!packageDir) {
+        console.warn(`Could not resolve ${name} from ${workspaceDir}`);
+        continue;
+      }
+      const { version } = JSON.parse(
+        readFileSync(join(packageDir, "package.json"), "utf8"),
+      );
+      if (resolved.has(version)) {
+        continue;
+      }
+      resolved.add(version);
+      for (const file of listTypeFiles(packageDir)) {
+        cpSync(
+          join(packageDir, file),
+          join(outDir, "api", name, version, file),
+        );
+      }
+    }
+    if (resolved.size > 0) {
+      versions[name] = [...resolved].sort(compareVersions);
+    }
+  }
+  return versions;
+}
+
 function snapshot(outDir) {
   // Not the script's repo: CI runs this copy against the base worktree too.
   const rootDir = process.cwd();
@@ -83,35 +116,7 @@ function snapshot(outDir) {
     configErrors.map((line) => `${line}\n`).join(""),
   );
 
-  // Declarations are stored per resolved version, since workspaces may differ.
-  const versions = {};
-  const deps = collectDirectDeps(listWorkspaceDirs(rootDir));
-  for (const [name, workspaceDirs] of deps) {
-    const resolved = new Set();
-    for (const workspaceDir of workspaceDirs) {
-      const packageDir = resolvePackageDir(rootDir, workspaceDir, name);
-      if (!packageDir) {
-        console.warn(`Could not resolve ${name} from ${workspaceDir}`);
-        continue;
-      }
-      const { version } = JSON.parse(
-        readFileSync(join(packageDir, "package.json"), "utf8"),
-      );
-      if (resolved.has(version)) {
-        continue;
-      }
-      resolved.add(version);
-      for (const file of listTypeFiles(packageDir)) {
-        cpSync(
-          join(packageDir, file),
-          join(outDir, "api", name, version, file),
-        );
-      }
-    }
-    if (resolved.size > 0) {
-      versions[name] = [...resolved].sort(compareVersions);
-    }
-  }
+  const versions = snapshotDeclarations(rootDir, outDir);
 
   const backstageJson = join(rootDir, "backstage.json");
   const backstage = existsSync(backstageJson)
@@ -130,9 +135,24 @@ function readLines(file) {
   return readFileSync(file, "utf8").split("\n").filter(Boolean);
 }
 
+// Resolved from fixed system directories rather than PATH.
+const GIT_CANDIDATES = [
+  "/usr/bin/git",
+  "/usr/local/bin/git",
+  "/opt/homebrew/bin/git",
+];
+
+function findGit() {
+  const git = GIT_CANDIDATES.find((path) => existsSync(path));
+  if (!git) {
+    throw new Error(`git not found in ${GIT_CANDIDATES.join(", ")}`);
+  }
+  return git;
+}
+
 function gitDiff(args, cwd) {
   // --no-index exits 1 when the inputs differ.
-  const result = spawnSync("git", ["diff", "--no-index", ...args], {
+  const result = spawnSync(findGit(), ["diff", "--no-index", ...args], {
     cwd,
     encoding: "utf8",
     maxBuffer: 256 * 1024 * 1024,
@@ -168,7 +188,7 @@ function compare(baseDir, headDir, reportDir) {
       ...Object.keys(baseVersions.packages),
       ...Object.keys(headVersions.packages),
     ]),
-  ].sort();
+  ].sort((a, b) => a.localeCompare(b));
 
   const patches = [];
   const api = names.map((name) => {

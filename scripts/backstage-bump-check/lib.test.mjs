@@ -52,8 +52,8 @@ test("parseConfigCheckOutput keeps only the error block, sorted and unique", () 
   assert.deepEqual(
     parseConfigCheckOutput({ status: 1, output, rootDir: "/r" }),
     [
-      "Config must NOT have additional properties { additionalProperty=b } at",
       "Config must be array { type=array } at /catalog/rules",
+      "Config must NOT have additional properties { additionalProperty=b } at",
       "Error: Configuration does not match schema",
     ],
   );
@@ -90,7 +90,7 @@ test("parseConfigCheckOutput never reports a crash as clean", () => {
       output: "TypeError: boom\n",
       rootDir: "/r",
     }),
-    ["TypeError: boom", "config:check exited with status 1"],
+    ["config:check exited with status 1", "TypeError: boom"],
   );
 });
 
@@ -126,6 +126,12 @@ test("config errors compare by params and path, not ajv wording", () => {
 
   // Lines outside the schema-error format keep their full text as identity.
   assert.equal(configErrorKey("Error: boom"), "Error: boom");
+  assert.equal(
+    configErrorKey(
+      "Config must NOT have additional properties { additionalProperty=x } at ",
+    ),
+    "{ additionalProperty=x } at ",
+  );
 });
 
 test("classifyApiChange covers every outcome", () => {

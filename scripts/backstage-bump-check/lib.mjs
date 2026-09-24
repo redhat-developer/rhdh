@@ -21,7 +21,7 @@ export function parseConfigCheckOutput({ status, output, rootDir }) {
     start === -1
       ? [`config:check exited with status ${status}`, ...lines]
       : lines.slice(start);
-  return [...new Set(errors)].sort();
+  return [...new Set(errors)].sort((a, b) => a.localeCompare(b));
 }
 
 /** Reads the `--config` arguments from a Containerfile ENTRYPOINT in exec form. */
@@ -42,8 +42,14 @@ export function parseEntrypointConfigs(containerfile) {
  * between @backstage/config-loader versions without the error changing.
  */
 export function configErrorKey(line) {
-  const match = /^Config .*? (\{.*\}) at\s*(.*)$/.exec(line);
-  return match ? `${match[1]} at ${match[2]}` : line;
+  const open = line.indexOf(" {");
+  const close = line.lastIndexOf("} at");
+  if (!line.startsWith("Config ") || open === -1 || close < open) {
+    return line;
+  }
+  const params = line.slice(open + 1, close + 1);
+  const path = line.slice(close + "} at".length).trim();
+  return `${params} at ${path}`;
 }
 
 export function diffLines(base, head, key = (line) => line) {
@@ -134,8 +140,9 @@ export function sumNumstat(output) {
 
 /** Orders `major.minor.patch[-pre]` versions; a prerelease sorts before its release. */
 export function compareVersions(a, b) {
-  const [aCore, aPre] = String(a).split("-", 2);
-  const [bCore, bPre] = String(b).split("-", 2);
+  // An empty prerelease means a release version.
+  const [aCore, aPre = ""] = String(a).split("-", 2);
+  const [bCore, bPre = ""] = String(b).split("-", 2);
   const aParts = aCore.split(".").map(Number);
   const bParts = bCore.split(".").map(Number);
   for (let i = 0; i < 3; i++) {
@@ -146,8 +153,8 @@ export function compareVersions(a, b) {
   if (aPre === bPre) {
     return 0;
   }
-  if (aPre === undefined || bPre === undefined) {
-    return aPre === undefined ? 1 : -1;
+  if (!aPre || !bPre) {
+    return aPre ? -1 : 1;
   }
   return aPre.localeCompare(bPre);
 }
@@ -244,15 +251,16 @@ function codeBlock(lines) {
 }
 
 export function renderReport({ backstage, config, api }) {
-  const out = ["## Backstage bump checks", ""];
-  out.push(`Backstage \`${backstage.base}\` → \`${backstage.head}\``, "");
-
-  out.push(
+  const out = [
+    "## Backstage bump checks",
+    "",
+    `Backstage \`${backstage.base}\` → \`${backstage.head}\``,
+    "",
     "### Config schema",
     "",
     "`backstage-cli config:check --strict` against the app-config files the image loads, compared with the base branch.",
     "",
-  );
+  ];
   if (config.added.length > 0) {
     out.push(
       `**FAIL**: ${config.added.length} new error(s) introduced by this change:`,
