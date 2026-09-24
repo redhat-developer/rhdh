@@ -3,6 +3,7 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
+import { ensureShowcaseEntityIngested } from "../utils/catalog-precondition";
 
 test.describe("TechDocs", () => {
   let common: Common;
@@ -10,6 +11,12 @@ test.describe("TechDocs", () => {
   let catalog: Catalog;
 
   test.beforeAll(async () => {
+    // The suite depends on the showcase entity; with a 24h catalog
+    // processingInterval a transient ingestion failure would otherwise fail
+    // every test here identically on all retries. The self-heal may poll up
+    // to 3 minutes, past the 90s default hook timeout.
+    test.setTimeout(240000);
+    await ensureShowcaseEntityIngested();
     test.info().annotations.push({
       type: "component",
       description: "core",

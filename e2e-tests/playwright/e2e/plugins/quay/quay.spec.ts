@@ -2,12 +2,19 @@ import { expect, test } from "@playwright/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { ImageRegistry } from "../../../utils/quay/quay";
+import { ensureShowcaseEntityIngested } from "../../../utils/catalog-precondition";
 
 test.describe("Test Quay.io plugin", () => {
   const quayRepository = "rhdh-community/rhdh";
   let uiHelper: UIhelper;
 
   test.beforeAll(async () => {
+    // The suite depends on the showcase entity; with a 24h catalog
+    // processingInterval a transient ingestion failure would otherwise fail
+    // every test here identically on all retries. The self-heal may poll up
+    // to 3 minutes, past the 90s default hook timeout.
+    test.setTimeout(240000);
+    await ensureShowcaseEntityIngested();
     test.info().annotations.push({
       type: "component",
       description: "plugins",
