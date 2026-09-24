@@ -591,11 +591,9 @@ initiate_upgrade_base_deployments() {
   local release_name=$1
   local namespace=$2
   local url=$3
+  local artifacts_subdir=$4
 
   log::info "Initiating base RHDH deployment before upgrade"
-
-  test_run_tracker::register "$namespace"
-  test_run_tracker::mark_deploy_success
 
   namespace::configure "${namespace}"
 
@@ -608,6 +606,8 @@ initiate_upgrade_base_deployments() {
 
   local previous_release_value_file
   previous_release_value_file=$(helm::get_previous_release_values "showcase") || return 1
+  common::save_artifact "${artifacts_subdir}/baseline" \
+    "${previous_release_value_file}" || true
 
   local -a chart_params
   if [[ "${CHART_VERSION_BASE}" == 1.* ]]; then
@@ -663,7 +663,6 @@ initiate_upgrade_deployments() {
     --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
-  save_all_pod_logs "$namespace"
 }
 
 initiate_sanity_plugin_checks_deployment() {
