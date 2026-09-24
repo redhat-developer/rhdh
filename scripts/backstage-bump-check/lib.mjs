@@ -194,40 +194,72 @@ const REPORTED_STATUSES = new Set([
 ]);
 
 /**
- * Decides how one package's API changed between base and head.
- * `measureDiff` is only called when both sides ship declarations.
+ * Version pairs to diff for one package: every (base, head) resolution a
+ * workspace moved between. `resolutions` map workspace -> version. When no
+ * workspace moved (e.g. only a workspace was added), falls back to the newest
+ * version on each side.
  */
-export function classifyApiChange({
+export function resolutionPairs({
+  baseResolutions = {},
+  headResolutions = {},
   baseVersions,
   headVersions,
-  baseHasTypes,
-  headHasTypes,
-  measureDiff,
 }) {
+  const pairs = new Map();
+  for (const [workspace, headVersion] of Object.entries(headResolutions)) {
+    const baseVersion = baseResolutions[workspace];
+    if (baseVersion && baseVersion !== headVersion) {
+      pairs.set(`${baseVersion}\0${headVersion}`, [baseVersion, headVersion]);
+    }
+  }
+  if (pairs.size === 0 && baseVersions && headVersions) {
+    const [base, head] = [baseVersions.at(-1), headVersions.at(-1)];
+    if (base !== head) {
+      pairs.set(`${base}\0${head}`, [base, head]);
+    }
+  }
+  return [...pairs.values()];
+}
+
+/**
+ * Decides how one package's API changed between base and head. `pairs` are
+ * the version pairs from resolutionPairs, each with whether both sides ship
+ * declarations; `measureDiff` is only called when both do.
+ */
+export function classifyApiChange({ baseVersions, headVersions, pairs }) {
   if (!baseVersions) {
     return { status: STATUS.newDependency };
   }
   if (!headVersions) {
     return { status: STATUS.droppedDependency };
   }
-  const sameVersions = baseVersions.join() === headVersions.join();
-  if (baseHasTypes !== headHasTypes) {
+  if (pairs.length === 0) {
+    const sameVersions = baseVersions.join() === headVersions.join();
     return {
-      status: headHasTypes
+      status: sameVersions ? STATUS.unchanged : STATUS.noDeclarationChange,
+    };
+  }
+  const mismatch = pairs.find((p) => p.baseHasTypes !== p.headHasTypes);
+  if (mismatch) {
+    return {
+      status: mismatch.headHasTypes
         ? STATUS.declarationsAdded
         : STATUS.declarationsRemoved,
     };
   }
-  if (!headHasTypes) {
-    return {
-      status: sameVersions ? STATUS.unchanged : STATUS.noDeclarations,
-    };
+  const typed = pairs.filter((p) => p.headHasTypes);
+  if (typed.length === 0) {
+    return { status: STATUS.noDeclarations };
   }
-  const { added, removed } = measureDiff();
+  let added = 0;
+  let removed = 0;
+  for (const pair of typed) {
+    const diff = pair.measureDiff();
+    added += diff.added;
+    removed += diff.removed;
+  }
   if (added + removed === 0) {
-    return {
-      status: sameVersions ? STATUS.unchanged : STATUS.noDeclarationChange,
-    };
+    return { status: STATUS.noDeclarationChange };
   }
   return { status: STATUS.changed, added, removed };
 }
@@ -304,7 +336,7 @@ export function renderReport({ backstage, config, api }) {
             ? `+${entry.added} / -${entry.removed}`
             : entry.status;
         const lines = hasMultipleVersions(entry)
-          ? `${status} (multiple versions, newest compared)`
+          ? `${status} (multiple versions)`
           : status;
         return `| \`${entry.name}\` | ${formatVersion(entry)} | ${lines} |`;
       }),

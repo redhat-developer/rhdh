@@ -31,6 +31,7 @@ import {
   parseConfigCheckOutput,
   parseEntrypointConfigs,
   renderReport,
+  resolutionPairs,
   resolvePackageDir,
   STATUS,
   sumNumstat,
@@ -54,12 +55,15 @@ function imageConfigFiles(rootDir) {
   return files;
 }
 
-// Declarations are stored per resolved version, since workspaces may differ.
+// Declarations are stored per resolved version, and the version each
+// workspace resolves is recorded, since workspaces may differ.
 function snapshotDeclarations(rootDir, outDir) {
   const versions = {};
+  const resolutions = {};
   const deps = collectDirectDeps(listWorkspaceDirs(rootDir));
   for (const [name, workspaceDirs] of deps) {
     const resolved = new Set();
+    resolutions[name] = {};
     for (const workspaceDir of workspaceDirs) {
       const packageDir = resolvePackageDir(rootDir, workspaceDir, name);
       if (!packageDir) {
@@ -69,6 +73,7 @@ function snapshotDeclarations(rootDir, outDir) {
       const { version } = JSON.parse(
         readFileSync(join(packageDir, "package.json"), "utf8"),
       );
+      resolutions[name][relative(rootDir, workspaceDir) || "."] = version;
       if (resolved.has(version)) {
         continue;
       }
@@ -84,7 +89,7 @@ function snapshotDeclarations(rootDir, outDir) {
       versions[name] = [...resolved].sort(compareVersions);
     }
   }
-  return versions;
+  return { versions, resolutions };
 }
 
 function snapshot(outDir) {
@@ -116,7 +121,7 @@ function snapshot(outDir) {
     configErrors.map((line) => `${line}\n`).join(""),
   );
 
-  const versions = snapshotDeclarations(rootDir, outDir);
+  const { versions, resolutions } = snapshotDeclarations(rootDir, outDir);
 
   const backstageJson = join(rootDir, "backstage.json");
   const backstage = existsSync(backstageJson)
@@ -124,7 +129,7 @@ function snapshot(outDir) {
     : "unknown";
   writeFileSync(
     join(outDir, "versions.json"),
-    `${JSON.stringify({ backstage, configFiles, packages: versions }, null, 2)}\n`,
+    `${JSON.stringify({ backstage, configFiles, packages: versions, resolutions }, null, 2)}\n`,
   );
   console.log(
     `Snapshot written to ${outDir}: ${configErrors.length} config error line(s) for ${configFiles.join(", ")}; ${Object.keys(versions).length} package(s)`,
@@ -197,20 +202,27 @@ function compare(baseDir, headDir, reportDir) {
       baseVersions: baseVersions.packages[name],
       headVersions: headVersions.packages[name],
     };
-    // Newest resolved version on each side; missing sides yield no path.
-    const apiDir = (rel, versions) =>
-      versions && join(rel, "api", name, versions.at(-1));
-    const baseApi = apiDir(baseRel, entry.baseVersions);
-    const headApi = apiDir(headRel, entry.headVersions);
-    const change = classifyApiChange({
+    const pairs = resolutionPairs({
       ...entry,
-      baseHasTypes: Boolean(baseApi) && existsSync(join(cwd, baseApi)),
-      headHasTypes: Boolean(headApi) && existsSync(join(cwd, headApi)),
-      measureDiff: () =>
-        sumNumstat(gitDiff(["--numstat", baseApi, headApi], cwd)),
+      baseResolutions: baseVersions.resolutions?.[name],
+      headResolutions: headVersions.resolutions?.[name],
+    }).map(([baseVersion, headVersion]) => {
+      const baseApi = join(baseRel, "api", name, baseVersion);
+      const headApi = join(headRel, "api", name, headVersion);
+      return {
+        baseApi,
+        headApi,
+        baseHasTypes: existsSync(join(cwd, baseApi)),
+        headHasTypes: existsSync(join(cwd, headApi)),
+        measureDiff: () =>
+          sumNumstat(gitDiff(["--numstat", baseApi, headApi], cwd)),
+      };
     });
+    const change = classifyApiChange({ ...entry, pairs });
     if (change.status === STATUS.changed) {
-      patches.push(gitDiff([baseApi, headApi], cwd));
+      for (const pair of pairs.filter((p) => p.headHasTypes)) {
+        patches.push(gitDiff([pair.baseApi, pair.headApi], cwd));
+      }
     }
     return { ...entry, ...change };
   });

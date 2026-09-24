@@ -16,6 +16,7 @@ import {
   parseConfigCheckOutput,
   parseEntrypointConfigs,
   renderReport,
+  resolutionPairs,
   resolvePackageDir,
   STATUS,
   sumNumstat,
@@ -135,89 +136,88 @@ test("config errors compare by params and path, not ajv wording", () => {
 });
 
 test("classifyApiChange covers every outcome", () => {
-  const measure = (added, removed) => () => ({ added, removed });
   const noDiff = () => assert.fail("measureDiff must not be called");
-  const both = { baseHasTypes: true, headHasTypes: true };
+  const pair = (baseHasTypes, headHasTypes, added = 0, removed = 0) => ({
+    baseHasTypes,
+    headHasTypes,
+    measureDiff: () => ({ added, removed }),
+  });
+  const versions = { baseVersions: ["1"], headVersions: ["2"] };
   const cases = [
+    [{ headVersions: ["1"], pairs: [] }, { status: STATUS.newDependency }],
+    [{ baseVersions: ["1"], pairs: [] }, { status: STATUS.droppedDependency }],
     [
-      { headVersions: ["1.0.0"], measureDiff: noDiff },
-      { status: STATUS.newDependency },
-    ],
-    [
-      { baseVersions: ["1.0.0"], measureDiff: noDiff },
-      { status: STATUS.droppedDependency },
-    ],
-    [
-      {
-        baseVersions: ["1"],
-        headVersions: ["2"],
-        baseHasTypes: false,
-        headHasTypes: true,
-        measureDiff: noDiff,
-      },
-      { status: STATUS.declarationsAdded },
-    ],
-    [
-      {
-        baseVersions: ["1"],
-        headVersions: ["2"],
-        baseHasTypes: true,
-        headHasTypes: false,
-        measureDiff: noDiff,
-      },
-      { status: STATUS.declarationsRemoved },
-    ],
-    [
-      {
-        baseVersions: ["1"],
-        headVersions: ["2"],
-        baseHasTypes: false,
-        headHasTypes: false,
-        measureDiff: noDiff,
-      },
-      { status: STATUS.noDeclarations },
-    ],
-    [
-      {
-        baseVersions: ["1"],
-        headVersions: ["1"],
-        baseHasTypes: false,
-        headHasTypes: false,
-        measureDiff: noDiff,
-      },
+      { baseVersions: ["1"], headVersions: ["1"], pairs: [] },
       { status: STATUS.unchanged },
     ],
     [
-      {
-        baseVersions: ["1"],
-        headVersions: ["2"],
-        ...both,
-        measureDiff: measure(0, 0),
-      },
+      { baseVersions: ["1"], headVersions: ["1", "2"], pairs: [] },
       { status: STATUS.noDeclarationChange },
     ],
     [
-      {
-        baseVersions: ["1"],
-        headVersions: ["1"],
-        ...both,
-        measureDiff: measure(0, 0),
-      },
-      { status: STATUS.unchanged },
+      { ...versions, pairs: [{ ...pair(false, true), measureDiff: noDiff }] },
+      { status: STATUS.declarationsAdded },
     ],
     [
-      {
-        baseVersions: ["1"],
-        headVersions: ["2"],
-        ...both,
-        measureDiff: measure(3, 1),
-      },
-      { status: STATUS.changed, added: 3, removed: 1 },
+      { ...versions, pairs: [{ ...pair(true, false), measureDiff: noDiff }] },
+      { status: STATUS.declarationsRemoved },
+    ],
+    [
+      { ...versions, pairs: [{ ...pair(false, false), measureDiff: noDiff }] },
+      { status: STATUS.noDeclarations },
+    ],
+    [
+      { ...versions, pairs: [pair(true, true)] },
+      { status: STATUS.noDeclarationChange },
+    ],
+    [
+      { ...versions, pairs: [pair(true, true, 3, 1), pair(true, true, 2, 0)] },
+      { status: STATUS.changed, added: 5, removed: 1 },
     ],
   ];
   for (const [input, expected] of cases) {
     assert.deepEqual(classifyApiChange(input), expected, JSON.stringify(input));
   }
+});
+
+test("resolutionPairs diffs every resolution a workspace moved between", () => {
+  // A lower resolution moving while the newest stays put must not be missed.
+  assert.deepEqual(
+    resolutionPairs({
+      baseResolutions: { "packages/a": "1.2.0", "packages/b": "2.0.0" },
+      headResolutions: { "packages/a": "1.3.0", "packages/b": "2.0.0" },
+      baseVersions: ["1.2.0", "2.0.0"],
+      headVersions: ["1.3.0", "2.0.0"],
+    }),
+    [["1.2.0", "1.3.0"]],
+  );
+  // Two workspaces making the same move yield one pair.
+  assert.deepEqual(
+    resolutionPairs({
+      baseResolutions: { a: "1.0.0", b: "1.0.0" },
+      headResolutions: { a: "1.1.0", b: "1.1.0" },
+      baseVersions: ["1.0.0"],
+      headVersions: ["1.1.0"],
+    }),
+    [["1.0.0", "1.1.0"]],
+  );
+});
+
+test("resolutionPairs falls back to the newest versions when no workspace moved", () => {
+  // Only a new workspace resolves the new version.
+  assert.deepEqual(
+    resolutionPairs({
+      baseResolutions: { a: "1.0.0" },
+      headResolutions: { a: "1.0.0", b: "1.1.0" },
+      baseVersions: ["1.0.0"],
+      headVersions: ["1.0.0", "1.1.0"],
+    }),
+    [["1.0.0", "1.1.0"]],
+  );
+  assert.deepEqual(
+    resolutionPairs({ baseVersions: ["1.0.0"], headVersions: ["1.0.0"] }),
+    [],
+  );
 });
 
 test("collectDirectDeps and resolvePackageDir follow the workspace layout", () => {
@@ -339,7 +339,7 @@ test("renderReport surfaces workspaces that resolve several versions", () => {
   });
   assert.match(
     report,
-    /\| `@backstage\/errors` \| 1\.3\.1 → 1\.2\.7, 1\.3\.1 \| unchanged \(multiple versions, newest compared\) \|/,
+    /\| `@backstage\/errors` \| 1\.3\.1 → 1\.2\.7, 1\.3\.1 \| unchanged \(multiple versions\) \|/,
   );
 });
 
