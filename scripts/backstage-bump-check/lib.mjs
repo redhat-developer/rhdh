@@ -36,12 +36,22 @@ export function parseEntrypointConfigs(containerfile) {
   return args.flatMap((arg, i) => (args[i - 1] === "--config" ? [arg] : []));
 }
 
-export function diffLines(base, head) {
-  const baseSet = new Set(base);
-  const headSet = new Set(head);
+/**
+ * Identity of a schema error: its params and config path, e.g.
+ * `{ additionalProperty=foo } at /app`. The ajv wording in front can change
+ * between @backstage/config-loader versions without the error changing.
+ */
+export function configErrorKey(line) {
+  const match = /^Config .*? (\{.*\}) at\s*(.*)$/.exec(line);
+  return match ? `${match[1]} at ${match[2]}` : line;
+}
+
+export function diffLines(base, head, key = (line) => line) {
+  const baseKeys = new Set(base.map(key));
+  const headKeys = new Set(head.map(key));
   return {
-    added: head.filter((line) => !baseSet.has(line)),
-    removed: base.filter((line) => !headSet.has(line)),
+    added: head.filter((line) => !baseKeys.has(key(line))),
+    removed: base.filter((line) => !headKeys.has(key(line))),
   };
 }
 
@@ -52,29 +62,31 @@ export function listWorkspaceDirs(rootDir) {
   const patterns = rootPkg.workspaces?.packages ?? rootPkg.workspaces ?? [];
   const dirs = [rootDir];
   for (const pattern of patterns) {
-    // Only "<dir>/*" patterns are used in this repo.
-    const parent = join(rootDir, pattern.replace(/\/\*$/, ""));
+    // The repo only uses "<dir>/*"; fail loudly rather than skip workspaces.
+    if (!pattern.endsWith("/*")) {
+      throw new Error(`Unsupported workspace pattern: ${pattern}`);
+    }
+    const parent = join(rootDir, pattern.slice(0, -2));
     if (!existsSync(parent)) {
       continue;
     }
     for (const entry of readdirSync(parent, { withFileTypes: true })) {
-      const dir = join(parent, entry.name);
-      if (entry.isDirectory() && existsSync(join(dir, "package.json"))) {
-        dirs.push(dir);
-      }
+      dirs.push(join(parent, entry.name));
     }
   }
-  return dirs;
+  return dirs.filter((dir) => existsSync(join(dir, "package.json")));
 }
 
-/** Maps each directly declared dependency matching `prefix` to the workspaces declaring it. */
-export function collectDirectDeps(workspaceDirs, prefix = "@backstage/") {
+const SCOPE = "@backstage/";
+
+/** Maps each directly declared `@backstage/*` dependency to the workspaces declaring it. */
+export function collectDirectDeps(workspaceDirs) {
   const deps = new Map();
   for (const dir of workspaceDirs) {
     const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
     for (const field of ["dependencies", "devDependencies"]) {
       for (const name of Object.keys(pkg[field] ?? {})) {
-        if (name.startsWith(prefix)) {
+        if (name.startsWith(SCOPE)) {
           deps.set(name, [...(deps.get(name) ?? []), dir]);
         }
       }
@@ -150,14 +162,68 @@ export function isBreakingRange(from, to) {
   return fromMajor === 0 && fromMinor !== toMinor;
 }
 
+export const STATUS = {
+  changed: "changed",
+  newDependency: "new dependency",
+  droppedDependency: "dropped dependency",
+  declarationsAdded: "declarations added",
+  declarationsRemoved: "declarations removed",
+  noDeclarations: "no declarations",
+  noDeclarationChange: "no declaration change",
+  unchanged: "unchanged",
+};
+
 // Rows worth a reviewer's attention; version-only bumps are just counted.
 const REPORTED_STATUSES = new Set([
-  "changed",
-  "new dependency",
-  "dropped dependency",
-  "declarations added",
-  "declarations removed",
+  STATUS.changed,
+  STATUS.newDependency,
+  STATUS.droppedDependency,
+  STATUS.declarationsAdded,
+  STATUS.declarationsRemoved,
 ]);
+
+/**
+ * Decides how one package's API changed between base and head.
+ * `measureDiff` is only called when both sides ship declarations.
+ */
+export function classifyApiChange({
+  baseVersions,
+  headVersions,
+  baseHasTypes,
+  headHasTypes,
+  measureDiff,
+}) {
+  if (!baseVersions) {
+    return { status: STATUS.newDependency };
+  }
+  if (!headVersions) {
+    return { status: STATUS.droppedDependency };
+  }
+  const sameVersions = baseVersions.join() === headVersions.join();
+  if (baseHasTypes !== headHasTypes) {
+    return {
+      status: headHasTypes
+        ? STATUS.declarationsAdded
+        : STATUS.declarationsRemoved,
+    };
+  }
+  if (!headHasTypes) {
+    return {
+      status: sameVersions ? STATUS.unchanged : STATUS.noDeclarations,
+    };
+  }
+  const { added, removed } = measureDiff();
+  if (added + removed === 0) {
+    return {
+      status: sameVersions ? STATUS.unchanged : STATUS.noDeclarationChange,
+    };
+  }
+  return { status: STATUS.changed, added, removed };
+}
+
+function hasMultipleVersions({ baseVersions, headVersions }) {
+  return baseVersions?.length > 1 || headVersions?.length > 1;
+}
 
 function formatVersion({ baseVersions, headVersions }) {
   const range = `${baseVersions?.join(", ") || "-"} → ${headVersions?.join(", ") || "-"}`;
@@ -170,7 +236,7 @@ function formatVersion({ baseVersions, headVersions }) {
 
 // Workspaces resolving different versions see different APIs; always surface it.
 function isReported(entry) {
-  return REPORTED_STATUSES.has(entry.status) || entry.headVersions?.length > 1;
+  return REPORTED_STATUSES.has(entry.status) || hasMultipleVersions(entry);
 }
 
 function codeBlock(lines) {
@@ -189,7 +255,7 @@ export function renderReport({ backstage, config, api }) {
   );
   if (config.added.length > 0) {
     out.push(
-      `**FAIL**: ${config.added.length} new error line(s) introduced by this change:`,
+      `**FAIL**: ${config.added.length} new error(s) introduced by this change:`,
       "",
       codeBlock(config.added),
       "",
@@ -212,7 +278,7 @@ export function renderReport({ backstage, config, api }) {
   out.push("### API surface of direct `@backstage/*` dependencies", "");
   const reported = api.filter(isReported);
   const bumpedOnly = api.filter(
-    (entry) => !isReported(entry) && entry.status !== "unchanged",
+    (entry) => !isReported(entry) && entry.status !== STATUS.unchanged,
   ).length;
   if (reported.length === 0) {
     out.push("No changes to the published type declarations.", "");
@@ -222,13 +288,12 @@ export function renderReport({ backstage, config, api }) {
       "| --- | --- | --- |",
       ...reported.map((entry) => {
         const status =
-          entry.status === "changed"
+          entry.status === STATUS.changed
             ? `+${entry.added} / -${entry.removed}`
             : entry.status;
-        const lines =
-          entry.headVersions?.length > 1
-            ? `${status} (multiple versions, newest compared)`
-            : status;
+        const lines = hasMultipleVersions(entry)
+          ? `${status} (multiple versions, newest compared)`
+          : status;
         return `| \`${entry.name}\` | ${formatVersion(entry)} | ${lines} |`;
       }),
       "",

@@ -11,6 +11,8 @@ The `detect-backstage-bump` action marks a pull request as a bump when one of th
 - `yarn.lock` changes the resolved version of any `@backstage/*` package. This includes partial updates such as security fixes.
 - The PR changes this folder or the detection action. This lets PRs that edit the checks test them.
 
+A PR that only bumps third-party scopes, such as `@backstage-community/*`, is not detected. A bump PR with `[skip-build]` in a commit subject still skips the build and test jobs, as any PR does.
+
 For those PRs, `.github/workflows/pr.yaml` then:
 
 - Builds and tests every package, not only the ones turbo reports as `--affected`. The build includes `tsc`.
@@ -32,7 +34,7 @@ The base is always a commit that already installs cleanly. So the job keeps work
 
 Each snapshot reads the `--config` files from its own `build/containerfiles/Containerfile` ENTRYPOINT. So a PR that renames an app-config file is checked against the files its image loads.
 
-`config:check` without `--strict` ignores schema errors. Even with `--strict`, the current config already fails: some keys belong to dynamic plugins, and their schemas are not in this repo. So the check compares the two sets of error lines and fails only on new ones. Checkout paths are masked in the error lines, so base and head compare equal. A `config:check` that exits non-zero without its usual error block is recorded as an error, never as a clean run.
+`config:check` without `--strict` ignores schema errors. Even with `--strict`, the current config already fails: some keys belong to dynamic plugins, and their schemas are not in this repo. So the check compares the two sets of errors and fails only on new ones. A schema error is identified by its params and config path, such as `{ additionalProperty=foo } at /app`, not by its message. So a `@backstage/config-loader` bump that rewords messages does not make old errors look new. Checkout paths are masked, so base and head compare equal. A `config:check` that exits non-zero without its usual error block is recorded as an error, never as a clean run.
 
 The job summary shows the result. The `backstage-bump-report` artifact holds `summary.md` and the full `api-surface.diff`. Its table flags a bump outside the caret range of the old version as `breaking range`. When workspaces resolve different versions of the same package, the table lists every version and diffs the newest one on each side.
 

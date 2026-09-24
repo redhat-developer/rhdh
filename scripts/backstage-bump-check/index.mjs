@@ -21,8 +21,10 @@ import {
 import { dirname, join, relative, resolve } from "node:path";
 
 import {
+  classifyApiChange,
   collectDirectDeps,
   compareVersions,
+  configErrorKey,
   diffLines,
   listTypeFiles,
   listWorkspaceDirs,
@@ -30,6 +32,7 @@ import {
   parseEntrypointConfigs,
   renderReport,
   resolvePackageDir,
+  STATUS,
   sumNumstat,
 } from "./lib.mjs";
 
@@ -52,6 +55,7 @@ function imageConfigFiles(rootDir) {
 }
 
 function snapshot(outDir) {
+  // Not the script's repo: CI runs this copy against the base worktree too.
   const rootDir = process.cwd();
   mkdirSync(outDir, { recursive: true });
 
@@ -149,7 +153,7 @@ function compare(baseDir, headDir, reportDir) {
   const baseErrors = readLines(join(baseDir, "config-errors.txt"));
   const headErrors = readLines(join(headDir, "config-errors.txt"));
   const config = {
-    ...diffLines(baseErrors, headErrors),
+    ...diffLines(baseErrors, headErrors, configErrorKey),
     headCount: headErrors.length,
   };
 
@@ -173,41 +177,22 @@ function compare(baseDir, headDir, reportDir) {
       baseVersions: baseVersions.packages[name],
       headVersions: headVersions.packages[name],
     };
-    if (!entry.baseVersions) {
-      return { ...entry, status: "new dependency" };
+    // Newest resolved version on each side; missing sides yield no path.
+    const apiDir = (rel, versions) =>
+      versions && join(rel, "api", name, versions.at(-1));
+    const baseApi = apiDir(baseRel, entry.baseVersions);
+    const headApi = apiDir(headRel, entry.headVersions);
+    const change = classifyApiChange({
+      ...entry,
+      baseHasTypes: Boolean(baseApi) && existsSync(join(cwd, baseApi)),
+      headHasTypes: Boolean(headApi) && existsSync(join(cwd, headApi)),
+      measureDiff: () =>
+        sumNumstat(gitDiff(["--numstat", baseApi, headApi], cwd)),
+    });
+    if (change.status === STATUS.changed) {
+      patches.push(gitDiff([baseApi, headApi], cwd));
     }
-    if (!entry.headVersions) {
-      return { ...entry, status: "dropped dependency" };
-    }
-    const sameVersions =
-      entry.baseVersions.join() === entry.headVersions.join();
-    const baseApi = join(baseRel, "api", name, entry.baseVersions.at(-1));
-    const headApi = join(headRel, "api", name, entry.headVersions.at(-1));
-    const baseHasTypes = existsSync(join(cwd, baseApi));
-    const headHasTypes = existsSync(join(cwd, headApi));
-    if (baseHasTypes !== headHasTypes) {
-      return {
-        ...entry,
-        status: headHasTypes ? "declarations added" : "declarations removed",
-      };
-    }
-    if (!headHasTypes) {
-      return {
-        ...entry,
-        status: sameVersions ? "unchanged" : "no declarations",
-      };
-    }
-    const { added, removed } = sumNumstat(
-      gitDiff(["--numstat", baseApi, headApi], cwd),
-    );
-    if (added + removed === 0) {
-      return {
-        ...entry,
-        status: sameVersions ? "unchanged" : "no declaration change",
-      };
-    }
-    patches.push(gitDiff([baseApi, headApi], cwd));
-    return { ...entry, status: "changed", added, removed };
+    return { ...entry, ...change };
   });
 
   writeFileSync(join(reportDir, "api-surface.diff"), patches.join(""));
