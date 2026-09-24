@@ -587,11 +587,20 @@ initiate_deployments_osd_gcp() {
 }
 
 # install base RHDH deployment before upgrade
+# Args:
+#   $1 - release_name: The Helm release name
+#   $2 - namespace: The namespace for the baseline deployment
+#   $3 - url: The RHDH URL
+#   $4 - artifacts_subdir: Subdirectory for upgrade artifacts
+#   $5 - previous_release_version: Required baseline release stream
 initiate_upgrade_base_deployments() {
   local release_name=$1
   local namespace=$2
   local url=$3
   local artifacts_subdir=$4
+  local previous_release_version=${5:-}
+
+  common::require_vars previous_release_version || return 1
 
   log::info "Initiating base RHDH deployment before upgrade"
 
@@ -605,7 +614,7 @@ initiate_upgrade_base_deployments() {
   log::info "Deploying image from base repository: ${IMAGE_REGISTRY}/${IMAGE_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
 
   local previous_release_value_file
-  previous_release_value_file=$(helm::get_previous_release_values "showcase") || return 1
+  previous_release_value_file=$(helm::get_previous_release_values "showcase" "${previous_release_version}") || return 1
   common::save_artifact "${artifacts_subdir}/baseline" \
     "${previous_release_value_file}" || true
 

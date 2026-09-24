@@ -80,10 +80,12 @@ helm::merge_values() {
 # Get the previous release's chart values for the upgrade baseline.
 # Args:
 #   $1 - value_file_type: Type of value file (default: "showcase")
+#   $2 - previous_release_version: Required release stream (e.g. "1.10")
 helm::get_previous_release_values() {
   local value_file_type=${1:-showcase}
-  if [[ -z "${previous_release_version:-}" ]]; then
-    log::error "Previous release version is not set"
+  local previous_release_version=${2:-}
+  if [[ -z "${previous_release_version}" ]]; then
+    log::error "Previous release version parameter is required" >&2
     return 1
   fi
 

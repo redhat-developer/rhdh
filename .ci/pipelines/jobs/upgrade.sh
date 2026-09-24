@@ -97,7 +97,7 @@ handle_ocp_helm_upgrade() {
   trap upgrade::exit_handler EXIT
 
   # Resolve the previous release's chart and values for the baseline deployment.
-  local current_release_version
+  local current_release_version previous_release_version
   current_release_version=$(helm::get_chart_stream)
   if [[ -z "$current_release_version" ]]; then
     log::error "Failed to determine current release version. Exiting."
@@ -143,7 +143,7 @@ handle_ocp_helm_upgrade() {
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   UPGRADE_PHASE="baseline-deploy"
   initiate_upgrade_base_deployments \
-    "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${upgrade_artifacts_subdir}"
+    "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${upgrade_artifacts_subdir}" "${previous_release_version}"
 
   UPGRADE_PHASE="baseline-readiness"
   postgres::wait_ready "${NAME_SPACE}" "${RELEASE_NAME}"
