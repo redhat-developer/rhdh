@@ -60,6 +60,8 @@ To update Backstage dependencies, run the following command:
 yarn versions:bump     # Updates Backstage dependencies
 ```
 
+Pull requests that bump Backstage run extra CI checks: a full build and test run, and the `Backstage bump checks` job. See [scripts/backstage-bump-check](scripts/backstage-bump-check/README.md).
+
 ### Enhancement Requests
 
 If you want an enhancement of a feature or workflow, you can submit an [issue](https://github.com/redhat-developer/rhdh/issues/new?assignees=&labels=kind%2Fenhancement%2Cstatus%2Ftriage&template=enhancement.md) describing the enhancement. Include:
