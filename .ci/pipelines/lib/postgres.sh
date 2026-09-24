@@ -226,10 +226,10 @@ postgres::restore_all() {
     env LC_ALL=C psql -U postgres -v ON_ERROR_STOP=0 < "${dump_file}" > "${restore_log}" 2>&1 \
     || restore_status=$?
 
+  # Keep failed restore logs for upgrade failure artifacts; cleanup removes them.
   if [[ ${restore_status} -ne 0 ]]; then
     log::error "PostgreSQL restore command failed with status ${restore_status}"
     grep -E 'ERROR:|FATAL:' "${restore_log}" || true
-    rm -f "${restore_log}"
     return 1
   fi
 
@@ -239,7 +239,6 @@ postgres::restore_all() {
   if [[ -n "${unexpected_errors}" ]]; then
     log::error "PostgreSQL restore reported unexpected SQL errors:"
     echo "${unexpected_errors}"
-    rm -f "${restore_log}"
     return 1
   fi
 

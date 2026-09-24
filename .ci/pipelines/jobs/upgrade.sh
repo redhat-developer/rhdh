@@ -29,6 +29,10 @@ upgrade::save_phase_artifacts() {
     return 0
   fi
 
+  if [[ "${phase}" == failure-* && -n "${POSTGRES_UPGRADE_DUMP_FILE:-}" && -f "${POSTGRES_UPGRADE_DUMP_FILE}.restore.log" ]]; then
+    common::save_artifact "${artifacts_subdir}" "${POSTGRES_UPGRADE_DUMP_FILE}.restore.log" || true
+  fi
+
   local diagnostics_file
   diagnostics_file=$(mktemp "${TMPDIR:-${DIR}}/upgrade-${phase}.XXXXXX.txt") || return 0
   {
@@ -143,7 +147,7 @@ handle_ocp_helm_upgrade() {
 
   UPGRADE_PHASE="baseline-readiness"
   postgres::wait_ready "${NAME_SPACE}" "${RELEASE_NAME}"
-  if ! testing::check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "showcase-upgrade-base"; then
+  if ! testing::check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${upgrade_artifacts_subdir}/baseline"; then
     log::error "Previous RHDH deployment did not become ready"
     oc describe "deployment/${DEPLOYMENT_NAME}" -n "${NAME_SPACE}" || true
     oc get events -n "${NAME_SPACE}" --sort-by='.lastTimestamp' || true
