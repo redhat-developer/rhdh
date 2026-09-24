@@ -1,7 +1,7 @@
 import { configApiRef, useApi } from "@backstage/core-plugin-api";
 
 import { useTheme } from "@mui/material/styles";
-import type { ThemeConfig } from "@red-hat-developer-hub/backstage-plugin-theme";
+import type { ThemeConfig } from "@red-hat-developer-hub/backstage-plugin-theme/legacy";
 
 import type { Config } from "../../config";
 
