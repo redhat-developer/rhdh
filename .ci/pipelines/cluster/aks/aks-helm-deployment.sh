@@ -41,7 +41,7 @@ initiate_aks_helm_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" \
     --set host="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params); then
+    $(helm::get_image_params --internal-postgresql-image); then
     log::error "Helm upgrade failed for ${RELEASE_NAME} in ${NAME_SPACE}"
     return 1
   fi
@@ -69,7 +69,7 @@ initiate_rbac_aks_helm_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" \
     --set host="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params); then
+    $(helm::get_image_params --internal-postgresql-image); then
     log::error "Helm upgrade failed for ${RELEASE_NAME_RBAC} in ${NAME_SPACE_RBAC}"
     return 1
   fi

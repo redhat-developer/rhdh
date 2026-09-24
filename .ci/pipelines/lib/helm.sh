@@ -77,47 +77,29 @@ helm::merge_values() {
   fi
 }
 
-# Get the previous release value file from GitHub
+# Get the previous release's chart values for the upgrade baseline.
 # Args:
-#   $1 - value_file_type: Type of value file (default: "showcase", can be "showcase-rbac")
-# Returns:
-#   Prints the path to the downloaded value file
+#   $1 - value_file_type: Type of value file (default: "showcase")
+#   $2 - previous_release_version: Required release stream (e.g. "1.10")
 helm::get_previous_release_values() {
-  local value_file_type=${1:-"showcase"}
-
-  local current_release_version
-  current_release_version=$(helm::get_chart_stream)
-  if [[ -z "$current_release_version" ]]; then
+  local value_file_type=${1:-showcase}
+  local previous_release_version=${2:-}
+  if [[ -z "${previous_release_version}" ]]; then
+    log::error "Previous release version parameter is required" >&2
     return 1
   fi
 
-  # Get the previous release version
-  local previous_release_version
-  previous_release_version=$(common::get_previous_release_version "$current_release_version")
-
-  if [[ -z "$previous_release_version" ]]; then
-    log::error "Failed to determine previous release version."
-    return 1
-  fi
-
-  log::info "Using previous release version: ${previous_release_version}" >&2
-
-  # Construct the GitHub URL for the value file
   local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ci/pipelines/value_files/values_${value_file_type}.yaml"
+  local temp_value_file
+  temp_value_file=$(mktemp "${TMPDIR:-${DIR}}/values_${value_file_type}_${previous_release_version}.XXXXXX.yaml") || return 1
 
-  # Create a temporary file path for the downloaded value file
-  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_version}.yaml"
-
-  log::info "Fetching value file from: ${github_url}" >&2
-
-  # Download the value file from GitHub
-  if curl -fsSL "${github_url}" -o "${temp_value_file}"; then
-    log::success "Successfully downloaded value file to: ${temp_value_file}" >&2
-    echo "${temp_value_file}"
-  else
-    log::error "Failed to download value file from GitHub."
+  log::info "Fetching previous release values from: ${github_url}" >&2
+  if ! curl -fsSL "${github_url}" -o "${temp_value_file}"; then
+    rm -f "${temp_value_file}"
+    log::error "Failed to download previous release values" >&2
     return 1
   fi
+  printf '%s\n' "${temp_value_file}"
 }
 
 # ==============================================================================
@@ -297,10 +279,12 @@ helm::uninstall() {
 # Install Operations
 # ==============================================================================
 
-# Get common Helm set parameters for image configuration.
+# Get common Helm image parameters.
 #
 # Uses global variables: IMAGE_REGISTRY, IMAGE_REPO, TAG_NAME,
-#   CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO, CATALOG_INDEX_TAG (from env_variables.sh)
+#   CATALOG_INDEX_REGISTRY, CATALOG_INDEX_REPO, CATALOG_INDEX_TAG,
+#   POSTGRESQL_IMAGE_REGISTRY, POSTGRESQL_IMAGE_REPO, POSTGRESQL_IMAGE_TAG
+#   (from env_variables.sh)
 #
 # Options (all optional; defaults reproduce the connected-install behavior):
 #   --backstage-registry <r>  Override image.registry
@@ -309,15 +293,19 @@ helm::uninstall() {
 #   --catalog-registry <r>    Override catalogIndex.image.registry
 #                             (default: CATALOG_INDEX_REGISTRY). Disconnected
 #                             installs pass MIRROR_REGISTRY_URL.
+#   --internal-postgresql-image
+#                             Set the integrated PostgreSQL image from the
+#                             shared POSTGRESQL_IMAGE_* environment variables.
 #   --omit-backstage-image    Skip the image.* flags entirely
 #                             (LOCAL_DISCONNECTED lets the chart + IDMS resolve
 #                             the hub image instead of pinning it).
 # Returns:
-#   Prints the Helm --set parameters string
+#   Prints the Helm image parameter string
 # shellcheck disable=SC2120 # all args optional; callers in other files pass them
 helm::get_image_params() {
   local backstage_registry="${IMAGE_REGISTRY}"
   local catalog_registry="${CATALOG_INDEX_REGISTRY:-}"
+  local internal_postgresql_image="false"
   local omit_backstage_image="false"
 
   while [[ $# -gt 0 ]]; do
@@ -329,6 +317,10 @@ helm::get_image_params() {
       --catalog-registry)
         catalog_registry="$2"
         shift 2
+        ;;
+      --internal-postgresql-image)
+        internal_postgresql_image="true"
+        shift
         ;;
       --omit-backstage-image)
         omit_backstage_image="true"
@@ -348,6 +340,13 @@ helm::get_image_params() {
     params+="--set image.repository=${IMAGE_REPO} "
     params+="--set image.tag=${TAG_NAME} "
     params+="--set image.digest= "
+  fi
+
+  if [[ "${internal_postgresql_image}" == "true" ]]; then
+    params+="--set postgresql.image.registry=${POSTGRESQL_IMAGE_REGISTRY} "
+    params+="--set postgresql.image.repository=${POSTGRESQL_IMAGE_REPO} "
+    params+="--set postgresql.image.tag=${POSTGRESQL_IMAGE_TAG} "
+    params+="--set postgresql.image.digest= "
   fi
 
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
@@ -388,5 +387,5 @@ helm::install() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
+    $(helm::get_image_params --internal-postgresql-image)
 }

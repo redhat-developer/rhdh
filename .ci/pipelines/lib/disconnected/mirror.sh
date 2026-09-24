@@ -113,8 +113,8 @@ EOF
     additional_images+=("${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}")
   fi
 
-  # PG image: CI charts may use quay.io/fedora/postgresql-15 instead of
-  # registry.redhat.io/rhel9/postgresql-15.
+  # PG image: CI charts may use quay.io/fedora/postgresql-18 instead of
+  # registry.redhat.io/rhel10/postgresql-18.
   if [[ "${PG_REGISTRY:-registry.redhat.io}" != "registry.redhat.io" ]]; then
     additional_images+=("${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}")
   fi

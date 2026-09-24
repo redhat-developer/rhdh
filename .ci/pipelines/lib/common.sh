@@ -72,38 +72,10 @@ common::sed_inplace() {
   return $?
 }
 
-# Print the highest release stream published as a branch under a given major.
-# Args:
-#   $1 - major_version: e.g. "1"
-# Returns:
-#   Prints the stream (e.g. "1.10"), or nothing if no such branch exists
-#   Non-zero if the remote could not be read at all
-common::highest_release_stream_for_major() {
-  local major=$1
-  if [[ ! "$major" =~ ^[0-9]+$ ]]; then
-    log::error "Major version must be numeric (got: '${major}')"
-    return 1
-  fi
-
-  # Capture before filtering: piping straight into sed would discard git's
-  # status, making an unreachable remote look like "no such branch".
-  local refs
-  if ! refs=$(git ls-remote --heads "https://github.com/${REPO_OWNER:-redhat-developer}/${REPO_NAME:-rhdh}" \
-    "refs/heads/release-${major}.*" 2> /dev/null); then
-    log::error "Failed to list release branches from the remote"
-    return 1
-  fi
-
-  printf '%s' "$refs" \
-    | sed 's|.*refs/heads/release-||' \
-    | grep -E "^${major}\.[0-9]+$" \
-    | sort -uV \
-    | tail -1
-}
-
-# Calculate previous release version from current version
+# Find the highest existing release branch below the current version.
 # Usage: prev=$(common::get_previous_release_version "1.6") # Returns: "1.5"
 #        prev=$(common::get_previous_release_version "2.0") # Returns: "1.10"
+#        prev=$(common::get_previous_release_version "2.1") # Returns: "1.10" when release-2.0 does not exist
 common::get_previous_release_version() {
   local version=$1
 
@@ -117,44 +89,44 @@ common::get_previous_release_version() {
     return 1
   fi
 
-  local major_version
-  major_version=$(echo "$version" | cut -d'.' -f1)
-  local minor_version
-  minor_version=$(echo "$version" | cut -d'.' -f2)
-
-  if [[ $minor_version -gt 0 ]]; then
-    echo "${major_version}.$((minor_version - 1))"
-    return 0
-  fi
-
-  # Major rollover. The number of minors in the preceding major is not fixed, so
-  # look it up rather than computing it. Ask the release branches, not the chart
-  # tags: streams are published from main before their branch is cut, so when
-  # main became 2.0 the newest 1.x chart tag was 1.11 while the newest
-  # release-1.x branch was 1.10. Callers fetch value files from
-  # release-<version> on GitHub, so a version without a branch is unusable.
-  local previous_major=$((major_version - 1))
-  if [[ $previous_major -lt 1 ]]; then
-    log::error "Cannot calculate previous version for $version"
+  # Ask release branches rather than computing major.minor - 1. Streams may be
+  # skipped (for example, 2.1 follows 1.10 when no release-2.0 branch exists).
+  local refs
+  if ! refs=$(cd "${TMPDIR:-/tmp}" && git ls-remote --heads \
+    "https://github.com/${REPO_OWNER:-redhat-developer}/${REPO_NAME:-rhdh}" \
+    'refs/heads/release-*' 2> /dev/null); then
+    log::error "Failed to list release branches from the remote"
     return 1
   fi
 
-  local previous_version
-  previous_version=$(common::highest_release_stream_for_major "$previous_major")
+  local previous_version=""
+  local candidate
+  while IFS= read -r candidate; do
+    if [[ "$candidate" == "$version" ]]; then
+      break
+    fi
+    previous_version=$candidate
+  done < <(
+    {
+      printf '%s\n' "$version"
+      printf '%s' "$refs" | sed 's|.*refs/heads/release-||' | grep -E '^[0-9]+\.[0-9]+$'
+    } | sort -uV
+  )
 
   if [[ -z "$previous_version" ]]; then
-    log::error "Cannot calculate previous version for ${version}: no release-${previous_major}.x branch found"
+    log::error "Cannot calculate previous version for ${version}: no earlier release branch found"
     return 1
   fi
-
   echo "$previous_version"
 }
 
-# Default downstream hub image repository for the current release branch.
+# Default downstream hub image repository for a release branch.
+# Args:
+#   $1 - branch: (optional) Branch to resolve; defaults to RELEASE_BRANCH_NAME
 # Maintenance branches (release-1.x) use RHEL 9 images; main / 2.y streams use RHEL 10.
 # Remove this if/else and only use RHEL10 once we have EOL'd RHDH 1.10 (after 2.2 is live, or after all the SUPPORTEX tickets expire)
 common::default_hub_image_repo() {
-  local branch="${RELEASE_BRANCH_NAME:-main}"
+  local branch="${1:-${RELEASE_BRANCH_NAME:-main}}"
   if [[ "$branch" == release-1.* ]]; then
     echo "rhdh/rhdh-hub-rhel9"
   else
@@ -273,6 +245,10 @@ common::save_artifact() {
 
   if [[ -z "$ARTIFACT_DIR" ]]; then
     log::warn "ARTIFACT_DIR not set, skipping artifact save"
+    return 0
+  fi
+  if [[ ! -e "$file" ]]; then
+    log::warn "Artifact path does not exist, skipping: ${file}"
     return 0
   fi
 

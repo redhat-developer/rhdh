@@ -587,15 +587,22 @@ initiate_deployments_osd_gcp() {
 }
 
 # install base RHDH deployment before upgrade
+# Args:
+#   $1 - release_name: The Helm release name
+#   $2 - namespace: The namespace for the baseline deployment
+#   $3 - url: The RHDH URL
+#   $4 - artifacts_subdir: Subdirectory for upgrade artifacts
+#   $5 - previous_release_version: Required baseline release stream
 initiate_upgrade_base_deployments() {
   local release_name=$1
   local namespace=$2
   local url=$3
+  local artifacts_subdir=$4
+  local previous_release_version=${5:-}
+
+  common::require_vars previous_release_version || return 1
 
   log::info "Initiating base RHDH deployment before upgrade"
-
-  test_run_tracker::register "$namespace"
-  test_run_tracker::mark_deploy_success
 
   namespace::configure "${namespace}"
 
@@ -606,58 +613,65 @@ initiate_upgrade_base_deployments() {
   apply_yaml_files "${DIR}" "${namespace}" "${url}"
   log::info "Deploying image from base repository: ${IMAGE_REGISTRY}/${IMAGE_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
 
-  # Get dynamic value file path based on previous release version
   local previous_release_value_file
-  previous_release_value_file=$(helm::get_previous_release_values "showcase")
-  echo "Using dynamic value file: ${previous_release_value_file}"
+  previous_release_value_file=$(helm::get_previous_release_values "showcase" "${previous_release_version}") || return 1
+  common::save_artifact "${artifacts_subdir}/baseline" \
+    "${previous_release_value_file}" || true
 
-  # The base is the previous release's chart; 1.x and 2.y read different value
-  # paths and silently ignore the other layout's.
-  local base_params=()
-  if [[ "${CHART_VERSION_BASE%%.*}" == "1" ]]; then
-    base_params=(
-      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
-      --set upstream.backstage.image.registry="${IMAGE_REGISTRY}"
-      --set upstream.backstage.image.repository="${IMAGE_REPO_BASE}"
-      --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+  local -a chart_params
+  if [[ "${CHART_VERSION_BASE}" == 1.* ]]; then
+    chart_params=(
+      --set "global.clusterRouterBase=${K8S_CLUSTER_ROUTER_BASE}"
+      --set "upstream.backstage.image.registry=${IMAGE_REGISTRY}"
+      --set "upstream.backstage.image.repository=${IMAGE_REPO_BASE}"
+      --set "upstream.backstage.image.tag=${TAG_NAME_BASE}"
     )
   else
-    base_params=(
-      --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
-      --set image.registry="${IMAGE_REGISTRY}"
-      --set image.repository="${IMAGE_REPO_BASE}"
-      --set image.tag="${TAG_NAME_BASE}"
+    chart_params=(
+      --set "openshift.clusterRouterBase=${K8S_CLUSTER_ROUTER_BASE}"
+      --set "image.registry=${IMAGE_REGISTRY}"
+      --set "image.repository=${IMAGE_REPO_BASE}"
+      --set "image.tag=${TAG_NAME_BASE}"
       --set image.digest=
     )
   fi
 
+  local status=0
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${previous_release_value_file}" \
-    "${base_params[@]}"
+    "${chart_params[@]}" || status=$?
+  rm -f "${previous_release_value_file}"
+  return "${status}"
 }
 
 initiate_upgrade_deployments() {
-  local _release_name=$1 # unused, kept for interface compatibility
+  local release_name=$1
   local namespace=$2
   local _url=$3 # unused, kept for interface compatibility
+  local backstage_replicas=${4:-}
   local wait_upgrade="10m"
+  local -a extra_params=()
+
+  if [[ -n "${backstage_replicas}" ]]; then
+    extra_params+=(--set "replicaCount=${backstage_replicas}")
+  fi
 
   log::info "Initiating upgrade deployment"
   cd "${DIR}" || return 1
 
-  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${IMAGE_REGISTRY}/${IMAGE_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${namespace}"
 
   # shellcheck disable=SC2046
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params) \
+    $(helm::get_image_params --internal-postgresql-image) \
+    "${extra_params[@]}" \
     --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
-  save_all_pod_logs "$namespace"
 }
 
 initiate_sanity_plugin_checks_deployment() {
@@ -677,7 +691,7 @@ initiate_sanity_plugin_checks_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params)
+    $(helm::get_image_params --internal-postgresql-image)
 }
 
 # ==============================================================================

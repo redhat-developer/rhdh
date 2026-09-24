@@ -35,6 +35,7 @@ export interface RuntimeDeployConfig {
   namespace: string;
   routerBase: string;
   image: ImageRef;
+  internalPostgresqlImage: ImageRef;
   catalogIndex?: ImageRef;
   helm?: { chartUrl: string; chartVersion: string };
 }
@@ -80,12 +81,18 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
   const imageRegistry = process.env.IMAGE_REGISTRY ?? "quay.io";
   const imageRepo = process.env.IMAGE_REPO ?? "rhdh-community/rhdh";
   const imageTag = process.env.TAG_NAME ?? "next";
+  const internalPostgresqlImage = buildImageRef(
+    process.env.POSTGRESQL_IMAGE_REGISTRY!,
+    process.env.POSTGRESQL_IMAGE_REPO!,
+    process.env.POSTGRESQL_IMAGE_TAG!,
+  );
 
   const config: RuntimeDeployConfig = {
     releaseName,
     namespace,
     routerBase,
     image: buildImageRef(imageRegistry, imageRepo, imageTag),
+    internalPostgresqlImage,
   };
 
   // CATALOG_INDEX_IMAGE opt-in override
@@ -214,7 +221,7 @@ export function generateHelmValuesYaml(): string {
 }
 
 /**
- * Generate the `--set` arguments for `helm upgrade -i`.
+ * Generate the Helm arguments for `helm upgrade -i`.
  *
  * These are values that must be resolved at deploy time (cluster-specific
  * or image-specific), not baked into the values YAML.
@@ -229,6 +236,14 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
     `upstream.backstage.image.repository=${config.image.repository}`,
     "--set",
     `upstream.backstage.image.tag=${config.image.tag}`,
+    "--set",
+    `postgresql.image.registry=${config.internalPostgresqlImage.registry}`,
+    "--set",
+    `postgresql.image.repository=${config.internalPostgresqlImage.repository}`,
+    "--set",
+    `postgresql.image.tag=${config.internalPostgresqlImage.tag}`,
+    "--set",
+    "postgresql.image.digest=",
   ];
 
   // CATALOG_INDEX_IMAGE override — mirrors helm::get_image_params() in
