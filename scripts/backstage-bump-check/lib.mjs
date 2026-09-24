@@ -156,17 +156,21 @@ export function compareVersions(a, b) {
   if (!aPre || !bPre) {
     return aPre ? -1 : 1;
   }
-  return aPre.localeCompare(bPre);
+  // Numeric so next.10 sorts after next.9.
+  return aPre.localeCompare(bPre, undefined, { numeric: true });
 }
 
-/** True when `to` is outside the caret range of `from` (major, or minor while 0.x). */
+/** True when `to` is outside the caret range of `from`: ^1.2.3, ^0.2.3 and ^0.0.3 differ. */
 export function isBreakingRange(from, to) {
-  const [fromMajor, fromMinor] = String(from).split(".").map(Number);
-  const [toMajor, toMinor] = String(to).split(".").map(Number);
+  const [fromMajor, fromMinor, fromPatch] = String(from).split(".").map(Number);
+  const [toMajor, toMinor, toPatch] = String(to).split(".").map(Number);
   if (fromMajor !== toMajor) {
     return true;
   }
-  return fromMajor === 0 && fromMinor !== toMinor;
+  if (fromMajor !== 0) {
+    return false;
+  }
+  return fromMinor !== toMinor || (fromMinor === 0 && fromPatch !== toPatch);
 }
 
 export const STATUS = {

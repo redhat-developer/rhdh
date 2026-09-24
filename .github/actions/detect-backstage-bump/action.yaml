@@ -26,8 +26,9 @@ runs:
         if grep -qxF 'backstage.json' <<< "$CHANGED_FILES"; then
           echo "backstage.json changed."
           RUN_BUMP_CHECKS=true
-        elif git diff "$BASE_COMMIT" "$PR_HEAD_SHA" -- yarn.lock | grep -qE '^[+-]  resolution: "@backstage/'; then
-          # Covers partial bumps (e.g. security updates) that leave backstage.json alone.
+        # Covers partial bumps (e.g. security updates) that leave backstage.json
+        # alone. -G avoids a `| grep -q` pipe, which SIGPIPEs under pipefail.
+        elif ! git diff --quiet -G '^  resolution: "@backstage/' "$BASE_COMMIT" "$PR_HEAD_SHA" -- yarn.lock; then
           echo "yarn.lock changes resolved @backstage/* versions."
           RUN_BUMP_CHECKS=true
         elif grep -qE '^(scripts/backstage-bump-check/|\.github/actions/detect-backstage-bump/)' <<< "$CHANGED_FILES"; then

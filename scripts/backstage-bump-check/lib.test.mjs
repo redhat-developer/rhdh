@@ -320,6 +320,8 @@ test("isBreakingRange follows caret semantics", () => {
   assert.equal(isBreakingRange("0.17.8", "0.18.0"), true);
   assert.equal(isBreakingRange("1.10.0", "1.11.0"), false);
   assert.equal(isBreakingRange("0.17.8", "0.17.9"), false);
+  assert.equal(isBreakingRange("0.0.1", "0.0.2"), true);
+  assert.equal(isBreakingRange("0.0.1", "0.0.1"), false);
 });
 
 test("renderReport surfaces workspaces that resolve several versions", () => {
@@ -362,4 +364,8 @@ test("compareVersions sorts numerically and puts prereleases first", () => {
     ["1.10.0", "1.2.7", "1.10.0-next.1", "0.9.0"].sort(compareVersions),
     ["0.9.0", "1.2.7", "1.10.0-next.1", "1.10.0"],
   );
+  assert.deepEqual(["1.2.0-next.10", "1.2.0-next.9"].sort(compareVersions), [
+    "1.2.0-next.9",
+    "1.2.0-next.10",
+  ]);
 });
