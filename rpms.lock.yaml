@@ -186,13 +186,13 @@ arches:
     name: glibc-locale-source
     evr: 2.39-128.el10_2
     sourcerpm: glibc-2.39-128.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.58.1.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-211.59.1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 3702917
-    checksum: sha256:ad371fc85cb9aaefcff9d0087ede88cfd49739aa0980574cb281396034bb8a9d
+    size: 3707673
+    checksum: sha256:9b9a21243765492e8ae0175ce3911c12ff9f5a4838b95d0380ba411850ab60bd
     name: kernel-headers
-    evr: 6.12.0-211.58.1.el10_2
-    sourcerpm: kernel-6.12.0-211.58.1.el10_2.src.rpm
+    evr: 6.12.0-211.59.1.el10_2
+    sourcerpm: kernel-6.12.0-211.59.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/l/libX11-1.8.10-1.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 659666
