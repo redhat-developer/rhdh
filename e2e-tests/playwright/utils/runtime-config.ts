@@ -237,11 +237,13 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
     "--set",
     `upstream.backstage.image.tag=${config.image.tag}`,
     "--set",
-    `upstream.postgresql.image.registry=${config.internalPostgresqlImage.registry}`,
+    `postgresql.image.registry=${config.internalPostgresqlImage.registry}`,
     "--set",
-    `upstream.postgresql.image.repository=${config.internalPostgresqlImage.repository}`,
+    `postgresql.image.repository=${config.internalPostgresqlImage.repository}`,
     "--set",
-    `upstream.postgresql.image.tag=${config.internalPostgresqlImage.tag}`,
+    `postgresql.image.tag=${config.internalPostgresqlImage.tag}`,
+    "--set",
+    "postgresql.image.digest=",
   ];
 
   // CATALOG_INDEX_IMAGE override — mirrors helm::get_image_params() in
