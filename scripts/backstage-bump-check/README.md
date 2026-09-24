@@ -1,0 +1,52 @@
+# Backstage bump checks
+
+Catches breakage from a Backstage dependency bump in pull request CI, before E2E runs.
+Tracked in [RHIDP-13523](https://redhat.atlassian.net/browse/RHIDP-13523).
+
+## When it runs
+
+The `detect-backstage-bump` action marks a pull request as a bump when one of these holds:
+
+- `backstage.json` changed.
+- `yarn.lock` changes the resolved version of any `@backstage/*` package. This includes partial updates such as security fixes.
+- The PR changes this folder or the detection action. This lets PRs that edit the checks test them.
+
+For those PRs, `.github/workflows/pr.yaml` then:
+
+- Builds and tests every package, not only the ones turbo reports as `--affected`. The build includes `tsc`.
+- Runs the `Backstage bump checks` job, described below.
+
+## What the job checks
+
+The job takes two snapshots and compares them:
+
+- **Head**: the checked-out merge commit, with the PR's dependencies installed.
+- **Base**: the merge commit's first parent, so the exact tree the PR merges into. It is a plain checkout in a separate worktree, installed with its own `yarn.lock`.
+
+The base is always a commit that already installs cleanly. So the job keeps working when the PR adds, removes or renames workspace packages, or changes the Yarn version. The base worktree sits outside the workspace, so the `node_modules` cache saved for the PR lockfile never picks up base packages.
+
+| Check         | How                                                                                                       | Result                                     |
+| ------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Config schema | `backstage-cli config:check --lax --strict` with the app-config files the container loads                 | The job fails when the PR adds error lines |
+| API surface   | Diff of the published `dist/**/*.d.ts` of every `@backstage/*` package that a workspace declares directly | Report only                                |
+
+Each snapshot reads the `--config` files from its own `build/containerfiles/Containerfile` ENTRYPOINT. So a PR that renames an app-config file is checked against the files its image loads.
+
+`config:check` without `--strict` ignores schema errors. Even with `--strict`, the current config already fails: some keys belong to dynamic plugins, and their schemas are not in this repo. So the check compares the two sets of error lines and fails only on new ones. Checkout paths are masked in the error lines, so base and head compare equal. A `config:check` that exits non-zero without its usual error block is recorded as an error, never as a clean run.
+
+The job summary shows the result. The `backstage-bump-report` artifact holds `summary.md` and the full `api-surface.diff`. Its table flags a bump outside the caret range of the old version as `breaking range`. When workspaces resolve different versions of the same package, the table lists every version and diffs the newest one on each side.
+
+## Run it locally
+
+```bash
+# With the PR's dependencies installed:
+node scripts/backstage-bump-check/index.mjs snapshot /tmp/bump/head
+
+# In a separate worktree of the base commit, with its dependencies installed:
+git worktree add --detach /tmp/rhdh-base <base-commit>
+(cd /tmp/rhdh-base && yarn install --immutable \
+  && node "$OLDPWD/scripts/backstage-bump-check/index.mjs" snapshot /tmp/bump/base)
+
+node scripts/backstage-bump-check/index.mjs compare /tmp/bump/base /tmp/bump/head /tmp/bump/report
+node --test scripts/backstage-bump-check/lib.test.mjs
+```
