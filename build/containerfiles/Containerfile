@@ -242,7 +242,7 @@ RUN rm -rf \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi10/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1789950483@sha256:bf6efa8c27f5cda1595bf86e1455a6d217c68cd8f386e8e167623250ace053eb AS runner
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1790214703@sha256:3884d765daf62b3044fe9ba576f07840b39d495c16e03c8dd86ebd8166098b4f AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
