@@ -5,28 +5,26 @@ How to run: [README.md](./README.md).
 
 - **Unmaintained:** no release in 18 months, or npm deprecated
 - **Impact:** high / medium / low — lookup of usage vs outdatedness, not a CVE score. See [README.md](./README.md).
-- **Totals (CSV):** unmaintained: 124 · OK: 1612 · unknown: 0
+- **Totals (CSV):** unmaintained: 124 · OK: 1721 · unknown: 0
 - Plugin workspace tables omit overlay `devDependencies` (those rows stay in the CSV).
 - Workspace non-OK counts are not additive; the same package can appear in more than one workspace.
 
 ## Contents
 
-- [RHDH core](#rhdh-core) — 15 non-OK
+- [RHDH core](#rhdh-core) — 13 non-OK
 - Plugin workspaces
   - [adoption-insights](#adoption-insights) — 2 non-OK
   - [analytics](#analytics) — 0 non-OK
-  - [apiconnect](#apiconnect) — 0 non-OK
   - [app-defaults](#app-defaults) — 0 non-OK
-  - [backstage](#backstage) — 22 non-OK
+  - [backstage](#backstage) — 32 non-OK
   - [bulk-import](#bulk-import) — 2 non-OK
   - [cost-management](#cost-management) — 20 non-OK
-  - [dynatrace-dql](#dynatrace-dql) — 5 non-OK
   - [extensions](#extensions) — 3 non-OK
   - [global-header](#global-header) — 0 non-OK
   - [homepage](#homepage) — 1 non-OK
-  - [intelligent-assistant](#intelligent-assistant) — 3 non-OK
+  - [intelligent-assistant](#intelligent-assistant) — 1 non-OK
   - [keycloak](#keycloak) — 0 non-OK
-  - [orchestrator](#orchestrator) — 9 non-OK
+  - [orchestrator](#orchestrator) — 6 non-OK
   - [pingidentity](#pingidentity) — 1 non-OK
   - [quickstart](#quickstart) — 0 non-OK
   - [rbac](#rbac) — 1 non-OK
@@ -34,28 +32,27 @@ How to run: [README.md](./README.md).
   - [scaffolder-backend-module-kubernetes](#scaffolder-backend-module-kubernetes) — 0 non-OK
   - [scaffolder-backend-module-regex](#scaffolder-backend-module-regex) — 0 non-OK
   - [scaffolder-relation-processor](#scaffolder-relation-processor) — 0 non-OK
+  - [scorecard](#scorecard) — 1 non-OK
   - [tech-radar](#tech-radar) — 5 non-OK
   - [topology](#topology) — 2 non-OK
 
 ## RHDH core
 
-unmaintained: 15 · OK: 251 · unknown: 0
+unmaintained: 13 · OK: 158 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
-| high | unmaintained | `app-next` | `@material-ui/core` | 4.12.4 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `app-next` | `@material-ui/lab` | 4.0.0-alpha.61 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `app-next` | `@material-ui/icons` | 4.11.3 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `app-next` | `history` | 5.3.0 | runtime-prod | 2022-02-22 |
-| high | unmaintained | `app-next` | `zen-observable` | 0.10.0 | runtime-prod | 2022-11-28 |
+| high | unmaintained | `app` | `@material-ui/core` | 4.12.4 | runtime-prod | 2022-04-03 |
+| high | unmaintained | `app` | `@material-ui/lab` | 4.0.0-alpha.61 | runtime-prod | 2022-04-03 |
+| high | unmaintained | `app` | `@material-ui/icons` | 4.11.3 | runtime-prod | 2022-04-03 |
+| high | unmaintained | `app` | `history` | 5.3.0 | runtime-prod | 2022-02-22 |
+| high | unmaintained | `app` | `zen-observable` | 0.10.0 | runtime-prod | 2022-11-28 |
 | high | unmaintained | `dynamic-plugins-info-backend` | `node-fetch` | 2.7.0 | runtime-prod | 2023-07-25 |
 | high | unmaintained | `licensed-users-info-backend` | `express-promise-router` | 4.1.1 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `licensed-users-info-backend` | `node-fetch` | 2.7.0 | runtime-prod | 2023-07-25 |
-| medium | unmaintained | `app` | `@emotion/react` | 11.14.0 | runtime-prod | 2024-12-09 |
-| low | unmaintained | `app` | `@janus-idp/cli` | patch:@janus-idp/cli@npm%3A3.7.0#~/.yarn/patches/@janus-idp-cli-npm-3.7.0-f225cddfdb.patch | build | 2026-01-20 |
-| low | unmaintained | `app` | `@testing-library/react-hooks` | 8.0.1 | test-only | 2022-06-18 |
-| low | unmaintained | `plugin-utils` | `@testing-library/react-hooks` | 8.0.1 | test-only | 2022-06-18 |
-| low | unmaintained | `app-next` | `@types/zen-observable` | 0.8.7 | test-only | 2023-11-22 |
+| medium | unmaintained | `app` | `material-icons` | 1.13.14 | runtime-prod | 2025-02-12 |
+| medium | unmaintained | `root` | `refractor@npm:3.6.0/prismjs` | ^1.30.0 | runtime-prod | 2025-03-10 |
+| low | unmaintained | `app` | `@types/zen-observable` | 0.8.7 | test-only | 2023-11-22 |
 | low | unmaintained | `backend` | `@types/global-agent` | 2.1.3 | test-only | 2025-02-21 |
 | low | unmaintained | `root` | `husky` | 8.0.3 | build | 2024-11-18 |
 
@@ -78,53 +75,56 @@ unmaintained: 0 · OK: 11 · unknown: 0
 
 _All OK._
 
-### apiconnect
-
-Support: generally-available
-unmaintained: 0 · OK: 33 · unknown: 0
-
-_All OK._
-
 ### app-defaults
 
-Support: tech-preview
-unmaintained: 0 · OK: 17 · unknown: 0
+Support: generally-available
+unmaintained: 0 · OK: 35 · unknown: 0
 
 _All OK._
 
 ### backstage
 
 Support: generally-available, tech-preview
-unmaintained: 22 · OK: 266 · unknown: 0
+unmaintained: 32 · OK: 314 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
 | high | unmaintained | `backstage-plugin-catalog-backend-module-github` | `@octokit/webhooks-types` | ^7.6.1 | runtime-prod | 2024-10-03 |
 | high | unmaintained | `backstage-plugin-kubernetes` | `@material-ui/core` | ^4.12.2 | runtime-prod | 2022-04-03 |
+| high | unmaintained | `backstage-plugin-org` | `@material-ui/core` | ^4.12.2 | runtime-prod | 2022-04-03 |
+| high | unmaintained | `backstage-plugin-org` | `@material-ui/lab` | 4.0.0-alpha.61 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-plugin-signals` | `@material-ui/core` | ^4.12.4 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-plugin-techdocs` | `@material-ui/core` | ^4.12.2 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-plugin-techdocs` | `@material-ui/lab` | 4.0.0-alpha.61 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-plugin-techdocs` | `@material-ui/styles` | ^4.10.0 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-plugin-techdocs-module-addons-contrib` | `@material-ui/core` | ^4.12.2 | runtime-prod | 2022-04-03 |
+| high | unmaintained | `backstage-plugin-auth-backend-module-github-provider` | `passport-github2` | ^0.1.12 | runtime-prod | 2020-03-27 |
+| high | unmaintained | `backstage-plugin-auth-backend-module-gitlab-provider` | `passport-gitlab2` | ^5.0.0 | runtime-prod | 2019-02-10 |
 | high | unmaintained | `backstage-plugin-kubernetes-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `backstage-plugin-kubernetes-backend` | `node-fetch` | ^2.7.0 | runtime-prod | 2023-07-25 |
+| high | unmaintained | `backstage-plugin-notifications` | `react-relative-time` | ^0.0.9 | runtime-prod | 2023-09-02 |
 | high | unmaintained | `backstage-plugin-notifications-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
+| high | unmaintained | `backstage-plugin-org` | `@material-ui/icons` | ^4.9.1 | runtime-prod | 2022-04-03 |
+| high | unmaintained | `backstage-plugin-org` | `pluralize` | ^8.0.0 | runtime-prod | 2019-05-25 |
 | high | unmaintained | `backstage-plugin-signals-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `backstage-plugin-techdocs` | `@material-ui/icons` | ^4.9.1 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-plugin-techdocs` | `@microsoft/fetch-event-source` | ^2.0.1 | runtime-prod | 2021-04-25 |
 | high | unmaintained | `backstage-plugin-techdocs` | `react-helmet` | 6.1.0 | runtime-prod | 2020-06-08 |
 | high | unmaintained | `backstage-plugin-techdocs-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `backstage-plugin-techdocs-module-addons-contrib` | `@material-ui/icons` | ^4.9.1 | runtime-prod | 2022-04-03 |
+| medium | unmaintained | `backstage-plugin-auth-backend-module-gitlab-provider` | `passport` | ^0.7.0 | runtime-prod | 2023-11-27 |
+| medium | unmaintained | `backstage-plugin-auth-backend-module-guest-provider` | `passport-oauth2` | ^1.7.0 | runtime-prod | 2024-02-02 |
+| medium | unmaintained | `backstage-plugin-auth-backend-module-microsoft-provider` | `passport-microsoft` | ^1.0.0 | runtime-prod | 2024-04-25 |
+| medium | unmaintained | `backstage-plugin-auth-backend-module-oidc-provider` | `passport` | ^0.7.0 | runtime-prod | 2023-11-27 |
 | medium | unmaintained | `backstage-plugin-kubernetes-backend` | `@aws-crypto/sha256-js` | ^5.0.0 | runtime-prod | 2023-10-16 |
 | medium | unmaintained | `backstage-plugin-notifications` | `notistack` | ^3.0.1 | runtime-prod | 2025-01-18 |
-| medium | unmaintained | `backstage-plugin-notifications` | `react-relative-time` | ^0.0.9 | runtime-prod | 2023-09-02 |
 | medium | unmaintained | `backstage-plugin-techdocs-module-addons-contrib` | `photoswipe` | ^5.3.7 | runtime-prod | 2024-05-24 |
 | low | unmaintained | `backstage-plugin-kubernetes-backend` | `@types/http-proxy-middleware` | ^1.0.0 | test-only | 2021-03-08 |
 | low | unmaintained | `backstage-plugin-kubernetes-backend` | `@jest-mock/express` | ^2.0.1 | test-only | 2025-02-03 |
 
 ### bulk-import
 
-Support: tech-preview
+Support: generally-available
 unmaintained: 2 · OK: 47 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
@@ -135,7 +135,7 @@ unmaintained: 2 · OK: 47 · unknown: 0
 ### cost-management
 
 Support: tech-preview
-unmaintained: 20 · OK: 31 · unknown: 0
+unmaintained: 20 · OK: 33 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -160,19 +160,6 @@ unmaintained: 20 · OK: 31 · unknown: 0
 | medium | unmaintained | `cost-management` | `victory-tooltip` | ^37.3.4 | runtime-prod | 2025-01-14 |
 | medium | unmaintained | `cost-management` | `victory-voronoi-container` | ^37.3.4 | runtime-prod | 2025-01-14 |
 
-### dynatrace-dql
-
-Support: generally-available
-unmaintained: 5 · OK: 21 · unknown: 0
-
-| Impact | Status | Plugin | Name | Version | Risk | Last publish |
-| --- | --- | --- | --- | --- | --- | --- |
-| high | unmaintained | `dynatrace-backstage-plugin-dql` | `@material-ui/core` | ^4.12.2 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `dynatrace-backstage-plugin-dql` | `@material-ui/lab` | 4.0.0-alpha.61 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `dynatrace-backstage-plugin-dql` | `@material-ui/icons` | ^4.9.1 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `dynatrace-backstage-plugin-dql-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
-| high | unmaintained | `dynatrace-backstage-plugin-dql-backend` | `node-fetch` | ^2.6.7 | runtime-prod | 2023-07-25 |
-
 ### extensions
 
 Support: tech-preview
@@ -187,14 +174,14 @@ unmaintained: 3 · OK: 50 · unknown: 0
 ### global-header
 
 Support: generally-available
-unmaintained: 0 · OK: 27 · unknown: 0
+unmaintained: 0 · OK: 28 · unknown: 0
 
 _All OK._
 
 ### homepage
 
-Support: generally-available, tech-preview
-unmaintained: 1 · OK: 36 · unknown: 0
+Support: generally-available
+unmaintained: 1 · OK: 37 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -203,12 +190,10 @@ unmaintained: 1 · OK: 36 · unknown: 0
 ### intelligent-assistant
 
 Support: generally-available
-unmaintained: 3 · OK: 42 · unknown: 0
+unmaintained: 1 · OK: 39 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
-| high | unmaintained | `rhdh-bsp-intelligent-assistant` | `@material-ui/core` | ^4.9.13 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `rhdh-bsp-intelligent-assistant` | `@mui/styles` | 5.18.0 | runtime-prod | 2025-03-17 |
 | medium | unmaintained | `rhdh-bsp-intelligent-assistant` | `@monaco-editor/react` | ^4.7.0 | runtime-prod | 2025-02-13 |
 
 ### keycloak
@@ -221,14 +206,11 @@ _All OK._
 ### orchestrator
 
 Support: generally-available
-unmaintained: 9 · OK: 94 · unknown: 0
+unmaintained: 6 · OK: 91 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
-| high | unmaintained | `rhdh-bsp-orchestrator-form-widgets` | `@mui/styles` | 5.18.0 | runtime-prod | 2025-03-17 |
-| high | unmaintained | `rhdh-bsp-orchestrator-form-widgets` | `@rjsf/material-ui` | ^5.21.2 | runtime-prod | 2025-08-22 |
 | high | unmaintained | `rhdh-bsp-orchestrator` | `json-schema` | ^0.4.0 | runtime-prod | 2021-11-09 |
-| high | unmaintained | `rhdh-bsp-orchestrator-backend` | `express-promise-router` | ^4.1.1 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `rhdh-bsp-orchestrator-backend` | `kafkajs` | ^2.2.4 | runtime-prod | 2023-02-27 |
 | high | unmaintained | `rhdh-bsp-orchestrator-form-widgets` | `json-schema` | ^0.4.0 | runtime-prod | 2021-11-09 |
 | medium | unmaintained | `rhdh-bsp-orchestrator` | `reactflow` | ^11.11.4 | runtime-prod | 2024-06-20 |
@@ -237,8 +219,8 @@ unmaintained: 9 · OK: 94 · unknown: 0
 
 ### pingidentity
 
-Support: tech-preview
-unmaintained: 1 · OK: 6 · unknown: 0
+Support: generally-available, tech-preview
+unmaintained: 1 · OK: 14 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -263,7 +245,7 @@ unmaintained: 1 · OK: 24 · unknown: 0
 ### roadie-backstage-plugins
 
 Support: generally-available
-unmaintained: 1 · OK: 4 · unknown: 0
+unmaintained: 1 · OK: 6 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -290,10 +272,19 @@ unmaintained: 0 · OK: 13 · unknown: 0
 
 _All OK._
 
+### scorecard
+
+Support: tech-preview
+unmaintained: 1 · OK: 94 · unknown: 0
+
+| Impact | Status | Plugin | Name | Version | Risk | Last publish |
+| --- | --- | --- | --- | --- | --- | --- |
+| high | unmaintained | `rhdh-backstage-plugin-scorecard-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
+
 ### tech-radar
 
 Support: generally-available
-unmaintained: 5 · OK: 19 · unknown: 0
+unmaintained: 5 · OK: 20 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -61,8 +61,8 @@ yarn --cwd e2e-tests e2e:local
 ```
 
 Playwright (`playwright.local.config.ts`) boots the backend and the NFS app dev server
-with `app-config.yaml` + `app-config.dynamic-plugins.yaml` +
-`app-config.local-e2e.yaml` + `dynamic-plugins-root/app-config.dynamic-plugins.yaml`.
+with `app-config.yaml` + `dynamic-plugins-root/app-config.dynamic-plugins.yaml` +
+`app-config.local-e2e.yaml`.
 The harness install config (`e2e-tests/local-harness/dynamic-plugins.yaml`) disables
 DPDY plugins that are not needed off-cluster (segment, adoption-insights, extensions,
 …). A `globalSetup` first fails fast with the populate command

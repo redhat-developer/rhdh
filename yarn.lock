@@ -8823,30 +8823,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils":
-  version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils"
-  dependencies:
-    "@backstage/catalog-model": "npm:1.10.0"
-    "@backstage/cli": "npm:0.36.5"
-    "@backstage/cli-defaults": "npm:0.1.5"
-    "@backstage/core-plugin-api": "npm:1.12.9"
-    "@backstage/test-utils": "npm:1.7.21"
-    "@testing-library/dom": "npm:9.3.4"
-    "@testing-library/jest-dom": "npm:6.9.1"
-    "@testing-library/react": "npm:14.3.1"
-    "@testing-library/react-hooks": "npm:8.0.1"
-    "@types/node": "npm:24.13.3"
-    "@types/react": "npm:18.3.31"
-    "@types/react-dom": "npm:18.3.7"
-    prettier: "npm:3.9.6"
-    react: "npm:18.3.1"
-    typescript: "npm:5.9.3"
-  peerDependencies:
-    react: 16.13.1 || ^17.0.0 || ^18.2.0
-  languageName: unknown
-  linkType: soft
-
 "@redis/client@npm:^1.6.0":
   version: 1.6.1
   resolution: "@redis/client@npm:1.6.1"
@@ -9857,28 +9833,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/react-hooks@npm:8.0.1":
-  version: 8.0.1
-  resolution: "@testing-library/react-hooks@npm:8.0.1"
-  dependencies:
-    "@babel/runtime": "npm:^7.12.5"
-    react-error-boundary: "npm:^3.1.0"
-  peerDependencies:
-    "@types/react": ^16.9.0 || ^17.0.0
-    react: ^16.9.0 || ^17.0.0
-    react-dom: ^16.9.0 || ^17.0.0
-    react-test-renderer: ^16.9.0 || ^17.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-    react-dom:
-      optional: true
-    react-test-renderer:
-      optional: true
-  checksum: 10c0/83bef2d4c437b84143213b5275ef00ef14e5bcd344f9ded12b162d253dc3c799138ead4428026b9c725e5a38dbebf611f2898aa43f3e43432bcaccbd7bf413e5
-  languageName: node
-  linkType: hard
-
 "@testing-library/react@npm:14.3.1":
   version: 14.3.1
   resolution: "@testing-library/react@npm:14.3.1"
@@ -10547,15 +10501,6 @@ __metadata:
   dependencies:
     undici-types: "npm:~8.3.0"
   checksum: 10c0/f36e21634fd8e8ded162ca486508bd8bb229d398a8d5541f6d8c1255968d4464e53327a77f403b216ef98e3b6f6956882eef83e4857d4bc2be9569dd55d37aae
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:24.13.3":
-  version: 24.13.3
-  resolution: "@types/node@npm:24.13.3"
-  dependencies:
-    undici-types: "npm:~7.18.0"
-  checksum: 10c0/a5bc08f49b9581dcdca90e02cd77197a3c799840807664942e5cd5161a553d4d2ae8064f7e3294410d748d7d098b5c1848be7fa50c06f29c4193ab16be4e59eb
   languageName: node
   linkType: hard
 
@@ -25478,17 +25423,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-error-boundary@npm:^3.1.0":
-  version: 3.1.4
-  resolution: "react-error-boundary@npm:3.1.4"
-  dependencies:
-    "@babel/runtime": "npm:^7.12.5"
-  peerDependencies:
-    react: ">=16.13.1"
-  checksum: 10c0/f977ca61823e43de2381d53dd7aa8b4d79ff6a984c9afdc88dc44f9973b99de7fd382d2f0f91f2688e24bb987c0185bf45d0b004f22afaaab0f990a830253bfb
-  languageName: node
-  linkType: hard
-
 "react-error-overlay@npm:^6.0.11":
   version: 6.1.0
   resolution: "react-error-overlay@npm:6.1.0"
@@ -29302,13 +29236,6 @@ __metadata:
   version: 5.26.5
   resolution: "undici-types@npm:5.26.5"
   checksum: 10c0/bb673d7876c2d411b6eb6c560e0c571eef4a01c1c19925175d16e3a30c4c428181fb8d7ae802a261f283e4166a0ac435e2f505743aa9e45d893f9a3df017b501
-  languageName: node
-  linkType: hard
-
-"undici-types@npm:~7.18.0":
-  version: 7.18.2
-  resolution: "undici-types@npm:7.18.2"
-  checksum: 10c0/85a79189113a238959d7a647368e4f7c5559c3a404ebdb8fc4488145ce9426fcd82252a844a302798dfc0e37e6fb178ff481ed03bc4caf634c5757d9ef43521d
   languageName: node
   linkType: hard
 
