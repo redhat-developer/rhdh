@@ -1,9 +1,9 @@
 name: "Detect Backstage Bump"
-description: "Detects whether a pull request changes the resolved Backstage dependencies"
+description: "Detects whether a pull request changes the resolved Backstage dependencies or the Yarn patches applied to dependencies"
 
 outputs:
   run_bump_checks:
-    description: "True if the PR bumps Backstage packages, or changes the bump checks themselves"
+    description: "True if the PR bumps Backstage packages, changes Yarn patches, or changes the bump checks themselves"
     value: ${{ steps.detect.outputs.run_bump_checks }}
   affected_flag:
     description: "Turbo scope flag: empty when the bump checks run (build and test everything), otherwise --affected"
@@ -30,6 +30,14 @@ runs:
         # alone. -G avoids a `| grep -q` pipe, which SIGPIPEs under pipefail.
         elif ! git diff --quiet -G '^  resolution: "@backstage/' "$BASE_COMMIT" "$PR_HEAD_SHA" -- yarn.lock; then
           echo "yarn.lock changes resolved @backstage/* versions."
+          RUN_BUMP_CHECKS=true
+        # Yarn patches (patch-backstage workflow, CVE backports) change code that
+        # turbo does not see as affected.
+        elif grep -q '^\.yarn/patches/' <<< "$CHANGED_FILES"; then
+          echo "Yarn patches changed."
+          RUN_BUMP_CHECKS=true
+        elif ! git diff --quiet -G '^  resolution: ".*@patch:.*[~.]/\.yarn/patches/' "$BASE_COMMIT" "$PR_HEAD_SHA" -- yarn.lock; then
+          echo "yarn.lock changes which Yarn patches are applied."
           RUN_BUMP_CHECKS=true
         elif grep -qE '^(scripts/backstage-bump-check/|\.github/actions/detect-backstage-bump/)' <<< "$CHANGED_FILES"; then
           echo "Bump checks changed; running them on this PR."
