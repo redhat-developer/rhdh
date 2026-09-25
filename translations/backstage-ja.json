@@ -60,10 +60,10 @@
   "catalog-import": {
     "ja": {
       "buttons.back": "戻る",
-      "defaultImportPage.headerTitle": "既存のコンポーネントの登録",
+      "defaultImportPage.headerTitle": "既存の Git リポジトリーのインポート",
       "defaultImportPage.contentHeaderTitle": "{{appTitle}} でのコンポーネントの追跡開始",
       "defaultImportPage.supportTitle": "{{appTitle}} でコンポーネントの追跡を開始するには、コンポーネントをソフトウェアカタログに追加してください。",
-      "importInfoCard.title": "既存のコンポーネントの登録",
+      "importInfoCard.title": "既存の Git リポジトリーのインポート",
       "importInfoCard.deepLinkTitle": "ソフトウェアカタログの詳細",
       "importInfoCard.linkDescription": "{{appTitle}} に追加するソースコードリポジトリーの URL を入力してください。",
       "importInfoCard.fileLinkTitle": "既存のエンティティーファイルへのリンク",
@@ -216,7 +216,11 @@
       "missingAnnotationEmptyState.readMore": "続きを読む",
       "missingAnnotationEmptyState.annotationYaml": "以下のハイライトされた例に示すように、{{entityKind}} YAML にアノテーションを追加してください:",
       "missingAnnotationEmptyState.generateDescription_one": "アノテーション {{annotations}} がありません。このツールを有効にするには、{{entityKind}} にアノテーションを追加する必要があります。",
-      "missingAnnotationEmptyState.generateDescription_other": "アノテーション {{annotations}} がありません。このツールを有効にするには、{{entityKind}} にアノテーションを追加する必要があります。"
+      "missingAnnotationEmptyState.generateDescription_other": "アノテーション {{annotations}} がありません。このツールを有効にするには、{{entityKind}} にアノテーションを追加する必要があります。",
+      "inspectEntityDialog.colocatedPage.entityListAriaLabel": "コロケーション配置されたエンティティー",
+      "inspectEntityDialog.overviewPage.copiedStatus": "コピー済み",
+      "inspectEntityDialog.overviewPage.copyAriaLabel": "{{label}} をコピーする",
+      "inspectEntityDialog.overviewPage.helpLinkAriaLabel": "詳細"
     }
   },
   "home-react": {
@@ -253,7 +257,11 @@
       "featuredDocsCard.learnMoreTitle": "詳細",
       "featuredDocsCard.empty.title": "表示するドキュメントがありません",
       "featuredDocsCard.empty.description": "独自のドキュメントを作成してください。スタートガイドの情報を参照してください",
-      "featuredDocsCard.empty.learnMoreLinkTitle": "DOCS"
+      "featuredDocsCard.empty.learnMoreLinkTitle": "DOCS",
+      "addWidgetDialog.noAvailableWidgets": "利用可能なウィジェットはすべてダッシュボードに追加されました。",
+      "visitList.disabled.description": "app-config.yaml で訪問履歴のトラッキングを有効にすると、最もよくアクセスするページや最近アクセスしたページがここに表示されます。",
+      "visitList.disabled.title": "訪問履歴のトラッキングが有効化されていません。",
+      "widgetSettingsOverlay.editSettingsTooltip": "設定の編集"
     }
   },
   "kubernetes-cluster": {
@@ -403,7 +411,8 @@
       "settings.noSettingsAvailable": "通知設定は利用できません。後で再度ご確認ください",
       "settings.table.origin": "オリジン",
       "settings.table.topic": "トピック",
-      "settings.errors.useNotificationFormat": "useNotificationFormat は NotificationFormatProvider 内で使用する必要があります"
+      "settings.errors.useNotificationFormat": "useNotificationFormat は NotificationFormatProvider 内で使用する必要があります",
+      "table.confirmDialog.cancel": "キャンセル"
     }
   },
   "org": {
@@ -609,17 +618,17 @@
       "templateEditorPage.templateEditorTextArea.refreshIconTooltip": "ファイルを再読み込みする",
       "templateEditorPage.templateEditorTextArea.emptyStateParagraph": "ファイルメニューで操作を選択してください。",
       "templateEditorPage.templateFormPreviewer.title": "既存のテンプレートの読み込み",
-      "templateListPage.title": "新しいコンポーネントの作成",
+      "templateListPage.title": "セルフサービス",
       "templateListPage.subtitle": "組織内の標準テンプレートを使用して新しいソフトウェアコンポーネントを作成する",
-      "templateListPage.pageTitle": "新しいコンポーネントの作成",
+      "templateListPage.pageTitle": "セルフサービス",
       "templateListPage.templateGroups.defaultTitle": "テンプレート",
       "templateListPage.templateGroups.otherTitle": "その他のテンプレート",
-      "templateListPage.contentHeader.registerExistingButtonTitle": "既存のコンポーネントの登録",
+      "templateListPage.contentHeader.registerExistingButtonTitle": "既存の Git リポジトリーのインポート",
       "templateListPage.contentHeader.supportButtonTitle": "標準テンプレートを使用して新しいソフトウェアコンポーネントを作成します。テンプレートごとに異なる種類のコンポーネント (サービス、Web サイト、ドキュメント...) が作成されます。",
       "templateListPage.additionalLinksForEntity.viewTechDocsTitle": "TechDocs の表示",
-      "templateWizardPage.title": "新しいコンポーネントの作成",
+      "templateWizardPage.title": "セルフサービス",
       "templateWizardPage.subtitle": "組織内の標準テンプレートを使用して新しいソフトウェアコンポーネントを作成する",
-      "templateWizardPage.pageTitle": "新しいコンポーネントの作成",
+      "templateWizardPage.pageTitle": "セルフサービス",
       "templateWizardPage.templateWithTitle": "新しい {{templateTitle}} の作成",
       "templateWizardPage.pageContextMenu.editConfigurationTitle": "設定の編集",
       "templateEditorToolbar.customFieldExplorerTooltip": "カスタムフィールドエクスプローラー",
@@ -635,7 +644,8 @@
       "templateEditorToolbarFileMenu.options.openDirectory": "テンプレートディレクトリーを開く",
       "templateEditorToolbarFileMenu.options.createDirectory": "テンプレートディレクトリーを作成する",
       "templateEditorToolbarFileMenu.options.closeEditor": "テンプレートエディターを閉じる",
-      "templateEditorToolbarTemplatesMenu.button": "テンプレート"
+      "templateEditorToolbarTemplatesMenu.button": "テンプレート",
+      "renderSchema.tableCell.value": "値"
     }
   },
   "search-react": {
@@ -666,7 +676,46 @@
   },
   "techdocs": {
     "ja": {
-      "aboutCard.viewTechdocs": "TechDocs の表示"
+      "aboutCard.viewTechdocs": "TechDocs の表示",
+      "buildLogs.closeDrawer": "ドロワーを閉じる",
+      "buildLogs.showBuildLogs": "ビルドログを表示する",
+      "buildLogs.title": "ビルドの詳細",
+      "buildLogs.waitingForLogs": "ログの待機中...",
+      "entityContent.title": "TechDocs",
+      "error.couldNotLoad": "利用可能なドキュメントを読み込めませんでした。",
+      "home.supportButton": "エコシステム内のドキュメントを検索します。",
+      "nav.title": "ドキュメント",
+      "notFound.builderNote": "設定ファイル内で techdocs.builder が 'local' に設定されていない点にご注意ください。これは、ドキュメントが見つからない場合でも、この Backstage アプリケーションがドキュメントを自動生成しないことを意味します。プロジェクトのドキュメントは、外部プロセス (例: CI/CD パイプライン) によって生成および公開されることを確認してください。または、techdocs.builder を 'local' に変更して、この Backstage インスタンスからドキュメントを生成します。",
+      "notFound.title": "ドキュメントが見つかりません",
+      "pageWrapper.subtitle": "ドキュメントは {{orgName}} で入手可能です",
+      "pageWrapper.title": "ドキュメント",
+      "reader.settings": "設定",
+      "readerPageHeader.lifecycle": "ライフサイクル",
+      "readerPageHeader.owner": "所有者",
+      "readerPageHeader.source": "ソース",
+      "redirectNotification.redirectNow": "今すぐリダイレクトする",
+      "search.noResults": "結果が見つかりません",
+      "search.placeholder": "{{entityTitle}} のドキュメントを検索する",
+      "stateIndicator.contentStaleError.message": "このドキュメントの新しいバージョンの作成に失敗しました。",
+      "stateIndicator.contentStaleReady.message": "このドキュメントのより新しいバージョンが公開されました。表示するにはページを更新してください。",
+      "stateIndicator.contentStaleReady.refreshButton": "更新",
+      "stateIndicator.contentStaleRefreshing.message": "このドキュメントのより新しいバージョンを準備中であり、まもなく公開される予定です。",
+      "stateIndicator.initialBuild.message": "ドキュメントが初めてアクセスされたため、現在準備中です。次回以降の読み込みは大幅に高速化されます。",
+      "table.actions.addToFavorites": "お気に入りに追加",
+      "table.actions.copyDocsUrl": "クリックしてドキュメントリンクをクリップボードにコピーします",
+      "table.actions.removeFromFavorites": "お気に入りから削除",
+      "table.body.emptyDataSourceMessage": "表示するレコードがありません",
+      "table.columns.document": "ドキュメント",
+      "table.columns.kind": "種類",
+      "table.columns.owner": "所有者",
+      "table.columns.type": "タイプ",
+      "table.emptyState.description": "独自のドキュメントを作成してください。スタートガイドの情報を参照してください",
+      "table.emptyState.docsButton": "DOCS",
+      "table.emptyState.title": "表示するドキュメントがありません",
+      "table.header.actions": "アクション",
+      "table.pagination.labelRowsSelect": "行",
+      "table.title.all": "すべて",
+      "table.toolbar.searchPlaceholder": "フィルター"
     }
   },
   "user-settings": {
@@ -726,7 +775,7 @@
   "catalog": {
     "ja": {
       "indexPage.title": "{{orgName}} のカタログ",
-      "indexPage.createButtonTitle": "作成",
+      "indexPage.createButtonTitle": "セルフサービス",
       "indexPage.supportButtonContent": "すべてのソフトウェアカタログエンティティー",
       "entityPage.notFoundMessage": "要求された {{link}} を持つ {{kind}} は存在しません。",
       "entityPage.notFoundLinkText": "種類、名前空間、および名前",
@@ -815,7 +864,20 @@
       "systemDiagramCard.description": "ピンチとズームを使用して図内を移動してください。",
       "systemDiagramCard.edgeLabels.partOf": "所属",
       "systemDiagramCard.edgeLabels.provides": "提供",
-      "systemDiagramCard.edgeLabels.dependsOn": "依存"
+      "systemDiagramCard.edgeLabels.dependsOn": "依存",
+      "aboutCard.kindField.label": "種類",
+      "catalogExportButton.cancelButtonTitle": "キャンセル",
+      "catalogExportButton.columnsLabel": "列",
+      "catalogExportButton.confirmButtonTitle": "確定",
+      "catalogExportButton.dialogTitle": "カタログ選択をエクスポートする",
+      "catalogExportButton.errorMessage": "カタログのエクスポートに失敗しました: {{errorMessage}}",
+      "catalogExportButton.exportingButtonTitle": "エクスポート中…",
+      "catalogExportButton.formatLabel": "形式",
+      "catalogExportButton.successMessage": "カタログが正常にエクスポートされました",
+      "catalogExportButton.triggerButtonTitle": "選択項目をエクスポートする",
+      "entityLabels.domainLabel": "ドメイン",
+      "entityLabels.partOfLabel": "一部",
+      "entityLabels.systemLabel": "システム"
     }
   },
   "kubernetes": {
