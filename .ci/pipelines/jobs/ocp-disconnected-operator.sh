@@ -37,15 +37,34 @@ handle_ocp_disconnected_operator() {
   # mirroring operator/operand images and installing the operator CatalogSource.
   log::section "Operator Mirroring and Installation"
 
-  # Fetch prepare-restricted-environment.sh from RELEASE_BRANCH_NAME (default
-  # main). rhdh-operator#3259 (native oc-mirror cc-* catalogs for OLM v1) is
-  # merged on main.
+  # Fetch an immutable copy of prepare-restricted-environment.sh so this test
+  # remains tied to the exact rhdh-operator PR under evaluation.
   local prepare_script_path="${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
-  disconnected::fetch_operator_repo_script "prepare-restricted-environment.sh" \
-    "${prepare_script_path}" || {
-    log::error "Failed to fetch prepare-restricted-environment.sh — aborting"
+  local prepare_script_commit="d4c08b8498b3e6c55076b427db65048877e27234"
+  local prepare_script_url="https://raw.githubusercontent.com/Fortune-Ndlovu/rhdh-operator/${prepare_script_commit}/.rhdh/scripts/prepare-restricted-environment.sh"
+  local expected_prepare_script_checksum="0094cb0e353258fdb7f5269c2548cd8cb510106cad4d96a70918e5a40c8153cb"
+  local actual_prepare_script_checksum
+
+  if ! curl -fsSL --max-time 30 -o "${prepare_script_path}" "${prepare_script_url}"; then
+    log::error "Failed to download prepare-restricted-environment.sh from immutable commit ${prepare_script_commit}"
     return 1
-  }
+  fi
+
+  if ! actual_prepare_script_checksum=$(sha256sum "${prepare_script_path}"); then
+    log::error "Failed to calculate prepare-restricted-environment.sh SHA-256"
+    return 1
+  fi
+  actual_prepare_script_checksum="${actual_prepare_script_checksum%% *}"
+  log::info "prepare-restricted-environment.sh source commit: ${prepare_script_commit}"
+  log::info "prepare-restricted-environment.sh SHA-256: ${actual_prepare_script_checksum}"
+  if [[ "${actual_prepare_script_checksum}" != "${expected_prepare_script_checksum}" ]]; then
+    log::error "prepare-restricted-environment.sh checksum mismatch; aborting"
+    return 1
+  fi
+  if ! chmod +x "${prepare_script_path}"; then
+    log::error "Failed to make prepare-restricted-environment.sh executable"
+    return 1
+  fi
 
   # Use oc-mirror (documented air-gapped OCP path) instead of the script's
   # default skopeo/umoci/podman-build path. Nested Podman in this CI pod cannot
@@ -122,6 +141,14 @@ handle_ocp_disconnected_operator() {
   else
     log::info "LOCAL_DISCONNECTED=1: skipping external bastion CA/pull-secret pre-prepare helpers"
   fi
+
+  local prepare_max_parallel="${PREPARE_MAX_PARALLEL:-10}"
+  if ! [[ "${prepare_max_parallel}" =~ ^[1-9][0-9]*$ ]]; then
+    log::error "PREPARE_MAX_PARALLEL must be a positive integer, got '${prepare_max_parallel}'"
+    return 1
+  fi
+
+  prepare_args+=(--max-parallel "${prepare_max_parallel}")
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
   if ! disconnected::retry_on_local_registry 5 \
