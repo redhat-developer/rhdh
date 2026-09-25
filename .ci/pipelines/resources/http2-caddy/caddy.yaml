@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caddy-fronting-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: caddy-fronting-proxy
+  template:
+    metadata:
+      labels:
+        app: caddy-fronting-proxy
+    spec:
+      volumes:
+        - name: caddy-config
+          configMap:
+            name: caddy-reverse-proxy
+            defaultMode: 420
+        - name: certs
+          secret:
+            secretName: tls-certs
+      serviceAccountName: default
+      containers:
+        - name: caddy-reverse-proxy
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "3Gi"
+              cpu: "1"
+          terminationMessagePath: /dev/termination-log
+          command:
+            - caddy
+            - run
+            - "--config"
+            - /etc/caddy/Caddyfile
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: proxy
+          imagePullPolicy: Always
+          env:
+            - name: CADDY_ROUTE_HOSTNAME
+              # hostname of the new route you create for Caddy (not the existing Backstage route)
+              value: "rhdh-developer-hub-namespace.apps.cluster.example.com"
+            - name: DEVELOPER_HUB_SERVICE_HOST
+              # developer hub service host
+              value: "http://backstage-developer-hub.namespace.svc.cluster.local:80"
+          volumeMounts:
+            - name: caddy-config
+              mountPath: /etc/caddy/Caddyfile
+              subPath: Caddyfile
+              readOnly: true
+            - name: certs
+              mountPath: /opt/app-root/certs
+              readOnly: true
+          terminationMessagePolicy: File
+          image: registry.access.redhat.com/hi/caddy:latest
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: caddy-reverse-proxy
+data:
+  Caddyfile: |
+    {
+      auto_https disable_redirects
+    }
+
+
+    https://{$CADDY_ROUTE_HOSTNAME}:8080 {
+      tls /opt/app-root/certs/tls.crt /opt/app-root/certs/tls.key
+
+
+      @scalprum_chunks {
+        path /api/scalprum/*/static/*.js
+      }
+
+      header @scalprum_chunks {
+          # Cache for 1 year (immutable since the hash changes on new builds)
+          >Cache-Control "public, max-age=31536000, immutable"
+
+      }
+
+      reverse_proxy {
+        to {$DEVELOPER_HUB_SERVICE_HOST}
+        transport http {
+          versions 1.1
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: caddy-fronting-proxy
+  labels:
+    app: caddy-fronting-proxy
+spec:
+  type: ClusterIP
+  ports:
+    - name: caddy-fronting-proxy
+      port: 443
+      targetPort: 8080
+  selector:
+    app: caddy-fronting-proxy
