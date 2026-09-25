@@ -30,7 +30,11 @@ export async function pollUntil(
     await sleep(intervalMs);
   }
 
-  throw new Error(options.label ?? `Condition not met within ${timeoutMs}ms`);
+  throw new Error(
+    options.label === undefined
+      ? `Condition not met within ${timeoutMs}ms`
+      : `Timed out after ${timeoutMs}ms waiting for: ${options.label}`,
+  );
 }
 
 /** Poll until `condition` is true for `stableChecks` consecutive evaluations. */

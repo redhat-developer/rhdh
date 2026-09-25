@@ -56,12 +56,12 @@ export function formatKubeErrorLog(error: unknown): string {
 }
 
 export function getEventSortTimestamp(event: k8s.CoreV1Event): number {
-  if (event.firstTimestamp !== undefined) {
+  if (event.firstTimestamp !== undefined && event.firstTimestamp !== null) {
     return typeof event.firstTimestamp === "string"
       ? new Date(event.firstTimestamp).getTime()
       : event.firstTimestamp.getTime();
   }
-  if (event.eventTime !== undefined) {
+  if (event.eventTime !== undefined && event.eventTime !== null) {
     return typeof event.eventTime === "string"
       ? new Date(event.eventTime).getTime()
       : event.eventTime.getTime();
@@ -70,12 +70,12 @@ export function getEventSortTimestamp(event: k8s.CoreV1Event): number {
 }
 
 export function formatEventTimestamp(event: k8s.CoreV1Event): string {
-  if (event.firstTimestamp !== undefined) {
+  if (event.firstTimestamp !== undefined && event.firstTimestamp !== null) {
     return typeof event.firstTimestamp === "string"
       ? new Date(event.firstTimestamp).toISOString()
       : event.firstTimestamp.toISOString();
   }
-  if (event.eventTime !== undefined) {
+  if (event.eventTime !== undefined && event.eventTime !== null) {
     return typeof event.eventTime === "string"
       ? new Date(event.eventTime).toISOString()
       : event.eventTime.toISOString();

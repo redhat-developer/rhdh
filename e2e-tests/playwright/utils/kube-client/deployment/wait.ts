@@ -117,6 +117,9 @@ async function logDeploymentTimeoutDiagnostics(
   await diagnostics.logReplicaSetStatus(deploymentName, namespace);
   await diagnostics.logPodEvents(namespace, finalLabelSelector);
   await diagnostics.logPodConditions(namespace, finalLabelSelector);
+  // The container logs are the evidence that explains a never-ready backend;
+  // without them a setup timeout is undiagnosable from CI artifacts.
+  await diagnostics.logPodContainerLogs(namespace, finalLabelSelector);
 }
 
 export async function waitForDeploymentReadyImpl(
