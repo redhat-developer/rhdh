@@ -27,7 +27,7 @@ postgresql:
       enabled: true
       fsGroup: 3000
   volumePermissions:
-    enabled: true
+    enabled: false
 service:
   type: NodePort
 ingress:

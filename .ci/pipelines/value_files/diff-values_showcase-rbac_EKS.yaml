@@ -39,12 +39,6 @@ startupProbe:
 postgresql:
   enabled: true
   postgresqlDataDir: /var/lib/pgsql/data/userdata
-  image:
-    registry: quay.io
-    repository: fedora/postgresql-15
-    tag: latest
-    # The chart pins the RHEL image by digest; clear it or the digest wins over the tag.
-    digest: ""
   auth:
     secretKeys:
       adminPasswordKey: postgres-password
@@ -69,7 +63,7 @@ postgresql:
             key: postgres-password
             name: "{{ .Release.Name }}-postgresql"
   volumePermissions:
-    enabled: true
+    enabled: false
 service:
   # NodePort is required for the ALB to route to the Service
   type: NodePort

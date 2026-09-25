@@ -55,12 +55,6 @@ affinity:
 postgresql:
   enabled: true
   postgresqlDataDir: /var/lib/pgsql/data/userdata
-  image:
-    registry: quay.io
-    repository: fedora/postgresql-15
-    tag: latest
-    # The chart pins the RHEL image by digest; clear it or the digest wins over the tag.
-    digest: ""
   auth:
     secretKeys:
       adminPasswordKey: postgres-password
@@ -101,7 +95,13 @@ postgresql:
                   values:
                     - "spot"
   volumePermissions:
-    enabled: true
+    enabled: false
 ingress:
   enabled: true
   className: webapprouting.kubernetes.azure.com
+  # AKS uses the load balancer IP as the app URL; Ingress rules cannot use an IP as host.
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: ImplementationSpecific

@@ -24,7 +24,7 @@ postgresql:
       enabled: true
       fsGroup: 3000
   volumePermissions:
-    enabled: true
+    enabled: false
 service:
   # NodePort is required for the ALB to route to the Service
   type: NodePort

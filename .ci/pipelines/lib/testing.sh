@@ -485,34 +485,3 @@ testing::check_helm_upgrade() {
     return 1
   fi
 }
-
-# Check upgrade and run tests if successful
-# Args:
-#   $1 - deployment_name: The name of the deployment
-#   $2 - release_name: The Helm release name
-#   $3 - namespace: The namespace
-#   $4 - playwright_project: The Playwright project to run
-#   $5 - url: The URL to test against
-#   $6 - timeout: (optional) Timeout in seconds (default: 600)
-testing::check_upgrade_and_test() {
-  local deployment_name="$1"
-  local release_name="$2"
-  local namespace="$3"
-  local playwright_project="$4"
-  local url=$5
-  local timeout=${6:-600}
-
-  if [[ -z "$deployment_name" || -z "$release_name" || -z "$namespace" || -z "$playwright_project" || -z "$url" ]]; then
-    log::error "${_TESTING_ERR_MISSING_PARAMS}"
-    log::info "Usage: testing::check_upgrade_and_test <deployment_name> <release_name> <namespace> <playwright_project> <url> [timeout]"
-    return 1
-  fi
-
-  if testing::check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
-    testing::check_and_test "${release_name}" "${namespace}" "${playwright_project}" "${url}"
-  else
-    log::error "Helm upgrade encountered an issue or timed out. Exiting..."
-    test_run_tracker::mark_deploy_failed "$playwright_project"
-  fi
-  return 0
-}

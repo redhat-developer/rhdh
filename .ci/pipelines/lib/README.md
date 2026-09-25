@@ -58,7 +58,17 @@ Functions: `config::create_app_config_map`, `config::select_config_map_file`,
 Testing utilities for CI pipelines including Playwright test execution and health checks.
 
 Functions: `testing::run_tests`, `testing::check_backstage_running`, `testing::check_and_test`,
-`testing::check_helm_upgrade`, `testing::check_upgrade_and_test`
+`testing::check_helm_upgrade`
+
+### `postgres.sh`
+
+PostgreSQL helpers for Helm-managed upgrade tests: readiness and version checks, application
+quiescence, logical dump/restore, data-volume replacement, and migration verification.
+
+Functions: `postgres::pod_name`, `postgres::wait_ready`, `postgres::server_major`,
+`postgres::major_from_image_repository`, `postgres::seed_migration_proof`,
+`postgres::verify_migration_proof`, `postgres::quiesce_application`, `postgres::dump_all`,
+`postgres::remove_data_volume`, `postgres::restore_all`, `postgres::refresh_collation_versions`
 
 ## Creating New Modules
 

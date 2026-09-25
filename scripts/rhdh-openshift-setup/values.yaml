@@ -390,8 +390,8 @@ upstream:
     postgresqlDataDir: /var/lib/pgsql/data/userdata
     image:
       registry: quay.io
-      repository: fedora/postgresql-15
-      tag: latest@sha256:2fb512d5d7942b68923869320c7f2b2b9c40ad8fe28b9abe2e5b6c983f3266f8
+      repository: fedora/postgresql-18
+      tag: latest@sha256:1f96385f645e5a6a4b133e58e254ea2eacca6312bfcae0e8f6980a17970e5be2
     auth:
       secretKeys:
         adminPasswordKey: postgres-password

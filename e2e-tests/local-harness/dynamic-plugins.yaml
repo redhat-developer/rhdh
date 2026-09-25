@@ -6,9 +6,6 @@
 # builds, …). The remaining harness-critical plugins stay enabled via DPDY defaults
 # and are documented explicitly below.
 #
-# app-config.dynamic-plugins.yaml (loaded by the harness) already configures these
-# plugins, so the existing RHDH specs render off-cluster.
-#
 # NOTE: every package below uses `{{inherit}}` rather than a hardcoded tag/digest,
 # resolved against dynamic-plugins.default.yaml extracted from a catalog-index
 # OCI image. Set CATALOG_INDEX_IMAGE (required — see populate.sh and
@@ -51,22 +48,13 @@ plugins:
 
   # --- Enabled for cluster-free E2E (inherits version + pluginConfig from DPDY) ---
 
-  # Home page: route / -> page:home (NFS, @backstage/plugin-home bundled in), plus
-  # home-page-widget:home/{random-joke,starred-entities,toolkit}. Superseded the older
-  # red-hat-developer-hub-backstage-plugin-dynamic-home-page (ghcr, bs_1.49.4__1.13.1),
-  # whose published build predates NFS support (no page:home export — see
-  # docs/dynamic-plugins/migrating-config-to-new-frontend-system.md). This is the same
-  # package + registry (quay.io/rhdh) the Helm chart/Operator install in production; the
-  # version is inherited from dynamic-plugins.default.yaml above.
+  # Home page widgets (same quay.io/rhdh package the Helm chart / Operator install).
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-homepage:{{inherit}}
     disabled: false
-  # Sign-in page + auth APIs, drawer infra, and SCM integrations for the NFS app shell
-  # (pluginId: 'app'). These 3 used to be statically bundled into packages/app
-  # (appAuthModule / appDrawerModule / appIntegrationsModule) — they're now installed
-  # dynamically here to mirror how the Helm chart/Operator install them by default in
-  # production (see dynamic-plugins.default.yaml). Without app-auth installed, the sign-in
-  # page falls back to upstream Backstage's default (no "Select a sign-in method" heading),
-  # which is what guest-signin-happy-path.spec.ts and github-happy-path.spec.ts exercise.
+  # Sign-in page + auth APIs, drawer infra, and SCM integrations (pluginId: 'app').
+  # Without app-auth, guest sign-in falls back to upstream's default page (no
+  # "Select a sign-in method" heading) — what guest-signin-happy-path and
+  # github-happy-path exercise.
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-auth:{{inherit}}
     disabled: false
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-defaults:{{inherit}}
@@ -74,43 +62,14 @@ plugins:
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-integrations:{{inherit}}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20
     disabled: false
-  # TechDocs frontend: /docs route (TechDocsIndexPage) + the "Docs" sidebar menu item,
-  # exercised by plugins/frontend/sidebar.spec.ts. Route/menu config comes from the
-  # repo's static app-config.dynamic-plugins.yaml; no pluginConfig needed here.
+  # TechDocs frontend: /docs + Docs sidebar item (plugins/frontend/sidebar.spec.ts).
   - package: oci://quay.io/rhdh/backstage-plugin-techdocs:{{inherit}}
     disabled: false
-  # NOTE: application-provider-test / application-listener-test (which exercise
-  # plugins/application-provider.spec.ts and plugins/application-listener.spec.ts) are
-  # deliberately NOT installed here. Their pinned OCI builds only expose an OFS ("."
-  # Module Federation) entry point — no NFS/alpha extensions — and packages/app (NFS)
-  # has no application/provider or application/listener renderer yet. Both specs are
-  # excluded from playwright.local.config.ts's testMatch for the same reason; re-add
-  # both once NFS support exists for either the fixture plugins or a generic
-  # application/provider+listener renderer in packages/app.
-  # Global header: top bar + profile dropdown (Settings / Sign-out navigation).
-  #
-  # Installed via its own NFS extensions (gh-component:global-header/*,
-  # gh-menu-item:global-header/*) rather than the legacy OFS
-  # dynamicPlugins.frontend.*.mountPoints bridge used elsewhere in this repo's
-  # static app-config.dynamic-plugins.yaml. The plugin's own defaults
-  # (globalHeaderPlugin in rhdh-plugins workspaces/global-header/plugins/global-header
-  # /src/plugin.ts) already register every toolbar item and dropdown menu item
-  # (CompanyLogo, SearchComponent, StarredDropdown, ApplicationLauncherDropdown,
-  # HelpDropdown, NotificationButton, ProfileDropdown, Settings/My profile/Logout,
-  # the app-launcher links, etc.) at the same priorities the old mountPoints config
-  # used, and NFS extensions are enabled by default — so no pluginConfig override
-  # is needed here at all. The header only needs its app-root-wrapper + translation
-  # module explicitly enabled (they attach to the core `app` plugin, which isn't
-  # auto-enabled the way plugin-scoped extensions are) — see
-  # app-config.local-e2e.yaml's app.extensions
+  # application-provider-test / application-listener-test are not installed: the
+  # pinned OCI builds and packages/app do not support those fixtures yet, and both
+  # specs are excluded from playwright.local.config.ts testMatch.
+  # Global header: top bar + profile dropdown (Settings / Sign-out).
+  # Enable app-root-wrapper + translation in app-config.local-e2e.yaml
   # (app-root-wrapper:app/global-header, translation:app/global-header-translations).
-  #
-  # RESOLVED (previously a KNOWN GAP): the ghcr overlays build previously pinned
-  # here (bs_1.49.4__1.21.6), driven through the OFS mountPoints bridge, only
-  # rendered CompanyLogo and SearchComponent — ProfileDropdown, StarredDropdown,
-  # ApplicationLauncherDropdown, HelpDropdown, and NotificationButton never
-  # appeared, regardless of `position`. Switching to the {{inherit}}-resolved
-  # quay.io build and to native NFS extensions (this comment) fixed it — confirmed
-  # locally with the same package + app.extensions in app-config.local.yaml.
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-global-header:{{inherit}}
     disabled: false
