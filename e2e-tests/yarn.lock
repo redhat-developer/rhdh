@@ -1080,12 +1080,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.13.3":
-  version: 24.13.3
-  resolution: "@types/node@npm:24.13.3"
+"@types/node@npm:24.13.6":
+  version: 24.13.6
+  resolution: "@types/node@npm:24.13.6"
   dependencies:
     undici-types: "npm:~7.18.0"
-  checksum: 10c0/a5bc08f49b9581dcdca90e02cd77197a3c799840807664942e5cd5161a553d4d2ae8064f7e3294410d748d7d098b5c1848be7fa50c06f29c4193ab16be4e59eb
+  checksum: 10c0/b6302b2ede891e3a583a6e9c75390e8bc0fb8a99ea81c61ed029c244426550f1508ebae4ba1acf32840fb22a7df461f1e87b449043a8f906240b31a090866c1a
   languageName: node
   linkType: hard
 
@@ -2014,7 +2014,7 @@ __metadata:
     "@microsoft/microsoft-graph-client": "npm:3.0.7"
     "@playwright/test": "npm:1.62.1"
     "@support/coverage": "portal:./playwright/support/coverage"
-    "@types/node": "npm:24.13.3"
+    "@types/node": "npm:24.13.6"
     "@types/pg": "npm:8.23.1"
     eslint-plugin-check-file: "npm:3.3.2"
     eslint-plugin-playwright: "npm:2.11.0"
