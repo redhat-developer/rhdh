@@ -60,7 +60,7 @@ To update Backstage dependencies, run the following command:
 yarn versions:bump     # Updates Backstage dependencies
 ```
 
-Pull requests that bump Backstage run extra CI checks: a full build and test run, and the `Backstage bump checks` job. See [scripts/backstage-bump-check](scripts/backstage-bump-check/README.md).
+Pull requests that bump Backstage, or that add or change a Yarn patch under `.yarn/patches/`, run extra CI checks: a full build and test run, and the `Backstage bump checks` job. See [scripts/backstage-bump-check](scripts/backstage-bump-check/README.md).
 
 ### Enhancement Requests
 
