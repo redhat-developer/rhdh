@@ -52,9 +52,9 @@
     "jest": "30.5.2",
     "jsdom": "27.4.0",
     "lint-staged": "15.5.2",
-    "rulesync": "16.34.2",
+    "rulesync": "16.39.1",
     "sherif": "1.13.0",
-    "turbo": "2.10.12"
+    "turbo": "2.11.3"
   },
   "resolutions": {
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
