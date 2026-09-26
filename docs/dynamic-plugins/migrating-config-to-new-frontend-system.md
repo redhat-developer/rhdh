@@ -510,8 +510,8 @@ app:
           defaultLanguage: en
 ```
 
-- **Translation messages** are `translation:*` extensions (`TranslationBlueprint`), usually auto-discovered with the plugin or registered by a frontend module with `pluginId: 'app'`. There is **no** NFS equivalent of `i18n.overrides` JSON files or ConfigMap-mounted `/translations` override files. To override strings, ship additional `TranslationBlueprint`s — see [Migrating Plugins to the New Frontend System](migrating-plugins-to-new-frontend-system.md) and the [Backstage i18n frontend-system docs](https://backstage.io/docs/frontend-system/building-plugins/internationalization/).
-- `i18n.*` in `app-config` is **legacy OFS only** and is ignored by `packages/app`.
+- **Translation messages** are `translation:*` extensions (`TranslationBlueprint`), usually auto-discovered with the plugin or registered by a frontend module with `pluginId: 'app'`. This RHDH NFS app also supports JSON catalogs from the repository-root `/translations` directory and files listed in `i18n.overrides` when `translationsApiModule` and the translations backend are enabled. See [Customizing the Language dropdown](../customization.md#adding-or-overriding-translation-strings-in-nfs) for file format and placement.
+- `i18n.locales` and `i18n.defaultLocale` remain **legacy OFS only**. NFS language selection uses `api:app/app-language` as shown above.
 
 Language preference persistence still uses `userSettings.persistence` (`database` or `browser`). See [Customizing the look of your showcase instance](../customization.md#customizing-the-language-dropdown).
 
@@ -746,7 +746,7 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 - **Mount arbitrary homepage cards** (`Headline`, `Placeholder`, `Markdown` / `MarkdownCard`, `WorldClock`, or any other `importName` that is not a `home-page-widget:*`). NFS only renders widgets plugins register as `home-page-widget:*`.
 - **Replicate `mountPoints[].config.layout`** grid column positioning — use card `type: info|content` or ask the plugin vendor to adjust the component layout. Homepage layout uses `home-page-layout:home/dynamic-homepage-layout` `widgetLayout` instead.
 - **Add a new entity tab** without a plugin that exports `entity-content:*`.
-- **Override translation strings from `i18n.overrides` JSON** — NFS has no app-config JSON override path; use `TranslationBlueprint`.
+- **Define translation messages inline in app-config** — store messages in JSON catalogs or register them with `TranslationBlueprint`; see [NFS JSON translation overrides](../customization.md#adding-or-overriding-translation-strings-in-nfs).
 - **Add cards to General settings** until upstream exposes extension inputs on `sub-page:user-settings/general`.
 - **Use RHDH-only mount points** (some global header slots) until equivalent NFS extensions exist. Application drawers have `AppDrawerContentBlueprint` — see the [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer-).
 
@@ -757,7 +757,8 @@ Extensible user settings is tracked as product work. Until upstream adds extensi
 | Nested sidebar menu groups (`menuItems.parent`) | No direct equivalent — flat nav from pages |
 | Arbitrary homepage `mountPoints` (`Headline`, `Placeholder`, `Markdown`, `WorldClock`) | No NFS widgets — only `home-page-widget:*` from plugins |
 | Random Joke / Toolkit homepage cards | Upstream widgets exist; RHDH homepage plugin disables them |
-| `i18n.locales` / `i18n.overrides` JSON translation files | Ignored by NFS; use `api:app/app-language` and `TranslationBlueprint` |
+| `i18n.locales` / `i18n.defaultLocale` | Ignored by NFS; use `api:app/app-language` |
+| `i18n.overrides` JSON translation files | Supported with the translations frontend module and backend; see [customization](../customization.md#adding-or-overriding-translation-strings-in-nfs) |
 | Application drawer mount points | `AppDrawerContentBlueprint` available — requires plugin update (see [plugins guide](migrating-plugins-to-new-frontend-system.md#adding-application-drawers-applicationinternaldrawer-)) |
 | `global.header/help` and similar header slots | Migrating in RHDH global-header plugins |
 | `mountPoints[].config.layout` (MUI grid) | Not configurable via YAML |

@@ -221,7 +221,7 @@ buildInfo:
 
 ## Customizing the Language dropdown
 
-The NFS app (`packages/app`) does **not** read `i18n.locales`, `i18n.defaultLocale`, or `i18n.overrides`. Available languages and the Settings language toggle come from the Backstage `AppLanguageApi` extension.
+The NFS app (`packages/app`) uses Backstage's `AppLanguageApi` extension to configure available languages and the Settings language toggle. It does not use `i18n.locales` or `i18n.defaultLocale` for language selection.
 
 Configure supported locales in `app-config.yaml`:
 
@@ -235,16 +235,16 @@ app:
 ```
 
 - List at least two languages or `UserSettingsLanguageToggle` hides itself (`languages.length <= 1`).
-- Available languages should match the translation resources shipped in `packages/app/src/translations/` (currently `en`, `de`, `es`, `fr`, `it`, `ja`).
-- `i18n.*` keys are **legacy OFS only** — see [Language and translation overrides (legacy OFS only)](#language-and-translation-overrides-legacy-ofs-only) below.
+- Include every locale you want users to select. RHDH ships translation resources for `en`, `de`, `es`, `fr`, `it`, and `ja`; JSON catalogs can add other locales, which must also be listed in `availableLanguages`.
+- `i18n.locales` and `i18n.defaultLocale` are **legacy OFS only**. `i18n.overrides` is supported for NFS JSON message overrides when the translations backend and `translationsApiModule` are enabled.
 
-### Overriding translation strings (NFS)
+### Adding or overriding translation strings in NFS
 
-There is **no** NFS app-config path equivalent to `i18n.overrides` JSON files or ConfigMap-mounted `/translations` files. To add or override messages, register additional `TranslationBlueprint`s from an app frontend module or a dynamic plugin module with `pluginId: 'app'`. See [Migrating Plugins to the New Frontend System](dynamic-plugins/migrating-plugins-to-new-frontend-system.md) and the [Backstage i18n frontend-system documentation](https://backstage.io/docs/frontend-system/building-plugins/internationalization/).
+The NFS app supports JSON translation catalogs when `translationsApiModule` is registered and the translations backend is enabled. The frontend module fetches the merged catalog from `/api/translations` and applies matching messages over NFS translation resources. The backend discovers JSON files in the repository-root `translations/` directory or a mounted `/opt/app-root/src/translations/` directory. Use `i18n.overrides` to add explicit files or give them priority over discovered catalogs, as described below. JSON catalogs supplement `TranslationBlueprint` resources; see [Migrating Plugins to the New Frontend System](dynamic-plugins/migrating-plugins-to-new-frontend-system.md) and the [Backstage i18n frontend-system documentation](https://backstage.io/docs/frontend-system/building-plugins/internationalization/).
 
-## Language and translation overrides (legacy OFS only)
+## Language and translation overrides
 
-> **Legacy OFS only.** The following `i18n.locales`, `i18n.defaultLocale`, `i18n.overrides`, `/translations` JSON mounting, and default-language priority that cites `i18n.defaultLocale` apply only to the legacy OFS app shell. They have no effect on the default NFS app (`packages/app`).
+> `i18n.locales` and `i18n.defaultLocale` configure language selection only for the legacy OFS app shell. NFS uses `api:app/app-language` as shown above. The translations backend reads `i18n.overrides` for JSON catalogs in NFS when `translationsApiModule` and the backend plugin are enabled.
 
 To customize the language dropdown on the legacy OFS app, configure the list of locales in the `app-config.yaml` file.
 
@@ -252,12 +252,12 @@ Example configuration:
 
 ```
 i18n:
-  locales: # List of supported locales. Must include `en`, otherwise the translation framework will fail to load.
+  locales: # Legacy OFS only: supported locales. Must include `en`.
     - en
     - de
     - it
-  defaultLocale: en # Optional. Used as fallback when browser language preferences don't match supported locales, or defaults to 'en' if not specified.
-  overrides: # List of JSON translation files applied in order (last file wins).  Each file may override/add translations for one or more plugins/locales
+  defaultLocale: en # Legacy OFS only: fallback when no browser language matches.
+  overrides: # JSON files applied after discovered catalogs; later files win.
     - <path-to>/<overrides-1>.json
     - <path-to>/<overrides-2>.json
 
@@ -287,18 +287,20 @@ Example of JSON translation file, where the top-level key is the plugin translat
 }
 ```
 
-### Translation priority order (legacy OFS only)
+### Translation file priority order
 
-Translations are resolved in this order (highest priority first):
+The translations backend merges JSON catalogs in this order, with later files overriding matching keys:
 
-1. **app-config overrides** — Paths listed in `i18n.overrides` in `app-config.yaml`. This is the only level users should change for custom labels.
-2. **`/translations` JSON files** — Files under `translations/` (e.g. in the repo or mounted at `/src/translations/`). **RHDH override files (`rhdh-<locale>.json`) must win over Backstage defaults (`backstage-<locale>.json`)** when the same key exists in both. For 1.9 this is ensured by processing files in order: `backstage-*.json`, then `community-plugins-*.json`, then `rhdh-*.json`. Going forward, the i18n CLI or build pipeline should enforce this order.
-3. **Locale TS files** — App sources under `app/src/.../<locale>.ts` (e.g. `packages/app/src/translations/scaffolder/ja.ts`). Left as-is for 1.9.
-4. **Fallback English** — Default messages in `app/src/.../ref.ts` (e.g. `rhdhMessages` in `packages/app/src/translations/rhdh/ref.ts`).
+1. Discovered `backstage-*.json` catalogs.
+2. Discovered `community-plugins-*.json` catalogs.
+3. Discovered `rhdh-plugins-*.json` catalogs.
+4. Discovered `rhdh-*.json` catalogs.
+5. Discovered catalogs with other basenames, such as customer files.
+6. Files listed in `i18n.overrides`, in the order configured (the last file wins).
 
-Levels 2–4 are for internal management only; only level 1 is user-configurable.
+Files within each discovered group are sorted by name. After the backend merges JSON catalogs, the NFS `TranslationApi` applies matching JSON messages over registered translation resources while preserving messages that the JSON files do not define.
 
-### Customizing Translations (legacy OFS only)
+### Customizing translations
 
 In a translation override JSON file, you can:
 
@@ -306,7 +308,7 @@ In a translation override JSON file, you can:
 2. **Add Other Languages**: Add new language sections (e.g., `"de"`, `"fr"`, `"es"`) to support additional locales by translating the English keys
 3. **Add Custom Keys**: Add new translation keys for custom components or plugins
 
-### Example Translation Override File (legacy OFS only)
+### Example translation override file
 
 You can add other languages as needed:
 
@@ -329,27 +331,22 @@ You can add other languages as needed:
 }
 ```
 
-### Applying Translation Overrides (legacy OFS only)
+### Applying translation overrides
 
 To apply your custom translations:
 
 #### For Local Development
 
-1. **Save the JSON file** in your project directory (e.g., `translations/custom-overrides.json`)
+1. **Save the JSON file** in the repository-root `translations/` directory (e.g., `translations/custom-overrides.json`). Files there are discovered automatically.
 2. **Update app-config.yaml** to include your override file:
 
 ```yaml
 i18n:
-  locales:
-    - en
-    - de
-    - fr
-  defaultLocale: en
   overrides:
-    - translations/custom-overrides.json
+    - ../../translations/custom-overrides.json # Relative to packages/backend in local workspace development
 ```
 
-3. **Restart the application** for changes to take effect
+3. **Restart the backend** so it reloads the catalog, then reload the frontend.
 
 #### For OpenShift Environment
 
@@ -375,33 +372,19 @@ data:
     }
 ```
 
-2. **Mount the ConfigMap** in your Backstage CR to `/src/translations/`:
+2. **Mount the ConfigMap** in your Backstage custom resource under `spec.application`:
 
 ```yaml
-apiVersion: apps/v1
-kind: Backstage
-metadata:
-  name: rhdh
-spec:
-  application:
-    appConfig:
-      mountPath: /opt/app-root/src
-    extraFiles:
-      configMaps:
-        - mountPath: /opt/app-root/src/translations/
-          name: translation-overrides
-      mountPath: /opt/app-root/src
+extraFiles:
+  configMaps:
+    - name: translation-overrides
+  mountPath: /opt/app-root/src/translations
 ```
 
 3. **Update your app-config.yaml** to reference the mounted file:
 
 ```yaml
 i18n:
-  locales:
-    - en
-    - de
-    - fr
-  defaultLocale: en
   overrides:
     - /opt/app-root/src/translations/custom-overrides.json
 ```

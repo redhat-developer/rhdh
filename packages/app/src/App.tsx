@@ -10,6 +10,7 @@ import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
 import homePagePlugin from "@backstage/plugin-home/alpha";
 
 import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
+import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
 
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { catalogCreatedAtModule } from "./modules/catalog";
@@ -46,6 +47,7 @@ const app = createApp({
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
     learningPathsModule, // Learning Paths page (/learning-paths)
     rhdhApisModule, // storage, learning-path APIs
+    translationsApiModule,
     rhdhTranslationsModule, // RHDH + plugin translation overrides (de, es, fr, it, ja)
     rhdhThemeModule, // RHDH light/dark themes
   ],
