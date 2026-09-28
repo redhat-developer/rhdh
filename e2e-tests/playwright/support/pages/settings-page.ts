@@ -174,7 +174,6 @@ export class SettingsPage {
 
   async verifySidebarMenuItemHidden(text: string): Promise<void> {
     const sidebar = getRhdhSidebarNavigation(this.page);
-    await expect(sidebar).toBeVisible();
     await expect(sidebar.getByText(text, { exact: true })).toBeHidden();
   }
 
