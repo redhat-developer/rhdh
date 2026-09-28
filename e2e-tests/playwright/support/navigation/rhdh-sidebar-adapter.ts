@@ -1,14 +1,14 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-function getNav(page: Page): Locator {
+export function getRhdhSidebarNavigation(page: Page): Locator {
   return page
     .getByRole("navigation")
-    .filter({ hasNot: page.getByTestId("KeyboardArrowDownOutlinedIcon") })
+    .filter({ has: page.getByTestId("sidebar-root") })
     .first();
 }
 
 function sidebarLinks(page: Page, linkName: string): Locator {
-  const nav = getNav(page);
+  const nav = getRhdhSidebarNavigation(page);
   // Intentional divergence: sidebar item accessible names may differ from visible labels.
   return nav
     .getByRole("link", { name: linkName, exact: true })
@@ -23,7 +23,7 @@ function isRhdhChildLinkVisible(page: Page, linkName: string): Promise<boolean> 
 }
 
 async function isRhdhSectionExpanded(page: Page, sectionLabel: string): Promise<boolean> {
-  const sectionButton = getNav(page).getByRole("button", {
+  const sectionButton = getRhdhSidebarNavigation(page).getByRole("button", {
     name: sectionLabel,
     exact: true,
   });
@@ -46,7 +46,7 @@ export async function ensureRhdhSectionExpanded(
     return;
   }
 
-  const sectionButton = getNav(page).getByRole("button", {
+  const sectionButton = getRhdhSidebarNavigation(page).getByRole("button", {
     name: sectionLabel,
     exact: true,
   });
@@ -111,7 +111,7 @@ export async function openRhdhLink(page: Page, linkName: string): Promise<void> 
 }
 
 export async function waitForRhdhSidebarVisible(page: Page): Promise<void> {
-  await expect(getNav(page).getByRole("link").first()).toBeVisible({
+  await expect(getRhdhSidebarNavigation(page).getByRole("link").first()).toBeVisible({
     timeout: 10_000,
   });
 }

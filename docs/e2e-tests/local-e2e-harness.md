@@ -88,7 +88,7 @@ for how that's wired).
   Sign-out via the GlobalHeader's profile menu). A fourth, untagged test in the same
   file exercises Quick Access against the real `/developer-hub` proxy; it only runs in
   the full cluster-based CI suite (see "Known issues").
-- `learning-path-page` — navigates via the NFS sidebar flat nav to `/learning-paths`
+- `learning-path-page` — navigates via the app-defaults sidebar to `/learning-paths`
   and renders from the static fallback data bundled with the app. See
   `plugins/frontend/sidebar` for the same sidebar entry.
 - `instance-health-check` — `GET /healthcheck` against the frontend origin. The app dev
@@ -107,12 +107,10 @@ for how that's wired).
   Access" assertion only checks the card's title text, not real link data (see "Known
   issues" for why); the file's other, untagged "Verify Customized Quick Access" test
   covers the real link data and only runs in full CI.
-- `plugins/frontend/sidebar` — the `@cluster-free-capable` tests verify flat-nav behavior:
-  Docs and Learning Paths sidebar items navigate to the expected pages (NFS
-  `PageBlueprint` title for TechDocs: "Docs", not the legacy OFS `pageWrapper.title`
-  "Documentation"). NFS's sidebar (`packages/app/src/modules/nav/Sidebar.tsx`) is a
-  fixed, code-defined flat nav with no config-driven nested-group equivalent of the
-  legacy References/Favorites `menuItems`. The Docs test stops at the index page —
+- `plugins/frontend/sidebar` — the `@cluster-free-capable` tests verify that the
+  app-defaults sidebar's Docs and Learning Paths items navigate to the expected pages
+  (NFS `PageBlueprint` title for TechDocs: "Docs", not the legacy OFS `pageWrapper.title`
+  "Documentation"). The Docs test stops at the index page —
   this harness's catalog has no `techdocs-ref`-annotated entities (see "Known issues"),
   so there's nothing to click into. The file's other, untagged "Verify Docs entity
   page renders real content" test opens a real entity's docs and checks for actual

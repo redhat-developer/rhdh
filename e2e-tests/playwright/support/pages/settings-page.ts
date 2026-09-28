@@ -6,6 +6,7 @@ import * as misc from "../../utils/ui-helper/misc";
 import * as navigation from "../../utils/ui-helper/navigation";
 import * as verification from "../../utils/ui-helper/verification";
 import { waitForRhdhSignInPage } from "../auth/sign-in-page";
+import { getRhdhSidebarNavigation } from "../navigation/rhdh-sidebar-adapter";
 import { SETTINGS_PAGE_COMPONENTS } from "../selectors/page-selectors";
 
 const t = getTranslations();
@@ -165,11 +166,15 @@ export class SettingsPage {
     await this.page.keyboard.press("Escape");
   }
 
+  async verifySidebarMenuItemVisible(text: string): Promise<void> {
+    await expect(getRhdhSidebarNavigation(this.page).getByText(text, { exact: true })).toBeVisible();
+  }
+
   async verifySidebarMenuItemHidden(text: string): Promise<void> {
-    // Collapsed sidebar links keep their aria-label; only the visible text goes away.
-    // (Readable BackstageSidebarItem-* class names exist only on the local webpack harness.)
+    const sidebar = getRhdhSidebarNavigation(this.page);
+    await expect(sidebar).toBeVisible();
     await expect(
-      this.page.getByRole("navigation", { name: "sidebar nav" }).getByText(text, { exact: true }),
+      sidebar.getByText(text, { exact: true }),
     ).toBeHidden();
   }
 

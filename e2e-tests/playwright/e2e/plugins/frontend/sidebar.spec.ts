@@ -21,8 +21,7 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
     await sidebarPage.verifyDocsHeading();
   });
 
-  // Learning Paths is pinned in the NFS sidebar (page:app/learning-paths) between
-  // Catalog and Create — not nested under the legacy "References" group.
+  // The app-defaults plugin exposes the NFS Learning Paths route in its sidebar.
   test("Verify Learning Paths sidebar navigation", { tag: "@cluster-free-capable" }, async () => {
     await sidebarPage.openLearningPaths();
 
