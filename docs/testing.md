@@ -84,9 +84,8 @@ renderInTestApp(
 Worked examples in `packages/app/src`:
 [`modules/learning-paths/LearningPathsPage.test.tsx`](../packages/app/src/modules/learning-paths/LearningPathsPage.test.tsx)
 (page with a mocked API),
-[`modules/user-settings/InfoCard.test.tsx`](../packages/app/src/modules/user-settings/InfoCard.test.tsx),
 and
-[`modules/nav/SidebarLogo.test.tsx`](../packages/app/src/modules/nav/SidebarLogo.test.tsx).
+[`modules/user-settings/InfoCard.test.tsx`](../packages/app/src/modules/user-settings/InfoCard.test.tsx).
 
 Prefer L3 over L4a whenever no dynamic-plugin loading is involved.
 

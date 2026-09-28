@@ -6,7 +6,7 @@ To customize the look of your showcase instance, you can edit the `app-config.ya
 
 ## Changing the Sidebar Logo
 
-The NFS app (`packages/app`) renders the sidebar logo in the nav module. Default logo comes from `@red-hat-developer-hub/backstage-plugin-theme` (`LogoFull` / `LogoIcon`). When the global-header plugin is enabled, branding stays in the sidebar; the header company-logo slot is hidden by app shell CSS so it does not duplicate the sidebar logo.
+The NFS sidebar is provided by the `app-defaults` dynamic plugin. It reads the logo settings below and falls back to the RHDH logos from `@red-hat-developer-hub/backstage-plugin-theme`. When the global-header plugin is enabled, branding stays in the sidebar; the header company-logo slot is hidden by app shell CSS so it does not duplicate the sidebar logo.
 
 The sidebar uses two logos - one for the expanded sidebar and one for the collapsed sidebar.
 
@@ -27,27 +27,48 @@ app:
 ![Default Icon Logo when side bar is collapsed](images/default-collapsed-icon.png)
 ![Default Full Logo when side bar is expanded](images/default-expanded-logo.png)
 
-## Hiding Sidebar search, settings, administration (legacy OFS only)
+## Hiding Sidebar Elements
 
-The NFS app (`packages/app`) always shows the sidebar logo. Branding is owned by the sidebar; hiding it is not supported because it would leave an empty gap with no replacement in the header.
+The NFS `app-defaults` dynamic plugin supplies the sidebar elements. Disable individual elements through `app.extensions`:
 
-On the legacy OFS app shell, the flags below can hide sidebar chrome. Search and settings are also available from the global-header toolbar when that plugin is installed.
+```yaml title="app-config.yaml"
+app:
+  extensions:
+    - sidebar-element:app/logo: false
+    - sidebar-element:app/search: false
+    - sidebar-item-group:app/settings: false
+    - sidebar-item-group:app/admin: false
+```
+
+The legacy OFS app shell also supports the `app.sidebar.search`, `app.sidebar.settings`, and `app.sidebar.administration` flags.
+
+## Customizing the Sidebar Menu Items
+
+The NFS `app-defaults` dynamic plugin reads sidebar entries from `app.sidebar.items` and `app.sidebar.groups`. Items can link to pages or external sites and can be nested under groups:
 
 ```yaml title="app-config.yaml"
 app:
   sidebar:
-    search: false # optional — hides sidebar search
-    settings: false # optional — hides settings menu item
-    administration: false # optional — hides administration menu item
+    items:
+      - title: Runbooks
+        icon: docs
+        to: https://docs.example.com/runbooks
+        priority: 10
+      - title: Grafana
+        to: /grafana
+        group: tools
+    groups:
+      - id: tools
+        title: Tools
+        icon: extension
+        priority: 20
 ```
 
-![Hidden Sidebar search, settings, and administration](images/sidebar-search-hidden.png)
+For entries contributed by a dynamic plugin, use `app.sidebar.plugins.<pluginName>` so multiple plugins can add items without replacing each other's arrays. The `app-defaults` plugin README documents all supported item and group fields.
 
-## Customizing the Sidebar Menu Items (legacy OFS only — obsolete for NFS)
+### Legacy OFS menu configuration
 
-> **Obsolete for NFS.** The default NFS app (`packages/app`) uses a code-defined flat sidebar in `packages/app/src/modules/nav/Sidebar.tsx`. The `dynamicPlugins.frontend.default.main-menu-items` configuration below only applied to the legacy OFS app shell and has no effect on NFS. For NFS navigation, see [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](dynamic-plugins/migrating-config-to-new-frontend-system.md).
-
-Order and parent-children relationship of sidebar main menu items can be customized using the `dynamicPlugins.frontend.default.main-menu-items.menuItems` field in the `app-config.yaml`. To ensure the menu item is recognized as a main menu item, the key must be prefixed with `default.`.
+The legacy OFS app shell uses `dynamicPlugins.frontend.default.main-menu-items.menuItems` to control order and nested items. The NFS sidebar does not read this setting. Prefix OFS main menu item keys with `default.`.
 
 ```yaml title="app-config.yaml"
 dynamicPlugins:

@@ -10,8 +10,7 @@ import {
  *
  * This module is intentionally kept local to `app` rather than upstreamed,
  * since upstream NFS does not currently expose card slots on the General
- * settings sub-page. See docs/adr/0001-app-next-sidebar-module-location.md
- * for the equivalent rationale applied to the nav module.
+ * settings sub-page.
  */
 const userSettingsGeneral = SubPageBlueprint.make({
   name: "general",

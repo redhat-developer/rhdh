@@ -72,9 +72,7 @@ catalog:
 # even though the plugin's widget/layout extensions load fine via Module Federation. NFS
 # home-page cards are a fixed set of built-in widgets (home-page-widget:home/*) —
 # arbitrary cards like the old OFS Placeholder/Markdown/JokeCard/Headline mount points
-# have no NFS equivalent, and nested sidebar menu groups (References/Favorites) have no
-# NFS equivalent either (the sidebar is a fixed NavContentBlueprint in
-# packages/app/src/modules/nav/Sidebar.tsx, not menuItems-config-driven). See
+# have no NFS equivalent. The app-defaults dynamic plugin provides the NFS sidebar. See
 # home-page-customization.spec.ts and sidebar.spec.ts for the assertions this drives —
 # guest-signin-happy-path.spec.ts additionally covers the Search and Starred Catalog
 # Entities widgets.

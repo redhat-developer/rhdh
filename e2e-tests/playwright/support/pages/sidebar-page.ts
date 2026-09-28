@@ -7,13 +7,8 @@ import * as verification from "../../utils/ui-helper/verification";
 const t = getTranslations();
 
 /**
- * Sidebar navigation on the RHDH instance.
- *
- * NFS (packages/app) renders a flat, code-defined sidebar
- * (packages/app/src/modules/nav/Sidebar.tsx): Home, Catalog, Learning Paths, and
- * Create are pinned first, everything else (Docs, etc.) is flat and sorted
- * alphabetically by title. There is no config-driven nested grouping (the legacy
- * "References" / "Favorites" menuItems groups have no NFS equivalent).
+ * Sidebar navigation on the RHDH instance. The app-defaults dynamic plugin
+ * provides the NFS sidebar; these helpers exercise its configured destinations.
  */
 export class SidebarPage {
   constructor(private readonly page: Page) {}
