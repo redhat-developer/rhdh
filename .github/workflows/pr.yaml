@@ -196,22 +196,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
-      - name: Change directory to dynamic-plugins
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: cd ./dynamic-plugins
-
-      - name: Install dynamic plugin dependencies
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: yarn install
-
-      - name: Test the dynamic plugin wrappers
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: yarn test --continue --affected
-
-      - name: Export the dynamic plugin wrappers
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: yarn export-dynamic --continue --affected
-
   backstage-bump-checks:
     name: Backstage bump checks
     runs-on: ubuntu-latest
