@@ -8,6 +8,7 @@ import {
   KubeClient,
   getRhdhDeploymentName,
   BACKSTAGE_BACKEND_CONTAINER,
+  envVarsNotFromSecret,
 } from "../../utils/kube-client";
 import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
 import type { AppConfigYaml } from "../../utils/runtime-config";
@@ -159,54 +160,30 @@ export class SchemaModeTestSetup {
     );
     const containers = deployment.body.spec?.template?.spec?.containers ?? [];
     const backstageContainer = containers.find((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
-    const backstageIdx = containers.findIndex((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
 
     if (backstageContainer === undefined) {
       console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
-    } else {
-      const existingEnv = backstageContainer.env ?? [];
-      const envPath = `/spec/template/spec/containers/${backstageIdx}/env`;
-      const isFromSecret = (varName: string) =>
-        existingEnv.some(
-          (e) =>
-            e.name === varName &&
-            e.valueFrom?.secretKeyRef?.name === secretName &&
-            e.valueFrom.secretKeyRef.key === varName,
-        );
-      const varsToSet = ([...POSTGRES_ENV_KEYS] as string[]).filter((v) => !isFromSecret(v));
-
-      if (varsToSet.length === 0) {
-        console.log("POSTGRES_* env vars already read from the schema-mode secret");
-        return;
-      }
-
-      console.log(`Pointing deployment env vars at ${secretName}: ${varsToSet.join(", ")}`);
-      const patch: { op: string; path: string; value?: unknown }[] = [];
-
-      if (backstageContainer.env === undefined || backstageContainer.env.length === 0) {
-        patch.push({ op: "add", path: envPath, value: [] });
-      }
-
-      for (const varName of varsToSet) {
-        const value = {
-          name: varName,
-          valueFrom: {
-            secretKeyRef: { name: secretName, key: varName },
-          },
-        };
-        // The 2.y chart already sets POSTGRES_HOST/PORT/USER as literal values
-        // (user "postgres"), so existing entries must be replaced, not skipped.
-        const idx = existingEnv.findIndex((e) => e.name === varName);
-        patch.push(
-          idx === -1
-            ? { op: "add", path: `${envPath}/-`, value }
-            : { op: "replace", path: `${envPath}/${idx}`, value },
-        );
-      }
-
-      await this.kubeClient.jsonPatchDeployment(deploymentName, this.namespace, patch);
-      console.log("Updated deployment env vars");
+      return;
     }
+
+    // Existing entries are replaced, not skipped: the chart may already set
+    // these variables to other values (it sets POSTGRES_USER to "postgres").
+    const varsToSet = envVarsNotFromSecret(backstageContainer.env, secretName, POSTGRES_ENV_KEYS);
+
+    if (varsToSet.length === 0) {
+      console.log("POSTGRES_* env vars already read from the schema-mode secret");
+      return;
+    }
+
+    console.log(`Pointing deployment env vars at ${secretName}: ${varsToSet.join(", ")}`);
+    await this.kubeClient.addContainerEnvVarsFromSecret(
+      deploymentName,
+      this.namespace,
+      BACKSTAGE_BACKEND_CONTAINER,
+      secretName,
+      varsToSet,
+    );
+    console.log("Updated deployment env vars");
   }
 
   private async updateAppConfigForSchemaMode(isInternalDb: boolean): Promise<void> {

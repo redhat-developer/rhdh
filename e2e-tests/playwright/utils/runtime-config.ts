@@ -7,14 +7,15 @@
  * Design:
  *   - Shared constants live here (app title, guest auth, dynamic plugins, …).
  *   - Helm values YAML is generated with ONLY the overrides that differ from
- *     the chart defaults.  Arrays (extraVolumes, extraVolumeMounts) must be
- *     specified in full because Helm replaces arrays rather than merging them.
+ *     the chart defaults.  The chart owns the system volumes, so
+ *     extraVolumes/extraVolumeMounts only carry the runtime additions.
  *   - Operator ConfigMaps / Backstage CR are generated programmatically.
  *   - CATALOG_INDEX_IMAGE opt-in override: Helm uses
  *     `catalogIndex.image.*` --set flags; Operator pushes an env var
  *     with `containers: ["install-dynamic-plugins"]`.
  */
 
+import type { V1Container } from "@kubernetes/client-node";
 import * as yaml from "yaml";
 
 import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
@@ -124,7 +125,8 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  *   - postgresql.enabled
  *
  * The chart owns the system volumes (dynamic-plugins-root, dynamic-plugins,
- * npmcacache, extensions-catalog, temp), so only the runtime additions go in
+ * dynamic-plugins-npmrc, dynamic-plugins-registry-auth, npmcacache,
+ * extensions-catalog, temp), so only the runtime additions go in
  * extraVolumes/extraVolumeMounts. dynamic-plugins-root is switched to a PVC
  * through dynamicPlugins.volume instead of redefining the volume.
  */
@@ -180,6 +182,20 @@ export function generateHelmValuesYaml(): string {
   return yaml.stringify(values, { lineWidth: 0 });
 }
 
+/** `--set` flags for one chart image. The digest is cleared so the tag wins. */
+function imageSetArgs(valuesPath: string, image: ImageRef): string[] {
+  return [
+    "--set",
+    `${valuesPath}.registry=${image.registry}`,
+    "--set",
+    `${valuesPath}.repository=${image.repository}`,
+    "--set",
+    `${valuesPath}.tag=${image.tag}`,
+    "--set",
+    `${valuesPath}.digest=`,
+  ];
+}
+
 /**
  * Generate the Helm arguments for `helm upgrade -i`.
  *
@@ -190,38 +206,15 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
   const args: string[] = [
     "--set",
     `openshift.clusterRouterBase=${config.routerBase}`,
-    "--set",
-    `image.registry=${config.image.registry}`,
-    "--set",
-    `image.repository=${config.image.repository}`,
-    "--set",
-    `image.tag=${config.image.tag}`,
-    "--set",
-    "image.digest=",
-    "--set",
-    `postgresql.image.registry=${config.internalPostgresqlImage.registry}`,
-    "--set",
-    `postgresql.image.repository=${config.internalPostgresqlImage.repository}`,
-    "--set",
-    `postgresql.image.tag=${config.internalPostgresqlImage.tag}`,
-    "--set",
-    "postgresql.image.digest=",
+    ...imageSetArgs("image", config.image),
+    ...imageSetArgs("postgresql.image", config.internalPostgresqlImage),
   ];
 
   // CATALOG_INDEX_IMAGE override — mirrors helm::get_image_params() in
   // .ci/pipelines/lib/helm.sh.  When not set, the chart's built-in
   // catalogIndex default takes effect.
   if (config.catalogIndex) {
-    args.push(
-      "--set",
-      `catalogIndex.image.registry=${config.catalogIndex.registry}`,
-      "--set",
-      `catalogIndex.image.repository=${config.catalogIndex.repository}`,
-      "--set",
-      `catalogIndex.image.tag=${config.catalogIndex.tag}`,
-      "--set",
-      "catalogIndex.image.digest=",
-    );
+    args.push(...imageSetArgs("catalogIndex.image", config.catalogIndex));
   }
 
   return args;
@@ -292,9 +285,9 @@ export function generateDynamicPluginsYaml(): string {
  * PostgreSQL pod is ready. When Backstage wins that race, each plugin fails
  * its database setup with ENOTFOUND, the process stays alive, and the
  * readiness probe returns 503 until the pod is deleted. The Helm chart avoids
- * this with the same wait-for-db init container.
+ * this with a wait-for-db init container doing the same TCP check.
  */
-function generateWaitForDbInitContainer(image: string, dbHost: string): Record<string, unknown> {
+function generateWaitForDbInitContainer(image: string, dbHost: string): V1Container {
   return {
     name: "wait-for-db",
     image,
@@ -303,6 +296,12 @@ function generateWaitForDbInitContainer(image: string, dbHost: string): Record<s
       "-c",
       `until timeout 2 bash -c '>/dev/tcp/${dbHost}/5432' 2>/dev/null; do echo "Waiting for ${dbHost}:5432"; sleep 2; done`,
     ],
+    securityContext: {
+      readOnlyRootFilesystem: true,
+      allowPrivilegeEscalation: false,
+      runAsNonRoot: true,
+      capabilities: { drop: ["ALL"] },
+    },
     resources: {
       requests: { cpu: "50m", memory: "32Mi" },
       limits: { cpu: "100m", memory: "64Mi" },
