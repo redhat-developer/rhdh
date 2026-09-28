@@ -50,6 +50,10 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
 
+      - name: Detect Backstage bump
+        id: bump
+        uses: ./.github/actions/detect-backstage-bump
+
       - name: Setup Node.js
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -73,9 +77,12 @@ jobs:
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
+      # A Backstage bump can break packages that turbo does not see as affected.
       - name: Build packages
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: yarn run build --continue --affected
+        env:
+          AFFECTED_FLAG: ${{ steps.bump.outputs.affected_flag }}
+        run: yarn run build --continue ${AFFECTED_FLAG:+"$AFFECTED_FLAG"}
 
   test:
     name: Test with Node.js ${{ matrix.node-version }}
@@ -94,6 +101,10 @@ jobs:
       - name: Check Image and Relevant Changes
         id: check-image
         uses: ./.github/actions/check-image-and-changes
+
+      - name: Detect Backstage bump
+        id: bump
+        uses: ./.github/actions/detect-backstage-bump
 
       - name: Setup Node.js
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -146,7 +157,9 @@ jobs:
 
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: yarn run test --continue --affected
+        env:
+          AFFECTED_FLAG: ${{ steps.bump.outputs.affected_flag }}
+        run: yarn run test --continue ${AFFECTED_FLAG:+"$AFFECTED_FLAG"}
 
       - name: Run Python tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -167,3 +180,71 @@ jobs:
       - name: Export the dynamic plugin wrappers
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn export-dynamic --continue --affected
+
+  backstage-bump-checks:
+    name: Backstage bump checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect Backstage bump
+        id: bump
+        uses: ./.github/actions/detect-backstage-bump
+
+      - name: Setup Node.js
+        if: ${{ steps.bump.outputs.run_bump_checks == 'true' }}
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        if: ${{ steps.bump.outputs.run_bump_checks == 'true' }}
+        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
+        with:
+          cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
+
+      - name: Run bump check unit tests
+        if: ${{ steps.bump.outputs.run_bump_checks == 'true' }}
+        run: node --test scripts/backstage-bump-check/lib.test.mjs
+
+      - name: Snapshot PR dependencies
+        if: ${{ steps.bump.outputs.run_bump_checks == 'true' }}
+        run: node scripts/backstage-bump-check/index.mjs snapshot "$RUNNER_TEMP/bump/head"
+
+      # First parent of the merge commit, as its own worktree outside the
+      # workspace. See scripts/backstage-bump-check/README.md.
+      - name: Snapshot base branch
+        if: ${{ steps.bump.outputs.run_bump_checks == 'true' }}
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git rev-parse -q --verify HEAD^2 > /dev/null; then
+            BASE_TREE=$(git rev-parse HEAD^1)
+          else
+            BASE_TREE="$PR_BASE_SHA"
+          fi
+          echo "Base snapshot from $BASE_TREE"
+          git worktree add --detach "$RUNNER_TEMP/base" "$BASE_TREE"
+          cd "$RUNNER_TEMP/base"
+          # Only .d.ts files and config:check are needed; skip dependency scripts.
+          yarn install --immutable --mode=skip-build
+          node "$GITHUB_WORKSPACE/scripts/backstage-bump-check/index.mjs" snapshot "$RUNNER_TEMP/bump/base"
+
+      - name: Compare snapshots
+        if: ${{ steps.bump.outputs.run_bump_checks == 'true' }}
+        run: node scripts/backstage-bump-check/index.mjs compare "$RUNNER_TEMP/bump/base" "$RUNNER_TEMP/bump/head" "$RUNNER_TEMP/bump/report"
+
+      - name: Upload bump report
+        if: ${{ steps.bump.outputs.run_bump_checks == 'true' && !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backstage-bump-report
+          path: ${{ runner.temp }}/bump/report
+          if-no-files-found: ignore

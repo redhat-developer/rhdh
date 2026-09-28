@@ -1,0 +1,51 @@
+name: "Detect Backstage Bump"
+description: "Detects whether a pull request changes the resolved Backstage dependencies or the Yarn patches applied to dependencies"
+
+outputs:
+  run_bump_checks:
+    description: "True if the PR bumps Backstage packages, changes Yarn patches, or changes the bump checks themselves"
+    value: ${{ steps.detect.outputs.run_bump_checks }}
+  affected_flag:
+    description: "Turbo scope flag: empty when the bump checks run (build and test everything), otherwise --affected"
+    value: ${{ steps.detect.outputs.affected_flag }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect Backstage bump
+      id: detect
+      shell: bash
+      env:
+        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        BASE_COMMIT=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
+        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$PR_HEAD_SHA")
+
+        RUN_BUMP_CHECKS=false
+        if grep -qxF 'backstage.json' <<< "$CHANGED_FILES"; then
+          echo "backstage.json changed."
+          RUN_BUMP_CHECKS=true
+        # Covers partial bumps (e.g. security updates) that leave backstage.json
+        # alone. -G avoids a `| grep -q` pipe, which SIGPIPEs under pipefail.
+        elif ! git diff --quiet -G '^  resolution: "@backstage/' "$BASE_COMMIT" "$PR_HEAD_SHA" -- yarn.lock; then
+          echo "yarn.lock changes resolved @backstage/* versions."
+          RUN_BUMP_CHECKS=true
+        # Yarn patches (patch-backstage workflow, CVE backports) change code that
+        # turbo does not see as affected.
+        elif grep -q '^\.yarn/patches/' <<< "$CHANGED_FILES"; then
+          echo "Yarn patches changed."
+          RUN_BUMP_CHECKS=true
+        elif ! git diff --quiet -G '^  resolution: ".*@patch:.*[~.]/\.yarn/patches/' "$BASE_COMMIT" "$PR_HEAD_SHA" -- yarn.lock; then
+          echo "yarn.lock changes which Yarn patches are applied."
+          RUN_BUMP_CHECKS=true
+        elif grep -qE '^(scripts/backstage-bump-check/|\.github/actions/detect-backstage-bump/)' <<< "$CHANGED_FILES"; then
+          echo "Bump checks changed; running them on this PR."
+          RUN_BUMP_CHECKS=true
+        fi
+        echo "run_bump_checks=$RUN_BUMP_CHECKS" >> "$GITHUB_OUTPUT"
+        if [[ "$RUN_BUMP_CHECKS" == "true" ]]; then
+          echo "affected_flag=" >> "$GITHUB_OUTPUT"
+        else
+          echo "affected_flag=--affected" >> "$GITHUB_OUTPUT"
+        fi
