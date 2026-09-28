@@ -167,15 +167,15 @@ export class SettingsPage {
   }
 
   async verifySidebarMenuItemVisible(text: string): Promise<void> {
-    await expect(getRhdhSidebarNavigation(this.page).getByText(text, { exact: true })).toBeVisible();
+    await expect(
+      getRhdhSidebarNavigation(this.page).getByText(text, { exact: true }),
+    ).toBeVisible();
   }
 
   async verifySidebarMenuItemHidden(text: string): Promise<void> {
     const sidebar = getRhdhSidebarNavigation(this.page);
     await expect(sidebar).toBeVisible();
-    await expect(
-      sidebar.getByText(text, { exact: true }),
-    ).toBeHidden();
+    await expect(sidebar.getByText(text, { exact: true })).toBeHidden();
   }
 
   async verifyBuildInfoCardVisible(): Promise<void> {
