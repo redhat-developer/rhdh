@@ -165,41 +165,47 @@ export class SchemaModeTestSetup {
       console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
     } else {
       const existingEnv = backstageContainer.env ?? [];
-      const missingVars = ([...POSTGRES_ENV_KEYS] as string[]).filter(
-        (v) => !existingEnv.some((e) => e.name === v),
-      );
+      const envPath = `/spec/template/spec/containers/${backstageIdx}/env`;
+      const isFromSecret = (varName: string) =>
+        existingEnv.some(
+          (e) =>
+            e.name === varName &&
+            e.valueFrom?.secretKeyRef?.name === secretName &&
+            e.valueFrom.secretKeyRef.key === varName,
+        );
+      const varsToSet = ([...POSTGRES_ENV_KEYS] as string[]).filter((v) => !isFromSecret(v));
 
-      if (missingVars.length === 0) {
-        console.log("POSTGRES_* env vars already present in deployment");
+      if (varsToSet.length === 0) {
+        console.log("POSTGRES_* env vars already read from the schema-mode secret");
         return;
       }
 
-      console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
+      console.log(`Pointing deployment env vars at ${secretName}: ${varsToSet.join(", ")}`);
       const patch: { op: string; path: string; value?: unknown }[] = [];
 
       if (backstageContainer.env === undefined || backstageContainer.env.length === 0) {
-        patch.push({
-          op: "add",
-          path: `/spec/template/spec/containers/${backstageIdx}/env`,
-          value: [],
-        });
+        patch.push({ op: "add", path: envPath, value: [] });
       }
 
-      for (const varName of missingVars) {
-        patch.push({
-          op: "add",
-          path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
-          value: {
-            name: varName,
-            valueFrom: {
-              secretKeyRef: { name: secretName, key: varName },
-            },
+      for (const varName of varsToSet) {
+        const value = {
+          name: varName,
+          valueFrom: {
+            secretKeyRef: { name: secretName, key: varName },
           },
-        });
+        };
+        // The 2.y chart already sets POSTGRES_HOST/PORT/USER as literal values
+        // (user "postgres"), so existing entries must be replaced, not skipped.
+        const idx = existingEnv.findIndex((e) => e.name === varName);
+        patch.push(
+          idx === -1
+            ? { op: "add", path: `${envPath}/-`, value }
+            : { op: "replace", path: `${envPath}/${idx}`, value },
+        );
       }
 
       await this.kubeClient.jsonPatchDeployment(deploymentName, this.namespace, patch);
-      console.log("Added env vars to deployment");
+      console.log("Updated deployment env vars");
     }
   }
 
