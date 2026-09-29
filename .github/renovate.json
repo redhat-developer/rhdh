@@ -141,6 +141,11 @@
       "automerge": false
     },
     {
+      "description": "Limit @remixicon/react to versions below 4.9.0 due to a license change in that release",
+      "matchPackageNames": ["@remixicon/react"],
+      "allowedVersions": "<4.9.0"
+    },
+    {
       "description": "disable minor updates for Winston",
       "matchPackageNames": ["winston"],
       "enabled": false,
