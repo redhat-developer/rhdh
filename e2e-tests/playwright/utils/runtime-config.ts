@@ -163,6 +163,27 @@ export function generateHelmValuesYaml(): string {
         pvc: { claimName: printfRelease("dynamic-plugins-root") },
       },
     },
+    // The chart's default-deny NetworkPolicies only let the backend reach the
+    // in-namespace PostgreSQL, so the external DB tests (RDS, Azure) could
+    // never connect. Same allowance CI applies to its namespaces
+    // (netpol-ci-allow-backend-egress.yaml).
+    extraDeploy: [
+      {
+        apiVersion: "networking.k8s.io/v1",
+        kind: "NetworkPolicy",
+        metadata: { name: printfRelease("ci-allow-backend-egress") },
+        spec: {
+          podSelector: {
+            matchLabels: {
+              "app.kubernetes.io/instance": tpl(".Release.Name"),
+              "app.kubernetes.io/component": "backstage",
+            },
+          },
+          policyTypes: ["Egress"],
+          egress: [{}],
+        },
+      },
+    ],
     // Runtime addition: postgres certificate for external DB tests
     extraVolumeMounts: [
       {

@@ -107,6 +107,26 @@ describe("generateHelmValuesYaml", () => {
     });
   });
 
+  it("lets the backend reach external databases past the chart's default-deny egress", () => {
+    expect(helmValues()).toMatchObject({
+      extraDeploy: [
+        {
+          kind: "NetworkPolicy",
+          spec: {
+            podSelector: {
+              matchLabels: {
+                "app.kubernetes.io/instance": "{{ .Release.Name }}",
+                "app.kubernetes.io/component": "backstage",
+              },
+            },
+            policyTypes: ["Egress"],
+            egress: [{}],
+          },
+        },
+      ],
+    });
+  });
+
   it("disables the Intelligent Assistant sidecar", () => {
     expect(helmValues()).toMatchObject({ intelligentAssistant: { enabled: false } });
   });
