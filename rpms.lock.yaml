@@ -158,13 +158,13 @@ arches:
     name: gcc-c++
     evr: 14.3.1-4.4.el10
     sourcerpm: gcc-14.3.1-4.4.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.el10.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 336480
-    checksum: sha256:53db0bb7526e7038a7d02c5aa28cd14e612409c02c75ac6edc749043e1cd6a85
+    size: 323602
+    checksum: sha256:42e02050b5ba6091e94cee7b2a4a298b81cbc94ade00d48632b9d41da1390467
     name: gdb-gdbserver
-    evr: 16.3-3.el10
-    sourcerpm: gdb-16.3-3.el10.src.rpm
+    evr: 16.3-3.1.el10_2
+    sourcerpm: gdb-16.3-3.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/g/git-core-2.52.0-1.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 5496689
@@ -1763,12 +1763,12 @@ arches:
     checksum: sha256:7012e9abb540c51db1efa2f0479b91122962765ac2b95d3a2c7dd4772dfdbeac
     name: fuse-overlayfs
     evr: 1.16-1.el10_1
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.1.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
-    size: 24893329
-    checksum: sha256:e26736c28a4cc0953f98f1e20f52935e41b16cfce836361b53837390475d8be8
+    size: 24883513
+    checksum: sha256:affe34e0bccde024fce408387ef04f09c843eb61ce85cb6575ebbd34b2294df6
     name: gdb
-    evr: 16.3-3.el10
+    evr: 16.3-3.1.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/g/git-2.52.0-1.el10.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
     size: 8050887
@@ -2838,13 +2838,13 @@ arches:
     name: gcc-c++
     evr: 14.3.1-4.4.el10
     sourcerpm: gcc-14.3.1-4.4.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.el10.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.1.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 346121
-    checksum: sha256:dcca181a2fecb01b206a941a0ce78eb28c74d9841bf5580d05a194fae76231c9
+    size: 333325
+    checksum: sha256:f71d54a95d05a42f74827f1c07afcab4751070740570348e3052fbc2b3ad6299
     name: gdb-gdbserver
-    evr: 16.3-3.el10
-    sourcerpm: gdb-16.3-3.el10.src.rpm
+    evr: 16.3-3.1.el10_2
+    sourcerpm: gdb-16.3-3.1.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/g/git-core-2.52.0-1.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 5406101
@@ -4422,12 +4422,12 @@ arches:
     checksum: sha256:7012e9abb540c51db1efa2f0479b91122962765ac2b95d3a2c7dd4772dfdbeac
     name: fuse-overlayfs
     evr: 1.16-1.el10_1
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.el10.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.1.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
-    size: 24893329
-    checksum: sha256:e26736c28a4cc0953f98f1e20f52935e41b16cfce836361b53837390475d8be8
+    size: 24883513
+    checksum: sha256:affe34e0bccde024fce408387ef04f09c843eb61ce85cb6575ebbd34b2294df6
     name: gdb
-    evr: 16.3-3.el10
+    evr: 16.3-3.1.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/g/git-2.52.0-1.el10.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
     size: 8050887
