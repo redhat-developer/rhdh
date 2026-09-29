@@ -50,21 +50,21 @@ plugins:
 
   # Home page widgets (same quay.io/rhdh package the Helm chart / Operator install).
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-homepage:{{inherit}}
-    disabled: false
+    enabled: true
   # Sign-in page + auth APIs, drawer infra, and SCM integrations (pluginId: 'app').
   # Without app-auth, guest sign-in falls back to upstream's default page (no
   # "Select a sign-in method" heading) — what guest-signin-happy-path and
   # github-happy-path exercise.
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-auth:{{inherit}}
-    disabled: false
+    enabled: true
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-defaults:{{inherit}}
-    disabled: false
+    enabled: true
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-integrations:{{inherit}}
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20
-    disabled: false
+    enabled: true
   # TechDocs frontend: /docs + Docs sidebar item (plugins/frontend/sidebar.spec.ts).
   - package: oci://quay.io/rhdh/backstage-plugin-techdocs:{{inherit}}
-    disabled: false
+    enabled: true
   # application-provider-test / application-listener-test are not installed: the
   # pinned OCI builds and packages/app do not support those fixtures yet, and both
   # specs are excluded from playwright.local.config.ts testMatch.
@@ -72,4 +72,4 @@ plugins:
   # Enable app-root-wrapper + translation in app-config.local-e2e.yaml
   # (app-root-wrapper:app/global-header, translation:app/global-header-translations).
   - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-global-header:{{inherit}}
-    disabled: false
+    enabled: true

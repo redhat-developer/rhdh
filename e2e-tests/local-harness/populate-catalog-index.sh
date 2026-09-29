@@ -51,14 +51,14 @@ fi
   echo "plugins:"
   while read -r ref; do
     echo "  - package: \"$ref\""
-    echo "    disabled: false"
+    echo "    enabled: true"
   done <<< "$refs"
   # Excluded packages must be disabled EXPLICITLY. The `includes` above pulls in
   # the index's own list, so simply leaving one out installs it anyway.
   if [[ -n "$excluded_refs" ]]; then
     while read -r ref; do
       echo "  - package: \"$ref\""
-      echo "    disabled: true"
+      echo "    enabled: false"
     done <<< "$excluded_refs"
   fi
 } > "$workdir/dynamic-plugins.catalog-index.yaml"
