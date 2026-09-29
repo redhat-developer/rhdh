@@ -6,7 +6,7 @@ import * as navigation from "../../utils/ui-helper/navigation";
 import * as table from "../../utils/ui-helper/table";
 import * as verification from "../../utils/ui-helper/verification";
 import { SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
-import { findTableCellByColumn } from "../selectors/semantic/table-helpers";
+import { findColumnIndex } from "../selectors/semantic/table-helpers";
 
 /** Catalog browse and entity list interactions. */
 export class CatalogBrowsePage {
@@ -134,16 +134,15 @@ export class CatalogBrowsePage {
   }
 
   async verifyFirstRowCreatedAtNotEmpty(): Promise<void> {
+    // Keep the first-row locator live instead of capturing its text: the
+    // table may still be re-sorting, and a row matched by stale text can move
+    // to another page of results.
+    const createdAtColumn = await findColumnIndex(this.page, "Created At");
     const firstRow = this.page
       .getByRole("row")
       .filter({ has: this.page.getByRole("cell") })
       .first();
-    const rowText = await firstRow.textContent();
-    if (rowText === null || rowText === "") {
-      throw new Error("Expected the first catalog row to have text content");
-    }
-    const createdAtCell = await findTableCellByColumn(this.page, rowText, "Created At");
-    await expect(createdAtCell).not.toBeEmpty();
+    await expect(firstRow.getByRole("cell").nth(createdAtColumn)).not.toBeEmpty();
   }
 
   async openEntityLinkByHref(hrefFragment: string): Promise<void> {
