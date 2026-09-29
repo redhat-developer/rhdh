@@ -30,11 +30,10 @@ const dynamicPluginsPvcSize = "5Gi";
  * Auth providers are no longer built into the backend, and the catalog index
  * ships the guest provider disabled. Without it the guest session has no user
  * token, so anything that needs one (user identity, TechDocs) returns 401.
- * Same package as values_showcase.yaml.
  */
 const guestAuthProviderPlugin = {
   package:
-    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20",
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.54.6__0.2.22",
   enabled: true,
 };
 
