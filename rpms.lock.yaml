@@ -200,13 +200,13 @@ arches:
     name: gcc-plugin-annobin
     evr: 11.5.0-14.el9
     sourcerpm: gcc-11.5.0-14.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.el9.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.1.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 331643
-    checksum: sha256:7f706961f029d8897780693f36834f3d644554ff5adf82da40a05e518632a744
+    size: 324810
+    checksum: sha256:305eee7f4794f2f47d74c4a0956d2321475dd6dd6d9f6f145f399ef632bde812
     name: gdb-gdbserver
-    evr: 16.3-3.el9
-    sourcerpm: gdb-16.3-3.el9.src.rpm
+    evr: 16.3-3.1.el9_8
+    sourcerpm: gdb-16.3-3.1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/g/ghc-srpm-macros-1.5.0-6.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 9252
@@ -3454,12 +3454,12 @@ arches:
     checksum: sha256:8e2ae14c212d0dde5afe0381b609c9bdb9f97bae787ca05a16c3c2c33b54547c
     name: fuse-overlayfs
     evr: 1.16-1.el9_7
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.1.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
-    size: 24609155
-    checksum: sha256:861f0c291529aa93c46a7ab9aacc842096cb0b82e58d3bc8d43bc0ab5110b5cc
+    size: 24605610
+    checksum: sha256:fd2fcc3be98aa3d001107b0e1483316cb038e32a11b3132914ab88436edfa781
     name: gdb
-    evr: 16.3-3.el9
+    evr: 16.3-3.1.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/g/ghc-srpm-macros-1.5.0-6.el9.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
     size: 10180
@@ -5369,13 +5369,13 @@ arches:
     name: gcc-plugin-annobin
     evr: 11.5.0-14.el9
     sourcerpm: gcc-11.5.0-14.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.el9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/gdb-gdbserver-16.3-3.1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 342570
-    checksum: sha256:001092995f6fecee8324eae37361c2a310cde8d6312c1d884ccb3f86bf5973c3
+    size: 335838
+    checksum: sha256:2fb0111010b097be79907c21f5639001c9fd36caf5625b347fae1e538d48a4dd
     name: gdb-gdbserver
-    evr: 16.3-3.el9
-    sourcerpm: gdb-16.3-3.el9.src.rpm
+    evr: 16.3-3.1.el9_8
+    sourcerpm: gdb-16.3-3.1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/ghc-srpm-macros-1.5.0-6.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 9252
@@ -8623,12 +8623,12 @@ arches:
     checksum: sha256:8e2ae14c212d0dde5afe0381b609c9bdb9f97bae787ca05a16c3c2c33b54547c
     name: fuse-overlayfs
     evr: 1.16-1.el9_7
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/gdb-16.3-3.1.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 24609155
-    checksum: sha256:861f0c291529aa93c46a7ab9aacc842096cb0b82e58d3bc8d43bc0ab5110b5cc
+    size: 24605610
+    checksum: sha256:fd2fcc3be98aa3d001107b0e1483316cb038e32a11b3132914ab88436edfa781
     name: gdb
-    evr: 16.3-3.el9
+    evr: 16.3-3.1.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/ghc-srpm-macros-1.5.0-6.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 10180
