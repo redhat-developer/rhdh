@@ -358,6 +358,8 @@ test.describe("Test RBAC", () => {
 
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
+      // A leaked test-role from a previous failed attempt breaks creation.
+      await rbacPo.tryDeleteRole("role:default/test-role");
       await rbacPo.createRole(
         "test-role",
         [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
@@ -375,16 +377,8 @@ test.describe("Test RBAC", () => {
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
-      const nextButton = page.getByTestId("nextButton-2").first();
-      await expect(nextButton).toBeVisible();
-      await expect(nextButton).toBeEnabled();
-      await nextButton.click();
-      // Wait for review step to be ready
-      const saveButton = page.getByRole("button", { name: "Save" });
-      await expect(saveButton).toBeVisible();
-      await expect(saveButton).toBeEnabled();
-      await saveButton.click();
+      await rbacPo.advanceFromPermissionsToReview();
+      await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
       );
@@ -435,15 +429,7 @@ test.describe("Test RBAC", () => {
       await page.click(rbacPo.selectMember("Guest User"));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
-      // Wait for next step to be ready and clickable (use .first() to handle multiple Next buttons)
-      const nextButton2 = page.getByTestId("nextButton-2").first();
-      await expect(nextButton2).toBeVisible();
-      await expect(nextButton2).toBeEnabled();
-      await nextButton2.click();
-      // Wait for review step before Save — stepper transition may take time
-      await expect(page.getByRole("button", { name: "Save" })).toBeVisible({
-        timeout: 20000,
-      });
+      await rbacPo.advanceFromPermissionsToReview();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -772,6 +758,8 @@ test.describe("Test RBAC", () => {
 
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
+      // A leaked test-role from a previous failed attempt breaks creation.
+      await rbacPo.tryDeleteRole("role:default/test-role");
       await rbacPo.createRole(
         "test-role",
         [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
@@ -792,16 +780,8 @@ test.describe("Test RBAC", () => {
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
-      const nextButton = page.getByTestId("nextButton-2").first();
-      await expect(nextButton).toBeVisible();
-      await expect(nextButton).toBeEnabled();
-      await nextButton.click();
-      // Wait for review step to be ready
-      const saveButton = page.getByRole("button", { name: "Save" });
-      await expect(saveButton).toBeVisible();
-      await expect(saveButton).toBeEnabled();
-      await saveButton.click();
+      await rbacPo.advanceFromPermissionsToReview();
+      await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
       );

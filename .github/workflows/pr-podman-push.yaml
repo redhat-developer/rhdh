@@ -1,3 +1,23 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Trusted publisher: runs with repository secrets after the untrusted
+# pull_request hermetic build. Does not check out PR/fork code. Push tags are
+# derived from trusted workflow_run fields (PR number + head_sha), not from
+# artifact metadata destinations. Destination is always rhdh-community/rhdh
+# with pr-<N> tags only (never :next / :latest / release tags).
+
 name: Podman PR Push
 
 on:
@@ -7,16 +27,26 @@ on:
     types:
       - completed
 
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.id }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: quay.io
+  # Fixed preview destination. Do not take this from artifacts.
+  REGISTRY_IMAGE: rhdh-community/rhdh
+
 jobs:
   podman-push:
     name: Push Podman Image to Registry
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_run' }}
     permissions:
       contents: read
       issues: write
       pull-requests: write
-    
+
     steps:
       - name: Get PR number from workflow run
         id: get-pr-info
@@ -30,44 +60,77 @@ jobs:
                 && format('{0}:{1}', github.event.workflow_run.head_repository.owner.login, github.event.workflow_run.head_branch)
                 || github.event.workflow_run.head_branch
             }}
-          
+          FULL_SHA: ${{ github.event.workflow_run.head_sha }}
+
         run: |
-          FULL_SHA="${{ github.event.workflow_run.head_sha }}"
-          SHORT_SHA=$(echo "$FULL_SHA" | cut -c1-8)
+          set -euo pipefail
+
+          SHORT_SHA=$(echo "${FULL_SHA}" | cut -c1-8)
           # Need to use gh cli instead of `events.workflow_run.pull_requests` because the latter doesn't work for PRs from forks
           # Refer to https://github.com/orgs/community/discussions/25220
           PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number')
-          
+
           if [ -n "$PR_NUMBER" ]; then
             echo "Found PR number: $PR_NUMBER"
             echo "PR branch: $PR_BRANCH"
-            echo "Artifact Name: container-image-pr-$PR_NUMBER-$SHORT_SHA"
 
-            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-            echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-            echo "artifact-name=container-image-pr-$PR_NUMBER-$SHORT_SHA" >> $GITHUB_OUTPUT
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
           else
-            echo "Failed to determine PR number"
+            echo "::error::Failed to determine PR number for branch: $PR_BRANCH"
+            echo "## Failed to determine PR number" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Could not find a PR for branch: \`$PR_BRANCH\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "No PR comment could be posted for this workflow run." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-      - name: Determine artifact name
-        run: |
-          # For workflow_run, extract from the event context
-          BUILD_ID="${{ steps.get-pr-info.outputs.pr_number }}"
-          SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
-          SHORT_SHA="${SHORT_SHA:0:8}"
 
-          
-          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-          ARTIFACT_NAME="podman-image-${BUILD_ID}-${SHORT_SHA}"
-          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
-          echo "SKIP_ARTIFACT_NAME=pr-${BUILD_ID}-${SHORT_SHA}-isSkipped" >> $GITHUB_ENV
+      - name: Comment build failure
+        if: ${{ github.event.workflow_run.conclusion != 'success' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          BUILD_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const conclusion = process.env.BUILD_CONCLUSION;
+
+            const body = `The container image [build workflow](${buildUrl}) finished with status: \`${conclusion}\`.\n\n`
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
+      - name: Determine artifact name
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        id: get-artifact-name
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          SHORT_SHA: ${{ steps.get-pr-info.outputs.short_sha }}
+        run: |
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          ARTIFACT_NAME="podman-image-${PR_NUMBER}-${SHORT_SHA}"
+          SKIP_ARTIFACT_NAME="pr-${PR_NUMBER}-${SHORT_SHA}-isSkipped"
+
           echo "Using artifact name: $ARTIFACT_NAME"
           echo "Using skip artifact name: $SKIP_ARTIFACT_NAME"
 
+          echo "artifact_name=$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
+          echo "skip_artifact_name=$SKIP_ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Download Skip Status Artifact
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: download-skip-status
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        env:
+          SKIP_ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.skip_artifact_name }}
         with:
           name: ${{ env.SKIP_ARTIFACT_NAME }}
           path: ./rhdh-skip-artifacts
@@ -76,82 +139,129 @@ jobs:
         continue-on-error: true
 
       - name: Check Skip Status
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: check-skip
         run: |
           if [ -f "./rhdh-skip-artifacts/isSkipped.txt" ]; then
             IS_SKIPPED_RAW=$(cat ./rhdh-skip-artifacts/isSkipped.txt)
-            
-            # Sanitize: Allow only 'true' or 'false', default to false if unknown to skip artifact download in case of injection
+
+            # Sanitize: Allow only 'true' or 'false', default to true if unknown
+            # so a poisoned skip artifact cannot force a push of bad image data.
             if [[ "$IS_SKIPPED_RAW" == "false" ]]; then
               IS_SKIPPED="false"
             else
               IS_SKIPPED="true"
             fi
-            
+
             echo "Found skip status: $IS_SKIPPED_RAW"
             echo "Sanitized skip status: $IS_SKIPPED"
-            echo "is_skipped=$IS_SKIPPED" >> $GITHUB_OUTPUT
+            echo "is_skipped=$IS_SKIPPED" >> "$GITHUB_OUTPUT"
           else
             echo "Skip status artifact not found, skipping push"
-            echo "is_skipped=true" >> $GITHUB_OUTPUT
+            echo "is_skipped=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Download Image Artifacts
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        env:
+          ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.artifact_name }}
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ./rhdh-podman-artifacts
           run-id: ${{ github.event.workflow_run.id || github.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Load and prepare image
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+      - name: Load and retag image with trusted tags
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         id: prepare
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          SHORT_SHA: ${{ steps.get-pr-info.outputs.short_sha }}
+          REGISTRY: ${{ env.REGISTRY }}
+          REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
         run: |
-          # Check if artifacts exist
           if [ ! -f "./rhdh-podman-artifacts/image.tar" ]; then
             echo "Error: image.tar not found in artifacts"
             echo "This may make sense if the build was skipped"
             exit 1
           fi
-          
-          # Load the image from tar file (contains all tags)
-          podman load -i ./rhdh-podman-artifacts/image.tar
-          
-          # Read metadata
-          TAGS_LIST=$(cat ./rhdh-podman-artifacts/tags.txt)
-                    
+
+          # Load the image from tar (may carry untrusted destination tags).
+          LOAD_OUT=$(podman load -i ./rhdh-podman-artifacts/image.tar)
+          echo "$LOAD_OUT"
+
+          # Resolve a local reference to retag from. Prefer first tags.txt line
+          # if present; otherwise parse podman load output.
+          SOURCE_REF=""
+          if [ -f "./rhdh-podman-artifacts/tags.txt" ]; then
+            SOURCE_REF=$(head -n1 ./rhdh-podman-artifacts/tags.txt | tr -d '\r')
+          fi
+          if [ -z "$SOURCE_REF" ]; then
+            SOURCE_REF=$(echo "$LOAD_OUT" | sed -n 's/.*Loaded image(s): //p' | awk -F',' '{print $1}' | tr -d ' ')
+          fi
+          if [ -z "$SOURCE_REF" ]; then
+            echo "::error::Could not determine loaded image reference to retag"
+            exit 1
+          fi
+
+          echo "Source ref from artifact: $SOURCE_REF"
           echo "Loaded images:"
           podman images
-          
-          echo "Full tags from metadata:"
+
+          # SECURITY: ignore artifact destination names. Derive push tags only
+          # from trusted workflow_run PR number + head_sha, and only to rhdh.
+          TRUSTED_PR="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}"
+          TRUSTED_SHA="${REGISTRY}/${REGISTRY_IMAGE}:pr-${PR_NUMBER}-${SHORT_SHA}"
+
+          podman tag "$SOURCE_REF" "$TRUSTED_PR"
+          podman tag "$SOURCE_REF" "$TRUSTED_SHA"
+
+          TAGS_LIST=$(printf '%s\n%s\n' "$TRUSTED_PR" "$TRUSTED_SHA")
+          echo "Trusted tags to push:"
           printf '%s\n' "$TAGS_LIST"
-          
-          # SECURITY: Use a random delimiter to prevent output injection from artifact poisoning
+
+          ALLOWED_RE="^quay\.io/rhdh-community/rhdh:pr-${PR_NUMBER}(-[A-Za-z0-9._-]+)?$"
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            if ! [[ "$tag" =~ $ALLOWED_RE ]]; then
+              echo "::error::Refusing to push disallowed trusted tag: $tag"
+              exit 1
+            fi
+          done <<< "$TAGS_LIST"
+
+          # SECURITY: Use a random delimiter to prevent output injection
           DELIMITER=$(openssl rand -hex 16)
-          echo "tags<<$DELIMITER" >> $GITHUB_OUTPUT
-          printf '%s\n' "$TAGS_LIST" >> $GITHUB_OUTPUT
-          echo "$DELIMITER" >> $GITHUB_OUTPUT
+          {
+            echo "tags<<$DELIMITER"
+            printf '%s\n' "$TAGS_LIST"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Push Images
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        env:
+          PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
         with:
-          tags: ${{ steps.prepare.outputs.tags }}
+          tags: ${{ env.PUSHED_TAGS }}
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Comment skip status
-        if: ${{ steps.check-skip.outputs.is_skipped == 'true' }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped == 'true' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          PUBLISH_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
             const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const publishUrl = process.env.PUBLISH_WORKFLOW_URL;
 
-            const body = '🚫 Image Push Skipped.\n\nThe container image push was skipped because the build was skipped (either due to [skip-build] tag or no relevant changes with existing image)\n\n';
+            const body = `The container image [build](${buildUrl}) and [publish](${publishUrl}) workflows were skipped (either due to [skip-build] tag or no relevant changes with existing image).\n`;
 
             github.rest.issues.createComment({
               issue_number: parseInt(prNumber),
@@ -161,41 +271,52 @@ jobs:
             })
 
       - name: Comment the image pull link
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          PUBLISH_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
             const prNumber = process.env.PR_NUMBER;
             const pushedTags = process.env.PUSHED_TAGS;
-            
-            if (!prNumber) {
-              console.log('No pull request number found');
-              return;
-            }
-            
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const publishUrl = process.env.PUBLISH_WORKFLOW_URL;
+
+            const noTagsError = (reason) => {
+              const body = `The image was [built](${buildUrl}) and [published](${publishUrl}) but no tags were found: ${reason}.\n`;
+
+              github.rest.issues.createComment({
+                issue_number: parseInt(prNumber),
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              core.setFailed(reason);
+            };
+
             if (!pushedTags) {
-              console.log('No pushed tags found');
+              noTagsError('No pushed tags output found');
               return;
             }
-            
+
             const tags = pushedTags.trim().split('\n').filter(tag => tag.trim());
-            
+
             if (tags.length === 0) {
-              console.log('No valid tags found');
+              noTagsError('Pushed tags output was empty');
               return;
             }
-            
+
             console.log(`Found ${tags.length} tags:`, tags);
-            
+
             const tagLinks = tags.map(fullTag => {
               return `* [\`${fullTag}\`](https://${fullTag})`;
             }).join('\n');
-            
-            const body = `The image is available at:\n\n${tagLinks}\n`;
-            
+
+            const body = `Image was [built](${buildUrl}) and [published](${publishUrl}) successfully. It is available at:\n\n${tagLinks}\n`;
+
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
 
             github.rest.issues.createComment({
@@ -205,3 +326,24 @@ jobs:
               body: body
             })
 
+      - name: Comment publish failure
+        if: ${{ failure() && github.event.workflow_run.conclusion == 'success' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          PUBLISH_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const publishUrl = process.env.PUBLISH_WORKFLOW_URL;
+
+            const body = `The container image was [built](${buildUrl}) successfully but failed to [publish](${publishUrl}) to the registry.\n`;
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
