@@ -26,6 +26,18 @@ import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 const appTitle = "Red Hat Developer Hub";
 const dynamicPluginsPvcSize = "5Gi";
 
+/**
+ * Auth providers are no longer built into the backend, and the catalog index
+ * ships the guest provider disabled. Without it the guest session has no user
+ * token, so anything that needs one (user identity, TechDocs) returns 401.
+ * Same package as values_showcase.yaml.
+ */
+const guestAuthProviderPlugin = {
+  package:
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20",
+  enabled: true,
+};
+
 /** Backstage CRD API version — update when the CRD version bumps. */
 export const BACKSTAGE_CR_API_VERSION = "rhdh.redhat.com/v1alpha5";
 
@@ -162,6 +174,7 @@ export function generateHelmValuesYaml(): string {
         type: "pvc",
         pvc: { claimName: printfRelease("dynamic-plugins-root") },
       },
+      plugins: [guestAuthProviderPlugin],
     },
     // The chart's default-deny NetworkPolicies only let the backend reach the
     // in-namespace PostgreSQL, so the external DB tests (RDS, Azure) could
@@ -291,9 +304,13 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
  * `dynamic-plugins.default.yaml` — many of its default-enabled plugins
  * crash without external config (GitHub org, GitLab, LDAP, Keycloak,
  * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
+ * The guest auth provider is the only plugin added, for guest sign-in.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.stringify({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: 0 });
+  return yaml.stringify(
+    { includes: [] as string[], plugins: [guestAuthProviderPlugin] },
+    { lineWidth: 0 },
+  );
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────

@@ -5,6 +5,7 @@ import { buildImageRef } from "../playwright/utils/helper";
 import { isRecord } from "../playwright/utils/kube-client/helpers";
 import {
   generateBackstageCR,
+  generateDynamicPluginsYaml,
   generateHelmSetArgs,
   generateHelmValuesYaml,
   type RuntimeDeployConfig,
@@ -17,6 +18,7 @@ const config: RuntimeDeployConfig = {
   image: buildImageRef("quay.io", "rhdh-community/rhdh", "next"),
   internalPostgresqlImage: buildImageRef("quay.io", "fedora/postgresql-18", "latest"),
 };
+const guestProviderPackage = /backstage-plugin-auth-backend-module-guest-provider/u;
 const catalogIndex = buildImageRef("quay.io", "rhdh/plugin-catalog-index", "next");
 
 /** Collapses ["--set", "k=v", ...] into { k: "v" } so tests assert on keys, not positions. */
@@ -127,8 +129,23 @@ describe("generateHelmValuesYaml", () => {
     });
   });
 
+  it("enables the guest auth provider, which the catalog index ships disabled", () => {
+    expect(helmValues()).toMatchObject({ dynamicPlugins: { plugins: [{ enabled: true }] } });
+    expect(generateHelmValuesYaml()).toMatch(guestProviderPackage);
+  });
+
   it("disables the Intelligent Assistant sidecar", () => {
     expect(helmValues()).toMatchObject({ intelligentAssistant: { enabled: false } });
+  });
+});
+
+describe("generateDynamicPluginsYaml", () => {
+  it("loads no catalog defaults and only the guest auth provider", () => {
+    expect(yaml.parse(generateDynamicPluginsYaml())).toMatchObject({
+      includes: [],
+      plugins: [{ enabled: true }],
+    });
+    expect(generateDynamicPluginsYaml()).toMatch(guestProviderPackage);
   });
 });
 

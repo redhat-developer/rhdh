@@ -19,6 +19,27 @@ import {
   setupSchemaModeDatabase,
 } from "./schema-mode-db";
 
+/** app-config `backend.database` for schema mode against the internal or an external DB. */
+export function schemaModeDatabaseConfig(
+  isInternalDb: boolean,
+): NonNullable<NonNullable<AppConfigYaml["backend"]>["database"]> {
+  return {
+    client: "pg",
+    pluginDivisionMode: "schema",
+    ensureSchemaExists: true,
+    connection: {
+      host: "${POSTGRES_HOST}",
+      port: "${POSTGRES_PORT}",
+      user: "${POSTGRES_USER}",
+      password: "${POSTGRES_PASSWORD}",
+      database: "${POSTGRES_DB}",
+      // Explicit for the internal DB, because pg otherwise falls back to
+      // PGSSLMODE, which the external DB tests leave set to "require".
+      ssl: isInternalDb ? false : { rejectUnauthorized: false },
+    },
+  };
+}
+
 export class SchemaModeTestSetup {
   private namespace: string;
   private releaseName: string;
@@ -201,27 +222,12 @@ export class SchemaModeTestSetup {
       }
 
       console.log("Updating app-config for schema mode...");
-      const connection: Record<string, unknown> = {
-        host: "${POSTGRES_HOST}",
-        port: "${POSTGRES_PORT}",
-        user: "${POSTGRES_USER}",
-        password: "${POSTGRES_PASSWORD}",
-        database: "${POSTGRES_DB}",
-      };
-
-      if (isInternalDb) {
-        console.log("Using non-SSL connection for internal PostgreSQL");
-      } else {
-        connection.ssl = { rejectUnauthorized: false };
-        console.log("Using SSL connection for external PostgreSQL");
-      }
-
-      appConfig.backend.database = {
-        client: "pg",
-        pluginDivisionMode: "schema",
-        ensureSchemaExists: true,
-        connection,
-      };
+      console.log(
+        isInternalDb
+          ? "Using non-SSL connection for internal PostgreSQL"
+          : "Using SSL connection for external PostgreSQL",
+      );
+      appConfig.backend.database = schemaModeDatabaseConfig(isInternalDb);
     });
     console.log("App-config updated for schema mode");
   }
