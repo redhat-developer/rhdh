@@ -3,7 +3,7 @@ dynamicPlugins:
     # This list replaces the one in values_showcase.yaml, so repeat the guest
     # auth provider. Auth providers are no longer built into the backend, and
     # without it the guest session has no user token (TechDocs returns 401).
-    - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20"
+    - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.54.6__0.2.22"
       enabled: true
     #  sanity check https://issues.redhat.com/browse/RHIDP-5301
     - package: ref://backstage-plugin-catalog-backend-module-gitlab-org
