@@ -39,8 +39,8 @@ async function detectRhdhSidebar(page: Page): Promise<boolean> {
   if (await hasLegacySidebarMarkup(page)) {
     return false;
   }
-  // NFS cluster-free harness proxies JSON /healthcheck and loads global-header — same
-  // signal as production RHDH for the rhdh-sidebar-adapter path.
+  // NFS cluster-free harness proxies JSON /healthcheck and loads the RHDH dynamic
+  // plugins, including app-defaults — the same signal used for the RHDH adapter path.
   return hasJsonHealthcheck(page);
 }
 

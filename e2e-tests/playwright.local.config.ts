@@ -44,8 +44,9 @@ export default defineConfig({
   // @cluster-free-capable tag. To widen coverage: tag the test where it lives and add its
   // spec file here. Validated so far: the full guest-signin spec (home page via the
   // homepage OCI plugin; Settings/Sign-out via the global-header OCI plugin's own NFS
-  // extensions), the learning-paths spec (sidebar flat nav to /learning-paths), and the
-  // instance health check (/healthcheck is proxied to the backend by the app dev server —
+  // extensions), the learning-paths spec (app-defaults sidebar navigation to
+  // /learning-paths), and the instance health check (/healthcheck is proxied to the
+  // backend by the app dev server —
   // see packages/app package.json — mirroring the single-origin production container).
   testMatch: [
     "e2e/guest-signin-happy-path.spec.ts",

@@ -15,7 +15,6 @@ import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-trans
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { catalogCreatedAtModule } from "./modules/catalog";
 import { learningPathsModule } from "./modules/learning-paths";
-import { navModule } from "./modules/nav";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
@@ -43,7 +42,6 @@ const app = createApp({
     userSettingsPlugin,
     dynamicFrontendFeaturesLoader(),
     // RHDH modules (local to app)
-    navModule, // RHDH-branded sidebar (logo, menu ordering, drawer toggle)
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
     learningPathsModule, // Learning Paths page (/learning-paths)
     rhdhApisModule, // storage, learning-path APIs

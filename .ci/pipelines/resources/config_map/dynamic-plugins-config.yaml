@@ -220,13 +220,8 @@ app:
                 xxs:
                   w: 12
                   h: 4
-    # Nested sidebar menu groups (e.g. "References" > APIs/Learning Paths, "Favorites" >
-    # Docs) have no NFS equivalent: the app's sidebar
-    # (packages/app/src/modules/nav/Sidebar.tsx) is a fixed, code-defined
-    # NavContentBlueprint (Search / Menu / Settings groups, with Catalog and Create
-    # pinned and everything else flat, sorted by title) — it does not read menuItems
-    # config at all. See sidebar.spec.ts for the flat-nav assertions this drives
-    # instead.
+    # Sidebar navigation is provided by the app-defaults dynamic plugin. E2E coverage
+    # verifies the user-facing Docs and Learning Paths destinations in sidebar.spec.ts.
     # The runtime catalog-graph API (app-defaults plugin override) does not know the
     # scaffolder-relation-processor pair, so the Overview "Relations" card drops the
     # scaffoldedFrom edge. Set relations and pairs on the card directly
