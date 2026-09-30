@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as yaml from "yaml";
 
-import { buildImageRef } from "../playwright/utils/helper";
+import { buildImageRef, parseCatalogIndexImage } from "../playwright/utils/helper";
 import { isRecord } from "../playwright/utils/kube-client/helpers";
 import {
   generateBackstageCR,
@@ -68,6 +68,27 @@ describe("generateHelmSetArgs", () => {
     const keys = Object.keys(setValues(generateHelmSetArgs({ ...config, catalogIndex })));
 
     expect(keys.filter((key) => /^(global|upstream)\./u.test(key))).toEqual([]);
+  });
+
+  it("passes a digest-pinned catalog index as a digest, not as a tag", () => {
+    const digest = "sha256:dd907085d2b535c5b34a95a8d1050ec5374f7685e76355332c4916a01c2568ee";
+    const pinned = parseCatalogIndexImage(`quay.io/rhdh/plugin-catalog-index@${digest}`);
+
+    expect(setValues(generateHelmSetArgs({ ...config, catalogIndex: pinned }))).toMatchObject({
+      "catalogIndex.image.repository": "rhdh/plugin-catalog-index",
+      "catalogIndex.image.tag": "",
+      "catalogIndex.image.digest": digest,
+    });
+  });
+
+  it("passes a digest-pinned RHDH image as a digest", () => {
+    const digest = "sha256:7baeebc72e5b719edc59e8651de7cf4627784fe43e7a084b8472f3072678c27d";
+    const pinned = buildImageRef("quay.io", "rhdh/rhdh-hub-rhel10", digest);
+
+    expect(setValues(generateHelmSetArgs({ ...config, image: pinned }))).toMatchObject({
+      "image.tag": "",
+      "image.digest": digest,
+    });
   });
 
   it("overrides the catalog index image only when one is configured", () => {

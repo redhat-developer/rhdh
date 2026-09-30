@@ -224,17 +224,22 @@ export function generateHelmValuesYaml(): string {
   return yaml.stringify(values, { lineWidth: 0 });
 }
 
-/** `--set` flags for one chart image. The digest is cleared so the tag wins. */
+/**
+ * `--set` flags for one chart image. A digest reference (`repo@sha256:...`)
+ * goes to `.digest`, because the chart renders `.tag` as `repo:tag`. A tag
+ * reference clears the chart's default digest so the tag wins.
+ */
 function imageSetArgs(valuesPath: string, image: ImageRef): string[] {
+  const isDigest = image.separator === "@";
   return [
     "--set",
     `${valuesPath}.registry=${image.registry}`,
     "--set",
     `${valuesPath}.repository=${image.repository}`,
     "--set",
-    `${valuesPath}.tag=${image.tag}`,
+    `${valuesPath}.tag=${isDigest ? "" : image.tag}`,
     "--set",
-    `${valuesPath}.digest=`,
+    `${valuesPath}.digest=${isDigest ? image.tag : ""}`,
   ];
 }
 
