@@ -134,6 +134,20 @@ describe("generateHelmValuesYaml", () => {
     expect(generateHelmValuesYaml()).toMatch(guestProviderPackage);
   });
 
+  it("enables the home page, which the new frontend system ships disabled", () => {
+    expect(helmValues()).toMatchObject({
+      appConfig: {
+        app: {
+          extensions: [
+            { "page:home": { config: { path: "/" } } },
+            { "api:home/visits": true },
+            { "app-root-element:home/visit-listener": true },
+          ],
+        },
+      },
+    });
+  });
+
   it("disables the Intelligent Assistant sidecar", () => {
     expect(helmValues()).toMatchObject({ intelligentAssistant: { enabled: false } });
   });

@@ -157,7 +157,16 @@ export function generateHelmValuesYaml(): string {
     // Intelligent Assistant sidecar would only slow down every restart.
     intelligentAssistant: { enabled: false },
     appConfig: {
-      app: { title: appTitle },
+      app: {
+        title: appTitle,
+        // The new frontend system ships page:home disabled, so "/" is a 404
+        // without it. Same home extensions as the CI dynamic-plugins-config.yaml.
+        extensions: [
+          { "page:home": { config: { path: "/" } } },
+          { "api:home/visits": true },
+          { "app-root-element:home/visit-listener": true },
+        ],
+      },
       auth: {
         environment: "development",
         providers: {
