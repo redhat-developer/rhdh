@@ -32,6 +32,12 @@ describe("envVarsNotFromSecret", () => {
     expect(envVarsNotFromSecret(undefined, SECRET, ["POSTGRES_DB"])).toEqual(["POSTGRES_DB"]);
   });
 
+  it("selects a variable whose secret reference sits next to a leftover literal", () => {
+    const existing = [fromSecret("POSTGRES_USER"), { name: "POSTGRES_USER", value: "postgres" }];
+
+    expect(envVarsNotFromSecret(existing, SECRET, ["POSTGRES_USER"])).toEqual(["POSTGRES_USER"]);
+  });
+
   it("skips variables that already read from the secret", () => {
     const existing = [fromSecret("POSTGRES_HOST"), { name: "POSTGRES_USER", value: "postgres" }];
 

@@ -158,21 +158,22 @@ export type JsonPatchOperation =
   | { op: "add"; path: string; value: unknown }
   | { op: "remove"; path: string };
 
-/** Names from `envVarNames` that do not already read the same-named key of `secretName`. */
+/**
+ * Names from `envVarNames` that do not read the same-named key of `secretName`
+ * through exactly one entry. A duplicate entry (for example a literal left
+ * next to the secret reference) counts as not done, so the caller patches it
+ * and buildEnvFromSecretPatch removes the extra entry.
+ */
 export function envVarsNotFromSecret(
   existingEnv: readonly k8s.V1EnvVar[] | undefined,
   secretName: string,
   envVarNames: readonly string[],
 ): string[] {
-  return envVarNames.filter(
-    (name) =>
-      !(existingEnv ?? []).some(
-        (e) =>
-          e.name === name &&
-          e.valueFrom?.secretKeyRef?.name === secretName &&
-          e.valueFrom.secretKeyRef.key === name,
-      ),
-  );
+  return envVarNames.filter((name) => {
+    const entries = (existingEnv ?? []).filter((e) => e.name === name);
+    const ref = entries[0]?.valueFrom?.secretKeyRef;
+    return !(entries.length === 1 && ref?.name === secretName && ref.key === name);
+  });
 }
 
 /**
