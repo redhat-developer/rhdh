@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi10/nodejs-24
-FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1790661935@sha256:03ae002e8603e69c5febedadca3b4b3abf50e7e8f4a90563d7d11c460052e199 AS skeleton
+FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1790817011@sha256:80c87fe2b161979a961911c837efff1198bdd597c6dbe7d2e59bf1c60638188d AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -241,7 +241,7 @@ RUN rm -rf \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi10/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1790642592@sha256:79eff48a9169e5fa93f542d192d91e63d8baa55a9c1639636c4c435c8a11b31d AS runner
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1790751276@sha256:111b3816e5786156d6a5bf306c43141677285360c41ecedcdf22461570b5c464 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
