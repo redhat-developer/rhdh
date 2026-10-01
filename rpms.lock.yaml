@@ -781,13 +781,13 @@ arches:
     name: environment-modules
     evr: 5.6.1-2.el10
     sourcerpm: environment-modules-5.6.1-2.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/e/expat-2.7.3-1.el10_2.3.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/e/expat-2.7.3-1.el10_2.5.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 124545
-    checksum: sha256:c2cc96badf054560d11e4d5041e10e51b38dedca132d3ebeb0cb219b4f1f9955
+    size: 126568
+    checksum: sha256:54e71e424d328f4ebe9d9f01708dc9e12d8d74edd9f19bfacd0406612d3545cc
     name: expat
-    evr: 2.7.3-1.el10_2.3
-    sourcerpm: expat-2.7.3-1.el10_2.3.src.rpm
+    evr: 2.7.3-1.el10_2.5
+    sourcerpm: expat-2.7.3-1.el10_2.5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/f/file-libs-5.45-9.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 785886
@@ -1243,20 +1243,20 @@ arches:
     name: openldap
     evr: 2.6.10-1.el10
     sourcerpm: openldap-2.6.10-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/o/openssh-9.9p1-27.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/o/openssh-9.9p1-28.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 362120
-    checksum: sha256:95c362810311b57ff4c4e39310bcb9eedde7b820a85a355bd16cbd6767d30893
+    size: 362013
+    checksum: sha256:aca12f00f8eeec85a659e06b7fd789ae696d2e15953d9feba293e7846cc0ad62
     name: openssh
-    evr: 9.9p1-27.el10_2
-    sourcerpm: openssh-9.9p1-27.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/o/openssh-clients-9.9p1-27.el10_2.aarch64.rpm
+    evr: 9.9p1-28.el10_2
+    sourcerpm: openssh-9.9p1-28.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/o/openssh-clients-9.9p1-28.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 768275
-    checksum: sha256:c7af5e73c48cd0680422e2798b3a224398b0e55958bd9dfc85a4fada9cdf24fe
+    size: 768552
+    checksum: sha256:1fd96d4f533e312a6b3d25b0a27e8c7d90dc1270b0a80702fd0d9852aa6baaa3
     name: openssh-clients
-    evr: 9.9p1-27.el10_2
-    sourcerpm: openssh-9.9p1-27.el10_2.src.rpm
+    evr: 9.9p1-28.el10_2
+    sourcerpm: openssh-9.9p1-28.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/o/openssl-3.5.8-1.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 1314667
@@ -2099,12 +2099,12 @@ arches:
     checksum: sha256:e0a4d876fab914179dd7f9d7a627ed744294133389bc0a18565b56f214da3445
     name: environment-modules
     evr: 5.6.1-2.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/e/expat-2.7.3-1.el10_2.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/e/expat-2.7.3-1.el10_2.5.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 874521
-    checksum: sha256:0e374c836935a7e07de43136299688b3bb172bce5a85754f923c57c36168ee26
+    size: 881935
+    checksum: sha256:8b13eae7a7bc201a48bacdecb80476e6a9e3980f77bbde3398b89bc6b1f68abf
     name: expat
-    evr: 2.7.3-1.el10_2.3
+    evr: 2.7.3-1.el10_2.5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/f/file-5.45-9.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 1339844
@@ -2453,12 +2453,12 @@ arches:
     checksum: sha256:14808cf2224c23002ecb0d3df48a474916d37230ba9b14dcc9d20f434eb351a9
     name: openldap
     evr: 2.6.10-1.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/o/openssh-9.9p1-27.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/o/openssh-9.9p1-28.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 2404763
-    checksum: sha256:96c890cf0d8ee5ac1b8510bbef0d02441f75818909308afbf095976c50b16866
+    size: 2406476
+    checksum: sha256:339f80b64499014ec151dd123b82bca39c4cced6ba5f9ff0c833e5cd7b900308
     name: openssh
-    evr: 9.9p1-27.el10_2
+    evr: 9.9p1-28.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/o/openssl-3.5.8-1.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 53473629
@@ -3447,13 +3447,13 @@ arches:
     name: environment-modules
     evr: 5.6.1-2.el10
     sourcerpm: environment-modules-5.6.1-2.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/e/expat-2.7.3-1.el10_2.3.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/e/expat-2.7.3-1.el10_2.5.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 130336
-    checksum: sha256:2f0c525858f8a52069796979aff0d064d81225641f00de54eb40e5eacf211735
+    size: 130906
+    checksum: sha256:68f1749f8c8b170f891d7be911f167808719071c1e04c45b3c2b2a08e840a4e8
     name: expat
-    evr: 2.7.3-1.el10_2.3
-    sourcerpm: expat-2.7.3-1.el10_2.3.src.rpm
+    evr: 2.7.3-1.el10_2.5
+    sourcerpm: expat-2.7.3-1.el10_2.5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/f/file-libs-5.45-9.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 787330
@@ -3902,20 +3902,20 @@ arches:
     name: openldap
     evr: 2.6.10-1.el10
     sourcerpm: openldap-2.6.10-1.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/o/openssh-9.9p1-27.el10_2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/o/openssh-9.9p1-28.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 368352
-    checksum: sha256:de1f34299c7cf64294263a2c10ebe9e9cc6d06dd9e4bf9720e3c935382597b31
+    size: 368139
+    checksum: sha256:58558ebf888650bc800be1896991782d656498894ab8d786e55847e8960d7d67
     name: openssh
-    evr: 9.9p1-27.el10_2
-    sourcerpm: openssh-9.9p1-27.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/o/openssh-clients-9.9p1-27.el10_2.x86_64.rpm
+    evr: 9.9p1-28.el10_2
+    sourcerpm: openssh-9.9p1-28.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/o/openssh-clients-9.9p1-28.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 792859
-    checksum: sha256:c09d9574a9604eade01e9c4c0cb2407594e1d12bc6dfa7f9a081fa74951c3b03
+    size: 792667
+    checksum: sha256:c0f39b7148d1bf822767916cfd86cc53a9010316d379b59cfbcd921cd7c0801e
     name: openssh-clients
-    evr: 9.9p1-27.el10_2
-    sourcerpm: openssh-9.9p1-27.el10_2.src.rpm
+    evr: 9.9p1-28.el10_2
+    sourcerpm: openssh-9.9p1-28.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/o/openssl-3.5.8-1.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 1337332
@@ -4758,12 +4758,12 @@ arches:
     checksum: sha256:e0a4d876fab914179dd7f9d7a627ed744294133389bc0a18565b56f214da3445
     name: environment-modules
     evr: 5.6.1-2.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/e/expat-2.7.3-1.el10_2.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/e/expat-2.7.3-1.el10_2.5.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 874521
-    checksum: sha256:0e374c836935a7e07de43136299688b3bb172bce5a85754f923c57c36168ee26
+    size: 881935
+    checksum: sha256:8b13eae7a7bc201a48bacdecb80476e6a9e3980f77bbde3398b89bc6b1f68abf
     name: expat
-    evr: 2.7.3-1.el10_2.3
+    evr: 2.7.3-1.el10_2.5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/f/file-5.45-9.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 1339844
@@ -5112,12 +5112,12 @@ arches:
     checksum: sha256:14808cf2224c23002ecb0d3df48a474916d37230ba9b14dcc9d20f434eb351a9
     name: openldap
     evr: 2.6.10-1.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/o/openssh-9.9p1-27.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/o/openssh-9.9p1-28.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 2404763
-    checksum: sha256:96c890cf0d8ee5ac1b8510bbef0d02441f75818909308afbf095976c50b16866
+    size: 2406476
+    checksum: sha256:339f80b64499014ec151dd123b82bca39c4cced6ba5f9ff0c833e5cd7b900308
     name: openssh
-    evr: 9.9p1-27.el10_2
+    evr: 9.9p1-28.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.5.8-1.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 53473629
