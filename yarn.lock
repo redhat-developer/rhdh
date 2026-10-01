@@ -9288,9 +9288,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/cli-module-install-dynamic-plugins@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@red-hat-developer-hub/cli-module-install-dynamic-plugins@npm:0.5.0"
+"@red-hat-developer-hub/cli-module-install-dynamic-plugins@npm:0.6.1":
+  version: 0.6.1
+  resolution: "@red-hat-developer-hub/cli-module-install-dynamic-plugins@npm:0.6.1"
   dependencies:
     "@backstage/cli-node": "npm:^0.3.2"
     cleye: "npm:^2.6.0"
@@ -9298,7 +9298,7 @@ __metadata:
     yaml: "npm:^2.8.2"
   bin:
     cli-module-install-dynamic-plugins: bin/install-dynamic-plugins
-  checksum: 10c0/edf9bc350fc50e4a6b0aab4a00cb03d67a0ddebb94630f7ee80a4ec5bf6691b08e29b49fe55987833bf27f75a40185d283f8603651b5621173dc55f11f2f65ca
+  checksum: 10c0/e737c5a5f2a84c482a6ceb03f1dded4b3de3b632b3412146734db870a3204570a3223f208eb2584c8394fcc9aedeec0f99ff88e41236a6cc4c71e57bf0dc4ab7
   languageName: node
   linkType: hard
 
@@ -12986,7 +12986,7 @@ __metadata:
     "@opentelemetry/instrumentation-runtime-node": "npm:0.30.0"
     "@opentelemetry/sdk-node": "npm:0.220.0"
     "@red-hat-developer-hub/backstage-plugin-translations-backend": "npm:0.6.0"
-    "@red-hat-developer-hub/cli-module-install-dynamic-plugins": "npm:0.5.0"
+    "@red-hat-developer-hub/cli-module-install-dynamic-plugins": "npm:0.6.1"
     "@types/express": "npm:4.17.25"
     "@types/global-agent": "npm:2.1.3"
     app: "workspace:*"
