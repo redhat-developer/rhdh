@@ -842,6 +842,10 @@ class NpmPluginInstaller(PluginInstaller):
         # Extract package
         plugin_path = self._extract_npm_package(archive)
 
+        # Clean up duplicate hashes (same directory, prior config hash on disk)
+        for key in [k for k, v in plugin_path_by_hash.items() if v == plugin_path]:
+            plugin_path_by_hash.pop(key)
+
         return plugin_path
 
     def _extract_npm_package(self, archive: str) -> str:

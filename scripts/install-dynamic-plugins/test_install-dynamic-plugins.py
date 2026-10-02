@@ -1315,6 +1315,36 @@ class TestNpmPluginInstallerInstall:
 
         assert plugin_path == 'test-package-1.0.0'
 
+    def test_install_cleans_up_duplicate_hashes(self, tmp_path, mocker):
+        """Test that npm/local install removes stale hash entries for the same directory."""
+        plugin_path = 'test-plugin-1.0.0'
+        plugin = {
+            'package': '@example/test-plugin',
+            'plugin_hash': 'newhash',
+        }
+        plugin_path_by_hash = {
+            'oldhash': plugin_path,
+            'anotherhash': plugin_path,
+        }
+
+        installer = install_dynamic_plugins.NpmPluginInstaller(
+            str(tmp_path), skip_integrity_check=True,
+        )
+        mocker.patch.object(
+            install_dynamic_plugins,
+            'run_command',
+            return_value=mocker.Mock(stdout='test-plugin-1.0.0.tgz\n'),
+        )
+        mocker.patch.object(
+            installer, '_extract_npm_package', return_value=plugin_path,
+        )
+
+        result = installer.install(plugin, plugin_path_by_hash)
+
+        assert result == plugin_path
+        assert 'oldhash' not in plugin_path_by_hash
+        assert 'anotherhash' not in plugin_path_by_hash
+
 @pytest.mark.integration
 class TestNpmPluginInstallerIntegration:
     """Integration tests with real file operations."""
