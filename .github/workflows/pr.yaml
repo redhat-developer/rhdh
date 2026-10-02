@@ -123,6 +123,12 @@ jobs:
         with:
           cache-prefix: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}
 
+      - name: Setup Python
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+
       - name: Install Python dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: | 
@@ -185,7 +191,7 @@ jobs:
 
       - name: Run Python tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v --cov=scripts/install-dynamic-plugins --cov-report=lcov:coverage-install-dynamic-plugins.lcov
+        run: python -m pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v --cov=scripts/install-dynamic-plugins --cov-report=lcov:coverage-install-dynamic-plugins.lcov
 
       - name: Upload install-dynamic-plugins coverage to Codecov
         if: ${{ steps.check-image.outputs.is_skipped != 'true' && !cancelled() }}
