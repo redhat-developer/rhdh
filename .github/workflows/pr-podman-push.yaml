@@ -138,7 +138,7 @@ jobs:
       - name: Download Skip Status Artifact
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: download-skip-status
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         env:
           SKIP_ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.skip_artifact_name }}
         with:
@@ -173,7 +173,7 @@ jobs:
 
       - name: Download Image Artifacts
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         env:
           ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.artifact_name }}
         with:
