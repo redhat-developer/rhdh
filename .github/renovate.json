@@ -22,6 +22,13 @@
   "reviewers": ["team:rhdh-security"],
   "packageRules": [    
     {
+      "description": "Disable Yarn packageManager updates via renovate; use skill rhdh-yarn-bump from https://github.com/redhat-developer/rhdh-skills/blob/main/skills/ci/rhdh-yarn-bump/SKILL.md instead",
+      "enabled": false,
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["packageManager", "devEngines.packageManager"],
+      "matchPackageNames": ["yarn"]
+    },
+    {
       "description": "exclude rpm-lockfile updates",
       "matchFileNames": [".github/workflows/update-rpm-lockfile.yaml"],
       "enabled": false
