@@ -35,7 +35,7 @@
     "@backstage/plugin-auth-backend": "0.30.0",
     "@backstage/plugin-auth-backend-module-github-provider": "0.5.6",
     "@backstage/plugin-auth-backend-module-guest-provider": "0.2.22",
-    "@backstage/plugin-auth-node": "0.7.4",
+    "@backstage/plugin-auth-node": "0.7.5",
     "@backstage/plugin-catalog-backend": "3.9.1",
     "@backstage/plugin-catalog-backend-module-logs": "0.1.25",
     "@backstage/plugin-catalog-backend-module-openapi": "0.2.25",
