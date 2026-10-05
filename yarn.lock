@@ -3369,6 +3369,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-org@npm:^0.7.9":
+  version: 0.7.9
+  resolution: "@backstage/plugin-org@npm:0.7.9"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.10.1"
+    "@backstage/core-components": "npm:^0.18.14"
+    "@backstage/core-plugin-api": "npm:^1.12.10"
+    "@backstage/frontend-plugin-api": "npm:^0.18.1"
+    "@backstage/plugin-catalog-common": "npm:^1.2.0"
+    "@backstage/plugin-catalog-react": "npm:^3.2.3"
+    "@backstage/ui": "npm:^0.18.0"
+    "@material-ui/core": "npm:^4.12.2"
+    "@material-ui/icons": "npm:^4.9.1"
+    "@material-ui/lab": "npm:4.0.0-alpha.61"
+    "@remixicon/react": "npm:>=4.6.0 <4.9.0"
+    lodash: "npm:^4.17.21"
+    p-limit: "npm:^3.1.0"
+    pluralize: "npm:^8.0.0"
+    qs: "npm:^6.15.2"
+    react-use: "npm:^17.2.4"
+    zod: "npm:^4.0.0"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.2
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/816f9fd244e0de8b2c73db22e83556c07bd944823733f1b6bba8f4fb8536bacd1a4206beca258794539f46de9cc69d2b6764e64fc86490368b7fb5c5a249dfe7
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-permission-backend@npm:0.7.15":
   version: 0.7.15
   resolution: "@backstage/plugin-permission-backend@npm:0.7.15"
@@ -12279,6 +12312,7 @@ __metadata:
     "@backstage/plugin-catalog-react": "npm:3.2.2"
     "@backstage/plugin-catalog-unprocessed-entities": "npm:0.2.34"
     "@backstage/plugin-home": "npm:0.9.9"
+    "@backstage/plugin-org": "npm:^0.7.9"
     "@backstage/plugin-permission-react": "npm:0.5.4"
     "@backstage/plugin-scaffolder": "npm:1.38.2"
     "@backstage/plugin-scaffolder-react": "npm:2.0.3"
