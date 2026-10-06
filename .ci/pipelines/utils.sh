@@ -1572,22 +1572,25 @@ get_previous_release_value_file() {
   local value_file_type=${1:-"showcase"} # Default to showcase, can be "showcase-rbac" for RBAC
 
   # Get the previous release version
-  local previous_release_version
-  previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
+  # local previous_release_version
+  # previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
 
-  if [[ -z "$previous_release_version" ]]; then
-    log::error "Failed to determine previous release version." >&2
-    save_overall_result 1
-    exit 1
-  fi
+  # if [[ -z "$previous_release_version" ]]; then
+  #   log::error "Failed to determine previous release version." >&2
+  #   save_overall_result 1
+  #   exit 1
+  # fi
 
-  log::info "Using previous release version: ${previous_release_version}" >&2
+  # log::info "Using previous release version: ${previous_release_version}" >&2
 
   # Construct the GitHub URL for the value file
-  local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ci/pipelines/value_files/values_${value_file_type}.yaml"
+
+  # WORKAROUND: We use a tag here since the release-1.8 branch was already removed.
+  local previous_release_tag="1.8.7"
+  local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/${previous_release_tag}/.ci/pipelines/value_files/values_${value_file_type}.yaml"
 
   # Create a temporary file path for the downloaded value file
-  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_version}.yaml"
+  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_tag}.yaml"
 
   echo "Fetching value file from: ${github_url}" >&2
 
