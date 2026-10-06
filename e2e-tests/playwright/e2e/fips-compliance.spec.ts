@@ -1,6 +1,7 @@
-import { test, expect } from "@support/coverage/test";
 import * as tls from "tls";
 import * as url from "url";
+
+import { test, expect } from "@support/coverage/test";
 
 test.describe("FIPS Compliance Validation", () => {
   test.beforeAll(({}, testInfo) => {
@@ -132,14 +133,15 @@ test.describe("FIPS Compliance Validation", () => {
 
     const { execSync } = await import("child_process");
 
-    const sigAlg = execSync("openssl x509 -noout -text", {
-      input: certPem,
-      encoding: "utf-8",
-    })
-      .split("\n")
-      .find((line) => line.trim().startsWith("Signature Algorithm:"))
-      ?.split(":")[1]
-      ?.trim() ?? "unknown";
+    const sigAlg =
+      execSync("openssl x509 -noout -text", {
+        input: certPem,
+        encoding: "utf-8",
+      })
+        .split("\n")
+        .find((line) => line.trim().startsWith("Signature Algorithm:"))
+        ?.split(":")[1]
+        ?.trim() ?? "unknown";
 
     const subject = execSync("openssl x509 -noout -subject -nameopt RFC2253", {
       input: certPem,
