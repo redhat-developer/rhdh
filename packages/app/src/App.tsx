@@ -2,6 +2,7 @@ import type { IconElement } from "@backstage/frontend-plugin-api";
 import { createApp } from "@backstage/frontend-defaults";
 import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
 import catalogPlugin from "@backstage/plugin-catalog/alpha";
+import orgPlugin from "@backstage/plugin-org/alpha";
 import catalogImportBase from "@backstage/plugin-catalog-import/alpha";
 import catalogUnprocessedEntitiesPlugin from "@backstage/plugin-catalog-unprocessed-entities/alpha";
 import scaffolderPlugin from "@backstage/plugin-scaffolder/alpha";
@@ -33,6 +34,7 @@ const app = createApp({
     // Upstream Backstage plugins
     homePagePlugin,
     catalogPlugin,
+    orgPlugin,
     catalogCreatedAtModule, // Created At column on catalog index
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
     catalogUnprocessedEntitiesPlugin,
