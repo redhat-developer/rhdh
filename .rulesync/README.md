@@ -20,17 +20,17 @@ This directory contains the source of truth for AI assistant rules (Cursor, Clau
 # Just stage and commit - lint-staged handles the rest!
 git add .rulesync/rules/my-rule.md
 git commit -m "docs: update AI assistant rules"
-# ✨ lint-staged automatically runs rulesync:generate and stages .cursor/.claude/.opencode
+# ✨ lint-staged automatically runs rulesync:generate and stages generated outputs
 ```
 
 **What happens:**
 1. You stage `.rulesync` files
 2. Pre-commit hook runs `lint-staged`
 3. `lint-staged` detects `.rulesync` changes and runs `yarn rulesync:generate`
-4. Generated files in `.cursor`, `.claude`, and `.opencode` are automatically staged
+4. Generated files in `.cursor`, `.claude`, `.opencode`, and `opencode.jsonc` are automatically staged
 5. Commit includes both source and generated files
 
-### When you edit `.cursor`, `.claude`, or `.opencode` files directly (Manual with notification):
+### When you edit `.cursor`, `.claude`, `.opencode`, or `opencode.jsonc` directly (Manual with notification):
 
 > ⚠️ **Note:** Prefer editing `.rulesync` files as the source of truth for easier management
 
@@ -63,6 +63,7 @@ git commit --amend --no-edit  # Add to the same commit
 | Command | Description |
 |---------|-------------|
 | `yarn rulesync:generate` | Generate `.cursor`, `.claude`, and `.opencode` configs from `.rulesync` |
+| `yarn rulesync:check` | Validate the Rulesync config and verify generated files are up to date |
 | `yarn rulesync:import:cursor` | Import changes from `.cursor` only |
 | `yarn rulesync:import:claude` | Import changes from `.claude` only |
 | `yarn rulesync:import:opencode` | Import changes from `.opencode` only |
@@ -73,7 +74,7 @@ A GitHub Actions workflow automatically validates synchronization on all PRs and
 
 - **Workflow**: `.github/workflows/rulesync-check.yaml`
 - **Triggers**: Changes to `.rulesync`, `.cursor`, `.claude`, `.opencode`, or config files
-- **What it does**: Runs `yarn rulesync:generate` and checks for differences
+- **What it does**: Runs `yarn rulesync:check` (`doctor --strict` plus `generate --check`)
 - **If it fails**: Run the appropriate command based on what you edited:
   - `yarn rulesync:generate` if you forgot to generate files from `.rulesync`
   - `yarn rulesync:import:cursor` if you edited `.cursor` files directly
@@ -128,4 +129,3 @@ Your rule documentation here...
 
 - [Rulesync GitHub](https://github.com/dyoshikawa/rulesync)
 - [Configuration](../rulesync.jsonc)
-

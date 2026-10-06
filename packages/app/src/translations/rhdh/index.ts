@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { createTranslationResource } from "@backstage/core-plugin-api/alpha";
 
-import { rhdhTranslationRef } from './ref';
+import { rhdhTranslationRef } from "./ref";
 
 /**
  * Translation Resource for RHDH Application
@@ -24,11 +24,11 @@ import { rhdhTranslationRef } from './ref';
 export const rhdhTranslations = createTranslationResource({
   ref: rhdhTranslationRef,
   translations: {
-    de: () => import('./de') as any,
-    es: () => import('./es') as any,
-    fr: () => import('./fr') as any,
-    it: () => import('./it') as any,
-    ja: () => import('./ja') as any,
+    de: () => import("./de") as any,
+    es: () => import("./es") as any,
+    fr: () => import("./fr") as any,
+    it: () => import("./it") as any,
+    ja: () => import("./ja") as any,
   },
 });
 

@@ -66,7 +66,7 @@ if [[ -z "${CATALOG_INDEX_IMAGE:-}" ]]; then
   CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:${RELEASE_VERSION}"
 fi
 if [[ -n "${CATALOG_INDEX_IMAGE}" ]]; then
-  # Derived components for Helm --set global.catalogIndex.image.{registry,repository,tag}
+  # Derived components for Helm --set catalogIndex.image.{registry,repository,tag}
   CATALOG_INDEX_TAG="${CATALOG_INDEX_IMAGE##*:}"
   _CI_WITHOUT_TAG="${CATALOG_INDEX_IMAGE%:*}"
   CATALOG_INDEX_REGISTRY="${_CI_WITHOUT_TAG%%/*}"
@@ -76,13 +76,12 @@ else
   unset CATALOG_INDEX_TAG CATALOG_INDEX_REGISTRY CATALOG_INDEX_REPO
 fi
 
-# Default PostgreSQL image for RHDH deployments when the source (Helm chart /
-# CR) does not pin one. Matches the showcase value files
-# (value_files/diff-values_showcase-rbac_*.yaml): quay.io/fedora/postgresql-15.
-# The community chart historically defaulted to registry.redhat.io/rhel9/...,
+# Shared PostgreSQL image defaults for CI overrides and disconnected fallback.
+# The community chart historically defaulted to registry.redhat.io/rhel9/...
 # which is not pullable without a Red Hat pull secret in every environment.
+# Midstream jobs can override these values with the RHEL 10 PostgreSQL 18 image.
 POSTGRESQL_IMAGE_REGISTRY="${POSTGRESQL_IMAGE_REGISTRY:-quay.io}"
-POSTGRESQL_IMAGE_REPO="${POSTGRESQL_IMAGE_REPO:-fedora/postgresql-15}"
+POSTGRESQL_IMAGE_REPO="${POSTGRESQL_IMAGE_REPO:-fedora/postgresql-18}"
 POSTGRESQL_IMAGE_TAG="${POSTGRESQL_IMAGE_TAG:-latest}"
 
 # =============================================================================
@@ -155,9 +154,19 @@ AZURE_DB_1_HOST=$(cat /tmp/secrets/AZURE_DB_1_HOST)
 AZURE_DB_2_HOST=$(cat /tmp/secrets/AZURE_DB_2_HOST)
 AZURE_DB_3_HOST=$(cat /tmp/secrets/AZURE_DB_3_HOST)
 AZURE_DB_4_HOST=$(cat /tmp/secrets/AZURE_DB_4_HOST)
-# Database TLS certificates (file paths to PEM files from Vault)
-# Store paths instead of content to avoid "Argument list too long" shell errors
-RDS_DB_CERTIFICATES_PATH="/tmp/secrets/rds-db-certificates.pem"
+# Database TLS certificates
+# Store paths instead of content to avoid "Argument list too long" shell errors.
+# The RDS trust store is the official AWS global bundle, downloaded at env-setup
+# time — the AWS CAs are public and rotate, so a stored copy goes stale, and the
+# full bundle does not fit the GSM secret size limit (RHDHBUGS-3744). No Vault
+# fallback on purpose: if the download fails, the file is absent and the RDS
+# suite reports/skips on the missing certificate instead of failing later with
+# SELF_SIGNED_CERT_IN_CHAIN.
+RDS_DB_CERTIFICATES_PATH="/tmp/rds-global-bundle.pem"
+if ! curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 --max-time 30 -o "$RDS_DB_CERTIFICATES_PATH" "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"; then
+  echo "WARNING: could not download the AWS RDS global certificate bundle; RDS TLS tests will not run"
+  rm -f "$RDS_DB_CERTIFICATES_PATH"
+fi
 AZURE_DB_CERTIFICATES_PATH="/tmp/secrets/azure-db-certificates.pem"
 
 JUNIT_RESULTS="junit-results.xml"
@@ -304,7 +313,8 @@ GITHUB_APP_WEBHOOK_SECRET_5=$(cat /tmp/secrets/GITHUB_APP_WEBHOOK_SECRET_HELM)
 #Default GitHub App env vars for showcase-rbac
 GITHUB_APP_APP_ID_RBAC=$(cat /tmp/secrets/GITHUB_APP_APP_ID_OPERATOR)
 GITHUB_APP_CLIENT_ID_RBAC=$(cat /tmp/secrets/GITHUB_APP_CLIENT_ID_OPERATOR)
-GITHUB_APP_PRIVATE_KEY_RBAC=$(cat /tmp/secrets/GITHUB_APP_CLIENT_SECRET_OPERATOR)
+GITHUB_APP_PRIVATE_KEY_RBAC=$(cat /tmp/secrets/GITHUB_APP_PRIVATE_KEY_OPERATOR)
+GITHUB_APP_CLIENT_SECRET_RBAC=$(cat /tmp/secrets/GITHUB_APP_CLIENT_SECRET_OPERATOR)
 GITHUB_APP_WEBHOOK_URL_RBAC=$(cat /tmp/secrets/GITHUB_APP_WEBHOOK_URL_OPERATOR)
 GITHUB_APP_WEBHOOK_SECRET_RBAC=$(cat /tmp/secrets/GITHUB_APP_WEBHOOK_SECRET_OPERATOR)
 

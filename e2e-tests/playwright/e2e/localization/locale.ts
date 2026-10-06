@@ -25,41 +25,32 @@ const esRhdh = loadTranslationJson("rhdh-es.json");
 const frRhdh = loadTranslationJson("rhdh-fr.json");
 const itRhdh = loadTranslationJson("rhdh-it.json");
 const jaRhdh = loadTranslationJson("rhdh-ja.json");
-const deRhdhPlugins = loadTranslationJson("rhdh-plugins-de.json");
-const esRhdhPlugins = loadTranslationJson("rhdh-plugins-es.json");
-const frRhdhPlugins = loadTranslationJson("rhdh-plugins-fr.json");
-const itRhdhPlugins = loadTranslationJson("rhdh-plugins-it.json");
-const jaRhdhPlugins = loadTranslationJson("rhdh-plugins-ja.json");
+// rhdh-plugins locale bundles live in the rhdh-plugins repo, not translations/.
 const en = loadTranslationJson("test/all-en.json");
 
 const de = {
   ...deBackstage,
   ...deRhdh,
-  ...deRhdhPlugins,
 };
 
 const es = {
   ...esBackstage,
   ...esRhdh,
-  ...esRhdhPlugins,
 };
 
 const fr = {
   ...frBackstage,
   ...frRhdh,
-  ...frRhdhPlugins,
 };
 
 const it = {
   ...itBackstage,
   ...itRhdh,
-  ...itRhdhPlugins,
 };
 
 const ja = {
   ...jaBackstage,
   ...jaRhdh,
-  ...jaRhdhPlugins,
 };
 
 const LOCALES = ["de", "en", "es", "fr", "it", "ja"] as const;

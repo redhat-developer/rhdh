@@ -6,7 +6,7 @@ import * as navigation from "../../utils/ui-helper/navigation";
 import * as table from "../../utils/ui-helper/table";
 import * as verification from "../../utils/ui-helper/verification";
 import { SEARCH_OBJECTS_COMPONENTS } from "../selectors/page-selectors";
-import { findTableCellByColumn } from "../selectors/semantic/table-helpers";
+import { findColumnIndex } from "../selectors/semantic/table-helpers";
 
 /** Catalog browse and entity list interactions. */
 export class CatalogBrowsePage {
@@ -56,8 +56,23 @@ export class CatalogBrowsePage {
     await interaction.clickLink(this.page, name);
   }
 
-  async openDependenciesTab(): Promise<void> {
-    await interaction.clickTab(this.page, "Dependencies");
+  /**
+   * NFS has no dedicated "Dependencies" entity-content tab (upstream
+   * `@backstage/plugin-catalog`); the same relations render as overview cards
+   * (`entity-card:catalog/depends-on-components`, `entity-card:catalog/depends-on-resources`,
+   * `entity-card:catalog-graph/relations`) on Overview instead. See
+   * "Dependencies tab → overview cards" in
+   * docs/dynamic-plugins/migrating-config-to-new-frontend-system.md.
+   *
+   * Entity contents are links in `navigation[name="Content navigation"]`, not
+   * ARIA tabs (legacy OFS `EntityLayout` used `role="tab"`).
+   */
+  async openOverviewTab(): Promise<void> {
+    const overviewLink = this.page
+      .getByRole("navigation", { name: "Content navigation" })
+      .getByRole("link", { name: "Overview", exact: true });
+    await expect(overviewLink).toBeVisible();
+    await overviewLink.click();
   }
 
   async verifyHeading(heading: string | RegExp): Promise<void> {
@@ -89,7 +104,7 @@ export class CatalogBrowsePage {
 
   async openSelfServiceFromCatalog(): Promise<void> {
     await navigation.openSidebar(this.page, "Catalog");
-    await interaction.clickButton(this.page, "Self-service");
+    await interaction.clickLink(this.page, "Self-service");
   }
 
   async importGitRepositoryFromCatalog(): Promise<void> {
@@ -119,16 +134,15 @@ export class CatalogBrowsePage {
   }
 
   async verifyFirstRowCreatedAtNotEmpty(): Promise<void> {
+    // Keep the first-row locator live instead of capturing its text: the
+    // table may still be re-sorting, and a row matched by stale text can move
+    // to another page of results.
+    const createdAtColumn = await findColumnIndex(this.page, "Created At");
     const firstRow = this.page
       .getByRole("row")
       .filter({ has: this.page.getByRole("cell") })
       .first();
-    const rowText = await firstRow.textContent();
-    if (rowText === null || rowText === "") {
-      throw new Error("Expected the first catalog row to have text content");
-    }
-    const createdAtCell = await findTableCellByColumn(this.page, rowText, "Created At");
-    await expect(createdAtCell).not.toBeEmpty();
+    await expect(firstRow.getByRole("cell").nth(createdAtColumn)).not.toBeEmpty();
   }
 
   async openEntityLinkByHref(hrefFragment: string): Promise<void> {
@@ -145,6 +159,7 @@ export class CatalogBrowsePage {
     await this.page.goto("/catalog?filters%5Bkind%5D=user&filters%5Buser");
   }
 
+  /** Verifies a dependency appears in the "Depends on resources" overview card. */
   async verifyDependencyResource(resource: string): Promise<void> {
     // Intentional divergence: topology graph workspace nodes lack stable roles; keyed by id + text.
     const resourceElement = this.page.locator(`#workspace:has-text("${resource}")`);

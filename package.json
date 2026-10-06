@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "private": true,
   "engines": {
     "node": "24"
@@ -26,7 +26,9 @@
     "repo:fix": "backstage-cli repo fix --publish",
     "versions:metadata": "node ./scripts/update-metadata.mjs",
     "versions:bump": "node ./scripts/update-backstage.mjs",
+    "eol-inventory": "node ./scripts/eol-inventory/index.mjs",
     "rulesync:generate": "rulesync generate",
+    "rulesync:check": "rulesync doctor --strict && rulesync generate --check",
     "rulesync:import:cursor": "rulesync import --targets cursor",
     "rulesync:import:claude": "rulesync import --targets claudecode",
     "rulesync:import:opencode": "rulesync import --targets opencode"
@@ -42,23 +44,17 @@
     "@backstage/cli-defaults": "0.1.5",
     "@backstage/frontend-test-utils": "0.6.3",
     "@ianvs/prettier-plugin-sort-imports": "4.7.1",
-    "@jest/environment-jsdom-abstract": "30.4.1",
+    "@jest/environment-jsdom-abstract": "30.5.2",
     "@manypkg/cli": "0.25.1",
     "@types/jest": "30.0.0",
     "glob": "11.1.0",
     "husky": "8.0.3",
-    "jest": "30.4.2",
+    "jest": "30.5.2",
     "jsdom": "27.4.0",
     "lint-staged": "15.5.2",
-    "node-gyp": "10.3.1",
-    "rulesync": "7.30.0",
+    "rulesync": "16.34.2",
     "sherif": "1.13.0",
-    "turbo": "2.10.11"
-  },
-  "dependenciesMeta": {
-    "keytar": {
-      "built": false
-    }
+    "turbo": "2.10.12"
   },
   "resolutions": {
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
@@ -66,5 +62,5 @@
   "jest": {
     "testTimeout": 20000
   },
-  "packageManager": "yarn@4.17.1"
+  "packageManager": "yarn@4.18.1"
 }

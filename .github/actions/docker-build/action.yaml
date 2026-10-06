@@ -165,6 +165,43 @@ runs:
         
         echo "transformed_containerfile=$TRANSFORMED_CONTAINERFILE" >> $GITHUB_OUTPUT
 
+    # Pre-pull digest-pinned base images with retries. Hermetic buildah uses
+    # --network=none, so bases must already be local. Quay CDN/S3 EOFs during
+    # the initial pull have caused buildah exit 125 in CI.
+    - name: Pre-pull base images with retries
+      shell: bash
+      env:
+        CONTAINERFILE_PATH: ${{ inputs.containerfilePath }}
+      run: |
+        set -euo pipefail
+        MAX_ATTEMPTS=3
+        mapfile -t BASE_IMAGES < <(
+          # awk takes the first non-flag token after FROM, skipping --platform=...
+          grep -E '^FROM[[:space:]]+[^[:space:]]+' "$CONTAINERFILE_PATH" \
+            | awk '{for(i=2;i<=NF;i++) if($i !~ /^-/){print $i; next}}' \
+            | grep -E '^[^/]+(/[^/]+)+' \
+            | grep -vE '^(skeleton|deps|build|cleanup|runner)$' \
+            | sort -u
+        )
+        if [ "${#BASE_IMAGES[@]}" -eq 0 ]; then
+          echo "No registry base images found to pre-pull"
+          exit 0
+        fi
+        for image in "${BASE_IMAGES[@]}"; do
+          echo "::group::Pre-pull $image"
+          attempt=1
+          until podman pull "$image"; do
+            if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
+              echo "::error::Failed to pull $image after $MAX_ATTEMPTS attempts"
+              exit 1
+            fi
+            echo "Pull failed (attempt $attempt/$MAX_ATTEMPTS); retrying in $((attempt * 15))s..."
+            sleep $((attempt * 15))
+            attempt=$((attempt + 1))
+          done
+          echo "::endgroup::"
+        done
+
     - name: "Build Docker Image"
       id: build
       uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2.13

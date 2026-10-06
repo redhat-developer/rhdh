@@ -8,6 +8,8 @@ export type YamlConfig = Record<string, unknown>;
 
 export interface DynamicPluginConfig {
   package: string;
+  enabled?: boolean;
+  /** Legacy configurations may still contain this key. */
   disabled?: boolean;
 }
 

@@ -164,6 +164,8 @@ Incomplete until every patched package shows a **patch locator** in **`yarn.lock
 
 **Commit:** **`.yarn/patches/*.patch`**, **`package.json`** **`resolutions`**, **`yarn.lock`**; PR to RHDH.
 
+**PR CI:** a change under **`.yarn/patches/`** makes PR CI build and test every package (not **`--affected`**) and run the **Backstage bump checks** job. See **`scripts/backstage-bump-check/README.md`**. It exercises the patched code only where existing tests reach it; E2E remains the integration gate.
+
 ### Final summary
 
 1. Links: `https://github.com/backstage/backstage/commit/<SHA>` for each **`COMMITS`** entry.

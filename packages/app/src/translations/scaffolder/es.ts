@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { scaffolderTranslationRef } from "@backstage/plugin-scaffolder";
 
 const es = createTranslationMessages({
   ref: scaffolderTranslationRef,
   full: false,
   messages: {
-    'templateListPage.title': 'Autoservicio',
-    'templateListPage.pageTitle': 'Autoservicio',
-    'templateWizardPage.title': 'Autoservicio',
-    'templateWizardPage.pageTitle': 'Autoservicio',
-    'templateListPage.contentHeader.registerExistingButtonTitle':
-      'Importar un repositorio Git existente',
+    "templateListPage.title": "Autoservicio",
+    "templateListPage.pageTitle": "Autoservicio",
+    "templateWizardPage.title": "Autoservicio",
+    "templateWizardPage.pageTitle": "Autoservicio",
+    "templateListPage.contentHeader.registerExistingButtonTitle":
+      "Importar un repositorio Git existente",
   },
 });
 

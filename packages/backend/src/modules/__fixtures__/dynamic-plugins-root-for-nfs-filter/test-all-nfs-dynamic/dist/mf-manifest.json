@@ -25,5 +25,26 @@
   },
   "shared": [],
   "remotes": [],
-  "exposes": [{"name": "."}, {"name": "alpha"}]
+  "exposes": [
+    {
+      "name": ".",
+      "assets": {
+        "js": {
+          "sync": ["static/8000.ggg77777.chunk.js"],
+          "async": []
+        },
+        "css": { "sync": [], "async": [] }
+      }
+    },
+    {
+      "name": "alpha",
+      "assets": {
+        "js": {
+          "sync": ["static/9000.hhh88888.chunk.js"],
+          "async": []
+        },
+        "css": { "sync": [], "async": [] }
+      }
+    }
+  ]
 }

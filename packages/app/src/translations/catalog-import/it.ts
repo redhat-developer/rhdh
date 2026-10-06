@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import';
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
+import { catalogImportTranslationRef } from "@backstage/plugin-catalog-import";
 
 export default createTranslationMessages({
   ref: catalogImportTranslationRef,
   full: false,
   messages: {
-    'defaultImportPage.headerTitle': 'Importa un repository Git esistente',
-    'importInfoCard.title': 'Importa un repository Git esistente',
+    "defaultImportPage.headerTitle": "Importa un repository Git esistente",
+    "importInfoCard.title": "Importa un repository Git esistente",
   },
 });

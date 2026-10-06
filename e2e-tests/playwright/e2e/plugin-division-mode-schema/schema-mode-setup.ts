@@ -8,6 +8,7 @@ import {
   KubeClient,
   getRhdhDeploymentName,
   BACKSTAGE_BACKEND_CONTAINER,
+  envVarsNotFromSecret,
 } from "../../utils/kube-client";
 import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
 import type { AppConfigYaml } from "../../utils/runtime-config";
@@ -17,6 +18,27 @@ import {
   cleanupOldPluginDatabases,
   setupSchemaModeDatabase,
 } from "./schema-mode-db";
+
+/** app-config `backend.database` for schema mode against the internal or an external DB. */
+export function schemaModeDatabaseConfig(
+  isInternalDb: boolean,
+): NonNullable<NonNullable<AppConfigYaml["backend"]>["database"]> {
+  return {
+    client: "pg",
+    pluginDivisionMode: "schema",
+    ensureSchemaExists: true,
+    connection: {
+      host: "${POSTGRES_HOST}",
+      port: "${POSTGRES_PORT}",
+      user: "${POSTGRES_USER}",
+      password: "${POSTGRES_PASSWORD}",
+      database: "${POSTGRES_DB}",
+      // Explicit for the internal DB, because pg otherwise falls back to
+      // PGSSLMODE, which the external DB tests leave set to "require".
+      ssl: isInternalDb ? false : { rejectUnauthorized: false },
+    },
+  };
+}
 
 export class SchemaModeTestSetup {
   private namespace: string;
@@ -159,48 +181,30 @@ export class SchemaModeTestSetup {
     );
     const containers = deployment.body.spec?.template?.spec?.containers ?? [];
     const backstageContainer = containers.find((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
-    const backstageIdx = containers.findIndex((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
 
     if (backstageContainer === undefined) {
       console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
-    } else {
-      const existingEnv = backstageContainer.env ?? [];
-      const missingVars = ([...POSTGRES_ENV_KEYS] as string[]).filter(
-        (v) => !existingEnv.some((e) => e.name === v),
-      );
-
-      if (missingVars.length === 0) {
-        console.log("POSTGRES_* env vars already present in deployment");
-        return;
-      }
-
-      console.log(`Adding env vars to deployment: ${missingVars.join(", ")}`);
-      const patch: { op: string; path: string; value?: unknown }[] = [];
-
-      if (backstageContainer.env === undefined || backstageContainer.env.length === 0) {
-        patch.push({
-          op: "add",
-          path: `/spec/template/spec/containers/${backstageIdx}/env`,
-          value: [],
-        });
-      }
-
-      for (const varName of missingVars) {
-        patch.push({
-          op: "add",
-          path: `/spec/template/spec/containers/${backstageIdx}/env/-`,
-          value: {
-            name: varName,
-            valueFrom: {
-              secretKeyRef: { name: secretName, key: varName },
-            },
-          },
-        });
-      }
-
-      await this.kubeClient.jsonPatchDeployment(deploymentName, this.namespace, patch);
-      console.log("Added env vars to deployment");
+      return;
     }
+
+    // Existing entries are replaced, not skipped: the chart may already set
+    // these variables to other values (it sets POSTGRES_USER to "postgres").
+    const varsToSet = envVarsNotFromSecret(backstageContainer.env, secretName, POSTGRES_ENV_KEYS);
+
+    if (varsToSet.length === 0) {
+      console.log("POSTGRES_* env vars already read from the schema-mode secret");
+      return;
+    }
+
+    console.log(`Pointing deployment env vars at ${secretName}: ${varsToSet.join(", ")}`);
+    await this.kubeClient.addContainerEnvVarsFromSecret(
+      deploymentName,
+      this.namespace,
+      BACKSTAGE_BACKEND_CONTAINER,
+      secretName,
+      varsToSet,
+    );
+    console.log("Updated deployment env vars");
   }
 
   private async updateAppConfigForSchemaMode(isInternalDb: boolean): Promise<void> {
@@ -218,27 +222,12 @@ export class SchemaModeTestSetup {
       }
 
       console.log("Updating app-config for schema mode...");
-      const connection: Record<string, unknown> = {
-        host: "${POSTGRES_HOST}",
-        port: "${POSTGRES_PORT}",
-        user: "${POSTGRES_USER}",
-        password: "${POSTGRES_PASSWORD}",
-        database: "${POSTGRES_DB}",
-      };
-
-      if (isInternalDb) {
-        console.log("Using non-SSL connection for internal PostgreSQL");
-      } else {
-        connection.ssl = { rejectUnauthorized: false };
-        console.log("Using SSL connection for external PostgreSQL");
-      }
-
-      appConfig.backend.database = {
-        client: "pg",
-        pluginDivisionMode: "schema",
-        ensureSchemaExists: true,
-        connection,
-      };
+      console.log(
+        isInternalDb
+          ? "Using non-SSL connection for internal PostgreSQL"
+          : "Using SSL connection for external PostgreSQL",
+      );
+      appConfig.backend.database = schemaModeDatabaseConfig(isInternalDb);
     });
     console.log("App-config updated for schema mode");
   }

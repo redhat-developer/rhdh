@@ -1,10 +1,7 @@
 import type { APIRequestContext } from "@playwright/test";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  fetchScalprumPluginNames,
-  RhdhDynamicPluginsApi,
-} from "../playwright/support/api/dynamic-plugins-api";
+import { RhdhDynamicPluginsApi } from "../playwright/support/api/dynamic-plugins-api";
 
 type Route = { status?: number; body?: unknown };
 type FakeResponse = { status: () => number; json: () => Promise<unknown> };
@@ -35,7 +32,6 @@ function fakeRequest(routes: Record<string, Route>) {
 
 const GUEST_REFRESH = "/api/auth/guest/refresh";
 const LOADED_PLUGINS = "/api/dynamic-plugins-info/loaded-plugins";
-const SCALPRUM_PLUGINS = "/api/scalprum/plugins";
 
 const session = { backstageIdentity: { token: "tok-123" } };
 
@@ -70,31 +66,5 @@ describe("RhdhDynamicPluginsApi", () => {
     await expect(RhdhDynamicPluginsApi.build(request)).rejects.toThrow(
       /\/api\/auth\/guest\/refresh responded with status 503/u,
     );
-  });
-});
-
-describe("fetchScalprumPluginNames", () => {
-  it("collects the served plugin names", async () => {
-    const { request } = fakeRequest({
-      [SCALPRUM_PLUGINS]: {
-        body: {
-          "backstage-community.plugin-tekton": { name: "backstage-community.plugin-tekton" },
-          "red-hat-developer-hub.plugin-orchestrator": {},
-        },
-      },
-    });
-
-    expect(await fetchScalprumPluginNames(request)).toEqual(
-      new Set(["backstage-community.plugin-tekton", "red-hat-developer-hub.plugin-orchestrator"]),
-    );
-  });
-
-  it("does not authenticate, since the endpoint is unauthenticated", async () => {
-    const { request, get } = fakeRequest({ [SCALPRUM_PLUGINS]: { body: {} } });
-
-    await fetchScalprumPluginNames(request);
-
-    expect(get).toHaveBeenCalledTimes(1);
-    expect(get).toHaveBeenCalledWith(SCALPRUM_PLUGINS, {});
   });
 });

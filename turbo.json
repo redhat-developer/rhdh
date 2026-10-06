@@ -6,9 +6,6 @@
     "YARN_ENABLE_MIRROR",
     "YARN_GLOBAL_FOLDER"
   ],
-  "globalDependencies": [
-    "app-config.dynamic-plugins.yaml"
-  ],
   "tasks": {
     "start": {
       "cache": false,

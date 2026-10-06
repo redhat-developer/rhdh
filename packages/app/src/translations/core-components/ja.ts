@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-import { coreComponentsTranslationRef } from '@backstage/core-components';
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+import { coreComponentsTranslationRef } from "@backstage/core-components";
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
 
 export default createTranslationMessages({
   ref: coreComponentsTranslationRef,
   full: false,
   messages: {
-    'table.filter.placeholder': 'すべての結果',
-    'table.body.emptyDataSourceMessage': '表示するレコードがありません',
-    'table.pagination.firstTooltip': '最初のページ',
-    'table.pagination.labelDisplayedRows': '{count} 件中 {from}-{to} 件目',
-    'table.pagination.labelRowsSelect': '行',
-    'table.pagination.lastTooltip': '最後のページ',
-    'table.pagination.nextTooltip': '次のページ',
-    'table.pagination.previousTooltip': '前のページ',
-    'table.toolbar.search': 'フィルター',
-    'alertDisplay.message_one': '({{ count }} 件の新しいメッセージ)',
-    'alertDisplay.message_other': '({{ count }} 件の新しいメッセージ)',
-    'table.header.actions': 'アクション',
-    'oauthRequestDialog.message':
-      '{{appTitle}} が {{provider}} API と ID にアクセスすることを許可するには、サインインしてください。',
+    "table.filter.placeholder": "すべての結果",
+    "table.body.emptyDataSourceMessage": "表示するレコードがありません",
+    "table.pagination.firstTooltip": "最初のページ",
+    "table.pagination.labelDisplayedRows": "{count} 件中 {from}-{to} 件目",
+    "table.pagination.labelRowsSelect": "行",
+    "table.pagination.lastTooltip": "最後のページ",
+    "table.pagination.nextTooltip": "次のページ",
+    "table.pagination.previousTooltip": "前のページ",
+    "table.toolbar.search": "フィルター",
+    "alertDisplay.message_one": "({{ count }} 件の新しいメッセージ)",
+    "alertDisplay.message_other": "({{ count }} 件の新しいメッセージ)",
+    "table.header.actions": "アクション",
+    "oauthRequestDialog.message":
+      "{{appTitle}} が {{provider}} API と ID にアクセスすることを許可するには、サインインしてください。",
   },
 });

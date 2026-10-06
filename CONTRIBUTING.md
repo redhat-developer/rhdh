@@ -60,6 +60,8 @@ To update Backstage dependencies, run the following command:
 yarn versions:bump     # Updates Backstage dependencies
 ```
 
+Pull requests that bump Backstage, or that add or change a Yarn patch under `.yarn/patches/`, run extra CI checks: a full build and test run, and the `Backstage bump checks` job. See [scripts/backstage-bump-check](scripts/backstage-bump-check/README.md).
+
 ### Enhancement Requests
 
 If you want an enhancement of a feature or workflow, you can submit an [issue](https://github.com/redhat-developer/rhdh/issues/new?assignees=&labels=kind%2Fenhancement%2Cstatus%2Ftriage&template=enhancement.md) describing the enhancement. Include:
@@ -152,7 +154,15 @@ If you want to submit code changes to the project, here are some guidelines:
 
 The image-push workflows default to `quay.io/rhdh-community/rhdh` and `quay.io/rhdh-community/rhdh-e2e-runner`. Forks that set `QUAY_USERNAME`/`QUAY_TOKEN` without retargeting those repos can overwrite shared tags such as `:next`.
 
-To test image builds from a fork:
+#### Pull requests targeting `redhat-developer/rhdh`
+
+[pr-build-image.yaml](.github/workflows/pr-build-image.yaml) runs in the **base** repository with no Quay secrets (`contents: read` only) and uploads the hermetic image as an artifact. [pr-podman-push.yaml](.github/workflows/pr-podman-push.yaml) then runs as a trusted `workflow_run` publisher: it does **not** check out fork code, retags from the trusted PR number and `workflow_run.head_sha`, and pushes only `quay.io/rhdh-community/rhdh:pr-<N>` / `pr-<N>-<sha>` with repository secrets. Fork PRs into upstream therefore get Quay preview tags the same way same-repo PRs do.
+
+Vars/secrets set on your fork are **not** used for PRs targeting this repository.
+
+#### Production / e2e-runner builds on your fork
+
+To test [next-build-image.yaml](.github/workflows/next-build-image.yaml) or [push-e2e-runner.yaml](.github/workflows/push-e2e-runner.yaml) **on your fork** (`push` / `workflow_dispatch`):
 
 1. Create a Quay repository in **your** namespace (not `rhdh-community`).
 2. Set a repository variable (Settings → Secrets and variables → Actions → Variables):

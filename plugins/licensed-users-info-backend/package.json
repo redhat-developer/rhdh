@@ -31,7 +31,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-common": "1.26.1",
+    "@backstage-community/plugin-rbac-common": "2.1.1",
     "@backstage/backend-defaults": "0.17.8",
     "@backstage/backend-plugin-api": "1.10.0",
     "@backstage/catalog-client": "1.16.1",
@@ -41,9 +41,9 @@
     "@backstage/plugin-auth-backend": "0.30.0",
     "@backstage/plugin-permission-common": "0.9.10",
     "@backstage/types": "1.2.2",
-    "express": "4.22.2",
+    "express": "4.22.3",
     "express-promise-router": "4.1.1",
-    "json-2-csv": "5.5.11",
+    "json-2-csv": "5.6.0",
     "knex": "3.3.0",
     "luxon": "3.7.2",
     "node-fetch": "2.7.0"

@@ -1,10 +1,6 @@
 import { test } from "@support/coverage/test";
 
 import { SidebarPage } from "../../../support/pages/sidebar-page";
-import { getTranslations, getCurrentLanguage } from "../../localization/locale";
-
-const t = getTranslations();
-const lang = getCurrentLanguage();
 
 test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equivalent" }, () => {
   let sidebarPage: SidebarPage;
@@ -18,26 +14,28 @@ test.describe("Validate Sidebar Navigation Customization", { tag: "@layer3-equiv
     sidebarPage = new SidebarPage(rhdhGuestPage);
   });
 
-  test("Verify menu order and navigate to Docs", { tag: "@cluster-free-capable" }, async () => {
-    await sidebarPage.verifyMenuItemInSection("References", t["rhdh"][lang]["menuItem.apis"]);
-    await sidebarPage.verifyMenuItemInSection(
-      "References",
-      t["rhdh"][lang]["menuItem.learningPaths"],
-    );
-    await sidebarPage.verifyMenuItemInSection("Favorites", t["rhdh"][lang]["menuItem.docs"]);
+  // Skip cluster-free: Docs is empty in the cluster-free harness.
+  test("Verify Docs sidebar navigation", async () => {
+    await sidebarPage.openDocs();
 
-    await sidebarPage.openFavoritesDocs();
+    await sidebarPage.verifyDocsHeading();
+  });
 
-    await sidebarPage.verifyDocumentationHeading();
-    await sidebarPage.verifyText("Documentation available in", false);
-    await sidebarPage.verifyText("Test enabled");
-    await sidebarPage.verifyLinkHidden("Test disabled");
+  // The app-defaults plugin exposes the NFS Learning Paths route in its sidebar.
+  test("Verify Learning Paths sidebar navigation", { tag: "@cluster-free-capable" }, async () => {
+    await sidebarPage.openLearningPaths();
 
-    await sidebarPage.openSidebarButton("Test enabled", "Test nested enabled");
-    await sidebarPage.verifyText("Test nested enabled");
-    await sidebarPage.verifyLinkHidden("Test nested disabled");
+    await sidebarPage.verifyLearningPathsHeading();
+  });
 
-    await sidebarPage.verifyText("Test_i enabled");
-    await sidebarPage.verifyLinkHidden("Test_i disabled");
+  // Not @cluster-free-capable: needs a real techdocs-ref entity with buildable/published docs
+  // content — e.g. catalog-entities/components/showcase.yaml's "Red Hat Developer Hub"
+  // (techdocs-ref: url:...), loaded via catalog-entities/all.yaml (app-config.yaml) in
+  // full CI only. The cluster-free harness's catalog has no such entity (see above), so
+  // this can't run there.
+  test("Verify Docs entity page renders real content", async () => {
+    await sidebarPage.openDocs();
+    await sidebarPage.openDocsEntity("Red Hat Developer Hub");
+    await sidebarPage.verifyDocsEntityContent();
   });
 });

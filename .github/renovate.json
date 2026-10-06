@@ -15,6 +15,20 @@
   "reviewers": ["team:rhdh-security"],
   "packageRules": [
     {
+      "description": "require dashboard approval for .nvmrc Node version bumps",
+      "matchManagers": ["nvm"],
+      "groupName": "Node.js",
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    },
+    {
+      "description": "Disable Yarn packageManager updates via renovate; use skill rhdh-yarn-bump from https://github.com/redhat-developer/rhdh-skills/blob/main/skills/ci/rhdh-yarn-bump/SKILL.md instead",
+      "enabled": false,
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["packageManager", "devEngines.packageManager"],
+      "matchPackageNames": ["yarn"]
+    },
+    {
       "description": "exclude rpm-lockfile updates",
       "matchFileNames": [".github/workflows/update-rpm-lockfile.yaml"],
       "enabled": false
@@ -134,6 +148,11 @@
       "automerge": false
     },
     {
+      "description": "Limit @remixicon/react to versions below 4.9.0 due to a license change in that release",
+      "matchPackageNames": ["@remixicon/react"],
+      "allowedVersions": "<4.9.0"
+    },
+    {
       "description": "disable minor updates for Winston",
       "matchPackageNames": ["winston"],
       "enabled": false,
@@ -166,7 +185,7 @@
       "automerge": false
     },
     {
-      "description": "Group Playwright npm and Docker image updates together so browsers stay in sync",
+      "description": "Group Playwright npm and Docker image updates together so browsers stay in sync; waive npm cool-off for patch/minor only so they clear with MCR",
       "matchPackageNames": [
         "@playwright/test",
         "playwright",
@@ -176,15 +195,12 @@
       "matchUpdateTypes": ["patch", "minor"],
       "groupName": "Playwright (non-major)",
       "additionalBranchPrefix": "playwright-",
-      "automerge": false
-    },
-    {
-      "description": "Age Playwright Docker via GitHub Releases (MCR has no releaseTimestamp)",
-      "matchPackageNames": ["mcr.microsoft.com/playwright"],
-      "matchDatasources": ["docker"],
-      "overrideDatasource": "github-releases",
-      "overridePackageName": "microsoft/playwright",
-      "minimumReleaseAge": "3 day"
+      "minimumReleaseAge": "0 days",
+      "automerge": false,
+      "addLabels": ["do-not-merge/hold"],
+      "prBodyNotes": [
+        "**Hold:** Playwright npm packages skip the usual 3-day `minimumReleaseAge` so they can ship with the MCR image. Wait at least 3 days after the npm release before merging this PR."
+      ]
     },
     {
       "description": "ignore updates to all backstage updates and 3rd party plugins",
@@ -207,10 +223,9 @@
       "matchPackageNames": ["@janus-idp/cli"],
       "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
       "matchUpdateTypes": ["patch", "minor"]
-  }
+    }
   ],
   "ignorePaths": ["**/dist-dynamic/**"],
   "vulnerabilityAlerts": {"enabled": true, "addLabels": ["kind/security"]},
   "osvVulnerabilityAlerts": false
-       
 }

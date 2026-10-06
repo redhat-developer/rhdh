@@ -1,4 +1,5 @@
 {
+  "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
   "targets": [
     "cursor",
     "claudecode",
@@ -9,11 +10,11 @@
     "commands",
     "skills"
   ],
-  "baseDirs": [
+  "outputRoots": [
     "."
   ],
   "delete": true,
   "verbose": false,
   "global": false,
-  "simulatedCommands": false
+  "simulateCommands": false
 }

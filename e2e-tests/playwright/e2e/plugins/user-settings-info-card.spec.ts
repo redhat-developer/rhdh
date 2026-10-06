@@ -1,6 +1,5 @@
 import { test } from "@support/coverage/test";
 
-import { HomePage } from "../../support/pages/home-page";
 import { SettingsPage } from "../../support/pages/settings-page";
 
 test.describe("Test user settings info card", { tag: "@layer3-equivalent" }, () => {
@@ -11,17 +10,14 @@ test.describe("Test user settings info card", { tag: "@layer3-equivalent" }, () 
     });
   });
 
-  let homePage: HomePage;
   let settingsPage: SettingsPage;
 
   test.beforeEach(({ guestPage }) => {
-    homePage = new HomePage(guestPage);
     settingsPage = new SettingsPage(guestPage);
   });
 
   test("Check if customized build info is rendered", { tag: "@cluster-free-capable" }, async () => {
-    await homePage.openHomeSidebar();
-    await settingsPage.openFromProfile("Guest User");
+    await settingsPage.open();
 
     await settingsPage.verifyBuildInfoCardVisible();
     await settingsPage.verifyBuildInfoText("TechDocs builder: local");

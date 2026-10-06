@@ -8,9 +8,12 @@ on:
       - '.cursorignore'
       - '.claude/**'
       - '.opencode/**'
-      - 'opencode.json'
+      - 'opencode.jsonc'
       - 'rulesync.jsonc'
       - '.rulesyncignore'
+      - '.lintstagedrc.cjs'
+      - 'package.json'
+      - 'yarn.lock'
   push:
     branches:
       - 'main'
@@ -21,9 +24,12 @@ on:
       - '.cursorignore'
       - '.claude/**'
       - '.opencode/**'
-      - 'opencode.json'
+      - 'opencode.jsonc'
       - 'rulesync.jsonc'
       - '.rulesyncignore'
+      - '.lintstagedrc.cjs'
+      - 'package.json'
+      - 'yarn.lock'
 
 jobs:
   rulesync:
@@ -42,32 +48,5 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Run rulesync generate
-        run: yarn rulesync:generate
-
-      - name: Verify generated files are in sync
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-changed-files
-        with:
-          files: |
-            .cursor/**
-            .claude/**
-            .opencode/**
-            .cursorignore
-            .rulesyncignore
-            opencode.json
-
-      - name: Report out-of-sync files
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
-        run: |
-          echo "❌ Generated files are out of sync with .rulesync!"
-          echo "📋 Files with differences: $CHANGED_FILES"
-          echo "🔧 To fix this, run:"
-          echo "  - yarn rulesync:generate if you forgot to generate the files from .rulesync"
-          echo "  - yarn rulesync:import:cursor if you edited .cursor files directly"
-          echo "  - yarn rulesync:import:claude if you edited .claude files directly"
-          echo "  - yarn rulesync:import:opencode if you edited .opencode files directly"
-          echo "  and then commit the changes"
-          exit 1
+      - name: Check rulesync configuration and generated files
+        run: yarn rulesync:check

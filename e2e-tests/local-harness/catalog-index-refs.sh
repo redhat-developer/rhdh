@@ -14,7 +14,7 @@
 # --excluded inverts the filter and prints the refs the excludes file matched.
 # The caller needs those: the generated install config pulls in the index's own
 # dynamic-plugins.default.yaml, so an excluded package installs anyway unless it
-# is explicitly listed as `disabled: true` - omitting it is not enough.
+# is explicitly listed as `enabled: false` - omitting it is not enough.
 set -e
 
 IMAGE="${1:?usage: catalog-index-refs.sh <catalog-index-image> [--excluded]}"

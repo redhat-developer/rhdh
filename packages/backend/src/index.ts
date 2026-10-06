@@ -3,18 +3,15 @@ import { WinstonLogger } from '@backstage/backend-defaults/rootLogger';
 import {
   CommonJSModuleLoader,
   dynamicPluginsFeatureLoader,
-  dynamicPluginsFrontendServiceRef,
 } from '@backstage/backend-dynamic-feature-service';
-import { createServiceFactory } from '@backstage/backend-plugin-api';
-import { PackageRoles } from '@backstage/cli-node';
 
-import * as path from 'path';
+import path from 'node:path';
 
 import { configureCorporateProxyAgent } from './corporate-proxy';
 import { getDefaultServiceFactories } from './defaultServiceFactories';
 import {
+  dynamicFeaturesResolver,
   healthCheckPlugin,
-  nfsModuleFilterPlugin,
   pluginIDProviderService,
   rbacDynamicPluginsProvider,
 } from './modules';
@@ -40,16 +37,6 @@ defaultServiceFactories.forEach(serviceFactory => {
 
 backend.add(
   dynamicPluginsFeatureLoader({
-    schemaLocator(pluginPackage) {
-      const platform = PackageRoles.getRoleInfo(
-        pluginPackage.manifest.backstage.role,
-      ).platform;
-      return path.join(
-        platform === 'node' ? 'dist' : 'dist-scalprum',
-        'configSchema.json',
-      );
-    },
-
     moduleLoader: logger =>
       new CommonJSModuleLoader({
         logger,
@@ -91,33 +78,7 @@ backend.add(
   }),
 );
 
-if (
-  (process.env.ENABLE_STANDARD_MODULE_FEDERATION || '').toLocaleLowerCase() !==
-  'true'
-) {
-  // When the `dynamicPlugins` entry exists in the configuration, the upstream dynamic plugins backend feature loader
-  // also loads the `dynamicPluginsFrontendServiceRef` service that installs an http router to serve
-  // standard Module Federation assets for every installed dynamic frontend plugin.
-  // For now in RHDH the old frontend application doesn't use standard module federation and, by default,
-  // exported RHDH dynamic frontend plugins don't contain standard module federation assets.
-  // That's why we disable (by overriding it with a noop) this service unless standard module federation use
-  // is explicitly requested.
-  backend.add(
-    createServiceFactory({
-      service: dynamicPluginsFrontendServiceRef,
-      deps: {},
-      factory: () => ({
-        setResolverProvider() {},
-      }),
-    }),
-  );
-} else {
-  // RHIDP-15377: when standard module federation is enabled, filter out
-  // exposed modules that are not NFS entrypoints based on backstage.features
-  // metadata in each frontend plugin's package.json.
-  backend.add(nfsModuleFilterPlugin);
-}
-
+backend.add(dynamicFeaturesResolver);
 backend.add(healthCheckPlugin);
 
 backend.add(import('@backstage/plugin-app-backend'));
@@ -166,7 +127,6 @@ if (process.env.ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE !== undefined) {
 }
 
 backend.add(import('@internal/plugin-dynamic-plugins-info-backend'));
-backend.add(import('@internal/plugin-scalprum-backend'));
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-translations-backend'),
 );

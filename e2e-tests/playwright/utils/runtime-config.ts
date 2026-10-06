@@ -7,14 +7,15 @@
  * Design:
  *   - Shared constants live here (app title, guest auth, dynamic plugins, …).
  *   - Helm values YAML is generated with ONLY the overrides that differ from
- *     the chart defaults.  Arrays (extraVolumes, extraVolumeMounts) must be
- *     specified in full because Helm replaces arrays rather than merging them.
+ *     the chart defaults.  The chart owns the system volumes, so
+ *     extraVolumes/extraVolumeMounts only carry the runtime additions.
  *   - Operator ConfigMaps / Backstage CR are generated programmatically.
  *   - CATALOG_INDEX_IMAGE opt-in override: Helm uses
- *     `global.catalogIndex.image.*` --set flags; Operator pushes an env var
+ *     `catalogIndex.image.*` --set flags; Operator pushes an env var
  *     with `containers: ["install-dynamic-plugins"]`.
  */
 
+import type { V1Container } from "@kubernetes/client-node";
 import * as yaml from "yaml";
 
 import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
@@ -24,6 +25,17 @@ import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
 const appTitle = "Red Hat Developer Hub";
 const dynamicPluginsPvcSize = "5Gi";
+
+/**
+ * Auth providers are no longer built into the backend, and the catalog index
+ * ships the guest provider disabled. Without it the guest session has no user
+ * token, so anything that needs one (user identity, TechDocs) returns 401.
+ */
+const guestAuthProviderPlugin = {
+  package:
+    "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.54.6__0.2.22",
+  enabled: true,
+};
 
 /** Backstage CRD API version — update when the CRD version bumps. */
 export const BACKSTAGE_CR_API_VERSION = "rhdh.redhat.com/v1alpha5";
@@ -35,6 +47,7 @@ export interface RuntimeDeployConfig {
   namespace: string;
   routerBase: string;
   image: ImageRef;
+  internalPostgresqlImage: ImageRef;
   catalogIndex?: ImageRef;
   helm?: { chartUrl: string; chartVersion: string };
 }
@@ -80,12 +93,18 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
   const imageRegistry = process.env.IMAGE_REGISTRY ?? "quay.io";
   const imageRepo = process.env.IMAGE_REPO ?? "rhdh-community/rhdh";
   const imageTag = process.env.TAG_NAME ?? "next";
+  const internalPostgresqlImage = buildImageRef(
+    process.env.POSTGRESQL_IMAGE_REGISTRY!,
+    process.env.POSTGRESQL_IMAGE_REPO!,
+    process.env.POSTGRESQL_IMAGE_TAG!,
+  );
 
   const config: RuntimeDeployConfig = {
     releaseName,
     namespace,
     routerBase,
     image: buildImageRef(imageRegistry, imageRepo, imageTag),
+    internalPostgresqlImage,
   };
 
   // CATALOG_INDEX_IMAGE opt-in override
@@ -107,19 +126,20 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
 
 /**
  * Generate a Helm values YAML string containing ONLY the overrides that
- * differ from the chart defaults.
+ * differ from the chart defaults (standalone chart 2.y layout).
  *
  * Values omitted (inherited from chart defaults):
- *   - global.dynamic.{includes, plugins}
- *   - upstream.nameOverride
- *   - upstream.backstage.appConfig.{app.baseUrl, backend.baseUrl, cors, externalAccess}
- *   - upstream.backstage.extraEnvVars (BACKEND_SECRET, POSTGRESQL_ADMIN_PASSWORD)
- *   - upstream.backstage.installDir
- *   - upstream.postgresql.enabled
+ *   - dynamicPlugins.{includes, plugins}
+ *   - nameOverride
+ *   - appConfig.{app.baseUrl, backend.baseUrl, cors, externalAccess}
+ *   - BACKEND_SECRET and the PostgreSQL credentials (injected by the chart)
+ *   - postgresql.enabled
  *
- * Arrays (extraVolumes, extraVolumeMounts) include chart-default entries
- * because Helm replaces arrays entirely — we add postgres-crt and change
- * dynamic-plugins-root from ephemeral to PVC.
+ * The chart owns the system volumes (dynamic-plugins-root, dynamic-plugins,
+ * dynamic-plugins-npmrc, dynamic-plugins-registry-auth, npmcacache,
+ * extensions-catalog, temp), so only the runtime additions go in
+ * extraVolumes/extraVolumeMounts. dynamic-plugins-root is switched to a PVC
+ * through dynamicPlugins.volume instead of redefining the volume.
  */
 const tpl = (expr: string) => `{{ ${expr} }}`;
 
@@ -131,90 +151,100 @@ export function generateHelmValuesYaml(): string {
   const printfRelease = (suffix: string) => tpl(`printf "%s-${suffix}" .Release.Name`);
 
   const values = {
-    global: {
-      lightspeed: { enabled: false },
-    },
-    upstream: {
-      commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },
-      backstage: {
-        image: { pullPolicy: "Always" },
-        appConfig: {
-          app: { title: appTitle },
-          auth: {
-            environment: "development",
-            providers: {
-              guest: { dangerouslyAllowOutsideDevelopment: true },
-            },
-          },
-        },
-        // Volume mounts — chart defaults + postgres-crt
-        extraVolumeMounts: [
-          {
-            name: "dynamic-plugins-root",
-            mountPath: "/opt/app-root/src/dynamic-plugins-root",
-          },
-          { name: "extensions-catalog", mountPath: "/extensions" },
-          { name: "temp", mountPath: "/tmp" },
-          // Runtime addition: postgres certificate for external DB tests
-          {
-            name: "postgres-crt",
-            mountPath: "/opt/app-root/src/postgres-crt.pem",
-            subPath: "postgres-crt.pem",
-          },
-        ],
-        // Volumes — PVC for dynamic-plugins-root + chart defaults + postgres-crt
-        extraVolumes: [
-          // PVC instead of chart-default ephemeral — persists plugins across
-          // deployment restarts (config-map and schema-mode tests both restart RHDH)
-          {
-            name: "dynamic-plugins-root",
-            persistentVolumeClaim: {
-              claimName: printfRelease("dynamic-plugins-root"),
-            },
-          },
-          // Chart defaults (must repeat because Helm replaces arrays)
-          {
-            name: "dynamic-plugins",
-            configMap: {
-              defaultMode: 420,
-              name: printfRelease("dynamic-plugins"),
-              optional: true,
-            },
-          },
-          {
-            name: "dynamic-plugins-npmrc",
-            secret: {
-              defaultMode: 420,
-              optional: true,
-              secretName: printfRelease("dynamic-plugins-npmrc"),
-            },
-          },
-          {
-            name: "dynamic-plugins-registry-auth",
-            secret: {
-              defaultMode: 416,
-              optional: true,
-              secretName: printfRelease("dynamic-plugins-registry-auth"),
-            },
-          },
-          // Runtime addition
-          {
-            name: "postgres-crt",
-            secret: { secretName: "postgres-crt", optional: true },
-          },
-          { name: "npmcacache", emptyDir: {} },
-          { name: "extensions-catalog", emptyDir: {} },
-          { name: "temp", emptyDir: {} },
+    commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },
+    image: { pullPolicy: "Always" },
+    // Runtime tests only cover ConfigMap changes and DB connectivity, so the
+    // Intelligent Assistant sidecar would only slow down every restart.
+    intelligentAssistant: { enabled: false },
+    appConfig: {
+      app: {
+        title: appTitle,
+        // The new frontend system ships page:home disabled, so "/" is a 404
+        // without it. Same home extensions as the CI dynamic-plugins-config.yaml.
+        extensions: [
+          { "page:home": { config: { path: "/" } } },
+          { "api:home/visits": true },
+          { "app-root-element:home/visit-listener": true },
         ],
       },
+      auth: {
+        environment: "development",
+        providers: {
+          guest: { dangerouslyAllowOutsideDevelopment: true },
+        },
+      },
     },
+    dynamicPlugins: {
+      // PVC instead of the chart-default ephemeral volume — persists plugins
+      // across deployment restarts (config-map and schema-mode tests both
+      // restart RHDH). The PVC is created by runtime-deploy.ts.
+      volume: {
+        type: "pvc",
+        pvc: { claimName: printfRelease("dynamic-plugins-root") },
+      },
+      plugins: [guestAuthProviderPlugin],
+    },
+    // The chart's default-deny NetworkPolicies only let the backend reach the
+    // in-namespace PostgreSQL, so the external DB tests (RDS, Azure) could
+    // never connect. Same allowance CI applies to its namespaces
+    // (netpol-ci-allow-backend-egress.yaml).
+    extraDeploy: [
+      {
+        apiVersion: "networking.k8s.io/v1",
+        kind: "NetworkPolicy",
+        metadata: { name: printfRelease("ci-allow-backend-egress") },
+        spec: {
+          podSelector: {
+            matchLabels: {
+              "app.kubernetes.io/instance": tpl(".Release.Name"),
+              "app.kubernetes.io/component": "backstage",
+            },
+          },
+          policyTypes: ["Egress"],
+          egress: [{}],
+        },
+      },
+    ],
+    // Runtime addition: postgres certificate for external DB tests
+    extraVolumeMounts: [
+      {
+        name: "postgres-crt",
+        mountPath: "/opt/app-root/src/postgres-crt.pem",
+        subPath: "postgres-crt.pem",
+      },
+    ],
+    extraVolumes: [
+      {
+        name: "postgres-crt",
+        secret: { secretName: "postgres-crt", optional: true },
+      },
+    ],
   };
 
   return yaml.stringify(values, { lineWidth: 0 });
 }
 
 /**
- * Generate the `--set` arguments for `helm upgrade -i`.
+ * `--set` flags for one chart image. A digest reference (`repo@sha256:...`)
+ * goes to `.digest`, because the chart renders `.tag` as `repo:tag`. A tag
+ * reference clears the chart's default digest so the tag wins.
+ */
+function imageSetArgs(valuesPath: string, image: ImageRef): string[] {
+  const isDigest = image.separator === "@";
+  return [
+    "--set",
+    `${valuesPath}.registry=${image.registry}`,
+    "--set",
+    `${valuesPath}.repository=${image.repository}`,
+    "--set",
+    `${valuesPath}.tag=${isDigest ? "" : image.tag}`,
+    "--set",
+    `${valuesPath}.digest=${isDigest ? image.tag : ""}`,
+  ];
+}
+
+/**
+ * Generate the Helm arguments for `helm upgrade -i`.
  *
  * These are values that must be resolved at deploy time (cluster-specific
  * or image-specific), not baked into the values YAML.
@@ -222,27 +252,16 @@ export function generateHelmValuesYaml(): string {
 export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
   const args: string[] = [
     "--set",
-    `global.clusterRouterBase=${config.routerBase}`,
-    "--set",
-    `upstream.backstage.image.registry=${config.image.registry}`,
-    "--set",
-    `upstream.backstage.image.repository=${config.image.repository}`,
-    "--set",
-    `upstream.backstage.image.tag=${config.image.tag}`,
+    `openshift.clusterRouterBase=${config.routerBase}`,
+    ...imageSetArgs("image", config.image),
+    ...imageSetArgs("postgresql.image", config.internalPostgresqlImage),
   ];
 
   // CATALOG_INDEX_IMAGE override — mirrors helm::get_image_params() in
   // .ci/pipelines/lib/helm.sh.  When not set, the chart's built-in
-  // global.catalogIndex default takes effect.
+  // catalogIndex default takes effect.
   if (config.catalogIndex) {
-    args.push(
-      "--set",
-      `global.catalogIndex.image.registry=${config.catalogIndex.registry}`,
-      "--set",
-      `global.catalogIndex.image.repository=${config.catalogIndex.repository}`,
-      "--set",
-      `global.catalogIndex.image.tag=${config.catalogIndex.tag}`,
-    );
+    args.push(...imageSetArgs("catalogIndex.image", config.catalogIndex));
   }
 
   return args;
@@ -298,12 +317,48 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
  * `dynamic-plugins.default.yaml` — many of its default-enabled plugins
  * crash without external config (GitHub org, GitLab, LDAP, Keycloak,
  * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
+ * The guest auth provider is the only plugin added, for guest sign-in.
  */
 export function generateDynamicPluginsYaml(): string {
-  return yaml.stringify({ includes: [] as string[], plugins: [] as unknown[] }, { lineWidth: 0 });
+  return yaml.stringify(
+    { includes: [] as string[], plugins: [guestAuthProviderPlugin] },
+    { lineWidth: 0 },
+  );
 }
 
 // ─── Operator Backstage CR generation ────────────────────────────────────────
+
+/**
+ * Init container that blocks until the local PostgreSQL accepts connections.
+ *
+ * The operator starts Backstage and its PostgreSQL StatefulSet at the same
+ * time. The DB Service is headless, so its name does not resolve until the
+ * PostgreSQL pod is ready. When Backstage wins that race, each plugin fails
+ * its database setup with ENOTFOUND, the process stays alive, and the
+ * readiness probe returns 503 until the pod is deleted. The Helm chart avoids
+ * this with a wait-for-db init container doing the same TCP check.
+ */
+function generateWaitForDbInitContainer(image: string, dbHost: string): V1Container {
+  return {
+    name: "wait-for-db",
+    image,
+    command: [
+      "bash",
+      "-c",
+      `until timeout 2 bash -c '>/dev/tcp/${dbHost}/5432' 2>/dev/null; do echo "Waiting for ${dbHost}:5432"; sleep 2; done`,
+    ],
+    securityContext: {
+      readOnlyRootFilesystem: true,
+      allowPrivilegeEscalation: false,
+      runAsNonRoot: true,
+      capabilities: { drop: ["ALL"] },
+    },
+    resources: {
+      requests: { cpu: "50m", memory: "32Mi" },
+      limits: { cpu: "100m", memory: "64Mi" },
+    },
+  };
+}
 
 /**
  * Generate the Backstage CR object for the operator path.
@@ -345,7 +400,10 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
             template: {
               spec: {
                 containers: [{ name: BACKSTAGE_BACKEND_CONTAINER, image: fullImage }],
-                initContainers: [{ name: "install-dynamic-plugins", image: fullImage }],
+                initContainers: [
+                  { name: "install-dynamic-plugins", image: fullImage },
+                  generateWaitForDbInitContainer(fullImage, `backstage-psql-${config.releaseName}`),
+                ],
                 volumes: [
                   {
                     name: "dynamic-plugins-root",

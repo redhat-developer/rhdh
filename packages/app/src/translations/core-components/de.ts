@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-import { coreComponentsTranslationRef } from '@backstage/core-components';
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+import { coreComponentsTranslationRef } from "@backstage/core-components";
+import { createTranslationMessages } from "@backstage/core-plugin-api/alpha";
 
 const de = createTranslationMessages({
   ref: coreComponentsTranslationRef,
   full: false,
   messages: {
-    'table.filter.placeholder': 'Alle Ergebnisse',
-    'table.body.emptyDataSourceMessage':
-      'Keine Datensätze zum Anzeigen vorhanden',
-    'table.pagination.firstTooltip': 'Erste Seite',
-    'table.pagination.labelDisplayedRows': '{von}-{bis} von {Anzahl}',
-    'table.pagination.labelRowsSelect': 'Zeilen',
-    'table.pagination.lastTooltip': 'Letzte Seite',
-    'table.pagination.nextTooltip': 'Nächste Seite',
-    'table.pagination.previousTooltip': 'Vorherige Seite',
-    'table.toolbar.search': 'Filter',
-    'alertDisplay.message_one': '({{ count }} neuere Nachricht)',
-    'alertDisplay.message_other': '({{ count }} neuere Nachrichten)',
-    'table.header.actions': 'Aktionen',
-    'oauthRequestDialog.message':
-      'Melden Sie sich an, um {{appTitle}} Zugriff auf die APIs und Identitäten von {{provider}} zu erlauben.',
+    "table.filter.placeholder": "Alle Ergebnisse",
+    "table.body.emptyDataSourceMessage":
+      "Keine Datensätze zum Anzeigen vorhanden",
+    "table.pagination.firstTooltip": "Erste Seite",
+    "table.pagination.labelDisplayedRows": "{von}-{bis} von {Anzahl}",
+    "table.pagination.labelRowsSelect": "Zeilen",
+    "table.pagination.lastTooltip": "Letzte Seite",
+    "table.pagination.nextTooltip": "Nächste Seite",
+    "table.pagination.previousTooltip": "Vorherige Seite",
+    "table.toolbar.search": "Filter",
+    "alertDisplay.message_one": "({{ count }} neuere Nachricht)",
+    "alertDisplay.message_other": "({{ count }} neuere Nachrichten)",
+    "table.header.actions": "Aktionen",
+    "oauthRequestDialog.message":
+      "Melden Sie sich an, um {{appTitle}} Zugriff auf die APIs und Identitäten von {{provider}} zu erlauben.",
   },
 });
 

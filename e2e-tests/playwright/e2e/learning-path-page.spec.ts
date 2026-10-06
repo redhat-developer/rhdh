@@ -21,7 +21,7 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
     "Verify that links in Learning Paths for Backstage opens in a new tab",
     { tag: "@cluster-free-capable" },
     async ({ guestPage }, testInfo) => {
-      await sidebarPage.openReferencesLearningPaths();
+      await sidebarPage.openLearningPaths();
       await sidebarPage.verifyLearningPathLinksOpenInNewTab();
 
       await runAccessibilityTests(guestPage, testInfo);

@@ -10,6 +10,46 @@ source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
 
+# The install script patches the cluster image registry to expose it and
+# immediately reads the default-route, which OpenShift takes a few seconds to
+# create — a known race (RHDHBUGS-3758). Expose the registry up front and wait
+# for the route so the script's own read finds it. Warn-only on timeout: the
+# install retry still gets its chance.
+ensure_registry_default_route() {
+  if [[ "${IS_OPENSHIFT}" != "true" ]]; then
+    return 0
+  fi
+  if ! oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge -p '{"spec":{"defaultRoute":true}}'; then
+    log::warn "Could not patch the image registry to expose the default route"
+    return 0
+  fi
+  local registry_host=""
+  for _ in $(seq 1 24); do
+    registry_host=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}' 2> /dev/null || true)
+    if [[ -n "$registry_host" ]]; then
+      break
+    fi
+    sleep 5
+  done
+  if [[ -z "$registry_host" ]]; then
+    log::warn "Image registry default-route did not appear within 120s; continuing"
+    return 0
+  fi
+  # The Route object existing is not enough: right after creation the router/
+  # registry data path can still refuse uploads (EOF on blob push,
+  # RHDHBUGS-3759). Probe the registry API through the route until it answers.
+  local code=""
+  for _ in $(seq 1 24); do
+    code=$(curl -ks -o /dev/null -w '%{http_code}' --max-time 10 "https://${registry_host}/v2/" || true)
+    if [[ "$code" == "200" || "$code" == "401" ]]; then
+      log::info "Image registry is serving through the default route"
+      return 0
+    fi
+    sleep 5
+  done
+  log::warn "Image registry route is not serving yet (last HTTP status: ${code:-none}); continuing"
+}
+
 install_rhdh_operator() {
   local namespace=$1
   local max_attempts=$2
@@ -33,18 +73,112 @@ install_rhdh_operator() {
   fi
   chmod +x /tmp/install-rhdh-catalog-source.sh
 
+  ensure_registry_default_route
+
   if [[ "$RELEASE_VERSION" == "next" ]]; then
     log::info "Installing RHDH operator with '--next' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh; then
+    # --olm-version v0: keep the CSV-based install path. On clusters that ship
+    # the OLM v1 CRDs (OCP/OSD >= 4.18) the script would auto-detect v1 and
+    # install via ClusterExtension, which has no CSV for
+    # override_operator_backstage_image to patch — leaving the stale
+    # RELATED_IMAGE_backstage digest in effect. OLM v1 coverage has its own
+    # dedicated flows (e.g. the disconnected jobs).
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --olm-version v0 --next --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
   else
     log::info "Installing RHDH operator with '-v $RELEASE_VERSION' flag"
-    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$RELEASE_VERSION" --install-operator rhdh; then
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --olm-version v0 -v "$RELEASE_VERSION" --install-operator rhdh; then
       log::error "Failed install RHDH Operator after ${max_attempts} attempts."
       return 1
     fi
+  fi
+
+  override_operator_backstage_image "$namespace"
+}
+
+# The operator bundle CSV pins RELATED_IMAGE_backstage to the hub image digest
+# captured when the bundle was built, which can lag the floating tag by weeks.
+# The operator applies that env to the install-dynamic-plugins init container
+# even when the Backstage CR deployment.patch overrides the main container, so
+# tests would exercise a stale installer image. Point the CSV at the image
+# under test; OLM propagates the change to the operator deployment.
+override_operator_backstage_image() {
+  local namespace=$1
+  local image="${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
+  local csv_name
+
+  # OLM v1 installs (install-rhdh-catalog-source.sh auto-detects it and uses a
+  # ClusterExtension) have no CSV to patch.
+  if oc get clusterextension rhdh &> /dev/null; then
+    log::info "RHDH installed via OLM v1 ClusterExtension; skipping CSV backstage image override"
+    return 0
+  fi
+
+  # install-rhdh-catalog-source.sh returns right after creating the
+  # Subscription, so the CSV may not exist yet — wait for it.
+  if ! common::poll_until \
+    "oc get csv -n '$namespace' -o name 2> /dev/null | grep -qE '/rhdh(-operator)?\\.'" \
+    30 10 "RHDH CSV present in namespace '$namespace'"; then
+    log::warn "No RHDH CSV appeared in namespace '$namespace'; skipping backstage image override"
+    return 0
+  fi
+  # `|| true` guards: the script runs with `set -o errexit`, and an empty grep
+  # or a missing resource must fall through to the guards, not abort.
+  csv_name=$(oc get csv -n "$namespace" -o name 2> /dev/null | grep -E '/rhdh(-operator)?\.' | head -1 || true)
+  if [[ -z "$csv_name" ]]; then
+    log::warn "No RHDH CSV found in namespace '$namespace'; skipping backstage image override"
+    return 0
+  fi
+
+  local csv_json
+  csv_json=$(oc get "$csv_name" -n "$namespace" -o json 2> /dev/null || true)
+  if [[ -z "$csv_json" ]]; then
+    log::error "Failed to read ${csv_name} in namespace '$namespace'"
+    return 1
+  fi
+
+  local patch
+  patch=$(jq --arg img "$image" -c '
+    [ .spec.install.spec.deployments as $ds
+      | range(0; $ds | length) as $d
+      | $ds[$d].spec.template.spec.containers as $cs
+      | range(0; $cs | length) as $c
+      | ($cs[$c].env // []) as $es
+      | range(0; $es | length) as $e
+      | select($es[$e].name == "RELATED_IMAGE_backstage")
+      | { op: "replace",
+          path: "/spec/install/spec/deployments/\($d)/spec/template/spec/containers/\($c)/env/\($e)/value",
+          value: $img } ]' <<< "$csv_json" || true)
+  if [[ -z "$patch" || "$patch" == "[]" ]]; then
+    log::warn "RELATED_IMAGE_backstage not found in ${csv_name}; skipping backstage image override"
+    return 0
+  fi
+
+  log::info "Overriding RELATED_IMAGE_backstage in ${csv_name} with '${image}'"
+  if ! oc patch "$csv_name" -n "$namespace" --type=json -p "$patch"; then
+    log::error "Failed to patch ${csv_name} with backstage image override"
+    return 1
+  fi
+
+  # OLM reconciles the operator deployment from the CSV; wait for the new env
+  # to land and for the operator pod to restart with it.
+  local operator_deployment
+  operator_deployment=$(oc get deployment -n "$namespace" -l control-plane=controller-manager -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || true)
+  if [[ -z "$operator_deployment" ]]; then
+    log::warn "No operator deployment found in namespace '$namespace'; not waiting for image override rollout"
+    return 0
+  fi
+  if ! common::poll_until \
+    "oc get deployment '$operator_deployment' -n '$namespace' -o json | jq -e --arg img '$image' '[.spec.template.spec.containers[].env // [] | .[] | select(.name == \"RELATED_IMAGE_backstage\")] | any(.value == \$img)'" \
+    30 5 "Operator deployment picked up backstage image override"; then
+    log::error "Operator deployment did not pick up the backstage image override"
+    return 1
+  fi
+  if ! oc rollout status "deployment/${operator_deployment}" -n "$namespace" --timeout=300s; then
+    log::error "Operator deployment '${operator_deployment}' did not finish rolling out after the backstage image override"
+    return 1
   fi
 }
 

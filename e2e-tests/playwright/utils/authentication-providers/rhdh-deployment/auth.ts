@@ -339,7 +339,7 @@ export function setDynamicPluginEnabled(
       ...state.dynamicPluginsConfig.plugins,
       {
         package: pluginName,
-        disabled: !enabled,
+        enabled,
       },
     ];
     console.log(
@@ -347,7 +347,8 @@ export function setDynamicPluginEnabled(
     );
     return;
   }
-  plugin.disabled = !enabled;
+  plugin.enabled = enabled;
+  delete plugin.disabled;
   console.log(`Plugin ${pluginName} has been ${enabled ? "enabled" : "disabled"}.`);
 }
 

@@ -7,7 +7,7 @@ For more information, see [Installing Dynamic Plugins with the Red Hat Developer
 
 Plugins are defined in the `plugins` array in the `dynamic-plugins.yaml` file. Each plugin is defined as an object with the following properties:
 
-- `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path. For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag to inherit the version from an included configuration. Additionally, when using single-plugin OCI images, the plugin path can also be omitted.
+- `package`: The plugin source: an OCI image, `tgz` archive, npm package, or directory path. For OCI plugins already listed under `includes`, use `ref://` or `{{inherit}}` (see [Plugin References](#plugin-references)).
 - `enabled`: A boolean value that determines whether the plugin is enabled (`true`) or disabled (`false`). The legacy `disabled` field is still accepted for backward compatibility; when both are present, `enabled` takes precedence.
 - `integrity`: The integrity hash of the package. This is required for `tgz` archives and npm packages.
 - `pluginConfig`: The configuration for the plugin. For backend plugins this is optional and can be used to pass configuration to the plugin. For frontend plugins this is required, see [Frontend Plugin Wiring](frontend-plugin-wiring.md) for more information on how to configure bindings and routes. This is a fragment of the `app-config.yaml` file. Anything that is added to this object will be merged into a `app-config.dynamic-plugins.yaml` file whose config can be merged with the main `app-config.yaml` config when launching RHDH.
@@ -24,13 +24,15 @@ On application start, for each plugin that is not enabled, the `install-dynamic-
 ======= Skipping disabled dynamic plugin oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment
 ```
 
-To activate this plugin, simply add a package with the same name and set `enabled: true`.
+To activate this plugin, add a `ref://` entry in your `dynamic-plugins.yaml` that matches the image name from the catalog defaults under `includes`, and set `enabled: true`:
 
 ```yaml
 plugins:
   - enabled: true
-    package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+    package: ref://backstage-community-plugin-analytics-provider-segment
 ```
+
+See [Plugin References](#plugin-references) for `ref://` and the `{{inherit}}` variant.
 
 While the plugin's default configuration comes from the `dynamic-plugins.default.yaml` file (now delivered via the catalog index image; see [Using a Catalog Index Image](#using-a-catalog-index-image-for-default-plugin-configurations) below), you still have the option to override it by incorporating a `pluginConfig` entry into the plugin configuration.
 
@@ -171,67 +173,64 @@ When the path is omitted, the installer will inspect the OCI image manifest for 
 
 Images MUST be packaged with the `@red-hat-developer-hub/cli` to ensure the proper `io.backstage.dynamic-packages` annotation is applied.
 
-#### OCI Package Version Inheritance
+#### Plugin References
 
-When working with OCI-packaged dynamic plugins, you may want to avoid specifying the version (tag or digest) in multiple places, especially when including plugins from other configuration files such as `dynamic-plugins.default.yaml`. Setting the tag of the OCI package to `{{inherit}}` allows a plugin configuration override to inherit the plugin version from an included configuration.
+When enabling or configuring plugins listed under `includes` (typically `dynamic-plugins.default.yaml` from the [catalog index](#using-a-catalog-index-image-for-default-plugin-configurations)), you can reference those entries instead of hard-coding a full OCI URL.
 
-For example, if we have an included dynamic plugin file (`dynamic-plugins.example.yaml`) with `v0.0.2` of our plugin which might be updated to match the current RHDH version:
+That keeps overrides stable when an include file changes. If the catalog (or another file under `includes`) ships a new registry, digest, or tag for the same image name, your `ref://` or `{{inherit}}` entry still resolves to whatever that file currently provides.
+
+##### `ref://plugin-name` (recommended)
+
+Use `ref://plugin-name` to look up a plugin by its OCI image name (the last path segment) and reuse its full package URL from the matching `includes` entry:
 
 ```yaml
-# dynamic-plugins.example.yaml
+# includes entry (e.g. dynamic-plugins.default.yaml from the catalog index)
 plugins:
   - enabled: false
-    package: oci://quay.io/example/image:v0.0.2!backstage-plugin-myplugin
-```
+    package: oci://quay.io/example/backstage-plugin-myplugin@sha256:abc123!backstage-plugin-myplugin
 
-and a `dynamic-plugins.yaml` file with the `{{inherit}}` tag using configurations for an older version that are still compatible:
-
-```yaml
-# dynamic-plugins.yaml
-includes:
-- dynamic-plugins.example.yaml
+# your dynamic-plugins.yaml override
 plugins:
   - enabled: true
-    package: oci://quay.io/example/image:{{inherit}}!backstage-plugin-myplugin
+    package: ref://backstage-plugin-myplugin
     pluginConfig:
-      exampleName: "test"
+      exampleName: test
 ```
 
-The resolved version would be `v0.0.2`, but the overridden `pluginConfig` and `enabled: true` would still apply.
+##### `{{inherit}}` (when you need a plugin path)
 
-**General Notes:**
-
-- An error will be thrown if you use `{{inherit}}` in the `includes` plugin configuration(s).
-- An error will be thrown if `{{inherit}}` is used in `dynamic-plugins.yaml` when there is no existing matching plugin configuration key in the `includes` plugin configuration(s).
-  - Plugin configuration key is a unique key based on the OCI image name + plugin path. Ex: `quay.io/example/image:!backstage-plugin-myplugin`
-
-##### Combining Version Inheritance with Path Omission
-
-When using `{{inherit}}` for version inheritance, you can also leverage the plugin path auto-detection feature by omitting the plugin path entirely. This is particularly useful when the base configuration in included files already has an explicit path or uses auto-detection itself.
-
-For example, we can have an example plugin that uses auto-detection that will resolve to `oci://quay.io/example/image:v0.0.2!example-path`
+`ref://` cannot set a `!plugin-path`. Use `{{inherit}}` as the OCI tag when you need that suffix. Matching uses the image name (the last path segment); the registry host and namespace in your URL are ignored for lookup. The matching `includes` entry supplies the concrete registry and digest or tag; your `!plugin-path` is kept.
 
 ```yaml
-# dynamic-plugins.example.yaml
+# includes entry (e.g. dynamic-plugins.default.yaml from the catalog index)
 plugins:
   - enabled: false
-    package: oci://quay.io/example/image:v0.0.2
-```
+    package: oci://quay.io/example/backstage-plugin-myplugin@sha256:abc123!backstage-plugin-myplugin
 
-Then we can just use `{{inherit}}` without a path, and we will inherit both the version `v0.0.2` and the plugin path `example-path`
-
-```yaml
-# dynamic-plugins.yaml
-includes:
-- dynamic-plugins.example.yaml
+# your dynamic-plugins.yaml override
 plugins:
   - enabled: true
-    package: oci://quay.io/example/image:{{inherit}}
+    package: oci://quay.io/example/backstage-plugin-myplugin:{{inherit}}!backstage-plugin-myplugin-backend
     pluginConfig:
-      exampleName: "test"
+      exampleName: test
 ```
 
-This only works when exactly ONE plugin from that OCI image is defined in the included configuration files. If more are found, an error will be thrown. Additionally, an error will be thrown if no matching plugins are found.
+You can also omit `!plugin-path` on the `{{inherit}}` entry. The path then comes from the matching `includes` entry, or from single-plugin image [auto-detection](#oci-package-plugin-path-auto-detection) when that entry omitted it too. This only works when exactly one plugin from that image appears under `includes`. For pathless include entries, that also requires a single-plugin image so auto-detection can run.
+
+```yaml
+# includes entry — path omitted; installer auto-detects for single-plugin images
+plugins:
+  - enabled: false
+    package: oci://quay.io/example/backstage-plugin-myplugin@sha256:abc123
+
+# your dynamic-plugins.yaml override — inherits digest/tag and the detected path
+plugins:
+  - enabled: true
+    package: oci://quay.io/example/backstage-plugin-myplugin:{{inherit}}
+    pluginConfig:
+      exampleName: test
+```
+
 
 ### Using a `tgz` Archive
 

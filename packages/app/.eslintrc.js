@@ -1,12 +1,5 @@
-const backstageConfig = require('@backstage/cli/config/eslint-factory')(
-  __dirname,
-);
-
-module.exports = {
-  ...backstageConfig,
+module.exports = require("@backstage/cli/config/eslint-factory")(__dirname, {
   rules: {
-    ...backstageConfig.rules,
-    'react/react-in-jsx-scope': 'off',
-    'react/jsx-uses-react': 'off',
+    "@backstage/no-top-level-material-ui-4-imports": "error",
   },
-};
+});

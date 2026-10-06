@@ -18,7 +18,6 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.open();
   });
 
-  // Run tests only for the selected language
   test(`Verify settings page`, { tag: "@cluster-free-capable" }, async () => {
     await settingsPage.hideQuickstartIfVisible();
     await settingsPage.verifyLanguageToggleList(lang);
@@ -33,9 +32,12 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.verifySignOutMenuLabel(t["user-settings"]["fr"]["signOutMenu.title"]);
     await settingsPage.closeUserSettingsMenu();
 
+    await settingsPage.verifySidebarMenuItemVisible(t["rhdh"]["fr"]["menuItem.apis"]);
     await settingsPage.uncheckCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
     await settingsPage.verifySidebarMenuItemHidden(t["rhdh"]["fr"]["menuItem.apis"]);
     await settingsPage.checkCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
-    await settingsPage.verifyText(t["rhdh"]["fr"]["menuItem.home"]);
+    // NFS sidebar page titles come from upstream PageBlueprint defaults ("Home"), not
+    // rhdh menuItem.* translations — only GlobalHeader chrome translates with AppLanguageApi.
+    await settingsPage.verifyText("Home");
   });
 });

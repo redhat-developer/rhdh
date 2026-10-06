@@ -1,0 +1,35 @@
+name: "Resolve catalog index image"
+description: "Resolves quay.io/rhdh/plugin-catalog-index from branch (next or release-*) or an override input"
+
+inputs:
+  branch:
+    description: "Branch to derive the index tag from (release-* -> version tag, else next)"
+    required: true
+  catalog_index_image:
+    description: "Optional full image override (validated before use)"
+    required: false
+    default: ""
+
+outputs:
+  image:
+    description: "Resolved catalog index image reference"
+    value: ${{ steps.resolve.outputs.image }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve the catalog index image
+      id: resolve
+      shell: bash
+      env:
+        BRANCH: ${{ inputs.branch }}
+        OVERRIDE: ${{ inputs.catalog_index_image }}
+      run: |
+        image="$(./e2e-tests/local-harness/resolve-catalog-index-image.sh "$BRANCH" "$OVERRIDE")"
+        echo "image=${image}" >> "$GITHUB_OUTPUT"
+        # The tag is a moving target; record the digest it resolved to so a
+        # later run can be traced back to the exact index it validated.
+        digest=$(skopeo inspect --no-creds --override-os linux --override-arch amd64 \
+          --format '{{.Digest}}' "docker://${image}" 2> /dev/null || echo "unresolved")
+        echo "Catalog index: ${image} (${digest})"
+        echo "Catalog index: \`${image}\` @ \`${digest}\`" >> "$GITHUB_STEP_SUMMARY"

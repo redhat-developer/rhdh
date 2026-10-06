@@ -42,29 +42,6 @@ export function parseLoadedPluginNames(body: unknown): Set<string> {
 }
 
 /**
- * Parse the /api/scalprum/plugins response (a name -> descriptor map) into the
- * set of frontend plugins the backend will actually serve to the browser.
- */
-export function parseScalprumPluginNames(body: unknown): Set<string> {
-  if (typeof body !== "object" || body === null || isUnknownArray(body)) {
-    throw new Error(`Expected scalprum plugins response to be an object, got: ${typeof body}`);
-  }
-  return new Set(Object.keys(body));
-}
-
-/**
- * Frontend plugins the scalprum backend will serve to the browser. Worth
- * asserting separately: that router logs a warning and skips a plugin whose
- * dist-scalprum is unusable, while the plugin still shows up as "loaded".
- *
- * A plain function rather than a method on the class below: the endpoint belongs
- * to a different backend plugin and needs no credentials.
- */
-export async function fetchScalprumPluginNames(request: APIRequestContext): Promise<Set<string>> {
-  return parseScalprumPluginNames(await getJson(request, "/api/scalprum/plugins"));
-}
-
-/**
  * The backend's own view of the dynamic plugins it loaded, for the cluster-free
  * plugin sanity check. Keeps the auth dance and the endpoint out of the spec.
  */

@@ -2,9 +2,11 @@
 
 To customize the look of your showcase instance, you can edit the `app-config.yaml` file in the root of this repository. The customizations used to configure the app are loaded by the backstage app at startup, with certain values being queried by the app at runtime.
 
-Plugins can use field `developerHub.flavor` of the `app-config.yaml` to identify which Backstage flavor they are running on (e.g `backstage`, `rhdh` or `rhtap`).
+> **NFS default:** RHDH ships the Backstage new frontend system (`packages/app`). For NFS-specific configuration, see [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](dynamic-plugins/migrating-config-to-new-frontend-system.md). Sections below marked **legacy OFS only** do not apply to the default NFS app shell.
 
 ## Changing the Sidebar Logo
+
+The NFS sidebar is provided by the `app-defaults` dynamic plugin. It reads the logo settings below and falls back to the RHDH logos from `@red-hat-developer-hub/backstage-plugin-theme`. When the global-header plugin is enabled, branding stays in the sidebar; the header company-logo slot is hidden by app shell CSS so it does not duplicate the sidebar logo.
 
 The sidebar uses two logos - one for the expanded sidebar and one for the collapsed sidebar.
 
@@ -25,22 +27,48 @@ app:
 ![Default Icon Logo when side bar is collapsed](images/default-collapsed-icon.png)
 ![Default Full Logo when side bar is expanded](images/default-expanded-logo.png)
 
-## Hiding Sidebar search, logo, settings, administration
+## Hiding Sidebar Elements
+
+The NFS `app-defaults` dynamic plugin supplies the sidebar elements. Disable individual elements through `app.extensions`:
+
+```yaml title="app-config.yaml"
+app:
+  extensions:
+    - sidebar-element:app/logo: false
+    - sidebar-element:app/search: false
+    - sidebar-item-group:app/settings: false
+    - sidebar-item-group:app/admin: false
+```
+
+The legacy OFS app shell also supports the `app.sidebar.search`, `app.sidebar.settings`, and `app.sidebar.administration` flags.
+
+## Customizing the Sidebar Menu Items
+
+The NFS `app-defaults` dynamic plugin reads sidebar entries from `app.sidebar.items` and `app.sidebar.groups`. Items can link to pages or external sites and can be nested under groups:
 
 ```yaml title="app-config.yaml"
 app:
   sidebar:
-    search: false # optional, when set to false hides sidebar search
-    logo: false # optional, when set to false hides sidebar logo
-    settings: false # optional, when set to false hides settings menu item
-    administration: false # # optional, when set to false hides administration menu item
+    items:
+      - title: Runbooks
+        icon: docs
+        to: https://docs.example.com/runbooks
+        priority: 10
+      - title: Grafana
+        to: /grafana
+        group: tools
+    groups:
+      - id: tools
+        title: Tools
+        icon: extension
+        priority: 20
 ```
 
-![Hidden Sidebar search, logo, settings, administration](images/sidebar-search-hidden.png)
+For entries contributed by a dynamic plugin, use `app.sidebar.plugins.<pluginName>` so multiple plugins can add items without replacing each other's arrays. The `app-defaults` plugin README documents all supported item and group fields.
 
-## Customizing the Sidebar Menu Items
+### Legacy OFS menu configuration
 
-Order and parent-children relationship of sidebar main menu items can be customized using the `dynamicPlugins.frontend.default.main-menu-items.menuItems` field in the `app-config.yaml`. To ensure the menu item is recognized as a main menu item, the key must be prefixed with `default.`.
+The legacy OFS app shell uses `dynamicPlugins.frontend.default.main-menu-items.menuItems` to control order and nested items. The NFS sidebar does not read this setting. Prefix OFS main menu item keys with `default.`.
 
 ```yaml title="app-config.yaml"
 dynamicPlugins:
@@ -62,18 +90,9 @@ dynamicPlugins:
 
 See [Menu items](dynamic-plugins/frontend-plugin-wiring.md#menu-items) from dynamic-plugins documentation for more details.
 
-See [DefaultMainMenuItems](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/consts.ts#L1) for a list of main menu items, including their default priorities.
-
 ## Changing the favicon and tab title
 
-Currently, the favicon customization utilizes the same Base64 encoded image as the icon logo provided via `app.branding.iconLogo` in the `app-config.yaml`
-Currently the favicon is only loaded once at startup, so if any changes need to be made to the favicon, the app will need to be restarted.
-
-```yaml title="app-config.yaml"
-app:
-  branding:
-    iconLogo: ${BASE64_EMBEDDED_ICON_LOGO}
-```
+> **Favicon from `iconLogo` (legacy OFS only):** The legacy OFS app shell could update the favicon from `app.branding.iconLogo` at runtime. The NFS app uses static favicon assets in `packages/app/public/` and does not apply `iconLogo` to the tab icon.
 
 To customize the tab title, provide a string value to the `app.title` field in the `app-config.yaml`:
 
@@ -223,18 +242,43 @@ buildInfo:
 
 ## Customizing the Language dropdown
 
-To customize the language dropdown in the User settings page, configure the list of locales your app should support in the `app-config.yaml` file.
+The NFS app (`packages/app`) uses Backstage's `AppLanguageApi` extension to configure available languages and the Settings language toggle. It does not use `i18n.locales` or `i18n.defaultLocale` for language selection.
+
+Configure supported locales in `app-config.yaml`:
+
+```yaml title="app-config.yaml"
+app:
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: [en, de, es, fr, it, ja]
+          defaultLanguage: en
+```
+
+- List at least two languages or `UserSettingsLanguageToggle` hides itself (`languages.length <= 1`).
+- Include every locale you want users to select. RHDH ships translation resources for `en`, `de`, `es`, `fr`, `it`, and `ja`; JSON catalogs can add other locales, which must also be listed in `availableLanguages`.
+- `i18n.locales` and `i18n.defaultLocale` are **legacy OFS only**. `i18n.overrides` is supported for NFS JSON message overrides when the translations backend and `translationsApiModule` are enabled.
+
+### Adding or overriding translation strings in NFS
+
+The NFS app supports JSON translation catalogs when `translationsApiModule` is registered and the translations backend is enabled. The frontend module fetches the merged catalog from `/api/translations` and applies matching messages over NFS translation resources. The backend discovers JSON files in the repository-root `translations/` directory or a mounted `/opt/app-root/src/translations/` directory. Use `i18n.overrides` to add explicit files or give them priority over discovered catalogs, as described below. JSON catalogs supplement `TranslationBlueprint` resources; see [Migrating Plugins to the New Frontend System](dynamic-plugins/migrating-plugins-to-new-frontend-system.md) and the [Backstage i18n frontend-system documentation](https://backstage.io/docs/frontend-system/building-plugins/internationalization/).
+
+## Language and translation overrides
+
+> `i18n.locales` and `i18n.defaultLocale` configure language selection only for the legacy OFS app shell. NFS uses `api:app/app-language` as shown above. The translations backend reads `i18n.overrides` for JSON catalogs in NFS when `translationsApiModule` and the backend plugin are enabled.
+
+To customize the language dropdown on the legacy OFS app, configure the list of locales in the `app-config.yaml` file.
 
 Example configuration:
 
 ```
 i18n:
-  locales: # List of supported locales. Must include `en`, otherwise the translation framework will fail to load.
+  locales: # Legacy OFS only: supported locales. Must include `en`.
     - en
     - de
     - it
-  defaultLocale: en # Optional. Used as fallback when browser language preferences don't match supported locales, or defaults to 'en' if not specified.
-  overrides: # List of JSON translation files applied in order (last file wins).  Each file may override/add translations for one or more plugins/locales
+  defaultLocale: en # Legacy OFS only: fallback when no browser language matches.
+  overrides: # JSON files applied after discovered catalogs; later files win.
     - <path-to>/<overrides-1>.json
     - <path-to>/<overrides-2>.json
 
@@ -264,18 +308,20 @@ Example of JSON translation file, where the top-level key is the plugin translat
 }
 ```
 
-### Translation priority order
+### Translation file priority order
 
-Translations are resolved in this order (highest priority first):
+The translations backend merges JSON catalogs in this order, with later files overriding matching keys:
 
-1. **app-config overrides** — Paths listed in `i18n.overrides` in `app-config.yaml`. This is the only level users should change for custom labels.
-2. **`/translations` JSON files** — Files under `translations/` (e.g. in the repo or mounted at `/src/translations/`). **RHDH override files (`rhdh-<locale>.json`) must win over Backstage defaults (`backstage-<locale>.json`)** when the same key exists in both. For 1.9 this is ensured by processing files in order: `backstage-*.json`, then `community-plugins-*.json`, then `rhdh-*.json`. Going forward, the i18n CLI or build pipeline should enforce this order.
-3. **Locale TS files** — App sources under `app/src/.../<locale>.ts` (e.g. `packages/app/src/translations/scaffolder/ja.ts`). Left as-is for 1.9.
-4. **Fallback English** — Default messages in `app/src/.../ref.ts` (e.g. `rhdhMessages` in `packages/app/src/translations/rhdh/ref.ts`).
+1. Discovered `backstage-*.json` catalogs.
+2. Discovered `community-plugins-*.json` catalogs.
+3. Discovered `rhdh-plugins-*.json` catalogs.
+4. Discovered `rhdh-*.json` catalogs.
+5. Discovered catalogs with other basenames, such as customer files.
+6. Files listed in `i18n.overrides`, in the order configured (the last file wins).
 
-Levels 2–4 are for internal management only; only level 1 is user-configurable.
+Files within each discovered group are sorted by name. After the backend merges JSON catalogs, the NFS `TranslationApi` applies matching JSON messages over registered translation resources while preserving messages that the JSON files do not define.
 
-### Customizing Translations
+### Customizing translations
 
 In a translation override JSON file, you can:
 
@@ -283,7 +329,7 @@ In a translation override JSON file, you can:
 2. **Add Other Languages**: Add new language sections (e.g., `"de"`, `"fr"`, `"es"`) to support additional locales by translating the English keys
 3. **Add Custom Keys**: Add new translation keys for custom components or plugins
 
-### Example Translation Override File
+### Example translation override file
 
 You can add other languages as needed:
 
@@ -306,27 +352,22 @@ You can add other languages as needed:
 }
 ```
 
-### Applying Translation Overrides
+### Applying translation overrides
 
 To apply your custom translations:
 
 #### For Local Development
 
-1. **Save the JSON file** in your project directory (e.g., `translations/custom-overrides.json`)
+1. **Save the JSON file** in the repository-root `translations/` directory (e.g., `translations/custom-overrides.json`). Files there are discovered automatically.
 2. **Update app-config.yaml** to include your override file:
 
 ```yaml
 i18n:
-  locales:
-    - en
-    - de
-    - fr
-  defaultLocale: en
   overrides:
-    - translations/custom-overrides.json
+    - ../../translations/custom-overrides.json # Relative to packages/backend in local workspace development
 ```
 
-3. **Restart the application** for changes to take effect
+3. **Restart the backend** so it reloads the catalog, then reload the frontend.
 
 #### For OpenShift Environment
 
@@ -352,40 +393,26 @@ data:
     }
 ```
 
-2. **Mount the ConfigMap** in your Backstage CR to `/src/translations/`:
+2. **Mount the ConfigMap** in your Backstage custom resource under `spec.application`:
 
 ```yaml
-apiVersion: apps/v1
-kind: Backstage
-metadata:
-  name: rhdh
-spec:
-  application:
-    appConfig:
-      mountPath: /opt/app-root/src
-    extraFiles:
-      configMaps:
-        - mountPath: /opt/app-root/src/translations/
-          name: translation-overrides
-      mountPath: /opt/app-root/src
+extraFiles:
+  configMaps:
+    - name: translation-overrides
+  mountPath: /opt/app-root/src/translations
 ```
 
 3. **Update your app-config.yaml** to reference the mounted file:
 
 ```yaml
 i18n:
-  locales:
-    - en
-    - de
-    - fr
-  defaultLocale: en
   overrides:
     - /opt/app-root/src/translations/custom-overrides.json
 ```
 
 4. **Apply the ConfigMap and deployment** for changes to take effect
 
-### Default Language Selection Priority
+### Default Language Selection Priority (legacy OFS only)
 
 Default language selection follows this priority order:
 
@@ -426,11 +453,33 @@ When users change the language in the UI:
 1. Change language using any language selector in the UI
 2. Language setting will automatically be saved and restored
 
+## Homepage cards (NFS)
+
+The default NFS app (`packages/app`) only places homepage cards that plugins register as `home-page-widget:*` extensions. You cannot attach an arbitrary OFS `importName` (for example `Headline`, `Placeholder`, `Markdown`, `MarkdownCard`, or `WorldClock`) through `dynamicPlugins.frontend.*.mountPoints`.
+
+Enable the home route, visit tracking, and layout under `app.extensions`. `widgetLayout` keys must match each widget's **`params.name`**, not its blueprint id. Full mapping, disable examples, and OFS → NFS equivalents are in [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](dynamic-plugins/migrating-config-to-new-frontend-system.md#homepage-cards).
+
+| OFS `importName` | NFS extension | Status |
+| --- | --- | --- |
+| `OnboardingSection` | `home-page-widget:home/rhdh-onboarding-section` | Equivalent |
+| `EntitySection` | `home-page-widget:home/rhdh-entity-section` | Equivalent |
+| `TemplateSection` | `home-page-widget:home/rhdh-template-section` | Equivalent |
+| `QuickAccessCard` | `home-page-widget:home/quick-access-card` | Equivalent |
+| `SearchBar` | `home-page-widget:home/search-bar` | Equivalent |
+| `FeaturedDocsCard` | `home-page-widget:home/featured-docs-card` | Equivalent |
+| `CatalogStarredEntitiesCard` | `home-page-widget:home/starred-entities` | Equivalent |
+| `RecentlyVisitedCard` | `home-page-widget:home/recently-visited` | Equivalent |
+| `TopVisitedCard` | `home-page-widget:home/top-visited` | Equivalent |
+| `Headline`, `Placeholder`, `Markdown` / `MarkdownCard`, `WorldClock` | — | **No NFS widget** |
+| `JokeCard` | `home-page-widget:home/random-joke` | Upstream widget; **disabled** by the RHDH homepage plugin |
+
+Third-party homepage cards appear only if that plugin ships a `home-page-widget:*` extension.
+
 ## Customizing QuickAccess card icons on the Homepage
 
 1. Add the JSON Data source
 
-The QuickAccess Cards on the Homepage supports loading data from a JSON file. This JSON file in your GitHub repository or any accessible endpoint can be hosted.
+The QuickAccess card (`home-page-widget:home/quick-access-card`) on the Homepage supports loading data from a JSON file. This JSON file in your GitHub repository or any accessible endpoint can be hosted.
 
 2. Configure the Proxy in `app-config.yaml`
 
@@ -443,7 +492,7 @@ proxy:
         '/developer-hub':
         target: https://raw.githubusercontent.com/ # i.e https://raw.githubusercontent.com/
         pathRewrite:
-            '^/api/proxy/developer-hub$': <path-to-your>.json # i.e /redhat-developer/rhdh/main/packages/app/public/homepage/data.json
+            '^/api/proxy/developer-hub$': <path-to-your>.json # e.g. a hosted JSON file for Quick Access card data
         changeOrigin: true
         secure: true
 ```

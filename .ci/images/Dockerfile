@@ -37,7 +37,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apache2-utils \
     gettext \
     curl wget jq colorized-logs \
-    unzip dnsutils && \
+    unzip dnsutils \
+    libnss3-tools && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     echo "Node: $(node -v)\nNPM: $(npm -v)\nYarn: $(yarn -v)\nTypeScript: $(tsc -v)"
 
@@ -76,7 +77,7 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
     apt-get update -y && \
-    apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y && \
+    apt-get install google-cloud-cli google-cloud-cli-gke-gcloud-auth-plugin -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install AWS CLI (uname -m returns x86_64 on amd64, aarch64 on arm64 — matching AWS URL naming)

@@ -41,7 +41,6 @@ if [[ "$oci_count" -eq 0 ]]; then
   # breadcrumb - pointing at the breadcrumb instead of at the cause.
   echo "No oci:// packages left to install from ${CATALOG_INDEX_IMAGE}" >&2
   echo "no installable refs found; check $DIR/plugin-sanity-excludes.txt" >&2
-  echo "outside the product image; check $DIR/plugin-sanity-excludes.txt" >&2
   exit 1
 fi
 
@@ -52,14 +51,14 @@ fi
   echo "plugins:"
   while read -r ref; do
     echo "  - package: \"$ref\""
-    echo "    disabled: false"
+    echo "    enabled: true"
   done <<< "$refs"
   # Excluded packages must be disabled EXPLICITLY. The `includes` above pulls in
   # the index's own list, so simply leaving one out installs it anyway.
   if [[ -n "$excluded_refs" ]]; then
     while read -r ref; do
       echo "  - package: \"$ref\""
-      echo "    disabled: true"
+      echo "    enabled: false"
     done <<< "$excluded_refs"
   fi
 } > "$workdir/dynamic-plugins.catalog-index.yaml"

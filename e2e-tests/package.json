@@ -1,6 +1,6 @@
 {
   "name": "e2e-tests",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -26,23 +26,22 @@
     "test:unit": "vitest run",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
-    "postinstall": "playwright install chromium",
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
-    "e2e:legacy-local": "playwright test --config=playwright.legacy-local.config.ts",
+    "e2e:local": "playwright test --config=playwright.local.config.ts",
     "e2e:plugin-sanity": "playwright test --config=playwright.plugin-sanity.config.ts"
   },
   "dependencies": {
     "@azure/arm-network": "34.2.0",
-    "@azure/identity": "4.13.2",
+    "@azure/identity": "4.13.3",
     "@backstage/catalog-model": "1.9.0",
     "@backstage/types": "1.2.2",
     "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
     "@microsoft/microsoft-graph-client": "3.0.7",
     "isomorphic-fetch": "3.0.0",
-    "pg": "8.22.0",
+    "pg": "8.23.0",
     "uuid": "14.0.2",
-    "yaml": "2.9.0"
+    "yaml": "2.9.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
@@ -55,15 +54,15 @@
     "ioredis": "5.11.1",
     "monocart-coverage-reports": "2.13.0",
     "otplib": "12.0.1",
-    "oxfmt": "0.56.0",
+    "oxfmt": "0.67.0",
     "oxlint": "1.80.0",
-    "oxlint-tsgolint": "0.23.0",
+    "oxlint-tsgolint": "0.25.0",
     "shellcheck": "4.1.0",
     "typescript": "6.0.3",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   },
   "engines": {
     "node": "24"
   },
-  "packageManager": "yarn@4.17.1"
+  "packageManager": "yarn@4.18.1"
 }

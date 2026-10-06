@@ -34,7 +34,7 @@ export default defineConfig({
       ...backendWebServer(["e2e-tests/local-harness/app-config.plugin-sanity.yaml"]),
       // Never adopt a backend already on :7007. The spec compares
       // dynamic-plugins-root against what the RUNNING backend loaded, so a
-      // leftover legacy-local backend (curated plugin set, booted without the
+      // leftover local harness backend (curated plugin set, booted without the
       // config above) would make it pass while validating nothing current.
       reuseExistingServer: false,
     },

@@ -202,12 +202,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 1. Copy `app-config.example.yaml` and rename it as `app-config.local.yaml`.
 
-2. Ensure you have the following developer tools installed:
-
-   - If you are on a Fedora/Red Hat Linux distribution run: `sudo dnf install python3 make g++ zlib-devel brotli-devel openssl-devel libuv-devel`
-   - If you are on a Debian/Ubuntu Linux distribution run: `sudo apt-get install python3 g++ build-essential`
-   - If you are on Windows, then follow the [instructions](https://github.com/nodejs/node-gyp#on-windows) in `node-gyp` for Windows
-   - If you are on macOS, then follow the [instructions](https://github.com/nodejs/node-gyp#on-macos) in `node-gyp` for macOS
+2. Use the Node.js version from `.nvmrc` and enable Corepack (`corepack enable`) so the Yarn version pinned in `package.json` is used.
 
 3. Run `yarn install` to install the dependencies
 
@@ -219,12 +214,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 1. Create an `app-config.local.yaml` file that will be used for storing the environment variables that the showcase app needs
 
-2. Ensure you have the following developer tools installed:
-
-   - If you are on a Fedora/Red Hat Linux distribution run: `sudo dnf install python3 make g++ zlib-devel brotli-devel openssl-devel libuv-devel`
-   - If you are on a Debian/Ubuntu Linux distribution run: `sudo apt-get install python3 g++ build-essential`
-   - If you are on Windows, then follow the [instructions](https://github.com/nodejs/node-gyp#on-windows) in `node-gyp` for Windows
-   - If you are on macOS, then follow the [instructions](https://github.com/nodejs/node-gyp#on-macos) in `node-gyp` for macOS
+2. Use the Node.js version from `.nvmrc` and enable Corepack (`corepack enable`) so the Yarn version pinned in `package.json` is used.
 
 3. Run `yarn install` to install the dependencies
 
@@ -255,46 +245,39 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 ## Optional Configuration and Plugins
 
-- Adding a Home Page — add the following to your `app-config.local.yaml`:
+- Adding a Home Page — add the following to your `app-config.local.yaml`. NFS only places cards that plugins register as `home-page-widget:*` extensions. Legacy OFS `mountPoints` cards such as Placeholder, Markdown, Headline, and JokeCard have no NFS equivalent. See [Homepage cards](dynamic-plugins/migrating-config-to-new-frontend-system.md#homepage-cards).
 
 ```yaml
-dynamicPlugins:
-  frontend:
-    red-hat-developer-hub.backstage-plugin-homepage:
-      dynamicRoutes:
-        - path: /
-          importName: DynamicHomePage
-      mountPoints:
-        - mountPoint: home.page/cards
-          importName: SearchBar
-          config:
-            layouts:
-              xl: { w: 10, h: 1, x: 1 }
-              lg: { w: 10, h: 1, x: 1 }
-              md: { w: 10, h: 1, x: 1 }
-              sm: { w: 10, h: 1, x: 1 }
-              xs: { w: 12, h: 1 }
-              xxs: { w: 12, h: 1 }
-        - mountPoint: home.page/cards
-          importName: QuickAccessCard
-          config:
-            layouts:
-              xl: { w: 7, h: 8 }
-              lg: { w: 7, h: 8 }
-              md: { w: 7, h: 8 }
-              sm: { w: 12, h: 8 }
-              xs: { w: 12, h: 8 }
-              xxs: { w: 12, h: 8 }
-        - mountPoint: home.page/cards
-          importName: CatalogStarredEntitiesCard
-          config:
-            layouts:
-              xl: { w: 5, h: 4, x: 7 }
-              lg: { w: 5, h: 4, x: 7 }
-              md: { w: 5, h: 4, x: 7 }
-              sm: { w: 12, h: 4 }
-              xs: { w: 12, h: 4 }
-              xxs: { w: 12, h: 4 }
+app:
+  extensions:
+    - page:home:
+        config:
+          path: /
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    # Upstream search also ships a homepage search bar; disable it so it does
+    # not duplicate home-page-widget:home/search-bar from the RHDH homepage plugin.
+    - home-page-widget:search/search-bar: false
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: false
+          widgetLayout:
+            "Quick Access Card":
+              breakpoints:
+                xl: { w: 6, h: 8, x: 6 }
+                lg: { w: 6, h: 8, x: 6 }
+                md: { w: 6, h: 8, x: 6 }
+                sm: { w: 12, h: 8 }
+                xs: { w: 12, h: 8 }
+                xxs: { w: 12, h: 8 }
+            "Catalog starred":
+              breakpoints:
+                xl: { w: 6, h: 4 }
+                lg: { w: 6, h: 4 }
+                md: { w: 6, h: 4 }
+                sm: { w: 12, h: 4 }
+                xs: { w: 12, h: 4 }
+                xxs: { w: 12, h: 4 }
 ```
 
 - Enabling Authentication in Showcase

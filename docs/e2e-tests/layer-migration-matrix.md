@@ -38,14 +38,14 @@ CI** (~3.5 min GitHub Actions job, no cluster, no image build): the full `guest-
 spec (#4 — home page, Settings, Sign-out: 3 test cases) and `learning-path-page` (#6). Two findings that
 change the cost picture for the remaining candidates:
 
-- **The global-header blocker is solved.** The repo's static
-  `app-config.dynamic-plugins.yaml` only mounts the bare `GlobalHeader` with no
-  children; the harness now installs the plugin from OCI with its canonical
-  `pluginConfig` and loads the generated
-  `dynamic-plugins-root/app-config.dynamic-plugins.yaml` last — the same file/merge
-  order as the production container. Profile-dropdown navigation (used by #4, #5 and
-  others) works off-cluster. The pattern generalizes to any plugin whose config is not
-  in the repo's static file.
+- **The global-header blocker is solved.** The harness installs the plugin from
+  OCI with its NFS defaults and loads the generated
+  `dynamic-plugins-root/app-config.dynamic-plugins.yaml` after `app-config.yaml`,
+  with `app-config.local-e2e.yaml` last — the same merge order as the production
+  container (the former repo-root static `app-config.dynamic-plugins.yaml` was
+  removed). Profile-dropdown navigation (used by #4, #5 and others) works
+  off-cluster. The pattern generalizes to any plugin whose config comes from the
+  generated install output rather than a checked-in static file.
 - **CI-configmap customizations mirror cheaply.** The "References" menu nesting from
   `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml` was mirrored in
   `app-config.local-e2e.yaml` with a few object-merge keys — the same approach covers

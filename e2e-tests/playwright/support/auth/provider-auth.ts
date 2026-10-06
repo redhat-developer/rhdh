@@ -9,7 +9,8 @@ import {
   handlePingFederatePopupLogin,
 } from "../../utils/common/auth-popup";
 import * as interaction from "../../utils/ui-helper/interaction";
-import { waitForAppReady } from "./app-shell";
+import { resetPageErrors, waitForAppReady } from "./app-shell";
+import { waitForRhdhSignInPage } from "./sign-in-page";
 
 const t = getTranslations();
 
@@ -29,9 +30,11 @@ export class AuthProviderSession {
   }
 
   private async openLandingPageWithProviderMessage(message: string): Promise<void> {
+    resetPageErrors(this.page);
     await this.page.goto("/");
     await waitForAppReady(this.page);
-    await expect(this.page.getByRole("main").getByText(message)).toBeVisible();
+    await waitForRhdhSignInPage(this.page, { locale: this.lang() });
+    await expect(this.page.getByText(message)).toBeVisible();
   }
 
   private async openPrimarySignInPopup(): Promise<Page> {
