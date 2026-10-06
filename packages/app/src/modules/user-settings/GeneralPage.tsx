@@ -1,3 +1,4 @@
+import { Content } from "@backstage/core-components";
 import {
   UserSettingsAppearanceCard,
   UserSettingsIdentityCard,
@@ -8,21 +9,28 @@ import Grid from "@mui/material/Grid";
 
 import { InfoCard } from "./InfoCard";
 
+/**
+ * RHDH General settings body. Matches upstream NFS
+ * `sub-page:user-settings/general`, which wraps the card grid in
+ * `Content` for page padding, and adds the local build-metadata InfoCard.
+ */
 export const GeneralPage = () => {
   return (
-    <Grid container direction="row" spacing={3}>
-      <Grid item xs={12} md={6}>
-        <UserSettingsProfileCard />
+    <Content>
+      <Grid container direction="row" spacing={3}>
+        <Grid item xs={12} md={6}>
+          <UserSettingsProfileCard />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <UserSettingsAppearanceCard />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <UserSettingsIdentityCard />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <InfoCard />
+        </Grid>
       </Grid>
-      <Grid item xs={12} md={6}>
-        <UserSettingsAppearanceCard />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <UserSettingsIdentityCard />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <InfoCard />
-      </Grid>
-    </Grid>
+    </Content>
   );
 };
