@@ -4,7 +4,7 @@
  * via Kubernetes secrets for testing with external PostgreSQL instances
  * (Azure Database for PostgreSQL, Amazon RDS, etc.).
  *
- * Certificates are loaded from file paths set by CI pipeline (from Vault).
+ * Certificates are loaded from file paths set by CI pipeline (downloaded or from Vault).
  * File paths are used instead of loading content into env vars to avoid
  * "Argument list too long" shell errors with large certificate bundles.
  * Each test file can import and apply its required configuration.
