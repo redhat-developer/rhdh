@@ -1590,7 +1590,7 @@ get_previous_release_value_file() {
   local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/${previous_release_tag}/.ci/pipelines/value_files/values_${value_file_type}.yaml"
 
   # Create a temporary file path for the downloaded value file
-  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_version}.yaml"
+  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_tag}.yaml"
 
   echo "Fetching value file from: ${github_url}" >&2
 
