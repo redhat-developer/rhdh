@@ -15,9 +15,9 @@ jobs:
   renovate-config-validator:
     runs-on: ubuntu-latest
     name: Renovate Config Validator
-    # Avoids npx lifecycle scripts (Sonar S6505). Pin by digest; bump intentionally.
+    # Avoids npx lifecycle scripts (Sonar S6505). tag@digest so Renovate can bump both.
     container:
-      image: ghcr.io/renovatebot/renovate@sha256:6f1f3e2d9d0c3f99aa1f61f7509d302185de7deb173ac8c5ff88a5ce283ec435 # 44.145.1
+      image: ghcr.io/renovatebot/renovate:44.145.1@sha256:6f1f3e2d9d0c3f99aa1f61f7509d302185de7deb173ac8c5ff88a5ce283ec435 # 44.145.1
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
