@@ -24,6 +24,4 @@ jobs:
           persist-credentials: false
       - name: Validate config
         # See https://docs.renovatebot.com/config-validation/
-        env:
-          GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: renovate-config-validator --strict .github/renovate.json
