@@ -18,6 +18,14 @@
 import type { V1Container } from "@kubernetes/client-node";
 import * as yaml from "yaml";
 
+import {
+  buildCloudSqlProxy,
+  buildCloudSqlProxyVolume,
+  buildCloudSqlEntityServer,
+  cloudSqlAppConfig,
+  CLOUD_SQL_DB_SECRET,
+  type CloudSqlDeploymentConfig,
+} from "./cloudsql-config";
 import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
@@ -25,6 +33,11 @@ import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 
 const appTitle = "Red Hat Developer Hub";
 const dynamicPluginsPvcSize = "5Gi";
+const homeExtensions = [
+  { "page:home": { config: { path: "/" } } },
+  { "api:home/visits": true },
+  { "app-root-element:home/visit-listener": true },
+];
 
 /**
  * Auth providers are no longer built into the backend, and the catalog index
@@ -50,6 +63,7 @@ export interface RuntimeDeployConfig {
   internalPostgresqlImage: ImageRef;
   catalogIndex?: ImageRef;
   helm?: { chartUrl: string; chartVersion: string };
+  cloudSql?: CloudSqlDeploymentConfig;
 }
 
 /** Typed Backstage CR used by runtime-deploy and schema-mode-setup. */
@@ -126,7 +140,7 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
 
 /**
  * Generate a Helm values YAML string containing ONLY the overrides that
- * differ from the chart defaults (standalone chart 2.y layout).
+ * differ from the standalone RHDH chart defaults.
  *
  * Values omitted (inherited from chart defaults):
  *   - dynamicPlugins.{includes, plugins}
@@ -143,14 +157,37 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
  */
 const tpl = (expr: string) => `{{ ${expr} }}`;
 
-export function generateHelmValuesYaml(): string {
+export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
   // Build the YAML as a plain object, then dump.
   // Helm template expressions are embedded as literal strings — Helm's
   // template engine evaluates them at render time regardless of whether
   // values come from a file or stdin.
   const printfRelease = (suffix: string) => tpl(`printf "%s-${suffix}" .Release.Name`);
 
+  const cloudSql = config?.cloudSql;
   const values = {
+    ...(cloudSql
+      ? {
+          postgresql: { enabled: false },
+          externalDatabase: {
+            host: "127.0.0.1",
+            port: 5432,
+            user: cloudSql.user,
+            existingSecretRef: { name: CLOUD_SQL_DB_SECRET, key: "POSTGRES_PASSWORD" },
+          },
+          preInitContainers: [buildCloudSqlProxy(cloudSql.instanceConnectionName)],
+          extraContainers: [buildCloudSqlEntityServer(imageRefToString(config.image))],
+          podAnnotations: { "rhdh.redhat.com/cloudsql-revision": cloudSql.revision },
+          extraEnv: [
+            {
+              name: "CLOUDSQL_API_TOKEN",
+              valueFrom: {
+                secretKeyRef: { name: CLOUD_SQL_DB_SECRET, key: "CLOUDSQL_API_TOKEN" },
+              },
+            },
+          ],
+        }
+      : {}),
     commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },
     image: { pullPolicy: "Always" },
     // Runtime tests only cover ConfigMap changes and DB connectivity, so the
@@ -161,12 +198,13 @@ export function generateHelmValuesYaml(): string {
         title: appTitle,
         // The new frontend system ships page:home disabled, so "/" is a 404
         // without it. Same home extensions as the CI dynamic-plugins-config.yaml.
-        extensions: [
-          { "page:home": { config: { path: "/" } } },
-          { "api:home/visits": true },
-          { "app-root-element:home/visit-listener": true },
-        ],
+        extensions: homeExtensions,
       },
+      ...(cloudSql
+        ? {
+            backend: cloudSqlAppConfig(cloudSql),
+          }
+        : {}),
       auth: {
         environment: "development",
         providers: {
@@ -214,6 +252,15 @@ export function generateHelmValuesYaml(): string {
       },
     ],
     extraVolumes: [
+      ...(cloudSql
+        ? [
+            buildCloudSqlProxyVolume(),
+            {
+              name: "cloud-sql-entity",
+              configMap: { name: "cloud-sql-entity" },
+            },
+          ]
+        : []),
       {
         name: "postgres-crt",
         secret: { secretName: "postgres-crt", optional: true },
@@ -275,11 +322,12 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
  * The operator path needs an explicit app-config ConfigMap because it
  * doesn't have Helm template helpers for hostname resolution.
  */
-export function generateAppConfigYaml(runtimeUrl: string): string {
+export function generateAppConfigYaml(runtimeUrl: string, config?: RuntimeDeployConfig): string {
   const appConfig = {
     app: {
       title: appTitle,
       baseUrl: runtimeUrl,
+      extensions: homeExtensions,
     },
     backend: {
       auth: {
@@ -295,6 +343,7 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
       },
       baseUrl: runtimeUrl,
       cors: { origin: runtimeUrl },
+      ...(config?.cloudSql ? cloudSqlAppConfig(config.cloudSql, "secret") : {}),
     },
     auth: {
       environment: "development",
@@ -312,16 +361,18 @@ export function generateAppConfigYaml(runtimeUrl: string): string {
 /**
  * Generate the dynamic-plugins.yaml content for the operator path.
  *
- * Runtime tests only need a basic RHDH instance (config-map changes, DB
- * connectivity).  We set `includes: []` to prevent loading
- * `dynamic-plugins.default.yaml` — many of its default-enabled plugins
- * crash without external config (GitHub org, GitLab, LDAP, Keycloak,
- * ArgoCD, Kubernetes, orchestrator, etc.) and block the readiness probe.
- * The guest auth provider is the only plugin added, for guest sign-in.
+ * Ordinary runtime tests retain their existing minimal plugin profile.
+ * Cloud SQL uses the catalog-index defaults, matching the verified Helm profile
+ * and supplying RHDH's app-auth and homepage frontend modules. Both enable guest auth.
  */
-export function generateDynamicPluginsYaml(): string {
+export function generateDynamicPluginsYaml(config?: RuntimeDeployConfig): string {
   return yaml.stringify(
-    { includes: [] as string[], plugins: [guestAuthProviderPlugin] },
+    {
+      // Cloud SQL checks the actual RHDH sign-in page and homepage, which are
+      // dynamic frontend modules supplied by the catalog index, just as in Helm.
+      includes: config?.cloudSql ? ["dynamic-plugins.default.yaml"] : [],
+      plugins: [guestAuthProviderPlugin],
+    },
     { lineWidth: 0 },
   );
 }
@@ -369,6 +420,7 @@ function generateWaitForDbInitContainer(image: string, dbHost: string): V1Contai
  */
 export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
   const fullImage = imageRefToString(config.image);
+  const cloudSql = config.cloudSql;
 
   const envs: Array<Record<string, unknown>> = [
     { name: "NODE_OPTIONS", value: "--no-node-snapshot" },
@@ -392,19 +444,56 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
   return {
     kind: "Backstage",
     apiVersion: BACKSTAGE_CR_API_VERSION,
-    metadata: { name: config.releaseName },
+    metadata: {
+      name: config.releaseName,
+      // Operator list merging otherwise appends new init containers after defaults.
+      ...(cloudSql
+        ? { annotations: { "rhdh.redhat.com/deployment-patch-list-merge-mode": "prepend" } }
+        : {}),
+    },
     spec: {
+      ...(cloudSql
+        ? { database: { enableLocalDb: false, authSecretName: CLOUD_SQL_DB_SECRET } }
+        : {}),
       deployment: {
         patch: {
           spec: {
             template: {
+              ...(cloudSql
+                ? {
+                    metadata: {
+                      annotations: {
+                        "rhdh.redhat.com/cloudsql-revision": cloudSql.revision,
+                      },
+                    },
+                  }
+                : {}),
               spec: {
-                containers: [{ name: BACKSTAGE_BACKEND_CONTAINER, image: fullImage }],
+                containers: [
+                  {
+                    name: BACKSTAGE_BACKEND_CONTAINER,
+                    image: fullImage,
+                  },
+                  ...(cloudSql ? [buildCloudSqlEntityServer(fullImage)] : []),
+                ],
                 initContainers: [
+                  ...(cloudSql ? [buildCloudSqlProxy(cloudSql.instanceConnectionName)] : []),
                   { name: "install-dynamic-plugins", image: fullImage },
-                  generateWaitForDbInitContainer(fullImage, `backstage-psql-${config.releaseName}`),
+                  generateWaitForDbInitContainer(
+                    fullImage,
+                    cloudSql ? "127.0.0.1" : `backstage-psql-${config.releaseName}`,
+                  ),
                 ],
                 volumes: [
+                  ...(cloudSql
+                    ? [
+                        buildCloudSqlProxyVolume(),
+                        {
+                          name: "cloud-sql-entity",
+                          configMap: { name: "cloud-sql-entity" },
+                        },
+                      ]
+                    : []),
                   {
                     name: "dynamic-plugins-root",
                     ephemeral: {
@@ -436,7 +525,18 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
         },
         extraEnvs: {
           envs,
-          secrets: [{ name: "rhdh-runtime-config" }],
+          secrets: [
+            { name: "rhdh-runtime-config" },
+            ...(cloudSql
+              ? [
+                  {
+                    name: CLOUD_SQL_DB_SECRET,
+                    key: "CLOUDSQL_API_TOKEN",
+                    containers: [BACKSTAGE_BACKEND_CONTAINER],
+                  },
+                ]
+              : []),
+          ],
         },
         route: { enabled: true },
       },

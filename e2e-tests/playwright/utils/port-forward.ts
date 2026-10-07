@@ -20,7 +20,6 @@ export type PortForwardOptions = {
 
 export class PortForwardSession {
   private child: ChildProcessByStdio<null, Readable, Readable> | null = null;
-  private readonly output: string[] = [];
   private outputBuffer = "";
 
   constructor(
@@ -28,12 +27,21 @@ export class PortForwardSession {
     private readonly options: PortForwardOptions,
   ) {}
 
+  getOutput(): string {
+    return this.outputBuffer;
+  }
+
+  assertRunning(): void {
+    if (!this.child || this.child.exitCode !== null || this.child.signalCode !== null) {
+      throw new Error(`Port-forward is not running.\n${this.getOutput()}`);
+    }
+  }
+
   async start(): Promise<ChildProcessByStdio<null, Readable, Readable>> {
     if (this.child !== null) {
       return this.child;
     }
 
-    this.output.length = 0;
     this.outputBuffer = "";
     const child =
       "shellCommand" in this.command
@@ -45,53 +53,59 @@ export class PortForwardSession {
           });
 
     this.child = child;
+    const captureOutput = (chunk: Buffer | string) => {
+      this.outputBuffer = (this.outputBuffer + chunk.toString()).slice(-64_000);
+    };
+    child.stdout.on("data", captureOutput);
+    child.stderr.on("data", captureOutput);
 
     const readyTimeoutMs = this.options.readyTimeoutMs ?? 30_000;
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        cleanup();
-        reject(
-          new Error(`Timed out waiting for port-forward to be ready.\n${this.output.join("")}`),
-        );
-      }, readyTimeoutMs);
-
-      const handleOutput = (chunk: Buffer | string) => {
-        const text = chunk.toString();
-        this.output.push(text);
-        this.outputBuffer += text;
-        if (this.options.readyPattern.test(this.outputBuffer)) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
           cleanup();
-          resolve();
-        }
-      };
+          reject(new Error(`Timed out waiting for port-forward to be ready.\n${this.getOutput()}`));
+        }, readyTimeoutMs);
 
-      const handleExit = (code: number | null, signal: NodeJS.Signals | null) => {
-        cleanup();
-        reject(
-          new Error(
-            `Port-forward exited before it became ready (code=${code}, signal=${signal}).\n${this.output.join("")}`,
-          ),
-        );
-      };
+        const handleOutput = () => {
+          if (this.options.readyPattern.test(this.outputBuffer)) {
+            cleanup();
+            resolve();
+          }
+        };
 
-      const handleError = (error: Error) => {
-        cleanup();
-        reject(new Error(`Port-forward spawn failed: ${error.message}`));
-      };
+        const handleExit = (code: number | null, signal: NodeJS.Signals | null) => {
+          cleanup();
+          reject(
+            new Error(
+              `Port-forward exited before it became ready (code=${code}, signal=${signal}).\n${this.getOutput()}`,
+            ),
+          );
+        };
 
-      const cleanup = () => {
-        clearTimeout(timeout);
-        child.stdout.off("data", handleOutput);
-        child.stderr.off("data", handleOutput);
-        child.off("exit", handleExit);
-        child.off("error", handleError);
-      };
+        const handleError = (error: Error) => {
+          cleanup();
+          reject(new Error(`Port-forward spawn failed: ${error.message}`));
+        };
 
-      child.stdout.on("data", handleOutput);
-      child.stderr.on("data", handleOutput);
-      child.on("exit", handleExit);
-      child.on("error", handleError);
-    });
+        const cleanup = () => {
+          clearTimeout(timeout);
+          child.stdout.off("data", handleOutput);
+          child.stderr.off("data", handleOutput);
+          child.off("exit", handleExit);
+          child.off("error", handleError);
+        };
+
+        child.stdout.on("data", handleOutput);
+        child.stderr.on("data", handleOutput);
+        child.on("exit", handleExit);
+        child.on("error", handleError);
+      });
+    } catch (error) {
+      if (child.pid === undefined) this.child = null;
+      else await this.stop();
+      throw error;
+    }
 
     return child;
   }
