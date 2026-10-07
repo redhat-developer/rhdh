@@ -15,6 +15,9 @@ jobs:
   renovate-config-validator:
     runs-on: ubuntu-latest
     name: Renovate Config Validator
+    # Pin to major 44 (not latest) so upgrades stay intentional; avoids npx lifecycle scripts (Sonar S6505)
+    container:
+      image: ghcr.io/renovatebot/renovate:44
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
@@ -23,5 +26,4 @@ jobs:
         # See https://docs.renovatebot.com/config-validation/
         env:
           GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx --yes --package renovate@44 -- renovate-config-validator --strict .github/renovate.json
+        run: renovate-config-validator --strict .github/renovate.json
