@@ -8,13 +8,20 @@ on:
     # https://docs.renovatebot.com/configuration-options/
     branches: [ 'main' ]
 
+permissions:
+  contents: read
+
 jobs:
   renovate-config-validator:
     runs-on: ubuntu-latest
     name: Renovate Config Validator
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
       - name: Validate config
         # See https://docs.renovatebot.com/config-validation/
+        env:
+          GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx --yes --package renovate -- renovate-config-validator --strict .github/renovate.json
+          npx --yes --package renovate@44 -- renovate-config-validator --strict .github/renovate.json
