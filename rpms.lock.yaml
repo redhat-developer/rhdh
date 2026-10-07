@@ -2727,13 +2727,13 @@ arches:
     name: libbpf
     evr: 2:1.5.0-3.el9
     sourcerpm: libbpf-1.5.0-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libbrotli-1.0.9-9.el9_7.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libbrotli-1.0.9-10.el9_8.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 325179
-    checksum: sha256:f5237abc90191238333c1214da97b5202c8a15c2be3ab401ee10d95343cfdf17
+    size: 325419
+    checksum: sha256:04d157b138153dcd27c04d81ae985e8190ddc542d63620f3d1ae0a690a1041b7
     name: libbrotli
-    evr: 1.0.9-9.el9_7
-    sourcerpm: brotli-1.0.9-9.el9_7.src.rpm
+    evr: 1.0.9-10.el9_8
+    sourcerpm: brotli-1.0.9-10.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libcbor-0.7.0-5.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 59368
@@ -3217,20 +3217,20 @@ arches:
     name: rsync
     evr: 3.2.7-1.el9_8
     sourcerpm: rsync-3.2.7-1.el9_8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-38.1.75-2.el9_8.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-38.1.75-2.el9_8.1.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 47589
-    checksum: sha256:781a7861de4d1b08390037fd2bf632df783135a60b39a686f5796036e8b818d6
+    size: 41505
+    checksum: sha256:1ecc1ae7b2d5224d4ce19c409e4e0c20d61180ce9d57c434d48b728de2696c04
     name: selinux-policy
-    evr: 38.1.75-2.el9_8
-    sourcerpm: selinux-policy-38.1.75-2.el9_8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-targeted-38.1.75-2.el9_8.noarch.rpm
+    evr: 38.1.75-2.el9_8.1
+    sourcerpm: selinux-policy-38.1.75-2.el9_8.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/selinux-policy-targeted-38.1.75-2.el9_8.1.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 7272627
-    checksum: sha256:a63a13d5b5883748b2731eb327417feb3c6e32a6c56b8cdb534218e5857a9e30
+    size: 7265868
+    checksum: sha256:9ab52c65bc9a4d704da17ab8f3c892212c6f558acd0889a24a98b1df589ece18
     name: selinux-policy-targeted
-    evr: 38.1.75-2.el9_8
-    sourcerpm: selinux-policy-38.1.75-2.el9_8.src.rpm
+    evr: 38.1.75-2.el9_8.1
+    sourcerpm: selinux-policy-38.1.75-2.el9_8.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/shadow-utils-subid-4.9-16.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 85318
@@ -3315,20 +3315,20 @@ arches:
     name: util-linux-core
     evr: 2.37.4-25.el9
     sourcerpm: util-linux-2.37.4-25.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/v/vim-filesystem-8.2.2637-26.el9_8.21.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/v/vim-filesystem-8.2.2637-26.el9_8.23.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 24156
-    checksum: sha256:4362190912229b1a670e20a7e46d1f20fb2d1d30e80ec22342bba1318784f742
+    size: 24487
+    checksum: sha256:4018dd580ce61bf3628d682e6966dd214e95ef704971ad02020651648cc9cb9f
     name: vim-filesystem
-    evr: 2:8.2.2637-26.el9_8.21
-    sourcerpm: vim-8.2.2637-26.el9_8.21.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/v/vim-minimal-8.2.2637-26.el9_8.21.aarch64.rpm
+    evr: 2:8.2.2637-26.el9_8.23
+    sourcerpm: vim-8.2.2637-26.el9_8.23.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/v/vim-minimal-8.2.2637-26.el9_8.23.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 670437
-    checksum: sha256:0ab745db26acfdd3ced59588a3d558508a9c12d25004e628f0ef716060e1176b
+    size: 670858
+    checksum: sha256:31370753ec20059c23ed00cc65ff86ca1a29c02c9e7ec6fad6b8aed04efe973e
     name: vim-minimal
-    evr: 2:8.2.2637-26.el9_8.21
-    sourcerpm: vim-8.2.2637-26.el9_8.21.src.rpm
+    evr: 2:8.2.2637-26.el9_8.23
+    sourcerpm: vim-8.2.2637-26.el9_8.23.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/v/virt-what-1.27-2.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 41745
@@ -4588,12 +4588,12 @@ arches:
     checksum: sha256:82174416ee39df7795da7fab8d37ea5dbbe25f1dbc2df39f5fb3f8a168bf5120
     name: binutils
     evr: 2.35.2-72.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/b/brotli-1.0.9-9.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/b/brotli-1.0.9-10.el9_8.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 517498
-    checksum: sha256:814868e0bec831c79d3e12ff76d31e06e5e62c462a1a4b6607b1f3cab7014438
+    size: 519221
+    checksum: sha256:c833ffbd6c6555543472ef4034a958cf4b8b8dee35b8661b2144ca6fc38908c7
     name: brotli
-    evr: 1.0.9-9.el9_7
+    evr: 1.0.9-10.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/c/cracklib-2.9.6-28.el9.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 6416053
@@ -5080,12 +5080,12 @@ arches:
     checksum: sha256:f0ea5966a6b8652c2116d84d6cde915ffec6455104c3aa12f2017dc28dc4c022
     name: rsync
     evr: 3.2.7-1.el9_8
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.75-2.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.75-2.el9_8.1.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 1177308
-    checksum: sha256:fb4301ce108706dd29513fd53b69811e0acd045aff1c22341a37acdd787b0af2
+    size: 1171908
+    checksum: sha256:6c8cb74a9061ce2f52ceebc6da6446cb2ca089dd918185e9caa1907b41d78f5f
     name: selinux-policy
-    evr: 38.1.75-2.el9_8
+    evr: 38.1.75-2.el9_8.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/s/shadow-utils-4.9-16.el9.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 1713058
@@ -5140,12 +5140,12 @@ arches:
     checksum: sha256:6c788387cde9c0fde5481382f3f8416e3ecbcf09c908b409b6c63358b90a399f
     name: util-linux
     evr: 2.37.4-25.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-26.el9_8.21.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-26.el9_8.23.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 12871596
-    checksum: sha256:a45265b0b68234bce69498fec26c9db8672e9ada0b32ce0cb3498f5f7f1ad885
+    size: 12874798
+    checksum: sha256:e0823f610d5ec4e89d4e858e651ccbe77f5d840e843266e8f7c30b9cd83b4ff3
     name: vim
-    evr: 2:8.2.2637-26.el9_8.21
+    evr: 2:8.2.2637-26.el9_8.23
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/v/virt-what-1.27-2.el9.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 572569
@@ -7889,13 +7889,13 @@ arches:
     name: libbpf
     evr: 2:1.5.0-3.el9
     sourcerpm: libbpf-1.5.0-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libbrotli-1.0.9-9.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libbrotli-1.0.9-10.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 326278
-    checksum: sha256:81096e6aed022489306e2fe1d1496b2b689d8f0bf6c70a94b5bddb82356eeda1
+    size: 326501
+    checksum: sha256:ecf2cda794cb9f68a7f67742ce0aeef4c3480795cce0e9bc8f49634072fd2e07
     name: libbrotli
-    evr: 1.0.9-9.el9_7
-    sourcerpm: brotli-1.0.9-9.el9_7.src.rpm
+    evr: 1.0.9-10.el9_8
+    sourcerpm: brotli-1.0.9-10.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libcbor-0.7.0-5.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 60575
@@ -8386,20 +8386,20 @@ arches:
     name: rsync
     evr: 3.2.7-1.el9_8
     sourcerpm: rsync-3.2.7-1.el9_8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-38.1.75-2.el9_8.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-38.1.75-2.el9_8.1.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 47589
-    checksum: sha256:781a7861de4d1b08390037fd2bf632df783135a60b39a686f5796036e8b818d6
+    size: 41505
+    checksum: sha256:1ecc1ae7b2d5224d4ce19c409e4e0c20d61180ce9d57c434d48b728de2696c04
     name: selinux-policy
-    evr: 38.1.75-2.el9_8
-    sourcerpm: selinux-policy-38.1.75-2.el9_8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-targeted-38.1.75-2.el9_8.noarch.rpm
+    evr: 38.1.75-2.el9_8.1
+    sourcerpm: selinux-policy-38.1.75-2.el9_8.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-targeted-38.1.75-2.el9_8.1.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 7272627
-    checksum: sha256:a63a13d5b5883748b2731eb327417feb3c6e32a6c56b8cdb534218e5857a9e30
+    size: 7265868
+    checksum: sha256:9ab52c65bc9a4d704da17ab8f3c892212c6f558acd0889a24a98b1df589ece18
     name: selinux-policy-targeted
-    evr: 38.1.75-2.el9_8
-    sourcerpm: selinux-policy-38.1.75-2.el9_8.src.rpm
+    evr: 38.1.75-2.el9_8.1
+    sourcerpm: selinux-policy-38.1.75-2.el9_8.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/shadow-utils-subid-4.9-16.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 86705
@@ -8484,20 +8484,20 @@ arches:
     name: util-linux-core
     evr: 2.37.4-25.el9
     sourcerpm: util-linux-2.37.4-25.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-filesystem-8.2.2637-26.el9_8.21.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-filesystem-8.2.2637-26.el9_8.23.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 24156
-    checksum: sha256:4362190912229b1a670e20a7e46d1f20fb2d1d30e80ec22342bba1318784f742
+    size: 24487
+    checksum: sha256:4018dd580ce61bf3628d682e6966dd214e95ef704971ad02020651648cc9cb9f
     name: vim-filesystem
-    evr: 2:8.2.2637-26.el9_8.21
-    sourcerpm: vim-8.2.2637-26.el9_8.21.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-minimal-8.2.2637-26.el9_8.21.x86_64.rpm
+    evr: 2:8.2.2637-26.el9_8.23
+    sourcerpm: vim-8.2.2637-26.el9_8.23.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-minimal-8.2.2637-26.el9_8.23.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 697543
-    checksum: sha256:645d5503a28e7e0e3ee93cd91fe1b0a57c37211daa75fdd60fa4193a4fe8eaa4
+    size: 697782
+    checksum: sha256:5b831c3525336e2639e27acabd87f322e201298b024b821c4567e109d87d56da
     name: vim-minimal
-    evr: 2:8.2.2637-26.el9_8.21
-    sourcerpm: vim-8.2.2637-26.el9_8.21.src.rpm
+    evr: 2:8.2.2637-26.el9_8.23
+    sourcerpm: vim-8.2.2637-26.el9_8.23.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/virt-what-1.27-2.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 43565
@@ -9757,12 +9757,12 @@ arches:
     checksum: sha256:82174416ee39df7795da7fab8d37ea5dbbe25f1dbc2df39f5fb3f8a168bf5120
     name: binutils
     evr: 2.35.2-72.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/b/brotli-1.0.9-9.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/b/brotli-1.0.9-10.el9_8.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 517498
-    checksum: sha256:814868e0bec831c79d3e12ff76d31e06e5e62c462a1a4b6607b1f3cab7014438
+    size: 519221
+    checksum: sha256:c833ffbd6c6555543472ef4034a958cf4b8b8dee35b8661b2144ca6fc38908c7
     name: brotli
-    evr: 1.0.9-9.el9_7
+    evr: 1.0.9-10.el9_8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/c/cracklib-2.9.6-28.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 6416053
@@ -10261,12 +10261,12 @@ arches:
     checksum: sha256:f0ea5966a6b8652c2116d84d6cde915ffec6455104c3aa12f2017dc28dc4c022
     name: rsync
     evr: 3.2.7-1.el9_8
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.75-2.el9_8.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.75-2.el9_8.1.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 1177308
-    checksum: sha256:fb4301ce108706dd29513fd53b69811e0acd045aff1c22341a37acdd787b0af2
+    size: 1171908
+    checksum: sha256:6c8cb74a9061ce2f52ceebc6da6446cb2ca089dd918185e9caa1907b41d78f5f
     name: selinux-policy
-    evr: 38.1.75-2.el9_8
+    evr: 38.1.75-2.el9_8.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/shadow-utils-4.9-16.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 1713058
@@ -10321,12 +10321,12 @@ arches:
     checksum: sha256:6c788387cde9c0fde5481382f3f8416e3ecbcf09c908b409b6c63358b90a399f
     name: util-linux
     evr: 2.37.4-25.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-26.el9_8.21.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-26.el9_8.23.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 12871596
-    checksum: sha256:a45265b0b68234bce69498fec26c9db8672e9ada0b32ce0cb3498f5f7f1ad885
+    size: 12874798
+    checksum: sha256:e0823f610d5ec4e89d4e858e651ccbe77f5d840e843266e8f7c30b9cd83b4ff3
     name: vim
-    evr: 2:8.2.2637-26.el9_8.21
+    evr: 2:8.2.2637-26.el9_8.23
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/virt-what-1.27-2.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 572569
