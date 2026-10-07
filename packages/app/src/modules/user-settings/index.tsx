@@ -12,16 +12,26 @@ import {
  * since upstream NFS does not currently expose card slots on the General
  * settings sub-page.
  */
-const userSettingsGeneral = SubPageBlueprint.make({
+const generalSettingsPage = SubPageBlueprint.make({
   name: "general",
   params: {
     path: "general",
     title: "General",
-    loader: () => import("./GeneralPage").then((m) => <m.GeneralPage />),
+    loader: async () => {
+      const [m, { Content }] = await Promise.all([
+        import('./GeneralPage'),
+        import('@backstage/core-components'),
+      ]);
+      return (
+        <Content>
+          <m.GeneralPage />
+        </Content>
+      );
+    },
   },
 });
 
 export const userSettingsGeneralModule = createFrontendModule({
   pluginId: "user-settings",
-  extensions: [userSettingsGeneral],
+  extensions: [generalSettingsPage],
 });
