@@ -6816,7 +6816,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.17.1":
+"@mui/icons-material@npm:5.18.0":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -9121,24 +9121,6 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
   checksum: 10c0/5db10c8c5556a3dcbbf7ed9cd53d0b5f7f04677d16d0f191c3054eaa0d1aae3e1132b07614ed8009b9d2838fa1f9a424f8f0bf9dee2770d3c5bb62c7eaf9047d
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-theme@npm:1.3.0":
-  version: 1.3.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.3.0"
-  dependencies:
-    "@backstage/frontend-plugin-api": "npm:^0.18.0"
-    "@backstage/plugin-app-react": "npm:^0.2.6"
-    "@mui/icons-material": "npm:^5.17.1"
-  peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.9
-    "@backstage/theme": ^0.7.3
-    "@mui/icons-material": ^5.17.1
-    "@mui/material": ^5.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/76aaa91984b2b67d8773f08d644b4a0a1d985dbcf660888cab7dce969d572fc921064229dc6084f0c27af3187264310b7d3f1db7fc3308d95b0523e7f208b74b
   languageName: node
   linkType: hard
 
@@ -12295,7 +12277,6 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@octokit/rest": "npm:19.0.13"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:1.3.0"
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.6.0"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
