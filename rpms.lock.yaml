@@ -1530,20 +1530,20 @@ arches:
     name: rsync
     evr: 3.5.0-3.el10_2
     sourcerpm: rsync-3.5.0-3.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/s/selinux-policy-42.1.18-4.el10_2.3.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/s/selinux-policy-42.1.18-4.el10_2.4.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 62248
-    checksum: sha256:aba29a2adf524fe433546a8525726c114e97dddafb2a6ae5568c011c177c0524
+    size: 60545
+    checksum: sha256:fd44d1d97bf9969a0f57ef355c9d4d75a673fee4b625469b0137b768400de35b
     name: selinux-policy
-    evr: 42.1.18-4.el10_2.3
-    sourcerpm: selinux-policy-42.1.18-4.el10_2.3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/s/selinux-policy-targeted-42.1.18-4.el10_2.3.noarch.rpm
+    evr: 42.1.18-4.el10_2.4
+    sourcerpm: selinux-policy-42.1.18-4.el10_2.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/s/selinux-policy-targeted-42.1.18-4.el10_2.4.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 6537937
-    checksum: sha256:3fd0fafbda4637b4f9c0923a0699e53a7bf0388f0447f13b3a30100b886e2612
+    size: 6537579
+    checksum: sha256:408432f60b57808e2518bce7930ec02c79fae46de456f2f12d4343871324a26a
     name: selinux-policy-targeted
-    evr: 42.1.18-4.el10_2.3
-    sourcerpm: selinux-policy-42.1.18-4.el10_2.3.src.rpm
+    evr: 42.1.18-4.el10_2.4
+    sourcerpm: selinux-policy-42.1.18-4.el10_2.4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/s/shadow-utils-4.15.0-11.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 1415521
@@ -1642,27 +1642,27 @@ arches:
     name: util-linux-core
     evr: 2.40.2-18.el10
     sourcerpm: util-linux-2.40.2-18.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-data-9.1.083-9.el10_2.20.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-data-9.1.083-9.el10_2.22.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 25961
-    checksum: sha256:f2a108350bf34c74cb7c7aa454c7a0d007b005302b437eefc455ad5215799b1e
+    size: 26267
+    checksum: sha256:3cba663422c732966b47b4d4056a084b4f15e4368607e62f0d3d02137432a508
     name: vim-data
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-filesystem-9.1.083-9.el10_2.20.noarch.rpm
+    evr: 2:9.1.083-9.el10_2.22
+    sourcerpm: vim-9.1.083-9.el10_2.22.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-filesystem-9.1.083-9.el10_2.22.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 25112
-    checksum: sha256:ee748848a45733ffc7b402cb38c42f5cf550c56acee34e744921820f2f0ca0cc
+    size: 25350
+    checksum: sha256:ec4656f5e01def83595bf56c6490dfbf34189223b35ef6cbaccd947a51a67e04
     name: vim-filesystem
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-minimal-9.1.083-9.el10_2.20.aarch64.rpm
+    evr: 2:9.1.083-9.el10_2.22
+    sourcerpm: vim-9.1.083-9.el10_2.22.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-minimal-9.1.083-9.el10_2.22.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 792515
-    checksum: sha256:da358bead6f9ae8556511841de1c5670cda53f2b68d3c968cb87ba0584304645
+    size: 792963
+    checksum: sha256:b09fe7c511f74ae6c4d6f1b7a94b29736da598dc84b2c2e68a33fbd7223b493a
     name: vim-minimal
-    evr: 2:9.1.083-9.el10_2.20
-    sourcerpm: vim-9.1.083-9.el10_2.20.src.rpm
+    evr: 2:9.1.083-9.el10_2.22
+    sourcerpm: vim-9.1.083-9.el10_2.22.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/virt-what-1.27-3.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 40598
@@ -2591,12 +2591,12 @@ arches:
     checksum: sha256:4df6621312ce2620f5ab03dc202cf35a1731852e362cedea8cfa7eb343376ee9
     name: rsync
     evr: 3.5.0-3.el10_2
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-42.1.18-4.el10_2.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/s/selinux-policy-42.1.18-4.el10_2.4.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 1304975
-    checksum: sha256:590936752e1aaa45e8d49badf85d93328c2ec7245c6f251b4e862211fa85c5f4
+    size: 1303755
+    checksum: sha256:7e36b3cb7125126cfa75421fcf2f4fabcc90a7b45673ca3c971e47d359572d47
     name: selinux-policy
-    evr: 42.1.18-4.el10_2.3
+    evr: 42.1.18-4.el10_2.4
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/s/shadow-utils-4.15.0-11.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 1924763
@@ -2657,12 +2657,12 @@ arches:
     checksum: sha256:665f63918b6019e3a2b668259f3b70a6345bb71699cbcdb7fc6ba2029c76114f
     name: util-linux
     evr: 2.40.2-18.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/vim-9.1.083-9.el10_2.20.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/vim-9.1.083-9.el10_2.22.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 14737078
-    checksum: sha256:4d34e2ccf06e1a75330764c98f9b923ba530bbb9ad0b9fc4513782a1c23d444d
+    size: 14741081
+    checksum: sha256:256b88925ed30d59ffdf25353a8d306a3dd0e349cb944515b15294180c7dad70
     name: vim
-    evr: 2:9.1.083-9.el10_2.20
+    evr: 2:9.1.083-9.el10_2.22
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/virt-what-1.27-3.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 590774
@@ -4189,20 +4189,20 @@ arches:
     name: rsync
     evr: 3.5.0-3.el10_2
     sourcerpm: rsync-3.5.0-3.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/s/selinux-policy-42.1.18-4.el10_2.3.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/s/selinux-policy-42.1.18-4.el10_2.4.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 62248
-    checksum: sha256:aba29a2adf524fe433546a8525726c114e97dddafb2a6ae5568c011c177c0524
+    size: 60545
+    checksum: sha256:fd44d1d97bf9969a0f57ef355c9d4d75a673fee4b625469b0137b768400de35b
     name: selinux-policy
-    evr: 42.1.18-4.el10_2.3
-    sourcerpm: selinux-policy-42.1.18-4.el10_2.3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/s/selinux-policy-targeted-42.1.18-4.el10_2.3.noarch.rpm
+    evr: 42.1.18-4.el10_2.4
+    sourcerpm: selinux-policy-42.1.18-4.el10_2.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/s/selinux-policy-targeted-42.1.18-4.el10_2.4.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 6537937
-    checksum: sha256:3fd0fafbda4637b4f9c0923a0699e53a7bf0388f0447f13b3a30100b886e2612
+    size: 6537579
+    checksum: sha256:408432f60b57808e2518bce7930ec02c79fae46de456f2f12d4343871324a26a
     name: selinux-policy-targeted
-    evr: 42.1.18-4.el10_2.3
-    sourcerpm: selinux-policy-42.1.18-4.el10_2.3.src.rpm
+    evr: 42.1.18-4.el10_2.4
+    sourcerpm: selinux-policy-42.1.18-4.el10_2.4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/s/shadow-utils-4.15.0-11.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 1416217
@@ -5250,12 +5250,12 @@ arches:
     checksum: sha256:4df6621312ce2620f5ab03dc202cf35a1731852e362cedea8cfa7eb343376ee9
     name: rsync
     evr: 3.5.0-3.el10_2
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-42.1.18-4.el10_2.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-42.1.18-4.el10_2.4.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 1304975
-    checksum: sha256:590936752e1aaa45e8d49badf85d93328c2ec7245c6f251b4e862211fa85c5f4
+    size: 1303755
+    checksum: sha256:7e36b3cb7125126cfa75421fcf2f4fabcc90a7b45673ca3c971e47d359572d47
     name: selinux-policy
-    evr: 42.1.18-4.el10_2.3
+    evr: 42.1.18-4.el10_2.4
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/s/shadow-utils-4.15.0-11.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 1924763
