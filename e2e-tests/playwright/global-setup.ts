@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 import { request as playwrightRequest } from "@playwright/test";
 
 import { parseProxy } from "./utils/proxy";
@@ -13,6 +15,8 @@ import { waitForRhdhReady } from "./utils/wait-for-rhdh-ready";
  * - Otherwise → no-op (lint-only / cluster-free local harness runs)
  */
 export default async function globalSetup(): Promise<void> {
+  // Workers (including replacements after a retry) inherit one ownership ID.
+  process.env.CLOUDSQL_RUN_ID = randomBytes(6).toString("hex");
   if (
     (process.env.BASE_URL === undefined || process.env.BASE_URL === "") &&
     process.env.RUNTIME_AUTO_DEPLOY === "true"
