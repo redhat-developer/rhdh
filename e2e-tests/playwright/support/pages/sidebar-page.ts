@@ -54,8 +54,11 @@ export class SidebarPage {
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {
-    const learningPathLinks = this.page.getByRole("main").getByRole("link");
+    const article = this.page.getByRole("article");
+    const content = (await article.count()) > 0 ? article : this.page.getByRole("main");
+    const learningPathLinks = content.getByRole("link");
 
+    await expect(learningPathLinks.first()).toBeVisible();
     for (const learningPathLink of await learningPathLinks.all()) {
       await expect(learningPathLink).toBeVisible();
       await expect(learningPathLink).toHaveAttribute("target", "_blank");

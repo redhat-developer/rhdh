@@ -53,9 +53,13 @@ Utilities: `startTestBackend`, `mockServices`, `createMockDirectory` from
 
 ```ts
 const { server } = await startTestBackend({
-  features: [myPlugin, stubbedServiceFactory, mockServices.rootConfig.factory()],
+  features: [
+    myPlugin,
+    stubbedServiceFactory,
+    mockServices.rootConfig.factory(),
+  ],
 });
-const response = await request(server).get('/api/my-plugin/things');
+const response = await request(server).get("/api/my-plugin/things");
 ```
 
 **Assert the HTTP contract** — status codes, response shape, what an unauthenticated
@@ -81,11 +85,12 @@ renderInTestApp(
 );
 ```
 
-Worked examples in `packages/app/src`:
-[`modules/learning-paths/LearningPathsPage.test.tsx`](../packages/app/src/modules/learning-paths/LearningPathsPage.test.tsx)
-(page with a mocked API),
-and
+Worked example in `packages/app/src`:
 [`modules/user-settings/InfoCard.test.tsx`](../packages/app/src/modules/user-settings/InfoCard.test.tsx).
+The Learning Paths component tests now live in the
+[`app-defaults` plugin](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/app-defaults/plugins/app-defaults/src/learning-paths),
+which provides the NFS page. Test its loading in this app with the cluster-free
+`learning-path-page` Playwright spec.
 
 Prefer L3 over L4a whenever no dynamic-plugin loading is involved.
 

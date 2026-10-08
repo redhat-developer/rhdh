@@ -45,14 +45,49 @@ package the catalog index declares — see "Plugin Sanity Check" in
 
 Alternatives:
 
-- **Catalog index** — installs the full index plugin set instead of the curated one.
-  Use `populate-catalog-index.sh`, which
+- **Catalog index** — installs the index plugin set, except entries in
+  [`plugin-sanity-excludes.txt`](../../e2e-tests/local-harness/plugin-sanity-excludes.txt),
+  instead of the curated one. Use
+  `populate-catalog-index.sh`, which
   also records the breadcrumb the plugin sanity check asserts against:
 
   ```bash
   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
     ./e2e-tests/local-harness/populate-catalog-index.sh
   ```
+
+To explore the full catalog set in a browser, start the backend and frontend in
+separate terminals from the repository root. The plugin-sanity overlay supplies
+dummy `.invalid` endpoints required by plugins that normally run in a cluster;
+the Jira proxy and Segment analytics plugin also need local values. Segment runs
+in test mode, so it does not send analytics events.
+
+```bash
+cd packages/backend
+export NODE_OPTIONS=--no-node-snapshot JIRA_URL=https://jira.invalid \
+  JIRA_TOKEN=plugin-sanity-dummy SEGMENT_WRITE_KEY=plugin-sanity-dummy \
+  SEGMENT_TEST_MODE=true
+../../node_modules/.bin/backstage-cli package start --require ./src/instrumentation.js \
+  --config ../../app-config.yaml \
+  --config ../../dynamic-plugins-root/app-config.dynamic-plugins.yaml \
+  --config ../../app-config.local-e2e.yaml \
+  --config ../../e2e-tests/local-harness/app-config.plugin-sanity.yaml
+```
+
+```bash
+cd packages/app
+export NODE_OPTIONS=--no-node-snapshot JIRA_URL=https://jira.invalid \
+  JIRA_TOKEN=plugin-sanity-dummy SEGMENT_WRITE_KEY=plugin-sanity-dummy \
+  SEGMENT_TEST_MODE=true
+../../node_modules/.bin/backstage-cli package start \
+  --config ../../app-config.yaml \
+  --config ../../dynamic-plugins-root/app-config.dynamic-plugins.yaml \
+  --config ../../app-config.local-e2e.yaml \
+  --config ../../e2e-tests/local-harness/app-config.plugin-sanity.yaml
+```
+
+Open `http://localhost:3000/learning-paths` and sign in as Guest. For the
+curated harness set, use the regular `e2e:local` command below.
 
 ### 2. Run
 
@@ -89,8 +124,12 @@ for how that's wired).
   file exercises Quick Access against the real `/developer-hub` proxy; it only runs in
   the full cluster-based CI suite (see "Known issues").
 - `learning-path-page` — navigates via the app-defaults sidebar to `/learning-paths`
-  and renders from the static fallback data bundled with the app. See
-  `plugins/frontend/sidebar` for the same sidebar entry.
+  and verifies that the dynamic page renders cards from the fallback data bundled
+  with app-defaults when the proxy fails and accepts customized proxy data. A
+  French-language check verifies the app-defaults translation resource through
+  the Docs empty state, then opens Learning Paths. See `plugins/frontend/sidebar`
+  for the same sidebar entry. The catalog index must provide app-defaults 1.4.0
+  or newer.
 - `instance-health-check` — `GET /healthcheck` against the frontend origin. The app dev
   server proxies `/healthcheck` to the backend (`proxy` field in
   `packages/app/package.json`), mirroring the single-origin production container where

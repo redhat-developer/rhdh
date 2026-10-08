@@ -92,9 +92,6 @@ const rhdhTranslationDe = createTranslationMessages({
     "app.search.filters.template": "Vorlage",
     "app.search.filters.experimental": "Experimental-",
     "app.search.filters.production": "Produktion",
-    "app.learningPaths.title": "Lernpfade",
-    "app.learningPaths.error.title": "Daten konnten nicht abgerufen werden.",
-    "app.learningPaths.error.unknownError": "Unbekannter Fehler",
     "app.userSettings.infoCard.title": "RHDH-Metadaten",
     "app.userSettings.infoCard.metadataCopied":
       "Metadaten in die Zwischenablage kopiert",

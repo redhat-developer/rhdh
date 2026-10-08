@@ -66,6 +66,16 @@ app:
 
 For entries contributed by a dynamic plugin, use `app.sidebar.plugins.<pluginName>` so multiple plugins can add items without replacing each other's arrays. The `app-defaults` plugin README documents all supported item and group fields.
 
+## Customizing Learning Paths (NFS)
+
+The `app-defaults` dynamic plugin provides the `/learning-paths` page and its sidebar entry. The default catalog index enables app-defaults; custom plugin configurations must enable app-defaults 1.4.0 or newer. No separate `app.extensions` entry is needed for the page or its translations.
+
+App-defaults supplies Learning Paths page and error messages in German, Spanish, French, Italian, and Japanese. App-defaults 1.8.0 and newer also localizes the NFS sidebar title; 1.10.0 and newer localizes the page header title. The old `app.learningPaths.*` messages in the RHDH app are not used by this dynamic page.
+
+The plugin requests card data from the backend proxy at `/developer-hub/learning-paths` by default. Configure that proxy endpoint to serve your own JSON, or set `developerHub.proxyPath` if the proxy is mounted elsewhere. When the request fails, app-defaults displays the example data bundled with the plugin.
+
+See [Customizing Learning Paths in app-defaults](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-defaults/README.md#customizing-learning-paths) for proxy configuration examples and the JSON source format.
+
 ### Legacy OFS menu configuration
 
 The legacy OFS app shell uses `dynamicPlugins.frontend.default.main-menu-items.menuItems` to control order and nested items. The NFS sidebar does not read this setting. Prefix OFS main menu item keys with `default.`.
@@ -459,19 +469,19 @@ The default NFS app (`packages/app`) only places homepage cards that plugins reg
 
 Enable the home route, visit tracking, and layout under `app.extensions`. `widgetLayout` keys must match each widget's **`params.name`**, not its blueprint id. Full mapping, disable examples, and OFS → NFS equivalents are in [Migrating RHDH Frontend Configuration to the Backstage New Frontend System](dynamic-plugins/migrating-config-to-new-frontend-system.md#homepage-cards).
 
-| OFS `importName` | NFS extension | Status |
-| --- | --- | --- |
-| `OnboardingSection` | `home-page-widget:home/rhdh-onboarding-section` | Equivalent |
-| `EntitySection` | `home-page-widget:home/rhdh-entity-section` | Equivalent |
-| `TemplateSection` | `home-page-widget:home/rhdh-template-section` | Equivalent |
-| `QuickAccessCard` | `home-page-widget:home/quick-access-card` | Equivalent |
-| `SearchBar` | `home-page-widget:home/search-bar` | Equivalent |
-| `FeaturedDocsCard` | `home-page-widget:home/featured-docs-card` | Equivalent |
-| `CatalogStarredEntitiesCard` | `home-page-widget:home/starred-entities` | Equivalent |
-| `RecentlyVisitedCard` | `home-page-widget:home/recently-visited` | Equivalent |
-| `TopVisitedCard` | `home-page-widget:home/top-visited` | Equivalent |
-| `Headline`, `Placeholder`, `Markdown` / `MarkdownCard`, `WorldClock` | — | **No NFS widget** |
-| `JokeCard` | `home-page-widget:home/random-joke` | Upstream widget; **disabled** by the RHDH homepage plugin |
+| OFS `importName`                                                     | NFS extension                                   | Status                                                    |
+| -------------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------- |
+| `OnboardingSection`                                                  | `home-page-widget:home/rhdh-onboarding-section` | Equivalent                                                |
+| `EntitySection`                                                      | `home-page-widget:home/rhdh-entity-section`     | Equivalent                                                |
+| `TemplateSection`                                                    | `home-page-widget:home/rhdh-template-section`   | Equivalent                                                |
+| `QuickAccessCard`                                                    | `home-page-widget:home/quick-access-card`       | Equivalent                                                |
+| `SearchBar`                                                          | `home-page-widget:home/search-bar`              | Equivalent                                                |
+| `FeaturedDocsCard`                                                   | `home-page-widget:home/featured-docs-card`      | Equivalent                                                |
+| `CatalogStarredEntitiesCard`                                         | `home-page-widget:home/starred-entities`        | Equivalent                                                |
+| `RecentlyVisitedCard`                                                | `home-page-widget:home/recently-visited`        | Equivalent                                                |
+| `TopVisitedCard`                                                     | `home-page-widget:home/top-visited`             | Equivalent                                                |
+| `Headline`, `Placeholder`, `Markdown` / `MarkdownCard`, `WorldClock` | —                                               | **No NFS widget**                                         |
+| `JokeCard`                                                           | `home-page-widget:home/random-joke`             | Upstream widget; **disabled** by the RHDH homepage plugin |
 
 Third-party homepage cards appear only if that plugin ships a `home-page-widget:*` extension.
 

@@ -14,7 +14,6 @@ import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-trans
 
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { catalogCreatedAtModule } from "./modules/catalog";
-import { learningPathsModule } from "./modules/learning-paths";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
@@ -43,8 +42,7 @@ const app = createApp({
     dynamicFrontendFeaturesLoader(),
     // RHDH modules (local to app)
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
-    learningPathsModule, // Learning Paths page (/learning-paths)
-    rhdhApisModule, // storage, learning-path APIs
+    rhdhApisModule, // storage API
     translationsApiModule,
     rhdhTranslationsModule, // RHDH + plugin translation overrides (de, es, fr, it, ja)
     rhdhThemeModule, // RHDH light/dark themes

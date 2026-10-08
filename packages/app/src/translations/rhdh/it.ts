@@ -92,9 +92,6 @@ const rhdhTranslationIt = createTranslationMessages({
     "app.search.filters.template": "Modello",
     "app.search.filters.experimental": "sperimentale",
     "app.search.filters.production": "produzione",
-    "app.learningPaths.title": "Learning Path",
-    "app.learningPaths.error.title": "Impossibile estrarre i dati.",
-    "app.learningPaths.error.unknownError": "Errore sconosciuto",
     "app.userSettings.infoCard.title": "Metadati RHDH",
     "app.userSettings.infoCard.metadataCopied":
       "Metadati copiati negli appunti",
