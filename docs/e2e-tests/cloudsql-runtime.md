@@ -33,15 +33,21 @@ arguments and environment variables containing JSON.
 From `e2e-tests/`, with the setup environment loaded:
 
 ```bash
-INSTALL_METHOD=helm CLOUDSQL_REQUIRED=true yarn playwright test --project=showcase-runtime playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts
-INSTALL_METHOD=operator CLOUDSQL_REQUIRED=true yarn playwright test --project=showcase-runtime playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts
+INSTALL_METHOD=helm RUNTIME_REQUIRED=false CLOUDSQL_REQUIRED=true yarn playwright test --project=showcase-runtime playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts
+INSTALL_METHOD=operator RUNTIME_REQUIRED=false CLOUDSQL_REQUIRED=true yarn playwright test --project=showcase-runtime playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts
 ```
 
-Helm and Operator nightly jobs already run `showcase-runtime`. Required coverage
-defaults on in CI. For local verification, use `CLOUDSQL_REQUIRED=true` and check
-that all four cases actually ran on both installation methods. An all-skipped
-result does not establish coverage. Run `yarn showcase-runtime` for the surrounding
-configuration, schema-mode, RDS, and Azure regression tests.
+Helm and Operator nightly jobs already run `showcase-runtime`. Full required
+coverage defaults on in CI. For a complete local acceptance run on each method,
+use `RUNTIME_REQUIRED=true CLOUDSQL_REQUIRED=true yarn showcase-runtime --retries=0`.
+Supply all four RDS and Azure targets and their CA bundles as well as Cloud SQL
+inputs; the runner needs direct network access to RDS and Azure PostgreSQL.
+Schema-mode inputs are resolved from the runtime deployment's internal PostgreSQL.
+The [runtime reporter](../../e2e-tests/playwright/support/runtime-reporter.ts) requires
+all 23 configuration, schema-mode, and database cases to pass without skips or
+retries. Preserve the configured reporters when overriding the CLI reporter list.
+The targeted commands above disable only the full-matrix gate; all four Cloud SQL
+cases must still run successfully on each method to establish Cloud SQL coverage.
 
 ## Interrupted-run recovery
 
@@ -56,3 +62,8 @@ independent Auth Proxy to drop only databases with the recorded exact prefix.
 Remove the recorded namespace and any surviving local port-forward process.
 Never clear every non-system database on a shared instance. Ordinary drops avoid
 requiring permission to signal Cloud SQL's privileged processes with `FORCE`.
+
+RDS and Azure attachments (`runtime-database-target`) similarly record the owned
+namespace and exact database prefix. Stop the recorded application before dropping
+only those databases with an authenticated, CA-verified PostgreSQL connection.
+Small managed instances can take several minutes to finish database cleanup.
