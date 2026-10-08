@@ -20,6 +20,7 @@ import { writeSecretStream } from "@red-hat-developer-hub/e2e-test-utils/secrets
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const repository = fileURLToPath(new URL("../../", import.meta.url));
+const prow = "https://prow.ci.openshift.org/view/gs/test-platform-results/logs/test-job/123";
 const runArgs = ["-R", "example.com", "-r", "rhdh", "-t", "test", "-s"];
 let root: string;
 let env: NodeJS.ProcessEnv;
@@ -399,4 +400,61 @@ fi`,
     expect(first.exitCode).toBe(143);
     expect(existsSync(join(root, "e2e-tests/.local-test/run.lock"))).toBe(false);
   }, 15_000);
+});
+
+describe("cluster claim login", () => {
+  it("rejects an invalid URL before fetching logs or secrets", () => {
+    const result = run(".ci/pipelines/ocp-cluster-claim-login.sh", ["https://example.test"]);
+    expect(result.status).toBe(2);
+    expect(events()).toBe("");
+  });
+
+  it.each([
+    ["exit 22", "HTTP or network failure"],
+    ["printf 'no claim\\n'", "Cluster claim not found"],
+    [
+      "printf 'The claimed cluster rhdh-4-20-us-east-2-extra is ready after 1s\\n'",
+      "Namespace must match",
+    ],
+  ])("fails before secret loading on invalid lookup: %s", (script, message) => {
+    mock("curl", script);
+    const result = run(".ci/pipelines/ocp-cluster-claim-login.sh", [prow]);
+    expect(result.status).toBe(1);
+    expect(result.stdout + result.stderr).toContain(message);
+    expect(events()).toBe("");
+  });
+
+  it("rejects ambiguous cluster claims before loading credentials", () => {
+    mock(
+      "curl",
+      `printf '%s\\n' \
+      'The claimed cluster rhdh-4-20-us-east-2 is ready after 1s' \
+      'The claimed cluster rhdh-4-21-us-east-2 is ready after 1s'`,
+    );
+    const result = run(".ci/pipelines/ocp-cluster-claim-login.sh", [prow]);
+    expect(result.status).toBe(1);
+    expect(result.stdout + result.stderr).toContain("Multiple cluster claims");
+    expect(events()).toBe("");
+  });
+
+  it("treats clipboard and browser failures as warnings after successful login", () => {
+    mock("pbcopy", "cat >/dev/null; exit 1");
+    mock("xdg-open", "exit 1");
+    mock("sleep", "exit 0");
+    const result = run(".ci/pipelines/ocp-cluster-claim-login.sh", [prow, "--open-console"]);
+    expect(result.status).toBe(0);
+    expect(result.stderr).toContain("Unable to copy password");
+    expect(result.stderr).toContain("Unable to open browser");
+    expect(result.stderr).not.toContain("synthetic-password");
+  });
+
+  it.each([prow, `${prow}/`, `${prow}?focus=claim#logs`])(
+    "fetches the claim once and succeeds non-interactively: %s",
+    (url) => {
+      const result = run(".ci/pipelines/ocp-cluster-claim-login.sh", [url]);
+      expect(result.status).toBe(0);
+      expect(events()).toMatch(/^curl\nsecrets\noc login /u);
+      expect(result.stdout + result.stderr).toContain("Web console not opened");
+    },
+  );
 });
