@@ -81,15 +81,33 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
       await settingsPage.selectLanguage("Français");
       await settingsPage.verifySelectedLanguage("Français");
 
-      // The installed app-defaults build renders translated empty-state text on Docs.
-      // Its Learning Paths success view only renders card data, so use this shared
-      // translation resource to verify locale loading before opening that page.
+      // The Learning Paths cards have no translated text. Control the Docs
+      // empty state so this app-defaults translation check is independent of
+      // how many TechDocs entities are registered in the cluster.
+      let docsFacetRequests = 0;
+      await guestPage.route(
+        (url) =>
+          url.pathname.endsWith("/api/catalog/entity-facets") &&
+          url.searchParams
+            .getAll("filter")
+            .includes("metadata.annotations.backstage.io/techdocs-ref"),
+        (route) => {
+          docsFacetRequests += 1;
+          return route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({ facets: { kind: [] } }),
+          });
+        },
+      );
+
       await getRhdhSidebarNavigation(guestPage)
-        .getByRole("link", { name: "Docs", exact: true })
+        .getByRole("link", { name: /^(?:Docs|Documentation)$/u })
         .click();
       await expect(
         guestPage.getByText("Aucune documentation disponible", { exact: true }),
       ).toBeVisible();
+      expect(docsFacetRequests).toBeGreaterThan(0);
 
       await getRhdhSidebarNavigation(guestPage)
         .getByRole("link", { name: /Learning Paths|Parcours d'apprentissage/u })

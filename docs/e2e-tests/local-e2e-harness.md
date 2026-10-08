@@ -11,9 +11,9 @@ container images — a single `run` that boots the backend and the NFS frontend 
 server in-process and drives a browser against them.
 
 The guest-auth + in-memory-SQLite overlay `app-config.local-e2e.yaml` is layered on top
-of `app-config.yaml`. Guest sign-in must be configured explicitly — the auth backend
-otherwise rejects guest with _"you must … configure the auth backend to support guest
-sign in."_
+of `app-config.yaml`. Guest sign-in needs both `auth.providers.guest` for the backend
+and `signInPage: guest` for the app-auth frontend. The frontend cannot read the backend
+provider list, so `packages/app/config.d.ts` marks `signInPage` as frontend-visible.
 
 ### 1. Populate `dynamic-plugins-root` (one-time)
 
@@ -146,14 +146,9 @@ for how that's wired).
   Access" assertion only checks the card's title text, not real link data (see "Known
   issues" for why); the file's other, untagged "Verify Customized Quick Access" test
   covers the real link data and only runs in full CI.
-- `plugins/frontend/sidebar` — the `@cluster-free-capable` tests verify that the
-  app-defaults sidebar's Docs and Learning Paths items navigate to the expected pages
-  (NFS `PageBlueprint` title for TechDocs: "Docs", not the legacy OFS `pageWrapper.title`
-  "Documentation"). The Docs test stops at the index page —
-  this harness's catalog has no `techdocs-ref`-annotated entities (see "Known issues"),
-  so there's nothing to click into. The file's other, untagged "Verify Docs entity
-  page renders real content" test opens a real entity's docs and checks for actual
-  content; it only runs in full CI, where `catalog-entities/components/showcase.yaml`/
+- `plugins/frontend/sidebar` — the cluster-free test verifies the app-defaults
+  Learning Paths sidebar destination. Its Docs navigation and entity-content tests
+  run in full CI, where `catalog-entities/components/showcase.yaml` and
   `community-plugins.yaml` provide real `techdocs-ref` entities.
 - `plugins/user-settings-info-card` — the CI `buildInfo` card customization ("RHDH
   Build info") mirrored in the overlay. Reaches the Settings page via the same
@@ -162,9 +157,8 @@ for how that's wired).
 - `settings.spec.ts` — language toggle (needs `api:app/app-language.availableLanguages`
   in `app.extensions`, not just `i18n.locales`), French label switching, pin-sidebar
   toggle, and identity-card ownership ("Guest User, team-a"). NFS sidebar page titles
-  stay in upstream English ("Home") even after switching AppLanguageApi to French —
-  only GlobalHeader chrome translates; the final assertion checks "Home", not
-  `menuItem.home` ("Accueil").
+  depend on the installed app-defaults version: the final assertion accepts the
+  text link as either "Home" or "Accueil" after switching to French.
 
 Not enablable yet:
 

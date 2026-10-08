@@ -1,5 +1,7 @@
+import { expect } from "@playwright/test";
 import { test } from "@support/coverage/test";
 
+import { getRhdhSidebarNavigation } from "../support/navigation/rhdh-sidebar-adapter";
 import { SettingsPage } from "../support/pages/settings-page";
 import { getTranslations, getCurrentLanguage } from "./localization/locale";
 
@@ -18,7 +20,7 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.open();
   });
 
-  test(`Verify settings page`, { tag: "@cluster-free-capable" }, async () => {
+  test(`Verify settings page`, { tag: "@cluster-free-capable" }, async ({ guestPage }) => {
     await settingsPage.hideQuickstartIfVisible();
     await settingsPage.verifyLanguageToggleList(lang);
     await settingsPage.verifyLanguageSelectShowsOptions();
@@ -36,8 +38,12 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.uncheckCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
     await settingsPage.verifySidebarMenuItemHidden(t["rhdh"]["fr"]["menuItem.apis"]);
     await settingsPage.checkCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
-    // NFS sidebar page titles come from upstream PageBlueprint defaults ("Home"), not
-    // rhdh menuItem.* translations — only GlobalHeader chrome translates with AppLanguageApi.
-    await settingsPage.verifyText("Home");
+    // The app-defaults sidebar labels this page "Home" or "Accueil", depending
+    // on the installed plugin version. Check the text link, not the Home logo.
+    await expect(
+      getRhdhSidebarNavigation(guestPage)
+        .getByRole("link", { name: /^(?:Home|Accueil)$/u })
+        .filter({ hasText: /^(?:Home|Accueil)$/u }),
+    ).toBeVisible();
   });
 });
