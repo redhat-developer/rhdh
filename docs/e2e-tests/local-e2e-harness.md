@@ -86,7 +86,7 @@ export NODE_OPTIONS=--no-node-snapshot JIRA_URL=https://jira.invalid \
   --config ../../e2e-tests/local-harness/app-config.plugin-sanity.yaml
 ```
 
-Open `http://localhost:3000/learning-paths` and sign in as Guest. For the
+Open `http://localhost:3000` and sign in as Guest. For the
 curated harness set, use the regular `e2e:local` command below.
 
 ### 2. Run
