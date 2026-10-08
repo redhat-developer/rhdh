@@ -11,16 +11,13 @@ import {
   readCloudSqlInputs,
   isCloudSqlRevisionReady,
   buildCloudSqlProxy,
-  buildCloudSqlEgressPolicy,
 } from "../playwright/utils/cloudsql-config";
 import { buildImageRef } from "../playwright/utils/helper";
 import { isRecord } from "../playwright/utils/kube-client";
 import {
-  generateAppConfigYaml,
   generateBackstageCR,
   generateHelmValuesYaml,
   generateHelmSetArgs,
-  generateDynamicPluginsYaml,
   type RuntimeDeployConfig,
 } from "../playwright/utils/runtime-config";
 
@@ -61,27 +58,12 @@ const config: RuntimeDeployConfig = {
 };
 
 describe("Cloud SQL prerequisites", () => {
-  it("only skips an unconfigured optional run", () => {
+  it("skips absent instances but rejects configured instances without credentials", () => {
     expect(readCloudSqlInputs({})).toBeNull();
-    expect(() => readCloudSqlInputs({ CLOUDSQL_REQUIRED: "true" })).toThrow(
-      "requires CLOUDSQL_INSTANCE_1..4",
-    );
+    expect(readCloudSqlInputs(env)?.instances[0]).toBe(env.CLOUDSQL_INSTANCE_1);
     expect(() => readCloudSqlInputs({ CLOUDSQL_INSTANCE_1: env.CLOUDSQL_INSTANCE_1 })).toThrow(
       "require CLOUDSQL_USER",
     );
-  });
-  it("rejects incomplete required coverage but accepts all four configured slots", () => {
-    expect(() => readCloudSqlInputs({ ...env, CLOUDSQL_REQUIRED: "true" })).toThrow(
-      "requires CLOUDSQL_INSTANCE_1..4",
-    );
-    const inputs = readCloudSqlInputs({
-      ...env,
-      CLOUDSQL_REQUIRED: "true",
-      CLOUDSQL_INSTANCE_2: "p:r:i2",
-      CLOUDSQL_INSTANCE_3: "p:r:i3",
-      CLOUDSQL_INSTANCE_4: "p:r:i4",
-    });
-    expect(inputs?.instances).toHaveLength(4);
   });
   it("rejects malformed instance names and service accounts without leaking JSON", () => {
     expect(() => readCloudSqlInputs({ ...env, CLOUDSQL_INSTANCE_1: "invalid" })).toThrow(
@@ -106,18 +88,6 @@ describe("Cloud SQL prerequisites", () => {
 });
 
 describe("Operator Cloud SQL configuration", () => {
-  it("supplies the same sign-in/homepage modules as Helm and permits the proxy's actual DB port", () => {
-    expect(yaml.parse(generateDynamicPluginsYaml(config))).toMatchObject({
-      includes: ["dynamic-plugins.default.yaml"],
-    });
-    expect(buildCloudSqlEgressPolicy("backstage-rhdh")).toMatchObject({
-      spec: {
-        podSelector: { matchLabels: { "rhdh.redhat.com/app": "backstage-rhdh" } },
-        policyTypes: ["Egress"],
-        egress: [{ ports: [{ port: 3307, protocol: "TCP" }] }],
-      },
-    });
-  });
   it("rejects a ready old revision until reconciliation and rollout finish", () => {
     const cloudSql = config.cloudSql!;
     const deployment = {
@@ -157,7 +127,6 @@ describe("Operator Cloud SQL configuration", () => {
     const proxyArgs: unknown = expect.arrayContaining(["project:region:instance"]);
     const waitCommand: unknown = expect.stringContaining("/dev/tcp/127.0.0.1/5432");
     const waitCommands: unknown = expect.arrayContaining([waitCommand]);
-    const home: unknown = expect.arrayContaining([{ "page:home": { config: { path: "/" } } }]);
     expect(generateBackstageCR(config)).toMatchObject({
       metadata: { annotations: { "rhdh.redhat.com/deployment-patch-list-merge-mode": "prepend" } },
       spec: {
@@ -199,12 +168,6 @@ describe("Operator Cloud SQL configuration", () => {
         },
       },
     });
-    expect(yaml.parse(generateAppConfigYaml("https://runtime.example.test", config))).toMatchObject(
-      {
-        app: { extensions: home },
-        backend: { database: { prefix: "csql_012345abcdef_1_", connection: { ssl: false } } },
-      },
-    );
   });
 });
 

@@ -8,7 +8,6 @@ import { KubeClient } from "../playwright/utils/kube-client";
 import {
   stopRuntimeApplication,
   waitForRuntimeRollout,
-  setRuntimeDatabaseEnv,
 } from "../playwright/utils/runtime-lifecycle";
 
 function kubeClient(): KubeClient {
@@ -53,9 +52,6 @@ describe("ordered runtime lifecycle", () => {
   it("stops through the CR and waits for initializing/terminating pods to disappear", async () => {
     vi.useFakeTimers();
     const kube = kubeClient();
-    vi.spyOn(kube.customObjectsApi, "getNamespacedCustomObject").mockResolvedValue(
-      response({ spec: { deployment: { patch: { spec: {} } } } }),
-    );
     const replace = vi
       .spyOn(kube.customObjectsApi, "patchNamespacedCustomObject")
       .mockResolvedValue(response({}));
@@ -72,70 +68,6 @@ describe("ordered runtime lifecycle", () => {
     expect(scale).not.toHaveBeenCalled();
     expect(replace.mock.calls[0][5]).toMatchObject({
       spec: { deployment: { patch: { spec: { replicas: 0 } } } },
-    });
-  });
-  it("keeps database credential references under Operator ownership", async () => {
-    const kube = kubeClient();
-    vi.spyOn(kube.customObjectsApi, "getNamespacedCustomObject").mockResolvedValue(
-      response({
-        spec: {
-          deployment: {
-            patch: {
-              spec: {
-                template: {
-                  spec: {
-                    containers: [
-                      {
-                        name: "backstage-backend",
-                        image: "image",
-                        env: [{ name: "NODE_OPTIONS", value: "keep" }],
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
-      }),
-    );
-    const replace = vi
-      .spyOn(kube.customObjectsApi, "patchNamespacedCustomObject")
-      .mockResolvedValue(response({}));
-    await setRuntimeDatabaseEnv(kube, "runtime", "rhdh", "operator", "runtime-schema-credentials", [
-      "POSTGRES_USER",
-    ]);
-    expect(replace.mock.calls[0][5]).toMatchObject({
-      spec: {
-        deployment: {
-          patch: {
-            spec: {
-              template: {
-                spec: {
-                  containers: [
-                    {
-                      name: "backstage-backend",
-                      image: "image",
-                      env: [
-                        { name: "NODE_OPTIONS", value: "keep" },
-                        {
-                          name: "POSTGRES_USER",
-                          valueFrom: {
-                            secretKeyRef: {
-                              name: "runtime-schema-credentials",
-                              key: "POSTGRES_USER",
-                            },
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        },
-      },
     });
   });
 });

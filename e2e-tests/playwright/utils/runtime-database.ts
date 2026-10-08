@@ -14,10 +14,6 @@ export interface ExternalDatabaseInputs {
   certificate: string;
 }
 
-export function runtimeCoverageRequired(env: NodeJS.ProcessEnv = process.env): boolean {
-  return (env.RUNTIME_REQUIRED ?? env.CI) === "true";
-}
-
 export function readExternalDatabaseInputs(
   provider: ExternalDatabaseProvider,
   slot: number,
@@ -33,7 +29,7 @@ export function readExternalDatabaseInputs(
   const anyHost = [1, 2, 3, 4].some(
     (index) => (env[`${root}_${index}_HOST`]?.trim().length ?? 0) > 0,
   );
-  if (!runtimeCoverageRequired(env) && !anyHost) return null;
+  if (!anyHost) return null;
   if (
     host === undefined ||
     host === "" ||

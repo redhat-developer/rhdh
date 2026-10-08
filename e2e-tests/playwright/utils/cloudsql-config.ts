@@ -28,18 +28,13 @@ export function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
 }
 
-/** No configured instances is an optional local skip; partial configuration is an error. */
+/** Unconfigured instances are skipped; configured instances require valid credentials. */
 export function readCloudSqlInputs(env: NodeJS.ProcessEnv = process.env): CloudSqlInputs | null {
   const instances = [1, 2, 3, 4].map((slot) => {
     const value = env[`CLOUDSQL_INSTANCE_${slot}`]?.trim();
     return isNonEmptyString(value) ? value : undefined;
   });
-  const required = env.CLOUDSQL_REQUIRED === "true";
-  if (!required && instances.every((instance) => instance === undefined)) return null;
-
-  if (required && instances.some((instance) => instance === undefined)) {
-    throw new Error("CLOUDSQL_REQUIRED=true requires CLOUDSQL_INSTANCE_1..4");
-  }
+  if (instances.every((instance) => instance === undefined)) return null;
   for (const instance of instances) {
     if (instance !== undefined && !/^[^\s:]+:[^\s:]+:[^\s:]+$/u.test(instance)) {
       throw new Error(

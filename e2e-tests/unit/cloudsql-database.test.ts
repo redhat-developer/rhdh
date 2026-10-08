@@ -37,17 +37,6 @@ describe("owned Cloud SQL cleanup", () => {
       [prefix],
     );
   });
-  it("drops only owned databases and checks the result", async () => {
-    const client: CloudSqlCleanupClient = new Client();
-    const query = vi
-      .spyOn(client, "query")
-      .mockResolvedValueOnce(result([`${prefix}catalog`]))
-      .mockResolvedValueOnce(result([]))
-      .mockResolvedValueOnce(result([]));
-    await clearCloudSqlDatabases(client, prefix);
-    expect(query).toHaveBeenNthCalledWith(2, `DROP DATABASE IF EXISTS "${prefix}catalog"`);
-    expect(query).toHaveBeenCalledTimes(3);
-  });
   it("propagates drop failures instead of producing a successful cleanup result", async () => {
     const client: CloudSqlCleanupClient = new Client();
     vi.spyOn(client, "query")

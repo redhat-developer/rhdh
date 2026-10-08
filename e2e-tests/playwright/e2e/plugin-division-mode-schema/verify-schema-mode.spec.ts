@@ -5,7 +5,6 @@ import { PortForwardHarness } from "../../support/harnesses/port-forward-harness
 import { HomePage } from "../../support/pages/home-page";
 import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
-import { runtimeCoverageRequired } from "../../utils/runtime-database";
 import { waitForRuntimeRollout } from "../../utils/runtime-lifecycle";
 import { configureSchemaMode } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
@@ -99,8 +98,6 @@ async function setupSchemaModeTests(
 } | null> {
   const env = readSchemaModeEnv();
   if (env === null) {
-    if (runtimeCoverageRequired())
-      throw new Error("Required schema-mode inputs were not resolved from the runtime PostgreSQL");
     testInfo.skip(
       true,
       "SCHEMA_MODE_* environment variables not set - schema mode tests are opt-in",

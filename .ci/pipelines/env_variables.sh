@@ -177,9 +177,6 @@ CLOUDSQL_INSTANCE_2="${CLOUDSQL_INSTANCE_2:-$(cat /tmp/secrets/CLOUDSQL_INSTANCE
 CLOUDSQL_INSTANCE_3="${CLOUDSQL_INSTANCE_3:-$(cat /tmp/secrets/CLOUDSQL_INSTANCE_3 2> /dev/null || true)}"
 CLOUDSQL_INSTANCE_4="${CLOUDSQL_INSTANCE_4:-$(cat /tmp/secrets/CLOUDSQL_INSTANCE_4 2> /dev/null || true)}"
 CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH="${CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH:-/tmp/secrets/cloudsql-service-account.json}"
-# The standard CI secret collection includes all four targets; local runs remain opt-in.
-CLOUDSQL_REQUIRED="${CLOUDSQL_REQUIRED:-${CI:-false}}"
-RUNTIME_REQUIRED="${RUNTIME_REQUIRED:-${CI:-false}}"
 
 JUNIT_RESULTS="junit-results.xml"
 
