@@ -93,9 +93,6 @@ const rhdhTranslationEs = createTranslationMessages({
     "app.search.filters.template": "Plantilla",
     "app.search.filters.experimental": "experimental",
     "app.search.filters.production": "producción",
-    "app.learningPaths.title": "Rutas de aprendizaje",
-    "app.learningPaths.error.title": "No se pudieron extraer los datos.",
-    "app.learningPaths.error.unknownError": "Error desconocido",
     "app.userSettings.infoCard.title": "Metadatos de RHDH",
     "app.userSettings.infoCard.metadataCopied":
       "Metadatos copiados en el portapapeles",

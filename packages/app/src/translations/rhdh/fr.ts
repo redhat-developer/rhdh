@@ -93,9 +93,6 @@ const rhdhTranslationFr = createTranslationMessages({
     "app.search.filters.template": "Modèle",
     "app.search.filters.experimental": "expérimental",
     "app.search.filters.production": "production",
-    "app.learningPaths.title": "Parcours d'apprentissage",
-    "app.learningPaths.error.title": "Impossible de récupérer les données",
-    "app.learningPaths.error.unknownError": "Erreur inconnue",
     "app.userSettings.infoCard.title": "Métadonnées RHDH",
     "app.userSettings.infoCard.metadataCopied":
       "Métadonnées copiées dans le presse-papiers",

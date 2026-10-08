@@ -143,17 +143,18 @@ Four of the L3 candidates already have a Layer 3 equivalent **merged** under epi
 RHIDP-13235 (Layer 3 component tests). These prove the pattern works and are the
 template for the rest — copy their structure rather than starting from scratch:
 
-| E2E spec                               | Layer 3 equivalent on `main`                                           |
-| -------------------------------------- | ---------------------------------------------------------------------- |
-| `learning-path-page` (#6)              | `packages/app/src/components/learningPaths/LearningPathsPage.test.tsx` |
-| `settings` (#5)                        | `packages/app/src/components/UserSettings/GeneralPage.test.tsx`        |
-| `plugins/frontend/sidebar` (#8)        | `packages/app/src/components/Root/CustomSidebarItem.test.tsx`          |
-| `plugins/user-settings-info-card` (#9) | `packages/app/src/components/UserSettings/InfoCard.test.tsx`           |
-| _(theming / global header feature)_    | `packages/app/src/hooks/useThemedConfig.test.tsx`                      |
-| _(header mount points feature)_        | `packages/app/src/utils/dynamicUI/getMountPointData.test.ts`           |
+| E2E spec                               | Layer 3 equivalent on `main`                                                                                                                                               |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `learning-path-page` (#6)              | Moved to [`app-defaults` Learning Paths tests](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/app-defaults/plugins/app-defaults/src/learning-paths) |
+| `settings` (#5)                        | `packages/app/src/components/UserSettings/GeneralPage.test.tsx`                                                                                                            |
+| `plugins/frontend/sidebar` (#8)        | `packages/app/src/components/Root/CustomSidebarItem.test.tsx`                                                                                                              |
+| `plugins/user-settings-info-card` (#9) | `packages/app/src/components/UserSettings/InfoCard.test.tsx`                                                                                                               |
+| _(theming / global header feature)_    | `packages/app/src/hooks/useThemedConfig.test.tsx`                                                                                                                          |
+| _(header mount points feature)_        | `packages/app/src/utils/dynamicUI/getMountPointData.test.ts`                                                                                                               |
 
-These are Vitest/RTL tests in `packages/app` — they run on every PR, no cluster, no
-Playwright. The corresponding E2E specs (#5, #6, #8, #9) were intentionally kept, per
+The Learning Paths component tests moved with the page to `app-defaults`; the other
+tests in this table record the original OFS migration and some paths may have changed
+since then. The corresponding E2E specs (#5, #6, #8, #9) were intentionally kept, per
 the additive rule at the top of this document.
 
 > Note: the epic briefing listed `custom-theme`, `default-global-header`,

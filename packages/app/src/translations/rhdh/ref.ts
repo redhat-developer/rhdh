@@ -170,13 +170,6 @@ export const rhdhMessages = {
         production: "production",
       },
     },
-    learningPaths: {
-      title: "Learning Paths",
-      error: {
-        title: "Could not fetch data.",
-        unknownError: "Unknown error",
-      },
-    },
     userSettings: {
       infoCard: {
         title: "RHDH Metadata",
