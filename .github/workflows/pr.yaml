@@ -131,10 +131,12 @@ jobs:
 
       - name: Install Python dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: | 
-          pip install -r python/requirements-dev.txt
-          pip install -r python/requirements-build.txt
-          pip install -r python/requirements.txt
+        run: |
+          # Isolate pytest plugins from the runner's preinstalled Python packages.
+          python3 -m venv "$RUNNER_TEMP/rhdh-python"
+          "$RUNNER_TEMP/rhdh-python/bin/python" -m pip install -r python/requirements-dev.txt
+          "$RUNNER_TEMP/rhdh-python/bin/python" -m pip install -r python/requirements.txt
+          "$RUNNER_TEMP/rhdh-python/bin/python" -m pip check
 
       - name: Run prettier
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -163,7 +165,8 @@ jobs:
 
       - name: Run Python tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest docker/test_install-dynamic-plugins.py -v
+        run: |
+          "$RUNNER_TEMP/rhdh-python/bin/python" -m pytest docker/test_install-dynamic-plugins.py -v
 
   backstage-bump-checks:
     name: Backstage bump checks
