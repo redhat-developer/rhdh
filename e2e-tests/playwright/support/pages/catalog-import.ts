@@ -77,15 +77,19 @@ export class CatalogImport {
       timeout: 60_000,
     });
 
-    // The catalog inspector is addressable even when a custom entity header has no menu actions.
-    const inspectUrl = new URL(this.page.url());
-    inspectUrl.searchParams.set("inspect", "yaml");
-    await this.page.goto(inspectUrl.toString());
+    // Intentional divergence: entity header overflow uses title="More", not always role name.
+    const moreButton = this.page
+      .getByRole("button", { name: "More" })
+      .or(this.page.getByTitle("More"));
+    await expect(moreButton.first()).toBeVisible({ timeout: 30_000 });
+    await moreButton.first().click();
+    await this.page.getByRole("menuitem", { name: "Inspect entity" }).click();
+    await interaction.clickTab(this.page, "Raw YAML");
+    await expect(this.page.getByTestId("code-snippet")).toContainText(text);
+
     const inspector = this.page
       .getByRole("dialog")
       .filter({ has: this.page.getByRole("heading", { name: "Entity Inspector" }) });
-    await expect(inspector).toBeVisible({ timeout: 30_000 });
-    await expect(inspector.getByTestId("code-snippet")).toContainText(text);
 
     // Toast "Request failed with 404" Close buttons match first(); scope to the inspector.
     await inspector.getByRole("button", { name: "Close" }).click();
