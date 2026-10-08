@@ -153,3 +153,66 @@ export { sleep } from "../poll-until";
 export function podNameOrUnknown(name: string | undefined): string {
   return name !== undefined && name !== "" ? name : "unknown";
 }
+
+export type JsonPatchOperation =
+  | { op: "add"; path: string; value: unknown }
+  | { op: "remove"; path: string };
+
+/**
+ * Names from `envVarNames` that do not read the same-named key of `secretName`
+ * through exactly one entry. A duplicate entry (for example a literal left
+ * next to the secret reference) counts as not done, so the caller patches it
+ * and buildEnvFromSecretPatch removes the extra entry.
+ */
+export function envVarsNotFromSecret(
+  existingEnv: readonly k8s.V1EnvVar[] | undefined,
+  secretName: string,
+  envVarNames: readonly string[],
+): string[] {
+  return envVarNames.filter((name) => {
+    const entries = (existingEnv ?? []).filter((e) => e.name === name);
+    const ref = entries[0]?.valueFrom?.secretKeyRef;
+    return !(entries.length === 1 && ref?.name === secretName && ref.key === name);
+  });
+}
+
+/**
+ * JSON patch that makes each named env var of the container at `containerIdx`
+ * read the same-named key of `secretName`. Every existing entry with one of
+ * those names is removed first, whatever it held, so a literal value set by
+ * the chart cannot survive next to the new reference.
+ */
+export function buildEnvFromSecretPatch(
+  containerIdx: number,
+  existingEnv: readonly k8s.V1EnvVar[] | undefined,
+  secretName: string,
+  envVarNames: readonly string[],
+): JsonPatchOperation[] {
+  const envPath = `/spec/template/spec/containers/${containerIdx}/env`;
+  const patch: JsonPatchOperation[] = [];
+
+  // Appending with env/- fails when the container has no env array yet
+  if (existingEnv === undefined) {
+    patch.push({ op: "add", path: envPath, value: [] });
+  }
+
+  // Remove in reverse order so earlier indices stay valid
+  const indicesToRemove = (existingEnv ?? [])
+    .map((e, idx) => ({ name: e.name, idx }))
+    .filter((e) => envVarNames.includes(e.name))
+    .map((e) => e.idx)
+    .toSorted((a, b) => b - a);
+  for (const idx of indicesToRemove) {
+    patch.push({ op: "remove", path: `${envPath}/${idx}` });
+  }
+
+  for (const name of envVarNames) {
+    patch.push({
+      op: "add",
+      path: `${envPath}/-`,
+      value: { name, valueFrom: { secretKeyRef: { name: secretName, key: name } } },
+    });
+  }
+
+  return patch;
+}

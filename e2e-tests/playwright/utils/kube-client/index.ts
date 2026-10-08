@@ -18,6 +18,8 @@ import { logReplicaSetStatusImpl } from "./diagnostics/replicasets";
 import { execPodCommandImpl } from "./exec";
 import {
   BACKSTAGE_BACKEND_CONTAINER,
+  buildEnvFromSecretPatch,
+  envVarsNotFromSecret,
   formatKubeErrorLog,
   getErrorStatusCode,
   getKubeApiErrorMessage,
@@ -28,7 +30,13 @@ import {
 } from "./helpers";
 import { checkPodFailureStatesImpl } from "./pod-failure";
 
-export { BACKSTAGE_BACKEND_CONTAINER, getErrorStatusCode, getRhdhDeploymentName, isRecord };
+export {
+  BACKSTAGE_BACKEND_CONTAINER,
+  envVarsNotFromSecret,
+  getErrorStatusCode,
+  getRhdhDeploymentName,
+  isRecord,
+};
 export type { PodFailureResult };
 
 export async function waitForBackstageCrd(
@@ -611,38 +619,12 @@ export class KubeClient {
       return;
     }
 
-    const existingEnv = containers[containerIdx].env ?? [];
-    const patch: Array<{ op: string; path: string; value?: unknown }> = [];
-
-    // Remove existing env vars with the same names (reverse order)
-    const indicesToRemove = existingEnv
-      .map((e, idx) => ({ name: e.name, idx }))
-      .filter((e) => envVarNames.includes(e.name))
-      .map((e) => e.idx);
-
-    if (indicesToRemove.length > 0) {
-      for (const idx of indicesToRemove.toSorted((a: number, b: number) => b - a)) {
-        patch.push({
-          op: "remove",
-          path: `/spec/template/spec/containers/${containerIdx}/env/${idx}`,
-        });
-      }
-    }
-
-    // Add fresh env vars from the secret
-    for (const name of envVarNames) {
-      patch.push({
-        op: "add",
-        path: `/spec/template/spec/containers/${containerIdx}/env/-`,
-        value: {
-          name,
-          valueFrom: {
-            secretKeyRef: { name: secretName, key: name },
-          },
-        },
-      });
-    }
-
+    const patch = buildEnvFromSecretPatch(
+      containerIdx,
+      containers[containerIdx].env,
+      secretName,
+      envVarNames,
+    );
     await this.jsonPatchDeployment(deploymentName, namespace, patch);
   }
 }
