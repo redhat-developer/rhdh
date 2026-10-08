@@ -46,6 +46,11 @@
       "digest": {"enabled": false}
     },
     {
+      "description": "Allow digest updates for the renovate-config-validator image",
+      "matchPackageNames": ["ghcr.io/renovatebot/renovate"],
+      "digest": {"enabled": true}
+    },
+    {
       "description": "Disable Dockerfile non-major updates",
       "matchDatasources": ["docker"],
       "matchUpdateTypes": ["patch", "minor"],
