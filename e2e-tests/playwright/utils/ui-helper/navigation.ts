@@ -1,12 +1,6 @@
 import { expect, Page } from "@playwright/test";
 
 import { getTranslations, getCurrentLanguage } from "../../e2e/localization/locale";
-import { hasJsonHealthcheck } from "../../support/auth/app-shell";
-import {
-  expandLegacySection,
-  openLegacyLink,
-  waitForLegacySidebarVisible,
-} from "../../support/navigation/legacy-sidebar-adapter";
 import {
   expandRhdhSection,
   openRhdhLink,
@@ -18,81 +12,6 @@ import * as table from "./table";
 import { verifyHeading } from "./verification";
 
 const t = getTranslations();
-
-let cachedUsesRhdhSidebar: boolean | undefined;
-let cachedSidebarBaseUrl: string | undefined;
-
-async function hasLegacySidebarMarkup(page: Page): Promise<boolean> {
-  // OFS packaged-app exposed login-button; NFS does not — keep this check narrow so
-  // the NFS cluster-free harness (JSON /healthcheck + global-header) uses the rhdh adapter.
-  const packagedSidebar = page.getByTestId("login-button");
-  if ((await packagedSidebar.count()) > 0) {
-    return packagedSidebar.isVisible().catch(() => false);
-  }
-  return false;
-}
-
-async function detectRhdhSidebar(page: Page): Promise<boolean> {
-  if (process.env.E2E_FORCE_LEGACY_SIDEBAR === "true") {
-    return false;
-  }
-  if (await hasLegacySidebarMarkup(page)) {
-    return false;
-  }
-  // NFS cluster-free harness proxies JSON /healthcheck and loads the RHDH dynamic
-  // plugins, including app-defaults — the same signal used for the RHDH adapter path.
-  return hasJsonHealthcheck(page);
-}
-
-async function usesRhdhSidebar(page: Page): Promise<boolean> {
-  const baseUrl = process.env.BASE_URL ?? page.url();
-  if (cachedSidebarBaseUrl === baseUrl && cachedUsesRhdhSidebar === true) {
-    return true;
-  }
-  const detected = await detectRhdhSidebar(page);
-  if (detected) {
-    cachedUsesRhdhSidebar = true;
-    cachedSidebarBaseUrl = baseUrl;
-  }
-  return detected;
-}
-
-async function runSidebarAction(
-  page: Page,
-  legacy: (page: Page) => Promise<void>,
-  rhdh: (page: Page) => Promise<void>,
-): Promise<void> {
-  // Intentional divergence: dual sidebar adapters — legacy packaged-app vs RHDH global-header.
-  if (await usesRhdhSidebar(page)) {
-    await rhdh(page);
-    return;
-  }
-  await legacy(page);
-}
-
-async function openLegacySidebarLink(page: Page, navBarText: string): Promise<void> {
-  await openLegacyLink(page, navBarText);
-}
-
-async function openRhdhSidebarLink(page: Page, navBarText: string): Promise<void> {
-  await openRhdhLink(page, navBarText);
-}
-
-async function expandLegacySidebarSection(
-  page: Page,
-  navBarButtonLabel: string,
-  childItemText?: string,
-): Promise<void> {
-  await expandLegacySection(page, navBarButtonLabel, childItemText);
-}
-
-async function expandRhdhSidebarSection(
-  page: Page,
-  navBarButtonLabel: string,
-  childItemText?: string,
-): Promise<void> {
-  await expandRhdhSection(page, navBarButtonLabel, childItemText);
-}
 
 async function openProfileDropdown(page: Page) {
   const header = getGlobalHeader(page);
@@ -124,20 +43,16 @@ export async function goToSelfServicePage(page: Page) {
   await clickLink(page, {
     ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
   });
-  // NFS scaffolder page title is "Create" (sidebar) with H2 "Templates", not legacy "Self-service".
+  // The scaffolder page title is "Create" (sidebar) with H2 "Templates".
   await verifyHeading(page, "Create");
 }
 
 export async function waitForSideBarVisible(page: Page) {
-  await runSidebarAction(page, waitForLegacySidebarVisible, waitForRhdhSidebarVisible);
+  await waitForRhdhSidebarVisible(page);
 }
 
 export async function openSidebar(page: Page, navBarText: string) {
-  await runSidebarAction(
-    page,
-    (currentPage) => openLegacySidebarLink(currentPage, navBarText),
-    (currentPage) => openRhdhSidebarLink(currentPage, navBarText),
-  );
+  await openRhdhLink(page, navBarText);
 }
 
 export async function openTemplateInCatalog(
@@ -170,11 +85,7 @@ export async function openSidebarButton(
   navBarButtonLabel: string,
   childItemText?: string,
 ) {
-  await runSidebarAction(
-    page,
-    (currentPage) => expandLegacySidebarSection(currentPage, navBarButtonLabel, childItemText),
-    (currentPage) => expandRhdhSidebarSection(currentPage, navBarButtonLabel, childItemText),
-  );
+  await expandRhdhSection(page, navBarButtonLabel, childItemText);
 }
 
 export async function selectMuiBox(page: Page, label: string, value: string, notVisible?: boolean) {
