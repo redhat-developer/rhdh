@@ -17,6 +17,7 @@ import { KubeClient, getErrorStatusCode, getRhdhDeploymentName } from "../../uti
 import { pollUntil } from "../../utils/poll-until";
 import { resolveConfig, type RuntimeDeployConfig } from "../../utils/runtime-config";
 import { deployRuntime, type RuntimeDeploymentHandle } from "../../utils/runtime-deploy";
+import { stopRuntimeApplication } from "../../utils/runtime-lifecycle";
 import { test as base } from "../coverage/test";
 
 type CloudSqlRuntime = RuntimeDeploymentHandle & {
@@ -283,6 +284,7 @@ export const test = base.extend<{ cloudSqlSlot: number; cloudSqlRuntime: CloudSq
           apiToken,
           sql,
           async restart() {
+            await stopRuntimeApplication(kube, namespace, config.releaseName, installMethod);
             config.cloudSql!.revision = randomBytes(8).toString("hex");
             await deployRuntime(config, installMethod, kube);
           },

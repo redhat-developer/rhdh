@@ -175,9 +175,9 @@ describe("generateHelmValuesYaml", () => {
 });
 
 describe("generateDynamicPluginsYaml", () => {
-  it("loads no catalog defaults and only the guest auth provider", () => {
+  it("loads the same RHDH frontend defaults as Helm and enables guest authentication", () => {
     expect(yaml.parse(generateDynamicPluginsYaml())).toMatchObject({
-      includes: [],
+      includes: ["dynamic-plugins.default.yaml"],
       plugins: [{ enabled: true }],
     });
     expect(generateDynamicPluginsYaml()).toMatch(guestProviderPackage);

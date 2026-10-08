@@ -56,6 +56,7 @@ import {
   BACKSTAGE_CR_API_VERSION,
   type RuntimeDeployConfig,
 } from "./runtime-config";
+import { waitForRuntimeRollout, patchRuntimeCR } from "./runtime-lifecycle";
 
 /** How long `helm --wait` waits for the release to become ready. */
 const HELM_WAIT_TIMEOUT_MINUTES = 10;
@@ -115,6 +116,22 @@ async function createPlaceholderSecrets(kubeClient: KubeClient, namespace: strin
 // Helm deployment
 // ---------------------------------------------------------------------------
 
+async function ensureRuntimePvc(
+  kubeClient: KubeClient,
+  namespace: string,
+  releaseName: string,
+): Promise<void> {
+  const pvcName = `${releaseName}-dynamic-plugins-root`;
+  try {
+    await kubeClient.coreV1Api.createNamespacedPersistentVolumeClaim(namespace, {
+      metadata: { name: pvcName },
+      spec: { accessModes: ["ReadWriteOnce"], resources: { requests: { storage: "5Gi" } } },
+    });
+  } catch (error) {
+    if (getErrorStatusCode(error) !== 409) throw error;
+  }
+}
+
 async function deployWithHelm(
   kubeClient: KubeClient,
   config: ReturnType<typeof resolveConfig>,
@@ -128,23 +145,7 @@ async function deployWithHelm(
 
   // Create PVC for dynamic plugins — persists extracted plugins across
   // deployment restarts (config-map and schema-mode tests both restart RHDH).
-  const pvcName = `${releaseName}-dynamic-plugins-root`;
-  try {
-    await kubeClient.coreV1Api.createNamespacedPersistentVolumeClaim(namespace, {
-      metadata: { name: pvcName },
-      spec: {
-        accessModes: ["ReadWriteOnce"],
-        resources: { requests: { storage: "5Gi" } },
-      },
-    });
-    console.log(`PVC ${pvcName} created`);
-  } catch (err: unknown) {
-    if (getErrorStatusCode(err) === 409) {
-      console.log(`PVC ${pvcName} already exists`);
-    } else {
-      throw err;
-    }
-  }
+  await ensureRuntimePvc(kubeClient, namespace, releaseName);
 
   // Generate values YAML and write to a temp file
   const valuesYaml = generateHelmValuesYaml(config);
@@ -220,6 +221,7 @@ async function deployWithOperator(
   config: ReturnType<typeof resolveConfig>,
 ): Promise<string> {
   const { namespace, releaseName, routerBase } = config;
+  await ensureRuntimePvc(kubeClient, namespace, releaseName);
   // The operator creates a route named backstage-<release> whose host is
   // backstage-<release>-<namespace>.<routerBase> — this matches the CR's
   // spec.application.route.enabled naming convention. Unlike Helm (where
@@ -271,6 +273,14 @@ async function deployWithOperator(
     });
   } catch (error) {
     if (getErrorStatusCode(error) !== 409) throw error;
+    const existing = await kubeClient.coreV1Api.readNamespacedConfigMap(
+      "dynamic-plugins",
+      namespace,
+    );
+    await kubeClient.coreV1Api.replaceNamespacedConfigMap("dynamic-plugins", namespace, {
+      metadata: existing.body.metadata,
+      data: { "dynamic-plugins.yaml": dpYaml },
+    });
   }
   console.log("Created runtime dynamic-plugins ConfigMap");
 
@@ -292,24 +302,10 @@ async function deployWithOperator(
   } catch (error) {
     if (getErrorStatusCode(error) !== 409)
       throw new Error(getKubeApiErrorMessage(error), { cause: error });
-    const existing = await kubeClient.customObjectsApi.getNamespacedCustomObject(
-      group,
-      version,
-      namespace,
-      "backstages",
-      releaseName,
-    );
-    if (!isRecord(existing.body) || !isRecord(existing.body.metadata))
-      throw new Error("Backstage CR has no metadata", { cause: error });
-    crObj.metadata.resourceVersion = existing.body.metadata.resourceVersion;
-    await kubeClient.customObjectsApi.replaceNamespacedCustomObject(
-      group,
-      version,
-      namespace,
-      "backstages",
-      releaseName,
-      crObj,
-    );
+    await patchRuntimeCR(kubeClient, namespace, releaseName, {
+      spec: crObj.spec,
+      metadata: { annotations: crObj.metadata.annotations },
+    });
   }
   console.log(`Applied Backstage CR '${(crObj.metadata as { name: string }).name}'`);
 
@@ -323,6 +319,26 @@ async function deployWithOperator(
       break;
     } catch (error) {
       if (getErrorStatusCode(error) !== 404) throw error;
+      const cr = await kubeClient.customObjectsApi.getNamespacedCustomObject(
+        group,
+        version,
+        namespace,
+        "backstages",
+        releaseName,
+      );
+      if (isRecord(cr.body) && isRecord(cr.body.status)) {
+        const conditions: unknown = cr.body.status.conditions;
+        if (Array.isArray(conditions)) {
+          const failed: unknown = conditions.find(
+            (condition: unknown) => isRecord(condition) && condition.reason === "DeployFailed",
+          );
+          if (isRecord(failed) && typeof failed.message === "string") {
+            throw new Error(`Operator rejected runtime deployment: ${failed.message}`, {
+              cause: error,
+            });
+          }
+        }
+      }
       if (i === 59)
         throw new Error(`Operator did not create deployment ${deploymentName} after 5 minutes`, {
           cause: error,
@@ -336,6 +352,7 @@ async function deployWithOperator(
   }
 
   await waitForRuntimeRevision(kubeClient, config, deploymentName);
+  await waitForRuntimeRollout(kubeClient, namespace, deploymentName);
   // 7. Wait for deployment readiness
   await kubeClient.waitForDeploymentReady(deploymentName, namespace, 1, 600_000);
   console.log("Operator deployment ready");
@@ -400,6 +417,7 @@ export async function deployRuntime(
       : await deployWithOperator(kubeClient, config);
   const deploymentName = getRhdhDeploymentName(installMethod, config.releaseName);
   await waitForRuntimeRevision(kubeClient, config, deploymentName);
+  await waitForRuntimeRollout(kubeClient, config.namespace, deploymentName);
   await kubeClient.waitForDeploymentReady(deploymentName, config.namespace, 1, 600_000);
   return { namespace: config.namespace, releaseName: config.releaseName, deploymentName, baseURL };
 }
@@ -462,7 +480,11 @@ export async function ensureRuntimeDeployed(): Promise<void> {
   let ready = 0;
   try {
     const dep = await kubeClient.appsApi.readNamespacedDeployment(deploymentName, namespace);
-    ready = dep.body.status?.readyReplicas ?? 0;
+    const sameRun =
+      config.revision === undefined ||
+      dep.body.spec?.template.metadata?.annotations?.["rhdh.redhat.com/runtime-run"] ===
+        config.revision;
+    ready = sameRun ? (dep.body.status?.readyReplicas ?? 0) : 0;
   } catch (error) {
     if (getErrorStatusCode(error) !== 404) throw error;
     // Deployment doesn't exist — proceed with fresh deploy

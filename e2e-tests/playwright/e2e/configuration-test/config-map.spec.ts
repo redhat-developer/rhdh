@@ -2,6 +2,7 @@ import { test, expect } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
+import { getKubeApiErrorMessage } from "../../utils/kube-client/helpers";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 test.describe("Change app-config at e2e test runtime", () => {
@@ -37,8 +38,9 @@ test.describe("Change app-config at e2e test runtime", () => {
       expect(await page.title()).toContain(dynamicTitle);
       console.log("Title successfully verified in the UI.");
     } catch (error) {
-      console.log(`Test failed during ConfigMap update or deployment restart:`, error);
-      throw error;
+      throw new Error(`ConfigMap runtime change failed: ${getKubeApiErrorMessage(error)}`, {
+        cause: error,
+      });
     }
   });
 });

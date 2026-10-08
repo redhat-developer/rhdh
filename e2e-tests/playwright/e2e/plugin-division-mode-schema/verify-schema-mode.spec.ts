@@ -5,6 +5,8 @@ import { PortForwardHarness } from "../../support/harnesses/port-forward-harness
 import { HomePage } from "../../support/pages/home-page";
 import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
+import { runtimeCoverageRequired } from "../../utils/runtime-database";
+import { waitForRuntimeRollout } from "../../utils/runtime-lifecycle";
 import { configureSchemaMode } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
@@ -76,18 +78,12 @@ async function initializeSchemaModeSetup(
   namespace: string,
   releaseName: string,
   installMethod: "helm" | "operator",
-  testInfo: TestInfo,
+  _testInfo: TestInfo,
 ): Promise<SchemaModeTestSetup | null> {
   const testSetup = new SchemaModeTestSetup(namespace, releaseName, installMethod);
 
-  try {
-    await testSetup.setupDatabase();
-    await testSetup.configureRHDH();
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    testInfo.skip(true, `Schema mode setup failed: ${errorMsg}`);
-    return null;
-  }
+  await testSetup.setupDatabase();
+  await testSetup.configureRHDH();
 
   return testSetup;
 }
@@ -103,6 +99,8 @@ async function setupSchemaModeTests(
 } | null> {
   const env = readSchemaModeEnv();
   if (env === null) {
+    if (runtimeCoverageRequired())
+      throw new Error("Required schema-mode inputs were not resolved from the runtime PostgreSQL");
     testInfo.skip(
       true,
       "SCHEMA_MODE_* environment variables not set - schema mode tests are opt-in",
@@ -167,24 +165,12 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     expect(hasRestrictedPerms).toBe(true);
   });
 
-  test("Verify RHDH is accessible with schema mode", async ({ guestPage }, testInfo) => {
+  test("Verify RHDH is accessible with schema mode", async ({ guestPage }) => {
     const kubeClient = new KubeClient();
     const deploymentName = testSetup.getDeploymentName();
 
-    try {
-      const deployment = await kubeClient.appsApi.readNamespacedDeployment(
-        deploymentName,
-        namespace,
-      );
-      const readyReplicas = deployment.body.status?.readyReplicas ?? 0;
-
-      if (readyReplicas < 1) {
-        testInfo.skip(true, "Deployment is not ready (cluster capacity or PVC issue)");
-        return;
-      }
-    } catch (error) {
-      console.warn("Could not check deployment readiness:", error);
-    }
+    await waitForRuntimeRollout(kubeClient, namespace, deploymentName);
+    expect(await testSetup.verifyPluginSchemas()).toBe(true);
 
     const homePage = new HomePage(guestPage);
     await homePage.verifyMainHeadingVisible();

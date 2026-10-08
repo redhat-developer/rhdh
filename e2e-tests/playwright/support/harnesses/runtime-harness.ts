@@ -1,25 +1,8 @@
 import { type Page } from "@playwright/test";
 
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
-import { pollUntil } from "../../utils/poll-until";
-import {
-  configurePostgresCertificate,
-  configurePostgresCredentials,
-  prepareForExternalDatabase,
-} from "../../utils/postgres-config";
+import { stopRuntimeApplication, resumeRuntimeApplication } from "../../utils/runtime-lifecycle";
 import { signInAsGuest } from "../auth/guest-auth";
-
-type ExternalPostgresOptions = {
-  certificateContent?: string | null;
-  credentials: {
-    host: string;
-    port?: string;
-    user: string;
-    password: string;
-    database?: string;
-    sslMode?: string;
-  };
-};
 
 export class RuntimeHarness {
   constructor(
@@ -29,61 +12,22 @@ export class RuntimeHarness {
   ) {}
 
   async updateConfigMapTitle(configMapName: string, title: string): Promise<void> {
+    await this.stopDeployment();
     await this.kubeClient.updateConfigMapTitle(configMapName, this.namespace, title);
   }
 
-  async configurePostgresCertificate(certificateContent: string): Promise<void> {
-    await configurePostgresCertificate(this.kubeClient, this.namespace, certificateContent);
-  }
-
-  async configurePostgresCredentials(
-    credentials: ExternalPostgresOptions["credentials"],
-  ): Promise<void> {
-    await configurePostgresCredentials(this.kubeClient, this.namespace, credentials);
-  }
-
   async restartDeployment(): Promise<void> {
-    await this.kubeClient.restartDeployment(this.deploymentName, this.namespace);
+    await this.stopDeployment();
+    await resumeRuntimeApplication(this.kubeClient, this.namespace);
   }
 
-  async restartDeploymentWithRetry(timeoutMs = 90_000, intervalMs = 15_000): Promise<void> {
-    let lastError: unknown;
-    try {
-      await pollUntil(
-        async () => {
-          try {
-            await this.restartDeployment();
-            return true;
-          } catch (error) {
-            lastError = error;
-            const message = error instanceof Error ? error.message : String(error);
-            console.warn(`Deployment restart failed, retrying: ${message}`);
-            return false;
-          }
-        },
-        {
-          timeoutMs,
-          intervalMs,
-          label: "Failed to restart deployment",
-        },
-      );
-    } catch {
-      const message = lastError instanceof Error ? lastError.message : "unknown error";
-      throw new Error(`Failed to restart deployment: ${message}`);
-    }
+  async stopDeployment(): Promise<void> {
+    await stopRuntimeApplication(this.kubeClient, this.namespace);
   }
 
-  async configureExternalPostgres(options: ExternalPostgresOptions): Promise<void> {
-    if (options.certificateContent !== undefined && options.certificateContent !== null) {
-      await this.configurePostgresCertificate(options.certificateContent);
-    }
-    await this.configurePostgresCredentials(options.credentials);
-    await this.restartDeploymentWithRetry();
-  }
-
-  /** Patch app-config and deployment env for external PostgreSQL tests. */
-  async prepareForExternalDatabase(): Promise<void> {
-    await prepareForExternalDatabase(this.kubeClient, this.namespace, this.deploymentName);
+  async restartDeploymentWithRetry(): Promise<void> {
+    // Readiness has one bounded deadline; never retry a partially completed mutation.
+    await this.restartDeployment();
   }
 
   /** Clear session state and sign in as guest after a deployment restart. */

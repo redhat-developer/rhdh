@@ -163,14 +163,14 @@ export function getSchemaModeEnv(): SchemaModeEnv {
 }
 
 export function connectAdminClient(
-  config: Pick<SchemaModeEnv, "dbHost" | "dbAdminUser" | "dbAdminPassword">,
+  config: Pick<SchemaModeEnv, "dbHost" | "dbAdminUser" | "dbAdminPassword"> & { database?: string },
 ): Promise<Client> {
   return connectWithSslFallback({
     host: normalizeDbHost(config.dbHost),
     port: 5432,
     user: config.dbAdminUser,
     password: config.dbAdminPassword,
-    database: "postgres",
+    database: config.database ?? "postgres",
     connectionTimeoutMillis: 30000,
   });
 }
@@ -179,7 +179,7 @@ export async function cleanupOldPluginDatabases(adminClient: Client): Promise<vo
   const oldDbsResult = await adminClient.query<{ datname: string }>(`
     SELECT datname FROM pg_database
     WHERE datistemplate = false
-      AND datname LIKE 'backstage_plugin_%'
+      AND starts_with(datname, 'backstage_plugin_')
   `);
 
   if (oldDbsResult.rows.length === 0) {
@@ -201,9 +201,7 @@ export async function cleanupOldPluginDatabases(adminClient: Client): Promise<vo
       await adminClient.query(`DROP DATABASE IF EXISTS ${quoteIdent(db.datname)}`);
       console.log(`  Dropped: ${db.datname}`);
     } catch (err) {
-      console.warn(
-        `  Could not drop ${db.datname}: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      throw new Error(`Could not clean schema-mode database ${db.datname}`, { cause: err });
     }
   }
 }
@@ -217,7 +215,12 @@ export async function setupSchemaModeDatabase(
   if (dbName === "postgres") {
     console.log(`✓ Using default postgres database`);
   } else {
-    await adminClient.query(`CREATE DATABASE ${quoteIdent(dbName)}`).catch(() => {});
+    try {
+      await adminClient.query(`CREATE DATABASE ${quoteIdent(dbName)}`);
+    } catch (error) {
+      if (typeof error !== "object" || error === null || Reflect.get(error, "code") !== "42P04")
+        throw error;
+    }
     console.log(`✓ Created/verified test database: ${dbName}`);
   }
 
@@ -259,8 +262,6 @@ export async function setupSchemaModeDatabase(
   await adminClient.query(
     `GRANT CONNECT ON DATABASE ${quoteIdent(dbName)} TO ${quoteIdent(dbUser)}`,
   );
-
-  await adminClient.end();
 
   const dbClient = await connectWithSslFallback({
     host: normalizeDbHost(dbHost),

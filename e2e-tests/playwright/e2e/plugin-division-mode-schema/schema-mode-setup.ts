@@ -4,14 +4,14 @@
  */
 
 import { base64Encode } from "../../utils/helper";
-import {
-  KubeClient,
-  getRhdhDeploymentName,
-  BACKSTAGE_BACKEND_CONTAINER,
-  envVarsNotFromSecret,
-} from "../../utils/kube-client";
+import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
 import type { AppConfigYaml } from "../../utils/runtime-config";
+import {
+  stopRuntimeApplication,
+  resumeRuntimeApplication,
+  setRuntimeDatabaseEnv,
+} from "../../utils/runtime-lifecycle";
 import {
   getSchemaModeEnv,
   connectAdminClient,
@@ -60,13 +60,16 @@ export class SchemaModeTestSetup {
   }
 
   private getSecretName(): string {
-    if (this.installMethod === "operator") {
-      return `backstage-psql-secret-${this.releaseName}`;
-    }
-    return `${this.releaseName}-postgresql`;
+    return "runtime-schema-credentials";
   }
 
   async setupDatabase(): Promise<void> {
+    await stopRuntimeApplication(
+      this.kubeClient,
+      this.namespace,
+      this.releaseName,
+      this.installMethod,
+    );
     console.log(`Connecting to PostgreSQL at ${this.env.dbHost}:5432...`);
 
     const adminClient = await connectAdminClient({
@@ -77,8 +80,12 @@ export class SchemaModeTestSetup {
 
     console.log("Connected to PostgreSQL");
 
-    await cleanupOldPluginDatabases(adminClient);
-    await setupSchemaModeDatabase(adminClient, this.env);
+    try {
+      await cleanupOldPluginDatabases(adminClient);
+      await setupSchemaModeDatabase(adminClient, this.env);
+    } finally {
+      await adminClient.end();
+    }
 
     console.log("Database setup complete");
   }
@@ -113,14 +120,13 @@ export class SchemaModeTestSetup {
   /**
    * Configure RHDH for schema mode:
    * 1. Update the Secret with schema-mode test user credentials
-   * 2. Patch the Deployment to inject POSTGRES_* env vars from the Secret (Helm only)
+   * 2. Set POSTGRES_* Secret references in the Helm Deployment or Operator CR
    * 3. Update the app-config ConfigMap for schema mode
-   * 4. Restart the deployment (with retry for operator reconciliation)
+   * 4. Resume the stopped deployment and await the current rollout
    */
   async configureRHDH(): Promise<void> {
     console.log(`Configuring RHDH for schema mode (${this.installMethod})...`);
 
-    const deploymentName = this.getDeploymentName();
     const secretName = this.getSecretName();
     const { host: rhdhPostgresHost, isInternal } = this.resolveRhdhPostgresHost();
     console.log(`RHDH pods will connect to PostgreSQL at: ${rhdhPostgresHost}`);
@@ -135,23 +141,6 @@ export class SchemaModeTestSetup {
       POSTGRES_PORT: base64Encode("5432"),
     };
 
-    if (this.installMethod === "operator") {
-      try {
-        const existing = await this.kubeClient.coreV1Api.readNamespacedSecret(
-          secretName,
-          this.namespace,
-        );
-        const existingData = existing.body.data ?? {};
-        if (existingData.POSTGRESQL_ADMIN_PASSWORD) {
-          secretData.POSTGRESQL_ADMIN_PASSWORD = existingData.POSTGRESQL_ADMIN_PASSWORD;
-        }
-      } catch {
-        console.warn(
-          `Could not read existing secret ${secretName}; POSTGRESQL_ADMIN_PASSWORD may be lost`,
-        );
-      }
-    }
-
     await this.kubeClient.createOrUpdateSecret(
       {
         metadata: { name: secretName },
@@ -161,50 +150,23 @@ export class SchemaModeTestSetup {
     );
     console.log(`Updated secret ${secretName} with schema-mode credentials`);
 
-    if (this.installMethod === "operator") {
-      console.log(
-        "Skipping Deployment env var patching (operator injects env vars from secret via extraEnvs.secrets)",
-      );
-    } else {
-      await this.ensureDeploymentEnvVars(deploymentName, secretName);
-    }
+    await setRuntimeDatabaseEnv(
+      this.kubeClient,
+      this.namespace,
+      this.releaseName,
+      this.installMethod,
+      secretName,
+      POSTGRES_ENV_KEYS,
+    );
 
     await this.updateAppConfigForSchemaMode(isInternal);
 
-    await this.kubeClient.restartDeploymentWithRetry(deploymentName, this.namespace);
-  }
-
-  private async ensureDeploymentEnvVars(deploymentName: string, secretName: string): Promise<void> {
-    const deployment = await this.kubeClient.appsApi.readNamespacedDeployment(
-      deploymentName,
+    await resumeRuntimeApplication(
+      this.kubeClient,
       this.namespace,
+      this.releaseName,
+      this.installMethod,
     );
-    const containers = deployment.body.spec?.template?.spec?.containers ?? [];
-    const backstageContainer = containers.find((c) => c.name === BACKSTAGE_BACKEND_CONTAINER);
-
-    if (backstageContainer === undefined) {
-      console.warn(`${BACKSTAGE_BACKEND_CONTAINER} container not found in deployment`);
-      return;
-    }
-
-    // Existing entries are replaced, not skipped: the chart may already set
-    // these variables to other values (it sets POSTGRES_USER to "postgres").
-    const varsToSet = envVarsNotFromSecret(backstageContainer.env, secretName, POSTGRES_ENV_KEYS);
-
-    if (varsToSet.length === 0) {
-      console.log("POSTGRES_* env vars already read from the schema-mode secret");
-      return;
-    }
-
-    console.log(`Pointing deployment env vars at ${secretName}: ${varsToSet.join(", ")}`);
-    await this.kubeClient.addContainerEnvVarsFromSecret(
-      deploymentName,
-      this.namespace,
-      BACKSTAGE_BACKEND_CONTAINER,
-      secretName,
-      varsToSet,
-    );
-    console.log("Updated deployment env vars");
   }
 
   private async updateAppConfigForSchemaMode(isInternalDb: boolean): Promise<void> {
@@ -274,8 +236,8 @@ export class SchemaModeTestSetup {
     });
 
     try {
-      const result = await adminClient.query<{ rolcreatedb: boolean }>(
-        `SELECT rolcreatedb FROM pg_roles WHERE rolname = $1`,
+      const result = await adminClient.query<{ rolcreatedb: boolean; rolsuper: boolean }>(
+        `SELECT rolcreatedb, rolsuper FROM pg_roles WHERE rolname = $1`,
         [this.env.dbUser],
       );
 
@@ -283,7 +245,7 @@ export class SchemaModeTestSetup {
         throw new Error(`Database user "${this.env.dbUser}" not found`);
       }
 
-      const hasCreateDb = result.rows[0].rolcreatedb;
+      const hasCreateDb = result.rows[0].rolcreatedb || result.rows[0].rolsuper;
       if (!hasCreateDb) {
         console.log(`Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`);
         return true;
@@ -292,6 +254,25 @@ export class SchemaModeTestSetup {
       return false;
     } finally {
       await adminClient.end();
+    }
+  }
+
+  async verifyPluginSchemas(): Promise<boolean> {
+    const client = await connectAdminClient({
+      dbHost: this.env.dbHost,
+      dbAdminUser: this.env.dbAdminUser,
+      dbAdminPassword: this.env.dbAdminPassword,
+      database: this.env.dbName,
+    });
+    try {
+      const schema = await client.query("SELECT 1 FROM pg_namespace WHERE nspname = 'catalog'");
+      if (schema.rows.length !== 1) return false;
+      const migrations = await client.query<{ count: string }>(
+        "SELECT count(*) FROM catalog.knex_migrations",
+      );
+      return Number(migrations.rows[0].count) > 0;
+    } finally {
+      await client.end();
     }
   }
 }

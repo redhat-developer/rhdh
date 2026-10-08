@@ -32,7 +32,6 @@ import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
 // ─── Shared constants ────────────────────────────────────────────────────────
 
 const appTitle = "Red Hat Developer Hub";
-const dynamicPluginsPvcSize = "5Gi";
 const homeExtensions = [
   { "page:home": { config: { path: "/" } } },
   { "api:home/visits": true },
@@ -64,6 +63,27 @@ export interface RuntimeDeployConfig {
   catalogIndex?: ImageRef;
   helm?: { chartUrl: string; chartVersion: string };
   cloudSql?: CloudSqlDeploymentConfig;
+  externalPostgres?: { host: string; port: number; user: string; databasePrefix: string };
+  revision?: string;
+}
+
+export const RUNTIME_DB_SECRET = "runtime-database";
+
+export function externalPostgresAppConfig(
+  config: NonNullable<RuntimeDeployConfig["externalPostgres"]>,
+) {
+  return {
+    client: "pg",
+    pluginDivisionMode: "database",
+    prefix: config.databasePrefix,
+    connection: {
+      host: "${POSTGRES_HOST}",
+      port: "${POSTGRES_PORT}",
+      user: "${POSTGRES_USER}",
+      password: "${POSTGRES_PASSWORD}",
+      ssl: { ca: { $file: "/opt/app-root/src/postgres-crt.pem" }, rejectUnauthorized: true },
+    },
+  };
 }
 
 /** Typed Backstage CR used by runtime-deploy and schema-mode-setup. */
@@ -119,6 +139,7 @@ export function resolveConfig(routerBase: string): RuntimeDeployConfig {
     routerBase,
     image: buildImageRef(imageRegistry, imageRepo, imageTag),
     internalPostgresqlImage,
+    revision: process.env.RUNTIME_RUN_ID,
   };
 
   // CATALOG_INDEX_IMAGE opt-in override
@@ -165,7 +186,23 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
   const printfRelease = (suffix: string) => tpl(`printf "%s-${suffix}" .Release.Name`);
 
   const cloudSql = config?.cloudSql;
+  const external = config?.externalPostgres;
   const values = {
+    strategy: { type: "Recreate" },
+    ...(config?.revision === undefined
+      ? {}
+      : { podAnnotations: { "rhdh.redhat.com/runtime-run": config.revision } }),
+    ...(external
+      ? {
+          postgresql: { enabled: false },
+          externalDatabase: {
+            host: external.host,
+            port: external.port,
+            user: external.user,
+            existingSecretRef: { name: RUNTIME_DB_SECRET, key: "POSTGRES_PASSWORD" },
+          },
+        }
+      : {}),
     ...(cloudSql
       ? {
           postgresql: { enabled: false },
@@ -205,6 +242,7 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
             backend: cloudSqlAppConfig(cloudSql),
           }
         : {}),
+      ...(external ? { backend: { database: externalPostgresAppConfig(external) } } : {}),
       auth: {
         environment: "development",
         providers: {
@@ -344,6 +382,9 @@ export function generateAppConfigYaml(runtimeUrl: string, config?: RuntimeDeploy
       baseUrl: runtimeUrl,
       cors: { origin: runtimeUrl },
       ...(config?.cloudSql ? cloudSqlAppConfig(config.cloudSql, "secret") : {}),
+      ...(config?.externalPostgres
+        ? { database: externalPostgresAppConfig(config.externalPostgres) }
+        : {}),
     },
     auth: {
       environment: "development",
@@ -362,15 +403,15 @@ export function generateAppConfigYaml(runtimeUrl: string, config?: RuntimeDeploy
  * Generate the dynamic-plugins.yaml content for the operator path.
  *
  * Ordinary runtime tests retain their existing minimal plugin profile.
- * Cloud SQL uses the catalog-index defaults, matching the verified Helm profile
+ * Operator uses the catalog-index defaults, matching the verified Helm profile
  * and supplying RHDH's app-auth and homepage frontend modules. Both enable guest auth.
  */
-export function generateDynamicPluginsYaml(config?: RuntimeDeployConfig): string {
+export function generateDynamicPluginsYaml(_config?: RuntimeDeployConfig): string {
   return yaml.stringify(
     {
-      // Cloud SQL checks the actual RHDH sign-in page and homepage, which are
+      // Runtime tests check the actual RHDH sign-in page and homepage, which are
       // dynamic frontend modules supplied by the catalog index, just as in Helm.
-      includes: config?.cloudSql ? ["dynamic-plugins.default.yaml"] : [],
+      includes: ["dynamic-plugins.default.yaml"],
       plugins: [guestAuthProviderPlugin],
     },
     { lineWidth: 0 },
@@ -421,6 +462,7 @@ function generateWaitForDbInitContainer(image: string, dbHost: string): V1Contai
 export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
   const fullImage = imageRefToString(config.image);
   const cloudSql = config.cloudSql;
+  const external = config.externalPostgres;
 
   const envs: Array<Record<string, unknown>> = [
     { name: "NODE_OPTIONS", value: "--no-node-snapshot" },
@@ -452,13 +494,23 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
         : {}),
     },
     spec: {
+      ...(external
+        ? { database: { enableLocalDb: false, authSecretName: RUNTIME_DB_SECRET } }
+        : {}),
       ...(cloudSql
         ? { database: { enableLocalDb: false, authSecretName: CLOUD_SQL_DB_SECRET } }
         : {}),
       deployment: {
         patch: {
           spec: {
+            replicas: 1,
+            strategy: { type: "RollingUpdate", rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } },
             template: {
+              ...(config.revision === undefined
+                ? {}
+                : {
+                    metadata: { annotations: { "rhdh.redhat.com/runtime-run": config.revision } },
+                  }),
               ...(cloudSql
                 ? {
                     metadata: {
@@ -481,7 +533,9 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
                   { name: "install-dynamic-plugins", image: fullImage },
                   generateWaitForDbInitContainer(
                     fullImage,
-                    cloudSql ? "127.0.0.1" : `backstage-psql-${config.releaseName}`,
+                    cloudSql
+                      ? "127.0.0.1"
+                      : (external?.host ?? `backstage-psql-${config.releaseName}`),
                   ),
                 ],
                 volumes: [
@@ -496,15 +550,9 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
                     : []),
                   {
                     name: "dynamic-plugins-root",
-                    ephemeral: {
-                      volumeClaimTemplate: {
-                        spec: {
-                          accessModes: ["ReadWriteOnce"],
-                          resources: {
-                            requests: { storage: dynamicPluginsPvcSize },
-                          },
-                        },
-                      },
+                    $patch: "replace",
+                    persistentVolumeClaim: {
+                      claimName: `${config.releaseName}-dynamic-plugins-root`,
                     },
                   },
                 ],

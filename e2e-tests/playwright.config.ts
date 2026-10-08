@@ -50,6 +50,7 @@ export default defineConfig({
   // Coverage reporter (RHIDP-13243) is appended only when COLLECT_COVERAGE=true;
   // otherwise it is not registered at all and the default reporters run alone.
   reporter: [
+    ["./playwright/support/runtime-reporter.ts"],
     ["html"],
     ["list"],
     ["junit", { outputFile: process.env.JUNIT_RESULTS ?? "junit-results.xml" }],
