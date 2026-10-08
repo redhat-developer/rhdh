@@ -21,12 +21,18 @@ Before running the deployment, verify these tools are installed:
 podman --version        # Container runtime
 oc version              # OpenShift CLI
 kubectl version --client # Kubernetes CLI
-vault --version         # HashiCorp Vault (for secrets)
+bw --version            # Bitwarden CLI (for local secrets)
+node --version          # Runtime and standalone stream decoder
+e2e-tests/node_modules/.bin/rhdh-e2e-secrets --help # Project-pinned secret profile CLI
 jq --version            # JSON processor
 curl --version          # HTTP client
 rsync --version         # File sync
 bc --version            # Calculator (for resource checks)
 ```
+
+Install dependencies with `yarn install` in `e2e-tests` to provide the project-pinned CLI,
+then export an unlocked Bitwarden session with `export BW_SESSION=$(bw unlock --raw)`.
+Only set `RHDH_E2E_SECRETS_BIN` when explicitly testing a different CLI build.
 
 ### Podman Machine Requirements
 
@@ -46,8 +52,8 @@ podman machine start
 
 ## Deployment Using local-run.sh
 
-The primary deployment method uses `e2e-tests/local-run.sh`, which handles everything:
-Vault authentication, cluster service account setup, RHDH deployment, and test execution.
+The primary deployment method uses `e2e-tests/local-run.sh`, which handles Bitwarden secret
+selection, cluster service account setup, RHDH deployment, and test execution.
 
 ### Execution Rules
 
@@ -62,18 +68,18 @@ Vault authentication, cluster service account setup, RHDH deployment, and test e
    ```bash
    tail -f e2e-tests/.local-test/container.log
    ```
-3. **Never launch concurrent deployments.** Two deployments to the same cluster will race and both fail. If a deployment appears stuck, check the container log and cluster state before deciding it failed.
+3. **Never launch concurrent deployments.** Two deployments to the same cluster will race and both fail. If a deployment appears stuck, check the container log and cluster state before deciding it failed. The runner rejects concurrent invocations in the same checkout and holds its lock until the wrapped runner stops, including on cancellation. After an uncatchable termination, confirm the previous runner has stopped before removing the stale lock as documented in `e2e-tests/README.md`.
 4. **How to detect actual failure vs slow progress:** The operator install script outputs detailed debug logs. If the container log shows active progress (timestamps advancing), the deployment is still running. Only consider it failed if:
    - The podman container has exited (`podman ps` shows no running container)
    - AND the container log shows an error message (e.g., "Failed install RHDH Operator")
 
 ### CLI Mode (Preferred)
 
-**CRITICAL**: CLI mode requires **all three** flags (`-j`, `-r`, `-t`). If `-r` is omitted, the script falls into interactive mode and will hang in automated contexts.
+**CRITICAL**: CLI mode requires `-r` and `-t`. Always supply `-j` with the full Prow job name to select the intended job; otherwise the runner defaults to the main OCP Helm PR job. Missing `-r` or `-t` enters interactive mode and can hang in automated contexts.
 
 ```bash
 cd e2e-tests
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag> [-s]
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG"
 ```
 
 **Example — OCP job** (deploy-only with `-s`):
@@ -116,41 +122,44 @@ Refer to the `e2e-fix-workflow` rule for the release branch to image repo/tag ma
 For OCP jobs, deploy without running tests so you can run specific tests manually:
 
 ```bash
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <tag> -s
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG" -s
 ```
 
 **Note**: K8s jobs (AKS, EKS, GKE) do not support deploy-only mode. They require the full execution pipeline — run without `-s`.
 
 ### What local-run.sh Does
 
-1. **Validates prerequisites**: Checks all required tools and podman resources
+1. **Validates prerequisites**: Checks required tools, podman resources, the project-pinned secrets CLI, and the Bitwarden session
 2. **Verifies the image**: Checks the image exists on quay.io via the Quay API
 3. **Pulls the runner image**: `quay.io/rhdh-community/rhdh-e2e-runner:main`
-4. **Authenticates to Vault**: OIDC-based login for secrets
-5. **Sets up cluster access**: Creates `rhdh-local-tester` service account with cluster-admin, generates 48h token
+4. **Loads Bitwarden secrets**: Retrieves and validates the `rhdh-qe` profile through `rhdh-e2e-secrets` before any cluster mutation
+5. **Sets up cluster access**: Creates `rhdh-local-tester` service account with cluster-admin, generates an 8-hour token
 6. **Copies the repo**: Syncs the local repo to `.local-test/rhdh/` (excludes node_modules)
 7. **Runs a Podman container**: Executes `container-init.sh` inside the runner image, which:
-   - Fetches all Vault secrets to `/tmp/secrets/`
+   - Receives the profile-selected FD 3 stream through Podman stdin and decodes it into private files in `/tmp/secrets` tmpfs before dependency installation, matching the original CI sourcing path
    - Logs into the cluster
    - Sets platform-specific environment variables
    - Runs `.ci/pipelines/openshift-ci-tests.sh` for deployment
 
 ### Post-Deployment: Setting Up for Manual Testing
 
-After `local-run.sh` completes (with `-s` for OCP jobs, or after full execution for K8s jobs), set up the environment for headed Playwright testing:
+After `local-run.sh` completes (with `-s` for OCP jobs, or after full execution for K8s jobs), run Playwright on the host against the URL printed by the deployment:
 
 ```bash
-# Source the test setup (choose 'showcase' or 'rbac')
-source e2e-tests/local-test-setup.sh showcase
+export BW_SESSION=$(bw unlock --raw)
+export BASE_URL=https://showcase.example.com
+export NAME_SPACE=showcase
+e2e-tests/local-test.sh -- --project=showcase --headed
 # or
-source e2e-tests/local-test-setup.sh rbac
+export BASE_URL=https://showcase-rbac.example.com
+export NAME_SPACE_RBAC=showcase-rbac
+e2e-tests/local-test.sh -- --project=showcase-rbac --headed
 ```
 
-This exports:
-- `BASE_URL` — The RHDH instance URL
-- `K8S_CLUSTER_URL` — Cluster API server URL
-- `K8S_CLUSTER_TOKEN` — Fresh service account token
-- All Vault secrets as environment variables
+Use the actual deployed namespaces if they differ from these defaults. Set
+`NAME_SPACE_RUNTIME` for runtime tests. `local-test.sh` loads the Bitwarden profile for Playwright. Set
+`K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN` explicitly for cluster-aware projects; the script does
+not generate them or read deployment configuration.
 
 Verify RHDH is accessible:
 ```bash

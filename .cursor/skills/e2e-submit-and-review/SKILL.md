@@ -95,7 +95,7 @@ gh pr create \
 
 ## Test Results
 - Local verification: 5/5 passes
-- Code quality: lint, tsc, prettier all pass
+- Code quality: Oxlint, Oxfmt, and applicable ShellCheck/unit tests pass
 
 ## Related
 - Prow job: <URL if applicable>
@@ -277,8 +277,8 @@ CI check types (Prow E2E jobs, lint checks, build checks, etc.) are documented i
 ### If CI Fails
 
 1. **E2E test failure**: Check the Prow job logs, determine if it's the same test or a different one
-2. **Lint failure**: Run `yarn lint:fix` locally, commit and push
-3. **Build failure**: Check TypeScript errors with `yarn tsc`
+2. **E2E lint failure**: Run `yarn lint:fix` from `e2e-tests/`, then rerun its lint and formatting checks before committing
+3. **Application build failure**: Check TypeScript errors with `yarn tsc` from the repository root; the E2E workspace has no separate `tsc:check` script
 4. **Unrelated failure**: Comment on the PR noting it's an unrelated failure, optionally `/retest` to re-trigger
 
 ### Re-trigger CI

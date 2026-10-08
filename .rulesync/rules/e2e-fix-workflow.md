@@ -65,8 +65,8 @@ BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | s
 
 Use the **full Prow CI job name** directly as the `-j` parameter. Do NOT use shortened names.
 
-**OCP** (deploy-only with `-s`): `./local-run.sh -j <full-job-name> -r <repo> -t <tag> -s`
-**K8s** (full execution, no `-s`): `./local-run.sh -j <full-job-name> -r <repo> -t <tag>`
+**OCP** (deploy-only with `-s`): `./local-run.sh -j "$JOB_NAME" -r "$REPO" -t "$TAG" -s`
+**K8s** (full execution, no `-s`): `./local-run.sh -j "$JOB_NAME" -r "$REPO" -t "$TAG"`
 
 ### Release Branch → Image Repo and Tag
 
@@ -78,8 +78,24 @@ else
 fi
 ```
 
+## Local Test Environment
+
+After deployment, run host tests through `e2e-tests/local-test.sh`. Export an unlocked
+`BW_SESSION`, set `BASE_URL` to the deployment URL, and set the namespaces used by the
+selected tests (`NAME_SPACE`, `NAME_SPACE_RBAC`, or `NAME_SPACE_RUNTIME`). Cluster-aware
+tests also require caller-provided `K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN`.
+
+The wrapper loads the project-pinned Bitwarden profile through FD 3. It does not
+deploy RHDH, read deployment configuration, generate cluster tokens, or write `.env`
+files. The deployment runner retrieves secrets before cluster mutation and rejects
+concurrent invocations in the same checkout.
+
 ## Coding Conventions
 
 All test code must follow the project's coding rules:
 - **`playwright-locators`** — locator priority, anti-patterns, assertions, Page Objects
 - **`ci-e2e-testing`** — test structure, component annotations, utility classes, CI scripts
+- **`e2e-coverage-imports`** — instrumented imports for Playwright specs
+
+Run code quality checks using the scripts defined in `e2e-tests/package.json`:
+`yarn lint`, `yarn fmt:check`, `yarn shellcheck`, and relevant `yarn test:unit` tests.

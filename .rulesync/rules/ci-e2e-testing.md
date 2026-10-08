@@ -19,8 +19,8 @@ This document serves as a comprehensive starting point for LLMs working with the
 
 ### Technology Stack
 - **Testing Framework**: Playwright with TypeScript
-- **Node.js Version**: 22
-- **Package Manager**: Yarn 3.8.7
+- **Node.js Version**: Use `engines.node` in `e2e-tests/package.json`
+- **Package Manager**: Use `packageManager` in `e2e-tests/package.json`
 - **Test Runner**: Playwright Test
 - **Reporting**: HTML, JUnit XML, List reporters
 
@@ -83,7 +83,6 @@ test.beforeAll(async ({ }, testInfo) => {
    - `showcase-operator`: General functionality tests with base deployment using Operator
    - `showcase-operator-rbac`: General functionality tests with RBAC-enabled deployment using Operator
    - `showcase-runtime`: Runtime environment tests
-   - `showcase-runtime-db`: Runtime database tests
    - `showcase-sanity-plugins`: Plugin sanity checks
    - `showcase-upgrade`: Upgrade scenario tests
    - `showcase-localization-de`: German localization tests
@@ -91,7 +90,7 @@ test.beforeAll(async ({ }, testInfo) => {
    - `showcase-localization-fr`: French localization tests
    - `showcase-localization-it`: Italian localization tests
    - `showcase-localization-ja`: Japanese localization tests
-   - `any-test`: Use for debugging when you need to run a specific tests
+   - `any-test`: Use for debugging when you need to run a specific test
 
    **Note**: All project names are defined in `e2e-tests/playwright/projects.json` as the single source of truth. This file is consumed by:
    - `playwright.config.ts` via TypeScript import (`e2e-tests/playwright/projects.ts`)
@@ -150,7 +149,22 @@ testing::run_tests "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${U
 
 #### Local Development Scripts
 
-Available yarn scripts in `e2e-tests/package.json` for local development:
+The package aliases below require an environment already prepared by CI. For local tests,
+run the equivalent project through `local-test.sh` so Bitwarden secrets and certificate files
+are prepared correctly:
+
+```bash
+cd e2e-tests
+export BW_SESSION=$(bw unlock --raw)
+BASE_URL=https://deployed-rhdh.example.com NAME_SPACE=showcase ./local-test.sh -- --project=showcase --headed
+```
+
+Set `NAME_SPACE_RBAC` for RBAC projects and `NAME_SPACE_RUNTIME` for the runtime project to the
+corresponding deployed namespace. Caller-supplied namespaces and cluster connection values
+are preserved. Host and container runs both download the current public AWS RDS CA bundle;
+a failed download never falls back to a stored bundle.
+
+Package aliases for CI or an already prepared environment:
 
 ```bash
 # Showcase tests - OpenShift deployments (Helm)
@@ -183,33 +197,60 @@ yarn showcase-localization-it      # Italian localization tests
 yarn showcase-localization-ja      # Japanese localization tests
 
 # Utility scripts
-yarn lint:check                    # Lint checking
-yarn lint:fix                      # Lint fixing
-yarn tsc                           # TypeScript compilation
-yarn prettier:check                # Prettier checking
-yarn prettier:fix                  # Prettier fixing
+yarn lint                          # Oxlint checking
+yarn lint:fix                      # Oxlint fixing
+yarn fmt:check                     # Oxfmt checking
+yarn fmt                           # Oxfmt fixing
+yarn test:unit                     # Vitest unit and runner regression tests
+yarn shellcheck                    # Shell script checking
 ```
+
+Unit tests live under `e2e-tests/unit/` and use Vitest imports. Playwright specs use
+the coverage-instrumented imports described in `e2e-coverage-imports`. Run unit tests
+for changes to the local runners, stream decoder, and shared test utilities without
+requiring a deployment. Run the relevant Playwright project for live E2E verification.
+The current workspace has no `tsc:check` script; do not report a separate TypeScript
+compilation check unless one was actually run.
 
 **Note**: The CI pipeline no longer uses yarn script aliases. Instead, it runs Playwright directly with `yarn playwright test --project=<project-name>`. This decouples the namespace from the test project name, enabling more flexible namespace and test project reuse.
 
 ### Environment Variables
 
 All the important environment variables are sourced in `.ci/pipelines/env_variables.sh`
-Most of them are populated by secrets from the Vault.
+CI secrets are mounted by OpenShift CI; local runners select equivalent names from Bitwarden.
 
 ⚠️ Important Notice
-Do not place any secrets directly into a file.
-All sensitive information must be stored in the Vault.
+Do not persist local test secrets in `.env` files.
+Store local credentials in the approved Bitwarden collection and CI secrets in the configured
+OpenShift CI secret store. Local wrappers transport profile-selected values through FD 3,
+materialize private files where needed, and load secrets into the test child environment.
+
+CI retains the explicit `/tmp/secrets/<field>` reads and aliases in `env_variables.sh`.
+The local container decodes its stream into a private tmpfs at that same path, so it
+uses the original CI sourcing. Normalize both Azure certificate spellings to
+`azure-db-certificates.pem` and reject conflicting aliases before writing files.
+
+Host tests use `e2e-tests/local-test-secrets.ts` with the installed package's stream
+decoder and child-process runner, without sourcing CI setup. Caller connection values
+and namespaces are preserved; profile-supplied process controls and cluster-admin
+credentials are excluded. The cluster-login helper reads only its two explicit fields
+from the separate ephemeral-cluster profile.
+
+Keep runtime secret files outside `SHARED_DIR` (flat cross-step state) and `ARTIFACT_DIR`
+(public artifacts). The host adapter removes its private certificate directory after the
+test process exits; container secrets retain their tmpfs lifecycle. Keep tracing disabled for secret-bearing
+commands. Store each GSM credential as a separate raw field for Prow censoring, as documented
+in [OpenShift CI secret protection guidance](https://docs.ci.openshift.org/how-tos/adding-a-new-secret-to-ci-gsm/#protecting-secrets-from-leaking).
 
 ### Test Configuration
 
 Playwright configuration (`e2e-tests/playwright.config.ts`):
 - **Timeout**: 90 seconds global, 10-15 seconds for actions
 - **Retries**: 2 on CI, 0 locally
-- **Workers**: 3 parallel workers
+- **Workers**: 3 on CI; Playwright's default locally, with project-specific overrides
 - **Viewport**: 1920x1080
-- **Video**: Enabled for all tests
-- **Screenshots**: Only on failure
+- **Video**: Retain on failure
+- **Screenshots**: Enabled for all tests
 - **Trace**: Retain on failure
 
 ### Key Differences: showcase-auth-providers vs Other Showcase Projects
@@ -273,7 +314,7 @@ Check the readme at `.ci/pipelines/README.md`
 2. **Cluster Management**: Managed via cluster claims
 3. **CI Job Types**: OCP, EKS, GKE, AKS environments
 4. **Authentication**: Keycloak as default provider
-5. **Secrets Management**: Vault-managed secrets
+5. **Secrets Management**: OpenShift CI mounted secrets; Bitwarden for local runs
 
 ### Cluster Pools
 
@@ -295,7 +336,8 @@ RHDH uses dedicated Hive cluster pools with the `rhdh` prefix on AWS `us-east-2`
 ### Test Execution Environment
 
 #### Local Development
-Tests are run directly using Playwright Test with Node.js 22 and Yarn 3.8.7 as specified in the technology stack above.
+Host tests run through `local-test.sh` using the Node.js and Yarn versions declared
+in `e2e-tests/package.json`. Container deployment and test runs use `local-run.sh`.
 
 #### CI/CD Pipeline Execution
 For CI/CD pipeline execution, tests run in a containerized environment using the image `.ci/images/Dockerfile`. This image is based on `mcr.microsoft.com/playwright` and uses Ubuntu as the base operating system.
@@ -367,10 +409,14 @@ For cluster pool admins, use the login script:
 .ci/pipelines/ocp-cluster-claim-login.sh
 ```
 
+It validates the Prow URL and resolves the cluster claim before loading Bitwarden
+credentials. Use `--no-console` for login only or `--open-console` to request the
+console explicitly. Non-interactive stdin skips the console prompt.
+
 #### Debugging Process
 1. Run the login script
 2. Provide Prow log URL when prompted
-3. Script will forward cluster web console URL and credentials
+3. Script resolves the claim, loads credentials, and logs in; console access is optional
 4. Ephemeral clusters are deleted after CI job termination
 
 ### CI Configuration Files
@@ -388,7 +434,7 @@ export ISRUNNINGLOCAL=true
 export ISRUNNINGLOCALDEBUG=true
 
 # Run tests locally
-yarn playwright test --project showcase-auth-providers --workers 1
+./local-test.sh -- --project=showcase-auth-providers --workers=1
 ```
 
 #### CI Debugging
@@ -398,8 +444,8 @@ yarn playwright test --project showcase-auth-providers --workers 1
 4. **Test Failures**: Review test reports and screenshots
 
 #### Common Debugging Tools
-- **Playwright Inspector**: `yarn playwright test --debug`
-- **Trace Viewer**: `yarn playwright show-trace`
+- **Playwright Inspector**: `./local-test.sh -- --project=PROJECT --debug`
+- **Trace analysis**: `npx playwright trace open "test-results/${TEST_PATH}/trace.zip"`, then `npx playwright trace errors` or `npx playwright trace actions`; finish with `npx playwright trace close`
 - **Screenshots**: Automatic on failure
 - **Video Recording**: Available for all tests
 

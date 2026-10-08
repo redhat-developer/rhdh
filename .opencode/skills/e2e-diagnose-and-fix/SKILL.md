@@ -41,7 +41,7 @@ After a successful cherry-pick (with or without conflict resolution), proceed to
 
 **The Playwright healer agent MUST be used for ALL test failures, regardless of failure category.** Do not attempt manual diagnosis without first running the healer. The healer can run the test, debug it step-by-step, inspect the live UI, generate correct locators, and edit the code — often resolving the issue end-to-end without manual intervention.
 
-> **Note**: The Playwright healer agent is currently supported in **OpenCode** and **Claude Code** only. In **Cursor** or other tools without Playwright agent support, skip the healer initialization and proceed directly to the "Failure Pattern Recognition" section below. Use manual diagnosis with direct test execution (`yarn playwright test ...`) and headed/debug mode (`--headed`, `--debug`) for live UI inspection.
+> **Note**: The Playwright healer agent is currently supported in **OpenCode** and **Claude Code** only. In **Cursor** or other tools without Playwright agent support, skip the healer initialization and proceed directly to the "Failure Pattern Recognition" section below. Use `local-test.sh` with headed/debug mode (`--headed`, `--debug`) for live UI inspection.
 
 ### Healer Initialization
 
@@ -61,14 +61,17 @@ See https://playwright.dev/docs/test-agents for the full list of supported tools
 
 ### Environment Setup for Healer
 
-The healer agent needs a `.env` file in `e2e-tests/` with all required environment variables (BASE_URL, K8S_CLUSTER_TOKEN, vault secrets, etc.). Generate it by passing the `--env` flag to `local-test-setup.sh`:
+Export `BASE_URL` and an unlocked `BW_SESSION` in the agent environment. Cluster-aware tests also
+require caller-provided `K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN`. Run tests through
+`local-test.sh` so Bitwarden secrets are loaded for Playwright. Set the deployed namespaces
+needed by the selected test (`NAME_SPACE`, `NAME_SPACE_RBAC`, or `NAME_SPACE_RUNTIME`):
 
 ```bash
 cd e2e-tests
-source local-test-setup.sh <showcase|rbac> --env
+./local-test.sh -- --project=any-test --retries=0 --workers=1 "$SPEC_FILE"
 ```
 
-The `.env` file is gitignored — never commit it. To regenerate (e.g. after token expiry), re-run the command above.
+Do not generate a `.env` file containing secrets.
 
 ### Invoking the Healer
 
@@ -78,7 +81,7 @@ Invoke the healer agent via the Task tool with `subagent_type: general`:
 Task: "You are the Playwright Test Healer agent. Run the failing test, debug it, inspect the UI, and fix the code.
 Working directory: <path>/e2e-tests
 Test: <spec-file> --project=any-test -g '<test-name>'
-Run command: set -a && source .env && set +a && npx playwright test <spec-file> --project=any-test --retries=0 --workers=1 -g '<test-name>'"
+Run command: ./local-test.sh -- --project=any-test --retries=0 --workers=1 "$SPEC_FILE" -g "$TEST_NAME""
 ```
 
 The healer will autonomously:
