@@ -19,50 +19,26 @@ trap handle_error ERR
 
 set -e
 
-# Install vault if not present
-if ! command -v vault &> /dev/null; then
-  VAULT_VERSION="${VAULT_VERSION:-1.15.4}"
-  log::info "Installing vault ${VAULT_VERSION}..."
-  # uname is portable where dpkg is Debian-only, but its names are not the ones
-  # HashiCorp publishes: vault_*_linux_x86_64.zip and _aarch64.zip both 404.
-  case "$(uname -m)" in
-    x86_64 | amd64) VAULT_ARCH=amd64 ;;
-    aarch64 | arm64) VAULT_ARCH=arm64 ;;
-    *)
-      log::error "Unsupported architecture for the vault download: $(uname -m)"
-      exit 1
-      ;;
-  esac
-  curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o /tmp/vault.zip
-  unzip -q /tmp/vault.zip -d /usr/local/bin/
-  rm /tmp/vault.zip
-fi
-
-# Fetch and write secrets to /tmp/secrets/
-log::section "Fetching Vault Secrets"
-set -o pipefail
-SECRETS=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r ".data.data")
-set +o pipefail
-if [[ -z "${SECRETS}" || "${SECRETS}" == "null" ]]; then
-  log::error "Vault returned no secrets for selfservice/rhdh-qe/rhdh"
-  exit 1
-fi
-
-for key in $(echo "$SECRETS" | jq -r "keys[]"); do
-  if [[ "$key" == */* ]]; then
-    mkdir -p "/tmp/secrets/$(dirname "$key")"
-  fi
-  echo "$SECRETS" | jq -r --arg k "$key" '.[$k]' > "/tmp/secrets/$key"
-done
-
-log::success "Secrets written to /tmp/secrets/"
+# Secret values are streamed by local-run.sh and materialized in the private
+# tmpfs mounted at the same /tmp/secrets path used by OpenShift CI.
+log::section "Reading host-provided secrets"
+mkdir -p /tmp/secrets
+chmod 700 /tmp/secrets
+node /tmp/rhdh/e2e-tests/decode-secret-stream.ts /tmp/secrets
+exec 0</dev/null
+log::success "Secret stream decoded"
 
 # Login using service account token from host
 log::section "Cluster Service Account and Token Management"
 
-# K8S_CLUSTER_URL, K8S_CLUSTER_TOKEN, and CONTAINER_PLATFORM are passed from local-run.sh
+# K8S_CLUSTER_URL, RHDH_LOCAL_TEST_CLUSTER_TOKEN, and CONTAINER_PLATFORM are passed from local-run.sh
 export K8S_CLUSTER_URL
-export K8S_CLUSTER_TOKEN
+if [[ -z "${RHDH_LOCAL_TEST_CLUSTER_TOKEN:-}" ]]; then
+  log::error "Generated cluster token was not provided by the host"
+  exit 1
+fi
+export K8S_CLUSTER_TOKEN="$RHDH_LOCAL_TEST_CLUSTER_TOKEN"
+unset RHDH_LOCAL_TEST_CLUSTER_TOKEN
 export CONTAINER_PLATFORM
 log::info "K8S_CLUSTER_URL: $K8S_CLUSTER_URL"
 log::info "CONTAINER_PLATFORM: $CONTAINER_PLATFORM"
@@ -79,7 +55,7 @@ else
   kubectl cluster-info
 fi
 
-log::info "Service account token is valid for 48 hours."
+log::info "Service account token is valid for 8 hours."
 
 log::section "Platform Environment Variables"
 
