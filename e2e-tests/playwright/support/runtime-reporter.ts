@@ -1,4 +1,4 @@
-import type { FullConfig, FullResult, Reporter, Suite, TestCase } from "@playwright/test/reporter";
+import type { FullResult, Reporter, Suite, TestCase } from "@playwright/test/reporter";
 
 import { runtimeCoverageRequired } from "../utils/runtime-database";
 
@@ -36,12 +36,13 @@ export default class RuntimeReporter implements Reporter {
   private tests: TestCase[] = [];
   private enabled = false;
 
-  onBegin(_config: FullConfig, suite: Suite): void {
+  onBegin(_config: unknown, suite: Pick<Suite, "allTests">): void {
     this.tests = suite
       .allTests()
       .filter((test) => test.parent.project()?.name === "showcase-runtime");
     this.enabled =
       runtimeCoverageRequired() &&
+      !process.argv.includes("--list") &&
       (this.tests.length > 0 || process.argv.some((arg) => arg.includes("showcase-runtime")));
   }
 

@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import {
+import RuntimeReporter, {
   runtimeCoverageProblem,
   type RuntimeCoverageCase,
 } from "../playwright/support/runtime-reporter";
@@ -28,6 +28,33 @@ function successfulCoverage(): RuntimeCoverageCase[] {
 }
 
 describe("required runtime coverage", () => {
+  it("allows CI test listing while still rejecting an empty runtime execution", async () => {
+    const argv = process.argv;
+    const required = process.env.RUNTIME_REQUIRED;
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      process.env.RUNTIME_REQUIRED = "true";
+      process.argv = ["node", "playwright", "--project=showcase-runtime", "--list"];
+      const config = {};
+      const suite = { allTests: () => [] };
+      const result = { status: "passed" as const, startTime: new Date(), duration: 0 };
+      const listing = new RuntimeReporter();
+      listing.onBegin(config, suite);
+      expect(await listing.onEnd(result)).toEqual({ status: "passed" });
+      expect(error).not.toHaveBeenCalled();
+
+      process.argv = process.argv.filter((arg) => arg !== "--list");
+      const execution = new RuntimeReporter();
+      execution.onBegin(config, suite);
+      expect(await execution.onEnd(result)).toEqual({ status: "failed" });
+      expect(error).toHaveBeenCalledWith(expect.stringContaining("selected 0/1"));
+    } finally {
+      process.argv = argv;
+      if (required === undefined) delete process.env.RUNTIME_REQUIRED;
+      else process.env.RUNTIME_REQUIRED = required;
+      error.mockRestore();
+    }
+  });
   it("accepts all 23 successful cases and rejects missing, skipped and retried coverage", () => {
     const tests = successfulCoverage();
     expect(tests).toHaveLength(23);
