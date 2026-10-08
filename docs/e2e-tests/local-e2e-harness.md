@@ -19,7 +19,7 @@ sign in."_
 
 Run the same script CI uses — it installs the harness plugin set
 (`e2e-tests/local-harness/dynamic-plugins.yaml`) from the public OCI registry (quay.io)
-via `install-dynamic-plugins` + skopeo, with `{{inherit}}` resolved against
+via `install-dynamic-plugins` + skopeo, with `ref://` resolved against
 `dynamic-plugins.default.yaml` extracted from a catalog-index OCI image.
 **`CATALOG_INDEX_IMAGE` is required** to extract the full catalog DPDY from a catalog-index OCI image
 `dynamic-plugins.default.yaml`. Pinned to the same CLI version as CI. No source build
@@ -122,10 +122,9 @@ for how that's wired).
   profile menu.
 - `settings.spec.ts` — language toggle (needs `api:app/app-language.availableLanguages`
   in `app.extensions`, not just `i18n.locales`), French label switching, pin-sidebar
-  toggle, and identity-card ownership ("Guest User, team-a"). NFS sidebar page titles
-  stay in upstream English ("Home") even after switching AppLanguageApi to French —
-  only GlobalHeader chrome translates; the final assertion checks "Home", not
-  `menuItem.home` ("Accueil").
+  toggle, and identity-card ownership ("Guest User, team-a"). The pin-sidebar check
+  verifies the same API menu entry disappears and reappears when toggled, without
+  assuming a particular home-page title or translation.
 
 Not enablable yet:
 
@@ -167,8 +166,14 @@ just `run`), which is why this harness boots the dev servers directly instead.
 
 ## Known issues / limits
 
+- **Release-2.1 fixture pins.** The cluster-free dev server loads only static config
+  schemas, so the harness pins `app-auth` 1.1.0 (development Guest selection) and
+  homepage 1.18.0 (`page:home`, matching the test overlay). Guest uses the catalog's
+  0.2.22 visibility backport via `ref://`, as do the cluster CI showcase jobs.
+  Remove the frontend pins when the harness supports dynamic schemas and
+  the Homepage 3 configuration migration is validated.
 - **Re-run `populate.sh` after changing the harness plugin set.** Overrides in
-  `e2e-tests/local-harness/dynamic-plugins.yaml` (`enabled: false` + `{{inherit}}`) only
+  `e2e-tests/local-harness/dynamic-plugins.yaml` (`enabled: false` + `ref://`) only
   take effect through the generated `dynamic-plugins-root/app-config.dynamic-plugins.yaml`,
   which the webServer loads last. A stale populate leaves unwanted plugins installed.
 - **Plugin sanity uses a separate config overlay.** Default `populate.sh` disables
