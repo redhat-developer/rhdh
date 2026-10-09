@@ -191,22 +191,3 @@ dynamicPlugins:
                     seconds: 15
                   timeout:
                     minutes: 15
-    - package: ref://backstage-community-plugin-catalog-backend-module-pingidentity
-      enabled: true
-      pluginConfig:
-        catalog:
-          providers:
-            pingIdentityOrg:
-              default:
-                apiPath: temp
-                authPath: temp
-                envId: temp
-                clientId: temp
-                clientSecret: temp
-                schedule:
-                  frequency:
-                    hours: 24
-                  initialDelay:
-                    seconds: 15
-                  timeout:
-                    minutes: 15
