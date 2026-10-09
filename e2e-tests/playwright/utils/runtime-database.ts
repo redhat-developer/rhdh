@@ -22,23 +22,13 @@ export function readExternalDatabaseInputs(
   if (![1, 2, 3, 4].includes(slot)) throw new Error("External database slot must be 1..4");
   const root = provider === "rds" ? "RDS" : "AZURE_DB";
   const host = env[`${root}_${slot}_HOST`]?.trim();
+  if (host === undefined || host === "") return null;
   const user = env[`${root}_USER`];
   const password = env[`${root}_PASSWORD`];
   const caPath =
     env[provider === "rds" ? "RDS_DB_CERTIFICATES_PATH" : "AZURE_DB_CERTIFICATES_PATH"];
-  const anyHost = [1, 2, 3, 4].some(
-    (index) => (env[`${root}_${index}_HOST`]?.trim().length ?? 0) > 0,
-  );
-  if (!anyHost) return null;
-  if (
-    host === undefined ||
-    host === "" ||
-    user === undefined ||
-    user === "" ||
-    password === undefined ||
-    password === ""
-  ) {
-    throw new Error(`Required ${provider} slot ${slot} needs host, user and password`);
+  if (user === undefined || user === "" || password === undefined || password === "") {
+    throw new Error(`Configured ${provider} slot ${slot} needs user and password`);
   }
   const certificate = readCertificateFile(caPath);
   if (certificate === null || !certificate.includes("-----BEGIN CERTIFICATE-----"))
@@ -82,6 +72,8 @@ export async function clearOwnedDatabases(
   client: OwnedDatabaseClient,
   prefix: string,
 ): Promise<void> {
+  // Writers must be stopped first. FORCE can try to signal privileged Cloud SQL
+  // processes that ordinary database owners cannot terminate.
   for (const name of await listOwnedDatabases(client, prefix)) {
     if (!name.startsWith(prefix)) throw new Error("Database escaped runtime ownership boundary");
     const quoted = `"${name.replaceAll('"', '""')}"`;

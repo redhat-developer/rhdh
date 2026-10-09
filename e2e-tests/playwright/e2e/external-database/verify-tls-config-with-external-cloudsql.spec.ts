@@ -6,6 +6,10 @@ import { waitForRhdhReady } from "../../utils/wait-for-rhdh-ready";
 
 const labels = ["latest-3", "latest-2", "latest-1", "latest"];
 
+test.beforeAll(({}, testInfo) => {
+  testInfo.annotations.push({ type: "component", description: "data-management" });
+});
+
 for (const [index, label] of labels.entries()) {
   test.describe(`Cloud SQL ${label} via Auth Proxy`, () => {
     test.use({ cloudSqlSlot: index + 1 });

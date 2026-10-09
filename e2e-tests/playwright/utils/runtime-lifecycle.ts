@@ -13,10 +13,11 @@ export async function deleteOwnedRuntimeNamespace(
   kube: KubeClient,
   namespace: string,
   runId: string,
+  labelKey = ownerLabel,
 ): Promise<void> {
   try {
     const existing = await kube.coreV1Api.readNamespace(namespace);
-    if (existing.body.metadata?.labels?.[ownerLabel] !== runId)
+    if (existing.body.metadata?.labels?.[labelKey] !== runId)
       throw new Error(`Refusing to delete unowned namespace ${namespace}`);
     await kube.coreV1Api.deleteNamespace(namespace);
   } catch (error) {
@@ -41,10 +42,11 @@ export async function resetRuntimeNamespace(
   kube: KubeClient,
   namespace: string,
   runId: string,
+  labelKey = ownerLabel,
 ): Promise<void> {
-  await deleteOwnedRuntimeNamespace(kube, namespace, runId);
+  await deleteOwnedRuntimeNamespace(kube, namespace, runId, labelKey);
   await kube.coreV1Api.createNamespace({
-    metadata: { name: namespace, labels: { [ownerLabel]: runId } },
+    metadata: { name: namespace, labels: { [labelKey]: runId } },
   });
 }
 
@@ -283,19 +285,23 @@ export async function collectRuntimeDiagnostics(
     "runtime-pods",
     async () => (await kube.coreV1Api.listNamespacedPod(namespace)).body,
   );
-  const pods = await kube.coreV1Api.listNamespacedPod(namespace);
-  for (const pod of pods.body.items) {
-    const name = pod.metadata?.name;
-    if (name === undefined) continue;
-    for (const container of [
-      ...(pod.spec?.initContainers ?? []),
-      ...(pod.spec?.containers ?? []),
-    ]) {
-      await attach(`${name}-${container.name}`, () =>
-        run("oc", ["logs", "-n", namespace, name, "-c", container.name, "--tail=500"], {
-          timeout: 30_000,
-        }),
-      );
+  try {
+    const pods = await kube.coreV1Api.listNamespacedPod(namespace);
+    for (const pod of pods.body.items) {
+      const name = pod.metadata?.name;
+      if (name === undefined) continue;
+      for (const container of [
+        ...(pod.spec?.initContainers ?? []),
+        ...(pod.spec?.containers ?? []),
+      ]) {
+        await attach(`${name}-${container.name}`, () =>
+          run("oc", ["logs", "-n", namespace, name, "-c", container.name, "--tail=500"], {
+            timeout: 30_000,
+          }),
+        );
+      }
     }
+  } catch (error) {
+    console.warn(`Runtime pod logs unavailable: ${redact(String(error))}`);
   }
 }

@@ -6,6 +6,9 @@ import { test, expect } from "./external-postgres-runtime";
 
 /** Both providers retain the configure/restart and guest-session tests per slot. */
 export function defineExternalPostgresTests(provider: ExternalDatabaseProvider): void {
+  test.beforeAll(({ browserName: _browserName }, info) => {
+    info.annotations.push({ type: "component", description: "data-management" });
+  });
   const name = provider === "rds" ? "RDS" : "Azure DB";
   for (const [index, label] of ["latest-3", "latest-2", "latest-1", "latest"].entries()) {
     test.describe.serial(`${name} ${label} PostgreSQL version`, () => {

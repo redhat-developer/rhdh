@@ -402,11 +402,10 @@ export function generateAppConfigYaml(runtimeUrl: string, config?: RuntimeDeploy
 /**
  * Generate the dynamic-plugins.yaml content for the operator path.
  *
- * Ordinary runtime tests retain their existing minimal plugin profile.
- * Operator uses the catalog-index defaults, matching the verified Helm profile
- * and supplying RHDH's app-auth and homepage frontend modules. Both enable guest auth.
+ * All Operator runtime targets use the catalog-index defaults, matching Helm
+ * and supplying RHDH's app-auth and homepage frontend modules, with guest auth enabled.
  */
-export function generateDynamicPluginsYaml(_config?: RuntimeDeployConfig): string {
+export function generateDynamicPluginsYaml(): string {
   return yaml.stringify(
     {
       // Runtime tests check the actual RHDH sign-in page and homepage, which are

@@ -2,12 +2,15 @@ import { IncomingMessage } from "node:http";
 import { Socket } from "node:net";
 
 import type { V1Deployment } from "@kubernetes/client-node";
+import type { TestInfo } from "@playwright/test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { KubeClient } from "../playwright/utils/kube-client";
 import {
   stopRuntimeApplication,
   waitForRuntimeRollout,
+  deleteOwnedRuntimeNamespace,
+  collectRuntimeDiagnostics,
 } from "../playwright/utils/runtime-lifecycle";
 
 function kubeClient(): KubeClient {
@@ -34,6 +37,43 @@ function deployment(observedGeneration: number, replicas = 1): V1Deployment {
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.useRealTimers();
+  vi.restoreAllMocks();
+});
+
+describe("owned runtime teardown", () => {
+  it.each(["rhdh.redhat.com/runtime-run", "rhdh.redhat.com/cloudsql-run"])(
+    "refuses namespace deletion when %s belongs to another run",
+    async (labelKey) => {
+      const kube = kubeClient();
+      vi.spyOn(kube.coreV1Api, "readNamespace").mockResolvedValue(
+        response({ metadata: { labels: { [labelKey]: "another-run" } } }),
+      );
+      const remove = vi.spyOn(kube.coreV1Api, "deleteNamespace");
+      await expect(
+        deleteOwnedRuntimeNamespace(kube, "runtime", "012345abcdef", labelKey),
+      ).rejects.toThrow("Refusing to delete unowned namespace");
+      expect(remove).not.toHaveBeenCalled();
+    },
+  );
+  it("keeps failed diagnostic pod lookups non-fatal and redacts credentials", async () => {
+    const kube = kubeClient();
+    vi.spyOn(kube.appsApi, "listNamespacedDeployment").mockResolvedValue(response({ items: [] }));
+    vi.spyOn(kube.coreV1Api, "listNamespacedEvent").mockResolvedValue(response({ items: [] }));
+    vi.spyOn(kube.coreV1Api, "listNamespacedPod").mockRejectedValue(
+      new Error("unavailable with fake-password and fake-api-token"),
+    );
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const info = {
+      attach: vi.fn<TestInfo["attach"]>().mockImplementation(() => Promise.resolve()),
+    };
+    await expect(
+      collectRuntimeDiagnostics(kube, "runtime", info, (text) =>
+        text.replaceAll("fake-password", "[REDACTED]").replaceAll("fake-api-token", "[REDACTED]"),
+      ),
+    ).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Runtime pod logs unavailable"));
+    expect(warn.mock.calls.flat().join(" ")).not.toMatch(/fake-password|fake-api-token/u);
+  });
 });
 
 describe("ordered runtime lifecycle", () => {

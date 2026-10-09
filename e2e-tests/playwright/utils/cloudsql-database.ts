@@ -2,62 +2,8 @@ import { Client } from "pg";
 
 import { buildCloudSqlProxy, buildCloudSqlProxyVolume } from "./cloudsql-config";
 import { KubeClient } from "./kube-client";
-import { pollUntil, sleep } from "./poll-until";
+import { pollUntil } from "./poll-until";
 import { PortForwardSession } from "./port-forward";
-
-/** Validate ownership before any destructive SQL; LIKE would interpret our underscores as wildcards. */
-export function assertCloudSqlPrefix(prefix: string): void {
-  if (!/^csql_[a-f0-9]{12}_[1-4]_$/u.test(prefix)) {
-    throw new Error("Refusing Cloud SQL cleanup without an exact run/slot database prefix");
-  }
-}
-
-function quoteIdentifier(value: string): string {
-  return `"${value.replaceAll('"', '""')}"`;
-}
-
-export interface CloudSqlCleanupClient {
-  query(text: string, values?: string[]): Promise<{ rows: Array<{ datname: string }> }>;
-}
-
-export async function listCloudSqlDatabases(
-  client: CloudSqlCleanupClient,
-  prefix: string,
-): Promise<string[]> {
-  assertCloudSqlPrefix(prefix);
-  const result = await client.query(
-    "SELECT datname FROM pg_database WHERE NOT datistemplate AND starts_with(datname, $1)",
-    [prefix],
-  );
-  return result.rows.map((row) => row.datname);
-}
-
-export async function clearCloudSqlDatabases(
-  client: CloudSqlCleanupClient,
-  prefix: string,
-): Promise<void> {
-  for (const database of await listCloudSqlDatabases(client, prefix)) {
-    // Defense in depth: never trust a result outside the exact ownership boundary.
-    if (!database.startsWith(prefix))
-      throw new Error("Database escaped Cloud SQL ownership boundary");
-    // Writers are stopped by the fixture. FORCE can try to signal Cloud SQL's
-    // privileged background processes, which ordinary DB owners cannot terminate.
-    for (let attempt = 0; attempt < 10; attempt++) {
-      try {
-        await client.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(database)}`);
-        break;
-      } catch (error) {
-        const busy =
-          typeof error === "object" && error !== null && Reflect.get(error, "code") === "55006";
-        if (!busy || attempt === 9) throw error;
-        await sleep(2_000);
-      }
-    }
-  }
-  if ((await listCloudSqlDatabases(client, prefix)).length > 0) {
-    throw new Error(`Cloud SQL cleanup left databases for ${prefix}`);
-  }
-}
 
 /** Independent of the application pod, including while RHDH is stopped or broken. */
 export class CloudSqlDatabaseSession {
@@ -74,7 +20,7 @@ export class CloudSqlDatabaseSession {
     private readonly password: string,
   ) {}
 
-  async start(instance: string): Promise<Client> {
+  async start(instance: string, statementTimeoutMs = 30_000): Promise<Client> {
     await this.kubeClient.coreV1Api.createNamespacedPod(this.namespace, {
       metadata: { name: this.podName, labels: { "rhdh.redhat.com/cloudsql-cleanup": "true" } },
       spec: {
@@ -109,7 +55,7 @@ export class CloudSqlDatabaseSession {
       { readyPattern: /Forwarding from 127\.0\.0\.1:\d+ -> 5432/u },
     );
     await this.startTunnel();
-    const client = await this.connect();
+    const client = await this.connect("postgres", statementTimeoutMs);
     await client.query("SELECT 1");
     this.started = true;
     return client;
@@ -123,7 +69,7 @@ export class CloudSqlDatabaseSession {
     this.port = Number(match[1]);
   }
 
-  async connect(database = "postgres"): Promise<Client> {
+  async connect(database = "postgres", statementTimeoutMs = 30_000): Promise<Client> {
     if (this.started && this.tunnel) {
       try {
         this.tunnel.assertRunning();
@@ -141,7 +87,8 @@ export class CloudSqlDatabaseSession {
       database,
       ssl: false,
       connectionTimeoutMillis: 30_000,
-      query_timeout: 30_000,
+      statement_timeout: statementTimeoutMs,
+      query_timeout: statementTimeoutMs + 10_000,
     });
     // pg emits asynchronous errors on an idle connection when a tunnel dies.
     client.on("error", () => {});

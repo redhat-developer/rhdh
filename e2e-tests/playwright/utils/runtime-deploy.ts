@@ -149,9 +149,7 @@ async function deployWithHelm(
 
   // Generate values YAML and write to a temp file
   const valuesYaml = generateHelmValuesYaml(config);
-  const tempRoot = path.join(os.tmpdir(), "opencode");
-  fs.mkdirSync(tempRoot, { recursive: true, mode: 0o700 });
-  const tmpDir = fs.mkdtempSync(path.join(tempRoot, "rhdh-runtime-"));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rhdh-runtime-"));
   const tmpValuesFile = path.join(tmpDir, "values.yaml");
   fs.writeFileSync(tmpValuesFile, valuesYaml, { encoding: "utf-8", mode: 0o600 });
   console.log(`Generated Helm values written to ${tmpValuesFile}`);
@@ -264,8 +262,8 @@ async function deployWithOperator(
   console.log("Created rhdh-runtime-config Secret");
 
   // 3. Create dynamic-plugins ConfigMap.
-  // Select the ordinary runtime profile or Cloud SQL's Helm-equivalent profile.
-  const dpYaml = generateDynamicPluginsYaml(config);
+  // All runtime targets use the same catalog defaults and guest-auth override as Helm.
+  const dpYaml = generateDynamicPluginsYaml();
   try {
     await kubeClient.createConfigMap(namespace, {
       metadata: { name: "dynamic-plugins" },
