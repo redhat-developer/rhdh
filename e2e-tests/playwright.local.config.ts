@@ -29,8 +29,7 @@ import {
  * after changing the harness plugin set.
  *
  * JSON /healthcheck (proxied by packages/app) plus the global-header dynamic plugin
- * mirror production RHDH; sidebar navigation uses the rhdh-sidebar-adapter path in
- * playwright/utils/ui-helper/navigation.ts (do not force E2E_FORCE_LEGACY_SIDEBAR).
+ * mirror production RHDH.
  */
 
 const frontendUrl = "http://localhost:3000";

@@ -1,5 +1,11 @@
 # E2E → Lower-Layer Migration Matrix (Phase 1)
 
+> Historical analysis of the June/July 2026 suite. The application-provider and
+> application-listener E2E specs have since been retired under RHIDP-17025: their
+> fixture plugins only expose the former app's entry point. NFS provides root
+> wrapper/element blueprints, but they do not render those old mount points or
+> supply replacement tests. Do not use historical suite totals as current counts.
+
 **Epic**: RHIDP-13501 — [Test Strategy] E2E Test Optimization (Optional)
 **Story**: RHIDP-15076 — Identify E2E specs supplementable by Layer 3 / cluster-free harness (Phase 1)
 **Author**: Gustavo Lira e Silva
@@ -59,10 +65,10 @@ L3 equivalents land.
 
 ## Update 2026-07-07 — L4a expansion batch merged (PR #5057)
 
-Every cheap-enablement candidate from the 2026-07-02 scan except #2 landed on
-`main`: the harness now runs **10 specs (14 test cases)** green on the PR check — #1 `instance-health-check`, #3
-`smoke-test`, #4 `guest-signin-happy-path`, #5 `settings`, #6 `learning-path-page`,
-#7 `home-page-customization`, #8 `sidebar`, #9 `user-settings-info-card`, #10/#11
+At the time, the harness ran **10 specs (14 test cases)** green on the PR check,
+including #1 `instance-health-check`, #3 `smoke-test`, #4 `guest-signin-happy-path`,
+#5 `settings`, #6 `learning-path-page`, #7 `home-page-customization`, #8 `sidebar`,
+#9 `user-settings-info-card`, and the since-retired #10/#11
 `application-provider/listener`. Notable mechanics (details in
 `docs/e2e-tests/local-e2e-harness.md`):
 
@@ -70,9 +76,6 @@ Every cheap-enablement candidate from the 2026-07-02 scan except #2 landed on
   `packages/app/package.json`), mirroring the production single-origin container.
 - The `team-a` ownership entities CI ingests from Keycloak are mirrored as a minimal
   User/Group file ingested via a `catalog.locations` file entry.
-- #10/#11's provider/listener test plugins turned out to be **OCI-only builds** that CI
-  installs through its Helm values — the harness installs the same packages, so the
-  earlier "local-path plugins" caveat is gone.
 - The one remaining candidate, #2 `licensed-users-info`, needs **no plugin work at
   all**: the backend plugin is `@internal` and compiled into the RHDH backend
   (`packages/backend/src/index.ts`), so the harness already serves its API. The
@@ -83,9 +86,10 @@ Every cheap-enablement candidate from the 2026-07-02 scan except #2 landed on
 Note: #19 `plugin-dynamic-loading` ships with PR #4967, still **open as of 2026-07-20** —
 the row below describes its state once merged.
 
-## Summary matrix (30 specs: 29 on `main` + #19 pending in PR #4967)
+## Summary matrix (28 remaining entries from the original 30-spec inventory)
 
-The 29 on `main` are the 28 `*.spec.ts` files under `e2e-tests/playwright/e2e/` plus
+At the time of the original inventory, 29 were on `main`: 28 `*.spec.ts` files
+under `e2e-tests/playwright/e2e/` (including the two since retired) plus
 #18 `github-happy-path`, parked as
 `e2e-tests/playwright/blocked/github-happy-path.blocked.ts` since #5022.
 
@@ -104,8 +108,6 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | 7   | `home-page-customization` 🟢                                          | showcase          | no       | yes        | none                    | **L3**                               |
 | 8   | `plugins/frontend/sidebar` 🟢                                         | showcase          | no       | yes        | none                    | **L3** ✅                            |
 | 9   | `plugins/user-settings-info-card` 🟢                                  | showcase          | no       | yes        | none                    | **L3** ✅                            |
-| 10  | `plugins/application-provider` 🟢                                     | showcase          | no       | yes        | none                    | **L3** (context logic → L1)          |
-| 11  | `plugins/application-listener` 🟢                                     | showcase          | no       | yes        | none                    | **L3**                               |
 | 12  | `catalog-timestamp`                                                   | showcase          | no       | yes        | GitHub (import)         | **L3** (replace import with fixture) |
 | 13  | `audit-log/auditor-rbac`                                              | showcase-rbac     | no       | no (API)   | Keycloak                | **L2** (mock auth)                   |
 | 14  | `audit-log/auditor-catalog`                                           | showcase-rbac     | no       | minimal    | GitHub (import)         | **L2 / L4a** (mock GitHub)           |
@@ -131,7 +133,7 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | Target         | Count | Specs                                       |
 | -------------- | ----- | ------------------------------------------- |
 | **L2**         | 4     | #1, #2, #13, #14                            |
-| **L3**         | 10    | #3\*, #4, #5, #6, #7, #8, #9, #10, #11, #12 |
+| **L3**         | 8     | #3\*, #4, #5, #6, #7, #8, #9, #12           |
 | **L4a**        | 5     | #15, #16, #17, #18, #19                     |
 | **L4b (stay)** | 11    | #20–#30                                     |
 
@@ -166,7 +168,7 @@ the additive rule at the top of this document.
 **Batch 1 — extend the landed L3 set + the cheap wins** (RHIDP-13528)
 
 - ~~#5, #6, #8, #9~~ — **done**, merged with #4864 (see the table above); use them as the template.
-- Add #7 `home-page-customization`, #4 `guest-signin-happy-path`, #10 `application-provider`, #11 `application-listener`.
+- Add #7 `home-page-customization`, #4 `guest-signin-happy-path`.
 - L2: #1 `instance-health-check`, #2 `licensed-users-info` (pure backend API → supertest).
 
 **Batch 2 — needs a mock seam** (RHIDP-13529)
@@ -195,8 +197,8 @@ the additive rule at the top of this document.
    for the event-shape contract, keep one L4b smoke for the wiring.
 2. Do we want L4a scaffolder tests to mock GitHub (deterministic, faster) or keep real
    GitHub (true integration)? Coordinate with RHDHPLAN-525 / overlay-repo strategy (RHIDP-13530).
-3. ROI: the 10 L3 + 4 L2 candidates are ~648 LOC of UI-only specs today; migrating buys
-   PR-time feedback (seconds vs. a nightly cluster deploy) for the most frequently-broken
+3. ROI: migrating the remaining L3 + L2 candidates buys PR-time feedback
+   (seconds vs. a nightly cluster deploy) for the most frequently-broken
    surface (UI/config). The 11 L4b specs are where the real cluster cost lives and are
    **not** the optimization target.
 

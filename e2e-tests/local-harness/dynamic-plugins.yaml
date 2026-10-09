@@ -65,9 +65,6 @@ plugins:
   # TechDocs frontend: /docs + Docs sidebar item (plugins/frontend/sidebar.spec.ts).
   - package: oci://quay.io/rhdh/backstage-plugin-techdocs:{{inherit}}
     enabled: true
-  # application-provider-test / application-listener-test are not installed: the
-  # pinned OCI builds and packages/app do not support those fixtures yet, and both
-  # specs are excluded from playwright.local.config.ts testMatch.
   # Global header: top bar + profile dropdown (Settings / Sign-out).
   # Enable app-root-wrapper + translation in app-config.local-e2e.yaml
   # (app-root-wrapper:app/global-header, translation:app/global-header-translations).

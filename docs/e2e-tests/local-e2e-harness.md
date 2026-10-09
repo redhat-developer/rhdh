@@ -127,15 +127,23 @@ for how that's wired).
   only GlobalHeader chrome translates; the final assertion checks "Home", not
   `menuItem.home` ("Accueil").
 
+The application-provider and application-listener specs and provider page fixture
+were retired under RHIDP-17025 because their OCI test plugins expose only the old
+app's entry point and cannot run in `packages/app`. Their source lived in the
+`rhdh-plugins` global-floating-action-button workspace, which was deleted in
+[rhdh-plugins#3348](https://github.com/redhat-developer/rhdh-plugins/pull/3348);
+published packages may still exist, but are not NFS fixtures. **The capabilities
+still exist in NFS:** `AppRootWrapperBlueprint` from `@backstage/plugin-app-react`
+wraps the app in a provider, and `AppRootElementBlueprint` from
+`@backstage/frontend-plugin-api` mounts a listener at the app root. RHDH uses these patterns in the global-header
+and quickstart plugins, respectively. Neither blueprint automatically renders
+legacy `application/provider` or `application/listener` mount points: test plugins
+would need NFS extensions and an `alpha` export. Existing guest sign-in and
+settings tests exercise the dynamically loaded global header's profile menu,
+but do not replace the old multi-provider or navigation-listener fixture checks.
+
 Not enablable yet:
 
-- `plugins/application-provider` and `plugins/application-listener` — the
-  application-provider-test / application-listener-test OCI plugins only publish an
-  OFS ("." Module Federation) entry point, no NFS/alpha extensions. `packages/app`
-  (NFS) has no application/provider or application/listener renderer yet — so neither
-  spec can currently pass here. Not installed in the harness; re-add once NFS support
-  exists for either the fixture plugins or a generic provider/listener renderer in
-  `packages/app`.
 - `plugins/licensed-users-info-backend` — the
   `licensed-users-info-backend` plugin is not published to the overlays OCI registry
   (ghcr).
