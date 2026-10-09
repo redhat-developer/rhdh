@@ -21,6 +21,10 @@ auth:
       # Required because auth.environment may resolve outside "development" in CI.
       dangerouslyAllowOutsideDevelopment: true
 
+# app-auth reads this frontend-visible setting to render the guest button.
+# auth.providers.guest configures only the backend.
+signInPage: guest
+
 backend:
   database:
     client: better-sqlite3
