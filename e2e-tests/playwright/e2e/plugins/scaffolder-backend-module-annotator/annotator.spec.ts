@@ -67,25 +67,30 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await scaffolderFlowPage.verifyComponentNameVisible(reactAppDetails.componentName);
   });
 
-  test("Verify custom label is added to scaffolded component", async () => {
+  // RHDHBUGS-3924: Re-enable these YAML checks when the localized header restores "Inspect entity".
+  // oxlint-disable-next-line playwright/no-skipped-test -- RHDHBUGS-3924
+  test.skip("Verify custom label is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(`labels:\n    custom: ${reactAppDetails.label}\n`);
   });
 
-  test("Verify custom annotation is added to scaffolded component", async () => {
+  // oxlint-disable-next-line playwright/no-skipped-test -- RHDHBUGS-3924
+  test.skip("Verify custom annotation is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(`custom.io/annotation: ${reactAppDetails.annotation}`);
   });
 
-  test("Verify template version annotation is added to scaffolded component", async () => {
+  // oxlint-disable-next-line playwright/no-skipped-test -- RHDHBUGS-3924
+  test.skip("Verify template version annotation is added to scaffolded component", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);
   });
 
-  test("Verify template version annotation is present on the template", async () => {
+  // oxlint-disable-next-line playwright/no-skipped-test -- RHDHBUGS-3924
+  test.skip("Verify template version annotation is present on the template", async () => {
     await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
     await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);
