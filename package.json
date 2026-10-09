@@ -57,7 +57,9 @@
     "turbo": "2.10.12"
   },
   "resolutions": {
-    "refractor@npm:3.6.0/prismjs": "^1.30.0"
+    "refractor@npm:3.6.0/prismjs": "^1.30.0",
+    "@backstage/core-components@npm:^0.18.13": "patch:@backstage/core-components@npm%3A0.18.14#~/.yarn/patches/@backstage-core-components-npm-0.18.14-15d4d3e194.patch",
+    "@backstage/core-components@npm:^0.18.14": "patch:@backstage/core-components@npm%3A0.18.14#~/.yarn/patches/@backstage-core-components-npm-0.18.14-15d4d3e194.patch"
   },
   "jest": {
     "testTimeout": 20000

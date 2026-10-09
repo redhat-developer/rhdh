@@ -1,0 +1,49 @@
+diff --git a/dist/layout/SignInPage/SignInPage.esm.js b/dist/layout/SignInPage/SignInPage.esm.js
+index 72566503342b423eae290124bcd5a14a8ddec792..3aa247224a1a97965b198ae0ef7c8b7d8e41183d 100644
+--- a/dist/layout/SignInPage/SignInPage.esm.js
++++ b/dist/layout/SignInPage/SignInPage.esm.js
+@@ -4,7 +4,7 @@ import { UserIdentity } from './UserIdentity.esm.js';
+ import Button from '@material-ui/core/Button';
+ import Grid from '@material-ui/core/Grid';
+ import Typography from '@material-ui/core/Typography';
+-import { useState } from 'react';
++import { useState, useMemo } from 'react';
+ import { useMountEffect } from '@react-hookz/web';
+ import { Progress } from '../../components/Progress/Progress.esm.js';
+ import { Content } from '../Content/Content.esm.js';
+@@ -27,7 +27,10 @@ const MultiSignInPage = ({
+ }) => {
+   const configApi = useApi(configApiRef);
+   const classes = useStyles();
+-  const signInProviders = getSignInProviders(providers);
++  const signInProviders = useMemo(
++    () => getSignInProviders(providers),
++    [providers]
++  );
+   const [loading, providerElements] = useSignInProviders(
+     signInProviders,
+     onSignInSuccess
+diff --git a/dist/layout/SignInPage/providers.esm.js b/dist/layout/SignInPage/providers.esm.js
+index daeb185524aba930a4e5195833d5309ac744b749..1eb34017aa3c1ff9b9559022afee0532628fbeff 100644
+--- a/dist/layout/SignInPage/providers.esm.js
++++ b/dist/layout/SignInPage/providers.esm.js
+@@ -90,7 +90,6 @@ const useSignInProviders = (providers, onSignInSuccess) => {
+     let didCancel = false;
+     provider.components.loader(apiHolder, provider.config?.apiRef).then((result) => {
+       if (didCancel) {
+-        localStorage.removeItem(PROVIDER_STORAGE_KEY);
+         return;
+       }
+       if (result) {
+@@ -99,10 +98,10 @@ const useSignInProviders = (providers, onSignInSuccess) => {
+         setLoading(false);
+       }
+     }).catch((error) => {
+-      localStorage.removeItem(PROVIDER_STORAGE_KEY);
+       if (didCancel) {
+         return;
+       }
++      localStorage.removeItem(PROVIDER_STORAGE_KEY);
+       errorApi.post(error);
+       setLoading(false);
+     });

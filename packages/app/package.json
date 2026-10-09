@@ -57,7 +57,7 @@
     "@backstage/config": "1.3.8",
     "@backstage/core-app-api": "1.20.4",
     "@backstage/core-compat-api": "0.5.14",
-    "@backstage/core-components": "0.18.13",
+    "@backstage/core-components": "patch:@backstage/core-components@npm%3A0.18.14#~/.yarn/patches/@backstage-core-components-npm-0.18.14-15d4d3e194.patch",
     "@backstage/core-plugin-api": "1.12.9",
     "@backstage/frontend-app-api": "0.16.7",
     "@backstage/frontend-defaults": "0.5.5",
