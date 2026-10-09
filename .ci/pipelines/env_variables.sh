@@ -159,12 +159,12 @@ AZURE_DB_4_HOST=$(cat /tmp/secrets/AZURE_DB_4_HOST)
 # The RDS trust store is the official AWS global bundle, downloaded at env-setup
 # time — the AWS CAs are public and rotate, so a stored copy goes stale, and the
 # full bundle does not fit the GSM secret size limit (RHDHBUGS-3744). No Vault
-# fallback on purpose: if the download fails, the file is absent and the RDS
-# suite reports/skips on the missing certificate instead of failing later with
+# fallback on purpose: if the download fails, the file is absent and configured RDS
+# targets fail prerequisite validation instead of failing later with
 # SELF_SIGNED_CERT_IN_CHAIN.
 RDS_DB_CERTIFICATES_PATH="/tmp/rds-global-bundle.pem"
 if ! curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 --max-time 30 -o "$RDS_DB_CERTIFICATES_PATH" "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"; then
-  echo "WARNING: could not download the AWS RDS global certificate bundle; RDS TLS tests will not run"
+  echo "WARNING: could not download the AWS RDS global certificate bundle; configured RDS targets will fail CA validation"
   rm -f "$RDS_DB_CERTIFICATES_PATH"
 fi
 AZURE_DB_CERTIFICATES_PATH="/tmp/secrets/azure-db-certificates.pem"

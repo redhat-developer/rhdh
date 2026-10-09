@@ -10,13 +10,13 @@ const t = getTranslations();
 
 export async function signInAsGuest(
   page: Page,
-  options?: { timeout?: number; locale?: Locale },
+  options?: { timeout?: number; locale?: Locale; baseURL?: string },
 ): Promise<void> {
   const lang = options?.locale ?? getCurrentLanguage();
   const timeout = options?.timeout ?? 120_000;
 
   resetPageErrors(page);
-  await page.goto("/");
+  await page.goto(options?.baseURL ?? "/");
   await waitForAppReady(page, timeout);
 
   page.once("dialog", async (dialog) => {

@@ -49,6 +49,7 @@ const config: RuntimeDeployConfig = {
   routerBase: "apps.example.test",
   image: buildImageRef("quay.io", "rhdh-community/rhdh", "next"),
   internalPostgresqlImage: buildImageRef("quay.io", "fedora/postgresql-18", "latest"),
+  catalogProbe: true,
   cloudSql: {
     instanceConnectionName: "project:region:instance",
     user: "test-user",
@@ -136,8 +137,8 @@ describe("Operator Cloud SQL configuration", () => {
             secrets: [
               { name: "rhdh-runtime-config" },
               {
-                name: "cloud-sql-database",
-                key: "CLOUDSQL_API_TOKEN",
+                name: "runtime-catalog-token",
+                key: "RUNTIME_CATALOG_API_TOKEN",
                 containers: ["backstage-backend"],
               },
             ],
@@ -172,66 +173,97 @@ describe("Operator Cloud SQL configuration", () => {
 });
 
 // Opt-in render against the actual CI-selected OCI archive, not a copied template.
-it.skipIf(process.env.CLOUDSQL_CHART_ARCHIVE === undefined)(
-  "renders the standalone chart with a declarative proxy and no bundled DB",
-  () => {
-    const valuesPath = join(directory, "values.yaml");
-    writeFileSync(valuesPath, generateHelmValuesYaml(config), { mode: 0o600 });
-    const rendered = execFileSync(
-      "helm",
-      [
-        "template",
-        "rhdh",
-        process.env.CLOUDSQL_CHART_ARCHIVE!,
-        "-n",
-        config.namespace,
-        "-f",
-        valuesPath,
-        "--set",
-        "openshift.clusterRouterBase=apps.example.test",
-        ...generateHelmSetArgs(config),
-      ],
-      { encoding: "utf8" },
-    );
-    const documents = yaml.parseAllDocuments(rendered).map((document) => {
-      const value: unknown = document.toJSON();
-      return value;
-    });
-    const deployment = documents.find(
-      (document) => isRecord(document) && document.kind === "Deployment",
-    );
-    const backendSecret: unknown = expect.any(Object);
-    const envVars: unknown = expect.arrayContaining([
-      { name: "POSTGRES_HOST", value: "127.0.0.1" },
-      {
-        name: "POSTGRES_PASSWORD",
-        valueFrom: { secretKeyRef: { name: "cloud-sql-database", key: "POSTGRES_PASSWORD" } },
-      },
-      { name: "BACKEND_SECRET", valueFrom: backendSecret },
-    ]);
-    expect(deployment).toMatchObject({
-      spec: {
-        template: {
-          spec: {
-            initContainers: [
-              { name: "cloud-sql-proxy", restartPolicy: "Always" },
-              { name: "install-dynamic-plugins" },
-              { name: "wait-for-db" },
-            ],
-            containers: [
-              {
-                name: "backstage-backend",
-                env: envVars,
-              },
-              { name: "cloud-sql-entity" },
-            ],
-          },
+it.skipIf(process.env.CLOUDSQL_CHART_ARCHIVE === undefined).each([
+  config,
+  {
+    ...config,
+    namespace: "runtime-direct-tls",
+    cloudSql: undefined,
+    externalPostgres: {
+      host: "postgres.example.test",
+      port: 5432,
+      user: "test-user",
+      databasePrefix: "rt_012345abcdef_rds1_",
+    },
+  },
+])("renders $namespace with the shared catalog probe and no bundled DB", (target) => {
+  const valuesPath = join(directory, "values.yaml");
+  writeFileSync(valuesPath, generateHelmValuesYaml(target), { mode: 0o600 });
+  const rendered = execFileSync(
+    "helm",
+    [
+      "template",
+      "rhdh",
+      process.env.CLOUDSQL_CHART_ARCHIVE!,
+      "-n",
+      target.namespace,
+      "-f",
+      valuesPath,
+      "--set",
+      "openshift.clusterRouterBase=apps.example.test",
+      ...generateHelmSetArgs(target),
+    ],
+    { encoding: "utf8" },
+  );
+  const documents = yaml.parseAllDocuments(rendered).map((document) => {
+    const value: unknown = document.toJSON();
+    return value;
+  });
+  const deployment = documents.find(
+    (document) => isRecord(document) && document.kind === "Deployment",
+  );
+  const backendSecret: unknown = expect.any(Object);
+  const envVars: unknown = expect.arrayContaining([
+    { name: "POSTGRES_HOST", value: target.externalPostgres?.host ?? "127.0.0.1" },
+    {
+      name: "POSTGRES_PASSWORD",
+      valueFrom: {
+        secretKeyRef: {
+          name: target.cloudSql ? "cloud-sql-database" : "runtime-database",
+          key: "POSTGRES_PASSWORD",
         },
       },
-    });
-    expect(
-      documents.some((document) => isRecord(document) && document.kind === "StatefulSet"),
-    ).toBe(false);
-    expect(rendered).not.toContain("upstream:");
-  },
-);
+    },
+    {
+      name: "RUNTIME_CATALOG_API_TOKEN",
+      valueFrom: {
+        secretKeyRef: { name: "runtime-catalog-token", key: "RUNTIME_CATALOG_API_TOKEN" },
+      },
+    },
+    { name: "BACKEND_SECRET", valueFrom: backendSecret },
+  ]);
+  expect(deployment).toMatchObject({
+    spec: {
+      template: {
+        spec: {
+          initContainers: [
+            ...(target.cloudSql ? [{ name: "cloud-sql-proxy", restartPolicy: "Always" }] : []),
+            { name: "install-dynamic-plugins" },
+            { name: "wait-for-db" },
+          ],
+          containers: [
+            {
+              name: "backstage-backend",
+              env: envVars,
+            },
+            {
+              name: "runtime-catalog",
+              volumeMounts: [
+                {
+                  name: "runtime-catalog",
+                  mountPath: "/opt/app-root/src/runtime-catalog",
+                  readOnly: true,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  });
+  expect(documents.some((document) => isRecord(document) && document.kind === "StatefulSet")).toBe(
+    false,
+  );
+  expect(rendered).not.toContain("upstream:");
+  expect(rendered.includes("rejectUnauthorized: true")).toBe(target.externalPostgres !== undefined);
+});

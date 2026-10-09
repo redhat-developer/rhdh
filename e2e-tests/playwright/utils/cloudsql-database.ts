@@ -4,6 +4,7 @@ import { buildCloudSqlProxy, buildCloudSqlProxyVolume } from "./cloudsql-config"
 import { KubeClient } from "./kube-client";
 import { pollUntil } from "./poll-until";
 import { PortForwardSession } from "./port-forward";
+import { closeDatabaseClients } from "./runtime-database";
 
 /** Independent of the application pod, including while RHDH is stopped or broken. */
 export class CloudSqlDatabaseSession {
@@ -85,6 +86,7 @@ export class CloudSqlDatabaseSession {
       user: this.user,
       password: this.password,
       database,
+      application_name: "rhdh-runtime-probe",
       ssl: false,
       connectionTimeoutMillis: 30_000,
       statement_timeout: statementTimeoutMs,
@@ -96,13 +98,22 @@ export class CloudSqlDatabaseSession {
     client.once("end", () => {
       this.clients.delete(client);
     });
-    await client.connect();
-    return client;
+    try {
+      await client.connect();
+      return client;
+    } catch (error) {
+      await client.end();
+      throw error;
+    }
+  }
+
+  async closeClients(): Promise<void> {
+    await closeDatabaseClients(this.clients);
   }
 
   async close(): Promise<void> {
     try {
-      await Promise.all([...this.clients].map((client) => client.end()));
+      await this.closeClients();
     } finally {
       this.clients.clear();
       await this.tunnel?.stop();

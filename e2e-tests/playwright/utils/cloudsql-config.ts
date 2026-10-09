@@ -2,13 +2,13 @@ import { readFileSync } from "node:fs";
 
 import type { V1Container, V1Deployment, V1Volume } from "@kubernetes/client-node";
 
+import { RUNTIME_DATABASE_KNEX_CONFIG } from "./postgres-config";
+
 /** Explicit version shared by the application sidecar and independent SQL proxy. */
 export const CLOUD_SQL_PROXY_IMAGE = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.26.0";
 export const CLOUD_SQL_SA_SECRET = "cloud-sql-service-account";
 export const CLOUD_SQL_DB_SECRET = "cloud-sql-database";
 export const CLOUD_SQL_PROXY_CONTAINER = "cloud-sql-proxy";
-export const CLOUD_SQL_ENTITY_PATH = "/opt/app-root/src/cloudsql/entity.yaml";
-export const CLOUD_SQL_ENTITY_URL = "http://127.0.0.1:8081/entity.yaml";
 
 export interface CloudSqlDeploymentConfig {
   instanceConnectionName: string;
@@ -97,34 +97,6 @@ export function buildCloudSqlEgressPolicy(deploymentName: string) {
   };
 }
 
-/** Serve run-owned catalog input over the URL location type supported by RHDH. */
-export function buildCloudSqlEntityServer(image: string): V1Container {
-  return {
-    name: "cloud-sql-entity",
-    image,
-    command: [
-      "node",
-      "-e",
-      `require('node:http').createServer((req, res) => {
-      if (req.url !== '/entity.yaml') { res.writeHead(404); res.end(); return; }
-      res.setHeader('Content-Type', 'text/yaml');
-      res.end(require('node:fs').readFileSync('${CLOUD_SQL_ENTITY_PATH}'));
-    }).listen(8081, '0.0.0.0');`,
-    ],
-    volumeMounts: [
-      { name: "cloud-sql-entity", mountPath: "/opt/app-root/src/cloudsql", readOnly: true },
-    ],
-    readinessProbe: { httpGet: { path: "/entity.yaml", port: 8081 }, periodSeconds: 2 },
-    securityContext: {
-      runAsNonRoot: true,
-      readOnlyRootFilesystem: true,
-      allowPrivilegeEscalation: false,
-      capabilities: { drop: ["ALL"] },
-    },
-    resources: { requests: { cpu: "50m", memory: "64Mi" } },
-  };
-}
-
 /** Native sidecar starts before the DB wait and stays up for the application lifetime. */
 export function buildCloudSqlProxy(instanceConnectionName: string, sidecar = true): V1Container {
   return {
@@ -188,16 +160,13 @@ export function isCloudSqlRevisionReady(
   );
 }
 
-export function cloudSqlAppConfig(
-  config: CloudSqlDeploymentConfig,
-  backendSecret = "${BACKEND_SECRET}",
-) {
+export function cloudSqlAppConfig(config: CloudSqlDeploymentConfig) {
   return {
-    reading: { allow: [{ host: "127.0.0.1:8081" }] },
     database: {
       client: "pg",
       pluginDivisionMode: "database",
       prefix: config.databasePrefix,
+      knexConfig: RUNTIME_DATABASE_KNEX_CONFIG,
       connection: {
         host: "${POSTGRES_HOST}",
         port: "${POSTGRES_PORT}",
@@ -205,16 +174,6 @@ export function cloudSqlAppConfig(
         password: "${POSTGRES_PASSWORD}",
         ssl: false,
       },
-    },
-    auth: {
-      externalAccess: [
-        { type: "legacy", options: { subject: "legacy-default-config", secret: backendSecret } },
-        {
-          type: "static",
-          options: { token: "${CLOUDSQL_API_TOKEN}", subject: "cloudsql-e2e" },
-          accessRestrictions: [{ plugin: "catalog" }],
-        },
-      ],
     },
   };
 }

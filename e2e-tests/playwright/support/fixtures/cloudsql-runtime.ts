@@ -1,7 +1,7 @@
 /* oxlint-disable import/max-dependencies -- coordinates deployment, SQL, diagnostics and Playwright lifecycle */
 import { randomBytes } from "node:crypto";
 
-import * as yaml from "yaml";
+import type { Client } from "pg";
 
 import {
   CLOUD_SQL_DB_SECRET,
@@ -13,7 +13,7 @@ import {
 import { CloudSqlDatabaseSession } from "../../utils/cloudsql-database";
 import { base64Encode, discoverRouterBase, resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
-import { pollUntil } from "../../utils/poll-until";
+import { createRuntimeCatalogProbe } from "../../utils/runtime-catalog";
 import { resolveConfig } from "../../utils/runtime-config";
 import {
   clearOwnedDatabases,
@@ -25,16 +25,17 @@ import {
   deleteOwnedRuntimeNamespace,
   deleteRuntimeApplication,
   collectRuntimeDiagnostics,
-  stopRuntimeApplication,
 } from "../../utils/runtime-lifecycle";
+import { restartRuntime } from "../../utils/runtime-restart";
 import { test as base } from "../coverage/test";
+import { withRuntimeRequest } from "./runtime-request";
 
 type CloudSqlRuntime = RuntimeDeploymentHandle & {
   databasePrefix: string;
   entityName: string;
   apiToken: string;
-  sql: CloudSqlDatabaseSession;
-  restart(): Promise<void>;
+  connect(database: string): Promise<Client>;
+  restart(whileStopped?: () => Promise<void>): Promise<void>;
 };
 
 const ownerLabel = "rhdh.redhat.com/cloudsql-run";
@@ -42,8 +43,16 @@ const ownerLabel = "rhdh.redhat.com/cloudsql-run";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const test = base.extend<{ cloudSqlSlot: number; cloudSqlRuntime: CloudSqlRuntime }>({
   cloudSqlSlot: [1, { option: true }],
-  baseURL: async ({ cloudSqlRuntime }, use) => {
-    await use(cloudSqlRuntime.baseURL);
+  request: async (
+    { playwright, cloudSqlRuntime, ignoreHTTPSErrors, extraHTTPHeaders, proxy },
+    use,
+  ) => {
+    await withRuntimeRequest(
+      playwright,
+      cloudSqlRuntime.baseURL,
+      { ignoreHTTPSErrors, extraHTTPHeaders, proxy },
+      use,
+    );
   },
   cloudSqlRuntime: [
     async ({ cloudSqlSlot }, use, testInfo) => {
@@ -74,10 +83,13 @@ export const test = base.extend<{ cloudSqlSlot: number; cloudSqlRuntime: CloudSq
         databasePrefix,
         revision: randomBytes(8).toString("hex"),
       };
+      config.catalogProbe = true;
       const entityName = `cloudsql-${runId}-${cloudSqlSlot}`;
-      const apiToken = randomBytes(32).toString("hex");
+      let apiToken = "";
       const redact = (text: string) =>
-        text.replaceAll(inputs.password, "[REDACTED]").replaceAll(apiToken, "[REDACTED]");
+        apiToken === ""
+          ? text.replaceAll(inputs.password, "[REDACTED]")
+          : text.replaceAll(inputs.password, "[REDACTED]").replaceAll(apiToken, "[REDACTED]");
       const kube = new KubeClient();
       const namespace = config.namespace;
       testInfo.annotations.push(
@@ -89,6 +101,7 @@ export const test = base.extend<{ cloudSqlSlot: number; cloudSqlRuntime: CloudSq
       let sqlReady = false;
       let setupError: unknown;
       try {
+        apiToken = (await createRuntimeCatalogProbe(kube, namespace, entityName)).apiToken;
         await kube.createOrUpdateSecret(
           {
             metadata: { name: CLOUD_SQL_SA_SECRET },
@@ -106,29 +119,22 @@ export const test = base.extend<{ cloudSqlSlot: number; cloudSqlRuntime: CloudSq
               POSTGRES_PORT: base64Encode("5432"),
               POSTGRES_USER: base64Encode(inputs.user),
               POSTGRES_PASSWORD: base64Encode(inputs.password),
-              CLOUDSQL_API_TOKEN: base64Encode(apiToken),
             },
           },
           namespace,
         );
-        await kube.createConfigMap(namespace, {
-          metadata: { name: "cloud-sql-entity" },
-          data: {
-            "entity.yaml": yaml.stringify({
-              apiVersion: "backstage.io/v1alpha1",
-              kind: "Component",
-              metadata: { name: entityName },
-              spec: { type: "service", lifecycle: "experimental", owner: "guests" },
-            }),
-          },
-        });
         const admin = await sql.start(instance, RUNTIME_DATABASE_CLEANUP_TIMEOUT_MS);
         sqlReady = true;
-        await clearOwnedDatabases(admin, databasePrefix);
-        const version = await admin.query<{ version: string; version_number: string }>(
-          "SELECT current_setting('server_version') AS version, current_setting('server_version_num') AS version_number",
-        );
-        await admin.end();
+        const version = await (async () => {
+          try {
+            await clearOwnedDatabases(admin, databasePrefix);
+            return await admin.query<{ version: string; version_number: string }>(
+              "SELECT current_setting('server_version') AS version, current_setting('server_version_num') AS version_number",
+            );
+          } finally {
+            await admin.end();
+          }
+        })();
         await testInfo.attach("cloudsql-target", {
           body: JSON.stringify(
             {
@@ -151,11 +157,9 @@ export const test = base.extend<{ cloudSqlSlot: number; cloudSqlRuntime: CloudSq
           databasePrefix,
           entityName,
           apiToken,
-          sql,
-          async restart() {
-            await stopRuntimeApplication(kube, namespace, config.releaseName, installMethod);
-            config.cloudSql!.revision = randomBytes(8).toString("hex");
-            await deployRuntime(config, installMethod, kube);
+          connect: (database) => sql.connect(database),
+          async restart(whileStopped) {
+            await restartRuntime(kube, config, installMethod, whileStopped);
           },
         });
       } catch (error) {
@@ -165,20 +169,11 @@ export const test = base.extend<{ cloudSqlSlot: number; cloudSqlRuntime: CloudSq
       await collectRuntimeDiagnostics(kube, namespace, testInfo, redact);
       const cleanupErrors: unknown[] = [];
       try {
-        await deleteRuntimeApplication(kube, namespace, config.releaseName, installMethod);
-        // The independent proxy stays alive; every other pod must stop before dropping databases.
-        await pollUntil(
-          async () => {
-            const pods = await kube.coreV1Api.listNamespacedPod(namespace);
-            return pods.body.items.every((pod) => pod.metadata?.name === sql.podName);
-          },
-          {
-            timeoutMs: 180_000,
-            intervalMs: 2_000,
-            label: "Cloud SQL application pods terminated before SQL cleanup",
-          },
-        );
+        await deleteRuntimeApplication(kube, namespace, config.releaseName, installMethod, [
+          sql.podName,
+        ]);
         if (sqlReady) {
+          await sql.closeClients();
           const cleanupClient = await sql.connect("postgres", RUNTIME_DATABASE_CLEANUP_TIMEOUT_MS);
           try {
             await clearOwnedDatabases(cleanupClient, databasePrefix);

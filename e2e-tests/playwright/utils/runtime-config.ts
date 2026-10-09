@@ -21,13 +21,20 @@ import * as yaml from "yaml";
 import {
   buildCloudSqlProxy,
   buildCloudSqlProxyVolume,
-  buildCloudSqlEntityServer,
   cloudSqlAppConfig,
   CLOUD_SQL_DB_SECRET,
   type CloudSqlDeploymentConfig,
 } from "./cloudsql-config";
 import { type ImageRef, buildImageRef, imageRefToString, parseCatalogIndexImage } from "./helper";
 import { BACKSTAGE_BACKEND_CONTAINER } from "./kube-client";
+import { RUNTIME_DATABASE_KNEX_CONFIG } from "./postgres-config";
+import {
+  buildRuntimeCatalogServer,
+  runtimeCatalogAppConfig,
+  RUNTIME_CATALOG_SOURCE,
+  RUNTIME_CATALOG_SECRET,
+  RUNTIME_CATALOG_TOKEN_KEY,
+} from "./runtime-catalog";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -63,6 +70,7 @@ export interface RuntimeDeployConfig {
   catalogIndex?: ImageRef;
   helm?: { chartUrl: string; chartVersion: string };
   cloudSql?: CloudSqlDeploymentConfig;
+  catalogProbe?: boolean;
   externalPostgres?: { host: string; port: number; user: string; databasePrefix: string };
   revision?: string;
 }
@@ -76,6 +84,7 @@ export function externalPostgresAppConfig(
     client: "pg",
     pluginDivisionMode: "database",
     prefix: config.databasePrefix,
+    knexConfig: RUNTIME_DATABASE_KNEX_CONFIG,
     connection: {
       host: "${POSTGRES_HOST}",
       port: "${POSTGRES_PORT}",
@@ -213,13 +222,17 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
             existingSecretRef: { name: CLOUD_SQL_DB_SECRET, key: "POSTGRES_PASSWORD" },
           },
           preInitContainers: [buildCloudSqlProxy(cloudSql.instanceConnectionName)],
-          extraContainers: [buildCloudSqlEntityServer(imageRefToString(config.image))],
           podAnnotations: { "rhdh.redhat.com/cloudsql-revision": cloudSql.revision },
+        }
+      : {}),
+    ...(config?.catalogProbe === true
+      ? {
+          extraContainers: [buildRuntimeCatalogServer(imageRefToString(config.image))],
           extraEnv: [
             {
-              name: "CLOUDSQL_API_TOKEN",
+              name: RUNTIME_CATALOG_TOKEN_KEY,
               valueFrom: {
-                secretKeyRef: { name: CLOUD_SQL_DB_SECRET, key: "CLOUDSQL_API_TOKEN" },
+                secretKeyRef: { name: RUNTIME_CATALOG_SECRET, key: RUNTIME_CATALOG_TOKEN_KEY },
               },
             },
           ],
@@ -237,12 +250,15 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
         // without it. Same home extensions as the CI dynamic-plugins-config.yaml.
         extensions: homeExtensions,
       },
-      ...(cloudSql
+      ...(cloudSql || external || config?.catalogProbe === true
         ? {
-            backend: cloudSqlAppConfig(cloudSql),
+            backend: {
+              ...(cloudSql ? cloudSqlAppConfig(cloudSql) : {}),
+              ...(external ? { database: externalPostgresAppConfig(external) } : {}),
+              ...(config?.catalogProbe === true ? runtimeCatalogAppConfig() : {}),
+            },
           }
         : {}),
-      ...(external ? { backend: { database: externalPostgresAppConfig(external) } } : {}),
       auth: {
         environment: "development",
         providers: {
@@ -290,14 +306,9 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
       },
     ],
     extraVolumes: [
-      ...(cloudSql
-        ? [
-            buildCloudSqlProxyVolume(),
-            {
-              name: "cloud-sql-entity",
-              configMap: { name: "cloud-sql-entity" },
-            },
-          ]
+      ...(cloudSql ? [buildCloudSqlProxyVolume()] : []),
+      ...(config?.catalogProbe === true
+        ? [{ name: RUNTIME_CATALOG_SOURCE, configMap: { name: RUNTIME_CATALOG_SOURCE } }]
         : []),
       {
         name: "postgres-crt",
@@ -381,10 +392,11 @@ export function generateAppConfigYaml(runtimeUrl: string, config?: RuntimeDeploy
       },
       baseUrl: runtimeUrl,
       cors: { origin: runtimeUrl },
-      ...(config?.cloudSql ? cloudSqlAppConfig(config.cloudSql, "secret") : {}),
+      ...(config?.cloudSql ? cloudSqlAppConfig(config.cloudSql) : {}),
       ...(config?.externalPostgres
         ? { database: externalPostgresAppConfig(config.externalPostgres) }
         : {}),
+      ...(config?.catalogProbe === true ? runtimeCatalogAppConfig("secret") : {}),
     },
     auth: {
       environment: "development",
@@ -525,7 +537,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
                     name: BACKSTAGE_BACKEND_CONTAINER,
                     image: fullImage,
                   },
-                  ...(cloudSql ? [buildCloudSqlEntityServer(fullImage)] : []),
+                  ...(config.catalogProbe === true ? [buildRuntimeCatalogServer(fullImage)] : []),
                 ],
                 initContainers: [
                   ...(cloudSql ? [buildCloudSqlProxy(cloudSql.instanceConnectionName)] : []),
@@ -538,12 +550,12 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
                   ),
                 ],
                 volumes: [
-                  ...(cloudSql
+                  ...(cloudSql ? [buildCloudSqlProxyVolume()] : []),
+                  ...(config.catalogProbe === true
                     ? [
-                        buildCloudSqlProxyVolume(),
                         {
-                          name: "cloud-sql-entity",
-                          configMap: { name: "cloud-sql-entity" },
+                          name: RUNTIME_CATALOG_SOURCE,
+                          configMap: { name: RUNTIME_CATALOG_SOURCE },
                         },
                       ]
                     : []),
@@ -574,11 +586,11 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
           envs,
           secrets: [
             { name: "rhdh-runtime-config" },
-            ...(cloudSql
+            ...(config.catalogProbe === true
               ? [
                   {
-                    name: CLOUD_SQL_DB_SECRET,
-                    key: "CLOUDSQL_API_TOKEN",
+                    name: RUNTIME_CATALOG_SECRET,
+                    key: RUNTIME_CATALOG_TOKEN_KEY,
                     containers: [BACKSTAGE_BACKEND_CONTAINER],
                   },
                 ]

@@ -105,11 +105,6 @@ async function setupSchemaModeTests(
     return null;
   }
 
-  testInfo.annotations.push(
-    { type: "component", description: "data-management" },
-    { type: "namespace", description: namespace },
-  );
-
   let portForwardHarness: PortForwardHarness | null = null;
   if (env.pfNamespace !== undefined && env.pfResource !== undefined) {
     portForwardHarness = await startSchemaModePortForward(env.pfNamespace, env.pfResource);
@@ -138,6 +133,10 @@ test.describe("Verify pluginDivisionMode: schema", () => {
 
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
+    testInfo.annotations.push(
+      { type: "component", description: "data-management" },
+      { type: "namespace", description: namespace },
+    );
 
     if (readSchemaModeEnv() === null) {
       const kubeClient = new KubeClient();
@@ -157,21 +156,25 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     await portForwardHarness?.stop();
   });
 
-  test("Verify database user has restricted permissions", async () => {
+  test("Verify the application user cannot create databases", async () => {
     const hasRestrictedPerms = await testSetup.verifyRestrictedDatabasePermissions();
     expect(hasRestrictedPerms).toBe(true);
   });
 
-  test("Verify RHDH is accessible with schema mode", async ({ guestPage }) => {
+  test("Verify Catalog uses the configured schema and RHDH is accessible", async ({
+    guestPage,
+  }) => {
     const kubeClient = new KubeClient();
     const deploymentName = testSetup.getDeploymentName();
 
     await waitForRuntimeRollout(kubeClient, namespace, deploymentName);
-    expect(await testSetup.verifyPluginSchemas()).toBe(true);
+    expect(await testSetup.verifyCatalogSchema()).toBe(true);
 
     const homePage = new HomePage(guestPage);
     await homePage.verifyMainHeadingVisible();
 
-    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+    console.log(
+      "RHDH is accessible - Catalog migrated its schema without separate plugin databases",
+    );
   });
 });

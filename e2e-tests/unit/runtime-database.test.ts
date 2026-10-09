@@ -1,11 +1,17 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   readExternalDatabaseInputs,
   runtimeDatabasePrefix,
   clearOwnedDatabases,
+  closeDatabaseClients,
   type OwnedDatabaseClient,
 } from "../playwright/utils/runtime-database";
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 describe.each(["rds", "azure"] as const)("%s optional runtime inputs", (provider) => {
   const root = provider === "rds" ? "RDS" : "AZURE_DB";
@@ -40,7 +46,7 @@ function result(names: string[]) {
   return { rows: names.map((datname) => ({ datname })) };
 }
 
-describe.each(["rt_012345abcdef_rds1_", "csql_012345abcdef_1_"])(
+describe.each(["rt_012345abcdef_rds1_", "rt_012345abcdef_azure1_", "csql_012345abcdef_1_"])(
   "%s owned database cleanup",
   (prefix) => {
     it("refuses broad or invalid prefixes before issuing SQL", async () => {
@@ -56,9 +62,12 @@ describe.each(["rt_012345abcdef_rds1_", "csql_012345abcdef_1_"])(
         .fn<OwnedDatabaseClient["query"]>()
         .mockResolvedValue(result([`${prefix.replace("012345abcdef", "abcdef012345")}catalog`]));
       await expect(clearOwnedDatabases({ query }, prefix)).rejects.toThrow("ownership boundary");
+      const literalPrefix: unknown = expect.stringContaining("starts_with(datname, $1)");
       expect(query).toHaveBeenCalledExactlyOnceWith(
-        expect.stringContaining("starts_with(datname, $1)"),
-        [prefix],
+        expect.objectContaining({
+          text: literalPrefix,
+          values: [prefix],
+        }),
       );
     });
     it("identifies failed drops and preserves their cause", async () => {
@@ -66,30 +75,95 @@ describe.each(["rt_012345abcdef_rds1_", "csql_012345abcdef_1_"])(
       const query = vi
         .fn<OwnedDatabaseClient["query"]>()
         .mockResolvedValueOnce(result([`${prefix}catalog`]))
+        .mockResolvedValueOnce(result([]))
         .mockRejectedValueOnce(error);
       await expect(clearOwnedDatabases({ query }, prefix)).rejects.toMatchObject({
         message: `Failed to drop owned database ${prefix}catalog`,
         cause: error,
       });
     });
-    it("waits for lingering sessions without requiring FORCE or signal privileges", async () => {
+    it("waits beyond the old retry window for sessions without FORCE or signalling", async () => {
       vi.useFakeTimers();
       try {
-        const query = vi
-          .fn<OwnedDatabaseClient["query"]>()
-          .mockResolvedValueOnce(result([`${prefix}catalog`]))
-          .mockRejectedValueOnce(
-            Object.assign(new Error("database is being accessed"), { code: "55006" }),
-          )
-          .mockResolvedValueOnce(result([]))
-          .mockResolvedValueOnce(result([]));
+        const start = Date.now();
+        let dropped = false;
+        const query = vi.fn<OwnedDatabaseClient["query"]>().mockImplementation((input) => {
+          const text = typeof input === "string" ? input : input.text;
+          if (text.includes("FROM pg_database"))
+            return Promise.resolve(result(dropped ? [] : [`${prefix}catalog`]));
+          if (text.startsWith("DROP")) {
+            if (Date.now() - start < 40_000)
+              return Promise.reject(Object.assign(new Error("busy"), { code: "55006" }));
+            dropped = true;
+          }
+          return Promise.resolve(
+            result(
+              text.includes("pg_stat_activity") && Date.now() - start < 40_000
+                ? [`${prefix}catalog`]
+                : [],
+            ),
+          );
+        });
         const cleanup = expect(clearOwnedDatabases({ query }, prefix)).resolves.toBeUndefined();
         await vi.runAllTimersAsync();
         await cleanup;
-        expect(query).toHaveBeenNthCalledWith(3, `DROP DATABASE IF EXISTS "${prefix}catalog"`);
+        expect(dropped).toBe(true);
+        expect(
+          query.mock.calls
+            .map(([input]) => (typeof input === "string" ? input : input.text))
+            .join("\n"),
+        ).not.toMatch(/FORCE|pg_terminate_backend/u);
       } finally {
         vi.useRealTimers();
       }
     });
+    it("fails at a bounded deadline with only owned-session diagnostics", async () => {
+      vi.useFakeTimers();
+      const query = vi.fn<OwnedDatabaseClient["query"]>().mockImplementation((input) => {
+        const text = typeof input === "string" ? input : input.text;
+        if (text.startsWith("DROP"))
+          return Promise.reject(Object.assign(new Error("busy"), { code: "55006" }));
+        return Promise.resolve(result(text.includes("set_config") ? [] : [`${prefix}catalog`]));
+      });
+      const cleanup = expect(clearOwnedDatabases({ query }, prefix, 5_000)).rejects.toThrow(
+        `remaining sessions: [{"datname":"${prefix}catalog"}]`,
+      );
+      await vi.advanceTimersByTimeAsync(5_000);
+      await cleanup;
+      const sessionQueries = query.mock.calls
+        .map(([input]) => input)
+        .filter((input) => typeof input !== "string" && input.text.includes("pg_stat_activity"));
+      const boundedTimeout: unknown = expect.any(Number);
+      expect(sessionQueries).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ values: [prefix], query_timeout: boundedTimeout }),
+        ]),
+      );
+    });
   },
 );
+
+it("settles every client close before reporting an individual failure", async () => {
+  vi.useFakeTimers();
+  const failed = { end: vi.fn<() => Promise<void>>().mockRejectedValue(new Error("close failed")) };
+  let closed = false;
+  const delayed = {
+    end: vi.fn<() => Promise<void>>().mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          setTimeout(() => {
+            closed = true;
+            resolve();
+          }, 50);
+        }),
+    ),
+  };
+  const clients = new Set([failed, delayed]);
+  const closing = expect(closeDatabaseClients(clients)).rejects.toThrow(
+    "SQL clients failed to close",
+  );
+  await vi.advanceTimersByTimeAsync(50);
+  await closing;
+  expect(closed).toBe(true);
+  expect(clients.size).toBe(0);
+});

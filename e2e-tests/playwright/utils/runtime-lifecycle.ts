@@ -51,7 +51,7 @@ export async function resetRuntimeNamespace(
 }
 
 /** Change the owner, never fight an Operator by patching its generated Deployment. */
-async function setRuntimeReplicas(
+export async function setRuntimeReplicas(
   kube: KubeClient,
   namespace: string,
   releaseName: string,
@@ -204,6 +204,7 @@ export async function deleteRuntimeApplication(
   namespace: string,
   releaseName: string,
   method: "helm" | "operator",
+  remainingPods: readonly string[] = [],
 ): Promise<void> {
   if (method === "helm") {
     await run(
@@ -245,7 +246,7 @@ export async function deleteRuntimeApplication(
   await pollUntil(
     async () => {
       const pods = await kube.coreV1Api.listNamespacedPod(namespace);
-      return !pods.body.items.some((pod) => pod.metadata?.name?.startsWith(`${name}-`) === true);
+      return pods.body.items.every((pod) => remainingPods.includes(pod.metadata?.name ?? ""));
     },
     { timeoutMs: 180_000, intervalMs: 2_000, label: `Delete runtime application ${name}` },
   );

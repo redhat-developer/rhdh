@@ -1,4 +1,4 @@
-import { Client } from "pg";
+import { Client, type QueryConfig } from "pg";
 
 import { sleep } from "./poll-until";
 import { readCertificateFile } from "./postgres-config";
@@ -47,7 +47,10 @@ export function runtimeDatabasePrefix(
 }
 
 export interface OwnedDatabaseClient {
-  query(text: string, values?: string[]): Promise<{ rows: Array<{ datname: string }> }>;
+  query(
+    text: string | (QueryConfig<string[]> & { query_timeout: number }),
+    values?: string[],
+  ): Promise<{ rows: Array<{ datname: string }> }>;
 }
 
 export function assertOwnedDatabasePrefix(prefix: string): void {
@@ -71,27 +74,83 @@ export async function listOwnedDatabases(
 export async function clearOwnedDatabases(
   client: OwnedDatabaseClient,
   prefix: string,
+  timeoutMs = RUNTIME_DATABASE_CLEANUP_TIMEOUT_MS,
 ): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  const query = (text: string, values?: string[], read = false) => {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) throw new Error(`Database cleanup deadline exceeded for ${prefix}`);
+    return client.query({
+      text,
+      values,
+      query_timeout: Math.min(remaining, read ? 10_000 : remaining),
+    });
+  };
+  const reads: OwnedDatabaseClient = {
+    query: (text, values) =>
+      typeof text === "string" ? query(text, values, true) : query(text.text, text.values, true),
+  };
   // Writers must be stopped first. FORCE can try to signal privileged Cloud SQL
   // processes that ordinary database owners cannot terminate.
-  for (const name of await listOwnedDatabases(client, prefix)) {
+  for (const name of await listOwnedDatabases(reads, prefix)) {
     if (!name.startsWith(prefix)) throw new Error("Database escaped runtime ownership boundary");
     const quoted = `"${name.replaceAll('"', '""')}"`;
-    for (let attempt = 0; attempt < 10; attempt++) {
+    for (;;) {
       try {
-        await client.query(`DROP DATABASE IF EXISTS ${quoted}`);
+        // Bound the server too: a client timeout alone does not cancel a checkpointing DROP.
+        await query(
+          "SELECT set_config('statement_timeout', $1, false)",
+          [String(Math.max(1, deadline - Date.now()))],
+          true,
+        );
+        await query(`DROP DATABASE IF EXISTS ${quoted}`);
         break;
       } catch (error) {
         const busy =
           typeof error === "object" && error !== null && Reflect.get(error, "code") === "55006";
-        if (!busy || attempt === 9)
-          throw new Error(`Failed to drop owned database ${name}`, { cause: error });
-        await sleep(2_000);
+        if (!busy) throw new Error(`Failed to drop owned database ${name}`, { cause: error });
+        let sessions: Array<{ datname: string }> = [];
+        try {
+          do {
+            sessions = (
+              await query(
+                "SELECT pid, datname, backend_type, state, wait_event_type, wait_event FROM pg_stat_activity WHERE starts_with(datname, $1)",
+                [prefix],
+                true,
+              )
+            ).rows;
+            if (sessions.some((session) => !session.datname.startsWith(prefix)))
+              throw new Error("Session escaped runtime ownership boundary", { cause: error });
+            // Backends can linger after pod termination. Do not signal privileged processes.
+            await sleep(Math.min(2_000, Math.max(0, deadline - Date.now())));
+          } while (sessions.length > 0 && Date.now() < deadline);
+          if (Date.now() >= deadline)
+            throw new Error("Owned database sessions did not drain", { cause: error });
+        } catch (drainError) {
+          throw new AggregateError(
+            [error, drainError],
+            `Failed to drop owned database ${name}; remaining sessions: ${JSON.stringify(sessions)}`,
+            { cause: drainError },
+          );
+        }
       }
     }
   }
-  if ((await listOwnedDatabases(client, prefix)).length > 0)
+  if ((await listOwnedDatabases(reads, prefix)).length > 0)
     throw new Error(`Database cleanup left resources for ${prefix}`);
+}
+
+/** Finish every close attempt before cleanup, even if an individual connection fails. */
+export async function closeDatabaseClients(clients: Set<{ end(): Promise<void> }>): Promise<void> {
+  const results = await Promise.allSettled([...clients].map((client) => client.end()));
+  clients.clear();
+  const errors = results
+    .filter((result) => result.status === "rejected")
+    .map((result) => {
+      const reason: unknown = result.reason;
+      return reason;
+    });
+  if (errors.length > 0) throw new AggregateError(errors, "Runtime SQL clients failed to close");
 }
 
 export async function connectExternalDatabase(
@@ -99,23 +158,31 @@ export async function connectExternalDatabase(
   database = "postgres",
   statementTimeoutMs = 30_000,
 ): Promise<Client> {
-  const client = new Client({
-    host: inputs.host,
-    port: inputs.port,
-    user: inputs.user,
-    password: inputs.password,
-    database,
-    ssl: { ca: inputs.certificate, rejectUnauthorized: true },
-    connectionTimeoutMillis: 30_000,
-    statement_timeout: statementTimeoutMs,
-    query_timeout: statementTimeoutMs + 10_000,
-  });
-  client.on("error", () => {});
-  try {
-    await client.connect();
-    return client;
-  } catch (error) {
-    await client.end();
-    throw error;
+  for (let attempt = 0; ; attempt++) {
+    const client = new Client({
+      host: inputs.host,
+      port: inputs.port,
+      user: inputs.user,
+      password: inputs.password,
+      database,
+      application_name: "rhdh-runtime-probe",
+      ssl: { ca: inputs.certificate, rejectUnauthorized: true },
+      connectionTimeoutMillis: 30_000,
+      statement_timeout: statementTimeoutMs,
+      query_timeout: statementTimeoutMs + 10_000,
+    });
+    client.on("error", () => {});
+    try {
+      await client.connect();
+      return client;
+    } catch (error) {
+      await client.end();
+      // Retry only transport establishment, never SQL or invalid credentials/certificates.
+      const code: unknown =
+        typeof error === "object" && error !== null ? Reflect.get(error, "code") : undefined;
+      const timedOut = error instanceof Error && error.message === "timeout expired";
+      if (attempt >= 2 || (!timedOut && code !== "ETIMEDOUT" && code !== "ECONNRESET")) throw error;
+      await sleep(2_000);
+    }
   }
 }

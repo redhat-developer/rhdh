@@ -3,6 +3,8 @@
  * Handles database setup and RHDH configuration for both Helm and Operator deployments.
  */
 
+import { randomBytes } from "node:crypto";
+
 import { base64Encode } from "../../utils/helper";
 import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
 import { POSTGRES_ENV_KEYS } from "../../utils/postgres-config";
@@ -15,6 +17,7 @@ import {
 import {
   getSchemaModeEnv,
   connectAdminClient,
+  connectSchemaModeClient,
   cleanupOldPluginDatabases,
   setupSchemaModeDatabase,
 } from "./schema-mode-db";
@@ -56,7 +59,7 @@ export class SchemaModeTestSetup {
   }
 
   getDeploymentName(): string {
-    return getRhdhDeploymentName();
+    return getRhdhDeploymentName(this.installMethod, this.releaseName);
   }
 
   private getSecretName(): string {
@@ -245,32 +248,52 @@ export class SchemaModeTestSetup {
         throw new Error(`Database user "${this.env.dbUser}" not found`);
       }
 
-      const hasCreateDb = result.rows[0].rolcreatedb || result.rows[0].rolsuper;
-      if (!hasCreateDb) {
-        console.log(`Database user "${this.env.dbUser}" has restricted permissions (NOCREATEDB)`);
-        return true;
+      const client = await connectSchemaModeClient(this.env);
+      const name = `schema_permission_${randomBytes(6).toString("hex")}`;
+      let created = false;
+      let denied = false;
+      try {
+        try {
+          await client.query(`CREATE DATABASE "${name}"`);
+          created = true;
+        } catch (error) {
+          if (typeof error !== "object" || error === null || Reflect.get(error, "code") !== "42501")
+            throw error;
+          denied = true;
+        }
+      } finally {
+        try {
+          await client.end();
+        } finally {
+          // If the assertion exposes a privilege regression, remove only this exact probe database.
+          if (created) await adminClient.query(`DROP DATABASE "${name}"`);
+        }
       }
-      console.warn(`Database user "${this.env.dbUser}" has CREATEDB privilege`);
-      return false;
+      return denied && !result.rows[0].rolcreatedb && !result.rows[0].rolsuper;
     } finally {
       await adminClient.end();
     }
   }
 
-  async verifyPluginSchemas(): Promise<boolean> {
-    const client = await connectAdminClient({
-      dbHost: this.env.dbHost,
-      dbAdminUser: this.env.dbAdminUser,
-      dbAdminPassword: this.env.dbAdminPassword,
-      database: this.env.dbName,
-    });
+  async verifyCatalogSchema(): Promise<boolean> {
+    const client = await connectSchemaModeClient(this.env);
     try {
       const schema = await client.query("SELECT 1 FROM pg_namespace WHERE nspname = 'catalog'");
       if (schema.rows.length !== 1) return false;
       const migrations = await client.query<{ count: string }>(
         "SELECT count(*) FROM catalog.knex_migrations",
       );
-      return Number(migrations.rows[0].count) > 0;
+      const database = await client.query<{ database: string }>(
+        "SELECT current_database() AS database",
+      );
+      const separateDatabases = await client.query<{ datname: string }>(
+        "SELECT datname FROM pg_database WHERE NOT datistemplate AND starts_with(datname, 'backstage_plugin_')",
+      );
+      return (
+        database.rows[0].database === this.env.dbName &&
+        Number(migrations.rows[0].count) > 0 &&
+        separateDatabases.rows.length === 0
+      );
     } finally {
       await client.end();
     }

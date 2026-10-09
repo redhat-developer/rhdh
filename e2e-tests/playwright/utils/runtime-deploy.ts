@@ -375,7 +375,7 @@ async function waitForRuntimeRevision(
   config: RuntimeDeployConfig,
   deploymentName: string,
 ): Promise<void> {
-  if (!config.cloudSql) return;
+  if (!config.cloudSql && config.revision === undefined) return;
   const cloudSql = config.cloudSql;
   await pollUntil(
     async () => {
@@ -383,9 +383,12 @@ async function waitForRuntimeRevision(
         deploymentName,
         config.namespace,
       );
-      return isCloudSqlRevisionReady(body, cloudSql);
+      return cloudSql
+        ? isCloudSqlRevisionReady(body, cloudSql)
+        : body.spec?.template.metadata?.annotations?.["rhdh.redhat.com/runtime-run"] ===
+            config.revision;
     },
-    { timeoutMs: 600_000, intervalMs: 2_000, label: "Cloud SQL deployment revision" },
+    { timeoutMs: 600_000, intervalMs: 2_000, label: "Expected runtime deployment revision" },
   );
 }
 

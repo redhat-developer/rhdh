@@ -175,6 +175,17 @@ export function connectAdminClient(
   });
 }
 
+export function connectSchemaModeClient(config: SchemaModeEnv): Promise<Client> {
+  return connectWithSslFallback({
+    host: normalizeDbHost(config.dbHost),
+    port: 5432,
+    user: config.dbUser,
+    password: config.dbPassword,
+    database: config.dbName,
+    connectionTimeoutMillis: 30000,
+  });
+}
+
 export async function cleanupOldPluginDatabases(adminClient: Client): Promise<void> {
   const oldDbsResult = await adminClient.query<{ datname: string }>(`
     SELECT datname FROM pg_database
