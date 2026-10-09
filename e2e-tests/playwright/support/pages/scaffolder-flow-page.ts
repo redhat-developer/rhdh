@@ -34,7 +34,7 @@ export class ScaffolderFlowPage {
   }
 
   async verifySelfServiceHeading(): Promise<void> {
-    await verification.verifyHeading(this.page, "Create");
+    await verification.verifyHeading(this.page, "Self-service");
   }
 
   async clickImportGitRepository(): Promise<void> {

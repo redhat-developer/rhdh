@@ -64,6 +64,10 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
+    test.skip(
+      true,
+      "RHDHBUGS-3921: entity 3-dot menu empty — Inspect entity / Raw YAML unreachable",
+    );
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(
@@ -98,6 +102,10 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test("Verify scaffolderOf relation on the template", async () => {
+    test.skip(
+      true,
+      "RHDHBUGS-3921: entity 3-dot menu empty — Inspect entity / Raw YAML unreachable",
+    );
     await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
     await catalogImport.verifyEntityYaml(

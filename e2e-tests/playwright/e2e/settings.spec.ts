@@ -36,8 +36,6 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.uncheckCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
     await settingsPage.verifySidebarMenuItemHidden(t["rhdh"]["fr"]["menuItem.apis"]);
     await settingsPage.checkCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
-    // NFS sidebar page titles come from upstream PageBlueprint defaults ("Home"), not
-    // rhdh menuItem.* translations — only GlobalHeader chrome translates with AppLanguageApi.
-    await settingsPage.verifyText("Home");
+    await settingsPage.verifySidebarMenuItemVisible(t["rhdh"]["fr"]["menuItem.home"]);
   });
 });

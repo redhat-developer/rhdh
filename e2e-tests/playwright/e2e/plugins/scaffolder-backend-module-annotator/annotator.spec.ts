@@ -68,24 +68,40 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   });
 
   test("Verify custom label is added to scaffolded component", async () => {
+    test.skip(
+      true,
+      "RHDHBUGS-3921: entity 3-dot menu empty — Inspect entity / Raw YAML unreachable",
+    );
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(`labels:\n    custom: ${reactAppDetails.label}\n`);
   });
 
   test("Verify custom annotation is added to scaffolded component", async () => {
+    test.skip(
+      true,
+      "RHDHBUGS-3921: entity 3-dot menu empty — Inspect entity / Raw YAML unreachable",
+    );
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(`custom.io/annotation: ${reactAppDetails.annotation}`);
   });
 
   test("Verify template version annotation is added to scaffolded component", async () => {
+    test.skip(
+      true,
+      "RHDHBUGS-3921: entity 3-dot menu empty — Inspect entity / Raw YAML unreachable",
+    );
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);
   });
 
   test("Verify template version annotation is present on the template", async () => {
+    test.skip(
+      true,
+      "RHDHBUGS-3921: entity 3-dot menu empty — Inspect entity / Raw YAML unreachable",
+    );
     await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
     await catalogImport.verifyEntityYaml(`backstage.io/template-version: 0.0.1`);

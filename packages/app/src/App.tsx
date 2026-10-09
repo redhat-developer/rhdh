@@ -4,7 +4,6 @@ import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-featu
 import catalogPlugin from "@backstage/plugin-catalog/alpha";
 import catalogImportBase from "@backstage/plugin-catalog-import/alpha";
 import catalogUnprocessedEntitiesPlugin from "@backstage/plugin-catalog-unprocessed-entities/alpha";
-import scaffolderPlugin from "@backstage/plugin-scaffolder/alpha";
 import searchPlugin from "@backstage/plugin-search/alpha";
 import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
 import homePagePlugin from "@backstage/plugin-home/alpha";
@@ -15,6 +14,7 @@ import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-trans
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { catalogCreatedAtModule } from "./modules/catalog";
 import { learningPathsModule } from "./modules/learning-paths";
+import { rhdhScaffolderPlugin } from "./modules/scaffolder";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
@@ -37,7 +37,7 @@ const app = createApp({
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
     catalogUnprocessedEntitiesPlugin,
     rhdhCatalogGraphPlugin, // catalog-graph UI + scaffolderOf/scaffoldedFrom API override
-    scaffolderPlugin,
+    rhdhScaffolderPlugin, // Self-service page/nav title (RHDHBUGS-3676)
     searchPlugin,
     userSettingsPlugin,
     dynamicFrontendFeaturesLoader(),
