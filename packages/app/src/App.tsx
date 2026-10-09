@@ -9,7 +9,6 @@ import searchPlugin from "@backstage/plugin-search/alpha";
 import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
 import homePagePlugin from "@backstage/plugin-home/alpha";
 
-import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
 
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
@@ -47,7 +46,6 @@ const app = createApp({
     rhdhApisModule, // storage, learning-path APIs
     translationsApiModule,
     rhdhTranslationsModule, // RHDH + plugin translation overrides (de, es, fr, it, ja)
-    rhdhThemeModule, // RHDH light/dark themes
   ],
 });
 

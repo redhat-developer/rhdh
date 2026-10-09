@@ -151,7 +151,6 @@ template for the rest — copy their structure rather than starting from scratch
 | `settings` (#5)                        | `packages/app/src/components/UserSettings/GeneralPage.test.tsx`        |
 | `plugins/frontend/sidebar` (#8)        | `packages/app/src/components/Root/CustomSidebarItem.test.tsx`          |
 | `plugins/user-settings-info-card` (#9) | `packages/app/src/components/UserSettings/InfoCard.test.tsx`           |
-| _(theming / global header feature)_    | `packages/app/src/hooks/useThemedConfig.test.tsx`                      |
 | _(header mount points feature)_        | `packages/app/src/utils/dynamicUI/getMountPointData.test.ts`           |
 
 These are Vitest/RTL tests in `packages/app` — they run on every PR, no cluster, no
