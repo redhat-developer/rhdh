@@ -63,7 +63,9 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     await scaffolderFlowPage.verifyComponentNameVisible(reactAppDetails.componentName);
   });
 
-  test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
+  // RHDHBUGS-3924: Re-enable these checks when the localized header restores "Inspect entity".
+  // oxlint-disable-next-line playwright/no-skipped-test -- RHDHBUGS-3924
+  test.skip("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
     await scaffolderFlowPage.openComponentInCatalog(reactAppDetails.componentName);
 
     await catalogImport.verifyEntityYaml(
@@ -97,7 +99,8 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     );
   });
 
-  test("Verify scaffolderOf relation on the template", async () => {
+  // oxlint-disable-next-line playwright/no-skipped-test -- RHDHBUGS-3924
+  test.skip("Verify scaffolderOf relation on the template", async () => {
     await scaffolderFlowPage.openTemplateFromCatalog("Create React App Template", "website");
 
     await catalogImport.verifyEntityYaml(
