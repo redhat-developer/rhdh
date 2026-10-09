@@ -1,4 +1,10 @@
 export interface Config {
+  /**
+   * Sign-in providers rendered by app-auth.
+   * @visibility frontend
+   */
+  signInPage?: string | string[];
+
   /** Configurations for the backstage(janus) instance */
   developerHub?: {
     /**
