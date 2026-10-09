@@ -134,14 +134,17 @@ export function getKubeApiErrorMessage(error: unknown): string {
  * Uses resolveInstallMethod() which checks INSTALL_METHOD env var first,
  * then falls back to JOB_NAME pattern matching.
  */
-export function getRhdhDeploymentName(): string {
-  const releaseName =
-    process.env.RELEASE_NAME !== undefined && process.env.RELEASE_NAME !== ""
-      ? process.env.RELEASE_NAME
-      : "rhdh";
-  return resolveInstallMethod() === "operator"
+export function getRhdhDeploymentName(
+  installMethod = resolveInstallMethod(),
+  releaseName = process.env.RELEASE_NAME !== undefined && process.env.RELEASE_NAME !== ""
+    ? process.env.RELEASE_NAME
+    : "rhdh",
+): string {
+  return installMethod === "operator"
     ? `backstage-${releaseName}`
-    : `${releaseName}-developer-hub`;
+    : releaseName.includes("developer-hub")
+      ? releaseName
+      : `${releaseName}-developer-hub`;
 }
 
 export function rejectAsError(reject: (reason: Error) => void, err: unknown): void {

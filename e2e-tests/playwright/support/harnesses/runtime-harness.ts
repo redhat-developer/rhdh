@@ -1,93 +1,50 @@
 import { type Page } from "@playwright/test";
 
-import { KubeClient, getRhdhDeploymentName } from "../../utils/kube-client";
-import { pollUntil } from "../../utils/poll-until";
-import {
-  configurePostgresCertificate,
-  configurePostgresCredentials,
-  prepareForExternalDatabase,
-} from "../../utils/postgres-config";
+import { KubeClient } from "../../utils/kube-client";
+import { stopRuntimeApplication, resumeRuntimeApplication } from "../../utils/runtime-lifecycle";
+import { waitForRhdhReady } from "../../utils/wait-for-rhdh-ready";
 import { signInAsGuest } from "../auth/guest-auth";
-
-type ExternalPostgresOptions = {
-  certificateContent?: string | null;
-  credentials: {
-    host: string;
-    port?: string;
-    user: string;
-    password: string;
-    database?: string;
-    sslMode?: string;
-  };
-};
 
 export class RuntimeHarness {
   constructor(
     private readonly namespace: string,
-    private readonly deploymentName: string = getRhdhDeploymentName(),
     private readonly kubeClient: KubeClient = new KubeClient(),
   ) {}
 
-  async updateConfigMapTitle(configMapName: string, title: string): Promise<void> {
-    await this.kubeClient.updateConfigMapTitle(configMapName, this.namespace, title);
-  }
-
-  async configurePostgresCertificate(certificateContent: string): Promise<void> {
-    await configurePostgresCertificate(this.kubeClient, this.namespace, certificateContent);
-  }
-
-  async configurePostgresCredentials(
-    credentials: ExternalPostgresOptions["credentials"],
-  ): Promise<void> {
-    await configurePostgresCredentials(this.kubeClient, this.namespace, credentials);
-  }
-
-  async restartDeployment(): Promise<void> {
-    await this.kubeClient.restartDeployment(this.deploymentName, this.namespace);
-  }
-
-  async restartDeploymentWithRetry(timeoutMs = 90_000, intervalMs = 15_000): Promise<void> {
-    let lastError: unknown;
+  /** Restore the original configuration and restart even when the behavioral assertion fails. */
+  async withAppTitle(title: string, verify: () => Promise<void>): Promise<void> {
+    const name = await this.kubeClient.findAppConfigMap(this.namespace);
+    const original = await this.kubeClient.getConfigMap(name, this.namespace);
+    const errors: unknown[] = [];
     try {
-      await pollUntil(
-        async () => {
-          try {
-            await this.restartDeployment();
-            return true;
-          } catch (error) {
-            lastError = error;
-            const message = error instanceof Error ? error.message : String(error);
-            console.warn(`Deployment restart failed, retrying: ${message}`);
-            return false;
-          }
-        },
-        {
-          timeoutMs,
-          intervalMs,
-          label: "Failed to restart deployment",
-        },
+      await stopRuntimeApplication(this.kubeClient, this.namespace);
+      await this.kubeClient.updateConfigMapTitle(name, this.namespace, title);
+      await resumeRuntimeApplication(this.kubeClient, this.namespace);
+      await verify();
+    } catch (error) {
+      errors.push(error);
+    }
+    try {
+      await stopRuntimeApplication(this.kubeClient, this.namespace);
+      const current = await this.kubeClient.getConfigMap(name, this.namespace);
+      current.body.data = original.body.data;
+      await this.kubeClient.coreV1Api.replaceNamespacedConfigMap(
+        name,
+        this.namespace,
+        current.body,
       );
-    } catch {
-      const message = lastError instanceof Error ? lastError.message : "unknown error";
-      throw new Error(`Failed to restart deployment: ${message}`);
+      await resumeRuntimeApplication(this.kubeClient, this.namespace);
+    } catch (error) {
+      errors.push(error);
     }
-  }
-
-  async configureExternalPostgres(options: ExternalPostgresOptions): Promise<void> {
-    if (options.certificateContent !== undefined && options.certificateContent !== null) {
-      await this.configurePostgresCertificate(options.certificateContent);
-    }
-    await this.configurePostgresCredentials(options.credentials);
-    await this.restartDeploymentWithRetry();
-  }
-
-  /** Patch app-config and deployment env for external PostgreSQL tests. */
-  async prepareForExternalDatabase(): Promise<void> {
-    await prepareForExternalDatabase(this.kubeClient, this.namespace, this.deploymentName);
+    if (errors.length === 1) throw errors[0];
+    if (errors.length > 1) throw new AggregateError(errors, "ConfigMap check and recovery failed");
   }
 
   /** Clear session state and sign in as guest after a deployment restart. */
   async verifyGuestSession(page: Page): Promise<void> {
+    // Pod readiness can precede route propagation; never navigate to a cached router 503 page.
+    await waitForRhdhReady(page.request, 180_000);
     await page.context().clearCookies();
     await page.context().clearPermissions();
     await page.reload({ waitUntil: "domcontentloaded" });

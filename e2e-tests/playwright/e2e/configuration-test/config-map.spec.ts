@@ -2,6 +2,7 @@ import { test, expect } from "@support/coverage/test";
 
 import { RuntimeHarness } from "../../support/harnesses/runtime-harness";
 import { HomePage } from "../../support/pages/home-page";
+import { getKubeApiErrorMessage } from "../../utils/kube-client/helpers";
 import { ensureRuntimeDeployed } from "../../utils/runtime-deploy";
 
 test.describe("Change app-config at e2e test runtime", () => {
@@ -21,24 +22,19 @@ test.describe("Change app-config at e2e test runtime", () => {
   });
 
   test("Verify title change after ConfigMap modification", async ({ page }) => {
-    const configMapName = "app-config-rhdh";
     const namespace = process.env.NAME_SPACE_RUNTIME ?? "showcase-runtime";
     const runtimeHarness = new RuntimeHarness(namespace);
     const dynamicTitle = generateDynamicTitle();
     try {
-      console.log(`Updating ConfigMap '${configMapName}' with new title.`);
-      await runtimeHarness.updateConfigMapTitle(configMapName, dynamicTitle);
-      console.log("Restarting deployment to apply ConfigMap changes.");
-      await runtimeHarness.restartDeploymentWithRetry();
-
-      await runtimeHarness.verifyGuestSession(page);
-      await new HomePage(page).openHomeSidebar();
-      console.log("Verifying new title in the UI... ");
-      expect(await page.title()).toContain(dynamicTitle);
-      console.log("Title successfully verified in the UI.");
+      await runtimeHarness.withAppTitle(dynamicTitle, async () => {
+        await runtimeHarness.verifyGuestSession(page);
+        await new HomePage(page).openHomeSidebar();
+        await expect(page).toHaveTitle(new RegExp(dynamicTitle, "u"));
+      });
     } catch (error) {
-      console.log(`Test failed during ConfigMap update or deployment restart:`, error);
-      throw error;
+      throw new Error(`ConfigMap runtime change failed: ${getKubeApiErrorMessage(error)}`, {
+        cause: error,
+      });
     }
   });
 });

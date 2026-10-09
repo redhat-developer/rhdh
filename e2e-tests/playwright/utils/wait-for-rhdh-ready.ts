@@ -13,7 +13,13 @@ export async function waitForRhdhReady(
   await expect
     .poll(
       async () => {
-        const response = await request.get("/healthcheck");
+        let response;
+        try {
+          response = await request.get("/healthcheck", { timeout: 10_000 });
+        } catch {
+          // Routes can transiently refuse/reset connections during rollouts.
+          return false;
+        }
         const contentType = response.headers()["content-type"] ?? "";
         if (!isJsonHealthcheckResponse(response.status(), contentType)) {
           return false;

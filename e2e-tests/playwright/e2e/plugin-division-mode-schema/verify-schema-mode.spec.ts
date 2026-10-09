@@ -5,6 +5,7 @@ import { PortForwardHarness } from "../../support/harnesses/port-forward-harness
 import { HomePage } from "../../support/pages/home-page";
 import { resolveInstallMethod } from "../../utils/helper";
 import { KubeClient } from "../../utils/kube-client";
+import { waitForRuntimeRollout } from "../../utils/runtime-lifecycle";
 import { configureSchemaMode } from "./schema-mode-db";
 import { SchemaModeTestSetup } from "./schema-mode-setup";
 
@@ -76,18 +77,12 @@ async function initializeSchemaModeSetup(
   namespace: string,
   releaseName: string,
   installMethod: "helm" | "operator",
-  testInfo: TestInfo,
+  _testInfo: TestInfo,
 ): Promise<SchemaModeTestSetup | null> {
   const testSetup = new SchemaModeTestSetup(namespace, releaseName, installMethod);
 
-  try {
-    await testSetup.setupDatabase();
-    await testSetup.configureRHDH();
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    testInfo.skip(true, `Schema mode setup failed: ${errorMsg}`);
-    return null;
-  }
+  await testSetup.setupDatabase();
+  await testSetup.configureRHDH();
 
   return testSetup;
 }
@@ -109,11 +104,6 @@ async function setupSchemaModeTests(
     );
     return null;
   }
-
-  testInfo.annotations.push(
-    { type: "component", description: "data-management" },
-    { type: "namespace", description: namespace },
-  );
 
   let portForwardHarness: PortForwardHarness | null = null;
   if (env.pfNamespace !== undefined && env.pfResource !== undefined) {
@@ -143,6 +133,10 @@ test.describe("Verify pluginDivisionMode: schema", () => {
 
   test.beforeAll(async ({}, testInfo) => {
     test.setTimeout(900000);
+    testInfo.annotations.push(
+      { type: "component", description: "data-management" },
+      { type: "namespace", description: namespace },
+    );
 
     if (readSchemaModeEnv() === null) {
       const kubeClient = new KubeClient();
@@ -162,33 +156,25 @@ test.describe("Verify pluginDivisionMode: schema", () => {
     await portForwardHarness?.stop();
   });
 
-  test("Verify database user has restricted permissions", async () => {
+  test("Verify the application user cannot create databases", async () => {
     const hasRestrictedPerms = await testSetup.verifyRestrictedDatabasePermissions();
     expect(hasRestrictedPerms).toBe(true);
   });
 
-  test("Verify RHDH is accessible with schema mode", async ({ guestPage }, testInfo) => {
+  test("Verify Catalog uses the configured schema and RHDH is accessible", async ({
+    guestPage,
+  }) => {
     const kubeClient = new KubeClient();
     const deploymentName = testSetup.getDeploymentName();
 
-    try {
-      const deployment = await kubeClient.appsApi.readNamespacedDeployment(
-        deploymentName,
-        namespace,
-      );
-      const readyReplicas = deployment.body.status?.readyReplicas ?? 0;
-
-      if (readyReplicas < 1) {
-        testInfo.skip(true, "Deployment is not ready (cluster capacity or PVC issue)");
-        return;
-      }
-    } catch (error) {
-      console.warn("Could not check deployment readiness:", error);
-    }
+    await waitForRuntimeRollout(kubeClient, namespace, deploymentName);
+    expect(await testSetup.verifyCatalogSchema()).toBe(true);
 
     const homePage = new HomePage(guestPage);
     await homePage.verifyMainHeadingVisible();
 
-    console.log("RHDH is accessible - plugins successfully created schemas in schema mode");
+    console.log(
+      "RHDH is accessible - Catalog migrated its schema without separate plugin databases",
+    );
   });
 });
