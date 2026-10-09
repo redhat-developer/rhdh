@@ -108,7 +108,9 @@ auth:
         signIn:
           resolvers:
             - resolver: emailLocalPartMatchingUserEntityName
-signInPage: oidc
+signInPage:
+  - guest
+  - oidc
 proxy:
   skipInvalidProxies: true
   # endpoints: {}

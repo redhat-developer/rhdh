@@ -6,11 +6,12 @@
 # builds, …). The remaining harness-critical plugins stay enabled via DPDY defaults
 # and are documented explicitly below.
 #
-# NOTE: every package below uses `{{inherit}}` rather than a hardcoded tag/digest,
+# Catalog plugin overrides use `ref://` rather than a hardcoded tag/digest,
 # resolved against dynamic-plugins.default.yaml extracted from a catalog-index
 # OCI image. Set CATALOG_INDEX_IMAGE (required — see populate.sh and
 # docs/e2e-tests/local-e2e-harness.md) before running populate.sh.
 #
+# The auth/homepage test fixtures below are pinned for release-2.1 compatibility.
 # Re-run populate.sh after editing this file.
 includes:
   - dynamic-plugins.default.yaml
@@ -18,23 +19,23 @@ plugins:
   # --- Disabled: not needed off-cluster (avoids env-var / dist-path startup failures) ---
 
   # Segment analytics — pluginConfig references ${SEGMENT_WRITE_KEY}, ${SEGMENT_TEST_MODE}, …
-  - package: oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:{{inherit}}
+  - package: ref://backstage-community-plugin-analytics-provider-segment
     enabled: false
 
   # Scaffolder regex module — not exercised by cluster-free specs
-  - package: oci://quay.io/rhdh/backstage-community-plugin-scaffolder-backend-module-regex:{{inherit}}
+  - package: ref://backstage-community-plugin-scaffolder-backend-module-regex
     enabled: false
 
   # Adoption Insights stack — analytics + admin routes; needs licensed-users backend in CI
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights:{{inherit}}
+  - package: ref://red-hat-developer-hub-backstage-plugin-adoption-insights
     enabled: false
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights-backend:{{inherit}}
+  - package: ref://red-hat-developer-hub-backstage-plugin-adoption-insights-backend
     enabled: false
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights:{{inherit}}
+  - package: ref://red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights
     enabled: false
 
   # Quickstart onboarding panel — not asserted by cluster-free specs
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-quickstart:{{inherit}}
+  - package: ref://red-hat-developer-hub-backstage-plugin-quickstart
     enabled: false
 
   # Extensions stack — catalog index DPDY still lists local ./dynamic-plugins/dist paths
@@ -46,24 +47,31 @@ plugins:
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
     enabled: false
 
-  # --- Enabled for cluster-free E2E (inherits version + pluginConfig from DPDY) ---
+  # --- Enabled for cluster-free E2E (catalog defaults, except the two fixture pins) ---
 
-  # Home page widgets (same quay.io/rhdh package the Helm chart / Operator install).
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-homepage:{{inherit}}
-    disabled: false
+  # Temporary release-2.1 fixtures: the dev server does not load dynamic auth
+  # schemas, and the test overlay targets the pre-3.0 homepage's page:home.
+  # Disable catalog copies before installing the compatible fixture versions.
+  - package: ref://red-hat-developer-hub-backstage-plugin-homepage
+    enabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-homepage:bs_1.54.6__1.18.0
+    enabled: true
   # Sign-in page + auth APIs, drawer infra, and SCM integrations (pluginId: 'app').
   # Without app-auth, guest sign-in falls back to upstream's default page (no
   # "Select a sign-in method" heading) — what guest-signin-happy-path and
   # github-happy-path exercise.
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-auth:{{inherit}}
+  - package: ref://red-hat-developer-hub-backstage-plugin-app-auth
+    enabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-app-auth:bs_1.54.6__1.1.0
+    enabled: true
+  - package: ref://red-hat-developer-hub-backstage-plugin-app-defaults
     disabled: false
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-defaults:{{inherit}}
-    disabled: false
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-app-integrations:{{inherit}}
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.52.0__0.2.20
-    disabled: false
+  - package: ref://red-hat-developer-hub-backstage-plugin-app-integrations
+  # Same catalog-selected patched Guest provider as the Helm and Operator jobs.
+  - package: ref://backstage-plugin-auth-backend-module-guest-provider
+    enabled: true
   # TechDocs frontend: /docs + Docs sidebar item (plugins/frontend/sidebar.spec.ts).
-  - package: oci://quay.io/rhdh/backstage-plugin-techdocs:{{inherit}}
+  - package: ref://backstage-plugin-techdocs
     disabled: false
   # application-provider-test / application-listener-test are not installed: the
   # pinned OCI builds and packages/app do not support those fixtures yet, and both
@@ -71,5 +79,5 @@ plugins:
   # Global header: top bar + profile dropdown (Settings / Sign-out).
   # Enable app-root-wrapper + translation in app-config.local-e2e.yaml
   # (app-root-wrapper:app/global-header, translation:app/global-header-translations).
-  - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-global-header:{{inherit}}
+  - package: ref://red-hat-developer-hub-backstage-plugin-global-header
     disabled: false
