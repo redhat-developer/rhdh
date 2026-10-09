@@ -3,7 +3,7 @@
 
 # Managing AI Assistant Rules
 
-This document provides guidelines for creating, importing, and managing AI assistant rules, commands, and configurations.
+This document provides guidelines for creating, importing, and managing AI assistant rules, commands, skills, and configurations. `.rulesync/` is the project source of truth.
 
 ## 📁 Directory Structure
 
@@ -11,12 +11,27 @@ This document provides guidelines for creating, importing, and managing AI assis
 .rulesync/
 ├── rules/              # Rule files (.md files with frontmatter)
 ├── commands/           # Command files (.md files with frontmatter)
+├── skills/             # One directory per skill, containing SKILL.md
 └── README.md          # Documentation
 ```
 
+`rulesync.jsonc` configures Cursor, Claude Code, and OpenCode, with the `rules`,
+`commands`, and `skills` features enabled. Use `yarn rulesync:generate` to regenerate
+these configured targets; do not expand generation to every supported tool.
+
+Generated outputs include:
+- `.cursor/rules/*.mdc`, `.cursor/commands/`, and `.cursor/skills/`
+- `.claude/rules/`, `.claude/commands/`, and `.claude/skills/`
+- `.opencode/memories/`, `.opencode/commands/`, and `.opencode/skills/`
+- The generated instruction list in `opencode.jsonc`
+
+Generation uses `delete: true`: removing a source rule, command, or skill removes
+its managed outputs on the next generation. Delete the source and regenerate
+rather than deleting only generated files.
+
 ## 🤖 Automated Checks
 
-A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automatically validates that generated files in `.cursor`, `.claude`, `.opencode`, and `opencode.jsonc` are in sync with `.rulesync` on:
+A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automatically validates that generated files in `.cursor`, `.claude`, `.opencode`, and `opencode.jsonc` are in sync with `.rulesync` when source, generated, or configuration files change on:
 - All pull requests
 - Pushes to main and release branches
 
@@ -31,7 +46,8 @@ A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automaticall
 ```bash
 # If you forgot to generate from .rulesync
 yarn rulesync:generate
-git add .cursor .claude .opencode opencode.jsonc
+yarn rulesync:check
+git add .rulesync .cursor .claude .opencode opencode.jsonc
 
 # If you edited .cursor files directly
 yarn rulesync:import:cursor
@@ -45,9 +61,11 @@ git add .rulesync
 yarn rulesync:import:opencode
 git add .rulesync
 
-# Then commit and push
-git commit --amend --no-edit
-git push --force-with-lease
+# After an import, review the source changes and regenerate all configured targets
+yarn rulesync:generate
+yarn rulesync:check
+git diff
+# Stage reviewed source and generated changes together, then create a new commit
 ```
 
 ## ✨ Creating New Rules
@@ -82,7 +100,7 @@ cursor:                    # Cursor-specific configuration
   globs:
     - src/api/**
     - tests/api/**
-claude:                    # Claude-specific configuration (optional)
+claudecode:                # Claude Code-specific configuration (optional)
   description: >-
     Brief description of what this rule covers
 ---
@@ -122,10 +140,11 @@ After creating or editing the rule:
 ```bash
 # This happens automatically on commit, but you can run manually:
 yarn rulesync:generate
+yarn rulesync:check
 
 # Then stage and commit
-git add .rulesync/rules/api-development.md .cursor .claude .opencode
-git commit -m "docs: add API development rule"
+git add .rulesync/rules/api-development.md .cursor .claude .opencode opencode.jsonc
+git commit -s -m "docs: add API development rule"
 ```
 
 ## 📥 Importing Existing Rules
@@ -155,6 +174,13 @@ yarn rulesync:import:claude
 
 # 3. Edit if needed to match the proper format
 ```
+
+### Scenario 3: Rules Already Exist in `.opencode`
+
+Use `yarn rulesync:import:opencode` to recover edits to `.opencode/memories/`,
+commands, skills, or the generated `opencode.jsonc` instruction list. Review the
+imported `.rulesync/` files before running `yarn rulesync:generate` and
+`yarn rulesync:check`.
 
 ## 🎯 Creating Commands
 
@@ -186,9 +212,28 @@ Execute the following steps:
 3. Provide actionable suggestions
 ```
 
+## Creating Skills
+
+Place each skill in `.rulesync/skills/<skill-name>/SKILL.md`, with `name`,
+`description`, and `targets` frontmatter:
+
+```yaml
+---
+name: example-skill
+description: Explain when and how this skill should be used
+targets: ['*']
+---
+```
+
+Edit the source skill, regenerate, and check synchronization using the same workflow
+as rules and commands. A flat `.md` file under `.rulesync/skills/` is not a skill.
+
 ## 📋 Frontmatter Field Reference
 
-### Required Fields
+### Shared Fields
+
+Required fields depend on the feature. Validate source metadata with
+`yarn rulesync:check` rather than assuming every feature uses the same schema.
 
 - **`targets`** - Array of AI assistants to target
   - `["*"]` - All assistants
@@ -221,9 +266,9 @@ Execute the following steps:
       - "path/**"
   ```
 
-- **`claude`** - Claude-specific configuration
+- **`claudecode`** - Claude Code-specific configuration
   ```yaml
-  claude:
+  claudecode:
     description: "Rule description"
   ```
 
@@ -261,30 +306,45 @@ globs:
 # 1. Edit source files
 vim .rulesync/rules/my-rule.md
 
-# 2. Stage and commit
+# 2. Generate and validate
+yarn rulesync:generate
+yarn rulesync:check
+
+# 3. Stage the source and reviewed generated outputs, then commit
 git add .rulesync/rules/my-rule.md
-git commit -m "docs: update my-rule"
-# ✨ Auto-generates .cursor/.claude on commit
+git add .cursor .claude .opencode opencode.jsonc
+git commit -s -m "docs: update my-rule"
+# ✨ The hook regenerates and checks .cursor/.claude/.opencode outputs
 ```
 
-### If You Edited .cursor or .claude Directly
+The `.lintstagedrc.cjs` hook regenerates, stages managed outputs, and runs
+`yarn rulesync:check` when a `.rulesync` source or generation configuration is staged.
+Changes to `rulesync.jsonc`, `.rulesyncignore`, `.lintstagedrc.cjs`, `package.json`,
+and `yarn.lock` also trigger this workflow.
+
+### If You Edited .cursor, .claude, or .opencode Directly
+
+The hook **rejects** generated-only changes. Import the edits before committing:
 
 ```bash
-# 1. Commit your changes (you'll see a notification)
-git add .cursor/rules/my-rule.mdc
-git commit -m "docs: update rule"
-
-# 2. You'll see:
-# ⚠️  Direct changes to .cursor detected!
-# 💡 To sync back to .rulesync, run:
-#    yarn rulesync:import:cursor
-#    git add .rulesync
-
-# 3. Follow the instructions
+# 1. Import from the tool whose generated files you changed
 yarn rulesync:import:cursor
-git add .rulesync
-git commit --amend --no-edit
+# Or: yarn rulesync:import:claude
+# Or: yarn rulesync:import:opencode
+
+# 2. Review the imported source changes
+git diff -- .rulesync
+
+# 3. Regenerate and validate all configured outputs
+yarn rulesync:generate
+yarn rulesync:check
+
+# 4. Stage the reviewed source and generated outputs together
+git add .rulesync .cursor .claude .opencode opencode.jsonc
 ```
+
+If a commit hook fails, fix the cause and retry with a new commit. Do not amend a
+previous successful commit or force-push as the default recovery step.
 
 ## 📝 Use `.local.md` for Personal Rules
 
@@ -375,9 +435,9 @@ These standards apply to all code in this repository...
 ### Problem: Import doesn't work
 
 **Solution:**
-1. Check the files exist in `.cursor` or `.claude`
+1. Check the files exist in `.cursor`, `.claude`, or `.opencode`
 2. Ensure they have proper format
-3. Run with specific target: `yarn rulesync:import:cursor`
+3. Run the matching import script: `yarn rulesync:import:cursor`, `yarn rulesync:import:claude`, or `yarn rulesync:import:opencode`
 
 ### Problem: Git shows changes after generate
 

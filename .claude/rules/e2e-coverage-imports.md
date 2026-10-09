@@ -26,7 +26,7 @@ If the spec creates its own `BrowserContext` / `Page` via `browser.newContext()`
 ```typescript
 import { test, expect, startCoverageForPage, stopCoverageForPage } from "@support/coverage/test";
 
-test("my test", async ({}, testInfo) => {
+test("my test", async ({ browser }, testInfo) => {
   const context = await browser.newContext();
   const page = await context.newPage();
   await startCoverageForPage(page);
@@ -34,6 +34,7 @@ test("my test", async ({}, testInfo) => {
     // test body
   } finally {
     await stopCoverageForPage(page, testInfo);
+    await context.close();
   }
 });
 ```

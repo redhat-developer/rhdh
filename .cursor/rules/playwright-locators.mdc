@@ -147,7 +147,10 @@ class CatalogPage {
 yarn playwright codegen http://localhost:7007
 
 # Debug tests step-by-step
-yarn playwright test --debug
+cd e2e-tests
+# Export BASE_URL, an unlocked BW_SESSION, and the deployed namespaces first.
+# Cluster-aware tests also require K8S_CLUSTER_URL and K8S_CLUSTER_TOKEN.
+./local-test.sh -- --project="$PLAYWRIGHT_PROJECT" --debug
 
 # Or pause in test
 await page.pause();

@@ -1,6 +1,6 @@
 # Rulesync - AI Assistant Rules Management
 
-This directory contains the source of truth for AI assistant rules (Cursor, Claude Code, OpenCode, Copilot, etc.).
+This directory contains the source of truth for AI assistant rules, commands, and skills. `rulesync.jsonc` currently configures Cursor, Claude Code, and OpenCode.
 
 ## 📁 Directory Structure
 
@@ -30,33 +30,30 @@ git commit -m "docs: update AI assistant rules"
 4. Generated files in `.cursor`, `.claude`, `.opencode`, and `opencode.jsonc` are automatically staged
 5. Commit includes both source and generated files
 
-### When you edit `.cursor`, `.claude`, `.opencode`, or `opencode.jsonc` directly (Manual with notification):
+### When you edit `.cursor`, `.claude`, `.opencode`, or `opencode.jsonc` directly (Import before committing):
 
 > ⚠️ **Note:** Prefer editing `.rulesync` files as the source of truth for easier management
 
 ```bash
-# Stage your changes
-git add .cursor/rules/my-rule.mdc
-git commit -m "docs: update rule"
-
-# ⚠️  You'll see a notification:
-# "Direct changes to .cursor detected!"
-# "To sync back to .rulesync, run:"
-#    yarn rulesync:import:cursor
-#    git add .rulesync
-
-# Follow the instructions to sync back
+# Import from the tool whose generated files you changed
 yarn rulesync:import:cursor
-git add .rulesync
-git commit --amend --no-edit  # Add to the same commit
+# Or: yarn rulesync:import:claude
+# Or: yarn rulesync:import:opencode
+
+# Review the imported source, regenerate, and validate
+git diff -- .rulesync
+yarn rulesync:generate
+yarn rulesync:check
+git add .rulesync .cursor .claude .opencode opencode.jsonc
+# Create a new commit containing the reviewed source and generated outputs
 ```
 
 **What happens:**
-1. You stage `.cursor` or `.claude` files
+1. You stage generated files without a matching source change
 2. Pre-commit hook runs `lint-staged`
-3. `lint-staged` **displays a notification** with instructions
-4. Commit proceeds (without automatic import)
-5. You **manually** run the import command if you want to sync
+3. `lint-staged` **rejects the commit** and prints import instructions
+4. You import and review the source changes, then regenerate and validate
+5. You stage source and generated files together and retry the commit
 
 ## 📝 Available Commands
 
@@ -70,7 +67,7 @@ git commit --amend --no-edit  # Add to the same commit
 
 ## 🤖 Continuous Integration
 
-A GitHub Actions workflow automatically validates synchronization on all PRs and pushes to main:
+A GitHub Actions workflow validates synchronization on relevant PRs and pushes to main and release branches:
 
 - **Workflow**: `.github/workflows/rulesync-check.yaml`
 - **Triggers**: Changes to `.rulesync`, `.cursor`, `.claude`, `.opencode`, or config files
@@ -81,6 +78,10 @@ A GitHub Actions workflow automatically validates synchronization on all PRs and
   - `yarn rulesync:import:claude` if you edited `.claude` files directly
   - `yarn rulesync:import:opencode` if you edited `.opencode` files directly
   - Then commit the changes
+
+Generation uses the targets and features in `rulesync.jsonc`, including skill
+outputs. With `delete: true`, removing a source file also removes its managed
+outputs on the next generation.
 
 ## 🎯 Best Practices
 
@@ -94,10 +95,10 @@ A GitHub Actions workflow automatically validates synchronization on all PRs and
    - Generated files are automatically included
    - No manual `yarn rulesync:generate` needed!
 
-3. **Manual sync for `.cursor`/`.claude`/`.opencode` edits**
-   - You'll get a notification on commit
-   - Run the suggested import command
-   - This gives you control over when to sync back
+3. **Import `.cursor`/`.claude`/`.opencode` edits before committing**
+   - Generated-only edits are rejected by the hook
+   - Run the matching import command and review its source changes
+   - Regenerate all configured targets and run `yarn rulesync:check`
 
 4. **Use `.local.md` for personal rules**
    - Files matching `*.local.md` are ignored by git
@@ -105,7 +106,7 @@ A GitHub Actions workflow automatically validates synchronization on all PRs and
 
 ## 📚 Rule File Format
 
-Each rule file should have YAML frontmatter-:
+Each rule file should have YAML frontmatter:
 
 ```yaml
 ---

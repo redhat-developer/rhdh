@@ -68,28 +68,36 @@ git branch --show-current
 
 **Skill**: `e2e-deploy-rhdh`
 
-Deploy RHDH to a cluster using `e2e-tests/local-run.sh`. CLI mode requires **all three** flags (`-j`, `-r`, `-t`):
+Deploy RHDH to a cluster using `e2e-tests/local-run.sh`. CLI mode requires `-r` and `-t`; always supply `-j` with the full parsed Prow job name to select the intended job:
 
 **OCP jobs** — use `-s` (deploy-only) to skip automated test execution so you can run the specific failing test manually:
 ```bash
 cd e2e-tests
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag> -s
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG" -s
 ```
 
 **K8s jobs (AKS, EKS, GKE)** — do **not** use `-s`. These jobs require the full execution pipeline and do not support deploy-only mode:
 ```bash
 cd e2e-tests
-./local-run.sh -j <full-prow-job-name> -r <image-repo> -t <image-tag>
+./local-run.sh -j "$PROW_JOB_NAME" -r "$IMAGE_REPO" -t "$IMAGE_TAG"
 ```
 
 Use the **full Prow CI job name** for `-j` (not shortened names).
 
 Derive the image repo (`-r`) and tag (`-t`) from the release branch — see the `e2e-fix-workflow` rule for the derivation logic.
 
-After deployment completes, set up the local test environment:
+After deployment completes, unlock Bitwarden and use the URL printed by the deployment:
 ```bash
-source e2e-tests/local-test-setup.sh <showcase|rbac>
+export BW_SESSION=$(bw unlock --raw)
+export BASE_URL=https://deployed-rhdh.example.com
+export NAME_SPACE=showcase
+export NAME_SPACE_RBAC=showcase-rbac
+export NAME_SPACE_RUNTIME=showcase-runtime
 ```
+
+Use the namespaces of the actual deployment when they differ from these defaults.
+Set `K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN` explicitly for cluster-aware tests;
+`local-test.sh` does not generate tokens or read deployment configuration.
 
 **Decision gate**: Before attempting deployment, verify cluster connectivity (`oc whoami`). If no cluster is available, **ask the user for explicit approval** before skipping this phase — do not skip silently. If deployment fails, the `e2e-deploy-rhdh` skill has error recovery procedures. If deployment cannot be recovered after investigation, report the deployment issue and stop.
 
@@ -101,14 +109,14 @@ Run the specific failing test to confirm it reproduces locally. Use `--project=a
 
 ```bash
 cd e2e-tests
-yarn playwright test <spec-file> --project=any-test --retries=0 --workers=1
+./local-test.sh -- --project=any-test --retries=0 --workers=1 "$SPEC_FILE"
 ```
 
 **Decision gates**:
 - **No cluster or deployment available**: If Phase 3 was skipped or no running RHDH instance exists, **ask the user for explicit approval** before skipping reproduction — do not skip silently.
 - **Consistent failure**: Proceed to Phase 5
 - **Flaky** (fails sometimes): Proceed to Phase 5, focus on reliability
-- **Cannot reproduce** (passes every time after 10 runs): Before giving up, try running the entire CI project with `CI=true yarn playwright test --project=<ci-project> --retries=0` to simulate CI conditions (3 workers, full test suite). If that also passes, report the results and **ask the user for explicit approval** before proceeding.
+- **Cannot reproduce** (passes every time after 10 runs): Before giving up, try running the entire CI project with `CI=true ./local-test.sh -- --project="$CI_PROJECT" --retries=0` to simulate CI conditions (3 workers, with project-specific overrides). If that also passes, report the results and **ask the user for explicit approval** before proceeding.
 
 ### Phase 5: Diagnose and Fix
 
@@ -137,7 +145,7 @@ Analyze the failure and implement a fix:
 Verify the fix:
 1. Run the fixed test once — must pass
 2. Run 5 times — must pass 5/5
-3. Run code quality checks: `yarn tsc:check`, `yarn lint:check`, `yarn prettier:check`
+3. Run code quality checks: `yarn lint`, `yarn fmt:check`, `yarn shellcheck`, and relevant `yarn test:unit` tests
 4. Fix any lint/formatting issues
 
 **Decision gate**: If the test still fails or is flaky, return to Phase 5 and iterate. If verification cannot be run (no cluster, environment issues), **ask the user for explicit approval** before proceeding without it.

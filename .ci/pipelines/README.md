@@ -62,6 +62,36 @@ Additionally, include the workflow: `generic-claim` for setup and cleanup.
     workflow: generic-claim
 ```
 
+## Secret Sourcing
+
+OpenShift CI supplies the `rhdh` credentials bundle as individual files under `/tmp/secrets`, as
+declared in the step's `credentials` stanza. `env_variables.sh` retains its explicit file reads,
+aliases, and encoded values. Credential-file contents are read as data, never executed as shell
+code.
+
+Local container runs retrieve the `e2e-secrets.profile.json` Bitwarden profile on the host and
+stream it through FD 3. `container-init.sh` validates and decodes it into a private tmpfs mounted at
+the same `/tmp/secrets` path, then invokes the existing CI entrypoint. Both supported Azure
+certificate spellings are normalized to `azure-db-certificates.pem`; conflicting aliases fail before
+files are written. The generated service-account token remains caller-provided.
+
+Host tests use `e2e-tests/local-test-secrets.ts` to prepare the Playwright child environment without
+sourcing the CI setup. Certificate files live in a private temporary directory and are removed after
+the test process exits. The cluster-login helper reads its two explicit credentials from a separate
+Bitwarden profile.
+
+Both paths download the current public AWS RDS CA bundle. A failed download removes the partial
+file, allowing the RDS suite's existing skip behavior; it never uses a stored RDS bundle instead.
+Keep tracing off for secret-bearing commands, and never dump the test environment. Runtime secret
+files must stay outside flat `SHARED_DIR` cross-step state and public `ARTIFACT_DIR` artifacts.
+
+Store each CI credential as its own raw GSM field so Prow knows the values to censor in public logs
+and artifacts. A secret-stored shell script or compound configuration is not a replacement for those
+raw fields. See
+[OpenShift CI secret protection guidance](https://docs.ci.openshift.org/how-tos/adding-a-new-secret-to-ci-gsm/#protecting-secrets-from-leaking)
+and
+[cross-step data requirements](https://docs.ci.openshift.org/architecture/step-registry/#sharing-data-between-steps).
+
 ## Debugging
 
 Any RHDH team member can use the
@@ -70,10 +100,12 @@ ephemeral cluster claimed by a CI job for investigation.
 
 ### Prerequisites
 
-- [`vault`](https://developer.hashicorp.com/vault/downloads), `oc`, and `jq` CLIs installed
-- Access to `selfservice/rhdh-qe/ephemeral_cluster` in
-  [vault.ci.openshift.org](https://vault.ci.openshift.org) (request access in
+- `bw`, `oc`, `curl`, and `node` CLIs installed
+- E2E dependencies installed with `yarn install` in `e2e-tests`; this provides the pinned
+  `rhdh-e2e-secrets` CLI
+- Access to the `ephemeral_cluster/` items in the Bitwarden `rhdh-qe` collection (request access in
   [#rhdh-e2e-tests](https://redhat-internal.slack.com/archives/rhdh-e2e-tests) if needed)
+- An unlocked Bitwarden session: `export BW_SESSION=$(bw unlock --raw)`
 - For **PR-triggered jobs**: add `[debug]` to your PR title to enable the HTPasswd identity
   provider, then re-trigger the job with `/test e2e-ocp-helm`
 
@@ -86,10 +118,14 @@ ephemeral cluster claimed by a CI job for investigation.
 2. Provide the Prow log URL when prompted, for example:
    `https://prow.ci.openshift.org/view/gs/test-platform-results/logs/periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly/<BUILD_ID>`
 3. The script will:
-   - Authenticate to Vault via OIDC and fetch cluster credentials from
-     `selfservice/rhdh-qe/ephemeral_cluster`.
+   - Validate the Prow URL and fetch its cluster claim before loading credentials.
+   - Load cluster credentials through the `ephemeral-cluster-secrets.profile.json` Bitwarden
+     profile.
    - Log in directly to the ephemeral cluster API.
-   - Prompt to open the OCP web console in the browser (password copied to clipboard).
+   - Prompt to open the OCP web console in the browser (password copied to clipboard). With
+     non-interactive stdin, the prompt is skipped. Use `--open-console` to request the console
+     explicitly or `--no-console` to suppress the prompt. Clipboard and browser failures are
+     warnings and do not invalidate a successful login.
 4. Note:
    - The ephemeral cluster is deleted as soon as the CI job terminates.
    - To retain the cluster for a longer duration, add a sleep command in the
@@ -113,7 +149,7 @@ ephemeral cluster claimed by a CI job for investigation.
 
 - URL:
   [Keycloak Admin Console](https://keycloak-rhsso.rhdh-pr-os-a9805650830b22c3aee243e51d79565d-0000.us-east.containers.appdomain.cloud/auth/admin/master/console/#/realms/rhdh-login-test)
-- Credentials: These can be found in the RHDH-QE Vault under the following keys:
+- Credentials are stored in the Bitwarden `rhdh-qe` collection under the following keys:
   - `KEYCLOAK_AUTH_BASE_URL`
   - `KEYCLOAK_AUTH_CLIENTID`
   - `KEYCLOAK_AUTH_CLIENT_SECRET`
