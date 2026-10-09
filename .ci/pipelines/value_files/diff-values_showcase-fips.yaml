@@ -1,0 +1,14 @@
+# This file is for FIPS installation only.
+# Applied on top of values_showcase.yaml via helm::merge_values (overwrite).
+# Arrays are replaced, so extraEnv must be restated in full.
+# TLS verification must stay enabled in FIPS mode.
+extraEnv:
+  # disable telemetry in CI
+  - name: SEGMENT_TEST_MODE
+    value: "true"
+  - name: NODE_TLS_REJECT_UNAUTHORIZED
+    value: "1"
+  - name: NODE_ENV
+    value: "production"
+  - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
+    value: "true"

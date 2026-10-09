@@ -139,6 +139,13 @@ main() {
       log::info "Calling handle_ocp_disconnected_operator"
       handle_ocp_disconnected_operator
       ;;
+    *ocp*fips*helm*nightly*)
+      log::info "Sourcing ocp-fips-helm.sh"
+      # shellcheck source=.ci/pipelines/jobs/ocp-fips-helm.sh
+      source "${DIR}/jobs/ocp-fips-helm.sh"
+      log::info "Calling handle_ocp_fips_helm"
+      handle_ocp_fips_helm
+      ;;
     *ocp*helm*nightly*)
       log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ci/pipelines/jobs/ocp-nightly.sh
