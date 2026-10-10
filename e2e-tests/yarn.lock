@@ -1260,12 +1260,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.18.0":
-  version: 8.18.0
-  resolution: "acorn@npm:8.18.0"
+"acorn@npm:^8.19.0":
+  version: 8.19.0
+  resolution: "acorn@npm:8.19.0"
   bin:
     acorn: bin/acorn
-  checksum: 10c0/be771be2135cc07910cf76f444ad514d7dcfd6d4a8026e597e93155275abc8ef61eee12211d52146e9d962874269b634f397464942087be013c89d0c54c5f8e5
+  checksum: 10c0/21007e0ca638dd13d44a0ad26856b7a885cc6c4319cd2bc71694bc8ec3f0606c23ecd12b157e167f909d9d2b2d68d5b50fe3f54211b1aab7c3451a7c801fe62e
   languageName: node
   linkType: hard
 
@@ -1766,10 +1766,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^14.0.3":
-  version: 14.0.3
-  resolution: "commander@npm:14.0.3"
-  checksum: 10c0/755652564bbf56ff2ff083313912b326450d3f8d8c85f4b71416539c9a05c3c67dbd206821ca72635bf6b160e2afdefcb458e86b317827d5cb333b69ce7f1a24
+"commander@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "commander@npm:15.0.0"
+  checksum: 10c0/539229c171914ea1ccd45ee5f10d924289a12a684ea3a7a44147abe54003c35ed6de9ae4ad198d88c29fdf403dca0428451a388234e6dc01b6faa978fb207206
   languageName: node
   linkType: hard
 
@@ -2020,7 +2020,7 @@ __metadata:
     eslint-plugin-playwright: "npm:2.11.0"
     ioredis: "npm:5.11.1"
     isomorphic-fetch: "npm:3.0.0"
-    monocart-coverage-reports: "npm:2.13.0"
+    monocart-coverage-reports: "npm:2.13.2"
     otplib: "npm:12.0.1"
     oxfmt: "npm:0.67.0"
     oxlint: "npm:1.80.0"
@@ -3483,14 +3483,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:2.13.0":
-  version: 2.13.0
-  resolution: "monocart-coverage-reports@npm:2.13.0"
+"monocart-coverage-reports@npm:2.13.2":
+  version: 2.13.2
+  resolution: "monocart-coverage-reports@npm:2.13.2"
   dependencies:
-    acorn: "npm:^8.18.0"
+    acorn: "npm:^8.19.0"
     acorn-loose: "npm:^8.5.2"
     acorn-walk: "npm:^8.3.5"
-    commander: "npm:^14.0.3"
+    commander: "npm:^15.0.0"
     console-grid: "npm:^2.2.4"
     eight-colors: "npm:^1.3.3"
     foreground-child: "npm:^4.0.3"
@@ -3498,17 +3498,17 @@ __metadata:
     istanbul-lib-report: "npm:^3.0.1"
     istanbul-reports: "npm:^3.2.0"
     lz-utils: "npm:^2.1.1"
-    monocart-locator: "npm:^1.0.3"
+    monocart-locator: "npm:^1.0.6"
   bin:
     mcr: lib/cli.js
-  checksum: 10c0/719fefe9aa173060be096531a554fbabf58e09a9e890294b0b92cbce9e8479cd165e77f8c10cb54f90094d68631423533edfac550c0aff025029684e12a9036f
+  checksum: 10c0/921b546a858b1c8c602283944da2d096c634933223c4699361aa7a8b770f754daceff9d4c4ef204aa3641380821f12659cde4b81aaea8ee1bbe5cf8459effb21
   languageName: node
   linkType: hard
 
-"monocart-locator@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "monocart-locator@npm:1.0.3"
-  checksum: 10c0/4682a0a32f255aa9f204fe7264280c9479c3035183b473ba60feafea773e2d973d2b6a4eddb1057bf5cc3e8ad48a1a41e2a2ac4919e7984e45e1e9e270e443ba
+"monocart-locator@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "monocart-locator@npm:1.0.6"
+  checksum: 10c0/d8ff80d6d1a6a37fb39256d949e10020175280792edc90ce122f194afb75d451219b38ad5f0bb93f1f6ea2b26aa2315ab070c50e02d9bac38c816233042f08fd
   languageName: node
   linkType: hard
 

@@ -10306,44 +10306,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turbo/darwin-64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/darwin-64@npm:2.10.12"
+"@turbo/darwin-64@npm:2.11.7":
+  version: 2.11.7
+  resolution: "@turbo/darwin-64@npm:2.11.7"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/darwin-arm64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/darwin-arm64@npm:2.10.12"
+"@turbo/darwin-arm64@npm:2.11.7":
+  version: 2.11.7
+  resolution: "@turbo/darwin-arm64@npm:2.11.7"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/linux-64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/linux-64@npm:2.10.12"
+"@turbo/linux-64@npm:2.11.7":
+  version: 2.11.7
+  resolution: "@turbo/linux-64@npm:2.11.7"
   conditions: (os=android | os=linux) & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/linux-arm64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/linux-arm64@npm:2.10.12"
+"@turbo/linux-arm64@npm:2.11.7":
+  version: 2.11.7
+  resolution: "@turbo/linux-arm64@npm:2.11.7"
   conditions: (os=android | os=linux) & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/windows-64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/windows-64@npm:2.10.12"
+"@turbo/windows-64@npm:2.11.7":
+  version: 2.11.7
+  resolution: "@turbo/windows-64@npm:2.11.7"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/windows-arm64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/windows-arm64@npm:2.10.12"
+"@turbo/windows-arm64@npm:2.11.7":
+  version: 2.11.7
+  resolution: "@turbo/windows-arm64@npm:2.11.7"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -26792,9 +26792,9 @@ __metadata:
     jest: "npm:30.5.2"
     jsdom: "npm:27.4.0"
     lint-staged: "npm:15.5.2"
-    rulesync: "npm:16.34.2"
+    rulesync: "npm:16.39.1"
     sherif: "npm:1.13.0"
-    turbo: "npm:2.10.12"
+    turbo: "npm:2.11.7"
   languageName: unknown
   linkType: soft
 
@@ -26820,9 +26820,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rulesync@npm:16.34.2":
-  version: 16.34.2
-  resolution: "rulesync@npm:16.34.2"
+"rulesync@npm:16.39.1":
+  version: 16.39.1
+  resolution: "rulesync@npm:16.39.1"
   dependencies:
     "@inquirer/checkbox": "npm:5.2.5"
     "@modelcontextprotocol/sdk": "npm:1.30.0"
@@ -26845,7 +26845,7 @@ __metadata:
     zod: "npm:4.6.2"
   bin:
     rulesync: dist/cli/index.js
-  checksum: 10c0/a483939b6165f660c202b193a41790f5c9cd419418e8247aaf8d25f1e456622155e44a9975f1e2721e4c0c89024b15327f6421f69b54a646afc96b1d4e1e2786
+  checksum: 10c0/cea3896ddbef6bfddaa30f8f43bb8f3a482bc04ed96c2430bb369d81503d0040159ad29cc7ee34fa892fffc846c1085d4b658cd2c7d53db608cc7a018aa2c18b
   languageName: node
   linkType: hard
 
@@ -29154,16 +29154,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo@npm:2.10.12":
-  version: 2.10.12
-  resolution: "turbo@npm:2.10.12"
+"turbo@npm:2.11.7":
+  version: 2.11.7
+  resolution: "turbo@npm:2.11.7"
   dependencies:
-    "@turbo/darwin-64": "npm:2.10.12"
-    "@turbo/darwin-arm64": "npm:2.10.12"
-    "@turbo/linux-64": "npm:2.10.12"
-    "@turbo/linux-arm64": "npm:2.10.12"
-    "@turbo/windows-64": "npm:2.10.12"
-    "@turbo/windows-arm64": "npm:2.10.12"
+    "@turbo/darwin-64": "npm:2.11.7"
+    "@turbo/darwin-arm64": "npm:2.11.7"
+    "@turbo/linux-64": "npm:2.11.7"
+    "@turbo/linux-arm64": "npm:2.11.7"
+    "@turbo/windows-64": "npm:2.11.7"
+    "@turbo/windows-arm64": "npm:2.11.7"
   dependenciesMeta:
     "@turbo/darwin-64":
       optional: true
@@ -29179,7 +29179,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10c0/bc912180b8c00f88be0672223c6cf8b61e05f113a93574d3bcb7343f9391ee03c115afc4468c76c4dfcbd9ee4a6564b025762dad9aefe53a91e02ff62613d9be
+  checksum: 10c0/42ad4f562a10b5f18be19dd13d24dec9276696818258ce5f31acbd507a8dfbdfab7bcee275b8b9c7f5446fde6549b90200950d7456f32042d604774338e6168a
   languageName: node
   linkType: hard
 
