@@ -98,12 +98,11 @@ describe("buildDescriptorKey", () => {
 
 describe("buildLockEntry", () => {
   it("produces a complete lockfile entry", () => {
-    const deps = { baz: "^2.0.0" };
     const peerDeps = { react: "^18.0.0" };
     const peerDepsMeta = { react: { optional: true as const } };
     const meta = fakeVersion({
       version: "1.2.3",
-      dependencies: deps,
+      dependencies: { baz: "npm:^2.0.0" },
       peerDependencies: peerDeps,
       peerDependenciesMeta: peerDepsMeta,
     });
@@ -113,7 +112,7 @@ describe("buildLockEntry", () => {
       languageName: "node",
       linkType: "hard",
       checksum: undefined,
-      dependencies: deps,
+      dependencies: { baz: "npm:^2.0.0" },
       peerDependencies: peerDeps,
       peerDependenciesMeta: peerDepsMeta,
       dist: meta.dist,
@@ -173,7 +172,7 @@ describe("bumpLockfile", () => {
       "@scope/target@npm:^1.0.0, @scope/target@npm:1.0.0": {
         version: "1.0.0",
         resolution: "@scope/target@npm:1.0.0",
-        dependencies: { "@scope/transitive": "^2.0.0" },
+        dependencies: { "@scope/transitive": "npm:^2.0.0" },
         checksum: "abc123",
         languageName: "node",
         linkType: "hard",
@@ -270,6 +269,7 @@ describe("bumpLockfile", () => {
       "@scope/pkg@npm:1.0.0": {
         version: "1.0.0",
         resolution: "@scope/pkg@npm:1.0.0",
+        dependencies: { "@scope/dep": "npm:^1.0.0" },
         checksum: "old",
         languageName: "node",
         linkType: "hard",
@@ -463,7 +463,7 @@ describe("bumpLockfile", () => {
       "@scope/other@npm:^1.0.0": {
         version: "1.0.0",
         resolution: "@scope/other@npm:1.0.0",
-        dependencies: { "@scope/pkg": "^1.0.0" },
+        dependencies: { "@scope/pkg": "npm:^1.0.0" },
         checksum: "other",
         languageName: "node",
         linkType: "hard",
