@@ -145,10 +145,12 @@ the UI have migrated; new specs should import from `@support/coverage/test`.
   of the same name does not reach Prow. The Codecov CLI reads it from the environment,
   never as an argument. Without it the upload is skipped and the report is still saved
   as the `coverage` artifact.
-- The CLI is a pinned release (`testing::_codecov_cli`), downloaded over HTTPS only and
-  checksum-verified. The upload runs with `--network-root-folder` at the repository root:
-  Codecov keeps only report paths that appear in that tree's `git ls-files`, and the job
-  runs from `e2e-tests/`. A report that names no source file is not uploaded.
+- The CLI is a pinned GitHub release (`testing::_codecov_cli`) for the node's architecture
+  (the build farm runs steps on both x86_64 and aarch64), downloaded over HTTPS only and
+  verified against a SHA-256 digest pinned in the script. The upload runs with
+  `--network-root-folder` at the repository root: Codecov keeps only report paths that
+  appear in that tree's `git ls-files`, and the job runs from `e2e-tests/`. A report
+  that names no source file is not uploaded.
 - The upload is attributed to the PR head (`PULL_PULL_SHA`) with `--pr`, never to the
   checkout's HEAD, which is a local merge of the PR onto its base that GitHub has never
   seen. It runs only when the job tested the PR's own image (`TAG_NAME` is
@@ -174,7 +176,7 @@ the UI have migrated; new specs should import from `@support/coverage/test`.
 | `COVERAGE_OUTPUT_DIR` | `<cwd>/coverage/e2e-raw` | Where per-test raw V8 coverage is written |
 | `COVERAGE_REPORT_DIR` | `<cwd>/coverage/e2e` | Where the merged Istanbul report is written |
 | `CODECOV_TOKEN` | `/tmp/secrets/CODECOV_TOKEN` in CI | Codecov upload token, set by `env_variables.sh`. When empty the upload is skipped |
-| `CODECOV_BIN` | `/tmp/codecov` | Where the Codecov CLI lives. Used as-is when already executable, otherwise downloaded there and checksum-verified |
+| `CODECOV_BIN` | `/tmp/codecov` | Where the Codecov CLI lives. Used as-is when already executable, otherwise the x86_64 or aarch64 build is downloaded there and checked against its pinned digest |
 | `COVERAGE_MERGE_TIMEOUT_MS` | `300000` (5 min) | Maximum time the reporter spends merging raw files, including fetching source maps (each map fetch is also capped at 30 s). Prevents a CI job from hanging if a route stalls |
 | `COVERAGE_GENERATE_TIMEOUT_MS` | `120000` (2 min) | Maximum time the reporter spends generating the report after merging. Prevents a CI job from hanging if the aggregation stalls |
 

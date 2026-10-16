@@ -176,9 +176,12 @@ describe("testing::_upload_e2e_coverage", () => {
   });
 });
 
-// A curl that writes CONTENT to every -o target, then exits with STATUS.
+// A curl that records its arguments, writes CONTENT to its -o target, then exits
+// with STATUS.
 const fakeCurl = (content: string, status = 0) =>
-  `curl() { while [[ $# -gt 0 ]]; do if [[ $1 == -o ]]; then ${content} > "$2"; shift; fi; shift; done; return ${status}; }`;
+  `curl() { printf '%s\\n' "$@" > "$ROOT/curl-args"; while [[ $# -gt 0 ]]; do if [[ $1 == -o ]]; then ${content} > "$2"; shift; fi; shift; done; return ${status}; }`;
+const fakeArch = (arch: string) => `uname() { echo "${arch}"; }`;
+const RELEASE_DOWNLOAD_URL = "https://github.com/codecov/codecov-cli/releases/download/v11.3.1";
 
 describe("testing::_codecov_cli download", () => {
   // A fresh directory, so the CLI is not already there and has to be fetched.
@@ -192,59 +195,93 @@ describe("testing::_codecov_cli download", () => {
     const target = downloadTarget();
     // The real sha256sum prints "OK" on stdout, which must not end up in the CLI path
     // the upload captures.
-    const prelude = `${fakeCurl('cat "$ROOT/codecov"')}\nsha256sum() { echo "codecov: OK"; }`;
+    const prelude = `${fakeArch("x86_64")}\n${fakeCurl('cat "$ROOT/codecov"')}\nsha256sum() { echo "codecov: OK"; }`;
     const { status, argv } = upload(
       { CODECOV_TOKEN: "token", ...PR_RUN, CODECOV_BIN: target },
       prelude,
     );
     expect(status).toBe(0);
     expect(argv[0]).toBe("upload-process");
-    expect(existsSync(`${target}.SHA256SUM`)).toBe(false);
   });
 
-  it("checks the published digest against CODECOV_BIN's own path", () => {
-    const target = downloadTarget().replace(/codecov$/u, "codecov-cli");
-    // The published file names `codecov`; the check must name the path actually written.
-    const prelude = `${fakeCurl('echo "abc123  codecov"')}\nsha256sum() { cat > "$ROOT/checked"; }`;
+  // Prow schedules steps on both x86_64 and aarch64 nodes; an x86_64 binary on an
+  // aarch64 node fails with "Exec format error".
+  it.each([
+    [
+      "x86_64",
+      "codecovcli_linux",
+      "ca1d64196d2d34771084afe76ea657d581bf628e31d993ff8e52ea09cc88a56d",
+    ],
+    [
+      "aarch64",
+      "codecovcli_linux_arm64",
+      "baff0923257c20b8594154c9651e7a6848f9783dc4392c6ce71791fec11a5913",
+    ],
+  ])("fetches the %s build and checks it against its pinned digest", (arch, asset, digest) => {
+    const target = downloadTarget();
+    const prelude = `${fakeArch(arch)}\n${fakeCurl("printf binary")}\nsha256sum() { cat > "$ROOT/checked"; }`;
     upload({ CODECOV_TOKEN: "token", ...PR_RUN, CODECOV_BIN: target }, prelude);
-    expect(readFileSync(join(root, "checked"), "utf8")).toBe(`abc123  ${target}\n`);
+    const curlArgs = readFileSync(join(root, "curl-args"), "utf8");
+    expect(curlArgs).toContain(`${RELEASE_DOWNLOAD_URL}/${asset}\n`);
+    // GitHub always redirects release downloads, so -L is required; HTTPS stays enforced
+    // across the redirect.
+    expect(curlArgs).toMatch(/^-fsSL$/mu);
+    expect(curlArgs).toContain("--proto\n=https\n--proto-redir\n=https\n");
+    expect(readFileSync(join(root, "checked"), "utf8")).toBe(`${digest}  ${target}\n`);
   });
 
-  // The published SHA256SUM names the file `codecov`; CODECOV_BIN may be named anything.
-  // GNU only, as in CI: BSD sha256sum has no --strict.
+  it("uses an executable already at CODECOV_BIN on any architecture, without downloading", () => {
+    const { status, argv } = upload(
+      { CODECOV_TOKEN: "token", ...PR_RUN },
+      `${fakeArch("s390x")}\n${fakeCurl("printf binary")}`,
+    );
+    expect(status).toBe(0);
+    expect(argv[0]).toBe("upload-process");
+    expect(existsSync(join(root, "curl-args"))).toBe(false);
+  });
+
+  // `uname -m` says arm64 only on macOS, where a Linux build cannot run either.
+  it.each(["s390x", "arm64"])("skips the upload, without downloading, on %s", (arch) => {
+    const target = downloadTarget();
+    const { status, argv, output } = upload(
+      { CODECOV_TOKEN: "token", ...PR_RUN, CODECOV_BIN: target },
+      `${fakeArch(arch)}\n${fakeCurl("printf binary")}`,
+    );
+    expect(status).toBe(0);
+    expect(argv).toEqual([]);
+    expect(output).toContain(`No Codecov CLI build for architecture ${arch}`);
+    expect(existsSync(join(root, "curl-args"))).toBe(false);
+  });
+
+  // The digest is pinned, so only a mismatch can be checked against the real tool; a
+  // malformed check line would fail with a format error instead. GNU only, as in CI:
+  // BSD sha256sum has no --strict.
   it.skipIf(!spawnSync("sha256sum", ["--version"], { encoding: "utf8" }).stdout?.includes("GNU"))(
-    "verifies the real checksum when CODECOV_BIN has another name",
+    "feeds the real sha256sum a well-formed check line",
     () => {
-      const directory = join(root, "download");
-      mkdirSync(directory);
-      const target = join(directory, "codecov-cli");
-      const digest = spawnSync("sha256sum", [join(root, "codecov")], {
-        encoding: "utf8",
-      }).stdout.split(" ")[0];
-      // First -o gets the binary, second the published checksum line.
-      const prelude = `curl() { local n=0; while [[ $# -gt 0 ]]; do if [[ $1 == -o ]]; then if ((n++ == 0)); then cat "$ROOT/codecov" > "$2"; else echo "${digest}  codecov" > "$2"; fi; shift; fi; shift; done; }`;
-      const { status, argv } = upload(
+      const target = downloadTarget();
+      const { output } = upload(
         { CODECOV_TOKEN: "token", ...PR_RUN, CODECOV_BIN: target },
-        prelude,
+        `${fakeArch("x86_64")}\n${fakeCurl("printf fake")}`,
       );
-      expect(status).toBe(0);
-      expect(argv[0]).toBe("upload-process");
+      expect(output).toContain(`${target}: FAILED`);
+      expect(output).not.toContain("no properly formatted");
+      expect(existsSync(target)).toBe(false);
     },
   );
 
   it.each([
-    // Writes part of each file before failing, as an interrupted transfer would.
+    // Writes part of the file before failing, as an interrupted transfer would.
     ["the download fails", fakeCurl("printf partial", 22)],
     ["the checksum does not match", `${fakeCurl("printf fake")}\nsha256sum() { return 1; }`],
   ])("skips the upload, leaves nothing behind, when %s", (_, prelude) => {
     const target = downloadTarget();
     const { status, output } = upload(
       { CODECOV_TOKEN: "token", ...PR_RUN, CODECOV_BIN: target },
-      prelude,
+      `${fakeArch("x86_64")}\n${prelude}`,
     );
     expect(status).toBe(0);
-    expect(output).toContain("Could not fetch a checksum-verified Codecov CLI");
+    expect(output).toContain("No checksum-verified Codecov CLI available");
     expect(existsSync(target)).toBe(false);
-    expect(existsSync(`${target}.SHA256SUM`)).toBe(false);
   });
 });
