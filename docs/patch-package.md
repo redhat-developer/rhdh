@@ -1,6 +1,28 @@
 # Guide to patching a backstage package
 
-This guide will show you how to patch a package in Backstage using the `patch-package` tool.
+## Recommended: Yarn patches via rhdh-skills
+
+For current RHDH release lines, prefer Yarn Berry patches (`.yarn/patches/`,
+`package.json` `resolutions`, lockfile updates) built from a local
+[backstage/backstage](https://github.com/backstage/backstage) checkout of the
+release tag named in this repo’s [`backstage.json`](../backstage.json)
+(`"version": "x.y.z"` → git tag `vx.y.z`). That file pins a version string only,
+not a commit SHA.
+
+The agent workflow lives in
+`/rhdh-patch-backstage` in the
+[rhdh-skills `ci/` pack](https://github.com/redhat-developer/rhdh-skills/tree/main/skills/ci)
+([redhat-developer/rhdh-skills](https://github.com/redhat-developer/rhdh-skills)).
+Install the pack (`npx skills add redhat-developer/rhdh-skills --global`) and use
+`/rhdh-patch-backstage`, or follow that skill’s steps manually.
+
+PRs that add or change a Yarn patch under `.yarn/patches/` run extra CI; see
+[scripts/backstage-bump-check](../scripts/backstage-bump-check/README.md).
+
+## Legacy: `patch-package` tool
+
+The sections below document the older `patch-package` flow (patches directory +
+`yarn patch-package`). Prefer the Yarn patch workflow above for new work.
 
 ## Prerequisites
 
