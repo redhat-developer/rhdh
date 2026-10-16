@@ -17,8 +17,6 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
-# shellcheck source=.ci/pipelines/lib/schema-mode-env.sh
-source "$DIR"/lib/schema-mode-env.sh
 
 export INSTALL_METHOD=operator
 
@@ -72,27 +70,9 @@ initiate_operator_deployments_osd_gcp() {
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 }
 
-run_operator_runtime_config_change_tests() {
-  # Runtime tests handle their own deployment via TypeScript (runtime-deploy.ts).
-  # The first test file (config-map.spec.ts) calls ensureRuntimeDeployed() which:
-  #   - Creates the namespace
-  #   - Deploys RHDH via the operator with internal PostgreSQL
-  #   - Configures schema-mode env vars for port-forwarding
-  # Subsequent test files reuse the existing deployment (workers: 1).
-  #
-  # INSTALL_METHOD=operator is already exported in handle_ocp_operator().
-  #
-  # No URL is passed on purpose - see the same note in jobs/ocp-nightly.sh.
-  # A pre-set BASE_URL makes global-setup.ts skip the deploy branch and poll a
-  # route nothing has created yet; ensureRuntimeDeployed() sets BASE_URL itself.
-  export RUNTIME_AUTO_DEPLOY="true"
-  testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" || true
-}
-
 handle_ocp_operator() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
-  export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 
   common::oc_login
@@ -117,6 +97,4 @@ handle_ocp_operator() {
 
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_OPERATOR}" "${url}"
   testing::check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "${rbac_url}"
-
-  run_operator_runtime_config_change_tests
 }

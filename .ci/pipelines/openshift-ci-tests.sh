@@ -125,6 +125,20 @@ main() {
       log::info "Calling handle_ocp_localization"
       handle_ocp_localization
       ;;
+    *ocp*helm*runtime*nightly*)
+      log::info "Sourcing ocp-runtime.sh"
+      # shellcheck source=.ci/pipelines/jobs/ocp-runtime.sh
+      source "${DIR}/jobs/ocp-runtime.sh"
+      log::info "Calling handle_ocp_helm_runtime"
+      handle_ocp_helm_runtime
+      ;;
+    *ocp*operator*runtime*nightly*)
+      log::info "Sourcing ocp-runtime.sh"
+      # shellcheck source=.ci/pipelines/jobs/ocp-runtime.sh
+      source "${DIR}/jobs/ocp-runtime.sh"
+      log::info "Calling handle_ocp_operator_runtime"
+      handle_ocp_operator_runtime
+      ;;
     *ocp*disconnected*helm*nightly*)
       log::info "Sourcing ocp-disconnected-helm.sh"
       # shellcheck source=.ci/pipelines/jobs/ocp-disconnected-helm.sh

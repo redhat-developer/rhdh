@@ -87,9 +87,12 @@ async function fixtures() {
   );
   for (const { name, value } of entries) writeFileSync(join(root, "ci", name), value);
   writeFileSync(join(root, "ci/azure-db-certificates.pem"), "synthetic-azure-ca");
+  const cloudSqlKey = JSON.stringify({ type: "service_account", private_key: "synthetic-key" });
+  writeFileSync(join(root, "ci/cloudsql-service-account.json"), cloudSqlKey);
   entries.push(
     { name: "azure_db_certificates__dot__pem", value: "synthetic-azure-ca" },
     { name: "rds_db_certificates_pem", value: "stale-stored-aws-ca" },
+    { name: "cloudsql_service_account_json", value: cloudSqlKey },
   );
   const chunks: Buffer[] = [];
   await writeSecretStream(
@@ -173,6 +176,13 @@ describe("original CI secret sourcing", () => {
       "synthetic-azure-ca",
     );
     expect(readFileSync(join(root, "aws-ca.pem"), "utf8")).toBe("current-public-aws-ca");
+    expect(environment).toHaveProperty(
+      "CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH",
+      "/tmp/secrets/cloudsql-service-account.json",
+    );
+    expect(readFileSync(join(root, "local/cloudsql-service-account.json"), "utf8")).toBe(
+      readFileSync(join(root, "ci/cloudsql-service-account.json"), "utf8"),
+    );
   });
 
   it("removes a failed public CA download without using the stored bundle", async () => {

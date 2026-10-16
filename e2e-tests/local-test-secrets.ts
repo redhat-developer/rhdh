@@ -24,6 +24,10 @@ const CERTIFICATES = new Set([
   "rds_db_certificates_pem",
   "rds_db_certificates__dot__pem",
 ]);
+const CLOUD_SQL_KEYS = new Set([
+  "cloudsql_service_account_json",
+  "cloudsql_service_account__dot__json",
+]);
 const CONTROLS =
   /^(?:BASH|BW_|DYLD_|LD_|NODE_|RHDH_E2E_|RHDH_LOCAL_|RHDH_SECRET_|EPHEMERAL_CLUSTER_ADMIN_|NAME_SPACE)|^(?:BASE_URL|K8S_CLUSTER_URL|K8S_CLUSTER_TOKEN|PATH|HOME|SHELL|ENV|SHELLOPTS|IFS|CDPATH|GLOBIGNORE|PS4|DIR|SHARED_DIR|ARTIFACT_DIR)$/u;
 const ALIASES = {
@@ -60,7 +64,10 @@ function testEnvironment(entries: ReturnType<typeof decodeSecretStream>): NodeJS
     ...process.env,
     ...Object.fromEntries(
       entries
-        .filter(({ name }) => !CONTROLS.test(name) && !CERTIFICATES.has(name))
+        .filter(
+          ({ name }) =>
+            !CONTROLS.test(name) && !CERTIFICATES.has(name) && !CLOUD_SQL_KEYS.has(name),
+        )
         .map(({ name, value }) => [name, value]),
     ),
     REDIS_USERNAME: "temp",
@@ -80,7 +87,8 @@ function testEnvironment(entries: ReturnType<typeof decodeSecretStream>): NodeJS
       name.startsWith("RHDH_LOCAL_TEST_") ||
       name.startsWith("EPHEMERAL_CLUSTER_ADMIN_") ||
       name === "RHDH_E2E_SECRET_FD" ||
-      CERTIFICATES.has(name)
+      CERTIFICATES.has(name) ||
+      CLOUD_SQL_KEYS.has(name)
     ) {
       delete environment[name];
     }
@@ -89,24 +97,43 @@ function testEnvironment(entries: ReturnType<typeof decodeSecretStream>): NodeJS
   return environment;
 }
 
-async function main(): Promise<number> {
-  const [command, ...args] = process.argv.slice(2);
-  if (!command) throw new Error("Wrapped test command is required");
-  const entries = readEntries();
+function writePrivateFiles(
+  entries: ReturnType<typeof decodeSecretStream>,
+  environment: NodeJS.ProcessEnv,
+  directory: string,
+): void {
   const azure = entries.filter(({ name }) =>
     ["azure_db_certificates_pem", "azure_db_certificates__dot__pem"].includes(name),
   );
   if (azure.length > 1) throw new Error("Secret stream contains conflicting Azure certificates");
+  const cloudSql = entries.filter(({ name }) => CLOUD_SQL_KEYS.has(name));
+  if (cloudSql.length > 1) throw new Error("Secret stream contains conflicting Cloud SQL keys");
+  delete environment.AZURE_DB_CERTIFICATES_PATH;
+  if (azure.length === 1) {
+    environment.AZURE_DB_CERTIFICATES_PATH = join(directory, "azure-db-certificates.pem");
+    writeFileSync(environment.AZURE_DB_CERTIFICATES_PATH, azure[0].value, { mode: 0o600 });
+  }
+  if (cloudSql.length === 1) {
+    environment.CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH = join(
+      directory,
+      "cloudsql-service-account.json",
+    );
+    writeFileSync(environment.CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH, cloudSql[0].value, {
+      mode: 0o600,
+    });
+  }
+}
+
+async function main(): Promise<number> {
+  const [command, ...args] = process.argv.slice(2);
+  if (!command) throw new Error("Wrapped test command is required");
+  const entries = readEntries();
   const environment = testEnvironment(entries);
   const root = join(import.meta.dirname, ".local-test");
   mkdirSync(root, { recursive: true, mode: 0o700 });
   const directory = mkdtempSync(join(root, "certificates."));
   try {
-    delete environment.AZURE_DB_CERTIFICATES_PATH;
-    if (azure.length === 1) {
-      environment.AZURE_DB_CERTIFICATES_PATH = join(directory, "azure-db-certificates.pem");
-      writeFileSync(environment.AZURE_DB_CERTIFICATES_PATH, azure[0].value, { mode: 0o600 });
-    }
+    writePrivateFiles(entries, environment, directory);
     environment.RDS_DB_CERTIFICATES_PATH = join(directory, "rds-global-bundle.pem");
     const downloaded = await runChild(
       "curl",

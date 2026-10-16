@@ -21,11 +21,13 @@ const MAX_ENTRIES = 65535;
 const MAX_FIELD_BYTES = 8 * 1024 * 1024;
 const MAX_STREAM_BYTES = 64 * 1024 * 1024;
 const ENVIRONMENT_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/u;
-const CERTIFICATE_FILES = new Map<string, string>([
+const SECRET_FILES = new Map<string, string>([
   ["rds_db_certificates_pem", "rds-db-certificates.pem"],
   ["rds_db_certificates__dot__pem", "rds-db-certificates.pem"],
   ["azure_db_certificates_pem", "azure-db-certificates.pem"],
   ["azure_db_certificates__dot__pem", "azure-db-certificates.pem"],
+  ["cloudsql_service_account_json", "cloudsql-service-account.json"],
+  ["cloudsql_service_account__dot__json", "cloudsql-service-account.json"],
 ]);
 
 function fail(message: string): never {
@@ -106,7 +108,7 @@ function readStreamInput(): Buffer {
 }
 
 function writeSecret(directory: string, name: string, value: string): void {
-  const filename = CERTIFICATE_FILES.get(name) ?? name;
+  const filename = SECRET_FILES.get(name) ?? name;
   const path = join(directory, filename);
   const flags =
     constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | (constants.O_NOFOLLOW ?? 0);
@@ -133,7 +135,7 @@ function main(): void {
   const entries = decode(readStreamInput());
   const filenames = new Set<string>();
   for (const entry of entries) {
-    const filename = CERTIFICATE_FILES.get(entry.name) ?? entry.name;
+    const filename = SECRET_FILES.get(entry.name) ?? entry.name;
     if (filenames.has(filename)) fail("Secret stream contains conflicting file names");
     filenames.add(filename);
   }

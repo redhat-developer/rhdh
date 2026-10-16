@@ -88,6 +88,7 @@ Nightly tests are run to ensure the stability and reliability of our codebase ov
 
 - **OCP Nightly Tests:** Run on ephemeral OpenShift clusters provisioned via Hive cluster pools on AWS. Multiple OCP versions are tested.
 - **OCP Operator Nightly Tests:** Same as OCP nightly but deploy RHDH using the Operator instead of Helm.
+- **OCP Runtime Nightly Tests:** Dedicated Helm and Operator jobs run `showcase-runtime` on one baseline OCP version. See [Runtime Tests](#runtime-tests).
 - **AKS Nightly Tests:** Nightly tests on Azure Kubernetes Service (AKS) using ephemeral clusters provisioned by [Mapt](https://github.com/redhat-developer/mapt). AKS is exclusively used for nightly runs (no PR checks).
 - **EKS Nightly Tests:** Nightly tests on AWS Elastic Kubernetes Service (EKS) using ephemeral clusters provisioned by Mapt.
 - **GKE Nightly Tests:** Nightly tests on Google Kubernetes Engine using a long-running shared cluster.
@@ -109,12 +110,40 @@ Localization tests verify that the RHDH UI displays correctly translated strings
 
 The localization test implementation is in `.ci/pipelines/jobs/ocp-localization.sh` (`run_localization_tests()` function).
 
+### Runtime Tests
+
+On `main` and `release-2.1`, the runtime suite runs in two dedicated jobs on **OCP 4.20**:
+
+| Job | Installation method | Playwright project |
+| --- | --- | --- |
+| `e2e-ocp-helm-runtime-nightly` | Helm | `showcase-runtime` |
+| `e2e-ocp-operator-runtime-nightly` | Operator | `showcase-runtime` |
+
+The [runtime handler](../../.ci/pipelines/jobs/ocp-runtime.sh) enables `RUNTIME_AUTO_DEPLOY` and invokes Playwright without a pre-set `BASE_URL`. The TypeScript deployment helpers create the runtime instance, its internal PostgreSQL database, and separate targets for configured AWS RDS, Azure PostgreSQL, and Google Cloud SQL slots. Coverage includes ConfigMap changes, `pluginDivisionMode: schema`, external-database TLS validation, and persistence across restarts. Operator runs first install the RHDH Operator; neither runtime job needs a Crunchy PostgreSQL deployment.
+
+Regular Helm and Operator nightlies, including version-specific OCP and OSD-GCP variants, run their standard projects without `showcase-runtime`. Helm's external Crunchy PostgreSQL TLS check remains in `showcase` across the OCP version matrix. Managed-database coverage exercises both installation methods on the baseline OCP version instead of the full managed-database/OCP cross-product.
+
+Both runtime jobs run twice weekly and have optional presubmits (`/test e2e-ocp-helm-runtime-nightly` and `/test e2e-ocp-operator-runtime-nightly`). The authoritative schedules are in the openshift/release configurations for [main](https://github.com/openshift/release/blob/main/ci-operator/config/redhat-developer/rhdh/redhat-developer-rhdh-main.yaml) and [release-2.1](https://github.com/openshift/release/blob/main/ci-operator/config/redhat-developer/rhdh/redhat-developer-rhdh-release-2.1.yaml), introduced by [openshift/release#86896](https://github.com/openshift/release/pull/86896).
+
+**Shared database coordination:** Cron spacing keeps scheduled users of the long-lived database slots apart, including release-1.10 nightlies, which still run runtime tests in their general handlers. `max_concurrency: 1` limits each job individually; it does not serialize Helm against Operator, different branches, or periodic against presubmit jobs. There is no shared database lock. Before a manual, presubmit, or local run, check for active shared-database users and allow delayed jobs to finish. Release-1.10 cleanup drops all non-system databases on shared RDS/Azure hosts; overlapping it can delete another runtime run's databases.
+
+Each job publishes its own `showcase-runtime` Playwright report, test results, and JUnit artifacts through the existing test runner and Slack/Data Router post steps. The test step remains `redhat-developer-rhdh-ocp-helm-nightly` or `redhat-developer-rhdh-ocp-operator-nightly`, even though the outer job name includes `runtime`.
+
+To run either job locally, follow [Managing E2E Secrets](managing-e2e-secrets.md#running-with-secrets), log in to an OCP cluster, and run from `e2e-tests`:
+
+```bash
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-runtime-nightly -r rhdh-community/rhdh -t next
+./local-run.sh -j periodic-ci-redhat-developer-rhdh-main-e2e-ocp-operator-runtime-nightly -r rhdh-community/rhdh -t next
+```
+
+Run them sequentially and omit `-s`: runtime deployments are created by the tests, so deploy-only mode skips them too.
+
 ### CI Job Definitions
 
 #### Nightly Test Job
 
 - **Purpose:** Ensure ongoing stability and detect regressions in different environments.
-- **Trigger:** Scheduled to run every night.
+- **Trigger:** Scheduled according to each job's cron configuration; some suites run twice weekly.
 - **Environments:**
   - **OCP:** Ephemeral clusters from Hive pools (multiple OCP versions).
   - **AKS/EKS:** Ephemeral clusters provisioned by [Mapt](https://github.com/redhat-developer/mapt).

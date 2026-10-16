@@ -278,7 +278,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   echo "  8) GKE Helm Nightly (*gke*helm*nightly*)"
   echo "  9) OCP Disconnected Operator Nightly (*ocp*disconnected*operator*nightly*)"
   echo " 10) OCP Disconnected Helm Nightly (*ocp*disconnected*helm*nightly*)"
-  echo " 11) Custom job name"
+  echo " 11) OCP Helm Runtime Nightly (*ocp*helm*runtime*nightly*)"
+  echo " 12) OCP Operator Runtime Nightly (*ocp*operator*runtime*nightly*)"
+  echo " 13) Custom job name"
   echo ""
   read -r -p "Enter choice [1]: " job_choice
   job_choice=${job_choice:-1}
@@ -294,7 +296,9 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     8) JOB_NAME="periodic-ci-gke-helm-nightly" ;;
     9) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly" ;;
     10) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly" ;;
-    11)
+    11) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-runtime-nightly" ;;
+    12) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-operator-runtime-nightly" ;;
+    13)
       read -r -p "Enter custom JOB_NAME: " JOB_NAME
       ;;
     *) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;
@@ -411,6 +415,11 @@ SKIP_TESTS="$SKIP_TESTS"
 EOF
   echo "Configuration saved to: $RUN_CONFIG_FILE"
   echo ""
+fi
+
+if [[ "$JOB_NAME" == *ocp*runtime*nightly* && "$SKIP_TESTS" == "true" ]]; then
+  log::error "Runtime jobs deploy RHDH from Playwright. Omit -s or select 'Deploy and run tests' to run them."
+  exit 1
 fi
 
 # Verify image exists (only supported for quay.io)

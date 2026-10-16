@@ -15,6 +15,8 @@ Use the collection ID `rhdh-qe`. Two profiles select secrets by path:
 
 The two database certificate items are the exception: either spelling of `azure_db_certificates_pem` is written as `azure-db-certificates.pem`, and supplying both spellings fails before any file is written. The stored RDS bundle is never used; both runners download the current public AWS RDS CA bundle instead.
 
+Cloud SQL uses `rhdh/cloudsql_service_account_json` (or the GSM-encoded `cloudsql_service_account__dot__json`). Container runs materialize it as `/tmp/secrets/cloudsql-service-account.json`, matching the default `CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH` in CI. Host runs write it to a private temporary file and set that path only in the test child environment. Supplying both aliases fails; the raw key is never exported as an environment variable.
+
 ## Running with Secrets
 
 Complete the [upstream local-command prerequisites](https://redhat-developer.github.io/rhdh-e2e-test-utils/api/secrets.html#local-command) — the `bw` CLI on `PATH` and an unlocked session — then run `yarn install` in `e2e-tests`, which provides the pinned `rhdh-e2e-secrets` executable. Set `RHDH_E2E_SECRETS_BIN` only to test a different CLI build.

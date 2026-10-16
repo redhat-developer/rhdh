@@ -204,6 +204,30 @@ describe("host runtime", () => {
     expect(readdirSync(join(root, "e2e-tests/.local-test"))).toEqual([]);
   });
 
+  it.each(["cloudsql_service_account_json", "cloudsql_service_account__dot__json"])(
+    "loads %s into a private file instead of the test environment",
+    async (name) => {
+      await stream([
+        { name, value: JSON.stringify({ type: "service_account", private_key: "synthetic-key" }) },
+      ]);
+      mock(
+        "yarn",
+        `exec node -e '
+        const assert = require("node:assert/strict");
+        const fs = require("node:fs");
+        const path = process.env.CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH;
+        assert.equal(JSON.parse(fs.readFileSync(path, "utf8")).private_key, "synthetic-key");
+        assert.equal(fs.statSync(path).mode & 0o777, 0o600);
+        assert.equal(process.env.cloudsql_service_account_json, undefined);
+        assert.equal(process.env.cloudsql_service_account__dot__json, undefined);
+        '`,
+      );
+      const result = run("e2e-tests/local-test.sh", ["--", "--project=showcase"]);
+      expect(result.status, result.stderr).toBe(0);
+      expect(readdirSync(join(root, "e2e-tests/.local-test"))).toEqual([]);
+    },
+  );
+
   it("keeps multiline secrets as data and restores caller connection values", async () => {
     const password = `synthetic-"'\\\n$(touch "$HOME/executed")\n\n`;
     await stream([
@@ -321,6 +345,18 @@ while true; do sleep 0.05; done`,
 });
 
 describe("container runner", () => {
+  it.each(["helm", "operator"])("rejects deploy-only %s runtime CLI runs", (method) => {
+    const result = run("e2e-tests/local-run.sh", [
+      ...runArgs,
+      "-j",
+      `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-${method}-runtime-nightly`,
+    ]);
+    expect(result.status).toBe(1);
+    expect(result.stdout + result.stderr).toContain("Omit -s or select 'Deploy and run tests'");
+    expect(events()).toBe("");
+    expect(existsSync(join(root, "e2e-tests/.local-test/run.lock"))).toBe(false);
+  });
+
   it.each([{ BW_SESSION: "" }, { FAIL_SECRETS: "1" }])(
     "does not mutate the cluster when secret loading fails: %j",
     (overrides) => {

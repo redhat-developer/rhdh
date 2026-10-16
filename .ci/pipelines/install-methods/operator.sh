@@ -108,7 +108,15 @@ install_rhdh_operator() {
 # under test; OLM propagates the change to the operator deployment.
 override_operator_backstage_image() {
   local namespace=$1
-  local image="${IMAGE_REGISTRY}/${IMAGE_REPO}:${TAG_NAME}"
+  local image_version="${IMAGE_DIGEST:-${TAG_NAME}}"
+  if [[ -n "${IMAGE_DIGEST:-}" && ! "${IMAGE_DIGEST}" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+    log::error "IMAGE_DIGEST must be a complete SHA-256 image digest"
+    return 1
+  fi
+  local image="${IMAGE_REGISTRY}/${IMAGE_REPO}:${image_version}"
+  if [[ "${image_version}" == sha256:* ]]; then
+    image="${IMAGE_REGISTRY}/${IMAGE_REPO}@${image_version}"
+  fi
   local csv_name
 
   # OLM v1 installs (install-rhdh-catalog-source.sh auto-detects it and uses a

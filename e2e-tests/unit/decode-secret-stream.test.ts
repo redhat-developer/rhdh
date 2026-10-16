@@ -74,6 +74,21 @@ describe("decode-secret-stream", () => {
     }
   });
 
+  it("normalizes the GSM-encoded Cloud SQL key name for the original CI path", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "rhdh-secret-stream-test-"));
+    const value = JSON.stringify({ type: "service_account", private_key: "synthetic-key" });
+    try {
+      execFileSync(process.execPath, [decoder, directory], {
+        input: await encode([{ name: "cloudsql_service_account__dot__json", value }]),
+      });
+      const path = join(directory, "cloudsql-service-account.json");
+      expect(readFileSync(path, "utf8")).toBe(value);
+      expect(statSync(path).mode & 0o777).toBe(0o600);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it("rejects conflicting certificate aliases before writing any files", async () => {
     const directory = mkdtempSync(join(tmpdir(), "rhdh-secret-stream-test-"));
     try {

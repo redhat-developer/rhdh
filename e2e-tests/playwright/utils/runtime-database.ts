@@ -185,7 +185,9 @@ export interface SlotCleanup {
 
 /**
  * Clear this slot's databases left by any earlier, interrupted run, then the current run's.
- * Runs against one database host never overlap, so every other run on the slot is finished.
+ * Dedicated runtime job schedules keep shared-host runs apart; max_concurrency only
+ * limits each job individually. Manual runs must also avoid overlapping other runtime
+ * runs and release-1.10 nightlies before treating other runs' databases as leftovers.
  */
 export async function clearSlotDatabases(
   client: OwnedDatabaseClient,

@@ -12,9 +12,10 @@ sidecars and, for Helm, the standalone RHDH chart. Cloud SQL additionally needs:
 
 Use the `rhdh` E2E secret collection; follow the upstream
 [Secrets API documentation](https://redhat-developer.github.io/rhdh-e2e-test-utils/api/secrets.html)
-for retrieval. For local runs, store the service-account JSON in a private file
-and point `CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH` at it, rather than putting the key
-in command arguments or environment variables containing JSON.
+for retrieval. Local runners materialize `rhdh/cloudsql_service_account_json` as
+a private file and set `CLOUDSQL_SERVICE_ACCOUNT_JSON_PATH`; see the repository's
+[secret naming conventions](managing-e2e-secrets.md#repository-collection-and-secret-names).
+Do not put the key in command arguments or environment variables containing JSON.
 
 RDS/Azure use direct PostgreSQL TLS instead: both the runner and RHDH need endpoint
 access and a provider CA bundle. An absent endpoint skips its slot; a configured

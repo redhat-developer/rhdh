@@ -52,10 +52,11 @@ BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | s
 
 | Job pattern | Projects |
 |-------------|----------|
-| `*ocp*helm*nightly*` (not upgrade, not localization) | `showcase`, `showcase-rbac`, `showcase-runtime`, `showcase-sanity-plugins` |
+| `*ocp*helm*runtime*nightly*` / `*ocp*operator*runtime*nightly*` | `showcase-runtime` |
+| `*ocp*helm*nightly*` (excluding runtime, upgrade, localization, disconnected, FIPS) / `*osd-gcp*helm*nightly*` | `showcase`, `showcase-rbac`, `showcase-sanity-plugins` |
 | `*ocp*helm*localization*nightly*` | `showcase-localization-de`, `showcase-localization-es`, `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja` |
 | `*ocp*helm*upgrade*` | `showcase-upgrade` |
-| `*ocp*operator*nightly*` (not auth) | `showcase-operator`, `showcase-operator-rbac` |
+| `*ocp*operator*nightly*` (excluding runtime, auth, disconnected) / `*osd-gcp*operator*nightly*` | `showcase-operator`, `showcase-operator-rbac` |
 | `*ocp*operator*auth-providers*` | `showcase-auth-providers` |
 | `*ocp*helm*pull*` | `showcase`, `showcase-rbac` |
 | `*aks*`/`*eks*`/`*gke*` helm | `showcase-k8s`, `showcase-rbac-k8s` |
@@ -67,6 +68,11 @@ Use the **full Prow CI job name** directly as the `-j` parameter. Do NOT use sho
 
 **OCP** (deploy-only with `-s`): `./local-run.sh -j "$JOB_NAME" -r "$REPO" -t "$TAG" -s`
 **K8s** (full execution, no `-s`): `./local-run.sh -j "$JOB_NAME" -r "$REPO" -t "$TAG"`
+
+**OCP runtime jobs** also require full execution without `-s`: the Playwright
+suite creates its own deployments. Run them sequentially, checking for active
+shared-database users first; scheduling and per-job concurrency do not serialize
+manual runs across jobs or branches. See `docs/e2e-tests/CI.md#runtime-tests`.
 
 ### Release Branch → Image Repo and Tag
 

@@ -67,7 +67,7 @@ Fullsend's GitHub issues are the automated overlay tracker. For overlay bugs tha
 | | Nightly (Periodic) Jobs | PR Check (Presubmit) Jobs |
 |---|---|---|
 | **Trigger** | Scheduled (usually once per night) | On PR creation/update, or `/ok-to-test` |
-| **Scope** | Full suite: showcase, RBAC, runtime, sanity plugins, localization, auth providers | Smaller scope: showcase + RBAC only |
+| **Scope** | Standard jobs: showcase and RBAC, plus Helm sanity plugins; dedicated jobs: runtime, localization, auth providers | Mandatory check: showcase + RBAC; optional nightly variants on request |
 | **Platforms** | OCP (multiple versions), AKS, EKS, GKE, OSD-GCP | OCP only (single version) |
 | **Install methods** | Helm and Operator | Helm only |
 | **Alert channel** | `#rhdh-e2e-alerts` / `#rhdh-e2e-alerts-{version}` | PR status checks on GitHub |
@@ -403,28 +403,38 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 
 The most comprehensive nightly job. Runs on OpenShift using ephemeral cluster claims. See [`ocp-nightly.sh`](../../.ci/pipelines/jobs/ocp-nightly.sh).
 
-**Namespaces**: `showcase-ci-nightly`, `showcase-rbac-nightly`, `postgress-external-db-nightly`, plus a runtime namespace for `showcase-runtime` tests
+**Namespaces**: `showcase-ci-nightly`, `showcase-rbac-nightly`, `postgress-external-db-nightly`, plus the sanity-plugins namespace
 
 **Test suites run (in order)**:
 1. **Standard deployment tests** (`showcase`, `showcase-rbac`) -- core functionality with and without RBAC
-2. **Runtime config change tests** (`showcase-runtime`) -- tests that modify RHDH configuration at runtime
-3. **Sanity plugins check** (`showcase-sanity-plugins`) -- validates plugin loading and basic functionality
-4. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
+2. **Sanity plugins check** (`showcase-sanity-plugins`) -- validates plugin loading and basic functionality
 
-**OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler but localization tests are skipped.
+**OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler and projects. Runtime and localization tests have dedicated jobs.
 
 ### OCP Operator (`ocp-operator`)
 
 Same as OCP nightly but deploys RHDH using the Operator instead of Helm. See [`ocp-operator.sh`](../../.ci/pipelines/jobs/ocp-operator.sh).
 
-**Namespaces**: `showcase`, `showcase-rbac`, `showcase-runtime` (when runtime tests are enabled)
+**Namespaces**: `showcase`, `showcase-rbac`, plus the external Crunchy PostgreSQL namespace
 
 **Test suites**: `showcase-operator`, `showcase-operator-rbac`
 
 **Key differences**:
 - Installs RHDH Operator and waits for `backstages.rhdh.redhat.com` CRD (300s timeout)
 - Uses Backstage CR (`rhdh-start.yaml`) instead of Helm release
-- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with external Crunchy PostgreSQL
+- OSD-GCP Operator jobs use the same handler and projects; runtime tests have dedicated jobs
+
+### OCP Runtime (`ocp-runtime`)
+
+`e2e-ocp-helm-runtime-nightly` and `e2e-ocp-operator-runtime-nightly` run only `showcase-runtime` on OCP 4.20 for `main` and `release-2.1`. See [`ocp-runtime.sh`](../../.ci/pipelines/jobs/ocp-runtime.sh).
+
+**Namespaces**: `showcase-runtime` by default, plus per-run external-database target namespaces created by the TypeScript fixtures.
+
+**Coverage**: ConfigMap changes, `pluginDivisionMode: schema`, and configured RDS, Azure PostgreSQL, and Cloud SQL TLS/persistence scenarios. The suite creates its own deployments and internal PostgreSQL; Operator runs first prepare the RHDH Operator. Crunchy setup is not required.
+
+**Artifacts**: Each Helm or Operator job has a `showcase-runtime` report and JUnit output. In GCS, the outer artifact directory uses the runtime job name; the inner test-step directory still uses `redhat-developer-rhdh-ocp-helm-nightly` or `redhat-developer-rhdh-ocp-operator-nightly`.
+
+**Coordination**: Twice-weekly cron spacing plus per-job `max_concurrency: 1`; no cross-job or cross-branch database lock. Check active shared-database users before triggering either optional presubmit or a local run. Release-1.10 nightlies still use the shared databases and can delete another run's databases during cleanup. See [runtime schedules and local commands](CI.md#runtime-tests).
 
 ### OCP PR Check (`ocp-pull`)
 

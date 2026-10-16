@@ -14,50 +14,40 @@ Schema mode is verified indirectly through RHDH accessibility: if RHDH starts su
 
 ## Opt-In Behavior
 
-Schema-mode tests are opt-in. They only run when the required `SCHEMA_MODE_*` environment variables are configured.
+The dedicated runtime jobs deploy PostgreSQL and discover the required `SCHEMA_MODE_*` variables automatically. Against an existing deployment, the spec attempts the same discovery before deciding whether to skip.
 
 ### When Tests Run
 
-The following environment variables must be set:
+Discovery or caller-provided configuration must supply:
 
 - `SCHEMA_MODE_DB_ADMIN_PASSWORD` - PostgreSQL admin password
 - `SCHEMA_MODE_DB_PASSWORD` - Test user password
 - Either:
-  - `SCHEMA_MODE_PORT_FORWARD_NAMESPACE` + `SCHEMA_MODE_PORT_FORWARD_RESOURCE` (CI auto-discovery), or
+  - `SCHEMA_MODE_PORT_FORWARD_NAMESPACE` + `SCHEMA_MODE_PORT_FORWARD_RESOURCE` (automatic port-forward), or
   - `SCHEMA_MODE_DB_HOST` (manual port-forward or direct access)
 
 ### When Tests Skip
 
-Tests skip when:
-
-- Any required `SCHEMA_MODE_*` variable is missing
-- PostgreSQL is not available in the runtime namespace
-- Port-forward fails to establish connection
+Tests skip if the required credentials or connection metadata are still missing after discovery, for example when PostgreSQL is not available in the runtime namespace. A port-forward or database connection failure after setup begins fails the test.
 
 ### CI Behavior
 
-- **OCP Helm nightly jobs**: Tests run (env auto-configured by `schema-mode-env.sh`)
-- **OCP Operator nightly jobs**: Tests run (env auto-configured by `schema-mode-env.sh` with `operator` install method)
-- **PR jobs**: Tests skip (env not configured by default)
-- **Non-OCP jobs (AKS, EKS, GKE)**: Tests skip (no PostgreSQL deployment)
+- **`e2e-ocp-helm-runtime-nightly` / `e2e-ocp-operator-runtime-nightly`**: Run the schema tests in `showcase-runtime`, including when triggered as optional presubmits.
+- **Regular OCP-version and OSD-GCP nightlies, the mandatory PR check, and AKS/EKS/GKE jobs**: Do not select the schema-mode spec.
 
 ## CI Integration
 
-On OCP Helm nightly jobs, [`.ci/pipelines/lib/schema-mode-env.sh`](../../../../.ci/pipelines/lib/schema-mode-env.sh) runs before the runtime Playwright project to discover PostgreSQL credentials and export `SCHEMA_MODE_*` variables, including `SCHEMA_MODE_PORT_FORWARD_NAMESPACE` and `SCHEMA_MODE_PORT_FORWARD_RESOURCE` (`svc/...` or `pod/...`).
+The TypeScript [`configureSchemaMode`](schema-mode-db.ts) helper discovers PostgreSQL service names and credentials in the runtime namespace and sets `SCHEMA_MODE_*` variables, including `SCHEMA_MODE_PORT_FORWARD_NAMESPACE` and `SCHEMA_MODE_PORT_FORWARD_RESOURCE`. [`runtime-deploy.ts`](../../utils/runtime-deploy.ts) calls it after deploying the internal database, and the spec retries discovery in `beforeAll` when configuration is missing.
 
-The test spec starts `oc port-forward` in `beforeAll` (similar to [`verify-redis-cache.spec.ts`](../../verify-redis-cache.spec.ts)) and stops it in `afterAll`.
+The test spec starts `oc port-forward` in `beforeAll` and stops it in `afterAll`.
 
-When the runtime namespace has no Bitnami `*-postgresql` Service, auto-discovery uses the Crunchy cluster in `NAME_SPACE_POSTGRES_DB`:
-
-- Admin password from `${SCHEMA_MODE_CRUNCHY_CLUSTER_NAME:-postgress-external-db}-pguser-janus-idp`
-- Forward target is a Running postgres pod (the `*-primary` Service has no selector, so forwarding the Service fails)
-- Override cluster name with `SCHEMA_MODE_CRUNCHY_CLUSTER_NAME` if your `PostgresCluster` metadata name differs
+Discovery checks `${RELEASE_NAME}-postgresql` for Helm and `backstage-psql-${RELEASE_NAME}` for Operator first, then tries the other name. It reads the admin password from the corresponding database Secret and forwards the Service. The dedicated runtime jobs use their own internal PostgreSQL; discovery does not fall back to a Crunchy deployment.
 
 Set `DEBUG_SCHEMA_MODE_PF=1` to log port-forward output.
 
 Tests run in the `showcase-runtime` Playwright project together with `config-map.spec.ts` (see [`playwright.config.ts`](../../../playwright.config.ts)).
 
-**Pipeline entrypoint**: [`.ci/pipelines/openshift-ci-tests.sh`](../../../../.ci/pipelines/openshift-ci-tests.sh) → `jobs/ocp-nightly.sh`
+**Pipeline entrypoint**: [`.ci/pipelines/openshift-ci-tests.sh`](../../../../.ci/pipelines/openshift-ci-tests.sh) → `jobs/ocp-runtime.sh` (`e2e-ocp-helm-runtime-nightly` or `e2e-ocp-operator-runtime-nightly`)
 
 **Environment baseline**: [`.ci/pipelines/env_variables.sh`](../../../../.ci/pipelines/env_variables.sh)
 
@@ -67,27 +57,19 @@ The tests include built-in retry logic to handle transient port-forward instabil
 
 - Automatic retry with exponential backoff for transient connection failures
 - Automatic port-forward restart when connection is refused (port-forward crashed)
-- SSL fallback for Crunchy PostgreSQL clusters requiring encrypted connections
+- SSL fallback for PostgreSQL endpoints requiring encrypted connections
 
 ## Local / ClusterBot Runs
 
-For ad-hoc runs against an existing cluster:
+For deployment and the full suite, use the [dedicated runtime local-run commands](../../../../docs/e2e-tests/CI.md#runtime-tests) without `-s`.
 
-1. Either run the same discovery as CI (source or replicate what [`schema-mode-env.sh`](../../../../.ci/pipelines/lib/schema-mode-env.sh) exports) so the spec can start `oc port-forward`, or manually port-forward and set `SCHEMA_MODE_DB_HOST=localhost` plus passwords.
-
-2. Set required environment variables:
-   - `SCHEMA_MODE_DB_ADMIN_PASSWORD`
-   - `SCHEMA_MODE_DB_PASSWORD`
-   - `NAME_SPACE_RUNTIME`
-   - `RELEASE_NAME`
-   - Forward metadata or `SCHEMA_MODE_DB_HOST` as described above
-
-3. `K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN` are only needed if the tests must talk to the API from your machine; OpenShift CI already sets them in jobs.
+To run only schema-mode tests against an existing deployment, follow [Managing E2E Secrets](../../../../docs/e2e-tests/managing-e2e-secrets.md#running-with-secrets), provide `K8S_CLUSTER_URL` and `K8S_CLUSTER_TOKEN`, and set `BASE_URL`, `NAME_SPACE_RUNTIME`, `RELEASE_NAME`, and `INSTALL_METHOD` for that deployment. The spec discovers its internal PostgreSQL; a direct connection instead needs `SCHEMA_MODE_DB_HOST`, `SCHEMA_MODE_DB_ADMIN_PASSWORD`, and `SCHEMA_MODE_DB_PASSWORD` supplied by the caller.
 
 ```bash
 cd e2e-tests
 yarn install
 yarn playwright install chromium
-yarn playwright test playwright/e2e/plugin-division-mode-schema/verify-schema-mode-helm.spec.ts --project=any-test
+BASE_URL=https://runtime.example.com NAME_SPACE_RUNTIME=showcase-runtime RELEASE_NAME=rhdh INSTALL_METHOD=helm \
+  ./local-test.sh -- --project=showcase-runtime playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts
 yarn playwright show-report
 ```

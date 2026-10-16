@@ -13,6 +13,15 @@ Container Platform (OCP).
 - Non-OCP platforms (AKS, EKS) use ephemeral clusters provisioned by
   [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running shared cluster.
 
+### Runtime Jobs
+
+`e2e-ocp-helm-runtime-nightly` and `e2e-ocp-operator-runtime-nightly` run only `showcase-runtime` on
+baseline OCP 4.20 for `main` and `release-2.1`. The handler is
+[`jobs/ocp-runtime.sh`](jobs/ocp-runtime.sh); general OCP-version and OSD-GCP nightlies run their
+standard projects without runtime tests. See the
+[runtime CI guide](../../docs/e2e-tests/CI.md#runtime-tests) for coverage, scheduling,
+shared-database coordination, artifacts, and local commands.
+
 ---
 
 ## Access Requirements

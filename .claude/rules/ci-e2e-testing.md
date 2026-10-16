@@ -388,9 +388,15 @@ The main script dispatches to job-specific handlers in `.ci/pipelines/jobs/`:
 - `handle_ocp_nightly`: OCP Helm nightly tests (also handles OSD-GCP Helm)
 - `handle_ocp_localization`: OCP Helm localization nightly tests
 - `handle_ocp_operator`: OCP Operator nightly tests (also handles OSD-GCP Operator)
+- `handle_ocp_helm_runtime` / `handle_ocp_operator_runtime`: Dedicated OCP runtime jobs (`jobs/ocp-runtime.sh`), running only `showcase-runtime` on one baseline OCP version
 - `handle_ocp_pull`: OCP PR checks
 - `handle_auth_providers`: Auth provider tests
 - `handle_ocp_helm_upgrade`: Upgrade scenario tests
+
+Runtime jobs replace runtime execution in regular OCP-version and OSD-GCP nightlies.
+They rely on cron spacing and per-job `max_concurrency: 1`, without a shared database
+lock. Before manual or local runtime runs, check active shared-database users,
+including release-1.10 nightlies. See `docs/e2e-tests/CI.md#runtime-tests`.
 
 #### Special Case: showcase-auth-providers Deployment
 
