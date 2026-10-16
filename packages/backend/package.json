@@ -43,7 +43,7 @@
     "@backstage/plugin-events-backend": "0.6.5",
     "@backstage/plugin-events-node": "0.4.25",
     "@backstage/plugin-permission-backend": "0.7.15",
-    "@backstage/plugin-proxy-backend": "0.6.17",
+    "@backstage/plugin-proxy-backend": "0.6.18",
     "@backstage/plugin-scaffolder-backend": "4.1.0",
     "@backstage/plugin-search-backend": "2.1.6",
     "@backstage/plugin-search-backend-module-catalog": "0.3.18",
