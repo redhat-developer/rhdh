@@ -3,22 +3,16 @@
 # for the full OFS -> NFS config mapping and known RHDH-specific gaps.
 app:
   extensions:
-    # Home page (red-hat-developer-hub.backstage-plugin-dynamic-home-page NFS export).
-    # `page:home` is disabled by default upstream (@backstage/plugin-home) and must be
-    # explicitly enabled — see the plugin's README ("New Frontend System" section) —
-    # otherwise "/" 404s even though the plugin's widget/layout extensions load fine via
-    # Module Federation. NFS home-page cards are a fixed set of built-in widgets
-    # (home-page-widget:home/*) auto-enabled by the plugin — arbitrary cards
-    # (Placeholder/Markdown/JokeCard/Headline) that the old OFS mountPoints used to add
-    # have no NFS equivalent, so home-page-customization.spec.ts only asserts the
-    # widgets that still exist: Quick Access, Featured Docs, Recently Visited, Top
-    # Visited. Search and Starred Catalog Entities are also still-existing widgets;
-    # they're asserted by guest-signin-happy-path.spec.ts instead.
-    - page:home:
+    # Homepage 3.1 owns page:homepage and its layout. Keep community home for visits,
+    # but disable its page so only one Home destination is registered.
+    - page:home: false
+    - page:homepage:
         config:
           path: /
+          title: Home
     - api:home/visits: true
     - app-root-element:home/visit-listener: true
+    - translation:app/homepage-translations
     # Global header: wrapper + translations attach to the core `app` plugin and must be
     # explicitly enabled. The plugin's own NFS extensions (gh-component:global-header/*,
     # gh-menu-item:global-header/*) are enabled by default — no pluginConfig needed.
@@ -32,17 +26,16 @@ app:
           availableLanguages: [en, de, es, fr, it, ja]
           defaultLanguage: en
     # Backstage 1.54 added home-page-widget:search/search-bar on @backstage/plugin-search.
-    # The RHDH homepage plugin already provides home-page-widget:home/search-bar; leaving
+    # The RHDH homepage plugin already provides home-page-widget:homepage/search-bar; leaving
     # both enabled duplicates the Search input and fails guest-signin-happy-path.spec.ts.
     - home-page-widget:search/search-bar: false
     # customizable: false so `priority` actually governs ordering (with customizable:
     # true, the layout extension keeps the plugin-registration order and ignores
-    # priority entirely). Keys must match each widget's `params.name` (not its
-    # blueprint `name`) — see
-    # rhdh-plugins/workspaces/homepage/plugins/homepage/src/alpha/extensions/homePageCards.tsx.
+    # priority entirely). Keys match each widget's `params.name` — see
+    # rhdh-plugins/workspaces/homepage/plugins/homepage/src/extensions/homePageCards.tsx.
     # Breakpoints mirror app-config.local.yaml so the default NFS widgets render in a
     # stable layout for home-page-customization.spec.ts and guest-signin-happy-path.spec.ts.
-    - home-page-layout:home/dynamic-homepage-layout:
+    - home-page-layout:homepage/dynamic-homepage-layout:
         config:
           customizable: false
           widgetLayout:
@@ -254,5 +247,28 @@ app:
             - [hasMember, memberOf]
             - [dependsOn, dependencyOf]
             - [scaffolderOf, scaffoldedFrom]
+# The catalog defaults expose only the three main sections. The backend-enabled
+# CI fixture also needs these cards for homepage customization and Guest tests.
+# Refs match home-page-widget:homepage/<ref>; no persona conditions hide them.
+homepage:
+  defaultWidgets:
+    - id: rhdh-onboarding-section
+      ref: rhdh-onboarding-section
+    - id: rhdh-entity-section
+      ref: rhdh-entity-section
+    - id: rhdh-template-section
+      ref: rhdh-template-section
+    - id: quickaccess-card
+      ref: quickaccess-card
+    - id: search-bar
+      ref: search-bar
+    - id: featured-docs-card
+      ref: featured-docs-card
+    - id: catalog-starred-entities-card
+      ref: catalog-starred-entities-card
+    - id: recently-visited-card
+      ref: recently-visited-card
+    - id: top-visited-card
+      ref: top-visited-card
 dynamicPlugins:
   rootDirectory: dynamic-plugins-root

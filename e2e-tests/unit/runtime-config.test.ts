@@ -8,6 +8,7 @@ import {
 } from "../playwright/utils/helper";
 import { isRecord } from "../playwright/utils/kube-client/helpers";
 import {
+  generateAppConfigYaml,
   generateBackstageCR,
   generateDynamicPluginsYaml,
   generateHelmSetArgs,
@@ -193,12 +194,19 @@ describe("generateHelmValuesYaml", () => {
     expect(generateHelmValuesYaml()).toMatch(guestProviderPackage);
   });
 
-  it("enables the home page, which the new frontend system ships disabled", () => {
+  it("uses the catalog Homepage 3.1 page and layout", () => {
     expect(helmValues()).toMatchObject({
       appConfig: {
         app: {
           extensions: [
-            { "page:home": { config: { path: "/" } } },
+            { "page:home": false },
+            { "page:homepage": { config: { path: "/", title: "Home" } } },
+            { "translation:app/homepage-translations": true },
+            {
+              "home-page-layout:homepage/dynamic-homepage-layout": {
+                config: { customizable: false },
+              },
+            },
             { "api:home/visits": true },
             { "app-root-element:home/visit-listener": true },
           ],
@@ -254,4 +262,13 @@ describe("generateBackstageCR", () => {
       image: "quay.io/rhdh-community/rhdh:next",
     });
   });
+});
+
+it("uses the same home page extensions for Helm and Operator runtime deployments", () => {
+  const helm = helmValues();
+  if (!isRecord(helm.appConfig) || !isRecord(helm.appConfig.app)) {
+    throw new Error("Helm app config is missing");
+  }
+  const operator: unknown = yaml.parse(generateAppConfigYaml("https://runtime.example.test"));
+  expect(operator).toMatchObject({ app: { extensions: helm.appConfig.app.extensions } });
 });

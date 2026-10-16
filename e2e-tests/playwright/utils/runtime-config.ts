@@ -40,7 +40,10 @@ import {
 
 const appTitle = "Red Hat Developer Hub";
 const homeExtensions = [
-  { "page:home": { config: { path: "/" } } },
+  { "page:home": false },
+  { "page:homepage": { config: { path: "/", title: "Home" } } },
+  { "translation:app/homepage-translations": true },
+  { "home-page-layout:homepage/dynamic-homepage-layout": { config: { customizable: false } } },
   { "api:home/visits": true },
   { "app-root-element:home/visit-listener": true },
 ];
@@ -261,8 +264,8 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
     appConfig: {
       app: {
         title: appTitle,
-        // The new frontend system ships page:home disabled, so "/" is a 404
-        // without it. Same home extensions as the CI dynamic-plugins-config.yaml.
+        // Homepage 3.1 owns the home page and layout. Match the CI
+        // dynamic-plugins-config.yaml instead of the community home page.
         extensions: homeExtensions,
       },
       ...(cloudSql || external || config?.catalogProbe === true
