@@ -1,0 +1,9 @@
+out/
+out-image/
+out-bench/
+out-coverage/
+node_modules/
+dist/
+package-lock.json
+*.scriptc
+*.c
