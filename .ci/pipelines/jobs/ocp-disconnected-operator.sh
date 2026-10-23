@@ -83,16 +83,20 @@ handle_ocp_disconnected_operator() {
     log::error "CONTAINER_PLATFORM_VERSION is unset or invalid ('${ocp_version}'); expected OpenShift major.minor"
     return 1
   fi
-  # GA/RC verification mirrors the published Red Hat Operator catalog, the only
-  # one carrying released bundles. A filtered oc-mirror run rejects it until the
-  # rhdh-operator defaultChannel fix lands (rhdh-operator#3822). CI runs
-  # (IMAGE_REGISTRY=quay.io) cannot use it at all: it has no 2.x bundles, so they
-  # mirror the RHDH CI catalog built from the same commit as the hub image.
+  # A CI chart tag (x.y-N-CI) means the run deploys a stream build, so mirror the
+  # RHDH CI catalog built from the same commit as the hub and plugin catalogs.
+  # Released charts (x.y.z) pair with the published Red Hat catalog, the only one
+  # carrying released bundles, even when the image itself is pulled from quay.
+  # That catalog still needs the rhdh-operator defaultChannel fix
+  # (rhdh-operator#3822) for a filtered oc-mirror run to accept it.
+  local use_ci_catalog="false"
+  if [[ "${IMAGE_REGISTRY}" != "registry.redhat.io" && "${CHART_VERSION:-}" == *-CI ]]; then
+    use_ci_catalog="true"
+  fi
+
   local index_image=""
   local registries_conf=""
-  if [[ "${IMAGE_REGISTRY}" == "registry.redhat.io" ]]; then
-    index_image="registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}"
-  else
+  if [[ "${use_ci_catalog}" == "true" ]]; then
     # rhdh-operator publishes one catalog per release stream and OCP minor,
     # e.g. quay.io/rhdh/iib:next-v4.21-x86_64 (amd64 only; the jobs run on
     # amd64 clusters).
@@ -123,6 +127,8 @@ location = "quay.io/rhdh"
 prefix = "registry.access.redhat.com/rhdh"
 location = "quay.io/rhdh"
 EOF
+  else
+    index_image="registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}"
   fi
   log::info "Using OCP ${ocp_version} (CONTAINER_PLATFORM_VERSION); index image ${index_image}"
 
