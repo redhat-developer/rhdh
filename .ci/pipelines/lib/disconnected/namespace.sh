@@ -124,6 +124,12 @@ disconnected::ensure_olm_mirror_pull_secret() {
 # pulls are unaffected. NetworkPolicies are additive and separate selectors cover
 # the Helm chart and the Operator pod labels (same split as
 # resources/network_policy/netpol-ci-allow-backend-egress.yaml).
+#
+# The rule is destination-agnostic on purpose. The bastion mirror's address is
+# assigned per run and only reachable by DNS name, so an ipBlock would break as
+# soon as the bastion is replaced. The namespace is ephemeral, and the connected
+# CI lanes use a broader allow-all rule, so scoping by port is the meaningful
+# boundary here.
 # Mirrors served on 443 (e.g. the LOCAL_DISCONNECTED route) need no extra rule.
 # Args:
 #   $1 - namespace

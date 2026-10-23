@@ -16,6 +16,12 @@ readonly -a DISCONNECTED_SMOKE_PLUGIN_NAMES=(
   "red-hat-developer-hub-backstage-plugin-homepage"
   "backstage-plugin-auth-backend-module-guest-provider"
 )
+# Space-separated copy for the `export -f` helpers: bash cannot export arrays, so
+# a child shell (e.g. `timeout bash -c`) would otherwise see an empty list and
+# mirror every digest-pinned plugin in the catalog.
+DISCONNECTED_SMOKE_PLUGIN_NAMES_STR="${DISCONNECTED_SMOKE_PLUGIN_NAMES[*]}"
+readonly DISCONNECTED_SMOKE_PLUGIN_NAMES_STR
+export DISCONNECTED_SMOKE_PLUGIN_NAMES_STR
 
 # ---------------------------------------------------------------------------
 # Hooks — overridable by local.sh (or other consumers) to customise CI-only
@@ -204,7 +210,12 @@ disconnected::set_smoke_plugin_packages_from_list() {
   local list_file=$1
   local name="" var="" line="" exported=0
 
-  for name in "${DISCONNECTED_SMOKE_PLUGIN_NAMES[@]}"; do
+  if [[ -z "${DISCONNECTED_SMOKE_PLUGIN_NAMES_STR:-}" ]]; then
+    log::error "DISCONNECTED_SMOKE_PLUGIN_NAMES_STR is empty; cannot resolve smoke plugin packages"
+    return 1
+  fi
+
+  for name in ${DISCONNECTED_SMOKE_PLUGIN_NAMES_STR}; do
     line=$(grep -E "/${name}(@|:)" "${list_file}" 2> /dev/null | head -1 || true)
     line="${line#"${line%%[![:space:]]*}"}"
     line="${line%"${line##*[![:space:]]}"}"
@@ -224,6 +235,10 @@ disconnected::set_smoke_plugin_packages_from_list() {
     exported=$((exported + 1))
   done
 
+  if [[ "${exported}" -eq 0 ]]; then
+    log::error "No smoke plugin package variables exported from ${list_file}"
+    return 1
+  fi
   log::info "Exported ${exported} smoke plugin package(s)"
 }
 
@@ -236,7 +251,7 @@ disconnected::write_smoke_plugin_list() {
   plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
 
   disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
-    "${DISCONNECTED_SMOKE_PLUGIN_NAMES[*]}" || return 1
+    "${DISCONNECTED_SMOKE_PLUGIN_NAMES_STR}" || return 1
   disconnected::set_smoke_plugin_packages_from_list "${list_file}" || return 1
 }
 
