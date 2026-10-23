@@ -13,6 +13,9 @@
 # The 2.x New Frontend System hub serves the sign-in page (app-auth), sidebar
 # (app-defaults), SCM integrations (app-integrations) and guest auth provider
 # as dynamic plugins, so they are installed next to the homepage.
+# Pins the chart fullname (<release>-developer-hub). The disconnected job creates
+# the registry-auth secret and the backend egress NetworkPolicy for that name.
+nameOverride: developer-hub
 dynamicPlugins:
   includes: []
   plugins:
