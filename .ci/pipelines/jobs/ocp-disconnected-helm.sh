@@ -162,7 +162,13 @@ handle_ocp_disconnected_helm() {
   # the chart mounts ${RELEASE_NAME}-dynamic-plugins-registry-auth at
   # /opt/app-root/src/.config/containers.
   disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
-  disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
+  # The chart mounts <fullname>-dynamic-plugins-registry-auth (optional: true) at
+  # /opt/app-root/src/.config/containers, and fullname is
+  # <release>-<nameOverride> with nameOverride pinned to developer-hub in the
+  # values file. A differently named secret leaves the init container without
+  # auth.json and skopeo then fails the mirror pull with "authentication required".
+  disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" \
+    "${RELEASE_NAME}-developer-hub-dynamic-plugins-registry-auth" || return 1
 
   log::section "Helm Deployment"
 
