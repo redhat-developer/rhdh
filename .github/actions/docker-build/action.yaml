@@ -40,6 +40,13 @@ inputs:
     description: Skip uploading the built image as a GitHub artifact
     required: false
     default: 'false'
+  prefetchedCacheDir:
+    description: >
+      If set, skip hermeto entirely and reuse this cache (must already include
+      output/ plus cachi2.env from fetch-deps + generate-env + inject-files on
+      amd64). Used by multi-arch builds so arm runners never pull hermeto:latest.
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -70,59 +77,81 @@ runs:
       shell: bash
       env:
         COMPONENT_DIR: ${{ inputs.componentDirectory }}
+        PREFETCHED_CACHE_DIR: ${{ inputs.prefetchedCacheDir }}
       run: |
         echo "HERMETO_IMAGE=quay.io/konflux-ci/hermeto:latest" >> $GITHUB_ENV
-        echo "LOCAL_CACHE_DIR=./hermeto-cache/$(basename "$COMPONENT_DIR")" >> $GITHUB_ENV
+        if [ -n "$PREFETCHED_CACHE_DIR" ]; then
+          echo "LOCAL_CACHE_DIR=$PREFETCHED_CACHE_DIR" >> $GITHUB_ENV
+        else
+          echo "LOCAL_CACHE_DIR=./hermeto-cache/$(basename "$COMPONENT_DIR")" >> $GITHUB_ENV
+        fi
         echo "COMPONENT_ABS_DIR=${GITHUB_WORKSPACE}/${COMPONENT_DIR}" >> $GITHUB_ENV
 
     - name: Cache dependencies with hermeto
       shell: bash
+      env:
+        PREFETCHED_CACHE_DIR: ${{ inputs.prefetchedCacheDir }}
       run: |        
-        set -ex
+        set -euo pipefail
 
-        echo "::group::Creating local cache directory"
-        mkdir -p ${{ env.LOCAL_CACHE_DIR }} || echo "Failed to create local cache directory"
-        echo "::endgroup::"
-        
+        mkdir -p "${LOCAL_CACHE_DIR}"
+        # Absolute bind mount — a relative path is treated as a podman named volume.
+        CACHE_ABS="$(cd "${LOCAL_CACHE_DIR}" && pwd)"
+
+        if [ -n "$PREFETCHED_CACHE_DIR" ]; then
+          # Multi-arch path: hermeto already ran on amd64 (fetch + generate-env + inject).
+          echo "::group::Using prefetched hermeto cache"
+          if [ ! -d "${LOCAL_CACHE_DIR}/output" ]; then
+            echo "::error::prefetchedCacheDir '$LOCAL_CACHE_DIR' has no output/"
+            exit 1
+          fi
+          if [ ! -f "${LOCAL_CACHE_DIR}/cachi2.env" ]; then
+            echo "::error::prefetchedCacheDir '$LOCAL_CACHE_DIR' has no cachi2.env (prefetch must run generate-env)"
+            exit 1
+          fi
+          ls -la "$LOCAL_CACHE_DIR"
+          echo "::endgroup::"
+          echo LOCAL_CACHE_DIR_REALPATH="$CACHE_ABS" >> $GITHUB_ENV
+          exit 0
+        fi
+
+        if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then
+          echo "::error::hermeto cannot run on arm (image is amd64-only; yarn under qemu SIGSEGVs). Prefetch on amd64 and pass prefetchedCacheDir."
+          exit 1
+        fi
+
+        # hermeto:latest is linux/amd64-only; pin platform (no-op on amd64 hosts).
+        HERMETO_PODMAN=(podman run --rm --platform linux/amd64 \
+          -v "$PWD:/source:z" -v "$CACHE_ABS:/cachi2:z" -w /source "$HERMETO_IMAGE")
+
         echo "::group::Fetching dependencies with hermeto"
-        # Build hermeto cache for rpm, yarn, and pip
-        podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
+        "${HERMETO_PODMAN[@]}" \
           --log-level DEBUG \
           fetch-deps --dev-package-managers \
           --source . \
           --output /cachi2/output \
-          '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "pip","path": "./python", "allow_binary": "false"}]'  || echo "Fetch-deps failed"
+          '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "pip","path": "./python", "allow_binary": "false"}]'
         echo "::endgroup::"
-        
-        if [ -d ${{ env.LOCAL_CACHE_DIR }}/output ]; then
-          echo "::group::Generating environment file"
-          
-          # Generate environment file
-          podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
-                      --log-level DEBUG \
-                      generate-env --format env \
-                      --output /cachi2/cachi2.env /cachi2/output
-          echo "::endgroup::"
-          
-        else
-          echo "No output directory found, skipping generate-env"
+
+        if [ ! -d "${LOCAL_CACHE_DIR}/output" ]; then
+          echo "::error::No hermeto output directory at ${LOCAL_CACHE_DIR}/output"
           exit 1
         fi
 
-        if [ -d ${{ env.LOCAL_CACHE_DIR }}/output ]; then
-          echo "::group::Injecting files"
-          
-          podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
-            --log-level DEBUG \
-            inject-files /cachi2/output || echo "Inject-files failed"
-          echo "::endgroup::"
+        echo "::group::Generating environment file"
+        "${HERMETO_PODMAN[@]}" \
+          --log-level DEBUG \
+          generate-env --format env \
+          --output /cachi2/cachi2.env /cachi2/output
+        echo "::endgroup::"
 
-        else
-          echo "No output directory found, skipping inject-files"
-          exit 1
-        fi
+        echo "::group::Injecting files"
+        "${HERMETO_PODMAN[@]}" \
+          --log-level DEBUG \
+          inject-files /cachi2/output
+        echo "::endgroup::"
 
-        echo LOCAL_CACHE_DIR_REALPATH=$(realpath "${{ env.LOCAL_CACHE_DIR }}") >> $GITHUB_ENV
+        echo LOCAL_CACHE_DIR_REALPATH="$CACHE_ABS" >> $GITHUB_ENV
 
     - name: "Fix Cache Ownership for Non-Root Buildah"
       shell: bash
