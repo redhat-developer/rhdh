@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 
-# Plugin mirroring, catalog index resolution, and homepage ConfigMap.
+# Plugin mirroring, catalog index resolution, and smoke plugin ConfigMap.
 
 [[ -n "${_DISCONNECTED_PLUGINS_SOURCED:-}" ]] && return 0
 readonly _DISCONNECTED_PLUGINS_SOURCED=1
 
-# Smoke only enables this plugin (includes: []). Full-catalog mirroring is RHIDP-13967.
-readonly DISCONNECTED_HOMEPAGE_PLUGIN_NAME="red-hat-developer-hub-backstage-plugin-homepage"
-export DISCONNECTED_HOMEPAGE_PLUGIN_NAME
+# Smoke only installs this plugin set (includes: []). Full-catalog mirroring is
+# RHIDP-13967. On the 2.x New Frontend System hub the sign-in page (app-auth),
+# sidebar (app-defaults), SCM integrations (app-integrations) and guest auth
+# provider are dynamic plugins, so the homepage alone cannot render a login.
+readonly -a DISCONNECTED_SMOKE_PLUGIN_NAMES=(
+  "red-hat-developer-hub-backstage-plugin-app-auth"
+  "red-hat-developer-hub-backstage-plugin-app-defaults"
+  "red-hat-developer-hub-backstage-plugin-app-integrations"
+  "red-hat-developer-hub-backstage-plugin-homepage"
+  "backstage-plugin-auth-backend-module-guest-provider"
+)
 
 # ---------------------------------------------------------------------------
 # Hooks — overridable by local.sh (or other consumers) to customise CI-only
@@ -69,11 +77,11 @@ disconnected::_catalog_index_mirror_dest() {
 # Args:
 #   $1 - plugin_index (oci://...)
 #   $2 - output list file path
-#   $3 - optional name substring; keep only matching refs (e.g. homepage)
+#   $3 - optional space-separated package names; keep only matching refs
 disconnected::write_digest_plugin_list() {
   local plugin_index=$1
   local list_file=$2
-  local name_filter=${3:-}
+  local name_filters=${3:-}
   local index_ref="${plugin_index#oci://}"
   local extract_dir
   extract_dir=$(mktemp -d)
@@ -122,11 +130,12 @@ disconnected::write_digest_plugin_list() {
     mv "${tmp}" "${list_file}"
   fi
 
-  if [[ -n "${name_filter}" && -s "${list_file}" ]]; then
-    local filtered
+  if [[ -n "${name_filters}" && -s "${list_file}" ]]; then
+    local filtered pattern
     filtered=$(mktemp)
     # Path-segment match so "...-homepage" does not also keep "...-homepage-backend".
-    grep -E "/${name_filter}(@|:)" "${list_file}" > "${filtered}" || true
+    pattern="${name_filters// /|}"
+    grep -E "/(${pattern})(@|:)" "${list_file}" > "${filtered}" || true
     mv "${filtered}" "${list_file}"
   fi
 
@@ -135,15 +144,15 @@ disconnected::write_digest_plugin_list() {
   rm -rf "${extract_dir}"
 
   if [[ "${count}" -lt 1 ]]; then
-    if [[ -n "${name_filter}" ]]; then
-      log::error "No digest-pinned ${name_filter} plugin found in catalog index"
+    if [[ -n "${name_filters}" ]]; then
+      log::error "No digest-pinned plugin matched: ${name_filters}"
     else
       log::error "No digest-pinned plugins found in catalog index"
     fi
     return 1
   fi
-  if [[ -n "${name_filter}" ]]; then
-    log::info "Plugin list filtered to ${name_filter}: ${count} digest-pinned ref(s)"
+  if [[ -n "${name_filters}" ]]; then
+    log::info "Plugin list filtered to ${count} digest-pinned ref(s) for: ${name_filters}"
   else
     log::info "${count} digest-pinned plugins (tag-only refs skipped)"
   fi
@@ -173,32 +182,69 @@ disconnected::copy_catalog_index_to_mirror() {
   fi
 }
 
-# Export HOMEPAGE_PLUGIN_PACKAGE from a one-line digest plugin list.
+# Package name -> env var rendered by the envsubst templates.
+# Args:
+#   $1 - plugin package name (last OCI path segment)
+disconnected::_smoke_plugin_package_var() {
+  case "$1" in
+    red-hat-developer-hub-backstage-plugin-app-auth) echo "APP_AUTH_PLUGIN_PACKAGE" ;;
+    red-hat-developer-hub-backstage-plugin-app-defaults) echo "APP_DEFAULTS_PLUGIN_PACKAGE" ;;
+    red-hat-developer-hub-backstage-plugin-app-integrations) echo "APP_INTEGRATIONS_PLUGIN_PACKAGE" ;;
+    red-hat-developer-hub-backstage-plugin-homepage) echo "HOMEPAGE_PLUGIN_PACKAGE" ;;
+    backstage-plugin-auth-backend-module-guest-provider) echo "GUEST_PROVIDER_PLUGIN_PACKAGE" ;;
+    *) return 1 ;;
+  esac
+}
+
+# Export one <NAME>_PLUGIN_PACKAGE per smoke plugin from the digest plugin list.
 # Adds !name if the list line has no OCI subpath (install-dynamic-plugins needs it).
 # Args:
 #   $1 - plugin list file from write_digest_plugin_list
-disconnected::set_homepage_plugin_package_from_list() {
+disconnected::set_smoke_plugin_packages_from_list() {
   local list_file=$1
-  local line=""
-  line=$(head -1 "${list_file}" 2> /dev/null || true)
-  line="${line#"${line%%[![:space:]]*}"}"
-  line="${line%"${line##*[![:space:]]}"}"
-  if [[ -z "${line}" ]]; then
-    log::error "Homepage plugin list is empty: ${list_file}"
-    return 1
-  fi
-  if [[ "${line}" != *'!'* ]]; then
-    line="${line}!${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}"
-  fi
-  export HOMEPAGE_PLUGIN_PACKAGE="${line}"
-  log::success "HOMEPAGE_PLUGIN_PACKAGE=${HOMEPAGE_PLUGIN_PACKAGE}"
+  local name="" var="" line="" exported=0
+
+  for name in "${DISCONNECTED_SMOKE_PLUGIN_NAMES[@]}"; do
+    line=$(grep -E "/${name}(@|:)" "${list_file}" 2> /dev/null | head -1 || true)
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    if [[ -z "${line}" ]]; then
+      log::error "No digest-pinned ${name} plugin in ${list_file}"
+      return 1
+    fi
+    if [[ "${line}" != *'!'* ]]; then
+      line="${line}!${name}"
+    fi
+    var=$(disconnected::_smoke_plugin_package_var "${name}") || {
+      log::error "No package variable mapped for plugin ${name}"
+      return 1
+    }
+    export "${var}=${line}"
+    log::success "${var}=${line}"
+    exported=$((exported + 1))
+  done
+
+  log::info "Exported ${exported} smoke plugin package(s)"
+}
+
+# Build the digest-pinned smoke plugin list and export its package variables.
+# Args:
+#   $1 - output list file path
+disconnected::write_smoke_plugin_list() {
+  local list_file=$1
+  local plugin_index
+  plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
+
+  disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
+    "${DISCONNECTED_SMOKE_PLUGIN_NAMES[*]}" || return 1
+  disconnected::set_smoke_plugin_packages_from_list "${list_file}" || return 1
 }
 
 # ---------------------------------------------------------------------------
 # mirror_plugins — fetch and run mirror-plugins.sh against the mirror registry
 # ---------------------------------------------------------------------------
 
-# Smoke: homepage plugin only (--plugin-list) plus the catalog index
+# Smoke: the minimal NFS plugin set (--plugin-list) plus the catalog index
 # (CATALOG_INDEX_IMAGE). --plugin-index would enumerate every catalog plugin,
 # including unpublished :tag refs.
 disconnected::mirror_plugins() {
@@ -212,10 +258,8 @@ disconnected::mirror_plugins() {
   local plugin_index
   plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
 
-  local list_file="${DISCONNECTED_TMPDIR}/homepage-plugins.txt"
-  disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
-    "${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}" || return 1
-  disconnected::set_homepage_plugin_package_from_list "${list_file}" || return 1
+  local list_file="${DISCONNECTED_TMPDIR}/smoke-plugins.txt"
+  disconnected::write_smoke_plugin_list "${list_file}" || return 1
 
   disconnected::wait_mirror_registry_route 300 || return 1
   bash "${mirror_script}" \
@@ -313,18 +357,20 @@ disconnected::resolve_catalog_index_image() {
 }
 
 # ---------------------------------------------------------------------------
-# Homepage plugin ConfigMap (Operator)
+# Smoke plugin ConfigMap (Operator)
 # ---------------------------------------------------------------------------
 
-# Create a ConfigMap from the homepage-only dynamic-plugins.yaml
-# (digest-pinned OCI package; includes: [] skips catalog defaults).
+# Create a ConfigMap from the smoke dynamic-plugins.yaml
+# (digest-pinned OCI packages; includes: [] skips catalog defaults).
 # Args:
 #   $1 - namespace
-disconnected::create_homepage_plugins_configmap() {
-  common::require_vars HOMEPAGE_PLUGIN_PACKAGE || return 1
+disconnected::create_smoke_plugins_configmap() {
+  common::require_vars HOMEPAGE_PLUGIN_PACKAGE APP_AUTH_PLUGIN_PACKAGE \
+    APP_DEFAULTS_PLUGIN_PACKAGE APP_INTEGRATIONS_PLUGIN_PACKAGE \
+    GUEST_PROVIDER_PLUGIN_PACKAGE || return 1
   local namespace=$1
   local cm_name="dynamic-plugins-disconnected-smoke"
-  local template="${DIR}/resources/disconnected/dynamic-plugins-homepage.yaml"
+  local template="${DIR}/resources/disconnected/dynamic-plugins-smoke.yaml"
   local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
 
   envsubst < "${template}" > "${tmp_yaml}" || {

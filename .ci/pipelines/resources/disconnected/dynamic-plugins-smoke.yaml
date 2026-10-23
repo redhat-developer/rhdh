@@ -1,0 +1,18 @@
+# Disconnected smoke: minimal New Frontend System plugin set (Operator ConfigMap).
+# Rendered via envsubst (requires the *_PLUGIN_PACKAGE variables).
+# includes: [] skips dynamic-plugins.default.yaml (unpublished :tag refs).
+# packages are the digest-pinned OCI refs from the catalog (ref:// needs includes).
+# The 2.x hub provides the sign-in page, sidebar, SCM integrations and guest auth
+# as dynamic plugins, so they must be installed alongside the homepage.
+includes: []
+plugins:
+  - package: ${APP_AUTH_PLUGIN_PACKAGE}
+    enabled: true
+  - package: ${APP_DEFAULTS_PLUGIN_PACKAGE}
+    enabled: true
+  - package: ${APP_INTEGRATIONS_PLUGIN_PACKAGE}
+    enabled: true
+  - package: ${GUEST_PROVIDER_PLUGIN_PACKAGE}
+    enabled: true
+  - package: ${HOMEPAGE_PLUGIN_PACKAGE}
+    enabled: true

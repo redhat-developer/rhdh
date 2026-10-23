@@ -1,11 +1,24 @@
 # Minimal app-config for disconnected operator smoke (guest login only).
 app:
   title: Red Hat Developer Hub
+  # New Frontend System: the homepage plugin owns page:homepage and its layout;
+  # disable the community home page so only one Home destination is registered.
+  # Same extension list as value_files/values_disconnected-smoke.yaml.
+  extensions:
+    - page:home: false
+    - page:homepage:
+        config:
+          path: /
+          title: Home
+    - translation:app/homepage-translations
 auth:
   environment: development
   providers:
     guest:
       dangerouslyAllowOutsideDevelopment: true
+# app-auth does not inject the Guest provider (auth.providers is not
+# frontend-visible), so the provider list must be explicit.
+signInPage: guest
 # Hub defaults enable permission/RBAC; without a policy module the backend
 # stays not-ready (readiness 503) even though / can return 200.
 permission:

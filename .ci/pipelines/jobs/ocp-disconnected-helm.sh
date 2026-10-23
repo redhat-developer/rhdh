@@ -143,13 +143,15 @@ handle_ocp_disconnected_helm() {
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
   # Pin CATALOG_INDEX_IMAGE to the digest actually pushed (hub profile default
-  # digest is often absent from the mirror). Homepage package is the digest-pinned
-  # OCI exported as HOMEPAGE_PLUGIN_PACKAGE (ref:// cannot resolve with includes: []).
+  # digest is often absent from the mirror). mirror_plugins exported the
+  # digest-pinned OCI package for each smoke plugin (ref:// cannot resolve with
+  # includes: []).
   disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
+  disconnected::allow_mirror_registry_egress "${NAME_SPACE}" || return 1
   if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
     disconnected::ensure_local_image_pull_access "${NAME_SPACE}" || return 1
   fi
@@ -205,7 +207,9 @@ handle_ocp_disconnected_helm() {
   # to the rendered Deployment, avoiding the Helm "array clobber" pitfall.
   local post_renderer="${DIR}/resources/disconnected/helm-post-renderer.sh"
   local helm_values="${DISCONNECTED_TMPDIR}/values_disconnected-smoke.yaml"
-  common::require_vars HOMEPAGE_PLUGIN_PACKAGE || return 1
+  common::require_vars HOMEPAGE_PLUGIN_PACKAGE APP_AUTH_PLUGIN_PACKAGE \
+    APP_DEFAULTS_PLUGIN_PACKAGE APP_INTEGRATIONS_PLUGIN_PACKAGE \
+    GUEST_PROVIDER_PLUGIN_PACKAGE || return 1
   envsubst < "${DIR}/value_files/values_disconnected-smoke.yaml" > "${helm_values}" || {
     log::error "Failed to render disconnected Helm values"
     return 1
