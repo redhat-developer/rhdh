@@ -116,3 +116,72 @@ disconnected::ensure_olm_mirror_pull_secret() {
   }
   log::success "Merged mirror registry credentials into openshift-config/pull-secret"
 }
+
+# Allow backend egress to the mirror registry. The chart and the Operator both
+# default-deny backend egress except DNS, HTTPS, Redis, and PostgreSQL, while CI
+# mirrors serve plain HTTP on a non-443 port: the install-dynamic-plugins init
+# container (skopeo catalog/plugin pulls) times out without this rule. Kubelet
+# pulls are unaffected. NetworkPolicies are additive and separate selectors cover
+# the Helm chart and the Operator pod labels (same split as
+# resources/network_policy/netpol-ci-allow-backend-egress.yaml).
+# Mirrors served on 443 (e.g. the LOCAL_DISCONNECTED route) need no extra rule.
+# Args:
+#   $1 - namespace
+disconnected::allow_mirror_registry_egress() {
+  local namespace=$1
+  local registry_host="${MIRROR_REGISTRY_URL%%/*}"
+  local registry_port=""
+
+  if [[ "${registry_host}" =~ :([0-9]+)$ ]]; then
+    registry_port="${BASH_REMATCH[1]}"
+  fi
+
+  if [[ -z "${registry_port}" || "${registry_port}" == "443" ]]; then
+    log::info "Mirror registry ${registry_host} is served on HTTPS; skipping dedicated egress rule"
+    return 0
+  fi
+
+  local policy_file="${DISCONNECTED_TMPDIR}/netpol-mirror-registry-egress.yaml"
+  cat > "${policy_file}" << EOF
+# Allow backend egress to the CI mirror registry (${registry_host}).
+# install-dynamic-plugins pulls the catalog index and plugins over plain HTTP.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rhdh-mirror-registry-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: developer-hub
+      app.kubernetes.io/component: backstage
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: ${registry_port}
+          protocol: TCP
+---
+# Operator Backend pods derive rhdh.redhat.com/app from the Backstage CR name.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rhdh-operator-mirror-registry-egress
+spec:
+  podSelector:
+    matchLabels:
+      rhdh.redhat.com/app: backstage-${RELEASE_NAME}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: ${registry_port}
+          protocol: TCP
+EOF
+
+  oc apply -f "${policy_file}" -n "${namespace}" || {
+    log::error "Failed to apply mirror registry egress NetworkPolicy in ${namespace}"
+    return 1
+  }
+  cp "${policy_file}" "${ARTIFACT_DIR}/disconnected-netpol-mirror-registry-egress.yaml" 2> /dev/null || true
+  log::success "NetworkPolicy allows backend egress to ${registry_host} in ${namespace}"
+}

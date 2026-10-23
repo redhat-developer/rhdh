@@ -4,8 +4,10 @@
 # Guest login + homepage only. flavours: [] disables default flavours
 # (lightspeed) to avoid extra sidecar images.
 #
-# Hub image: CSV RELATED_IMAGE_backstage (GA rhdh-hub-rhel9). prepare +
-# oc-mirror IDMS rewrites pulls for kubelet.
+# Hub image: CSV RELATED_IMAGE_backstage. CI runs install the RHDH CI catalog
+# (quay.io/rhdh/iib), whose bundle points at rhdh-hub-rhel10; GA runs use the
+# released rhdh-hub-rhel9. Either way the CSV ref is mirrored by prepare +
+# oc-mirror and the generated IDMS rewrites the kubelet pull.
 #
 # CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator from the mirrored
 # catalog digest so install-dynamic-plugins does not pull the hub profile
