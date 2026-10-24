@@ -83,6 +83,8 @@ disconnected::wait_operator_crd_olm_v1() {
 # Grant the installer the operator's own rules, fetched from the same release
 # branch the bundle comes from, so this cannot drift. Applied before prepare so
 # the first install attempt already has the permissions.
+# Upstream fix: redhat-developer/rhdh-operator#3923 (+ #3924 for release-2.1),
+# tracked in RHDHBUGS-4056.
 # Args:
 #   $1 - operator namespace (default: rhdh-operator)
 #   $2 - installer ServiceAccount name (default: rhdh-operator-installer)
