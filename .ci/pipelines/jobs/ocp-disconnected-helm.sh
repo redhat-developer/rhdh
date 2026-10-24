@@ -121,6 +121,11 @@ handle_ocp_disconnected_helm() {
 
   disconnected::patch_idms "${OC_MIRROR_IDMS_FILE}"
 
+  # Snapshot before the apply so wait_mcp_updated can tell whether the MCO has
+  # already rendered this change or the pool is still on the previous config.
+  local mcp_snapshot
+  mcp_snapshot=$(disconnected::snapshot_mcp_rendered_configs)
+
   oc apply -f "${OC_MIRROR_IDMS_FILE}" || {
     log::error "Failed to apply IDMS — aborting"
     return 1
@@ -138,7 +143,7 @@ handle_ocp_disconnected_helm() {
   # IDMS/ITMS changes trigger a MachineConfig update which rolls worker nodes
   # (drain → apply config → reboot). Wait for all MachineConfigPools to finish
   # before deploying workloads, otherwise pods get evicted mid-startup.
-  disconnected::wait_mcp_updated
+  disconnected::wait_mcp_updated "${mcp_snapshot}"
 
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1

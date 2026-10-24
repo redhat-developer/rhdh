@@ -256,13 +256,86 @@ disconnected::patch_idms() {
   cp "${idms_file}" "${ARTIFACT_DIR}/disconnected-idms-patched.yaml" 2> /dev/null || true
 }
 
+# Record the rendered MachineConfig every pool currently targets.
+# Call this before applying an IDMS/ITMS/additionalTrustedCA change and pass the
+# output to disconnected::wait_mcp_updated.
+disconnected::snapshot_mcp_rendered_configs() {
+  oc get machineconfigpool \
+    -o jsonpath='{range .items[*]}{.metadata.name}={.spec.configuration.name}{"\n"}{end}' \
+    2> /dev/null || true
+}
+
+# True when every MachineConfigPool runs its rendered config and no node is
+# still updating or degraded.
+disconnected::mcp_all_converged() {
+  local snapshot
+  snapshot=$(oc get machineconfigpool \
+    -o jsonpath='{range .items[*]}{.spec.configuration.name}{"|"}{.status.configuration.name}{"|"}{.status.updatedMachineCount}{"|"}{.status.machineCount}{"|"}{.status.degradedMachineCount}{"\n"}{end}' \
+    2> /dev/null) || return 1
+  [[ -n "${snapshot}" ]] || return 1
+
+  local spec_name status_name updated total degraded
+  while IFS='|' read -r spec_name status_name updated total degraded; do
+    if [[ "${spec_name}" != "${status_name}" ||
+      "${updated}" != "${total}" ||
+      "${degraded:-0}" != "0" ]]; then
+      return 1
+    fi
+  done <<< "${snapshot}"
+  return 0
+}
+
 # Wait for MachineConfigPool updates after IDMS/CatalogSource changes.
+#
+# `oc wait --for=condition=Updated=True` alone is not enough right after an
+# apply: the MCO needs a few seconds to render the new config and bump the pool
+# generation, and until then the condition is still True from the previous
+# rollout, so the wait returns immediately. The nodes are drained later, while
+# workloads are starting (observed: workers drained mid-deploy, hub and
+# PostgreSQL pods evicted). With a snapshot from
+# disconnected::snapshot_mcp_rendered_configs (taken before the change) this
+# waits for the MCO to pick the change up first.
+#
 # Warns and continues on timeout (same behavior as both handlers historically).
+# Args:
+#   $1 - snapshot from disconnected::snapshot_mcp_rendered_configs (optional)
+#   $2 - seconds to wait for the MCO to render the change (default: 180)
+#   $3 - seconds to wait for the rollout to finish (default: 1200)
 disconnected::wait_mcp_updated() {
-  log::info "Waiting for MachineConfigPool updates to complete (up to 20m)..."
-  if oc wait machineconfigpool --all --for=condition=Updated=True --timeout=20m; then
-    log::success "All MachineConfigPools are Updated"
-  else
-    log::warn "MachineConfigPool wait timed out -- proceeding anyway"
+  local before_snapshot=${1:-}
+  local render_timeout=${2:-180}
+  local rollout_timeout=${3:-1200}
+
+  if [[ -n "${before_snapshot}" ]]; then
+    log::info "Waiting for MachineConfigPool to pick up the new rendered config (up to ${render_timeout}s)..."
+    local rendered=0
+    local render_start=$SECONDS
+    while ((SECONDS - render_start < render_timeout)); do
+      if [[ "$(disconnected::snapshot_mcp_rendered_configs)" != "${before_snapshot}" ]]; then
+        rendered=1
+        break
+      fi
+      sleep 5
+    done
+    if ((rendered != 1)); then
+      # Re-applying identical content (e.g. an unchanged IDMS) does not roll
+      # the nodes, so there is nothing to wait for.
+      log::warn "No MachineConfigPool rendered a new config within ${render_timeout}s -- nothing to roll, continuing"
+      return 0
+    fi
+    log::success "MachineConfigPool picked up the new rendered config"
   fi
+
+  log::info "Waiting for MachineConfigPool updates to complete (up to 20m)..."
+  local rollout_start=$SECONDS
+  while ((SECONDS - rollout_start < rollout_timeout)); do
+    if disconnected::mcp_all_converged; then
+      log::success "All MachineConfigPools are Updated"
+      return 0
+    fi
+    sleep 10
+  done
+
+  log::warn "MachineConfigPool wait timed out -- proceeding anyway"
+  oc get machineconfigpool 2>&1 | tee -a "${ARTIFACT_DIR}/disconnected-mcp-status.txt" || true
 }
