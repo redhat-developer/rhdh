@@ -160,10 +160,14 @@ EOF
   # external registries. Catalogd must trust the mirror CA and authenticate
   # before ClusterCatalog can reach Serving=True. Skip on LOCAL_DISCONNECTED —
   # OCP_INTERNAL path configures internal registry trust itself.
+  local mcp_snapshot
   if [[ "${LOCAL_DISCONNECTED:-}" != "1" ]]; then
+    # Snapshot before the additionalTrustedCA patch: it also rolls the nodes.
+    mcp_snapshot=$(disconnected::snapshot_mcp_rendered_configs)
+
     disconnected::ensure_olm_mirror_pull_secret || return 1
     disconnected::ensure_mirror_registry_ca || return 1
-    disconnected::wait_mcp_updated
+    disconnected::wait_mcp_updated "${mcp_snapshot}"
   else
     log::info "LOCAL_DISCONNECTED=1: skipping external bastion CA/pull-secret pre-prepare helpers"
   fi
@@ -175,6 +179,15 @@ EOF
     prepare_cmd=(env CONTAINERS_REGISTRIES_CONF="${registries_conf}" "${prepare_cmd[@]}")
     log::info "Redirecting registry.redhat.io/rhdh to quay.io/rhdh via ${registries_conf}"
   fi
+
+  # prepare applies the IDMS; snapshot first so the wait below can tell whether
+  # the MCO has already rendered it.
+  mcp_snapshot=$(disconnected::snapshot_mcp_rendered_configs)
+
+  # TEMPORARY: the installer ClusterRole rendered by
+  # prepare-restricted-environment.sh lags behind the bundle's required
+  # permissions on OLM v1. Remove once the upstream fix is released.
+  disconnected::grant_operator_installer_rbac || return 1
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
   if ! disconnected::retry_on_local_registry 5 \
@@ -215,7 +228,7 @@ EOF
   # prepare-restricted-environment.sh applies IDMS/CatalogSource which triggers
   # a MachineConfig update and node rolling. Wait for completion before deploying
   # workloads, same as the Helm path.
-  disconnected::wait_mcp_updated
+  disconnected::wait_mcp_updated "${mcp_snapshot}"
 
   if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
     # Catalogd needs the registry + image-puller grants above before Serving=True.
@@ -295,7 +308,11 @@ EOF
 
   cp "${cr_temp}" "${ARTIFACT_DIR}/disconnected-backstage-cr.yaml" 2> /dev/null || true
 
-  deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}"
+  deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}" || {
+    log::error "Backstage CR did not produce a deployment — dumping OLM v1 status"
+    disconnected::dump_olm_v1_status "rhdh-operator"
+    return 1
+  }
   log::success "Backstage CR deployed in ${NAME_SPACE}"
 
   log::section "Smoke Test"
