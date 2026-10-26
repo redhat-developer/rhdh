@@ -35,97 +35,13 @@ fips_deployment() {
   local artifacts_subdir=$1
   local fips_diff_value_file="${DIR}/value_files/diff-values_showcase-fips.yaml"
   local fips_merged_value_file="/tmp/merged-values_showcase-fips.yaml"
-  local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
-  local wait_interval=5
 
   namespace::configure "${NAME_SPACE}"
 
-  # Configure PostgreSQL with FIPS custom CA
-  log::section "Configuring PostgreSQL with FIPS custom CA"
+  # Configure external PostgreSQL with TLS (uses Crunchy's auto-generated CA)
+  log::section "Configuring external PostgreSQL with TLS"
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
-  fips_configure_postgres_with_custom_ca "${NAME_SPACE_POSTGRES_DB}" || return 1
-
-  # Deploy PostgresCluster with custom TLS configuration
-  log::info "Creating PostgresCluster with custom TLS in namespace ${NAME_SPACE_POSTGRES_DB}..."
-  if ! oc apply -f "${DIR}/resources/postgres-db/postgres-fips.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"; then
-    log::error "Failed to create PostgresCluster"
-    return 1
-  fi
-
-  # Wait for cluster cert secret
-  log::info "Waiting for cluster certificate secret..."
-  if ! common::poll_until \
-    "oc get secret postgress-external-db-cluster-cert -n '${NAME_SPACE_POSTGRES_DB}'" \
-    "$max_attempts" "$wait_interval" \
-    "Cluster certificate secret found"; then
-    return 1
-  fi
-
-  # Extract cluster certificates and copy to RHDH namespace
-  log::info "Extracting and copying PostgreSQL certificates to RHDH namespace..."
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/postgres-ca || {
-    log::error "Failed to extract ca.crt"
-    return 1
-  }
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > /tmp/postgres-tls-crt || {
-    log::error "Failed to extract tls.crt"
-    return 1
-  }
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > /tmp/postgres-tls-key || {
-    log::error "Failed to extract tls.key"
-    return 1
-  }
-
-  # Create cluster certificate secret in RHDH namespace
-  if ! oc create secret generic postgress-external-db-cluster-cert \
-    --from-file=ca.crt=/tmp/postgres-ca \
-    --from-file=tls.crt=/tmp/postgres-tls-crt \
-    --from-file=tls.key=/tmp/postgres-tls-key \
-    --dry-run=client -o yaml | oc apply -f - --namespace="${NAME_SPACE}"; then
-    log::error "Failed to create cluster certificate secret"
-    return 1
-  fi
-
-  # Create postgres-crt secret for Backstage
-  if ! oc create secret generic postgres-crt \
-    --from-file=postgres-crt.pem=/tmp/postgres-ca \
-    --dry-run=client -o yaml | oc apply -f - --namespace="${NAME_SPACE}"; then
-    log::error "Failed to create postgres-crt secret"
-    return 1
-  fi
-
-  # Wait for PostgreSQL user secret
-  log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
-  if ! common::poll_until \
-    "oc get secret postgress-external-db-pguser-janus-idp -n '${NAME_SPACE_POSTGRES_DB}'" \
-    "$max_attempts" "$wait_interval" \
-    "PostgreSQL user secret found"; then
-    log::error "PostgreSQL user secret not created"
-    oc describe postgrescluster postgress-external-db -n "${NAME_SPACE_POSTGRES_DB}" || true
-    return 1
-  fi
-
-  # Extract PostgreSQL connection details and create postgres-cred secret
-  local pg_password pg_host
-  pg_password=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}' | base64 --decode)
-  pg_host="postgress-external-db-primary.${NAME_SPACE_POSTGRES_DB}.svc.cluster.local"
-
-  log::info "Creating postgres-cred secret in RHDH namespace..."
-  if ! oc create secret generic postgres-cred \
-    --from-literal=POSTGRES_HOST="${pg_host}" \
-    --from-literal=POSTGRES_PORT="5432" \
-    --from-literal=POSTGRES_USER="janus-idp" \
-    --from-literal=POSTGRES_PASSWORD="${pg_password}" \
-    --from-literal=NODE_EXTRA_CA_CERTS="/opt/app-root/src/postgres-crt.pem" \
-    --dry-run=client -o yaml | oc apply -f - --namespace="${NAME_SPACE}"; then
-    log::error "Failed to create postgres-cred secret"
-    return 1
-  fi
-
-  log::success "PostgreSQL configuration completed successfully"
-
-  # Clean up temporary certificate files
-  rm -f /tmp/postgres-ca /tmp/postgres-tls-crt /tmp/postgres-tls-key
+  configure_external_postgres_db "${NAME_SPACE}" || return 1
 
   # Deploy Redis with TLS using FIPS custom CA
   log::section "Configuring Redis with FIPS custom CA and TLS"
@@ -208,10 +124,11 @@ run_standard_deployment_tests() {
 
 # Setup Chromium NSS certificate database for Playwright
 # This function configures the Chromium certificate store used by Playwright
-# to trust the custom root CA certificate.
+# to trust multiple CA certificates (FIPS CA + Crunchy PostgreSQL CA).
 #
 # Required environment variables:
-#   FIPS_ROOT_CA_CERT - Base64-encoded root CA certificate (PEM format)
+#   FIPS_ROOT_CA_CERT - Base64-encoded FIPS root CA certificate (PEM format)
+#   NAME_SPACE - RHDH namespace (to extract Crunchy PostgreSQL CA)
 #
 # Returns:
 #   0 - Success
@@ -247,33 +164,60 @@ fips_setup_chromium_cert_store() {
 
   log::success "✓ NSS database initialized"
 
-  # Write root CA certificate to file
-  log::info "Writing root CA certificate to ${root_ca_file}"
+  # Write FIPS root CA certificate to file
+  log::info "Writing FIPS root CA certificate to ${root_ca_file}"
   if ! echo "${FIPS_ROOT_CA_CERT}" | base64 -d > "${root_ca_file}"; then
-    log::error "Failed to decode and write root CA certificate"
+    log::error "Failed to decode and write FIPS root CA certificate"
     return 1
   fi
 
-  # Trust the custom CA in the Node.js process running Playwright TLS tests.
-  export NODE_EXTRA_CA_CERTS="${root_ca_file}"
+  # Add Crunchy PostgreSQL CA to the trust bundle (multi-CA scenario)
+  local crunchy_ca_file="${HOME}/.pki/crunchyCA.crt"
+  local combined_ca_file="${HOME}/.pki/combined-ca.crt"
 
-  # Add root CA certificate to NSS database (WITH sql: prefix for -A)
-  log::info "Adding root CA certificate to NSS database..."
+  log::info "Extracting Crunchy PostgreSQL CA certificate..."
+  if ! oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE}" -o jsonpath='{.data.ca\.crt}' | base64 -d > "${crunchy_ca_file}"; then
+    log::warning "Failed to extract Crunchy CA - PostgreSQL might not be deployed yet"
+    # Fall back to FIPS CA only
+    cp "${root_ca_file}" "${combined_ca_file}"
+  else
+    # Combine both CAs for Node.js trust
+    log::info "Combining FIPS CA and Crunchy CA for Node.js..."
+    cat "${root_ca_file}" > "${combined_ca_file}"
+    cat "${crunchy_ca_file}" >> "${combined_ca_file}"
+    log::success "✓ Combined CA bundle created (FIPS + Crunchy)"
+  fi
+
+  # Trust both CAs in the Node.js process running Playwright TLS tests
+  export NODE_EXTRA_CA_CERTS="${combined_ca_file}"
+
+  # Add FIPS root CA certificate to NSS database (WITH sql: prefix for -A)
+  log::info "Adding FIPS root CA certificate to NSS database..."
   if ! certutil -A -d "sql:${nss_db_dir}" -t "C,," -n "FIPS Root CA" -i "${root_ca_file}"; then
-    log::error "Failed to add root CA certificate to NSS database"
+    log::error "Failed to add FIPS root CA certificate to NSS database"
     return 1
   fi
 
-  log::success "✓ Root CA certificate added to NSS database"
+  log::success "✓ FIPS root CA certificate added to NSS database"
 
-  # Verify certificate was added
+  # Add Crunchy CA to NSS database if available
+  if [[ -f "${crunchy_ca_file}" ]]; then
+    log::info "Adding Crunchy PostgreSQL CA certificate to NSS database..."
+    if ! certutil -A -d "sql:${nss_db_dir}" -t "C,," -n "Crunchy PostgreSQL CA" -i "${crunchy_ca_file}"; then
+      log::warning "Failed to add Crunchy CA certificate to NSS database"
+    else
+      log::success "✓ Crunchy PostgreSQL CA certificate added to NSS database"
+    fi
+  fi
+
+  # Verify certificates were added
   log::info "Verifying certificate installation..."
   if ! certutil -L -d "sql:${nss_db_dir}" | grep -q "FIPS Root CA"; then
     log::error "Certificate verification failed - 'FIPS Root CA' not found in database"
     return 1
   fi
 
-  log::success "✓ Certificate verified in NSS database"
+  log::success "✓ Certificates verified in NSS database"
 
   # List all certificates for debugging
   log::info "Certificates in NSS database:"
@@ -410,142 +354,6 @@ EOF
   fi
 
   log::success "Custom CA ingress configuration completed successfully"
-  return 0
-}
-
-# Configure PostgreSQL with custom CA-signed TLS certificates
-# This function generates PostgreSQL TLS certificates (primary and replication)
-# signed by the FIPS root CA and creates the required secrets.
-#
-# Prerequisites:
-#   - fips_configure_custom_ca_ingress() must be called first
-#   - FIPS_CERT_TMPDIR must be set with rootCA.crt and rootCA.key
-#
-# Required environment variables:
-#   NAME_SPACE_POSTGRES_DB - Namespace for PostgreSQL deployment
-#
-# Returns:
-#   0 - Success
-#   1 - Failure (missing vars, cert generation failed, or secret creation failed)
-fips_configure_postgres_with_custom_ca() {
-  local namespace=$1
-  local tmpdir="${FIPS_CERT_TMPDIR}"
-
-  log::info "Configuring PostgreSQL with FIPS custom CA-signed certificates..."
-
-  # Verify prerequisites
-  if [[ -z "${tmpdir}" || ! -f "${tmpdir}/rootCA.crt" || ! -f "${tmpdir}/rootCA.key" ]]; then
-    log::error "FIPS CA not available - run fips_configure_custom_ca_ingress first"
-    return 1
-  fi
-
-  if [[ -z "${namespace}" ]]; then
-    log::error "PostgreSQL namespace not provided"
-    return 1
-  fi
-
-  # Generate PostgreSQL primary certificate (for client connections)
-  log::info "Generating PostgreSQL primary TLS certificate..."
-
-  openssl ecparam -name prime256v1 -genkey -noout -out "${tmpdir}/postgres-primary.key"
-
-  openssl req -new -key "${tmpdir}/postgres-primary.key" \
-    -out "${tmpdir}/postgres-primary.csr" \
-    -subj "/O=CI-FIPS-Testing/CN=postgress-external-db-primary"
-
-  # Create extensions file for PostgreSQL primary certificate
-  cat > "${tmpdir}/postgres_primary_ext.cnf" << EOF
-[ v3_req ]
-basicConstraints = CA:FALSE
-keyUsage = critical, digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth, clientAuth
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = issuer
-subjectAltName = @alt_names
-
-[ alt_names ]
-DNS.1 = postgress-external-db-primary
-DNS.2 = postgress-external-db-primary.${namespace}.svc
-DNS.3 = postgress-external-db-primary.${namespace}.svc.cluster.local
-DNS.4 = *.postgress-external-db-pods.${namespace}.svc.cluster.local
-EOF
-
-  openssl x509 -req -in "${tmpdir}/postgres-primary.csr" \
-    -CA "${tmpdir}/rootCA.crt" -CAkey "${tmpdir}/rootCA.key" -CAcreateserial \
-    -out "${tmpdir}/postgres-primary.crt" -days 30 -sha256 \
-    -extfile "${tmpdir}/postgres_primary_ext.cnf" -extensions v3_req
-
-  if [[ ! -f "${tmpdir}/postgres-primary.crt" ]]; then
-    log::error "Failed to generate PostgreSQL primary certificate"
-    return 1
-  fi
-
-  log::success "✓ PostgreSQL primary certificate generated"
-
-  # Generate PostgreSQL replication certificate
-  log::info "Generating PostgreSQL replication TLS certificate..."
-
-  openssl ecparam -name prime256v1 -genkey -noout -out "${tmpdir}/postgres-repl.key"
-
-  openssl req -new -key "${tmpdir}/postgres-repl.key" \
-    -out "${tmpdir}/postgres-repl.csr" \
-    -subj "/O=CI-FIPS-Testing/CN=_crunchyrepl"
-
-  # Create extensions file for PostgreSQL replication certificate
-  cat > "${tmpdir}/postgres_repl_ext.cnf" << EOF
-[ v3_req ]
-basicConstraints = CA:FALSE
-keyUsage = critical, digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth, clientAuth
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = issuer
-EOF
-
-  openssl x509 -req -in "${tmpdir}/postgres-repl.csr" \
-    -CA "${tmpdir}/rootCA.crt" -CAkey "${tmpdir}/rootCA.key" -CAcreateserial \
-    -out "${tmpdir}/postgres-repl.crt" -days 30 -sha256 \
-    -extfile "${tmpdir}/postgres_repl_ext.cnf" -extensions v3_req
-
-  if [[ ! -f "${tmpdir}/postgres-repl.crt" ]]; then
-    log::error "Failed to generate PostgreSQL replication certificate"
-    return 1
-  fi
-
-  log::success "✓ PostgreSQL replication certificate generated"
-
-  # Create customTLSSecret in PostgreSQL namespace
-  log::info "Creating PostgreSQL TLS secrets in namespace '${namespace}'..."
-
-  oc create secret generic postgres-custom-tls \
-    -n "${namespace}" \
-    --from-file=ca.crt="${tmpdir}/rootCA.crt" \
-    --from-file=tls.crt="${tmpdir}/postgres-primary.crt" \
-    --from-file=tls.key="${tmpdir}/postgres-primary.key" \
-    --dry-run=client -o yaml | oc apply -f -
-
-  if [[ $? -ne 0 ]]; then
-    log::error "Failed to create postgres-custom-tls secret"
-    return 1
-  fi
-
-  log::success "✓ postgres-custom-tls secret created"
-
-  # Create customReplicationTLSSecret
-  oc create secret generic postgres-replication-tls \
-    -n "${namespace}" \
-    --from-file=ca.crt="${tmpdir}/rootCA.crt" \
-    --from-file=tls.crt="${tmpdir}/postgres-repl.crt" \
-    --from-file=tls.key="${tmpdir}/postgres-repl.key" \
-    --dry-run=client -o yaml | oc apply -f -
-
-  if [[ $? -ne 0 ]]; then
-    log::error "Failed to create postgres-replication-tls secret"
-    return 1
-  fi
-
-  log::success "✓ postgres-replication-tls secret created"
-
-  log::success "PostgreSQL custom CA TLS configuration completed successfully"
   return 0
 }
 
