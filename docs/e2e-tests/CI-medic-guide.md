@@ -258,10 +258,7 @@ artifacts/
 │   │       │   ├── test-results/            # Videos, traces per test
 │   │       │   └── pod_logs/                # Logs from all pods
 │   │       ├── showcase-rbac/               # Same structure as above
-│   │       ├── showcase-runtime/
-│   │       ├── showcase-localization-fr/
-│   │       ├── showcase-localization-it/
-│   │       └── showcase-localization-ja/
+│   │       └── showcase-runtime/
 │   ├── gather-must-gather/                  # Cluster diagnostics
 │   └── redhat-developer-rhdh-send-alert/    # Slack notification step (`Nightly Test Alerts`)
 ├── build-resources/                         # Build pod info

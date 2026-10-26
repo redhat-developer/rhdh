@@ -39,7 +39,7 @@ permissions:
   contents: read
 
 # The job runs inside a container, where steps default to `sh -e {0}` rather
-# than the runner host's bash, so `[[ ]]` and `=~` are syntax errors.
+# than the runner host's bash; keep bash so `run:` steps behave the same.
 defaults:
   run:
     shell: bash
