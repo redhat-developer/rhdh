@@ -226,6 +226,7 @@ testing::_coverage_main_commit() {
     log::warn "Could not confirm that main contains upstream commit ${upstream} of ${image_ids}"
     return 0
   fi
+  log::info "Image revision ${sha:-none} is not on main; using upstream commit ${upstream} from its build metadata"
   echo "${upstream}"
 }
 

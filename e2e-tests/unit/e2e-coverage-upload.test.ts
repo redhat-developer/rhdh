@@ -327,13 +327,14 @@ printf '%b\\n' ${JSON.stringify(pods)}
     const notOnGitHub = `curl() { echo '{"message":"Not Found"}'; return 22; }`;
 
     it("uploads to the upstream commit the build metadata names", () => {
-      const { status, argv } = mainUpload(midstream, {
+      const { status, argv, output } = mainUpload(midstream, {
         bundle: upstream(onMain.slice(0, 8)),
         prelude: notOnGitHub,
       });
       expect(status).toBe(0);
       expect(argv).toContain(onMain);
       expect(argv).not.toContain(midstream);
+      expect(output).toContain(`using upstream commit ${onMain} from its build metadata`);
       // Reads the bundle of the container that runs the image, not the sidecar.
       expect(readFileSync(join(root, "oc-exec-args"), "utf8")).toMatch(
         /^exec\n-n\nshowcase-ci-nightly\nrhdh-0\n-c\nbackstage-backend\n--\ngrep\n/u,
