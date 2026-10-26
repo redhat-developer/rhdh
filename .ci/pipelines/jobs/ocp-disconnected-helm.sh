@@ -121,8 +121,6 @@ handle_ocp_disconnected_helm() {
 
   disconnected::patch_idms "${OC_MIRROR_IDMS_FILE}"
 
-  # Snapshot before the apply so wait_mcp_updated can tell whether the MCO has
-  # already rendered this change or the pool is still on the previous config.
   local mcp_snapshot
   mcp_snapshot=$(disconnected::snapshot_mcp_rendered_configs)
 
@@ -162,16 +160,14 @@ handle_ocp_disconnected_helm() {
   fi
   disconnected::apply_plugin_mirror_configmap "${NAME_SPACE}" || return 1
 
-  # Mirror CA + registry auth for install-dynamic-plugins (skopeo).
-  # Post-renderer mounts CA at /etc/containers/certs.d/<registry>/ca.crt;
-  # the chart mounts ${RELEASE_NAME}-dynamic-plugins-registry-auth at
-  # /opt/app-root/src/.config/containers.
+  # Mirror CA + registry auth for install-dynamic-plugins (skopeo). The
+  # post-renderer mounts the CA at /etc/containers/certs.d/<registry>/ca.crt; the
+  # chart mounts <fullname>-dynamic-plugins-registry-auth (optional: true) at
+  # /opt/app-root/src/.config/containers, where fullname is <release>-<nameOverride>
+  # and nameOverride is pinned to developer-hub in the values file. A differently
+  # named secret leaves the init container without auth.json and the mirror pull
+  # fails with "authentication required".
   disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
-  # The chart mounts <fullname>-dynamic-plugins-registry-auth (optional: true) at
-  # /opt/app-root/src/.config/containers, and fullname is
-  # <release>-<nameOverride> with nameOverride pinned to developer-hub in the
-  # values file. A differently named secret leaves the init container without
-  # auth.json and skopeo then fails the mirror pull with "authentication required".
   disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" \
     "${RELEASE_NAME}-developer-hub-dynamic-plugins-registry-auth" || return 1
 

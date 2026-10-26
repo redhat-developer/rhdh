@@ -2,8 +2,7 @@
 # Rendered via envsubst (requires the *_PLUGIN_PACKAGE variables).
 # includes: [] skips dynamic-plugins.default.yaml (unpublished :tag refs).
 # packages are the digest-pinned OCI refs from the catalog (ref:// needs includes).
-# The 2.x hub provides the sign-in page, sidebar, SCM integrations and guest auth
-# as dynamic plugins, so they must be installed alongside the homepage.
+# The plugin set is explained in .ci/pipelines/lib/disconnected/plugins.sh.
 includes: []
 plugins:
   - package: ${APP_AUTH_PLUGIN_PACKAGE}

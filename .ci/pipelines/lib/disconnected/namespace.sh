@@ -125,11 +125,11 @@ disconnected::ensure_olm_mirror_pull_secret() {
 # the Helm chart and the Operator pod labels (same split as
 # resources/network_policy/netpol-ci-allow-backend-egress.yaml).
 #
-# The rule is destination-agnostic on purpose. The bastion mirror's address is
-# assigned per run and only reachable by DNS name, so an ipBlock would break as
-# soon as the bastion is replaced. The namespace is ephemeral, and the connected
-# CI lanes use a broader allow-all rule, so scoping by port is the meaningful
-# boundary here.
+# The rule is scoped by port only. MIRROR_REGISTRY_URL is the bastion's public
+# EC2 DNS name, which resolves to a different address from the CI pod and from
+# inside the cluster, so there is no stable ipBlock to use. The namespace is
+# ephemeral and the connected CI lanes allow all egress, so the port is the
+# meaningful boundary here.
 # Mirrors served on 443 (e.g. the LOCAL_DISCONNECTED route) need no extra rule.
 # Args:
 #   $1 - namespace

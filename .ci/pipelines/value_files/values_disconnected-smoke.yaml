@@ -8,11 +8,9 @@
 # catalogs can list :tag refs that do not exist on quay (manifest unknown),
 # which CrashLoops install-dynamic-plugins after registries.conf rewrites
 # those pulls to the mirror. Every package below is a digest-pinned OCI from
-# the catalog. ref:// needs includes and cannot be used.
+# the catalog. ref:// needs includes and cannot be used. The plugin set is
+# explained in .ci/pipelines/lib/disconnected/plugins.sh.
 #
-# The 2.x New Frontend System hub serves the sign-in page (app-auth), sidebar
-# (app-defaults), SCM integrations (app-integrations) and guest auth provider
-# as dynamic plugins, so they are installed next to the homepage.
 # Pins the chart fullname (<release>-developer-hub). The disconnected job creates
 # the registry-auth secret and the backend egress NetworkPolicy for that name.
 nameOverride: developer-hub
