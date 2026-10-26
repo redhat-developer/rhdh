@@ -56,7 +56,7 @@ export -f disconnected::build_imageset_config
 export -f disconnected::run_oc_mirror
 export -f disconnected::patch_idms
 export -f disconnected::snapshot_mcp_rendered_configs
-export -f disconnected::mcp_all_converged
+export -f disconnected::_mcp_all_converged
 export -f disconnected::wait_mcp_updated
 export -f disconnected::_hook_should_add_hub_image
 export -f disconnected::_hook_adjust_oc_mirror_args

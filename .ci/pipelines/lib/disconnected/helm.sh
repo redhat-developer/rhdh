@@ -13,13 +13,14 @@ readonly _DISCONNECTED_HELM_SOURCED=1
 # The bounce scales the Deployment to 0 and back to 1 instead of using
 # `oc rollout restart`: a rolling restart runs two backends against the freshly
 # initialised database, which race on the knex migration lock and leave the
-# loser never Ready. The grace period starts once the backend container starts,
-# so a pod still extracting plugins is not mistaken for a stuck backend.
+# loser never Ready. The wait gives a pod that is still extracting plugins up to
+# the grace period to start its backend before the hub is considered stuck.
 # Args:
 #   $1 - namespace
 #   $2 - Helm release name (default: rhdh)
 #   $3 - Postgres Ready timeout seconds (default: 600)
-#   $4 - Hub Available grace seconds after the backend starts (default: 180)
+#   $4 - Hub grace seconds: waits this long for the backend container to start,
+#        then this long again for the Deployment to become Available (default: 180)
 #   $5 - Hub rollout timeout seconds after restart (default: 420)
 disconnected::ensure_helm_hub_after_postgres() {
   local namespace=$1
