@@ -407,9 +407,10 @@ The most comprehensive nightly job. Runs on OpenShift using ephemeral cluster cl
 **Test suites run (in order)**:
 1. **Standard deployment tests** (`showcase`, `showcase-rbac`) -- core functionality with and without RBAC
 2. **Runtime config change tests** (`showcase-runtime`) -- tests that modify RHDH configuration at runtime
-3. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
 
-**OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler but localization tests are skipped.
+Localization tests run in their own job (`handle_ocp_localization`, `e2e-ocp-helm-localization-nightly`).
+
+**OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler.
 
 ### OCP Operator (`ocp-operator`)
 
