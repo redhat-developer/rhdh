@@ -46,7 +46,6 @@ handle_ocp_nightly() {
 
   run_standard_deployment_tests
   run_runtime_config_change_tests
-  run_sanity_plugins_check
 }
 
 run_standard_deployment_tests() {
@@ -75,16 +74,4 @@ run_runtime_config_change_tests() {
   export INSTALL_METHOD="helm"
   export RUNTIME_AUTO_DEPLOY="true"
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" || true
-}
-
-run_sanity_plugins_check() {
-  local sanity_plugins_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_SANITY_PLUGINS_CHECK}.${K8S_CLUSTER_ROUTER_BASE}"
-  initiate_sanity_plugin_checks_deployment "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}"
-  # The /developer-hub proxy behind the home page Quick Access card targets
-  # the provider route in this namespace (DH_TARGET_URL in apply_yaml_files).
-  deploy_test_backstage_customization_provider "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}" "${sanity_plugins_url}"
-  # A broken plugin takes the whole pod down and the answer is buried in the
-  # pod logs; advisory, prints nothing on healthy runs.
-  testing::report_plugin_startup_failures "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}"
 }

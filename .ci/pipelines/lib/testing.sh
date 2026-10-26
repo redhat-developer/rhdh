@@ -384,67 +384,6 @@ testing::_count_junit_failures() {
   fi
 }
 
-# Scans RHDH pod logs in a namespace for dynamic-plugin startup failures and
-# prints a summary naming each failed plugin. On CrashLoopBackOff the culprit is
-# in the PREVIOUS container logs (-p). Advisory only: never fails.
-# Args:
-#   $1 - release_name: selects the RHDH pods
-#   $2 - namespace
-#   $3 - artifacts_subdir: where to save the summary artifact
-testing::report_plugin_startup_failures() {
-  local release_name=$1
-  local namespace=$2
-  local artifacts_subdir=$3
-  local out="/tmp/plugin-startup-failures-${namespace}.txt"
-
-  # Collected here rather than reused from save_all_pod_logs: that runs only when
-  # a test fails, and its pod_logs/ directory is not namespace-scoped, so a
-  # leftover copy would report another namespace's failures.
-  #
-  # One query yields both the pod list and whether anything actually crashed, so
-  # a healthy run does not pay for two `oc logs` calls per pod.
-  local pod_status
-  pod_status=$(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub)" \
-    -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.containerStatuses[*]}{.restartCount}{" "}{end}{range .status.initContainerStatuses[*]}{.restartCount}{" "}{end}{"\n"}{end}' 2> /dev/null || true)
-
-  if [[ -z "${pod_status//[[:space:]]/}" ]]; then
-    # Distinct from "scanned and found nothing": a bad selector must not read as
-    # a clean bill of health.
-    log::warn "No RHDH pods matched in ${namespace}; skipping startup-failure scan."
-    return 0
-  fi
-
-  # A plugin that fails startup fatally takes the backend down, so if every pod
-  # is Running with no restarts there is nothing here to find.
-  local unhealthy
-  unhealthy=$(awk 'NF == 0 { next } $2 != "Running" { print $1; next } { for (i = 3; i <= NF; i++) if ($i != "0") { print $1; next } }' <<< "${pod_status}")
-  if [[ -z "${unhealthy}" ]]; then
-    log::info "All RHDH pods in ${namespace} are Running with no restarts; skipping startup-failure scan."
-    return 0
-  fi
-
-  local pods
-  pods=$(awk 'NF > 0 { print "pod/" $1 }' <<< "${pod_status}")
-
-  {
-    local pod
-    for pod in ${pods}; do
-      # Current and previous (pre-crash) logs; either may not exist yet.
-      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers 2> /dev/null || true
-      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers -p 2> /dev/null || true
-    done
-  } | "${DIR}/../../e2e-tests/local-harness/filter-plugin-startup-failures.sh" > "${out}" || true
-
-  if [[ -s "${out}" ]]; then
-    log::error "==================== PLUGIN STARTUP FAILURES (${namespace}) ===================="
-    cat "${out}"
-    log::error "==============================================================================="
-    common::save_artifact "${artifacts_subdir}" "${out}" || true
-  else
-    log::info "No dynamic-plugin startup failures found in ${namespace} pod logs."
-  fi
-}
-
 # ==============================================================================
 # Health Checks
 # ==============================================================================

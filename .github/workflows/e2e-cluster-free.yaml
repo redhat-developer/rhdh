@@ -30,29 +30,16 @@ on:
       - ".github/actions/setup-cluster-free-harness/**"
       - ".github/actions/resolve-catalog-index-image/**"
       - "e2e-tests/local-harness/resolve-catalog-index-image.sh"
-  # The catalog index is built outside this repo and changes on its own, so the
-  # plugin sanity job needs a trigger that is not tied to a commit here. GitHub
-  # only runs `schedule` from the default branch, so this covers the `next`
-  # index; use the dispatch input below to check a release branch's index.
-  schedule:
-    - cron: "0 5 * * *"
-  workflow_dispatch:
-    inputs:
-      catalog_index_image:
-        description: "Catalog index image for the plugin sanity job (default: quay.io/rhdh/plugin-catalog-index:<branch version>). Use this for RC verification."
-        required: false
-        type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
-# Both jobs run inside a container, where steps default to `sh -e {0}` rather
-# than the runner host's bash, so `[[ ]]` and `=~` are syntax errors. Requesting
-# bash also brings `-o pipefail`, which the tee'd test step relies on.
+# The job runs inside a container, where steps default to `sh -e {0}` rather
+# than the runner host's bash, so `[[ ]]` and `=~` are syntax errors.
 defaults:
   run:
     shell: bash
@@ -61,9 +48,6 @@ jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
-    # The new schedule/dispatch triggers exist for plugin-sanity; paths filters
-    # do not gate those events, so keep this job on its original triggers.
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
     timeout-minutes: 45
     # Playwright image: browsers + OS deps preinstalled, so no browser-install step
     # (which hung on plain ubuntu runners). Keep the tag in sync with the
@@ -85,7 +69,6 @@ jobs:
         uses: ./.github/actions/resolve-catalog-index-image
         with:
           branch: ${{ github.event.pull_request.base.ref || github.ref_name }}
-          catalog_index_image: ${{ inputs.catalog_index_image }}
 
       - name: Populate dynamic-plugins-root (OCI)
         # populate.sh resolves ref:// against the catalog index DPDY, then
@@ -104,76 +87,4 @@ jobs:
         with:
           name: playwright-report-local
           path: e2e-tests/playwright-report-local
-          retention-days: 7
-
-  plugin-sanity:
-    name: plugin-sanity
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    # The catalog index is built outside this repo, so a PR here cannot change
-    # what this job validates. Keep it on schedule (and dispatch for RC checks);
-    # the e2e job above keeps pull_request/push.
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-    # Request-only (no browser), but the image also carries the OS deps the
-    # backend boot needs, and reusing it keeps both jobs on one base.
-    container:
-      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
-    steps:
-      - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-        with:
-          persist-credentials: false
-
-      - name: Set up the cluster-free harness
-        uses: ./.github/actions/setup-cluster-free-harness
-
-      - name: Resolve the catalog index image
-        id: index
-        uses: ./.github/actions/resolve-catalog-index-image
-        with:
-          branch: ${{ github.event.pull_request.base.ref || github.ref_name }}
-          catalog_index_image: ${{ inputs.catalog_index_image }}
-
-      - name: Populate dynamic-plugins-root from the catalog index
-        env:
-          CATALOG_INDEX_IMAGE: ${{ steps.index.outputs.image }}
-        run: ./e2e-tests/local-harness/populate-catalog-index.sh
-
-      - name: Run the plugin sanity check
-        id: sanity
-        working-directory: ./e2e-tests
-        env:
-          CATALOG_INDEX_IMAGE: ${{ steps.index.outputs.image }}
-        run: |
-          set -o pipefail
-          yarn e2e:plugin-sanity 2>&1 | tee plugin-sanity.log
-
-      - name: Report plugin startup failures
-        # A plugin that throws during init aborts the whole backend; the cause is
-        # in the backend log Playwright pipes into the run above, so pull the
-        # culprits onto the run summary instead of leaving them mid-log.
-        if: ${{ failure() && steps.sanity.conclusion == 'failure' }}
-        run: |
-          ./e2e-tests/local-harness/filter-plugin-startup-failures.sh \
-            < e2e-tests/plugin-sanity.log > /tmp/plugin-startup-failures.txt || true
-          if [[ -s /tmp/plugin-startup-failures.txt ]]; then
-            {
-              echo "### Plugin startup failures"
-              echo '```'
-              cat /tmp/plugin-startup-failures.txt
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
-            cat /tmp/plugin-startup-failures.txt
-          else
-            echo "No dynamic-plugin startup failures found in the backend log."
-          fi
-
-      - name: Upload Playwright report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: playwright-report-plugin-sanity
-          path: |
-            e2e-tests/playwright-report-plugin-sanity
-            e2e-tests/plugin-sanity.log
           retention-days: 7

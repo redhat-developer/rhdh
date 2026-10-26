@@ -67,7 +67,7 @@ Fullsend's GitHub issues are the automated overlay tracker. For overlay bugs tha
 | | Nightly (Periodic) Jobs | PR Check (Presubmit) Jobs |
 |---|---|---|
 | **Trigger** | Scheduled (usually once per night) | On PR creation/update, or `/ok-to-test` |
-| **Scope** | Full suite: showcase, RBAC, runtime, sanity plugins, localization, auth providers | Smaller scope: showcase + RBAC only |
+| **Scope** | Full suite: showcase, RBAC, runtime, localization, auth providers | Smaller scope: showcase + RBAC only |
 | **Platforms** | OCP (multiple versions), AKS, EKS, GKE, OSD-GCP | OCP only (single version) |
 | **Install methods** | Helm and Operator | Helm only |
 | **Alert channel** | `#rhdh-e2e-alerts` / `#rhdh-e2e-alerts-{version}` | PR status checks on GitHub |
@@ -259,7 +259,6 @@ artifacts/
 │   │       │   └── pod_logs/                # Logs from all pods
 │   │       ├── showcase-rbac/               # Same structure as above
 │   │       ├── showcase-runtime/
-│   │       ├── showcase-sanity-plugins/
 │   │       ├── showcase-localization-fr/
 │   │       ├── showcase-localization-it/
 │   │       └── showcase-localization-ja/
@@ -408,8 +407,7 @@ The most comprehensive nightly job. Runs on OpenShift using ephemeral cluster cl
 **Test suites run (in order)**:
 1. **Standard deployment tests** (`showcase`, `showcase-rbac`) -- core functionality with and without RBAC
 2. **Runtime config change tests** (`showcase-runtime`) -- tests that modify RHDH configuration at runtime
-3. **Sanity plugins check** (`showcase-sanity-plugins`) -- validates plugin loading and basic functionality
-4. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
+3. **Localization tests** (`showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`) -- UI translations
 
 **OSD-GCP variant**: Nightly tests on OpenShift Dedicated on GCP. Uses the same handler but localization tests are skipped.
 
@@ -435,7 +433,7 @@ Runs on every PR that modifies e2e test code. Smaller scope for faster feedback.
 **Test suites**: `showcase`, `showcase-rbac` only
 
 **Key differences**:
-- No runtime, sanity plugin, or localization tests
+- No runtime or localization tests
 - Deploys test Backstage customization provider
 
 ### Auth Providers (`auth-providers`)
