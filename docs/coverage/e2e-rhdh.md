@@ -174,8 +174,8 @@ the UI have migrated; new specs should import from `@support/coverage/test`.
   The image, not the checkout, names the commit, because `next` can lag `main`.
   `next` is also rebuilt on every merge, so the first project's commit is kept for the
   job and a project that ran a newer image skips its upload. Other
-  nightlies, a tag other than `next`, an image with neither a revision label nor
-  build metadata on `main`, or a commit outside `main` skip the upload. Codecov
+  nightlies, a tag other than `next`, or an image whose label and build metadata both
+  fail to name a commit on `main` skip the upload. Codecov
   carries a flag forward from a commit's parent (`carryforward: true` in
   `codecov.yml`), so commits processed before the upload do
   not get it: the flag first shows once an upload lands on the newest processed

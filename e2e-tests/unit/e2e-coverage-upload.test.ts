@@ -186,6 +186,22 @@ const githubSays = (status: string) =>
 const upstream = (sha: string) =>
   `JSON.parse('{"title":"RHDH Metadata","card":{"RHDH Version":"2.2.0","Upstream":"https://github.com/redhat-developer/rhdh/tree/main @ ${sha}","Midstream":"https://gitlab.cee.redhat.com/rhidp/rhdh/-/commits/main @ c4eb3cda"}}')`;
 
+// A container status: [name, image, imageID].
+type Container = [string, string, string];
+// The `oc get pods -o json` list for pods keyed by name.
+const podList = (pods: Record<string, Container[]>) => ({
+  items: Object.entries(pods).map(([name, containers]) => ({
+    metadata: { name },
+    status: {
+      containerStatuses: containers.map(([container, image, imageID]) => ({
+        name: container,
+        image,
+        imageID,
+      })),
+    },
+  })),
+});
+
 // The main OCP Helm nightly uploads to the main commit its `next` image was built
 // from, named by the image's revision label or, for Konflux images that label the
 // midstream commit, by the app's build metadata. Never the checkout's HEAD.
@@ -193,6 +209,9 @@ describe("testing::_upload_e2e_coverage from the main nightly", () => {
   const MAIN_JOB = "periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly";
   const DIGEST = `quay.io/rhdh-community/rhdh@sha256:${"d".repeat(64)}`;
   const MAIN_RUN = { CODECOV_TOKEN: "token", JOB_NAME: MAIN_JOB, TAG_NAME: "next" };
+  const RHDH: Container = ["backstage-backend", "quay.io/rhdh-community/rhdh:next", DIGEST];
+  const SIDECAR: Container = ["sidecar", "registry.redhat.io/sidecar:1", "y@sha256:2"];
+  const POSTGRES: Container = ["postgresql", "registry.redhat.io/postgresql:16", "x@sha256:1"];
   // A commit this checkout has and HEAD contains. HEAD itself, because CI checks
   // out with fetch-depth 1 and has no parent commit.
   const onMain = spawnSync("git", ["-C", repository, "rev-parse", "HEAD"], {
@@ -203,21 +222,21 @@ describe("testing::_upload_e2e_coverage from the main nightly", () => {
 
   /**
    * Puts fake `oc` and `skopeo` executables in `$ROOT/bin` (they run under
-   * `timeout`, so shell functions cannot replace them). `pods` is what
-   * `oc get pods` prints: one "<pod> (<container> <image> <imageID>)..." line per
-   * pod. `oc exec` runs its command locally, with the app's dist directory
-   * holding one chunk whose content is `bundle`.
+   * `timeout`, so shell functions cannot replace them). `oc get pods -o json`
+   * prints `pods`, keyed by pod name. `oc exec` runs its command locally, with the
+   * app's dist directory holding one chunk whose content is `bundle`.
    */
   function mainUpload(
     revision: string | null,
     {
-      pods = `rhdh-0 backstage-backend quay.io/rhdh-community/rhdh:next ${DIGEST} sidecar registry.redhat.io/sidecar:1 y@sha256:2\npg-0 postgresql registry.redhat.io/postgresql:16 x@sha256:1`,
+      // The sidecar comes first, so reading the wrong container shows.
+      pods = { "rhdh-0": [SIDECAR, RHDH], "pg-0": [POSTGRES] },
       bundle = "",
       env = {},
       prelude = "",
       namespace = "showcase-ci-nightly",
     }: {
-      pods?: string;
+      pods?: Record<string, Container[]>;
       bundle?: string;
       env?: Record<string, string>;
       prelude?: string;
@@ -237,7 +256,9 @@ if [[ $1 == exec ]]; then
   shift
   exec "\${@/#\\/opt\\/app-root\\/src\\/packages\\/app\\/dist/${root}/dist}"
 fi
-printf '%b\\n' ${JSON.stringify(pods)}
+cat <<'JSON'
+${JSON.stringify(podList(pods))}
+JSON
 `,
     );
     const labels = revision === null ? {} : { "org.opencontainers.image.revision": revision };
@@ -286,15 +307,16 @@ printf '%b\\n' ${JSON.stringify(pods)}
     ],
     ["a tag other than next", { env: { TAG_NAME: "2.1-122" } }, ""],
     ["no namespace", { namespace: "" }, ""],
-    [
-      "no RHDH pod",
-      { pods: "pg-0 postgresql registry.redhat.io/postgresql:16 x@sha256:1" },
-      "found: none",
-    ],
+    ["no RHDH pod", { pods: { "pg-0": [POSTGRES] } }, "found: none"],
     [
       "pods on two digests",
       {
-        pods: `rhdh-0 backstage-backend quay.io/rhdh-community/rhdh:next ${DIGEST}\nrhdh-1 backstage-backend quay.io/rhdh-community/rhdh:next ${DIGEST.replace(/d+$/u, "f".repeat(64))}`,
+        pods: {
+          "rhdh-0": [RHDH],
+          "rhdh-1": [
+            ["backstage-backend", RHDH[1], DIGEST.replace(/d+$/u, "f".repeat(64))] as Container,
+          ],
+        },
       },
       "Expected one",
     ],
@@ -334,7 +356,7 @@ printf '%b\\n' ${JSON.stringify(pods)}
       expect(status).toBe(0);
       expect(argv).toContain(onMain);
       expect(argv).not.toContain(midstream);
-      expect(output).toContain(`using upstream commit ${onMain} from its build metadata`);
+      expect(output).toContain(`using upstream commit ${onMain} from the build metadata`);
       // Reads the bundle of the container that runs the image, not the sidecar.
       expect(readFileSync(join(root, "oc-exec-args"), "utf8")).toMatch(
         /^exec\n-n\nshowcase-ci-nightly\nrhdh-0\n-c\nbackstage-backend\n--\ngrep\n/u,
@@ -372,8 +394,17 @@ printf '%b\\n' ${JSON.stringify(pods)}
     });
   });
 
+  it("reads the RHDH container when a sidecar has no image ID yet", () => {
+    const { argv } = mainUpload(onMain, {
+      pods: { "rhdh-0": [["sidecar", SIDECAR[1], ""], RHDH] },
+    });
+    expect(argv).toContain(onMain);
+  });
+
   it("reads the commit from pods that run the image by digest", () => {
-    const { argv } = mainUpload(onMain, { pods: `rhdh-0 backstage-backend ${DIGEST} ${DIGEST}` });
+    const { argv } = mainUpload(onMain, {
+      pods: { "rhdh-0": [["backstage-backend", DIGEST, DIGEST]] },
+    });
     expect(argv).toContain(onMain);
     expect(readFileSync(join(root, "skopeo-args"), "utf8")).toContain(`docker://${DIGEST}\n`);
   });
