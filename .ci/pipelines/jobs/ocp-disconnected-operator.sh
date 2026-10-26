@@ -55,26 +55,14 @@ handle_ocp_disconnected_operator() {
   # injected into the Backstage CR by deploy_rhdh_operator.
   #
   # OLM version: leave default (auto). On OCP 4.21+ this selects OLM v1.
-  local filter_versions="${RELEASE_VERSION}"
-  if [[ "${filter_versions}" == "next" || "${filter_versions}" == "*" ]]; then
-    filter_versions="*"
-  fi
-
-  # Mirroring every historical RHDH operator version (* / next) is unnecessary
-  # for smoke and flakes on quay CDN EOF (CI) or overwhelms the integrated
-  # registry (local). Pin to the chart major.minor (e.g. 2.0-80-CI → 2.0).
-  if [[ "${filter_versions}" == "*" ]]; then
-    local chart_mm=""
-    if [[ -n "${CHART_VERSION:-}" && "${CHART_VERSION}" =~ ^([0-9]+\.[0-9]+) ]]; then
-      chart_mm="${BASH_REMATCH[1]}"
-    fi
-    if [[ -z "${chart_mm}" ]]; then
-      log::error "Cannot derive --filter-versions from CHART_VERSION='${CHART_VERSION:-unset}'; expected major.minor prefix (e.g. 2.0-80-CI)"
-      return 1
-    fi
-    filter_versions="${chart_mm}"
-    log::info "filter-versions=${filter_versions} (from CHART_VERSION=${CHART_VERSION})"
-  fi
+  #
+  # The operator stream follows the checkout branch, like install_rhdh_operator:
+  # main mirrors the 2.2 bundles, release-2.1 the 2.1 ones. A pinned image or
+  # chart does not change it, and an unfiltered catalog would pull every
+  # historical version.
+  local filter_versions
+  filter_versions=$(common::get_release_stream) || return 1
+  log::info "filter-versions=${filter_versions} (from RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME})"
 
   # CONTAINER_PLATFORM_VERSION is set by e2e-tests/container-init.sh from the
   # live cluster (oc version → major.minor).
@@ -87,8 +75,6 @@ handle_ocp_disconnected_operator() {
   # RHDH CI catalog built from the same commit as the hub and plugin catalogs.
   # Released charts (x.y.z) pair with the published Red Hat catalog, the only one
   # carrying released bundles, even when the image itself is pulled from quay.
-  # That catalog still needs the rhdh-operator defaultChannel fix
-  # (rhdh-operator#3822) for a filtered oc-mirror run to accept it.
   local use_ci_catalog="false"
   if [[ "${IMAGE_REGISTRY}" != "registry.redhat.io" && "${CHART_VERSION:-}" == *-CI ]]; then
     use_ci_catalog="true"
@@ -97,9 +83,8 @@ handle_ocp_disconnected_operator() {
   local index_image=""
   local registries_conf=""
   if [[ "${use_ci_catalog}" == "true" ]]; then
-    # rhdh-operator publishes one catalog per release stream and OCP minor,
-    # e.g. quay.io/rhdh/iib:next-v4.21-x86_64 (amd64 only; the jobs run on
-    # amd64 clusters).
+    # rhdh-operator publishes one catalog per stream and OCP minor, e.g.
+    # quay.io/rhdh/iib:next-v4.21-x86_64 (amd64 only; the jobs run on amd64).
     index_image="quay.io/rhdh/iib:${RELEASE_VERSION}-v${ocp_version}-x86_64"
     skopeo inspect --raw "docker://${index_image}" > /dev/null || {
       log::error "RHDH CI operator catalog ${index_image} not found or unreadable"
