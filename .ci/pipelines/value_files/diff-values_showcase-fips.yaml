@@ -2,6 +2,34 @@
 # Applied on top of values_showcase.yaml via helm::merge_values (overwrite).
 # Arrays are replaced, so extraEnv must be restated in full.
 # TLS verification must stay enabled in FIPS mode.
+
+# Configure external PostgreSQL and Redis with TLS
+appConfig:
+  backend:
+    database:
+      connection:
+        host: ${POSTGRES_HOST}
+        port: ${POSTGRES_PORT}
+        user: ${POSTGRES_USER}
+        password: ${POSTGRES_PASSWORD}
+        ssl:
+          rejectUnauthorized: true
+          ca:
+            $file: /opt/app-root/src/postgres-ca.pem
+          key:
+            $file: /opt/app-root/src/postgres-key.key
+          cert:
+            $file: /opt/app-root/src/postgres-crt.pem
+    cache:
+      store: redis
+      connection: rediss://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis:6379
+      useRedisSets: false
+      # Redis TLS configuration
+      tlsOptions:
+        rejectUnauthorized: true
+        ca:
+          $file: /opt/app-root/src/redis-ca.pem
+
 extraEnv:
   # disable telemetry in CI
   - name: SEGMENT_TEST_MODE
@@ -12,3 +40,36 @@ extraEnv:
     value: "production"
   - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
     value: "true"
+
+extraVolumeMounts:
+  - mountPath: /opt/app-root/src/postgres-crt.pem
+    name: postgress-external-db-cluster-cert
+    subPath: tls.crt
+  - mountPath: /opt/app-root/src/postgres-ca.pem
+    name: postgress-external-db-cluster-cert
+    subPath: ca.crt
+  - mountPath: /opt/app-root/src/postgres-key.key
+    name: postgress-external-db-cluster-cert
+    subPath: tls.key
+  - mountPath: /opt/app-root/src/redis-ca.pem
+    name: redis-certs
+    subPath: ca.crt
+
+extraVolumes:
+  - name: postgress-external-db-cluster-cert
+    secret:
+      secretName: postgress-external-db-cluster-cert
+  - name: redis-certs
+    secret:
+      secretName: redis-certs
+
+extraEnvFrom:
+  - secretRef:
+      name: rhdh-secrets
+  - secretRef:
+      name: redis-secret
+  - secretRef:
+      name: postgres-cred
+
+postgresql:
+  enabled: false
