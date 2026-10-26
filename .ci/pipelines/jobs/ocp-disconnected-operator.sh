@@ -55,10 +55,9 @@ handle_ocp_disconnected_operator() {
   #
   # OLM version: leave default (auto). On OCP 4.21+ this selects OLM v1.
   #
-  # The operator stream follows the checkout branch, like install_rhdh_operator:
-  # main mirrors the 2.2 bundles, release-2.1 the 2.1 ones. A pinned image or
-  # chart does not change it, and an unfiltered catalog would pull every
-  # historical version.
+  # The operator stream follows the checkout branch: main mirrors the 2.2
+  # bundles, release-2.1 the 2.1 ones. A pinned image or chart does not change
+  # it, and an unfiltered catalog would pull every historical version.
   local filter_versions
   filter_versions=$(common::get_release_stream) || return 1
   log::info "filter-versions=${filter_versions} (from RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME})"
@@ -83,8 +82,11 @@ handle_ocp_disconnected_operator() {
   local registries_conf=""
   if [[ "${use_ci_catalog}" == "true" ]]; then
     # rhdh-operator publishes one catalog per stream and OCP minor, e.g.
-    # quay.io/rhdh/iib:next-v4.21-x86_64 (amd64 only; the jobs run on amd64).
-    index_image="quay.io/rhdh/iib:${RELEASE_VERSION}-v${ocp_version}-x86_64"
+    # quay.io/rhdh/iib:2.2-v4.21-x86_64 (amd64 only; the jobs run on amd64).
+    # The tag follows filter_versions, so the tag and --filter-versions cannot
+    # disagree, and a stream without a published catalog fails here instead of
+    # in oc-mirror.
+    index_image="quay.io/rhdh/iib:${filter_versions}-v${ocp_version}-x86_64"
     skopeo inspect --raw "docker://${index_image}" > /dev/null || {
       log::error "RHDH CI operator catalog ${index_image} not found or unreadable"
       return 1
