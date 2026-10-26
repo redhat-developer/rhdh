@@ -96,7 +96,6 @@ packages:
   - glibc-minimal-langpack
   - gmp
   - gnupg2
-  - gnutls
   - gobject-introspection
   - gpgme
   - grep
@@ -193,7 +192,6 @@ packages:
   - ncurses
   - ncurses-base
   - ncurses-libs
-  - nettle
   - npth
   - nspr
   - nss

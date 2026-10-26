@@ -64,7 +64,6 @@ ignore:
   - "**/build/**"
   - "**/node_modules/**"
   - "e2e-tests/**"
-  - ".claude/**"
   - "docs/**"
 
 # Flags let us view coverage per area in the Codecov dashboard.

@@ -8,6 +8,7 @@ import {
 } from "../playwright/utils/helper";
 import { isRecord } from "../playwright/utils/kube-client/helpers";
 import {
+  generateAppConfigYaml,
   generateBackstageCR,
   generateDynamicPluginsYaml,
   generateHelmSetArgs,
@@ -131,6 +132,18 @@ describe("generateHelmSetArgs", () => {
 });
 
 describe("generateHelmValuesYaml", () => {
+  it("keeps Segment in test mode alongside the catalog probe token", () => {
+    expect(helmValues()).toMatchObject({
+      extraEnv: [{ name: "SEGMENT_TEST_MODE", value: "true" }],
+    });
+    expect(yaml.parse(generateHelmValuesYaml({ ...config, catalogProbe: true }))).toMatchObject({
+      extraEnv: [
+        { name: "SEGMENT_TEST_MODE", value: "true" },
+        { name: "RUNTIME_CATALOG_API_TOKEN", valueFrom: { secretKeyRef: {} } },
+      ],
+    });
+  });
+
   it("uses only 2.y top-level keys", () => {
     expect(Object.keys(helmValues())).not.toContain("global");
     expect(Object.keys(helmValues())).not.toContain("upstream");
@@ -181,12 +194,19 @@ describe("generateHelmValuesYaml", () => {
     expect(generateHelmValuesYaml()).toMatch(guestProviderPackage);
   });
 
-  it("enables the home page, which the new frontend system ships disabled", () => {
+  it("uses the catalog Homepage 3.1 page and layout", () => {
     expect(helmValues()).toMatchObject({
       appConfig: {
         app: {
           extensions: [
-            { "page:home": { config: { path: "/" } } },
+            { "page:home": false },
+            { "page:homepage": { config: { path: "/", title: "Home" } } },
+            { "translation:app/homepage-translations": true },
+            {
+              "home-page-layout:homepage/dynamic-homepage-layout": {
+                config: { customizable: false },
+              },
+            },
             { "api:home/visits": true },
             { "app-root-element:home/visit-listener": true },
           ],
@@ -221,6 +241,14 @@ describe("generateBackstageCR", () => {
     return patch.spec.template.spec.initContainers;
   }
 
+  it("sets Segment test mode on operator runtime deployments", () => {
+    const application = generateBackstageCR(config).spec.application;
+    if (!isRecord(application) || !isRecord(application.extraEnvs)) {
+      throw new Error("Operator extraEnvs are missing");
+    }
+    expect(application.extraEnvs.envs).toContainEqual({ name: "SEGMENT_TEST_MODE", value: "true" });
+  });
+
   it("waits for the release PostgreSQL service before Backstage starts", () => {
     const waitForDb = initContainers().find((container) => container.name === "wait-for-db");
 
@@ -234,4 +262,13 @@ describe("generateBackstageCR", () => {
       image: "quay.io/rhdh-community/rhdh:next",
     });
   });
+});
+
+it("uses the same home page extensions for Helm and Operator runtime deployments", () => {
+  const helm = helmValues();
+  if (!isRecord(helm.appConfig) || !isRecord(helm.appConfig.app)) {
+    throw new Error("Helm app config is missing");
+  }
+  const operator: unknown = yaml.parse(generateAppConfigYaml("https://runtime.example.test"));
+  expect(operator).toMatchObject({ app: { extensions: helm.appConfig.app.extensions } });
 });

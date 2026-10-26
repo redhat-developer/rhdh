@@ -137,11 +137,11 @@ for how that's wired).
 - `smoke-test` — guest sign-in plus the home-page welcome heading (dynamic-home-page
   plugin); its readiness poll uses the same proxied `/healthcheck`.
 - `home-page-customization` — the Quick Access, Featured Docs, Top Visited, and
-  Recently Visited widgets, using the `home-page-layout:home/dynamic-homepage-layout`
+  Recently Visited widgets, using the `home-page-layout:homepage/dynamic-homepage-layout`
   `app.extensions` customization mirrored from
   `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml` into
   `app-config.local-e2e.yaml`. NFS home-page cards are a fixed set of built-in widgets
-  (`home-page-widget:home/*`) — the legacy Placeholder/Markdown/Random Joke mount-point
+  (`home-page-widget:homepage/*`) — the legacy Placeholder/Markdown/Random Joke mount-point
   cards have no NFS equivalent and are no longer asserted. Its `@cluster-free-capable` "Quick
   Access" assertion only checks the card's title text, not real link data (see "Known
   issues" for why); the file's other, untagged "Verify Customized Quick Access" test

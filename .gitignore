@@ -78,15 +78,6 @@ e2e-tests/local-harness/.generated/
 # Private Keys
 *.pem
 
-# Local AI Assistant rules
-.cursor/rules/*.local.mdc
-.rulesync/**/*.local.md
-.claude/**/*.local.md
-.claude/settings.json
-.claude/settings.local.json
-.opencode/**/*.local.md
-.opencode/package-lock.json
-
 # CI/Pipeline local overrides
 .ci/pipelines/shared_dir/*
 .ci/pipelines/artifact_dir/*
@@ -107,6 +98,3 @@ e2e-tests/test-results/
 # Hermeto Cache
 hermeto-cache/
 build/containerfiles/Containerfile.hermeto
-
-# Claude Code session lock
-.claude/scheduled_tasks.lock

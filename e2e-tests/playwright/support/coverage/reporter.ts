@@ -8,20 +8,28 @@
 // Activated only when COLLECT_COVERAGE=true. When inactive, the reporter is
 // a no-op so the default reporter set (html, list, junit) is unaffected.
 //
-// The merged report goes to coverage/e2e/ and can be uploaded to Codecov with
-// the flag `rhdh-e2e-frontend` by a CI step (follow-up).
+// The merged report goes to coverage/e2e/, limited to packages/app sources and
+// named by repository path (see source-paths.ts), and testing.sh uploads it to
+// Codecov with the flag `rhdh-e2e-frontend`.
 //
 // Dependencies (dev): monocart-coverage-reports
 
 import fs from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
+
 import type { Reporter } from "@playwright/test/reporter";
 import { CoverageReport } from "monocart-coverage-reports";
+
 import { COVERAGE_RAW_DIR, COVERAGE_REPORT_DIR } from "./paths";
+import { SourceMapLoader } from "./source-maps";
+import { coverageSourceOptions } from "./source-paths";
 
 const generateTimeoutMs = Number(
   process.env.COVERAGE_GENERATE_TIMEOUT_MS ?? 2 * 60 * 1000,
+);
+const mergeTimeoutMs = Number(
+  process.env.COVERAGE_MERGE_TIMEOUT_MS ?? 5 * 60 * 1000,
 );
 
 function isENOENT(err: unknown): boolean {
@@ -59,6 +67,71 @@ async function withTimeout<T>(
   } finally {
     controller.abort();
   }
+}
+
+/**
+ * Add each raw coverage file to the report, one at a time: each holds the full text
+ * of every bundle the page loaded (~6 MB per test against the showcase image), so
+ * parsing them all up front multiplies peak memory by the number of tests. Only the
+ * app's bundles with a loadable source map are added (see source-maps.ts).
+ */
+export async function mergeRawCoverage(
+  report: { add: (entries: unknown[]) => Promise<unknown> },
+  rawFiles: string[],
+  sourceMaps: SourceMapLoader,
+  signal?: AbortSignal,
+): Promise<void> {
+  for (const file of rawFiles) {
+    signal?.throwIfAborted();
+    const content = await fs.readFile(
+      path.join(COVERAGE_RAW_DIR, file),
+      "utf-8",
+    );
+    const parsed: unknown = JSON.parse(content);
+    if (!isUnknownArray(parsed)) {
+      console.warn(
+        `[coverage] Skipping ${file}: expected an array of V8 script coverage entries, got ${typeof parsed}`,
+      );
+      continue;
+    }
+    const entries = await sourceMaps.attach(parsed);
+    signal?.throwIfAborted();
+    await report.add(entries);
+  }
+  if (sourceMaps.failures.length > 0) {
+    console.warn(
+      `[coverage] ${sourceMaps.failures.length} source map(s) could not be loaded; their bundles are left out of the report.`,
+    );
+  }
+}
+
+/**
+ * Merge, then generate, each under its own budget: slow source-map fetches must not
+ * use up the time report generation needs. A merge that times out stops adding.
+ */
+export async function buildReport<T>(
+  report: {
+    add: (entries: unknown[]) => Promise<unknown>;
+    generate: () => Promise<T>;
+  },
+  rawFiles: string[],
+  sourceMaps: SourceMapLoader,
+): Promise<T> {
+  const merging = new AbortController();
+  try {
+    await withTimeout(
+      mergeRawCoverage(report, rawFiles, sourceMaps, merging.signal),
+      mergeTimeoutMs,
+      "[coverage] merging raw coverage",
+    );
+  } finally {
+    merging.abort();
+  }
+  return withTimeout(
+    report.generate(),
+    generateTimeoutMs,
+    "[coverage] report.generate()",
+  );
 }
 
 class CoverageReporter implements Reporter {
@@ -119,44 +192,21 @@ class CoverageReporter implements Reporter {
       const report = new CoverageReport({
         name: "RHDH E2E Coverage",
         outputDir: COVERAGE_REPORT_DIR,
-        reports: [
-          ["v8"],
-          ["lcov"],
-          ["html"],
-          ["json-summary"],
-          ["console-summary"],
-        ],
+        reports: [["lcov"], ["html"], ["json-summary"], ["console-summary"]],
         cleanCache: true,
+        ...coverageSourceOptions,
       });
 
-      const entriesPerFile = await Promise.all(
-        rawFiles.map(async (file) => {
-          const content = await fs.readFile(
-            path.join(COVERAGE_RAW_DIR, file),
-            "utf-8",
-          );
-          const parsed: unknown = JSON.parse(content);
-          if (!isUnknownArray(parsed)) {
-            console.warn(
-              `[coverage] Skipping ${file}: expected an array of V8 script coverage entries, got ${typeof parsed}`,
-            );
-            return null;
-          }
-          return parsed;
-        }),
+      const results = await buildReport(
+        report,
+        rawFiles,
+        new SourceMapLoader(),
       );
-
-      for (const entries of entriesPerFile) {
-        if (entries !== null) {
-          await report.add(entries);
-        }
+      if ((results?.files.length ?? 0) === 0) {
+        console.warn(
+          "[coverage] The report names no packages/app source. Were the app's source maps reachable?",
+        );
       }
-
-      await withTimeout(
-        report.generate(),
-        generateTimeoutMs,
-        "[coverage] report.generate()",
-      );
       console.log(`[coverage] Merged report written to ${COVERAGE_REPORT_DIR}`);
     } catch (err) {
       console.error(

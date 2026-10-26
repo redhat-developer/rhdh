@@ -15,15 +15,9 @@ ci/images/*
 !.yarnrc.yml
 hermeto-cache
 .github
-.cursor
-.claude
-.rulesync
-.rulesyncignore
-.pr_agents.toml
 .sonarcloud.properties
 docs
 e2e-tests
-.opencode
 .husky
 .vscode
 .turbo

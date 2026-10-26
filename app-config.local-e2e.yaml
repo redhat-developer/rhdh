@@ -72,11 +72,9 @@ catalog:
 
 # The app (NFS, default) reads `app.extensions` below, mirroring the CI ConfigMap
 # (.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml): the home page route
-# plus a customized home-page widget layout. `page:home` is disabled by default upstream
-# (@backstage/plugin-home) and must be explicitly enabled — see the
-# dynamic-home-page plugin's README ("New Frontend System" section) — otherwise "/" 404s
-# even though the plugin's widget/layout extensions load fine via Module Federation. NFS
-# home-page cards are a fixed set of built-in widgets (home-page-widget:home/*) —
+# plus a customized home-page widget layout. RHDH homepage owns `page:homepage`;
+# disable community `page:home` so only one Home destination is registered. NFS
+# home-page cards are a fixed set of built-in widgets (home-page-widget:homepage/*) —
 # arbitrary cards like the old OFS Placeholder/Markdown/JokeCard/Headline mount points
 # have no NFS equivalent. The app-defaults dynamic plugin provides the NFS sidebar. See
 # home-page-customization.spec.ts and sidebar.spec.ts for the assertions this drives —
@@ -84,10 +82,13 @@ catalog:
 # Entities widgets.
 app:
   extensions:
-    - page:home:
+    - page:home: false
+    - page:homepage:
         config:
           path: /
+          title: Home
     - api:home/visits: true
+    - translation:app/homepage-translations
     # app-root-element:home/visit-listener (also enabled in the CI ConfigMap) is
     # deliberately NOT enabled here. It calls VisitsStorageApi.save() — an unguarded
     # backend call — on every route change, which 404s because userSettings.persistence:
@@ -111,17 +112,16 @@ app:
           availableLanguages: [en, de, es, fr, it, ja]
           defaultLanguage: en
     # Backstage 1.54 added home-page-widget:search/search-bar on @backstage/plugin-search.
-    # The RHDH homepage plugin already provides home-page-widget:home/search-bar; leaving
+    # The RHDH homepage plugin already provides home-page-widget:homepage/search-bar; leaving
     # both enabled duplicates the Search input and fails guest-signin-happy-path.spec.ts.
     - home-page-widget:search/search-bar: false
     # customizable: false so `priority` actually governs ordering (with customizable:
     # true, the layout extension keeps the plugin-registration order and ignores
-    # priority entirely). Keys must match each widget's `params.name` (not its blueprint
-    # `name`) — see
-    # rhdh-plugins/workspaces/homepage/plugins/homepage/src/alpha/extensions/homePageCards.tsx.
-    # Breakpoints mirror app-config.local.yaml / the CI ConfigMap so default NFS widgets
+    # priority entirely). Keys match each widget's `params.name` — see
+    # rhdh-plugins/workspaces/homepage/plugins/homepage/src/extensions/homePageCards.tsx.
+    # Breakpoints mirror app-config.local.yaml / the CI ConfigMap so the default NFS widgets
     # render in a stable layout for home-page-customization.spec.ts.
-    - home-page-layout:home/dynamic-homepage-layout:
+    - home-page-layout:homepage/dynamic-homepage-layout:
         config:
           customizable: false
           widgetLayout:
@@ -299,3 +299,25 @@ app:
                 xxs:
                   w: 12
                   h: 4
+homepage:
+  # The backend catalog defaults only include the three main sections. Mirror
+  # the CI fixture's cards so Guest and homepage tests cover the same widgets.
+  defaultWidgets:
+    - id: rhdh-onboarding-section
+      ref: rhdh-onboarding-section
+    - id: rhdh-entity-section
+      ref: rhdh-entity-section
+    - id: rhdh-template-section
+      ref: rhdh-template-section
+    - id: quickaccess-card
+      ref: quickaccess-card
+    - id: search-bar
+      ref: search-bar
+    - id: featured-docs-card
+      ref: featured-docs-card
+    - id: catalog-starred-entities-card
+      ref: catalog-starred-entities-card
+    - id: recently-visited-card
+      ref: recently-visited-card
+    - id: top-visited-card
+      ref: top-visited-card

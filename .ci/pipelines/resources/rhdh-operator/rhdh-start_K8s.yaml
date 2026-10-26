@@ -38,6 +38,8 @@ spec:
     dynamicPluginsConfigMapName: dynamic-plugins
     extraEnvs:
       envs:
+        - name: SEGMENT_TEST_MODE
+          value: "true"
         - name: NODE_OPTIONS
           value: "--no-node-snapshot"
         - name: NODE_ENV

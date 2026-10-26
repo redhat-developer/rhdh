@@ -48,9 +48,27 @@ export WORKSPACE="/path/to/workspace"
 export CLIENT_ID="your_client_id"
 export CLIENT_SECRET="your_client_secret"
 
+# OSD version to provision (see "Choosing an OSD Version" below)
+export OSD_VERSION="x.y.z"
+
 # Optional: Custom cluster name
 export CLUSTER_NAME="your-cluster-name"
 ```
+
+### Choosing an OSD Version
+
+`create-osd.sh` requires `OSD_VERSION` and does not assume a default. Pick one of:
+
+- **Match CI:** use the version configured for the OSD-GCP nightly jobs. Check `OSD_VERSION` under
+  the `e2e-osd-gcp-helm-nightly` / `e2e-osd-gcp-operator-nightly` tests in the
+  [RHDH CI configuration for main](https://github.com/openshift/release/blob/main/ci-operator/config/redhat-developer/rhdh/redhat-developer-rhdh-main.yaml).
+- **Latest available:** after logging in with `ocm login`, select the newest GCP-marketplace-enabled
+  version:
+  ```bash
+  export OSD_VERSION="$(ocm list versions --marketplace-gcp true | tail -n 1)"
+  ```
+- **Any specific version** you want to test against. List what is available with
+  `ocm list versions`.
 
 ## 🚀 Usage
 
@@ -82,8 +100,8 @@ This will remove all clusters matching the specified name pattern.
 
 Creates an OpenShift Dedicated cluster with the following specifications:
 
-- OSD Version: 4.16.16
-- Region: us-east1
+- OSD Version: whatever `OSD_VERSION` is set to (see "Choosing an OSD Version")
+- Region: us-west1
 - Provider: GCP
 - Subscription: marketplace-gcp
 

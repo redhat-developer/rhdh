@@ -5,10 +5,15 @@ WORKSPACE=$(pwd)/osdcluster
 mkdir -p $WORKSPACE
 export PATH=$WORKSPACE:$PATH
 
+if [ -z "$OSD_VERSION" ]; then
+  echo "OSD_VERSION must be set in the environment." >&2
+  echo "See the README in this directory for how to choose a version." >&2
+  exit 1
+fi
+
 CLIENT_ID="${CLIENT_ID:-$(cat /tmp/osdsecrets/OSD_CLIENT_ID)}"
 CLIENT_SECRET="${CLIENT_SECRET:-$(cat /tmp/osdsecrets/OSD_CLIENT_SECRET)}"
 SERVICE_ACCOUNT_FILE="${SERVICE_ACCOUNT_FILE:-$(cat /tmp/osdsecrets/SERVICE_ACCOUNT_FILE)}"
-OSD_VERSION="${OSD_VERSION:-4.20.17}"
 
 if [ -n "$CLUSTER_NAME" ]; then
   echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
@@ -30,7 +35,6 @@ echo "Logged in as $(ocm whoami | jq -rc '.username')"
 echo $SERVICE_ACCOUNT_FILE > $WORKSPACE/gcp_service_account_json.json
 SERVICE_ACCOUNT_FILE=$WORKSPACE/gcp_service_account_json.json
 
-# OSD_VERSION=${OSD_VERSION:-$(ocm list versions | tail -n1)}
 echo "creating OSD_VERSION : $OSD_VERSION"
 
 ocm create cluster --ccs --provider gcp --region us-west1 --service-account-file $SERVICE_ACCOUNT_FILE --subscription-type marketplace-gcp --marketplace-gcp-terms --version "$OSD_VERSION" "$CLUSTER_NAME"

@@ -111,6 +111,8 @@ GH_USER2_ID=$(cat /tmp/secrets/GH_USER2_ID)
 GH_USER2_PASS=$(cat /tmp/secrets/GH_USER2_PASS)
 GH_USER2_2FA_SECRET=$(cat /tmp/secrets/GH_USER2_2FA_SECRET)
 GH_RHDH_QE_USER_TOKEN=$(cat /tmp/secrets/GH_RHDH_QE_USER_TOKEN)
+# Optional: without it the E2E coverage upload is skipped (testing::_upload_e2e_coverage).
+CODECOV_TOKEN=$(cat /tmp/secrets/CODECOV_TOKEN 2> /dev/null || true)
 QE_USER3_ID=$(cat /tmp/secrets/QE_USER3_ID)
 QE_USER3_PASS=$(cat /tmp/secrets/QE_USER3_PASS)
 QE_USER4_ID=$(cat /tmp/secrets/QE_USER4_ID)

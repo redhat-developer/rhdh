@@ -669,7 +669,7 @@ The script uses a dedicated kubeconfig (`~/.config/openshift-ci/kubeconfig`) to 
 
 ### AI-Assisted Triggering
 
-A Claude Code command is available at `.claude/commands/trigger-nightly-job.md` that provides an interactive, AI-guided workflow for triggering nightly jobs. It:
+An agent skill is available at `.agents/skills/trigger-nightly-job/SKILL.md` that provides an interactive, AI-guided workflow for triggering nightly jobs. It:
 
 - Fetches available jobs from Prow and presents them in a table
 - Maps natural language descriptions to job names (e.g., "ocp helm" or "azure operator")
@@ -677,7 +677,7 @@ A Claude Code command is available at `.claude/commands/trigger-nightly-job.md` 
 - Fetches available image tags from Quay when needed
 - Builds the command and asks for confirmation before executing
 
-To use it, run the `/trigger-nightly-job` command in Claude Code or OpenCode.
+To use it, invoke the `trigger-nightly-job` skill in your agent.
 
 ### Available Job Names
 

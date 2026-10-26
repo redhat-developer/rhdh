@@ -18,6 +18,9 @@ handle_ocp_pull() {
   export NAME_SPACE="${NAME_SPACE:-showcase}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
+  # RHIDP-13242: the PR check is what feeds the rhdh-e2e-frontend Codecov flag.
+  # Collection never fails a test, and the upload is skipped without CODECOV_TOKEN.
+  export COLLECT_COVERAGE="${COLLECT_COVERAGE:-true}"
 
   log::info "Configuring namespace: ${NAME_SPACE}"
   common::oc_login

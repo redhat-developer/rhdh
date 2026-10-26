@@ -40,7 +40,10 @@ import {
 
 const appTitle = "Red Hat Developer Hub";
 const homeExtensions = [
-  { "page:home": { config: { path: "/" } } },
+  { "page:home": false },
+  { "page:homepage": { config: { path: "/", title: "Home" } } },
+  { "translation:app/homepage-translations": true },
+  { "home-page-layout:homepage/dynamic-homepage-layout": { config: { customizable: false } } },
   { "api:home/visits": true },
   { "app-root-element:home/visit-listener": true },
 ];
@@ -238,16 +241,21 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
     ...(config?.catalogProbe === true
       ? {
           extraContainers: [buildRuntimeCatalogServer(imageRefToString(config.image))],
-          extraEnv: [
+        }
+      : {}),
+    extraEnv: [
+      { name: "SEGMENT_TEST_MODE", value: "true" },
+      ...(config?.catalogProbe === true
+        ? [
             {
               name: RUNTIME_CATALOG_TOKEN_KEY,
               valueFrom: {
                 secretKeyRef: { name: RUNTIME_CATALOG_SECRET, key: RUNTIME_CATALOG_TOKEN_KEY },
               },
             },
-          ],
-        }
-      : {}),
+          ]
+        : []),
+    ],
     commonLabels: { "backstage.io/kubernetes-id": "developer-hub" },
     image: { pullPolicy: "Always" },
     // Runtime tests only cover ConfigMap changes and DB connectivity, so the
@@ -256,8 +264,8 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
     appConfig: {
       app: {
         title: appTitle,
-        // The new frontend system ships page:home disabled, so "/" is a 404
-        // without it. Same home extensions as the CI dynamic-plugins-config.yaml.
+        // Homepage 3.1 owns the home page and layout. Match the CI
+        // dynamic-plugins-config.yaml instead of the community home page.
         extensions: homeExtensions,
       },
       ...(cloudSql || external || config?.catalogProbe === true
@@ -486,6 +494,7 @@ export function generateBackstageCR(config: RuntimeDeployConfig): BackstageCR {
   const external = config.externalPostgres;
 
   const envs: Array<Record<string, unknown>> = [
+    { name: "SEGMENT_TEST_MODE", value: "true" },
     { name: "NODE_OPTIONS", value: "--no-node-snapshot" },
     { name: "NODE_ENV", value: "production" },
     { name: "NODE_TLS_REJECT_UNAUTHORIZED", value: "0" },
