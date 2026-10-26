@@ -35,10 +35,101 @@ fips_deployment() {
   local artifacts_subdir=$1
   local fips_diff_value_file="${DIR}/value_files/diff-values_showcase-fips.yaml"
   local fips_merged_value_file="/tmp/merged-values_showcase-fips.yaml"
+  local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
+  local wait_interval=5
 
   namespace::configure "${NAME_SPACE}"
 
-  deploy_redis_cache "${NAME_SPACE}"
+  # Configure PostgreSQL with FIPS custom CA
+  log::section "Configuring PostgreSQL with FIPS custom CA"
+  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
+  fips_configure_postgres_with_custom_ca "${NAME_SPACE_POSTGRES_DB}" || return 1
+
+  # Deploy PostgresCluster with custom TLS configuration
+  log::info "Creating PostgresCluster with custom TLS in namespace ${NAME_SPACE_POSTGRES_DB}..."
+  if ! oc apply -f "${DIR}/resources/postgres-db/postgres-fips.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"; then
+    log::error "Failed to create PostgresCluster"
+    return 1
+  fi
+
+  # Wait for cluster cert secret
+  log::info "Waiting for cluster certificate secret..."
+  if ! common::poll_until \
+    "oc get secret postgress-external-db-cluster-cert -n '${NAME_SPACE_POSTGRES_DB}'" \
+    "$max_attempts" "$wait_interval" \
+    "Cluster certificate secret found"; then
+    return 1
+  fi
+
+  # Extract cluster certificates and copy to RHDH namespace
+  log::info "Extracting and copying PostgreSQL certificates to RHDH namespace..."
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/postgres-ca || {
+    log::error "Failed to extract ca.crt"
+    return 1
+  }
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > /tmp/postgres-tls-crt || {
+    log::error "Failed to extract tls.crt"
+    return 1
+  }
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > /tmp/postgres-tls-key || {
+    log::error "Failed to extract tls.key"
+    return 1
+  }
+
+  # Create cluster certificate secret in RHDH namespace
+  if ! oc create secret generic postgress-external-db-cluster-cert \
+    --from-file=ca.crt=/tmp/postgres-ca \
+    --from-file=tls.crt=/tmp/postgres-tls-crt \
+    --from-file=tls.key=/tmp/postgres-tls-key \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${NAME_SPACE}"; then
+    log::error "Failed to create cluster certificate secret"
+    return 1
+  fi
+
+  # Create postgres-crt secret for Backstage
+  if ! oc create secret generic postgres-crt \
+    --from-file=postgres-crt.pem=/tmp/postgres-ca \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${NAME_SPACE}"; then
+    log::error "Failed to create postgres-crt secret"
+    return 1
+  fi
+
+  # Wait for PostgreSQL user secret
+  log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
+  if ! common::poll_until \
+    "oc get secret postgress-external-db-pguser-janus-idp -n '${NAME_SPACE_POSTGRES_DB}'" \
+    "$max_attempts" "$wait_interval" \
+    "PostgreSQL user secret found"; then
+    log::error "PostgreSQL user secret not created"
+    oc describe postgrescluster postgress-external-db -n "${NAME_SPACE_POSTGRES_DB}" || true
+    return 1
+  fi
+
+  # Extract PostgreSQL connection details and create postgres-cred secret
+  local pg_password pg_host
+  pg_password=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}' | base64 --decode)
+  pg_host="postgress-external-db-primary.${NAME_SPACE_POSTGRES_DB}.svc.cluster.local"
+
+  log::info "Creating postgres-cred secret in RHDH namespace..."
+  if ! oc create secret generic postgres-cred \
+    --from-literal=POSTGRES_HOST="${pg_host}" \
+    --from-literal=POSTGRES_PORT="5432" \
+    --from-literal=POSTGRES_USER="janus-idp" \
+    --from-literal=POSTGRES_PASSWORD="${pg_password}" \
+    --from-literal=NODE_EXTRA_CA_CERTS="/opt/app-root/src/postgres-crt.pem" \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${NAME_SPACE}"; then
+    log::error "Failed to create postgres-cred secret"
+    return 1
+  fi
+
+  log::success "PostgreSQL configuration completed successfully"
+
+  # Clean up temporary certificate files
+  rm -f /tmp/postgres-ca /tmp/postgres-tls-crt /tmp/postgres-tls-key
+
+  # Deploy Redis with TLS using FIPS custom CA
+  log::section "Configuring Redis with FIPS custom CA and TLS"
+  fips_deploy_redis_with_tls "${NAME_SPACE}" || return 1
 
   cd "${DIR}" || exit
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -59,6 +150,13 @@ fips_deployment() {
     -f "${fips_merged_value_file}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(helm::get_image_params)
+
+  # Clean up FIPS certificate tmpdir at the end
+  if [[ -n "${FIPS_CERT_TMPDIR}" && -d "${FIPS_CERT_TMPDIR}" ]]; then
+    log::info "Cleaning up FIPS certificate temporary directory..."
+    rm -rf "${FIPS_CERT_TMPDIR}"
+    unset FIPS_CERT_TMPDIR
+  fi
 }
 
 # Verify that the OpenShift cluster has FIPS mode enabled
@@ -101,6 +199,9 @@ run_standard_deployment_tests() {
     log::error "Failed to setup Chromium certificate store"
     return 1
   }
+
+  # Enable TLS mode for Redis tests in FIPS environment
+  export REDIS_TLS=true
 
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_FIPS}" "${url}"
 }
@@ -281,9 +382,8 @@ EOF
 
   log::success "✓ TLS secret '${secret_name}' created in namespace '${ingress_namespace}'"
 
-  # Clean up temporary files immediately
-  rm -rf "${tmpdir}"
-  unset FIPS_CERT_TMPDIR
+  # NOTE: tmpdir is preserved (FIPS_CERT_TMPDIR) for reuse in PostgreSQL and Redis cert generation
+  # It will be cleaned up at the end of fips_deployment()
 
   # Patch the default IngressController to use the custom certificate
   log::info "Patching default IngressController to use custom certificate..."
@@ -310,5 +410,263 @@ EOF
   fi
 
   log::success "Custom CA ingress configuration completed successfully"
+  return 0
+}
+
+# Configure PostgreSQL with custom CA-signed TLS certificates
+# This function generates PostgreSQL TLS certificates (primary and replication)
+# signed by the FIPS root CA and creates the required secrets.
+#
+# Prerequisites:
+#   - fips_configure_custom_ca_ingress() must be called first
+#   - FIPS_CERT_TMPDIR must be set with rootCA.crt and rootCA.key
+#
+# Required environment variables:
+#   NAME_SPACE_POSTGRES_DB - Namespace for PostgreSQL deployment
+#
+# Returns:
+#   0 - Success
+#   1 - Failure (missing vars, cert generation failed, or secret creation failed)
+fips_configure_postgres_with_custom_ca() {
+  local namespace=$1
+  local tmpdir="${FIPS_CERT_TMPDIR}"
+
+  log::info "Configuring PostgreSQL with FIPS custom CA-signed certificates..."
+
+  # Verify prerequisites
+  if [[ -z "${tmpdir}" || ! -f "${tmpdir}/rootCA.crt" || ! -f "${tmpdir}/rootCA.key" ]]; then
+    log::error "FIPS CA not available - run fips_configure_custom_ca_ingress first"
+    return 1
+  fi
+
+  if [[ -z "${namespace}" ]]; then
+    log::error "PostgreSQL namespace not provided"
+    return 1
+  fi
+
+  # Generate PostgreSQL primary certificate (for client connections)
+  log::info "Generating PostgreSQL primary TLS certificate..."
+
+  openssl ecparam -name prime256v1 -genkey -noout -out "${tmpdir}/postgres-primary.key"
+
+  openssl req -new -key "${tmpdir}/postgres-primary.key" \
+    -out "${tmpdir}/postgres-primary.csr" \
+    -subj "/O=CI-FIPS-Testing/CN=postgress-external-db-primary"
+
+  # Create extensions file for PostgreSQL primary certificate
+  cat > "${tmpdir}/postgres_primary_ext.cnf" << EOF
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = issuer
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = postgress-external-db-primary
+DNS.2 = postgress-external-db-primary.${namespace}.svc
+DNS.3 = postgress-external-db-primary.${namespace}.svc.cluster.local
+DNS.4 = *.postgress-external-db-pods.${namespace}.svc.cluster.local
+EOF
+
+  openssl x509 -req -in "${tmpdir}/postgres-primary.csr" \
+    -CA "${tmpdir}/rootCA.crt" -CAkey "${tmpdir}/rootCA.key" -CAcreateserial \
+    -out "${tmpdir}/postgres-primary.crt" -days 30 -sha256 \
+    -extfile "${tmpdir}/postgres_primary_ext.cnf" -extensions v3_req
+
+  if [[ ! -f "${tmpdir}/postgres-primary.crt" ]]; then
+    log::error "Failed to generate PostgreSQL primary certificate"
+    return 1
+  fi
+
+  log::success "✓ PostgreSQL primary certificate generated"
+
+  # Generate PostgreSQL replication certificate
+  log::info "Generating PostgreSQL replication TLS certificate..."
+
+  openssl ecparam -name prime256v1 -genkey -noout -out "${tmpdir}/postgres-repl.key"
+
+  openssl req -new -key "${tmpdir}/postgres-repl.key" \
+    -out "${tmpdir}/postgres-repl.csr" \
+    -subj "/O=CI-FIPS-Testing/CN=_crunchyrepl"
+
+  # Create extensions file for PostgreSQL replication certificate
+  cat > "${tmpdir}/postgres_repl_ext.cnf" << EOF
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = issuer
+EOF
+
+  openssl x509 -req -in "${tmpdir}/postgres-repl.csr" \
+    -CA "${tmpdir}/rootCA.crt" -CAkey "${tmpdir}/rootCA.key" -CAcreateserial \
+    -out "${tmpdir}/postgres-repl.crt" -days 30 -sha256 \
+    -extfile "${tmpdir}/postgres_repl_ext.cnf" -extensions v3_req
+
+  if [[ ! -f "${tmpdir}/postgres-repl.crt" ]]; then
+    log::error "Failed to generate PostgreSQL replication certificate"
+    return 1
+  fi
+
+  log::success "✓ PostgreSQL replication certificate generated"
+
+  # Create customTLSSecret in PostgreSQL namespace
+  log::info "Creating PostgreSQL TLS secrets in namespace '${namespace}'..."
+
+  oc create secret generic postgres-custom-tls \
+    -n "${namespace}" \
+    --from-file=ca.crt="${tmpdir}/rootCA.crt" \
+    --from-file=tls.crt="${tmpdir}/postgres-primary.crt" \
+    --from-file=tls.key="${tmpdir}/postgres-primary.key" \
+    --dry-run=client -o yaml | oc apply -f -
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to create postgres-custom-tls secret"
+    return 1
+  fi
+
+  log::success "✓ postgres-custom-tls secret created"
+
+  # Create customReplicationTLSSecret
+  oc create secret generic postgres-replication-tls \
+    -n "${namespace}" \
+    --from-file=ca.crt="${tmpdir}/rootCA.crt" \
+    --from-file=tls.crt="${tmpdir}/postgres-repl.crt" \
+    --from-file=tls.key="${tmpdir}/postgres-repl.key" \
+    --dry-run=client -o yaml | oc apply -f -
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to create postgres-replication-tls secret"
+    return 1
+  fi
+
+  log::success "✓ postgres-replication-tls secret created"
+
+  log::success "PostgreSQL custom CA TLS configuration completed successfully"
+  return 0
+}
+
+# Deploy Redis with TLS using FIPS custom CA-signed certificates
+# This function generates Redis TLS certificate signed by the FIPS root CA,
+# creates the required secrets, and deploys a TLS-enabled Redis instance.
+#
+# Prerequisites:
+#   - fips_configure_custom_ca_ingress() must be called first
+#   - FIPS_CERT_TMPDIR must be set with rootCA.crt and rootCA.key
+#
+# Required environment variables:
+#   REDIS_USERNAME - Redis username
+#   REDIS_PASSWORD - Redis password
+#
+# Returns:
+#   0 - Success
+#   1 - Failure (missing vars, cert generation failed, or deployment failed)
+fips_deploy_redis_with_tls() {
+  local namespace=$1
+  local tmpdir="${FIPS_CERT_TMPDIR}"
+
+  log::info "Deploying Redis with FIPS custom CA-signed TLS certificates..."
+
+  # Verify prerequisites
+  if [[ -z "${tmpdir}" || ! -f "${tmpdir}/rootCA.crt" || ! -f "${tmpdir}/rootCA.key" ]]; then
+    log::error "FIPS CA not available - run fips_configure_custom_ca_ingress first"
+    return 1
+  fi
+
+  if [[ -z "${namespace}" ]]; then
+    log::error "Redis namespace not provided"
+    return 1
+  fi
+
+  if [[ -z "${REDIS_USERNAME}" || -z "${REDIS_PASSWORD}" ]]; then
+    log::error "REDIS_USERNAME or REDIS_PASSWORD not set"
+    return 1
+  fi
+
+  # Generate Redis server certificate
+  log::info "Generating Redis TLS certificate..."
+
+  openssl ecparam -name prime256v1 -genkey -noout -out "${tmpdir}/redis.key"
+
+  openssl req -new -key "${tmpdir}/redis.key" \
+    -out "${tmpdir}/redis.csr" \
+    -subj "/O=CI-FIPS-Testing/CN=redis.${namespace}.svc.cluster.local"
+
+  # Create extensions file for Redis certificate
+  cat > "${tmpdir}/redis_ext.cnf" << EOF
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = issuer
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = redis
+DNS.2 = redis.${namespace}.svc
+DNS.3 = redis.${namespace}.svc.cluster.local
+EOF
+
+  openssl x509 -req -in "${tmpdir}/redis.csr" \
+    -CA "${tmpdir}/rootCA.crt" -CAkey "${tmpdir}/rootCA.key" -CAcreateserial \
+    -out "${tmpdir}/redis.crt" -days 30 -sha256 \
+    -extfile "${tmpdir}/redis_ext.cnf" -extensions v3_req
+
+  if [[ ! -f "${tmpdir}/redis.crt" ]]; then
+    log::error "Failed to generate Redis certificate"
+    return 1
+  fi
+
+  log::success "✓ Redis TLS certificate generated"
+
+  # Create Redis TLS secret
+  log::info "Creating Redis TLS secret in namespace '${namespace}'..."
+
+  oc create secret generic redis-certs \
+    -n "${namespace}" \
+    --from-file=ca.crt="${tmpdir}/rootCA.crt" \
+    --from-file=tls.crt="${tmpdir}/redis.crt" \
+    --from-file=tls.key="${tmpdir}/redis.key" \
+    --dry-run=client -o yaml | oc apply -f -
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to create redis-certs secret"
+    return 1
+  fi
+
+  log::success "✓ redis-certs secret created"
+
+  # Create Redis connection secret with TLS-enabled URL
+  log::info "Creating Redis connection secret..."
+
+  # REDIS_USERNAME_ENCODED and REDIS_PASSWORD_ENCODED already set in env_variables.sh
+  REDIS_TLS_ENABLED=$(printf "true" | base64 | tr -d '\n')
+  export REDIS_TLS_ENABLED
+
+  envsubst < "${DIR}/resources/redis-cache/redis-secret-tls.yaml" | oc apply --namespace="${namespace}" -f -
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to create Redis secret"
+    return 1
+  fi
+
+  log::success "✓ Redis secret created"
+
+  # Deploy TLS-enabled Redis
+  log::info "Deploying TLS-enabled Redis..."
+
+  oc apply -f "${DIR}/resources/redis-cache/redis-deployment-tls.yaml" --namespace="${namespace}"
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to deploy Redis"
+    return 1
+  fi
+
+  log::success "✓ Redis deployment created"
+  log::success "Redis TLS deployment completed successfully"
   return 0
 }

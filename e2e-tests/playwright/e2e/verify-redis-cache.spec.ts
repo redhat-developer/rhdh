@@ -58,9 +58,23 @@ test.describe("Verify Redis Cache DB", () => {
     });
 
     console.log("Connecting to Redis...");
-    redis = new Redis(
-      `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:${REDIS_LOCAL_PORT}`,
-    );
+
+    // Support both TLS and non-TLS Redis connections
+    const redisTlsEnabled = process.env.REDIS_TLS === "true";
+    const redisProtocol = redisTlsEnabled ? "rediss" : "redis";
+    const redisUrl = `${redisProtocol}://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:${REDIS_LOCAL_PORT}`;
+
+    const redisOptions = redisTlsEnabled
+      ? {
+          tls: {
+            // Port-forward bypasses server name verification, so we need to disable it
+            rejectUnauthorized: false,
+          },
+        }
+      : {};
+
+    console.log(`Connecting to Redis with TLS: ${redisTlsEnabled}`);
+    redis = new Redis(redisUrl, redisOptions);
     console.log("Verifying Redis keys...");
     await expect(async () => {
       const keys = (await redis.keys("*")).filter((k) => k.includes("techdocs"));
