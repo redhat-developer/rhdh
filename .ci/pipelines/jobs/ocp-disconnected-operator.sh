@@ -38,8 +38,7 @@ handle_ocp_disconnected_operator() {
   log::section "Operator Mirroring and Installation"
 
   # Fetch prepare-restricted-environment.sh from RELEASE_BRANCH_NAME (default
-  # main). rhdh-operator#3259 (native oc-mirror cc-* catalogs for OLM v1) is
-  # merged on main.
+  # main).
   local prepare_script_path="${DISCONNECTED_TMPDIR}/prepare-restricted-environment.sh"
   disconnected::fetch_operator_repo_script "prepare-restricted-environment.sh" \
     "${prepare_script_path}" || {
@@ -93,11 +92,9 @@ handle_ocp_disconnected_operator() {
 
     # The CI bundle's RELATED_IMAGE refs point at registry.redhat.io/rhdh/*
     # (plus the stage/access aliases), whose digests exist on quay.io/rhdh only.
-    # Rewrite those pulls for the oc-mirror run with containers/image
-    # registries.conf (CONTAINERS_REGISTRIES_CONF), the same mechanism the
-    # medik8s-disconnected-catalogsource CI step uses. Images in other
-    # repositories (e.g. registry.redhat.io/rhel10/postgresql-18) keep their
-    # original source and are pulled with the CI credentials.
+    # Rewrite those pulls for the oc-mirror run via CONTAINERS_REGISTRIES_CONF.
+    # Images in other repositories (e.g. registry.redhat.io/rhel10/postgresql-18)
+    # keep their original source and are pulled with the CI credentials.
     registries_conf="${DISCONNECTED_TMPDIR}/oc-mirror-registries.conf"
     cat > "${registries_conf}" << 'EOF'
 [[registry]]
@@ -165,8 +162,6 @@ EOF
     log::info "Redirecting registry.redhat.io/rhdh to quay.io/rhdh via ${registries_conf}"
   fi
 
-  # prepare applies the IDMS; snapshot first so the wait below can tell whether
-  # the MCO has already rendered it.
   mcp_snapshot=$(disconnected::snapshot_mcp_rendered_configs)
 
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"

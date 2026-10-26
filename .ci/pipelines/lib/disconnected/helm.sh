@@ -10,15 +10,11 @@ readonly _DISCONNECTED_HELM_SOURCED=1
 # it. Wait for Postgres Ready, then bounce the hub only if it is not Available.
 # No-op when the hub becomes Ready after Postgres (typical local timing).
 #
-# The bounce scales the Deployment to zero and back up instead of using
-# `oc rollout restart`: a rolling restart keeps the old pod serving while the
-# new one starts, and two backends booting against a freshly initialised
-# database race on the knex migration lock ("Migration table is already
-# locked"), after which the losing backend never becomes Ready and the rollout
-# times out. Scaling to zero guarantees a single backend at a time.
-#
-# The grace period starts only once the backend container has started, so a pod
-# still extracting plugins is not mistaken for a stuck backend.
+# The bounce scales the Deployment to 0 and back to 1 instead of using
+# `oc rollout restart`: a rolling restart runs two backends against the freshly
+# initialised database, which race on the knex migration lock and leave the
+# loser never Ready. The grace period starts once the backend container starts,
+# so a pod still extracting plugins is not mistaken for a stuck backend.
 # Args:
 #   $1 - namespace
 #   $2 - Helm release name (default: rhdh)
@@ -39,7 +35,6 @@ disconnected::ensure_helm_hub_after_postgres() {
 
   local pg_pod="${release_name}-postgresql-0"
   local hub_deploy="${release_name}-developer-hub"
-  # Same label the disconnected NetworkPolicies select the backend with.
   local hub_selector="app.kubernetes.io/name=developer-hub"
   local pg_ready=0
   local start=$SECONDS

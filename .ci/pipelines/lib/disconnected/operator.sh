@@ -22,11 +22,8 @@ disconnected::dump_olm_v1_status() {
 
 # Wait for OLM v1 ClusterExtension to report Installed, then for the CRD.
 #
-# The CRD alone is not proof of a successful install: with OLM v1 the bundle is
-# applied as a Helm chart, so a release that fails halfway (e.g. the operator
-# ClusterRole is refused) still leaves the CRD, the Deployment and a
-# ClusterRoleBinding behind. The operator then runs without permissions and the
-# job fails much later with a misleading "deployment not created". Require
+# A half-failed OLM v1 install still leaves the CRD behind (the bundle is applied
+# as a Helm chart), so the CRD alone is not proof of success. Require
 # Installed=True as well.
 # Args:
 #   $1 - extension name (default: rhdh-operator)
@@ -51,8 +48,6 @@ disconnected::wait_operator_crd_olm_v1() {
       return 0
     fi
 
-    # Info level on purpose: install errors (RBAC escalation, missing images)
-    # are the useful signal in the build log when this wait times out.
     local progressing reason
     progressing=$(oc get clusterextension "${extension_name}" \
       -o jsonpath='{range .status.conditions[?(@.type=="Progressing")]}{.status}{end}' 2> /dev/null || true)

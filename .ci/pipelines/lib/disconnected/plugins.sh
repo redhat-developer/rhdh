@@ -6,7 +6,7 @@
 readonly _DISCONNECTED_PLUGINS_SOURCED=1
 
 # Smoke only installs this plugin set (includes: []). Full-catalog mirroring is
-# RHIDP-13967. On the 2.x New Frontend System hub the sign-in page (app-auth),
+# RHIDP-13967. On the 2.1+ New Frontend System hub the sign-in page (app-auth),
 # sidebar (app-defaults), SCM integrations (app-integrations) and guest auth
 # provider are dynamic plugins, so the homepage alone cannot render a login.
 readonly -a DISCONNECTED_SMOKE_PLUGIN_NAMES=(
@@ -16,9 +16,7 @@ readonly -a DISCONNECTED_SMOKE_PLUGIN_NAMES=(
   "red-hat-developer-hub-backstage-plugin-homepage"
   "backstage-plugin-auth-backend-module-guest-provider"
 )
-# Space-separated copy for the `export -f` helpers: bash cannot export arrays, so
-# a child shell (e.g. `timeout bash -c`) would otherwise see an empty list and
-# mirror every digest-pinned plugin in the catalog.
+# Bash cannot export arrays, so the exported helpers read this string.
 DISCONNECTED_SMOKE_PLUGIN_NAMES_STR="${DISCONNECTED_SMOKE_PLUGIN_NAMES[*]}"
 readonly DISCONNECTED_SMOKE_PLUGIN_NAMES_STR
 export DISCONNECTED_SMOKE_PLUGIN_NAMES_STR

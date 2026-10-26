@@ -287,16 +287,12 @@ disconnected::mcp_all_converged() {
 
 # Wait for MachineConfigPool updates after IDMS/CatalogSource changes.
 #
-# `oc wait --for=condition=Updated=True` alone is not enough right after an
-# apply: the MCO needs a few seconds to render the new config and bump the pool
-# generation, and until then the condition is still True from the previous
-# rollout, so the wait returns immediately. The nodes are drained later, while
-# workloads are starting (observed: workers drained mid-deploy, hub and
-# PostgreSQL pods evicted). With a snapshot from
-# disconnected::snapshot_mcp_rendered_configs (taken before the change) this
-# waits for the MCO to pick the change up first.
+# `oc wait --for=condition=Updated=True` alone is not enough: right after an
+# apply the MCO has not rendered the new config yet, so the condition is still
+# True from the previous rollout and the wait returns immediately. With the
+# snapshot taken before the change, wait until the MCO picks it up first.
 #
-# Warns and continues on timeout (same behavior as both handlers historically).
+# Warns and continues on timeout.
 # Args:
 #   $1 - snapshot from disconnected::snapshot_mcp_rendered_configs (optional)
 #   $2 - seconds to wait for the MCO to render the change (default: 180)
@@ -326,7 +322,7 @@ disconnected::wait_mcp_updated() {
     log::success "MachineConfigPool picked up the new rendered config"
   fi
 
-  log::info "Waiting for MachineConfigPool updates to complete (up to 20m)..."
+  log::info "Waiting for MachineConfigPool updates to complete (up to ${rollout_timeout}s)..."
   local rollout_start=$SECONDS
   while ((SECONDS - rollout_start < rollout_timeout)); do
     if disconnected::mcp_all_converged; then
