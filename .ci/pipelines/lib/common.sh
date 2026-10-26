@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Common utility functions for pipeline scripts
-# Dependencies: oc, kubectl, lib/log.sh
+# Dependencies: oc, kubectl, jq, lib/log.sh
 
 if [[ -n "${COMMON_LIB_SOURCED:-}" ]]; then
   return 0

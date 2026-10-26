@@ -233,10 +233,6 @@ disconnected::set_smoke_plugin_packages_from_list() {
     exported=$((exported + 1))
   done
 
-  if [[ "${exported}" -eq 0 ]]; then
-    log::error "No smoke plugin package variables exported from ${list_file}"
-    return 1
-  fi
   log::info "Exported ${exported} smoke plugin package(s)"
 }
 

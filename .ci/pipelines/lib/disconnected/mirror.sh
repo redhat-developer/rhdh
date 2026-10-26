@@ -267,7 +267,7 @@ disconnected::snapshot_mcp_rendered_configs() {
 
 # True when every MachineConfigPool runs its rendered config and no node is
 # still updating or degraded.
-disconnected::mcp_all_converged() {
+disconnected::_mcp_all_converged() {
   local snapshot
   snapshot=$(oc get machineconfigpool \
     -o jsonpath='{range .items[*]}{.spec.configuration.name}{"|"}{.status.configuration.name}{"|"}{.status.updatedMachineCount}{"|"}{.status.machineCount}{"|"}{.status.degradedMachineCount}{"\n"}{end}' \
@@ -295,12 +295,10 @@ disconnected::mcp_all_converged() {
 # Warns and continues on timeout.
 # Args:
 #   $1 - snapshot from disconnected::snapshot_mcp_rendered_configs (optional)
-#   $2 - seconds to wait for the MCO to render the change (default: 180)
-#   $3 - seconds to wait for the rollout to finish (default: 1200)
 disconnected::wait_mcp_updated() {
   local before_snapshot=${1:-}
-  local render_timeout=${2:-180}
-  local rollout_timeout=${3:-1200}
+  local render_timeout=180
+  local rollout_timeout=1200
 
   if [[ -n "${before_snapshot}" ]]; then
     log::info "Waiting for MachineConfigPool to pick up the new rendered config (up to ${render_timeout}s)..."
@@ -325,7 +323,7 @@ disconnected::wait_mcp_updated() {
   log::info "Waiting for MachineConfigPool updates to complete (up to ${rollout_timeout}s)..."
   local rollout_start=$SECONDS
   while ((SECONDS - rollout_start < rollout_timeout)); do
-    if disconnected::mcp_all_converged; then
+    if disconnected::_mcp_all_converged; then
       log::success "All MachineConfigPools are Updated"
       return 0
     fi
