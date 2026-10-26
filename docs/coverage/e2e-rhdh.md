@@ -20,8 +20,8 @@ Scope of this mechanism:
 
 ## How it works
 
-1. **Enabled by env var.** When `COLLECT_COVERAGE=true` (set by the OCP PR check,
-   off elsewhere), a Playwright fixture
+1. **Enabled by env var.** When `COLLECT_COVERAGE=true` (set by the OCP PR check
+   and the main OCP Helm nightly, off elsewhere), a Playwright fixture
    (`e2e-tests/playwright/support/coverage/test.ts`) extends the base `test`
    and wraps each run with `page.coverage.startJSCoverage()` / `stopJSCoverage()`.
    Raw V8 coverage is persisted per test as JSON under `coverage/e2e-raw/`.
@@ -39,7 +39,8 @@ Scope of this mechanism:
    17 of them in this repository.
 4. **Codecov upload (CI).** `testing::_upload_e2e_coverage` in
    `.ci/pipelines/lib/testing.sh` uploads `coverage/e2e/lcov.info` with the flag
-   `rhdh-e2e-frontend`, attributed to the PR head commit (see "CI wiring" below).
+   `rhdh-e2e-frontend`, attributed to the PR head commit or, from the main nightly,
+   to the main commit the tested image was built from (see "CI wiring" below).
 
 With `COLLECT_COVERAGE` unset (the default), the fixture and reporter are no-ops
 and the E2E suite runs identically to the pre-coverage configuration.
@@ -159,14 +160,25 @@ the UI have migrated; new specs should import from `@support/coverage/test`.
   as an artifact but upload nothing.
 - Coverage is reporting, not a gate: a failed collection, report or upload logs a
   warning and never changes the job result.
-- Uploads go to PR head commits only. Codecov carries a flag forward from the commit
-  it was uploaded to, and a squash merge creates a new commit on `main`, so the flag
-  shows on PRs but not on `main`'s dashboard. Uploading from a `main` nightly would
-  close that gap.
-- For the same reason, the repository-wide `project`/`patch` statuses and components in
-  `codecov.yml` combine every flag: on a PR with an E2E upload they include E2E
-  coverage, while `main` has unit coverage only. They are informational, but the PR's
-  project delta for `packages/app` reflects the extra flag, not only the change.
+- `main` gets the flag from the `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly`
+  job, which `handle_ocp_nightly` (`.ci/pipelines/jobs/ocp-nightly.sh`) switches to
+  `COLLECT_COVERAGE=true`. PR uploads cannot cover `main`: a squash merge creates a new
+  commit there. `testing::_coverage_main_commit` takes the image digest the RHDH pods in
+  the tested namespace ran, reads its `org.opencontainers.image.revision` label with
+  `skopeo`, checks that `main` contains that commit, and uploads with `--branch main`.
+  The label, not the checkout, names the commit, because `next` can lag `main`.
+  `next` is also rebuilt on every merge, so the first project's commit is kept for the
+  job and a project that ran a newer image skips its upload. Other
+  nightlies, a tag other than `next`, a missing label, or a commit outside `main` skip
+  the upload. Codecov carries a flag forward from a commit's parent
+  (`carryforward: true` in `codecov.yml`), so commits processed before the upload do
+  not get it: the flag first shows once an upload lands on the newest processed
+  commit, and later unit-only commits keep it from then on.
+- The repository-wide `project`/`patch` statuses and components in `codecov.yml`
+  combine every flag: on a PR with an E2E upload they include E2E coverage, while
+  `main` gets it only from the nightly, which can lag behind. They are informational,
+  but the PR's project delta for `packages/app` reflects the extra flag, not only the
+  change.
 
 ## Environment variables
 

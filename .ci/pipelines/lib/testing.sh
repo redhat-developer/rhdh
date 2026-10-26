@@ -97,7 +97,8 @@ testing::run_tests() {
   fi
 
   # RHIDP-13243: V8 coverage collection for E2E tests.
-  # handle_ocp_pull turns it on for the PR check (RHIDP-13242). When enabled, the
+  # handle_ocp_pull (PR check) and handle_ocp_nightly (main nightly only) turn it
+  # on (RHIDP-13242). When enabled, the
   # coverage fixture wraps page.coverage.startJSCoverage/stopJSCoverage and
   # the reporter merges raw JSON into lcov via monocart-coverage-reports.
   export COLLECT_COVERAGE="${COLLECT_COVERAGE:-false}"
@@ -135,7 +136,7 @@ testing::run_tests() {
   # RHIDP-13243: Save and upload E2E coverage report
   if [[ -f "${e2e_tests_dir}/coverage/e2e/lcov.info" ]]; then
     common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/coverage/e2e/" "coverage" || true
-    testing::_upload_e2e_coverage "${e2e_tests_dir}/coverage/e2e/lcov.info"
+    testing::_upload_e2e_coverage "${e2e_tests_dir}/coverage/e2e/lcov.info" "${namespace}"
   fi
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
@@ -173,6 +174,63 @@ testing::_coverage_pr_head() {
   echo "${sha} ${pr}"
 }
 
+# RHIDP-13242: Succeeds for the one nightly that uploads E2E coverage to main.
+# Uses globals: JOB_NAME
+testing::is_main_coverage_nightly() {
+  [[ "${JOB_NAME:-}" == *-rhdh-main-e2e-ocp-helm-nightly ]]
+}
+
+# RHIDP-13242: Prints the main commit the RHDH image in a namespace was built from,
+# or nothing. Only the main OCP Helm nightly deploying `next` qualifies; the commit
+# is the image's org.opencontainers.image.revision label, read from the digest the
+# pods actually ran, so a `next` rebuilt mid-job does not change it.
+# Args:
+#   $1 - namespace: where the tested RHDH runs
+# Uses globals: JOB_NAME, TAG_NAME, IMAGE_REGISTRY, IMAGE_REPO, DIR
+testing::_coverage_main_commit() {
+  local namespace="${1:-}"
+  testing::is_main_coverage_nightly && [[ "${TAG_NAME:-}" == "next" && -n "${namespace}" ]] || return 0
+
+  local image="${IMAGE_REGISTRY:-quay.io}/${IMAGE_REPO:-rhdh-community/rhdh}" image_ids
+  image_ids=$(timeout 60 oc get pods -n "${namespace}" \
+    -o jsonpath='{range .items[*].status.containerStatuses[*]}{.image}{" "}{.imageID}{"\n"}{end}' 2> /dev/null \
+    | awk -v image="${image}" 'index($1, image ":") == 1 || index($1, image "@") == 1 { print $2 }' | sort -u)
+  if [[ -z "${image_ids}" || "${image_ids}" == *$'\n'* ]]; then
+    log::warn "Expected one ${image} digest in ${namespace}, found: ${image_ids:-none}"
+    return 0
+  fi
+
+  local sha
+  sha=$(timeout 60 skopeo inspect --override-os linux --override-arch amd64 "docker://${image_ids#docker-pullable://}" 2> /dev/null \
+    | jq -r '.Labels["org.opencontainers.image.revision"] // empty' 2> /dev/null)
+  if [[ ! "${sha}" =~ ^[0-9a-f]{40}$ ]]; then
+    log::warn "Could not read a commit revision label from ${image_ids}"
+    return 0
+  fi
+  if ! testing::_commit_on_main "${sha}"; then
+    log::warn "Could not confirm that main contains image revision ${sha}"
+    return 0
+  fi
+  echo "${sha}"
+}
+
+# Succeeds when main contains the commit. Uses the checkout (the periodic clones
+# main) when it has the commit, otherwise asks GitHub.
+# Args:
+#   $1 - sha
+# Uses globals: DIR
+testing::_commit_on_main() {
+  local sha=$1
+  if git -C "${DIR}" cat-file -e "${sha}^{commit}" 2> /dev/null; then
+    git -C "${DIR}" merge-base --is-ancestor "${sha}" HEAD
+    return
+  fi
+  local status
+  status=$(curl -fsS --max-time 30 "https://api.github.com/repos/redhat-developer/rhdh/compare/${sha}...main" 2> /dev/null \
+    | jq -r '.status // empty' 2> /dev/null)
+  [[ "${status}" == "ahead" || "${status}" == "identical" ]]
+}
+
 # RHIDP-13242: Prints the path of a checksum-verified Codecov CLI for this machine's
 # architecture, downloading the pinned release unless an executable is already at
 # CODECOV_BIN. The build farm runs steps on both x86_64 and aarch64 nodes.
@@ -207,13 +265,16 @@ testing::_codecov_cli() {
 }
 
 # RHIDP-13242: Upload the merged E2E lcov to Codecov under the rhdh-e2e-frontend
-# flag. Never fails the job: coverage is reporting, not a gate, and the caller has
+# flag, to the PR head or, from the main nightly, to the main commit it tested.
+# Never fails the job: coverage is reporting, not a gate, and the caller has
 # already saved the report as an artifact.
 # Args:
 #   $1 - path to the merged lcov.info
-# Uses globals: CODECOV_TOKEN (env_variables.sh), DIR
+#   $2 - namespace: (optional) where the tested RHDH runs
+# Uses globals: CODECOV_TOKEN (env_variables.sh), DIR, COVERAGE_MAIN_SHA (set here)
 testing::_upload_e2e_coverage() {
   local lcov_file="$1"
+  local namespace="${2:-}"
   if [[ -z "${CODECOV_TOKEN:-}" ]]; then
     log::info "No Codecov token mounted — skipping Codecov upload. Coverage report saved as artifact."
     return 0
@@ -222,13 +283,29 @@ testing::_upload_e2e_coverage() {
     log::warn "E2E lcov names no source file (were the app's source maps reachable?) — skipping Codecov upload"
     return 0
   fi
-  local head sha pr codecov_bin repo_root
+  local head sha pr target codecov_bin repo_root target_args
   head=$(testing::_coverage_pr_head)
-  if [[ -z "${head}" ]]; then
-    log::info "Run did not test a PR image (TAG_NAME=${TAG_NAME:-unset}) — skipping Codecov upload"
-    return 0
+  if [[ -n "${head}" ]]; then
+    read -r sha pr <<< "${head}"
+    target="PR #${pr}"
+    target_args=(--sha "${sha}" --pr "${pr}")
+  else
+    sha=$(testing::_coverage_main_commit "${namespace}")
+    if [[ -z "${sha}" ]]; then
+      log::info "Run did not test a PR image or a main build (TAG_NAME=${TAG_NAME:-unset}) — skipping Codecov upload"
+      return 0
+    fi
+    # `next` is rebuilt on every merge, so a later project can run a newer image.
+    # Keep the job on one commit: a commit holding only some projects' uploads
+    # would hide the rest, since carryforward skips commits that have the flag.
+    if [[ -n "${COVERAGE_MAIN_SHA:-}" && "${sha}" != "${COVERAGE_MAIN_SHA}" ]]; then
+      log::warn "This job uploads E2E coverage for ${COVERAGE_MAIN_SHA}; skipping ${sha}"
+      return 0
+    fi
+    COVERAGE_MAIN_SHA="${sha}"
+    target="main"
+    target_args=(--sha "${sha}" --branch main)
   fi
-  read -r sha pr <<< "${head}"
   if ! codecov_bin=$(testing::_codecov_cli); then
     log::warn "No checksum-verified Codecov CLI available — skipping upload"
     return 0
@@ -240,7 +317,7 @@ testing::_upload_e2e_coverage() {
     return 0
   fi
 
-  log::info "Uploading E2E coverage to Codecov (flag: rhdh-e2e-frontend, PR #${pr}, ${sha})..."
+  log::info "Uploading E2E coverage to Codecov (flag: rhdh-e2e-frontend, ${target}, ${sha})..."
   # The CLI reads CODECOV_TOKEN from the environment; never pass it in argv,
   # where any process listing would show it.
   "${codecov_bin}" upload-process \
@@ -249,8 +326,7 @@ testing::_upload_e2e_coverage() {
     --network-root-folder "${repo_root}" \
     --flag rhdh-e2e-frontend \
     --slug redhat-developer/rhdh \
-    --sha "${sha}" \
-    --pr "${pr}" \
+    "${target_args[@]}" \
     --fail-on-error || log::warn "Codecov E2E coverage upload failed (non-fatal)"
 }
 

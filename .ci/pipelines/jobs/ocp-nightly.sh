@@ -22,6 +22,11 @@ handle_ocp_nightly() {
   export NAME_SPACE="${NAME_SPACE:-showcase-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-nightly}"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db-nightly}"
+  # RHIDP-13242: this job feeds the rhdh-e2e-frontend flag on main
+  # (testing::_coverage_main_commit); other nightlies do not collect coverage.
+  if testing::is_main_coverage_nightly; then
+    export COLLECT_COVERAGE="${COLLECT_COVERAGE:-true}"
+  fi
 
   common::oc_login
 
