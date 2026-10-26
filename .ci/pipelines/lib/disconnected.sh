@@ -85,7 +85,6 @@ export -f disconnected::ensure_olm_mirror_pull_secret
 # operator.sh
 export -f disconnected::dump_olm_v1_status
 export -f disconnected::wait_operator_crd_olm_v1
-export -f disconnected::grant_operator_installer_rbac
 # helm.sh
 export -f disconnected::ensure_helm_hub_after_postgres
 # mirror.sh / plugins.sh CI-safe defaults (always defined; local.sh overrides)

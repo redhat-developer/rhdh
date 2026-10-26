@@ -184,12 +184,6 @@ EOF
   # the MCO has already rendered it.
   mcp_snapshot=$(disconnected::snapshot_mcp_rendered_configs)
 
-  # TEMPORARY: the installer ClusterRole rendered by
-  # prepare-restricted-environment.sh lags behind the bundle's required
-  # permissions on OLM v1. Remove once redhat-developer/rhdh-operator#3923 is
-  # released (RHDHBUGS-4056).
-  disconnected::grant_operator_installer_rbac || return 1
-
   log::info "Running prepare-restricted-environment.sh with: ${prepare_args[*]}"
   if ! disconnected::retry_on_local_registry 5 \
     disconnected::with_unset_registry_auth_file \
