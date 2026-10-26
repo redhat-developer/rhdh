@@ -166,12 +166,18 @@ the UI have migrated; new specs should import from `@support/coverage/test`.
   commit there. `testing::_coverage_main_commit` takes the image digest the RHDH pods in
   the tested namespace ran, reads its `org.opencontainers.image.revision` label with
   `skopeo`, checks that `main` contains that commit, and uploads with `--branch main`.
-  The label, not the checkout, names the commit, because `next` can lag `main`.
+  The nightly deploys the Konflux image `quay.io/rhdh/rhdh-hub-rhel10:next`, whose label
+  names the GitLab midstream commit instead. When the label is not on `main`, the
+  upstream commit comes from the `"Upstream": ".../tree/main @ <sha>"` entry that the
+  downstream build writes into the app's `build-metadata.json`, read with `oc exec`
+  from the bundle in the running pod and expanded to a full sha.
+  The image, not the checkout, names the commit, because `next` can lag `main`.
   `next` is also rebuilt on every merge, so the first project's commit is kept for the
   job and a project that ran a newer image skips its upload. Other
-  nightlies, a tag other than `next`, a missing label, or a commit outside `main` skip
-  the upload. Codecov carries a flag forward from a commit's parent
-  (`carryforward: true` in `codecov.yml`), so commits processed before the upload do
+  nightlies, a tag other than `next`, an image with neither a revision label nor
+  build metadata on `main`, or a commit outside `main` skip the upload. Codecov
+  carries a flag forward from a commit's parent (`carryforward: true` in
+  `codecov.yml`), so commits processed before the upload do
   not get it: the flag first shows once an upload lands on the newest processed
   commit, and later unit-only commits keep it from then on.
 - The repository-wide `project`/`patch` statuses and components in `codecov.yml`

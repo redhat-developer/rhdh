@@ -181,9 +181,11 @@ testing::is_main_coverage_nightly() {
 }
 
 # RHIDP-13242: Prints the main commit the RHDH image in a namespace was built from,
-# or nothing. Only the main OCP Helm nightly deploying `next` qualifies; the commit
+# or nothing. Only the main OCP Helm nightly deploying `next` qualifies. The commit
 # is the image's org.opencontainers.image.revision label, read from the digest the
-# pods actually ran, so a `next` rebuilt mid-job does not change it.
+# pods actually ran, so a `next` rebuilt mid-job does not change it. Konflux images
+# (quay.io/rhdh/rhdh-hub-*) label the GitLab midstream commit instead; for those the
+# upstream commit comes from the app's build metadata.
 # Args:
 #   $1 - namespace: where the tested RHDH runs
 # Uses globals: JOB_NAME, TAG_NAME, IMAGE_REGISTRY, IMAGE_REPO, DIR
@@ -191,10 +193,15 @@ testing::_coverage_main_commit() {
   local namespace="${1:-}"
   testing::is_main_coverage_nightly && [[ "${TAG_NAME:-}" == "next" && -n "${namespace}" ]] || return 0
 
-  local image="${IMAGE_REGISTRY:-quay.io}/${IMAGE_REPO:-rhdh-community/rhdh}" image_ids
-  image_ids=$(timeout 60 oc get pods -n "${namespace}" \
-    -o jsonpath='{range .items[*].status.containerStatuses[*]}{.image}{" "}{.imageID}{"\n"}{end}' 2> /dev/null \
-    | awk -v image="${image}" 'index($1, image ":") == 1 || index($1, image "@") == 1 { print $2 }' | sort -u)
+  local image="${IMAGE_REGISTRY:-quay.io}/${IMAGE_REPO:-rhdh-community/rhdh}" containers image_ids
+  # One "<pod> <container> <imageID>" line per container that runs the image.
+  containers=$(timeout 60 oc get pods -n "${namespace}" \
+    -o jsonpath='{range .items[*]}{.metadata.name}{range .status.containerStatuses[*]}{" "}{.name}{" "}{.image}{" "}{.imageID}{end}{"\n"}{end}' 2> /dev/null \
+    | awk -v image="${image}" '{
+        for (i = 2; i + 2 <= NF; i += 3)
+          if (index($(i + 1), image ":") == 1 || index($(i + 1), image "@") == 1) print $1, $i, $(i + 2)
+      }')
+  image_ids=$(awk '{ print $3 }' <<< "${containers}" | sort -u)
   if [[ -z "${image_ids}" || "${image_ids}" == *$'\n'* ]]; then
     log::warn "Expected one ${image} digest in ${namespace}, found: ${image_ids:-none}"
     return 0
@@ -203,15 +210,41 @@ testing::_coverage_main_commit() {
   local sha
   sha=$(timeout 60 skopeo inspect --override-os linux --override-arch amd64 "docker://${image_ids#docker-pullable://}" 2> /dev/null \
     | jq -r '.Labels["org.opencontainers.image.revision"] // empty' 2> /dev/null)
-  if [[ ! "${sha}" =~ ^[0-9a-f]{40}$ ]]; then
-    log::warn "Could not read a commit revision label from ${image_ids}"
+  if [[ "${sha}" =~ ^[0-9a-f]{40}$ ]] && testing::_commit_on_main "${sha}"; then
+    echo "${sha}"
     return 0
   fi
-  if ! testing::_commit_on_main "${sha}"; then
-    log::warn "Could not confirm that main contains image revision ${sha}"
+
+  local pod container upstream
+  read -r pod container _ <<< "${containers%%$'\n'*}"
+  upstream=$(testing::_build_metadata_upstream "${namespace}" "${pod}" "${container}")
+  if [[ -z "${upstream}" ]]; then
+    log::warn "Could not find a main commit for ${image_ids} (revision label: ${sha:-none}, no upstream commit in its build metadata)"
     return 0
   fi
-  echo "${sha}"
+  if ! testing::_commit_on_main "${upstream}"; then
+    log::warn "Could not confirm that main contains upstream commit ${upstream} of ${image_ids}"
+    return 0
+  fi
+  echo "${upstream}"
+}
+
+# Prints the full upstream main commit that the app's build-metadata.json in a pod
+# names ("Upstream": ".../redhat-developer/rhdh/tree/main @ <short sha>"), or nothing.
+# Args:
+#   $1 - namespace, $2 - pod, $3 - container
+# Uses globals: DIR
+testing::_build_metadata_upstream() {
+  local short
+  short=$(timeout 60 oc exec -n "$1" "$2" -c "$3" -- grep -rhoE \
+    '"Upstream":"https://github.com/redhat-developer/rhdh/tree/main @ [0-9a-f]+"' /opt/app-root/src/packages/app/dist 2> /dev/null \
+    | sed -nE '1s/.* @ ([0-9a-f]+)"$/\1/p')
+  [[ "${short}" =~ ^[0-9a-f]{7,40}$ ]] || return 0
+  if git -C "${DIR}" rev-parse --verify -q "${short}^{commit}" 2> /dev/null; then
+    return 0
+  fi
+  curl -fsS --max-time 30 "https://api.github.com/repos/redhat-developer/rhdh/commits/${short}" 2> /dev/null \
+    | jq -r '.sha // empty | select(test("^[0-9a-f]{40}$"))' 2> /dev/null
 }
 
 # Succeeds when main contains the commit. Uses the checkout (the periodic clones
