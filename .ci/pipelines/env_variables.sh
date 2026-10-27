@@ -51,8 +51,6 @@ HELM_CHART_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase_GKE.yaml"
 HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_GKE.yaml"
 HELM_CHART_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_EKS.yaml"
 HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
-HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
-HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
@@ -92,11 +90,10 @@ RELEASE_NAME=rhdh
 RELEASE_NAME_RBAC=rhdh-rbac
 
 # Default namespaces (override via environment for different environments)
-: "${NAME_SPACE:=showcase}"                               # Standard deployment namespace
-: "${NAME_SPACE_RBAC:=showcase-rbac}"                     # RBAC-enabled deployment namespace
-: "${NAME_SPACE_RUNTIME:=showcase-runtime}"               # Runtime configuration tests namespace
-: "${NAME_SPACE_POSTGRES_DB:=postgress-external-db}"      # External PostgreSQL database namespace
-NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins" # Sanity check namespace (fixed)
+: "${NAME_SPACE:=showcase}"                          # Standard deployment namespace
+: "${NAME_SPACE_RBAC:=showcase-rbac}"                # RBAC-enabled deployment namespace
+: "${NAME_SPACE_RUNTIME:=showcase-runtime}"          # Runtime configuration tests namespace
+: "${NAME_SPACE_POSTGRES_DB:=postgress-external-db}" # External PostgreSQL database namespace
 
 # Operator configuration
 OPERATOR_MANAGER='rhdh-operator'

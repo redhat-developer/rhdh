@@ -83,8 +83,9 @@ including #1 `instance-health-check`, #3 `smoke-test`, #4 `guest-signin-happy-pa
   `playwright.config.ts` `BASE_URL`, which the harness does not set — a small
   follow-up.
 
-Note: #19 `plugin-dynamic-loading` ships with PR #4967, still **open as of 2026-07-20** —
-the row below describes its state once merged.
+Note: #19 `plugin-dynamic-loading` merged with PR #4967 and was later removed from this
+repo: plugin sanity now runs in rhdh-plugin-export-overlays (`release-plugin-sanity.yaml`).
+#15 `plugins/http-request` was removed in #5209.
 
 ## Summary matrix (28 remaining entries from the original 30-spec inventory)
 
@@ -100,7 +101,7 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | #   | Spec                                                                  | Current project   | Cluster? | Renders UI | External svc            | **Target layer**                     |
 | --- | --------------------------------------------------------------------- | ----------------- | -------- | ---------- | ----------------------- | ------------------------------------ |
 | 1   | `instance-health-check` 🟢                                            | showcase          | no       | no (API)   | none                    | **L2**                               |
-| 2   | `plugins/licensed-users-info-backend/licensed-users-info`             | sanity-plugins    | no       | no (API)   | none                    | **L2**                               |
+| 2   | `plugins/licensed-users-info-backend/licensed-users-info`             | showcase          | no       | no (API)   | none                    | **L2**                               |
 | 3   | `smoke-test` 🟢                                                       | smoke             | no       | yes        | none                    | **L3** (keep a thin L4a smoke)       |
 | 4   | `guest-signin-happy-path` 🟢                                          | showcase          | no       | yes        | none                    | **L3**                               |
 | 5   | `settings` 🟢                                                         | showcase          | no       | yes        | none                    | **L3** ✅                            |
@@ -111,11 +112,11 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | 12  | `catalog-timestamp`                                                   | showcase          | no       | yes        | GitHub (import)         | **L3** (replace import with fixture) |
 | 13  | `audit-log/auditor-rbac`                                              | showcase-rbac     | no       | no (API)   | Keycloak                | **L2** (mock auth)                   |
 | 14  | `audit-log/auditor-catalog`                                           | showcase-rbac     | no       | minimal    | GitHub (import)         | **L2 / L4a** (mock GitHub)           |
-| 15  | `plugins/http-request`                                                | sanity-plugins    | no       | yes        | GitHub                  | **L4a** (or L2 w/ mock)              |
-| 16  | `plugins/scaffolder-backend-module-annotator/annotator`               | sanity-plugins    | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
-| 17  | `plugins/scaffolder-relation-processor/scaffolder-relation-processor` | sanity-plugins    | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
+| 15  | `plugins/http-request`                                                | none (removed)    | no       | yes        | GitHub                  | **L4a** (or L2 w/ mock)              |
+| 16  | `plugins/scaffolder-backend-module-annotator/annotator`               | showcase          | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
+| 17  | `plugins/scaffolder-relation-processor/scaffolder-relation-processor` | showcase          | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
 | 18  | `github-happy-path`                                                   | none (`blocked/`) | no       | yes        | GitHub OAuth+API        | **L4a / L4b**                        |
-| 19  | `plugin-dynamic-loading`                                              | sanity-plugins    | no       | no (API)   | catalog index image     | **L4a** (already cluster-free)       |
+| 19  | `plugin-dynamic-loading`                                              | none (moved)      | no       | no (API)   | catalog index image     | **L4a** (already cluster-free)       |
 | 20  | `auth-providers/oidc`                                                 | auth-providers    | **yes**  | yes        | Keycloak/RHBK           | **L4b**                              |
 | 21  | `auth-providers/microsoft`                                            | auth-providers    | **yes**  | yes        | Azure Entra             | **L4b**                              |
 | 22  | `auth-providers/github`                                               | auth-providers    | **yes**  | yes        | GitHub                  | **L4b**                              |
@@ -210,7 +211,7 @@ system — and tier 1 is _already cluster-free_:
 
 | Tier            | Count         | How it runs                                                                                                                                                                       | Cluster? | Equivalent to                       |
 | --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------- |
-| **smoke-tests** | 32 workspaces | `docker run` RHDH + sqlite `:memory:` + guest auth, mounts `dynamic-plugins.test.yaml`, asserts the plugin loads (workflow `run-workspace-smoke-tests.yaml`, ubuntu-latest)       | **NO**   | RHDH `plugin-dynamic-loading` (L4a) |
+| **smoke-tests** | 32 workspaces | `docker run` RHDH + sqlite `:memory:` + guest auth, mounts `dynamic-plugins.test.yaml`, asserts the plugin loads (workflow `run-workspace-smoke-tests.yaml`, ubuntu-latest)       | **NO**   | former `plugin-dynamic-loading`     |
 | **e2e-tests**   | 24 workspaces | `run-e2e.sh` → helm/operator deploy + Keycloak; Playwright via `@red-hat-developer-hub/e2e-test-utils` (`rhdh.deploy()`, `k8sClient.getRouteLocation()`, `loginAsKeycloakUser()`) | **YES**  | RHDH auth/cluster specs (L4b)       |
 
 **Takeaway:** the overlay smoke harness is the _same cluster-free pattern_ we want — a
@@ -253,7 +254,7 @@ respecting:
    target Backstage version."_ → the **frontend-render** half is genuinely better solved by
    NFS/app-next, not by faking it.
 2. It **predated the published npm CLI**. Now that `install-dynamic-plugins` is on npm
-   (the same package RHDH's `plugin-dynamic-loading.spec.ts` reuses, PR #4967), the 694
+   (the same package RHDH's former `plugin-dynamic-loading.spec.ts` reused, PR #4967), the 694
    lines of OCI handling collapse to a CLI call — the harness becomes small and maintainable.
 
 **So: don't lead with Docker.** The strictly-better move for load/API validation is the
@@ -314,7 +315,8 @@ scaffolder-relation-processor`.
 - Existing L3 work: [rhdh#4864](https://github.com/redhat-developer/rhdh/pull/4864) (merged 2026-06-01; RHIDP-13235) — tests live in `packages/app/src/`.
 - Cluster-free L4a harness: [rhdh#5005](https://github.com/redhat-developer/rhdh/pull/5005) (RHIDP-15075);
   expansion to 10 specs: [rhdh#5057](https://github.com/redhat-developer/rhdh/pull/5057).
-- Plugin load validation (L4a): `e2e-tests/playwright/cluster-free/plugin-dynamic-loading.spec.ts` (RHIDP-13508, PR #4967).
+- Plugin load validation: added in rhdh PR #4967 (RHIDP-13508), now `release-plugin-sanity.yaml` in
+  [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays).
 - Overlay-repo native smoke harness (no Docker):
   [overlays#2714](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2714),
   workspace mode [overlays#2731](https://github.com/redhat-developer/rhdh-plugin-export-overlays/pull/2731).

@@ -24,7 +24,6 @@ export const PW_PROJECT = projectsJson as {
   readonly SHOWCASE_OPERATOR_RBAC: string;
   readonly SHOWCASE_RUNTIME: string;
   readonly SHOWCASE_AUTH_PROVIDERS: string;
-  readonly SHOWCASE_SANITY_PLUGINS: string;
   readonly SHOWCASE_UPGRADE: string;
   readonly SHOWCASE_LOCALIZATION_DE: string;
   readonly SHOWCASE_LOCALIZATION_ES: string;

@@ -220,17 +220,6 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
       ],
     },
-
-    {
-      name: PW_PROJECT.SHOWCASE_SANITY_PLUGINS,
-      dependencies: [PW_PROJECT.SMOKE_TEST],
-      testMatch: [
-        "**/playwright/e2e/catalog-timestamp.spec.ts",
-        "**/playwright/e2e/home-page-customization.spec.ts",
-        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
-        "**/playwright/e2e/instance-health-check.spec.ts",
-      ],
-    },
     {
       name: PW_PROJECT.ANY_TEST,
       testMatch: "**/*.spec.ts",
