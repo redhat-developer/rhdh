@@ -56,8 +56,10 @@ handle_ocp_disconnected_operator() {
   # OLM version: leave default (auto). On OCP 4.21+ this selects OLM v1.
   #
   # The operator stream follows the checkout branch: main mirrors the 2.2
-  # bundles, release-2.1 the 2.1 ones. A pinned image or chart does not change
-  # it, and an unfiltered catalog would pull every historical version.
+  # bundles, release-2.1 the 2.1 ones. TAG_NAME, IMAGE_* and CHART_VERSION do
+  # not change it: the hub image comes from the bundle, so only the newest
+  # bundle of the branch's stream can be tested. An unfiltered catalog would
+  # pull every historical version.
   local filter_versions
   filter_versions=$(common::get_release_stream) || return 1
   log::info "filter-versions=${filter_versions} (from RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME})"
@@ -69,36 +71,26 @@ handle_ocp_disconnected_operator() {
     log::error "CONTAINER_PLATFORM_VERSION is unset or invalid ('${ocp_version}'); expected OpenShift major.minor"
     return 1
   fi
-  # A CI chart tag (x.y-N-CI) means the run deploys a stream build, so mirror the
-  # RHDH CI catalog built from the same commit as the hub and plugin catalogs.
-  # Released charts (x.y.z) pair with the published Red Hat catalog, the only one
-  # carrying released bundles, even when the image itself is pulled from quay.
-  local use_ci_catalog="false"
-  if [[ "${IMAGE_REGISTRY}" != "registry.redhat.io" && "${CHART_VERSION:-}" == *-CI ]]; then
-    use_ci_catalog="true"
-  fi
+  # rhdh-operator publishes one catalog per stream and OCP minor, e.g.
+  # quay.io/rhdh/iib:2.2-v4.21-x86_64 (amd64 only; the jobs run on amd64), built
+  # from the same commit as the hub and plugin catalogs. The tag follows
+  # filter_versions, so the tag and --filter-versions cannot disagree, and a
+  # stream without a published catalog fails here instead of in oc-mirror.
+  local index_image="quay.io/rhdh/iib:${filter_versions}-v${ocp_version}-x86_64"
+  skopeo inspect --raw "docker://${index_image}" > /dev/null || {
+    log::error "RHDH CI operator catalog ${index_image} not found or unreadable"
+    return 1
+  }
+  log::info "Using OCP ${ocp_version} (CONTAINER_PLATFORM_VERSION); index image ${index_image}"
+  log::info "Operator and hub come from the newest ${filter_versions} bundle in ${index_image}; TAG_NAME/IMAGE_* do not apply"
 
-  local index_image=""
-  local registries_conf=""
-  if [[ "${use_ci_catalog}" == "true" ]]; then
-    # rhdh-operator publishes one catalog per stream and OCP minor, e.g.
-    # quay.io/rhdh/iib:2.2-v4.21-x86_64 (amd64 only; the jobs run on amd64).
-    # The tag follows filter_versions, so the tag and --filter-versions cannot
-    # disagree, and a stream without a published catalog fails here instead of
-    # in oc-mirror.
-    index_image="quay.io/rhdh/iib:${filter_versions}-v${ocp_version}-x86_64"
-    skopeo inspect --raw "docker://${index_image}" > /dev/null || {
-      log::error "RHDH CI operator catalog ${index_image} not found or unreadable"
-      return 1
-    }
-
-    # The CI bundle's RELATED_IMAGE refs point at registry.redhat.io/rhdh/*
-    # (plus the stage/access aliases), whose digests exist on quay.io/rhdh only.
-    # Rewrite those pulls for the oc-mirror run via CONTAINERS_REGISTRIES_CONF.
-    # Images in other repositories (e.g. registry.redhat.io/rhel10/postgresql-18)
-    # keep their original source and are pulled with the CI credentials.
-    registries_conf="${DISCONNECTED_TMPDIR}/oc-mirror-registries.conf"
-    cat > "${registries_conf}" << 'EOF'
+  # The CI bundle's RELATED_IMAGE refs point at registry.redhat.io/rhdh/*
+  # (plus the stage/access aliases), whose digests exist on quay.io/rhdh only.
+  # Rewrite those pulls for the oc-mirror run via CONTAINERS_REGISTRIES_CONF.
+  # Images in other repositories (e.g. registry.redhat.io/rhel10/postgresql-18)
+  # keep their original source and are pulled with the CI credentials.
+  local registries_conf="${DISCONNECTED_TMPDIR}/oc-mirror-registries.conf"
+  cat > "${registries_conf}" << 'EOF'
 [[registry]]
 prefix = "registry.redhat.io/rhdh"
 location = "quay.io/rhdh"
@@ -111,10 +103,6 @@ location = "quay.io/rhdh"
 prefix = "registry.access.redhat.com/rhdh"
 location = "quay.io/rhdh"
 EOF
-  else
-    index_image="registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}"
-  fi
-  log::info "Using OCP ${ocp_version} (CONTAINER_PLATFORM_VERSION); index image ${index_image}"
 
   # Local connected OCP: OCP_INTERNAL sentinel (same as omit-on-OCP). CI bastion
   # keeps the external MIRROR_REGISTRY_URL. Route URL stays in MIRROR_REGISTRY_URL
@@ -157,12 +145,10 @@ EOF
   fi
 
   local -a prepare_cmd=(bash "${prepare_script_path}" "${prepare_args[@]}")
-  if [[ -n "${registries_conf}" ]]; then
-    # Scoped to this call: CATALOG_INDEX_IMAGE and the plugin pulls keep their
-    # own registry configuration.
-    prepare_cmd=(env CONTAINERS_REGISTRIES_CONF="${registries_conf}" "${prepare_cmd[@]}")
-    log::info "Redirecting registry.redhat.io/rhdh to quay.io/rhdh via ${registries_conf}"
-  fi
+  # Scoped to this call: CATALOG_INDEX_IMAGE and the plugin pulls keep their own
+  # registry configuration.
+  prepare_cmd=(env CONTAINERS_REGISTRIES_CONF="${registries_conf}" "${prepare_cmd[@]}")
+  log::info "Redirecting registry.redhat.io/rhdh to quay.io/rhdh via ${registries_conf}"
 
   mcp_snapshot=$(disconnected::snapshot_mcp_rendered_configs)
 
