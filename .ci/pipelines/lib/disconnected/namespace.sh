@@ -120,10 +120,10 @@ disconnected::ensure_olm_mirror_pull_secret() {
 
 # Allow backend egress to the mirror registry. The chart and the Operator both
 # default-deny backend egress except DNS, HTTPS, Redis, and PostgreSQL, while CI
-# mirrors serve plain HTTP on a non-443 port: the install-dynamic-plugins init
-# container (skopeo catalog/plugin pulls) times out without this rule. Kubelet
-# pulls are unaffected. NetworkPolicies are additive and separate selectors cover
-# the Helm chart and the Operator pod labels (same split as
+# mirrors serve TLS on a non-443 port: the install-dynamic-plugins init container
+# (skopeo catalog/plugin pulls) times out without this rule. Kubelet pulls are
+# unaffected. NetworkPolicies are additive and separate selectors cover the Helm
+# chart and the Operator pod labels (same split as
 # resources/network_policy/netpol-ci-allow-backend-egress.yaml).
 #
 # The rule is scoped by port only. MIRROR_REGISTRY_URL is the bastion's public
@@ -144,14 +144,14 @@ disconnected::allow_mirror_registry_egress() {
   fi
 
   if [[ -z "${registry_port}" || "${registry_port}" == "443" ]]; then
-    log::info "Mirror registry ${registry_host} is served on HTTPS; skipping dedicated egress rule"
+    log::info "Mirror registry ${registry_host} is served on port 443; skipping dedicated egress rule"
     return 0
   fi
 
   local policy_file="${DISCONNECTED_TMPDIR}/netpol-mirror-registry-egress.yaml"
   cat > "${policy_file}" << EOF
 # Allow backend egress to the CI mirror registry (${registry_host}).
-# install-dynamic-plugins pulls the catalog index and plugins over plain HTTP.
+# install-dynamic-plugins pulls the catalog index and plugins from this port.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

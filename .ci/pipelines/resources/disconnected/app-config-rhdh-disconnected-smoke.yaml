@@ -1,4 +1,4 @@
-# Minimal app-config for disconnected operator smoke (guest login only).
+# Minimal app-config for disconnected operator smoke (guest login + homepage).
 app:
   title: Red Hat Developer Hub
   # New Frontend System: the homepage plugin owns page:homepage and its layout;
