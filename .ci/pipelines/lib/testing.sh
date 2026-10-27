@@ -194,12 +194,15 @@ testing::_coverage_main_commit() {
   testing::is_main_coverage_nightly && [[ "${TAG_NAME:-}" == "next" && -n "${namespace}" ]] || return 0
 
   local image="${IMAGE_REGISTRY:-quay.io}/${IMAGE_REPO:-rhdh-community/rhdh}" containers image_ids
-  # One "<pod>\t<container>\t<imageID>" line per container that runs the image. The
-  # imageID is empty while a container waits for its image.
+  # One "<pod>\t<container>\t<imageID>\t<live>" line per container that runs the
+  # image and has pulled it. live is true for a running container in a pod that is
+  # not being deleted, so `oc exec` never targets a terminating one.
   containers=$(timeout 60 oc get pods -n "${namespace}" -o json 2> /dev/null \
-    | jq -r --arg image "${image}" '.items[] | .metadata.name as $pod | .status.containerStatuses[]?
+    | jq -r --arg image "${image}" '.items[] | .metadata.name as $pod
+        | (.metadata.deletionTimestamp == null) as $kept | .status.containerStatuses[]?
+        | select(.imageID != "")
         | select((.image | startswith($image + ":")) or (.image | startswith($image + "@")))
-        | [$pod, .name, .imageID] | @tsv' 2> /dev/null)
+        | [$pod, .name, .imageID, ($kept and .state.running != null)] | @tsv' 2> /dev/null)
   image_ids=$(cut -f3 <<< "${containers}" | sort -u)
   if [[ -z "${image_ids}" || "${image_ids}" == *$'\n'* ]]; then
     log::warn "Expected one ${image} digest in ${namespace}, found: ${image_ids:-none}"
@@ -215,10 +218,14 @@ testing::_coverage_main_commit() {
   fi
 
   local pod container upstream
-  read -r pod container _ <<< "${containers%%$'\n'*}"
+  read -r pod container < <(awk -F '\t' '$4 == "true" { print $1, $2; exit }' <<< "${containers}") || true
+  if [[ -z "${pod}" ]]; then
+    log::warn "Could not find a main commit for ${image_ids}: revision label ${sha:-none} is not confirmed on main, and no running pod has the build metadata"
+    return 0
+  fi
   upstream=$(testing::_build_metadata_upstream "${namespace}" "${pod}" "${container}")
   if [[ -z "${upstream}" ]]; then
-    log::warn "Could not find a main commit for ${image_ids}: revision label ${sha:-none} is not confirmed on main, and its build metadata names no upstream commit"
+    log::warn "Could not find a main commit for ${image_ids}: revision label ${sha:-none} is not confirmed on main, and the build metadata gave no upstream commit"
     return 0
   fi
   if ! testing::_commit_on_main "${upstream}"; then
@@ -229,25 +236,50 @@ testing::_coverage_main_commit() {
   echo "${upstream}"
 }
 
-# Prints the full upstream main commit that the app's build-metadata.json in a pod
-# names ("Upstream": ".../redhat-developer/rhdh/tree/main @ <short sha>"), or nothing.
+# RHIDP-13242: Prints the full upstream main commit named by the app's build metadata
+# (".../redhat-developer/rhdh/tree/main @ <short sha>"), which is minified into the
+# bundle the pod ships, or nothing. Logs why when it prints nothing.
 # Args:
 #   $1 - namespace
 #   $2 - pod
 #   $3 - container: the one that runs the RHDH image
 # Uses globals: DIR
 testing::_build_metadata_upstream() {
-  local short full
-  short=$(timeout 60 oc exec -n "$1" "$2" -c "$3" -- grep -rhoE \
-    '"Upstream": *"https://github.com/redhat-developer/rhdh/tree/main @ [0-9a-f]+"' /opt/app-root/src/packages/app/dist 2> /dev/null \
-    | sed -nE '1s/.* @ ([0-9a-f]+)"$/\1/p')
-  [[ "${short}" =~ ^[0-9a-f]{7,40}$ ]] || return 0
+  local namespace="$1" pod="$2" container="$3"
+  local dist="/opt/app-root/src/packages/app/dist" matches err status=0 short full body
+  err=$(mktemp)
+  matches=$(timeout 60 oc exec -n "${namespace}" "${pod}" -c "${container}" -- \
+    grep -rhoE 'redhat-developer/rhdh/tree/main ?@ ?[0-9a-f]{7,40}' "${dist}" 2> "${err}") || status=$?
+  # grep exits 1, silently, when nothing matches; anything else is a failed read.
+  if [[ ${status} -ne 0 && (${status} -ne 1 || -s "${err}") ]]; then
+    log::warn "Could not read the build metadata in ${pod}/${container} (exit ${status})"
+    log::debug "$(< "${err}")"
+    rm -f "${err}"
+    return 0
+  fi
+  rm -f "${err}"
+  short=$(grep -oE '[0-9a-f]{7,40}$' <<< "${matches}" | sort -u | head -1)
+  if [[ -z "${short}" ]]; then
+    log::warn "The build metadata in ${pod}/${container} names no redhat-developer/rhdh main commit"
+    return 0
+  fi
   if full=$(git -C "${DIR}" rev-parse --verify -q "${short}^{commit}" 2> /dev/null); then
     echo "${full}"
     return 0
   fi
-  curl -fsS --max-time 30 "https://api.github.com/repos/redhat-developer/rhdh/commits/${short}" 2> /dev/null \
-    | jq -r '.sha // empty | select(test("^[0-9a-f]{40}$"))' 2> /dev/null
+  if ! body=$(curl -fsS --max-time 30 "https://api.github.com/repos/redhat-developer/rhdh/commits/${short}" 2> /dev/null); then
+    log::warn "GitHub did not return upstream commit ${short} from the build metadata"
+    return 0
+  fi
+  if ! full=$(jq -r '.sha // empty' <<< "${body}" 2> /dev/null); then
+    log::warn "GitHub's response for upstream commit ${short} is not JSON"
+    return 0
+  fi
+  if [[ ! "${full}" =~ ^[0-9a-f]{40}$ ]]; then
+    log::warn "GitHub's response for upstream commit ${short} names no commit sha"
+    return 0
+  fi
+  echo "${full}"
 }
 
 # Succeeds when main contains the commit. Uses the checkout (the periodic clones

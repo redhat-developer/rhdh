@@ -163,15 +163,17 @@ the UI have migrated; new specs should import from `@support/coverage/test`.
 - `main` gets the flag from the `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly`
   job, which `handle_ocp_nightly` (`.ci/pipelines/jobs/ocp-nightly.sh`) switches to
   `COLLECT_COVERAGE=true`. PR uploads cannot cover `main`: a squash merge creates a new
-  commit there. `testing::_coverage_main_commit` takes the image digest the RHDH pods in
-  the tested namespace ran, reads its `org.opencontainers.image.revision` label with
-  `skopeo`, checks that `main` contains that commit, and uploads with `--branch main`.
-  The nightly deploys the Konflux image `quay.io/rhdh/rhdh-hub-rhel10:next`, whose label
-  names the GitLab midstream commit instead. When the label is not on `main`, the
-  upstream commit comes from the `"Upstream": ".../tree/main @ <sha>"` entry that the
-  downstream build writes into the app's `build-metadata.json`, read with `oc exec`
-  from the bundle in the running pod and expanded to a full sha.
-  The image, not the checkout, names the commit, because `next` can lag `main`.
+  commit there. `testing::_coverage_main_commit` takes the digest of the image the job
+  deploys (`IMAGE_REGISTRY`/`IMAGE_REPO`) from the RHDH pods in the tested namespace,
+  reads its `org.opencontainers.image.revision` label with `skopeo`, checks that `main`
+  contains that commit, and uploads with `--branch main`.
+  A Konflux image such as `quay.io/rhdh/rhdh-hub-rhel10:next` labels the GitLab
+  midstream commit instead. When the label is not on `main`, the upstream commit comes
+  from the `.../redhat-developer/rhdh/tree/main @ <sha>` entry of the build metadata
+  that the downstream build minifies into the bundle the app ships. It is read with
+  `oc exec` from a running pod and expanded to a full sha through the checkout or GitHub.
+  The commit always comes from the image, never from the checkout's HEAD, because
+  `next` can lag `main`.
   `next` is also rebuilt on every merge, so the first project's commit is kept for the
   job and a project that ran a newer image skips its upload. Other
   nightlies, a tag other than `next`, or an image whose label and build metadata both
