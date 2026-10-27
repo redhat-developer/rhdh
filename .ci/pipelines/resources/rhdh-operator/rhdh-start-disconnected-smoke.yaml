@@ -1,8 +1,9 @@
 # Minimal Backstage CR for disconnected operator smoke test.
 # Rendered via envsubst (requires MIRROR_REGISTRY_URL, RELEASE_NAME).
 #
-# Guest login + homepage only. flavours: [] disables default flavours
-# (lightspeed) to avoid extra sidecar images.
+# Guest login + homepage smoke test; installs the minimal NFS plugin set.
+# flavours: [] disables default flavours (lightspeed) to avoid extra sidecar
+# images.
 #
 # Hub image: CSV RELATED_IMAGE_backstage from the newest CI bundle of the
 # branch's operator stream. prepare + oc-mirror mirror that ref and the generated

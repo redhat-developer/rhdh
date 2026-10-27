@@ -11,8 +11,9 @@
 # the catalog. ref:// needs includes and cannot be used. The plugin set is
 # explained in .ci/pipelines/lib/disconnected/plugins.sh.
 #
-# Pins the chart fullname (<release>-developer-hub). The disconnected job creates
-# the registry-auth secret and the backend egress NetworkPolicy for that name.
+# Pins the chart fullname (<release>-developer-hub, also the chart default): the
+# job creates the registry-auth secret under that name. The egress NetworkPolicy
+# selects on pod labels and does not depend on this.
 nameOverride: developer-hub
 dynamicPlugins:
   includes: []
@@ -50,7 +51,7 @@ appConfig:
   app:
     # New Frontend System: the homepage plugin owns page:homepage and its
     # layout; disable the community home page so only one Home destination is
-    # registered. Mirrors resources/config_map/dynamic-plugins-config.yaml.
+    # registered. Subset of resources/config_map/dynamic-plugins-config.yaml.
     extensions:
       - page:home: false
       - page:homepage:
