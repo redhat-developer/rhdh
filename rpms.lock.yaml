@@ -536,13 +536,13 @@ arches:
     name: scl-utils
     evr: 1:2.0.3-5.el10
     sourcerpm: scl-utils-2.0.3-5.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/s/skopeo-1.22.2-5.el10_2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/s/skopeo-1.22.2-6.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 7391380
-    checksum: sha256:bb6f8e58e40f9abed5903c0cb3478d92fb1beb334a70c7b80d89e991e7a32690
+    size: 7386105
+    checksum: sha256:45af448f6992425aa1b3008a1edaf5b00f87f3d51fa15e7904a6e9bdcf8027d4
     name: skopeo
-    evr: 2:1.22.2-5.el10_2
-    sourcerpm: skopeo-1.22.2-5.el10_2.src.rpm
+    evr: 2:1.22.2-6.el10_2
+    sourcerpm: skopeo-1.22.2-6.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/s/spirv-tools-libs-2025.4-1.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 1629453
@@ -1955,12 +1955,12 @@ arches:
     checksum: sha256:66c06124196ef7235aba6988f1e90509614155b13d5a48cf240e770bd2921fc0
     name: sgml-common
     evr: 0.6.3-65.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-5.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-6.el10_2.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
-    size: 10206745
-    checksum: sha256:67e76eb09bf2e4ebb8e30c5e0c5166d59f2fd1ace41bbf4285c61cca9291a6d9
+    size: 10206987
+    checksum: sha256:7c9ed7d29eee98146a0067babaae4caa4b33149eea4bf2061631ff4f8e5eeba2
     name: skopeo
-    evr: 2:1.22.2-5.el10_2
+    evr: 2:1.22.2-6.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/s/spirv-tools-2025.4-1.el10.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
     size: 3410134
@@ -3202,13 +3202,13 @@ arches:
     name: scl-utils
     evr: 1:2.0.3-5.el10
     sourcerpm: scl-utils-2.0.3-5.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/s/skopeo-1.22.2-5.el10_2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/s/skopeo-1.22.2-6.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 8276531
-    checksum: sha256:dfb167e63565b36560441e7284982682b348432c3fdd9f370f12adb832fb0dbf
+    size: 8275893
+    checksum: sha256:8ba318a779226377dd9c067fb9ea435bae40bffafe8c3831af8fe82fba4328fb
     name: skopeo
-    evr: 2:1.22.2-5.el10_2
-    sourcerpm: skopeo-1.22.2-5.el10_2.src.rpm
+    evr: 2:1.22.2-6.el10_2
+    sourcerpm: skopeo-1.22.2-6.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/s/spirv-tools-libs-2025.4-1.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 1714868
@@ -4614,12 +4614,12 @@ arches:
     checksum: sha256:66c06124196ef7235aba6988f1e90509614155b13d5a48cf240e770bd2921fc0
     name: sgml-common
     evr: 0.6.3-65.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-5.el10_2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.22.2-6.el10_2.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
-    size: 10206745
-    checksum: sha256:67e76eb09bf2e4ebb8e30c5e0c5166d59f2fd1ace41bbf4285c61cca9291a6d9
+    size: 10206987
+    checksum: sha256:7c9ed7d29eee98146a0067babaae4caa4b33149eea4bf2061631ff4f8e5eeba2
     name: skopeo
-    evr: 2:1.22.2-5.el10_2
+    evr: 2:1.22.2-6.el10_2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/s/spirv-tools-2025.4-1.el10.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
     size: 3410134
