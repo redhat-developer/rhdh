@@ -21,6 +21,10 @@ disconnected::dump_olm_v1_status() {
 }
 
 # Wait for OLM v1 ClusterExtension to report Installed, then for the CRD.
+#
+# A half-failed OLM v1 install still leaves the CRD behind (the bundle is applied
+# as a Helm chart), so the CRD alone is not proof of success. Require
+# Installed=True as well.
 # Args:
 #   $1 - extension name (default: rhdh-operator)
 #   $2 - crd name (default: backstages.rhdh.redhat.com)
@@ -32,33 +36,30 @@ disconnected::wait_operator_crd_olm_v1() {
   local interval=15
   local elapsed=0
 
-  log::info "Waiting for ClusterExtension/${extension_name} and CRD ${crd_name} (timeout: ${timeout}s)..."
+  log::info "Waiting for ClusterExtension/${extension_name} Installed=True and CRD ${crd_name} (timeout: ${timeout}s)..."
 
   while ((elapsed < timeout)); do
-    if oc get crd "${crd_name}" > /dev/null 2>&1; then
-      log::success "CRD '${crd_name}' is available"
-      return 0
-    fi
-
     local installed
     installed=$(oc get clusterextension "${extension_name}" \
       -o jsonpath='{range .status.conditions[?(@.type=="Installed")]}{.status}{end}' 2> /dev/null || true)
-    if [[ "${installed}" == "True" ]]; then
-      log::info "ClusterExtension/${extension_name} reports Installed=True; waiting for CRD..."
-    else
-      local progressing reason
-      progressing=$(oc get clusterextension "${extension_name}" \
-        -o jsonpath='{range .status.conditions[?(@.type=="Progressing")]}{.status}{end}' 2> /dev/null || true)
-      reason=$(oc get clusterextension "${extension_name}" \
-        -o jsonpath='{range .status.conditions[?(@.type=="Installed")]}{.reason}{" "}{.message}{end}' 2> /dev/null || true)
-      log::debug "ClusterExtension Installed=${installed:-unknown} Progressing=${progressing:-unknown} ${reason}"
+
+    if [[ "${installed}" == "True" ]] && oc get crd "${crd_name}" > /dev/null 2>&1; then
+      log::success "ClusterExtension/${extension_name} Installed=True; CRD '${crd_name}' is available"
+      return 0
     fi
+
+    local progressing reason
+    progressing=$(oc get clusterextension "${extension_name}" \
+      -o jsonpath='{range .status.conditions[?(@.type=="Progressing")]}{.status}{end}' 2> /dev/null || true)
+    reason=$(oc get clusterextension "${extension_name}" \
+      -o jsonpath='{range .status.conditions[?(@.type=="Installed")]}{.reason}{": "}{.message}{end}' 2> /dev/null || true)
+    log::info "ClusterExtension/${extension_name} Installed=${installed:-unknown} Progressing=${progressing:-unknown} ${reason}"
 
     sleep "${interval}"
     elapsed=$((elapsed + interval))
   done
 
-  log::error "Timeout waiting for CRD '${crd_name}' after ${timeout}s"
+  log::error "Timeout waiting for ClusterExtension/${extension_name} Installed=True and CRD '${crd_name}' after ${timeout}s"
   disconnected::dump_olm_v1_status "${extension_name}"
   return 1
 }

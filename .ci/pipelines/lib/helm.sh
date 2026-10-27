@@ -171,51 +171,6 @@ helm::resolve_chart_version() {
   helm::get_chart_version
 }
 
-# Get the release stream this run belongs to: a major.minor pair like "1.10",
-# not a bare major. 'main' takes it from package.json; 'release-x.y' from the
-# branch name.
-# Args:
-#   $1 - (optional) version_override: Specific stream to use (e.g., "1.8" for upgrade base)
-# Returns:
-#   Prints the stream (e.g., "1.10")
-helm::get_chart_stream() {
-  local version_override=${1:-}
-
-  if [[ -n "$version_override" ]]; then
-    echo "$version_override"
-    return 0
-  fi
-
-  if [[ -z "${RELEASE_BRANCH_NAME:-}" ]]; then
-    log::error "RELEASE_BRANCH_NAME is not set"
-    return 1
-  fi
-
-  if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
-    # main carries no version in its name. The published tags cannot answer
-    # this either - they hold every stream anyone pushed, so "highest on quay"
-    # follows whichever stream is ahead, not this checkout's.
-    local package_json="${DIR}/../../package.json"
-    if [[ ! -f "$package_json" ]]; then
-      log::error "Cannot determine the chart stream: ${package_json} not found"
-      return 1
-    fi
-
-    local chart_stream
-    chart_stream=$(jq -r '.version // empty' "$package_json" | grep -oE '^[0-9]+\.[0-9]+')
-    if [[ -z "$chart_stream" ]]; then
-      log::error "Cannot determine the chart stream: no usable .version in ${package_json}"
-      return 1
-    fi
-    echo "$chart_stream"
-  elif echo "$RELEASE_BRANCH_NAME" | grep -qE '^release-[0-9]+\.[0-9]+$'; then
-    echo "$RELEASE_BRANCH_NAME" | grep -oE '[0-9]+\.[0-9]+'
-  else
-    log::error "Invalid RELEASE_BRANCH_NAME: $RELEASE_BRANCH_NAME (expected 'main' or 'release-x.y')"
-    return 1
-  fi
-}
-
 # Get the latest chart version based on RELEASE_BRANCH_NAME or an optional version override.
 # Args:
 #   $1 - (optional) version_override: Specific version to use (e.g., "1.8" for upgrade base)
@@ -223,7 +178,7 @@ helm::get_chart_stream() {
 #   Prints the chart version (e.g., "1.4-123-CI")
 helm::get_chart_version() {
   local chart_stream
-  chart_stream=$(helm::get_chart_stream "${1:-}")
+  chart_stream=$(common::get_release_stream "${1:-}")
   if [[ -z "$chart_stream" ]]; then
     return 1
   fi
