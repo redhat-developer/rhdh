@@ -865,32 +865,11 @@ arches:
     name: gettext-runtime
     evr: 0.22.5-6.el10
     sourcerpm: gettext-0.22.5-6.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/g/glibc-2.39-145.el10_2.aarch64.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 1863175
-    checksum: sha256:c7dec6a139df15937e0dbc972cd172427b9100cbdc5ceef69cfe30bf1aa82fce
-    name: glibc
-    evr: 2.39-145.el10_2
-    sourcerpm: glibc-2.39-145.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/g/glibc-common-2.39-145.el10_2.aarch64.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 321286
-    checksum: sha256:3a00fd4de4f9d1791876b13299e933f44d861415000d307bae966020e145a75c
-    name: glibc-common
-    evr: 2.39-145.el10_2
-    sourcerpm: glibc-2.39-145.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/g/glibc-langpack-en-2.39-145.el10_2.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 687018
     checksum: sha256:f3fbcce812743954a95b80661406cc05da9c45b36ae522718899ca4f5280b3e2
     name: glibc-langpack-en
-    evr: 2.39-145.el10_2
-    sourcerpm: glibc-2.39-145.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/g/glibc-minimal-langpack-2.39-145.el10_2.aarch64.rpm
-    repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 32349
-    checksum: sha256:77dc287f4b089716353f80dacb6a82d97a2ff0de33523ac495ee1a4ec1908580
-    name: glibc-minimal-langpack
     evr: 2.39-145.el10_2
     sourcerpm: glibc-2.39-145.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/g/gnupg2-2.4.5-4.el10_1.aarch64.rpm
@@ -3539,32 +3518,11 @@ arches:
     name: gettext-runtime
     evr: 0.22.5-6.el10
     sourcerpm: gettext-0.22.5-6.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/g/glibc-2.39-145.el10_2.x86_64.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 2206293
-    checksum: sha256:58c3395be80343739e06e1b35f0aa95adc767d69d37d5dfbd9ab31bb3f8a3a7b
-    name: glibc
-    evr: 2.39-145.el10_2
-    sourcerpm: glibc-2.39-145.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/g/glibc-common-2.39-145.el10_2.x86_64.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 334108
-    checksum: sha256:475a7bec99ece4f629afc0ce490bc1eabdee143eb4ddad606b7e28bccecf744d
-    name: glibc-common
-    evr: 2.39-145.el10_2
-    sourcerpm: glibc-2.39-145.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/g/glibc-langpack-en-2.39-145.el10_2.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 687054
     checksum: sha256:022db96f8f5e07b95c224b6ce5f8b9a8fb1f2e6c6e7e6e060eaff0749d8c270f
     name: glibc-langpack-en
-    evr: 2.39-145.el10_2
-    sourcerpm: glibc-2.39-145.el10_2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/g/glibc-minimal-langpack-2.39-145.el10_2.x86_64.rpm
-    repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 32385
-    checksum: sha256:76d27e5e92d5024a7419f26fa48840314d8b8df8207cbc8a2e8aeb54ad84582a
-    name: glibc-minimal-langpack
     evr: 2.39-145.el10_2
     sourcerpm: glibc-2.39-145.el10_2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/g/gnupg2-2.4.5-4.el10_1.x86_64.rpm
