@@ -5,9 +5,10 @@
 # flavours: [] disables default flavours (lightspeed) to avoid extra sidecar
 # images.
 #
-# Hub image: CSV RELATED_IMAGE_backstage from the newest CI bundle of the
-# branch's operator stream. prepare + oc-mirror mirror that ref and the generated
-# IDMS rewrites the kubelet pull.
+# Hub image: CSV RELATED_IMAGE_backstage. CI runs install the CI catalog, whose
+# bundle points at the newest stream build; GA runs install the published
+# catalog. Either way the CSV ref is mirrored by prepare + oc-mirror and the
+# generated IDMS rewrites the kubelet pull.
 #
 # CATALOG_INDEX_IMAGE is injected by deploy_rhdh_operator from the mirrored
 # catalog digest so install-dynamic-plugins does not pull the hub profile
