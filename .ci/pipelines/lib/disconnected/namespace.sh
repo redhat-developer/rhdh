@@ -44,7 +44,8 @@ disconnected::create_plugin_registry_auth_secret() {
 # Ensure the mirror registry CA is trusted cluster-wide via
 # image.config.openshift.io/cluster additionalTrustedCA so OLM v1 catalogd
 # can pull ClusterCatalog images (x509 unknown authority otherwise).
-# Triggers an MCP update; callers should run disconnected::wait_mcp_updated after.
+# Triggers a MachineConfigPool update; callers should run
+# disconnected::wait_machineconfigpool_updated after.
 disconnected::ensure_mirror_registry_ca() {
   local registry_host="${MIRROR_REGISTRY_URL%%/*}"
   # OpenShift ConfigMap keys use ".." in place of ":" for host:port.
