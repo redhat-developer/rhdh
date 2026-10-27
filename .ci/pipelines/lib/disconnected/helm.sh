@@ -91,9 +91,12 @@ disconnected::ensure_helm_hub_after_postgres() {
     return 1
   fi
   # Wait for the old pod to be gone before starting the replacement, otherwise
-  # both backends initialise at once.
+  # both backends initialise at once. kubectl treats --for=delete as satisfied
+  # when nothing matches, so this only fails while a pod is still there.
   if ! oc wait --for=delete pod -l "${hub_selector}" -n "${namespace}" --timeout=180s; then
-    log::warn "Old hub pods still present after 180s — scaling back up anyway"
+    log::error "Old hub pods still present after 180s — not scaling up next to them"
+    oc get pods -l "${hub_selector}" -n "${namespace}" -o wide || true
+    return 1
   fi
   if ! oc scale "deployment/${hub_deploy}" --replicas=1 -n "${namespace}"; then
     log::error "Failed to scale deployment/${hub_deploy} back up in ${namespace}"

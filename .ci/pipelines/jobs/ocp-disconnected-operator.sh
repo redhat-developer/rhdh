@@ -272,7 +272,7 @@ EOF
   cp "${cr_temp}" "${ARTIFACT_DIR}/disconnected-backstage-cr.yaml" 2> /dev/null || true
 
   deploy_rhdh_operator "${NAME_SPACE}" "${cr_temp}" || {
-    log::error "Backstage CR did not produce a deployment — dumping OLM v1 status"
+    log::error "deploy_rhdh_operator failed in ${NAME_SPACE} — dumping OLM v1 status"
     disconnected::dump_olm_v1_status "rhdh-operator"
     return 1
   }
