@@ -41,7 +41,7 @@ fips_deployment() {
   # Configure external PostgreSQL with TLS (uses Crunchy's auto-generated CA)
   log::section "Configuring external PostgreSQL with TLS"
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
-  configure_external_postgres_db "${NAME_SPACE}" || return 1
+  configure_external_postgres_db "${NAME_SPACE}" "true" || return 1
 
   # Deploy Redis with TLS using FIPS custom CA
   log::section "Configuring Redis with FIPS custom CA and TLS"
