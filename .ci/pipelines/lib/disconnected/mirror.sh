@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# oc-mirror image mirroring, IDMS/ITMS patching, and MCP wait helpers.
+# oc-mirror image mirroring, IDMS/ITMS patching, and MachineConfigPool wait helpers.
 
 [[ -n "${_DISCONNECTED_MIRROR_SOURCED:-}" ]] && return 0
 readonly _DISCONNECTED_MIRROR_SOURCED=1
@@ -256,18 +256,30 @@ disconnected::patch_idms() {
   cp "${idms_file}" "${ARTIFACT_DIR}/disconnected-idms-patched.yaml" 2> /dev/null || true
 }
 
-# Record the rendered MachineConfig every pool currently targets.
-# Call this before applying an IDMS/ITMS/additionalTrustedCA change and pass the
-# output to disconnected::wait_mcp_updated.
-disconnected::snapshot_mcp_rendered_configs() {
-  oc get machineconfigpool \
-    -o jsonpath='{range .items[*]}{.metadata.name}={.spec.configuration.name}{"\n"}{end}' \
-    2> /dev/null || true
+# Record the rendered MachineConfig every pool currently targets. Fails when the
+# read fails or returns nothing, so a caller cannot mistake a broken API call for
+# an unchanged cluster.
+disconnected::snapshot_machineconfigpool_rendered_configs() {
+  local attempt snapshot=""
+  for attempt in 1 2 3; do
+    if snapshot=$(oc get machineconfigpool \
+      -o jsonpath='{range .items[*]}{.metadata.name}={.spec.configuration.name}{"\n"}{end}' \
+      2> /dev/null) && [[ -n "${snapshot}" ]]; then
+      printf '%s\n' "${snapshot}"
+      return 0
+    fi
+    log::debug "MachineConfigPool snapshot failed (attempt ${attempt}/3)"
+    if ((attempt < 3)); then
+      sleep 5
+    fi
+  done
+  log::error "Could not read the MachineConfigPool rendered configs"
+  return 1
 }
 
 # True when every MachineConfigPool runs its rendered config and no node is
 # still updating or degraded.
-disconnected::_mcp_all_converged() {
+disconnected::_machineconfigpool_all_converged() {
   local snapshot
   snapshot=$(oc get machineconfigpool \
     -o jsonpath='{range .items[*]}{.spec.configuration.name}{"|"}{.status.configuration.name}{"|"}{.status.updatedMachineCount}{"|"}{.status.machineCount}{"|"}{.status.degradedMachineCount}{"\n"}{end}' \
@@ -290,40 +302,46 @@ disconnected::_mcp_all_converged() {
 # `oc wait --for=condition=Updated=True` alone is not enough: right after an
 # apply the MCO has not rendered the new config yet, so the condition is still
 # True from the previous rollout and the wait returns immediately. With the
-# snapshot taken before the change, wait until the MCO picks it up first.
+# snapshot taken before the change, wait until the MCO picks it up first. A
+# config rendered while the rollout is still running is covered: each pool's spec
+# moves to the newest render, and convergence compares status against it.
 #
-# Warns and continues on timeout.
+# Warns and continues on rollout timeout.
 # Args:
-#   $1 - snapshot from disconnected::snapshot_mcp_rendered_configs (optional)
-disconnected::wait_mcp_updated() {
-  local before_snapshot=${1:-}
+#   $1 - snapshot from disconnected::snapshot_machineconfigpool_rendered_configs
+disconnected::wait_machineconfigpool_updated() {
+  local before_snapshot=$1
   local render_timeout=180
   local rollout_timeout=1200
 
-  if [[ -n "${before_snapshot}" ]]; then
-    log::info "Waiting for MachineConfigPool to pick up the new rendered config (up to ${render_timeout}s)..."
-    local rendered=0
-    local render_start=$SECONDS
-    while ((SECONDS - render_start < render_timeout)); do
-      if [[ "$(disconnected::snapshot_mcp_rendered_configs)" != "${before_snapshot}" ]]; then
-        rendered=1
-        break
-      fi
-      sleep 5
-    done
-    if ((rendered != 1)); then
-      # Re-applying identical content (e.g. an unchanged IDMS) does not roll
-      # the nodes, so there is nothing to wait for.
-      log::warn "No MachineConfigPool rendered a new config within ${render_timeout}s -- nothing to roll, continuing"
-      return 0
-    fi
-    log::success "MachineConfigPool picked up the new rendered config"
+  if [[ -z "${before_snapshot}" ]]; then
+    log::error "wait_machineconfigpool_updated needs the pre-change MachineConfigPool snapshot"
+    return 1
   fi
+
+  log::info "Waiting for MachineConfigPool to pick up the new rendered config (up to ${render_timeout}s)..."
+  local rendered=0 render_start=$SECONDS current=""
+  while ((SECONDS - render_start < render_timeout)); do
+    # A failed read is not a change; retry on the next iteration.
+    if current=$(disconnected::snapshot_machineconfigpool_rendered_configs) \
+      && [[ "${current}" != "${before_snapshot}" ]]; then
+      rendered=1
+      break
+    fi
+    sleep 5
+  done
+  if ((rendered != 1)); then
+    # Re-applying identical content (e.g. an unchanged IDMS) does not roll
+    # the nodes, so there is nothing to wait for.
+    log::warn "No MachineConfigPool rendered a new config within ${render_timeout}s -- nothing to roll, continuing"
+    return 0
+  fi
+  log::success "MachineConfigPool picked up the new rendered config"
 
   log::info "Waiting for MachineConfigPool updates to complete (up to ${rollout_timeout}s)..."
   local rollout_start=$SECONDS
   while ((SECONDS - rollout_start < rollout_timeout)); do
-    if disconnected::_mcp_all_converged; then
+    if disconnected::_machineconfigpool_all_converged; then
       log::success "All MachineConfigPools are Updated"
       return 0
     fi
@@ -331,5 +349,5 @@ disconnected::wait_mcp_updated() {
   done
 
   log::warn "MachineConfigPool wait timed out -- proceeding anyway"
-  oc get machineconfigpool 2>&1 | tee -a "${ARTIFACT_DIR}/disconnected-mcp-status.txt" || true
+  oc get machineconfigpool 2>&1 | tee -a "${ARTIFACT_DIR}/disconnected-machineconfigpool-status.txt" || true
 }
