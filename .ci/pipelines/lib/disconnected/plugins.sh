@@ -200,6 +200,41 @@ disconnected::_smoke_plugin_package_var() {
   esac
 }
 
+# Render a smoke plugin template, mapping DISCONNECTED_SMOKE_PLUGIN_NAMES_STR to
+# the <NAME>_PLUGIN_PACKAGE variables. Fails when a package is unset or a
+# template entry renders without one, so a template/array mismatch surfaces here
+# instead of at pod runtime.
+# Args:
+#   $1 - template path
+#   $2 - output path
+disconnected::render_smoke_plugins_template() {
+  local template=$1 output=$2 name var
+  local -a package_vars=()
+
+  if [[ -z "${DISCONNECTED_SMOKE_PLUGIN_NAMES_STR:-}" ]]; then
+    log::error "DISCONNECTED_SMOKE_PLUGIN_NAMES_STR is empty; cannot render ${template}"
+    return 1
+  fi
+
+  for name in ${DISCONNECTED_SMOKE_PLUGIN_NAMES_STR}; do
+    var=$(disconnected::_smoke_plugin_package_var "${name}") || {
+      log::error "No package variable mapped for plugin ${name}"
+      return 1
+    }
+    package_vars+=("${var}")
+  done
+  common::require_vars "${package_vars[@]}" || return 1
+
+  envsubst < "${template}" > "${output}" || {
+    log::error "Failed to render ${template}"
+    return 1
+  }
+  if grep -qE '^[[:space:]-]*package:[[:space:]]*$' "${output}"; then
+    log::error "${template} has a plugin entry without a package after rendering"
+    return 1
+  fi
+}
+
 # Export one <NAME>_PLUGIN_PACKAGE per smoke plugin from the digest plugin list.
 # Adds !name if the list line has no OCI subpath (install-dynamic-plugins needs it).
 # Args:
@@ -374,18 +409,12 @@ disconnected::resolve_catalog_index_image() {
 # Args:
 #   $1 - namespace
 disconnected::create_smoke_plugins_configmap() {
-  common::require_vars HOMEPAGE_PLUGIN_PACKAGE APP_AUTH_PLUGIN_PACKAGE \
-    APP_DEFAULTS_PLUGIN_PACKAGE APP_INTEGRATIONS_PLUGIN_PACKAGE \
-    GUEST_PROVIDER_PLUGIN_PACKAGE || return 1
   local namespace=$1
   local cm_name="dynamic-plugins-disconnected-smoke"
   local template="${DIR}/resources/disconnected/dynamic-plugins-smoke.yaml"
   local tmp_yaml="${DISCONNECTED_TMPDIR}/dynamic-plugins-disconnected-smoke.yaml"
 
-  envsubst < "${template}" > "${tmp_yaml}" || {
-    log::error "Failed to render ${template}"
-    return 1
-  }
+  disconnected::render_smoke_plugins_template "${template}" "${tmp_yaml}" || return 1
 
   oc create configmap "${cm_name}" \
     --from-file="dynamic-plugins.yaml=${tmp_yaml}" \

@@ -70,6 +70,7 @@ export -f disconnected::apply_plugin_mirror_configmap
 export -f disconnected::write_digest_plugin_list
 export -f disconnected::write_smoke_plugin_list
 export -f disconnected::set_smoke_plugin_packages_from_list
+export -f disconnected::render_smoke_plugins_template
 export -f disconnected::_smoke_plugin_package_var
 export -f disconnected::copy_catalog_index_to_mirror
 export -f disconnected::_catalog_index_source_ref

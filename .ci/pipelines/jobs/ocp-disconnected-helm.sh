@@ -214,13 +214,8 @@ handle_ocp_disconnected_helm() {
   # to the rendered Deployment, avoiding the Helm "array clobber" pitfall.
   local post_renderer="${DIR}/resources/disconnected/helm-post-renderer.sh"
   local helm_values="${DISCONNECTED_TMPDIR}/values_disconnected-smoke.yaml"
-  common::require_vars HOMEPAGE_PLUGIN_PACKAGE APP_AUTH_PLUGIN_PACKAGE \
-    APP_DEFAULTS_PLUGIN_PACKAGE APP_INTEGRATIONS_PLUGIN_PACKAGE \
-    GUEST_PROVIDER_PLUGIN_PACKAGE || return 1
-  envsubst < "${DIR}/value_files/values_disconnected-smoke.yaml" > "${helm_values}" || {
-    log::error "Failed to render disconnected Helm values"
-    return 1
-  }
+  disconnected::render_smoke_plugins_template \
+    "${DIR}/value_files/values_disconnected-smoke.yaml" "${helm_values}" || return 1
   cp "${helm_values}" "${ARTIFACT_DIR}/values_disconnected-smoke.yaml" 2> /dev/null || true
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
