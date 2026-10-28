@@ -54,7 +54,7 @@ runs:
     - name: Free Disk Space (Ubuntu)
       uses: jlumbroso/free-disk-space@36e9a5af4eddb91fc11aec4c6f6f79b3cc0cb523 # main
       with:
-        tool-cache: false
+        preinstalled-runtimes: false
         android: true
         dotnet: true
         haskell: true
