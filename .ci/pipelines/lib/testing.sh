@@ -250,6 +250,8 @@ testing::_build_metadata_upstream() {
   err=$(mktemp)
   # grep exits 1 when nothing matches, which is not a failed read. Fold that into 0
   # in the container: oc reports any non-zero exit on stderr, so it looks like one.
+  # This needs a shell in the image (/usr/bin/sh is bash on the ubi10 bases); without
+  # one every call fails here with exit 127.
   matches=$(timeout 60 oc exec -n "${namespace}" "${pod}" -c "${container}" -- \
     sh -c 'grep -rhoE "$1" "$2"; rc=$?; [ "${rc}" -eq 1 ] && exit 0; exit "${rc}"' _ \
     'redhat-developer/rhdh/tree/main ?@ ?[0-9a-f]{7,40}' "${dist}" 2> "${err}") || status=$?
