@@ -230,7 +230,8 @@ describe("testing::_upload_e2e_coverage from the main nightly", () => {
    * `timeout`, so shell functions cannot replace them). `oc get pods -o json`
    * prints `pods`, keyed by pod name. `oc exec` runs its command locally, with the
    * app's dist directory holding one chunk whose content is `bundle` (no directory
-   * when `bundle` is null), or prints `execError` and fails.
+   * when `bundle` is null), or prints `execError` and fails. Like `oc`, it reports
+   * a non-zero exit of the remote command on stderr.
    */
   function mainUpload(
     revision: string | null,
@@ -267,7 +268,11 @@ if [[ $1 == exec ]]; then
   ${execError ? `echo ${JSON.stringify(execError)} >&2; exit 1` : ""}
   while [[ $1 != -- ]]; do shift; done
   shift
-  exec "\${@/#\\/opt\\/app-root\\/src\\/packages\\/app\\/dist/${root}/dist}"
+  "\${@/#\\/opt\\/app-root\\/src\\/packages\\/app\\/dist/${root}/dist}"
+  rc=$?
+  # Like oc, reports a failed remote command on stderr.
+  (( rc == 0 )) || echo "command terminated with exit code $rc" >&2
+  exit $rc
 fi
 cat <<'JSON'
 ${JSON.stringify(podList(pods, terminating))}
@@ -372,7 +377,7 @@ JSON
       expect(output).toContain(`using upstream commit ${onMain} from the build metadata`);
       // Reads the bundle of the container that runs the image, not the sidecar.
       expect(readFileSync(join(root, "oc-exec-args"), "utf8")).toMatch(
-        /^exec\n-n\nshowcase-ci-nightly\nrhdh-0\n-c\nbackstage-backend\n--\ngrep\n/u,
+        /^exec\n-n\nshowcase-ci-nightly\nrhdh-0\n-c\nbackstage-backend\n--\nsh\n/u,
       );
     });
 
@@ -399,16 +404,21 @@ JSON
     // The metadata comes from a build outside this repository, so its exact shape
     // may change.
     it.each([
-      ["with no space after the colon", (sha: string) => upstream(sha).replace('": "', '":"')],
+      [
+        "with a space after the colon",
+        (sha: string) => upstream(sha).replace('":"https', '": "https'),
+      ],
       ["with no spaces around @", (sha: string) => upstream(sha).replace(" @ ", "@")],
       [
         "with a suffix after the sha",
         (sha: string) => upstream(sha).replace(sha, `${sha} (dirty)`),
       ],
       ["under another key", (sha: string) => upstream(sha).replace("Upstream", "Source")],
-    ])("reads the upstream commit %s", (_, bundle) => {
+    ])("reads the upstream commit %s", (_, variant) => {
+      const bundle = variant(onMain.slice(0, 8));
+      expect(bundle).not.toBe(upstream(onMain.slice(0, 8)));
       const { argv } = mainUpload(midstream, {
-        bundle: bundle(onMain.slice(0, 8)),
+        bundle,
         prelude: notOnGitHub,
       });
       expect(argv).toContain(onMain);
