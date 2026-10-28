@@ -182,12 +182,41 @@ describe("testing::_upload_e2e_coverage", () => {
 const githubSays = (status: string) =>
   `curl() { printf '%s\\n' "$@" > "$ROOT/curl-args"; echo '{"status":"${status}"}'; }`;
 
+// The app build metadata naming an upstream commit, as minified into the bundle.
+const upstream = (sha: string) =>
+  `JSON.parse('{"title":"RHDH Metadata","card":{"RHDH Version":"2.2.0","Upstream":"https://github.com/redhat-developer/rhdh/tree/main @ ${sha}","Midstream":"https://gitlab.cee.redhat.com/rhidp/rhdh/-/commits/main @ c4eb3cda"}}')`;
+
+// A container status: [name, image, imageID, state (default running)].
+type Container = [string, string, string, ("running" | "waiting")?];
+// The `oc get pods -o json` list for pods keyed by name; `terminating` pods carry a
+// deletionTimestamp.
+const podList = (pods: Record<string, Container[]>, terminating: string[] = []) => ({
+  items: Object.entries(pods).map(([name, containers]) => ({
+    metadata: {
+      name,
+      ...(terminating.includes(name) && { deletionTimestamp: "2026-10-27T00:00:00Z" }),
+    },
+    status: {
+      containerStatuses: containers.map(([container, image, imageID, state = "running"]) => ({
+        name: container,
+        image,
+        imageID,
+        state: { [state]: {} },
+      })),
+    },
+  })),
+});
+
 // The main OCP Helm nightly uploads to the main commit its `next` image was built
-// from, named by the image's revision label, not to the checkout's HEAD.
+// from, named by the image's revision label or, for Konflux images that label the
+// midstream commit, by the app's build metadata. Never the checkout's HEAD.
 describe("testing::_upload_e2e_coverage from the main nightly", () => {
   const MAIN_JOB = "periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly";
   const DIGEST = `quay.io/rhdh-community/rhdh@sha256:${"d".repeat(64)}`;
   const MAIN_RUN = { CODECOV_TOKEN: "token", JOB_NAME: MAIN_JOB, TAG_NAME: "next" };
+  const RHDH: Container = ["backstage-backend", "quay.io/rhdh-community/rhdh:next", DIGEST];
+  const SIDECAR: Container = ["sidecar", "registry.redhat.io/sidecar:1", "y@sha256:2"];
+  const POSTGRES: Container = ["postgresql", "registry.redhat.io/postgresql:16", "x@sha256:1"];
   // A commit this checkout has and HEAD contains. HEAD itself, because CI checks
   // out with fetch-depth 1 and has no parent commit.
   const onMain = spawnSync("git", ["-C", repository, "rev-parse", "HEAD"], {
@@ -198,21 +227,53 @@ describe("testing::_upload_e2e_coverage from the main nightly", () => {
 
   /**
    * Puts fake `oc` and `skopeo` executables in `$ROOT/bin` (they run under
-   * `timeout`, so shell functions cannot replace them). `pods` is what
-   * `oc get pods` prints: one "<image> <imageID>" line per container.
+   * `timeout`, so shell functions cannot replace them). `oc get pods -o json`
+   * prints `pods`, keyed by pod name. `oc exec` runs its command locally, with the
+   * app's dist directory holding one chunk whose content is `bundle` (no directory
+   * when `bundle` is null), or prints `execError` and fails.
    */
   function mainUpload(
     revision: string | null,
     {
-      pods = `quay.io/rhdh-community/rhdh:next ${DIGEST}\nregistry.redhat.io/postgresql:16 x@sha256:1`,
+      // The sidecar comes first, so reading the wrong container shows.
+      pods = { "rhdh-0": [SIDECAR, RHDH], "pg-0": [POSTGRES] },
+      terminating = [],
+      bundle = "",
+      execError = "",
       env = {},
       prelude = "",
       namespace = "showcase-ci-nightly",
-    }: { pods?: string; env?: Record<string, string>; prelude?: string; namespace?: string } = {},
+    }: {
+      pods?: Record<string, Container[]>;
+      terminating?: string[];
+      bundle?: string | null;
+      execError?: string;
+      env?: Record<string, string>;
+      prelude?: string;
+      namespace?: string;
+    } = {},
   ) {
     const bin = join(root, "bin");
     mkdirSync(bin, { recursive: true });
-    writeFileSync(join(bin, "oc"), `#!/bin/bash\nprintf '%b\\n' ${JSON.stringify(pods)}\n`);
+    if (bundle !== null) {
+      mkdirSync(join(root, "dist/static"), { recursive: true });
+      writeFileSync(join(root, "dist/static/5032.chunk.js"), bundle);
+    }
+    writeFileSync(
+      join(bin, "oc"),
+      `#!/bin/bash
+if [[ $1 == exec ]]; then
+  printf '%s\\n' "$@" > "${root}/oc-exec-args"
+  ${execError ? `echo ${JSON.stringify(execError)} >&2; exit 1` : ""}
+  while [[ $1 != -- ]]; do shift; done
+  shift
+  exec "\${@/#\\/opt\\/app-root\\/src\\/packages\\/app\\/dist/${root}/dist}"
+fi
+cat <<'JSON'
+${JSON.stringify(podList(pods, terminating))}
+JSON
+`,
+    );
     const labels = revision === null ? {} : { "org.opencontainers.image.revision": revision };
     writeFileSync(
       join(bin, "skopeo"),
@@ -259,11 +320,16 @@ describe("testing::_upload_e2e_coverage from the main nightly", () => {
     ],
     ["a tag other than next", { env: { TAG_NAME: "2.1-122" } }, ""],
     ["no namespace", { namespace: "" }, ""],
-    ["no RHDH pod", { pods: "registry.redhat.io/postgresql:16 x@sha256:1" }, "found: none"],
+    ["no RHDH pod", { pods: { "pg-0": [POSTGRES] } }, "found: none"],
     [
       "pods on two digests",
       {
-        pods: `quay.io/rhdh-community/rhdh:next ${DIGEST}\nquay.io/rhdh-community/rhdh:next ${DIGEST.replace(/d+$/u, "f".repeat(64))}`,
+        pods: {
+          "rhdh-0": [RHDH],
+          "rhdh-1": [
+            ["backstage-backend", RHDH[1], DIGEST.replace(/d+$/u, "f".repeat(64))] as Container,
+          ],
+        },
       },
       "Expected one",
     ],
@@ -275,29 +341,177 @@ describe("testing::_upload_e2e_coverage from the main nightly", () => {
   });
 
   it.each([
-    ["the image has no revision label", null, "", "Could not read a commit revision label"],
-    ["the label is not a commit sha", "v2.1.0", "", "Could not read a commit revision label"],
-    [
-      "main does not contain the commit",
-      unknown,
-      githubSays("diverged"),
-      "Could not confirm that main contains",
-    ],
-    [
-      "GitHub cannot be reached",
-      unknown,
-      "curl() { return 7; }",
-      "Could not confirm that main contains",
-    ],
-  ])("skips the upload, without failing, when %s", (_, revision, prelude, message) => {
-    const { status, argv, output } = mainUpload(revision, { prelude });
-    expect(status).toBe(0);
-    expect(argv).toEqual([]);
-    expect(output).toContain(message);
+    ["the image has no revision label", null, ""],
+    ["the label is not a commit sha", "v2.1.0", ""],
+    ["main does not contain the commit", unknown, githubSays("diverged")],
+    ["GitHub cannot be reached", unknown, "curl() { return 7; }"],
+  ])(
+    "skips the upload, without failing, when %s and the build metadata names no commit",
+    (_, revision, prelude) => {
+      const { status, argv, output } = mainUpload(revision, { prelude });
+      expect(status).toBe(0);
+      expect(argv).toEqual([]);
+      expect(output).toContain("Could not find a main commit");
+    },
+  );
+
+  // Konflux images (quay.io/rhdh/rhdh-hub-*) label the GitLab midstream commit,
+  // which GitHub does not know. Their bundle names the upstream commit.
+  describe("for an image that labels a midstream commit", () => {
+    const midstream = "c".repeat(40);
+    const notOnGitHub = `curl() { echo '{"message":"Not Found"}'; return 22; }`;
+
+    it("uploads to the upstream commit the build metadata names", () => {
+      const { status, argv, output } = mainUpload(midstream, {
+        bundle: upstream(onMain.slice(0, 8)),
+        prelude: notOnGitHub,
+      });
+      expect(status).toBe(0);
+      expect(argv).toContain(onMain);
+      expect(argv).not.toContain(midstream);
+      expect(output).toContain(`using upstream commit ${onMain} from the build metadata`);
+      // Reads the bundle of the container that runs the image, not the sidecar.
+      expect(readFileSync(join(root, "oc-exec-args"), "utf8")).toMatch(
+        /^exec\n-n\nshowcase-ci-nightly\nrhdh-0\n-c\nbackstage-backend\n--\ngrep\n/u,
+      );
+    });
+
+    it("expands a short commit this checkout lacks through GitHub", () => {
+      const prelude = `curl() { printf '%s\\n' "$@" >> "$ROOT/curl-args"; if [[ $* == */commits/* ]]; then echo '{"sha":"${unknown}"}'; elif [[ $* == */compare/${unknown}...main* ]]; then echo '{"status":"ahead"}'; else return 22; fi; }`;
+      const { argv } = mainUpload(midstream, { bundle: upstream("eeeeeee"), prelude });
+      expect(argv).toContain(unknown);
+      expect(readFileSync(join(root, "curl-args"), "utf8")).toContain(
+        "https://api.github.com/repos/redhat-developer/rhdh/commits/eeeeeee\n",
+      );
+    });
+
+    it("skips the upload when main does not contain the upstream commit", () => {
+      const prelude = `curl() { if [[ $* == */commits/* ]]; then echo '{"sha":"${unknown}"}'; else echo '{"status":"diverged"}'; fi; }`;
+      const { status, argv, output } = mainUpload(midstream, {
+        bundle: upstream("eeeeeee"),
+        prelude,
+      });
+      expect(status).toBe(0);
+      expect(argv).toEqual([]);
+      expect(output).toContain(`Could not confirm that main contains upstream commit ${unknown}`);
+    });
+
+    // The metadata comes from a build outside this repository, so its exact shape
+    // may change.
+    it.each([
+      ["with no space after the colon", (sha: string) => upstream(sha).replace('": "', '":"')],
+      ["with no spaces around @", (sha: string) => upstream(sha).replace(" @ ", "@")],
+      [
+        "with a suffix after the sha",
+        (sha: string) => upstream(sha).replace(sha, `${sha} (dirty)`),
+      ],
+      ["under another key", (sha: string) => upstream(sha).replace("Upstream", "Source")],
+    ])("reads the upstream commit %s", (_, bundle) => {
+      const { argv } = mainUpload(midstream, {
+        bundle: bundle(onMain.slice(0, 8)),
+        prelude: notOnGitHub,
+      });
+      expect(argv).toContain(onMain);
+    });
+
+    it("picks the same commit whatever order chunks name them in", () => {
+      // Sorts after the commit on main; GitHub does not know it.
+      const other = onMain.startsWith("ffffffff") ? "fffffffff" : "ffffffff";
+      const { argv } = mainUpload(midstream, {
+        bundle: upstream(other) + upstream(onMain.slice(0, 8)),
+        prelude: notOnGitHub,
+      });
+      expect(argv).toContain(onMain);
+    });
+
+    it.each([
+      ["names another repository", upstream(onMain).replace("redhat-developer", "someone")],
+      ["names another branch", upstream(onMain).replace("tree/main", "tree/release-2.1")],
+      ["names a sha too short to identify a commit", upstream("abc")],
+    ])("skips the upload when the build metadata %s", (_, bundle) => {
+      const { status, argv, output } = mainUpload(midstream, { bundle, prelude: notOnGitHub });
+      expect(status).toBe(0);
+      expect(argv).toEqual([]);
+      expect(output).toContain(
+        "build metadata in rhdh-0/backstage-backend names no redhat-developer/rhdh main commit",
+      );
+      expect(output).toContain("Could not find a main commit");
+    });
+
+    // pods/exec is a permission the job may lack, and the image may move the bundle.
+    it.each([
+      ["oc exec is refused", { execError: 'pods "rhdh-0" is forbidden' }, "is forbidden"],
+      ["the bundle is not where expected", { bundle: null }, "No such file or directory"],
+    ])("says the build metadata could not be read when %s", (_, options, reason) => {
+      const { status, argv, output } = mainUpload(midstream, {
+        ...options,
+        env: { LOG_LEVEL: "DEBUG" },
+      });
+      expect(status).toBe(0);
+      expect(argv).toEqual([]);
+      expect(output).toMatch(
+        /Could not read the build metadata in rhdh-0\/backstage-backend \(exit [12]\)/u,
+      );
+      expect(output).toContain(reason);
+      expect(output).not.toContain("names no redhat-developer/rhdh main commit");
+    });
+
+    it.each([
+      ["fails", "curl() { return 22; }", "GitHub did not return upstream commit eeeeeee"],
+      [
+        "answers with no JSON",
+        "curl() { echo '<html>'; }",
+        "for upstream commit eeeeeee is not JSON",
+      ],
+      ["names no sha", `curl() { echo '{}'; }`, "for upstream commit eeeeeee names no commit sha"],
+    ])("says why when GitHub %s for a short sha", (_, prelude, message) => {
+      const { status, argv, output } = mainUpload(midstream, {
+        bundle: upstream("eeeeeee"),
+        prelude,
+      });
+      expect(status).toBe(0);
+      expect(argv).toEqual([]);
+      expect(output).toContain(message);
+    });
+
+    it("reads the bundle of a running replica, not a terminating or waiting one", () => {
+      const waiting: Container = [RHDH[0], RHDH[1], DIGEST, "waiting"];
+      const { argv } = mainUpload(midstream, {
+        pods: { "rhdh-3": [waiting], "rhdh-2": [RHDH], "rhdh-0": [SIDECAR, RHDH] },
+        terminating: ["rhdh-2"],
+        bundle: upstream(onMain.slice(0, 8)),
+        prelude: notOnGitHub,
+      });
+      expect(argv).toContain(onMain);
+      expect(readFileSync(join(root, "oc-exec-args"), "utf8")).toContain("\nrhdh-0\n");
+    });
+
+    it("skips the upload when no replica is running", () => {
+      const { status, argv, output } = mainUpload(midstream, {
+        pods: { "rhdh-0": [RHDH] },
+        terminating: ["rhdh-0"],
+        bundle: upstream(onMain.slice(0, 8)),
+      });
+      expect(status).toBe(0);
+      expect(argv).toEqual([]);
+      expect(output).toContain("no running pod has the build metadata");
+    });
+  });
+
+  // Mid-rollout, a replica still waiting for its image reports an empty imageID.
+  it("uploads when another replica has not pulled the image yet", () => {
+    const pulling: Container = [RHDH[0], RHDH[1], "", "waiting"];
+    const { argv, output } = mainUpload(onMain, {
+      pods: { "rhdh-1": [pulling], "rhdh-0": [SIDECAR, RHDH] },
+    });
+    expect(output).not.toContain("Expected one");
+    expect(argv).toContain(onMain);
   });
 
   it("reads the commit from pods that run the image by digest", () => {
-    const { argv } = mainUpload(onMain, { pods: `${DIGEST} ${DIGEST}` });
+    const { argv } = mainUpload(onMain, {
+      pods: { "rhdh-0": [["backstage-backend", DIGEST, DIGEST]] },
+    });
     expect(argv).toContain(onMain);
     expect(readFileSync(join(root, "skopeo-args"), "utf8")).toContain(`docker://${DIGEST}\n`);
   });
