@@ -211,7 +211,7 @@ test.describe("FIPS Compliance Validation", () => {
       expect(response).toBe("PONG");
     } finally {
       if (redis?.status === "ready") {
-        await redis.disconnect();
+        redis.disconnect();
       }
       if (portForward) {
         await portForward.stop();
