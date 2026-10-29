@@ -62,6 +62,8 @@ yarn versions:bump     # Updates Backstage dependencies
 
 Pull requests that bump Backstage, or that add or change a Yarn patch under `.yarn/patches/`, run extra CI checks: a full build and test run, and the `Backstage bump checks` job. See [scripts/backstage-bump-check](scripts/backstage-bump-check/README.md).
 
+To backport a Backstage fix onto an RHDH `release-*` line with Yarn patches (without bumping published `@backstage/*` versions), use `/rhdh-patch-backstage` from the [rhdh-skills `ci/` pack](https://github.com/redhat-developer/rhdh-skills/tree/main/skills/ci), or follow [docs/patch-package.md](docs/patch-package.md).
+
 ### Enhancement Requests
 
 If you want an enhancement of a feature or workflow, you can submit an [issue](https://github.com/redhat-developer/rhdh/issues/new?assignees=&labels=kind%2Fenhancement%2Cstatus%2Ftriage&template=enhancement.md) describing the enhancement. Include:
