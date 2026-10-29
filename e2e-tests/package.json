@@ -43,7 +43,7 @@
     "yaml": "2.9.1"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.13.0",
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.62.1",
     "@red-hat-developer-hub/e2e-test-utils": "2.2.2",
     "@support/coverage": "portal:./playwright/support/coverage",
@@ -52,7 +52,7 @@
     "eslint-plugin-check-file": "3.3.2",
     "eslint-plugin-playwright": "2.11.0",
     "ioredis": "5.11.1",
-    "monocart-coverage-reports": "2.13.0",
+    "monocart-coverage-reports": "2.13.2",
     "otplib": "12.0.1",
     "oxfmt": "0.67.0",
     "oxlint": "1.80.0",
