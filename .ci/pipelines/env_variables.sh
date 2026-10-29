@@ -44,6 +44,11 @@ HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
 QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
+# TEMPORARY (RHDH 1.9.10 RC validation): pin the hub image and chart to the RC build.
+# Revert once RC testing is complete.
+QUAY_REPO="rhdh/rhdh-hub-rhel9"
+TAG_NAME="1.9-259"
+CHART_VERSION="1.9-259-CI"
 QUAY_NAMESPACE=$(cat /tmp/secrets/QUAY_NAMESPACE)
 QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN)
 

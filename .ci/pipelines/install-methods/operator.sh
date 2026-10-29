@@ -83,10 +83,27 @@ install_rhdh_operator() {
       log::error "Failed to extract operator version from RELEASE_BRANCH_NAME: '$RELEASE_BRANCH_NAME'"
       return 1
     fi
-    log::info "Installing RHDH operator with '-v $operator_version' flag"
+    # TEMPORARY (RHDH 1.9.10 RC validation): the 1.9 IIB tags float past the RC, so pin
+    # the IIB digests that carry bundle 1.9-287. Revert once RC testing is complete.
+    local ocp_minor="v4.21" # the catalog script's default on non-OpenShift clusters
+    if [[ "${IS_OPENSHIFT}" == "true" ]]; then
+      ocp_minor="v$(oc version -o json | jq -r '.openshiftVersion' | cut -d. -f1,2)"
+    fi
+    local catalog_source_args=()
+    case "$ocp_minor" in
+      v4.18) catalog_source_args=(--catalog-source "quay.io/rhdh/iib@sha256:c5d3831f56e9d89e0e84bb4a0769468e16236ad369896a2c2f2ad32564688898") ;;
+      v4.19) catalog_source_args=(--catalog-source "quay.io/rhdh/iib@sha256:1bd11f21f8bf85753787e2d0fe49abfbc05f9d99ee6efe39e4634ea31ab0db2b") ;;
+      v4.20) catalog_source_args=(--catalog-source "quay.io/rhdh/iib@sha256:afcfd38b51a22280ae2e35e040e79ce2daa7c993d6fcc8fa8659d5a785dcb273") ;;
+      v4.21) catalog_source_args=(--catalog-source "quay.io/rhdh/iib@sha256:305a08df14ad0f984aa927616ad29f2d9bededf8c1fb2bac081e10fc71a78e7f") ;;
+      v4.22) catalog_source_args=(--catalog-source "quay.io/rhdh/iib@sha256:390242c7ca695b4d0df16e9aec3b8dab542e2aa2adb71bba4eee50b257bdd29f") ;;
+      v4.23) catalog_source_args=(--catalog-source "quay.io/rhdh/iib@sha256:bf2092b1dd94722e38e66cac7035f03d78b697889d905de42e23a11ed68e1fc6") ;;
+      v5.0) catalog_source_args=(--catalog-source "quay.io/rhdh/iib@sha256:e12385936574a937d7914c796ff32bb22f825cd741ee0dc57d3f59e75c072daa") ;;
+      *) log::warn "No pinned RC IIB for OCP ${ocp_minor}; using the floating ${operator_version} IIB" ;;
+    esac
+    log::info "Installing RHDH operator with '-v $operator_version ${catalog_source_args[*]}' flags"
     for ((i = 1; i <= max_attempts; i++)); do
       # Not using bash -x to avoid leaking skopeo tokens in CI logs
-      if output=$(bash /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh 2>&1); then
+      if output=$(bash /tmp/install-rhdh-catalog-source.sh -v "$operator_version" "${catalog_source_args[@]}" --install-operator rhdh 2>&1); then
         log::debug "${output}"
         log::success "RHDH Operator installed on attempt ${i}."
         break
