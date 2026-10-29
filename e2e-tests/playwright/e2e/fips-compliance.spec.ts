@@ -2,6 +2,9 @@ import * as tls from "tls";
 import * as url from "url";
 
 import { test, expect } from "@support/coverage/test";
+import Redis from "ioredis";
+
+import { PortForwardHarness } from "../support/harnesses/port-forward-harness";
 
 test.describe("FIPS Compliance Validation", () => {
   test.beforeAll(({}, testInfo) => {
@@ -164,5 +167,55 @@ test.describe("FIPS Compliance Validation", () => {
     expect(sigAlg.toLowerCase()).toMatch(/sha(256|384|512)/iu);
     expect(sigAlg.toLowerCase()).not.toMatch(/md5/iu);
     expect(sigAlg.toLowerCase()).not.toMatch(/sha1(?!with)/iu);
+  });
+
+  test("Redis TLS connection works", async () => {
+    const REDIS_LOCAL_PORT = 16_379;
+    let portForward: PortForwardHarness | null = null;
+    let redis: Redis | null = null;
+
+    try {
+      // Setup port-forward to Redis
+      portForward = new PortForwardHarness(
+        {
+          shellCommand: `
+            oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
+            kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
+            kubectl port-forward service/redis ${REDIS_LOCAL_PORT}:6379 --namespace="${process.env.NAME_SPACE}"
+          `,
+        },
+        {
+          readyPattern: /Forwarding from/u,
+          readyTimeoutMs: 60_000,
+        },
+      );
+
+      await portForward.start();
+
+      // Connect to Redis with TLS
+      const redisUrl = `rediss://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:${REDIS_LOCAL_PORT}`;
+      const redisOptions = {
+        tls: {
+          // Port-forward bypasses server name verification
+          rejectUnauthorized: false,
+        },
+      };
+
+      console.log("[FIPS] Connecting to Redis with TLS...");
+      redis = new Redis(redisUrl, redisOptions);
+
+      // Verify connection with PING
+      const response = await redis.ping();
+      console.log(`[FIPS] Redis PING response: ${response}`);
+
+      expect(response).toBe("PONG");
+    } finally {
+      if (redis?.status === "ready") {
+        redis.disconnect();
+      }
+      if (portForward) {
+        await portForward.stop();
+      }
+    }
   });
 });
