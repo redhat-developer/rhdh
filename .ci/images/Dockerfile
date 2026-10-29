@@ -1,7 +1,7 @@
 # Base image from Microsoft Playwright (multi-arch: amd64 + arm64)
 # Playwright v1.62.1-noble includes Node 24.14.1
 # Pinned to manifest list digest to support both platforms
-FROM mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
 
 # Automatically set by buildx/podman based on --platform (amd64 or arm64)
 ARG TARGETARCH
