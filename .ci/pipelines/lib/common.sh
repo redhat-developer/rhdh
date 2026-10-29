@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Common utility functions for pipeline scripts
-# Dependencies: oc, kubectl, lib/log.sh
+# Dependencies: oc, kubectl, jq, lib/log.sh
 
 if [[ -n "${COMMON_LIB_SOURCED:-}" ]]; then
   return 0
@@ -70,6 +70,51 @@ common::sed_inplace() {
     sed -i "$@"
   fi
   return $?
+}
+
+# Get the release stream this run belongs to: a major.minor pair like "1.10",
+# not a bare major. 'main' takes it from package.json; 'release-x.y' from the
+# branch name.
+# Args:
+#   $1 - (optional) version_override: Specific stream to use (e.g., "1.8" for upgrade base)
+# Returns:
+#   Prints the stream (e.g., "1.10")
+common::get_release_stream() {
+  local version_override=${1:-}
+
+  if [[ -n "$version_override" ]]; then
+    echo "$version_override"
+    return 0
+  fi
+
+  if [[ -z "${RELEASE_BRANCH_NAME:-}" ]]; then
+    log::error "RELEASE_BRANCH_NAME is not set"
+    return 1
+  fi
+
+  if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
+    # main carries no version in its name. The published tags cannot answer
+    # this either - they hold every stream anyone pushed, so "highest on quay"
+    # follows whichever stream is ahead, not this checkout's.
+    local package_json="${DIR}/../../package.json"
+    if [[ ! -f "$package_json" ]]; then
+      log::error "Cannot determine the release stream: ${package_json} not found"
+      return 1
+    fi
+
+    local release_stream
+    release_stream=$(jq -r '.version // empty' "$package_json" | grep -oE '^[0-9]+\.[0-9]+')
+    if [[ -z "$release_stream" ]]; then
+      log::error "Cannot determine the release stream: no usable .version in ${package_json}"
+      return 1
+    fi
+    echo "$release_stream"
+  elif echo "$RELEASE_BRANCH_NAME" | grep -qE '^release-[0-9]+\.[0-9]+$'; then
+    echo "$RELEASE_BRANCH_NAME" | grep -oE '[0-9]+\.[0-9]+'
+  else
+    log::error "Invalid RELEASE_BRANCH_NAME: $RELEASE_BRANCH_NAME (expected 'main' or 'release-x.y')"
+    return 1
+  fi
 }
 
 # Find the highest existing release branch below the current version.

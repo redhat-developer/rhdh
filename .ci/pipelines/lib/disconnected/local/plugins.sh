@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# LOCAL_DISCONNECTED plugin mirroring: homepage-only mirror_plugins override
+# LOCAL_DISCONNECTED plugin mirroring: smoke-plugin mirror_plugins override
 # (retry loop, skopeo catalog copy, imagestream tagging). Sourced only when
 # LOCAL_DISCONNECTED=1.
 
 [[ -n "${_DISCONNECTED_LOCAL_PLUGINS_SOURCED:-}" ]] && return 0
 readonly _DISCONNECTED_LOCAL_PLUGINS_SOURCED=1
 
-# Full override: homepage-only plugin list, retry loop, skopeo catalog copy,
+# Full override: smoke plugin list, retry loop, skopeo catalog copy,
 # summary handling, and imagestream tagging.
 disconnected::mirror_plugins() {
   local mirror_script="${DISCONNECTED_TMPDIR}/mirror-plugins.sh"
@@ -19,10 +19,8 @@ disconnected::mirror_plugins() {
   local plugin_index
   plugin_index="oci://$(disconnected::_catalog_index_source_ref)"
 
-  local list_file="${DISCONNECTED_TMPDIR}/homepage-plugins.txt"
-  disconnected::write_digest_plugin_list "${plugin_index}" "${list_file}" \
-    "${DISCONNECTED_HOMEPAGE_PLUGIN_NAME}" || return 1
-  disconnected::set_homepage_plugin_package_from_list "${list_file}" || return 1
+  local list_file="${DISCONNECTED_TMPDIR}/smoke-plugins.txt"
+  disconnected::write_smoke_plugin_list "${list_file}" || return 1
 
   # --plugin-list only (not --plugin-index): index mode re-adds fragile tags.
   # Catalog index is mirrored after plugins so the summary still records it.
@@ -40,7 +38,7 @@ disconnected::mirror_plugins() {
     log::warn "mirror-plugins.sh attempt ${attempt}/${max_attempts} failed (registry 503 during Recreate is typical)"
   done
   if [[ "${mirrored}" != "1" ]]; then
-    log::error "mirror-plugins.sh (homepage plugin list) failed after ${max_attempts} attempts -- aborting"
+    log::error "mirror-plugins.sh (smoke plugin list) failed after ${max_attempts} attempts -- aborting"
     return 1
   fi
 

@@ -97,7 +97,8 @@ testing::run_tests() {
   fi
 
   # RHIDP-13243: V8 coverage collection for E2E tests.
-  # handle_ocp_pull turns it on for the PR check (RHIDP-13242). When enabled, the
+  # handle_ocp_pull (PR check) and handle_ocp_nightly (main nightly only) turn it
+  # on (RHIDP-13242). When enabled, the
   # coverage fixture wraps page.coverage.startJSCoverage/stopJSCoverage and
   # the reporter merges raw JSON into lcov via monocart-coverage-reports.
   export COLLECT_COVERAGE="${COLLECT_COVERAGE:-false}"
@@ -135,7 +136,7 @@ testing::run_tests() {
   # RHIDP-13243: Save and upload E2E coverage report
   if [[ -f "${e2e_tests_dir}/coverage/e2e/lcov.info" ]]; then
     common::save_artifact "${artifacts_subdir}" "${e2e_tests_dir}/coverage/e2e/" "coverage" || true
-    testing::_upload_e2e_coverage "${e2e_tests_dir}/coverage/e2e/lcov.info"
+    testing::_upload_e2e_coverage "${e2e_tests_dir}/coverage/e2e/lcov.info" "${namespace}"
   fi
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
@@ -173,6 +174,135 @@ testing::_coverage_pr_head() {
   echo "${sha} ${pr}"
 }
 
+# RHIDP-13242: Succeeds for the one nightly that uploads E2E coverage to main.
+# Uses globals: JOB_NAME
+testing::is_main_coverage_nightly() {
+  [[ "${JOB_NAME:-}" == *-rhdh-main-e2e-ocp-helm-nightly ]]
+}
+
+# RHIDP-13242: Prints the main commit the RHDH image in a namespace was built from,
+# or nothing. Only the main OCP Helm nightly deploying `next` qualifies. The commit
+# is the image's org.opencontainers.image.revision label, read from the digest the
+# pods actually ran, so a `next` rebuilt mid-job does not change it. Konflux images
+# (quay.io/rhdh/rhdh-hub-*) label the GitLab midstream commit instead; for those the
+# upstream commit comes from the app's build metadata.
+# Args:
+#   $1 - namespace: where the tested RHDH runs
+# Uses globals: JOB_NAME, TAG_NAME, IMAGE_REGISTRY, IMAGE_REPO, DIR
+testing::_coverage_main_commit() {
+  local namespace="${1:-}"
+  testing::is_main_coverage_nightly && [[ "${TAG_NAME:-}" == "next" && -n "${namespace}" ]] || return 0
+
+  local image="${IMAGE_REGISTRY:-quay.io}/${IMAGE_REPO:-rhdh-community/rhdh}" containers image_ids
+  # One "<pod>\t<container>\t<imageID>\t<live>" line per container that runs the
+  # image and has pulled it. live is true for a running container in a pod that is
+  # not being deleted, so `oc exec` never targets a terminating one.
+  containers=$(timeout 60 oc get pods -n "${namespace}" -o json 2> /dev/null \
+    | jq -r --arg image "${image}" '.items[] | .metadata.name as $pod
+        | (.metadata.deletionTimestamp == null) as $kept | .status.containerStatuses[]?
+        | select(.imageID != "")
+        | select((.image | startswith($image + ":")) or (.image | startswith($image + "@")))
+        | [$pod, .name, .imageID, ($kept and .state.running != null)] | @tsv' 2> /dev/null)
+  image_ids=$(cut -f3 <<< "${containers}" | sort -u)
+  if [[ -z "${image_ids}" || "${image_ids}" == *$'\n'* ]]; then
+    log::warn "Expected one ${image} digest in ${namespace}, found: ${image_ids:-none}"
+    return 0
+  fi
+
+  local sha
+  sha=$(timeout 60 skopeo inspect --override-os linux --override-arch amd64 "docker://${image_ids#docker-pullable://}" 2> /dev/null \
+    | jq -r '.Labels["org.opencontainers.image.revision"] // empty' 2> /dev/null)
+  if [[ "${sha}" =~ ^[0-9a-f]{40}$ ]] && testing::_commit_on_main "${sha}"; then
+    echo "${sha}"
+    return 0
+  fi
+
+  local pod container upstream
+  read -r pod container < <(awk -F '\t' '$4 == "true" { print $1, $2; exit }' <<< "${containers}") || true
+  if [[ -z "${pod}" ]]; then
+    log::warn "Could not find a main commit for ${image_ids}: revision label ${sha:-none} is not confirmed on main, and no running pod has the build metadata"
+    return 0
+  fi
+  upstream=$(testing::_build_metadata_upstream "${namespace}" "${pod}" "${container}")
+  if [[ -z "${upstream}" ]]; then
+    log::warn "Could not find a main commit for ${image_ids}: revision label ${sha:-none} is not confirmed on main, and the build metadata gave no upstream commit"
+    return 0
+  fi
+  if ! testing::_commit_on_main "${upstream}"; then
+    log::warn "Could not confirm that main contains upstream commit ${upstream} of ${image_ids}"
+    return 0
+  fi
+  log::info "Revision label ${sha:-none} is not confirmed on main; using upstream commit ${upstream} from the build metadata"
+  echo "${upstream}"
+}
+
+# RHIDP-13242: Prints the full upstream main commit named by the app's build metadata
+# (".../redhat-developer/rhdh/tree/main @ <short sha>"), which is minified into the
+# bundle the pod ships, or nothing. Logs why when it prints nothing.
+# Args:
+#   $1 - namespace
+#   $2 - pod
+#   $3 - container: the one that runs the RHDH image
+# Uses globals: DIR
+testing::_build_metadata_upstream() {
+  local namespace="$1" pod="$2" container="$3"
+  local dist="/opt/app-root/src/packages/app/dist" matches err status=0 short full body
+  err=$(mktemp)
+  # grep exits 1 when nothing matches, which is not a failed read. Fold that into 0
+  # in the container: oc reports any non-zero exit on stderr, so it looks like one.
+  # This needs a shell in the image (/usr/bin/sh is bash on the ubi10 bases); without
+  # one every call fails here with exit 127.
+  matches=$(timeout 60 oc exec -n "${namespace}" "${pod}" -c "${container}" -- \
+    sh -c 'grep -rhoE "$1" "$2"; rc=$?; [ "${rc}" -eq 1 ] && exit 0; exit "${rc}"' _ \
+    'redhat-developer/rhdh/tree/main ?@ ?[0-9a-f]{7,40}' "${dist}" 2> "${err}") || status=$?
+  if [[ ${status} -ne 0 ]]; then
+    log::warn "Could not read the build metadata in ${pod}/${container} (exit ${status})"
+    log::debug "$(< "${err}")"
+    rm -f "${err}"
+    return 0
+  fi
+  rm -f "${err}"
+  short=$(grep -oE '[0-9a-f]{7,40}$' <<< "${matches}" | sort -u | head -1)
+  if [[ -z "${short}" ]]; then
+    log::warn "The build metadata in ${pod}/${container} names no redhat-developer/rhdh main commit"
+    return 0
+  fi
+  if full=$(git -C "${DIR}" rev-parse --verify -q "${short}^{commit}" 2> /dev/null); then
+    echo "${full}"
+    return 0
+  fi
+  if ! body=$(curl -fsS --max-time 30 "https://api.github.com/repos/redhat-developer/rhdh/commits/${short}" 2> /dev/null); then
+    log::warn "GitHub did not return upstream commit ${short} from the build metadata"
+    return 0
+  fi
+  if ! full=$(jq -r '.sha // empty' <<< "${body}" 2> /dev/null); then
+    log::warn "GitHub's response for upstream commit ${short} is not JSON"
+    return 0
+  fi
+  if [[ ! "${full}" =~ ^[0-9a-f]{40}$ ]]; then
+    log::warn "GitHub's response for upstream commit ${short} names no commit sha"
+    return 0
+  fi
+  echo "${full}"
+}
+
+# Succeeds when main contains the commit. Uses the checkout (the periodic clones
+# main) when it has the commit, otherwise asks GitHub.
+# Args:
+#   $1 - sha
+# Uses globals: DIR
+testing::_commit_on_main() {
+  local sha=$1
+  if git -C "${DIR}" cat-file -e "${sha}^{commit}" 2> /dev/null; then
+    git -C "${DIR}" merge-base --is-ancestor "${sha}" HEAD
+    return
+  fi
+  local status
+  status=$(curl -fsS --max-time 30 "https://api.github.com/repos/redhat-developer/rhdh/compare/${sha}...main" 2> /dev/null \
+    | jq -r '.status // empty' 2> /dev/null)
+  [[ "${status}" == "ahead" || "${status}" == "identical" ]]
+}
+
 # RHIDP-13242: Prints the path of a checksum-verified Codecov CLI for this machine's
 # architecture, downloading the pinned release unless an executable is already at
 # CODECOV_BIN. The build farm runs steps on both x86_64 and aarch64 nodes.
@@ -207,13 +337,16 @@ testing::_codecov_cli() {
 }
 
 # RHIDP-13242: Upload the merged E2E lcov to Codecov under the rhdh-e2e-frontend
-# flag. Never fails the job: coverage is reporting, not a gate, and the caller has
+# flag, to the PR head or, from the main nightly, to the main commit it tested.
+# Never fails the job: coverage is reporting, not a gate, and the caller has
 # already saved the report as an artifact.
 # Args:
 #   $1 - path to the merged lcov.info
-# Uses globals: CODECOV_TOKEN (env_variables.sh), DIR
+#   $2 - namespace: (optional) where the tested RHDH runs
+# Uses globals: CODECOV_TOKEN (env_variables.sh), DIR, COVERAGE_MAIN_SHA (set here)
 testing::_upload_e2e_coverage() {
   local lcov_file="$1"
+  local namespace="${2:-}"
   if [[ -z "${CODECOV_TOKEN:-}" ]]; then
     log::info "No Codecov token mounted — skipping Codecov upload. Coverage report saved as artifact."
     return 0
@@ -222,13 +355,29 @@ testing::_upload_e2e_coverage() {
     log::warn "E2E lcov names no source file (were the app's source maps reachable?) — skipping Codecov upload"
     return 0
   fi
-  local head sha pr codecov_bin repo_root
+  local head sha pr target codecov_bin repo_root target_args
   head=$(testing::_coverage_pr_head)
-  if [[ -z "${head}" ]]; then
-    log::info "Run did not test a PR image (TAG_NAME=${TAG_NAME:-unset}) — skipping Codecov upload"
-    return 0
+  if [[ -n "${head}" ]]; then
+    read -r sha pr <<< "${head}"
+    target="PR #${pr}"
+    target_args=(--sha "${sha}" --pr "${pr}")
+  else
+    sha=$(testing::_coverage_main_commit "${namespace}")
+    if [[ -z "${sha}" ]]; then
+      log::info "Run did not test a PR image or a main build (TAG_NAME=${TAG_NAME:-unset}) — skipping Codecov upload"
+      return 0
+    fi
+    # `next` is rebuilt on every merge, so a later project can run a newer image.
+    # Keep the job on one commit: a commit holding only some projects' uploads
+    # would hide the rest, since carryforward skips commits that have the flag.
+    if [[ -n "${COVERAGE_MAIN_SHA:-}" && "${sha}" != "${COVERAGE_MAIN_SHA}" ]]; then
+      log::warn "This job uploads E2E coverage for ${COVERAGE_MAIN_SHA}; skipping ${sha}"
+      return 0
+    fi
+    COVERAGE_MAIN_SHA="${sha}"
+    target="main"
+    target_args=(--sha "${sha}" --branch main)
   fi
-  read -r sha pr <<< "${head}"
   if ! codecov_bin=$(testing::_codecov_cli); then
     log::warn "No checksum-verified Codecov CLI available — skipping upload"
     return 0
@@ -240,7 +389,7 @@ testing::_upload_e2e_coverage() {
     return 0
   fi
 
-  log::info "Uploading E2E coverage to Codecov (flag: rhdh-e2e-frontend, PR #${pr}, ${sha})..."
+  log::info "Uploading E2E coverage to Codecov (flag: rhdh-e2e-frontend, ${target}, ${sha})..."
   # The CLI reads CODECOV_TOKEN from the environment; never pass it in argv,
   # where any process listing would show it.
   "${codecov_bin}" upload-process \
@@ -249,8 +398,7 @@ testing::_upload_e2e_coverage() {
     --network-root-folder "${repo_root}" \
     --flag rhdh-e2e-frontend \
     --slug redhat-developer/rhdh \
-    --sha "${sha}" \
-    --pr "${pr}" \
+    "${target_args[@]}" \
     --fail-on-error || log::warn "Codecov E2E coverage upload failed (non-fatal)"
 }
 
@@ -305,67 +453,6 @@ testing::_count_junit_failures() {
     echo "${UNKNOWN_FAILURE_COUNT}"
   else
     echo "${total}"
-  fi
-}
-
-# Scans RHDH pod logs in a namespace for dynamic-plugin startup failures and
-# prints a summary naming each failed plugin. On CrashLoopBackOff the culprit is
-# in the PREVIOUS container logs (-p). Advisory only: never fails.
-# Args:
-#   $1 - release_name: selects the RHDH pods
-#   $2 - namespace
-#   $3 - artifacts_subdir: where to save the summary artifact
-testing::report_plugin_startup_failures() {
-  local release_name=$1
-  local namespace=$2
-  local artifacts_subdir=$3
-  local out="/tmp/plugin-startup-failures-${namespace}.txt"
-
-  # Collected here rather than reused from save_all_pod_logs: that runs only when
-  # a test fails, and its pod_logs/ directory is not namespace-scoped, so a
-  # leftover copy would report another namespace's failures.
-  #
-  # One query yields both the pod list and whether anything actually crashed, so
-  # a healthy run does not pay for two `oc logs` calls per pod.
-  local pod_status
-  pod_status=$(timeout 60 oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub)" \
-    -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.containerStatuses[*]}{.restartCount}{" "}{end}{range .status.initContainerStatuses[*]}{.restartCount}{" "}{end}{"\n"}{end}' 2> /dev/null || true)
-
-  if [[ -z "${pod_status//[[:space:]]/}" ]]; then
-    # Distinct from "scanned and found nothing": a bad selector must not read as
-    # a clean bill of health.
-    log::warn "No RHDH pods matched in ${namespace}; skipping startup-failure scan."
-    return 0
-  fi
-
-  # A plugin that fails startup fatally takes the backend down, so if every pod
-  # is Running with no restarts there is nothing here to find.
-  local unhealthy
-  unhealthy=$(awk 'NF == 0 { next } $2 != "Running" { print $1; next } { for (i = 3; i <= NF; i++) if ($i != "0") { print $1; next } }' <<< "${pod_status}")
-  if [[ -z "${unhealthy}" ]]; then
-    log::info "All RHDH pods in ${namespace} are Running with no restarts; skipping startup-failure scan."
-    return 0
-  fi
-
-  local pods
-  pods=$(awk 'NF > 0 { print "pod/" $1 }' <<< "${pod_status}")
-
-  {
-    local pod
-    for pod in ${pods}; do
-      # Current and previous (pre-crash) logs; either may not exist yet.
-      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers 2> /dev/null || true
-      timeout 60 oc logs "${pod}" -n "${namespace}" --all-containers -p 2> /dev/null || true
-    done
-  } | "${DIR}/../../e2e-tests/local-harness/filter-plugin-startup-failures.sh" > "${out}" || true
-
-  if [[ -s "${out}" ]]; then
-    log::error "==================== PLUGIN STARTUP FAILURES (${namespace}) ===================="
-    cat "${out}"
-    log::error "==============================================================================="
-    common::save_artifact "${artifacts_subdir}" "${out}" || true
-  else
-    log::info "No dynamic-plugin startup failures found in ${namespace} pod logs."
   fi
 }
 

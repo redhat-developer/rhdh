@@ -15,7 +15,6 @@
     "showcase-runtime": "playwright test --project=showcase-runtime",
     "showcase-upgrade": "playwright test --project=showcase-upgrade",
     "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
-    "showcase-sanity-plugins": "playwright test --project=showcase-sanity-plugins",
     "showcase-localization-de": "LOCALE=de playwright test --project=showcase-localization-de",
     "showcase-localization-es": "LOCALE=es playwright test --project=showcase-localization-es",
     "showcase-localization-fr": "LOCALE=fr playwright test --project=showcase-localization-fr",
@@ -28,8 +27,7 @@
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
-    "e2e:local": "playwright test --config=playwright.local.config.ts",
-    "e2e:plugin-sanity": "playwright test --config=playwright.plugin-sanity.config.ts"
+    "e2e:local": "playwright test --config=playwright.local.config.ts"
   },
   "dependencies": {
     "@azure/arm-network": "34.2.0",

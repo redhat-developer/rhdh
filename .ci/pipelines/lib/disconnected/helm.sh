@@ -10,16 +10,17 @@ readonly _DISCONNECTED_HELM_SOURCED=1
 # it. Wait for Postgres Ready, then bounce the hub only if it is not Available.
 # No-op when the hub becomes Ready after Postgres (typical local timing).
 #
-# The bounce uses a rolling `oc rollout restart deployment` (never `oc delete
-# pod`): a pod-delete restart was observed to coincide with the PostgreSQL
-# StatefulSet pod being rescheduled, which on AWS triggers a slow (~5 min)
-# EBS CSI volume detach/re-attach (FailedAttachVolume) and cascades into a
-# smoke-test timeout. A rollout restart only touches the hub Deployment.
+# The bounce scales the Deployment to 0 and back to 1 instead of using
+# `oc rollout restart`: a rolling restart runs two backends against the freshly
+# initialised database, which race on the knex migration lock and leave the
+# loser never Ready. The wait gives a pod that is still extracting plugins up to
+# the grace period to start its backend before the hub is considered stuck.
 # Args:
 #   $1 - namespace
 #   $2 - Helm release name (default: rhdh)
 #   $3 - Postgres Ready timeout seconds (default: 600)
-#   $4 - Hub Available grace seconds before restart (default: 180)
+#   $4 - Hub grace seconds: waits this long for the backend container to start,
+#        then this long again for the Deployment to become Available (default: 180)
 #   $5 - Hub rollout timeout seconds after restart (default: 420)
 disconnected::ensure_helm_hub_after_postgres() {
   local namespace=$1
@@ -35,6 +36,7 @@ disconnected::ensure_helm_hub_after_postgres() {
 
   local pg_pod="${release_name}-postgresql-0"
   local hub_deploy="${release_name}-developer-hub"
+  local hub_selector="app.kubernetes.io/name=developer-hub"
   local pg_ready=0
   local start=$SECONDS
 
@@ -58,6 +60,24 @@ disconnected::ensure_helm_hub_after_postgres() {
     return 1
   fi
 
+  log::info "Waiting for the hub backend container to start (timeout ${hub_grace}s)..."
+  local backend_started=0
+  start=$SECONDS
+  while ((SECONDS - start < hub_grace)); do
+    local backend_state
+    backend_state=$(oc get pods -n "${namespace}" -l "${hub_selector}" \
+      -o jsonpath='{range .items[*].status.containerStatuses[?(@.name=="backstage-backend")]}{.started}{"\n"}{end}' \
+      2> /dev/null || true)
+    if grep -q true <<< "${backend_state}"; then
+      backend_started=1
+      break
+    fi
+    sleep 5
+  done
+  if [[ "${backend_started}" -ne 1 ]]; then
+    log::warn "Hub backend did not start within ${hub_grace}s; checking deployment availability anyway"
+  fi
+
   if oc wait --for=condition=Available "deployment/${hub_deploy}" \
     -n "${namespace}" --timeout="${hub_grace}s"; then
     log::success "Hub ${hub_deploy} already Available — skipping restart"
@@ -66,8 +86,20 @@ disconnected::ensure_helm_hub_after_postgres() {
 
   log::warn "Hub ${hub_deploy} not Available after Postgres Ready — restarting to recover from DB connect race"
   oc get pods -n "${namespace}" || true
-  if ! oc rollout restart "deployment/${hub_deploy}" -n "${namespace}"; then
-    log::error "Failed to restart deployment/${hub_deploy} in ${namespace}"
+  if ! oc scale "deployment/${hub_deploy}" --replicas=0 -n "${namespace}"; then
+    log::error "Failed to scale deployment/${hub_deploy} down in ${namespace}"
+    return 1
+  fi
+  # Wait for the old pod to be gone before starting the replacement, otherwise
+  # both backends initialise at once. kubectl treats --for=delete as satisfied
+  # when nothing matches, so this only fails while a pod is still there.
+  if ! oc wait --for=delete pod -l "${hub_selector}" -n "${namespace}" --timeout=180s; then
+    log::error "Old hub pods still present after 180s — not scaling up next to them"
+    oc get pods -l "${hub_selector}" -n "${namespace}" -o wide || true
+    return 1
+  fi
+  if ! oc scale "deployment/${hub_deploy}" --replicas=1 -n "${namespace}"; then
+    log::error "Failed to scale deployment/${hub_deploy} back up in ${namespace}"
     return 1
   fi
   if ! oc rollout status "deployment/${hub_deploy}" -n "${namespace}" --timeout="${rollout_timeout}s"; then

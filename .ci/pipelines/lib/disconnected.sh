@@ -55,7 +55,9 @@ export -f disconnected::cluster_mirror_host
 export -f disconnected::build_imageset_config
 export -f disconnected::run_oc_mirror
 export -f disconnected::patch_idms
-export -f disconnected::wait_mcp_updated
+export -f disconnected::snapshot_machineconfigpool_rendered_configs
+export -f disconnected::_machineconfigpool_all_converged
+export -f disconnected::wait_machineconfigpool_updated
 export -f disconnected::_hook_should_add_hub_image
 export -f disconnected::_hook_adjust_oc_mirror_args
 export -f disconnected::_hook_run_oc_mirror
@@ -63,10 +65,13 @@ export -f disconnected::_hook_rewrite_mirror_host
 # plugins.sh
 export -f disconnected::mirror_plugins
 export -f disconnected::resolve_catalog_index_image
-export -f disconnected::create_homepage_plugins_configmap
+export -f disconnected::create_smoke_plugins_configmap
 export -f disconnected::apply_plugin_mirror_configmap
 export -f disconnected::write_digest_plugin_list
-export -f disconnected::set_homepage_plugin_package_from_list
+export -f disconnected::write_smoke_plugin_list
+export -f disconnected::set_smoke_plugin_packages_from_list
+export -f disconnected::render_smoke_plugins_template
+export -f disconnected::_smoke_plugin_package_var
 export -f disconnected::copy_catalog_index_to_mirror
 export -f disconnected::_catalog_index_source_ref
 export -f disconnected::_catalog_index_mirror_dest
@@ -75,6 +80,7 @@ export -f disconnected::_hook_catalog_index_exports
 # namespace.sh
 export -f disconnected::create_mirror_registry_ca_configmap
 export -f disconnected::create_plugin_registry_auth_secret
+export -f disconnected::allow_mirror_registry_egress
 export -f disconnected::ensure_mirror_registry_ca
 export -f disconnected::ensure_olm_mirror_pull_secret
 # operator.sh
