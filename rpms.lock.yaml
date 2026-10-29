@@ -3343,13 +3343,6 @@ arches:
     name: xz
     evr: 5.2.5-8.el9_8.1
     sourcerpm: xz-5.2.5-8.el9_8.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/x/xz-libs-5.2.5-8.el9_8.1.aarch64.rpm
-    repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 97519
-    checksum: sha256:676d05687218716506c26203552a5a4537e72c20928b03d5c245301feb936e5f
-    name: xz-libs
-    evr: 5.2.5-8.el9_8.1
-    sourcerpm: xz-5.2.5-8.el9_8.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/y/yum-4.14.0-34.el9_8.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 77555
@@ -8517,13 +8510,6 @@ arches:
     size: 237249
     checksum: sha256:642e46f7fcc460ee7ec0984a63e9f68ecefbea115c9724c0bab53e885e07bf11
     name: xz
-    evr: 5.2.5-8.el9_8.1
-    sourcerpm: xz-5.2.5-8.el9_8.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/x/xz-libs-5.2.5-8.el9_8.1.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 99498
-    checksum: sha256:0a0aed732d24942475761b6094842dd58c2eecf396f96556a1bdde0f890c97f9
-    name: xz-libs
     evr: 5.2.5-8.el9_8.1
     sourcerpm: xz-5.2.5-8.el9_8.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/y/yum-4.14.0-34.el9_8.noarch.rpm
