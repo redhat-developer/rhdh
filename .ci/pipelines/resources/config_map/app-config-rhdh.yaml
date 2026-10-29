@@ -155,7 +155,7 @@ catalog:
     - type: url
       target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
     - type: url
-      target: https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-kubernetes/plugins/kubernetes-actions/examples/templates/01-kubernetes-template.yaml
+      target: https://github.com/backstage/community-plugins/blob/94537ec5411869f45adce62a91bd8ec5246404d1/workspaces/scaffolder-backend-module-kubernetes/plugins/scaffolder-backend-module-kubernetes/examples/templates/01-kubernetes-template.yaml
     - type: url
       target: https://github.com/backstage/community-plugins/blob/main/workspaces/quay/plugins/quay-actions/examples/templates/01-quay-template.yaml
     - type: url
