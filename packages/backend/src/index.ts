@@ -15,7 +15,6 @@ import {
   pluginIDProviderService,
   rbacDynamicPluginsProvider,
 } from './modules';
-import { userSettingsBackend } from './modules/userSettings';
 
 // Create a logger to cover logging static initialization tasks
 const staticLogger = WinstonLogger.create({
@@ -89,23 +88,7 @@ backend.add(
 // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
-backend.add(import('@backstage/plugin-catalog-backend'));
-
-// TODO: Probably we should now provide this as a dynamic plugin
-backend.add(import('@backstage/plugin-catalog-backend-module-openapi'));
-
 backend.add(import('@backstage/plugin-proxy-backend'));
-
-// TODO: Check in the Scaffolder new backend plugin why the identity is not passed and the default is built instead.
-backend.add(import('@backstage/plugin-scaffolder-backend'));
-
-// search engine
-// See https://backstage.io/docs/features/search/search-engines
-backend.add(import('@backstage/plugin-search-backend-module-pg'));
-
-// search collators
-backend.add(import('@backstage/plugin-search-backend'));
-backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 
 // TODO: We should test it more deeply. The structure is not exactly the same as the old backend implementation
 backend.add(import('@backstage/plugin-events-backend'));
@@ -131,7 +114,5 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-translations-backend'),
 );
 backend.add(import('@internal/plugin-licensed-users-info-backend'));
-
-backend.add(userSettingsBackend);
 
 backend.start();
