@@ -15,8 +15,22 @@
 name: Build Next and Tag Image
 
 on:
-  # workflow_dispatch so that it can be triggered manually if needed
+  # workflow_dispatch so that it can be triggered manually if needed.
+  # To republish a release tag with the workflow from main (e.g. after a CI fix):
+  #   gh workflow run next-build-image.yaml --ref main \
+  #     -f checkout_ref=1.10.6 -f image_tag=1.10.6
   workflow_dispatch:
+    inputs:
+      checkout_ref:
+        description: 'Git ref to build (tag/branch/sha). Empty = the branch selected for this run.'
+        required: false
+        default: ''
+        type: string
+      image_tag:
+        description: 'Override image tag name (e.g. 1.10.6). Empty = derive from checkout_ref / branch.'
+        required: false
+        default: ''
+        type: string
   schedule:
     # run at 3:18 UTC every day
     - cron: "18 3 * * *"
@@ -43,9 +57,105 @@ env:
   REGISTRY_IMAGE: ${{ vars.QUAY_RHDH_IMAGE_REPO || 'rhdh-community/rhdh' }}
 
 jobs:
+  # hermeto:latest is amd64-only (yarn under qemu SIGSEGVs), so run the full hermeto
+  # pipeline once on amd64 — fetch-deps (both yarn CPUs) + generate-env + inject-files —
+  # and share the ready cache to native amd64/arm64 builders (no hermeto/qemu on arm).
+  prefetch-hermeto:
+    name: Prefetch Hermeto Cache
+    if: github.repository == 'redhat-developer/rhdh' || vars.QUAY_RHDH_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.checkout_ref || github.ref }}
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: false
+
+      - name: Fetch dependencies with hermeto
+        env:
+          HERMETO_IMAGE: quay.io/konflux-ci/hermeto:latest
+          LOCAL_CACHE_DIR: hermeto-cache/rhdh
+        run: |
+          set -euo pipefail
+          mkdir -p "$LOCAL_CACHE_DIR"
+          # Absolute bind mount — a relative path is treated as a podman named volume.
+          CACHE_ABS="$(cd "$LOCAL_CACHE_DIR" && pwd)"
+
+          # Prefetch optional native deps for BOTH image arches in one hermeto run.
+          # Default yarn behavior only fetches the host CPU (x64 here), so arm64 builds
+          # later miss @esbuild/linux-arm64 / @swc/core-linux-arm64-* and try the network
+          # under buildah --network=none → ERR_SOCKET_CLOSED_BEFORE_CONNECTION.
+          printf '%s\n' \
+            '' \
+            '# CI multi-arch prefetch only (not committed): both community image arches.' \
+            'supportedArchitectures:' \
+            '  os:' \
+            '    - linux' \
+            '  cpu:' \
+            '    - x64' \
+            '    - arm64' \
+            '  libc:' \
+            '    - glibc' \
+            >> .yarnrc.yml
+
+          HERMETO_PODMAN=(podman run --rm --platform linux/amd64 \
+            -v "$PWD:/source:z" -v "$CACHE_ABS:/cachi2:z" -w /source "$HERMETO_IMAGE")
+
+          "${HERMETO_PODMAN[@]}" \
+            --log-level INFO \
+            fetch-deps --dev-package-managers \
+            --source . \
+            --output /cachi2/output \
+            '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "pip","path": "./python", "allow_binary": "false"}]'
+          test -d "$LOCAL_CACHE_DIR/output"
+          # Sanity: arm64 optional packages must be in the shared yarn mirror.
+          if ! find "$LOCAL_CACHE_DIR/output/deps/yarn" -name '*linux-arm64*' | head -1 | grep -q .; then
+            echo "::error::hermeto yarn cache has no linux-arm64 packages; multi-arch arm builds will fail offline"
+            find "$LOCAL_CACHE_DIR/output/deps/yarn/cache" -name '*linux-*' | head -40 || true
+            exit 1
+          fi
+
+          # Finish hermeto on amd64 so arm builders never need the hermeto image/qemu:
+          # generate-env → cachi2.env; inject-files → rpm createrepo metadata in the cache.
+          "${HERMETO_PODMAN[@]}" \
+            --log-level INFO \
+            generate-env --format env \
+            --output /cachi2/cachi2.env /cachi2/output
+          "${HERMETO_PODMAN[@]}" \
+            --log-level INFO \
+            inject-files /cachi2/output
+          test -f "$LOCAL_CACHE_DIR/cachi2.env"
+          du -sh "$LOCAL_CACHE_DIR"
+
+      - name: Upload hermeto cache
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hermeto-cache
+          path: hermeto-cache/rhdh
+          # hermeto writes .build-config.json under output/; v4 excludes dotfiles by default
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
+
   build-image:
     name: Build Image
     if: github.repository == 'redhat-developer/rhdh' || vars.QUAY_RHDH_IMAGE_REPO != '' || github.event_name == 'workflow_dispatch'
+    needs:
+      - prefetch-hermeto
     env:
       HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
     strategy:
@@ -70,10 +180,41 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
+          # For tag republish: build sources from checkout_ref while the workflow
+          # YAML itself comes from the branch selected in the Actions UI (main).
+          ref: ${{ github.event.inputs.checkout_ref || github.ref }}
+
+      # When republishing an older tag, overlay the docker-build action from the
+      # workflow commit (github.sha) so CI fixes on main apply without retagging.
+      - name: Overlay docker-build action from workflow ref
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.checkout_ref != ''
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout: |
+            .github/actions/docker-build
+          sparse-checkout-cone-mode: true
+          path: _workflow_overlay
+
+      - name: Apply docker-build action overlay
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.checkout_ref != ''
+        run: |
+          set -euo pipefail
+          rm -rf .github/actions/docker-build
+          cp -a _workflow_overlay/.github/actions/docker-build .github/actions/docker-build
+          rm -rf _workflow_overlay
+
+      - name: Download hermeto cache
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: hermeto-cache
+          path: hermeto-cache/rhdh
 
       - name: Prepare
         env:
           MATRIX_OS: ${{ matrix.os }}
+          INPUT_CHECKOUT_REF: ${{ github.event.inputs.checkout_ref || '' }}
+          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag || '' }}
         run: |
           if [ "$MATRIX_OS" == "ubuntu-24.04" ]; then
             platform="linux/amd64"
@@ -84,7 +225,17 @@ jobs:
             exit 1
           fi
 
-          ref_name="$GITHUB_REF_NAME"
+          if [ -n "$INPUT_IMAGE_TAG" ]; then
+            ref_name="$INPUT_IMAGE_TAG"
+          elif [ -n "$INPUT_CHECKOUT_REF" ]; then
+            ref_name="$INPUT_CHECKOUT_REF"
+          else
+            ref_name="$GITHUB_REF_NAME"
+          fi
+          # Normalize refs/tags/1.10.6 or origin/1.10.6 → 1.10.6
+          ref_name="${ref_name#refs/tags/}"
+          ref_name="${ref_name#refs/heads/}"
+          ref_name="${ref_name##*/}"
 
           if [ "$ref_name" == "main" ]; then
             ref_name="next"
@@ -146,6 +297,7 @@ jobs:
             org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
           platform: ${{ env.PLATFORM }}
           skipArtifactUpload: true
+          prefetchedCacheDir: hermeto-cache/rhdh
 
       - name: Push Image to Registry
         id: push-image
@@ -200,8 +352,21 @@ jobs:
             password: ${{ secrets.QUAY_TOKEN }}
 
         - name: Prepare
+          env:
+            INPUT_CHECKOUT_REF: ${{ github.event.inputs.checkout_ref || '' }}
+            INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag || '' }}
           run: |
-            ref_name="$GITHUB_REF_NAME"
+            if [ -n "$INPUT_IMAGE_TAG" ]; then
+              ref_name="$INPUT_IMAGE_TAG"
+            elif [ -n "$INPUT_CHECKOUT_REF" ]; then
+              ref_name="$INPUT_CHECKOUT_REF"
+            else
+              ref_name="$GITHUB_REF_NAME"
+            fi
+            ref_name="${ref_name#refs/tags/}"
+            ref_name="${ref_name#refs/heads/}"
+            ref_name="${ref_name##*/}"
+
             if [ "$ref_name" == "main" ]; then
               ref_name="next"
             elif [[ "$ref_name" =~ ^release-([0-9]+)\.([0-9]+) ]]; then
@@ -231,6 +396,7 @@ jobs:
           uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
           with:
             fetch-depth: 0
+            ref: ${{ github.event.inputs.checkout_ref || github.ref }}
 
         - name: Download digests
           uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
