@@ -7,9 +7,14 @@ import {
   clearSlotDatabases,
   closeDatabaseClients,
   dropOwnedDatabases,
+  newRuntimeRunId,
   RUNTIME_DATABASE_CLEANUP_TIMEOUT_MS,
+  RUNTIME_RUN_MAX_AGE_MS,
   type OwnedDatabaseClient,
 } from "../playwright/utils/runtime-database";
+
+/** A whole second, so a run id's start time round-trips exactly. */
+const FIXED_NOW = Date.UTC(2026, 9, 21, 5, 30);
 
 afterEach(() => {
   vi.useRealTimers();
@@ -71,7 +76,7 @@ describe("owned database cleanup failures", () => {
     );
     expect(query).not.toHaveBeenCalled();
   });
-  it("waits for active sessions without FORCE or signalling", async () => {
+  it("waits for active sessions without FORCE, ending only its own role's sessions", async () => {
     vi.useFakeTimers();
     try {
       const start = Date.now();
@@ -97,11 +102,40 @@ describe("owned database cleanup failures", () => {
       await vi.runAllTimersAsync();
       await cleanup;
       expect(dropped).toBe(true);
-      expect(
-        query.mock.calls
-          .map(([input]) => (typeof input === "string" ? input : input.text))
-          .join("\n"),
-      ).not.toMatch(/FORCE|pg_terminate_backend/u);
+      const sql = query.mock.calls.map(([input]) =>
+        typeof input === "string" ? input : input.text,
+      );
+      expect(sql.join("\n")).not.toMatch(/FORCE/u);
+      const terminations = sql.filter((text) => text.includes("pg_terminate_backend"));
+      expect(terminations.length).toBeGreaterThan(0);
+      for (const text of terminations) expect(text).toContain("usename = current_user");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("drops a database whose only sessions are its role's orphans from a stopped pod", async () => {
+    vi.useFakeTimers();
+    try {
+      let orphans = true;
+      let databases = [`${prefix}catalog`];
+      const query = vi.fn<OwnedDatabaseClient["query"]>().mockImplementation((input) => {
+        const text = typeof input === "string" ? input : input.text;
+        if (text.includes("pg_terminate_backend")) orphans = false;
+        if (text.startsWith("DROP")) {
+          if (orphans) return Promise.reject(Object.assign(new Error("busy"), { code: "55006" }));
+          databases = [];
+        }
+        if (text.includes("FROM pg_database")) return Promise.resolve(result(databases));
+        if (text.includes("pg_stat_activity") && !text.includes("pg_terminate_backend"))
+          return Promise.resolve(result(orphans ? [`${prefix}catalog`] : []));
+        return Promise.resolve(result([]));
+      });
+      const cleanup = expect(
+        clearOwnedDatabases({ query }, prefix, 10_000),
+      ).resolves.toBeUndefined();
+      await vi.advanceTimersByTimeAsync(10_000);
+      await cleanup;
+      expect(databases).toEqual([]);
     } finally {
       vi.useRealTimers();
     }
@@ -204,6 +238,7 @@ describe.each([
     await expect(clearSlotDatabases({ query: server.query }, current)).resolves.toEqual({
       retired: [stale],
       failed: [],
+      active: [],
     });
     expect([...server.databases]).toEqual(unrelated);
   });
@@ -214,6 +249,7 @@ describe.each([
     await expect(clearSlotDatabases({ query: server.query }, current)).resolves.toEqual({
       retired: [],
       failed: [stale],
+      active: [],
     });
     expect([...server.databases]).toEqual([`${stale}catalog`]);
     const failing = fakeServer([`${current}catalog`], current);
@@ -221,6 +257,37 @@ describe.each([
       `Failed to drop owned database ${current}catalog`,
     );
   });
+
+  it("leaves another run on the slot alone while it may still be running", async () => {
+    const now = FIXED_NOW;
+    const margin = 60_000;
+    const clockAhead = 30_000;
+    const startedAgo = (ms: number) => stale.replace("abcdef012345", newRuntimeRunId(now - ms));
+    const young = startedAgo(RUNTIME_RUN_MAX_AGE_MS - margin);
+    const skewed = startedAgo(-clockAhead);
+    const old = startedAgo(RUNTIME_RUN_MAX_AGE_MS + margin);
+    const server = fakeServer([
+      `${young}catalog`,
+      `${skewed}catalog`,
+      `${old}catalog`,
+      `${current}catalog`,
+    ]);
+    await expect(clearSlotDatabases({ query: server.query }, current, now)).resolves.toEqual({
+      retired: [old],
+      failed: [],
+      active: [young, skewed],
+    });
+    expect([...server.databases]).toEqual([`${young}catalog`, `${skewed}catalog`]);
+  });
+});
+
+it("starts each run id with its start time so other runs can tell its age", () => {
+  const now = FIXED_NOW;
+  const lastMsOfSecond = 999;
+  const runId = newRuntimeRunId(now + lastMsOfSecond);
+  expect(runId).toMatch(/^[a-f0-9]{12}$/u);
+  expect(Number.parseInt(runId.slice(0, 8), 16) * 1000).toBe(now);
+  expect(runtimeDatabasePrefix(runId, "rds", 1)).toBe(`rt_${runId}_rds1_`);
 });
 
 it("settles every client close before reporting an individual failure", async () => {

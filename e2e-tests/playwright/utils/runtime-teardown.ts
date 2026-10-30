@@ -44,7 +44,7 @@ export async function teardownRuntime(steps: RuntimeTeardown): Promise<void> {
   await attempt("diagnostics", steps.collectDiagnostics);
   const stopped = await attempt("stop-application", steps.stopApplication);
   await attempt("close-sql-clients", steps.closeSqlClients);
-  // A live writer would recreate what is dropped; the next run on the slot retires leftovers.
+  // A live writer would recreate what is dropped; a later run on the slot retires leftovers.
   const dropped = stopped && (await attempt("drop-databases", steps.dropDatabases));
   try {
     await steps.reportCleanup(dropped);

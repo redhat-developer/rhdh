@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 import type { Client, QueryConfig } from "pg";
 
 import { sleep } from "./poll-until";
@@ -62,6 +64,25 @@ export function runtimeDatabasePrefix(
   if (!/^[a-f0-9]{12}$/u.test(runId) || ![1, 2, 3, 4].includes(slot))
     throw new Error("Invalid runtime database ownership");
   return `rt_${runId}_${provider}${slot}_`;
+}
+
+/** Longer than any job that runs these tests; a younger run on the slot may still be live. */
+export const RUNTIME_RUN_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+
+/** Leading hex chars of a run id that hold its start time in seconds; the rest are random. */
+const RUN_ID_TIME_HEX_CHARS = 8;
+
+/** Start time first, so other runs on the slot can read this run's age from its prefix. */
+export function newRuntimeRunId(now = Date.now()): string {
+  const seconds = Math.floor(now / 1000)
+    .toString(16)
+    .padStart(RUN_ID_TIME_HEX_CHARS, "0");
+  return `${seconds}${randomBytes(2).toString("hex")}`;
+}
+
+function runStartedAt(prefix: string): number {
+  const runId = /_([a-f0-9]{12})_/u.exec(prefix)?.[1] ?? "";
+  return Number.parseInt(runId.slice(0, RUN_ID_TIME_HEX_CHARS), 16) * 1000;
 }
 
 export interface OwnedDatabaseClient {
@@ -129,17 +150,23 @@ export async function clearOwnedDatabases(
         if (!busy) throw new Error(`Failed to drop owned database ${name}`, { cause: error });
         let sessions: Array<{ datname: string }> = [];
         try {
+          // Backends of a stopped pod can outlive it until TCP keepalive. Ending this role's own
+          // sessions needs no privilege and never signals the provider's processes.
+          await query(
+            "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND usename = current_user AND pid <> pg_backend_pid()",
+            [name],
+          );
           do {
             sessions = (
               await query(
-                "SELECT pid, datname, backend_type, state, wait_event_type, wait_event FROM pg_stat_activity WHERE starts_with(datname, $1)",
+                "SELECT pid, datname, usename, backend_type, state, wait_event_type, wait_event FROM pg_stat_activity WHERE starts_with(datname, $1)",
                 [prefix],
                 true,
               )
             ).rows;
             if (sessions.some((session) => !session.datname.startsWith(prefix)))
               throw new Error("Session escaped runtime ownership boundary", { cause: error });
-            // Backends can linger after pod termination. Do not signal privileged processes.
+            // Other roles' sessions are left to end on their own.
             await sleep(Math.min(2_000, Math.max(0, deadline - Date.now())));
           } while (sessions.length > 0 && Date.now() < deadline);
           if (Date.now() >= deadline)
@@ -181,15 +208,19 @@ export async function dropOwnedDatabases(
 export interface SlotCleanup {
   retired: string[];
   failed: string[];
+  /** Other runs on this slot young enough to still be running; left untouched. */
+  active: string[];
 }
 
 /**
- * Clear this slot's databases left by any earlier, interrupted run, then the current run's.
- * Runs against one database host never overlap, so every other run on the slot is finished.
+ * Clear this slot's databases left by earlier, interrupted runs, then the current run's.
+ * Nightlies and PR jobs on every branch share the database hosts, so another run on the slot
+ * may still be live: only runs older than RUNTIME_RUN_MAX_AGE_MS are retired.
  */
 export async function clearSlotDatabases(
   client: OwnedDatabaseClient,
   currentPrefix: string,
+  now = Date.now(),
 ): Promise<SlotCleanup> {
   assertOwnedDatabasePrefix(currentPrefix);
   // rt_<run>_rds1_ -> ^rt_[a-f0-9]{12}_rds1_ ; csql_<run>_1_ -> ^csql_[a-f0-9]{12}_1_
@@ -200,15 +231,20 @@ export async function clearSlotDatabases(
     query_timeout: 10_000,
   });
   const matcher = new RegExp(slotPattern, "u");
-  const stale = new Set(
+  const otherRuns = new Set(
     rows
       .map((row) => row.datname)
       .filter((name) => matcher.test(name))
       .map((name) => name.slice(0, currentPrefix.length))
       .filter((prefix) => prefix !== currentPrefix),
   );
-  const cleanup: SlotCleanup = { retired: [], failed: [] };
-  for (const prefix of stale) {
+  const cleanup: SlotCleanup = { retired: [], failed: [], active: [] };
+  for (const prefix of otherRuns) {
+    // Either sign: a run on a node whose clock is ahead looks like it starts in the future.
+    if (Math.abs(now - runStartedAt(prefix)) < RUNTIME_RUN_MAX_AGE_MS) {
+      cleanup.active.push(prefix);
+      continue;
+    }
     try {
       await clearOwnedDatabases(client, prefix);
       cleanup.retired.push(prefix);
