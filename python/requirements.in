@@ -4,6 +4,9 @@
 # TechDocs MkDocs stack — transitive pins come from mkdocs-techdocs-core.
 mkdocs-techdocs-core==1.7.1
 
+# Floor certifi for eMudhra/emSign CA distrust (GHSA-6q48-6c7w-9gw2 / RHIDP-18529).
+certifi>=2026.10.23
+
 # Hermeto (allow_binary=false) prefetches one shared requirements-build.txt.
 # urllib3>=2.5 and platformdirs>=4.5 need setuptools-scm>=8 via hatch-vcs,
 # but python-dateutil's sdist still requires setuptools_scm<8.
