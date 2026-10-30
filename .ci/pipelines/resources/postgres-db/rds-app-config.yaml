@@ -17,6 +17,11 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
+    # Shared servers, one pool per plugin: keep pools small (see values-showcase-postgres.yaml).
+    knexConfig:
+      pool:
+        min: 0
+        max: 2
 auth:
   environment: development
   providers:
