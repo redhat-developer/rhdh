@@ -10,7 +10,7 @@ __metadata:
   resolution: ".ci@workspace:."
   dependencies:
     prettier: "npm:3.9.6"
-    prettier-plugin-sh: "npm:0.19.0"
+    prettier-plugin-sh: "npm:0.20.2"
     shellcheck: "npm:4.1.0"
   languageName: unknown
   linkType: soft
@@ -801,15 +801,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-plugin-sh@npm:0.19.0":
-  version: 0.19.0
-  resolution: "prettier-plugin-sh@npm:0.19.0"
+"prettier-plugin-sh@npm:0.20.2":
+  version: 0.20.2
+  resolution: "prettier-plugin-sh@npm:0.20.2"
   dependencies:
     "@reteps/dockerfmt": "npm:^0.5.4"
-    sh-syntax: "npm:^0.6.0"
+    sh-syntax: "npm:^0.7.0"
   peerDependencies:
     prettier: ^3.6.0
-  checksum: 10c0/47a152ea7049743d8080749eaeebc05ade1c224e27537b03aa1cb7d6680b28f5bd6d6539f4289fc724f52ea7baed22a4b027e8f7cd6ec28a60c24d9eaae7a79b
+  checksum: 10c0/3fabfa370c77de6874dfe83e760f9613bc14912260e5319b0c453b41ffdc0c91948f4a2dac98edf1606760fc744cc58b9f9b31198d7fe59219317e86dcc26d63
   languageName: node
   linkType: hard
 
@@ -923,10 +923,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sh-syntax@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "sh-syntax@npm:0.6.0"
-  checksum: 10c0/495c660a23c67725cdee077b423ca974521ae580302ee62eda9309c84f6cf31722560cdf55bbea5ca98ba7dd7ac352d59f3eed61612d42b1f8a41cfc7673ba9f
+"sh-syntax@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "sh-syntax@npm:0.7.0"
+  checksum: 10c0/04eb1589e59d0d0313d1ca09718e0ae675f4ac74eb915377ff1c44dbdc7814d3917c5d981bff4e26fd0b313c358fd8de38e8838a8bd96f4608284de99c412319
   languageName: node
   linkType: hard
 
