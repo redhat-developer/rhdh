@@ -102,7 +102,7 @@
     "react-use": "17.6.1",
     "tss-react": "4.9.21",
     "zen-observable": "0.10.0",
-    "zod": "^4.0.0"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@backstage/frontend-test-utils": "0.6.3",
