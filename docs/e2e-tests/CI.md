@@ -13,6 +13,7 @@ The mandatory `e2e-ocp-helm` check claims an ephemeral OpenShift cluster on ever
 - **Code Changes Affecting Tests:** rhdh-bot comments `/test e2e-ocp-helm` and the job runs against the PR image.
 - **Changes That Do Not Need a Cluster:** For PRs that only change docs, repository tooling, AI agent config, the cluster-free e2e harness or CI for other platforms, the gate marks `ci/prow/e2e-ocp-helm` as passed without claiming a cluster. The same applies to rhdh-bot PRs tagged `[skip-e2e]`.
 - **Dependency Bot PRs:** For Renovate and Dependabot PRs, the check stays pending until a reviewer comments `/test e2e-ocp-helm`, so rebases do not each claim a cluster.
+- **Draft PRs:** The check stays pending while the PR is a draft. Marking it ready for review runs the gate again; comment `/test e2e-ocp-helm` to test a draft.
 - **Image Build Problems:** If the PR image fails to build or publish, the check fails with the reason instead of waiting for an image that will not appear.
 
 ### Manual Triggering of Tests

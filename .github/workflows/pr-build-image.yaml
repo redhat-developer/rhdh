@@ -16,6 +16,8 @@ name: PR Build Image (Hermetic)
 
 on:
   pull_request:
+    # ready_for_review re-runs the e2e-ocp-helm gate, which waits on drafts.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}

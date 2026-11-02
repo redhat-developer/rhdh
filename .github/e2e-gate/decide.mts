@@ -21,6 +21,8 @@ export interface GateInput {
   authorAssociation: string;
   title: string;
   labels: string[];
+  /** True while the PR is a draft. */
+  draft: boolean;
   /** Conclusion of the "PR Build Image (Hermetic)" run. */
   buildConclusion: string;
   /** Result of the podman-push job. */
@@ -105,6 +107,15 @@ export function decide(input: GateInput): GateDecision {
     return {
       action: "fail",
       reason: "PR image was built but could not be published",
+    };
+  }
+
+  // Prow never auto-ran presubmits on drafts. Marking the PR ready for review
+  // re-runs the image build and this gate.
+  if (input.draft) {
+    return {
+      action: "wait",
+      reason: `Draft PR: mark it ready for review, or comment ${TEST_COMMAND}`,
     };
   }
 

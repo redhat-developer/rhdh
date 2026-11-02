@@ -20,7 +20,7 @@ image is published and decides what the PR needs.
 | Decision | When                                                                                            | What happens                                                                                          |
 | -------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `skip`   | Every changed file matches a no-cluster rule, or rhdh-bot opened a `[skip-e2e]` PR              | Sets `ci/prow/e2e-ocp-helm` to success with the reason                                                |
-| `wait`   | Renovate or Dependabot PR, or an author Prow does not trust                                     | Sets the status to pending, asking for `/test e2e-ocp-helm` (and `/ok-to-test` for untrusted authors) |
+| `wait`   | Draft PR, Renovate or Dependabot PR, or an author Prow does not trust                           | Sets the status to pending, asking for `/test e2e-ocp-helm` (and `/ok-to-test` for untrusted authors) |
 | `fail`   | The image build failed, publishing failed, or `[skip-build]` left no image for a product change | Sets the status to failure with the reason                                                            |
 | `run`    | Anything else                                                                                   | rhdh-bot comments `/test e2e-ocp-helm` and Prow runs the job                                          |
 
@@ -40,7 +40,9 @@ status the gate set. Use this to:
 
 - test a dependency PR before merging it,
 - test a PR whose image build was skipped,
-- test a change the gate skipped when you still want cluster coverage.
+- test a change the gate skipped when you still want cluster coverage,
+- test a draft PR. Drafts otherwise wait until they are marked ready for
+  review, which re-runs the image build and the gate.
 
 ## Changing the rules
 

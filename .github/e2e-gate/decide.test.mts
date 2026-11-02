@@ -9,6 +9,7 @@ const base: GateInput = {
   authorAssociation: "MEMBER",
   title: "feat: something",
   labels: [],
+  draft: false,
   buildConclusion: "success",
   publishResult: "success",
   imageSkipped: false,
@@ -187,5 +188,35 @@ describe("image state", () => {
       action({ imageSkipped: true, publishResult: "success" }),
       "fail",
     );
+  });
+});
+
+describe("draft PRs", () => {
+  it("waits on drafts instead of claiming a cluster", () => {
+    const d = decide({ ...base, draft: true });
+    assert.equal(d.action, "wait");
+    assert.match(d.reason, /ready for review/);
+    assert.match(d.reason, /\/test e2e-ocp-helm/);
+  });
+
+  it("still skips drafts that need no cluster", () => {
+    assert.equal(action({ draft: true, files: ["docs/index.md"] }), "skip");
+  });
+
+  it("still skips rhdh-bot [skip-e2e] drafts", () => {
+    assert.equal(
+      action({
+        draft: true,
+        author: "rhdh-bot",
+        authorAssociation: "MEMBER",
+        title: "chore: bump base image [skip-e2e]",
+        files: ["build/containerfiles/Containerfile"],
+      }),
+      "skip",
+    );
+  });
+
+  it("still reports image build failures on drafts", () => {
+    assert.equal(action({ draft: true, buildConclusion: "failure" }), "fail");
   });
 });

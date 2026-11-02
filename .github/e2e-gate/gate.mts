@@ -27,6 +27,7 @@ const API = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}`;
 
 interface PullRequest {
   state: string;
+  draft: boolean;
   title: string;
   author_association: string;
   user: { login: string };
@@ -121,6 +122,7 @@ async function main(): Promise<void> {
     authorAssociation: pr.author_association,
     title: pr.title,
     labels: pr.labels.map((l) => l.name),
+    draft: pr.draft,
     buildConclusion: env.BUILD_CONCLUSION ?? "",
     publishResult: env.PUBLISH_RESULT ?? "",
     imageSkipped: env.IMAGE_SKIPPED === "true",
@@ -130,7 +132,7 @@ async function main(): Promise<void> {
   report([
     `## e2e-ocp-helm gate: \`${decision.action}\``,
     "",
-    `- PR: #${prNumber} into \`${pr.base.ref}\` by \`${pr.user.login}\` (${pr.author_association})`,
+    `- PR: #${prNumber}${pr.draft ? " (draft)" : ""} into \`${pr.base.ref}\` by \`${pr.user.login}\` (${pr.author_association})`,
     `- Head: \`${headSha}\``,
     `- Reason: ${decision.reason}`,
     `- Changed files: ${files.length}`,
