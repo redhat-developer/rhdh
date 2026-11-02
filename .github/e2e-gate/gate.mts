@@ -79,8 +79,13 @@ async function paginate<T>(token: string, path: string): Promise<T[]> {
   return items;
 }
 
+/** Strips line breaks and control characters from API values before logging. */
+function clean(value: unknown): string {
+  return String(value).replace(/[\u0000-\u001f\u007f]+/g, " ");
+}
+
 function report(lines: string[]): void {
-  const text = lines.join("\n");
+  const text = lines.map(clean).join("\n");
   console.log(text);
   if (env.GITHUB_STEP_SUMMARY)
     appendFileSync(env.GITHUB_STEP_SUMMARY, `${text}\n`);
@@ -97,18 +102,18 @@ async function main(): Promise<void> {
   const pr = await getJson<PullRequest>(token, `/pulls/${prNumber}`);
 
   if (pr.state !== "open") {
-    console.log(`PR #${prNumber} is ${pr.state}; nothing to do.`);
+    console.log(`PR #${prNumber} is ${clean(pr.state)}; nothing to do.`);
     return;
   }
   if (pr.head.sha !== headSha) {
     console.log(
-      `PR #${prNumber} head moved to ${pr.head.sha}; a newer run will decide.`,
+      `PR #${prNumber} head moved to ${clean(pr.head.sha)}; a newer run will decide.`,
     );
     return;
   }
   if (!GATED_BASE_BRANCHES.test(pr.base.ref)) {
     console.log(
-      `Base branch ${pr.base.ref} has no e2e-ocp-helm job; nothing to do.`,
+      `Base branch ${clean(pr.base.ref)} has no e2e-ocp-helm job; nothing to do.`,
     );
     return;
   }

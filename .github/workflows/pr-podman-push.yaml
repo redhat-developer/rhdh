@@ -389,10 +389,11 @@ jobs:
       statuses: write
 
     steps:
+      # No `ref`: in a workflow_run job, checkout uses the default branch head
+      # (GITHUB_SHA), never the PR.
       - name: Checkout gate scripts from the default branch
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
           sparse-checkout: |
             .github/e2e-gate
