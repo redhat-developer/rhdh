@@ -49,6 +49,9 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
+    outputs:
+      pr_number: ${{ steps.get-pr-info.outputs.pr_number }}
+      is_skipped: ${{ steps.check-skip.outputs.is_skipped }}
 
     steps:
       - name: Get PR number from workflow run
@@ -364,3 +367,56 @@ jobs:
               repo: context.repo.repo,
               body: body
             })
+
+  # Decides whether the PR needs the e2e-ocp-helm Prow job, which claims an
+  # ephemeral OpenShift cluster on every run (RHIDP-16423). Prow does not
+  # trigger that job on push; this job either comments `/test e2e-ocp-helm`
+  # once the PR image is published or sets the required
+  # `ci/prow/e2e-ocp-helm` status itself. Rules: .github/e2e-gate/rules.mts.
+  #
+  # Runs only trusted code: the gate scripts come from the default branch and
+  # the PR is read through the API, never checked out.
+  e2e-ocp-gate:
+    name: Decide e2e-ocp-helm
+    needs: podman-push
+    # Also runs when publishing failed, so the PR gets a failing status
+    # instead of none. A newer push cancels this run through concurrency.
+    if: ${{ !cancelled() && needs.podman-push.outputs.pr_number != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+
+    steps:
+      - name: Checkout gate scripts from the default branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/e2e-gate
+            .nvmrc
+          sparse-checkout-cone-mode: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Decide and report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # rhdh-bot is an org member, so Prow accepts its /test comments.
+          RHDH_BOT_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
+          PR_NUMBER: ${{ needs.podman-push.outputs.pr_number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          BUILD_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          PUBLISH_RESULT: ${{ needs.podman-push.result }}
+          IMAGE_SKIPPED: ${{ needs.podman-push.outputs.is_skipped }}
+          # Unset or anything other than "enforce": only write the decision to
+          # the job summary. Set the repository variable to "enforce" once the
+          # openshift/release change making e2e-ocp-helm manual is merged.
+          GATE_MODE: ${{ vars.E2E_GATE_MODE }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node .github/e2e-gate/gate.mts

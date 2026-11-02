@@ -8,8 +8,12 @@ When a new Pull Request (PR) is opened at [rhdh](https://github.com/redhat-devel
 
 ### Automatic Triggering of Tests
 
-- **Code Changes Affecting Tests:** PR tests are triggered automatically if the changes include code modifications that could impact tests. This means that for PRs involving code that affects functionality or test suites, the CI will automatically initiate the testing process.
-- **Documentation-Only Changes:** PRs that involve only documentation updates will skip the tests to conserve CI resources, as they do not affect the codebase or functionality.
+The mandatory `e2e-ocp-helm` check claims an ephemeral OpenShift cluster on every run, so Prow does not start it on push. After the PR image is built and published, the **Decide e2e-ocp-helm** job in `pr-podman-push.yaml` decides what the PR needs (see [the gate README](../../.github/e2e-gate/README.md)):
+
+- **Code Changes Affecting Tests:** rhdh-bot comments `/test e2e-ocp-helm` and the job runs against the PR image.
+- **Changes That Do Not Need a Cluster:** For PRs that only change docs, repository tooling, AI agent config, the cluster-free e2e harness or CI for other platforms, the gate marks `ci/prow/e2e-ocp-helm` as passed without claiming a cluster. The same applies to rhdh-bot PRs tagged `[skip-e2e]`.
+- **Dependency Bot PRs:** For Renovate and Dependabot PRs, the check stays pending until a reviewer comments `/test e2e-ocp-helm`, so rebases do not each claim a cluster.
+- **Image Build Problems:** If the PR image fails to build or publish, the check fails with the reason instead of waiting for an image that will not appear.
 
 ### Manual Triggering of Tests
 
@@ -50,7 +54,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 
 - **Purpose:** Validate new PRs for code quality, functionality, and integration.
 - **Trigger:**
-  - **Automatic:** When a PR includes code changes affecting tests (excluding doc-only changes), tests are automatically triggered.
+  - **Automatic:** The e2e-ocp-helm gate comments `/test e2e-ocp-helm` once the PR image is published, for PRs whose changes need a cluster. Other PRs get the status from the gate without a cluster.
   - **Manual:** When `/ok-to-test` is commented by an `openshift` and `redhat-developer` org member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
