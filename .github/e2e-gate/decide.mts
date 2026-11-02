@@ -57,8 +57,10 @@ export function decide(input: GateInput): GateDecision {
 
   if (files.length > 0) {
     const categories = files.map(noClusterCategory);
-    if (categories.every((c) => c !== null)) {
-      const names = [...new Set(categories)].sort().join(", ");
+    if (categories.every((c): c is string => c !== null)) {
+      const names = [...new Set(categories)]
+        .sort((a, b) => a.localeCompare(b))
+        .join(", ");
       return {
         action: "skip",
         reason: `No cluster needed: only ${names} changed`,
