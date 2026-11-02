@@ -277,13 +277,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.1-1.el9
     sourcerpm: go-rpm-macros-3.8.1-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-687.61.1.el9_8.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-687.64.1.el9_8.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 2994353
-    checksum: sha256:e033c43830512e57b795bb85c0bfdc5a250cde81cb72c2205998643617c27885
+    size: 2998841
+    checksum: sha256:63e8c2f98fdd0ed70e30d9037e7262925730013dcd52b46d7f7e10c428ac7ed3
     name: kernel-headers
-    evr: 5.14.0-687.61.1.el9_8
-    sourcerpm: kernel-5.14.0-687.61.1.el9_8.src.rpm
+    evr: 5.14.0-687.64.1.el9_8
+    sourcerpm: kernel-5.14.0-687.64.1.el9_8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 14098
@@ -354,13 +354,13 @@ arches:
     name: libXft
     evr: 2.3.3-8.el9
     sourcerpm: libXft-2.3.3-8.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/l/libXi-1.7.10-8.el9_8.1.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/l/libXi-1.7.10-8.el9_8.3.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 45534
-    checksum: sha256:9532f23ba589ee56bd306f65b1d75371b25a7baed810530c1677c8f9db1920a9
+    size: 45951
+    checksum: sha256:00ad1703ce8a4275f88b9307c5826369a0cc8d66867301f291d93734a4d2a19a
     name: libXi
-    evr: 1.7.10-8.el9_8.1
-    sourcerpm: libXi-1.7.10-8.el9_8.1.src.rpm
+    evr: 1.7.10-8.el9_8.3
+    sourcerpm: libXi-1.7.10-8.el9_8.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/l/libXrandr-1.5.2-8.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 30948
@@ -3526,12 +3526,12 @@ arches:
     checksum: sha256:b1ef5a942e759207022bf9bff3d122bc9596914d8dd7ab92ea56ebcad96ee9a6
     name: libXft
     evr: 2.3.3-8.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/l/libXi-1.7.10-8.el9_8.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/l/libXi-1.7.10-8.el9_8.3.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 509042
-    checksum: sha256:65e1e5ed42b08a5952b1512d2267b744d9d2736040e8e049a3d8633f76d294e4
+    size: 511364
+    checksum: sha256:7f6199631903760aab6dffc28b942b728e78642a39c58977cd8fa8f786d0a4d3
     name: libXi
-    evr: 1.7.10-8.el9_8.1
+    evr: 1.7.10-8.el9_8.3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/l/libXrandr-1.5.2-8.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 343241
