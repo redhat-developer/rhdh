@@ -9,6 +9,7 @@ import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
 
 import { rhdhCatalogGraphPlugin } from "./apis/apisModule";
+import { customCatalogFilterModule } from "./modules/catalog";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
 
@@ -28,6 +29,7 @@ const app = createApp({
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
     catalogUnprocessedEntitiesPlugin,
     rhdhCatalogGraphPlugin, // catalog-graph UI + scaffolderOf/scaffoldedFrom API override
+    customCatalogFilterModule, // Custom OR-logic tag filter
     dynamicFrontendFeaturesLoader(),
     // RHDH modules (local to app)
     translationsApiModule,
