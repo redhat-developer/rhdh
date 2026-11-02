@@ -77,7 +77,6 @@ test.beforeAll(async ({ }, testInfo) => {
    - `showcase-operator`: General functionality tests with base deployment using Operator
    - `showcase-operator-rbac`: General functionality tests with RBAC-enabled deployment using Operator
    - `showcase-runtime`: Runtime environment tests
-   - `showcase-sanity-plugins`: Plugin sanity checks
    - `showcase-upgrade`: Upgrade scenario tests
    - `showcase-localization-de`: German localization tests
    - `showcase-localization-es`: Spanish localization tests
@@ -184,9 +183,6 @@ yarn showcase-upgrade              # Upgrade scenario tests
 
 # Authentication provider tests
 yarn showcase-auth-providers       # Auth provider tests
-
-# Plugin tests
-yarn showcase-sanity-plugins       # Plugin sanity tests
 
 # Localization tests
 yarn showcase-localization-de      # German localization tests
@@ -549,7 +545,6 @@ The choice of config map depends on the **Playwright test project** being execut
 - `showcase-k8s` - Kubernetes integration tests (explicitly excludes RBAC tests)
 - `showcase-operator` - Operator-based tests (explicitly excludes RBAC tests)
 - `showcase-runtime` - Runtime environment tests
-- `showcase-sanity-plugins` - Plugin sanity tests
 - `showcase-upgrade` - Upgrade scenario tests
 - `showcase-localization-de` - German localization tests
 - `showcase-localization-es` - Spanish localization tests

@@ -17,7 +17,7 @@ import {
  * the NFS app dev server itself and drives the browser against them.
  *
  *   # one-time: populate dynamic-plugins-root (same script CI uses — OCI, no build;
- *   # alternatives in docs/e2e-tests/local-e2e-harness.md):
+ *   # release-branch index tags in docs/e2e-tests/local-e2e-harness.md):
  *   CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next ./e2e-tests/local-harness/populate.sh
  *
  *   yarn --cwd e2e-tests e2e:local

@@ -36,58 +36,9 @@ Use a specific catalog index image (for example a release branch tag):
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:2.0 ./e2e-tests/local-harness/populate.sh
 ```
 
-`populate.sh` takes an optional install-config path as its first argument
-(default: the curated harness set above). The plugin sanity check drives that
-hook through `populate-catalog-index.sh`, which generates a config enabling every
-package the catalog index declares — see "Plugin Sanity Check" in
-[`e2e-tests/README.md`](../../e2e-tests/README.md). Both flavors share
-`populate.sh` for the install itself.
-
-Alternatives:
-
-- **Catalog index** — installs the index plugin set, except entries in
-  [`plugin-sanity-excludes.txt`](../../e2e-tests/local-harness/plugin-sanity-excludes.txt),
-  instead of the curated one. Use
-  `populate-catalog-index.sh`, which
-  also records the breadcrumb the plugin sanity check asserts against:
-
-  ```bash
-  CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
-    ./e2e-tests/local-harness/populate-catalog-index.sh
-  ```
-
-To explore the full catalog set in a browser, start the backend and frontend in
-separate terminals from the repository root. The plugin-sanity overlay supplies
-dummy `.invalid` endpoints required by plugins that normally run in a cluster;
-the Jira proxy and Segment analytics plugin also need local values. Segment runs
-in test mode, so it does not send analytics events.
-
-```bash
-cd packages/backend
-export NODE_OPTIONS=--no-node-snapshot JIRA_URL=https://jira.invalid \
-  JIRA_TOKEN=plugin-sanity-dummy SEGMENT_WRITE_KEY=plugin-sanity-dummy \
-  SEGMENT_TEST_MODE=true
-../../node_modules/.bin/backstage-cli package start --require ./src/instrumentation.js \
-  --config ../../app-config.yaml \
-  --config ../../dynamic-plugins-root/app-config.dynamic-plugins.yaml \
-  --config ../../app-config.local-e2e.yaml \
-  --config ../../e2e-tests/local-harness/app-config.plugin-sanity.yaml
-```
-
-```bash
-cd packages/app
-export NODE_OPTIONS=--no-node-snapshot JIRA_URL=https://jira.invalid \
-  JIRA_TOKEN=plugin-sanity-dummy SEGMENT_WRITE_KEY=plugin-sanity-dummy \
-  SEGMENT_TEST_MODE=true
-../../node_modules/.bin/backstage-cli package start \
-  --config ../../app-config.yaml \
-  --config ../../dynamic-plugins-root/app-config.dynamic-plugins.yaml \
-  --config ../../app-config.local-e2e.yaml \
-  --config ../../e2e-tests/local-harness/app-config.plugin-sanity.yaml
-```
-
-Open `http://localhost:3000` and sign in as Guest. For the
-curated harness set, use the regular `e2e:local` command below.
+The check that every catalog index plugin loads (plugin sanity) lives in
+[rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays)
+as the `release-plugin-sanity.yaml` workflow, not in this harness.
 
 ### 2. Run
 
@@ -212,10 +163,6 @@ just `run`), which is why this harness boots the dev servers directly instead.
   `e2e-tests/local-harness/dynamic-plugins.yaml` (`enabled: false` + `ref://`) only
   take effect through the generated `dynamic-plugins-root/app-config.dynamic-plugins.yaml`,
   which the webServer loads last. A stale populate leaves unwanted plugins installed.
-- **Plugin sanity uses a separate config overlay.** Default `populate.sh` disables
-  segment, adoption-insights, extensions, and other plugins not needed for
-  cluster-free specs. If you switch to `populate-catalog-index.sh` (full index), use
-  `app-config.plugin-sanity.yaml` (via `e2e:plugin-sanity`) for provider stubs.
 - **Live-external-service specs** (real k8s cluster, GitHub org, Quay, Tekton, Keycloak)
   still need those services or mocks; this harness covers UI/plugin-rendering scenarios
   that don't require live external infra.

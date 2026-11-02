@@ -98,7 +98,7 @@ handle_ocp_helm_upgrade() {
 
   # Resolve the previous release's chart and values for the baseline deployment.
   local current_release_version previous_release_version
-  current_release_version=$(helm::get_chart_stream)
+  current_release_version=$(common::get_release_stream)
   if [[ -z "$current_release_version" ]]; then
     log::error "Failed to determine current release version. Exiting."
     save_overall_result 1

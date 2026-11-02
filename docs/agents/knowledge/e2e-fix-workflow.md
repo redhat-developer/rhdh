@@ -32,7 +32,7 @@ BRANCH=$(echo "$JOB_NAME" | grep -oE '\-rhdh-(main|release-[0-9]+\.[0-9]+)-' | s
 
 | Job pattern | Projects |
 |-------------|----------|
-| `*ocp*helm*nightly*` (not upgrade, not localization) | `showcase`, `showcase-rbac`, `showcase-runtime`, `showcase-sanity-plugins` |
+| `*ocp*helm*nightly*` (not upgrade, not localization) | `showcase`, `showcase-rbac`, `showcase-runtime` |
 | `*ocp*helm*localization*nightly*` | `showcase-localization-de`, `showcase-localization-es`, `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja` |
 | `*ocp*helm*upgrade*` | `showcase-upgrade` |
 | `*ocp*operator*nightly*` (not auth) | `showcase-operator`, `showcase-operator-rbac` |

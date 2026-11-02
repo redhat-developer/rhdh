@@ -427,7 +427,6 @@ cluster_setup_k8s_helm() {
 # Functions: base_deployment, rbac_deployment, initiate_deployments,
 #            base_deployment_osd_gcp, rbac_deployment_osd_gcp, initiate_deployments_osd_gcp,
 #            initiate_upgrade_base_deployments, initiate_upgrade_deployments,
-#            initiate_sanity_plugin_checks_deployment,
 #            apply_yaml_files, deploy_test_backstage_customization_provider,
 #            deploy_redis_cache, configure_external_postgres_db
 # ==============================================================================
@@ -672,26 +671,6 @@ initiate_upgrade_deployments() {
     --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
-}
-
-initiate_sanity_plugin_checks_deployment() {
-  local release_name=$1
-  local name_space_sanity_plugins_check=$2
-  local sanity_plugins_url=$3
-  local artifacts_subdir=$4
-
-  namespace::configure "${name_space_sanity_plugins_check}"
-  helm::uninstall "${name_space_sanity_plugins_check}" "${release_name}"
-  deploy_redis_cache "${name_space_sanity_plugins_check}"
-  apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
-  helm::merge_values "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
-  common::save_artifact "${artifacts_subdir}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" || true
-  # shellcheck disable=SC2046
-  helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
-    --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(helm::get_image_params --internal-postgresql-image)
 }
 
 # ==============================================================================

@@ -618,8 +618,9 @@ Across the overlays repo as a whole: 24 of 64 workspaces have `e2e-tests/` and 3
 
 ### Active Test Expansion
 - Orchestrator: 6 test PRs merged in July 2026 (RHIDP-15513) — 105 test files
-- Plugin sanity cluster-free check: rhdh PR #4967 (merged 2026-08-04) — sweeps the
-  29-package catalog index (`quay.io/rhdh/plugin-catalog-index`), all GA
+- Plugin sanity check: started as rhdh PR #4967 (merged 2026-08-04); now the
+  `release-plugin-sanity.yaml` workflow in rhdh-plugin-export-overlays (overlays PR #4536),
+  which boots the RHDH image with every catalog index and community plugin
 - Overlay E2E improvements: quay (#2873), argocd/topology (#2864), tekton (#2804)
 
 ### Decision Records
@@ -637,7 +638,8 @@ Across the overlays repo as a whole: 24 of 64 workspaces have `e2e-tests/` and 3
 - **RHIDP-13504**: Vitest migration spike (recommendation: stay with Jest)
 - **RHIDP-13233**: Layer 1-2 tests for RHDH-owned backend plugins
 - **RHIDP-13235**: Layer 3 component tests mirroring UI E2E specs
-- **RHIDP-13508**: Cluster-free plugin sanity check for the catalog index (rhdh PR #4967)
+- **RHIDP-13508**: Cluster-free plugin sanity check for the catalog index (rhdh PR #4967; since
+  moved to rhdh-plugin-export-overlays `release-plugin-sanity.yaml`)
 - **RHIDP-13512**: Quality expectations for community-supported plugins
 - **RHIDP-13513**: Quality expectations for 3rd-party plugins in the Extensions Catalog. The
   story was closed pointing at this document, but the expectations it described were never

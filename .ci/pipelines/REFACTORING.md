@@ -514,7 +514,6 @@ Functions to extract:
 - `initiate_upgrade_base_deployments`
 - `initiate_upgrade_deployments`
 - `initiate_runtime_deployment`
-- `initiate_sanity_plugin_checks_deployment`
 
 Risk: Medium (orchestration logic)
 

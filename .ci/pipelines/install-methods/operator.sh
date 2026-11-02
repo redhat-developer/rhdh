@@ -212,14 +212,23 @@ deploy_rhdh_operator() {
   # Verify Backstage CRD is available
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
 
-  rendered_yaml=$(envsubst < "$backstage_crd_path")
+  rendered_yaml=$(envsubst < "$backstage_crd_path") || {
+    log::error "Failed to render Backstage CR from $backstage_crd_path"
+    return 1
+  }
   if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
     # Dynamically inject CATALOG_INDEX_IMAGE environment variable if specified
-    rendered_yaml=$(echo "$rendered_yaml" | yq eval '.spec.application.extraEnvs.envs += [{"name": "CATALOG_INDEX_IMAGE", "value": "'"$CATALOG_INDEX_IMAGE"'", "containers": ["install-dynamic-plugins"]}]' -)
+    rendered_yaml=$(echo "$rendered_yaml" | yq eval '.spec.application.extraEnvs.envs += [{"name": "CATALOG_INDEX_IMAGE", "value": "'"$CATALOG_INDEX_IMAGE"'", "containers": ["install-dynamic-plugins"]}]' -) || {
+      log::error "Failed to inject CATALOG_INDEX_IMAGE into the Backstage CR"
+      return 1
+    }
   fi
   log::info "Applying Backstage CR from: $backstage_crd_path"
   log::debug "$rendered_yaml"
-  echo "$rendered_yaml" | oc apply -f - -n "$namespace"
+  echo "$rendered_yaml" | oc apply -f - -n "$namespace" || {
+    log::error "Failed to apply Backstage CR from $backstage_crd_path in $namespace"
+    return 1
+  }
 
   # Wait for the operator to create the Backstage deployment (5 minutes max)
   if ! common::poll_until \

@@ -14,7 +14,8 @@ Functions: `log::info`, `log::warn`, `log::error`, `log::success`, `log::debug`,
 
 Common utilities.
 
-Functions: `common::oc_login`, `common::sed_inplace`, `common::get_previous_release_version`
+Functions: `common::oc_login`, `common::sed_inplace`, `common::get_release_stream`,
+`common::get_previous_release_version`
 
 ### `k8s-wait.sh`
 

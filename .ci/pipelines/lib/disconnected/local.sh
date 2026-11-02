@@ -7,7 +7,7 @@
 #   registry.sh     integrated-registry bring-up, retry-on-503, MIRROR_* bootstrap
 #   access.sh       mirror push-target projects, workload + OLM pull access
 #   mirror-host.sh  IDMS/ITMS push-route -> in-cluster registry service rewrite
-#   plugins.sh      homepage-only mirror_plugins override + imagestream tags
+#   plugins.sh      smoke-plugin mirror_plugins override + imagestream tags
 
 [[ -n "${_DISCONNECTED_LOCAL_SOURCED:-}" ]] && return 0
 readonly _DISCONNECTED_LOCAL_SOURCED=1

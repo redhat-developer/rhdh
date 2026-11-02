@@ -7,45 +7,12 @@ Cloud SQL runtime prerequisites and entry points are [here](../docs/e2e-tests/cl
 
 ---
 
-## Plugin Sanity Check (cluster-free)
+## Plugin Sanity Check
 
-Validates that every plugin enabled by the catalog index loads in the real RHDH
-backend (booted from `packages/backend` source). Populate `dynamic-plugins-root`
-with the full index set, then run the dedicated Playwright config:
-
-```bash
-CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
-  ./local-harness/populate-catalog-index.sh
-yarn e2e:plugin-sanity
-```
-
-The spec lives in `playwright/cluster-free/`, outside the `testDir` the cluster
-projects scan, so it needs no per-project `testIgnore`. Put further
-cluster-free-only specs there too.
-
-CI runs it as the `plugin-sanity` job of the
-[E2E Cluster-free workflow](../.github/workflows/e2e-cluster-free.yaml) — nightly
-(`cron: 0 5 * * *`) and on `workflow_dispatch`, not on pull requests. A PR in
-this repo cannot change the catalog index, so running the job as a PR check only
-fails unrelated work when the index drifts. The runner has no registry
-credentials: digest-pinned packages resolve anonymously (the install CLI rewrites
-`registry.access.redhat.com/rhdh/` to `quay.io/rhdh/`). The few packages that are
-not published publicly are listed in `local-harness/plugin-sanity-excludes.txt`.
-
-The index is built outside this repo and changes on its own — it grew from 9 to
-36 declared packages in the space of a week. For RC verification, run the
-workflow manually and set the `catalog_index_image` input.
-
-This complements, but does not depend on, the cluster-based `sanity-plugins`
-deployment in the nightly OCP job: that one validates the curated plugin set on
-the shipped image, while this validates the full index composition against the
-current backend line, with no cluster and no product image.
-
-Plugins that cannot initialize in a standalone backend are excluded in
-`local-harness/plugin-sanity-excludes.txt`, which documents the rules and the
-reason for each entry. When a plugin does abort the backend, the job pulls the
-culprits onto the run summary via
-`local-harness/filter-plugin-startup-failures.sh`.
+The plugin sanity check (every catalog index and community plugin loads in the
+real RHDH image) lives in
+[rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays),
+as the `release-plugin-sanity.yaml` workflow.
 
 ## Local Test Runner
 
@@ -310,7 +277,7 @@ letting CI or a local run target a subset.
 
 `@cluster-free-capable` is what `playwright.local.config.ts` selects on. It
 describes a capability of the test, not how a given run executed: the tag still shows
-in reports of cluster runs, where the project name (e.g. `showcase-sanity-plugins`) is
+in reports of cluster runs, where the project name (e.g. `showcase`) is
 what identifies the execution mode.
 
 ```bash

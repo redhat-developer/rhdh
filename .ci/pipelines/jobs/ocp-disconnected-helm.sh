@@ -121,6 +121,9 @@ handle_ocp_disconnected_helm() {
 
   disconnected::patch_idms "${OC_MIRROR_IDMS_FILE}"
 
+  local machineconfigpool_snapshot
+  machineconfigpool_snapshot=$(disconnected::snapshot_machineconfigpool_rendered_configs) || return 1
+
   oc apply -f "${OC_MIRROR_IDMS_FILE}" || {
     log::error "Failed to apply IDMS — aborting"
     return 1
@@ -138,29 +141,35 @@ handle_ocp_disconnected_helm() {
   # IDMS/ITMS changes trigger a MachineConfig update which rolls worker nodes
   # (drain → apply config → reboot). Wait for all MachineConfigPools to finish
   # before deploying workloads, otherwise pods get evicted mid-startup.
-  disconnected::wait_mcp_updated
+  disconnected::wait_machineconfigpool_updated "${machineconfigpool_snapshot}" || return 1
 
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
   # Pin CATALOG_INDEX_IMAGE to the digest actually pushed (hub profile default
-  # digest is often absent from the mirror). Homepage package is the digest-pinned
-  # OCI exported as HOMEPAGE_PLUGIN_PACKAGE (ref:// cannot resolve with includes: []).
+  # digest is often absent from the mirror). mirror_plugins exported the
+  # digest-pinned OCI package for each smoke plugin (ref:// cannot resolve with
+  # includes: []).
   disconnected::resolve_catalog_index_image || return 1
 
   log::section "Namespace and Secrets"
 
   namespace::configure "${NAME_SPACE}"
+  disconnected::allow_mirror_registry_egress "${NAME_SPACE}" || return 1
   if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
     disconnected::ensure_local_image_pull_access "${NAME_SPACE}" || return 1
   fi
   disconnected::apply_plugin_mirror_configmap "${NAME_SPACE}" || return 1
 
-  # Mirror CA + registry auth for install-dynamic-plugins (skopeo).
-  # Post-renderer mounts CA at /etc/containers/certs.d/<registry>/ca.crt;
-  # the chart mounts ${RELEASE_NAME}-dynamic-plugins-registry-auth at
-  # /opt/app-root/src/.config/containers.
+  # Mirror CA + registry auth for install-dynamic-plugins (skopeo). The
+  # post-renderer mounts the CA at /etc/containers/certs.d/<registry>/ca.crt; the
+  # chart mounts <fullname>-dynamic-plugins-registry-auth (optional: true) at
+  # /opt/app-root/src/.config/containers, where fullname is <release>-<nameOverride>
+  # and nameOverride is pinned to developer-hub in the values file. A differently
+  # named secret leaves the init container without auth.json and the mirror pull
+  # fails with "authentication required".
   disconnected::create_mirror_registry_ca_configmap "${NAME_SPACE}" || return 1
-  disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" || return 1
+  disconnected::create_plugin_registry_auth_secret "${NAME_SPACE}" \
+    "${RELEASE_NAME}-developer-hub-dynamic-plugins-registry-auth" || return 1
 
   log::section "Helm Deployment"
 
@@ -205,11 +214,8 @@ handle_ocp_disconnected_helm() {
   # to the rendered Deployment, avoiding the Helm "array clobber" pitfall.
   local post_renderer="${DIR}/resources/disconnected/helm-post-renderer.sh"
   local helm_values="${DISCONNECTED_TMPDIR}/values_disconnected-smoke.yaml"
-  common::require_vars HOMEPAGE_PLUGIN_PACKAGE || return 1
-  envsubst < "${DIR}/value_files/values_disconnected-smoke.yaml" > "${helm_values}" || {
-    log::error "Failed to render disconnected Helm values"
-    return 1
-  }
+  disconnected::render_smoke_plugins_template \
+    "${DIR}/value_files/values_disconnected-smoke.yaml" "${helm_values}" || return 1
   cp "${helm_values}" "${ARTIFACT_DIR}/values_disconnected-smoke.yaml" 2> /dev/null || true
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
