@@ -10,6 +10,8 @@ import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-trans
 
 import { rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { customCatalogFilterModule } from "./modules/catalog";
+import { scaffolderSelfServiceModule } from "./modules/scaffolder";
+import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
 
@@ -30,6 +32,14 @@ const app = createApp({
     catalogUnprocessedEntitiesPlugin,
     rhdhCatalogGraphPlugin, // catalog-graph UI + scaffolderOf/scaffoldedFrom API override
     customCatalogFilterModule, // Custom OR-logic tag filter
+    // Note: @backstage/plugin-scaffolder is decoupled and NOT included in the core app bundle.
+    // It is loaded dynamically as an OCI plugin. scaffolderSelfServiceModule only sets
+    // the default RHDH page title and sidebar item to "Self-service" (RHDHBUGS-3676).
+    scaffolderSelfServiceModule,
+    // Note: @backstage/plugin-user-settings is decoupled and NOT included in the core app bundle.
+    // It is loaded dynamically as an OCI plugin. userSettingsGeneralModule only customizes
+    // the General sub-page extension layout to render the RHDH build-metadata InfoCard.
+    userSettingsGeneralModule,
     dynamicFrontendFeaturesLoader(),
     // RHDH modules (local to app)
     translationsApiModule,
