@@ -33,6 +33,12 @@ upstream:
             port: ${POSTGRES_PORT}
             user: ${POSTGRES_USER}
             password: ${POSTGRES_PASSWORD}
+          # Runs on every branch share these servers (Azure allows ~35 sessions) and each
+          # plugin gets its own pool, so keep pools small and release idle connections.
+          knexConfig:
+            pool:
+              min: 0
+              max: 2
       auth:
         environment: development
         providers:
