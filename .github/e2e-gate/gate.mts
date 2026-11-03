@@ -55,6 +55,8 @@ interface PullRequest {
   labels: { name: string }[];
 }
 
+const GITHUB_LOGIN = /^[A-Za-z0-9-]{1,39}$/;
+
 /**
  * Prow trusts members of the repo's org, including private members, but
  * author_association only shows MEMBER for public ones. Asking with an org
@@ -62,8 +64,10 @@ interface PullRequest {
  */
 async function isOrgMember(token: string, login: string): Promise<boolean> {
   const org = required("GITHUB_REPOSITORY").split("/")[0];
+  // Only plain user logins can be members; bots like renovate[bot] cannot.
+  if (!GITHUB_LOGIN.test(org) || !GITHUB_LOGIN.test(login)) return false;
   const res = await fetch(
-    `https://api.github.com/orgs/${org}/members/${encodeURIComponent(login)}`,
+    `https://api.github.com/orgs/${org}/members/${login}`,
     { redirect: "manual", headers: headers(token) },
   );
   return res.status === 204;
@@ -105,7 +109,11 @@ async function paginate<T>(token: string, path: string): Promise<T[]> {
   while (url) {
     const res = await request(token, url);
     items.push(...((await res.json()) as T[]));
-    url = res.headers.get("link")?.match(/<([^>]+)>;\s*rel="next"/)?.[1];
+    url = res.headers
+      .get("link")
+      ?.split(",")
+      .find((link) => link.includes('rel="next"'))
+      ?.match(/<([^>]*)>/)?.[1];
   }
   return items;
 }
@@ -261,8 +269,14 @@ async function reportError(): Promise<void> {
   );
 }
 
-main().catch(async (err: unknown) => {
+try {
+  await main();
+} catch (err) {
   console.error(err);
-  await reportError().catch(console.error);
-  process.exit(1);
-});
+  process.exitCode = 1;
+  try {
+    await reportError();
+  } catch (reportErr) {
+    console.error(reportErr);
+  }
+}
