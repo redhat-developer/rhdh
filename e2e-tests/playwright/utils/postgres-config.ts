@@ -10,7 +10,8 @@ export const POSTGRES_ENV_KEYS = [
 ] as const;
 
 /** Bound managed-server usage while leaving room for Catalog's background processing. */
-export const RUNTIME_DATABASE_KNEX_CONFIG = { pool: { min: 0, max: 5 } };
+/** Concurrent runs share small servers (Azure allows ~35 sessions); ~18 plugin pools each. */
+export const RUNTIME_DATABASE_KNEX_CONFIG = { pool: { min: 0, max: 2 } };
 
 /** Certificate files from the E2E secret collection can contain escaped newlines. */
 export function readCertificateFile(filePath: string | undefined): string | null {

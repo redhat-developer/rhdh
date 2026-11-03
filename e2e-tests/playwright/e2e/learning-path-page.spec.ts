@@ -114,8 +114,10 @@ test.describe("Learning Paths", { tag: "@layer3-equivalent" }, () => {
         .click();
 
       await expect(guestPage).toHaveURL(/\/learning-paths(?:\?|$)/u);
+      // The plugin header toolbar h1 may be the only heading or sit next to the page's own.
+      // A string name: a regex with an apostrophe breaks the selector once chained with first().
       await expect(
-        guestPage.getByRole("heading", { name: /Learning Paths|Parcours d'apprentissage/u }),
+        guestPage.getByRole("heading", { name: "Parcours d'apprentissage", exact: true }).first(),
       ).toBeVisible();
       await expect(guestPage.getByText("Building Operators on OpenShift")).toBeVisible();
     },
