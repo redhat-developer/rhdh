@@ -127,6 +127,4 @@ jobs:
 
           This PR has been automatically approved by the auto-approve workflow.
 
-          /override ci/prow/e2e-ocp-helm
-
           **Labels Added:** \`lgtm\`, \`approved\`"

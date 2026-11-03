@@ -8,8 +8,13 @@ When a new Pull Request (PR) is opened at [rhdh](https://github.com/redhat-devel
 
 ### Automatic Triggering of Tests
 
-- **Code Changes Affecting Tests:** PR tests are triggered automatically if the changes include code modifications that could impact tests. This means that for PRs involving code that affects functionality or test suites, the CI will automatically initiate the testing process.
-- **Documentation-Only Changes:** PRs that involve only documentation updates will skip the tests to conserve CI resources, as they do not affect the codebase or functionality.
+The mandatory `e2e-ocp-helm` check claims an ephemeral OpenShift cluster on every run, so it does not run on every push. It is a second-stage job of the OpenShift CI [pipeline controller](https://docs.ci.openshift.org/docs/how-tos/creating-a-pipeline/), which `main` and the `release-*` branches use in LGTM mode:
+
+- **When the PR gets `lgtm`:** The pipeline controller comments `/test e2e-ocp-helm` and the job runs. An approving review adds `lgtm`, and a new push removes it, so the job runs again after the next approval.
+- **Changes That Do Not Need a Cluster:** If every changed file is docs, repository tooling, AI agent config, the cluster-free e2e harness or CI for other platforms, the job is not run. The `pipeline_skip_if_only_changed` pattern in the job's [openshift/release config](https://github.com/openshift/release/tree/main/ci-operator/config/redhat-developer/rhdh) lists them.
+- **Merge Requirement:** The `ci/pipeline-gate` check is required. It turns green once the pipeline controller has started the applicable jobs, or when none apply. Once `e2e-ocp-helm` has started, it must pass before the PR can merge.
+
+To get e2e results before review, comment `/test e2e-ocp-helm` at any time. If `ci/pipeline-gate` is missing or stuck, comment `/pipeline remaining` to start any job that has not run for the current commit. `/pipeline help` lists the other commands.
 
 ### Manual Triggering of Tests
 
@@ -50,7 +55,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 
 - **Purpose:** Validate new PRs for code quality, functionality, and integration.
 - **Trigger:**
-  - **Automatic:** When a PR includes code changes affecting tests (excluding doc-only changes), tests are automatically triggered.
+  - **Automatic:** When the PR gets `lgtm`, the pipeline controller triggers `e2e-ocp-helm`, unless every changed file matches its `pipeline_skip_if_only_changed` pattern.
   - **Manual:** When `/ok-to-test` is commented by an `openshift` and `redhat-developer` org member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
