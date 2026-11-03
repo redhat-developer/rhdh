@@ -1,5 +1,5 @@
 // Pure decision logic for the e2e-ocp-helm gate. No I/O, so it is unit tested
-// with `node --test ".github/e2e-gate/*.test.mts"`.
+// with `node --test "scripts/e2e-gate/*.test.mts"`.
 import {
   GATE_BOT_LOGIN,
   GATE_STATUS_CREATOR,

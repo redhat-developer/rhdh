@@ -8,7 +8,7 @@ When a new Pull Request (PR) is opened at [rhdh](https://github.com/redhat-devel
 
 ### Automatic Triggering of Tests
 
-The mandatory `e2e-ocp-helm` check claims an ephemeral OpenShift cluster on every run, so Prow does not start it on push. After the PR image is built and published, the **Decide e2e-ocp-helm** job in `pr-podman-push.yaml` decides what the PR needs (see [the gate README](../../.github/e2e-gate/README.md)):
+The mandatory `e2e-ocp-helm` check claims an ephemeral OpenShift cluster on every run, so Prow does not start it on push. After the PR image is built and published, the **Decide e2e-ocp-helm** job in `pr-podman-push.yaml` decides what the PR needs (see [the gate README](../../scripts/e2e-gate/README.md)):
 
 - **Code Changes Affecting Tests:** rhdh-bot comments `/test e2e-ocp-helm` and the job runs against the PR image.
 - **Changes That Do Not Need a Cluster:** For PRs that only change docs, repository tooling, AI agent config, the cluster-free e2e harness or CI for other platforms, the gate marks `ci/prow/e2e-ocp-helm` as passed without claiming a cluster. The same applies to rhdh-bot PRs tagged `[skip-e2e]`.

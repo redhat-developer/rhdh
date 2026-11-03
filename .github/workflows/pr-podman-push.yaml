@@ -369,7 +369,7 @@ jobs:
             })
 
   # Decides whether the PR needs the e2e-ocp-helm Prow job, which claims an
-  # ephemeral OpenShift cluster on every run. See .github/e2e-gate/README.md.
+  # ephemeral OpenShift cluster on every run. See scripts/e2e-gate/README.md.
   #
   # Runs only trusted code: the gate scripts come from the default branch and
   # the PR is read through the API, never checked out.
@@ -394,7 +394,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: |
-            .github/e2e-gate
+            scripts/e2e-gate
             .nvmrc
           sparse-checkout-cone-mode: false
 
@@ -414,4 +414,4 @@ jobs:
           PUBLISH_RESULT: ${{ needs.podman-push.result }}
           IMAGE_SKIPPED: ${{ needs.podman-push.outputs.is_skipped }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: node .github/e2e-gate/gate.mts
+        run: node scripts/e2e-gate/gate.mts

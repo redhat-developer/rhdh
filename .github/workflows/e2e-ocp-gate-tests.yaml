@@ -17,7 +17,7 @@ name: E2E OCP Gate Tests
 on:
   pull_request:
     paths:
-      - ".github/e2e-gate/**"
+      - "scripts/e2e-gate/**"
       - ".github/workflows/e2e-ocp-gate-tests.yaml"
 
 permissions:
@@ -39,4 +39,4 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Run gate rule tests
-        run: node --test ".github/e2e-gate/*.test.mts"
+        run: node --test "scripts/e2e-gate/*.test.mts"
