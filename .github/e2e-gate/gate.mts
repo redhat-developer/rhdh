@@ -113,7 +113,9 @@ async function paginate<T>(token: string, path: string): Promise<T[]> {
       .get("link")
       ?.split(",")
       .find((link) => link.includes('rel="next"'))
-      ?.match(/<([^>]*)>/)?.[1];
+      ?.split(";")[0]
+      .trim()
+      .slice(1, -1); // <url>; rel="next"
   }
   return items;
 }
