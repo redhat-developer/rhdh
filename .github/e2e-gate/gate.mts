@@ -36,6 +36,14 @@ const STATUS_STATE: Record<Exclude<GateAction, "run">, string> = {
 const env = process.env;
 const API = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}`;
 
+function headers(token: string): Record<string, string> {
+  return {
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${token}`,
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
 interface PullRequest {
   state: string;
   draft: boolean;
@@ -56,14 +64,7 @@ async function isOrgMember(token: string, login: string): Promise<boolean> {
   const org = required("GITHUB_REPOSITORY").split("/")[0];
   const res = await fetch(
     `https://api.github.com/orgs/${org}/members/${encodeURIComponent(login)}`,
-    {
-      redirect: "manual",
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${token}`,
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    },
+    { redirect: "manual", headers: headers(token) },
   );
   return res.status === 204;
 }
@@ -82,9 +83,7 @@ async function request(
   const res = await fetch(url.startsWith("https://") ? url : `${API}${url}`, {
     ...init,
     headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${token}`,
-      "X-GitHub-Api-Version": "2022-11-28",
+      ...headers(token),
       ...(init.body ? { "Content-Type": "application/json" } : {}),
     },
   });
@@ -111,6 +110,36 @@ async function paginate<T>(token: string, path: string): Promise<T[]> {
   return items;
 }
 
+/** The newest ci/prow/e2e-ocp-helm status if Prow wrote it, else null. */
+async function prowResult(
+  token: string,
+  headSha: string,
+): Promise<CommitStatus | null> {
+  return prowStatus(
+    await getJson<CommitStatus[]>(
+      token,
+      `/commits/${headSha}/statuses?per_page=100`,
+    ),
+  );
+}
+
+async function setStatus(
+  token: string,
+  headSha: string,
+  state: string,
+  description: string,
+): Promise<void> {
+  await request(token, `/statuses/${headSha}`, {
+    method: "POST",
+    body: JSON.stringify({
+      state,
+      context: STATUS_CONTEXT,
+      description: description.slice(0, 140),
+      target_url: env.RUN_URL,
+    }),
+  });
+}
+
 /** Strips line breaks and control characters from API values before logging. */
 function clean(value: unknown): string {
   return String(value).replace(/[\u0000-\u001f\u007f]+/g, " ");
@@ -124,16 +153,10 @@ function report(lines: string[]): void {
 }
 
 async function main(): Promise<void> {
-  if (env.BUILD_CONCLUSION === "cancelled") {
-    // cancel-in-progress cancels a build when a newer one starts (a push, or
-    // marking a draft ready); that newer build decides.
-    console.log("The image build was cancelled; a newer build will decide.");
-    return;
-  }
   const prNumber = Number(env.PR_NUMBER);
   if (!Number.isInteger(prNumber) || prNumber <= 0) {
-    // Exit with an error so the workflow's fallback step marks the commit
-    // instead of leaving the required status missing.
+    // Thrown errors set an error status, so the required status is never
+    // left missing.
     throw new Error("Could not determine the PR for this image build.");
   }
   const headSha = required("HEAD_SHA");
@@ -157,13 +180,22 @@ async function main(): Promise<void> {
     return;
   }
 
-  const files = changedPaths(
-    await paginate<PullRequestFile>(token, `/pulls/${prNumber}/files`),
-  );
+  // A manual /test or a run the gate requested earlier already produced a
+  // Prow result for this commit. Never replace it or start a second run.
+  const prow = await prowResult(token, headSha);
+  if (prow) {
+    console.log(
+      `Prow already reported "${clean(prow.state)}" for this commit; leaving it.`,
+    );
+    return;
+  }
+
   const botToken = env.RHDH_BOT_TOKEN;
-  const orgMember = botToken
-    ? await isOrgMember(botToken, pr.user.login)
-    : false;
+  const [rawFiles, orgMember] = await Promise.all([
+    paginate<PullRequestFile>(token, `/pulls/${prNumber}/files`),
+    botToken ? isOrgMember(botToken, pr.user.login) : false,
+  ]);
+  const files = changedPaths(rawFiles);
   const decision = decide({
     files,
     author: pr.user.login,
@@ -186,22 +218,6 @@ async function main(): Promise<void> {
     `- Changed files: ${files.length}`,
   ]);
 
-  // A manual /test, a run the gate requested earlier, or (before Prow stopped
-  // auto-running the job) a push-triggered run already produced a Prow result
-  // for this commit. Never replace it or start a second run.
-  const prow = prowStatus(
-    await getJson<CommitStatus[]>(
-      token,
-      `/commits/${headSha}/statuses?per_page=100`,
-    ),
-  );
-  if (prow) {
-    console.log(
-      `Prow already reported "${clean(prow.state)}" for this commit; leaving it.`,
-    );
-    return;
-  }
-
   if (decision.action === "run") {
     // Prow decides on the comment author's trust, so this must be the token
     // of an org member. The marker lets a re-run see the earlier request.
@@ -223,18 +239,30 @@ async function main(): Promise<void> {
     return;
   }
 
-  await request(token, `/statuses/${headSha}`, {
-    method: "POST",
-    body: JSON.stringify({
-      state: STATUS_STATE[decision.action],
-      context: STATUS_CONTEXT,
-      description: decision.reason.slice(0, 140),
-      target_url: env.RUN_URL,
-    }),
-  });
+  await setStatus(
+    token,
+    headSha,
+    STATUS_STATE[decision.action],
+    decision.reason,
+  );
 }
 
-main().catch((err: unknown) => {
+// Prow no longer starts e2e-ocp-helm on push, so without a status from the
+// gate Tide would wait forever with no message on the PR.
+async function reportError(): Promise<void> {
+  const headSha = required("HEAD_SHA");
+  const token = required("GITHUB_TOKEN");
+  if (await prowResult(token, headSha)) return;
+  await setStatus(
+    token,
+    headSha,
+    "error",
+    `The e2e-ocp-helm gate failed. Re-run it, or comment ${TEST_COMMAND}`,
+  );
+}
+
+main().catch(async (err: unknown) => {
   console.error(err);
+  await reportError().catch(console.error);
   process.exit(1);
 });

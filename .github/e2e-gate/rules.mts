@@ -1,11 +1,4 @@
-// Rules for the e2e-ocp-helm gate (RHIDP-16423).
-//
-// The Prow job `ci/prow/e2e-ocp-helm` claims an ephemeral OpenShift cluster
-// every time it runs. Prow no longer triggers it on push; the "Decide
-// e2e-ocp-helm" job in pr-podman-push.yaml applies these rules once the PR
-// image is published, then either asks Prow to run the job or reports the
-// required status itself.
-//
+// Rules for the e2e-ocp-helm gate. See README.md for how they are applied.
 // workflow_run workflows always run from the default branch, so this file on
 // `main` decides for PRs against every branch.
 

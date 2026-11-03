@@ -39,8 +39,8 @@ checked with rhdh-bot's token), a collaborator, or a PR with `ok-to-test`.
 Once Prow has reported `ci/prow/e2e-ocp-helm` on a commit, the gate leaves it
 alone: it never replaces a Prow result and never requests a second run. A
 cancelled image build does nothing, because the newer build decides. If the
-gate itself fails, a fallback step sets the status to `error` with a link to
-the run, so the PR never waits on a status that will not arrive.
+gate itself fails, it sets the status to `error` with a link to the run, so
+the PR never waits on a status that will not arrive.
 
 The `ci/prow/e2e-ocp-helm` status is required for merge. openshift/release
 sets `require_manually_triggered_jobs: true` for this repository, so Tide and

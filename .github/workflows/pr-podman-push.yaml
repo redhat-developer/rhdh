@@ -369,10 +369,7 @@ jobs:
             })
 
   # Decides whether the PR needs the e2e-ocp-helm Prow job, which claims an
-  # ephemeral OpenShift cluster on every run (RHIDP-16423). Prow does not
-  # trigger that job on push; this job either comments `/test e2e-ocp-helm`
-  # once the PR image is published or sets the required
-  # `ci/prow/e2e-ocp-helm` status itself. Rules: .github/e2e-gate/rules.mts.
+  # ephemeral OpenShift cluster on every run. See .github/e2e-gate/README.md.
   #
   # Runs only trusted code: the gate scripts come from the default branch and
   # the PR is read through the API, never checked out.
@@ -380,9 +377,9 @@ jobs:
     name: Decide e2e-ocp-helm
     needs: podman-push
     # Also runs when publishing failed or the PR number is unknown, so the PR
-    # gets a failing status instead of none. A newer push cancels this run
-    # through concurrency.
-    if: ${{ !cancelled() }}
+    # gets a failing status instead of none. A cancelled build was replaced by
+    # a newer push, whose build decides.
+    if: ${{ !cancelled() && github.event.workflow_run.conclusion != 'cancelled' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -418,27 +415,3 @@ jobs:
           IMAGE_SKIPPED: ${{ needs.podman-push.outputs.is_skipped }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node .github/e2e-gate/gate.mts
-
-      # Prow no longer starts e2e-ocp-helm on push, so without a status from
-      # the gate Tide would wait forever with no message on the PR. Leaves
-      # results Prow already reported alone.
-      - name: Report a gate error on the commit
-        if: ${{ failure() }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          CONTEXT="ci/prow/e2e-ocp-helm"
-          LATEST_CREATOR=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/statuses?per_page=100" \
-            --jq "[.[] | select(.context == \"${CONTEXT}\")][0].creator.login // \"\"")
-          if [[ -n "${LATEST_CREATOR}" && "${LATEST_CREATOR}" != "github-actions[bot]" ]]; then
-            echo "Prow already reported on this commit; leaving its status."
-            exit 0
-          fi
-          gh api "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
-            -f state=error \
-            -f context="${CONTEXT}" \
-            -f description="The e2e-ocp-helm gate failed. Re-run it, or comment /test e2e-ocp-helm" \
-            -f target_url="${RUN_URL}" >/dev/null

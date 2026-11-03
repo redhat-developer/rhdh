@@ -221,50 +221,30 @@ describe("image state", () => {
     assert.equal(action({ publishResult: "failure" }), "fail");
   });
 
-  it("runs on the next image when only e2e or CI files changed and the build was skipped", () => {
-    assert.equal(
-      action({
-        files: [
-          "e2e-tests/playwright/e2e/settings.spec.ts",
-          ".ci/pipelines/lib/helm.sh",
-        ],
-        imageSkipped: true,
-        publishResult: "skipped",
-      }),
-      "run",
-    );
+  it("runs on the next image when the build was skipped for directories Prow accepts", () => {
+    // The spec needs a cluster; the other file is under an accepted directory.
+    const spec = "e2e-tests/playwright/e2e/settings.spec.ts";
+    for (const file of [
+      ".ci/pipelines/lib/helm.sh",
+      "docs/a.md",
+      ".claude/skills/x.md",
+    ]) {
+      assert.equal(
+        action({ files: [spec, file], imageSkipped: true }),
+        "run",
+        file,
+      );
+    }
   });
 
   it("fails when [skip-build] skipped the image for a product change", () => {
-    assert.equal(
-      action({ imageSkipped: true, publishResult: "success" }),
-      "fail",
-    );
-  });
-
-  it("runs on the next image for the same directories Prow accepts", () => {
-    assert.equal(
-      action({
-        files: ["e2e-tests/playwright/e2e/a.spec.ts", ".claude/skills/x.md"],
-        imageSkipped: true,
-        publishResult: "skipped",
-      }),
-      "run",
-    );
+    assert.equal(action({ imageSkipped: true }), "fail");
   });
 
   it("fails a skipped build for directories Prow does not accept", () => {
     // Prow would wait 60 minutes for a PR image that was never pushed.
     for (const file of ["e2e/foo.ts", "doc/foo.ts"]) {
-      assert.equal(
-        action({
-          files: [file],
-          imageSkipped: true,
-          publishResult: "skipped",
-        }),
-        "fail",
-        file,
-      );
+      assert.equal(action({ files: [file], imageSkipped: true }), "fail", file);
     }
   });
 
