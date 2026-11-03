@@ -26,7 +26,21 @@ image is published and decides what the PR needs.
 
 The rules are in [`rules.mts`](rules.mts) and the decision order is in
 [`decide.mts`](decide.mts). A path that no rule matches always runs, so a
-missing rule costs a cluster rather than skipping a needed test.
+missing rule costs a cluster rather than skipping a needed test. A renamed
+file counts under both its old and its new path.
+
+Image problems are checked before any `wait`, so a PR whose image did not
+build gets `fail` rather than an invitation to comment `/test`, which would
+claim a cluster and wait 60 minutes for an image that does not exist.
+
+"Trusted" means what Prow means: an org member (private members included,
+checked with rhdh-bot's token), a collaborator, or a PR with `ok-to-test`.
+
+Once Prow has reported `ci/prow/e2e-ocp-helm` on a commit, the gate leaves it
+alone: it never replaces a Prow result and never requests a second run. A
+cancelled image build does nothing, because the newer build decides. If the
+gate itself fails, a fallback step sets the status to `error` with a link to
+the run, so the PR never waits on a status that will not arrive.
 
 The `ci/prow/e2e-ocp-helm` status is required for merge. openshift/release
 sets `require_manually_triggered_jobs: true` for this repository, so Tide and

@@ -1,6 +1,8 @@
 // Pure decision logic for the e2e-ocp-helm gate. No I/O, so it is unit tested
 // with `node --test ".github/e2e-gate/*.test.mts"`.
 import {
+  GATE_BOT_LOGIN,
+  GATE_STATUS_CREATOR,
   MANUAL_TRIGGER_AUTHORS,
   NO_CLUSTER_PATHS,
   OK_TO_TEST_LABEL,
@@ -11,14 +13,17 @@ import {
 } from "./rules.mts";
 
 export const TEST_COMMAND = "/test e2e-ocp-helm";
+export const STATUS_CONTEXT = "ci/prow/e2e-ocp-helm";
 
 export interface GateInput {
-  /** Changed file paths in the PR. */
+  /** Changed file paths in the PR, including the old path of renamed files. */
   files: string[];
   /** PR author login. */
   author: string;
   /** GitHub author_association of the PR author. */
   authorAssociation: string;
+  /** True when the author is a (possibly private) member of the repo's org. */
+  orgMember: boolean;
   title: string;
   labels: string[];
   /** True while the PR is a draft. */
@@ -52,6 +57,65 @@ export function noClusterCategory(path: string): string | null {
   return null;
 }
 
+export interface PullRequestFile {
+  filename: string;
+  previous_filename?: string;
+}
+
+/**
+ * Every path a PR touches. A rename also changes its old path: renaming a
+ * values file the Helm job reads must still run the job.
+ */
+export function changedPaths(files: PullRequestFile[]): string[] {
+  return [
+    ...new Set(
+      files.flatMap((f) =>
+        f.previous_filename ? [f.filename, f.previous_filename] : [f.filename],
+      ),
+    ),
+  ];
+}
+
+export interface CommitStatus {
+  context: string;
+  state: string;
+  creator?: { login: string } | null;
+}
+
+/**
+ * Returns the newest ci/prow/e2e-ocp-helm status if Prow wrote it, else null.
+ * `statuses` is newest first, as the GitHub API returns it. Once Prow has
+ * reported on a commit, its result stands and the gate does nothing.
+ */
+export function prowStatus(statuses: CommitStatus[]): CommitStatus | null {
+  const latest = statuses.find((s) => s.context === STATUS_CONTEXT);
+  if (!latest || latest.creator?.login === GATE_STATUS_CREATOR) return null;
+  return latest;
+}
+
+export interface IssueComment {
+  body?: string;
+  user?: { login: string } | null;
+}
+
+export function runRequestMarker(headSha: string): string {
+  return `<!-- e2e-ocp-gate sha=${headSha} -->`;
+}
+
+/** True when the gate bot already asked Prow to test this commit. */
+export function alreadyRequested(
+  comments: IssueComment[],
+  headSha: string,
+): boolean {
+  const marker = runRequestMarker(headSha);
+  return comments.some(
+    (c) =>
+      c.user?.login === GATE_BOT_LOGIN &&
+      c.body?.startsWith(TEST_COMMAND) === true &&
+      c.body.includes(marker),
+  );
+}
+
 export function decide(input: GateInput): GateDecision {
   const { files, author, authorAssociation, title, labels } = input;
 
@@ -75,23 +139,8 @@ export function decide(input: GateInput): GateDecision {
     };
   }
 
-  if (MANUAL_TRIGGER_AUTHORS.has(author)) {
-    return {
-      action: "wait",
-      reason: `Dependency PR: comment ${TEST_COMMAND} when it is ready to merge`,
-    };
-  }
-
-  const trusted =
-    TRUSTED_ASSOCIATIONS.has(authorAssociation) ||
-    labels.includes(OK_TO_TEST_LABEL);
-  if (!trusted) {
-    return {
-      action: "wait",
-      reason: `Needs /ok-to-test from a member, then ${TEST_COMMAND}`,
-    };
-  }
-
+  // Image problems come before every "comment /test" answer: without an image
+  // Prow would claim a cluster and wait 60 minutes for nothing.
   if (input.buildConclusion !== "success") {
     return {
       action: "fail",
@@ -102,13 +151,32 @@ export function decide(input: GateInput): GateDecision {
     if (!files.every((f) => PREBUILT_IMAGE_OK_PATHS.test(f))) {
       return {
         action: "fail",
-        reason: `Image build was skipped ([skip-build]); comment ${TEST_COMMAND} to override`,
+        reason:
+          "Image build was skipped ([skip-build]) for a product change; push without [skip-build] to build one",
       };
     }
   } else if (input.publishResult !== "success") {
     return {
       action: "fail",
       reason: "PR image was built but could not be published",
+    };
+  }
+
+  if (MANUAL_TRIGGER_AUTHORS.has(author)) {
+    return {
+      action: "wait",
+      reason: `Dependency PR: comment ${TEST_COMMAND} when it is ready to merge`,
+    };
+  }
+
+  const trusted =
+    TRUSTED_ASSOCIATIONS.has(authorAssociation) ||
+    input.orgMember ||
+    labels.includes(OK_TO_TEST_LABEL);
+  if (!trusted) {
+    return {
+      action: "wait",
+      reason: `Needs /ok-to-test from a member, then ${TEST_COMMAND}`,
     };
   }
 

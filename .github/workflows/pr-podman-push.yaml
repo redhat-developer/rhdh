@@ -379,9 +379,10 @@ jobs:
   e2e-ocp-gate:
     name: Decide e2e-ocp-helm
     needs: podman-push
-    # Also runs when publishing failed, so the PR gets a failing status
-    # instead of none. A newer push cancels this run through concurrency.
-    if: ${{ !cancelled() && needs.podman-push.outputs.pr_number != '' }}
+    # Also runs when publishing failed or the PR number is unknown, so the PR
+    # gets a failing status instead of none. A newer push cancels this run
+    # through concurrency.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -421,3 +422,27 @@ jobs:
           GATE_MODE: ${{ vars.E2E_GATE_MODE }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node .github/e2e-gate/gate.mts
+
+      # Prow no longer starts e2e-ocp-helm on push, so without a status from
+      # the gate Tide would wait forever with no message on the PR. Leaves
+      # results Prow already reported alone.
+      - name: Report a gate error on the commit
+        if: ${{ failure() && vars.E2E_GATE_MODE == 'enforce' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          CONTEXT="ci/prow/e2e-ocp-helm"
+          LATEST_CREATOR=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/statuses?per_page=100" \
+            --jq "[.[] | select(.context == \"${CONTEXT}\")][0].creator.login // \"\"")
+          if [[ -n "${LATEST_CREATOR}" && "${LATEST_CREATOR}" != "github-actions[bot]" ]]; then
+            echo "Prow already reported on this commit; leaving its status."
+            exit 0
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=error \
+            -f context="${CONTEXT}" \
+            -f description="The e2e-ocp-helm gate failed. Re-run it, or comment /test e2e-ocp-helm" \
+            -f target_url="${RUN_URL}" >/dev/null

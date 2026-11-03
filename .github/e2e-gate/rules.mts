@@ -45,9 +45,11 @@ export const NO_CLUSTER_PATHS: PathRule[] = [
     // CI for other platforms and install methods. The OCP Helm PR check only
     // runs .ci/pipelines/jobs/ocp-pull.sh. Syntax errors in these files are
     // still caught by the "E2E Bash" ShellCheck workflow.
+    // cleanup.sh sources cluster/gke/gcloud.sh and cluster/eks/aws.sh in every
+    // job, including the OCP Helm one, so those two always run.
     category: "CI for other platforms",
     pattern:
-      /^\.ci\/pipelines\/(cluster\/|jobs\/(aks|eks|gke|osd|ocp-disconnected|ocp-fips|ocp-localization|ocp-nightly|ocp-operator|auth-providers|upgrade)[^/]*\.sh$|install-methods\/operator\.sh$|lib\/disconnected|resources\/(disconnected|rhdh-operator)\/|value_files\/[^/]*(AKS|EKS|GKE|sanity|fips|disconnected)[^/]*$)/,
+      /^\.ci\/pipelines\/(cluster\/(?!gke\/gcloud\.sh$|eks\/aws\.sh$)|jobs\/(aks|eks|gke|osd|ocp-disconnected|ocp-fips|ocp-localization|ocp-nightly|ocp-operator|auth-providers|upgrade)[^/]*\.sh$|install-methods\/operator\.sh$|lib\/disconnected|resources\/(disconnected|rhdh-operator)\/|value_files\/[^/]*(AKS|EKS|GKE|sanity|fips|disconnected)[^/]*$)/,
   },
 ];
 
@@ -72,7 +74,17 @@ export const TRUSTED_ASSOCIATIONS = new Set([
 ]);
 export const OK_TO_TEST_LABEL = "ok-to-test";
 
-// When the image build is skipped because only these directories changed, the
-// Prow step tests the `next` image instead of a PR image, so the job can still
-// run. Mirrors .github/actions/check-image-and-changes.
-export const PREBUILT_IMAGE_OK_PATHS = /^(e2e|e2e-tests|doc|docs|\.ci)\//;
+// When every changed file is under these directories, the Prow step tests the
+// `next` image instead of waiting for a PR image, so the job can run even when
+// the image build was skipped. Must match DIRECTORIES_TO_CHECK in
+// openshift/release redhat-developer-rhdh-ocp-helm-commands.sh; any other
+// change makes Prow wait up to 60 minutes for a PR image.
+export const PREBUILT_IMAGE_OK_PATHS =
+  /^(\.ci|e2e-tests|docs|\.claude|\.cursor|\.opencode|\.rulesync|\.vscode)\//;
+
+// Login behind RHDH_BOT_TOKEN. Only its comments count as earlier run requests.
+export const GATE_BOT_LOGIN = "rhdh-bot";
+
+// Login that writes commit statuses with GITHUB_TOKEN. Any other author of a
+// ci/prow/e2e-ocp-helm status is Prow, and the gate never overwrites it.
+export const GATE_STATUS_CREATOR = "github-actions[bot]";

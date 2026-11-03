@@ -4,7 +4,8 @@
 //
 // Environment:
 //   GITHUB_REPOSITORY, GITHUB_TOKEN  repository and a token with statuses:write
-//   RHDH_BOT_TOKEN                   token of a Prow-trusted org member (posts /test)
+//   RHDH_BOT_TOKEN                   token of a Prow-trusted org member (posts /test,
+//                                    sees private org members)
 //   PR_NUMBER, HEAD_SHA              from the workflow_run event
 //   BUILD_CONCLUSION                 conclusion of the image build workflow
 //   PUBLISH_RESULT                   result of the podman-push job
@@ -12,10 +13,21 @@
 //   GATE_MODE                        "enforce" to act; anything else only reports
 //   RUN_URL                          link used as the status target
 import { appendFileSync } from "node:fs";
-import { decide, TEST_COMMAND, type GateAction } from "./decide.mts";
+import {
+  alreadyRequested,
+  changedPaths,
+  decide,
+  prowStatus,
+  runRequestMarker,
+  STATUS_CONTEXT,
+  TEST_COMMAND,
+  type CommitStatus,
+  type GateAction,
+  type IssueComment,
+  type PullRequestFile,
+} from "./decide.mts";
 import { GATED_BASE_BRANCHES } from "./rules.mts";
 
-const STATUS_CONTEXT = "ci/prow/e2e-ocp-helm";
 const STATUS_STATE: Record<Exclude<GateAction, "run">, string> = {
   skip: "success",
   wait: "pending",
@@ -34,6 +46,27 @@ interface PullRequest {
   head: { sha: string };
   base: { ref: string };
   labels: { name: string }[];
+}
+
+/**
+ * Prow trusts members of the repo's org, including private members, but
+ * author_association only shows MEMBER for public ones. Asking with an org
+ * member's token also sees private members: 204 yes, 404 no.
+ */
+async function isOrgMember(token: string, login: string): Promise<boolean> {
+  const org = required("GITHUB_REPOSITORY").split("/")[0];
+  const res = await fetch(
+    `https://api.github.com/orgs/${org}/members/${encodeURIComponent(login)}`,
+    {
+      redirect: "manual",
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    },
+  );
+  return res.status === 204;
 }
 
 function required(name: string): string {
@@ -92,10 +125,17 @@ function report(lines: string[]): void {
 }
 
 async function main(): Promise<void> {
+  if (env.BUILD_CONCLUSION === "cancelled") {
+    // cancel-in-progress cancels a build when a newer one starts (a push, or
+    // marking a draft ready); that newer build decides.
+    console.log("The image build was cancelled; a newer build will decide.");
+    return;
+  }
   const prNumber = Number(env.PR_NUMBER);
   if (!Number.isInteger(prNumber) || prNumber <= 0) {
-    console.log("No PR number; nothing to do.");
-    return;
+    // Exit with an error so the workflow's fallback step marks the commit
+    // instead of leaving the required status missing.
+    throw new Error("Could not determine the PR for this image build.");
   }
   const headSha = required("HEAD_SHA");
   const token = required("GITHUB_TOKEN");
@@ -118,13 +158,18 @@ async function main(): Promise<void> {
     return;
   }
 
-  const files = (
-    await paginate<{ filename: string }>(token, `/pulls/${prNumber}/files`)
-  ).map((f) => f.filename);
+  const files = changedPaths(
+    await paginate<PullRequestFile>(token, `/pulls/${prNumber}/files`),
+  );
+  const botToken = env.RHDH_BOT_TOKEN;
+  const orgMember = botToken
+    ? await isOrgMember(botToken, pr.user.login)
+    : false;
   const decision = decide({
     files,
     author: pr.user.login,
     authorAssociation: pr.author_association,
+    orgMember,
     title: pr.title,
     labels: pr.labels.map((l) => l.name),
     draft: pr.draft,
@@ -137,7 +182,7 @@ async function main(): Promise<void> {
   report([
     `## e2e-ocp-helm gate: \`${decision.action}\``,
     "",
-    `- PR: #${prNumber}${pr.draft ? " (draft)" : ""} into \`${pr.base.ref}\` by \`${pr.user.login}\` (${pr.author_association})`,
+    `- PR: #${prNumber}${pr.draft ? " (draft)" : ""} into \`${pr.base.ref}\` by \`${pr.user.login}\` (${pr.author_association}${orgMember ? ", org member" : ""})`,
     `- Head: \`${headSha}\``,
     `- Reason: ${decision.reason}`,
     `- Changed files: ${files.length}`,
@@ -145,23 +190,37 @@ async function main(): Promise<void> {
   ]);
   if (!enforce) return;
 
+  // A manual /test, or a run the gate requested earlier, already produced a
+  // Prow result for this commit. Never replace it or start a second run.
+  const prow = prowStatus(
+    await getJson<CommitStatus[]>(
+      token,
+      `/commits/${headSha}/statuses?per_page=100`,
+    ),
+  );
+  if (prow) {
+    console.log(
+      `Prow already reported "${clean(prow.state)}" for this commit; leaving it.`,
+    );
+    return;
+  }
+
   if (decision.action === "run") {
     // Prow decides on the comment author's trust, so this must be the token
     // of an org member. The marker lets a re-run see the earlier request.
-    const botToken = required("RHDH_BOT_TOKEN");
-    const marker = `<!-- e2e-ocp-gate sha=${headSha} -->`;
-    const comments = await paginate<{ body?: string }>(
-      botToken,
+    const runToken = required("RHDH_BOT_TOKEN");
+    const comments = await paginate<IssueComment>(
+      runToken,
       `/issues/${prNumber}/comments`,
     );
-    if (comments.some((c) => c.body?.includes(marker))) {
+    if (alreadyRequested(comments, headSha)) {
       console.log("A run was already requested for this commit.");
       return;
     }
-    await request(botToken, `/issues/${prNumber}/comments`, {
+    await request(runToken, `/issues/${prNumber}/comments`, {
       method: "POST",
       body: JSON.stringify({
-        body: `${TEST_COMMAND}\n${marker}\nThe PR image for \`${headSha.slice(0, 8)}\` is published, so the OCP e2e check can start.`,
+        body: `${TEST_COMMAND}\n${runRequestMarker(headSha)}\nThe PR image for \`${headSha.slice(0, 8)}\` is published, so the OCP e2e check can start.`,
       }),
     });
     return;
