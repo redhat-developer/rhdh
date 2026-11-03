@@ -15,7 +15,8 @@
 name: Auto-Approve Bot PRs
 
 # This workflow automatically adds labels and approves PRs that match specific criteria:
-# - Created by rhdh-bot (via RHDH GitHub App)
+# - Created by rhdh-bot, or by rhdh-gh-app[bot] (the RHDH GitHub App token that
+#   update-versions.yaml and update-dynamic-plugins-default.yaml push with)
 # - Branch name matches specific patterns (base image updates, version bumps, etc.)
 # - Adds lgtm and approved labels if not present
 #
@@ -44,8 +45,12 @@ jobs:
     name: Auto-Approve and Label PRs
     runs-on: ubuntu-latest
 
-    # Only run if PR is from rhdh-bot
-    if: github.event.pull_request.user.login == 'rhdh-bot'
+    # Only run if PR is from rhdh-bot or the RHDH GitHub App bot. Both are checked
+    # because some automation pushes with a PAT (author rhdh-bot) and some with
+    # actions/create-github-app-token (author rhdh-gh-app[bot]). The branch
+    # allowlist below stays the filter for what may be approved.
+    if: |
+      contains(fromJSON('["rhdh-bot", "rhdh-gh-app[bot]"]'), github.event.pull_request.user.login)
 
     steps:
       - name: Check PR eligibility
