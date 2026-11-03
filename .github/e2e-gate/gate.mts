@@ -10,7 +10,6 @@
 //   BUILD_CONCLUSION                 conclusion of the image build workflow
 //   PUBLISH_RESULT                   result of the podman-push job
 //   IMAGE_SKIPPED                    "true" when the build and push were skipped
-//   GATE_MODE                        "enforce" to act; anything else only reports
 //   RUN_URL                          link used as the status target
 import { appendFileSync } from "node:fs";
 import {
@@ -178,7 +177,6 @@ async function main(): Promise<void> {
     imageSkipped: env.IMAGE_SKIPPED === "true",
   });
 
-  const enforce = env.GATE_MODE === "enforce";
   report([
     `## e2e-ocp-helm gate: \`${decision.action}\``,
     "",
@@ -186,12 +184,11 @@ async function main(): Promise<void> {
     `- Head: \`${headSha}\``,
     `- Reason: ${decision.reason}`,
     `- Changed files: ${files.length}`,
-    `- Mode: ${enforce ? "enforce" : "report only (set the E2E_GATE_MODE repository variable to `enforce` to act)"}`,
   ]);
-  if (!enforce) return;
 
-  // A manual /test, or a run the gate requested earlier, already produced a
-  // Prow result for this commit. Never replace it or start a second run.
+  // A manual /test, a run the gate requested earlier, or (before Prow stopped
+  // auto-running the job) a push-triggered run already produced a Prow result
+  // for this commit. Never replace it or start a second run.
   const prow = prowStatus(
     await getJson<CommitStatus[]>(
       token,

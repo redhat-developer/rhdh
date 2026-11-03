@@ -416,10 +416,6 @@ jobs:
           BUILD_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           PUBLISH_RESULT: ${{ needs.podman-push.result }}
           IMAGE_SKIPPED: ${{ needs.podman-push.outputs.is_skipped }}
-          # Unset or anything other than "enforce": only write the decision to
-          # the job summary. Set the repository variable to "enforce" once the
-          # openshift/release change making e2e-ocp-helm manual is merged.
-          GATE_MODE: ${{ vars.E2E_GATE_MODE }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node .github/e2e-gate/gate.mts
 
@@ -427,7 +423,7 @@ jobs:
       # the gate Tide would wait forever with no message on the PR. Leaves
       # results Prow already reported alone.
       - name: Report a gate error on the commit
-        if: ${{ failure() && vars.E2E_GATE_MODE == 'enforce' }}
+        if: ${{ failure() }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}

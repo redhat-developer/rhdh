@@ -68,18 +68,6 @@ status the gate set. Use this to:
    always run from the default branch, so one copy of the rules covers PRs
    against every release branch, and a PR cannot test its own gate changes.
 
-## Rollout switch
-
-The `E2E_GATE_MODE` repository variable controls the gate:
-
-- unset (default): the gate writes its decision to the job summary and does
-  nothing else;
-- `enforce`: the gate sets statuses and posts `/test` comments.
-
-Set it to `enforce` when the openshift/release change that makes
-`e2e-ocp-helm` manual-only merges. PRs pushed before the switch have no status
-on their head commit, so push again or comment `/test e2e-ocp-helm`.
-
 ## Security
 
 The gate job runs with repository secrets (`RHDH_BOT_TOKEN`). It checks out
