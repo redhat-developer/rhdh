@@ -180,12 +180,13 @@ export function decide(input: GateInput): GateDecision {
     };
   }
 
-  // Prow never auto-ran presubmits on drafts. Marking the PR ready for review
-  // re-runs the image build and this gate.
+  // Prow never auto-ran presubmits on drafts. Marking a PR ready does not
+  // re-run the gate (that would rebuild the image), so the next push or a
+  // manual /test does.
   if (input.draft) {
     return {
       action: "wait",
-      reason: `Draft PR: mark it ready for review, or comment ${TEST_COMMAND}`,
+      reason: `Draft PR: comment ${TEST_COMMAND}, or push once it is ready for review`,
     };
   }
 

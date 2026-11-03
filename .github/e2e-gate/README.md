@@ -55,8 +55,9 @@ status the gate set. Use this to:
 - test a dependency PR before merging it,
 - test a PR whose image build was skipped,
 - test a change the gate skipped when you still want cluster coverage,
-- test a draft PR. Drafts otherwise wait until they are marked ready for
-  review, which re-runs the image build and the gate.
+- test a draft PR, or a PR just marked ready for review. Marking a PR ready
+  does not re-run the gate, because that would rebuild the image; the next
+  push does.
 
 ## Changing the rules
 

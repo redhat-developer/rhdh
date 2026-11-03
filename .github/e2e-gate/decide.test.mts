@@ -291,7 +291,7 @@ describe("draft PRs", () => {
   it("waits on drafts instead of claiming a cluster", () => {
     const d = decide({ ...base, draft: true });
     assert.equal(d.action, "wait");
-    assert.match(d.reason, /ready for review/);
+    assert.match(d.reason, /push once it is ready for review/);
     assert.match(d.reason, /\/test e2e-ocp-helm/);
   });
 
