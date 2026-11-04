@@ -35,14 +35,15 @@ export const NO_CLUSTER_PATHS: PathRule[] = [
       /^e2e-tests\/(unit\/|local-harness\/|local-[^/]+$|playwright\/cluster-free\/|playwright\.(local|plugin-sanity)\.config\.ts$)/,
   },
   {
-    // CI for other platforms and install methods. The OCP Helm PR check only
-    // runs .ci/pipelines/jobs/ocp-pull.sh. Syntax errors in these files are
-    // still caught by the "E2E Bash" ShellCheck workflow.
-    // cleanup.sh sources cluster/gke/gcloud.sh and cluster/eks/aws.sh in every
-    // job, including the OCP Helm one, so those two always run.
+    // CI for other platforms. The OCP Helm PR check only runs
+    // .ci/pipelines/jobs/ocp-pull.sh. Syntax errors in these files are still
+    // caught by the "E2E Bash" ShellCheck workflow.
+    // cleanup.sh sources cluster/gke/gcloud.sh (which sources
+    // install-methods/operator.sh) and cluster/eks/aws.sh in every job,
+    // including the OCP Helm one, so those always run.
     category: "CI for other platforms",
     pattern:
-      /^\.ci\/pipelines\/(cluster\/(?!gke\/gcloud\.sh$|eks\/aws\.sh$)|jobs\/(aks|eks|gke|osd|ocp-disconnected|ocp-fips|ocp-localization|ocp-nightly|ocp-operator|auth-providers|upgrade)[^/]*\.sh$|install-methods\/operator\.sh$|lib\/disconnected|resources\/(disconnected|rhdh-operator)\/|value_files\/[^/]*(AKS|EKS|GKE|sanity|fips|disconnected)[^/]*$)/,
+      /^\.ci\/pipelines\/(cluster\/(?!gke\/gcloud\.sh$|eks\/aws\.sh$)|jobs\/(aks|eks|gke|osd|ocp-disconnected|ocp-fips|ocp-localization|ocp-nightly|ocp-operator|auth-providers|upgrade)[^/]*\.sh$|lib\/disconnected|resources\/(disconnected|rhdh-operator)\/|value_files\/[^/]*(AKS|EKS|GKE|sanity|fips|disconnected)[^/]*$)/,
   },
 ];
 

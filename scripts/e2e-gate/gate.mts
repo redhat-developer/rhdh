@@ -8,7 +8,7 @@
 //                                    sees private org members)
 //   PR_NUMBER, HEAD_SHA              from the workflow_run event
 //   BUILD_CONCLUSION                 conclusion of the image build workflow
-//   PUBLISH_RESULT                   result of the podman-push job
+//   PUBLISH_RESULT                   outcome of the image push step
 //   IMAGE_SKIPPED                    "true" when the build and push were skipped
 //   RUN_URL                          link used as the status target
 import { appendFileSync } from "node:fs";
@@ -16,9 +16,11 @@ import {
   alreadyRequested,
   changedPaths,
   decide,
+  MAX_LISTED_FILES,
   prowStatus,
   runRequestMarker,
   STATUS_CONTEXT,
+  statusDescription,
   TEST_COMMAND,
   type CommitStatus,
   type GateAction,
@@ -27,7 +29,9 @@ import {
 } from "./decide.mts";
 import { GATED_BASE_BRANCHES } from "./rules.mts";
 
-const STATUS_STATE: Record<Exclude<GateAction, "run">, string> = {
+const STATUS_STATE: Record<GateAction, string> = {
+  // Until Prow picks up the /test comment and reports its own pending status.
+  run: "pending",
   skip: "success",
   wait: "pending",
   fail: "failure",
@@ -60,7 +64,9 @@ const GITHUB_LOGIN = /^[A-Za-z0-9-]{1,39}$/;
 /**
  * Prow trusts members of the repo's org, including private members, but
  * author_association only shows MEMBER for public ones. Asking with an org
- * member's token also sees private members: 204 yes, 404 no.
+ * member's token also sees private members: 204 yes, 404 no (302 when the
+ * token's user is not a member). Anything else is an error, so a broken token
+ * does not quietly turn members into untrusted authors.
  */
 async function isOrgMember(token: string, login: string): Promise<boolean> {
   const org = required("GITHUB_REPOSITORY").split("/")[0];
@@ -70,7 +76,9 @@ async function isOrgMember(token: string, login: string): Promise<boolean> {
     `https://api.github.com/orgs/${org}/members/${login}`,
     { redirect: "manual", headers: headers(token) },
   );
-  return res.status === 204;
+  if (res.status === 204) return true;
+  if (res.status === 404 || res.status === 302) return false;
+  throw new Error(`Org membership check for ${login}: ${res.status}`);
 }
 
 function required(name: string): string {
@@ -133,12 +141,20 @@ async function prowResult(
   );
 }
 
+/**
+ * Sets the status unless Prow reported on the commit while the gate was
+ * deciding. Returns false when Prow's result was left in place.
+ */
 async function setStatus(
   token: string,
   headSha: string,
   state: string,
   description: string,
-): Promise<void> {
+): Promise<boolean> {
+  if (await prowResult(token, headSha)) {
+    console.log("Prow reported while the gate was deciding; leaving it.");
+    return false;
+  }
   await request(token, `/statuses/${headSha}`, {
     method: "POST",
     body: JSON.stringify({
@@ -148,6 +164,7 @@ async function setStatus(
       target_url: env.RUN_URL,
     }),
   });
+  return true;
 }
 
 /** Strips line breaks and control characters from API values before logging. */
@@ -165,7 +182,7 @@ function report(lines: string[]): void {
 async function main(): Promise<void> {
   const prNumber = Number(env.PR_NUMBER);
   if (!Number.isInteger(prNumber) || prNumber <= 0) {
-    // Thrown errors set an error status, so the required status is never
+    // Failing the step sets an error status, so the required status is never
     // left missing.
     throw new Error("Could not determine the PR for this image build.");
   }
@@ -208,6 +225,7 @@ async function main(): Promise<void> {
   const files = changedPaths(rawFiles);
   const decision = decide({
     files,
+    allFilesListed: rawFiles.length < MAX_LISTED_FILES,
     author: pr.user.login,
     authorAssociation: pr.author_association,
     orgMember,
@@ -240,6 +258,14 @@ async function main(): Promise<void> {
       console.log("A run was already requested for this commit.");
       return;
     }
+    // The pending status shows the request on the PR if Prow never picks it up.
+    const requested = await setStatus(
+      token,
+      headSha,
+      STATUS_STATE.run,
+      `Requested ${TEST_COMMAND}; comment it again if the job does not start`,
+    );
+    if (!requested) return;
     await request(runToken, `/issues/${prNumber}/comments`, {
       method: "POST",
       body: JSON.stringify({
@@ -253,32 +279,10 @@ async function main(): Promise<void> {
     token,
     headSha,
     STATUS_STATE[decision.action],
-    decision.reason,
+    statusDescription(decision),
   );
 }
 
-// Prow no longer starts e2e-ocp-helm on push, so without a status from the
-// gate Tide would wait forever with no message on the PR.
-async function reportError(): Promise<void> {
-  const headSha = required("HEAD_SHA");
-  const token = required("GITHUB_TOKEN");
-  if (await prowResult(token, headSha)) return;
-  await setStatus(
-    token,
-    headSha,
-    "error",
-    `The e2e-ocp-helm gate failed. Re-run it, or comment ${TEST_COMMAND}`,
-  );
-}
-
-try {
-  await main();
-} catch (err) {
-  console.error(err);
-  process.exitCode = 1;
-  try {
-    await reportError();
-  } catch (reportErr) {
-    console.error(reportErr);
-  }
-}
+// A failure here fails the step, and the workflow's "Report a gate failure"
+// step sets an error status, so Tide never waits on a missing status.
+await main();

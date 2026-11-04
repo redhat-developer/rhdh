@@ -6,12 +6,14 @@ import {
   decide,
   prowStatus,
   runRequestMarker,
+  statusDescription,
   type GateInput,
 } from "./decide.mts";
 
 // A trusted member's PR with a freshly published image.
 const base: GateInput = {
   files: ["packages/app/src/App.tsx"],
+  allFilesListed: true,
   author: "some-member",
   authorAssociation: "MEMBER",
   orgMember: true,
@@ -44,6 +46,8 @@ describe("paths that need a cluster", () => {
     // cleanup.sh sources these in every job, including OCP Helm.
     ".ci/pipelines/cluster/gke/gcloud.sh",
     ".ci/pipelines/cluster/eks/aws.sh",
+    // gcloud.sh sources it, so it loads in every job too.
+    ".ci/pipelines/install-methods/operator.sh",
   ]) {
     it(`runs for ${file}`, () =>
       assert.equal(action({ files: [file] }), "run"));
@@ -102,7 +106,6 @@ describe("paths that do not need a cluster", () => {
     ".ci/pipelines/jobs/aks-helm.sh",
     ".ci/pipelines/jobs/ocp-nightly.sh",
     ".ci/pipelines/lib/disconnected/mirror.sh",
-    ".ci/pipelines/install-methods/operator.sh",
     ".ci/pipelines/cluster/osd-gcp/create-osd.sh",
     ".ci/pipelines/cluster/eks/eks-helm-deployment.sh",
     ".ci/pipelines/resources/disconnected/policy.json",
@@ -126,6 +129,50 @@ describe("paths that do not need a cluster", () => {
 
   it("does not skip an empty file list", () => {
     assert.equal(action({ files: [] }), "run");
+  });
+
+  it("does not skip when GitHub truncated the file list", () => {
+    assert.equal(
+      action({ files: ["docs/index.md"], allFilesListed: false }),
+      "run",
+    );
+  });
+});
+
+describe("status descriptions", () => {
+  it("marks skips so Tide does not start the job before merge", () => {
+    const d = decide({ ...base, files: ["docs/index.md"] });
+    assert.equal(
+      statusDescription(d),
+      "[prow:skip-retest] No cluster needed: only docs changed",
+    );
+  });
+
+  it("keeps the marker within GitHub's 140 characters for the longest reason", () => {
+    const d = decide({
+      ...base,
+      files: [
+        "docs/a.md",
+        ".github/x.yaml",
+        ".claude/x.md",
+        "e2e-tests/unit/x.ts",
+        ".ci/pipelines/jobs/aks-helm.sh",
+      ],
+    });
+    assert.ok(statusDescription(d).length <= 140);
+  });
+
+  it("does not mark pending or failing statuses", () => {
+    for (const over of [
+      { draft: true },
+      { buildConclusion: "failure" },
+    ] satisfies Partial<GateInput>[]) {
+      assert.ok(
+        !statusDescription(decide({ ...base, ...over })).includes(
+          "[prow:skip-retest]",
+        ),
+      );
+    }
   });
 });
 
@@ -241,6 +288,17 @@ describe("image state", () => {
     assert.equal(action({ imageSkipped: true }), "fail");
   });
 
+  it("fails a skipped build when GitHub truncated the file list", () => {
+    assert.equal(
+      action({
+        files: ["e2e-tests/playwright/e2e/settings.spec.ts"],
+        imageSkipped: true,
+        allFilesListed: false,
+      }),
+      "fail",
+    );
+  });
+
   it("fails a skipped build for directories Prow does not accept", () => {
     // Prow would wait 60 minutes for a PR image that was never pushed.
     for (const file of ["e2e/foo.ts", "doc/foo.ts"]) {
@@ -317,6 +375,14 @@ describe("existing Prow results", () => {
       { context: ctx, state: "failure", creator: gate },
     ]);
     assert.equal(s?.state, "failure");
+  });
+
+  it("finds a Prow status under a newer gate status", () => {
+    const s = prowStatus([
+      { context: ctx, state: "pending", creator: gate },
+      { context: ctx, state: "success", creator: prow },
+    ]);
+    assert.equal(s?.state, "success");
   });
 
   it("lets the gate replace its own status", () => {

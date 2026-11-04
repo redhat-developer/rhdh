@@ -15,9 +15,19 @@ import {
 export const TEST_COMMAND = "/test e2e-ocp-helm";
 export const STATUS_CONTEXT = "ci/prow/e2e-ocp-helm";
 
+// Tide only counts a required job as passed when a ProwJob exists for it, or
+// when its success status carries this sentinel. Without it Tide would start
+// the job itself before merging a skipped PR.
+export const SKIP_RETEST_SENTINEL = "[prow:skip-retest]";
+
+// GitHub lists at most this many files for a pull request.
+export const MAX_LISTED_FILES = 3000;
+
 export interface GateInput {
   /** Changed file paths in the PR, including the old path of renamed files. */
   files: string[];
+  /** False when GitHub truncated the file list (MAX_LISTED_FILES). */
+  allFilesListed: boolean;
   /** PR author login. */
   author: string;
   /** GitHub author_association of the PR author. */
@@ -30,7 +40,7 @@ export interface GateInput {
   draft: boolean;
   /** Conclusion of the "PR Build Image (Hermetic)" run. */
   buildConclusion: string;
-  /** Result of the podman-push job. */
+  /** Outcome of the image push step ("skipped" if it never ran). */
   publishResult: string;
   /** True when the image build and push were skipped. */
   imageSkipped: boolean;
@@ -83,14 +93,26 @@ export interface CommitStatus {
 }
 
 /**
- * Returns the newest ci/prow/e2e-ocp-helm status if Prow wrote it, else null.
+ * Returns the newest ci/prow/e2e-ocp-helm status Prow wrote, else null.
  * `statuses` is newest first, as the GitHub API returns it. Once Prow has
- * reported on a commit, its result stands and the gate does nothing.
+ * reported on a commit, its result stands and the gate does nothing, even if
+ * a gate status landed after it.
  */
 export function prowStatus(statuses: CommitStatus[]): CommitStatus | null {
-  const latest = statuses.find((s) => s.context === STATUS_CONTEXT);
-  if (!latest || latest.creator?.login === GATE_STATUS_CREATOR) return null;
-  return latest;
+  return (
+    statuses.find(
+      (s) =>
+        s.context === STATUS_CONTEXT &&
+        s.creator?.login !== GATE_STATUS_CREATOR,
+    ) ?? null
+  );
+}
+
+/** The commit status description for a decision. */
+export function statusDescription(decision: GateDecision): string {
+  return decision.action === "skip"
+    ? `${SKIP_RETEST_SENTINEL} ${decision.reason}`
+    : decision.reason;
 }
 
 export interface IssueComment {
@@ -117,9 +139,11 @@ export function alreadyRequested(
 }
 
 export function decide(input: GateInput): GateDecision {
-  const { files, author, authorAssociation, title, labels } = input;
+  const { files, allFilesListed, author, authorAssociation, title, labels } =
+    input;
 
-  if (files.length > 0) {
+  // A truncated list could hide product changes, so it never skips.
+  if (allFilesListed && files.length > 0) {
     const categories = files.map(noClusterCategory);
     if (categories.every((c): c is string => c !== null)) {
       const names = [...new Set(categories)]
@@ -148,11 +172,14 @@ export function decide(input: GateInput): GateDecision {
     };
   }
   if (input.imageSkipped) {
-    if (!files.every((f) => PREBUILT_IMAGE_OK_PATHS.test(f))) {
+    if (
+      !allFilesListed ||
+      !files.every((f) => PREBUILT_IMAGE_OK_PATHS.test(f))
+    ) {
       return {
         action: "fail",
         reason:
-          "Image build was skipped ([skip-build]) for a product change; push without [skip-build] to build one",
+          "No PR image was built, and these changes need one; push a commit without [skip-build] to build it",
       };
     }
   } else if (input.publishResult !== "success") {

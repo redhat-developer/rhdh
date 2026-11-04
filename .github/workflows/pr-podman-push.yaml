@@ -52,6 +52,9 @@ jobs:
     outputs:
       pr_number: ${{ steps.get-pr-info.outputs.pr_number }}
       is_skipped: ${{ steps.check-skip.outputs.is_skipped }}
+      # Outcome of the push itself; later comment steps can fail the job after
+      # the image was published.
+      push_outcome: ${{ steps.push.outcome }}
 
     steps:
       - name: Get PR number from workflow run
@@ -259,6 +262,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Push Images
+        id: push
         if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
         env:
@@ -376,10 +380,10 @@ jobs:
   e2e-ocp-gate:
     name: Decide e2e-ocp-helm
     needs: podman-push
-    # Also runs when publishing failed or the PR number is unknown, so the PR
-    # gets a failing status instead of none. A cancelled build was replaced by
-    # a newer push, whose build decides.
-    if: ${{ !cancelled() && github.event.workflow_run.conclusion != 'cancelled' }}
+    # Also runs when the build was cancelled, publishing failed or the PR
+    # number is unknown, so the PR gets a failing status instead of none. A
+    # build cancelled by a newer push is ignored because the PR head moved.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -411,7 +415,30 @@ jobs:
           PR_NUMBER: ${{ needs.podman-push.outputs.pr_number }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           BUILD_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          PUBLISH_RESULT: ${{ needs.podman-push.result }}
+          PUBLISH_RESULT: ${{ needs.podman-push.outputs.push_outcome }}
           IMAGE_SKIPPED: ${{ needs.podman-push.outputs.is_skipped }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/e2e-gate/gate.mts
+
+      # Prow no longer starts e2e-ocp-helm on push, so if any step above fails,
+      # set an error status rather than leave Tide waiting with no message.
+      # Uses only gh, so it works even when checkout or Node setup failed.
+      - name: Report a gate failure
+        if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # A Prow result stands; only the gate's own statuses are replaced.
+          prow=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/statuses?per_page=100" \
+            --jq '[.[] | select(.context == "ci/prow/e2e-ocp-helm" and .creator.login != "github-actions[bot]")] | length')
+          if [ "$prow" -gt 0 ]; then
+            echo "Prow already reported for this commit; leaving it."
+            exit 0
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=error \
+            -f context=ci/prow/e2e-ocp-helm \
+            -f description="The e2e-ocp-helm gate failed. Re-run it, or comment /test e2e-ocp-helm" \
+            -f target_url="$RUN_URL"
