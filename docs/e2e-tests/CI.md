@@ -12,7 +12,8 @@ The mandatory `e2e-ocp-helm` check claims an ephemeral OpenShift cluster on ever
 
 - **When the PR gets `lgtm`:** The pipeline controller comments `/test e2e-ocp-helm` and the job runs. An approving review adds `lgtm`, and a new push removes it, so the job runs again after the next approval.
 - **Changes That Do Not Need a Cluster:** If every changed file is docs, repository tooling, AI agent config, the cluster-free e2e harness or CI for other platforms, the job is not run. The `pipeline_skip_if_only_changed` pattern in the job's [openshift/release config](https://github.com/openshift/release/tree/main/ci-operator/config/redhat-developer/rhdh) lists them.
-- **Merge Requirement:** The `ci/pipeline-gate` check is required. It turns green once the pipeline controller has started the applicable jobs, or when none apply. Once `e2e-ocp-helm` has started, it must pass before the PR can merge.
+- **`[skip-e2e]` Bot PRs:** Before the auto-approve workflow approves a `[skip-e2e]` PR from `rhdh-bot` or `rhdh-gh-app[bot]`, `rhdh-bot` comments `/override ci/prow/e2e-ocp-helm`, so approval does not start the job. If the override does not land within three minutes, the PR is approved anyway; the job then runs and exits early on `[skip-e2e]`.
+- **Merge Requirement:** The `ci/pipeline-gate` check is required at repository level, so a new `release-*` branch gets it, and the pipeline controller, as soon as its CI config (copied from `main`) is added to openshift/release. It turns green once the pipeline controller has started the applicable jobs, or when none apply. Once `e2e-ocp-helm` has started, it must pass before the PR can merge.
 
 To get e2e results before review, comment `/test e2e-ocp-helm` at any time. If `ci/pipeline-gate` is missing or stuck, comment `/pipeline remaining` to start any job that has not run for the current commit. `/pipeline help` lists the other commands.
 

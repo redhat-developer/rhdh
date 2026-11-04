@@ -39,6 +39,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  statuses: write
 
 jobs:
   auto-approve:
@@ -109,6 +110,54 @@ jobs:
 
           echo "HEAD unchanged for ${DEBOUNCE_SECONDS}s: ${CURRENT_SHA}"
           echo "stable=true" >> "$GITHUB_OUTPUT"
+
+      # Approval adds lgtm, and lgtm makes the OpenShift CI pipeline controller
+      # run e2e-ocp-helm, which claims a cluster before the job sees [skip-e2e].
+      # Override the context first: /override records a successful ProwJob on
+      # this HEAD, so the controller finds e2e already done and starts nothing.
+      # /override only accepts a failed or pending context, hence the pending
+      # status. If the override does not land (rhdh-bot not authorized, Prow
+      # slow), approve anyway: the job then runs and exits on [skip-e2e] as before.
+      - name: Override e2e-ocp-helm for [skip-e2e] PRs
+        if: >-
+          steps.check-eligibility.outputs.eligible == 'true' &&
+          steps.debounce.outputs.stable == 'true' &&
+          contains(github.event.pull_request.title, '[skip-e2e]')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          CONTEXT="ci/prow/e2e-ocp-helm"
+
+          e2e_state() {
+            gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" \
+              --jq ".statuses[] | select(.context == \"${CONTEXT}\") | .state"
+          }
+
+          if [[ "$(e2e_state)" == "success" ]]; then
+            echo "${CONTEXT} is already successful on ${HEAD_SHA}."
+            exit 0
+          fi
+
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=pending -f context="${CONTEXT}" \
+            -f description="[skip-e2e] bot PR: waiting for /override" >/dev/null
+
+          GH_TOKEN="${BOT_TOKEN}" gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --body "/override ${CONTEXT}"
+
+          for _ in $(seq 1 12); do
+            sleep 15
+            if [[ "$(e2e_state)" == "success" ]]; then
+              # Give the pipeline controller's ProwJob cache time to see the override.
+              sleep 15
+              echo "${CONTEXT} overridden on ${HEAD_SHA}."
+              exit 0
+            fi
+          done
+          echo "::warning::${CONTEXT} was not overridden within 3 minutes; approving anyway, so e2e-ocp-helm will run and exit on [skip-e2e]."
 
       - name: Add required labels and approve PR
         if: steps.check-eligibility.outputs.eligible == 'true' && steps.debounce.outputs.stable == 'true'
