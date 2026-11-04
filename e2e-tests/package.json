@@ -14,7 +14,6 @@
     "showcase-operator-rbac": "playwright test --project=showcase-operator-rbac",
     "showcase-runtime": "playwright test --project=showcase-runtime",
     "showcase-upgrade": "playwright test --project=showcase-upgrade",
-    "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
     "showcase-localization-de": "LOCALE=de playwright test --project=showcase-localization-de",
     "showcase-localization-es": "LOCALE=es playwright test --project=showcase-localization-es",
     "showcase-localization-fr": "LOCALE=fr playwright test --project=showcase-localization-fr",
@@ -30,13 +29,10 @@
     "e2e:local": "playwright test --config=playwright.local.config.ts"
   },
   "dependencies": {
-    "@azure/arm-network": "34.2.0",
     "@azure/identity": "4.13.3",
     "@backstage/catalog-model": "1.9.0",
     "@backstage/types": "1.2.2",
-    "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
-    "@microsoft/microsoft-graph-client": "3.0.7",
     "isomorphic-fetch": "3.0.0",
     "pg": "8.23.0",
     "uuid": "14.0.2",
