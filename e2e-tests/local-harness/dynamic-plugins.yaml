@@ -70,3 +70,17 @@ plugins:
   # (app-root-wrapper:app/global-header, translation:app/global-header-translations).
   - package: ref://red-hat-developer-hub-backstage-plugin-global-header
     enabled: true
+
+  # Core decoupled plugins (loaded from OCI until catalog index includes them)
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog:pr_4450__2.0.8"
+    enabled: true
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend:pr_4450__3.9.1"
+    enabled: true
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-openapi:pr_4450__0.2.25"
+    enabled: true
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder:pr_4450__1.38.2"
+    enabled: true
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-search:pr_4450__1.7.7"
+    enabled: true
+  - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-user-settings:pr_4450__0.9.6"
+    enabled: true
