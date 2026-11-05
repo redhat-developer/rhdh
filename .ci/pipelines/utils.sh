@@ -219,13 +219,21 @@ create_postgres_cred_secret() {
 
 configure_external_postgres_db() {
   local project=$1
+  local fips_mode=${2:-false}
   local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
   local wait_interval=5
 
   log::info "Creating PostgresCluster in namespace ${NAME_SPACE_POSTGRES_DB}..."
 
+  # Select YAML based on FIPS mode
+  local postgres_yaml="${DIR}/resources/postgres-db/postgres.yaml"
+  if [[ "${fips_mode}" == "true" ]]; then
+    postgres_yaml="${DIR}/resources/postgres-db/postgres-fips.yaml"
+    log::info "Using FIPS-compatible PostgreSQL configuration"
+  fi
+
   # Validate oc apply command execution
-  if ! oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"; then
+  if ! oc apply -f "${postgres_yaml}" --namespace="${NAME_SPACE_POSTGRES_DB}"; then
     log::error "Failed to create PostgresCluster"
     return 1
   fi

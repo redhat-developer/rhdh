@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:6.2
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            - name: REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_USERNAME
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PASSWORD
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "user ${REDIS_USERNAME} on >${REDIS_PASSWORD} allcommands allkeys" > /data/redis.conf
+              redis-server /data/redis.conf \
+                --tls-port 6379 \
+                --port 0 \
+                --tls-cert-file /certs/tls.crt \
+                --tls-key-file /certs/tls.key \
+                --tls-ca-cert-file /certs/ca.crt \
+                --tls-auth-clients no
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+            - name: redis-certs
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+        - name: redis-certs
+          secret:
+            secretName: redis-certs
+            defaultMode: 0400
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: redis
