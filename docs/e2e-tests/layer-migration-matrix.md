@@ -117,12 +117,7 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | 17  | `plugins/scaffolder-relation-processor/scaffolder-relation-processor` | showcase          | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
 | 18  | `github-happy-path`                                                   | none (`blocked/`) | no       | yes        | GitHub OAuth+API        | **L4a / L4b**                        |
 | 19  | `plugin-dynamic-loading`                                              | none (moved)      | no       | no (API)   | catalog index image     | **L4a** (already cluster-free)       |
-| 20  | `auth-providers/oidc`                                                 | auth-providers    | **yes**  | yes        | Keycloak/RHBK           | **L4b**                              |
-| 21  | `auth-providers/microsoft`                                            | auth-providers    | **yes**  | yes        | Azure Entra             | **L4b**                              |
-| 22  | `auth-providers/github`                                               | auth-providers    | **yes**  | yes        | GitHub                  | **L4b**                              |
-| 23  | `auth-providers/gitlab`                                               | auth-providers    | **yes**  | yes        | GitLab                  | **L4b**                              |
-| 24  | `auth-providers/ldap`                                                 | auth-providers    | **yes**  | yes        | Keycloak+LDAP+Azure NSG | **L4b**                              |
-| 25  | `external-database/...-crunchy`                                       | runtime-db        | **yes**  | yes        | Crunchy PG              | **L4b**                              |
+| 20  | `external-database/...-crunchy`                                       | runtime-db        | **yes**  | yes        | Crunchy PG              | **L4b**                              |
 | 26  | `external-database/...-azure-db`                                      | runtime-db        | **yes**  | yes        | Azure PG (x4)           | **L4b**                              |
 | 27  | `external-database/...-rds`                                           | runtime-db        | **yes**  | yes        | AWS RDS (x4)            | **L4b**                              |
 | 28  | `configuration-test/config-map`                                       | showcase          | **yes**  | yes        | ConfigMap reload        | **L4b**                              |
@@ -136,7 +131,7 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | **L2**         | 4     | #1, #2, #13, #14                            |
 | **L3**         | 8     | #3\*, #4, #5, #6, #7, #8, #9, #12           |
 | **L4a**        | 5     | #15, #16, #17, #18, #19                     |
-| **L4b (stay)** | 11    | #20–#30                                     |
+| **L4b (stay)** | 6     | #20–#25                                     |
 
 \* smoke-test: migrate the assertion to L3 but keep a minimal L4a/L4b smoke as a deployment heartbeat.
 

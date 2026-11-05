@@ -149,14 +149,13 @@ After `periodic-ci-` or `pull-ci-`, the next two segments are the GitHub **org**
 | `{BRANCH}` | `main`, `release-1.9`, `release-1.10` | Git branch being tested |
 | `{PLATFORM}` | `ocp`, `ocp-v4-{VER}`, `aks`, `eks`, `gke`, `osd-gcp` | Target platform (OCP versions rotate as new releases come out) |
 | `{INSTALL_METHOD}` | `helm`, `operator` | Installation method |
-| `{VARIANT}` | `auth-providers`, `upgrade` | Optional -- specialized test scenario. Overlay nightlies typically have no variant: `e2e-ocp-helm-nightly` |
+| `{VARIANT}` | `upgrade` | Optional -- specialized test scenario. Overlay nightlies typically have no variant: `e2e-ocp-helm-nightly` |
 
 Examples -- Core (`rhdh`):
 
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-nightly` -- OCP nightly with Helm on main
 - `periodic-ci-redhat-developer-rhdh-release-1.9-e2e-aks-helm-nightly` -- AKS nightly for release 1.9
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-operator-nightly` -- OCP nightly with Operator
-- `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-operator-auth-providers-nightly` -- Auth provider tests
 - `periodic-ci-redhat-developer-rhdh-main-e2e-ocp-helm-upgrade-nightly` -- Upgrade scenario tests
 
 Examples -- Overlay (`rhdh-plugin-export-overlays`):
@@ -433,27 +432,6 @@ Runs on every PR that modifies e2e test code. Smaller scope for faster feedback.
 **Key differences**:
 - No runtime or localization tests
 - Deploys test Backstage customization provider
-
-### Auth Providers (`auth-providers`)
-
-Tests authentication provider integrations. Has a completely different deployment approach. See [`auth-providers.sh`](../../.ci/pipelines/jobs/auth-providers.sh).
-
-**Namespace**: `showcase-auth-providers` (dedicated)
-
-**Release name**: `rhdh-auth-providers`
-
-**Providers tested**:
-- OIDC via Red Hat Backstage Keycloak (RHBK)
-- Microsoft OAuth2
-- GitHub authentication
-- LDAP / Active Directory (may be commented out)
-
-**Key differences**:
-- Uses RHDH **Operator** for deployment (not Helm)
-- TypeScript-based test configuration (not Bash scripts) -- see [auth-providers test directory](../../e2e-tests/playwright/e2e/auth-providers/)
-- Only **1 retry** (vs 2 for other projects) -- due to complex auth setup/teardown
-- Dedicated logs folder: `e2e-tests/auth-providers-logs`
-- Requires specific plugins: `keycloak-dynamic`, `github-org-dynamic`, `msgraph-dynamic`, `rbac`
 
 ### Upgrade (`upgrade`)
 

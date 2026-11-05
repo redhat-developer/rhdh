@@ -287,7 +287,7 @@ await page.getByRole('article').filter({ hasText: cardHeading });
 **Problem:** 50+ instances of arbitrary timeouts that make tests slow and flaky.
 
 ```typescript
-// ❌ AVOID - Found in auth-providers, RBAC, and plugin tests
+// ❌ AVOID - Found in RBAC and plugin tests
 await page.waitForTimeout(3000);  // Why 3 seconds? What are we waiting for?
 await button.click();
 
