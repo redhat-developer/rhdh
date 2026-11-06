@@ -265,6 +265,8 @@ COPY --from=build /usr/bin/openssl /usr/bin/openssl
 # RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
+# RHDHBUGS-4080: configure the signature lookaside for registry.access.redhat.com so Skopeo can verify images
+COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/registries.d/registry.access.redhat.com.yaml /etc/containers/registries.d/registry.access.redhat.com.yaml
 
 # Production app tree from cleanup stage (excludes monorepo sources/build artifacts)
 COPY --from=cleanup --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
