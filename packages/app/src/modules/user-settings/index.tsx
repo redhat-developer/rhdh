@@ -8,9 +8,9 @@ import {
  * the RHDH build-metadata `InfoCard` alongside the default profile,
  * appearance, and identity cards.
  *
- * This module is intentionally kept local to `app` rather than upstreamed,
- * since upstream NFS does not currently expose card slots on the General
- * settings sub-page.
+ * Note: The `@backstage/plugin-user-settings` plugin itself is decoupled and NOT
+ * included in the core app bundle (loaded dynamically via OCI). This local module
+ * only customizes the General sub-page extension layout.
  */
 const userSettingsGeneral = SubPageBlueprint.make({
   name: "general",
