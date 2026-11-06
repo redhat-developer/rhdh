@@ -2,7 +2,12 @@ import { test } from "@support/coverage/test";
 
 import { CatalogImport } from "../../support/pages/catalog-import";
 import { SelfServicePage } from "../../support/pages/self-service-page";
-import { APIHelper } from "../../utils/api-helper";
+import {
+  deleteEntityLocationById,
+  getLocationIdByTarget,
+  getTemplateEntityUidByName,
+  registerLocation,
+} from "../../utils/api-helper";
 import { LogUtils } from "./log-utils";
 
 const template = "https://github.com/janus-qe/sample-service/blob/main/demo_template.yaml";
@@ -10,18 +15,18 @@ const entityName = "hello-world-2";
 const namespace = "default";
 
 async function ensureEntityExists() {
-  const uid = await APIHelper.getTemplateEntityUidByName(entityName, namespace);
+  const uid = await getTemplateEntityUidByName(entityName, namespace);
   if (uid === undefined || uid === "") {
-    await APIHelper.registerLocation(template);
+    await registerLocation(template);
     return false;
   }
   return true;
 }
 
 async function ensureEntityDoesNotExist() {
-  const id = await APIHelper.getLocationIdByTarget(template);
+  const id = await getLocationIdByTarget(template);
   if (id !== undefined && id !== "") {
-    await APIHelper.deleteEntityLocationById(id);
+    await deleteEntityLocationById(id);
   }
 }
 
