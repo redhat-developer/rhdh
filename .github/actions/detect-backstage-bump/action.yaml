@@ -31,7 +31,7 @@ runs:
         elif ! git diff --quiet -G '^  resolution: "@backstage/' "$BASE_COMMIT" "$PR_HEAD_SHA" -- yarn.lock; then
           echo "yarn.lock changes resolved @backstage/* versions."
           RUN_BUMP_CHECKS=true
-        # Yarn patches (patch-backstage workflow, CVE backports) change code that
+        # Yarn patches (rhdh-patch-backstage workflow, CVE backports) change code that
         # turbo does not see as affected.
         elif grep -q '^\.yarn/patches/' <<< "$CHANGED_FILES"; then
           echo "Yarn patches changed."
