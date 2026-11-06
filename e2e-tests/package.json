@@ -29,13 +29,9 @@
     "e2e:local": "playwright test --config=playwright.local.config.ts"
   },
   "dependencies": {
-    "@azure/identity": "4.13.3",
-    "@backstage/catalog-model": "1.9.0",
     "@backstage/types": "1.2.2",
     "@kubernetes/client-node": "0.22.3",
-    "isomorphic-fetch": "3.0.0",
     "pg": "8.23.0",
-    "uuid": "14.0.2",
     "yaml": "2.9.1"
   },
   "devDependencies": {

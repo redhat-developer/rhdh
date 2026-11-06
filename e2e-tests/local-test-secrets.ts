@@ -26,7 +26,6 @@ const CERTIFICATES = new Set([
 ]);
 const CONTROLS =
   /^(?:BASH|BW_|DYLD_|LD_|NODE_|RHDH_E2E_|RHDH_LOCAL_|RHDH_SECRET_|EPHEMERAL_CLUSTER_ADMIN_|NAME_SPACE)|^(?:BASE_URL|K8S_CLUSTER_URL|K8S_CLUSTER_TOKEN|PATH|HOME|SHELL|ENV|SHELLOPTS|IFS|CDPATH|GLOBIGNORE|PS4|DIR|SHARED_DIR|ARTIFACT_DIR)$/u;
-const ALIASES: Record<string, string> = {};
 
 function readEntries() {
   if (process.env.RHDH_E2E_SECRET_FD !== "3") {
@@ -62,10 +61,6 @@ function testEnvironment(entries: ReturnType<typeof decodeSecretStream>): NodeJS
   for (const variable of CALLER_VARIABLES) {
     const value = process.env[`RHDH_LOCAL_TEST_CALLER_${variable}`];
     if (value !== undefined) environment[variable] = value;
-  }
-  for (const [target, source] of Object.entries(ALIASES)) {
-    delete environment[target];
-    if (environment[source] !== undefined) environment[target] = environment[source];
   }
   removeProviderEnvironmentVariables(environment);
   for (const name of Object.keys(environment)) {

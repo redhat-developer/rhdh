@@ -67,7 +67,7 @@ Fullsend's GitHub issues are the automated overlay tracker. For overlay bugs tha
 | | Nightly (Periodic) Jobs | PR Check (Presubmit) Jobs |
 |---|---|---|
 | **Trigger** | Scheduled (usually once per night) | On PR creation/update, or `/ok-to-test` |
-| **Scope** | Full suite: showcase, RBAC, runtime, localization, auth providers | Smaller scope: showcase + RBAC only |
+| **Scope** | Full suite: showcase, RBAC, runtime, localization | Smaller scope: showcase + RBAC only |
 | **Platforms** | OCP (multiple versions), AKS, EKS, GKE, OSD-GCP | OCP only (single version) |
 | **Install methods** | Helm and Operator | Helm only |
 | **Alert channel** | `#rhdh-e2e-alerts` / `#rhdh-e2e-alerts-{version}` | PR status checks on GitHub |

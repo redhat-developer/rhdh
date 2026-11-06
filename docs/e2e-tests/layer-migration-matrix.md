@@ -117,7 +117,7 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | 17  | `plugins/scaffolder-relation-processor/scaffolder-relation-processor` | showcase          | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
 | 18  | `github-happy-path`                                                   | none (`blocked/`) | no       | yes        | GitHub OAuth+API        | **L4a / L4b**                        |
 | 19  | `plugin-dynamic-loading`                                              | none (moved)      | no       | no (API)   | catalog index image     | **L4a** (already cluster-free)       |
-| 20  | `external-database/...-crunchy`                                       | runtime-db        | **yes**  | yes        | Crunchy PG              | **L4b**                              |
+| 25  | `external-database/...-crunchy`                                       | runtime-db        | **yes**  | yes        | Crunchy PG              | **L4b**                              |
 | 26  | `external-database/...-azure-db`                                      | runtime-db        | **yes**  | yes        | Azure PG (x4)           | **L4b**                              |
 | 27  | `external-database/...-rds`                                           | runtime-db        | **yes**  | yes        | AWS RDS (x4)            | **L4b**                              |
 | 28  | `configuration-test/config-map`                                       | showcase          | **yes**  | yes        | ConfigMap reload        | **L4b**                              |
@@ -131,7 +131,7 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | **L2**         | 4     | #1, #2, #13, #14                            |
 | **L3**         | 8     | #3\*, #4, #5, #6, #7, #8, #9, #12           |
 | **L4a**        | 5     | #15, #16, #17, #18, #19                     |
-| **L4b (stay)** | 6     | #20–#25                                     |
+| **L4b (stay)** | 6     | #25–#30                                     |
 
 \* smoke-test: migrate the assertion to L3 but keep a minimal L4a/L4b smoke as a deployment heartbeat.
 
@@ -181,9 +181,8 @@ the additive rule at the top of this document.
 
 ## Specs that must stay L4b (do not migrate)
 
-#20–#30. These exercise exactly the things lower layers cannot fake:
+#25–#30. These exercise exactly the things lower layers cannot fake:
 
-- **Auth providers** (#20–#24): real IdP token issuance, resolver behavior against live user/group data, session/autologout semantics, dynamic OAuth-app/redirect-URL and firewall (NSG) provisioning.
 - **External databases** (#25–#27): real TLS handshake + driver behavior across managed PG versions.
 - **Infra wiring** (#28 ConfigMap reload, #29 Redis cache keys, #30 schema-mode restricted-DB role): the value _is_ the cluster integration.
 
@@ -196,7 +195,7 @@ the additive rule at the top of this document.
    GitHub (true integration)? Coordinate with RHDHPLAN-525 / overlay-repo strategy (RHIDP-13530).
 3. ROI: migrating the remaining L3 + L2 candidates buys PR-time feedback
    (seconds vs. a nightly cluster deploy) for the most frequently-broken
-   surface (UI/config). The 11 L4b specs are where the real cluster cost lives and are
+   surface (UI/config). The 6 L4b specs are where the real cluster cost lives and are
    **not** the optimization target.
 
 ## Companion analysis: `rhdh-plugin-export-overlays`

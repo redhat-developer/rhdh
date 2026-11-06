@@ -272,13 +272,12 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
   echo "  2) OCP Helm Nightly tests (*ocp*helm*nightly*)"
   echo "  3) OCP Operator Nightly (*ocp*operator*nightly*)"
   echo "  4) OCP Helm Upgrade (*ocp*helm*upgrade*nightly*)"
-  echo "  5) Auth Providers (*ocp*operator*auth-providers*nightly*)"
-  echo "  6) AKS Helm Nightly (*aks*helm*nightly*)"
-  echo "  7) EKS Helm Nightly (*eks*helm*nightly*)"
-  echo "  8) GKE Helm Nightly (*gke*helm*nightly*)"
-  echo "  9) OCP Disconnected Operator Nightly (*ocp*disconnected*operator*nightly*)"
-  echo " 10) OCP Disconnected Helm Nightly (*ocp*disconnected*helm*nightly*)"
-  echo " 11) Custom job name"
+  echo "  5) AKS Helm Nightly (*aks*helm*nightly*)"
+  echo "  6) EKS Helm Nightly (*eks*helm*nightly*)"
+  echo "  7) GKE Helm Nightly (*gke*helm*nightly*)"
+  echo "  8) OCP Disconnected Operator Nightly (*ocp*disconnected*operator*nightly*)"
+  echo "  9) OCP Disconnected Helm Nightly (*ocp*disconnected*helm*nightly*)"
+  echo " 10) Custom job name"
   echo ""
   read -r -p "Enter choice [1]: " job_choice
   job_choice=${job_choice:-1}
@@ -288,13 +287,12 @@ if [[ "$CLI_MODE" == "false" && "$USE_PREVIOUS" == "false" ]]; then
     2) JOB_NAME="periodic-ci-ocp-helm-nightly" ;;
     3) JOB_NAME="periodic-ci-ocp-operator-nightly" ;;
     4) JOB_NAME="periodic-ci-ocp-helm-upgrade-nightly" ;;
-    5) JOB_NAME="periodic-ci-ocp-operator-auth-providers-nightly" ;;
-    6) JOB_NAME="periodic-ci-aks-helm-nightly" ;;
-    7) JOB_NAME="periodic-ci-eks-helm-nightly" ;;
-    8) JOB_NAME="periodic-ci-gke-helm-nightly" ;;
-    9) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly" ;;
-    10) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly" ;;
-    11)
+    5) JOB_NAME="periodic-ci-aks-helm-nightly" ;;
+    6) JOB_NAME="periodic-ci-eks-helm-nightly" ;;
+    7) JOB_NAME="periodic-ci-gke-helm-nightly" ;;
+    8) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-operator-nightly" ;;
+    9) JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-ocp-disconnected-helm-nightly" ;;
+    10)
       read -r -p "Enter custom JOB_NAME: " JOB_NAME
       ;;
     *) JOB_NAME="pull-ci-redhat-developer-rhdh-main-e2e-ocp-helm" ;;

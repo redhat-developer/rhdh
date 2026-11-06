@@ -359,10 +359,6 @@ console explicitly. Non-interactive stdin skips the console prompt.
 
 #### Local Debugging
 ```bash
-# Set local development flags
-export ISRUNNINGLOCAL=true
-export ISRUNNINGLOCALDEBUG=true
-
 # Run tests locally
 ./local-test.sh -- --project=showcase --workers=1
 ```

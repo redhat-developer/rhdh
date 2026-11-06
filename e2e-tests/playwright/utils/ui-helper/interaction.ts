@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 
-import { DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS, DEFAULT_CLICK_BUTTON_OPTIONS } from "./defaults";
+import { DEFAULT_CLICK_BUTTON_OPTIONS } from "./defaults";
 
 export function getGlobalHeader(page: Page): Locator {
   return page.getByRole("navigation").filter({
@@ -32,35 +32,6 @@ export async function clickByDataTestId(page: Page, dataTestId: string) {
   const element = page.getByTestId(dataTestId);
   await element.waitFor({ state: "visible" });
   await element.click();
-}
-
-export async function clickButtonByText(
-  page: Page,
-  buttonText: string | RegExp,
-  options?: {
-    exact?: boolean;
-    timeout?: number;
-    force?: boolean;
-  },
-) {
-  const { exact, timeout, force } = {
-    ...DEFAULT_CLICK_BUTTON_BY_TEXT_OPTIONS,
-    ...options,
-  };
-  const buttonElement = page.getByRole("button", { name: buttonText, exact });
-
-  await buttonElement.waitFor({
-    state: "visible",
-    timeout,
-  });
-
-  if (force) {
-    // Intentional divergence: MUI overlay blocks native click in CI.
-    // oxlint-disable-next-line playwright/no-force-option
-    await buttonElement.click({ force: true });
-  } else {
-    await buttonElement.click();
-  }
 }
 
 export async function fillTextInputByLabel(page: Page, label: string, text: string) {
