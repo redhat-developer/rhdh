@@ -26,14 +26,6 @@ const CERTIFICATES = new Set([
 ]);
 const CONTROLS =
   /^(?:BASH|BW_|DYLD_|LD_|NODE_|RHDH_E2E_|RHDH_LOCAL_|RHDH_SECRET_|EPHEMERAL_CLUSTER_ADMIN_|NAME_SPACE)|^(?:BASE_URL|K8S_CLUSTER_URL|K8S_CLUSTER_TOKEN|PATH|HOME|SHELL|ENV|SHELLOPTS|IFS|CDPATH|GLOBIGNORE|PS4|DIR|SHARED_DIR|ARTIFACT_DIR)$/u;
-const ALIASES = {
-  RHBK_BASE_URL: "AUTH_PROVIDERS_RHBK_BASE_URL",
-  RHBK_CLIENT_SECRET: "AUTH_PROVIDERS_RHBK_CLIENT_SECRET",
-  RHBK_CLIENT_ID: "AUTH_PROVIDERS_RHBK_CLIENT_ID",
-  RHBK_REALM: "AUTH_PROVIDERS_RHBK_REALM",
-  DEFAULT_USER_PASSWORD: "AUTH_PROVIDERS_DEFAULT_USER_PASSWORD",
-  DEFAULT_USER_PASSWORD_2: "AUTH_PROVIDERS_DEFAULT_USER_PASSWORD_2",
-};
 
 function readEntries() {
   if (process.env.RHDH_E2E_SECRET_FD !== "3") {
@@ -69,10 +61,6 @@ function testEnvironment(entries: ReturnType<typeof decodeSecretStream>): NodeJS
   for (const variable of CALLER_VARIABLES) {
     const value = process.env[`RHDH_LOCAL_TEST_CALLER_${variable}`];
     if (value !== undefined) environment[variable] = value;
-  }
-  for (const [target, source] of Object.entries(ALIASES)) {
-    delete environment[target];
-    if (environment[source] !== undefined) environment[target] = environment[source];
   }
   removeProviderEnvironmentVariables(environment);
   for (const name of Object.keys(environment)) {

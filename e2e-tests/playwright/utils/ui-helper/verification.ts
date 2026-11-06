@@ -35,16 +35,6 @@ export async function verifyLink(
   }
 }
 
-export async function verifyTextVisible(
-  page: Page,
-  text: string,
-  exact = false,
-  timeout = 15_000,
-): Promise<void> {
-  const locator = page.getByText(text, { exact });
-  await expect(locator).toBeVisible({ timeout });
-}
-
 export async function verifyText(
   page: Page,
   text: string | RegExp,
@@ -174,10 +164,4 @@ export async function waitForTitle(page: Page, text: string, level: number = 1) 
   await expect(
     page.getByRole("heading", { name: text, level: coerceHeadingLevel(level) }),
   ).toBeVisible();
-}
-
-export async function verifyAlertErrorMessage(page: Page, message: string | RegExp) {
-  const alert = page.getByRole("alert");
-  await alert.waitFor();
-  await expect(alert).toHaveText(message);
 }

@@ -19,14 +19,6 @@ async function openProfileDropdown(page: Page) {
   await header.getByTestId("KeyboardArrowDownOutlinedIcon").click();
 }
 
-export async function goToPageUrl(page: Page, url: string, heading?: string) {
-  await page.goto(url);
-  await expect(page).toHaveURL(url);
-  if (heading !== undefined && heading !== "") {
-    await verifyHeading(page, heading);
-  }
-}
-
 export async function goToSettingsPage(page: Page) {
   const lang = getCurrentLanguage();
   await expect(getGlobalHeader(page)).toBeVisible();

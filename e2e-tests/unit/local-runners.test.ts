@@ -207,8 +207,7 @@ describe("host runtime", () => {
   it("keeps multiline secrets as data and restores caller connection values", async () => {
     const password = `synthetic-"'\\\n$(touch "$HOME/executed")\n\n`;
     await stream([
-      { name: "AUTH_PROVIDERS_DEFAULT_USER_PASSWORD", value: password },
-      { name: "AUTH_PROVIDERS_RHBK_CLIENT_SECRET", value: "synthetic-rhbk-secret" },
+      { name: "GITHUB_OAUTH_APP_SECRET", value: password },
       { name: "BASE_URL", value: "https://profile.test" },
       { name: "K8S_CLUSTER_TOKEN", value: "profile-token" },
       { name: "NAME_SPACE", value: "profile-namespace" },
@@ -221,8 +220,7 @@ describe("host runtime", () => {
       `exec node -e '
       const assert = require("node:assert/strict");
       const fs = require("node:fs");
-      assert.equal(process.env.DEFAULT_USER_PASSWORD, fs.readFileSync(process.env.HOME + "/expected-password", "utf8"));
-      assert.equal(process.env.RHBK_CLIENT_SECRET, "synthetic-rhbk-secret");
+      assert.equal(process.env.GITHUB_OAUTH_APP_SECRET, fs.readFileSync(process.env.HOME + "/expected-password", "utf8"));
       assert.equal(process.env.BASE_URL, "https://example.test");
       assert.equal(process.env.K8S_CLUSTER_TOKEN, "caller-token");
       assert.equal(process.env.NAME_SPACE, "local-showcase");

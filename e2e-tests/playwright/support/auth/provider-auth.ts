@@ -1,13 +1,7 @@
-import { expect, type BrowserContext, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/localization/locale";
-import {
-  handleGitHubPopupLogin,
-  handleGitlabPopupLogin,
-  handleKeycloakPopupLogin,
-  handleMicrosoftAzurePopupLogin,
-  handlePingFederatePopupLogin,
-} from "../../utils/common/auth-popup";
+import { handleGitHubPopupLogin, handleKeycloakPopupLogin } from "../../utils/common/auth-popup";
 import * as interaction from "../../utils/ui-helper/interaction";
 import { resetPageErrors, waitForAppReady } from "./app-shell";
 import { waitForRhdhSignInPage } from "./sign-in-page";
@@ -22,11 +16,6 @@ export class AuthProviderSession {
 
   private lang(): Locale {
     return this.locale ?? getCurrentLanguage();
-  }
-
-  async clearAuthState(context: BrowserContext): Promise<void> {
-    await context.clearCookies();
-    await context.clearPermissions();
   }
 
   private async openLandingPageWithProviderMessage(message: string): Promise<void> {
@@ -53,15 +42,6 @@ export class AuthProviderSession {
     return handleKeycloakPopupLogin(popup, username, password);
   }
 
-  async loginWithGitHub(username: string, password: string, twofactor: string): Promise<string> {
-    const lang = this.lang();
-    await this.openLandingPageWithProviderMessage(
-      t["rhdh"][lang]["signIn.providers.github.message"],
-    );
-    const popup = await this.openPrimarySignInPopup();
-    return handleGitHubPopupLogin(popup, username, password, twofactor);
-  }
-
   async loginWithGitHubFromSettingsPage(
     username: string,
     password: string,
@@ -85,30 +65,5 @@ export class AuthProviderSession {
     ]);
 
     return handleGitHubPopupLogin(popup, username, password, twofactor);
-  }
-
-  async loginWithGitLab(username: string, password: string): Promise<string> {
-    const lang = this.lang();
-    await this.openLandingPageWithProviderMessage(
-      t["rhdh"][lang]["signIn.providers.gitlab.message"],
-    );
-    const popup = await this.openPrimarySignInPopup();
-    return handleGitlabPopupLogin(popup, username, password);
-  }
-
-  async loginWithMicrosoftAzure(username: string, password: string): Promise<string> {
-    const lang = this.lang();
-    await this.openLandingPageWithProviderMessage(
-      t["rhdh"][lang]["signIn.providers.microsoft.message"],
-    );
-    const popup = await this.openPrimarySignInPopup();
-    return handleMicrosoftAzurePopupLogin(popup, username, password);
-  }
-
-  async loginWithPingFederate(username: string, password: string): Promise<string> {
-    const lang = this.lang();
-    await this.openLandingPageWithProviderMessage(t["rhdh"][lang]["signIn.providers.oidc.message"]);
-    const popup = await this.openPrimarySignInPopup();
-    return handlePingFederatePopupLogin(popup, username, password);
   }
 }
