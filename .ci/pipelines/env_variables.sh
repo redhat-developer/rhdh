@@ -60,6 +60,18 @@ IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io}"
 IMAGE_REPO="${IMAGE_REPO:-${QUAY_REPO:-rhdh-community/rhdh}}"
 QUAY_REPO="${IMAGE_REPO}" # Keep QUAY_REPO in sync for backward compatibility
 
+# TEMPORARY, do not merge: pin the 2.1 RC (hub, chart, catalog index, PostgreSQL).
+IMAGE_REGISTRY="quay.io"
+IMAGE_REPO="rhdh/rhdh-hub-rhel10"
+QUAY_REPO="${IMAGE_REPO}"
+TAG_NAME="2.1-133"
+CHART_VERSION="2.1-199-CI"
+CATALOG_INDEX_IMAGE="quay.io/rhdh/plugin-catalog-index:2.1-122"
+POSTGRESQL_IMAGE_REGISTRY="registry.redhat.io"
+POSTGRESQL_IMAGE_REPO="rhel10/postgresql-18"
+POSTGRESQL_IMAGE_TAG="10.2-1793809718"
+export IMAGE_REGISTRY IMAGE_REPO QUAY_REPO TAG_NAME CHART_VERSION CATALOG_INDEX_IMAGE
+
 # Catalog index image, derived from RELEASE_VERSION (main → :next, release-1.10 → :1.10).
 # Per-run (RC/GA/mirror): non-empty CATALOG_INDEX_IMAGE wins (Gangway / --catalog-index-image).
 if [[ -z "${CATALOG_INDEX_IMAGE:-}" ]]; then
