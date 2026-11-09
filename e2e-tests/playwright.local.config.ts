@@ -56,6 +56,7 @@ export default defineConfig({
     "e2e/plugins/frontend/sidebar.spec.ts",
     "e2e/settings.spec.ts",
     "e2e/plugins/user-settings-info-card.spec.ts",
+    "e2e/branding.spec.ts",
   ],
   // The optional `-capable` keeps branches still carrying the old @cluster-free
   // spelling working while they land. Without it they are silently dropped from

@@ -81,15 +81,18 @@ export class HomePage {
     }
   }
 
-  async verifyVisitedCardContent(section: string) {
-    const sectionLocator = this.page
-      /* oxlint-disable-next-line typescript/no-deprecated -- visited cards use MuiCard-root, not region/article roles */
-      .locator(HOME_PAGE_COMPONENTS.MuiCard)
-      .filter({ hasText: section });
-    await expect(sectionLocator).toBeVisible();
+  /** Leaves Home and comes back, so the visited cards re-read the visit recorded for "/". */
+  async reopenHomeViaCatalog(): Promise<void> {
+    await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.catalog"]);
+    await this.openHomeSidebar();
+  }
 
-    const itemLocator = sectionLocator.locator(`li[class*="MuiListItem-root"]`);
-    // Intentional divergence: visited-card list items use MUI class hooks, not role=listitem.
-    expect(await itemLocator.count()).toBeGreaterThanOrEqual(0);
+  /** The visit to "/" is named after the browser title, so it carries app.title. */
+  async verifyVisitedCardContent(section: string, visitName: string | RegExp) {
+    // Each homepage widget is a "home-page card <n>"; the generic region lookup
+    // would match the whole grid, which holds both visited cards.
+    const card = this.page.getByTestId(/^home-page card /u).filter({ hasText: section });
+    await expect(card).toBeVisible();
+    await expect(card.getByRole("listitem").filter({ hasText: visitName })).toBeVisible();
   }
 }

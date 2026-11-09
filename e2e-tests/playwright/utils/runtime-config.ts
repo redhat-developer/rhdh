@@ -18,6 +18,7 @@
 import type { V1Container } from "@kubernetes/client-node";
 import * as yaml from "yaml";
 
+import { APP_TITLE } from "../support/test-data/branding";
 import {
   buildCloudSqlProxy,
   buildCloudSqlProxyVolume,
@@ -38,7 +39,6 @@ import {
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
-const appTitle = "Red Hat Developer Hub";
 const homeExtensions = [
   { "page:home": false },
   { "page:homepage": { config: { path: "/", title: "Home" } } },
@@ -263,7 +263,7 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
     intelligentAssistant: { enabled: false },
     appConfig: {
       app: {
-        title: appTitle,
+        title: APP_TITLE,
         // Homepage 3.1 owns the home page and layout. Match the CI
         // dynamic-plugins-config.yaml instead of the community home page.
         extensions: homeExtensions,
@@ -392,7 +392,7 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
 export function generateAppConfigYaml(runtimeUrl: string, config?: RuntimeDeployConfig): string {
   const appConfig = {
     app: {
-      title: appTitle,
+      title: APP_TITLE,
       baseUrl: runtimeUrl,
       extensions: homeExtensions,
     },

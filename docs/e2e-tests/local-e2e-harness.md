@@ -91,12 +91,19 @@ for how that's wired).
   Recently Visited widgets, using the `home-page-layout:homepage/dynamic-homepage-layout`
   `app.extensions` customization mirrored from
   `.ci/pipelines/resources/config_map/dynamic-plugins-config.yaml` into
-  `app-config.local-e2e.yaml`. NFS home-page cards are a fixed set of built-in widgets
+  `app-config.local-e2e.yaml`. The visited cards must list the Home visit under the
+  custom `app.title` (RHDHBUGS-632), recorded by `app-root-element:home/visit-listener`.
+  NFS home-page cards are a fixed set of built-in widgets
   (`home-page-widget:homepage/*`) — the legacy Placeholder/Markdown/Random Joke mount-point
   cards have no NFS equivalent and are no longer asserted. Its `@cluster-free-capable` "Quick
   Access" assertion only checks the card's title text, not real link data (see "Known
   issues" for why); the file's other, untagged "Verify Customized Quick Access" test
   covers the real link data and only runs in full CI.
+- `branding` — the custom `app.title` (`RHDH QE Instance`) in the served HTML
+  `<title>` and the browser tab, the configured `sidebarItemSelectedBackgroundColor`
+  in light and dark theme (selected through `prefers-color-scheme`), and a 404 page
+  background that differs from the sidebar. The title and theme block are mirrored
+  from `.ci/pipelines/resources/config_map/app-config-rhdh.yaml`.
 - `plugins/frontend/sidebar` — the cluster-free test verifies the app-defaults
   Learning Paths sidebar destination. Its Docs navigation and entity-content tests
   run in full CI, where `catalog-entities/components/showcase.yaml` and
@@ -169,21 +176,12 @@ just `run`), which is why this harness boots the dev servers directly instead.
 - **`backstage-cli`** lives in the repo-root `node_modules/.bin`, which yarn
   does not surface for the `app`/`backend` workspaces, so the webServer commands invoke
   it directly with the root `.bin` prepended to `PATH`.
-- **`VisitsStorageApi` 404s under this config, pre-dating NFS.** `app-config.local-e2e.yaml`
-  sets `userSettings.persistence: browser` (added in `#4020`, before the NFS migration,
-  to opt CI out of database storage, and mirrored in the CI ConfigMap), which means
-  `@backstage/plugin-user-settings-backend` is never loaded (see
-  `packages/backend/src/modules/userSettings.ts`). `VisitsStorageApi` calls the backend
-  regardless, so `/api/user-settings/multiget`/`/api/user-settings/buckets/...` 404 —
-  in a production build that's just a background error, but under this harness's dev
-  server the unhandled rejection trips webpack's react-refresh error overlay (a
-  full-screen transparent `<iframe id="react-refresh-overlay">`) which then intercepts
-  every subsequent click for the rest of the test. Because of that, `app-config.local-e2e.yaml`
-  deliberately does **not** enable `app-root-element:home/visit-listener` (unlike the CI
-  ConfigMap) — it's the extension that calls `VisitsStorageApi.save()` on every route
-  change. `api:home/visits` is still enabled so the home-page-customization "Top
-  Visited"/"Recently Visited" widgets keep rendering (just always empty, since nothing
-  ever records a visit here).
+- **Visits are stored in the browser.** `app-config.local-e2e.yaml` sets
+  `userSettings.persistence: browser` (mirrored from the CI ConfigMap), so the app's
+  storage API is `WebStorage` (`packages/app/src/apis/apisModule.ts`) and
+  `@backstage/plugin-user-settings-backend` is never loaded. `VisitsStorageApi` writes
+  through that storage API, so `app-root-element:home/visit-listener` records visits in
+  `localStorage` without any backend call, and is enabled here as in CI.
 - **Quick Access needs a CI-only proxy target.** The Quick Access widget calls
   `GET /api/proxy/developer-hub`
   ([`QuickAccessApiClient`](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/homepage/plugins/homepage/src/api/QuickAccessApiClient.ts)).
@@ -219,8 +217,6 @@ just `run`), which is why this harness boots the dev servers directly instead.
     `translation:app/global-header-translations` module needed explicit `app.extensions`
     entries (they attach to the core `app` plugin, which isn't auto-enabled the way
     plugin-scoped extensions are) — see `app-config.local-e2e.yaml`.
-  - Fixing the header surfaced the `VisitsStorageApi`/react-refresh-overlay click-blocker
-    above (previously masked because no test's click never reached the header).
 - **Language toggle needs `api:app/app-language`, not just `i18n.locales` (RESOLVED).**
   `UserSettingsLanguageToggle` hides itself when NFS `AppLanguageApi` reports
   `languages.length <= 1`. `AppLanguageApi` reads `availableLanguages` from the
