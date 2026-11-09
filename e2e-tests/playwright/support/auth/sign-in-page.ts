@@ -13,7 +13,7 @@ export async function waitForRhdhSignInPage(
 ): Promise<void> {
   const lang = options?.locale ?? getCurrentLanguage();
   const timeout = options?.timeout ?? 120_000;
-  const signInTitle = t["rhdh"][lang]["signIn.page.title"];
+  const signInTitle = t["plugin.app-auth.sign-in"][lang]["signIn.page.title"];
   const guestEnterLabel = t["core-components"][lang]["signIn.guestProvider.enter"];
 
   const signInHeading = page.getByRole("heading", { name: signInTitle });

@@ -121,10 +121,11 @@ export async function goToSettingsPage(page: Page) {
 
 export async function goToSelfServicePage(page: Page) {
   const lang = getCurrentLanguage();
+  const selfServiceTitle = t["plugin.app-react"][lang]["pages.Self-service"];
   await clickLink(page, {
-    ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
+    ariaLabel: selfServiceTitle,
   });
-  await verifyHeading(page, "Self-service");
+  await verifyHeading(page, selfServiceTitle);
 }
 
 export async function waitForSideBarVisible(page: Page) {
@@ -153,7 +154,7 @@ export async function openTemplateInCatalog(
 
 export async function openCatalogSidebar(page: Page, kind: string) {
   const lang = getCurrentLanguage();
-  await openSidebar(page, t["rhdh"][lang]["menuItem.catalog"]);
+  await openSidebar(page, t["plugin.app-react"][lang]["pages.Catalog"]);
   await selectMuiBox(page, t["catalog-react"][lang]["entityKindPicker.title"], kind);
   await expect(async () => {
     await clickByDataTestId(page, "user-picker-all");
