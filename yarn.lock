@@ -2965,39 +2965,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-graph@npm:0.6.7":
-  version: 0.6.7
-  resolution: "@backstage/plugin-catalog-graph@npm:0.6.7"
-  dependencies:
-    "@backstage/catalog-client": "npm:^1.16.1"
-    "@backstage/catalog-model": "npm:^1.10.0"
-    "@backstage/core-components": "npm:^0.18.13"
-    "@backstage/core-plugin-api": "npm:^1.12.9"
-    "@backstage/frontend-plugin-api": "npm:^0.18.0"
-    "@backstage/plugin-catalog-react": "npm:^3.2.1"
-    "@backstage/types": "npm:^1.2.2"
-    "@backstage/ui": "npm:^0.17.1"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
-    "@material-ui/lab": "npm:4.0.0-alpha.61"
-    "@remixicon/react": "npm:>=4.6.0 <4.9.0"
-    classnames: "npm:^2.3.1"
-    lodash: "npm:^4.17.15"
-    qs: "npm:^6.15.2"
-    react-use: "npm:^17.2.4"
-    zod: "npm:^4.0.0"
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.30.2
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10c0/56d1a3d0f05d6ba2d5c3fc098793c77370eae01c5a10212091f49e6baa3dd435103656bef31da965acbd169cfdc6c3760be73b328040d8e7030f94e8af531035
-  languageName: node
-  linkType: hard
-
 "@backstage/plugin-catalog-import@npm:0.13.17":
   version: 0.13.17
   resolution: "@backstage/plugin-catalog-import@npm:0.13.17"
@@ -11745,7 +11712,6 @@ __metadata:
     "@backstage/plugin-app-react": "npm:0.2.6"
     "@backstage/plugin-auth-react": "npm:0.1.30"
     "@backstage/plugin-catalog-common": "npm:1.1.10"
-    "@backstage/plugin-catalog-graph": "npm:0.6.7"
     "@backstage/plugin-catalog-import": "npm:0.13.17"
     "@backstage/plugin-catalog-react": "npm:3.2.2"
     "@backstage/plugin-catalog-unprocessed-entities": "npm:0.2.34"
@@ -13278,7 +13244,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:^2.2.6, classnames@npm:^2.3.1":
+"classnames@npm:^2.2.6":
   version: 2.5.1
   resolution: "classnames@npm:2.5.1"
   checksum: 10c0/afff4f77e62cea2d79c39962980bf316bacb0d7c49e13a21adaadb9221e1c6b9d3cdb829d8bb1b23c406f4e740507f37e1dcf506f7e3b7113d17c5bab787aa69

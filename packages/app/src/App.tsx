@@ -8,7 +8,6 @@ import homePagePlugin from "@backstage/plugin-home/alpha";
 import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
 
-import { rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { customCatalogFilterModule } from "./modules/catalog";
 import { scaffolderSelfServiceModule } from "./modules/scaffolder";
 import { userSettingsGeneralModule } from "./modules/user-settings";
@@ -30,7 +29,6 @@ const app = createApp({
     homePagePlugin,
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
     catalogUnprocessedEntitiesPlugin,
-    rhdhCatalogGraphPlugin, // catalog-graph UI + scaffolderOf/scaffoldedFrom API override
     customCatalogFilterModule, // Custom OR-logic tag filter
     // Note: @backstage/plugin-scaffolder is decoupled and NOT included in the core app bundle.
     // It is loaded dynamically as an OCI plugin. scaffolderSelfServiceModule only sets
