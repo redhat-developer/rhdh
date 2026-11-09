@@ -7,12 +7,16 @@ export function getRhdhSidebarNavigation(page: Page): Locator {
     .first();
 }
 
+/** The sidebar link whose accessible name is exactly `linkName`. */
+export function getRhdhSidebarLink(page: Page, linkName: string): Locator {
+  return getRhdhSidebarNavigation(page).getByRole("link", { name: linkName, exact: true });
+}
+
 function sidebarLinks(page: Page, linkName: string): Locator {
-  const nav = getRhdhSidebarNavigation(page);
   // Intentional divergence: sidebar item accessible names may differ from visible labels.
-  return nav
-    .getByRole("link", { name: linkName, exact: true })
-    .or(nav.locator(`a:has-text("${linkName}")`));
+  return getRhdhSidebarLink(page, linkName).or(
+    getRhdhSidebarNavigation(page).locator(`a:has-text("${linkName}")`),
+  );
 }
 
 function isRhdhChildLinkVisible(page: Page, linkName: string): Promise<boolean> {

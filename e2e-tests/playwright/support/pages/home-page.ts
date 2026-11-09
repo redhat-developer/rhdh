@@ -82,16 +82,16 @@ export class HomePage {
   }
 
   /** Leaves Home and comes back, so the visited cards re-read the visit recorded for "/". */
-  async reopenHomeViaCatalog(): Promise<void> {
+  async revisitHome(): Promise<void> {
     await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.catalog"]);
     await this.openHomeSidebar();
   }
 
   /** The visit to "/" is named after the browser title, so it carries app.title. */
-  async verifyVisitedCardContent(section: string, visitName: string | RegExp) {
+  async verifyVisitedCardContent(cardTitle: string, visitName: string | RegExp) {
     // Each homepage widget is a "home-page card <n>"; the generic region lookup
     // would match the whole grid, which holds both visited cards.
-    const card = this.page.getByTestId(/^home-page card /u).filter({ hasText: section });
+    const card = this.page.getByTestId(/^home-page card /u).filter({ hasText: cardTitle });
     await expect(card).toBeVisible();
     await expect(card.getByRole("listitem").filter({ hasText: visitName })).toBeVisible();
   }

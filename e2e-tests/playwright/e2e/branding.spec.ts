@@ -1,31 +1,8 @@
-import { test, expect, type Locator, type Page } from "@support/coverage/test";
+import { test, expect } from "@support/coverage/test";
 
-import { getRhdhSidebarNavigation } from "../support/navigation/rhdh-sidebar-adapter";
+import { getRhdhSidebarLink } from "../support/navigation/rhdh-sidebar-adapter";
 import { APP_TITLE, SIDEBAR_ITEM_SELECTED_BACKGROUND } from "../support/test-data/branding";
-
-// Computed styles report colours as rgb(); the config uses hex.
-function hexToRgb(hex: string): string {
-  const [r, g, b] = [1, 3, 5].map((start) => Number.parseInt(hex.slice(start, start + 2), 16));
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
-// The colour actually painted behind an element: its own background, or that of
-// the closest ancestor with a non-transparent one.
-function paintedBackground(locator: Locator): Promise<string> {
-  return locator.evaluate((element) => {
-    for (let node: Element | null = element; node; node = node.parentElement) {
-      const color = getComputedStyle(node).backgroundColor;
-      if (color !== "rgba(0, 0, 0, 0)" && color !== "transparent") {
-        return color;
-      }
-    }
-    return getComputedStyle(document.body).backgroundColor;
-  });
-}
-
-function sidebarLink(page: Page, name: string): Locator {
-  return getRhdhSidebarNavigation(page).getByRole("link", { name, exact: true });
-}
+import { getPaintedBackground, hexToRgb } from "../utils/ui-helper/styles";
 
 test.describe("Branding", () => {
   test.beforeAll(() => {
@@ -38,7 +15,7 @@ test.describe("Branding", () => {
   // RHDHBUGS-2040: the served HTML must carry app.title, so the tab shows it
   // while the app is still loading, not only after React takes over.
   test(
-    "Serves the custom app title in the HTML before the app loads",
+    "Verify the served HTML carries the custom app title before the app loads",
     { tag: "@cluster-free-capable" },
     async ({ request }) => {
       const response = await request.get("/");
@@ -51,7 +28,7 @@ test.describe("Branding", () => {
   );
 
   test(
-    "Shows the custom app title in the browser tab after sign-in",
+    "Verify the browser tab shows the custom app title after sign-in",
     { tag: "@cluster-free-capable" },
     async ({ guestPage }) => {
       await expect(guestPage).toHaveTitle(new RegExp(APP_TITLE, "u"));
@@ -65,10 +42,10 @@ test.describe("Branding", () => {
 
       // RHDHBUGS-2046: sidebarItemSelectedBackgroundColor is configurable.
       test(
-        "Paints the selected sidebar item with the configured background",
+        "Verify the selected sidebar item uses the configured background",
         { tag: "@cluster-free-capable" },
         async ({ guestPage }) => {
-          const home = sidebarLink(guestPage, "Home");
+          const home = getRhdhSidebarLink(guestPage, "Home");
           await expect(home).toHaveAttribute("aria-current", "page");
           await expect(home).toHaveCSS(
             "background-color",
@@ -79,7 +56,7 @@ test.describe("Branding", () => {
 
       // RHDHBUGS-2045: the 404 page must not blend into the sidebar.
       test(
-        "Renders the 404 page on a different background than the sidebar",
+        "Verify the 404 page background differs from the sidebar background",
         { tag: "@cluster-free-capable" },
         async ({ guestPage }) => {
           await guestPage.goto("/this-page-does-not-exist");
@@ -87,10 +64,11 @@ test.describe("Branding", () => {
           await expect(notFound).toContainText("404");
 
           // An unselected item shows the sidebar's own background.
-          const home = sidebarLink(guestPage, "Home");
+          const home = getRhdhSidebarLink(guestPage, "Home");
           await expect(home).not.toHaveAttribute("aria-current", "page");
+          const sidebarBackground = await getPaintedBackground(home);
 
-          expect(await paintedBackground(notFound)).not.toBe(await paintedBackground(home));
+          await expect.poll(() => getPaintedBackground(notFound)).not.toBe(sidebarBackground);
         },
       );
     });

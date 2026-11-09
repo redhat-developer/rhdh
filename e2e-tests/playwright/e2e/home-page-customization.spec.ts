@@ -40,8 +40,7 @@ test.describe("Home page customization", () => {
     "Verify that the Top Visited card lists the Home visit under the custom app title",
     { tag: "@cluster-free-capable" },
     async () => {
-      await homePage.reopenHomeViaCatalog();
-      await homePage.verifyTextInCard("Top Visited", "Top Visited");
+      await homePage.revisitHome();
       await homePage.verifyVisitedCardContent("Top Visited", APP_TITLE);
     },
   );
@@ -50,8 +49,7 @@ test.describe("Home page customization", () => {
     "Verify that the Recently Visited card lists the Home visit under the custom app title",
     { tag: "@cluster-free-capable" },
     async () => {
-      await homePage.reopenHomeViaCatalog();
-      await homePage.verifyTextInCard("Recently Visited", "Recently Visited");
+      await homePage.revisitHome();
       await homePage.verifyVisitedCardContent("Recently Visited", APP_TITLE);
     },
   );

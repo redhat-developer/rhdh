@@ -5,7 +5,8 @@
  * ensuring both install methods stay in sync.
  *
  * Design:
- *   - Shared constants live here (app title, guest auth, dynamic plugins, …).
+ *   - Shared constants live here (guest auth, dynamic plugins, …); the app
+ *     title comes from support/test-data/branding.ts, shared with the specs.
  *   - Helm values YAML is generated with ONLY the overrides that differ from
  *     the chart defaults.  The chart owns the system volumes, so
  *     extraVolumes/extraVolumeMounts only carry the runtime additions.
