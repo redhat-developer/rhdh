@@ -145,6 +145,13 @@ handle_ocp_helm_upgrade() {
   initiate_upgrade_base_deployments \
     "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${upgrade_artifacts_subdir}" "${previous_release_version}"
 
+  # The home page Quick Access card reads through the /developer-hub proxy, whose target
+  # (DH_TARGET_URL) is the test-backstage-customization-provider route in this namespace.
+  # Deploy it right after the namespace exists so the build finishes before the tests run;
+  # without it /api/proxy/developer-hub returns 503 and Quick Access renders its
+  # "Could not fetch data." error state. Mirrors the other OpenShift lanes.
+  deploy_test_backstage_customization_provider "${NAME_SPACE}"
+
   UPGRADE_PHASE="baseline-readiness"
   postgres::wait_ready "${NAME_SPACE}" "${RELEASE_NAME}"
   if ! testing::check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${upgrade_artifacts_subdir}/baseline"; then
