@@ -7,9 +7,14 @@ export function getRhdhSidebarNavigation(page: Page): Locator {
     .first();
 }
 
-/** The sidebar link whose accessible name is exactly `linkName`. */
+/**
+ * The sidebar menu link labelled `linkName`. The text filter skips the company
+ * logo link, which is also named "Home" when no global header hides it (e.g. 404).
+ */
 export function getRhdhSidebarLink(page: Page, linkName: string): Locator {
-  return getRhdhSidebarNavigation(page).getByRole("link", { name: linkName, exact: true });
+  return getRhdhSidebarNavigation(page)
+    .getByRole("link", { name: linkName, exact: true })
+    .filter({ hasText: linkName });
 }
 
 function sidebarLinks(page: Page, linkName: string): Locator {
