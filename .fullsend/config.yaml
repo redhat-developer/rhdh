@@ -1,0 +1,33 @@
+# fullsend per-repo configuration
+# https://github.com/fullsend-ai/fullsend
+#
+# This file configures fullsend for per-repo installation mode.
+# See ADR 0033 for details.
+#
+# The "runtime" key selects which agent runtime runs the agents, claude
+# (default when unset) or pi. For one run, the 'fullsend run --runtime'
+# flag wins, then FULLSEND_RUNTIME, then this file. See docs/runtimes.md.
+version: "1"
+roles:
+    - triage
+    - coder
+    - review
+    - fix
+    - retro
+    - prioritize
+allowed_remote_resources:
+    - https://raw.githubusercontent.com/fullsend-ai/fullsend/
+    - https://raw.githubusercontent.com/fullsend-ai/agents/
+    - https://github.com/redhat-developer/rhdh-skills/
+agents:
+    - name: code
+      source: harness/code.yaml
+create_issues:
+    allow_targets:
+        repos:
+            - redhat-developer/rhdh
+            - fullsend-ai/fullsend
+mint_url: https://mint.fullsend.sh
+inference:
+    project: rhdh-sidekick-167988
+    wif_provider: projects/189673402608/locations/global/workloadIdentityPools/fullsend-inference/providers/redhat-developer-rhdh
