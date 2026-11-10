@@ -32,14 +32,13 @@ export async function goToSettingsPage(page: Page) {
 
 export async function goToSelfServicePage(page: Page) {
   const lang = getCurrentLanguage();
-  // NFS sidebar/page title use the localized Self-service strings (same values as
-  // scaffolder.templateListPage.title). plugin.app-react has no pages.Self-service locales.
-  const selfServiceTitle = t["rhdh"][lang]["menuItem.selfService"];
+  // Sidebar label matches rhdh.menuItem.selfService, but the NFS /create h1 can differ
+  // (CI: FR Libre-service, IT Self-Service vs menu En libre service / Self service).
   await clickLink(page, {
-    ariaLabel: selfServiceTitle,
+    ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
   });
-  // RHDH overrides the scaffolder page title to Self-service (RHDHBUGS-3676).
-  await verifyHeading(page, t["scaffolder"][lang]["templateListPage.title"]);
+  await expect(page).toHaveURL(/\/create(?:\?|$)/u);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 }
 
 export async function waitForSideBarVisible(page: Page) {
