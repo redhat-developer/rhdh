@@ -64,7 +64,7 @@ jobs:
 
           release=$INPUT_RELEASE
           if [[ -z "$release" && -z "$INPUT_PATTERN" ]]; then
-            release_data=$(curl -fsSL --retry 3 --max-time 60 \
+            release_data=$(curl -fsSL --retry 3 --max-time 60 --proto =https \
               https://api.github.com/repos/backstage/backstage/releases/latest)
             if ! release=$(jq -er '
               select(.draft == false and .prerelease == false)
