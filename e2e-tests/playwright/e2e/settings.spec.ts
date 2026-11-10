@@ -34,9 +34,9 @@ test.describe(`Settings page`, { tag: "@layer3-equivalent" }, () => {
     await settingsPage.verifySignOutMenuLabel(t["user-settings"]["fr"]["signOutMenu.title"]);
     await settingsPage.closeUserSettingsMenu();
 
-    await settingsPage.verifySidebarMenuItemVisible(t["rhdh"]["fr"]["menuItem.apis"]);
+    await settingsPage.verifySidebarMenuItemVisible(t["plugin.app-react"]["fr"]["pages.APIs"]);
     await settingsPage.uncheckCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
-    await settingsPage.verifySidebarMenuItemHidden(t["rhdh"]["fr"]["menuItem.apis"]);
+    await settingsPage.verifySidebarMenuItemHidden(t["plugin.app-react"]["fr"]["pages.APIs"]);
     await settingsPage.checkCheckbox(t["user-settings"]["fr"]["pinToggle.ariaLabelTitle"]);
     // The app-defaults sidebar labels this page "Home" or "Accueil", depending
     // on the installed plugin version. Check the text link, not the Home logo.

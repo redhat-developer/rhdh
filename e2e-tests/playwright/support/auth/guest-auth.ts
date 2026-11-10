@@ -8,6 +8,23 @@ import { waitForRhdhSignInPage } from "./sign-in-page";
 
 const t = getTranslations();
 
+/**
+ * The NFS app picks its language from localStorage `language` or the configured
+ * `defaultLanguage`, not from the browser locale. Seed it before the app boots,
+ * but keep a value that is already stored (e.g. a language chosen in Settings).
+ * English leaves storage unset so the app uses defaultLanguage (en).
+ */
+async function seedAppLanguage(page: Page, lang: Locale): Promise<void> {
+  if (lang === "en") {
+    return;
+  }
+  await page.addInitScript((language) => {
+    if (window.localStorage.getItem("language") === null) {
+      window.localStorage.setItem("language", language);
+    }
+  }, lang);
+}
+
 export async function signInAsGuest(
   page: Page,
   options?: { timeout?: number; locale?: Locale; baseURL?: string },
@@ -15,6 +32,7 @@ export async function signInAsGuest(
   const lang = options?.locale ?? getCurrentLanguage();
   const timeout = options?.timeout ?? 120_000;
 
+  await seedAppLanguage(page, lang);
   resetPageErrors(page);
   await page.goto(options?.baseURL ?? "/");
   await waitForAppReady(page, timeout);
@@ -24,7 +42,8 @@ export async function signInAsGuest(
     await dialog.accept();
   });
 
+  // plugin.app-auth.sign-in currently ships English-only copy, including Guest Enter.
   await waitForRhdhSignInPage(page, { timeout, locale: lang });
-  await interaction.clickButton(page, t["core-components"][lang]["signIn.guestProvider.enter"]);
+  await interaction.clickButton(page, t["core-components"]["en"]["signIn.guestProvider.enter"]);
   await navigation.waitForSideBarVisible(page);
 }
