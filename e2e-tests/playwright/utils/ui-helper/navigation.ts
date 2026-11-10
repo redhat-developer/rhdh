@@ -37,7 +37,8 @@ export async function goToSelfServicePage(page: Page) {
   await clickLink(page, {
     ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
   });
-  await expect(page).toHaveURL(/\/create(?:\?|$)/u);
+  // NFS Self-service lands on /create/templates?... (not bare /create).
+  await expect(page).toHaveURL(/\/create(?:\/|\?|$)/u);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 }
 
