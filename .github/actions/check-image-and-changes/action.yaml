@@ -9,7 +9,7 @@ outputs:
     description: "True if changes require a build"
     value: ${{ steps.changes.outputs.relevant }}
   is_skipped:
-    description: "True if build should be skipped (via [skip-build] tag OR image exists with no relevant changes)"
+    description: "True if build should be skipped (via [skip-build] tag OR image exists with no relevant changes). [skip-build] is ignored when image build inputs (Dockerfile, .nvm, .nvmrc) change."
     value: ${{ steps.final-decision.outputs.is_skipped }}
   short_sha:
     description: "Short SHA of the latest commit"
@@ -51,6 +51,14 @@ runs:
         if git log --format=%s "$BASE_COMMIT".."$PR_HEAD_SHA" | grep -qE '(^|[[:space:]])\[skip-build\]([[:space:]]|$)'; then
           echo "Found skip-build trailer in PR commit subject(s)."
           SKIP_BUILD_TAG=true
+        fi
+
+        # Base image and Node header changes always build, so a [skip-build]
+        # bump that breaks the image cannot pass the required Build Image check.
+        if [[ "$SKIP_BUILD_TAG" == "true" ]] \
+          && grep -qE '^(docker/|\.nvm/|\.nvmrc$)' <<< "$CHANGED_FILES"; then
+          echo "Ignoring skip-build trailer: image build inputs changed."
+          SKIP_BUILD_TAG=false
         fi
 
         # Flag to track if we found any relevant changes
