@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import * as tls from "tls";
 import * as url from "url";
 
@@ -22,7 +23,8 @@ test.describe("FIPS Compliance Validation", () => {
 
     const parsedUrl = new url.URL(baseUrl);
     const host = parsedUrl.hostname;
-    const port = parsedUrl.port === "" ? 443 : Math.trunc(Number(parsedUrl.port));
+    const port =
+      parsedUrl.port === "" ? 443 : Math.trunc(Number(parsedUrl.port));
 
     const tlsInfo = await new Promise<{
       cipher: string;
@@ -51,7 +53,8 @@ test.describe("FIPS Compliance Validation", () => {
       );
 
       socket.on("error", (error) => {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         reject(new Error(`TLS connection failed: ${errorMessage}`));
       });
 
@@ -81,7 +84,8 @@ test.describe("FIPS Compliance Validation", () => {
 
     const parsedUrl = new url.URL(baseUrl);
     const host = parsedUrl.hostname;
-    const port = parsedUrl.port === "" ? 443 : Math.trunc(Number(parsedUrl.port));
+    const port =
+      parsedUrl.port === "" ? 443 : Math.trunc(Number(parsedUrl.port));
 
     const certPem = await new Promise<string>((resolve, reject) => {
       const socket = tls.connect(
@@ -124,7 +128,8 @@ test.describe("FIPS Compliance Validation", () => {
       );
 
       socket.on("error", (error) => {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         reject(new Error(`TLS connection failed: ${errorMessage}`));
       });
 
@@ -192,12 +197,24 @@ test.describe("FIPS Compliance Validation", () => {
 
       await portForward.start();
 
-      // Connect to Redis with TLS
+      // Connect to Redis with TLS and proper certificate verification
       const redisUrl = `rediss://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:${REDIS_LOCAL_PORT}`;
+
+      // Read CA certificate from NODE_EXTRA_CA_CERTS (contains FIPS CA + Crunchy CA)
+      if (!process.env.NODE_EXTRA_CA_CERTS) {
+        throw new Error(
+          "NODE_EXTRA_CA_CERTS not set - required for Redis TLS verification",
+        );
+      }
+
+      const caCert = fs.readFileSync(process.env.NODE_EXTRA_CA_CERTS);
+
       const redisOptions = {
         tls: {
-          // Port-forward bypasses server name verification
-          rejectUnauthorized: false,
+          // Verify certificate against FIPS CA
+          ca: caCert,
+          // Set servername to match certificate SAN (port-forward uses localhost)
+          servername: "redis",
         },
       };
 

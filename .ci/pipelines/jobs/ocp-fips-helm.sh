@@ -66,13 +66,6 @@ fips_deployment() {
     -f "${fips_merged_value_file}" \
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(helm::get_image_params)
-
-  # Clean up FIPS certificate tmpdir at the end
-  if [[ -n "${FIPS_CERT_TMPDIR}" && -d "${FIPS_CERT_TMPDIR}" ]]; then
-    log::info "Cleaning up FIPS certificate temporary directory..."
-    rm -rf "${FIPS_CERT_TMPDIR}"
-    unset FIPS_CERT_TMPDIR
-  fi
 }
 
 # Verify that the OpenShift cluster has FIPS mode enabled
@@ -115,9 +108,6 @@ run_standard_deployment_tests() {
     log::error "Failed to setup Chromium certificate store"
     return 1
   }
-
-  # Enable TLS mode for Redis tests in FIPS environment
-  export REDIS_TLS=true
 
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_FIPS}" "${url}"
 }
@@ -467,9 +457,8 @@ EOF
   # Deploy TLS-enabled Redis
   log::info "Deploying TLS-enabled Redis..."
 
-  oc apply -f "${DIR}/resources/redis-cache/redis-deployment-tls.yaml" --namespace="${namespace}"
-
-  if [[ $? -ne 0 ]]; then
+  if ! oc apply -f "${DIR}/resources/redis-cache/redis-deployment-tls.yaml" \
+    -f "${DIR}/resources/redis-cache/redis-service.yaml" --namespace="${namespace}"; then
     log::error "Failed to deploy Redis"
     return 1
   fi
