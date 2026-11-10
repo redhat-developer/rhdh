@@ -37,7 +37,7 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test.beforeEach(async () => {
-    await catalogBrowsePage.openSidebar(t["rhdh"][lang]["menuItem.catalog"]);
+    await catalogBrowsePage.openSidebar(t["plugin.app-react"][lang]["pages.Catalog"]);
     await catalogBrowsePage.verifyHeading(
       t["catalog"][lang]["indexPage.title"].replace("{{orgName}}", "My Org"),
     );
