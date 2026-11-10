@@ -9,7 +9,7 @@ outputs:
     description: "True if changes require a build"
     value: ${{ steps.changes.outputs.relevant }}
   is_skipped:
-    description: "True if build should be skipped (via [skip-build] tag OR image exists with no relevant changes). [skip-build] is ignored when image build inputs (Containerfile, .nvm, .nvmrc) change."
+    description: "True if build should be skipped (via [skip-build] tag OR image exists with no relevant changes). [skip-build] is ignored when image build inputs (Containerfile, .nvm, .nvmrc, rpms.lock.yaml) change."
     value: ${{ steps.final-decision.outputs.is_skipped }}
   short_sha:
     description: "Short SHA of the latest commit"
@@ -54,10 +54,11 @@ runs:
           SKIP_BUILD_TAG=true
         fi
 
-        # Base image and Node header changes always build, so a [skip-build]
-        # bump that breaks the image cannot pass the required Build Image check.
+        # Base image, Node header and RPM lockfile changes always build, so a
+        # [skip-build] bump that breaks the image cannot pass the required
+        # Build Image check.
         if [[ "$SKIP_BUILD_TAG" == "true" ]] \
-          && grep -qE '^(build/containerfiles/|\.nvm/|\.nvmrc$)' <<< "$CHANGED_FILES"; then
+          && grep -qE '^(build/containerfiles/|\.nvm/|\.nvmrc$|rpms\.lock\.yaml$)' <<< "$CHANGED_FILES"; then
           echo "Ignoring skip-build trailer: image build inputs changed."
           SKIP_BUILD_TAG=false
         fi
