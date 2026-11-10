@@ -17,8 +17,6 @@ export const RHDH_PLUGINS_TRANSLATIONS: Record<string, Record<string, Record<str
       "pages.APIs": "APIs",
       "pages.Docs": "Docs",
       "pages.Learning Paths": "Learning Paths",
-      // RHDH titles the scaffolder page "Self-service"; app-react only translates "Create".
-      "pages.Self-service": "Self-service",
     },
     de: {
       "pages.Catalog": "Katalog",

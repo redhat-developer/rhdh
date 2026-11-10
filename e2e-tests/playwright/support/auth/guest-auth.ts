@@ -1,12 +1,9 @@
 import { type Page } from "@playwright/test";
 
-import { getCurrentLanguage, getTranslations, type Locale } from "../../e2e/localization/locale";
-import * as interaction from "../../utils/ui-helper/interaction";
+import { getCurrentLanguage, type Locale } from "../../e2e/localization/locale";
 import * as navigation from "../../utils/ui-helper/navigation";
 import { resetPageErrors, waitForAppReady } from "./app-shell";
-import { waitForRhdhSignInPage } from "./sign-in-page";
-
-const t = getTranslations();
+import { guestEnterButton, waitForRhdhSignInPage } from "./sign-in-page";
 
 /**
  * The NFS app picks its language from localStorage `language` or the configured
@@ -42,8 +39,8 @@ export async function signInAsGuest(
     await dialog.accept();
   });
 
-  // plugin.app-auth.sign-in currently ships English-only copy, including Guest Enter.
+  // Title is English-only (plugin.app-auth); Guest Enter may be localized.
   await waitForRhdhSignInPage(page, { timeout, locale: lang });
-  await interaction.clickButton(page, t["core-components"]["en"]["signIn.guestProvider.enter"]);
+  await guestEnterButton(page, lang).click();
   await navigation.waitForSideBarVisible(page);
 }
