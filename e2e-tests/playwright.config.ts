@@ -105,6 +105,8 @@ export default defineConfig({
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        // Local-harness only (APP_DEFAULT_LANGUAGE=fr); see playwright.local-default-language.config.ts
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -124,6 +126,7 @@ export default defineConfig({
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -155,6 +158,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -181,6 +185,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {

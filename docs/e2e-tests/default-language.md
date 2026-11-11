@@ -41,6 +41,9 @@ yarn --cwd e2e-tests e2e:local:default-language
 ```
 
 Existing `showcase-localization-*` projects and English smoke are unchanged.
+`default-language.spec.ts` is listed in `playwright.config.ts` `testIgnore` for
+showcase / operator / k8s / fips so Prow `e2e-ocp-helm` does not run it against
+`defaultLanguage: en`.
 
 ### CI / localization nightly (not in this change)
 
