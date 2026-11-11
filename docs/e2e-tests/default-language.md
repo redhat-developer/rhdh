@@ -24,9 +24,10 @@ still localize. Do not assert translated sign-in titles until product ships them
 1. `app-config.local-e2e.yaml` sets
    `defaultLanguage: ${APP_DEFAULT_LANGUAGE:-en}` so the normal
    `yarn e2e:local` path stays English.
-2. `playwright.local-default-language.config.ts` sets `APP_DEFAULT_LANGUAGE=fr`
-   and `LOCALE=fr`, and always starts a fresh backend/frontend (no
-   `reuseExistingServer`) so a previously started English harness is not reused.
+2. `playwright.local-default-language.config.ts` spreads `playwright.local.config.ts`,
+   sets `APP_DEFAULT_LANGUAGE=fr` / `LOCALE=fr` for the app and assertions, keeps
+   Playwright browser `locale: "en"` (so French UI is not from the browser), and
+   always starts a fresh backend/frontend (no `reuseExistingServer`).
 3. `e2e/default-language.spec.ts` calls `signInAsGuest(..., { seedLanguage: false })`
    so the app must take French from `defaultLanguage`, not from a test seed.
 4. Specs assert:
@@ -39,6 +40,9 @@ still localize. Do not assert translated sign-in titles until product ships them
 # requires dynamic-plugins-root (same as e2e:local)
 yarn --cwd e2e-tests e2e:local:default-language
 ```
+
+GitHub Actions `e2e-cluster-free` runs this after `yarn e2e:local` and uploads
+`playwright-report-local-default-language`.
 
 Existing `showcase-localization-*` projects and English smoke are unchanged.
 `default-language.spec.ts` is listed in `playwright.config.ts` `testIgnore` for

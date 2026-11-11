@@ -1,11 +1,11 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig } from "@playwright/test";
 
+import base from "./playwright.local.config";
 import {
   backendWebServer,
-  harnessConfigArgs,
+  frontendWebServer,
   harnessProcessEnv,
   harnessReporters,
-  isCI,
 } from "./playwright/support/local-harness-servers";
 
 /**
@@ -14,13 +14,13 @@ import {
  *
  *   yarn --cwd e2e-tests e2e:local:default-language
  *
+ * Spreads playwright.local.config.ts and overrides only what differs. Browser
+ * locale stays English so French UI proves defaultLanguage (not the browser).
  * Do not reuse a server started by e2e:local (defaultLanguage en).
  */
 
 process.env.LOCALE = "fr";
 process.env.APP_DEFAULT_LANGUAGE = "fr";
-
-const frontendUrl = "http://localhost:3000";
 
 const processEnv: Record<string, string> = {
   ...harnessProcessEnv,
@@ -29,46 +29,19 @@ const processEnv: Record<string, string> = {
 };
 
 export default defineConfig({
-  testDir: "./playwright",
-  globalSetup: "./playwright/support/local-harness-global-setup.ts",
+  ...base,
   testMatch: ["e2e/default-language.spec.ts"],
-  grep: /@cluster-free(-capable)?/u,
-  timeout: 90 * 1000,
-  forbidOnly: isCI,
-  retries: isCI ? 1 : 0,
-  workers: 1,
+  // Dedicated allowlist — no @cluster-free-capable grep (that tag means the
+  // spec also runs on a cluster deploy; this one cannot).
+  grep: undefined,
   reporter: harnessReporters("local-default-language"),
   use: {
-    baseURL: frontendUrl,
-    locale: "fr",
-    ignoreHTTPSErrors: true,
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
-    video: "retain-on-failure",
-    ...devices["Desktop Chrome"],
-    viewport: { width: 1920, height: 1080 },
-    actionTimeout: 15 * 1000,
-    navigationTimeout: 60 * 1000,
-  },
-  expect: {
-    timeout: 15 * 1000,
+    ...base.use,
+    // English browser locale: NFS ignores it; French must come from defaultLanguage.
+    locale: "en",
   },
   webServer: [
-    {
-      ...backendWebServer(),
-      env: processEnv,
-      // Always start fresh so APP_DEFAULT_LANGUAGE=fr is applied.
-      reuseExistingServer: false,
-    },
-    {
-      command: `backstage-cli package start ${harnessConfigArgs()}`,
-      cwd: "../packages/app",
-      env: processEnv,
-      url: frontendUrl,
-      reuseExistingServer: false,
-      timeout: 240 * 1000,
-      stdout: "pipe",
-      stderr: "pipe",
-    },
+    backendWebServer({ env: processEnv, reuseExistingServer: false }),
+    frontendWebServer({ env: processEnv, reuseExistingServer: false }),
   ],
 });

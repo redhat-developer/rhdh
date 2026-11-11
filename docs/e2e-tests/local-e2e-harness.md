@@ -24,8 +24,8 @@ via `install-dynamic-plugins` + skopeo, with `ref://` resolved against
 **`CATALOG_INDEX_IMAGE` is required** to extract the full catalog DPDY from a catalog-index OCI image
 `dynamic-plugins.default.yaml`. Pinned to the same CLI version as CI. No source build
 needed; works from a fresh clone. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS).
-On macOS, `populate.sh` overrides skopeo to `linux/amd64` (catalog-index images are
-linux-only) and uses BSD-compatible `sed -i`.
+`populate.sh` always asks skopeo for `linux/amd64` (catalog-index images are
+published for that platform only) and uses BSD-compatible `sed -i`.
 
 ```bash
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \

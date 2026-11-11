@@ -31,13 +31,9 @@ extract_catalog_index_dpdy() {
   oci_dir="$(mktemp -d)"
 
   echo "======= Extracting dynamic-plugins.default.yaml from ${image}"
-  # Catalog-index images are linux-only; on macOS/arm64 skopeo must override
-  # the host platform or the manifest list has no matching entry.
-  local skopeo_platform=()
-  if [[ "$(uname -s)" == "Darwin" ]]; then
-    skopeo_platform=(--override-os linux --override-arch amd64)
-  fi
-  skopeo copy "${skopeo_platform[@]}" "docker://${image}" "oci:${oci_dir}"
+  # Catalog-index images are linux/amd64 only; pin the platform on every host
+  # (macOS/arm64 and linux/arm64 otherwise have no matching manifest entry).
+  skopeo copy --override-os linux --override-arch amd64 "docker://${image}" "oci:${oci_dir}"
   for blob in "${oci_dir}"/blobs/sha256/*; do
     tar -xf "$blob" -C "${unpack_dir}/" 2>/dev/null || true
   done
