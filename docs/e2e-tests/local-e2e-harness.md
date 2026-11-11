@@ -23,7 +23,9 @@ via `install-dynamic-plugins` + skopeo, with `ref://` resolved against
 `dynamic-plugins.default.yaml` extracted from a catalog-index OCI image.
 **`CATALOG_INDEX_IMAGE` is required** to extract the full catalog DPDY from a catalog-index OCI image
 `dynamic-plugins.default.yaml`. Pinned to the same CLI version as CI. No source build
-needed; works from a fresh clone. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS):
+needed; works from a fresh clone. Requires skopeo (preinstalled in CI; `brew install skopeo` on macOS).
+On macOS, `populate.sh` overrides skopeo to `linux/amd64` (catalog-index images are
+linux-only) and uses BSD-compatible `sed -i`.
 
 ```bash
 CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:next \
@@ -110,6 +112,10 @@ for how that's wired).
   toggle, and identity-card ownership ("Guest User, team-a"). NFS sidebar page titles
   depend on the installed app-defaults version: the final assertion accepts the
   text link as either "Home" or "Accueil" after switching to French.
+- `default-language.spec.ts` — non-English `defaultLanguage` (`fr`) with no
+  `localStorage` seed. Runs only under
+  `yarn e2e:local:default-language` (see [default-language.md](./default-language.md));
+  not part of the default `e2e:local` allowlist.
 
 The application-provider and application-listener specs and provider page fixture
 were retired under RHIDP-17025 because their OCI test plugins expose only the old

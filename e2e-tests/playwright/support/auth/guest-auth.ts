@@ -10,6 +10,9 @@ import { guestEnterButton, waitForRhdhSignInPage } from "./sign-in-page";
  * `defaultLanguage`, not from the browser locale. Seed it before the app boots,
  * but keep a value that is already stored (e.g. a language chosen in Settings).
  * English leaves storage unset so the app uses defaultLanguage (en).
+ *
+ * Pass `seedLanguage: false` to exercise defaultLanguage with an empty store
+ * (see playwright.local-default-language.config.ts).
  */
 async function seedAppLanguage(page: Page, lang: Locale): Promise<void> {
   if (lang === "en") {
@@ -24,12 +27,21 @@ async function seedAppLanguage(page: Page, lang: Locale): Promise<void> {
 
 export async function signInAsGuest(
   page: Page,
-  options?: { timeout?: number; locale?: Locale; baseURL?: string },
+  options?: {
+    timeout?: number;
+    locale?: Locale;
+    baseURL?: string;
+    /** When false, do not write localStorage.language (test defaultLanguage). Default true. */
+    seedLanguage?: boolean;
+  },
 ): Promise<void> {
   const lang = options?.locale ?? getCurrentLanguage();
   const timeout = options?.timeout ?? 120_000;
+  const seedLanguage = options?.seedLanguage ?? true;
 
-  await seedAppLanguage(page, lang);
+  if (seedLanguage) {
+    await seedAppLanguage(page, lang);
+  }
   resetPageErrors(page);
   await page.goto(options?.baseURL ?? "/");
   await waitForAppReady(page, timeout);
