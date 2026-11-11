@@ -210,6 +210,8 @@ export default defineConfig({
     {
       name: PW_PROJECT.ANY_TEST,
       testMatch: "**/*.spec.ts",
+      // Local-harness only (APP_DEFAULT_LANGUAGE=fr); see playwright.local-default-language.config.ts
+      testIgnore: ["**/playwright/e2e/default-language.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,

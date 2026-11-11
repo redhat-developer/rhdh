@@ -1,5 +1,5 @@
-import { expect, type Page } from "@playwright/test";
-import { test } from "@support/coverage/test";
+import { type Page } from "@playwright/test";
+import { expect, test } from "@support/coverage/test";
 
 import { signInAsGuest } from "../support/auth/guest-auth";
 import { waitForRhdhSignInPage } from "../support/auth/sign-in-page";
@@ -31,8 +31,8 @@ async function clearStoredLanguage(page: Page): Promise<void> {
 }
 
 test.describe("NFS defaultLanguage (no stored language)", () => {
-  test.beforeEach(() => {
-    test.info().annotations.push({
+  test.beforeAll(({}, testInfo) => {
+    testInfo.annotations.push({
       type: "component",
       description: "core",
     });
