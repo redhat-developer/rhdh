@@ -47,7 +47,7 @@ test.describe("NFS defaultLanguage (no stored language)", () => {
       await page.goto("/");
       // AppLanguageSelector persists defaultLanguage on first boot.
       await expect
-        .poll(async () => await page.evaluate(() => window.localStorage.getItem("language")))
+        .poll(() => page.evaluate(() => window.localStorage.getItem("language")))
         .toBe(DEFAULT_LOCALE);
 
       // Sign-in heading stays English-only; Guest Enter may follow locale bundles.
@@ -123,7 +123,7 @@ test.describe("NFS defaultLanguage (no stored language)", () => {
 
       await page.goto("/");
       await expect
-        .poll(async () => await page.evaluate(() => window.localStorage.getItem("language")))
+        .poll(() => page.evaluate(() => window.localStorage.getItem("language")))
         .toBe(DEFAULT_LOCALE);
 
       await signInAsGuest(page, { locale: DEFAULT_LOCALE, seedLanguage: false });
