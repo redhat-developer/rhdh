@@ -315,7 +315,6 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 
 **What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) installs required operators and infrastructure (see [operators.sh](../../.ci/pipelines/lib/operators.sh)):
 - OpenShift Pipelines (Tekton) operator
-- Crunchy PostgreSQL operator
 
 **What can go wrong**:
 - Operator installation timeout (OperatorHub/Marketplace issues)
@@ -357,7 +356,7 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 - `CrashLoopBackOff` -- pod is crash-looping
 - `Failed to reach Backstage` -- health check timeout
 - `helm upgrade` failures
-- `Crunchy Postgres operator failed to create the user` -- PostgreSQL setup issue
+- `External PostgreSQL did not become ready` -- external PostgreSQL (`postgress-external-db` StatefulSet) setup issue
 - Check `pod_logs/` for application-level errors
 
 **Action**: Check pod logs and events in artifacts. May be a config issue (real bug) or transient infra (re-trigger).
@@ -419,7 +418,7 @@ Same as OCP nightly but deploys RHDH using the Operator instead of Helm. See [`o
 **Key differences**:
 - Installs RHDH Operator and waits for `backstages.rhdh.redhat.com` CRD (300s timeout)
 - Uses Backstage CR (`rhdh-start.yaml`) instead of Helm release
-- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with external Crunchy PostgreSQL
+- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with the external PostgreSQL
 
 ### OCP PR Check (`ocp-pull`)
 

@@ -3,7 +3,7 @@ import { test, expect } from "@support/coverage/test";
 import { CatalogBrowsePage } from "../../support/pages/catalog-browse-page";
 import { HomePage } from "../../support/pages/home-page";
 
-test.describe("Verify TLS configuration with external Crunchy Postgres DB", () => {
+test.describe("Verify TLS configuration with external PostgreSQL DB", () => {
   test.beforeAll(() => {
     test.info().annotations.push(
       {

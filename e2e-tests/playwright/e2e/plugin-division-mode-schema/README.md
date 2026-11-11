@@ -47,11 +47,11 @@ On OCP Helm nightly jobs, [`.ci/pipelines/lib/schema-mode-env.sh`](../../../../.
 
 The test spec starts `oc port-forward` in `beforeAll` (similar to [`verify-redis-cache.spec.ts`](../../verify-redis-cache.spec.ts)) and stops it in `afterAll`.
 
-When the runtime namespace has no Bitnami `*-postgresql` Service, auto-discovery uses the Crunchy cluster in `NAME_SPACE_POSTGRES_DB`:
+When the runtime namespace has no Bitnami `*-postgresql` Service, auto-discovery uses the external PostgreSQL StatefulSet in `NAME_SPACE_POSTGRES_DB` (see [`postgres.yaml`](../../../../.ci/pipelines/resources/postgres-db/postgres.yaml)):
 
-- Admin password from `${SCHEMA_MODE_CRUNCHY_CLUSTER_NAME:-postgress-external-db}-pguser-janus-idp`
-- Forward target is a Running postgres pod (the `*-primary` Service has no selector, so forwarding the Service fails)
-- Override cluster name with `SCHEMA_MODE_CRUNCHY_CLUSTER_NAME` if your `PostgresCluster` metadata name differs
+- Admin password from `${SCHEMA_MODE_EXTERNAL_DB_NAME:-postgress-external-db}-pguser-janus-idp`
+- Forward target is the Running pod labeled `app.kubernetes.io/name=${SCHEMA_MODE_EXTERNAL_DB_NAME:-postgress-external-db}`
+- Override the name with `SCHEMA_MODE_EXTERNAL_DB_NAME` if your StatefulSet name differs
 
 Set `DEBUG_SCHEMA_MODE_PF=1` to log port-forward output.
 
@@ -67,7 +67,7 @@ The tests include built-in retry logic to handle transient port-forward instabil
 
 - Automatic retry with exponential backoff for transient connection failures
 - Automatic port-forward restart when connection is refused (port-forward crashed)
-- SSL fallback for Crunchy PostgreSQL clusters requiring encrypted connections
+- SSL fallback for PostgreSQL servers requiring encrypted connections (the external PostgreSQL only accepts TLS)
 
 ## Local / ClusterBot Runs
 

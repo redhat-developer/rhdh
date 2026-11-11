@@ -33,8 +33,6 @@ handle_ocp_nightly() {
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
 
-  cluster_setup_ocp_helm
-
   if [[ "${JOB_NAME}" == *osd-gcp* ]]; then
     log::info "Detected OSD-GCP job, using OSD-GCP specific deployment"
     initiate_deployments_osd_gcp "${PW_PROJECT_SHOWCASE}" "${PW_PROJECT_SHOWCASE_RBAC}"

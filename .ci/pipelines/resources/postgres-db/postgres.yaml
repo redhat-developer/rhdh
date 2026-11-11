@@ -1,74 +1,167 @@
-apiVersion: postgres-operator.crunchydata.com/v1beta1
-kind: PostgresCluster
+# External PostgreSQL used by the showcase-rbac tests. Deployed by
+# configure_external_postgres_db in utils.sh, which also creates the
+# postgress-external-db-cluster-cert, postgress-external-db-pguser-janus-idp
+# and rh-pull-secret secrets referenced below.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgress-external-db-config
+data:
+  ssl.conf: |
+    ssl = on
+    ssl_cert_file = '/opt/app-root/src/certs/tls.crt'
+    ssl_key_file = '/opt/app-root/src/certs/tls.key'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgress-external-db-start
+data:
+  rhdh-setup.sh: |
+    # Sourced by the image's run-postgresql after the server starts locally.
+    # Only accept TLS connections over the network.
+    sed -i -E 's/^host([[:space:]]+all[[:space:]]+all[[:space:]]+all[[:space:]]+md5)/hostssl\1/' "${PGDATA}/pg_hba.conf"
+    psql -v ON_ERROR_STOP=1 -v user="${RHDH_DB_USER}" -v password="${RHDH_DB_PASSWORD}" << 'EOSQL'
+    SELECT format('CREATE ROLE %I', :'user') WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'user') \gexec
+    ALTER ROLE :"user" WITH LOGIN SUPERUSER PASSWORD :'password';
+    EOSQL
+    unset RHDH_DB_USER RHDH_DB_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgress-external-db-primary
+  labels:
+    app.kubernetes.io/name: postgress-external-db
+spec:
+  selector:
+    app.kubernetes.io/name: postgress-external-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: postgress-external-db
+  labels:
+    app.kubernetes.io/name: postgress-external-db
 spec:
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-18.1-2547
-  postgresVersion: 18
-  instances:
-    - name: instance1
-      dataVolumeClaimSpec:
+  serviceName: postgress-external-db-primary
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgress-external-db
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgress-external-db
+    spec:
+      imagePullSecrets:
+        - name: rh-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        # PostgreSQL refuses a private key that is readable by others, so copy
+        # the certificates to a volume owned by the container user.
+        - name: copy-certs
+          image: registry.redhat.io/rhel9/postgresql-18:latest
+          command:
+            - /bin/sh
+            - -c
+            - cp /tls/ca.crt /tls/tls.crt /tls/tls.key /certs/ && chmod 0600 /certs/tls.key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - name: tls-secret
+              mountPath: /tls
+              readOnly: true
+            - name: certs
+              mountPath: /certs
+      containers:
+        - name: postgres
+          image: registry.redhat.io/rhel9/postgresql-18:latest
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - name: POSTGRESQL_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgress-external-db-pguser-janus-idp
+                  key: postgres-password
+            - name: RHDH_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgress-external-db-pguser-janus-idp
+                  key: user
+            - name: RHDH_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgress-external-db-pguser-janus-idp
+                  key: password
+          readinessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/pgsql/data
+            - name: certs
+              mountPath: /opt/app-root/src/certs
+              readOnly: true
+            - name: config
+              mountPath: /opt/app-root/src/postgresql-cfg
+              readOnly: true
+            - name: start
+              mountPath: /opt/app-root/src/postgresql-start
+              readOnly: true
+      volumes:
+        - name: tls-secret
+          secret:
+            secretName: postgress-external-db-cluster-cert
+        - name: certs
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: postgress-external-db-config
+        - name: start
+          configMap:
+            name: postgress-external-db-start
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
         accessModes:
-          - "ReadWriteOnce"
+          - ReadWriteOnce
         resources:
           requests:
             storage: 2Gi
-      resources:
-        limits:
-          cpu: 300m
-        requests:
-          cpu: 200m
-      sidecars:
-        replicaCertCopy:
-          resources:
-            limits:
-              cpu: 300m
-            requests:
-              cpu: 200m
-  backups:
-    pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.56.0-2547
-      global:
-        # Save backups for 7 days, this means 1 full backups with 6 differential ones in between
-        repo1-retention-full: "1"
-        repo1-retention-full-type: count
-      repoHost:
-        resources:
-          limits:
-            cpu: 300m
-          requests:
-            cpu: 200m
-      repos:
-        - name: repo1
-          schedules:
-            # Every sunday at 01:00 full backup
-            full: "0 1 * * 0"
-            # Monday through saturday at 01:00 differential backup
-            differential: "0 1 * * 1-6"
-          volume:
-            volumeClaimSpec:
-              accessModes:
-                - "ReadWriteOnce"
-              resources:
-                requests:
-                  storage: 2Gi
-      sidecars:
-        pgbackrest:
-          resources:
-            limits:
-              cpu: 200m
-            requests:
-              cpu: 100m
-        pgbackrestConfig:
-          resources:
-            limits:
-              cpu: 300m
-            requests:
-              cpu: 200m
-  users:
-    - name: janus-idp
-      options: "SUPERUSER"
-    - name: sonarqube
-      databases:
-        - sonarqube
-      options: "NOSUPERUSER"
