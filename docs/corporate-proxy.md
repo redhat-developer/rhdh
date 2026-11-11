@@ -1,108 +1,342 @@
-# Running the Showcase application behind a corporate proxy
+# Corporate proxy configuration
 
-Out of the box, the Showcase application can be run behind a corporate proxy, by setting any of the following environment variables prior to starting the application:
+Red Hat Developer Hub relies on **Node.js built-in proxy support**, aligned with upstream Backstage. Outbound proxying is **opt-in**: set `NODE_USE_ENV_PROXY=1` together with `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` on workloads that make outbound requests (backend, init containers, and similar). The container image does not enable proxy support by default.
 
-- `HTTP_PROXY`: Proxy to use for HTTP requests.
-- `HTTPS_PROXY`: Proxy to use for HTTPS requests.
+## Canonical documentation
 
-Additionally, you can set the `NO_PROXY` environment variable to exclude certain domains from proxying. The value is a comma or space-separated list of hostnames that do not require a proxy to get reached, even if one is specified.
+Production Helm, Operator, and adopter configuration are documented elsewhere:
 
-## Understanding the `NO_PROXY` exclusion rules
+- Upstream: [Running Backstage behind a Corporate Proxy](https://backstage.io/docs/tutorials/corporate-proxy/)
+- Red Hat product documentation: [Run RHDH behind a corporate proxy](https://docs.redhat.com/en/documentation/red_hat_developer_hub/2.1/html/configuring_red_hat_developer_hub/assembly-run-rhdh-behind-a-corporate-proxy)
 
-`NO_PROXY` is a comma or space-separated list of hostnames or IP addresses, optionally with port numbers. If the input URL matches any of the entries listed in `NO_PROXY`, then that URL will be fetched by a direct request (i.e., bypassing the proxy settings).
+The sections below cover **this repository**: local development and cluster-based testing only.
 
-Note that the default value for `NO_PROXY` in the container image is `localhost,127.0.0.1`. If you want to override it, please make sure to also include at least `localhost` or `localhost:7007` in the list; otherwise, the Backend might not work correctly.
+## Local development with `yarn`
 
-Matching follows the rules below:
+When running this repository locally behind a proxy, set `NODE_USE_ENV_PROXY=1` and the standard proxy variables before starting the backend (for example with `yarn start`):
 
-- `NO_PROXY=*` will bypass the proxy for all requests.
-- Space and commas may be used to separate the entries in the `NO_PROXY` list. For example, `NO_PROXY=localhost,example.com`, `NO_PROXY="localhost example.com"`, or `NO_PROXY="localhost, example.com"` would have the same effect.
-- If `NO_PROXY` does not contain any entries, then all requests will be sent through the proxy if the `HTTP(S)_PROXY` settings are configured. Otherwise, requests will be fetched directly.
-- No DNS lookup is performed to decide if a request should bypass the proxy or not. For example, if DNS is known to resolve `example.com` to `1.2.3.4`, setting `NO_PROXY=1.2.3.4` will not have any effect on requests sent to `example.com`. Only requests explicitly sent to the IP address `1.2.3.4` will bypass the proxy.
-- If a port is added after the host name or IP Address, then the input request must match both the host/IP and port in order to bypass the proxy. For example, `NO_PROXY=example.com:1234` would exclude requests to `http(s)://example.com:1234` (so calling them directly), but not requests to other ports like `http(s)://example.com` (which will be sent through the proxy).
-- If no port is specified after the host name or IP address, all requests to that host/IP address will bypass the proxy regardless of the port. For example, `NO_PROXY=localhost` would exclude all requests sent to `localhost` (so calling them directly), like `http(s)://localhost:7077` and `http(s)://localhost:8888`.
-- IP Address blocks in CIDR notation will not work. So setting `NO_PROXY=10.11.0.0/16` will not have any effect, even if a request is explicitly sent to an IP address in that block.
-- Only IPv4 addresses are supported. IPv6 addresses like `::1` will not work.
-- Generally, the proxy is only bypassed if the host name is an exact match for an entry in the `NO_PROXY` list. The only exceptions are entries that start with a dot (`.`) or with a wildcard (`*`). In such a case, the proxy is bypassed if the host name ends with the entry. Please note that you should list both the domain and the wildcard domain if you want to exclude a domain and all its subdomains. For example, you would set `NO_PROXY=example.com,.example.com` to bypass the proxy for requests sent to `http(s)://example.com` and `http(s)://subdomain.example.com`.
-
-## Helm deployment
-
-You can set the proxy information in your Helm `values` file, like so:
-
-```yaml
-upstream:
-  backstage:
-    extraEnvVars:
-      # Proxy to use for HTTP requests
-      - name: HTTP_PROXY
-        value: '<my_http_proxy_url>'
-      # Proxy to use for HTTPS requests
-      - name: HTTPS_PROXY
-        value: '<my_https_proxy_url>'
-      - name: NO_PROXY
-        # List of comma-separated URLs that should be excluded from proxying.
-        # Make sure you include 'localhost'.
-        # Example: 'localhost,foo.com,baz.com'
-        value: '<my_no_proxy_settings>'
+```shell
+export NODE_USE_ENV_PROXY=1
+export HTTP_PROXY=http://localhost:3128
+export HTTPS_PROXY=http://localhost:3128
+export NO_PROXY='localhost,127.0.0.1'
+yarn start
 ```
 
-<details>
-<summary>Example</summary>
+<!-- markdown-link-check-disable-next-line -->
+You can use the command below to quickly start a local corporate proxy server (based on [Squid](https://www.squid-cache.org/)):
 
-```yaml
-# --- Truncated ---
-upstream:
-  backstage:
-    extraEnvVars:
-      - name: HTTP_PROXY
-        value: 'http://10.10.10.105:3128'
-      - name: HTTPS_PROXY
-        value: 'http://10.10.10.106:3128'
-      - name: NO_PROXY
-        value: 'localhost,example.org'
+```shell
+podman container run --rm --name squid-container \
+  -e TZ=UTC \
+  -p 3128:3128 \
+  -it registry.redhat.io/rhel9/squid:latest
 ```
 
-</details>
+## Logging
 
-## Operator deployment
+To debug native `fetch` behavior with proxy settings, set `NODE_DEBUG=fetch`. See the [Node.js debugging documentation](https://nodejs.org/api/cli.html#node_debugmodule).
 
-You can set the proxy information in your Custom Resource, like so:
+## Testing
+
+The most challenging part of writing an end-to-end test from the context of a corporate proxy is to set up an environment where an application is forbidden access to the public Internet except through that proxy.
+
+### Locally with `podman-compose` or `docker-compose`
+
+You can leverage the [`rhdh-local`](https://github.com/redhat-developer/rhdh-local) project to test how a given Showcase/Red Hat Developer Hub container image would behave when it is running behind a corporate proxy server. You would need either [`podman-compose`](https://docs.podman.io/en/latest/markdown/podman-compose.1.html) or [Docker Compose](https://docs.docker.com/compose/).
+
+See [Corporate Proxy Setup](https://github.com/redhat-developer/rhdh-local/blob/main/docs/rhdh-local-guide/corporate-proxy-setup-sim.md) in the rhdh-local repository.
+
+### On a cluster
+
+This approach simulates a corporate proxy environment in a Kubernetes/OpenShift namespace with the help of [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) to control ingress and egress traffic for pods within that namespace.
+
+#### Kubernetes
+
+1. Make sure the network plugin in your Kubernetes cluster supports network policies. [k3d](https://k3d.io) for example supports Network Policies out of the box.
+
+<!-- markdown-link-check-disable-next-line -->
+2. Create a separate proxy namespace, and deploy a [Squid](https://www.squid-cache.org/)-based proxy application there. The full URL to access the proxy server from within the cluster would be `http://squid-service.proxy.svc.cluster.local:3128`.
+
+```shell
+kubectl create namespace proxy
+
+cat <<EOF | kubectl -n proxy apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: squid-service
+  labels:
+    app: squid
+spec:
+  ports:
+  - port: 3128
+  selector:
+    app: squid
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "squid"
+  template:
+    metadata:
+      labels:
+        app: squid
+    spec:
+      containers:
+      - name: squid
+        image: docker.io/ubuntu/squid:latest
+        ports:
+        - containerPort: 3128
+          name: squid
+          protocol: TCP
+EOF
+```
+
+3. Create the namespace where the Showcase application will be running, e.g.:
+
+```shell
+kubectl create namespace my-ns
+```
+
+4. Add the network policies in the namespace above. The first one denies all egress traffic except to the DNS resolver and the Squid proxy. The second one allows ingress and egress traffic in the same namespace, because the Showcase app pod needs to contact the local Database pod.
+
+```shell
+cat <<EOF | kubectl -n my-ns apply -f -
+---
+# Deny all egress traffic in this namespace => proxy settings can be used to overcome this.
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-deny-egress-with-exceptions
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # allow DNS resolution (we need this allowed, otherwise we won't be able to resolve the DNS name of the Squid proxy service)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+      - port: 53
+        protocol: UDP
+      - port: 53
+        protocol: TCP
+  # allow traffic to Squid proxy
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: proxy
+    ports:
+    - port: 3128
+      protocol: TCP
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-same-namespace
+spec:
+  podSelector: {}
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+EOF
+```
+
+5. Configure proxy environment variables on the deployment. Use the Red Hat [configuring guide](https://docs.redhat.com/en/documentation/red_hat_developer_hub/2.1/html/configuring_red_hat_developer_hub/assembly-run-rhdh-behind-a-corporate-proxy) for Helm or Operator procedures.
+
+Example with a Custom Resource (set `NODE_USE_ENV_PROXY=1` with your proxy URLs):
 
 ```yaml
+apiVersion: rhdh.redhat.com/v1alpha1
+kind: Backstage
+metadata:
+  name: my-rhdh
 spec:
   application:
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+    dynamicPluginsConfigMapName: dynamic-plugins-rhdh
     extraEnvs:
       envs:
-        # Proxy to use for HTTP requests
+        - name: NODE_USE_ENV_PROXY
+          value: '1'
         - name: HTTP_PROXY
-          value: '<my_http_proxy_url>'
-        # Proxy to use for HTTPS requests
+          value: 'http://squid-service.proxy.svc.cluster.local:3128'
         - name: HTTPS_PROXY
-          value: '<my_https_proxy_url>'
+          value: 'http://squid-service.proxy.svc.cluster.local:3128'
         - name: NO_PROXY
-          # List of comma-separated URLs that should be excluded from proxying.
-          # Make sure you include 'localhost'.
-          # Example: 'localhost,foo.com,baz.com'
-          value: '<my_no_proxy_settings>'
+          value: 'localhost'
+      secrets:
+        - name: secrets-rhdh
+# --- TRUNCATED ---
 ```
 
-<details>
-<summary>Example</summary>
+#### OpenShift
+
+<!-- markdown-link-check-disable-next-line -->
+2. Create a separate proxy project, and deploy a [Squid](https://www.squid-cache.org/)-based proxy application there. The full URL to access the proxy server from within the cluster would be `http://squid-service.proxy.svc.cluster.local:3128`.
+
+```shell
+oc new-project proxy
+
+cat <<EOF | kubectl -n proxy apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: squid-service
+  labels:
+    app: squid
+spec:
+  ports:
+  - port: 3128
+  selector:
+    app: squid
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "squid"
+  template:
+    metadata:
+      labels:
+        app: squid
+    spec:
+      containers:
+      - name: squid
+        image: registry.redhat.io/rhel9/squid:latest
+        ports:
+        - containerPort: 3128
+          name: squid
+          protocol: TCP
+EOF
+```
+
+3. Create the namespace where the Showcase application will be running, e.g.:
+
+```shell
+oc new-project rhdh
+```
+
+4. Add the network policies in the namespace above. The first one denies all egress traffic except to the DNS resolver and the Squid proxy. The second one allows ingress and egress traffic in the same namespace, because the Showcase app pod needs to contact the local Database pod.
+
+```shell
+cat <<EOF | kubectl -n rhdh apply -f -
+---
+# Deny all egress traffic in this namespace => proxy settings can be used to overcome this.
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-deny-egress-with-exceptions
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # allow DNS resolution (we need this allowed, otherwise we won't be able to resolve the DNS name of the Squid proxy service)
+  - to:
+    - podSelector: {}
+      namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns
+    ports:
+      - port: 53
+        protocol: UDP
+      - port: 53
+        protocol: TCP
+  # allow traffic to Squid proxy
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: proxy
+    ports:
+    - port: 3128
+      protocol: TCP
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-same-namespace
+spec:
+  podSelector: {}
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# allow incoming connections from Ingress controller (to make Route and Ingress work)
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-from-openshift-ingress
+spec:
+  podSelector: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
+  policyTypes:
+    - Ingress
+
+EOF
+```
+
+5. Configure proxy environment variables on the deployment. Use the Red Hat [configuring guide](https://docs.redhat.com/en/documentation/red_hat_developer_hub/2.1/html/configuring_red_hat_developer_hub/assembly-run-rhdh-behind-a-corporate-proxy) for Helm or Operator procedures.
+
+Example with a Custom Resource:
 
 ```yaml
+apiVersion: rhdh.redhat.com/v1alpha1
+kind: Backstage
+metadata:
+  name: my-rhdh
 spec:
-  # --- Truncated ---
   application:
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+    dynamicPluginsConfigMapName: dynamic-plugins-rhdh
     extraEnvs:
       envs:
+        - name: NODE_USE_ENV_PROXY
+          value: '1'
         - name: HTTP_PROXY
-          value: 'http://10.10.10.105:3128'
+          value: 'http://squid-service.proxy.svc.cluster.local:3128'
         - name: HTTPS_PROXY
-          value: 'http://10.10.10.106:3128'
+          value: 'http://squid-service.proxy.svc.cluster.local:3128'
         - name: NO_PROXY
-          value: 'localhost,example.org'
+          value: 'localhost'
+      secrets:
+        - name: secrets-rhdh
+# --- TRUNCATED ---
 ```
 
-</details>
+## External resources
 
-**NOTE**: Instead of specifying the proxy settings in each Custom Resource, you can edit the Operator default configuration once. To do so, look for a `ConfigMap` named `backstage-default-config` in the namespace where the Operator is deployed (typically `backstage-system` or `rhdh-operator`). Then edit the `deployment.yaml` key by adding the `HTTP(S)_PROXY` and `NO_PROXY` environment variables to the containers listed in this Deployment spec.
+The way proxy settings are parsed and handled is not fully standardized across libraries, especially for `NO_PROXY`. See [We need to talk: Can we standardize NO_PROXY?](https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/).
