@@ -14,5 +14,5 @@ metadata:
 spec:
   type: database
   lifecycle: production
-  owner: janus-authors
-  system: janus-idp
+  owner: rhdh-authors
+  system: rhdh-examples

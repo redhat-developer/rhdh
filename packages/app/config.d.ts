@@ -1,5 +1,5 @@
 export interface Config {
-  /** Configurations for the backstage(janus) instance */
+  /** Configurations for the Backstage (RHDH) instance */
   developerHub?: {
     /**
      * The url of json data for customization.

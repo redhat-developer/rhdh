@@ -224,8 +224,8 @@ app:
       - title: Join the community
         icon: chat
         links:
-          - url: https://janus-idp.io/community/
-            title: Janus Community
+          - url: https://github.com/redhat-developer/rhdh
+            title: RHDH Community
 ```
 
 ![Example Support Configured](images/example-support-button.png)
