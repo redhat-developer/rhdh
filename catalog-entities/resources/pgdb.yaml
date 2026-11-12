@@ -3,16 +3,16 @@ kind: Resource
 metadata:
   name: pgdb
   title: PostgreSQL cluster
-  description: PostgreSQL is a powerful, open source object-relational database system. PostgreSQL cluster is created by Crunchy Postgres for Kubernetes operator. We use Postgres as the databse for this showcase.
+  description: PostgreSQL is a powerful, open source object-relational database system. The cluster runs as a StatefulSet using the RHEL PostgreSQL image. We use Postgres as the database for this showcase.
   links:
-    - url: https://www.crunchydata.com/products/crunchy-high-availability-postgresql
-      title: Crunchy product pages
+    - url: https://www.postgresql.org/about/
+      title: PostgreSQL product pages
       icon: web
-    - url: https://access.crunchydata.com/documentation/postgres-operator/v5/
+    - url: https://github.com/sclorg/postgresql-container
       title: Documentation
       icon: web
 spec:
   type: database
   lifecycle: production
-  owner: janus-authors
-  system: janus-idp
+  owner: rhdh-authors
+  system: rhdh-examples

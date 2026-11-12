@@ -10,21 +10,21 @@ metadata:
       url: https://developers.redhat.com/rhdh
     - title: RHDH Documentation
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/
-    - title: Blog
-      url: https://janus-idp.io/blog
+    - title: Releases
+      url: https://github.com/redhat-developer/rhdh/releases
     - title: Backstage Discord
       url: https://discord.com/servers/backstage-687207715902193673
   annotations:
-    argocd/app-name: 'janus-idp'
-    backstage.io/kubernetes-id: 'janus-idp'
+    argocd/app-name: 'rhdh'
+    backstage.io/kubernetes-id: 'rhdh'
     github.com/project-slug: redhat-developer/rhdh
     quay.io/repository-slug: rhdh-community/rhdh
     backstage.io/techdocs-ref: url:https://github.com/redhat-developer/rhdh
-    backstage.io/kubernetes-namespace: janus-idp-prod
-    sonarqube.org/project-key: janus-idp_backstage-showcase
+    backstage.io/kubernetes-namespace: rhdh-prod
+    sonarqube.org/project-key: redhat-developer_rhdh
 spec:
   type: website
-  system: red-hat-developer-hub
+  system: rhdh-examples
   owner: red-hat
   lifecycle: production
   dependsOn:

@@ -32,11 +32,14 @@ export async function goToSettingsPage(page: Page) {
 
 export async function goToSelfServicePage(page: Page) {
   const lang = getCurrentLanguage();
+  // Sidebar label matches rhdh.menuItem.selfService, but the NFS /create h1 can differ
+  // (CI: FR Libre-service, IT Self-Service vs menu En libre service / Self service).
   await clickLink(page, {
     ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
   });
-  // RHDH overrides the scaffolder page title to Self-service (RHDHBUGS-3676).
-  await verifyHeading(page, "Self-service");
+  // NFS Self-service lands on /create/templates?... (not bare /create).
+  await expect(page).toHaveURL(/\/create(?:\/|\?|$)/u);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 }
 
 export async function waitForSideBarVisible(page: Page) {
@@ -61,7 +64,7 @@ export async function openTemplateInCatalog(
 
 export async function openCatalogSidebar(page: Page, kind: string) {
   const lang = getCurrentLanguage();
-  await openSidebar(page, t["rhdh"][lang]["menuItem.catalog"]);
+  await openSidebar(page, t["plugin.app-react"][lang]["pages.Catalog"]);
   await selectMuiBox(page, t["catalog-react"][lang]["entityKindPicker.title"], kind);
   await expect(async () => {
     await clickByDataTestId(page, "user-picker-all");

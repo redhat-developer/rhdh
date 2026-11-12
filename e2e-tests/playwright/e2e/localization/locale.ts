@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { RHDH_PLUGINS_TRANSLATIONS } from "./rhdh-plugins";
+
 type TranslationFile = Record<string, Record<string, Record<string, string>>>;
 
 const TRANSLATIONS_DIR = join(import.meta.dirname, "../../../../translations");
@@ -25,7 +27,8 @@ const esRhdh = loadTranslationJson("rhdh-es.json");
 const frRhdh = loadTranslationJson("rhdh-fr.json");
 const itRhdh = loadTranslationJson("rhdh-it.json");
 const jaRhdh = loadTranslationJson("rhdh-ja.json");
-// rhdh-plugins locale bundles live in the rhdh-plugins repo, not translations/.
+// rhdh-plugins locale bundles live in the rhdh-plugins repo, not translations/;
+// the strings the specs need are in ./rhdh-plugins.ts.
 const en = loadTranslationJson("test/all-en.json");
 
 const de = {
@@ -77,6 +80,7 @@ function isLocale(lang: string): lang is Locale {
 function createMergedTranslations() {
   const allNamespaces = new Set([
     ...Object.keys(en),
+    ...Object.keys(RHDH_PLUGINS_TRANSLATIONS),
     ...Object.keys(de),
     ...Object.keys(es),
     ...Object.keys(fr),
@@ -87,7 +91,10 @@ function createMergedTranslations() {
   const merged: Record<string, Record<string, Record<string, string>>> = {};
 
   for (const namespace of allNamespaces) {
-    const enKeys = en[namespace]?.en ?? {};
+    const enKeys = {
+      ...RHDH_PLUGINS_TRANSLATIONS[namespace]?.en,
+      ...en[namespace]?.en,
+    };
     const namespaceTranslations: Record<string, Record<string, string>> = {
       en: enKeys,
     };
@@ -98,6 +105,7 @@ function createMergedTranslations() {
       }
       namespaceTranslations[locale] = {
         ...enKeys,
+        ...RHDH_PLUGINS_TRANSLATIONS[namespace]?.[locale],
         ...NON_EN_LOCALE_BUNDLES[locale][namespace]?.[locale],
       };
     }

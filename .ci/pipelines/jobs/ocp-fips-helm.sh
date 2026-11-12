@@ -21,8 +21,6 @@ handle_ocp_fips_helm() {
 
   fips_configure_custom_ca_ingress
 
-  cluster_setup_ocp_helm
-
   fips_deployment "${PW_PROJECT_SHOWCASE_FIPS}"
 
   deploy_test_backstage_customization_provider "${NAME_SPACE}"

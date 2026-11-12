@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi10/nodejs-24
-FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1793854619@sha256:57212ff4d61b69442054ba664b9801d0c9368310417847e86bcdc644e46e1e29 AS skeleton
+FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1794296068@sha256:4678d7a58d8cd4aee921fb66e894e525853dd26c6ddab43d51a04ae5698b139a AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -241,7 +241,7 @@ RUN rm -rf \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi10/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1793706601@sha256:835b92ddef05d7929ca1db0272f4eda24b84df964dafe7b559fe09ce40a1c0b0 AS runner
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1794201704@sha256:b32886dede141ace3e470c3fc106e10d28265de98b72fe408636123860fc2d33 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -322,16 +322,10 @@ ENV NPM_CONFIG_ignore-scripts='true'
 ENV SEGMENT_WRITE_KEY=gGVM6sYRK0D0ndVX22BOtS7NRcxPej8t
 ENV SEGMENT_TEST_MODE=false
 
-# RHIDP-2217: corporate proxy support (configured using 'global-agent' for 'node-fetch' calls and 'undici' for 'fetch' calls)
-# This is to avoid having to define several environment variables for the same purpose,
-# i.e, GLOBAL_AGENT_HTTP(S)_PROXY (for 'global-agent') and the conventional HTTP(S)_PROXY (honored by other libraries like Axios).
-# By setting GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE to an empty value,
-# 'global-agent' will use the same HTTP_PROXY, HTTPS_PROXY and NO_PROXY environment variables.
-ENV GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE=''
-
 # RHDHBUGS-106,RHIDP-4646: requests to the loopback interface should bypass the corporate proxy if set.
-# Note that NO_PROXY will take effect only if the 'HTTP(S)_PROXY' environment variables are set.
-# Users can still override this when running the image.
+# NO_PROXY is honored for outbound Node traffic only when adopters enable proxying
+# (NODE_USE_ENV_PROXY=1 with HTTP_PROXY/HTTPS_PROXY). This image default does not turn proxying on.
+# Users can still override NO_PROXY when running the image.
 ENV NO_PROXY='localhost,127.0.0.1'
 
 # The `--no-node-snapshot` node option enables the usage of the backstage scaffolder on nodejs 20+
