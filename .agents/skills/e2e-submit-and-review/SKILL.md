@@ -223,7 +223,7 @@ If no response is received after 1 minute, ask the user for guidance.
 
 The bot's response has two sections:
 
-1. **Required jobs** — triggered automatically when the PR is marked as ready for review (not on draft PRs). These run the basic presubmit checks:
+1. **Required jobs** — `e2e-ocp-helm` is not started on push. The pipeline controller starts it when the PR gets `lgtm`; to get results earlier, trigger it yourself. See `docs/agents/knowledge/pr-ci-and-merge.md`:
   ```
   /test e2e-ocp-helm
   ```
