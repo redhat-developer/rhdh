@@ -316,8 +316,8 @@ EOF
 
   log::success "✓ TLS secret '${secret_name}' created in namespace '${ingress_namespace}'"
 
-  # NOTE: tmpdir is preserved (FIPS_CERT_TMPDIR) for reuse in PostgreSQL and Redis cert generation
-  # It will be cleaned up at the end of fips_deployment()
+  # NOTE: tmpdir is preserved (FIPS_CERT_TMPDIR) for Redis cert generation
+  # It is removed by the cleanup EXIT trap (cleanup.sh)
 
   # Patch the default IngressController to use the custom certificate
   log::info "Patching default IngressController to use custom certificate..."
@@ -438,14 +438,11 @@ EOF
 
   log::success "✓ redis-certs secret created"
 
-  # Create Redis connection secret with TLS-enabled URL
+  # Create Redis credentials secret
   log::info "Creating Redis connection secret..."
 
   # REDIS_USERNAME_ENCODED and REDIS_PASSWORD_ENCODED already set in env_variables.sh
-  REDIS_TLS_ENABLED=$(printf "true" | base64 | tr -d '\n')
-  export REDIS_TLS_ENABLED
-
-  envsubst < "${DIR}/resources/redis-cache/redis-secret-tls.yaml" | oc apply --namespace="${namespace}" -f -
+  envsubst < "${DIR}/resources/redis-cache/redis-secret.yaml" | oc apply --namespace="${namespace}" -f -
 
   if [[ $? -ne 0 ]]; then
     log::error "Failed to create Redis secret"

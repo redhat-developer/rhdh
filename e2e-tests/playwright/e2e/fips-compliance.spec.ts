@@ -198,7 +198,7 @@ test.describe("FIPS Compliance Validation", () => {
 
       // Read CA certificate from NODE_EXTRA_CA_CERTS (contains FIPS CA + Crunchy CA)
       const caCertPath = process.env.NODE_EXTRA_CA_CERTS;
-      if (typeof caCertPath !== "string" || caCertPath === "") {
+      if (caCertPath === undefined || caCertPath === "") {
         throw new Error("NODE_EXTRA_CA_CERTS not set - required for Redis TLS verification");
       }
 
