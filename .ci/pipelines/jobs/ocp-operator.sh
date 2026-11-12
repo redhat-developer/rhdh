@@ -35,7 +35,6 @@ initiate_operator_deployments() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
-  wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 }
 
@@ -63,20 +62,19 @@ initiate_operator_deployments_osd_gcp() {
   common::save_artifact "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
-  wait_for_crunchy_crd || return 1
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 }
 
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime.
-  # Uses enableLocalDb=false with external Crunchy PostgreSQL for both runtime and schema-mode tests.
+  # Uses enableLocalDb=false with the external PostgreSQL for both runtime and schema-mode tests.
   namespace::configure "${NAME_SPACE_RUNTIME}"
 
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   local postgres_ready
   postgres_ready=false
 
-  # Set up real external PostgreSQL (Crunchy) instead of placeholder secrets.
+  # Set up the real external PostgreSQL instead of placeholder secrets.
   # Creates postgres-cred and postgres-crt secrets in NAME_SPACE_RUNTIME.
   # IMPORTANT: Must be called AFTER namespace is created but BEFORE operator deployment.
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"

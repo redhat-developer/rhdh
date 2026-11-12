@@ -156,37 +156,6 @@ save_all_pod_logs() {
   set -e
 }
 
-# ==============================================================================
-# Operator Functions - Delegate to lib/operators.sh
-# ==============================================================================
-install_subscription() { operator::install_subscription "$@"; }
-
-check_operator_status() { operator::check_status "$@"; }
-
-# Installs the Crunchy Postgres Operator
-# Args: platform ("ocp" or "k8s", default: "ocp")
-install_crunchy_postgres_operator() {
-  local platform=${1:-ocp}
-  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
-}
-
-# Waits for the Crunchy Postgres Operator to be ready
-# Args: platform ("ocp" or "k8s", default: "ocp")
-waitfor_crunchy_postgres_operator() {
-  local platform=${1:-ocp}
-  local namespace="openshift-operators"
-  [[ "$platform" == "k8s" ]] && namespace="operators"
-
-  check_operator_status 300 "$namespace" "Crunchy Postgres for Kubernetes" "Succeeded"
-  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 120 5 || return 1
-}
-
-# Backward compatibility shims
-install_crunchy_postgres_ocp_operator() { install_crunchy_postgres_operator "ocp"; }
-install_crunchy_postgres_k8s_operator() { install_crunchy_postgres_operator "k8s"; }
-waitfor_crunchy_postgres_ocp_operator() { waitfor_crunchy_postgres_operator "ocp"; }
-waitfor_crunchy_postgres_k8s_operator() { waitfor_crunchy_postgres_operator "k8s"; }
-
 # Create the postgres-cred secret in a target namespace.
 # Accepts key=value pairs as positional args for additional/override literals.
 # Usage: create_postgres_cred_secret <namespace> <host> <password> [extra_key=value ...]
@@ -202,7 +171,7 @@ create_postgres_cred_secret() {
   if ! oc create secret generic postgres-cred \
     --from-literal=POSTGRES_PASSWORD="${password}" \
     --from-literal=POSTGRES_PORT="5432" \
-    --from-literal=POSTGRES_USER="janus-idp" \
+    --from-literal=POSTGRES_USER="rhdh" \
     --from-literal=POSTGRES_HOST="${host}" \
     --from-literal=PGSSLMODE="require" \
     --from-literal=NODE_EXTRA_CA_CERTS="/opt/app-root/src/postgres-crt.pem" \
@@ -213,47 +182,106 @@ create_postgres_cred_secret() {
   fi
 }
 
+# Generate a CA and a server certificate for the external PostgreSQL Service.
+# Usage: generate_external_postgres_certs <output_dir> <service_name> <namespace>
+# Writes ca.crt, tls.crt and tls.key to output_dir.
+generate_external_postgres_certs() {
+  local out_dir=$1 service=$2 namespace=$3
+
+  openssl ecparam -name prime256v1 -genkey -noout -out "${out_dir}/ca.key" || return 1
+  openssl req -x509 -new -key "${out_dir}/ca.key" -sha256 -days 30 \
+    -subj "/O=RHDH-CI/CN=RHDH CI external PostgreSQL CA" \
+    -out "${out_dir}/ca.crt" || return 1
+
+  openssl ecparam -name prime256v1 -genkey -noout -out "${out_dir}/tls.key" || return 1
+  openssl req -new -key "${out_dir}/tls.key" -subj "/O=RHDH-CI/CN=${service}" \
+    -out "${out_dir}/tls.csr" || return 1
+  cat > "${out_dir}/tls_ext.cnf" << EOF
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = DNS:${service}, DNS:${service}.${namespace}, DNS:${service}.${namespace}.svc, DNS:${service}.${namespace}.svc.cluster.local
+EOF
+  openssl x509 -req -in "${out_dir}/tls.csr" -CA "${out_dir}/ca.crt" -CAkey "${out_dir}/ca.key" \
+    -CAcreateserial -days 30 -sha256 -extfile "${out_dir}/tls_ext.cnf" \
+    -out "${out_dir}/tls.crt" || return 1
+}
+
+# Deploy the external PostgreSQL (registry.redhat.io/rhel9/postgresql-16) with TLS
+# in NAME_SPACE_POSTGRES_DB and create the connection secrets in the given project.
 configure_external_postgres_db() {
   local project=$1
-  local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
-  local wait_interval=5
+  local db_name="postgress-external-db"
+  local db_namespace="${NAME_SPACE_POSTGRES_DB}"
+  local service="${db_name}-primary"
+  local cert_secret="${db_name}-cluster-cert"
+  local user_secret="${db_name}-pguser-rhdh"
 
-  log::info "Creating PostgresCluster in namespace ${NAME_SPACE_POSTGRES_DB}..."
+  common::require_vars "NAME_SPACE_POSTGRES_DB" "REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON" || return 1
 
-  # Validate oc apply command execution
-  if ! oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"; then
-    log::error "Failed to create PostgresCluster"
+  local cert_dir
+  cert_dir=$(mktemp -d)
+
+  # The image is pulled from registry.redhat.io, which requires authentication.
+  namespace::create_dockerconfigjson_secret "${db_namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}" || return 1
+
+  # Reuse existing certificates and credentials so a second call in the same job
+  # (release-1.10 reuses the database created for the RBAC instance when setting
+  # up the runtime namespace) does not rotate the credentials of a running
+  # database.
+  if oc get secret "${cert_secret}" -n "${db_namespace}" &> /dev/null; then
+    log::info "Reusing existing ${cert_secret} secret"
+  else
+    log::info "Generating TLS certificates for ${service}.${db_namespace}"
+    if ! generate_external_postgres_certs "${cert_dir}" "${service}" "${db_namespace}"; then
+      log::error "Failed to generate PostgreSQL TLS certificates"
+      return 1
+    fi
+    if ! oc create secret generic "${cert_secret}" \
+      --from-file=ca.crt="${cert_dir}/ca.crt" \
+      --from-file=tls.crt="${cert_dir}/tls.crt" \
+      --from-file=tls.key="${cert_dir}/tls.key" \
+      --namespace="${db_namespace}"; then
+      log::error "Failed to create ${cert_secret} secret"
+      return 1
+    fi
+  fi
+
+  if oc get secret "${user_secret}" -n "${db_namespace}" &> /dev/null; then
+    log::info "Reusing existing ${user_secret} secret"
+  elif ! oc create secret generic "${user_secret}" \
+    --from-literal=user="rhdh" \
+    --from-literal=password="$(openssl rand -hex 24)" \
+    --from-literal=postgres-password="$(openssl rand -hex 24)" \
+    --namespace="${db_namespace}"; then
+    log::error "Failed to create ${user_secret} secret"
     return 1
   fi
 
-  # Wait for cluster cert secret (usually created quickly)
-  log::info "Waiting for cluster certificate secret..."
-  if ! common::poll_until \
-    "oc get secret postgress-external-db-cluster-cert -n '${NAME_SPACE_POSTGRES_DB}'" \
-    "$max_attempts" "$wait_interval" \
-    "Cluster certificate secret found"; then
+  log::info "Deploying external PostgreSQL in namespace ${db_namespace}..."
+  if ! oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${db_namespace}"; then
+    log::error "Failed to apply external PostgreSQL resources"
     return 1
   fi
 
-  # Extract cluster certificates
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca || {
-    log::error "Failed to extract ca.crt"
+  if ! oc rollout status "statefulset/${db_name}" -n "${db_namespace}" --timeout=10m; then
+    log::error "External PostgreSQL did not become ready"
+    oc get pods -n "${db_namespace}" -o wide || true
+    oc describe pod "${db_name}-0" -n "${db_namespace}" || true
+    oc logs "${db_name}-0" -n "${db_namespace}" --all-containers --tail=100 || true
     return 1
-  }
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt || {
-    log::error "Failed to extract tls.crt"
-    return 1
-  }
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tls-key || {
-    log::error "Failed to extract tls.key"
-    return 1
-  }
+  fi
 
-  # Validate secret creation
-  if ! oc create secret generic postgress-external-db-cluster-cert \
-    --from-file=ca.crt=postgres-ca \
-    --from-file=tls.crt=postgres-tls-crt \
-    --from-file=tls.key=postgres-tls-key \
+  # Copy the certificates to the RHDH namespace (mounted by the showcase-rbac Helm values)
+  if ! oc extract "secret/${cert_secret}" -n "${db_namespace}" --to="${cert_dir}" --confirm > /dev/null; then
+    log::error "Failed to extract certificates from ${cert_secret}"
+    return 1
+  fi
+
+  if ! oc create secret generic "${cert_secret}" \
+    --from-file=ca.crt="${cert_dir}/ca.crt" \
+    --from-file=tls.crt="${cert_dir}/tls.crt" \
+    --from-file=tls.key="${cert_dir}/tls.key" \
     --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
     log::error "Failed to create cluster certificate secret"
     return 1
@@ -262,43 +290,22 @@ configure_external_postgres_db() {
   # Create postgres-crt secret for Backstage deployment (Helm/Operator)
   # This secret is referenced by rhdh-start-runtime.yaml and values-showcase-postgres.yaml
   if ! oc create secret generic postgres-crt \
-    --from-file=postgres-crt.pem=postgres-ca \
+    --from-file=postgres-crt.pem="${cert_dir}/ca.crt" \
     --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
     log::error "Failed to create postgres-crt secret"
     return 1
   fi
+  rm -rf "${cert_dir}"
 
-  # Wait for USER secret (this is the critical one that causes CI failures!)
-  log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
-  log::info "This secret is created by the Crunchy Postgres operator after the database is ready"
-  if ! common::poll_until \
-    "oc get secret postgress-external-db-pguser-janus-idp -n '${NAME_SPACE_POSTGRES_DB}'" \
-    "$max_attempts" "$wait_interval" \
-    "PostgreSQL user secret found"; then
-    log::error "This usually means the Crunchy Postgres operator failed to create the user"
-    log::info "Checking PostgresCluster status..."
-    oc describe postgrescluster postgress-external-db -n "${NAME_SPACE_POSTGRES_DB}" || true
-    log::info "Checking operator logs..."
-    oc logs -n "${NAME_SPACE_POSTGRES_DB}" -l postgres-operator.crunchydata.com/cluster=postgress-external-db --tail=50 || true
+  local pg_password pg_host
+  if ! pg_password=$(oc get secret "${user_secret}" -n "${db_namespace}" -o go-template='{{.data.password | base64decode}}') \
+    || [[ -z "${pg_password}" ]]; then
+    log::error "Failed to read the password from ${user_secret}"
     return 1
   fi
+  pg_host="${service}.${db_namespace}.svc.cluster.local"
 
-  # Wait for PostgreSQL pods to be Running (needed for schema-mode tests)
-  log::info "Waiting for PostgreSQL pods to be Running..."
-  if ! common::poll_until \
-    "oc get pods -n '${NAME_SPACE_POSTGRES_DB}' -l 'postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres' --field-selector=status.phase=Running -o name 2>/dev/null | grep -q pod/" \
-    "$max_attempts" "$wait_interval" \
-    "PostgreSQL pod is Running"; then
-    log::warn "PostgreSQL pod not Running yet; schema-mode tests may skip"
-    # Don't fail here - the database might work fine, just schema tests won't run
-  fi
-
-  # Now we can safely get the password (decode from base64 since K8s .data is always base64-encoded)
-  local pg_password pg_host
-  pg_password=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}' | base64 --decode)
-  pg_host="postgress-external-db-primary.${NAME_SPACE_POSTGRES_DB}.svc.cluster.local"
-
-  create_postgres_cred_secret "${project}" "${pg_host}" "${pg_password}"
+  create_postgres_cred_secret "${project}" "${pg_host}" "${pg_password}" || return 1
 
   log::success "External PostgreSQL database configured successfully!"
 }
@@ -398,8 +405,6 @@ cluster_setup_ocp_helm() {
   log::info "Waiting for OpenShift Pipelines to be ready..."
   k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
   k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
-
-  operator::install_postgres_ocp
 }
 
 cluster_setup_ocp_operator() {
@@ -409,15 +414,12 @@ cluster_setup_ocp_operator() {
   log::info "Waiting for OpenShift Pipelines to be ready..."
   k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
   k8s_wait::endpoint "${PIPELINES_OPERATOR_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
-
-  operator::install_postgres_ocp
 }
 
 cluster_setup_k8s_operator() {
   operator::install_olm
   # Install Tekton Pipelines for K8s deployments (AKS/EKS/GKE) for topology tests to work
   operator::install_tekton
-  # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 cluster_setup_k8s_helm() {
@@ -425,7 +427,6 @@ cluster_setup_k8s_helm() {
   log::info "Installing Tekton Pipelines for K8s Helm deployment"
   # operator::install_olm
   operator::install_tekton
-  # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 # ==============================================================================
@@ -459,14 +460,8 @@ rbac_deployment() {
 
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
-  configure_external_postgres_db "${NAME_SPACE_RBAC}"
-
-  # Wait for PostgreSQL to be fully ready before deploying RBAC instance
-  log::info "Waiting for external PostgreSQL to be ready..."
-  if ! k8s_wait::deployment "${NAME_SPACE_POSTGRES_DB}" "postgress-external-db" 10 10; then
-    log::error "PostgreSQL deployment failed to become ready"
-    return 1
-  fi
+  # Waits for the StatefulSet rollout, so the RBAC instance can connect immediately
+  configure_external_postgres_db "${NAME_SPACE_RBAC}" || return 1
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -571,7 +566,7 @@ rbac_deployment_osd_gcp() {
 
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
-  configure_external_postgres_db "${NAME_SPACE_RBAC}"
+  configure_external_postgres_db "${NAME_SPACE_RBAC}" || return 1
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"

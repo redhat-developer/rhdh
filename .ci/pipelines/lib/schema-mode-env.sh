@@ -58,24 +58,25 @@ configure_schema_mode_runtime_env() {
     done
   else
     local pdb="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
-    local crunchy_cluster="${SCHEMA_MODE_CRUNCHY_CLUSTER_NAME:-postgress-external-db}"
-    if oc get svc postgress-external-db-primary -n "${pdb}" &> /dev/null; then
+    # Name and labels deployed by resources/postgres-db/postgres.yaml
+    local external_db="postgress-external-db"
+    if oc get svc "${external_db}-primary" -n "${pdb}" &> /dev/null; then
       forward_namespace="${pdb}"
-      log::info "Schema-mode (${install_method}): no in-cluster Postgres Service in ${runtime_namespace}; using Crunchy cluster in ${pdb}"
-      local crunchy_admin_secret="${crunchy_cluster}-pguser-janus-idp"
-      if oc get secret "${crunchy_admin_secret}" -n "${pdb}" &> /dev/null; then
-        admin_password=$(oc get secret "${crunchy_admin_secret}" -n "${pdb}" -o jsonpath='{.data.password}' 2> /dev/null | base64 -d || true)
+      log::info "Schema-mode (${install_method}): no in-cluster Postgres Service in ${runtime_namespace}; using external PostgreSQL in ${pdb}"
+      local external_db_secret="${external_db}-pguser-rhdh"
+      if oc get secret "${external_db_secret}" -n "${pdb}" &> /dev/null; then
+        admin_password=$(oc get secret "${external_db_secret}" -n "${pdb}" -o jsonpath='{.data.password}' 2> /dev/null | base64 -d || true)
       fi
       if [[ -z "${admin_password}" ]]; then
-        log::warn "Schema-mode (${install_method}): could not read ${crunchy_admin_secret} password in ${pdb}; schema tests remain opt-in."
+        log::warn "Schema-mode (${install_method}): could not read ${external_db_secret} password in ${pdb}; schema tests remain opt-in."
         return 1
       fi
       postgres_service=$(oc get pods -n "${pdb}" \
-        -l "postgres-operator.crunchydata.com/cluster=${crunchy_cluster},postgres-operator.crunchydata.com/data=postgres" \
+        -l "app.kubernetes.io/name=${external_db}" \
         --field-selector=status.phase=Running \
         -o jsonpath='{.items[0].metadata.name}' 2> /dev/null)
       if [[ -z "${postgres_service}" ]]; then
-        log::warn "Schema-mode (${install_method}): no Running Postgres pod in ${pdb} for cluster ${crunchy_cluster}; schema tests remain opt-in."
+        log::warn "Schema-mode (${install_method}): no Running Postgres pod in ${pdb} for ${external_db}; schema tests remain opt-in."
         return 1
       fi
       forward_via_pod=1
@@ -101,7 +102,7 @@ configure_schema_mode_runtime_env() {
   export SCHEMA_MODE_PORT_FORWARD_RESOURCE="${pf_target}"
 
   if [[ "${forward_via_pod}" -eq 1 ]]; then
-    export SCHEMA_MODE_DB_ADMIN_USER="${SCHEMA_MODE_DB_ADMIN_USER:-janus-idp}"
+    export SCHEMA_MODE_DB_ADMIN_USER="${SCHEMA_MODE_DB_ADMIN_USER:-rhdh}"
   else
     export SCHEMA_MODE_DB_ADMIN_USER="${SCHEMA_MODE_DB_ADMIN_USER:-postgres}"
   fi

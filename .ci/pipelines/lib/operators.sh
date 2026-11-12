@@ -10,7 +10,6 @@ fi
 readonly OPERATORS_LIB_SOURCED=1
 
 # Constants
-readonly OPERATOR_STATUS_SUCCEEDED="Succeeded"
 readonly OPERATOR_NAMESPACE="openshift-operators"
 
 # Create OpenShift Operator subscription
@@ -37,39 +36,6 @@ spec:
   sourceNamespace: $source_namespace
 EOD
   return $?
-}
-
-# Monitor operator status until expected phase is reached
-# Args: timeout_seconds, namespace, operator_name, expected_status (default: "Succeeded")
-operator::check_status() {
-  local timeout=${1:-300}
-  local namespace=$2
-  local operator_name=$3
-  local expected_status=${4:-${OPERATOR_STATUS_SUCCEEDED}}
-
-  log::info "Checking the status of operator '${operator_name}' in namespace '${namespace}' with a timeout of ${timeout} seconds."
-  log::info "Expected status: ${expected_status}"
-
-  timeout "${timeout}" bash -c "
-    while true; do
-      CURRENT_PHASE=\$(oc get csv -n '${namespace}' -o jsonpath='{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}')
-      echo \"Operator '${operator_name}' current phase: \${CURRENT_PHASE}\"
-      [[ \"\${CURRENT_PHASE}\" == \"${expected_status}\" ]] && echo \"Operator '${operator_name}' is now in '${expected_status}' phase.\" && break
-      sleep 10
-    done
-  " || log::error "Timed out after ${timeout} seconds. Operator '${operator_name}' did not reach '${expected_status}' phase."
-  return $?
-}
-
-# Install Crunchy Postgres Operator from OpenShift Marketplace
-operator::install_postgres_ocp() {
-  operator::install_subscription crunchy-postgres-operator "${OPERATOR_NAMESPACE}" v5 crunchy-postgres-operator certified-operators openshift-marketplace
-  operator::check_status 300 "${OPERATOR_NAMESPACE}" "Crunchy Postgres for Kubernetes" "${OPERATOR_STATUS_SUCCEEDED}" || return 1
-
-  # Wait for PostgresCluster CRD to be registered
-  log::info "Waiting for PostgresCluster CRD to be registered..."
-  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 120 5 || return 1
-  return 0
 }
 
 # Install Red Hat OpenShift Pipelines operator if not present
