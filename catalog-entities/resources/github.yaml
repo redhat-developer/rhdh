@@ -3,7 +3,7 @@ kind: Resource
 metadata:
   name: github
   title: GitHub Showcase repository
-  description: We store our deployment manifests and code for the janus showcase in this GitHub repository.
+  description: We store our deployment manifests and code for the RHDH showcase in this GitHub repository.
   links:
     - url: https://github.com/redhat-developer/rhdh
       title: GitHub Repository
@@ -11,5 +11,5 @@ metadata:
 spec:
   type: repository
   lifecycle: production
-  owner: janus-authors
-  system: janus-idp
+  owner: rhdh-authors
+  system: rhdh-examples

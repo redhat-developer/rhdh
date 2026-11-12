@@ -67,7 +67,7 @@ data:
         ocm:
           default:
             name: openshift-local
-            owner: janus-authors
+            owner: rhdh-authors
             schedule: # optional; same options as in TaskScheduleDefinition
               # supports cron, ISO duration, "human duration" as used in code
               frequency: { minutes: 15 }

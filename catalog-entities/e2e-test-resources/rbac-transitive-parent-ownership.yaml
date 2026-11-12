@@ -4,8 +4,8 @@ metadata:
   name: mock-sub-child-site
   description: A mock site for testing RBAC permissions with includeTransitiveGroupOwnership config.
   links:
-    - title: Janus Website
-      url: https://janus-idp.io
+    - title: RHDH Repository
+      url: https://github.com/redhat-developer/rhdh
 spec:
   type: website
   lifecycle: experimental
@@ -19,8 +19,8 @@ metadata:
   name: mock-site
   description: A mock site for testing RBAC permissions with includeTransitiveGroupOwnership config.
   links:
-    - title: Janus Website
-      url: https://janus-idp.io
+    - title: RHDH Repository
+      url: https://github.com/redhat-developer/rhdh
 spec:
   type: website
   lifecycle: experimental
@@ -34,8 +34,8 @@ metadata:
   name: mock-child-site
   description: A mock site for testing RBAC permissions with includeTransitiveGroupOwnership config.
   links:
-    - title: Janus Website
-      url: https://janus-idp.io
+    - title: RHDH Repository
+      url: https://github.com/redhat-developer/rhdh
 spec:
   type: website
   lifecycle: experimental

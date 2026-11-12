@@ -58,7 +58,7 @@ Additionally, include the workflow: `generic-claim` for setup and cleanup.
   cron: 0 7 * * *
   steps:
     test:
-      - ref: janus-idp-backstage-showcase-nightly
+      - ref: redhat-developer-rhdh-ocp-helm-nightly
     workflow: generic-claim
 ```
 
