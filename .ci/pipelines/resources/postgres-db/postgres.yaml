@@ -1,6 +1,6 @@
 # External PostgreSQL used by the showcase-rbac tests. Deployed by
 # configure_external_postgres_db in utils.sh, which also creates the
-# postgress-external-db-cluster-cert, postgress-external-db-pguser-janus-idp
+# postgress-external-db-cluster-cert, postgress-external-db-pguser-rhdh
 # and rh-pull-secret secrets referenced below.
 apiVersion: v1
 kind: ConfigMap
@@ -114,17 +114,17 @@ spec:
             - name: POSTGRESQL_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgress-external-db-pguser-janus-idp
+                  name: postgress-external-db-pguser-rhdh
                   key: postgres-password
             - name: RHDH_DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: postgress-external-db-pguser-janus-idp
+                  name: postgress-external-db-pguser-rhdh
                   key: user
             - name: RHDH_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgress-external-db-pguser-janus-idp
+                  name: postgress-external-db-pguser-rhdh
                   key: password
           readinessProbe:
             exec:

@@ -349,7 +349,7 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 - Helm chart errors (invalid values, missing CRDs)
 - Pod stuck in `CrashLoopBackOff` (bad config, missing secrets, image pull failure)
 - Health check timeout (`Failed to reach Backstage after N attempts`)
-- PostgreSQL operator fails to create user secret (`postgress-external-db-pguser-janus-idp`)
+- External PostgreSQL user secret is missing (`postgress-external-db-pguser-rhdh`)
 
 **How to tell**: Search `build-log.txt` for:
 - `CrashLoopBackOff` -- pod is crash-looping

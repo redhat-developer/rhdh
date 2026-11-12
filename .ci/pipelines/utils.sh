@@ -175,7 +175,7 @@ create_postgres_cred_secret() {
   if ! oc create secret generic postgres-cred \
     --from-literal=POSTGRES_PASSWORD="${password}" \
     --from-literal=POSTGRES_PORT="5432" \
-    --from-literal=POSTGRES_USER="janus-idp" \
+    --from-literal=POSTGRES_USER="rhdh" \
     --from-literal=POSTGRES_HOST="${host}" \
     --from-literal=PGSSLMODE="require" \
     --from-literal=NODE_EXTRA_CA_CERTS="/opt/app-root/src/postgres-crt.pem" \
@@ -219,7 +219,7 @@ configure_external_postgres_db() {
   local db_namespace="${NAME_SPACE_POSTGRES_DB}"
   local service="${db_name}-primary"
   local cert_secret="${db_name}-cluster-cert"
-  local user_secret="${db_name}-pguser-janus-idp"
+  local user_secret="${db_name}-pguser-rhdh"
 
   common::require_vars "NAME_SPACE_POSTGRES_DB" "REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON" || return 1
 
@@ -254,7 +254,7 @@ configure_external_postgres_db() {
   if oc get secret "${user_secret}" -n "${db_namespace}" &> /dev/null; then
     log::info "Reusing existing ${user_secret} secret"
   elif ! oc create secret generic "${user_secret}" \
-    --from-literal=user="janus-idp" \
+    --from-literal=user="rhdh" \
     --from-literal=password="$(openssl rand -hex 24)" \
     --from-literal=postgres-password="$(openssl rand -hex 24)" \
     --namespace="${db_namespace}"; then

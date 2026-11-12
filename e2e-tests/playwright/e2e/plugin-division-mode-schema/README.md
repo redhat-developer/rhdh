@@ -49,7 +49,7 @@ The test spec starts `oc port-forward` in `beforeAll` (similar to [`verify-redis
 
 When the runtime namespace has no Bitnami `*-postgresql` Service, auto-discovery uses the external PostgreSQL StatefulSet in `NAME_SPACE_POSTGRES_DB` (see [`postgres.yaml`](../../../../.ci/pipelines/resources/postgres-db/postgres.yaml)):
 
-- Admin password from `postgress-external-db-pguser-janus-idp`
+- Admin password from `postgress-external-db-pguser-rhdh`
 - Forward target is the Running pod labeled `app.kubernetes.io/name=postgress-external-db`
 - The names match the StatefulSet deployed by `postgres.yaml`; there is no override
 
