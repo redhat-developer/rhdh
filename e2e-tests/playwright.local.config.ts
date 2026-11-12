@@ -2,8 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 import {
   backendWebServer,
-  harnessConfigArgs,
-  harnessProcessEnv,
+  frontendUrl,
+  frontendWebServer,
   harnessReporters,
   isCI,
 } from "./playwright/support/local-harness-servers";
@@ -31,8 +31,6 @@ import {
  * JSON /healthcheck (proxied by packages/app) plus the global-header dynamic plugin
  * mirror production RHDH.
  */
-
-const frontendUrl = "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./playwright",
@@ -82,17 +80,5 @@ export default defineConfig({
   expect: {
     timeout: 15 * 1000,
   },
-  webServer: [
-    backendWebServer(),
-    {
-      command: `backstage-cli package start ${harnessConfigArgs()}`,
-      cwd: "../packages/app",
-      env: harnessProcessEnv,
-      url: frontendUrl,
-      reuseExistingServer: !isCI,
-      timeout: 240 * 1000,
-      stdout: "pipe",
-      stderr: "pipe",
-    },
-  ],
+  webServer: [backendWebServer(), frontendWebServer()],
 });

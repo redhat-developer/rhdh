@@ -105,6 +105,8 @@ export default defineConfig({
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        // Local-harness only (APP_DEFAULT_LANGUAGE=fr); see playwright.local-default-language.config.ts
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -125,6 +127,7 @@ export default defineConfig({
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/verify-redis-cache.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -156,6 +159,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -182,6 +186,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -206,6 +211,8 @@ export default defineConfig({
     {
       name: PW_PROJECT.ANY_TEST,
       testMatch: "**/*.spec.ts",
+      // Local-harness only (APP_DEFAULT_LANGUAGE=fr); see playwright.local-default-language.config.ts
+      testIgnore: ["**/playwright/e2e/default-language.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,
