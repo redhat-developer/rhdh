@@ -51,6 +51,10 @@ fips_deployment() {
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
+  # FIPS-only app-config (Redis TLS cache), loaded after app-config-rhdh via extraAppConfig
+  common::create_configmap_from_file "app-config-rhdh-fips" "${NAME_SPACE}" \
+    "app-config-rhdh-fips.yaml" "${DIR}/resources/config_map/app-config-rhdh-fips.yaml"
+
   # Merge base values with the FIPS environment overrides.
   helm::merge_values "overwrite" \
     "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \

@@ -20,15 +20,17 @@ appConfig:
             $file: /opt/app-root/src/postgres-key.key
           cert:
             $file: /opt/app-root/src/postgres-crt.pem
-    cache:
-      store: redis
-      connection: rediss://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis:6379
-      useRedisSets: false
-      # Redis TLS configuration
-      tlsOptions:
-        rejectUnauthorized: true
-        ca:
-          $file: /opt/app-root/src/redis-ca.pem
+
+# Redis TLS cache config lives in app-config-rhdh-fips.yaml: appConfig is loaded
+# BEFORE extraAppConfig, so app-config-rhdh.yaml's plain redis:// would win here.
+# Arrays are replaced, so the base list is restated in full.
+extraAppConfig:
+  - configMapRef: app-config-rhdh
+    filename: app-config-rhdh.yaml
+  - configMapRef: dynamic-plugins-config
+    filename: dynamic-plugins-config.yaml
+  - configMapRef: app-config-rhdh-fips
+    filename: app-config-rhdh-fips.yaml
 
 extraEnv:
   # disable telemetry in CI

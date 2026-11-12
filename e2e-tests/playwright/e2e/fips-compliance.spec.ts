@@ -214,13 +214,23 @@ test.describe("FIPS Compliance Validation", () => {
       };
 
       console.log("[FIPS] Connecting to Redis with TLS...");
-      redis = new Redis(redisUrl, redisOptions);
+      const client = new Redis(redisUrl, redisOptions);
+      redis = client;
 
       // Verify connection with PING
-      const response = await redis.ping();
+      const response = await client.ping();
       console.log(`[FIPS] Redis PING response: ${response}`);
 
       expect(response).toBe("PONG");
+
+      // Redis only accepts TLS (--port 0), so any key present was written by
+      // the RHDH backend over TLS. An empty DB means RHDH is not using the cache.
+      await expect
+        .poll(() => client.dbsize(), {
+          message: "RHDH backend should write cache entries to Redis over TLS",
+          timeout: 60_000,
+        })
+        .toBeGreaterThan(0);
     } finally {
       if (redis?.status === "ready") {
         redis.disconnect();
