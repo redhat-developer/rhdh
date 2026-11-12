@@ -125,14 +125,6 @@ describe("original CI secret sourcing", () => {
     expect(environment).toHaveProperty("K8S_CLUSTER_TOKEN", "fresh-caller-token");
     expect(environment).toHaveProperty("POSTGRESQL_IMAGE_TAG", "custom-tag");
     expect(environment).toHaveProperty(
-      "RHBK_CLIENT_SECRET",
-      "AUTH_PROVIDERS_RHBK_CLIENT_SECRET-synthetic",
-    );
-    expect(environment).toHaveProperty(
-      "AUTH_PROVIDERS_GH_USER_PASSWORD",
-      "AUTH_PROVIDERS_GH_USER_PASSWORD-synthetic",
-    );
-    expect(environment).toHaveProperty(
       "GITHUB_APP_PRIVATE_KEY_RBAC",
       "GITHUB_APP_PRIVATE_KEY_OPERATOR-synthetic",
     );

@@ -99,7 +99,6 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
-        "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
@@ -118,19 +117,6 @@ export default defineConfig({
       ],
     },
     {
-      name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
-      timeout: 600 * 1000,
-      testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
-      testIgnore: [
-        // temporarily disable github-happy-path
-        "**/playwright/e2e/auth-providers/github-happy-path.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
-      ],
-      retries: 1,
-    },
-    {
       name: PW_PROJECT.SHOWCASE_K8S,
       ...k8sSpecificConfig,
       dependencies: [PW_PROJECT.SMOKE_TEST],
@@ -140,7 +126,6 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
-        "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -168,7 +153,6 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
-        "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",

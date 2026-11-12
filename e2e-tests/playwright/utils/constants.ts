@@ -1,6 +1,3 @@
-export const NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE =
-  /Login failed;u caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver./u;
-
 /**
  * CI/CD Environment variable patterns used for conditional test execution
  * Based on OpenShift CI and Prow environment variables

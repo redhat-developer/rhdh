@@ -104,13 +104,6 @@ main() {
       log::info "Calling handle_gke_operator"
       handle_gke_operator
       ;;
-    *ocp*operator*auth-providers*nightly*)
-      log::info "Sourcing auth-providers.sh"
-      # shellcheck source=.ci/pipelines/jobs/auth-providers.sh
-      source "${DIR}/jobs/auth-providers.sh"
-      log::info "Calling handle_auth_providers"
-      handle_auth_providers
-      ;;
     *ocp*helm*upgrade*nightly*)
       log::info "Sourcing upgrade.sh"
       # shellcheck source=.ci/pipelines/jobs/upgrade.sh

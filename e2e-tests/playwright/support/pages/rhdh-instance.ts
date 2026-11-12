@@ -1,6 +1,6 @@
 import { Page, expect } from "@playwright/test";
 
-import { APIHelper } from "../../utils/api-helper";
+import { getGitHubPRs } from "../../utils/api-helper";
 import * as verification from "../../utils/ui-helper/verification";
 import { RHDH_INSTANCE_TABLE } from "../selectors/rhdh-instance-table";
 
@@ -9,7 +9,7 @@ export class RhdhInstance {
   constructor(private readonly page: Page) {}
 
   static getRhdhPullRequests(state: "open" | "closed" | "all", paginated = false) {
-    return APIHelper.getGitHubPRs("redhat-developer", "rhdh", state, paginated);
+    return getGitHubPRs("redhat-developer", "rhdh", state, paginated);
   }
 
   async clickNextPage() {

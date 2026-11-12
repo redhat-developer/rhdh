@@ -1,4 +1,3 @@
-import { type UserEntity } from "@backstage/catalog-model";
 import { type APIResponse } from "@playwright/test";
 
 interface GitHubPullRequestFile {
@@ -36,10 +35,6 @@ export function isGitHubPullRequestFile(value: unknown): value is GitHubPullRequ
     "raw_url" in value &&
     typeof value.raw_url === "string"
   );
-}
-
-export function isUserEntity(value: unknown): value is UserEntity {
-  return isEntityMetadataResponse(value) && "kind" in value && value.kind === "User";
 }
 
 export function parseJsonResponse(response: APIResponse): Promise<unknown> {
