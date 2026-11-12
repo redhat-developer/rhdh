@@ -106,6 +106,19 @@ jobs:
           path: e2e-tests/playwright-report-local
           retention-days: 7
 
+      - name: Run cluster-free E2E (defaultLanguage fr)
+        if: ${{ !cancelled() }}
+        working-directory: ./e2e-tests
+        run: yarn e2e:local:default-language
+
+      - name: Upload Playwright report (defaultLanguage fr)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report-local-default-language
+          path: e2e-tests/playwright-report-local-default-language
+          retention-days: 7
+
   plugin-sanity:
     name: plugin-sanity
     runs-on: ubuntu-latest

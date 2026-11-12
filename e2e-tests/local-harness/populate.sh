@@ -49,7 +49,9 @@ extract_catalog_index_dpdy() {
   oci_dir="$(mktemp -d)"
 
   echo "======= Extracting dynamic-plugins.default.yaml from ${image}"
-  skopeo copy "docker://${image}" "oci:${oci_dir}"
+  # Catalog-index images are linux/amd64 only; pin the platform on every host
+  # (macOS/arm64 and linux/arm64 otherwise have no matching manifest entry).
+  skopeo copy --override-os linux --override-arch amd64 "docker://${image}" "oci:${oci_dir}"
   for blob in "${oci_dir}"/blobs/sha256/*; do
     tar -xf "$blob" -C "${unpack_dir}/" 2>/dev/null || true
   done
@@ -88,7 +90,9 @@ mkdir -p dynamic-plugins-root
 cp "$CONFIG_SRC" dynamic-plugins.yaml
 
 if [[ -n "${CATALOG_INDEX_IMAGE:-}" ]]; then
-  sed -i "s|dynamic-plugins.default.yaml|${DPDY_INCLUDE}|" dynamic-plugins.yaml
+  # BSD sed (macOS) requires a backup suffix with -i; GNU sed accepts -i''.
+  sed -i.bak "s|dynamic-plugins.default.yaml|${DPDY_INCLUDE}|" dynamic-plugins.yaml
+  rm -f dynamic-plugins.yaml.bak
 fi
 
 npx -y "@red-hat-developer-hub/cli-module-install-dynamic-plugins@$CLI_VERSION" install dynamic-plugins-root

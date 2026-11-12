@@ -8,6 +8,7 @@ import { resolve } from "path";
 import type { PlaywrightTestConfig, ReporterDescription } from "@playwright/test";
 
 export const backendUrl = "http://localhost:7007";
+export const frontendUrl = "http://localhost:3000";
 const backendReadiness = `${backendUrl}/.backstage/health/v1/readiness`;
 export const isCI = process.env.CI !== undefined && process.env.CI !== "";
 
@@ -71,13 +72,35 @@ export const harnessConfigArgs = (extraConfigs: string[] = []): string =>
 type WebServer = Extract<NonNullable<PlaywrightTestConfig["webServer"]>, unknown[]>[number];
 
 /** Mirrors packages/backend's `start` script (--require instrumentation) — keep in sync. */
-export const backendWebServer = (extraConfigs: string[] = []): WebServer => ({
-  command: `backstage-cli package start --require ./src/instrumentation.js ${harnessConfigArgs(extraConfigs)}`,
-  cwd: "../packages/backend",
+export function backendWebServer(extraConfigs?: string[]): WebServer;
+export function backendWebServer(overrides: Partial<WebServer>): WebServer;
+export function backendWebServer(
+  extraConfigsOrOverrides: string[] | Partial<WebServer> = [],
+): WebServer {
+  const extraConfigs = Array.isArray(extraConfigsOrOverrides) ? extraConfigsOrOverrides : [];
+  const overrides = Array.isArray(extraConfigsOrOverrides) ? {} : extraConfigsOrOverrides;
+  return {
+    command: `backstage-cli package start --require ./src/instrumentation.js ${harnessConfigArgs(extraConfigs)}`,
+    cwd: "../packages/backend",
+    env: harnessProcessEnv,
+    url: backendReadiness,
+    reuseExistingServer: !isCI,
+    timeout: 180 * 1000,
+    stdout: "pipe",
+    stderr: "pipe",
+    ...overrides,
+  };
+}
+
+/** NFS app (`packages/app`) webpack/rspack dev server for the cluster-free harness. */
+export const frontendWebServer = (overrides: Partial<WebServer> = {}): WebServer => ({
+  command: `backstage-cli package start ${harnessConfigArgs()}`,
+  cwd: "../packages/app",
   env: harnessProcessEnv,
-  url: backendReadiness,
+  url: frontendUrl,
   reuseExistingServer: !isCI,
-  timeout: 180 * 1000,
+  timeout: 240 * 1000,
   stdout: "pipe",
   stderr: "pipe",
+  ...overrides,
 });
