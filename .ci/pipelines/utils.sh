@@ -276,7 +276,7 @@ configure_external_postgres_db() {
     return 1
   fi
 
-  # Copy the certificates to the RHDH namespace (mounted by the RBAC values and operator CRs)
+  # Copy the certificates to the RHDH namespace (mounted by the showcase-rbac Helm values)
   if ! oc extract "secret/${cert_secret}" -n "${db_namespace}" --to="${cert_dir}" --confirm > /dev/null; then
     log::error "Failed to extract certificates from ${cert_secret}"
     return 1

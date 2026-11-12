@@ -19,11 +19,12 @@ data:
   # TLS-only rules do not depend on the image's authentication defaults.
   # Not named *.conf on purpose: the image loads every *.conf in this
   # directory as a settings file.
+  # The unix socket is trusted for the image's start hooks; every TCP client,
+  # including oc port-forward (which arrives over loopback), needs TLS and a
+  # password. The readiness probe counts a password request as "server up".
   pg_hba.rules: |
-    local   all all              trust
-    host    all all 127.0.0.1/32 trust
-    host    all all ::1/128      trust
-    hostssl all all all          scram-sha-256
+    local   all all trust
+    hostssl all all all scram-sha-256
 ---
 apiVersion: v1
 kind: ConfigMap

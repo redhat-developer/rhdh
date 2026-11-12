@@ -314,18 +314,16 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 ### Phase 3: Cluster Setup (Prerequisites)
 
 **What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) prepares the cluster before deployment:
-- OCP jobs install no operators. The external PostgreSQL used by `showcase-rbac` is a plain StatefulSet (see [postgres.yaml](../../.ci/pipelines/resources/postgres-db/postgres.yaml))
+- OCP jobs need no cluster setup. The RHDH operator (operator jobs only) is installed later, in Phase 4
 - AKS/EKS/GKE jobs install Tekton Pipelines for the topology tests (see [operators.sh](../../.ci/pipelines/lib/operators.sh))
 
 **What can go wrong**:
 - Tekton webhook deployment not ready (Kubernetes jobs only)
-- External PostgreSQL StatefulSet not becoming ready (image pull, TLS secret, PVC)
 
 **How to tell**: Search `build-log.txt` for:
 - `Tekton` or `pipeline` related errors early in the log
-- `External PostgreSQL did not become ready`
 
-**Action**: Usually infrastructure -- re-trigger. If a recent change touched the database setup, investigate compatibility.
+**Action**: Usually infrastructure -- re-trigger. If a recent change touched the operator installation, investigate compatibility.
 
 ### Phase 4: RHDH Deployment
 
@@ -349,7 +347,7 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 - Helm chart errors (invalid values, missing CRDs)
 - Pod stuck in `CrashLoopBackOff` (bad config, missing secrets, image pull failure)
 - Health check timeout (`Failed to reach Backstage after N attempts`)
-- External PostgreSQL user secret is missing (`postgress-external-db-pguser-rhdh`)
+- External PostgreSQL for `showcase-rbac` not ready (image pull from `registry.redhat.io`, PVC, TLS secret)
 
 **How to tell**: Search `build-log.txt` for:
 - `CrashLoopBackOff` -- pod is crash-looping
@@ -417,7 +415,7 @@ Same as OCP nightly but deploys RHDH using the Operator instead of Helm. See [`o
 **Key differences**:
 - Installs RHDH Operator and waits for `backstages.rhdh.redhat.com` CRD (300s timeout)
 - Uses Backstage CR (`rhdh-start.yaml`) instead of Helm release
-- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with the external PostgreSQL
+- Runtime config tests enabled, including `pluginDivisionMode: schema` tests against the PostgreSQL the operator deploys in the runtime namespace (not the `showcase-rbac` external DB)
 
 ### OCP PR Check (`ocp-pull`)
 
