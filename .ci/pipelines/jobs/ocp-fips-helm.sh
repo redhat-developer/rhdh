@@ -238,8 +238,8 @@ fips_configure_custom_ca_ingress() {
 
   # Verify required environment variables
   if [[ -z "${FIPS_ROOT_CA_CERT:-}" ]] || [[ -z "${FIPS_ROOT_CA_KEY:-}" ]]; then
-    log::warning "FIPS_ROOT_CA_CERT or FIPS_ROOT_CA_KEY not set - skipping custom CA configuration"
-    return 0
+    log::error "FIPS_ROOT_CA_CERT or FIPS_ROOT_CA_KEY not set - required for FIPS job"
+    return 1
   fi
 
   if [[ -z "${K8S_CLUSTER_ROUTER_BASE:-}" ]]; then

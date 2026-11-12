@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:6.2
+          image: registry.redhat.io/rhel9/redis-7:latest
           ports:
             - containerPort: 6379
           resources:
