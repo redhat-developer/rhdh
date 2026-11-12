@@ -65,8 +65,9 @@ configure_schema_mode_runtime_env() {
     done
   else
     local pdb="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
-    local external_db="${SCHEMA_MODE_EXTERNAL_DB_NAME:-postgress-external-db}"
-    if oc get svc postgress-external-db-primary -n "${pdb}" &> /dev/null; then
+    # Name and labels deployed by resources/postgres-db/postgres.yaml
+    local external_db="postgress-external-db"
+    if oc get svc "${external_db}-primary" -n "${pdb}" &> /dev/null; then
       forward_namespace="${pdb}"
       log::info "Schema-mode (${install_method}): no in-cluster Postgres Service in ${runtime_namespace}; using external PostgreSQL in ${pdb}"
       local external_db_secret="${external_db}-pguser-janus-idp"

@@ -7,10 +7,23 @@ kind: ConfigMap
 metadata:
   name: postgress-external-db-config
 data:
+  # Merged into the image-generated postgresql.conf on every start.
   ssl.conf: |
     ssl = on
     ssl_cert_file = '/opt/app-root/src/certs/tls.crt'
     ssl_key_file = '/opt/app-root/src/certs/tls.key'
+    # The PostgreSQL 18 default (X25519:prime256v1) is not FIPS-approved
+    ssl_groups = 'prime256v1'
+    hba_file = '/opt/app-root/src/postgresql-cfg/pg_hba.rules'
+  # Replaces the image-generated pg_hba.conf instead of rewriting it, so the
+  # TLS-only rules do not depend on the image's authentication defaults.
+  # Not named *.conf on purpose: the image loads every *.conf in this
+  # directory as a settings file.
+  pg_hba.rules: |
+    local   all all              trust
+    host    all all 127.0.0.1/32 trust
+    host    all all ::1/128      trust
+    hostssl all all all          scram-sha-256
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -18,9 +31,9 @@ metadata:
   name: postgress-external-db-start
 data:
   rhdh-setup.sh: |
-    # Sourced by the image's run-postgresql after the server starts locally.
-    # Only accept TLS connections over the network.
-    sed -i -E 's/^host([[:space:]]+all[[:space:]]+all[[:space:]]+all[[:space:]]+md5)/hostssl\1/' "${PGDATA}/pg_hba.conf"
+    # Sourced by the image's run-postgresql on every start, while the server is
+    # listening on the unix socket only. TLS and authentication are configured
+    # by the pg_hba.rules/ssl.conf keys of postgress-external-db-config.
     psql -v ON_ERROR_STOP=1 -v user="${RHDH_DB_USER}" -v password="${RHDH_DB_PASSWORD}" << 'EOSQL'
     SELECT format('CREATE ROLE %I', :'user') WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'user') \gexec
     ALTER ROLE :"user" WITH LOGIN SUPERUSER PASSWORD :'password';

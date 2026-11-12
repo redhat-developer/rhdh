@@ -311,22 +311,21 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 
 **Action**: Usually transient -- re-trigger. If the Dockerfile or GitHub Actions workflow changed recently, check the [workflow runs](https://github.com/redhat-developer/rhdh/actions/workflows/push-e2e-runner.yaml) to verify the image was built and pushed successfully.
 
-### Phase 3: Cluster Setup (Operators and Prerequisites)
+### Phase 3: Cluster Setup (Prerequisites)
 
-**What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) installs required operators and infrastructure (see [operators.sh](../../.ci/pipelines/lib/operators.sh)):
-- OpenShift Pipelines (Tekton) operator
+**What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) prepares the cluster before deployment:
+- OCP jobs install no operators. The external PostgreSQL used by `showcase-rbac` is a plain StatefulSet (see [postgres.yaml](../../.ci/pipelines/resources/postgres-db/postgres.yaml))
+- AKS/EKS/GKE jobs install Tekton Pipelines for the topology tests (see [operators.sh](../../.ci/pipelines/lib/operators.sh))
 
 **What can go wrong**:
-- Operator installation timeout (OperatorHub/Marketplace issues)
-- CRD not becoming available
-- Tekton webhook deployment not ready
+- Tekton webhook deployment not ready (Kubernetes jobs only)
+- External PostgreSQL StatefulSet not becoming ready (image pull, TLS secret, PVC)
 
 **How to tell**: Search `build-log.txt` for:
-- `Failed to install subscription`
-- Timeout waiting for operator CRDs
 - `Tekton` or `pipeline` related errors early in the log
+- `External PostgreSQL did not become ready`
 
-**Action**: Usually infrastructure -- re-trigger. If operators were recently upgraded, investigate compatibility.
+**Action**: Usually infrastructure -- re-trigger. If a recent change touched the database setup, investigate compatibility.
 
 ### Phase 4: RHDH Deployment
 

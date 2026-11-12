@@ -229,8 +229,10 @@ configure_external_postgres_db() {
   # The image is pulled from registry.redhat.io, which requires authentication.
   namespace::create_dockerconfigjson_secret "${db_namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}" || return 1
 
-  # Reuse existing certificates and credentials so a second call (e.g. upgrade
-  # jobs) does not break the running database.
+  # Reuse existing certificates and credentials so a second call in the same job
+  # (release-1.10 reuses the database created for the RBAC instance when setting
+  # up the runtime namespace) does not rotate the credentials of a running
+  # database.
   if oc get secret "${cert_secret}" -n "${db_namespace}" &> /dev/null; then
     log::info "Reusing existing ${cert_secret} secret"
   else
@@ -275,13 +277,10 @@ configure_external_postgres_db() {
   fi
 
   # Copy the certificates to the RHDH namespace (mounted by the RBAC values and operator CRs)
-  local file
-  for file in ca.crt tls.crt tls.key; do
-    if ! oc get secret "${cert_secret}" -n "${db_namespace}" -o jsonpath="{.data.${file//./\\.}}" | base64 --decode > "${cert_dir}/${file}"; then
-      log::error "Failed to extract ${file} from ${cert_secret}"
-      return 1
-    fi
-  done
+  if ! oc extract "secret/${cert_secret}" -n "${db_namespace}" --to="${cert_dir}" --confirm > /dev/null; then
+    log::error "Failed to extract certificates from ${cert_secret}"
+    return 1
+  fi
 
   if ! oc create secret generic "${cert_secret}" \
     --from-file=ca.crt="${cert_dir}/ca.crt" \
@@ -301,10 +300,14 @@ configure_external_postgres_db() {
   rm -rf "${cert_dir}"
 
   local pg_password pg_host
-  pg_password=$(oc get secret "${user_secret}" -n "${db_namespace}" -o jsonpath='{.data.password}' | base64 --decode)
+  if ! pg_password=$(oc get secret "${user_secret}" -n "${db_namespace}" -o go-template='{{.data.password | base64decode}}') \
+    || [[ -z "${pg_password}" ]]; then
+    log::error "Failed to read the password from ${user_secret}"
+    return 1
+  fi
   pg_host="${service}.${db_namespace}.svc.cluster.local"
 
-  create_postgres_cred_secret "${project}" "${pg_host}" "${pg_password}"
+  create_postgres_cred_secret "${project}" "${pg_host}" "${pg_password}" || return 1
 
   log::success "External PostgreSQL database configured successfully!"
 }
@@ -444,14 +447,8 @@ rbac_deployment() {
 
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
-  configure_external_postgres_db "${NAME_SPACE_RBAC}"
-
-  # Wait for PostgreSQL to be fully ready before deploying RBAC instance
-  log::info "Waiting for external PostgreSQL to be ready..."
-  if ! k8s_wait::deployment "${NAME_SPACE_POSTGRES_DB}" "postgress-external-db" 10 10; then
-    log::error "PostgreSQL deployment failed to become ready"
-    return 1
-  fi
+  # Waits for the StatefulSet rollout, so the RBAC instance can connect immediately
+  configure_external_postgres_db "${NAME_SPACE_RBAC}" || return 1
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -556,7 +553,7 @@ rbac_deployment_osd_gcp() {
 
   namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RBAC}"
-  configure_external_postgres_db "${NAME_SPACE_RBAC}"
+  configure_external_postgres_db "${NAME_SPACE_RBAC}" || return 1
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"

@@ -49,9 +49,9 @@ The test spec starts `oc port-forward` in `beforeAll` (similar to [`verify-redis
 
 When the runtime namespace has no Bitnami `*-postgresql` Service, auto-discovery uses the external PostgreSQL StatefulSet in `NAME_SPACE_POSTGRES_DB` (see [`postgres.yaml`](../../../../.ci/pipelines/resources/postgres-db/postgres.yaml)):
 
-- Admin password from `${SCHEMA_MODE_EXTERNAL_DB_NAME:-postgress-external-db}-pguser-janus-idp`
-- Forward target is the Running pod labeled `app.kubernetes.io/name=${SCHEMA_MODE_EXTERNAL_DB_NAME:-postgress-external-db}`
-- Override the name with `SCHEMA_MODE_EXTERNAL_DB_NAME` if your StatefulSet name differs
+- Admin password from `postgress-external-db-pguser-janus-idp`
+- Forward target is the Running pod labeled `app.kubernetes.io/name=postgress-external-db`
+- The names match the StatefulSet deployed by `postgres.yaml`; there is no override
 
 Set `DEBUG_SCHEMA_MODE_PF=1` to log port-forward output.
 
@@ -67,7 +67,7 @@ The tests include built-in retry logic to handle transient port-forward instabil
 
 - Automatic retry with exponential backoff for transient connection failures
 - Automatic port-forward restart when connection is refused (port-forward crashed)
-- SSL fallback for PostgreSQL servers requiring encrypted connections (the external PostgreSQL only accepts TLS)
+- SSL fallback for PostgreSQL servers requiring encrypted connections (the external PostgreSQL requires TLS for every network connection)
 
 ## Local / ClusterBot Runs
 
