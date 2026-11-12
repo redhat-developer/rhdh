@@ -14,31 +14,29 @@
 
 name: Update Backstage
 
-env:
-  TURBO_SCM_BASE: ${{ github.sha }}
-
-# enforce only one release action per release branch at a time
+# Serialize issue creation across every ref in this repository.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 on:
   workflow_dispatch:
     inputs:
       release:
-        description: 'Backstage release version (e.g., 1.2.3)'
+        description: 'Backstage release version (e.g., 1.2.3). Do not combine with pattern.'
         required: false
       pattern:
         description: |
-          Specify a glob pattern to select packages for upgrade (e.g., `@{backstage,backstage-community}/*`).
+          Specify a glob pattern to select packages for upgrade. Do not combine with release.
+          For example, `@{backstage,backstage-community}/*`.
           To update all Backstage-related packages, use `@{backstage,backstage-community,janus-idp,roadiehq,immobiliarelabs,pagerduty,parfuemerie-douglas}/*`.
         required: false
   schedule:
     - cron: "15 3 * * WED" # Every Wednesday at 3:15 AM
 
 jobs:
-  create-pr:
-    name: Create PR
+  create-issue:
+    name: Create upgrade issue
     runs-on: ubuntu-latest
 
     steps:
@@ -48,65 +46,152 @@ jobs:
         with:
           app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
           private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-issues: write
 
-      - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: '.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        uses: backstage/actions/yarn-install@0d281eb2e96927466db49d4cd01d52b14809a66b # v0.7.10
-        with:
-          cache-prefix: ${{ runner.os }}-v20
-
-      - name: Run versons:bump script
+      - name: Create Backstage upgrade issue
         env:
-          INPUT_RELEASE: ${{ inputs.release }}
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
           INPUT_PATTERN: ${{ inputs.pattern }}
+          INPUT_RELEASE: ${{ inputs.release }}
         run: |
-          RELEASE_ARG=""
-          PATTERN_ARG=""
-          if [[ -n "$INPUT_RELEASE" ]]; then
-            RELEASE_ARG="--release $INPUT_RELEASE"
-          fi
-          if [[ -n "$INPUT_PATTERN" ]]; then
-            PATTERN_ARG="--pattern $INPUT_PATTERN"
-          fi
-          yarn versions:bump $RELEASE_ARG $PATTERN_ARG
+          set -euo pipefail
 
-      - name: Determine PR details
-        id: pr-details
-        env:
-          INPUT_RELEASE: ${{ inputs.release }}
-          INPUT_PATTERN: ${{ inputs.pattern }}
-        run: |
-          if [[ -n "$INPUT_RELEASE" ]]; then
-            echo "commit_message=feat: update Backstage to $INPUT_RELEASE" >> $GITHUB_OUTPUT
-            echo "branch=dependencies/backstage-$INPUT_RELEASE" >> $GITHUB_OUTPUT
-          elif [[ -n "$INPUT_PATTERN" ]]; then
-            sanitized_branch=$(echo "$INPUT_PATTERN" | tr -d '@{}*' | tr '/' '-' | tr ',' '.')
-            # Remove trailing hyphen if present
-            sanitized_branch=${sanitized_branch%-*}
-            echo "commit_message=feat: update Backstage plugins dependencies with pattern $INPUT_PATTERN" >> $GITHUB_OUTPUT
-            echo "branch=dependencies/${sanitized_branch}" >> $GITHUB_OUTPUT
+          if [[ -n "$INPUT_RELEASE" && -n "$INPUT_PATTERN" ]]; then
+            echo "release and pattern are mutually exclusive" >&2
+            exit 1
+          fi
+
+          release=$INPUT_RELEASE
+          if [[ -z "$release" && -z "$INPUT_PATTERN" ]]; then
+            release_data=$(curl -fsSL --retry 3 --max-time 60 --proto =https \
+              https://api.github.com/repos/backstage/backstage/releases/latest)
+            if ! release=$(jq -er '
+              select(.draft == false and .prerelease == false)
+              | .tag_name
+              | select(type == "string")
+              | capture("^v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)$").version
+            ' <<< "$release_data"); then
+              echo "Latest Backstage release metadata must contain a stable vX.Y.Z tag" >&2
+              exit 1
+            fi
+
+            # Read main directly: this workflow does not need a checkout or dependencies.
+            current_release=$(gh api "repos/$GITHUB_REPOSITORY/contents/backstage.json?ref=main" \
+              --jq '.content | @base64d | fromjson | .version')
+            if [[ ! "$current_release" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Invalid Backstage version in main's backstage.json: $current_release" >&2
+              exit 1
+            fi
+            if jq -en --arg current "$current_release" --arg latest "$release" '
+              def version: split(".") | map(tonumber);
+              ($current | version) >= ($latest | version)
+            ' > /dev/null; then
+              echo "Backstage $current_release is already at or newer than $release; skipping"
+              exit 0
+            fi
+          fi
+
+          release_notes=""
+          issue_state=open
+          if [[ -n "$release" ]]; then
+            title="Upgrade Backstage to $release"
+            release_notes="Release notes: https://github.com/backstage/backstage/releases/tag/v${release#v}"
+            # Completed or declined release requests must not be recreated every week.
+            issue_state=all
           else
-            echo "commit_message=feat: update Backstage to the latest version" >> $GITHUB_OUTPUT
-            echo "branch=dependencies/backstage-latest" >> $GITHUB_OUTPUT
+            title="Upgrade Backstage dependencies matching $INPUT_PATTERN"
           fi
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-          commit-message: ${{ steps.pr-details.outputs.commit_message }}
-          title: ${{ steps.pr-details.outputs.commit_message }}
-          branch: ${{ steps.pr-details.outputs.branch }}
-          base: main
-          signoff: true
-          sign-commits: true
+          release_display=${release:-latest stable release}
+          pattern=${INPUT_PATTERN:-all Backstage packages}
+          request_key=$(
+            printf 'release=%s\npattern=%s\n' "$release" "$INPUT_PATTERN" |
+              sha256sum |
+              cut -d ' ' -f 1
+          )
+          request_marker="<!-- backstage-upgrade-request:$request_key -->"
+
+          ensure_label() {
+            local name=$1
+            local description=$2
+            local color=$3
+            gh label create "$name" \
+              --repo "$GITHUB_REPOSITORY" \
+              --description "$description" \
+              --color "$color" \
+              --force
+          }
+
+          ensure_label \
+            backstage-upgrade \
+            "Backstage dependency upgrade handled by Fullsend" \
+            "1D76DB"
+          ensure_label \
+            backstage-upgrade-automation \
+            "Backstage upgrade request created by automation" \
+            "BFDADC"
+
+          existing_issue=$(
+            gh issue list \
+              --repo "$GITHUB_REPOSITORY" \
+              --state "$issue_state" \
+              --label backstage-upgrade-automation \
+              --limit 1000 \
+              --json body,number,state |
+              jq -r --arg marker "$request_marker" \
+                'first(.[] | select(.body | contains($marker)) | [.number, .state] | @tsv) // empty'
+          )
+          if [[ -n "$existing_issue" ]]; then
+            read -r issue_number existing_state <<< "$existing_issue"
+            if [[ "$existing_state" == "CLOSED" ]]; then
+              echo "Release request already closed: https://github.com/$GITHUB_REPOSITORY/issues/$issue_number"
+              exit 0
+            fi
+            gh issue edit "$issue_number" \
+              --repo "$GITHUB_REPOSITORY" \
+              --add-label backstage-upgrade,backstage-upgrade-automation
+            echo "Reconciled existing request: https://github.com/$GITHUB_REPOSITORY/issues/$issue_number"
+            exit 0
+          fi
+
+          body=$(mktemp)
+          trap 'rm -f "$body"' EXIT
+          cat > "$body" <<EOF
+          $request_marker
+          <!-- issue-template: backstage-upgrade.yml -->
+          ## Backstage release
+
+          $release_display
+
+          $release_notes
+
+          ## Dependency pattern
+
+          $pattern
+
+          ## Start the upgrade
+
+          Creating this issue does not start an upgrade automatically.
+          A maintainer can start it via Fullsend by posting a new comment on this issue containing \`/fs-code\`.
+
+          ## Implementation
+
+          Use \`/rhdh-backstage-upgrade\` to update this RHDH checkout from \`main\`. Follow the skill's RHDH monorepo path, preserve this repository's dependency range conventions, complete the required migrations, and run every repository-specific verification check before opening the pull request.
+
+          ## Completion criteria
+
+          - [ ] The requested Backstage dependencies are updated.
+          - [ ] Required source migrations are complete.
+          - [ ] The verification commands required by \`/rhdh-backstage-upgrade\` pass.
+          - [ ] The pull request links this issue.
+          EOF
+
+          issue_url=$(gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$title" \
+            --body-file "$body" \
+            --label backstage-upgrade \
+            --label backstage-upgrade-automation)
+
+          echo "Created $issue_url"
