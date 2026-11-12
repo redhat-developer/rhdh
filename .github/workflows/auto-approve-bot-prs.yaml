@@ -19,6 +19,8 @@ name: Auto-Approve Bot PRs
 #   update-versions.yaml and update-dynamic-plugins-default.yaml push with)
 # - Branch name matches specific patterns (base image updates, version bumps, etc.)
 # - Adds lgtm and approved labels if not present
+# - [skip-e2e] PRs from rhdh-bot get skip-e2e instead of lgtm (see the
+#   "Mark ci/pipeline-gate" step), so e2e-ocp-helm never starts
 #
 # pull_request_target runs this file from the *base* branch, so every release-*
 # line needs the same debounce. updateBaseImages.sh opens the PR on the first
@@ -39,7 +41,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
-  statuses: write
+  checks: read
 
 jobs:
   auto-approve:
@@ -111,17 +113,22 @@ jobs:
           echo "HEAD unchanged for ${DEBOUNCE_SECONDS}s: ${CURRENT_SHA}"
           echo "stable=true" >> "$GITHUB_OUTPUT"
 
-      # Approval adds lgtm, and lgtm makes the OpenShift CI pipeline controller
-      # run e2e-ocp-helm, which claims a cluster before the job sees [skip-e2e].
-      # Override the context first: /override records a successful ProwJob on
-      # this HEAD, so the controller finds e2e already done and starts nothing.
-      # /override only accepts a failed or pending context, hence the pending
-      # status. If the override does not land (rhdh-bot not authorized, Prow
-      # slow), approve anyway: the job then runs and exits on [skip-e2e] as before.
-      - name: Override e2e-ocp-helm for [skip-e2e] PRs
+      # In LGTM mode the OpenShift CI pipeline controller starts e2e-ocp-helm
+      # when lgtm is added, and the job claims a cluster before it sees
+      # [skip-e2e]. So [skip-e2e] PRs from rhdh-bot do not get lgtm: rhdh-bot
+      # marks the required ci/pipeline-gate check green for this HEAD, and the
+      # PR gets a skip-e2e label instead, which a Tide query in openshift/release
+      # (author rhdh-bot + label skip-e2e) merges on. The command names the HEAD,
+      # so the controller rejects it if the PR has moved. If the gate does not
+      # turn green, fall back to lgtm: the job then runs and exits on [skip-e2e].
+      # rhdh-gh-app[bot] PRs always take the lgtm path; the Tide query only
+      # matches rhdh-bot.
+      - name: Mark ci/pipeline-gate for [skip-e2e] PRs
+        id: skip-e2e
         if: >-
           steps.check-eligibility.outputs.eligible == 'true' &&
           steps.debounce.outputs.stable == 'true' &&
+          github.event.pull_request.user.login == 'rhdh-bot' &&
           contains(github.event.pull_request.title, '[skip-e2e]')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -129,44 +136,44 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          CONTEXT="ci/prow/e2e-ocp-helm"
-
-          e2e_state() {
-            gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" \
-              --jq ".statuses[] | select(.context == \"${CONTEXT}\") | .state"
+          gate_conclusion() {
+            gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs?check_name=ci/pipeline-gate" \
+              --jq '[.check_runs[] | select(.app.slug == "openshift-merge-bot")][0].conclusion // ""'
           }
 
-          if [[ "$(e2e_state)" == "success" ]]; then
-            echo "${CONTEXT} is already successful on ${HEAD_SHA}."
-            exit 0
+          if [[ "$(gate_conclusion)" != "success" ]]; then
+            GH_TOKEN="${BOT_TOKEN}" gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+              --body "/pipeline mark-pipeline-gate ${HEAD_SHA}"
+            for _ in $(seq 1 12); do
+              sleep 10
+              if [[ "$(gate_conclusion)" == "success" ]]; then
+                break
+              fi
+            done
           fi
 
-          gh api "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
-            -f state=pending -f context="${CONTEXT}" \
-            -f description="[skip-e2e] bot PR: waiting for /override" >/dev/null
-
-          GH_TOKEN="${BOT_TOKEN}" gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-            --body "/override ${CONTEXT}"
-
-          for _ in $(seq 1 12); do
-            sleep 15
-            if [[ "$(e2e_state)" == "success" ]]; then
-              # Give the pipeline controller's ProwJob cache time to see the override.
-              sleep 15
-              echo "${CONTEXT} overridden on ${HEAD_SHA}."
-              exit 0
-            fi
-          done
-          echo "::warning::${CONTEXT} was not overridden within 3 minutes; approving anyway, so e2e-ocp-helm will run and exit on [skip-e2e]."
+          if [[ "$(gate_conclusion)" == "success" ]]; then
+            echo "ci/pipeline-gate is green on ${HEAD_SHA}; labelling skip-e2e instead of lgtm."
+            echo "gate-marked=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::ci/pipeline-gate was not marked within 2 minutes; falling back to lgtm, so e2e-ocp-helm will run and exit on [skip-e2e]."
+          fi
 
       - name: Add required labels and approve PR
         if: steps.check-eligibility.outputs.eligible == 'true' && steps.debounce.outputs.stable == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          GATE_MARKED: ${{ steps.skip-e2e.outputs.gate-marked }}
         run: |
+          # skip-e2e when the pipeline gate was marked above, otherwise lgtm
+          MERGE_LABEL="lgtm"
+          if [[ "$GATE_MARKED" == "true" ]]; then
+            MERGE_LABEL="skip-e2e"
+          fi
+
           # Add the required labels if not already present
-          gh pr edit "$PR_NUMBER" --add-label "lgtm,approved" --repo "$GITHUB_REPOSITORY"
+          gh pr edit "$PR_NUMBER" --add-label "${MERGE_LABEL},approved" --repo "$GITHUB_REPOSITORY"
 
           # Auto-approve the PR
           gh pr review "$PR_NUMBER" \
@@ -176,4 +183,4 @@ jobs:
 
           This PR has been automatically approved by the auto-approve workflow.
 
-          **Labels Added:** \`lgtm\`, \`approved\`"
+          **Labels Added:** \`${MERGE_LABEL}\`, \`approved\`"
