@@ -322,16 +322,10 @@ ENV NPM_CONFIG_ignore-scripts='true'
 ENV SEGMENT_WRITE_KEY=mUr49Tkld5bj1lFFPxxqHrAzkQMRINvF
 ENV SEGMENT_TEST_MODE=false
 
-# RHIDP-2217: corporate proxy support (configured using 'global-agent' for 'node-fetch' calls and 'undici' for 'fetch' calls)
-# This is to avoid having to define several environment variables for the same purpose,
-# i.e, GLOBAL_AGENT_HTTP(S)_PROXY (for 'global-agent') and the conventional HTTP(S)_PROXY (honored by other libraries like Axios).
-# By setting GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE to an empty value,
-# 'global-agent' will use the same HTTP_PROXY, HTTPS_PROXY and NO_PROXY environment variables.
-ENV GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE=''
-
 # RHDHBUGS-106,RHIDP-4646: requests to the loopback interface should bypass the corporate proxy if set.
-# Note that NO_PROXY will take effect only if the 'HTTP(S)_PROXY' environment variables are set.
-# Users can still override this when running the image.
+# NO_PROXY is honored for outbound Node traffic only when adopters enable proxying
+# (NODE_USE_ENV_PROXY=1 with HTTP_PROXY/HTTPS_PROXY). This image default does not turn proxying on.
+# Users can still override NO_PROXY when running the image.
 ENV NO_PROXY='localhost,127.0.0.1'
 
 # The `--no-node-snapshot` node option enables the usage of the backstage scaffolder on nodejs 20+

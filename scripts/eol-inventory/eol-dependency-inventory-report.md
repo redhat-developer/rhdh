@@ -5,40 +5,40 @@ How to run: [README.md](./README.md).
 
 - **Unmaintained:** no release in 18 months, or npm deprecated
 - **Impact:** high / medium / low — lookup of usage vs outdatedness, not a CVE score. See [README.md](./README.md).
-- **Totals (CSV):** unmaintained: 124 · OK: 1721 · unknown: 0
+- **Totals (CSV):** unmaintained: 113 · OK: 1790 · unknown: 2
 - Plugin workspace tables omit overlay `devDependencies` (those rows stay in the CSV).
 - Workspace non-OK counts are not additive; the same package can appear in more than one workspace.
 
 ## Contents
 
-- [RHDH core](#rhdh-core) — 13 non-OK
+- [RHDH core](#rhdh-core) — 14 non-OK
 - Plugin workspaces
   - [adoption-insights](#adoption-insights) — 2 non-OK
   - [analytics](#analytics) — 0 non-OK
   - [app-defaults](#app-defaults) — 0 non-OK
-  - [backstage](#backstage) — 32 non-OK
-  - [bulk-import](#bulk-import) — 2 non-OK
-  - [cost-management](#cost-management) — 20 non-OK
+  - [backstage](#backstage) — 36 non-OK
+  - [bulk-import](#bulk-import) — 3 non-OK
+  - [cost-management](#cost-management) — 5 non-OK
   - [extensions](#extensions) — 3 non-OK
   - [global-header](#global-header) — 0 non-OK
   - [homepage](#homepage) — 1 non-OK
   - [intelligent-assistant](#intelligent-assistant) — 1 non-OK
   - [keycloak](#keycloak) — 0 non-OK
   - [orchestrator](#orchestrator) — 6 non-OK
-  - [pingidentity](#pingidentity) — 1 non-OK
+  - [pingidentity](#pingidentity) — 0 non-OK
   - [quickstart](#quickstart) — 0 non-OK
   - [rbac](#rbac) — 1 non-OK
   - [roadie-backstage-plugins](#roadie-backstage-plugins) — 1 non-OK
   - [scaffolder-backend-module-kubernetes](#scaffolder-backend-module-kubernetes) — 0 non-OK
   - [scaffolder-backend-module-regex](#scaffolder-backend-module-regex) — 0 non-OK
-  - [scaffolder-relation-processor](#scaffolder-relation-processor) — 0 non-OK
+  - [scaffolder-relation-processor](#scaffolder-relation-processor) — 2 non-OK
   - [scorecard](#scorecard) — 1 non-OK
-  - [tech-radar](#tech-radar) — 5 non-OK
+  - [tech-radar](#tech-radar) — 4 non-OK
   - [topology](#topology) — 2 non-OK
 
 ## RHDH core
 
-unmaintained: 13 · OK: 158 · unknown: 0
+unmaintained: 12 · OK: 164 · unknown: 2
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -53,15 +53,16 @@ unmaintained: 13 · OK: 158 · unknown: 0
 | medium | unmaintained | `app` | `material-icons` | 1.13.14 | runtime-prod | 2025-02-12 |
 | medium | unmaintained | `root` | `refractor@npm:3.6.0/prismjs` | ^1.30.0 | runtime-prod | 2025-03-10 |
 | low | unmaintained | `app` | `@types/zen-observable` | 0.8.7 | test-only | 2023-11-22 |
-| low | unmaintained | `backend` | `@types/global-agent` | 2.1.3 | test-only | 2025-02-21 |
 | low | unmaintained | `root` | `husky` | 8.0.3 | build | 2024-11-18 |
+| low | unknown | `root` | `@backstage/core-components@npm:^0.18.13` | patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch | runtime-prod | — |
+| low | unknown | `root` | `@backstage/core-components@npm:^0.18.14` | patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch | runtime-prod | — |
 
 ## Plugin workspaces
 
 ### adoption-insights
 
 Support: generally-available
-unmaintained: 2 · OK: 39 · unknown: 0
+unmaintained: 2 · OK: 41 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -78,14 +79,14 @@ _All OK._
 ### app-defaults
 
 Support: generally-available
-unmaintained: 0 · OK: 35 · unknown: 0
+unmaintained: 0 · OK: 44 · unknown: 0
 
 _All OK._
 
 ### backstage
 
 Support: generally-available, tech-preview
-unmaintained: 32 · OK: 314 · unknown: 0
+unmaintained: 36 · OK: 310 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -100,6 +101,7 @@ unmaintained: 32 · OK: 314 · unknown: 0
 | high | unmaintained | `backstage-plugin-techdocs-module-addons-contrib` | `@material-ui/core` | ^4.12.2 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-plugin-auth-backend-module-github-provider` | `passport-github2` | ^0.1.12 | runtime-prod | 2020-03-27 |
 | high | unmaintained | `backstage-plugin-auth-backend-module-gitlab-provider` | `passport-gitlab2` | ^5.0.0 | runtime-prod | 2019-02-10 |
+| high | unmaintained | `backstage-plugin-kubernetes-backend` | `@aws-crypto/sha256-js` | ^5.0.0 | runtime-prod | 2023-10-16 |
 | high | unmaintained | `backstage-plugin-kubernetes-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `backstage-plugin-kubernetes-backend` | `node-fetch` | ^2.7.0 | runtime-prod | 2023-07-25 |
 | high | unmaintained | `backstage-plugin-notifications` | `react-relative-time` | ^0.0.9 | runtime-prod | 2023-09-02 |
@@ -116,8 +118,11 @@ unmaintained: 32 · OK: 314 · unknown: 0
 | medium | unmaintained | `backstage-plugin-auth-backend-module-guest-provider` | `passport-oauth2` | ^1.7.0 | runtime-prod | 2024-02-02 |
 | medium | unmaintained | `backstage-plugin-auth-backend-module-microsoft-provider` | `passport-microsoft` | ^1.0.0 | runtime-prod | 2024-04-25 |
 | medium | unmaintained | `backstage-plugin-auth-backend-module-oidc-provider` | `passport` | ^0.7.0 | runtime-prod | 2023-11-27 |
-| medium | unmaintained | `backstage-plugin-kubernetes-backend` | `@aws-crypto/sha256-js` | ^5.0.0 | runtime-prod | 2023-10-16 |
+| medium | unmaintained | `backstage-plugin-catalog-backend-module-github` | `git-url-parse` | ^15.0.0 | runtime-prod | 2025-04-15 |
 | medium | unmaintained | `backstage-plugin-notifications` | `notistack` | ^3.0.1 | runtime-prod | 2025-01-18 |
+| medium | unmaintained | `backstage-plugin-scaffolder-backend-module-github` | `octokit-plugin-create-pull-request` | ^5.0.0 | runtime-prod | 2025-04-14 |
+| medium | unmaintained | `backstage-plugin-techdocs` | `git-url-parse` | ^15.0.0 | runtime-prod | 2025-04-15 |
+| medium | unmaintained | `backstage-plugin-techdocs-module-addons-contrib` | `git-url-parse` | ^15.0.0 | runtime-prod | 2025-04-15 |
 | medium | unmaintained | `backstage-plugin-techdocs-module-addons-contrib` | `photoswipe` | ^5.3.7 | runtime-prod | 2024-05-24 |
 | low | unmaintained | `backstage-plugin-kubernetes-backend` | `@types/http-proxy-middleware` | ^1.0.0 | test-only | 2021-03-08 |
 | low | unmaintained | `backstage-plugin-kubernetes-backend` | `@jest-mock/express` | ^2.0.1 | test-only | 2025-02-03 |
@@ -125,17 +130,18 @@ unmaintained: 32 · OK: 314 · unknown: 0
 ### bulk-import
 
 Support: generally-available
-unmaintained: 2 · OK: 47 · unknown: 0
+unmaintained: 3 · OK: 46 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
 | high | unmaintained | `red-hat-developer-hub-backstage-plugin-bulk-import-backend` | `just-kebab-case` | 4.2.0 | runtime-prod | 2022-12-17 |
 | medium | unmaintained | `red-hat-developer-hub-backstage-plugin-bulk-import-backend` | `ajv-formats` | ^3.0.1 | runtime-prod | 2024-03-30 |
+| medium | unmaintained | `red-hat-developer-hub-backstage-plugin-bulk-import-backend` | `git-url-parse` | ^14.0.0 | runtime-prod | 2025-04-15 |
 
 ### cost-management
 
 Support: tech-preview
-unmaintained: 20 · OK: 33 · unknown: 0
+unmaintained: 5 · OK: 48 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -144,26 +150,11 @@ unmaintained: 20 · OK: 33 · unknown: 0
 | high | unmaintained | `cost-management` | `@material-ui/icons` | ^4.9.1 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `cost-management-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `cost-management-backend` | `node-fetch` | ^2.6.7 | runtime-prod | 2023-07-25 |
-| medium | unmaintained | `cost-management` | `victory-area` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-bar` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-box-plot` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-chart` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-core` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-create-container` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-cursor-container` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-group` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-legend` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-line` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-pie` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-scatter` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-stack` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-tooltip` | ^37.3.4 | runtime-prod | 2025-01-14 |
-| medium | unmaintained | `cost-management` | `victory-voronoi-container` | ^37.3.4 | runtime-prod | 2025-01-14 |
 
 ### extensions
 
 Support: tech-preview
-unmaintained: 3 · OK: 50 · unknown: 0
+unmaintained: 3 · OK: 51 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -174,14 +165,14 @@ unmaintained: 3 · OK: 50 · unknown: 0
 ### global-header
 
 Support: generally-available
-unmaintained: 0 · OK: 28 · unknown: 0
+unmaintained: 0 · OK: 27 · unknown: 0
 
 _All OK._
 
 ### homepage
 
 Support: generally-available
-unmaintained: 1 · OK: 37 · unknown: 0
+unmaintained: 1 · OK: 36 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -190,7 +181,7 @@ unmaintained: 1 · OK: 37 · unknown: 0
 ### intelligent-assistant
 
 Support: generally-available
-unmaintained: 1 · OK: 39 · unknown: 0
+unmaintained: 1 · OK: 43 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -219,12 +210,10 @@ unmaintained: 6 · OK: 91 · unknown: 0
 
 ### pingidentity
 
-Support: generally-available, tech-preview
-unmaintained: 1 · OK: 14 · unknown: 0
+Support: generally-available
+unmaintained: 0 · OK: 8 · unknown: 0
 
-| Impact | Status | Plugin | Name | Version | Risk | Last publish |
-| --- | --- | --- | --- | --- | --- | --- |
-| high | unmaintained | `backstage-community-plugin-catalog-backend-module-pingidentity` | `node-fetch` | ^2.6.7 | runtime-prod | 2023-07-25 |
+_All OK._
 
 ### quickstart
 
@@ -268,9 +257,12 @@ _All OK._
 ### scaffolder-relation-processor
 
 Support: tech-preview
-unmaintained: 0 · OK: 13 · unknown: 0
+unmaintained: 2 · OK: 11 · unknown: 0
 
-_All OK._
+| Impact | Status | Plugin | Name | Version | Risk | Last publish |
+| --- | --- | --- | --- | --- | --- | --- |
+| medium | unmaintained | `bcp-ctlg-backend-mod-scaffolder-relation-processor` | `git-url-parse` | ^16.1.0 | runtime-prod | 2025-04-15 |
+| medium | unmaintained | `bcp-ctlg-backend-mod-scaffolder-relation-processor` | `octokit-plugin-create-pull-request` | ^6.0.1 | runtime-prod | 2025-04-14 |
 
 ### scorecard
 
@@ -279,18 +271,17 @@ unmaintained: 1 · OK: 94 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
-| high | unmaintained | `rhdh-backstage-plugin-scorecard-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
+| high | unmaintained | `rhdh-bsp-scorecard-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
 
 ### tech-radar
 
 Support: generally-available
-unmaintained: 5 · OK: 20 · unknown: 0
+unmaintained: 4 · OK: 21 · unknown: 0
 
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
 | high | unmaintained | `backstage-community-plugin-tech-radar` | `@material-ui/core` | ^4.12.2 | runtime-prod | 2022-04-03 |
 | high | unmaintained | `backstage-community-plugin-tech-radar` | `@material-ui/icons` | ^4.9.1 | runtime-prod | 2022-04-03 |
-| high | unmaintained | `backstage-community-plugin-tech-radar` | `d3-force` | ^3.0.0 | runtime-prod | 2021-06-05 |
 | high | unmaintained | `backstage-community-plugin-tech-radar-backend` | `express-promise-router` | ^4.1.0 | runtime-prod | 2021-11-30 |
 | high | unmaintained | `backstage-community-plugin-tech-radar-backend` | `node-fetch` | ^2.6.7 | runtime-prod | 2023-07-25 |
 
@@ -302,5 +293,5 @@ unmaintained: 2 · OK: 36 · unknown: 0
 | Impact | Status | Plugin | Name | Version | Risk | Last publish |
 | --- | --- | --- | --- | --- | --- | --- |
 | medium | unmaintained | `backstage-community-plugin-topology` | `classnames` | 2.x | runtime-prod | 2023-12-29 |
-| medium | unmaintained | `backstage-community-plugin-topology` | `victory` | ^37.3.6 | runtime-prod | 2025-01-14 |
+| medium | unmaintained | `backstage-community-plugin-topology` | `git-url-parse` | ^13.1.0 | runtime-prod | 2025-04-15 |
 

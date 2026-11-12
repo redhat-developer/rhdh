@@ -1,108 +1,53 @@
-# Running the Showcase application behind a corporate proxy
+# Corporate proxy configuration
 
-Out of the box, the Showcase application can be run behind a corporate proxy, by setting any of the following environment variables prior to starting the application:
+Red Hat Developer Hub uses the same Node.js proxy support as upstream Backstage. Outbound traffic goes through a proxy only when you turn it on: set `NODE_USE_ENV_PROXY=1` along with `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` on the RHDH backend (in your shell before `yarn start`, or on the backend container in a deployment). The shipped image does not enable proxying by default. It sets `NO_PROXY` to `localhost,127.0.0.1` so local loopback calls are not proxied when you do enable it.
 
-- `HTTP_PROXY`: Proxy to use for HTTP requests.
-- `HTTPS_PROXY`: Proxy to use for HTTPS requests.
+## Documentation
 
-Additionally, you can set the `NO_PROXY` environment variable to exclude certain domains from proxying. The value is a comma or space-separated list of hostnames that do not require a proxy to get reached, even if one is specified.
+These guides explain the variables and how to configure production installs. The Red Hat document includes Helm and Operator steps.
 
-## Understanding the `NO_PROXY` exclusion rules
+- Node.js: [Enterprise network configuration (proxy)](https://nodejs.org/en/learn/http/enterprise-network-configuration)
+- Backstage: [Running Backstage behind a Corporate Proxy](https://backstage.io/docs/tutorials/corporate-proxy/)
+- Red Hat: [Run RHDH behind a corporate proxy](https://github.com/redhat-developer/red-hat-developers-documentation-rhdh/blob/main/assemblies/configure_configuring-rhdh/assembly-run-rhdh-behind-a-corporate-proxy.adoc)
 
-`NO_PROXY` is a comma or space-separated list of hostnames or IP addresses, optionally with port numbers. If the input URL matches any of the entries listed in `NO_PROXY`, then that URL will be fetched by a direct request (i.e., bypassing the proxy settings).
+What follows is specific to **this repo**: running from source locally and optional ways to test behind a proxy.
 
-Note that the default value for `NO_PROXY` in the container image is `localhost,127.0.0.1`. If you want to override it, please make sure to also include at least `localhost` or `localhost:7007` in the list; otherwise, the Backend might not work correctly.
+## Local development with `yarn`
 
-Matching follows the rules below:
+Behind a proxy, export the variables below, then start the backend:
 
-- `NO_PROXY=*` will bypass the proxy for all requests.
-- Space and commas may be used to separate the entries in the `NO_PROXY` list. For example, `NO_PROXY=localhost,example.com`, `NO_PROXY="localhost example.com"`, or `NO_PROXY="localhost, example.com"` would have the same effect.
-- If `NO_PROXY` does not contain any entries, then all requests will be sent through the proxy if the `HTTP(S)_PROXY` settings are configured. Otherwise, requests will be fetched directly.
-- No DNS lookup is performed to decide if a request should bypass the proxy or not. For example, if DNS is known to resolve `example.com` to `1.2.3.4`, setting `NO_PROXY=1.2.3.4` will not have any effect on requests sent to `example.com`. Only requests explicitly sent to the IP address `1.2.3.4` will bypass the proxy.
-- If a port is added after the host name or IP Address, then the input request must match both the host/IP and port in order to bypass the proxy. For example, `NO_PROXY=example.com:1234` would exclude requests to `http(s)://example.com:1234` (so calling them directly), but not requests to other ports like `http(s)://example.com` (which will be sent through the proxy).
-- If no port is specified after the host name or IP address, all requests to that host/IP address will bypass the proxy regardless of the port. For example, `NO_PROXY=localhost` would exclude all requests sent to `localhost` (so calling them directly), like `http(s)://localhost:7077` and `http(s)://localhost:8888`.
-- IP Address blocks in CIDR notation will not work. So setting `NO_PROXY=10.11.0.0/16` will not have any effect, even if a request is explicitly sent to an IP address in that block.
-- Only IPv4 addresses are supported. IPv6 addresses like `::1` will not work.
-- Generally, the proxy is only bypassed if the host name is an exact match for an entry in the `NO_PROXY` list. The only exceptions are entries that start with a dot (`.`) or with a wildcard (`*`). In such a case, the proxy is bypassed if the host name ends with the entry. Please note that you should list both the domain and the wildcard domain if you want to exclude a domain and all its subdomains. For example, you would set `NO_PROXY=example.com,.example.com` to bypass the proxy for requests sent to `http(s)://example.com` and `http(s)://subdomain.example.com`.
-
-## Helm deployment
-
-You can set the proxy information in your Helm `values` file, like so:
-
-```yaml
-upstream:
-  backstage:
-    extraEnvVars:
-      # Proxy to use for HTTP requests
-      - name: HTTP_PROXY
-        value: '<my_http_proxy_url>'
-      # Proxy to use for HTTPS requests
-      - name: HTTPS_PROXY
-        value: '<my_https_proxy_url>'
-      - name: NO_PROXY
-        # List of comma-separated URLs that should be excluded from proxying.
-        # Make sure you include 'localhost'.
-        # Example: 'localhost,foo.com,baz.com'
-        value: '<my_no_proxy_settings>'
+```shell
+export NODE_USE_ENV_PROXY=1
+export HTTP_PROXY=http://localhost:3128
+export HTTPS_PROXY=http://localhost:3128
+export NO_PROXY='localhost,127.0.0.1'
+yarn start
 ```
 
-<details>
-<summary>Example</summary>
+<!-- markdown-link-check-disable-next-line -->
+To run a local Squid proxy for testing:
 
-```yaml
-# --- Truncated ---
-upstream:
-  backstage:
-    extraEnvVars:
-      - name: HTTP_PROXY
-        value: 'http://10.10.10.105:3128'
-      - name: HTTPS_PROXY
-        value: 'http://10.10.10.106:3128'
-      - name: NO_PROXY
-        value: 'localhost,example.org'
+```shell
+podman container run --rm --name squid-container \
+  -e TZ=UTC \
+  -p 3128:3128 \
+  -it registry.redhat.io/rhel9/squid:latest
 ```
 
-</details>
+## Logging
 
-## Operator deployment
+For verbose outbound HTTP logging, set `NODE_DEBUG=fetch`. See [Node.js debugging](https://nodejs.org/api/cli.html#node_debugmodule).
 
-You can set the proxy information in your Custom Resource, like so:
+## Testing
 
-```yaml
-spec:
-  application:
-    extraEnvs:
-      envs:
-        # Proxy to use for HTTP requests
-        - name: HTTP_PROXY
-          value: '<my_http_proxy_url>'
-        # Proxy to use for HTTPS requests
-        - name: HTTPS_PROXY
-          value: '<my_https_proxy_url>'
-        - name: NO_PROXY
-          # List of comma-separated URLs that should be excluded from proxying.
-          # Make sure you include 'localhost'.
-          # Example: 'localhost,foo.com,baz.com'
-          value: '<my_no_proxy_settings>'
-```
+Put RHDH in an environment where the internet is reachable only through a proxy, then check that catalog and integrations work with the proxy variables set and break or fail without them.
 
-<details>
-<summary>Example</summary>
+### With Compose
 
-```yaml
-spec:
-  # --- Truncated ---
-  application:
-    extraEnvs:
-      envs:
-        - name: HTTP_PROXY
-          value: 'http://10.10.10.105:3128'
-        - name: HTTPS_PROXY
-          value: 'http://10.10.10.106:3128'
-        - name: NO_PROXY
-          value: 'localhost,example.org'
-```
+Use [`rhdh-local`](https://github.com/redhat-developer/rhdh-local) with `podman-compose` or Docker Compose. Steps are in [Corporate Proxy Setup](https://github.com/redhat-developer/rhdh-local/blob/main/docs/rhdh-local-guide/corporate-proxy-setup-sim.md).
 
-</details>
+### On a cluster
 
-**NOTE**: Instead of specifying the proxy settings in each Custom Resource, you can edit the Operator default configuration once. To do so, look for a `ConfigMap` named `backstage-default-config` in the namespace where the Operator is deployed (typically `backstage-system` or `rhdh-operator`). Then edit the `deployment.yaml` key by adding the `HTTP(S)_PROXY` and `NO_PROXY` environment variables to the containers listed in this Deployment spec.
+You can recreate the same idea on Kubernetes or OpenShift: run Squid (or another HTTP proxy) in one namespace, run RHDH and its database in another, and use [network policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) so application pods cannot reach the internet except via DNS, the proxy, and other pods in their own namespace. Set `HTTP_PROXY` and `HTTPS_PROXY` to the in-cluster proxy URL, set `NODE_USE_ENV_PROXY=1`, and list hosts that must bypass the proxy in `NO_PROXY`. On OpenShift, allow traffic from the ingress/router if you test through a Route.
+
+Exact YAML depends on your cluster. For production Helm or Operator settings, use the Red Hat document linked above.
