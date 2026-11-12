@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi10/nodejs-24
-FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1793854619@sha256:57212ff4d61b69442054ba664b9801d0c9368310417847e86bcdc644e46e1e29 AS skeleton
+FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1794296068@sha256:4678d7a58d8cd4aee921fb66e894e525853dd26c6ddab43d51a04ae5698b139a AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -241,7 +241,7 @@ RUN rm -rf \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi10/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1793706601@sha256:835b92ddef05d7929ca1db0272f4eda24b84df964dafe7b559fe09ce40a1c0b0 AS runner
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1794201704@sha256:b32886dede141ace3e470c3fc106e10d28265de98b72fe408636123860fc2d33 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -265,6 +265,8 @@ COPY --from=build /usr/bin/openssl /usr/bin/openssl
 # RHDHBUGS-2799: custom policy.json file with a specific identity mapping for pulls against registry.access.redhat.com/rhdh
 # For some reason, Skopeo would fail otherwise with "Source image rejected: None of the signatures were accepted"
 COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/policy.json /etc/containers/policy.json
+# RHDHBUGS-4080: configure the signature lookaside for registry.access.redhat.com so Skopeo can verify images
+COPY $EXTERNAL_SOURCE_NESTED/build/containerfiles/registries.d/registry.access.redhat.com.yaml /etc/containers/registries.d/registry.access.redhat.com.yaml
 
 # Production app tree from cleanup stage (excludes monorepo sources/build artifacts)
 COPY --from=cleanup --chown=1001:1001 "$CONTAINER_SOURCE"/ ./

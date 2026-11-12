@@ -15,12 +15,12 @@ export class SidebarPage {
 
   async openDocs(): Promise<void> {
     const lang = getCurrentLanguage();
-    await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.docs"]);
+    await navigation.openSidebar(this.page, t["plugin.app-react"][lang]["pages.Docs"]);
   }
 
   async openLearningPaths(): Promise<void> {
     const lang = getCurrentLanguage();
-    await navigation.openSidebar(this.page, t["rhdh"][lang]["menuItem.learningPaths"]);
+    await navigation.openSidebar(this.page, t["plugin.app-react"][lang]["pages.Learning Paths"]);
   }
 
   /** Opens a specific entity's TechDocs from the TechDocs index page (must call openDocs() first). */
@@ -33,14 +33,19 @@ export class SidebarPage {
     await expect(this.page).toHaveURL(/\/docs(\?|$)/u);
     // With no techdocs entities (cluster-free harness) the index renders only its
     // empty state, without the "Docs" page header.
-    const docsHeading = this.page.getByRole("heading", { name: t["rhdh"][lang]["menuItem.docs"] });
+    const docsHeading = this.page.getByRole("heading", {
+      name: t["plugin.app-react"][lang]["pages.Docs"],
+    });
     const emptyState = this.page.getByText("No documentation available", { exact: true });
     await expect(docsHeading.or(emptyState).first()).toBeVisible({ timeout: 20_000 });
   }
 
   async verifyLearningPathsHeading(): Promise<void> {
     const lang = getCurrentLanguage();
-    await verification.verifyHeading(this.page, t["rhdh"][lang]["menuItem.learningPaths"]);
+    await verification.verifyHeading(
+      this.page,
+      t["plugin.app-react"][lang]["pages.Learning Paths"],
+    );
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {

@@ -4,7 +4,7 @@ import { CatalogBrowsePage } from "../../../support/pages/catalog-browse-page";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 import { ScaffolderFlowPage } from "../../../support/pages/scaffolder-flow-page";
 import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
-import { APIHelper } from "../../../utils/api-helper";
+import { githubRequest } from "../../../utils/api-helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 import { skipIfJobName } from "../../../utils/helper";
 
@@ -111,7 +111,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   test.afterAll(async () => {
-    await APIHelper.githubRequest(
+    await githubRequest(
       "DELETE",
       GITHUB_API_ENDPOINTS.deleteRepo(reactAppDetails.repoOwner, reactAppDetails.repo),
     );

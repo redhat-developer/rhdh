@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   pollForValue,
   pollUntil,
-  pollUntilStable,
   sleep,
   waitForNextTotpWindow,
 } from "../playwright/utils/poll-until";
@@ -88,65 +87,6 @@ describe("pollUntil", () => {
     await expect(pollUntil(() => Promise.reject(new Error("condition failed")))).rejects.toThrow(
       /condition failed/u,
     );
-  });
-});
-
-describe("pollUntilStable", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it("requires consecutive true results", async () => {
-    let calls = 0;
-    const promise = pollUntilStable(
-      () => {
-        calls += 1;
-        return Promise.resolve(true);
-      },
-      { timeoutMs: 5000, intervalMs: 500, stableChecks: 2 },
-    );
-
-    await vi.advanceTimersByTimeAsync(500);
-    await promise;
-
-    expect(calls).toBe(2);
-  });
-
-  it("resets the consecutive counter when the condition becomes false", async () => {
-    const results = [true, false, true, true];
-    let index = 0;
-    let calls = 0;
-    const promise = pollUntilStable(
-      () => {
-        calls += 1;
-        return Promise.resolve(results[index++]);
-      },
-      { timeoutMs: 5000, intervalMs: 500, stableChecks: 2 },
-    );
-
-    await vi.advanceTimersByTimeAsync(500);
-    await vi.advanceTimersByTimeAsync(500);
-    await vi.advanceTimersByTimeAsync(500);
-    await promise;
-
-    expect(calls).toBe(4);
-  });
-
-  it("times out when stability is never reached", async () => {
-    const promise = pollUntilStable(() => Promise.resolve(true), {
-      timeoutMs: 1000,
-      intervalMs: 500,
-      stableChecks: 5,
-    });
-
-    const rejection = expect(promise).rejects.toThrow(/Condition not met within 1000ms/u);
-    await vi.advanceTimersByTimeAsync(500);
-    await vi.advanceTimersByTimeAsync(500);
-    await rejection;
   });
 });
 
