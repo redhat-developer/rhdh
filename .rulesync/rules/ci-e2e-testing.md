@@ -2,7 +2,6 @@
 root: false
 targets:
   - '*'
-globs: []
 ---
 # RHDH (Red Hat Developer Hub) Repository Context
 
@@ -96,13 +95,7 @@ test.beforeAll(async ({ }, testInfo) => {
    - `playwright.config.ts` via TypeScript import (`e2e-tests/playwright/projects.ts`)
    - CI/CD scripts via `.ci/pipelines/playwright-projects.sh` (exports as `$PW_PROJECT_*` variables)
 
-3. **Authentication Provider Tests** (`showcase-auth-providers`)
-   - OIDC (Red Hat Backstage Keycloak)
-   - Microsoft OAuth2
-   - GitHub authentication
-   - LDAP (Active Directory)
-
-4. **Plugin Tests** (`playwright/e2e/plugins/`)
+3. **Plugin Tests** (`playwright/e2e/plugins/`)
    - RBAC (Role-Based Access Control)
    - Kubernetes actions
    - Notifications
@@ -188,9 +181,6 @@ yarn showcase-operator-rbac        # Operator showcase tests with RBAC
 yarn showcase-runtime              # Runtime configuration tests
 yarn showcase-upgrade              # Upgrade scenario tests
 
-# Authentication provider tests
-yarn showcase-auth-providers       # Auth provider tests
-
 # Plugin tests
 yarn showcase-sanity-plugins       # Plugin sanity tests
 
@@ -257,53 +247,6 @@ Playwright configuration (`e2e-tests/playwright.config.ts`):
 - **Video**: Retain on failure
 - **Screenshots**: Enabled for all tests
 - **Trace**: Retain on failure
-
-### Key Differences: showcase-auth-providers vs Other Showcase Projects
-
-The `showcase-auth-providers` project has several significant differences from other showcase projects, particularly in deployment and configuration:
-
-#### **Namespace and Release Management**
-- **Other Showcase Projects**: Use standard namespace patterns (`showcase-ci-nightly`, `showcase-rbac-nightly`)
-- **showcase-auth-providers**: Uses dedicated namespace `showcase-auth-providers` and release `rhdh-auth-providers`
-- **Logging**: Dedicated logs folder: `e2e-tests/auth-providers-logs`
-
-#### **Test Retry Configuration**
-- **Other Showcase Projects**: Typically use 2 retries (CI default)
-- **showcase-auth-providers**: Configured with only 1 retry due to the complexity of authentication provider setup and teardown
-
-#### **Configuration and Deployment Approach**
-- **Other Showcase Projects**: Use Bash scripts for configuration and deployment
-- **showcase-auth-providers**: Uses TypeScript for configuration and deployment management
-- **Configuration Files**: Uses different configuration files compared to other showcase projects:
-  - `e2e-tests/playwright/e2e/auth-providers/` directory structure with TypeScript test files
-  - Dedicated values file: `.ci/pipelines/value_files/values_showcase-auth-providers.yaml`
-  - TypeScript-based test configuration instead of Bash scripts
-  - Dynamic RHDH instance management (create, update, restart, delete)
-
-#### **Required Plugins and Dependencies**
-- **Other Showcase Projects**: Standard plugin dependencies
-- **showcase-auth-providers**: Requires specific plugins exported to `dynamic-plugins-root`:
-  - `backstage-community-plugin-catalog-backend-module-keycloak-dynamic`
-  - `backstage-plugin-catalog-backend-module-github-org-dynamic`
-  - `backstage-plugin-catalog-backend-module-msgraph-dynamic`
-  - `backstage-community-plugin-rbac`
-
-#### **Authentication Provider Coverage**
-- **Other Showcase Projects**: Standard authentication testing
-- **showcase-auth-providers**: Tests multiple authentication providers:
-  - OIDC using Red Hat Backstage Keycloak (RHBK)
-  - Microsoft OAuth2 provider
-  - GitHub authentication
-  - LDAP using Active Directory (commented out)
-
-#### **Test Structure and Files**
-- **Other Showcase Projects**: Standard test file patterns
-- **showcase-auth-providers**: Dedicated test structure:
-  - `e2e-tests/playwright/e2e/auth-providers/` directory
-  - Individual test files: `oidc.spec.ts`, `microsoft.spec.ts`, `github.spec.ts`, `ldap.spec.ts`
-  - Tests verify: supported resolvers, user/group ingestion, nested groups, session token configuration
-
-These differences make `showcase-auth-providers` a specialized testing environment focused on validating authentication provider integrations rather than general RHDH functionality testing.
 
 ## CI/CD Infrastructure
 
@@ -395,16 +338,7 @@ The main script dispatches to job-specific handlers in `.ci/pipelines/jobs/`:
 - `handle_ocp_localization`: OCP Helm localization nightly tests
 - `handle_ocp_operator`: OCP Operator nightly tests (also handles OSD-GCP Operator)
 - `handle_ocp_pull`: OCP PR checks
-- `handle_auth_providers`: Auth provider tests
 - `handle_ocp_helm_upgrade`: Upgrade scenario tests
-
-#### Special Case: showcase-auth-providers Deployment
-
-The `showcase-auth-providers` project has a unique deployment workflow that differs significantly from other showcase projects:
-
-**Handler**: `handle_auth_providers()` function in `.ci/pipelines/jobs/auth-providers.sh`
-**Configuration**: Uses dedicated values file `values_showcase-auth-providers.yaml` with auth provider-specific settings
-**Test Execution**: Runs TypeScript-based tests from `e2e-tests/playwright/e2e/auth-providers/` directory
 
 ### Access and Debugging
 
@@ -434,12 +368,8 @@ console explicitly. Non-interactive stdin skips the console prompt.
 
 #### Local Debugging
 ```bash
-# Set local development flags
-export ISRUNNINGLOCAL=true
-export ISRUNNINGLOCALDEBUG=true
-
 # Run tests locally
-./local-test.sh -- --project=showcase-auth-providers --workers=1
+./local-test.sh -- --project=showcase --workers=1
 ```
 
 #### CI Debugging
@@ -511,7 +441,6 @@ brew install gnu-sed
 ### Core Documentation
 - [E2E Testing CI Documentation](docs/e2e-tests/CI.md)
 - [Dynamic Plugins Documentation](docs/dynamic-plugins/index.md)
-- [Authentication Providers README](e2e-tests/playwright/e2e/auth-providers/README.md)
 - [OpenShift CI Pipeline README](.ci/pipelines/README.md)
 
 ### Configuration Files
@@ -562,7 +491,6 @@ The choice of config map depends on the **Playwright test project** being execut
 - `showcase-localization-fr` - French localization tests
 - `showcase-localization-it` - Italian localization tests
 - `showcase-localization-ja` - Japanese localization tests
-- `showcase-auth-providers` - Authentication provider tests (uses special deployment process)
 
 #### **app-config-rhdh-rbac.yaml** (RBAC Configuration)
 
@@ -583,10 +511,6 @@ The choice of config map depends on the **Playwright test project** being execut
 2. **Check the Playwright project configuration:**
    - Projects that exclude RBAC tests (using `testIgnore` for RBAC patterns) → Use `app-config-rhdh.yaml`
    - Projects that include RBAC tests (using `testMatch` for RBAC patterns) → Use `app-config-rhdh-rbac.yaml`
-
-### **Special Cases**
-
-1. **showcase-auth-providers**: Although it uses the non-RBAC config pattern, it has its own specialized deployment process with dedicated values file (`values_showcase-auth-providers.yaml`) and TypeScript-based configuration management.
 
 ### **Configuration Deployment Process**
 

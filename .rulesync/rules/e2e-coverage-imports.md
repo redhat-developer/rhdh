@@ -5,6 +5,10 @@ targets:
 globs:
   - e2e-tests/playwright/**/*.spec.ts
   - e2e-tests/playwright/**/*.test.ts
+claudecode:
+  paths:
+    - e2e-tests/playwright/**/*.spec.ts
+    - e2e-tests/playwright/**/*.test.ts
 ---
 # E2E Coverage: Use Instrumented Imports
 

@@ -33,24 +33,6 @@ export async function pollUntil(
   throw new Error(options.label ?? `Condition not met within ${timeoutMs}ms`);
 }
 
-/** Poll until `condition` is true for `stableChecks` consecutive evaluations. */
-export async function pollUntilStable(
-  condition: () => Promise<boolean>,
-  options: PollUntilOptions & { stableChecks?: number } = {},
-): Promise<void> {
-  const stableChecks = options.stableChecks ?? 2;
-  let consecutive = 0;
-
-  await pollUntil(async () => {
-    if (await condition()) {
-      consecutive += 1;
-      return consecutive >= stableChecks;
-    }
-    consecutive = 0;
-    return false;
-  }, options);
-}
-
 /** Poll until `fn` returns a non-null value. */
 export async function pollForValue<T>(
   fn: () => Promise<T | null | undefined>,

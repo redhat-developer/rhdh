@@ -2,7 +2,6 @@
 root: false
 targets:
   - '*'
-globs: []
 ---
 # RHDH Extensions Catalog - Plugin Metadata Workflow
 

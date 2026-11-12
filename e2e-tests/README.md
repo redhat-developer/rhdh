@@ -338,19 +338,18 @@ In CI, set the `PLAYWRIGHT_GREP` environment variable (consumed by
 Log in to the target OpenShift cluster with `oc login`, or configure your Kubernetes
 kubeconfig so `kubectl cluster-info` reaches the target cluster.
 
-| Option | JOB_NAME Pattern                        | Description                             |
-| ------ | --------------------------------------- | --------------------------------------- |
-| 1      | `*pull*ocp*helm*`                       | OCP Helm PR tests                       |
-| 2      | `*ocp*helm*nightly*`                    | OCP Helm Nightly tests                  |
-| 3      | `*ocp*operator*nightly*`                | OCP Operator Nightly tests              |
-| 4      | `*ocp*helm*upgrade*nightly*`            | OCP Helm Upgrade tests                  |
-| 5      | `*ocp*operator*auth-providers*nightly*` | Auth Providers tests                    |
-| 6      | `*aks*helm*nightly*`                    | AKS Helm Nightly tests                  |
-| 7      | `*eks*helm*nightly*`                    | EKS Helm Nightly tests                  |
-| 8      | `*gke*helm*nightly*`                    | GKE Helm Nightly tests                  |
-| 9      | `*ocp*disconnected*operator*nightly*`   | Disconnected OCP Operator Nightly tests |
-| 10     | `*ocp*disconnected*helm*nightly*`       | Disconnected OCP Helm Nightly tests     |
-| 11     | Custom                                  | Enter the full Prow JOB_NAME            |
+| Option | JOB_NAME Pattern                      | Description                             |
+| ------ | ------------------------------------- | --------------------------------------- |
+| 1      | `*pull*ocp*helm*`                     | OCP Helm PR tests                       |
+| 2      | `*ocp*helm*nightly*`                  | OCP Helm Nightly tests                  |
+| 3      | `*ocp*operator*nightly*`              | OCP Operator Nightly tests              |
+| 4      | `*ocp*helm*upgrade*nightly*`          | OCP Helm Upgrade tests                  |
+| 5      | `*aks*helm*nightly*`                  | AKS Helm Nightly tests                  |
+| 6      | `*eks*helm*nightly*`                  | EKS Helm Nightly tests                  |
+| 7      | `*gke*helm*nightly*`                  | GKE Helm Nightly tests                  |
+| 8      | `*ocp*disconnected*operator*nightly*` | Disconnected OCP Operator Nightly tests |
+| 9      | `*ocp*disconnected*helm*nightly*`     | Disconnected OCP Helm Nightly tests     |
+| 10     | Custom                                | Enter the full Prow JOB_NAME            |
 
 **Other supported patterns** (use Custom option):
 

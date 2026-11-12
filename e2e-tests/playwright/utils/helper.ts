@@ -66,8 +66,8 @@ function isOperatorDeployment(): boolean {
  * Works with `oc get deploy -l` or `listNamespacedDeployment` to resolve the
  * deployment, then target pods via `oc logs deployment/<name>`.
  *
- * Generalizes the auth-providers pattern from rhdh-deployment.ts which queries
- * deployments (not pods) by `app.kubernetes.io/name` + `app.kubernetes.io/instance`.
+ * Uses `app.kubernetes.io/name` + `app.kubernetes.io/instance` labels to
+ * identify deployments (not pods).
  *
  * @returns The appropriate deployment label selector string
  */

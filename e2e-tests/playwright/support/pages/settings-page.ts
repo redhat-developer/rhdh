@@ -68,31 +68,12 @@ export class SettingsPage {
     await waitForRhdhSignInPage(this.page, { locale: getCurrentLanguage() });
   }
 
-  async verifySignInError(message: string | RegExp): Promise<void> {
-    await verification.verifyAlertErrorMessage(this.page, message);
-  }
-
   async hideQuickstartIfVisible(): Promise<void> {
     await misc.hideQuickstartIfVisible(this.page);
   }
 
   async verifyText(text: string | RegExp, exact = true): Promise<void> {
     await verification.verifyText(this.page, text, exact);
-  }
-
-  async goToPageUrl(url: string, heading?: string): Promise<void> {
-    await navigation.goToPageUrl(this.page, url, heading);
-  }
-
-  async verifyTextVisible(text: string, exact = false, timeout = 10000): Promise<void> {
-    await verification.verifyTextVisible(this.page, text, exact, timeout);
-  }
-
-  async clickButtonByText(
-    buttonText: string | RegExp,
-    options?: { exact?: boolean; timeout?: number; force?: boolean },
-  ): Promise<void> {
-    await interaction.clickButtonByText(this.page, buttonText, options);
   }
 
   async uncheckCheckbox(label: string): Promise<void> {
@@ -191,26 +172,5 @@ export class SettingsPage {
     await SETTINGS_PAGE_COMPONENTS.getBuildInfoCard(this.page)
       .getByRole("button", { name: "Show more" })
       .click();
-  }
-
-  async verifyGuestSignInMethodNotListed(): Promise<void> {
-    const signInMethodsContainer = this.page.getByRole("main");
-    const signInMethods = await signInMethodsContainer
-      .getByRole("heading", { level: 6 })
-      .allInnerTexts();
-    expect(signInMethods).not.toContain("Guest");
-  }
-
-  async verifyInactivityLogoutMessageHidden(timeout = 30_000): Promise<void> {
-    await expect(
-      this.page.getByRole("alert").filter({ hasText: "Logging out due to inactivity" }),
-    ).toBeHidden({
-      timeout,
-    });
-  }
-
-  async verifyRhdhMetadata(): Promise<void> {
-    await this.expandShowMoreSection();
-    await verification.verifyText(this.page, "RHDH Metadata");
   }
 }

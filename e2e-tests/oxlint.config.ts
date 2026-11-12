@@ -16,7 +16,6 @@ const playwrightAssertFunctions = [
   "verifyGuestProfile",
   "verifySignInPageTitle",
   "verifyProfileHeading",
-  "verifySignInError",
   "verifyQuickAccess",
   "verifyLink",
   "verifyRowsInTable",
@@ -55,7 +54,6 @@ const playwrightAssertFunctions = [
   "checkRbacResponse",
   "verifyTextInSelector",
   "verifyPartialTextInSelector",
-  "verifyTextVisible",
   "verifyLanguageToggleList",
   "verifyLanguageSelectShowsOptions",
   "verifyLanguageOptionsList",
@@ -65,9 +63,6 @@ const playwrightAssertFunctions = [
   "verifyLocalizedUserSettingsLabelsWithOwnership",
   "verifyBuildInfoCardVisible",
   "verifyBuildInfoText",
-  "verifyGuestSignInMethodNotListed",
-  "verifyInactivityLogoutMessageHidden",
-  "verifyRhdhMetadata",
   "verifyLearningPathLinksOpenInNewTab",
   "verifyMainHeadingVisible",
   "waitForEntityPath",
@@ -122,13 +117,6 @@ export default defineConfig({
     ],
   },
   overrides: [
-    {
-      files: ["playwright/e2e/auth-providers/**/*.spec.ts"],
-      rules: {
-        "typescript/strict-void-return": "off",
-        "typescript/no-misused-promises": "off",
-      },
-    },
     {
       files: ["**/*.spec.ts", "**/*.test.ts"],
       rules: {
