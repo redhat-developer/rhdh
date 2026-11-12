@@ -28,6 +28,7 @@
     "fmt:check": "oxfmt --check .",
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
     "e2e:local": "playwright test --config=playwright.local.config.ts",
+    "e2e:local:default-language": "playwright test --config=playwright.local-default-language.config.ts",
     "e2e:plugin-sanity": "playwright test --config=playwright.plugin-sanity.config.ts"
   },
   "dependencies": {

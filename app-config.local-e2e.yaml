@@ -104,7 +104,10 @@ app:
     - api:app/app-language:
         config:
           availableLanguages: [en, de, es, fr, it, ja]
-          defaultLanguage: en
+          # Override with APP_DEFAULT_LANGUAGE for the default-language harness
+          # (playwright.local-default-language.config.ts). Localization nightlies
+          # and yarn e2e:local keep the English default.
+          defaultLanguage: ${APP_DEFAULT_LANGUAGE:-en}
     # Backstage 1.54 added home-page-widget:search/search-bar on @backstage/plugin-search.
     # The RHDH homepage plugin already provides home-page-widget:homepage/search-bar; leaving
     # both enabled duplicates the Search input and fails guest-signin-happy-path.spec.ts.
