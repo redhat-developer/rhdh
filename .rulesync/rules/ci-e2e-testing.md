@@ -2,7 +2,6 @@
 root: false
 targets:
   - '*'
-globs: []
 ---
 # RHDH (Red Hat Developer Hub) Repository Context
 

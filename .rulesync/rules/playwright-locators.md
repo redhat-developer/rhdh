@@ -2,7 +2,6 @@
 root: false
 targets:
   - '*'
-globs: []
 ---
 # Playwright Locator Best Practices
 

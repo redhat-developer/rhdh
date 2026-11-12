@@ -1,8 +1,8 @@
 ---
 name: patch-backstage
-description: >-
-  Workflow to backport Backstage changes into RHDH by syncing a downstream
-  maintenance branch and generating yarn patches.
+description: Workflow to backport Backstage changes into RHDH by syncing a downstream maintenance branch and generating yarn patches.
+targets:
+  - '*'
 ---
 # RHDH Patch Generator
 

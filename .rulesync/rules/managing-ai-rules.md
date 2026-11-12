@@ -2,7 +2,6 @@
 root: false
 targets:
   - '*'
-globs: []
 ---
 # Managing AI Assistant Rules
 

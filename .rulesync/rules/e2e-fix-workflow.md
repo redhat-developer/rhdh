@@ -2,7 +2,6 @@
 root: false
 targets:
   - '*'
-globs: []
 ---
 # E2E Test Fix Workflow
 
