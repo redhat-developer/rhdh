@@ -219,6 +219,7 @@ create_postgres_cred_secret() {
 
 configure_external_postgres_db() {
   local project=$1
+  local require_running=${2:-false}
   local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
   local wait_interval=5
 
@@ -293,6 +294,10 @@ configure_external_postgres_db() {
     "oc get pods -n '${NAME_SPACE_POSTGRES_DB}' -l 'postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres' --field-selector=status.phase=Running -o name 2>/dev/null | grep -q pod/" \
     "$max_attempts" "$wait_interval" \
     "PostgreSQL pod is Running"; then
+    if [[ "${require_running}" == "true" ]]; then
+      log::error "PostgreSQL pod did not reach Running state"
+      return 1
+    fi
     log::warn "PostgreSQL pod not Running yet; schema-mode tests may skip"
     # Don't fail here - the database might work fine, just schema tests won't run
   fi
@@ -388,6 +393,7 @@ deploy_redis_cache() {
   local namespace=$1
   envsubst < "$DIR/resources/redis-cache/redis-secret.yaml" | oc apply --namespace="${namespace}" -f -
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
+  oc apply -f "$DIR/resources/redis-cache/redis-service.yaml" --namespace="${namespace}"
 }
 
 # OLM Functions - Delegate to lib/operators.sh

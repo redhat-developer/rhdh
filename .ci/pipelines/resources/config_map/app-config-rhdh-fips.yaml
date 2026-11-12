@@ -1,0 +1,12 @@
+# FIPS-only app-config, listed in extraAppConfig AFTER app-config-rhdh.yaml
+# so it overrides the plain redis:// connection defined there.
+# The object form of `connection` is passed to the underlying node-redis client.
+backend:
+  cache:
+    store: redis
+    connection:
+      url: rediss://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis:6379
+      socket:
+        tls: true
+        ca:
+          $file: /opt/app-root/src/redis-ca.pem
