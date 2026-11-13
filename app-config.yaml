@@ -142,9 +142,8 @@ backend:
 #       # Change to "false" in case of using self hosted Nexus Repository Manager instance with a self-signed certificate
 #       secure: ${NEXUS_REPOSITORY_MANAGER_SECURE}
 
-scaffolder:
-  {}
-  # see https://backstage.io/docs/features/software-templates/configuration for software template options
+# scaffolder:
+#   # see https://backstage.io/docs/features/software-templates/configuration for software template options
 
 catalog:
   import:

@@ -1,20 +1,15 @@
 import type { IconElement } from "@backstage/frontend-plugin-api";
 import { createApp } from "@backstage/frontend-defaults";
 import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
-import catalogPlugin from "@backstage/plugin-catalog/alpha";
 import catalogImportBase from "@backstage/plugin-catalog-import/alpha";
 import catalogUnprocessedEntitiesPlugin from "@backstage/plugin-catalog-unprocessed-entities/alpha";
-import searchPlugin from "@backstage/plugin-search/alpha";
-import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
 import homePagePlugin from "@backstage/plugin-home/alpha";
 
 import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
 
-import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
-import { catalogCreatedAtModule } from "./modules/catalog";
-import { rhdhScaffolderPlugin } from "./modules/scaffolder";
-import { userSettingsGeneralModule } from "./modules/user-settings";
+import { customCatalogFilterModule } from "./modules/catalog";
+import { scaffolderSelfServiceModule } from "./modules/scaffolder";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
 
@@ -31,18 +26,15 @@ const app = createApp({
   features: [
     // Upstream Backstage plugins
     homePagePlugin,
-    catalogPlugin,
-    catalogCreatedAtModule, // Created At column on catalog index
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
     catalogUnprocessedEntitiesPlugin,
-    rhdhCatalogGraphPlugin, // catalog-graph UI + scaffolderOf/scaffoldedFrom API override
-    rhdhScaffolderPlugin, // Self-service page/nav title (RHDHBUGS-3676)
-    searchPlugin,
-    userSettingsPlugin,
+    customCatalogFilterModule, // Custom OR-logic tag filter
+    // Note: @backstage/plugin-scaffolder is decoupled and NOT included in the core app bundle.
+    // It is loaded dynamically as an OCI plugin. scaffolderSelfServiceModule only sets
+    // the default RHDH page title and sidebar item to "Self-service" (RHDHBUGS-3676).
+    scaffolderSelfServiceModule,
     dynamicFrontendFeaturesLoader(),
     // RHDH modules (local to app)
-    userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
-    rhdhApisModule, // storage API
     translationsApiModule,
     rhdhTranslationsModule, // RHDH + plugin translation overrides (de, es, fr, it, ja)
     rhdhThemeModule, // RHDH light/dark themes
