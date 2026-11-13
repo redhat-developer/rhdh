@@ -15,6 +15,8 @@ readonly -a DISCONNECTED_SMOKE_PLUGIN_NAMES=(
   "red-hat-developer-hub-backstage-plugin-app-integrations"
   "red-hat-developer-hub-backstage-plugin-homepage"
   "backstage-plugin-auth-backend-module-guest-provider"
+  "red-hat-developer-hub-backstage-plugin-intelligent-assistant"
+  "red-hat-developer-hub-backstage-plugin-intelligent-assistant-backend"
 )
 # Bash cannot export arrays, so the exported helpers read this string.
 DISCONNECTED_SMOKE_PLUGIN_NAMES_STR="${DISCONNECTED_SMOKE_PLUGIN_NAMES[*]}"
@@ -196,6 +198,8 @@ disconnected::_smoke_plugin_package_var() {
     red-hat-developer-hub-backstage-plugin-app-integrations) echo "APP_INTEGRATIONS_PLUGIN_PACKAGE" ;;
     red-hat-developer-hub-backstage-plugin-homepage) echo "HOMEPAGE_PLUGIN_PACKAGE" ;;
     backstage-plugin-auth-backend-module-guest-provider) echo "GUEST_PROVIDER_PLUGIN_PACKAGE" ;;
+    red-hat-developer-hub-backstage-plugin-intelligent-assistant) echo "INTELLIGENT_ASSISTANT_PLUGIN_PACKAGE" ;;
+    red-hat-developer-hub-backstage-plugin-intelligent-assistant-backend) echo "INTELLIGENT_ASSISTANT_BACKEND_PLUGIN_PACKAGE" ;;
     *) return 1 ;;
   esac
 }
