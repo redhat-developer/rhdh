@@ -54,6 +54,10 @@ test.describe("Home page customization", () => {
   );
 
   test("Verify Customized Quick Access", async () => {
+    test.fixme(
+      process.env.IS_OPENSHIFT === "false",
+      "Requires the OpenShift-only customization provider; restore Kubernetes coverage in RHDHBUGS-4096.",
+    );
     // Expanded by default
     await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
     await homePage.verifyQuickAccess("CI/CD Tools", ["ArgoCD", "SonarQube", "Quay.io"]);
