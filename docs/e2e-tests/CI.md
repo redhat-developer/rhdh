@@ -6,10 +6,77 @@ This document provides a comprehensive overview of our Continuous Integration (C
 
 When a new Pull Request (PR) is opened at [rhdh](https://github.com/redhat-developer/rhdh), tests are triggered based on the nature of the changes and the contributor's role.
 
-### Automatic Triggering of Tests
+### How PRs Are Tested and Merged
 
-- **Code Changes Affecting Tests:** PR tests are triggered automatically if the changes include code modifications that could impact tests. This means that for PRs involving code that affects functionality or test suites, the CI will automatically initiate the testing process.
-- **Documentation-Only Changes:** PRs that involve only documentation updates will skip the tests to conserve CI resources, as they do not affect the codebase or functionality.
+The mandatory `e2e-ocp-helm` check claims an ephemeral OpenShift cluster on every run, so it does not run on every push. It is a second-stage job of the OpenShift CI [pipeline controller](https://docs.ci.openshift.org/docs/how-tos/creating-a-pipeline/), which every branch of this repo (`main` and all `release-*`) uses in **LGTM mode**: the job starts when a PR is approved, and it must pass before the PR merges.
+
+#### The Pieces
+
+| Piece                        | What it does                                                                                                                                                                                                                      |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Prow**                     | OpenShift CI's GitHub automation. It runs presubmit jobs, handles `/test`, `/lgtm`, `/approve`, `/hold` and other comment commands, and manages the matching labels.                                                              |
+| **Tide**                     | Prow's merge bot (`openshift-merge-bot`). It merges a PR once the PR matches a Tide query and its required checks are green.                                                                                                      |
+| **`lgtm` label**             | Added by an approving review or `/lgtm`, removed by any new push. Tide merges PRs that have it. In this repo it is also the signal that starts `e2e-ocp-helm`.                                                                    |
+| **Pipeline controller**      | Watches for `lgtm`. When it is added, it comments `/test e2e-ocp-helm`, unless the job already ran on this commit or the change does not need a cluster.                                                                          |
+| **`ci/pipeline-gate` check** | Published by the pipeline controller, and required for merge on every protected branch. It turns green once the controller has started the jobs that apply, or when none apply. It is per commit, so a new push needs a new gate. |
+| **`e2e-ocp-helm` check**     | The mandatory e2e job. It is not started on push, but once it has started, it must pass before merge.                                                                                                                             |
+| **Auto-approve workflow**    | [`auto-approve-bot-prs.yaml`](../../.github/workflows/auto-approve-bot-prs.yaml). It labels and approves eligible bot PRs (see [Bot PRs](#bot-prs)).                                                                              |
+| **`skip-e2e` label**         | Added only by the auto-approve workflow to `[skip-e2e]` PRs from `rhdh-bot`. Tide merges `rhdh-bot` PRs that have it without `lgtm`. It has no effect on other PRs. Do not add it by hand.                                        |
+
+#### Contributor PRs
+
+1. **Push:** the fast checks (lint, unit tests, image build and so on) run as usual. `e2e-ocp-helm` does not start. The PR cannot merge yet because `ci/pipeline-gate` is required and not reported.
+2. **Optional early run:** comment `/test e2e-ocp-helm` at any time to get e2e results before review.
+3. **Approval:** an approving review adds `lgtm`, and the pipeline controller then does one of three things:
+   - **Every changed file is docs, repository tooling, AI agent config, the cluster-free e2e harness or CI for other platforms:** it turns `ci/pipeline-gate` green and starts nothing. The `pipeline_skip_if_only_changed` pattern in the job's [openshift/release config](https://github.com/openshift/release/tree/main/ci-operator/config/redhat-developer/rhdh) lists these paths.
+   - **`e2e-ocp-helm` already ran on this commit** (for example from step 2): it turns the gate green and does not run the job again.
+   - **Otherwise:** it comments `/test e2e-ocp-helm` and turns the gate green.
+4. **Merge:** once `e2e-ocp-helm` passes (if it ran), Tide merges the PR. The job is not re-run when the base branch moves.
+5. **New push after approval:** the push removes `lgtm`, so the next approval runs `e2e-ocp-helm` again on the new commit.
+
+Draft PRs are not usually approved, so `e2e-ocp-helm` does not run on them unless someone comments `/test e2e-ocp-helm`.
+
+#### Bot PRs
+
+The auto-approve workflow handles PRs from `rhdh-bot` and `rhdh-gh-app[bot]` on `chore/automated-*` branches (base-image updates, version bumps and similar). No human is involved: the workflow approves the PR and adds the merge label, and Tide merges it.
+
+| Bot PR                                                                           | What the workflow adds                                                                                                                                                            | Does `e2e-ocp-helm` run?                    |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `rhdh-bot`, title contains `[skip-e2e]`                                          | `rhdh-bot` comments `/pipeline mark-pipeline-gate <HEAD SHA>`, which turns `ci/pipeline-gate` green for that commit, then the workflow adds `skip-e2e` and `approved` (no `lgtm`) | No, and no cluster is claimed               |
+| `rhdh-bot` `[skip-e2e]` PR whose gate is not green within two minutes (fallback) | `lgtm` and `approved`                                                                                                                                                             | Yes, but it exits early on `[skip-e2e]`     |
+| `rhdh-bot` or `rhdh-gh-app[bot]` without `[skip-e2e]`                            | `lgtm` and `approved`                                                                                                                                                             | Yes                                         |
+| `rhdh-gh-app[bot]` with `[skip-e2e]`                                             | `lgtm` and `approved`                                                                                                                                                             | Yes, but it exits early on `[skip-e2e]`     |
+| Any other bot PR (not on a `chore/automated-*` branch)                           | Nothing                                                                                                                                                                           | Reviewed and approved like a contributor PR |
+
+`pull_request_target` runs the workflow file from the PR's base branch, so a change to it applies to `release-*` branches only after it is backported there.
+
+#### Commands
+
+| Command                 | When to use it                                                                                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `/test e2e-ocp-helm`    | Get e2e results before review, or re-run a failed run                                                           |
+| `/pipeline remaining`   | `ci/pipeline-gate` is missing or stuck on an approved PR: starts any job that has not run on the current commit |
+| `/pipeline help`        | Lists the other pipeline-controller commands                                                                    |
+| `/hold`, `/hold cancel` | Stop or allow Tide merging the PR                                                                               |
+
+#### Troubleshooting a PR That Does Not Merge
+
+| Symptom                                                | Likely cause                                                                                                             | Fix                                                                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `ci/pipeline-gate` is "Expected — waiting for status"  | The PR has not been approved on its current commit, or it was approved before this repo moved to the pipeline controller | Get an approving review, or comment `/pipeline remaining`                                                   |
+| `ci/pipeline-gate` is green but `e2e-ocp-helm` failed  | The test failed                                                                                                          | Fix it, or comment `/test e2e-ocp-helm` to retry a flake                                                    |
+| A `[skip-e2e]` bot PR has `skip-e2e` but no green gate | A push after the workflow ran, or the controller did not process the comment                                             | Re-run the auto-approve workflow, or comment `/lgtm` so it takes the normal path (e2e runs and exits early) |
+| Everything is green but nothing merges                 | A blocking label: `do-not-merge/hold`, `do-not-merge/work-in-progress`, `jira/invalid-bug` and similar                   | Remove the label, or comment `/hold cancel`                                                                 |
+
+#### Where This Is Configured
+
+| What                                                                                      | Where                                                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pipeline-controller enrolment (LGTM mode, all branches)                                   | [`core-services/pipeline-controller/lgtm-config.yaml`](https://github.com/openshift/release/blob/main/core-services/pipeline-controller/lgtm-config.yaml) in openshift/release                                          |
+| Required `ci/pipeline-gate`, Tide queries (`lgtm`; `rhdh-bot` + `skip-e2e`), merge method | [`core-services/prow/02_config/redhat-developer/rhdh/_prowconfig.yaml`](https://github.com/openshift/release/blob/main/core-services/prow/02_config/redhat-developer/rhdh/_prowconfig.yaml) in openshift/release        |
+| `e2e-ocp-helm` job and its `pipeline_skip_if_only_changed` pattern                        | [`ci-operator/config/redhat-developer/rhdh/`](https://github.com/openshift/release/tree/main/ci-operator/config/redhat-developer/rhdh) in openshift/release                                                             |
+| The early exit on `[skip-e2e]`                                                            | [`redhat-developer-rhdh-ocp-helm-commands.sh`](https://github.com/openshift/release/blob/main/ci-operator/step-registry/redhat-developer/rhdh/ocp/helm/redhat-developer-rhdh-ocp-helm-commands.sh) in openshift/release |
+| Bot PR labelling and approval                                                             | [`.github/workflows/auto-approve-bot-prs.yaml`](../../.github/workflows/auto-approve-bot-prs.yaml) in this repo                                                                                                         |
 
 ### Manual Triggering of Tests
 
@@ -50,7 +117,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 
 - **Purpose:** Validate new PRs for code quality, functionality, and integration.
 - **Trigger:**
-  - **Automatic:** When a PR includes code changes affecting tests (excluding doc-only changes), tests are automatically triggered.
+  - **Automatic:** When the PR gets `lgtm`, the pipeline controller triggers `e2e-ocp-helm`, unless every changed file matches its `pipeline_skip_if_only_changed` pattern.
   - **Manual:** When `/ok-to-test` is commented by an `openshift` and `redhat-developer` org member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
 - **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
