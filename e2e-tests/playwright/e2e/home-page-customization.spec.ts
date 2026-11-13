@@ -1,6 +1,7 @@
 import { test } from "@support/coverage/test";
 
 import { HomePage } from "../support/pages/home-page";
+import { APP_TITLE } from "../support/test-data/branding";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Home page customization", () => {
@@ -36,20 +37,20 @@ test.describe("Home page customization", () => {
   );
 
   test(
-    "Verify that the Top Visited card in the Home page renders without an error",
+    "Verify that the Top Visited card lists the Home visit under the custom app title",
     { tag: "@cluster-free-capable" },
     async () => {
-      await homePage.verifyTextInCard("Top Visited", "Top Visited");
-      await homePage.verifyVisitedCardContent("Top Visited");
+      await homePage.revisitHome();
+      await homePage.verifyVisitedCardContent("Top Visited", APP_TITLE);
     },
   );
 
   test(
-    "Verify that the Recently Visited card in the Home page renders without an error",
+    "Verify that the Recently Visited card lists the Home visit under the custom app title",
     { tag: "@cluster-free-capable" },
     async () => {
-      await homePage.verifyTextInCard("Recently Visited", "Recently Visited");
-      await homePage.verifyVisitedCardContent("Recently Visited");
+      await homePage.revisitHome();
+      await homePage.verifyVisitedCardContent("Recently Visited", APP_TITLE);
     },
   );
 

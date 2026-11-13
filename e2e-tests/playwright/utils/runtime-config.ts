@@ -5,7 +5,8 @@
  * ensuring both install methods stay in sync.
  *
  * Design:
- *   - Shared constants live here (app title, guest auth, dynamic plugins, …).
+ *   - Shared constants live here (guest auth, dynamic plugins, …); the app
+ *     title comes from support/test-data/branding.ts, shared with the specs.
  *   - Helm values YAML is generated with ONLY the overrides that differ from
  *     the chart defaults.  The chart owns the system volumes, so
  *     extraVolumes/extraVolumeMounts only carry the runtime additions.
@@ -18,6 +19,7 @@
 import type { V1Container } from "@kubernetes/client-node";
 import * as yaml from "yaml";
 
+import { APP_TITLE } from "../support/test-data/branding";
 import {
   buildCloudSqlProxy,
   buildCloudSqlProxyVolume,
@@ -38,7 +40,6 @@ import {
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
-const appTitle = "Red Hat Developer Hub";
 const homeExtensions = [
   { "page:home": false },
   { "page:homepage": { config: { path: "/", title: "Home" } } },
@@ -263,7 +264,7 @@ export function generateHelmValuesYaml(config?: RuntimeDeployConfig): string {
     intelligentAssistant: { enabled: false },
     appConfig: {
       app: {
-        title: appTitle,
+        title: APP_TITLE,
         // Homepage 3.1 owns the home page and layout. Match the CI
         // dynamic-plugins-config.yaml instead of the community home page.
         extensions: homeExtensions,
@@ -392,7 +393,7 @@ export function generateHelmSetArgs(config: RuntimeDeployConfig): string[] {
 export function generateAppConfigYaml(runtimeUrl: string, config?: RuntimeDeployConfig): string {
   const appConfig = {
     app: {
-      title: appTitle,
+      title: APP_TITLE,
       baseUrl: runtimeUrl,
       extensions: homeExtensions,
     },

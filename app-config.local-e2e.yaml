@@ -81,6 +81,21 @@ catalog:
 # guest-signin-happy-path.spec.ts additionally covers the Search and Starred Catalog
 # Entities widgets.
 app:
+  # Non-default title and sidebar colours mirrored from the CI ConfigMap
+  # (app-config-rhdh.yaml); asserted by branding.spec.ts.
+  title: RHDH QE Instance
+  branding:
+    theme:
+      light:
+        palette:
+          rhdh:
+            general:
+              sidebarItemSelectedBackgroundColor: "#f0f0f0"
+      dark:
+        palette:
+          rhdh:
+            general:
+              sidebarItemSelectedBackgroundColor: "#333333"
   extensions:
     - page:home: false
     - page:homepage:
@@ -89,15 +104,10 @@ app:
           title: Home
     - api:home/visits: true
     - translation:app/homepage-translations
-    # app-root-element:home/visit-listener (also enabled in the CI ConfigMap) is
-    # deliberately NOT enabled here. It calls VisitsStorageApi.save() — an unguarded
-    # backend call — on every route change, which 404s because userSettings.persistence:
-    # browser (above) means the backend never loads @backstage/plugin-user-settings-backend.
-    # In a production build that 404 is just a background error; under this harness's dev
-    # server (backstage-cli package start), the resulting unhandled rejection triggers
-    # webpack's react-refresh error overlay, which is a full-screen transparent iframe that
-    # then intercepts every click for the rest of the test. api:home/visits above is enough
-    # to keep the Top/Recently Visited home-page widgets rendering (just always empty here).
+    # Records visits for the Top/Recently Visited widgets, as in the CI ConfigMap.
+    # With userSettings.persistence: browser the app's storage API is WebStorage
+    # (packages/app/src/apis/apisModule.ts), so visits stay in localStorage.
+    - app-root-element:home/visit-listener: true
     # The global-header plugin's own default extensions (gh-component:global-header/*,
     # gh-menu-item:global-header/*) are enabled by default — see
     # e2e-tests/local-harness/dynamic-plugins.yaml. Only the wrapper + translation

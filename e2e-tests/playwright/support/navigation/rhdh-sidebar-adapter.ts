@@ -7,12 +7,21 @@ export function getRhdhSidebarNavigation(page: Page): Locator {
     .first();
 }
 
-function sidebarLinks(page: Page, linkName: string): Locator {
-  const nav = getRhdhSidebarNavigation(page);
-  // Intentional divergence: sidebar item accessible names may differ from visible labels.
-  return nav
+/**
+ * The sidebar menu link labelled `linkName`. The text filter skips the company
+ * logo link, which is also named "Home" when no global header hides it (e.g. 404).
+ */
+export function getRhdhSidebarLink(page: Page, linkName: string): Locator {
+  return getRhdhSidebarNavigation(page)
     .getByRole("link", { name: linkName, exact: true })
-    .or(nav.locator(`a:has-text("${linkName}")`));
+    .filter({ hasText: linkName });
+}
+
+function sidebarLinks(page: Page, linkName: string): Locator {
+  // Intentional divergence: sidebar item accessible names may differ from visible labels.
+  return getRhdhSidebarLink(page, linkName).or(
+    getRhdhSidebarNavigation(page).locator(`a:has-text("${linkName}")`),
+  );
 }
 
 function isRhdhChildLinkVisible(page: Page, linkName: string): Promise<boolean> {
