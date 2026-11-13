@@ -193,17 +193,6 @@ prepare_operator() {
   k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || return 1
 }
 
-# Waits for the Crunchy Data PostgreSQL Operator's PostgresCluster CRD to become available.
-# Must be called after the Crunchy DB CRD is created and before RHDH is deployed
-# with internal DB disabled and configured to use Crunchy DB as the external PostgreSQL database.
-wait_for_crunchy_crd() {
-  log::info "Verifying PostgresCluster CRD is available before deploying Backstage CR..."
-  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 60 5 || {
-    log::error "PostgresCluster CRD not available - operator won't be able to create internal database"
-    return 1
-  }
-}
-
 deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
@@ -244,11 +233,9 @@ deploy_rhdh_operator() {
     return 0
   fi
 
-  # Wait for the operator to create the database resource (5 minutes max)
-  # The operator can create either PostgresCluster (Crunchy) or StatefulSet (built-in)
+  # Wait for the operator to create the database StatefulSet (5 minutes max)
   if ! common::poll_until \
-    "oc get postgrescluster -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql' || \
-     oc get statefulset -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql'" \
+    "oc get statefulset -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql'" \
     60 5 "Database resource created by operator"; then
     log::error "Database resource not created after 5 minutes"
     _operator_debug_info "$namespace"
@@ -267,8 +254,6 @@ _operator_debug_info() {
   oc logs -n "${OPERATOR_MANAGER:-rhdh-operator}" -l control-plane=controller-manager --tail=50 || true
   log::info "Checking for StatefulSet..."
   oc get statefulset -n "$namespace" || true
-  log::info "Checking for PostgresCluster..."
-  oc get postgrescluster -n "$namespace" 2> /dev/null || echo "No PostgresCluster CRD or resources found"
 }
 
 delete_rhdh_operator() {

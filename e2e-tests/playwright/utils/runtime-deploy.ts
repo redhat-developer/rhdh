@@ -89,7 +89,7 @@ async function createPlaceholderSecrets(kubeClient: KubeClient, namespace: strin
       data: {
         POSTGRES_PASSWORD: base64Encode("tmp"),
         POSTGRES_PORT: base64Encode("5432"),
-        POSTGRES_USER: base64Encode("janus-idp"),
+        POSTGRES_USER: base64Encode("rhdh"),
         POSTGRES_HOST: base64Encode("tmp"),
         // internal DB has no TLS
         PGSSLMODE: base64Encode("disable"),
