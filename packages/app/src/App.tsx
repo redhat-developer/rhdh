@@ -17,12 +17,16 @@ import { rhdhScaffolderPlugin } from "./modules/scaffolder";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
+import { provideExternalFederationRuntime } from "./provideFederationRuntime";
 
 // Keep the /catalog-import route for scaffolder, but hide it from the sidebar.
 const catalogImportPlugin = catalogImportBase.withOverrides({
   title: "",
   icon: false as unknown as IconElement,
 });
+
+// Remotes built with MF experiments.externalRuntime need a host-provided runtime-core.
+provideExternalFederationRuntime();
 
 // Avoid shipping duplicate copies of common libraries inside every dynamic plugin.
 addRuntimeSharedDependencies();

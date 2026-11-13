@@ -6444,6 +6444,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@module-federation/error-codes@npm:2.9.3":
+  version: 2.9.3
+  resolution: "@module-federation/error-codes@npm:2.9.3"
+  checksum: 10c0/1aa4f0ac7d7e2c6e20dcf44039928932a069d8919107b6f3d5a718230c3c4247a10821e90bb5dbe2bc4bbee73a6b200596c07205f73e802840cb9e7421ddd74a
+  languageName: node
+  linkType: hard
+
 "@module-federation/inject-external-runtime-core-plugin@npm:2.8.1":
   version: 2.8.1
   resolution: "@module-federation/inject-external-runtime-core-plugin@npm:2.8.1"
@@ -6517,6 +6524,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@module-federation/runtime-core@npm:^2.8.1":
+  version: 2.9.3
+  resolution: "@module-federation/runtime-core@npm:2.9.3"
+  dependencies:
+    "@module-federation/error-codes": "npm:2.9.3"
+    "@module-federation/sdk": "npm:2.9.3"
+  checksum: 10c0/9c6aac5570a223913d6c1325ad4b9c0a2a728ac65190b0ccb6e2e512f6afcae9eb861b0b63fe7d713754f67108303a8ed64acc0369e19276cf513bc752c1666e
+  languageName: node
+  linkType: hard
+
 "@module-federation/runtime-tools@npm:0.22.0":
   version: 0.22.0
   resolution: "@module-federation/runtime-tools@npm:0.22.0"
@@ -6570,6 +6587,13 @@ __metadata:
   version: 2.8.1
   resolution: "@module-federation/sdk@npm:2.8.1"
   checksum: 10c0/e369ec1ed093686c31adb835621bdeb72639b7f2034addd386feaadaec64056f5a182bc15a37b7733f66d089b77e619ede999096f1287244321a9bb57b0ae317
+  languageName: node
+  linkType: hard
+
+"@module-federation/sdk@npm:2.9.3":
+  version: 2.9.3
+  resolution: "@module-federation/sdk@npm:2.9.3"
+  checksum: 10c0/82584160ea309c6cae4055002390af5a84f38bf46025bbb264e7b4e1dbe82b42d0af93c80abeee2d9d8d136ddb0a4119940da413c4471b363c4b6d8b19424fb5
   languageName: node
   linkType: hard
 
@@ -11898,6 +11922,7 @@ __metadata:
     "@material-ui/core": "npm:4.12.4"
     "@material-ui/icons": "npm:4.11.3"
     "@material-ui/lab": "npm:4.0.0-alpha.61"
+    "@module-federation/runtime-core": "npm:^2.8.1"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@octokit/rest": "npm:19.0.13"
