@@ -114,7 +114,7 @@ Legend: ✅ = Layer 3 equivalent **already merged** on `main` via
 | 17  | `plugins/scaffolder-relation-processor/scaffolder-relation-processor` | sanity-plugins    | no       | yes        | GitHub (repo CRUD)      | **L4a**                              |
 | 18  | `github-happy-path`                                                   | none (`blocked/`) | no       | yes        | GitHub OAuth+API        | **L4a / L4b**                        |
 | 19  | `plugin-dynamic-loading`                                              | none (moved)      | no       | no (API)   | catalog index image     | **L4a** (already cluster-free)       |
-| 25  | `external-database/...-crunchy`                                       | runtime-db        | **yes**  | yes        | Crunchy PG              | **L4b**                              |
+| 25  | `external-database/...-postgres`                                      | runtime-db        | **yes**  | yes        | RHEL PostgreSQL         | **L4b**                              |
 | 26  | `external-database/...-azure-db`                                      | runtime-db        | **yes**  | yes        | Azure PG (x4)           | **L4b**                              |
 | 27  | `external-database/...-rds`                                           | runtime-db        | **yes**  | yes        | AWS RDS (x4)            | **L4b**                              |
 | 28  | `configuration-test/config-map`                                       | showcase          | **yes**  | yes        | ConfigMap reload        | **L4b**                              |

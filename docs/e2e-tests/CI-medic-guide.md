@@ -315,23 +315,19 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 
 **Action**: Usually transient -- re-trigger. If the Dockerfile or GitHub Actions workflow changed recently, check the [workflow runs](https://github.com/redhat-developer/rhdh/actions/workflows/push-e2e-runner.yaml) to verify the image was built and pushed successfully.
 
-### Phase 3: Cluster Setup (Operators and Prerequisites)
+### Phase 3: Cluster Setup (Prerequisites)
 
-**What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) installs required operators and infrastructure (see [operators.sh](../../.ci/pipelines/lib/operators.sh)):
-- OpenShift Pipelines (Tekton) operator
-- Crunchy PostgreSQL operator
+**What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) prepares the cluster before deployment:
+- OCP jobs need no cluster setup. The RHDH operator (operator jobs only) is installed later, in Phase 4
+- AKS/EKS/GKE jobs install Tekton Pipelines for the topology tests (see [operators.sh](../../.ci/pipelines/lib/operators.sh))
 
 **What can go wrong**:
-- Operator installation timeout (OperatorHub/Marketplace issues)
-- CRD not becoming available
-- Tekton webhook deployment not ready
+- Tekton webhook deployment not ready (Kubernetes jobs only)
 
 **How to tell**: Search `build-log.txt` for:
-- `Failed to install subscription`
-- Timeout waiting for operator CRDs
 - `Tekton` or `pipeline` related errors early in the log
 
-**Action**: Usually infrastructure -- re-trigger. If operators were recently upgraded, investigate compatibility.
+**Action**: Usually infrastructure -- re-trigger. If a recent change touched the operator installation, investigate compatibility.
 
 ### Phase 4: RHDH Deployment
 
@@ -355,13 +351,13 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 - Helm chart errors (invalid values, missing CRDs)
 - Pod stuck in `CrashLoopBackOff` (bad config, missing secrets, image pull failure)
 - Health check timeout (`Failed to reach Backstage after N attempts`)
-- PostgreSQL operator fails to create user secret (`postgress-external-db-pguser-janus-idp`)
+- External PostgreSQL for `showcase-rbac` not ready (image pull from `registry.redhat.io`, PVC, TLS secret)
 
 **How to tell**: Search `build-log.txt` for:
 - `CrashLoopBackOff` -- pod is crash-looping
 - `Failed to reach Backstage` -- health check timeout
 - `helm upgrade` failures
-- `Crunchy Postgres operator failed to create the user` -- PostgreSQL setup issue
+- `External PostgreSQL did not become ready` -- external PostgreSQL (`postgress-external-db` StatefulSet) setup issue
 - Check `pod_logs/` for application-level errors
 
 **Action**: Check pod logs and events in artifacts. May be a config issue (real bug) or transient infra (re-trigger).
@@ -423,7 +419,7 @@ Same as OCP nightly but deploys RHDH using the Operator instead of Helm. See [`o
 **Key differences**:
 - Installs RHDH Operator and waits for `backstages.rhdh.redhat.com` CRD (300s timeout)
 - Uses Backstage CR (`rhdh-start.yaml`) instead of Helm release
-- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with external Crunchy PostgreSQL
+- Runtime config tests enabled, including `pluginDivisionMode: schema` tests against the PostgreSQL the operator deploys in the runtime namespace (not the `showcase-rbac` external DB)
 
 ### OCP PR Check (`ocp-pull`)
 
