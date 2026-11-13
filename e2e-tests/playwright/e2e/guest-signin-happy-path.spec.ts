@@ -33,9 +33,9 @@ test.describe("Guest Signing Happy path", () => {
   // only resolves to real content against the CI cluster's test-backstage-customization-provider
   // (DH_TARGET_URL); the cluster-free harness has no such target, so this can't run there.
   test("Verify the Homepage renders with Quick Access", async () => {
-    test.skip(
+    test.fixme(
       process.env.IS_OPENSHIFT === "false",
-      "Requires the OpenShift-only customization provider; restore Kubernetes coverage in RHDHBUGS-3950.",
+      "Requires the OpenShift-only customization provider; restore Kubernetes coverage in RHDHBUGS-4096.",
     );
     await homePage.verifyWelcomeHeading();
     await homePage.openHomeSidebar();
