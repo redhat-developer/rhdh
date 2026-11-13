@@ -288,20 +288,18 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 ### Phase 3: Cluster Setup (Operators and Prerequisites)
 
 **What happens**: The [test script](../../.ci/pipelines/openshift-ci-tests.sh) installs required operators and infrastructure (see [operators.sh](../../.ci/pipelines/lib/operators.sh)):
-- OpenShift Pipelines (Tekton) operator
-- Crunchy PostgreSQL operator
+- OCP jobs install the OpenShift Pipelines (Tekton) operator
+- AKS/EKS/GKE jobs install Tekton Pipelines for the topology tests
 
 **What can go wrong**:
 - Operator installation timeout (OperatorHub/Marketplace issues)
-- CRD not becoming available
 - Tekton webhook deployment not ready
 
 **How to tell**: Search `build-log.txt` for:
 - `Failed to install subscription`
-- Timeout waiting for operator CRDs
 - `Tekton` or `pipeline` related errors early in the log
 
-**Action**: Usually infrastructure -- re-trigger. If operators were recently upgraded, investigate compatibility.
+**Action**: Usually infrastructure -- re-trigger. If a recent change touched the operator installation, investigate compatibility.
 
 ### Phase 4: RHDH Deployment
 
@@ -325,13 +323,13 @@ Open `index.html` in a browser from the GCS artifacts. The report contains per-t
 - Helm chart errors (invalid values, missing CRDs)
 - Pod stuck in `CrashLoopBackOff` (bad config, missing secrets, image pull failure)
 - Health check timeout (`Failed to reach Backstage after N attempts`)
-- PostgreSQL operator fails to create user secret (`postgress-external-db-pguser-janus-idp`)
+- External PostgreSQL for `showcase-rbac` and `showcase-runtime` not ready (image pull from `registry.redhat.io`, PVC, TLS secret)
 
 **How to tell**: Search `build-log.txt` for:
 - `CrashLoopBackOff` -- pod is crash-looping
 - `Failed to reach Backstage` -- health check timeout
 - `helm upgrade` failures
-- `Crunchy Postgres operator failed to create the user` -- PostgreSQL setup issue
+- `External PostgreSQL did not become ready` -- external PostgreSQL (`postgress-external-db` StatefulSet) setup issue
 - Check `pod_logs/` for application-level errors
 
 **Action**: Check pod logs and events in artifacts. May be a config issue (real bug) or transient infra (re-trigger).
@@ -393,7 +391,7 @@ Same as OCP nightly but deploys RHDH using the Operator instead of Helm. See [`o
 **Key differences**:
 - Installs RHDH Operator and waits for `backstages.rhdh.redhat.com` CRD (300s timeout)
 - Uses Backstage CR (`rhdh-start.yaml`) instead of Helm release
-- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with external Crunchy PostgreSQL
+- Runtime config tests enabled, including `pluginDivisionMode: schema` tests with the external PostgreSQL (`enableLocalDb=false`)
 
 ### OCP PR Check (`ocp-pull`)
 

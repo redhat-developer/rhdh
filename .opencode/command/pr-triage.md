@@ -152,13 +152,13 @@ Use the failure classification from the CI Medic Guide to categorize each failur
 - "CrashLoopBackOff"
 - "Failed to reach Backstage"
 - "helm upgrade.*failed"
-- "Crunchy Postgres operator failed to create the user"
+- "External PostgreSQL did not become ready"
 - "ImagePullBackOff"
 - "FailedScheduling"
 ```
 
 **Classification:** `DEPLOY_FAILED` with subcategories:
-- `DEPLOY_POSTGRES` - PostgreSQL operator issues
+- `DEPLOY_POSTGRES` - External PostgreSQL issues
 - `DEPLOY_HELM` - Helm chart failures
 - `DEPLOY_OPERATOR` - Operator CRD/deployment issues
 - `DEPLOY_HEALTH_CHECK` - Health check timeouts
@@ -219,7 +219,7 @@ Create a fingerprint for each failure to detect duplicates:
 
 **Example:**
 ```
-DEPLOY_POSTGRES:Crunchy Postgres operator failed:showcase-rbac-nightly:showcase-rbac
+DEPLOY_POSTGRES:External PostgreSQL did not become ready:showcase-rbac-nightly:showcase-rbac
 ```
 
 ### Similarity Detection
@@ -232,9 +232,9 @@ Compare fingerprints across all analyzed PRs:
 
 **Output:**
 ```
-PR #4537: DEPLOY_POSTGRES:Crunchy Postgres operator failed:showcase-rbac-nightly
-PR #4418: DEPLOY_POSTGRES:Crunchy Postgres operator failed:showcase-rbac-nightly
-PR #4501: DEPLOY_POSTGRES:Crunchy Postgres operator failed:showcase-nightly
+PR #4537: DEPLOY_POSTGRES:External PostgreSQL did not become ready:showcase-rbac-nightly
+PR #4418: DEPLOY_POSTGRES:External PostgreSQL did not become ready:showcase-rbac-nightly
+PR #4501: DEPLOY_POSTGRES:External PostgreSQL did not become ready:showcase-nightly
 
 → Identical: #4537, #4418
 → Related: #4501 (same error, different namespace)
@@ -331,8 +331,8 @@ For each detected failure, extract keywords for Jira searching:
    # Example error: "Timed out waiting for Docker image :pr-4537-9c77192a"
    # Keywords: "Docker image", "timeout", "waiting"
    
-   # Example error: "Crunchy Postgres operator failed to create the user"
-   # Keywords: "PostgreSQL operator", "create user", "failed"
+   # Example error: "External PostgreSQL did not become ready"
+   # Keywords: "External PostgreSQL", "not ready", "StatefulSet"
    ```
 
 2. **Build Jira search URLs**:
@@ -534,7 +534,7 @@ Reference the CI Medic Guide for known patterns:
 
 | Pattern | Classification | Jira Label | Action |
 |---------|---------------|------------|--------|
-| `Crunchy Postgres operator failed to create the user` | DEPLOY_POSTGRES | `postgresql-operator` | Check operator version, re-trigger |
+| `External PostgreSQL did not become ready` | DEPLOY_POSTGRES | `external-postgres` | Check StatefulSet pod events/logs, re-trigger |
 | `Failed to reach Backstage after N attempts` | DEPLOY_HEALTH_CHECK | `health-check-timeout` | Check pod logs, resource limits |
 | `CrashLoopBackOff` | DEPLOY_POD_CRASH | `deployment-crash` | Investigate pod logs |
 | `ImagePullBackOff` | DEPLOY_IMAGE_PULL | `image-registry` | Check registry, rate limits |
