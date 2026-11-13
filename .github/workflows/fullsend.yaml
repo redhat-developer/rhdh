@@ -1,0 +1,48 @@
+# Based on fullsend scaffold; customized to disable all agent auto-triggers.
+# Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/templates/shim-per-repo.yaml
+---
+# fullsend shim workflow (per-repo installation mode)
+# Routes events to agent workflows via reusable-dispatch.yml.
+# All agent execution happens in this repo's context — no external
+# config repo is needed.
+#
+# Routing: this shim forwards the raw event context to reusable-dispatch.yml,
+# which determines the stage and runs the agent inline (ADR 62).
+# Adding a new stage requires only a job in reusable-dispatch.yml — zero changes to this repo.
+#
+# Concurrency: per-role cancel-in-progress groups live in reusable-dispatch.yml
+# stage jobs with -agent- suffix. Roles operate independently (#2452).
+name: fullsend
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    if: >-
+      github.event_name == 'issue_comment'
+      && github.event.comment.body == '/fs-code'
+      && github.event.comment.user.type != 'Bot'
+    permissions:
+      actions: write
+      id-token: write
+      contents: write
+      issues: write
+      packages: read
+      pull-requests: write
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@d5f36921ac754705619f38c637ef692873809fbc # v0.43.0
+    with:
+      event_action: ${{ github.event.action }}
+      install_mode: per-repo
+      mint_url: ${{ vars.FULLSEND_MINT_URL }}
+      gcp_region: ${{ vars.FULLSEND_GCP_REGION }}
+      project_number: ${{ vars.FULLSEND_PROJECT_NUMBER }}
+      runner_image: ubuntu-24.04
+    secrets:
+      FULLSEND_GCP_WIF_PROVIDER: ${{ secrets.FULLSEND_GCP_WIF_PROVIDER }}
+      FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}
+      OTEL_EXPORTER_OTLP_TRACES_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_TRACES_HEADERS }}
+      OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
