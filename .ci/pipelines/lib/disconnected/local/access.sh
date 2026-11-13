@@ -8,7 +8,16 @@ readonly _DISCONNECTED_LOCAL_ACCESS_SOURCED=1
 
 # Projects that oc-mirror/skopeo push mirrored images into. Kept in sync with
 # the pull-access grants in disconnected::ensure_local_image_pull_access.
-DISCONNECTED_LOCAL_MIRROR_PROJECTS=(oc-mirror rhdh-community rhel9 rhdh rhdh-plugin-export-overlays)
+DISCONNECTED_LOCAL_MIRROR_PROJECTS=(
+  oc-mirror
+  rhdh-community
+  rhel9
+  rhel10
+  rhdh
+  rhdh-plugin-export-overlays
+  lightspeed-core
+  offline-knowledge-portal
+)
 
 # Ensure a single integrated-registry push-target namespace exists. Idempotent
 # and race-tolerant: an existing namespace (or one that appears between the

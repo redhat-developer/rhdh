@@ -66,6 +66,26 @@ handle_ocp_disconnected_helm() {
   fi
   log::success "Chart pulled: ${CHART_LOCAL_TGZ}"
 
+  # The OpenShift integrated registry cannot store the upstream multi-architecture
+  # indexes while oc-mirror preserves their digests. For this local smoke only,
+  # pin the chart to the linux/amd64 child manifests used by the cluster nodes.
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+    local chart_unpack_dir chart_root chart_values
+    chart_unpack_dir=$(mktemp -d)
+    chart_root=$(tar -tzf "${CHART_LOCAL_TGZ}" | head -1 | cut -d/ -f1)
+    tar -xzf "${CHART_LOCAL_TGZ}" -C "${chart_unpack_dir}"
+    chart_values="${chart_unpack_dir}/${chart_root}/values.yaml"
+    yq -i \
+      '.intelligentAssistant.core.image.digest = "sha256:b2c7ebf0b98d66efa15ad6ad0b7d43e2d268db81b6d9096db9481b2ad061fbf4" |
+       .intelligentAssistant.okp.enabled = true |
+       .intelligentAssistant.okp.image.digest = "sha256:14378bffba8e172d18b093e55bffcf0f7ee6d77cdd18626aa6b2645553b3568a" |
+       .postgresql.image.digest = "sha256:6a3882f0e168a21152fc033edeb53262fce1a3241b4aba9e9b1c08e41f9663aa"' \
+      "${chart_values}"
+    tar -czf "${CHART_LOCAL_TGZ}" -C "${chart_unpack_dir}" "${chart_root}"
+    rm -rf "${chart_unpack_dir}"
+    log::info "LOCAL_DISCONNECTED: chart image indexes pinned to linux/amd64 child digests"
+  fi
+
   # Resolve PostgreSQL image from chart values
   local helm_values
   helm_values=$(helm show values "${CHART_LOCAL_TGZ}" 2> /dev/null || true)
@@ -121,27 +141,40 @@ handle_ocp_disconnected_helm() {
 
   disconnected::patch_idms "${OC_MIRROR_IDMS_FILE}"
 
-  local machineconfigpool_snapshot
-  machineconfigpool_snapshot=$(disconnected::snapshot_machineconfigpool_rendered_configs) || return 1
+  local machineconfigpool_snapshot=""
+  local hosted_control_plane="false"
+  if [[ "$(oc get infrastructure cluster -o jsonpath='{.status.controlPlaneTopology}')" == "External" ]]; then
+    hosted_control_plane="true"
+    log::info "Hosted control plane detected; using explicit mirror image references instead of IDMS/ITMS"
+  elif oc api-resources --api-group=machineconfiguration.openshift.io -o name \
+    | grep -qx 'machineconfigpools.machineconfiguration.openshift.io'; then
+    machineconfigpool_snapshot=$(disconnected::snapshot_machineconfigpool_rendered_configs) || return 1
+  else
+    log::info "MachineConfigPool API is unavailable; skipping the node rollout wait"
+  fi
 
-  oc apply -f "${OC_MIRROR_IDMS_FILE}" || {
-    log::error "Failed to apply IDMS — aborting"
-    return 1
-  }
-  log::success "ImageDigestMirrorSet applied"
-
-  if [[ -n "${OC_MIRROR_ITMS_FILE:-}" ]]; then
-    oc apply -f "${OC_MIRROR_ITMS_FILE}" || {
-      log::error "Failed to apply ITMS — aborting"
+  if [[ "${hosted_control_plane}" != "true" ]]; then
+    oc apply -f "${OC_MIRROR_IDMS_FILE}" || {
+      log::error "Failed to apply IDMS — aborting"
       return 1
     }
-    log::success "ImageTagMirrorSet applied"
+    log::success "ImageDigestMirrorSet applied"
+
+    if [[ -n "${OC_MIRROR_ITMS_FILE:-}" ]]; then
+      oc apply -f "${OC_MIRROR_ITMS_FILE}" || {
+        log::error "Failed to apply ITMS — aborting"
+        return 1
+      }
+      log::success "ImageTagMirrorSet applied"
+    fi
   fi
 
   # IDMS/ITMS changes trigger a MachineConfig update which rolls worker nodes
   # (drain → apply config → reboot). Wait for all MachineConfigPools to finish
   # before deploying workloads, otherwise pods get evicted mid-startup.
-  disconnected::wait_machineconfigpool_updated "${machineconfigpool_snapshot}" || return 1
+  if [[ -n "${machineconfigpool_snapshot}" ]]; then
+    disconnected::wait_machineconfigpool_updated "${machineconfigpool_snapshot}" || return 1
+  fi
 
   log::section "Plugin Mirroring"
   disconnected::mirror_plugins || return 1
@@ -186,6 +219,9 @@ handle_ocp_disconnected_helm() {
 
   local helm_set_flags=(
     --set openshift.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}"
+    --set image.registry="${image_registry}"
+    --set intelligentAssistant.core.image.registry="${image_registry}"
+    --set intelligentAssistant.okp.image.registry="${image_registry}"
     --set postgresql.image.registry="${image_registry}"
   )
 

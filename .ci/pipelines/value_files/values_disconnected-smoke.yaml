@@ -28,8 +28,17 @@ dynamicPlugins:
       enabled: true
     - package: ${HOMEPAGE_PLUGIN_PACKAGE}
       enabled: true
+    - package: ${INTELLIGENT_ASSISTANT_PLUGIN_PACKAGE}
+      enabled: true
+    - package: ${INTELLIGENT_ASSISTANT_BACKEND_PLUGIN_PACKAGE}
+      enabled: true
 intelligentAssistant:
-  enabled: false
+  enabled: true
+  # The two plugins are listed above as digest-pinned OCI artifacts so the
+  # disconnected smoke does not need to resolve ref:// packages externally.
+  plugins: []
+  okp:
+    enabled: true
 orchestrator:
   enabled: false
 # The chart replaces Bitnami's PostgreSQL image with Red Hat's; the Bitnami common
