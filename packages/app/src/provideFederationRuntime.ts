@@ -10,7 +10,10 @@ type FederationRuntimeGlobal = typeof globalThis & {
  * (rhdh-cli default) do not embed `@module-federation/runtime-core`. They
  * resolve it from `globalThis._FEDERATION_RUNTIME_CORE` instead.
  *
- * Call this once during app bootstrap before dynamic remotes load.
+ * Shipped as `public/federation-runtime.js` (see `federation-runtime-entry.ts`)
+ * and loaded synchronously from `index.html` before `preload.js` injects
+ * remoteEntry scripts. Calling from the main app bundle is too late — preload
+ * races ahead of webpack/rspack entry execution.
  *
  * @see https://module-federation.io/configure/experiments.html#externalruntime
  */

@@ -17,7 +17,6 @@ import { rhdhScaffolderPlugin } from "./modules/scaffolder";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
 import { addRuntimeSharedDependencies } from "./enhancedSharing";
-import { provideExternalFederationRuntime } from "./provideFederationRuntime";
 
 // Keep the /catalog-import route for scaffolder, but hide it from the sidebar.
 const catalogImportPlugin = catalogImportBase.withOverrides({
@@ -25,8 +24,8 @@ const catalogImportPlugin = catalogImportBase.withOverrides({
   icon: false as unknown as IconElement,
 });
 
-// Remotes built with MF experiments.externalRuntime need a host-provided runtime-core.
-provideExternalFederationRuntime();
+// Module Federation runtime-core for externalized remotes is provided by
+// public/federation-runtime.js (loaded from index.html before preload.js).
 
 // Avoid shipping duplicate copies of common libraries inside every dynamic plugin.
 addRuntimeSharedDependencies();
