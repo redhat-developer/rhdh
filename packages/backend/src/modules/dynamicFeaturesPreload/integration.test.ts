@@ -11,6 +11,7 @@ import { dynamicFeaturesResolver } from '../dynamicFeaturesResolver';
 import {
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_REMOTES_PATH,
+  DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
 } from './paths';
 
 jest.setTimeout(60_000);
@@ -108,7 +109,124 @@ describe('dynamicFeaturesResolver wiring', () => {
         (r: { packageName: string }) => r.packageName === remote.packageName,
       );
       expect(match?.exposedModules).toEqual(remote.exposedModules);
-      expect(match?.remoteInfo.name).toEqual(remote.remoteInfo.name);
+      expect(match?.remoteInfo.name).toBe(remote.remoteInfo.name);
+    }
+  });
+
+  it('serves shared assets in-place from a plugin dist/shared directory', async () => {
+    const runtimeName =
+      'webpack-bundler-runtime@test-rspack-test-0123abcd4567ef89.mjs';
+    const url = `http://127.0.0.1:${port}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/${runtimeName}`;
+    const res = await fetch(url);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toContain('javascript');
+    await expect(res.text()).resolves.toContain('test shared runtime entry');
+  });
+
+  it('serves non-module shared assets without modulepreloading them', async () => {
+    const url = `http://127.0.0.1:${port}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/test-asset.txt`;
+    const res = await fetch(url);
+
+    // Any file type under dist/shared/ is served...
+    expect(res.status).toBe(200);
+    await expect(res.text()).resolves.toContain(
+      'not an ES module, served but never modulepreloaded',
+    );
+
+    // ...but only .mjs files join the preload list.
+    const preloadRes = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+    );
+    expect(preloadRes.ok).toBe(true);
+    const body = await preloadRes.text();
+    expect(body).not.toContain('test-asset.txt');
+  });
+
+  it('modulepreloads the canonical shared .mjs URL in preload.js', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+    );
+    expect(res.ok).toBe(true);
+
+    const body = await res.text();
+    // The canonical URL (backend baseUrl-anchored) is what ESM remote
+    // entries' baked relative runtime external resolves to —
+    // modulepreloaded to warm exactly that fetch.
+    expect(body).toContain(
+      `var sharedModules = ["http://localhost:0${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/webpack-bundler-runtime@test-rspack-test-0123abcd4567ef89.mjs"]`,
+    );
+    expect(body).toContain('bl.rel = "modulepreload"');
+  });
+
+  it('does not serve unrecognized filenames from the shared assets route', async () => {
+    const url = `http://127.0.0.1:${port}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/package.json`;
+    const res = await fetch(url);
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('dynamicFeaturesResolver shared asset conflicts', () => {
+  const conflictRootDirectory = resolvePath(
+    __dirname,
+    '../__fixtures__/dynamic-plugins-root-for-shared-conflict',
+  );
+  const conflictPackages = [
+    'plugin-test-conflict-alpha-dynamic',
+    'plugin-test-conflict-beta-dynamic',
+  ];
+
+  it('drops the conflicting plugin and serves the surviving plugin copy', async () => {
+    const backend = await startTestBackend({
+      features: [
+        mockServices.rootConfig.factory({
+          data: {
+            dynamicPlugins: {
+              rootDirectory: conflictRootDirectory,
+            },
+            backend: {
+              baseUrl: 'http://localhost:0',
+            },
+          },
+        }),
+        dynamicPluginsFeatureLoader({
+          moduleLoader: logger => testModuleLoader(logger),
+        }),
+        dynamicFeaturesResolver,
+      ],
+    });
+    try {
+      const port = backend.server.port();
+
+      // The scan for the second-registered plugin throws inside the
+      // upstream for() hook; upstream catches it and skips that entire
+      // plugin from /remotes. Which plugin survives depends on scan
+      // order, so assert order-independently: exactly one is exposed.
+      const remotesRes = await fetch(
+        `http://127.0.0.1:${port}${DYNAMIC_FEATURES_REMOTES_PATH}`,
+      );
+      expect(remotesRes.ok).toBe(true);
+      const remotes = await remotesRes.json();
+      const present = remotes.filter((r: { packageName: string }) =>
+        conflictPackages.includes(r.packageName),
+      );
+      expect(present).toHaveLength(1);
+
+      // The surviving provider's copy is served for the colliding name.
+      const assetRes = await fetch(
+        `http://127.0.0.1:${port}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/colliding.txt`,
+      );
+      expect(assetRes.status).toBe(200);
+      const served = await assetRes.text();
+      const survivor = present[0].packageName as string;
+      expect(served).toContain(
+        survivor === conflictPackages[0]
+          ? 'from plugin alpha'
+          : 'from plugin beta',
+      );
+    } finally {
+      await backend.stop();
     }
   });
 });
