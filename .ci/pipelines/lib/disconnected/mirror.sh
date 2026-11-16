@@ -119,6 +119,13 @@ EOF
     additional_images+=("${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}")
   fi
 
+  # OKP is a gated registry.redhat.io image and is not discovered reliably
+  # from the Helm chart by oc-mirror. Include the exact chart ref whenever the
+  # disconnected smoke test enables OKP.
+  if [[ -n "${OKP_IMAGE:-}" ]]; then
+    additional_images+=("${OKP_IMAGE}")
+  fi
+
   # Catalog index: the init container pulls it at startup, so it must be
   # mirrored for IDMS to redirect the pull. Mirror the exact ref the hub will
   # consume (CATALOG_INDEX_IMAGE, the shared env contract from env_variables.sh),
@@ -247,6 +254,18 @@ disconnected::patch_idms() {
         ".spec.imageDigestMirrors += [{\"mirrors\": [\"${pg_mirror}\"], \"source\": \"${pg_source}\"}]" \
         "${idms_file}"
       log::info "Added IDMS entry: ${pg_source} -> ${pg_mirror}"
+    fi
+  fi
+
+  if [[ -n "${OKP_REGISTRY:-}" && -n "${OKP_REPO:-}" ]]; then
+    local okp_source="${OKP_REGISTRY}/${OKP_REPO}"
+    local okp_mirror="${mirror_host}/${OKP_REPO}"
+
+    if ! yq eval ".spec.imageDigestMirrors[].source" "${idms_file}" 2> /dev/null | grep -qF "${okp_source}"; then
+      yq eval -i \
+        ".spec.imageDigestMirrors += [{\"mirrors\": [\"${okp_mirror}\"], \"source\": \"${okp_source}\"}]" \
+        "${idms_file}"
+      log::info "Added IDMS entry: ${okp_source} -> ${okp_mirror}"
     fi
   fi
 

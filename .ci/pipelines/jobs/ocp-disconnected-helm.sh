@@ -66,24 +66,45 @@ handle_ocp_disconnected_helm() {
   fi
   log::success "Chart pulled: ${CHART_LOCAL_TGZ}"
 
+  local okp_enabled
+  okp_enabled=$(yq '.intelligentAssistant.okp.enabled // false' \
+    "${DIR}/value_files/values_disconnected-smoke.yaml")
+
   # The OpenShift integrated registry cannot store the upstream multi-architecture
   # indexes while oc-mirror preserves their digests. For this local smoke only,
   # pin the chart to the linux/amd64 child manifests used by the cluster nodes.
-  if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
-    local chart_unpack_dir chart_root chart_values
+  # The disconnected IA/OKP smoke also uses keyword search so LCORE does not
+  # need to download an embedding model from the internet.
+  if [[ "${LOCAL_DISCONNECTED:-}" == "1" || "${okp_enabled}" == "true" ]]; then
+    local chart_unpack_dir chart_root chart_values stack_config
     chart_unpack_dir=$(mktemp -d)
     chart_root=$(tar -tzf "${CHART_LOCAL_TGZ}" | head -1 | cut -d/ -f1)
     tar -xzf "${CHART_LOCAL_TGZ}" -C "${chart_unpack_dir}"
     chart_values="${chart_unpack_dir}/${chart_root}/values.yaml"
-    yq -i \
-      '.intelligentAssistant.core.image.digest = "sha256:b2c7ebf0b98d66efa15ad6ad0b7d43e2d268db81b6d9096db9481b2ad061fbf4" |
-       .intelligentAssistant.okp.enabled = true |
-       .intelligentAssistant.okp.image.digest = "sha256:14378bffba8e172d18b093e55bffcf0f7ee6d77cdd18626aa6b2645553b3568a" |
-       .postgresql.image.digest = "sha256:6a3882f0e168a21152fc033edeb53262fce1a3241b4aba9e9b1c08e41f9663aa"' \
-      "${chart_values}"
+
+    if [[ "${LOCAL_DISCONNECTED:-}" == "1" ]]; then
+      yq -i \
+        '.intelligentAssistant.core.image.digest = "sha256:b2c7ebf0b98d66efa15ad6ad0b7d43e2d268db81b6d9096db9481b2ad061fbf4" |
+         .intelligentAssistant.okp.enabled = true |
+         .intelligentAssistant.okp.image.digest = "sha256:14378bffba8e172d18b093e55bffcf0f7ee6d77cdd18626aa6b2645553b3568a" |
+         .postgresql.image.digest = "sha256:6a3882f0e168a21152fc033edeb53262fce1a3241b4aba9e9b1c08e41f9663aa"' \
+        "${chart_values}"
+      log::info "LOCAL_DISCONNECTED: chart image indexes pinned to linux/amd64 child digests"
+    fi
+
+    if [[ "${okp_enabled}" == "true" ]]; then
+      stack_config="${chart_unpack_dir}/${chart_root}/files/intelligent-assistant/lightspeed-stack.yaml"
+      if [[ ! -f "${stack_config}" ]]; then
+        log::error "The chart does not contain the OKP-enabled Lightspeed Stack configuration"
+        rm -rf "${chart_unpack_dir}"
+        return 1
+      fi
+      yq -i '.rag.okp.search_mode = "keyword"' "${stack_config}"
+      log::info "Configured OKP keyword search for embedding-free disconnected retrieval"
+    fi
+
     tar -czf "${CHART_LOCAL_TGZ}" -C "${chart_unpack_dir}" "${chart_root}"
     rm -rf "${chart_unpack_dir}"
-    log::info "LOCAL_DISCONNECTED: chart image indexes pinned to linux/amd64 child digests"
   fi
 
   # Resolve PostgreSQL image from chart values
@@ -113,6 +134,28 @@ handle_ocp_disconnected_helm() {
   fi
 
   log::info "PostgreSQL image from chart: ${PG_REGISTRY}/${PG_REPO}${PG_SEPARATOR}${PG_TAG}"
+
+  if [[ "${okp_enabled}" == "true" ]]; then
+    export OKP_REGISTRY OKP_REPO OKP_TAG OKP_SEPARATOR OKP_IMAGE
+    local okp_digest
+    OKP_REGISTRY=$(echo "${helm_values}" | yq '.intelligentAssistant.okp.image.registry // ""' || true)
+    OKP_REPO=$(echo "${helm_values}" | yq '.intelligentAssistant.okp.image.repository // ""' || true)
+    OKP_TAG=$(echo "${helm_values}" | yq '.intelligentAssistant.okp.image.tag // ""' || true)
+    okp_digest=$(echo "${helm_values}" | yq '.intelligentAssistant.okp.image.digest // ""' || true)
+
+    if [[ -z "${OKP_REGISTRY}" || -z "${OKP_REPO}" || (-z "${OKP_TAG}" && -z "${okp_digest}") ]]; then
+      log::error "OKP is enabled but its image reference is incomplete in the chart"
+      return 1
+    fi
+
+    common::normalize_chart_image_ref OKP_REPO OKP_SEPARATOR
+    if [[ -n "${okp_digest}" ]]; then
+      OKP_SEPARATOR="@${okp_digest%%:*}:"
+      OKP_TAG="${okp_digest#*:}"
+    fi
+    OKP_IMAGE="${OKP_REGISTRY}/${OKP_REPO}${OKP_SEPARATOR}${OKP_TAG}"
+    log::info "OKP image from chart: ${OKP_IMAGE}"
+  fi
 
   # Catalog index is no longer derived from chart values: both CI and
   # LOCAL_DISCONNECTED consume CATALOG_INDEX_IMAGE (the shared env contract in
@@ -271,6 +314,19 @@ handle_ocp_disconnected_helm() {
   # Hub can start during first-boot Postgres initdb, fail plugin init, and
   # stay not-ready (liveness 200). Bounce only if still not Available.
   disconnected::ensure_helm_hub_after_postgres "${NAME_SPACE}" "${RELEASE_NAME}" || return 1
+
+  if [[ "${okp_enabled}" == "true" ]]; then
+    local okp_deployment="${RELEASE_NAME}-developer-hub-ia-okp"
+    log::info "Waiting for OKP deployment ${okp_deployment} to become Available..."
+    if ! oc rollout status "deployment/${okp_deployment}" -n "${NAME_SPACE}" --timeout=20m; then
+      log::error "OKP deployment ${okp_deployment} did not become Available"
+      oc get deployment,pods -n "${NAME_SPACE}" -o wide || true
+      oc describe "deployment/${okp_deployment}" -n "${NAME_SPACE}" || true
+      oc get events -n "${NAME_SPACE}" --sort-by='.lastTimestamp' | tail -80 || true
+      return 1
+    fi
+    log::success "OKP deployment ${okp_deployment} is Available"
+  fi
 
   log::section "Smoke Test"
 
