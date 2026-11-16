@@ -393,6 +393,7 @@ deploy_redis_cache() {
   local namespace=$1
   envsubst < "$DIR/resources/redis-cache/redis-secret.yaml" | oc apply --namespace="${namespace}" -f -
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
+  oc apply -f "$DIR/resources/redis-cache/redis-service.yaml" --namespace="${namespace}"
 }
 
 # OLM Functions - Delegate to lib/operators.sh
