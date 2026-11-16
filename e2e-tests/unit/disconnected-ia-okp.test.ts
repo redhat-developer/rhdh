@@ -99,4 +99,41 @@ describe("disconnected OKP image mirroring", () => {
       "- name: registry.redhat.io/offline-knowledge-portal/rhokp-rhel9@sha256:0123456789abcdef",
     );
   });
+
+  it("extends the oc-mirror image timeout when OKP is included", () => {
+    const workspace = join(root, "oc-mirror-workspace");
+    const argsFile = join(root, "oc-mirror-args.txt");
+    const script = [
+      'source "$PIPELINES/lib/log.sh"',
+      'source "$PIPELINES/lib/disconnected/env.sh"',
+      'source "$PIPELINES/lib/disconnected/mirror.sh"',
+      "disconnected::_hook_run_oc_mirror() {",
+      '  printf "%s\\n" "$@" > "$ARGS_FILE"',
+      '  mkdir -p "$WORKSPACE/working-dir/cluster-resources"',
+      '  printf "apiVersion: config.openshift.io/v1\\nkind: ImageDigestMirrorSet\\nspec:\\n  imageDigestMirrors: []\\n" > "$WORKSPACE/working-dir/cluster-resources/idms-oc-mirror.yaml"',
+      "}",
+      'disconnected::run_oc_mirror "$CONFIG" "$WORKSPACE" > /dev/null',
+    ].join("\n");
+
+    const result = spawnSync("/bin/bash", ["--noprofile", "--norc", "-ec", script], {
+      env: {
+        PATH: process.env.PATH,
+        PIPELINES: pipelines,
+        CONFIG: join(root, "imageset-config.yaml"),
+        WORKSPACE: workspace,
+        ARGS_FILE: argsFile,
+        ARTIFACT_DIR: join(root, "artifacts"),
+        MIRROR_REGISTRY_URL: "mirror.test",
+        OKP_IMAGE:
+          "registry.redhat.io/offline-knowledge-portal/rhokp-rhel9@sha256:0123456789abcdef",
+      },
+      encoding: "utf8",
+      timeout: 10_000,
+    });
+
+    expect(result.status).toBe(0);
+    const args = readFileSync(argsFile, "utf8").trim().split("\n");
+    expect(args).toContain("--image-timeout");
+    expect(args).toContain("30m");
+  });
 });

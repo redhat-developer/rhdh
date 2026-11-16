@@ -168,6 +168,14 @@ disconnected::run_oc_mirror() {
     --v2
     --workspace "file://${workspace_dir}"
   )
+
+  # OKP contains a multi-gigabyte layer that can exceed oc-mirror's default
+  # 10-minute per-image timeout when uploaded to the CI bastion registry.
+  # Keep the default for normal runs and only extend it when OKP is included.
+  if [[ -n "${OKP_IMAGE:-}" ]]; then
+    oc_mirror_args+=(--image-timeout "${OKP_OC_MIRROR_IMAGE_TIMEOUT:-30m}")
+  fi
+
   disconnected::_hook_adjust_oc_mirror_args oc_mirror_args
 
   log::info "Running oc-mirror --v2 -> ${MIRROR_REGISTRY_URL} (${oc_mirror_args[*]})"
