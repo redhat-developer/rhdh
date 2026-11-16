@@ -44,7 +44,7 @@ function portForward(ns: string, resource: string, localPort: number, remotePort
     {
       shellCommand: `
         oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
-        oc port-forward ${resource} ${localPort}:${remotePort} --namespace="${ns}"
+        exec oc port-forward ${resource} ${localPort}:${remotePort} --namespace="${ns}"
       `,
     },
     { readyPattern: /Forwarding from/u, readyTimeoutMs: 60_000 },
@@ -377,18 +377,31 @@ test.describe("FIPS: RHDH, PostgreSQL and Redis", () => {
     control.disconnect();
 
     // Offering only ChaCha20 (not FIPS-approved) must be refused by the server.
-    const chacha = new Redis(redisUrl, {
-      tls: {
-        ...tlsOptions,
-        ciphers: "TLS_CHACHA20_POLY1305_SHA256",
-        minVersion: "TLSv1.3",
-        maxVersion: "TLSv1.3",
-      },
-      lazyConnect: true,
-      retryStrategy: () => null,
+    // Plain tls.connect: ioredis hides the TLS error behind "Connection is closed."
+    const handshake = new Promise<string>((resolve, reject) => {
+      const socket = tls.connect(
+        {
+          ...tlsOptions,
+          host: "localhost",
+          port: REDIS_LOCAL_PORT,
+          ciphers: "TLS_CHACHA20_POLY1305_SHA256",
+          minVersion: "TLSv1.3",
+          maxVersion: "TLSv1.3",
+        },
+        () => {
+          const cipher = socket.getCipher().name;
+          socket.end();
+          resolve(cipher);
+        },
+      );
+      socket.on("error", reject);
+      socket.setTimeout(10_000, () => {
+        socket.destroy();
+        reject(new Error("TLS connection timeout"));
+      });
     });
-    await expect(chacha.connect()).rejects.toThrow(/handshake failure/iu);
-    chacha.disconnect();
+
+    await expect(handshake).rejects.toThrow(/handshake failure/iu);
   });
 
   // Proves RHDH actually uses Redis. Redis only accepts TLS, so this connection is encrypted.

@@ -43,10 +43,12 @@ spec:
             - |
               # The RHEL image keeps protected mode on, which rejects remote clients while the
               # default user has no password: disable the default user and allow remote clients.
+              # No RDB snapshots: the working dir is not writable and a failed save blocks writes.
               echo "user default off" > /data/redis.conf
               echo "user ${REDIS_USERNAME} on >${REDIS_PASSWORD} allcommands allkeys" >> /data/redis.conf
               redis-server /data/redis.conf \
                 --protected-mode no \
+                --save "" \
                 --tls-port 6379 \
                 --port 0 \
                 --tls-cert-file /certs/tls.crt \
