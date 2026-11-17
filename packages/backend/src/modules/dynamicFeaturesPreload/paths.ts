@@ -34,3 +34,34 @@ export const DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH = `${DYNAMIC_FEATURES_PRELOAD_
 
 /** Default Module Federation manifest filename under each remote. */
 export const DYNAMIC_FEATURES_MANIFEST_FILE = 'mf-manifest.json';
+
+/**
+ * Mount path for shared dynamic-plugin assets.
+ *
+ * Contract: any deployed plugin may carry a flat `dist/shared/` directory
+ * (files only — subdirectories are not served); the resolver serves
+ * each file at `<base path>/<filename>` from an in-memory snapshot
+ * (contents read once at scan time, like the app-backend's static
+ * asset store — no per-request filesystem access)
+ * that contains it. Files with the same name in multiple plugins must be
+ * content-identical (SHA-256): a conflict fails the conflicting plugin
+ * (see `sharedAssets.ts`). Every `.mjs` file registered here is
+ * modulepreloaded by `preload.js`; other file types are served but never
+ * preloaded.
+ *
+ * Root-router constraint: this must not prefix-overlap any other root
+ * mount — Backstage's root router rejects nested paths outright, so
+ * `/.backstage/dynamic-features/shared` is not mountable from a separate
+ * plugin. The hyphenated sibling keeps the dynamic-features namespace
+ * without nesting.
+ */
+export const DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH =
+  '/.backstage/dynamic-features-shared-modules';
+
+/**
+ * Directory inside each deployed plugin (`<plugin>/dist/`) holding shared
+ * assets served at {@link DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}.
+ * Currently embedded by `rhdh-cli plugin export --shared-esm-runtime`
+ * (the shared MF runtime module); the serving surface is generic.
+ */
+export const SHARED_ASSETS_DIST_DIR = 'shared';

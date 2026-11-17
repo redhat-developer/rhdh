@@ -45,6 +45,46 @@ function populatedStore(): PreloadStore {
     remoteEntry: 'remoteEntry.js',
     globalName: 'backstage__plugin_test_mixed_features',
   } as PreloadStore['moduleInfo'][string];
+
+  // An ESM remote (rhdh-cli --shared-esm-runtime emission): the snapshot
+  // carries remoteEntryType "module" (derived by generateSnapshotFromManifest
+  // from metaData.remoteEntry.type) and the store carries the canonical
+  // shared-module URL (populated by the resolver's dist/shared/ scan) —
+  // what the remoteEntry's baked relative runtime external resolves to.
+  store.remotes.push({
+    packageName: 'plugin-test-esm-dynamic',
+    remoteInfo: {
+      name: 'backstage__plugin_test_esm',
+      entry:
+        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/mf-manifest.json',
+    },
+    exposedModules: ['.'],
+  });
+  store.moduleInfo.backstage__plugin_test_esm = {
+    name: 'backstage__plugin_test_esm',
+    version: 'v',
+    buildVersion: '0.0.0',
+    remotesInfo: [],
+    shared: [],
+    modules: [
+      {
+        moduleName: '.',
+        modulePath: '.',
+        assets: {
+          js: { sync: ['static/5000.eee55555.chunk.mjs'], async: [] },
+          css: { sync: [], async: [] },
+        },
+      },
+    ],
+    publicPath:
+      'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/',
+    remoteEntry: 'remoteEntry.js',
+    remoteEntryType: 'module',
+    globalName: 'backstage__plugin_test_esm',
+  } as PreloadStore['moduleInfo'][string];
+  store.sharedModuleUrls.push(
+    'http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs',
+  );
   return store;
 }
 
@@ -129,7 +169,7 @@ describe('mountPreloadEndpoint', () => {
     expect(res2.status).toBe(304);
   });
 
-  it('embeds moduleInfo, local remotes, fetch shim, and script/preload injection', async () => {
+  it('embeds moduleInfo, local remotes, fetch shim, and preload injection', async () => {
     ({ server, base } = await startServer(createApp(populatedStore())));
     const body = await (await fetch(`${base}/preload.js`)).text();
 
@@ -141,12 +181,16 @@ describe('mountPreloadEndpoint', () => {
     expect(body).toContain('moduleInfo');
     expect(body).toContain('backstage__plugin_test_mixed_features');
 
-    expect(body).toContain('document.createElement("script")');
-    expect(body).toContain('snap.publicPath + snap.remoteEntry');
-    expect(body).toContain('s.defer = true');
-    expect(body).toContain('document.createElement("link")');
+    expect(body).toContain(
+      'var entryHref = snap.publicPath + snap.remoteEntry',
+    );
     expect(body).toContain('l.rel = "preload"');
     expect(body).toContain('l.as = "script"');
+    // Nothing is ever executed here: classic entries are cache-warmed only
+    // (execution happens later via the MF runtime at loadRemote), and ESM
+    // entries cannot be executed as classic scripts at all.
+    expect(body).not.toContain('document.createElement("script")');
+    expect(body).toContain('document.createElement("link")');
     expect(body).toContain('cl.as = "style"');
 
     // exposedModules filter was removed — snapshot modules are pre-trimmed
@@ -174,5 +218,28 @@ describe('mountPreloadEndpoint', () => {
     expect(
       snap.modules.map((m: { moduleName: string }) => m.moduleName),
     ).toEqual(['alpha']);
+  });
+
+  it('modulepreloads the canonical shared-module URL for ESM entries', async () => {
+    ({ server, base } = await startServer(createApp(populatedStore())));
+    const body = await (await fetch(`${base}/preload.js`)).text();
+
+    // ESM detection is snapshot-driven
+    expect(body).toContain(
+      'snap.remoteEntryType === "module" || snap.remoteEntryType === "esm"',
+    );
+    expect(body).toContain('l.rel = "modulepreload"');
+
+    // The ESM remote's snapshot (with its remoteEntryType) is embedded, and
+    // its sync chunks are modulepreloaded, not preloaded as scripts
+    expect(body).toContain('"remoteEntryType":"module"');
+    expect(body).toContain('static/5000.eee55555.chunk.mjs');
+
+    // The canonical shared-module URL (what the baked relative runtime
+    // external resolves to) is modulepreloaded
+    expect(body).toContain(
+      'var sharedModules = ["http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs"]',
+    );
+    expect(body).toContain('bl.rel = "modulepreload"');
   });
 });

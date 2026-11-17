@@ -26,21 +26,38 @@ export interface FrontendPluginRemote {
  * An empty store (remotes.length === 0) means no frontend plugins
  * were found; the preload endpoint serves a no-op comment in that case.
  *
- * The preload handler derives remoteEntry `<script>` tags and sync-asset
- * `<link rel="preload">` hints directly from `remotes` + `moduleInfo`
- * at render time — no separate URL lists are needed. Snapshot modules
- * are already trimmed to match each remote's exposedModules.
+ * The preload handler derives remoteEntry and sync-asset `<link
+ * rel="preload">` hints directly from `remotes` + `moduleInfo` at render
+ * time — no separate URL lists are needed. Snapshot modules are already
+ * trimmed to match each remote's exposedModules.
  */
 export interface PreloadStore {
   /** Remotes list matching the /remotes JSON shape. */
   remotes: FrontendPluginRemote[];
   /** MF snapshot dictionary keyed by manifest.name. */
   moduleInfo: GlobalModuleInfo;
+  /**
+   * Canonical URLs of shared dynamic-plugin `.mjs` modules (deduped).
+   *
+   * ESM remote entries exported with `rhdh-cli plugin export
+   * --shared-esm-runtime` externalize their MF runtime through a static
+   * relative specifier baked at export time, which resolves against the
+   * remoteEntry's own URL to the canonical shared-assets URL (backend
+   * baseUrl-anchored). Identical runtime bytes produce the same
+   * canonical URL, so all plugins built with the same toolchain import
+   * the same resolved URL and share a single fetched and evaluated
+   * module instance. This list — populated by the resolver's scan of
+   * each deployed plugin's flat `dist/shared/` directory (`.mjs` files
+   * only) — is modulepreloaded by preload.js, warming exactly the URLs
+   * the runtime externals resolve to.
+   */
+  sharedModuleUrls: string[];
 }
 
 export function createPreloadStore(): PreloadStore {
   return {
     remotes: [],
     moduleInfo: {},
+    sharedModuleUrls: [],
   };
 }
