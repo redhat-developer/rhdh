@@ -15,20 +15,40 @@ import type { PreloadStore } from './dynamicFeaturesPreload/store';
  * deployed plugin's `dist/shared/` directory
  * ({@link SHARED_ASSETS_DIST_DIR}).
  *
- * Maps file name → the file's contents plus the first deployed plugin
- * that provides it. Contents are read once at scan time — the same
- * pattern as the app-backend's static asset store — so the serving
- * route performs no per-request filesystem access. The registry is
- * also the allowlist: only names present in it are served, so path
+ * Maps file name → the file's contents, the first deployed plugin that
+ * provides it, and its cache class. Contents are read once at scan time
+ * — the same pattern as the app-backend's static asset store — so the
+ * serving route performs no per-request filesystem access. The registry
+ * is also the allowlist: only names present in it are served, so path
  * traversal and unexpected files are excluded by construction.
  */
 export type SharedAssetRegistry = Map<
   string,
-  { content: Buffer; provider: string }
+  { content: Buffer; provider: string; immutable: boolean }
 >;
+
+/** Cache-Control for assets whose name is verified content-addressed. */
+export const SHARED_ASSET_IMMUTABLE_CACHE_CONTROL =
+  'public, max-age=31536000, immutable';
+
+/** Cache-Control for everything else: revalidate every use. */
+export const SHARED_ASSET_REVALIDATE_CACHE_CONTROL = 'public, max-age=0';
 
 function sha256_16(content: Buffer): string {
   return createHash('sha256').update(content).digest('hex').slice(0, 16);
+}
+
+/**
+ * Whether a file name is verified content-addressed: the name's stem
+ * (without its final extension) ends with the first 16 hex digits of
+ * the sha256 of the content itself. Such a URL cannot be reused for
+ * different bytes without failing this check, so it may be cached
+ * immutable; names that merely look hashed but do not match their
+ * bytes, and arbitrary names, must revalidate.
+ */
+function isContentAddressed(name: string, content: Buffer): boolean {
+  const stem = name.replace(/\.[^.]+$/, '');
+  return stem.endsWith(`-${sha256_16(content)}`);
 }
 
 /**
@@ -51,6 +71,10 @@ function sha256_16(content: Buffer): string {
  * (`${backendBaseUrl}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/<file>`)
  * joins the preload store's modulepreload list — the URL that ESM
  * remote entries' baked relative runtime external resolves to.
+ *
+ * Cache class per asset: names verified content-addressed by
+ * {@link isContentAddressed} are marked immutable; all others
+ * revalidate (see the serving route).
  */
 export function registerSharedAssets(
   registry: SharedAssetRegistry,
@@ -109,6 +133,7 @@ export function registerSharedAssets(
       registry.set(name, {
         content: contents.get(name)!,
         provider: pluginName,
+        immutable: isContentAddressed(name, contents.get(name)!),
       });
       logger.info(
         `dynamic-features-resolver: registered shared asset ${name} from ${pluginName}`,
