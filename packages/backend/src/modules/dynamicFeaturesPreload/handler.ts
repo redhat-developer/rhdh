@@ -61,7 +61,9 @@ function buildPreloadBody(store: PreloadStore): string {
     `    }`,
     `    return originalFetch.apply(this, arguments);`,
     `  };`,
-    // remoteEntry preloads + sync-asset preloads
+    // remoteEntry preloads + sync-asset preloads — batch into a fragment
+    // so the browser sees a single head mutation instead of N appends.
+    `  var frag = document.createDocumentFragment();`,
     `  var seen = {};`,
     `  for (var r = 0; r < remotes.length; r++) {`,
     `    var snap = info[remotes[r].remoteInfo.name];`,
@@ -77,7 +79,7 @@ function buildPreloadBody(store: PreloadStore): string {
     `      var l = document.createElement("link");`,
     `      if (isEsm) { l.rel = "modulepreload"; l.href = entryHref; }`,
     `      else { l.rel = "preload"; l.href = entryHref; l.as = "script"; }`,
-    `      document.head.appendChild(l);`,
+    `      frag.appendChild(l);`,
     `    }`,
     // Walk snapshot modules (already trimmed to exposedModules by collector)
     // to inject preload hints for sync JS/CSS chunks. Sync chunks of ESM
@@ -96,7 +98,7 @@ function buildPreloadBody(store: PreloadStore): string {
     `          var l = document.createElement("link");`,
     `          if (isEsm) { l.rel = "modulepreload"; l.href = href; }`,
     `          else { l.rel = "preload"; l.href = href; l.as = "script"; }`,
-    `          document.head.appendChild(l);`,
+    `          frag.appendChild(l);`,
     `        }`,
     `      }`,
     // Sync CSS chunks
@@ -108,7 +110,7 @@ function buildPreloadBody(store: PreloadStore): string {
     `          var cl = document.createElement("link");`,
     `          cl.rel = "preload"; cl.href = ch; cl.as = "style";`,
     `          cl.crossOrigin = "";`,
-    `          document.head.appendChild(cl);`,
+    `          frag.appendChild(cl);`,
     `        }`,
     `      }`,
     `    }`,
@@ -124,9 +126,10 @@ function buildPreloadBody(store: PreloadStore): string {
     `      seen[bh] = 1;`,
     `      var bl = document.createElement("link");`,
     `      bl.rel = "modulepreload"; bl.href = bh;`,
-    `      document.head.appendChild(bl);`,
+    `      frag.appendChild(bl);`,
     `    }`,
     `  }`,
+    `  document.head.appendChild(frag);`,
     `})();`,
   ].join('\n');
 }
