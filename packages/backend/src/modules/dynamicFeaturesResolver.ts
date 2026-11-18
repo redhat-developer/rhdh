@@ -80,6 +80,13 @@ export const dynamicFeaturesResolver = createBackendPlugin({
       },
       async init({ frontendRemotes, rootHttpRouter, config, logger }) {
         const backendBaseUrl = config.getString('backend.baseUrl');
+        // Mass remoteEntry/sync `<link rel=preload>` hints (default on).
+        // Set `dynamicPlugins.frontend.preloadRemotes.enabled: false` to keep
+        // moduleInfo + remotes fetch shim without the N× preload stampede.
+        const preloadRemotesEnabled =
+          config.getOptionalBoolean(
+            'dynamicPlugins.frontend.preloadRemotes.enabled',
+          ) ?? true;
         const store = createPreloadStore();
         const sharedAssets: SharedAssetRegistry = new Map();
 
@@ -122,11 +129,11 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         });
 
         const preloadRouter = Router();
-        mountPreloadEndpoint(preloadRouter, store);
+        mountPreloadEndpoint(preloadRouter, store, { preloadRemotesEnabled });
         rootHttpRouter.use(DYNAMIC_FEATURES_PRELOAD_BASE_PATH, preloadRouter);
 
         logger.info(
-          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH} (preloadRemotes.enabled=${preloadRemotesEnabled})`,
         );
 
         // Serve directly from the first plugin carrying a given shared

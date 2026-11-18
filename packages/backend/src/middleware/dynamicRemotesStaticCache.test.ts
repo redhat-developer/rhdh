@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 import {
+  DYNAMIC_REMOTES_ENTRY_CACHE_CONTROL,
   DYNAMIC_REMOTES_STATIC_CACHE_CONTROL,
   dynamicRemotesStaticCacheMiddleware,
 } from './dynamicRemotesStaticCache';
@@ -40,6 +41,23 @@ describe('dynamicRemotesStaticCacheMiddleware', () => {
     '/.backstage/dynamic-features/remotes/@red-hat-developer-hub/backstage-plugin-adoption-insights-dynamic/remoteEntry.js',
     '/.backstage/dynamic-features/remotes/plugin-example-dynamic/mf-manifest.json',
     '/.backstage/dynamic-features/remotes/@red-hat-developer-hub/backstage-plugin-adoption-insights-dynamic/mf-manifest.json',
+  ])(
+    'sets revalidation-safe Cache-Control for remotes entrypoints: %s',
+    path => {
+      const { headers, next, setHeader } = runMiddleware(path);
+
+      expect(setHeader).toHaveBeenCalledWith(
+        'Cache-Control',
+        DYNAMIC_REMOTES_ENTRY_CACHE_CONTROL,
+      );
+      expect(headers['Cache-Control']).toBe('no-cache');
+      expect(next).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each([
+    '/.backstage/dynamic-features/remotes/plugin-example-dynamic/other.js',
+    '/.backstage/dynamic-features/remotes/plugin-example-dynamic/static',
     '/static/main.js',
   ])('does not set Cache-Control for %s', path => {
     const { setHeader, next } = runMiddleware(path);
