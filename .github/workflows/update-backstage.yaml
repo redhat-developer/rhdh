@@ -138,15 +138,26 @@ jobs:
               --state "$issue_state" \
               --label backstage-upgrade-automation \
               --limit 1000 \
-              --json body,number,state |
-              jq -r --arg marker "$request_marker" \
-                'first(.[] | select(.body | contains($marker)) | [.number, .state] | @tsv) // empty'
+              --json body,number,state,stateReason,labels |
+              jq -r --arg marker "$request_marker" '
+                first(.[] | select(.body | contains($marker)) |
+                  [.number, .state,
+                   (if .stateReason == "NOT_PLANNED" and
+                       any(.labels[]; .name == "Stale") then "stale" else "other" end)] |
+                  @tsv) // empty
+              '
           )
           if [[ -n "$existing_issue" ]]; then
-            read -r issue_number existing_state <<< "$existing_issue"
+            read -r issue_number existing_state close_reason <<< "$existing_issue"
             if [[ "$existing_state" == "CLOSED" ]]; then
-              echo "Release request already closed: https://github.com/$GITHUB_REPOSITORY/issues/$issue_number"
-              exit 0
+              # Only revive requests closed by stale automation, not completed or declined upgrades.
+              if [[ "$close_reason" != "stale" ]]; then
+                echo "Release request already closed: https://github.com/$GITHUB_REPOSITORY/issues/$issue_number"
+                exit 0
+              fi
+              gh issue reopen "$issue_number" --repo "$GITHUB_REPOSITORY"
+              gh issue edit "$issue_number" --repo "$GITHUB_REPOSITORY" --remove-label Stale
+              echo "Reopened stale request: https://github.com/$GITHUB_REPOSITORY/issues/$issue_number"
             fi
             gh issue edit "$issue_number" \
               --repo "$GITHUB_REPOSITORY" \
