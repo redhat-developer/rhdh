@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 
 import { DYNAMIC_FEATURES_REMOTES_PATH } from './paths';
 import type { PreloadStore } from './store';
+import { stripEmpty } from './stripEmpty';
 
 /**
  * Build the preload.js body from the store contents.
@@ -36,21 +37,29 @@ import type { PreloadStore } from './store';
  * `@backstage/frontend-dynamic-feature-loader` reads it as a global.
  * Snapshot modules are already trimmed to the NFS-filtered exposedModules
  * by the collector, so no runtime match against `exposedModules` is needed.
+ *
+ * Embedded JSON is passed through {@link stripEmpty} so empty strings,
+ * arrays, and objects (recursively) do not bloat preload.js.
  */
 function buildPreloadBody(store: PreloadStore): string {
   const remotesPathJson = JSON.stringify(DYNAMIC_FEATURES_REMOTES_PATH);
+  const moduleInfoJson = JSON.stringify(stripEmpty(store.moduleInfo) ?? {});
+  const remotesJson = JSON.stringify(stripEmpty(store.remotes) ?? []);
+  const sharedModulesJson = JSON.stringify(
+    stripEmpty(store.sharedModuleUrls) ?? [],
+  );
 
   return [
     // --- 1. Prefill MF global snapshot --------------------------------------
     `window.__FEDERATION__ = window.__FEDERATION__ || {};`,
     `window.__FEDERATION__.moduleInfo = Object.assign(`,
     `  window.__FEDERATION__.moduleInfo || {},`,
-    `  ${JSON.stringify(store.moduleInfo)}`,
+    `  ${moduleInfoJson}`,
     `);`,
     // --- 2. Fetch shim + script/preload injection ---------------------------
     `(function() {`,
     `  var remotesPath = ${remotesPathJson};`,
-    `  var remotes = ${JSON.stringify(store.remotes)};`,
+    `  var remotes = ${remotesJson};`,
     `  var info = window.__FEDERATION__.moduleInfo;`,
     // fetch shim: intercept the remotes endpoint and return from local data
     `  var originalFetch = window.fetch;`,
@@ -80,7 +89,7 @@ function buildPreloadBody(store: PreloadStore): string {
     // be emitted BEFORE the per-remote links — under connection-limited
     // transports (HTTP/1.1) and real latency, a shared module queued
     // behind all remote entries and chunks delays every ESM plugin.
-    `  var sharedModules = ${JSON.stringify(store.sharedModuleUrls)};`,
+    `  var sharedModules = ${sharedModulesJson};`,
     `  for (var b = 0; b < sharedModules.length; b++) {`,
     `    var bh = sharedModules[b];`,
     `    if (!seen[bh]) {`,

@@ -288,6 +288,18 @@ describe('mountPreloadEndpoint', () => {
     expect(
       snap.modules.map((m: { moduleName: string }) => m.moduleName),
     ).toEqual(['alpha']);
+    // Empty arrays/objects/strings are stripped from the embedded snapshot
+    expect(snap.shared).toBeUndefined();
+    expect(snap.remotesInfo).toBeUndefined();
+    expect(snap.modules[0].assets.js.async).toBeUndefined();
+    expect(snap.modules[0].assets.css.async).toBeUndefined();
+    expect(snap.modules[0].assets.css.sync).toEqual([
+      'static/alpha.ddd44444.css',
+    ]);
+    // Fully-filtered remote keeps identity fields but drops empty modules
+    const filtered = moduleInfo.backstage__plugin_test_fully_filtered;
+    expect(filtered.remoteEntry).toBe('remoteEntry.js');
+    expect(filtered.modules).toBeUndefined();
   });
 
   it('modulepreloads the canonical shared-module URL for ESM entries', async () => {
