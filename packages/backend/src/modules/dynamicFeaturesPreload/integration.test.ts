@@ -8,10 +8,13 @@ import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { resolve as resolvePath } from 'node:path';
 
 import { dynamicFeaturesResolver } from '../dynamicFeaturesResolver';
+import { hashFeaturesBody } from './bootstrap';
 import {
+  DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH,
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_REMOTES_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
+  featuresBootstrapHashedPath,
 } from './paths';
 
 jest.setTimeout(60_000);
@@ -164,6 +167,42 @@ describe('dynamicFeaturesResolver wiring', () => {
     const res = await fetch(url);
 
     expect(res.status).toBe(404);
+  });
+
+  it('serves features bootstrap with classic remoteEntries and disables mass JS preloads', async () => {
+    const [preloadRes, featuresRes] = await Promise.all([
+      fetch(`http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`),
+      fetch(
+        `http://127.0.0.1:${port}${DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH}`,
+      ),
+    ]);
+
+    expect(preloadRes.ok).toBe(true);
+    expect(featuresRes.ok).toBe(true);
+
+    const preloadBody = await preloadRes.text();
+    const featuresBody = await featuresRes.text();
+
+    expect(preloadBody).toContain('"enabled":true');
+    // Mass classic remoteEntry/sync script preloads are off when bootstrap is active
+    expect(preloadBody).not.toContain('l.as = "script"');
+
+    // Fixture remoteEntries are no-op IIFEs; they must still appear in the bundle
+    expect(featuresBody).toContain('RHDH dynamic-features bootstrap');
+    expect(featuresBody).toContain('(function doNothing(){})();');
+    expect(featuresBody).toContain('plugin-test-mixed-features-dynamic');
+
+    const hash = hashFeaturesBody(featuresBody);
+    expect(featuresRes.headers.get('etag')).toBe(`"${hash}"`);
+
+    const hashedRes = await fetch(
+      `http://127.0.0.1:${port}${featuresBootstrapHashedPath(hash)}`,
+    );
+    expect(hashedRes.status).toBe(200);
+    expect(hashedRes.headers.get('cache-control')).toBe(
+      'public, max-age=31536000, immutable',
+    );
+    expect(await hashedRes.text()).toBe(featuresBody);
   });
 });
 

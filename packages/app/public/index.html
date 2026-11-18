@@ -43,6 +43,16 @@
       fetchpriority="high"
       src="/.backstage/dynamic-features-preload/preload.js"
     ></script>
+    <!--
+      Classic MF remoteEntry bootstrap (content-hashed sibling also served).
+      Must follow preload.js so moduleInfo exists first; both defer, so
+      document order is preserved before the app bundles. See
+      packages/backend/src/modules/dynamicFeaturesPreload/.
+    -->
+    <script
+      defer
+      src="/.backstage/dynamic-features-preload/features.js"
+    ></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

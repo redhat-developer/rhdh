@@ -9,6 +9,7 @@ import { Router } from 'express';
 import { collectPluginPreload } from './dynamicFeaturesPreload/collector';
 import { mountPreloadEndpoint } from './dynamicFeaturesPreload/handler';
 import {
+  DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH,
   DYNAMIC_FEATURES_PRELOAD_BASE_PATH,
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
@@ -51,10 +52,16 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
  * 1. Filters exposed modules to NFS entrypoints (FrontendPlugin / FrontendModule)
  * 2. Collects MF snapshot data for each plugin into a shared store
  * 3. Mounts a CSP-safe `preload.js` endpoint that prefills MF globals,
- *    shims the remotes fetch, and injects remoteEntry / sync-asset
- *    preload hints (or modulepreload hints for ESM-built remotes — never
- *    executing remoteEntry scripts)
- * 4. Registers the shared assets embedded in each plugin's flat
+ *    shims the remotes fetch, and (when features bootstrap is off)
+ *    injects remoteEntry / sync-asset preload hints (or modulepreload
+ *    hints for ESM-built remotes — never executing remoteEntry scripts
+ *    from preload.js itself)
+ * 4. Assembles a content-hashed `features.<hash>.js` bootstrap of classic
+ *    remoteEntry bodies (default on; config
+ *    `dynamicPlugins.frontend.featuresBootstrap.enabled`) so cold start
+ *    does not need O(N) remoteEntry fetches — MF `getRemoteEntryExports`
+ *    hits the already-registered `window[globalName]`
+ * 5. Registers the shared assets embedded in each plugin's flat
  *    `dist/shared/` directory (any file type; currently the
  *    self-contained ESM shared MF runtime module embedded by
  *    `rhdh-cli plugin export --shared-esm-runtime`), serves them from
@@ -65,8 +72,9 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
  *    provides it; files with the same name must be content-identical
  *    (a conflict fails the conflicting plugin — see `sharedAssets.ts`).
  *
- * The app's `index.html` must include a deferred script pointing at
- * DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH.
+ * The app's `index.html` must include deferred scripts pointing at
+ * DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH then
+ * DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH (order matters).
  */
 export const dynamicFeaturesResolver = createBackendPlugin({
   pluginId: 'dynamic-features-resolver',
@@ -82,6 +90,10 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         const backendBaseUrl = config.getString('backend.baseUrl');
         const store = createPreloadStore();
         const sharedAssets: SharedAssetRegistry = new Map();
+        const featuresBootstrapEnabled =
+          config.getOptionalBoolean(
+            'dynamicPlugins.frontend.featuresBootstrap.enabled',
+          ) ?? true;
 
         frontendRemotes.setResolverProvider({
           for(pluginName, pluginPackagePath) {
@@ -110,6 +122,7 @@ export const dynamicFeaturesResolver = createBackendPlugin({
                 collectPluginPreload(
                   store,
                   pluginName,
+                  pluginPackagePath,
                   manifest,
                   filtered,
                   backendBaseUrl,
@@ -122,11 +135,15 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         });
 
         const preloadRouter = Router();
-        mountPreloadEndpoint(preloadRouter, store);
+        mountPreloadEndpoint(preloadRouter, store, {
+          featuresBootstrapEnabled,
+          logger,
+        });
         rootHttpRouter.use(DYNAMIC_FEATURES_PRELOAD_BASE_PATH, preloadRouter);
 
         logger.info(
-          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}` +
+            ` (features bootstrap ${featuresBootstrapEnabled ? 'enabled' : 'disabled'} → ${DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH})`,
         );
 
         // Serve directly from the first plugin carrying a given shared
