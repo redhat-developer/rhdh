@@ -11,8 +11,8 @@ metadata:
       url: https://help.sonatype.com/repomanager3
 spec:
   type: openapi
-  system: janus-idp
-  owner: janus-authors
+  system: rhdh-examples
+  owner: rhdh-authors
   lifecycle: production
   definition:
     $openapi: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/apis/nexus-swagger.json

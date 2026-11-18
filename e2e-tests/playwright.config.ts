@@ -98,13 +98,15 @@ export default defineConfig({
         "**/playwright/seed.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-postgres.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-cloudsql.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        // Local-harness only (APP_DEFAULT_LANGUAGE=fr); see playwright.local-default-language.config.ts
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -119,11 +121,12 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-postgres.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -131,7 +134,7 @@ export default defineConfig({
       dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
         "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-postgres.spec.ts",
       ],
     },
     {
@@ -143,7 +146,7 @@ export default defineConfig({
         "**/playwright/e2e/smoke-test.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-postgres.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
@@ -155,6 +158,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -170,7 +174,7 @@ export default defineConfig({
         "**/playwright/seed.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-crunchy.spec.ts",
+        "**/playwright/e2e/external-database/verify-tls-config-with-external-postgres.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
         "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
@@ -181,6 +185,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugin-division-mode-schema/*.spec.ts",
         "**/playwright/e2e/fips-compliance.spec.ts",
+        "**/playwright/e2e/default-language.spec.ts",
       ],
     },
     {
@@ -205,6 +210,8 @@ export default defineConfig({
     {
       name: PW_PROJECT.ANY_TEST,
       testMatch: "**/*.spec.ts",
+      // Local-harness only (APP_DEFAULT_LANGUAGE=fr); see playwright.local-default-language.config.ts
+      testIgnore: ["**/playwright/e2e/default-language.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,

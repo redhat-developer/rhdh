@@ -48,7 +48,7 @@ metadata:
     github.com/project-slug: redhat-developer/rhdh
     github.com/team-slug: redhat-developer/rhdh-team
     quay.io/repository-slug: rhdh-community/rhdh
-    sonarqube.org/project-key: janus-idp_backstage-showcase
+    sonarqube.org/project-key: redhat-developer_rhdh
   tags:
     - backstage
     - rhdh

@@ -5,5 +5,5 @@ metadata:
   description: A collection of all groups
 spec:
   targets:
-    - ./groups/janus-authors.yaml
+    - ./groups/rhdh-authors.yaml
     - ./groups/rhdh-team.yaml

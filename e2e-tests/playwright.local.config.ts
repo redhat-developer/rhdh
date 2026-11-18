@@ -2,8 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 import {
   backendWebServer,
-  harnessConfigArgs,
-  harnessProcessEnv,
+  frontendUrl,
+  frontendWebServer,
   harnessReporters,
   isCI,
 } from "./playwright/support/local-harness-servers";
@@ -32,8 +32,6 @@ import {
  * mirror production RHDH.
  */
 
-const frontendUrl = "http://localhost:3000";
-
 export default defineConfig({
   testDir: "./playwright",
   // Fails fast if dynamic-plugins-root has not been populated.
@@ -56,6 +54,7 @@ export default defineConfig({
     "e2e/plugins/frontend/sidebar.spec.ts",
     "e2e/settings.spec.ts",
     "e2e/plugins/user-settings-info-card.spec.ts",
+    "e2e/branding.spec.ts",
   ],
   // The optional `-capable` keeps branches still carrying the old @cluster-free
   // spelling working while they land. Without it they are silently dropped from
@@ -82,17 +81,5 @@ export default defineConfig({
   expect: {
     timeout: 15 * 1000,
   },
-  webServer: [
-    backendWebServer(),
-    {
-      command: `backstage-cli package start ${harnessConfigArgs()}`,
-      cwd: "../packages/app",
-      env: harnessProcessEnv,
-      url: frontendUrl,
-      reuseExistingServer: !isCI,
-      timeout: 240 * 1000,
-      stdout: "pipe",
-      stderr: "pipe",
-    },
-  ],
+  webServer: [backendWebServer(), frontendWebServer()],
 });

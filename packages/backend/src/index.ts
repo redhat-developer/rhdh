@@ -7,7 +7,6 @@ import {
 
 import path from 'node:path';
 
-import { configureCorporateProxyAgent } from './corporate-proxy';
 import { getDefaultServiceFactories } from './defaultServiceFactories';
 import {
   dynamicFeaturesResolver,
@@ -22,9 +21,6 @@ const staticLogger = WinstonLogger.create({
   meta: { service: 'developer-hub-init' },
 });
 staticLogger.info('Starting Developer Hub backend');
-
-// RHIDP-2217: adds support for corporate proxy
-configureCorporateProxyAgent();
 
 const backend = createBackend();
 

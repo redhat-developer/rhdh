@@ -15,8 +15,8 @@ metadata:
       url: https://petstore3.swagger.io/api/v3/openapi.json
 spec:
   type: openapi
-  system: janus-idp
-  owner: janus-authors
+  system: rhdh-examples
+  owner: rhdh-authors
   lifecycle: production
   definition:
     $openapi: https://github.com/OAI/learn.openapis.org/blob/main/examples/v3.0/petstore.yaml

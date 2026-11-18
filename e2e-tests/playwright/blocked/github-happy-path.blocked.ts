@@ -162,7 +162,7 @@ test.describe("GitHub Happy path", { tag: "@blocked" }, () => {
   test("Verify that the following components were ingested into the Catalog", async () => {
     await catalogBrowsePage.openCatalogSidebar();
     await catalogBrowsePage.selectKind("Group");
-    await catalogBrowsePage.verifyComponentsInCatalog("Group", ["Janus-IDP Authors"]);
+    await catalogBrowsePage.verifyComponentsInCatalog("Group", ["RHDH Authors"]);
 
     await catalogBrowsePage.verifyComponentsInCatalog("API", ["Petstore"]);
     await catalogBrowsePage.verifyComponentsInCatalog("Component", ["Red Hat Developer Hub"]);
