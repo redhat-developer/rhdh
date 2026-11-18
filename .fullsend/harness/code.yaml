@@ -6,6 +6,10 @@ skills:
 allowed_remote_resources:
   - https://raw.githubusercontent.com/fullsend-ai/agents/
   - https://github.com/redhat-developer/rhdh-skills/
+# Scope Yarn's proxy bridge to Fullsend's sandbox, not every repo install.
+host_files:
+  - src: env/yarn-proxy.env
+    dest: /sandbox/workspace/.env.d/yarn-proxy.env
 # Allow the full upgrade, install and verification steps to finish.
 timeout_minutes: 60
 env:
