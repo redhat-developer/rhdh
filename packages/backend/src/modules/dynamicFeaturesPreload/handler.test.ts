@@ -88,10 +88,13 @@ function populatedStore(): PreloadStore {
   return store;
 }
 
-function createApp(store: PreloadStore) {
+function createApp(
+  store: PreloadStore,
+  options?: { preloadRemotesEnabled?: boolean },
+) {
   const app = express();
   const router = Router();
-  mountPreloadEndpoint(router, store);
+  mountPreloadEndpoint(router, store, options);
   app.use(router);
   return app;
 }
@@ -237,6 +240,39 @@ describe('mountPreloadEndpoint', () => {
 
     // The canonical shared-module URL (what the baked relative runtime
     // external resolves to) is modulepreloaded
+    expect(body).toContain(
+      'var sharedModules = ["http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs"]',
+    );
+    expect(body).toContain('bl.rel = "modulepreload"');
+  });
+
+  it('keeps moduleInfo + fetch shim but skips mass remoteEntry/sync preload when disabled', async () => {
+    ({ server, base } = await startServer(
+      createApp(populatedStore(), { preloadRemotesEnabled: false }),
+    ));
+    const body = await (await fetch(`${base}/preload.js`)).text();
+
+    expect(body).toContain('window.__FEDERATION__');
+    expect(body).toContain('moduleInfo');
+    expect(body).toContain('backstage__plugin_test_mixed_features');
+    expect(body).toContain('window.fetch = function(input, init)');
+    expect(body).toContain(
+      `var remotesPath = ${JSON.stringify(DYNAMIC_FEATURES_REMOTES_PATH)}`,
+    );
+
+    const remotesMatch = body.match(/var remotes = (\[.+?\]);/s);
+    expect(remotesMatch).not.toBeNull();
+    expect(JSON.parse(remotesMatch![1])).toHaveLength(2);
+
+    // No N× remoteEntry / sync link injection
+    expect(body).not.toContain(
+      'var entryHref = snap.publicPath + snap.remoteEntry',
+    );
+    expect(body).not.toContain('l.rel = "preload"');
+    expect(body).not.toContain('l.as = "script"');
+    expect(body).not.toContain('cl.as = "style"');
+
+    // Shared-module modulepreloads remain (O(few), not the stampede)
     expect(body).toContain(
       'var sharedModules = ["http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs"]',
     );

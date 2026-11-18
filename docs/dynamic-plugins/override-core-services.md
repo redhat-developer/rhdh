@@ -35,6 +35,8 @@ export default customRootHttpServerFactory;
 
 This `BackendFeature` overrides the default HTTP router service factory.  Because this is overriding the default implementation of a core service, the above example would need the `ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE` environment variable set to `true` so that the Developer Hub does not install the default implementation automatically.
 
+If you replace `core.rootHttpRouter`, re-include `dynamicRemotesStaticCacheMiddleware` from `packages/backend/src/middleware/dynamicRemotesStaticCache.ts` before routes so Module Federation remotes keep their Cache-Control policy (long-lived for hashed `/static/` chunks; `no-cache` revalidation for unhashed `remoteEntry.js` / `mf-manifest.json`).
+
 ## Override Environment Variables
 
 To allow a dynamic plugin to load a core service override, start the Developer Hub backend with the environment variable set that corresponds with the core service ID to be overridden.  Here is a list of the available environment variables and core service IDs:
