@@ -9,6 +9,7 @@ import { resolve as resolvePath } from 'node:path';
 
 import { dynamicFeaturesResolver } from '../dynamicFeaturesResolver';
 import {
+  DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH,
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_REMOTES_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
@@ -164,6 +165,34 @@ describe('dynamicFeaturesResolver wiring', () => {
     const res = await fetch(url);
 
     expect(res.status).toBe(404);
+  });
+
+  it('serves concatenated classic remoteEntries and skips mass classic remoteEntry preloads', async () => {
+    const [preloadRes, concatRes] = await Promise.all([
+      fetch(`http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`),
+      fetch(
+        `http://127.0.0.1:${port}${DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH}`,
+      ),
+    ]);
+
+    expect(preloadRes.ok).toBe(true);
+    expect(concatRes.ok).toBe(true);
+
+    const preloadBody = await preloadRes.text();
+    const concatBody = await concatRes.text();
+
+    expect(preloadBody).toContain('"enabled":true');
+    expect(preloadBody).toContain('var concatIncluded = {');
+    expect(preloadBody).toContain('"plugin-test-mixed-features-dynamic":1');
+    expect(preloadBody).toContain(
+      'var inConcat = !!concatIncluded[remotes[r].packageName]',
+    );
+    // Sync chunks still get preload hints (not inlined in option 3).
+    expect(preloadBody).toContain('l.as = "script"');
+
+    expect(concatBody).toContain('Object.defineProperty(document, "currentScript"');
+    expect(concatBody).toContain('plugin-test-mixed-features-dynamic');
+    expect(concatBody).toContain('(function doNothing(){})();');
   });
 });
 

@@ -32,6 +32,30 @@ export const DYNAMIC_FEATURES_PRELOAD_BASE_PATH =
  */
 export const DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH = `${DYNAMIC_FEATURES_PRELOAD_BASE_PATH}/preload.js`;
 
+/**
+ * Stable (unhashed) URL of the concatenated classic remoteEntries script.
+ * Must stay in sync with `packages/app/public/index.html`.
+ *
+ * Served with `Cache-Control: no-cache` + content ETag. Prefer the
+ * content-hashed sibling ({@link concatRemoteEntriesHashedPath}) for
+ * immutable long-cache fetches; `preload.js` embeds that URL when concat
+ * is active.
+ */
+export const DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH = `${DYNAMIC_FEATURES_PRELOAD_BASE_PATH}/features-remote-entries.js`;
+
+/** Build the content-hashed concatenated remoteEntries URL for a given hash. */
+export function concatRemoteEntriesHashedPath(hash: string): string {
+  return `${DYNAMIC_FEATURES_PRELOAD_BASE_PATH}/features-remote-entries.${hash}.js`;
+}
+
+/**
+ * Directory inside each deployed plugin package that holds the MF
+ * remote assets (`remoteEntry.js`, `mf-manifest.json`, `static/`).
+ * Matches `@backstage/backend-dynamic-feature-service`'s default
+ * `assetsPathFromPackage`.
+ */
+export const REMOTE_ASSETS_PATH_FROM_PACKAGE = 'dist';
+
 /** Default Module Federation manifest filename under each remote. */
 export const DYNAMIC_FEATURES_MANIFEST_FILE = 'mf-manifest.json';
 

@@ -386,6 +386,30 @@ Goal: minimize JavaScript on the **startup** path (sync size), not merely total 
 
 4. Smoke-test: open plugin routes, lazy menus/dropdowns, icons, translations, and sign-in. Watch for blank UI or missing nav items.
 
+### Prefer a fat `remoteEntry` (expose sync inside the entry)
+
+Keeping the NFS entry **lightweight in bytes** (async UI via `import()`) is still required. Separately, prefer that the **expose sync graph lives inside `remoteEntry.js`** so cold start does not need an extra `__federation_expose_*.chunk.js` (or similar) per plugin before the feature can register.
+
+| Goal | Meaning |
+| --- | --- |
+| Thin NFS source | Extension definition modules do not statically import heavy UI |
+| Fat remoteEntry artifact | Bundler inlines the small sync expose graph into `remoteEntry.js` so `assets.js.sync` for that expose is empty (or unused on the startup path) |
+
+**Why:** With hundreds of frontend dynamic plugins, each remote typically costs `remoteEntry.js` **plus** at least one expose sync chunk. A fat remoteEntry collapses that to **one** JS file per plugin for registration. RHDH can then concatenate classic remoteEntries into a single transfer (see backend `dynamic-features-preload`); fat remotes make that concat approach sufficient without also inlining sync chunks.
+
+**How to validate** after `rhdh-cli plugin export` (or your overlay/export pipeline):
+
+1. Open the derived package's `mf-manifest.json` (under `dist-dynamic/` / the exported `dist/`).
+2. Find the expose RHDH loads (package root `.` and/or `alpha`).
+3. Inspect that expose's `assets.js.sync`:
+   - **Ideal:** empty array — expose code is already in `remoteEntry`.
+   - **Common today:** one or more `static/….chunk.js` files — those still download on `loadRemote` even with a thin NFS entry.
+4. Confirm Network (cold load, cache disabled): for that remote, only `remoteEntry.js` is fetched before the FrontendPlugin/Module registers; later UI may still load async chunks via `import()`.
+
+**Build tooling note:** Making sync empty usually requires Module Federation / rspack export settings (for example how the expose entry is bundled relative to the container entry). That lives in `rhdh-cli` / the export overlay pipeline, not in the RHDH app repo. Until tooling defaults change, keep NFS source thin with `import()` and treat empty `assets.js.sync` as the export-time acceptance check.
+
+**Do not** make remoteEntry “fat” by statically importing page UI — that defeats the lightweight-entry rules above and produces a huge single file.
+
 ### Do / don't
 
 **Do**
@@ -396,6 +420,7 @@ Goal: minimize JavaScript on the **startup** path (sync size), not merely total 
 - Split optional UI onto secondary package/MF exports; import registration APIs from thin subpaths when available
 - Use thin `React.lazy` + `Suspense` shells when a blueprint requires a sync `element`
 - Inspect `mf-manifest.json` after migration and compare sync metrics
+- Prefer empty expose `assets.js.sync` (fat remoteEntry) once export tooling supports it — still keep UI behind `import()`
 
 **Don't**
 
@@ -405,7 +430,7 @@ Goal: minimize JavaScript on the **startup** path (sync size), not merely total 
 - Call `import()` at module scope in files that are statically imported from registration code
 - Re-export heavy UI from the NFS root when consumers only need registration APIs
 - Import peer-plugin `/components` building blocks when a local stub or `/blueprints` + `loader` is enough
-
+- Inline heavy UI into remoteEntry just to empty the sync list — keep registration thin, fatten only the small expose graph
 ---
 
 ## Configuration migration reference

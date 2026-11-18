@@ -50,9 +50,14 @@ describe('collectPluginPreload', () => {
     const logger = createMockLogger();
     const manifest = loadManifest('test-mixed-features-dynamic');
 
+    const pluginPackagePath = resolvePath(
+      fixturesRoot,
+      'test-mixed-features-dynamic',
+    );
     collectPluginPreload(
       store,
       'plugin-test-mixed-features-dynamic',
+      pluginPackagePath,
       manifest,
       ['alpha'],
       baseUrl,
@@ -68,6 +73,9 @@ describe('collectPluginPreload', () => {
       },
       exposedModules: ['alpha'],
     });
+    expect(store.remoteAssetsPaths['plugin-test-mixed-features-dynamic']).toBe(
+      resolvePath(pluginPackagePath, 'dist'),
+    );
 
     // Collector stores generateSnapshotFromManifest output (ProviderModuleInfo);
     // GlobalModuleInfo values are a wider union.
@@ -108,6 +116,7 @@ describe('collectPluginPreload', () => {
     collectPluginPreload(
       store,
       'plugin-test-mixed-features-dynamic',
+      resolvePath(fixturesRoot, 'test-mixed-features-dynamic'),
       manifest,
       ['alpha'],
       baseUrl,
@@ -133,6 +142,7 @@ describe('collectPluginPreload', () => {
     collectPluginPreload(
       store,
       'broken-plugin',
+      '/tmp/broken-plugin',
       { exposes: [] } as JsonObject,
       ['.'],
       baseUrl,
