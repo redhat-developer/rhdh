@@ -1,4 +1,5 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
+
 import type { Router } from 'express';
 
 import { createHash } from 'node:crypto';

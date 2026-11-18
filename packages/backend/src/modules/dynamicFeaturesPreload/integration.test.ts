@@ -7,8 +7,8 @@ import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 
 import { resolve as resolvePath } from 'node:path';
 
-import { hashFeaturesBody } from './bootstrap';
 import { dynamicFeaturesResolver } from '../dynamicFeaturesResolver';
+import { hashFeaturesBody } from './bootstrap';
 import {
   DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH,
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
@@ -172,7 +172,9 @@ describe('dynamicFeaturesResolver wiring', () => {
   it('serves features bootstrap with classic remoteEntries and disables mass JS preloads', async () => {
     const [preloadRes, featuresRes] = await Promise.all([
       fetch(`http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`),
-      fetch(`http://127.0.0.1:${port}${DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH}`),
+      fetch(
+        `http://127.0.0.1:${port}${DYNAMIC_FEATURES_BOOTSTRAP_SCRIPT_PATH}`,
+      ),
     ]);
 
     expect(preloadRes.ok).toBe(true);

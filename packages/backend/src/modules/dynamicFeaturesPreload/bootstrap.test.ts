@@ -1,16 +1,8 @@
-import {
-  mkdtempSync,
-  writeFileSync,
-  rmSync,
-  symlinkSync,
-} from 'node:fs';
+import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import {
-  assembleFeaturesBootstrap,
-  hashFeaturesBody,
-} from './bootstrap';
+import { assembleFeaturesBootstrap, hashFeaturesBody } from './bootstrap';
 import { createPreloadStore, type PreloadStore } from './store';
 
 function snap(
@@ -29,7 +21,7 @@ function snap(
     modules: [],
     publicPath: 'http://localhost:7007/remotes/x/',
     ...overrides,
-  } as PreloadStore['moduleInfo'][string];
+  } as unknown as PreloadStore['moduleInfo'][string];
 }
 
 describe('assembleFeaturesBootstrap', () => {

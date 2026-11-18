@@ -1,4 +1,5 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
+
 import type { ProviderModuleInfo } from '@module-federation/sdk';
 
 import { createHash } from 'node:crypto';
@@ -38,9 +39,7 @@ export interface FeaturesBootstrapArtifact {
   skipped: { packageName: string; reason: string }[];
 }
 
-function isProviderSnapshot(
-  value: unknown,
-): value is ProviderModuleInfo {
+function isProviderSnapshot(value: unknown): value is ProviderModuleInfo {
   return (
     !!value &&
     typeof value === 'object' &&
