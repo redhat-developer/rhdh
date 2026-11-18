@@ -9,6 +9,7 @@ import { resolve as resolvePath } from 'node:path';
 
 import { dynamicFeaturesResolver } from '../dynamicFeaturesResolver';
 import {
+  DYNAMIC_FEATURES_BULK_JSON_PATH,
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_REMOTES_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
@@ -97,6 +98,8 @@ describe('dynamicFeaturesResolver wiring', () => {
     const body = await preloadRes.text();
 
     expect(body).toContain('window.__FEDERATION__.moduleInfo');
+    expect(body).toContain('window.__DYNAMIC_FEATURES_BULK__');
+    expect(body).toContain('"enabled":true');
 
     // Parse the local `var remotes = [...]` inside the IIFE
     const remotesMatch = body.match(/var remotes = (\[.+?\]);/s);
@@ -110,6 +113,23 @@ describe('dynamicFeaturesResolver wiring', () => {
       );
       expect(match?.exposedModules).toEqual(remote.exposedModules);
       expect(match?.remoteInfo.name).toBe(remote.remoteInfo.name);
+    }
+  });
+
+  it('serves bulk.json with classic remoteEntry sources from fixtures', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_BULK_JSON_PATH}`,
+    );
+    expect(res.ok).toBe(true);
+    expect(res.headers.get('content-type')).toContain('application/json');
+    expect(res.headers.get('etag')).toMatch(/^"[0-9a-f]{16}"$/);
+
+    const payload = await res.json();
+    expect(payload.version).toBe(1);
+    expect(payload.evaluate.length).toBeGreaterThan(0);
+    for (const url of payload.evaluate) {
+      expect(typeof payload.sources[url]).toBe('string');
+      expect(payload.sources[url].length).toBeGreaterThan(0);
     }
   });
 

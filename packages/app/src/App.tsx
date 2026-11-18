@@ -1,6 +1,5 @@
 import type { IconElement } from "@backstage/frontend-plugin-api";
 import { createApp } from "@backstage/frontend-defaults";
-import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
 import catalogPlugin from "@backstage/plugin-catalog/alpha";
 import catalogImportBase from "@backstage/plugin-catalog-import/alpha";
 import catalogUnprocessedEntitiesPlugin from "@backstage/plugin-catalog-unprocessed-entities/alpha";
@@ -12,6 +11,7 @@ import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
 
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
+import { rhdhDynamicFrontendFeaturesLoader } from "./dynamicFeaturesBulk";
 import { catalogCreatedAtModule } from "./modules/catalog";
 import { rhdhScaffolderPlugin } from "./modules/scaffolder";
 import { userSettingsGeneralModule } from "./modules/user-settings";
@@ -39,7 +39,7 @@ const app = createApp({
     rhdhScaffolderPlugin, // Self-service page/nav title (RHDHBUGS-3676)
     searchPlugin,
     userSettingsPlugin,
-    dynamicFrontendFeaturesLoader(),
+    rhdhDynamicFrontendFeaturesLoader(), // option 2: bulk remoteEntries + MF hooks
     // RHDH modules (local to app)
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
     rhdhApisModule, // storage API

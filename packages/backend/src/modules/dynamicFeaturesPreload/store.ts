@@ -15,7 +15,7 @@ export interface FrontendPluginRemote {
 
 /**
  * Mutable store populated during the upstream remotes initialization (via the
- * resolver provider hooks) and read by the preload endpoint.
+ * resolver provider hooks) and read by the preload / bulk endpoints.
  *
  * The store starts empty. The upstream remotes router populates it
  * during its startup hook by calling `provider.for()` for each
@@ -30,12 +30,22 @@ export interface FrontendPluginRemote {
  * rel="preload">` hints directly from `remotes` + `moduleInfo` at render
  * time — no separate URL lists are needed. Snapshot modules are already
  * trimmed to match each remote's exposedModules.
+ *
+ * `remoteAssetsPaths` maps each remote's `packageName` to the on-disk
+ * assets directory (typically `<pluginPackagePath>/dist`) so the bulk
+ * endpoint can read `remoteEntry.js` / sync chunk bodies from disk.
  */
 export interface PreloadStore {
   /** Remotes list matching the /remotes JSON shape. */
   remotes: FrontendPluginRemote[];
   /** MF snapshot dictionary keyed by manifest.name. */
   moduleInfo: GlobalModuleInfo;
+  /**
+   * Absolute filesystem path of each remote's static assets directory
+   * (the directory that contains `remoteEntry.js` / `mf-manifest.json`),
+   * keyed by remotes `packageName`.
+   */
+  remoteAssetsPaths: Record<string, string>;
   /**
    * Canonical URLs of shared dynamic-plugin `.mjs` modules (deduped).
    *
@@ -58,6 +68,7 @@ export function createPreloadStore(): PreloadStore {
   return {
     remotes: [],
     moduleInfo: {},
+    remoteAssetsPaths: {},
     sharedModuleUrls: [],
   };
 }

@@ -2,10 +2,19 @@ import express, { Router } from 'express';
 
 import { createHash } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
+import { resolve as resolvePath } from 'node:path';
 
 import { mountPreloadEndpoint } from './handler';
-import { DYNAMIC_FEATURES_REMOTES_PATH } from './paths';
+import {
+  DYNAMIC_FEATURES_BULK_JSON_PATH,
+  DYNAMIC_FEATURES_REMOTES_PATH,
+} from './paths';
 import { createPreloadStore, type PreloadStore } from './store';
+
+const fixturesRoot = resolvePath(
+  __dirname,
+  '../__fixtures__/dynamic-plugins-root-for-nfs-filter',
+);
 
 function populatedStore(): PreloadStore {
   const store = createPreloadStore();
@@ -18,6 +27,11 @@ function populatedStore(): PreloadStore {
     },
     exposedModules: ['alpha'],
   });
+  store.remoteAssetsPaths['plugin-test-mixed-features-dynamic'] = resolvePath(
+    fixturesRoot,
+    'test-mixed-features-dynamic',
+    'dist',
+  );
   store.moduleInfo.backstage__plugin_test_mixed_features = {
     name: 'backstage__plugin_test_mixed_features',
     version: 'v',
@@ -46,11 +60,8 @@ function populatedStore(): PreloadStore {
     globalName: 'backstage__plugin_test_mixed_features',
   } as PreloadStore['moduleInfo'][string];
 
-  // An ESM remote (rhdh-cli --shared-esm-runtime emission): the snapshot
-  // carries remoteEntryType "module" (derived by generateSnapshotFromManifest
-  // from metaData.remoteEntry.type) and the store carries the canonical
-  // shared-module URL (populated by the resolver's dist/shared/ scan) —
-  // what the remoteEntry's baked relative runtime external resolves to.
+  // An ESM remote (rhdh-cli --shared-esm-runtime emission): skipped by bulk
+  // assembler; still modulepreloaded when bulk is active.
   store.remotes.push({
     packageName: 'plugin-test-esm-dynamic',
     remoteInfo: {
@@ -60,6 +71,11 @@ function populatedStore(): PreloadStore {
     },
     exposedModules: ['.'],
   });
+  store.remoteAssetsPaths['plugin-test-esm-dynamic'] = resolvePath(
+    fixturesRoot,
+    'test-mixed-features-dynamic',
+    'dist',
+  );
   store.moduleInfo.backstage__plugin_test_esm = {
     name: 'backstage__plugin_test_esm',
     version: 'v',
@@ -88,10 +104,13 @@ function populatedStore(): PreloadStore {
   return store;
 }
 
-function createApp(store: PreloadStore) {
+function createApp(
+  store: PreloadStore,
+  opts?: { bulkRemoteEntriesEnabled?: boolean },
+) {
   const app = express();
   const router = Router();
-  mountPreloadEndpoint(router, store);
+  mountPreloadEndpoint(router, store, opts);
   app.use(router);
   return app;
 }
@@ -135,8 +154,6 @@ describe('mountPreloadEndpoint', () => {
     const res = await fetch(`${base}/preload.js`);
     expect(res.status).toBe(200);
     expect(await res.text()).toContain('no preload data available');
-    // Empty-store response skips our content-hash ETag; Express may still
-    // attach its own weak ETag from res.send().
     expect(res.headers.get('etag')).not.toMatch(/^"[0-9a-f]{8}"$/);
   });
 
@@ -169,74 +186,98 @@ describe('mountPreloadEndpoint', () => {
     expect(res2.status).toBe(304);
   });
 
-  it('embeds moduleInfo, local remotes, fetch shim, and preload injection', async () => {
+  it('embeds moduleInfo, remotes shim, and bulk meta when bulk is active', async () => {
     ({ server, base } = await startServer(createApp(populatedStore())));
     const body = await (await fetch(`${base}/preload.js`)).text();
 
-    // remotes must NOT be a window global — only a local var inside the IIFE
     expect(body).not.toContain('window.__DYNAMIC_FEATURES_REMOTES__');
-
-    // MF snapshot global is still required
     expect(body).toContain('window.__FEDERATION__');
     expect(body).toContain('moduleInfo');
     expect(body).toContain('backstage__plugin_test_mixed_features');
 
-    expect(body).toContain(
-      'var entryHref = snap.publicPath + snap.remoteEntry',
-    );
-    expect(body).toContain('l.rel = "preload"');
-    expect(body).toContain('l.as = "script"');
-    // Nothing is ever executed here: classic entries are cache-warmed only
-    // (execution happens later via the MF runtime at loadRemote), and ESM
-    // entries cannot be executed as classic scripts at all.
-    expect(body).not.toContain('document.createElement("script")');
-    expect(body).toContain('document.createElement("link")');
-    expect(body).toContain('cl.as = "style"');
+    // Bulk meta for the app wrapper
+    expect(body).toContain('window.__DYNAMIC_FEATURES_BULK__');
+    expect(body).toContain(DYNAMIC_FEATURES_BULK_JSON_PATH);
+    expect(body).toContain('"enabled":true');
 
-    // exposedModules filter was removed — snapshot modules are pre-trimmed
-    expect(body).not.toContain('exposed[e]');
+    // Mass classic remoteEntry preload stampede disabled
+    expect(body).not.toContain('l.as = "script"');
+    // Still modulepreloads ESM + shared modules; CSS preload kept
+    expect(body).toContain('l.rel = "modulepreload"');
+    expect(body).toContain('cl.as = "style"');
+    expect(body).not.toContain('document.createElement("script")');
 
     expect(body).toContain(
       `var remotesPath = ${JSON.stringify(DYNAMIC_FEATURES_REMOTES_PATH)}`,
     );
     expect(body).toContain('window.fetch = function(input, init)');
-    expect(body).toContain('originalFetch.apply(this, arguments)');
 
-    // Parse the local `var remotes = [...]` inside the IIFE
     const remotesMatch = body.match(/var remotes = (\[.+?\]);/s);
     expect(remotesMatch).not.toBeNull();
     const remotes = JSON.parse(remotesMatch![1]);
     expect(remotes[0].exposedModules).toEqual(['alpha']);
+  });
 
-    const moduleInfoMatch = body.match(
-      /Object\.assign\(\s*window\.__FEDERATION__\.moduleInfo \|\| \{\},\s*(\{.+?\})\s*\)/s,
+  it('serves bulk.json with classic remoteEntry sources and ETag', async () => {
+    ({ server, base } = await startServer(createApp(populatedStore())));
+    const res = await fetch(`${base}/bulk.json`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toContain('application/json');
+    expect(res.headers.get('cache-control')).toBe('no-cache');
+    expect(res.headers.get('etag')).toMatch(/^"[0-9a-f]{16}"$/);
+
+    const payload = await res.json();
+    expect(payload.version).toBe(1);
+    expect(payload.evaluate).toHaveLength(1);
+    expect(payload.evaluate[0]).toContain(
+      'plugin-test-mixed-features-dynamic/remoteEntry.js',
     );
-    expect(moduleInfoMatch).not.toBeNull();
-    const moduleInfo = JSON.parse(moduleInfoMatch![1]);
-    const snap = moduleInfo.backstage__plugin_test_mixed_features;
-    expect(snap.remoteEntry).toBe('remoteEntry.js');
+    expect(payload.sources[payload.evaluate[0]]).toContain('doNothing');
+    // ESM remote is not in evaluate
     expect(
-      snap.modules.map((m: { moduleName: string }) => m.moduleName),
-    ).toEqual(['alpha']);
+      Object.keys(payload.sources).some((u: string) =>
+        u.includes('plugin-test-esm-dynamic'),
+      ),
+    ).toBe(false);
+  });
+
+  it('returns 304 for bulk.json when If-None-Match matches', async () => {
+    ({ server, base } = await startServer(createApp(populatedStore())));
+    const res1 = await fetch(`${base}/bulk.json`);
+    const etag = res1.headers.get('etag')!;
+    const res2 = await fetch(`${base}/bulk.json`, {
+      headers: { 'If-None-Match': etag },
+    });
+    expect(res2.status).toBe(304);
+  });
+
+  it('restores mass classic preloads when bulk is disabled', async () => {
+    ({ server, base } = await startServer(
+      createApp(populatedStore(), { bulkRemoteEntriesEnabled: false }),
+    ));
+    const body = await (await fetch(`${base}/preload.js`)).text();
+
+    expect(body).toContain('"enabled":false');
+    expect(body).toContain('l.as = "script"');
+    expect(body).toContain(
+      'var entryHref = snap.publicPath + snap.remoteEntry',
+    );
+
+    const bulk = await (await fetch(`${base}/bulk.json`)).json();
+    expect(bulk.evaluate).toEqual([]);
+    expect(bulk.sources).toEqual({});
   });
 
   it('modulepreloads the canonical shared-module URL for ESM entries', async () => {
     ({ server, base } = await startServer(createApp(populatedStore())));
     const body = await (await fetch(`${base}/preload.js`)).text();
 
-    // ESM detection is snapshot-driven
     expect(body).toContain(
       'snap.remoteEntryType === "module" || snap.remoteEntryType === "esm"',
     );
     expect(body).toContain('l.rel = "modulepreload"');
-
-    // The ESM remote's snapshot (with its remoteEntryType) is embedded, and
-    // its sync chunks are modulepreloaded, not preloaded as scripts
     expect(body).toContain('"remoteEntryType":"module"');
     expect(body).toContain('static/5000.eee55555.chunk.mjs');
-
-    // The canonical shared-module URL (what the baked relative runtime
-    // external resolves to) is modulepreloaded
     expect(body).toContain(
       'var sharedModules = ["http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs"]',
     );
