@@ -190,7 +190,9 @@ describe('dynamicFeaturesResolver wiring', () => {
     // Sync chunks still get preload hints (not inlined in option 3).
     expect(preloadBody).toContain('l.as = "script"');
 
-    expect(concatBody).toContain('Object.defineProperty(document, "currentScript"');
+    expect(concatBody).toContain(
+      'Object.defineProperty(document, "currentScript"',
+    );
     expect(concatBody).toContain('plugin-test-mixed-features-dynamic');
     expect(concatBody).toContain('(function doNothing(){})();');
   });

@@ -1,9 +1,4 @@
-import {
-  mkdtempSync,
-  writeFileSync,
-  rmSync,
-  symlinkSync,
-} from 'node:fs';
+import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -30,7 +25,7 @@ function snap(
     modules: [],
     publicPath: overrides.publicPath ?? 'http://localhost:7007/remotes/x/',
     ...overrides,
-  } as PreloadStore['moduleInfo'][string];
+  } as unknown as PreloadStore['moduleInfo'][string];
 }
 
 describe('assembleConcatRemoteEntries', () => {
@@ -133,9 +128,7 @@ describe('assembleConcatRemoteEntries', () => {
       'var remote_var_lib;remote_var_lib={get(){},init(){}};',
     );
     // Must NOT wrap the body in try { … } inside a function.
-    expect(artifact.body).not.toMatch(
-      /try \{\s*var remote_var_lib/,
-    );
+    expect(artifact.body).not.toMatch(/try \{\s*var remote_var_lib/);
     expect(artifact.body).toMatch(
       /}\)\(\);\nvar remote_var_lib;remote_var_lib=\{get\(\)\{\},init\(\)\{\}\};/,
     );

@@ -9,8 +9,8 @@ import { join } from 'node:path';
 import { hashConcatBody } from './concatRemoteEntries';
 import { mountPreloadEndpoint, type MountPreloadOptions } from './handler';
 import {
-  DYNAMIC_FEATURES_REMOTES_PATH,
   concatRemoteEntriesHashedPath,
+  DYNAMIC_FEATURES_REMOTES_PATH,
 } from './paths';
 import { createPreloadStore, type PreloadStore } from './store';
 
@@ -294,9 +294,7 @@ describe('mountPreloadEndpoint', () => {
       'window.backstage__plugin_test_mixed_features = { get() {}, init() {} };',
     );
     expect(body).toContain('plugin-test-mixed-features-dynamic');
-    expect(body).toContain(
-      'Object.defineProperty(document, "currentScript"',
-    );
+    expect(body).toContain('Object.defineProperty(document, "currentScript"');
 
     const hash = hashConcatBody(body);
     expect(res.headers.get('etag')).toBe(`"${hash}"`);

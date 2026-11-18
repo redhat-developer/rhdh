@@ -1,4 +1,5 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
+
 import type { ProviderModuleInfo } from '@module-federation/sdk';
 
 import { createHash } from 'node:crypto';

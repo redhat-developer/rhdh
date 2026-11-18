@@ -1,4 +1,5 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
+
 import type { Router } from 'express';
 
 import { createHash } from 'node:crypto';
@@ -8,9 +9,9 @@ import {
   type ConcatRemoteEntriesArtifact,
 } from './concatRemoteEntries';
 import {
+  concatRemoteEntriesHashedPath,
   DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH,
   DYNAMIC_FEATURES_REMOTES_PATH,
-  concatRemoteEntriesHashedPath,
 } from './paths';
 import type { PreloadStore } from './store';
 
@@ -323,12 +324,6 @@ export function mountPreloadEndpoint(
       return;
     }
     const etag = `"${concat.hash}"`;
-    sendJs(
-      req,
-      res,
-      concat.body,
-      etag,
-      'public, max-age=31536000, immutable',
-    );
+    sendJs(req, res, concat.body, etag, 'public, max-age=31536000, immutable');
   });
 }
