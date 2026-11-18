@@ -68,7 +68,7 @@ function isContentAddressed(name: string, content: Buffer): boolean {
  * serves) with an info log.
  *
  * For every `.mjs` file, the canonical shared-assets URL
- * (`${backendBaseUrl}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/<file>`)
+ * (`${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/<file>`, root-relative)
  * joins the preload store's modulepreload list — the URL that ESM
  * remote entries' baked relative runtime external resolves to.
  *
@@ -81,7 +81,6 @@ export function registerSharedAssets(
   store: PreloadStore,
   pluginPackagePath: string,
   pluginName: string,
-  backendBaseUrl: string,
   logger: LoggerService,
 ): void {
   const sharedRoot = path.join(
@@ -141,8 +140,9 @@ export function registerSharedAssets(
       if (name.endsWith('.mjs')) {
         // The canonical URL that ESM remote entries' baked relative
         // runtime external resolves to — modulepreloaded by preload.js.
+        // Root-relative (no backend hostname) to keep preload.js small.
         store.sharedModuleUrls.push(
-          `${backendBaseUrl}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/${name}`,
+          `${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/${name}`,
         );
       }
     }

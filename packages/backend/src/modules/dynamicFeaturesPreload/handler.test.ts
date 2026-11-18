@@ -15,7 +15,7 @@ function populatedStore(): PreloadStore {
     remoteInfo: {
       name: 'backstage__plugin_test_mixed_features',
       entry:
-        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/mf-manifest.json',
+        '/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/mf-manifest.json',
     },
     exposedModules: ['alpha'],
   });
@@ -42,7 +42,7 @@ function populatedStore(): PreloadStore {
       },
     ],
     publicPath:
-      'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/',
+      '/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/',
     remoteEntry: 'remoteEntry.js',
     globalName: 'backstage__plugin_test_mixed_features',
   } as PreloadStore['moduleInfo'][string];
@@ -57,7 +57,7 @@ function populatedStore(): PreloadStore {
     remoteInfo: {
       name: 'backstage__plugin_test_esm',
       entry:
-        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/mf-manifest.json',
+        '/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/mf-manifest.json',
     },
     exposedModules: ['.'],
   });
@@ -77,14 +77,13 @@ function populatedStore(): PreloadStore {
         },
       },
     ],
-    publicPath:
-      'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/',
+    publicPath: '/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/',
     remoteEntry: 'remoteEntry.js',
     remoteEntryType: 'module',
     globalName: 'backstage__plugin_test_esm',
   } as PreloadStore['moduleInfo'][string];
   store.sharedModuleUrls.push(
-    'http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs',
+    '/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs',
   );
 
   // A fully-filtered remote: all exposed modules removed by the NFS
@@ -94,7 +93,7 @@ function populatedStore(): PreloadStore {
     remoteInfo: {
       name: 'backstage__plugin_test_fully_filtered',
       entry:
-        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-fully-filtered-dynamic/mf-manifest.json',
+        '/.backstage/dynamic-features/remotes/plugin-test-fully-filtered-dynamic/mf-manifest.json',
     },
     exposedModules: [],
   });
@@ -106,7 +105,7 @@ function populatedStore(): PreloadStore {
     shared: [],
     modules: [],
     publicPath:
-      'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-fully-filtered-dynamic/',
+      '/.backstage/dynamic-features/remotes/plugin-test-fully-filtered-dynamic/',
     remoteEntry: 'remoteEntry.js',
     remoteEntryType: 'global',
     globalName: 'backstage__plugin_test_fully_filtered',
@@ -308,7 +307,7 @@ describe('mountPreloadEndpoint', () => {
     // The canonical shared-module URL (what the baked relative runtime
     // external resolves to) is modulepreloaded
     expect(body).toContain(
-      'var sharedModules = ["http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs"]',
+      'var sharedModules = ["/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs"]',
     );
     expect(body).toContain('bl.rel = "modulepreload"');
   });
@@ -357,7 +356,7 @@ describe('mountPreloadEndpoint', () => {
 
     const cssLinks = runPreloadBody(body).filter(l => l.as === 'style');
     expect(cssLinks.map(l => l.href)).toEqual([
-      'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/static/alpha.ddd44444.css',
+      '/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/static/alpha.ddd44444.css',
     ]);
     for (const link of cssLinks) {
       expect(link.crossOrigin).toBeUndefined();
@@ -383,12 +382,12 @@ describe('mountPreloadEndpoint', () => {
     ).toBe(false);
     expect(
       hrefs.includes(
-        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/remoteEntry.js',
+        '/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/remoteEntry.js',
       ),
     ).toBe(true);
     expect(
       hrefs.includes(
-        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/remoteEntry.js',
+        '/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/remoteEntry.js',
       ),
     ).toBe(true);
   });
