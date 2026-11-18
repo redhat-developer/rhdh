@@ -1,9 +1,9 @@
-import { evalClassicRemoteEntry } from './applyBulk';
+import { evalClassicRemoteEntry } from "./applyBulk";
 import {
   lookupBulkSource,
   markBulkExecuted,
   wasBulkExecuted,
-} from './sourceMap';
+} from "./sourceMap";
 
 /**
  * Minimal Module Federation runtime plugin shape used by
@@ -15,11 +15,9 @@ export interface RhdhMfRuntimePlugin {
   createScript?: (args: {
     url: string;
     attrs?: Record<string, unknown>;
-  }) => HTMLScriptElement | { script?: HTMLScriptElement; timeout?: number } | void;
-  fetch?: (
-    url: string,
-    init: RequestInit,
-  ) => Promise<Response> | false | void;
+  }) =>
+    HTMLScriptElement | { script?: HTMLScriptElement; timeout?: number } | void;
+  fetch?: (url: string, init: RequestInit) => Promise<Response> | false | void;
 }
 
 /**
@@ -32,8 +30,8 @@ export interface RhdhMfRuntimePlugin {
  * `publicPath: "auto"` — stripping `blob:` leaves the page origin.)
  */
 function noopLoadScript(): HTMLScriptElement {
-  const script = document.createElement('script');
-  script.src = 'data:text/javascript,';
+  const script = document.createElement("script");
+  script.src = "data:text/javascript,";
   return script;
 }
 
@@ -55,7 +53,7 @@ function noopLoadScript(): HTMLScriptElement {
  */
 export function createBulkRemoteEntriesMfPlugin(): RhdhMfRuntimePlugin {
   return {
-    name: 'rhdh-bulk-remote-entries',
+    name: "rhdh-bulk-remote-entries",
     createScript({ url }) {
       const source = lookupBulkSource(url);
       if (source === undefined) {
@@ -83,7 +81,7 @@ export function createBulkRemoteEntriesMfPlugin(): RhdhMfRuntimePlugin {
       return Promise.resolve(
         new Response(source, {
           status: 200,
-          headers: { 'Content-Type': 'application/javascript' },
+          headers: { "Content-Type": "application/javascript" },
         }),
       );
     },

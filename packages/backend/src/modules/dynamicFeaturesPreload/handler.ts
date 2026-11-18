@@ -1,4 +1,5 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
+
 import type { Router } from 'express';
 
 import { createHash } from 'node:crypto';
@@ -319,10 +320,7 @@ export function mountPreloadEndpoint(
     }
     const bulk = ensureBulk();
     const bulkActive = !!bulk;
-    if (
-      !cachedPreloadBody ||
-      cachedBulkActive !== bulkActive
-    ) {
+    if (!cachedPreloadBody || cachedBulkActive !== bulkActive) {
       cachedPreloadBody = buildPreloadBody(store, {
         bulkActive,
         bulkHash: bulk?.hash,
@@ -356,8 +354,7 @@ export function mountPreloadEndpoint(
     const bulk = ensureBulk();
     if (!bulk) {
       // Empty payload when disabled / nothing to include — client no-ops.
-      const empty =
-        '{"version":1,"sources":{},"evaluate":[]}\n';
+      const empty = '{"version":1,"sources":{},"evaluate":[]}\n';
       sendWithETag(
         req,
         res,

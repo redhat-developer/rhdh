@@ -1,6 +1,6 @@
-import { resolve as resolvePath } from 'node:path';
-import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { resolve as resolvePath } from 'node:path';
 
 import { assembleBulkRemoteEntries, hashBulkBody } from './bulk';
 import { createPreloadStore, type PreloadStore } from './store';
@@ -10,22 +10,24 @@ const fixturesRoot = resolvePath(
   '../__fixtures__/dynamic-plugins-root-for-nfs-filter',
 );
 
-function classicSnap(
-  overrides: Partial<PreloadStore['moduleInfo'][string]> & {
-    publicPath: string;
-    remoteEntry: string;
-  },
-): PreloadStore['moduleInfo'][string] {
+function classicSnap(overrides: {
+  publicPath: string;
+  remoteEntry: string;
+  name?: string;
+  globalName?: string;
+  remoteEntryType?: string;
+  modules?: unknown[];
+}): PreloadStore['moduleInfo'][string] {
   return {
-    name: 'backstage__plugin_test',
+    name: overrides.name ?? 'backstage__plugin_test',
     version: 'v',
     buildVersion: '0.0.0',
     remotesInfo: [],
     shared: [],
     modules: [],
-    globalName: 'backstage__plugin_test',
+    globalName: overrides.globalName ?? 'backstage__plugin_test',
     ...overrides,
-  } as PreloadStore['moduleInfo'][string];
+  } as unknown as PreloadStore['moduleInfo'][string];
 }
 
 describe('assembleBulkRemoteEntries', () => {
@@ -40,7 +42,8 @@ describe('assembleBulkRemoteEntries', () => {
       packageName,
       remoteInfo: {
         name: 'backstage__plugin_test_mixed_features',
-        entry: 'http://localhost:7007/.backstage/dynamic-features/remotes/x/mf-manifest.json',
+        entry:
+          'http://localhost:7007/.backstage/dynamic-features/remotes/x/mf-manifest.json',
       },
       exposedModules: ['alpha'],
     });

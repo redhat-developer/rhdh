@@ -9,7 +9,10 @@ const executed = new Set<string>();
 
 function pathnameKey(url: string): string | undefined {
   try {
-    const u = new URL(url, typeof window !== 'undefined' ? window.location.href : 'http://localhost');
+    const u = new URL(
+      url,
+      typeof window !== "undefined" ? window.location.href : "http://localhost",
+    );
     return `${u.pathname}${u.search}`;
   } catch {
     return undefined;

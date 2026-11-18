@@ -1,21 +1,21 @@
-import { dynamicFrontendFeaturesLoader } from '@backstage/frontend-dynamic-feature-loader';
+import { dynamicFrontendFeaturesLoader } from "@backstage/frontend-dynamic-feature-loader";
 import type {
   FrontendFeature,
   FrontendFeatureLoader,
-} from '@backstage/frontend-plugin-api';
-import type { ConfigApi } from '@backstage/core-plugin-api';
+} from "@backstage/frontend-plugin-api";
+import type { ConfigApi } from "@backstage/core-plugin-api";
 
-import { applyBulkRemoteEntries } from './applyBulk';
-import { createBulkRemoteEntriesMfPlugin } from './mfPlugin';
+import { applyBulkRemoteEntries } from "./applyBulk";
+import { createBulkRemoteEntriesMfPlugin } from "./mfPlugin";
 
 /**
  * Internal shape of a v1 feature loader — `loader` is implemented by
  * `createFrontendFeatureLoader` but not part of the public type export.
  */
 type FeatureLoaderInternal = FrontendFeatureLoader & {
-  loader(deps: { config: ConfigApi }): Promise<
-    (FrontendFeature | FrontendFeatureLoader)[]
-  >;
+  loader(deps: {
+    config: ConfigApi;
+  }): Promise<(FrontendFeature | FrontendFeatureLoader)[]>;
 };
 
 /**

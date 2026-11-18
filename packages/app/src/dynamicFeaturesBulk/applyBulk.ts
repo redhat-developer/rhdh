@@ -1,12 +1,9 @@
-import type { ConfigApi } from '@backstage/core-plugin-api';
+import type { ConfigApi } from "@backstage/core-plugin-api";
 
-import {
-  indexBulkSources,
-  markBulkExecuted,
-} from './sourceMap';
-import type { BulkRemoteEntriesPayload } from './types';
+import { indexBulkSources, markBulkExecuted } from "./sourceMap";
+import type { BulkRemoteEntriesPayload } from "./types";
 
-const DEFAULT_BULK_PATH = '/.backstage/dynamic-features-preload/bulk.json';
+const DEFAULT_BULK_PATH = "/.backstage/dynamic-features-preload/bulk.json";
 
 let applyPromise: Promise<void> | undefined;
 
@@ -21,10 +18,10 @@ let applyPromise: Promise<void> | undefined;
  * `__webpack_require__.p` match the remotes publicPath.
  */
 function withFakeCurrentScript<T>(entryUrl: string, fn: () => T): T {
-  const fake = { src: entryUrl, tagName: 'SCRIPT' as const };
+  const fake = { src: entryUrl, tagName: "SCRIPT" as const };
   const proto = Document.prototype;
-  const previous = Object.getOwnPropertyDescriptor(proto, 'currentScript');
-  Object.defineProperty(proto, 'currentScript', {
+  const previous = Object.getOwnPropertyDescriptor(proto, "currentScript");
+  Object.defineProperty(proto, "currentScript", {
     configurable: true,
     enumerable: true,
     get: () => fake,
@@ -33,7 +30,7 @@ function withFakeCurrentScript<T>(entryUrl: string, fn: () => T): T {
     return fn();
   } finally {
     if (previous) {
-      Object.defineProperty(proto, 'currentScript', previous);
+      Object.defineProperty(proto, "currentScript", previous);
     } else {
       delete (proto as { currentScript?: unknown }).currentScript;
     }
@@ -66,7 +63,7 @@ export function evalClassicRemoteEntry(
 }
 
 function bulkMeta() {
-  return typeof window !== 'undefined'
+  return typeof window !== "undefined"
     ? window.__DYNAMIC_FEATURES_BULK__
     : undefined;
 }
@@ -94,15 +91,11 @@ async function doApplyBulk(backendBaseUrl: string): Promise<void> {
   try {
     response = await fetch(url);
   } catch (err) {
-    console.warn(
-      `dynamic-features-bulk: failed to fetch ${url}: ${err}`,
-    );
+    console.warn(`dynamic-features-bulk: failed to fetch ${url}: ${err}`);
     return;
   }
   if (!response.ok) {
-    console.warn(
-      `dynamic-features-bulk: ${url} returned ${response.status}`,
-    );
+    console.warn(`dynamic-features-bulk: ${url} returned ${response.status}`);
     return;
   }
 
@@ -122,7 +115,7 @@ async function doApplyBulk(backendBaseUrl: string): Promise<void> {
 
   for (const entryUrl of payload.evaluate) {
     const source = payload.sources[entryUrl];
-    if (typeof source !== 'string') {
+    if (typeof source !== "string") {
       continue;
     }
     try {
@@ -147,10 +140,10 @@ export function applyBulkRemoteEntries(
 ): Promise<void> {
   if (!applyPromise) {
     const backendBaseUrl =
-      typeof configOrBaseUrl === 'string'
+      typeof configOrBaseUrl === "string"
         ? configOrBaseUrl
-        : configOrBaseUrl.getString('backend.baseUrl');
-    applyPromise = doApplyBulk(backendBaseUrl).catch(err => {
+        : configOrBaseUrl.getString("backend.baseUrl");
+    applyPromise = doApplyBulk(backendBaseUrl).catch((err) => {
       console.warn(`dynamic-features-bulk: apply failed: ${err}`);
     });
   }

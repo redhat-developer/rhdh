@@ -1,3 +1,3 @@
-export { rhdhDynamicFrontendFeaturesLoader } from './loader';
-export { applyBulkRemoteEntries, evalClassicRemoteEntry } from './applyBulk';
-export { createBulkRemoteEntriesMfPlugin } from './mfPlugin';
+export { rhdhDynamicFrontendFeaturesLoader } from "./loader";
+export { applyBulkRemoteEntries, evalClassicRemoteEntry } from "./applyBulk";
+export { createBulkRemoteEntriesMfPlugin } from "./mfPlugin";
