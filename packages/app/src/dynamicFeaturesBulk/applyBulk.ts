@@ -91,10 +91,12 @@ async function doApplyBulk(backendBaseUrl: string): Promise<void> {
   try {
     response = await fetch(url);
   } catch (err) {
+    // eslint-disable-next-line no-console -- bootstrap path has no app logger yet
     console.warn(`dynamic-features-bulk: failed to fetch ${url}: ${err}`);
     return;
   }
   if (!response.ok) {
+    // eslint-disable-next-line no-console -- bootstrap path has no app logger yet
     console.warn(`dynamic-features-bulk: ${url} returned ${response.status}`);
     return;
   }
@@ -103,6 +105,7 @@ async function doApplyBulk(backendBaseUrl: string): Promise<void> {
   try {
     payload = (await response.json()) as BulkRemoteEntriesPayload;
   } catch (err) {
+    // eslint-disable-next-line no-console -- bootstrap path has no app logger yet
     console.warn(`dynamic-features-bulk: invalid JSON from ${url}: ${err}`);
     return;
   }
@@ -122,6 +125,7 @@ async function doApplyBulk(backendBaseUrl: string): Promise<void> {
       evalClassicRemoteEntry(source, entryUrl);
       markBulkExecuted(entryUrl);
     } catch (err) {
+      // eslint-disable-next-line no-console -- bootstrap path has no app logger yet
       console.error(
         `dynamic-features-bulk: failed evaluating remoteEntry ${entryUrl}: ${err}`,
       );
@@ -144,6 +148,7 @@ export function applyBulkRemoteEntries(
         ? configOrBaseUrl
         : configOrBaseUrl.getString("backend.baseUrl");
     applyPromise = doApplyBulk(backendBaseUrl).catch((err) => {
+      // eslint-disable-next-line no-console -- bootstrap path has no app logger yet
       console.warn(`dynamic-features-bulk: apply failed: ${err}`);
     });
   }

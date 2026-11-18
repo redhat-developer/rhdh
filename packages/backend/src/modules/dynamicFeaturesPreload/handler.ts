@@ -300,14 +300,11 @@ export function mountPreloadEndpoint(
     if (cachedBulk === null) {
       cachedBulk = assembleBulkRemoteEntries(store, logger);
       if (cachedBulk) {
+        const skipped = cachedBulk.skipped.length
+          ? `, skipped=${cachedBulk.skipped.length}`
+          : '';
         logger?.info(
-          `dynamic-features-bulk: assembled ${cachedBulk.includedRemoteEntries.length} classic remoteEntries` +
-            ` + ${cachedBulk.includedSyncChunkUrls.length} sync chunks` +
-            ` (hash=${cachedBulk.hash}` +
-            (cachedBulk.skipped.length
-              ? `, skipped=${cachedBulk.skipped.length}`
-              : '') +
-            `)`,
+          `dynamic-features-bulk: assembled ${cachedBulk.includedRemoteEntries.length} classic remoteEntries + ${cachedBulk.includedSyncChunkUrls.length} sync chunks (hash=${cachedBulk.hash}${skipped})`,
         );
       }
     }

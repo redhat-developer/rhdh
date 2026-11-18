@@ -54,10 +54,10 @@ function noopLoadScript(): HTMLScriptElement {
 export function createBulkRemoteEntriesMfPlugin(): RhdhMfRuntimePlugin {
   return {
     name: "rhdh-bulk-remote-entries",
-    createScript({ url }) {
+    createScript({ url }): HTMLScriptElement | void {
       const source = lookupBulkSource(url);
       if (source === undefined) {
-        return;
+        return undefined;
       }
       if (wasBulkExecuted(url)) {
         return noopLoadScript();
@@ -66,17 +66,18 @@ export function createBulkRemoteEntriesMfPlugin(): RhdhMfRuntimePlugin {
         evalClassicRemoteEntry(source, url);
         markBulkExecuted(url);
       } catch (err) {
+        // eslint-disable-next-line no-console -- bootstrap path has no app logger yet
         console.error(
           `dynamic-features-bulk: createScript failed for ${url}: ${err}`,
         );
-        return;
+        return undefined;
       }
       return noopLoadScript();
     },
-    fetch(url) {
+    fetch(url): Promise<Response> | void {
       const source = lookupBulkSource(url);
       if (source === undefined) {
-        return;
+        return undefined;
       }
       return Promise.resolve(
         new Response(source, {
