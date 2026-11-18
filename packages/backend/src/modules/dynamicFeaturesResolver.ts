@@ -9,6 +9,7 @@ import { Router } from 'express';
 import { collectPluginPreload } from './dynamicFeaturesPreload/collector';
 import { mountPreloadEndpoint } from './dynamicFeaturesPreload/handler';
 import {
+  DYNAMIC_FEATURES_BULK_JSON_PATH,
   DYNAMIC_FEATURES_PRELOAD_BASE_PATH,
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
@@ -51,10 +52,15 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
  * 1. Filters exposed modules to NFS entrypoints (FrontendPlugin / FrontendModule)
  * 2. Collects MF snapshot data for each plugin into a shared store
  * 3. Mounts a CSP-safe `preload.js` endpoint that prefills MF globals,
- *    shims the remotes fetch, and injects remoteEntry / sync-asset
- *    preload hints (or modulepreload hints for ESM-built remotes — never
- *    executing remoteEntry scripts)
- * 4. Registers the shared assets embedded in each plugin's flat
+ *    shims the remotes fetch, and (when bulk mode is off) injects
+ *    remoteEntry / sync-asset preload hints (or modulepreload hints for
+ *    ESM-built remotes — never executing remoteEntry scripts from
+ *    preload.js itself)
+ * 4. Serves `bulk.json` (option 2; default on via config
+ *    `dynamicPlugins.frontend.bulkRemoteEntries.enabled`) — a URL-keyed
+ *    map of classic remoteEntry (+ expose sync JS) sources so the app
+ *    can eval containers once and short-circuit MF `createScript`/`fetch`
+ * 5. Registers the shared assets embedded in each plugin's flat
  *    `dist/shared/` directory (any file type; currently the
  *    self-contained ESM shared MF runtime module embedded by
  *    `rhdh-cli plugin export --shared-esm-runtime`), serves them from
@@ -66,7 +72,8 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
  *    (a conflict fails the conflicting plugin — see `sharedAssets.ts`).
  *
  * The app's `index.html` must include a deferred script pointing at
- * DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH.
+ * DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH. The app bulk wrapper reads
+ * `window.__DYNAMIC_FEATURES_BULK__` set by preload.js.
  */
 export const dynamicFeaturesResolver = createBackendPlugin({
   pluginId: 'dynamic-features-resolver',
@@ -82,6 +89,10 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         const backendBaseUrl = config.getString('backend.baseUrl');
         const store = createPreloadStore();
         const sharedAssets: SharedAssetRegistry = new Map();
+        const bulkRemoteEntriesEnabled =
+          config.getOptionalBoolean(
+            'dynamicPlugins.frontend.bulkRemoteEntries.enabled',
+          ) ?? true;
 
         frontendRemotes.setResolverProvider({
           for(pluginName, pluginPackagePath) {
@@ -110,6 +121,7 @@ export const dynamicFeaturesResolver = createBackendPlugin({
                 collectPluginPreload(
                   store,
                   pluginName,
+                  pluginPackagePath,
                   manifest,
                   filtered,
                   backendBaseUrl,
@@ -122,11 +134,15 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         });
 
         const preloadRouter = Router();
-        mountPreloadEndpoint(preloadRouter, store);
+        mountPreloadEndpoint(preloadRouter, store, {
+          bulkRemoteEntriesEnabled,
+          logger,
+        });
         rootHttpRouter.use(DYNAMIC_FEATURES_PRELOAD_BASE_PATH, preloadRouter);
 
         logger.info(
-          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}` +
+            ` (bulk remoteEntries ${bulkRemoteEntriesEnabled ? 'enabled' : 'disabled'} → ${DYNAMIC_FEATURES_BULK_JSON_PATH})`,
         );
 
         // Serve directly from the first plugin carrying a given shared

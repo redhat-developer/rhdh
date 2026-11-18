@@ -32,6 +32,20 @@ export const DYNAMIC_FEATURES_PRELOAD_BASE_PATH =
  */
 export const DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH = `${DYNAMIC_FEATURES_PRELOAD_BASE_PATH}/preload.js`;
 
+/**
+ * Absolute URL path of the bulk remote-entries JSON (option 2).
+ * URL-keyed source map consumed by the app before `loadRemote`.
+ */
+export const DYNAMIC_FEATURES_BULK_JSON_PATH = `${DYNAMIC_FEATURES_PRELOAD_BASE_PATH}/bulk.json`;
+
+/**
+ * Directory inside each deployed plugin package that holds the MF
+ * remote assets (`remoteEntry.js`, `mf-manifest.json`, `static/`).
+ * Matches `@backstage/backend-dynamic-feature-service`'s default
+ * `assetsPathFromPackage`.
+ */
+export const REMOTE_ASSETS_PATH_FROM_PACKAGE = 'dist';
+
 /** Default Module Federation manifest filename under each remote. */
 export const DYNAMIC_FEATURES_MANIFEST_FILE = 'mf-manifest.json';
 
