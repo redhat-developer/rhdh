@@ -9,6 +9,7 @@ import { Router } from 'express';
 import { collectPluginPreload } from './dynamicFeaturesPreload/collector';
 import { mountPreloadEndpoint } from './dynamicFeaturesPreload/handler';
 import {
+  DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH,
   DYNAMIC_FEATURES_PRELOAD_BASE_PATH,
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
@@ -53,8 +54,15 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
  * 3. Mounts a CSP-safe `preload.js` endpoint that prefills MF globals,
  *    shims the remotes fetch, and injects remoteEntry / sync-asset
  *    preload hints (or modulepreload hints for ESM-built remotes — never
- *    executing remoteEntry scripts)
- * 4. Registers the shared assets embedded in each plugin's flat
+ *    executing remoteEntry scripts from preload.js itself). When classic
+ *    remoteEntry concatenation is active, mass classic remoteEntry
+ *    `<link rel=preload>` hints are skipped.
+ * 4. Assembles a content-hashed `features-remote-entries.<hash>.js` of
+ *    classic remoteEntry bodies (default on; config
+ *    `dynamicPlugins.frontend.concatRemoteEntries.enabled`) so cold start
+ *    does not need O(N) remoteEntry fetches — MF `getRemoteEntryExports`
+ *    hits the already-registered `window[globalName]`
+ * 5. Registers the shared assets embedded in each plugin's flat
  *    `dist/shared/` directory (any file type; currently the
  *    self-contained ESM shared MF runtime module embedded by
  *    `rhdh-cli plugin export --shared-esm-runtime`), serves them from
@@ -65,8 +73,9 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
  *    provides it; files with the same name must be content-identical
  *    (a conflict fails the conflicting plugin — see `sharedAssets.ts`).
  *
- * The app's `index.html` must include a deferred script pointing at
- * DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH.
+ * The app's `index.html` must include deferred scripts pointing at
+ * DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH then
+ * DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH (order matters).
  */
 export const dynamicFeaturesResolver = createBackendPlugin({
   pluginId: 'dynamic-features-resolver',
@@ -82,6 +91,10 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         const backendBaseUrl = config.getString('backend.baseUrl');
         const store = createPreloadStore();
         const sharedAssets: SharedAssetRegistry = new Map();
+        const concatRemoteEntriesEnabled =
+          config.getOptionalBoolean(
+            'dynamicPlugins.frontend.concatRemoteEntries.enabled',
+          ) ?? true;
 
         frontendRemotes.setResolverProvider({
           for(pluginName, pluginPackagePath) {
@@ -110,6 +123,7 @@ export const dynamicFeaturesResolver = createBackendPlugin({
                 collectPluginPreload(
                   store,
                   pluginName,
+                  pluginPackagePath,
                   manifest,
                   filtered,
                   backendBaseUrl,
@@ -122,11 +136,15 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         });
 
         const preloadRouter = Router();
-        mountPreloadEndpoint(preloadRouter, store);
+        mountPreloadEndpoint(preloadRouter, store, {
+          concatRemoteEntriesEnabled,
+          logger,
+        });
         rootHttpRouter.use(DYNAMIC_FEATURES_PRELOAD_BASE_PATH, preloadRouter);
 
         logger.info(
-          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+          `dynamic-features-resolver: preload endpoint at ${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}` +
+            ` (concat remoteEntries ${concatRemoteEntriesEnabled ? 'enabled' : 'disabled'} → ${DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH})`,
         );
 
         // Serve directly from the first plugin carrying a given shared

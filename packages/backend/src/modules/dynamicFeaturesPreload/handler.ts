@@ -1,9 +1,35 @@
+import type { LoggerService } from '@backstage/backend-plugin-api';
+
 import type { Router } from 'express';
 
 import { createHash } from 'node:crypto';
 
-import { DYNAMIC_FEATURES_REMOTES_PATH } from './paths';
+import {
+  assembleConcatRemoteEntries,
+  type ConcatRemoteEntriesArtifact,
+} from './concatRemoteEntries';
+import {
+  concatRemoteEntriesHashedPath,
+  DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH,
+  DYNAMIC_FEATURES_REMOTES_PATH,
+} from './paths';
 import type { PreloadStore } from './store';
+
+export interface MountPreloadOptions {
+  /**
+   * When true (default), assemble classic remoteEntries into
+   * `features-remote-entries.<hash>.js`, load it from index.html / the
+   * stable `features-remote-entries.js` alias, and skip classic
+   * remoteEntry `<link rel=preload>` only for remotes included in that
+   * concat (skipped classic remotes still get a preload hint).
+   *
+   * Sync JS/CSS preload hints remain (exposes are not inlined). Falls
+   * back to mass remoteEntry preloads when the assembler finds nothing
+   * to include.
+   */
+  concatRemoteEntriesEnabled?: boolean;
+  logger?: LoggerService;
+}
 
 /**
  * Build the preload.js body from the store contents.
@@ -15,22 +41,40 @@ import type { PreloadStore } from './store';
  * 2. In a single IIFE that closes over a local `remotes` array:
  *    a. Installs a `fetch` shim that serves the remotes list without a
  *       network hop when the app later requests the remotes endpoint.
- *    b. Injects preload hints for each remoteEntry and for sync chunks of
- *       exposed modules (never executing anything here). Classic entries
- *       get `<link rel="preload" as="script">`; ESM entries (snapshot
- *       remoteEntryType "module"/"esm", from rhdh-cli's
- *       --shared-esm-runtime emission) get `<link rel="modulepreload">`,
- *       which also pre-compiles the module. Canonical shared-module URLs
- *       (what ESM remote entries' baked relative runtime external
- *       resolves to) are modulepreloaded as well.
+ *    b. Injects preload hints for remoteEntries and for sync chunks of
+ *       exposed modules. Classic remotes whose bodies were concatenated
+ *       skip remoteEntry `<link rel=preload>` (they already run via
+ *       features-remote-entries.js); classic remotes skipped by the
+ *       assembler still get a preload hint. ESM entries keep
+ *       modulepreload. Sync JS/CSS hints always remain.
  *
  * Remotes data is NOT placed on `window` — nothing in the app or
  * `@backstage/frontend-dynamic-feature-loader` reads it as a global.
  * Snapshot modules are already trimmed to the NFS-filtered exposedModules
  * by the collector, so no runtime match against `exposedModules` is needed.
  */
-function buildPreloadBody(store: PreloadStore): string {
+function buildPreloadBody(
+  store: PreloadStore,
+  opts: {
+    concatRemoteEntriesActive: boolean;
+    concatRemoteEntriesHash?: string;
+    /** packageNames whose classic remoteEntry was included in the concat. */
+    concatIncludedPackageNames?: string[];
+  },
+): string {
   const remotesPathJson = JSON.stringify(DYNAMIC_FEATURES_REMOTES_PATH);
+  const concatMeta = opts.concatRemoteEntriesActive
+    ? {
+        enabled: true,
+        hash: opts.concatRemoteEntriesHash,
+        url: concatRemoteEntriesHashedPath(opts.concatRemoteEntriesHash!),
+        stableUrl: DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH,
+      }
+    : { enabled: false };
+  const concatIncluded: Record<string, 1> = {};
+  for (const name of opts.concatIncludedPackageNames ?? []) {
+    concatIncluded[name] = 1;
+  }
 
   return [
     // --- 1. Prefill MF global snapshot --------------------------------------
@@ -39,11 +83,16 @@ function buildPreloadBody(store: PreloadStore): string {
     `  window.__FEDERATION__.moduleInfo || {},`,
     `  ${JSON.stringify(store.moduleInfo)}`,
     `);`,
-    // --- 2. Fetch shim + script/preload injection ---------------------------
+    // Discoverable by operators / debugging; index.html loads
+    // features-remote-entries.js as a sibling defer script (not injected here).
+    `window.__DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES__ = ${JSON.stringify(concatMeta)};`,
+    // --- 2. Fetch shim + preload injection ----------------------------------
     `(function() {`,
     `  var remotesPath = ${remotesPathJson};`,
     `  var remotes = ${JSON.stringify(store.remotes)};`,
     `  var info = window.__FEDERATION__.moduleInfo;`,
+    // Only skip classic remoteEntry preload for remotes actually in the concat.
+    `  var concatIncluded = ${JSON.stringify(concatIncluded)};`,
     // fetch shim: intercept the remotes endpoint and return from local data
     `  var originalFetch = window.fetch;`,
     `  window.fetch = function(input, init) {`,
@@ -63,33 +112,27 @@ function buildPreloadBody(store: PreloadStore): string {
     `  };`,
     // remoteEntry preloads + sync-asset preloads — batch into a fragment
     // so the browser sees a single head mutation instead of N appends.
+    // Classic remotes in concatIncluded skip remoteEntry links (bodies
+    // already live in features-remote-entries.js); sync JS/CSS remain.
     `  var frag = document.createDocumentFragment();`,
     `  var seen = {};`,
     `  for (var r = 0; r < remotes.length; r++) {`,
     `    var snap = info[remotes[r].remoteInfo.name];`,
     `    if (!snap || !snap.publicPath) continue;`,
-    // ESM entries (rhdh-cli --shared-esm-runtime): modulepreload fetches
-    // AND pre-compiles the module graph. Classic entries: preload the
-    // script for cache warming only — execution happens later via the MF
-    // runtime (loadRemote). Nothing is ever executed here.
     `    var isEsm = snap.remoteEntryType === "module" || snap.remoteEntryType === "esm";`,
     `    var entryHref = snap.publicPath + snap.remoteEntry;`,
-    `    if (!seen[entryHref]) {`,
+    `    var inConcat = !!concatIncluded[remotes[r].packageName];`,
+    `    if (!seen[entryHref] && (isEsm || !inConcat)) {`,
     `      seen[entryHref] = 1;`,
     `      var l = document.createElement("link");`,
     `      if (isEsm) { l.rel = "modulepreload"; l.href = entryHref; }`,
     `      else { l.rel = "preload"; l.href = entryHref; l.as = "script"; }`,
     `      frag.appendChild(l);`,
     `    }`,
-    // Walk snapshot modules (already trimmed to exposedModules by collector)
-    // to inject preload hints for sync JS/CSS chunks. Sync chunks of ESM
-    // remotes are ES modules too (chunkLoading: "import") — modulepreload
-    // them so the CORS-mode module fetch matches.
     `    var mods = snap.modules || [];`,
     `    for (var m = 0; m < mods.length; m++) {`,
     `      var a = mods[m].assets;`,
     `      if (!a) continue;`,
-    // Sync JS chunks
     `      var js = (a.js && a.js.sync) || [];`,
     `      for (var j = 0; j < js.length; j++) {`,
     `        var href = snap.publicPath + js[j];`,
@@ -101,7 +144,6 @@ function buildPreloadBody(store: PreloadStore): string {
     `          frag.appendChild(l);`,
     `        }`,
     `      }`,
-    // Sync CSS chunks
     `      var css = (a.css && a.css.sync) || [];`,
     `      for (var k = 0; k < css.length; k++) {`,
     `        var ch = snap.publicPath + css[k];`,
@@ -115,10 +157,6 @@ function buildPreloadBody(store: PreloadStore): string {
     `      }`,
     `    }`,
     `  }`,
-    // Canonical shared-module URLs (backend baseUrl-anchored): what the
-    // ESM remote entries' baked relative runtime external resolves to —
-    // modulepreload so they are fetched and pre-compiled before the
-    // first ESM remote entry evaluates.
     `  var sharedModules = ${JSON.stringify(store.sharedModuleUrls)};`,
     `  for (var b = 0; b < sharedModules.length; b++) {`,
     `    var bh = sharedModules[b];`,
@@ -141,57 +179,151 @@ function contentHash(body: string): string {
   return createHash('sha256').update(body).digest('hex').slice(0, 8);
 }
 
+function sendJs(
+  req: { headers: Record<string, unknown> },
+  res: {
+    setHeader: (k: string, v: string) => void;
+    status: (n: number) => { end: () => void };
+    send: (body: string) => void;
+  },
+  body: string,
+  etag: string,
+  cacheControl: string,
+): void {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.setHeader('Cache-Control', cacheControl);
+  res.setHeader('ETag', etag);
+  if (req.headers['if-none-match'] === etag) {
+    res.status(304).end();
+    return;
+  }
+  res.send(body);
+}
+
 /**
- * Mount the preload endpoint on the given router.
+ * Mount the preload + concatenated-remoteEntries endpoints on the given router.
  *
- * Serves `preload.js` with revalidation caching:
- *   Cache-Control: no-cache   — browser may cache but must revalidate
- *   ETag: "<content-hash>"    — enables 304 Not Modified on revalidation
+ * ## Caching
+ * - `preload.js`: `Cache-Control: no-cache` + content-hash ETag (revalidate).
+ * - `features-remote-entries.js`: same revalidation model (stable URL for
+ *   index.html).
+ * - `features-remote-entries.<hash>.js`: `public, max-age=31536000, immutable`
+ *   when the path hash matches the assembled body; 404 otherwise.
  *
- * This is the URL referenced in the app's `index.html`
- * `<script defer src="/.../preload.js">` tag.
+ * ## Enable / disable
+ * Config key (backend): `dynamicPlugins.frontend.concatRemoteEntries.enabled`
+ * (default `true`). When disabled or when no classic remoteEntries can be
+ * assembled, `preload.js` restores mass classic remoteEntry
+ * `<link rel=preload>` hints.
  *
  * The store is populated by the upstream remotes router during its startup
  * hook. HTTP requests only arrive after all startup hooks complete, so the
- * store is guaranteed to be ready when this handler runs.
+ * store is guaranteed to be ready when these handlers run.
+ *
+ * `packages/app/public/index.html` must include deferred scripts for
+ * both {@link DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH} and
+ * {@link DYNAMIC_FEATURES_CONCAT_REMOTE_ENTRIES_SCRIPT_PATH} (preload first).
  */
 export function mountPreloadEndpoint(
   router: Router,
   store: PreloadStore,
+  options: MountPreloadOptions = {},
 ): void {
-  let cachedBody: string | undefined;
-  let cachedETag: string | undefined;
+  const concatRemoteEntriesEnabled =
+    options.concatRemoteEntriesEnabled !== false;
+  const logger = options.logger;
 
-  function ensureBody(): { body: string; etag: string } | undefined {
+  let cachedPreloadBody: string | undefined;
+  let cachedPreloadETag: string | undefined;
+  let cachedConcat: ConcatRemoteEntriesArtifact | undefined | null;
+  let concatLogged = false;
+
+  function ensureConcat(): ConcatRemoteEntriesArtifact | undefined {
+    if (!concatRemoteEntriesEnabled) {
+      return undefined;
+    }
+    if (cachedConcat === null) {
+      return undefined;
+    }
+    if (cachedConcat === undefined) {
+      if (store.remotes.length === 0) {
+        cachedConcat = null;
+        return undefined;
+      }
+      const artifact = assembleConcatRemoteEntries(store, logger);
+      cachedConcat = artifact ?? null;
+      if (!concatLogged) {
+        concatLogged = true;
+        if (artifact) {
+          logger?.info(
+            `dynamic-features-concat-remote-entries: assembled features-remote-entries.${artifact.hash}.js ` +
+              `(${artifact.included.length} classic remoteEntries` +
+              `${artifact.skipped.length ? `, ${artifact.skipped.length} skipped` : ''})`,
+          );
+        } else {
+          logger?.info(
+            'dynamic-features-concat-remote-entries: no classic remoteEntries to assemble; using mass remoteEntry preload hints',
+          );
+        }
+      }
+    }
+    return cachedConcat ?? undefined;
+  }
+
+  function ensurePreload(): { body: string; etag: string } | undefined {
     if (store.remotes.length === 0) {
       return undefined;
     }
-    if (!cachedBody) {
-      cachedBody = buildPreloadBody(store);
-      cachedETag = `"${contentHash(cachedBody)}"`;
+    if (!cachedPreloadBody) {
+      const concat = ensureConcat();
+      const concatRemoteEntriesActive = !!concat;
+      cachedPreloadBody = buildPreloadBody(store, {
+        concatRemoteEntriesActive,
+        concatRemoteEntriesHash: concat?.hash,
+        concatIncludedPackageNames: concat?.included,
+      });
+      cachedPreloadETag = `"${contentHash(cachedPreloadBody)}"`;
     }
-    return { body: cachedBody, etag: cachedETag! };
+    return { body: cachedPreloadBody, etag: cachedPreloadETag! };
   }
 
   router.get('/preload.js', (req, res) => {
-    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache');
-
-    const result = ensureBody();
+    const result = ensurePreload();
     if (!result) {
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache');
       res.send('// dynamic-features-preload: no preload data available\n');
       return;
     }
+    sendJs(req, res, result.body, result.etag, 'no-cache');
+  });
 
-    res.setHeader('ETag', result.etag);
+  const emptyConcat =
+    '// dynamic-features-concat-remote-entries: no concatenated remoteEntries available\n';
 
-    // Support conditional requests: if the client already has this version,
-    // respond with 304 and skip sending the body.
-    if (req.headers['if-none-match'] === result.etag) {
-      res.status(304).end();
+  router.get('/features-remote-entries.js', (req, res) => {
+    const concat = ensureConcat();
+    if (!concat) {
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.send(emptyConcat);
       return;
     }
+    const etag = `"${concat.hash}"`;
+    sendJs(req, res, concat.body, etag, 'no-cache');
+  });
 
-    res.send(result.body);
+  router.get('/features-remote-entries.:hash.js', (req, res) => {
+    const concat = ensureConcat();
+    const requested = req.params.hash;
+    if (!concat || requested !== concat.hash) {
+      res
+        .status(404)
+        .type('text/plain')
+        .send('Concatenated remoteEntries not found');
+      return;
+    }
+    const etag = `"${concat.hash}"`;
+    sendJs(req, res, concat.body, etag, 'public, max-age=31536000, immutable');
   });
 }

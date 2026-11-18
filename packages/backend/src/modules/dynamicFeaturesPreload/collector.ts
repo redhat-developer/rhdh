@@ -4,9 +4,12 @@ import type { JsonObject } from '@backstage/types';
 import { generateSnapshotFromManifest } from '@module-federation/sdk';
 import type { Manifest } from '@module-federation/sdk';
 
+import path from 'node:path';
+
 import {
   DYNAMIC_FEATURES_MANIFEST_FILE,
   DYNAMIC_FEATURES_PLUGIN_ID,
+  REMOTE_ASSETS_PATH_FROM_PACKAGE,
 } from './paths';
 import type { PreloadStore } from './store';
 
@@ -16,17 +19,21 @@ import type { PreloadStore } from './store';
  * Called from the composed resolver's `overrideExposedModules` hook,
  * after NFS filtering has produced the final exposedModules list.
  *
- * Only `remotes` and `moduleInfo` are populated here. Snapshot modules
- * are trimmed to the filtered exposedModules list so they stay
+ * Populates `remotes`, `moduleInfo`, and `remoteAssetsPaths`. Snapshot
+ * modules are trimmed to the filtered exposedModules list so they stay
  * consistent. The preload handler derives remoteEntry and sync-asset
  * preload hints (or modulepreload hints for ESM-built remotes) at render
  * time by walking these structures — no separate URL lists are needed.
  * The shared MF runtime modulepreload URLs are populated by the
  * resolver's runtime-file scan, not here.
+ *
+ * `remoteAssetsPaths` records `<pluginPackagePath>/dist` so the classic
+ * remoteEntry concatenator can read `remoteEntry.js` bodies from disk.
  */
 export function collectPluginPreload(
   store: PreloadStore,
   pluginName: string,
+  pluginPackagePath: string,
   manifest: JsonObject,
   filteredExposedModules: string[],
   backendBaseUrl: string,
@@ -55,6 +62,11 @@ export function collectPluginPreload(
     },
     exposedModules: filteredExposedModules,
   });
+
+  store.remoteAssetsPaths[pluginName] = path.resolve(
+    pluginPackagePath,
+    REMOTE_ASSETS_PATH_FROM_PACKAGE,
+  );
 
   // Build the MF snapshot.
   // Pass version=entryUrl so that:
