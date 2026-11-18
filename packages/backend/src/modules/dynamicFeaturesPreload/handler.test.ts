@@ -344,6 +344,15 @@ describe('mountPreloadEndpoint', () => {
     const chunkEmit = body.indexOf('l.fetchPriority = "low"');
     expect(entryEmit).toBeGreaterThan(-1);
     expect(chunkEmit).toBeGreaterThan(entryEmit);
+
+    // The shared-module links carry an explicit high priority: emitted
+    // first, and robust where insertion-order scheduling isn't guaranteed
+    // (Firefox/Safari, HTTP/2 stream weights).
+    const sharedLinks = runPreloadBody(body).filter(
+      l => l.rel === 'modulepreload' && l.href.includes('shared-modules'),
+    );
+    expect(sharedLinks).toHaveLength(1);
+    expect(sharedLinks[0].fetchPriority).toBe('high');
   });
 
   it('preloads CSS without crossorigin so the runtime stylesheet matches the cache key', async () => {

@@ -29,6 +29,7 @@ import { userInfoServiceFactory } from '@backstage/backend-defaults/userInfo';
 import type { ServiceFactory } from '@backstage/backend-plugin-api';
 import { eventsServiceFactory } from '@backstage/plugin-events-node';
 
+import { appHtmlFetchPriorityMiddleware } from './middleware/appHtmlFetchPriority';
 import { dynamicRemotesStaticCacheMiddleware } from './middleware/dynamicRemotesStaticCache';
 
 /**
@@ -54,11 +55,14 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   permissionsServiceFactory,
   permissionsRegistryServiceFactory,
   rootHealthServiceFactory,
-  // Custom configure so hashed remotes `/static/` get long-lived Cache-Control.
-  // Re-include dynamicRemotesStaticCacheMiddleware if replacing core.rootHttpRouter.
+  // Custom configure so hashed remotes `/static/` get long-lived Cache-Control
+  // and the served app HTML gets fetchpriority hints on its defer scripts.
+  // Re-include dynamicRemotesStaticCacheMiddleware and
+  // appHtmlFetchPriorityMiddleware if replacing core.rootHttpRouter.
   rootHttpRouterServiceFactory({
     configure({ app, applyDefaults }) {
       app.use(dynamicRemotesStaticCacheMiddleware);
+      app.use(appHtmlFetchPriorityMiddleware);
       applyDefaults();
     },
   }),
