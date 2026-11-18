@@ -1,0 +1,13 @@
+# Extend Fullsend's code agent with the RHDH Backstage upgrade workflow.
+# Based on the working rhdh-parasol/rhdh harness (Fullsend v0.43.0).
+base: https://raw.githubusercontent.com/fullsend-ai/agents/dc7c805632ebb6b79a4b0890ef6da17fe8fc539d/harness/code.yaml#sha256=6493021f96431dc55b330d553c543b3c8463a1987c8f62e911b37286cadd855c
+skills:
+  - https://github.com/redhat-developer/rhdh-skills/tree/37a767651fea1317cf64a2849a2fd2c163620ec0/skills/plugins/rhdh-backstage-upgrade#sha256=96b158fdf11d61bdfb4d4e30a76fb6b1319af96a1ebc2f91204a92609155f09f
+allowed_remote_resources:
+  - https://raw.githubusercontent.com/fullsend-ai/agents/
+  - https://github.com/redhat-developer/rhdh-skills/
+# Allow the full upgrade, install and verification steps to finish.
+timeout_minutes: 60
+env:
+  sandbox:
+    TIMEOUT_SECONDS: "3600"

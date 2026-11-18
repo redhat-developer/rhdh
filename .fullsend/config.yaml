@@ -8,13 +8,9 @@
 # (default when unset) or pi. For one run, the 'fullsend run --runtime'
 # flag wins, then FULLSEND_RUNTIME, then this file. See docs/runtimes.md.
 version: "1"
+# This installation only dispatches the code agent for upgrade issues.
 roles:
-    - triage
     - coder
-    - review
-    - fix
-    - retro
-    - prioritize
 allowed_remote_resources:
     - https://raw.githubusercontent.com/fullsend-ai/fullsend/
     - https://raw.githubusercontent.com/fullsend-ai/agents/
@@ -22,12 +18,6 @@ allowed_remote_resources:
 agents:
     - name: code
       source: harness/code.yaml
-create_issues:
-    allow_targets:
-        repos:
-            - redhat-developer/rhdh
-            - fullsend-ai/fullsend
 mint_url: https://mint.fullsend.sh
-inference:
-    project: rhdh-sidekick-167988
-    wif_provider: projects/189673402608/locations/global/workloadIdentityPools/fullsend-inference/providers/redhat-developer-rhdh
+# Inference project and WIF provider are passed from repository secrets by
+# .github/workflows/fullsend.yaml; GitHub expressions are not expanded here.

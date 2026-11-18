@@ -1,4 +1,4 @@
-# Based on fullsend scaffold; customized to disable all agent auto-triggers.
+# Based on fullsend scaffold; only manual /fs-code on an open Backstage upgrade issue.
 # Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/templates/shim-per-repo.yaml
 ---
 # fullsend shim workflow (per-repo installation mode)
@@ -24,6 +24,9 @@ jobs:
   dispatch:
     if: >-
       github.event_name == 'issue_comment'
+      && github.event.issue.pull_request == null
+      && github.event.issue.state == 'open'
+      && contains(github.event.issue.labels.*.name, 'backstage-upgrade-automation')
       && github.event.comment.body == '/fs-code'
       && github.event.comment.user.type != 'Bot'
     permissions:
