@@ -18,18 +18,25 @@ import {
   filterNfsExposedModules,
   readBackstageFeatures,
 } from './nfsModuleFilter';
-import { registerSharedAssets } from './sharedAssets';
-import type { SharedAssetRegistry } from './sharedAssets';
+import {
+  registerSharedAssets,
+  SHARED_ASSET_IMMUTABLE_CACHE_CONTROL,
+  SHARED_ASSET_REVALIDATE_CACHE_CONTROL,
+  type SharedAssetRegistry,
+} from './sharedAssets';
 
 /**
  * Router serving registered shared assets at `/:filename`. The
  * registry is the allowlist: unregistered names get a loud 404, and
  * registered ones are served from the in-memory snapshot — no
  * per-request filesystem access (the app-backend serves its static
- * assets the same way). Express generates a content ETag for res.send
- * bodies and answers conditional requests with 304 automatically;
- * range requests are not supported (shared modules and assets are not
- * range-fetched).
+ * assets the same way). Cache class per asset, verified at
+ * registration: names that carry their own content hash are served
+ * immutable (the URL cannot be reused for different bytes without
+ * failing the registration check); everything else revalidates every
+ * use — Express generates a content ETag for res.send bodies and
+ * answers conditional requests with 304 automatically. Range requests
+ * are not supported (shared modules and assets are not range-fetched).
  */
 function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
   const router = Router();
@@ -40,6 +47,12 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
       return;
     }
     res.type(req.params.filename);
+    res.setHeader(
+      'Cache-Control',
+      sharedAsset.immutable
+        ? SHARED_ASSET_IMMUTABLE_CACHE_CONTROL
+        : SHARED_ASSET_REVALIDATE_CACHE_CONTROL,
+    );
     res.send(sharedAsset.content);
   });
   return router;

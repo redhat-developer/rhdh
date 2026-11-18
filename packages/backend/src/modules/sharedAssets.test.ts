@@ -245,4 +245,58 @@ describe('registerSharedAssets', () => {
       ),
     );
   });
+
+  it('marks verified content-addressed names immutable', () => {
+    const { root, registry } = setup();
+    const store = createPreloadStore();
+    const contents = 'export const marker = "content-addressed";\n';
+    const hash16 = createHash('sha256')
+      .update(contents)
+      .digest('hex')
+      .slice(0, 16);
+    const pluginDir = writePlugin(root, 'plugin-a', {
+      [`webpack-bundler-runtime@2.8.0-${hash16}.mjs`]: contents,
+    });
+
+    registerSharedAssets(
+      registry,
+      store,
+      pluginDir,
+      'plugin-a',
+      backendBaseUrl,
+      createMockLogger(),
+    );
+
+    expect(
+      registry.get(`webpack-bundler-runtime@2.8.0-${hash16}.mjs`),
+    ).toMatchObject({ immutable: true });
+  });
+
+  it('does not mark names that merely look hashed as immutable', () => {
+    const { root, registry } = setup();
+    const store = createPreloadStore();
+    // The trailing segment is 16 hex chars but not the sha256 prefix of
+    // these bytes — a name cannot earn immutable caching without
+    // matching its own content.
+    const pluginDir = writePlugin(root, 'plugin-a', {
+      'looks-hashed-0123abcd4567ef89.mjs': 'export default 1;',
+      'plain-name.mjs': 'export default 2;',
+    });
+
+    registerSharedAssets(
+      registry,
+      store,
+      pluginDir,
+      'plugin-a',
+      backendBaseUrl,
+      createMockLogger(),
+    );
+
+    expect(registry.get('looks-hashed-0123abcd4567ef89.mjs')).toMatchObject({
+      immutable: false,
+    });
+    expect(registry.get('plain-name.mjs')).toMatchObject({
+      immutable: false,
+    });
+  });
 });

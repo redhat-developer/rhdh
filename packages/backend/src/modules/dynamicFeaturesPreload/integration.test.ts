@@ -122,6 +122,27 @@ describe('dynamicFeaturesResolver wiring', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain('javascript');
     await expect(res.text()).resolves.toContain('test shared runtime entry');
+    // The fixture name's trailing segment is not the sha256 prefix of
+    // its bytes — a name that merely looks hashed stays on
+    // revalidation caching.
+    expect(res.headers.get('cache-control')).toBe('public, max-age=0');
+  });
+
+  it('serves verified content-addressed shared assets immutable', async () => {
+    // Fixture whose file name ends with the sha256 prefix of its own
+    // bytes — verified at registration, so the URL can never be reused
+    // for different content without failing that check.
+    const assetName = 'fixture-module@1.0.0-5c73ca0807811c5a.js';
+    const url = `http://127.0.0.1:${port}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/${assetName}`;
+    const res = await fetch(url);
+
+    expect(res.status).toBe(200);
+    await expect(res.text()).resolves.toContain(
+      'content-addressed-shared-asset',
+    );
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=31536000, immutable',
+    );
   });
 
   it('serves non-module shared assets without modulepreloading them', async () => {
