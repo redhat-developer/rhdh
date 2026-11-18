@@ -1,14 +1,26 @@
 import express, { Router } from 'express';
 
 import { createHash } from 'node:crypto';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
+import { hashFeaturesBody } from './bootstrap';
 import { mountPreloadEndpoint } from './handler';
-import { DYNAMIC_FEATURES_REMOTES_PATH } from './paths';
+import {
+  DYNAMIC_FEATURES_REMOTES_PATH,
+  featuresBootstrapHashedPath,
+} from './paths';
 import { createPreloadStore, type PreloadStore } from './store';
 
-function populatedStore(): PreloadStore {
+function populatedStore(assetsDir: string): PreloadStore {
   const store = createPreloadStore();
+  writeFileSync(
+    join(assetsDir, 'remoteEntry.js'),
+    'window.backstage__plugin_test_mixed_features = { get() {}, init() {} };',
+  );
+
   store.remotes.push({
     packageName: 'plugin-test-mixed-features-dynamic',
     remoteInfo: {
@@ -18,6 +30,7 @@ function populatedStore(): PreloadStore {
     },
     exposedModules: ['alpha'],
   });
+  store.remoteAssetsPaths['plugin-test-mixed-features-dynamic'] = assetsDir;
   store.moduleInfo.backstage__plugin_test_mixed_features = {
     name: 'backstage__plugin_test_mixed_features',
     version: 'v',
@@ -43,6 +56,7 @@ function populatedStore(): PreloadStore {
     publicPath:
       'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/',
     remoteEntry: 'remoteEntry.js',
+    remoteEntryType: 'global',
     globalName: 'backstage__plugin_test_mixed_features',
   } as PreloadStore['moduleInfo'][string];
 
@@ -60,6 +74,7 @@ function populatedStore(): PreloadStore {
     },
     exposedModules: ['.'],
   });
+  store.remoteAssetsPaths['plugin-test-esm-dynamic'] = assetsDir;
   store.moduleInfo.backstage__plugin_test_esm = {
     name: 'backstage__plugin_test_esm',
     version: 'v',
@@ -88,10 +103,13 @@ function populatedStore(): PreloadStore {
   return store;
 }
 
-function createApp(store: PreloadStore) {
+function createApp(
+  store: PreloadStore,
+  options?: Parameters<typeof mountPreloadEndpoint>[2],
+) {
   const app = express();
   const router = Router();
-  mountPreloadEndpoint(router, store);
+  mountPreloadEndpoint(router, store, options);
   app.use(router);
   return app;
 }
@@ -123,11 +141,17 @@ async function stopServer(server: Server): Promise<void> {
 describe('mountPreloadEndpoint', () => {
   let server: Server;
   let base: string;
+  let assetsDir: string;
+
+  beforeEach(() => {
+    assetsDir = mkdtempSync(join(tmpdir(), 'rhdh-preload-handler-'));
+  });
 
   afterEach(async () => {
     if (server) {
       await stopServer(server);
     }
+    rmSync(assetsDir, { recursive: true, force: true });
   });
 
   it('serves a no-op comment when the store is empty', async () => {
@@ -141,7 +165,9 @@ describe('mountPreloadEndpoint', () => {
   });
 
   it('serves preload.js with no-cache and a content-hash ETag', async () => {
-    ({ server, base } = await startServer(createApp(populatedStore())));
+    ({ server, base } = await startServer(
+      createApp(populatedStore(assetsDir)),
+    ));
     const res = await fetch(`${base}/preload.js`);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain('application/javascript');
@@ -159,7 +185,9 @@ describe('mountPreloadEndpoint', () => {
   });
 
   it('returns 304 when If-None-Match matches the ETag', async () => {
-    ({ server, base } = await startServer(createApp(populatedStore())));
+    ({ server, base } = await startServer(
+      createApp(populatedStore(assetsDir)),
+    ));
     const res1 = await fetch(`${base}/preload.js`);
     const etag = res1.headers.get('etag')!;
 
@@ -169,8 +197,10 @@ describe('mountPreloadEndpoint', () => {
     expect(res2.status).toBe(304);
   });
 
-  it('embeds moduleInfo, local remotes, fetch shim, and preload injection', async () => {
-    ({ server, base } = await startServer(createApp(populatedStore())));
+  it('embeds moduleInfo, local remotes, fetch shim, and bootstrap meta when bootstrap is on', async () => {
+    ({ server, base } = await startServer(
+      createApp(populatedStore(assetsDir)),
+    ));
     const body = await (await fetch(`${base}/preload.js`)).text();
 
     // remotes must NOT be a window global — only a local var inside the IIFE
@@ -180,21 +210,17 @@ describe('mountPreloadEndpoint', () => {
     expect(body).toContain('window.__FEDERATION__');
     expect(body).toContain('moduleInfo');
     expect(body).toContain('backstage__plugin_test_mixed_features');
+    expect(body).toContain('window.__DYNAMIC_FEATURES_BOOTSTRAP__');
+    expect(body).toContain('"enabled":true');
 
-    expect(body).toContain(
-      'var entryHref = snap.publicPath + snap.remoteEntry',
-    );
-    expect(body).toContain('l.rel = "preload"');
-    expect(body).toContain('l.as = "script"');
-    // Nothing is ever executed here: classic entries are cache-warmed only
-    // (execution happens later via the MF runtime at loadRemote), and ESM
-    // entries cannot be executed as classic scripts at all.
-    expect(body).not.toContain('document.createElement("script")');
-    expect(body).toContain('document.createElement("link")');
+    // Mass classic remoteEntry/sync JS preloads are disabled (no as=script).
+    // ESM remotes still modulepreload via entryHref inside `if (isEsm)`.
+    expect(body).not.toContain('l.as = "script"');
+    expect(body).toContain('if (isEsm)');
+    // CSS preload + ESM modulepreload remain
     expect(body).toContain('cl.as = "style"');
-
-    // exposedModules filter was removed — snapshot modules are pre-trimmed
-    expect(body).not.toContain('exposed[e]');
+    expect(body).toContain('l.rel = "modulepreload"');
+    expect(body).not.toContain('document.createElement("script")');
 
     expect(body).toContain(
       `var remotesPath = ${JSON.stringify(DYNAMIC_FEATURES_REMOTES_PATH)}`,
@@ -221,25 +247,68 @@ describe('mountPreloadEndpoint', () => {
   });
 
   it('modulepreloads the canonical shared-module URL for ESM entries', async () => {
-    ({ server, base } = await startServer(createApp(populatedStore())));
+    ({ server, base } = await startServer(
+      createApp(populatedStore(assetsDir)),
+    ));
     const body = await (await fetch(`${base}/preload.js`)).text();
 
-    // ESM detection is snapshot-driven
     expect(body).toContain(
       'snap.remoteEntryType === "module" || snap.remoteEntryType === "esm"',
     );
     expect(body).toContain('l.rel = "modulepreload"');
-
-    // The ESM remote's snapshot (with its remoteEntryType) is embedded, and
-    // its sync chunks are modulepreloaded, not preloaded as scripts
     expect(body).toContain('"remoteEntryType":"module"');
     expect(body).toContain('static/5000.eee55555.chunk.mjs');
 
-    // The canonical shared-module URL (what the baked relative runtime
-    // external resolves to) is modulepreloaded
     expect(body).toContain(
       'var sharedModules = ["http://localhost:7007/.backstage/dynamic-features-shared-modules/webpack-bundler-runtime@2.8.0-0123abcd4567ef89.mjs"]',
     );
     expect(body).toContain('bl.rel = "modulepreload"');
+  });
+
+  it('restores mass remoteEntry/sync preloads when bootstrap is disabled', async () => {
+    ({ server, base } = await startServer(
+      createApp(populatedStore(assetsDir), {
+        featuresBootstrapEnabled: false,
+      }),
+    ));
+    const body = await (await fetch(`${base}/preload.js`)).text();
+    expect(body).toContain('"enabled":false');
+    expect(body).toContain(
+      'var entryHref = snap.publicPath + snap.remoteEntry',
+    );
+    expect(body).toContain('l.as = "script"');
+
+    const features = await fetch(`${base}/features.js`);
+    expect(await features.text()).toContain('no features bootstrap available');
+  });
+
+  it('serves features.js and features.<hash>.js with correct caching', async () => {
+    const store = populatedStore(assetsDir);
+    ({ server, base } = await startServer(createApp(store)));
+
+    const res = await fetch(`${base}/features.js`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe('no-cache');
+    const body = await res.text();
+    expect(body).toContain(
+      'window.backstage__plugin_test_mixed_features = { get() {}, init() {} };',
+    );
+    expect(body).toContain('plugin-test-mixed-features-dynamic');
+
+    const hash = hashFeaturesBody(body);
+    expect(res.headers.get('etag')).toBe(`"${hash}"`);
+    // Absolute path helper stays in sync with the served route name.
+    expect(featuresBootstrapHashedPath(hash)).toContain(`features.${hash}.js`);
+
+    // mount is at router root in this unit test → /features.<hash>.js
+    const hashedDirect = await fetch(`${base}/features.${hash}.js`);
+    expect(hashedDirect.status).toBe(200);
+    expect(hashedDirect.headers.get('cache-control')).toBe(
+      'public, max-age=31536000, immutable',
+    );
+    expect(await hashedDirect.text()).toBe(body);
+
+    const miss = await fetch(`${base}/features.deadbeefdeadbeef.js`);
+    expect(miss.status).toBe(404);
   });
 });
