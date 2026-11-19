@@ -1,6 +1,7 @@
 import {
   actionsRegistryServiceFactory,
   actionsServiceFactory,
+  connectionsServiceFactory,
   metricsServiceFactory,
 } from '@backstage/backend-defaults/alpha';
 import { auditorServiceFactory } from '@backstage/backend-defaults/auditor';
@@ -72,6 +73,7 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   // alpha services
   actionsRegistryServiceFactory,
   actionsServiceFactory,
+  connectionsServiceFactory,
   metricsServiceFactory,
 ] as const;
 
