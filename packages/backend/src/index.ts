@@ -8,12 +8,7 @@ import {
 import path from 'node:path';
 
 import { getDefaultServiceFactories } from './defaultServiceFactories';
-import {
-  dynamicFeaturesResolver,
-  healthCheckPlugin,
-  pluginIDProviderService,
-  rbacDynamicPluginsProvider,
-} from './modules';
+import { dynamicFeaturesResolver, healthCheckPlugin } from './modules';
 
 // Create a logger to cover logging static initialization tasks
 const staticLogger = WinstonLogger.create({
@@ -89,10 +84,9 @@ backend.add(import('@backstage/plugin-proxy-backend'));
 // TODO: We should test it more deeply. The structure is not exactly the same as the old backend implementation
 backend.add(import('@backstage/plugin-events-backend'));
 
-backend.add(import('@backstage/plugin-permission-backend'));
-backend.add(import('@backstage-community/plugin-rbac-backend'));
-backend.add(pluginIDProviderService);
-backend.add(rbacDynamicPluginsProvider);
+backend.add(
+  import('@backstage-community/plugin-scaffolder-backend-module-annotator'),
+);
 
 backend.add(import('@backstage/plugin-auth-backend'));
 backend.add(import('./modules/authOwnershipModule'));
