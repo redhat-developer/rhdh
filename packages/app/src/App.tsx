@@ -13,6 +13,7 @@ import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-trans
 
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
 import { catalogCreatedAtModule } from "./modules/catalog";
+import { rhdhProgressModule } from "./modules/progress";
 import { rhdhScaffolderPlugin } from "./modules/scaffolder";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
@@ -42,6 +43,7 @@ const app = createApp({
     dynamicFrontendFeaturesLoader(),
     // RHDH modules (local to app)
     userSettingsGeneralModule, // build-metadata InfoCard on Settings / General
+    rhdhProgressModule, // demo: red-bar override of core-progress
     rhdhApisModule, // storage API
     translationsApiModule,
     rhdhTranslationsModule, // RHDH + plugin translation overrides (de, es, fr, it, ja)
