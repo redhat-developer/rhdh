@@ -109,6 +109,8 @@ Localization tests verify that the RHDH UI displays correctly translated strings
 
 The localization test implementation is in `.ci/pipelines/jobs/ocp-localization.sh` (`run_localization_tests()` function).
 
+Those projects seed `localStorage.language` and keep deploy `defaultLanguage: en`. Coverage for a non-English `defaultLanguage` (no stored language) lives in the cluster-free harness — see [default-language.md](./default-language.md).
+
 ### CI Job Definitions
 
 #### Nightly Test Job

@@ -1,0 +1,17 @@
+{
+  "name": "plugin-test-conflict-alpha-dynamic",
+  "version": "0.0.0",
+  "description": "Conflict test plugin A: ships colliding.txt under dist/shared",
+  "backstage": {
+    "role": "frontend-dynamic-container",
+    "pluginId": "test-conflict-alpha",
+    "pluginPackages": [
+      "plugin-test-conflict-alpha"
+    ]
+  },
+  "keywords": [
+    "backstage",
+    "dynamic"
+  ],
+  "main": "remote-entry.js"
+}

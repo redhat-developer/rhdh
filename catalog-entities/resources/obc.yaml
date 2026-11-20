@@ -11,5 +11,5 @@ metadata:
 spec:
   type: s3-bucket
   lifecycle: production
-  owner: janus-authors
-  system: janus-idp
+  owner: rhdh-authors
+  system: rhdh-examples

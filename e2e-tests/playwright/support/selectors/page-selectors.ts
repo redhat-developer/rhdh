@@ -10,8 +10,6 @@ const lang = getCurrentLanguage();
 export const HOME_PAGE_COMPONENTS = {
   /** @deprecated Use SemanticSelectors.region() with appropriate filter */
   MuiAccordion: 'div[class*="MuiAccordion-root-"]',
-  /** @deprecated Use SemanticSelectors.region() or article with appropriate filter */
-  MuiCard: 'div[class*="MuiCard-root-"]',
 
   getAccordion: (page: Page, heading: string | RegExp): Locator =>
     page

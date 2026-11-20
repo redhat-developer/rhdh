@@ -221,13 +221,6 @@
         "/^@pagerduty//",
         "/^@internal//"
       ]
-    },
-    {
-      "description": "patch and minor updates for the janus cli",
-      "groupName": "janus cli updates",
-      "matchPackageNames": ["@janus-idp/cli"],
-      "matchDepTypes": ["dependencies", "peerDependencies", "devDependencies"],
-      "matchUpdateTypes": ["patch", "minor"]
     }
   ],
   "ignorePaths": ["**/dist-dynamic/**"],

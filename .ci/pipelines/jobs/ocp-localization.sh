@@ -24,7 +24,6 @@ handle_ocp_localization() {
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
 
-  cluster_setup_ocp_helm
   base_deployment "${PW_PROJECT_SHOWCASE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
 

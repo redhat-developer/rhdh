@@ -1,6 +1,6 @@
 app:
   baseUrl: ${RHDH_BASE_URL}
-  title: Red Hat Developer Hub
+  title: RHDH QE Instance
 backend:
   baseUrl: ${RHDH_BASE_URL}
   cors:

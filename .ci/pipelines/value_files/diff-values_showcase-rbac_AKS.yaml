@@ -5,7 +5,7 @@
 openshift:
   route:
     enabled: false
-# The base config points ssl at Crunchy certs that are not mounted here, and the
+# The base config points ssl at external PostgreSQL certs that are not mounted here, and the
 # bundled Fedora postgres has no TLS. The merge drops null keys, removing ssl.
 appConfig:
   backend:
