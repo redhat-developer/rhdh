@@ -50,3 +50,4 @@ const app = createApp({
 });
 
 export default app.createRoot();
+// ci-test: B4-code
