@@ -1,0 +1,92 @@
+diff --git a/dist/assets/fonts/font.min.css.esm.js b/dist/assets/fonts/font.min.css.esm.js
+deleted file mode 100644
+index 7ee7f9ea230178443a1649572947854d47f8b1da..0000000000000000000000000000000000000000
+--- a/dist/assets/fonts/font.min.css.esm.js
++++ /dev/null
+@@ -1,5 +0,0 @@
+-import styleInject from '../../node_modules_dist/style-inject/dist/style-inject.es.esm.js';
+-
+-var css_248z = "@font-face {\n  font-family: 'RedHatDisplay';\n  src: url(./RedHatDisplay/RedHatDisplayVF.woff2) format('woff2-variations');\n  font-weight: 300 900;\n  font-style: normal;\n  font-display: fallback;\n}\n@font-face {\n  font-family: 'RedHatDisplay';\n  src: url(./RedHatDisplay/RedHatDisplayVF-Italic.woff2)\n    format('woff2-variations');\n  font-weight: 300 900;\n  font-style: italic;\n  font-display: fallback;\n}\n@font-face {\n  font-family: 'RedHatText';\n  src: url(./RedHatText/RedHatTextVF.woff2) format('woff2-variations');\n  font-weight: 300 700;\n  font-style: normal;\n  font-display: fallback;\n}\n@font-face {\n  font-family: 'RedHatText';\n  src: url(./RedHatText/RedHatTextVF-Italic.woff2) format('woff2-variations');\n  font-weight: 300 700;\n  font-style: italic;\n  font-display: fallback;\n}\n@font-face {\n  font-family: 'RedHatMono';\n  src: url(./RedHatMono/RedHatMonoVF.woff2) format('woff2-variations');\n  font-weight: 300 700;\n  font-style: normal;\n  font-display: fallback;\n}\n@font-face {\n  font-family: 'RedHatMono';\n  src: url(./RedHatMono/RedHatMonoVF-Italic.woff2) format('woff2-variations');\n  font-weight: 300 700;\n  font-style: italic;\n  font-display: fallback;\n}\n";
+-styleInject(css_248z);
+-//# sourceMappingURL=font.min.css.esm.js.map
+diff --git a/dist/assets/fonts/font.min.css.esm.js.map b/dist/assets/fonts/font.min.css.esm.js.map
+deleted file mode 100644
+index 933d3accf9a32bc974ffc33877ead773abe1602f..0000000000000000000000000000000000000000
+--- a/dist/assets/fonts/font.min.css.esm.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"font.min.css.esm.js","sources":[],"sourcesContent":[],"names":[],"mappings":";;;"}
+\ No newline at end of file
+diff --git a/dist/fonts.esm.js b/dist/fonts.esm.js
+index ebee081ab28c57bd595710ad17bfd55ff3eb72c6..52cb11e787cc155a090dcc1ee934e114aaf0dd5f 100644
+--- a/dist/fonts.esm.js
++++ b/dist/fonts.esm.js
+@@ -87,6 +87,19 @@ const redHatFonts = {
+     "monospace"
+   ].join(", ")
+ };
++function injectRedHatFontFaces() {
++  if (typeof document === "undefined" || document.querySelector('style[data-rhdh-fonts="redhat"]')) {
++    return;
++  }
++  const css = redHatFontFaces.map(
++    ({ fontFamily, src, fontWeight, fontStyle, fontDisplay }) => `@font-face{font-family:'${fontFamily}';src:${src};font-weight:${fontWeight};font-style:${fontStyle};font-display:${fontDisplay};}`
++  ).join("");
++  const style = document.createElement("style");
++  style.setAttribute("data-rhdh-fonts", "redhat");
++  style.appendChild(document.createTextNode(css));
++  document.head.appendChild(style);
++}
++injectRedHatFontFaces();
+ 
+ export { RedHatTextFontFace, redHatFontFaces, redHatFonts };
+ //# sourceMappingURL=fonts.esm.js.map
+diff --git a/dist/fonts.esm.js.map b/dist/fonts.esm.js.map
+index 181dfdbc0bcef6d322c27bd72d1639bda7a7154e..27b0f4b4167a6ea375f516ec5f13689405db9292 100644
+--- a/dist/fonts.esm.js.map
++++ b/dist/fonts.esm.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"fonts.esm.js","sources":["../src/fonts.tsx"],"sourcesContent":["/*\n * Copyright Red Hat, Inc.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport RedHatDisplay from './assets/fonts/RedHatDisplay/RedHatDisplayVF.woff2';\nimport RedHatDisplayItalic from './assets/fonts/RedHatDisplay/RedHatDisplayVF-Italic.woff2';\nimport RedHatText from './assets/fonts/RedHatText/RedHatTextVF.woff2';\nimport RedHatTextItalic from './assets/fonts/RedHatText/RedHatTextVF-Italic.woff2';\nimport RedHatMono from './assets/fonts/RedHatMono/RedHatMonoVF.woff2';\nimport RedHatMonoItalic from './assets/fonts/RedHatMono/RedHatMonoVF-Italic.woff2';\n\nconst RedHatDisplayFontFace = {\n  fontFamily: 'RedHatDisplay',\n  src: `url(${RedHatDisplay}) format('woff2-variations')`,\n  fontWeight: '300 900',\n  fontStyle: 'normal',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatDisplayItalicFontFace = {\n  fontFamily: 'RedHatDisplay',\n  src: `url(${RedHatDisplayItalic}) format('woff2-variations')`,\n  fontWeight: '300 900',\n  fontStyle: 'italic',\n  fontDisplay: 'fallback',\n};\n\nexport const RedHatTextFontFace = {\n  fontFamily: 'RedHatText',\n  src: `url(${RedHatText}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'normal',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatTextItalicFontFace = {\n  fontFamily: 'RedHatText',\n  src: `url(${RedHatTextItalic}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'italic',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatMonoFontFace = {\n  fontFamily: 'RedHatMono',\n  src: `url(${RedHatMono}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'normal',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatMonoItalicFontFace = {\n  fontFamily: 'RedHatMono',\n  src: `url(${RedHatMonoItalic}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'italic',\n  fontDisplay: 'fallback',\n};\n\nexport const redHatFontFaces = [\n  RedHatDisplayFontFace,\n  RedHatDisplayItalicFontFace,\n  RedHatTextFontFace,\n  RedHatTextItalicFontFace,\n  RedHatMonoFontFace,\n  RedHatMonoItalicFontFace,\n];\n\nexport const redHatFonts = {\n  text: [\n    'RedHatText',\n    '\"Helvetica Neue\"',\n    '-apple-system',\n    '\"Segoe UI\"',\n    'Roboto',\n    'Helvetica',\n    'Arial',\n    'sans-serif',\n  ].join(', '),\n  heading: [\n    'RedHatDisplay',\n    '\"Helvetica Neue\"',\n    '-apple-system',\n    '\"Segoe UI\"',\n    'Roboto',\n    'Helvetica',\n    'Arial',\n    'sans-serif',\n  ].join(', '),\n  monospace: [\n    'RedHatMono',\n    '\"Liberation Mono\"',\n    'consolas',\n    '\"SFMono-Regular\"',\n    'menlo',\n    'monaco',\n    '\"Courier New\"',\n    'monospace',\n  ].join(', '),\n};\n"],"names":[],"mappings":";;;;;;;AAuBA,MAAM,qBAAA,GAAwB;AAAA,EAC5B,UAAA,EAAY,eAAA;AAAA,EACZ,GAAA,EAAK,OAAO,aAAa,CAAA,4BAAA,CAAA;AAAA,EACzB,UAAA,EAAY,SAAA;AAAA,EACZ,SAAA,EAAW,QAAA;AAAA,EACX,WAAA,EAAa;AACf,CAAA;AAEA,MAAM,2BAAA,GAA8B;AAAA,EAClC,UAAA,EAAY,eAAA;AAAA,EACZ,GAAA,EAAK,OAAO,mBAAmB,CAAA,4BAAA,CAAA;AAAA,EAC/B,UAAA,EAAY,SAAA;AAAA,EACZ,SAAA,EAAW,QAAA;AAAA,EACX,WAAA,EAAa;AACf,CAAA;AAEO,MAAM,kBAAA,GAAqB;AAAA,EAChC,UAAA,EAAY,YAAA;AAAA,EACZ,GAAA,EAAK,OAAO,UAAU,CAAA,4BAAA,CAAA;AAAA,EACtB,UAAA,EAAY,SAAA;AAAA,EACZ,SAAA,EAAW,QAAA;AAAA,EACX,WAAA,EAAa;AACf;AAEA,MAAM,wBAAA,GAA2B;AAAA,EAC/B,UAAA,EAAY,YAAA;AAAA,EACZ,GAAA,EAAK,OAAO,gBAAgB,CAAA,4BAAA,CAAA;AAAA,EAC5B,UAAA,EAAY,SAAA;AAAA,EACZ,SAAA,EAAW,QAAA;AAAA,EACX,WAAA,EAAa;AACf,CAAA;AAEA,MAAM,kBAAA,GAAqB;AAAA,EACzB,UAAA,EAAY,YAAA;AAAA,EACZ,GAAA,EAAK,OAAO,UAAU,CAAA,4BAAA,CAAA;AAAA,EACtB,UAAA,EAAY,SAAA;AAAA,EACZ,SAAA,EAAW,QAAA;AAAA,EACX,WAAA,EAAa;AACf,CAAA;AAEA,MAAM,wBAAA,GAA2B;AAAA,EAC/B,UAAA,EAAY,YAAA;AAAA,EACZ,GAAA,EAAK,OAAO,gBAAgB,CAAA,4BAAA,CAAA;AAAA,EAC5B,UAAA,EAAY,SAAA;AAAA,EACZ,SAAA,EAAW,QAAA;AAAA,EACX,WAAA,EAAa;AACf,CAAA;AAEO,MAAM,eAAA,GAAkB;AAAA,EAC7B,qBAAA;AAAA,EACA,2BAAA;AAAA,EACA,kBAAA;AAAA,EACA,wBAAA;AAAA,EACA,kBAAA;AAAA,EACA;AACF;AAEO,MAAM,WAAA,GAAc;AAAA,EACzB,IAAA,EAAM;AAAA,IACJ,YAAA;AAAA,IACA,kBAAA;AAAA,IACA,eAAA;AAAA,IACA,YAAA;AAAA,IACA,QAAA;AAAA,IACA,WAAA;AAAA,IACA,OAAA;AAAA,IACA;AAAA,GACF,CAAE,KAAK,IAAI,CAAA;AAAA,EACX,OAAA,EAAS;AAAA,IACP,eAAA;AAAA,IACA,kBAAA;AAAA,IACA,eAAA;AAAA,IACA,YAAA;AAAA,IACA,QAAA;AAAA,IACA,WAAA;AAAA,IACA,OAAA;AAAA,IACA;AAAA,GACF,CAAE,KAAK,IAAI,CAAA;AAAA,EACX,SAAA,EAAW;AAAA,IACT,YAAA;AAAA,IACA,mBAAA;AAAA,IACA,UAAA;AAAA,IACA,kBAAA;AAAA,IACA,OAAA;AAAA,IACA,QAAA;AAAA,IACA,eAAA;AAAA,IACA;AAAA,GACF,CAAE,KAAK,IAAI;AACb;;;;"}
+\ No newline at end of file
++{"version":3,"file":"fonts.esm.js","sources":["../src/fonts.tsx"],"sourcesContent":["/*\n * Copyright Red Hat, Inc.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport RedHatDisplay from './assets/fonts/RedHatDisplay/RedHatDisplayVF.woff2';\nimport RedHatDisplayItalic from './assets/fonts/RedHatDisplay/RedHatDisplayVF-Italic.woff2';\nimport RedHatText from './assets/fonts/RedHatText/RedHatTextVF.woff2';\nimport RedHatTextItalic from './assets/fonts/RedHatText/RedHatTextVF-Italic.woff2';\nimport RedHatMono from './assets/fonts/RedHatMono/RedHatMonoVF.woff2';\nimport RedHatMonoItalic from './assets/fonts/RedHatMono/RedHatMonoVF-Italic.woff2';\n\nconst RedHatDisplayFontFace = {\n  fontFamily: 'RedHatDisplay',\n  src: `url(${RedHatDisplay}) format('woff2-variations')`,\n  fontWeight: '300 900',\n  fontStyle: 'normal',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatDisplayItalicFontFace = {\n  fontFamily: 'RedHatDisplay',\n  src: `url(${RedHatDisplayItalic}) format('woff2-variations')`,\n  fontWeight: '300 900',\n  fontStyle: 'italic',\n  fontDisplay: 'fallback',\n};\n\nexport const RedHatTextFontFace = {\n  fontFamily: 'RedHatText',\n  src: `url(${RedHatText}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'normal',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatTextItalicFontFace = {\n  fontFamily: 'RedHatText',\n  src: `url(${RedHatTextItalic}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'italic',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatMonoFontFace = {\n  fontFamily: 'RedHatMono',\n  src: `url(${RedHatMono}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'normal',\n  fontDisplay: 'fallback',\n};\n\nconst RedHatMonoItalicFontFace = {\n  fontFamily: 'RedHatMono',\n  src: `url(${RedHatMonoItalic}) format('woff2-variations')`,\n  fontWeight: '300 700',\n  fontStyle: 'italic',\n  fontDisplay: 'fallback',\n};\n\nexport const redHatFontFaces = [\n  RedHatDisplayFontFace,\n  RedHatDisplayItalicFontFace,\n  RedHatTextFontFace,\n  RedHatTextItalicFontFace,\n  RedHatMonoFontFace,\n  RedHatMonoItalicFontFace,\n];\n\nexport const redHatFonts = {\n  text: [\n    'RedHatText',\n    '\"Helvetica Neue\"',\n    '-apple-system',\n    '\"Segoe UI\"',\n    'Roboto',\n    'Helvetica',\n    'Arial',\n    'sans-serif',\n  ].join(', '),\n  heading: [\n    'RedHatDisplay',\n    '\"Helvetica Neue\"',\n    '-apple-system',\n    '\"Segoe UI\"',\n    'Roboto',\n    'Helvetica',\n    'Arial',\n    'sans-serif',\n  ].join(', '),\n  monospace: [\n    'RedHatMono',\n    '\"Liberation Mono\"',\n    'consolas',\n    '\"SFMono-Regular\"',\n    'menlo',\n    'monaco',\n    '\"Courier New\"',\n    'monospace',\n  ].join(', '),\n};\n\n/**\n * Inject @font-face rules using webpack-resolved woff2 URLs.\n * CSS url() paths must not be baked into published *.css.esm.js — those stay\n * relative and break under app publicPath. Import this module for the side effect.\n */\nfunction injectRedHatFontFaces(): void {\n  if (\n    typeof document === 'undefined' ||\n    document.querySelector('style[data-rhdh-fonts=\"redhat\"]')\n  ) {\n    return;\n  }\n  const css = redHatFontFaces\n    .map(\n      ({ fontFamily, src, fontWeight, fontStyle, fontDisplay }) =>\n        `@font-face{font-family:'${fontFamily}';src:${src};font-weight:${fontWeight};font-style:${fontStyle};font-display:${fontDisplay};}`,\n    )\n    .join('');\n  const style = document.createElement('style');\n  style.setAttribute('data-rhdh-fonts', 'redhat');\n  style.appendChild(document.createTextNode(css));\n  document.head.appendChild(style);\n}\n\ninjectRedHatFontFaces();\n"],"names":[],"mappings":"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"}
+\ No newline at end of file
+diff --git a/dist/index.esm.js b/dist/index.esm.js
+index 39c3f1ebad583ad3043f6fe9d3d5a4705bf3dc1a..b9621a81f3a75f999f9a858787dcced468428528 100644
+--- a/dist/index.esm.js
++++ b/dist/index.esm.js
+@@ -1,7 +1,7 @@
+ import { createFrontendModule } from '@backstage/frontend-plugin-api';
+ import { ThemeBlueprint } from '@backstage/plugin-app-react';
+ import { getThemes } from './themes.esm.js';
+-import './assets/fonts/font.min.css.esm.js';
++import './fonts.esm.js';
+ import './assets/bui/tokens.css.esm.js';
+ import './assets/bui/component-overrides.css.esm.js';
+ export { LogoFull } from './components/LogoFull.esm.js';
+diff --git a/dist/legacy.esm.js b/dist/legacy.esm.js
+index db4b3840c95c4368f52f6d5200c98a9eabbd3c7e..aea481273f0a9db98cb8b0f5ef421e4339199650 100644
+--- a/dist/legacy.esm.js
++++ b/dist/legacy.esm.js
+@@ -1,6 +1,6 @@
+ export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
+ export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+-import './assets/fonts/font.min.css.esm.js';
++import './fonts.esm.js';
+ export { useBranding } from './hooks/useBranding.esm.js';
+ export { useThemeConfig } from './hooks/useThemeConfig.esm.js';
+ export { useThemeOptions } from './hooks/useThemeOptions.esm.js';
+diff --git a/package.json b/package.json
+index d71f8aa6c430790464f22264fe6191fbb98ebde2..48c040bf84a8780797cf0e0ad32923af4aa2f68b 100644
+--- a/package.json
++++ b/package.json
+@@ -26,7 +26,9 @@
+   "sideEffects": [
+     "*.css",
+     "*.css.esm.js",
+-    "**/*.css.esm.js"
++    "**/*.css.esm.js",
++    "./src/fonts.tsx",
++    "./dist/fonts.esm.js"
+   ],
+   "exports": {
+     ".": {
