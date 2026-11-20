@@ -186,13 +186,13 @@ arches:
     name: glibc-locale-source
     evr: 2.39-147.el10_3
     sourcerpm: glibc-2.39-147.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-264.16.1.el10_3.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-264.17.1.el10_3.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 3533789
-    checksum: sha256:7766e856ddc0a52713fc26daf3f3a8f6eb6c2ac33194902bb437d5a3d7f8b485
+    size: 3541573
+    checksum: sha256:f4b69a357058d8383a46a337c69588ee9a69aa2fbb1d8b7c86d6d22bcf029b2b
     name: kernel-headers
-    evr: 6.12.0-264.16.1.el10_3
-    sourcerpm: kernel-6.12.0-264.16.1.el10_3.src.rpm
+    evr: 6.12.0-264.17.1.el10_3
+    sourcerpm: kernel-6.12.0-264.17.1.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/l/libX11-1.8.13-1.el10_3.1.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 661395
@@ -536,13 +536,13 @@ arches:
     name: scl-utils
     evr: 1:2.0.3-5.el10
     sourcerpm: scl-utils-2.0.3-5.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/s/skopeo-1.24.0-3.el10_3.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/s/skopeo-1.24.1-1.el10_3.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 7642960
-    checksum: sha256:0c94af849c734d4aced0493205e2f4d9c9f13c828e6d771adf80ec74072ef80f
+    size: 7739084
+    checksum: sha256:c209b44f3004a290403d22dae2eff12a9e6cb4f4d1f3d80f446c0a3cd40983f2
     name: skopeo
-    evr: 3:1.24.0-3.el10_3
-    sourcerpm: skopeo-1.24.0-3.el10_3.src.rpm
+    evr: 3:1.24.1-1.el10_3
+    sourcerpm: skopeo-1.24.1-1.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/s/spirv-tools-libs-2026.1-1.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 1677110
@@ -781,13 +781,13 @@ arches:
     name: environment-modules
     evr: 5.6.1-3.el10_3
     sourcerpm: environment-modules-5.6.1-3.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/e/expat-2.7.3-2.el10_3.4.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/e/expat-2.7.3-2.el10_3.8.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 126905
-    checksum: sha256:3f7b6cc830c346a1b0b092ee3f12d2b5f38d5ea93d80974b7c68f887fba8d633
+    size: 129985
+    checksum: sha256:cf0fe8dbae89e5e61df5b601bf0bb930f5039ac59adc7cf950c10bff5aaba016
     name: expat
-    evr: 2.7.3-2.el10_3.4
-    sourcerpm: expat-2.7.3-2.el10_3.4.src.rpm
+    evr: 2.7.3-2.el10_3.8
+    sourcerpm: expat-2.7.3-2.el10_3.8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/f/file-libs-5.45-12.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 786560
@@ -1577,6 +1577,7 @@ arches:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-25.el10.aarch64.rpm
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.aarch64.rpm
@@ -1609,6 +1610,31 @@ arches:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.aarch64.rpm
 >>>>>>> Stashed changes
     repoid: ubi-10-for-aarch64-baseos-rpms
+=======
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 582120
+    checksum: sha256:086d80f163085b84af4806c0baa881a50e15e5e914bc124401c0976566cbf679
+    name: rpm
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 96147
+    checksum: sha256:b9d155cad2b19c1e8a8fa20306a17e79443b601bd460ba691ff8b9a5d8c780d3
+    name: rpm-build-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-libs-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 313116
+    checksum: sha256:9477424bf90d70ed15b6b345e4c656fef32fc640570e10b97ac6c85f0a6dbd8d
+    name: rpm-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+>>>>>>> Stashed changes
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
@@ -1847,27 +1873,27 @@ arches:
     name: util-linux-core
     evr: 2.40.2-24.el10_3.24
     sourcerpm: util-linux-2.40.2-24.el10_3.24.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-data-9.1.083-25.el10_3.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-data-9.1.083-26.el10_3.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 25847
-    checksum: sha256:5038e2114105fd7442f7908611a6e8c96a1e056f3a031178dc1c5284b3dd6ed6
+    size: 25984
+    checksum: sha256:504525e140695d9a80271b14055c346c805165f986245db2497b6a6b7e30f840
     name: vim-data
-    evr: 2:9.1.083-25.el10_3
-    sourcerpm: vim-9.1.083-25.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-filesystem-9.1.083-25.el10_3.noarch.rpm
+    evr: 2:9.1.083-26.el10_3
+    sourcerpm: vim-9.1.083-26.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-filesystem-9.1.083-26.el10_3.noarch.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 25060
-    checksum: sha256:dc0b2639a216b193426009acee8291166a4662b446e5a7cacc5e45579ca47513
+    size: 25132
+    checksum: sha256:ff28328c4e19a349fa2582a0972e44de0b411dd5d2d117c3c07929bd67cd7518
     name: vim-filesystem
-    evr: 2:9.1.083-25.el10_3
-    sourcerpm: vim-9.1.083-25.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-minimal-9.1.083-25.el10_3.aarch64.rpm
+    evr: 2:9.1.083-26.el10_3
+    sourcerpm: vim-9.1.083-26.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/vim-minimal-9.1.083-26.el10_3.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
-    size: 792494
-    checksum: sha256:2fad5d7527b380a5362b6460710236e14c1cac36dad2cc4714d57498e4435af3
+    size: 792558
+    checksum: sha256:fb0331bd351139abf82c2ec17a56637e52f419dafa9dc666ce91a216833f5b58
     name: vim-minimal
-    evr: 2:9.1.083-25.el10_3
-    sourcerpm: vim-9.1.083-25.el10_3.src.rpm
+    evr: 2:9.1.083-26.el10_3
+    sourcerpm: vim-9.1.083-26.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/v/virt-what-1.27-3.el10.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
     size: 40598
@@ -2160,12 +2186,12 @@ arches:
     checksum: sha256:66c06124196ef7235aba6988f1e90509614155b13d5a48cf240e770bd2921fc0
     name: sgml-common
     evr: 0.6.3-65.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/s/skopeo-1.24.0-3.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/s/skopeo-1.24.1-1.el10_3.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
-    size: 9752122
-    checksum: sha256:da8c3bbe274c47e6d9c106c780a4e89aa2402e7405e35503734db0bd2c4da11d
+    size: 9805780
+    checksum: sha256:58c73771672ac481303aafd099d596eeeb196b17a184b2e0abe63a11d644180a
     name: skopeo
-    evr: 3:1.24.0-3.el10_3
+    evr: 3:1.24.1-1.el10_3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/source/SRPMS/Packages/s/spirv-tools-2026.1-1.el10.src.rpm
     repoid: ubi-10-for-aarch64-appstream-source-rpms
     size: 3478183
@@ -2304,12 +2330,12 @@ arches:
     checksum: sha256:e65fed967ae05436a9bbebaec93cb56728e0b7294c506d0b9d44ad92114dae28
     name: environment-modules
     evr: 5.6.1-3.el10_3
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/e/expat-2.7.3-2.el10_3.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/e/expat-2.7.3-2.el10_3.8.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 885607
-    checksum: sha256:4e97cefa2dd835383d3faf79ec2f77827405e289031134711defe71dae62a062
+    size: 908065
+    checksum: sha256:a0549adbc7a67fb794b90da08ad568e9dd85c9f94ea0def17e8321662a8d267b
     name: expat
-    evr: 2.7.3-2.el10_3.4
+    evr: 2.7.3-2.el10_3.8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/f/file-5.45-12.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 1345032
@@ -2862,12 +2888,12 @@ arches:
     checksum: sha256:1e1acc05be4a0f22797a511794f891b6e32e22df1ef023f6dbf9308048128bf6
     name: util-linux
     evr: 2.40.2-24.el10_3.24
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/vim-9.1.083-25.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/vim-9.1.083-26.el10_3.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
-    size: 14741450
-    checksum: sha256:8d0e09834b43be5398d8c1c105ada0c0ecec4af62a57c02c5048cf05ac78e6f2
+    size: 14743189
+    checksum: sha256:5da0741dad70dd941b79a627f8e650006caf7bb033f2bf34b38306d7b98299dd
     name: vim
-    evr: 2:9.1.083-25.el10_3
+    evr: 2:9.1.083-26.el10_3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/source/SRPMS/Packages/v/virt-what-1.27-3.el10.src.rpm
     repoid: ubi-10-for-aarch64-baseos-source-rpms
     size: 590774
@@ -3071,13 +3097,13 @@ arches:
     name: glibc-locale-source
     evr: 2.39-147.el10_3
     sourcerpm: glibc-2.39-147.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-264.16.1.el10_3.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-264.17.1.el10_3.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 3572305
-    checksum: sha256:7d9ee5afa52dcb18dd68df611999b5b85e9636db6601776ead8b326a46aae3f7
+    size: 3580065
+    checksum: sha256:a37fecdfffab230f6c7d8759d3eb22ab0cef70631759da6e7ed74b63be5096a3
     name: kernel-headers
-    evr: 6.12.0-264.16.1.el10_3
-    sourcerpm: kernel-6.12.0-264.16.1.el10_3.src.rpm
+    evr: 6.12.0-264.17.1.el10_3
+    sourcerpm: kernel-6.12.0-264.17.1.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/l/libX11-1.8.13-1.el10_3.1.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 672753
@@ -3407,13 +3433,13 @@ arches:
     name: scl-utils
     evr: 1:2.0.3-5.el10
     sourcerpm: scl-utils-2.0.3-5.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/s/skopeo-1.24.0-3.el10_3.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/s/skopeo-1.24.1-1.el10_3.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 8575910
-    checksum: sha256:e838ea89c54cdfed24301bbb07a1fdc06121ddf029a4783b0aeac251fe071a7f
+    size: 8708134
+    checksum: sha256:a3300dbdc9197888a22e2dc78ea2b1b384519c552908536d57f33a7cd11549b3
     name: skopeo
-    evr: 3:1.24.0-3.el10_3
-    sourcerpm: skopeo-1.24.0-3.el10_3.src.rpm
+    evr: 3:1.24.1-1.el10_3
+    sourcerpm: skopeo-1.24.1-1.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/s/spirv-tools-libs-2026.1-1.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 1761501
@@ -3652,13 +3678,13 @@ arches:
     name: environment-modules
     evr: 5.6.1-3.el10_3
     sourcerpm: environment-modules-5.6.1-3.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/e/expat-2.7.3-2.el10_3.4.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/e/expat-2.7.3-2.el10_3.8.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 131158
-    checksum: sha256:1ec28f4e4bb1cced06f78c45385567e77e98b52dcaa1848b3eef873c1fe2d487
+    size: 134235
+    checksum: sha256:6986a1d442981bb2ab7c17478dc5ecfba71ec3f484799e7e27f316c07a03b1ec
     name: expat
-    evr: 2.7.3-2.el10_3.4
-    sourcerpm: expat-2.7.3-2.el10_3.4.src.rpm
+    evr: 2.7.3-2.el10_3.8
+    sourcerpm: expat-2.7.3-2.el10_3.8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/f/file-libs-5.45-12.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 787866
@@ -4441,6 +4467,7 @@ arches:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-25.el10.x86_64.rpm
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.x86_64.rpm
@@ -4473,6 +4500,31 @@ arches:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.x86_64.rpm
 >>>>>>> Stashed changes
     repoid: ubi-10-for-x86_64-baseos-rpms
+=======
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 581052
+    checksum: sha256:785205115639c60d0a869a5ba80de1b7223eef01e52a30db6fdd203efffccc9c
+    name: rpm
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 100897
+    checksum: sha256:b1e7ee51a4af2396b9521bf614e0314700faffcd410658c9f50bdf9ea6afde4d
+    name: rpm-build-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-libs-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 323833
+    checksum: sha256:0243c2ce346e3dab1edf3abfbbc9e593ea6deab6c6635b074bdb5ee1b83ce0ed
+    name: rpm-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+>>>>>>> Stashed changes
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
@@ -4711,27 +4763,27 @@ arches:
     name: util-linux-core
     evr: 2.40.2-24.el10_3.24
     sourcerpm: util-linux-2.40.2-24.el10_3.24.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-data-9.1.083-25.el10_3.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-data-9.1.083-26.el10_3.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 25847
-    checksum: sha256:5038e2114105fd7442f7908611a6e8c96a1e056f3a031178dc1c5284b3dd6ed6
+    size: 25984
+    checksum: sha256:504525e140695d9a80271b14055c346c805165f986245db2497b6a6b7e30f840
     name: vim-data
-    evr: 2:9.1.083-25.el10_3
-    sourcerpm: vim-9.1.083-25.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-filesystem-9.1.083-25.el10_3.noarch.rpm
+    evr: 2:9.1.083-26.el10_3
+    sourcerpm: vim-9.1.083-26.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-filesystem-9.1.083-26.el10_3.noarch.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 25060
-    checksum: sha256:dc0b2639a216b193426009acee8291166a4662b446e5a7cacc5e45579ca47513
+    size: 25132
+    checksum: sha256:ff28328c4e19a349fa2582a0972e44de0b411dd5d2d117c3c07929bd67cd7518
     name: vim-filesystem
-    evr: 2:9.1.083-25.el10_3
-    sourcerpm: vim-9.1.083-25.el10_3.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-minimal-9.1.083-25.el10_3.x86_64.rpm
+    evr: 2:9.1.083-26.el10_3
+    sourcerpm: vim-9.1.083-26.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/vim-minimal-9.1.083-26.el10_3.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
-    size: 826542
-    checksum: sha256:bfd5a874660886dbb41f4b07f9dd71b9f0669ec1e2b30057fe19cb5ae9e15148
+    size: 826635
+    checksum: sha256:6a84a47fe2a0d8d4f15767ee1376591a1855e7db6787113b6c4c3cdec125ece4
     name: vim-minimal
-    evr: 2:9.1.083-25.el10_3
-    sourcerpm: vim-9.1.083-25.el10_3.src.rpm
+    evr: 2:9.1.083-26.el10_3
+    sourcerpm: vim-9.1.083-26.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/v/virt-what-1.27-3.el10.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
     size: 42128
@@ -5024,12 +5076,12 @@ arches:
     checksum: sha256:66c06124196ef7235aba6988f1e90509614155b13d5a48cf240e770bd2921fc0
     name: sgml-common
     evr: 0.6.3-65.el10
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.24.0-3.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.24.1-1.el10_3.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
-    size: 9752122
-    checksum: sha256:da8c3bbe274c47e6d9c106c780a4e89aa2402e7405e35503734db0bd2c4da11d
+    size: 9805780
+    checksum: sha256:58c73771672ac481303aafd099d596eeeb196b17a184b2e0abe63a11d644180a
     name: skopeo
-    evr: 3:1.24.0-3.el10_3
+    evr: 3:1.24.1-1.el10_3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/source/SRPMS/Packages/s/spirv-tools-2026.1-1.el10.src.rpm
     repoid: ubi-10-for-x86_64-appstream-source-rpms
     size: 3478183
@@ -5168,12 +5220,12 @@ arches:
     checksum: sha256:e65fed967ae05436a9bbebaec93cb56728e0b7294c506d0b9d44ad92114dae28
     name: environment-modules
     evr: 5.6.1-3.el10_3
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/e/expat-2.7.3-2.el10_3.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/e/expat-2.7.3-2.el10_3.8.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 885607
-    checksum: sha256:4e97cefa2dd835383d3faf79ec2f77827405e289031134711defe71dae62a062
+    size: 908065
+    checksum: sha256:a0549adbc7a67fb794b90da08ad568e9dd85c9f94ea0def17e8321662a8d267b
     name: expat
-    evr: 2.7.3-2.el10_3.4
+    evr: 2.7.3-2.el10_3.8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/f/file-5.45-12.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 1345032
@@ -5726,12 +5778,12 @@ arches:
     checksum: sha256:1e1acc05be4a0f22797a511794f891b6e32e22df1ef023f6dbf9308048128bf6
     name: util-linux
     evr: 2.40.2-24.el10_3.24
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/v/vim-9.1.083-25.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/v/vim-9.1.083-26.el10_3.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
-    size: 14741450
-    checksum: sha256:8d0e09834b43be5398d8c1c105ada0c0ecec4af62a57c02c5048cf05ac78e6f2
+    size: 14743189
+    checksum: sha256:5da0741dad70dd941b79a627f8e650006caf7bb033f2bf34b38306d7b98299dd
     name: vim
-    evr: 2:9.1.083-25.el10_3
+    evr: 2:9.1.083-26.el10_3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/source/SRPMS/Packages/v/virt-what-1.27-3.el10.src.rpm
     repoid: ubi-10-for-x86_64-baseos-source-rpms
     size: 590774
