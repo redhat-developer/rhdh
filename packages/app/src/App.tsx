@@ -12,7 +12,6 @@ import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
 
 import { rhdhApisModule, rhdhCatalogGraphPlugin } from "./apis/apisModule";
-import { catalogCreatedAtModule } from "./modules/catalog";
 import { rhdhScaffolderPlugin } from "./modules/scaffolder";
 import { userSettingsGeneralModule } from "./modules/user-settings";
 import { rhdhTranslationsModule } from "./translations/translationsModule";
@@ -32,7 +31,6 @@ const app = createApp({
     // Upstream Backstage plugins
     homePagePlugin,
     catalogPlugin,
-    catalogCreatedAtModule, // Created At column on catalog index
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
     catalogUnprocessedEntitiesPlugin,
     rhdhCatalogGraphPlugin, // catalog-graph UI + scaffolderOf/scaffoldedFrom API override
