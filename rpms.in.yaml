@@ -7,6 +7,14 @@ arches:
   - x86_64
   - aarch64
 allowerasing: true
+# The big "dnf install" runs in the "skeleton" stage, so the rpmdb context
+# must come from that stage's FROM image. Without this filter the default is
+# the LAST stage (ubi9/nodejs-24-minimal), which produced unresolvable
+# exact-EVR locks when the runner and builder images skew (see #5800/#5811).
+context:
+  containerfile:
+    file: build/containerfiles/Containerfile
+    stageName: skeleton
 contentOrigin:
   repos:
     - repoid: ubi-9-for-$basearch-appstream-rpms
@@ -291,6 +299,7 @@ packages:
   - procps-ng
   - protobuf-c
   - psmisc
+  - python-unversioned-command
   - python3-chardet
   - python3-cloud-what
   - python3-dateutil
