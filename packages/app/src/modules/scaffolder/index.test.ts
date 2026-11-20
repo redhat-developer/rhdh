@@ -2,7 +2,7 @@ import { rhdhScaffolderPlugin } from ".";
 
 describe("rhdhScaffolderPlugin", () => {
   it("keeps the upstream scaffolder plugin id", () => {
-    expect(rhdhScaffolderPlugin.id).toBe("scaffolder");
+    expect(rhdhScaffolderPlugin.pluginId).toBe("scaffolder");
   });
 
   it("registers page:scaffolder", () => {

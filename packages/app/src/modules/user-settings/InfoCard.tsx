@@ -49,19 +49,6 @@ export const InfoCard = () => {
   const getTitle = () => {
     const defaultTitle = buildInfo?.title ?? buildMetadata?.title;
 
-    // If titleKey is provided, use translation
-    if (buildInfo?.titleKey) {
-      return t(buildInfo.titleKey as any, {
-        defaultValue: defaultTitle,
-      });
-    }
-    // If no title but titleKey in metadata, use that translation
-    if (!buildInfo?.title && buildMetadata?.titleKey) {
-      return t(buildMetadata.titleKey as any, {
-        defaultValue: buildMetadata?.title,
-      });
-    }
-
     // Fall back to title or default
     return defaultTitle;
   };
