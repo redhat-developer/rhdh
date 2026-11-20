@@ -15,4 +15,5 @@ Red Hat Developer Hub (RHDH): Red Hat's supported distribution of Backstage. Yar
 | E2E test fix workflow | `docs/agents/knowledge/e2e-fix-workflow.md` |
 | Extensions catalog plugin metadata | `docs/agents/knowledge/plugin-metadata-workflow.md` |
 | GitHub Workflows security | `docs/agents/knowledge/github-workflows-security.md` |
+| PR CI and merging (pipeline controller, `ci/pipeline-gate`, Tide, bot PRs) | `docs/agents/knowledge/pr-ci-and-merge.md` |
 | Playwright locator best practices | `docs/agents/knowledge/playwright-locators.md` |

@@ -111,7 +111,7 @@ If you want to submit code changes to the project, here are some guidelines:
 
    - **Note on Environment Dependencies:**
 
-     - If your new or edited code can't be validated locally due to environment dependencies, you can open a **draft Pull Request (PR)**. This allows the tests to run on the test environment as described in our CI documentation.
+     - If your new or edited code can't be validated locally due to environment dependencies, you can open a **draft Pull Request (PR)** and comment `/test e2e-ocp-helm` to run the e2e tests on the test environment, as described in our [CI documentation](./docs/e2e-tests/CI.md#how-prs-are-tested-and-merged).
 
 4. **Linting and Formatting**
 
@@ -126,7 +126,7 @@ If you want to submit code changes to the project, here are some guidelines:
 
 5. **Ensure CI Passes**
 
-   Your contributions will need to pass the Continuous Integration (CI) tests for pull requests.
+   Your contributions will need to pass the Continuous Integration (CI) tests for pull requests. The mandatory `e2e-ocp-helm` check starts when your PR is approved, not on every push, and PRs are merged automatically by Prow's Tide once approved and green. See [How PRs Are Tested and Merged](./docs/e2e-tests/CI.md#how-prs-are-tested-and-merged).
 
 6. **Commit Changes**
 
