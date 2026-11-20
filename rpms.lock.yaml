@@ -1579,6 +1579,7 @@ arches:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-25.el10.aarch64.rpm
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.aarch64.rpm
@@ -1611,6 +1612,31 @@ arches:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.aarch64.rpm
 >>>>>>> Stashed changes
     repoid: ubi-10-for-aarch64-baseos-rpms
+=======
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 582120
+    checksum: sha256:086d80f163085b84af4806c0baa881a50e15e5e914bc124401c0976566cbf679
+    name: rpm
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 96147
+    checksum: sha256:b9d155cad2b19c1e8a8fa20306a17e79443b601bd460ba691ff8b9a5d8c780d3
+    name: rpm-build-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-libs-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+    size: 313116
+    checksum: sha256:9477424bf90d70ed15b6b345e4c656fef32fc640570e10b97ac6c85f0a6dbd8d
+    name: rpm-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.aarch64.rpm
+    repoid: ubi-10-for-aarch64-baseos-rpms
+>>>>>>> Stashed changes
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.aarch64.rpm
     repoid: ubi-10-for-aarch64-baseos-rpms
@@ -4495,6 +4521,7 @@ arches:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-25.el10.x86_64.rpm
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.x86_64.rpm
@@ -4527,6 +4554,31 @@ arches:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.x86_64.rpm
 >>>>>>> Stashed changes
     repoid: ubi-10-for-x86_64-baseos-rpms
+=======
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 581052
+    checksum: sha256:785205115639c60d0a869a5ba80de1b7223eef01e52a30db6fdd203efffccc9c
+    name: rpm
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-build-libs-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 100897
+    checksum: sha256:b1e7ee51a4af2396b9521bf614e0314700faffcd410658c9f50bdf9ea6afde4d
+    name: rpm-build-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-libs-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+    size: 323833
+    checksum: sha256:0243c2ce346e3dab1edf3abfbbc9e593ea6deab6c6635b074bdb5ee1b83ce0ed
+    name: rpm-libs
+    evr: 4.19.1.1-29.el10_3
+    sourcerpm: rpm-4.19.1.1-29.el10_3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-plugin-selinux-4.19.1.1-29.el10_3.x86_64.rpm
+    repoid: ubi-10-for-x86_64-baseos-rpms
+>>>>>>> Stashed changes
 =======
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/baseos/os/Packages/r/rpm-4.19.1.1-29.el10_3.x86_64.rpm
     repoid: ubi-10-for-x86_64-baseos-rpms
