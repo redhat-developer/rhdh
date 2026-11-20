@@ -2,6 +2,7 @@ import type { FC } from "react";
 
 import { Entity } from "@backstage/catalog-model";
 import { useTranslationRef } from "@backstage/core-plugin-api/alpha";
+import type { FilterPredicate } from "@backstage/filter-predicates";
 import {
   catalogReactTranslationRef,
   EntityAutocompletePicker,
@@ -33,6 +34,24 @@ export class CustomEntityTagFilter {
     return this.values;
   }
 
+  getCatalogQuery(): FilterPredicate | undefined {
+    if (this.values.length === 0) {
+      return undefined;
+    }
+    if (this.values.length === 1) {
+      return { "metadata.tags": { $contains: this.values[0] } };
+    }
+    // OR logic: return true if entity has ANY of the selected tags
+    return {
+      $any: this.values.map((tag) => ({
+        "metadata.tags": { $contains: tag },
+      })),
+    };
+  }
+
+  /**
+   * @deprecated Use `getCatalogQuery` instead.
+   */
   getCatalogFilters(): Record<string, string | string[]> {
     return {
       "metadata.tags": this.values,
