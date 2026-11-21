@@ -9,7 +9,7 @@ The `detect-backstage-bump` action marks a pull request as a bump when one of th
 
 - `backstage.json` changed.
 - `yarn.lock` changes the resolved version of any `@backstage/*` package. This includes partial updates such as security fixes.
-- The PR adds, removes or edits a Yarn patch under `.yarn/patches/`, or `yarn.lock` changes which patches are applied. Fixes from the `patch-backstage` workflow, including CVE backports, land this way ([RHIDP-13524](https://redhat.atlassian.net/browse/RHIDP-13524)).
+- The PR adds, removes or edits a Yarn patch under `.yarn/patches/`, or `yarn.lock` changes which patches are applied. Fixes from the `/rhdh-patch-backstage` workflow in the [rhdh-skills `ci/` pack](https://github.com/redhat-developer/rhdh-skills/tree/main/skills/ci), including CVE backports, land this way ([RHIDP-13524](https://redhat.atlassian.net/browse/RHIDP-13524)).
 - The PR changes this folder or the detection action. This lets PRs that edit the checks test them.
 
 A PR that only bumps third-party scopes, such as `@backstage-community/*`, or non-Backstage dependencies without a patch, is not detected. A bump PR with `[skip-build]` in a commit subject still skips the build and test jobs, as any PR does.
