@@ -24,6 +24,9 @@ const catalogImportPlugin = catalogImportBase.withOverrides({
   icon: false as unknown as IconElement,
 });
 
+// Module Federation runtime-core for externalized remotes is provided by
+// public/federation-runtime.js (loaded from index.html before preload.js).
+
 // Avoid shipping duplicate copies of common libraries inside every dynamic plugin.
 addRuntimeSharedDependencies();
 

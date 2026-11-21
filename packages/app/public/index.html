@@ -38,6 +38,13 @@
     <title>
       <%= config.getOptionalString('app.title') ?? 'Red Hat Developer Hub' %>
     </title>
+    <!--
+      Sync on purpose: remotes use experiments.externalRuntime and read
+      globalThis._FEDERATION_RUNTIME_CORE. preload.js injects remoteEntry
+      scripts immediately; this must run first. Built by
+      scripts/build-federation-runtime.mjs (yarn build / yarn start).
+    -->
+    <script src="<%= publicPath %>/federation-runtime.js"></script>
     <script
       defer
       fetchpriority="high"
