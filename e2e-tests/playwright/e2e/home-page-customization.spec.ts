@@ -55,9 +55,9 @@ test.describe("Home page customization", () => {
   );
 
   test("Verify Customized Quick Access", async () => {
-    test.skip(
+    test.fixme(
       process.env.IS_OPENSHIFT === "false",
-      "Requires the OpenShift-only customization provider; restore Kubernetes coverage in RHDHBUGS-3950.",
+      "Requires the OpenShift-only customization provider; restore Kubernetes coverage in RHDHBUGS-4096.",
     );
     // Expanded by default
     await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
