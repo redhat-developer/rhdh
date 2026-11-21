@@ -74,7 +74,6 @@
     "@backstage/plugin-catalog-import": "0.13.17",
     "@backstage/plugin-catalog-react": "3.2.2",
     "@backstage/plugin-catalog-unprocessed-entities": "0.2.34",
-    "@backstage/plugin-home": "0.9.9",
     "@backstage/plugin-permission-react": "0.5.4",
     "@backstage/plugin-scaffolder": "1.38.2",
     "@backstage/plugin-scaffolder-react": "2.0.3",
