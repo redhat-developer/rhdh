@@ -4,10 +4,7 @@ import type { JsonObject } from '@backstage/types';
 import { generateSnapshotFromManifest } from '@module-federation/sdk';
 import type { Manifest } from '@module-federation/sdk';
 
-import {
-  DYNAMIC_FEATURES_MANIFEST_FILE,
-  DYNAMIC_FEATURES_PLUGIN_ID,
-} from './paths';
+import { dynamicFeaturesRemoteManifestPath } from './paths';
 import type { PreloadStore } from './store';
 
 /**
@@ -23,13 +20,16 @@ import type { PreloadStore } from './store';
  * time by walking these structures — no separate URL lists are needed.
  * The shared MF runtime modulepreload URLs are populated by the
  * resolver's runtime-file scan, not here.
+ *
+ * Remotes `entry`, snapshot `version`, and `publicPath` are stored as
+ * root-relative paths (`/.backstage/…`) so preload.js does not repeat
+ * the backend hostname for every plugin.
  */
 export function collectPluginPreload(
   store: PreloadStore,
   pluginName: string,
   manifest: JsonObject,
   filteredExposedModules: string[],
-  backendBaseUrl: string,
   logger: LoggerService,
 ): void {
   const manifestName = manifest.name as string;
@@ -40,7 +40,7 @@ export function collectPluginPreload(
     return;
   }
 
-  const entryUrl = `${backendBaseUrl}/${DYNAMIC_FEATURES_PLUGIN_ID}/remotes/${pluginName}/${DYNAMIC_FEATURES_MANIFEST_FILE}`;
+  const entryPath = dynamicFeaturesRemoteManifestPath(pluginName);
 
   // Build the remotes list entry (same shape as GET /remotes response).
   // No remoteInfo.type marking is needed — for manifest-based remotes the
@@ -51,19 +51,20 @@ export function collectPluginPreload(
     packageName: pluginName,
     remoteInfo: {
       name: manifestName,
-      entry: entryUrl,
+      entry: entryPath,
     },
     exposedModules: filteredExposedModules,
   });
 
   // Build the MF snapshot.
-  // Pass version=entryUrl so that:
+  // Pass version=entryPath so that:
   //   - name-only keys work (snapshot.version matches remotesInfo.matchedVersion)
-  //   - publicPath: "auto" resolves via inferAutoPublicPath(entryUrl)
+  //   - publicPath: "auto" resolves via inferAutoPublicPath(entryPath) to a
+  //     root-relative directory (same origin as the page)
   try {
     const snapshot = generateSnapshotFromManifest(
       manifest as unknown as Manifest,
-      { version: entryUrl },
+      { version: entryPath },
     );
     // Keep snapshot.modules aligned with NFS-filtered exposedModules so
     // preload.js only carries (and can only preload) modules RHDH will load.

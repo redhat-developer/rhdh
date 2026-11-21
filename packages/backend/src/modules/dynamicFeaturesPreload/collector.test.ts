@@ -9,7 +9,7 @@ import { resolve as resolvePath } from 'node:path';
 import { collectPluginPreload } from './collector';
 import {
   DYNAMIC_FEATURES_MANIFEST_FILE,
-  DYNAMIC_FEATURES_PLUGIN_ID,
+  dynamicFeaturesRemoteManifestPath,
 } from './paths';
 import { createPreloadStore } from './store';
 
@@ -43,8 +43,6 @@ function loadManifest(pluginDir: string): JsonObject {
 }
 
 describe('collectPluginPreload', () => {
-  const baseUrl = 'http://localhost:7007';
-
   it('pushes a remotes entry and MF snapshot for a valid manifest', () => {
     const store = createPreloadStore();
     const logger = createMockLogger();
@@ -55,7 +53,6 @@ describe('collectPluginPreload', () => {
       'plugin-test-mixed-features-dynamic',
       manifest,
       ['alpha'],
-      baseUrl,
       logger,
     );
 
@@ -64,7 +61,9 @@ describe('collectPluginPreload', () => {
       packageName: 'plugin-test-mixed-features-dynamic',
       remoteInfo: {
         name: 'backstage__plugin_test_mixed_features',
-        entry: `${baseUrl}/${DYNAMIC_FEATURES_PLUGIN_ID}/remotes/plugin-test-mixed-features-dynamic/${DYNAMIC_FEATURES_MANIFEST_FILE}`,
+        entry: dynamicFeaturesRemoteManifestPath(
+          'plugin-test-mixed-features-dynamic',
+        ),
       },
       exposedModules: ['alpha'],
     });
@@ -81,7 +80,12 @@ describe('collectPluginPreload', () => {
     // ProviderModuleInfo is WithPublicPath | WithGetPublicPath
     expect(
       'publicPath' in pluginSnapshotEntry && pluginSnapshotEntry.publicPath,
-    ).toBeTruthy();
+    ).toBe(
+      '/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/',
+    );
+    expect(pluginSnapshotEntry.version).toBe(
+      dynamicFeaturesRemoteManifestPath('plugin-test-mixed-features-dynamic'),
+    );
 
     const modNames = (pluginSnapshotEntry.modules ?? []).map(
       (m: { moduleName: string }) => m.moduleName,
@@ -110,7 +114,6 @@ describe('collectPluginPreload', () => {
       'plugin-test-mixed-features-dynamic',
       manifest,
       ['alpha'],
-      baseUrl,
       logger,
     );
 
@@ -135,7 +138,6 @@ describe('collectPluginPreload', () => {
       'broken-plugin',
       { exposes: [] } as JsonObject,
       ['.'],
-      baseUrl,
       logger,
     );
 

@@ -171,11 +171,11 @@ describe('dynamicFeaturesResolver wiring', () => {
     expect(res.ok).toBe(true);
 
     const body = await res.text();
-    // The canonical URL (backend baseUrl-anchored) is what ESM remote
-    // entries' baked relative runtime external resolves to —
-    // modulepreloaded to warm exactly that fetch.
+    // The canonical root-relative URL is what ESM remote entries' baked
+    // relative runtime external resolves to — modulepreloaded to warm
+    // exactly that fetch.
     expect(body).toContain(
-      `var sharedModules = ["http://localhost:0${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/webpack-bundler-runtime@test-rspack-test-0123abcd4567ef89.mjs"]`,
+      `var sharedModules = ["${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/webpack-bundler-runtime@test-rspack-test-0123abcd4567ef89.mjs"]`,
     );
     expect(body).toContain('bl.rel = "modulepreload"');
   });

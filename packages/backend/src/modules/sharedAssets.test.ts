@@ -10,10 +10,8 @@ import { createPreloadStore } from './dynamicFeaturesPreload/store';
 import { registerSharedAssets } from './sharedAssets';
 import type { SharedAssetRegistry } from './sharedAssets';
 
-const backendBaseUrl = 'http://localhost:7007';
-
 function canonicalUrl(file: string): string {
-  return `${backendBaseUrl}${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/${file}`;
+  return `${DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH}/${file}`;
 }
 
 function createMockLogger(): LoggerService {
@@ -67,14 +65,7 @@ describe('registerSharedAssets', () => {
       'styles.css': 'body{}',
     });
 
-    registerSharedAssets(
-      registry,
-      store,
-      pluginDir,
-      'plugin-a',
-      backendBaseUrl,
-      logger,
-    );
+    registerSharedAssets(registry, store, pluginDir, 'plugin-a', logger);
 
     expect([...registry.keys()].sort()).toEqual([
       'asset.txt',
@@ -100,7 +91,6 @@ describe('registerSharedAssets', () => {
       store,
       pluginDir,
       'plugin-a',
-      backendBaseUrl,
       createMockLogger(),
     );
 
@@ -120,7 +110,6 @@ describe('registerSharedAssets', () => {
       store,
       pluginA,
       'plugin-a',
-      backendBaseUrl,
       createMockLogger(),
     );
     registerSharedAssets(
@@ -128,7 +117,6 @@ describe('registerSharedAssets', () => {
       store,
       pluginB,
       'plugin-b',
-      backendBaseUrl,
       createMockLogger(),
     );
 
@@ -154,7 +142,6 @@ describe('registerSharedAssets', () => {
       store,
       pluginA,
       'plugin-a',
-      backendBaseUrl,
       createMockLogger(),
     );
 
@@ -164,7 +151,6 @@ describe('registerSharedAssets', () => {
         store,
         pluginB,
         'plugin-b',
-        backendBaseUrl,
         createMockLogger(),
       ),
     ).toThrow(
@@ -198,7 +184,6 @@ describe('registerSharedAssets', () => {
       store,
       pluginA,
       'plugin-a',
-      backendBaseUrl,
       createMockLogger(),
     );
 
@@ -208,7 +193,6 @@ describe('registerSharedAssets', () => {
         store,
         pluginB,
         'plugin-b',
-        backendBaseUrl,
         createMockLogger(),
       ),
     ).toThrow(
@@ -229,14 +213,7 @@ describe('registerSharedAssets', () => {
     fs.writeFileSync(path.join(sharedDir, 'runtime.mjs'), 'export default 1;');
 
     const logger = createMockLogger();
-    registerSharedAssets(
-      registry,
-      store,
-      pluginDir,
-      'plugin-a',
-      backendBaseUrl,
-      logger,
-    );
+    registerSharedAssets(registry, store, pluginDir, 'plugin-a', logger);
 
     expect([...registry.keys()]).toEqual(['runtime.mjs']);
     expect(logger.warn).toHaveBeenCalledWith(
@@ -263,7 +240,6 @@ describe('registerSharedAssets', () => {
       store,
       pluginDir,
       'plugin-a',
-      backendBaseUrl,
       createMockLogger(),
     );
 
@@ -288,7 +264,6 @@ describe('registerSharedAssets', () => {
       store,
       pluginDir,
       'plugin-a',
-      backendBaseUrl,
       createMockLogger(),
     );
 

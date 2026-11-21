@@ -36,6 +36,17 @@ export const DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH = `${DYNAMIC_FEATURES_PRELOAD_
 export const DYNAMIC_FEATURES_MANIFEST_FILE = 'mf-manifest.json';
 
 /**
+ * Root-relative path to a plugin's Module Federation manifest.
+ *
+ * Prefer `/…` over `${backend.baseUrl}/…` in preload.js / remotes data so
+ * the payload stays smaller and same-origin browser resolution works
+ * without baking the hostname into hundreds of snapshot entries.
+ */
+export function dynamicFeaturesRemoteManifestPath(pluginName: string): string {
+  return `${DYNAMIC_FEATURES_REMOTES_PATH}/${pluginName}/${DYNAMIC_FEATURES_MANIFEST_FILE}`;
+}
+
+/**
  * Mount path for shared dynamic-plugin assets.
  *
  * Contract: any deployed plugin may carry a flat `dist/shared/` directory

@@ -88,11 +88,9 @@ export const dynamicFeaturesResolver = createBackendPlugin({
       deps: {
         frontendRemotes: dynamicPluginsFrontendServiceRef,
         rootHttpRouter: coreServices.rootHttpRouter,
-        config: coreServices.rootConfig,
         logger: coreServices.rootLogger,
       },
-      async init({ frontendRemotes, rootHttpRouter, config, logger }) {
-        const backendBaseUrl = config.getString('backend.baseUrl');
+      async init({ frontendRemotes, rootHttpRouter, logger }) {
         const store = createPreloadStore();
         const sharedAssets: SharedAssetRegistry = new Map();
 
@@ -103,7 +101,6 @@ export const dynamicFeaturesResolver = createBackendPlugin({
               store,
               pluginPackagePath,
               pluginName,
-              backendBaseUrl,
               logger,
             );
             const features = readBackstageFeatures(
@@ -125,7 +122,6 @@ export const dynamicFeaturesResolver = createBackendPlugin({
                   pluginName,
                   manifest,
                   filtered,
-                  backendBaseUrl,
                   logger,
                 );
                 return filtered;
