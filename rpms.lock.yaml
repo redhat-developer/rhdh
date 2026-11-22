@@ -277,13 +277,13 @@ arches:
     name: go-srpm-macros
     evr: 3.8.1-1.el9
     sourcerpm: go-rpm-macros-3.8.1-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-741.22.1.el9_9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-741.24.1.el9_9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 2768777
-    checksum: sha256:0b47eff696c4ea2fe0a7088365d19cbaff5dc3580bb35e3908298c833311b86d
+    size: 2776853
+    checksum: sha256:fa32ef8311cd60127da5f4b38f15b30d51f2f50c146124b9e1b6ab7028ea39d6
     name: kernel-headers
-    evr: 5.14.0-741.22.1.el9_9
-    sourcerpm: kernel-5.14.0-741.22.1.el9_9.src.rpm
+    evr: 5.14.0-741.24.1.el9_9
+    sourcerpm: kernel-5.14.0-741.24.1.el9_9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-16.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 20832
@@ -2594,13 +2594,13 @@ arches:
     name: environment-modules
     evr: 5.3.0-3.el9_9
     sourcerpm: environment-modules-5.3.0-3.el9_9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/e/expat-2.5.0-9.el9_9.4.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/e/expat-2.5.0-9.el9_9.8.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 129305
-    checksum: sha256:9e8c9375b2d88064de2dbaff424a72a913bb0c2809c6cddb48d00cd2176e61ee
+    size: 132507
+    checksum: sha256:86b667aa4d1254fe4fbc0dd2febadba3e020f40e5c460d3245c606397eedcbfe
     name: expat
-    evr: 2.5.0-9.el9_9.4
-    sourcerpm: expat-2.5.0-9.el9_9.4.src.rpm
+    evr: 2.5.0-9.el9_9.8
+    sourcerpm: expat-2.5.0-9.el9_9.8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/f/file-5.39-19.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 55304
@@ -3287,27 +3287,27 @@ arches:
     name: subscription-manager-rhsm-certificates
     evr: 20220623-1.el9
     sourcerpm: subscription-manager-rhsm-certificates-20220623-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-79.el9_9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-79.el9_9.1.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 4397590
-    checksum: sha256:8d349cdb8899fb709b01d968fd849cf24cd3dd8c7935a11fba13a541d229b62a
+    size: 4396903
+    checksum: sha256:38f36d12bf8ff4a0b75d503913742efc4630dff2ef96dc09e29dd89d4fd557b3
     name: systemd
-    evr: 252-79.el9_9
-    sourcerpm: systemd-252-79.el9_9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-79.el9_9.x86_64.rpm
+    evr: 252-79.el9_9.1
+    sourcerpm: systemd-252-79.el9_9.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-79.el9_9.1.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 258820
-    checksum: sha256:84a210955d395b190d1082d7b3259d54dc0998fcf38cc80433bb7c8ea2ca3f2e
+    size: 259347
+    checksum: sha256:3a7ae96e4a9445b824a104f0ba7c8f74e681774b110f698964c8351c24d27977
     name: systemd-pam
-    evr: 252-79.el9_9
-    sourcerpm: systemd-252-79.el9_9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-79.el9_9.noarch.rpm
+    evr: 252-79.el9_9.1
+    sourcerpm: systemd-252-79.el9_9.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-79.el9_9.1.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 41417
-    checksum: sha256:601a5463e84ace10a8b696beb3816ef8bc7d20afb6fecb539f585b29e97ceabf
+    size: 41813
+    checksum: sha256:07f7baa81b0ba437650f222813b0e8f316914d1b06440fa83b819a8c7e4bef6d
     name: systemd-rpm-macros
-    evr: 252-79.el9_9
-    sourcerpm: systemd-252-79.el9_9.src.rpm
+    evr: 252-79.el9_9.1
+    sourcerpm: systemd-252-79.el9_9.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/t/tcl-8.6.10-7.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 1152092
@@ -3350,20 +3350,20 @@ arches:
     name: util-linux-core
     evr: 2.37.4-28.el9_9.1
     sourcerpm: util-linux-2.37.4-28.el9_9.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-filesystem-8.2.2637-43.el9_9.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-filesystem-8.2.2637-44.el9_9.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 23839
-    checksum: sha256:bc6c08b15ad94e6ebc4a4dc46f40b6687599725f8fc42aecf0b4109fa232e7e2
+    size: 23982
+    checksum: sha256:7b84c73ac91c4069d80014998db7f2fcf719051902805d6046f795a3e3488d3a
     name: vim-filesystem
-    evr: 2:8.2.2637-43.el9_9
-    sourcerpm: vim-8.2.2637-43.el9_9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-minimal-8.2.2637-43.el9_9.x86_64.rpm
+    evr: 2:8.2.2637-44.el9_9
+    sourcerpm: vim-8.2.2637-44.el9_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/vim-minimal-8.2.2637-44.el9_9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 697216
-    checksum: sha256:1e39347bbd317f1987faf7de7a3a0ba2b0848d4059b70d10025e262202226624
+    size: 697505
+    checksum: sha256:d47055eaf8c39a2b161c7611f677a8457e888d2f1ffc076cb14c0efd5a8fc2b5
     name: vim-minimal
-    evr: 2:8.2.2637-43.el9_9
-    sourcerpm: vim-8.2.2637-43.el9_9.src.rpm
+    evr: 2:8.2.2637-44.el9_9
+    sourcerpm: vim-8.2.2637-44.el9_9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/v/virt-what-1.27-2.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 43565
@@ -4701,12 +4701,12 @@ arches:
     checksum: sha256:c020589b759ef601d1b32662c6b2386a78437ff8779416265a895c00cb2051e1
     name: environment-modules
     evr: 5.3.0-3.el9_9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/e/expat-2.5.0-9.el9_9.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/e/expat-2.5.0-9.el9_9.8.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 8414151
-    checksum: sha256:c461966c67935df3c01d4755d76b9b9ff8894936aaf99000716976ffad14acda
+    size: 8431764
+    checksum: sha256:eab744300e98369808dc49c509237234da7ded9273e806b2bd29fb7a4f316b0b
     name: expat
-    evr: 2.5.0-9.el9_9.4
+    evr: 2.5.0-9.el9_9.8
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/f/file-5.39-19.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 1008227
@@ -5175,12 +5175,12 @@ arches:
     checksum: sha256:a814ce978afe85327fd03829047ce04181d5d3f76bad8cfe8d24adfbd9be38a2
     name: subscription-manager-rhsm-certificates
     evr: 20220623-1.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/systemd-252-79.el9_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/systemd-252-79.el9_9.1.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 45061118
-    checksum: sha256:ddda500164b45e4c4057c8f55d9c6addabb1867d12140f8a947e3ae29815d0cd
+    size: 45069139
+    checksum: sha256:769a78a55d84d5c044904039375ff8936319ce6b4fede9e54d29f4920fe6c33b
     name: systemd
-    evr: 252-79.el9_9
+    evr: 252-79.el9_9.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/t/tcl-8.6.10-7.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 6000353
@@ -5211,12 +5211,12 @@ arches:
     checksum: sha256:2d3ec3819df3e6eeb8b9706a0e2b3a64a128b16eea8a08ddb423f1c41b90a1ee
     name: util-linux
     evr: 2.37.4-28.el9_9.1
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-43.el9_9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/vim-8.2.2637-44.el9_9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 12875864
-    checksum: sha256:56613019912377c69af90fa16d1e4b0ea217165a5b424e7acc4893aa47955f63
+    size: 12877484
+    checksum: sha256:24a4b96ba7f937992a3a435875ce052a344b3fd1a718849f369c73e83ee07f26
     name: vim
-    evr: 2:8.2.2637-43.el9_9
+    evr: 2:8.2.2637-44.el9_9
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/v/virt-what-1.27-2.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 572569
