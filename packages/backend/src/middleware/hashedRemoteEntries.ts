@@ -38,7 +38,10 @@ const NOT_FOUND_BODY = 'Hashed remote entry not found';
  *
  * Note: a dynamic plugin that fully replaces `core.rootHttpRouter`
  * (via `ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE`) must re-include this
- * middleware to keep the same behavior.
+ * middleware to keep the same behavior. The dynamic-features resolver
+ * detects that env var and degrades to the literal `remoteEntry.js`
+ * names, so hashed URLs are never referenced when this middleware is
+ * absent.
  */
 export function hashedRemoteEntriesMiddleware(): RequestHandler {
   return (req, res, next) => {

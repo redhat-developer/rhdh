@@ -84,16 +84,32 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   metricsServiceFactory,
 ] as const;
 
+/**
+ * Whether the given core service factory is being replaced by a dynamic
+ * plugin, via its `ENABLE_<SERVICE_ID>_OVERRIDE` environment variable.
+ *
+ * This is the single source of truth for the env-name derivation; other
+ * modules (e.g. the dynamic-features resolver) must use it to stay
+ * consistent with the filtering below.
+ */
+export function isCoreServiceOverrideEnabled(serviceId: string): boolean {
+  const envName = `ENABLE_${serviceId
+    .toLocaleUpperCase()
+    .replace('.', '_')}_OVERRIDE`;
+  return (process.env[envName] ?? '').toLocaleLowerCase() === 'true';
+}
+
 export const getDefaultServiceFactories = ({
   logger,
 }: {
   logger: WinstonLogger;
 }) => {
   return DEFAULT_SERVICE_FACTORIES.filter(serviceFactory => {
-    const envName = `ENABLE_${serviceFactory.service.id.toLocaleUpperCase().replace('.', '_')}_OVERRIDE`;
-    if ((process.env[envName] || '').toLocaleLowerCase() !== 'true') {
+    if (!isCoreServiceOverrideEnabled(serviceFactory.service.id)) {
       logger.debug(
-        `Adding service factory "${serviceFactory.service.id}", to override set "${envName}" to "true"`,
+        `Adding service factory "${serviceFactory.service.id}", to override set "ENABLE_${serviceFactory.service.id
+          .toLocaleUpperCase()
+          .replace('.', '_')}_OVERRIDE" to "true"`,
       );
       return true;
     }

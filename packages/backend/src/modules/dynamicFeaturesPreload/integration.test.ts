@@ -20,6 +20,7 @@ import {
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
 } from './paths';
 import { hashedRemoteEntryName } from './remoteEntryHash';
+import { remoteEntryRegistry } from './remoteEntryRegistry';
 
 jest.setTimeout(60_000);
 
@@ -305,6 +306,91 @@ describe('dynamicFeaturesResolver wiring', () => {
     expect(body).toContain(
       `${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/mf-manifest.json`,
     );
+  });
+});
+
+describe('dynamicFeaturesResolver with core.rootHttpRouter overridden', () => {
+  let port: number;
+  const previousEnv = process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE;
+
+  beforeAll(async () => {
+    // When a dynamic plugin overrides core.rootHttpRouter (e.g.
+    // adoption-insights), RHDH's default root-router factory — and with it
+    // hashedRemoteEntriesMiddleware — is not installed. The resolver must
+    // then not reference hashed entry names anywhere.
+    process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE = 'true';
+    remoteEntryRegistry.clear();
+
+    const backend = await startTestBackend({
+      features: [
+        mockServices.rootConfig.factory({
+          data: {
+            dynamicPlugins: {
+              rootDirectory: dynamicPluginsRootDirectory,
+            },
+            backend: {
+              baseUrl: 'http://localhost:0',
+            },
+          },
+        }),
+        dynamicPluginsFeatureLoader({
+          moduleLoader: logger => testModuleLoader(logger),
+        }),
+        dynamicFeaturesResolver,
+        hashedEntriesTestMount,
+      ],
+    });
+    port = backend.server.port();
+  });
+
+  afterAll(() => {
+    if (previousEnv === undefined) {
+      delete process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE;
+    } else {
+      process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE = previousEnv;
+    }
+  });
+
+  it('keeps the literal remoteEntry.js name in the served manifest', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/mf-manifest.json`,
+    );
+    expect(res.ok).toBe(true);
+    const manifest = await res.json();
+    expect(manifest.metaData.remoteEntry.name).toBe('remoteEntry.js');
+  });
+
+  it('keeps the literal entry name in preload.js', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+    );
+    expect(res.ok).toBe(true);
+    const body = await res.text();
+    expect(body).toContain(`"remoteEntry":"remoteEntry.js"`);
+    expect(body).not.toMatch(/remoteEntry\.[0-9a-f]{16}\.js/);
+  });
+
+  it('registers no entries in the hashed-entry registry', async () => {
+    const entryBytes = readFileSync(
+      resolvePath(
+        dynamicPluginsRootDirectory,
+        'test-mixed-features-dynamic/dist/remoteEntry.js',
+      ),
+    );
+    const hashedName = hashedRemoteEntryName(entryBytes);
+
+    // Even if a hashed URL were requested, nothing serves it.
+    const res = await fetch(
+      `http://127.0.0.1:${port}/hashed-entries-test${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/${hashedName}`,
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it('still serves the literal remoteEntry.js (upstream static)', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/remoteEntry.js`,
+    );
+    expect(res.ok).toBe(true);
   });
 });
 

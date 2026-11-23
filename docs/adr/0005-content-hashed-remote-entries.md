@@ -61,6 +61,20 @@ and terminal-returns, so it negotiates `Accept-Encoding` itself from the
 precomputed encodings. CSP is unchanged — same origins, same resource
 types.
 
+Root-router overrides degrade to literal names: the rewrite and the
+serving must never disagree. Because the middleware is registered by
+RHDH's default root-router factory — which `getDefaultServiceFactories`
+drops entirely when a dynamic plugin overrides `core.rootHttpRouter`
+(e.g. adoption-insights) — the resolver checks the same
+`ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE` env var and skips the rewrite and
+registration when the override is enabled. Otherwise hashed URLs would
+be referenced but not served: the request falls through upstream
+`express.static` to the app-backend SPA fallback, which answers 200 with
+HTML for the entry URL and every frontend dynamic plugin fails to load.
+In override deployments plugins keep the literal `remoteEntry.js`
+(upstream static, max-age=0) — exactly the pre-hashing behavior; the
+immutable-cache win applies to standard deployments.
+
 Evidence: `packages/backend/src/modules/dynamicFeaturesPreload/remoteEntryHash.ts`,
 `.../remoteEntryRegistry.ts`, `packages/backend/src/middleware/hashedRemoteEntries.ts`,
 `packages/backend/src/modules/dynamicFeaturesResolver.ts` (resolver
