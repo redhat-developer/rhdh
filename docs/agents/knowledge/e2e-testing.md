@@ -262,7 +262,7 @@ RHDH uses dedicated Hive cluster pools with the `rhdh` prefix on AWS `us-east-2`
 ### CI Job Types
 
 #### Pull Request Tests
-- **Trigger**: Automatic for code changes, manual with `/ok-to-test`
+- **Trigger**: when the PR gets `lgtm`, or manually with `/test e2e-ocp-helm`. See `docs/agents/knowledge/pr-ci-and-merge.md`
 - **Environment**: Ephemeral OpenShift cluster
 - **Scope**: Both RBAC and non-RBAC namespaces
 - **Artifacts**: 6-month retention period
