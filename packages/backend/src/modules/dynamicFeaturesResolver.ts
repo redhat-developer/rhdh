@@ -140,12 +140,7 @@ export const dynamicFeaturesResolver = createBackendPlugin({
               logger,
             );
             if (serveHashedEntries) {
-              registerRemoteEntry(
-                remoteEntryRegistry,
-                pluginName,
-                pluginPackagePath,
-                logger,
-              );
+              registerRemoteEntry(pluginName, pluginPackagePath, logger);
             }
             const features = readBackstageFeatures(
               pluginName,

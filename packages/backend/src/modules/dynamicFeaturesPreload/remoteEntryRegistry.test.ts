@@ -33,24 +33,24 @@ function fixtureEntryBytes(pluginDir: string): Buffer {
   );
 }
 
-describe('registerRemoteEntry', () => {
-  beforeEach(() => {
-    remoteEntryRegistry.clear();
-  });
+beforeEach(() => {
+  remoteEntryRegistry.clear();
+});
 
+describe('registerRemoteEntry', () => {
   it('reads the entry bytes and populates the hash and precomputed encodings', () => {
-    const registry = remoteEntryRegistry;
     const logger = createMockLogger();
     const bytes = fixtureEntryBytes('test-mixed-features-dynamic');
 
     registerRemoteEntry(
-      registry,
       'plugin-test-mixed-features-dynamic',
       resolvePath(fixturesRoot, 'test-mixed-features-dynamic'),
       logger,
     );
 
-    const record = registry.get('plugin-test-mixed-features-dynamic');
+    const record = remoteEntryRegistry.get(
+      'plugin-test-mixed-features-dynamic',
+    );
     expect(record).toBeDefined();
     expect(record!.bytes.equals(bytes)).toBe(true);
     expect(record!.hashedName).toBe(hashedRemoteEntryName(bytes));
@@ -60,42 +60,37 @@ describe('registerRemoteEntry', () => {
   });
 
   it('handles scoped plugin names', () => {
-    const registry = remoteEntryRegistry;
     const bytes = fixtureEntryBytes('test-all-nfs-dynamic');
 
     registerRemoteEntry(
-      registry,
       '@scope/test-all-nfs-dynamic',
       resolvePath(fixturesRoot, 'test-all-nfs-dynamic'),
       createMockLogger(),
     );
 
-    const record = registry.get('@scope/test-all-nfs-dynamic');
+    const record = remoteEntryRegistry.get('@scope/test-all-nfs-dynamic');
     expect(record).toBeDefined();
     expect(record!.bytes.equals(bytes)).toBe(true);
   });
 
   it('keeps the first registration and warns on a duplicate plugin name', () => {
-    const registry = remoteEntryRegistry;
     const logger = createMockLogger();
     const firstBytes = fixtureEntryBytes('test-mixed-features-dynamic');
     const secondBytes = fixtureEntryBytes('test-no-features-dynamic');
     expect(firstBytes.equals(secondBytes)).toBe(false);
 
     registerRemoteEntry(
-      registry,
       'duplicate-plugin',
       resolvePath(fixturesRoot, 'test-mixed-features-dynamic'),
       logger,
     );
     registerRemoteEntry(
-      registry,
       'duplicate-plugin',
       resolvePath(fixturesRoot, 'test-no-features-dynamic'),
       logger,
     );
 
-    const record = registry.get('duplicate-plugin');
+    const record = remoteEntryRegistry.get('duplicate-plugin');
     expect(record!.bytes.equals(firstBytes)).toBe(true);
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining('already registered'),
@@ -103,17 +98,15 @@ describe('registerRemoteEntry', () => {
   });
 
   it('skips the plugin with a warning when the entry file is unreadable', () => {
-    const registry = remoteEntryRegistry;
     const logger = createMockLogger();
 
     registerRemoteEntry(
-      registry,
       'plugin-without-entry',
       resolvePath(fixturesRoot, 'does-not-exist'),
       logger,
     );
 
-    expect(registry.has('plugin-without-entry')).toBe(false);
+    expect(remoteEntryRegistry.has('plugin-without-entry')).toBe(false);
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining('could not read remote entry'),
     );
@@ -153,14 +146,9 @@ describe('HASHED_REMOTE_ENTRY_PATH_RE', () => {
 });
 
 describe('lookupRemoteEntry', () => {
-  beforeEach(() => {
-    remoteEntryRegistry.clear();
-  });
-
   it('returns the record for the registered plugin and matching hash', () => {
     const bytes = fixtureEntryBytes('test-mixed-features-dynamic');
     registerRemoteEntry(
-      remoteEntryRegistry,
       'plugin-test-mixed-features-dynamic',
       resolvePath(fixturesRoot, 'test-mixed-features-dynamic'),
       createMockLogger(),
@@ -181,7 +169,6 @@ describe('lookupRemoteEntry', () => {
   it('returns undefined for a wrong (stale) hash', () => {
     const bytes = fixtureEntryBytes('test-mixed-features-dynamic');
     registerRemoteEntry(
-      remoteEntryRegistry,
       'plugin-test-mixed-features-dynamic',
       resolvePath(fixturesRoot, 'test-mixed-features-dynamic'),
       createMockLogger(),

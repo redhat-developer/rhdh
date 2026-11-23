@@ -37,9 +37,10 @@ export interface RemoteEntryRecord {
  * This map is a module-scoped singleton because its reader is a global
  * middleware created at `rootHttpRouterServiceFactory.configure()`
  * time — before the resolver plugin initializes — and Express
- * middlewares cannot receive services. Registration still goes through
- * {@link registerRemoteEntry} with an explicit registry argument so
- * tests can use isolated instances.
+ * middlewares cannot receive services. Both population
+ * ({@link registerRemoteEntry}) and reads ({@link lookupRemoteEntry})
+ * go through this module's functions; tests reset the singleton
+ * between cases with {@link remoteEntryRegistry}.clear().
  */
 export type RemoteEntryRegistry = Map<string, RemoteEntryRecord>;
 
@@ -59,7 +60,8 @@ export const HASHED_REMOTE_ENTRY_PATH_RE =
   /^\/\.backstage\/dynamic-features\/remotes\/(.+)\/remoteEntry\.([0-9a-f]{16})\.js$/;
 
 /**
- * Register one plugin's `dist/remoteEntry.js` in the registry.
+ * Register one plugin's `dist/remoteEntry.js` in the singleton
+ * registry.
  *
  * Reads the entry bytes, derives the content-addressed name, and
  * precomputes the brotli/gzip encodings — everything the serving
@@ -72,12 +74,11 @@ export const HASHED_REMOTE_ENTRY_PATH_RE =
  * the first copy and warns.
  */
 export function registerRemoteEntry(
-  registry: RemoteEntryRegistry,
   pluginName: string,
   pluginPackagePath: string,
   logger: LoggerService,
 ): void {
-  if (registry.has(pluginName)) {
+  if (remoteEntryRegistry.has(pluginName)) {
     logger.warn(
       `dynamic-features-resolver: remote entry for '${pluginName}' already registered; keeping the first registration`,
     );
@@ -96,7 +97,7 @@ export function registerRemoteEntry(
   }
 
   const hashedName = hashedRemoteEntryName(bytes);
-  registry.set(pluginName, {
+  remoteEntryRegistry.set(pluginName, {
     hashedName,
     bytes,
     brotli: brotliCompressSync(bytes, {

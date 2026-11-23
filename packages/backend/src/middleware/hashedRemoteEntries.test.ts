@@ -6,10 +6,7 @@ import { resolve as resolvePath } from 'node:path';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 
 import { hashedRemoteEntryName } from '../modules/dynamicFeaturesPreload/remoteEntryHash';
-import {
-  registerRemoteEntry,
-  remoteEntryRegistry,
-} from '../modules/dynamicFeaturesPreload/remoteEntryRegistry';
+import { registerRemoteEntry } from '../modules/dynamicFeaturesPreload/remoteEntryRegistry';
 import {
   HASHED_REMOTE_ENTRY_CACHE_CONTROL,
   hashedRemoteEntriesMiddleware,
@@ -98,7 +95,6 @@ describe('hashedRemoteEntriesMiddleware', () => {
     hashedPath = `${REMOTES_BASE}/${PLUGIN_NAME}/${hashedName}`;
 
     registerRemoteEntry(
-      remoteEntryRegistry,
       PLUGIN_NAME,
       resolvePath(fixturesRoot, PLUGIN_DIR),
       mockLogger(),
@@ -174,7 +170,7 @@ describe('hashedRemoteEntriesMiddleware', () => {
       'public, max-age=31536000, immutable',
     );
     expect(Number(res.headers['content-length'])).toBe(entryBytes.length);
-    expect(res.body.length).toBe(0);
+    expect(res.body).toHaveLength(0);
   });
 
   it('404s with no-store for an unknown plugin', async () => {
