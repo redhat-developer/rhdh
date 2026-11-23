@@ -126,6 +126,49 @@ describe('collectPluginPreload', () => {
     ).toEqual(['alpha']);
   });
 
+  it('carries a content-hashed remoteEntry name into the snapshot while remotes keep the manifest URL', () => {
+    const store = createPreloadStore();
+    const logger = createMockLogger();
+    const manifest = loadManifest('test-mixed-features-dynamic');
+
+    // The resolver's serving-time rewrite: metaData.remoteEntry.name is
+    // the content-hashed file, path stays "" and type is preserved.
+    const hashedName = 'remoteEntry.0123456789abcdef.js';
+    const rewritten = {
+      ...manifest,
+      metaData: {
+        ...(manifest.metaData as JsonObject),
+        remoteEntry: {
+          ...((manifest.metaData as JsonObject).remoteEntry as JsonObject),
+          name: hashedName,
+        },
+      },
+    } as JsonObject;
+
+    collectPluginPreload(
+      store,
+      'plugin-test-mixed-features-dynamic',
+      rewritten,
+      ['alpha'],
+      baseUrl,
+      logger,
+    );
+
+    // Snapshot remoteEntry is the hashed name — preload.js hrefs
+    // (publicPath + remoteEntry) and the MF runtime's entry resolution
+    // follow from it automatically.
+    const snap = store.moduleInfo.backstage__plugin_test_mixed_features as
+      ProviderModuleInfo | undefined;
+    expect(snap).toBeDefined();
+    expect(snap!.remoteEntry).toBe(hashedName);
+    expect(snap!.remoteEntryType).toBe('global');
+
+    // The remotes-list entry keeps pointing at the manifest URL.
+    expect(store.remotes[0].remoteInfo.entry).toBe(
+      `${baseUrl}/${DYNAMIC_FEATURES_PLUGIN_ID}/remotes/plugin-test-mixed-features-dynamic/${DYNAMIC_FEATURES_MANIFEST_FILE}`,
+    );
+  });
+
   it('skips collection and warns when manifest.name is missing', () => {
     const store = createPreloadStore();
     const logger = createMockLogger();

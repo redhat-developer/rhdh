@@ -31,6 +31,7 @@ import { eventsServiceFactory } from '@backstage/plugin-events-node';
 
 import { appHtmlFetchPriorityMiddleware } from './middleware/appHtmlFetchPriority';
 import { dynamicRemotesStaticCacheMiddleware } from './middleware/dynamicRemotesStaticCache';
+import { hashedRemoteEntriesMiddleware } from './middleware/hashedRemoteEntries';
 
 /**
  * Service factories that are added to the backend statically by default.  This
@@ -55,14 +56,18 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   permissionsServiceFactory,
   permissionsRegistryServiceFactory,
   rootHealthServiceFactory,
-  // Custom configure so hashed remotes `/static/` get long-lived Cache-Control
-  // and the served app HTML gets fetchpriority hints on its defer scripts.
-  // Re-include dynamicRemotesStaticCacheMiddleware and
-  // appHtmlFetchPriorityMiddleware if replacing core.rootHttpRouter.
+  // Custom configure so hashed remotes `/static/` get long-lived Cache-Control,
+  // the served app HTML gets fetchpriority hints on its defer scripts, and
+  // content-hashed remote entries are served immutable from the in-memory
+  // registry.
+  // Re-include dynamicRemotesStaticCacheMiddleware,
+  // appHtmlFetchPriorityMiddleware, and hashedRemoteEntriesMiddleware if
+  // replacing core.rootHttpRouter.
   rootHttpRouterServiceFactory({
     configure({ app, applyDefaults }) {
       app.use(dynamicRemotesStaticCacheMiddleware);
       app.use(appHtmlFetchPriorityMiddleware);
+      app.use(hashedRemoteEntriesMiddleware());
       applyDefaults();
     },
   }),
