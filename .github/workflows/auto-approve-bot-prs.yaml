@@ -25,6 +25,11 @@ name: Auto-Approve Bot PRs
 # Wait 10s after the triggering commit and skip if HEAD moved. A later
 # synchronize run (with cancel-in-progress) applies lgtm 10s after the last push.
 # labeled is omitted so adding lgtm/approved does not retrigger this workflow.
+#
+# lgtm makes the pipeline controller start e2e-ocp-helm. On [skip-e2e] PRs to
+# main, rhdh-bot overrides it first (rhdh-ci-overriders team), so no cluster is
+# used. Not on release branches: Prow's /override records the main job, which
+# the controller does not match to release-branch jobs.
 
 on:
   pull_request_target:
@@ -38,6 +43,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  statuses: read
 
 jobs:
   auto-approve:
@@ -105,8 +111,84 @@ jobs:
           echo "HEAD unchanged for ${DEBOUNCE_SECONDS}s: ${CURRENT_SHA}"
           echo "stable=true" >> "$GITHUB_OUTPUT"
 
+      # Runs before lgtm is added. On any failure the next step adds lgtm as usual.
+      # Only for events rhdh-bot triggered: the sender can't be spoofed, so a
+      # human's push, "Update branch" or reopen skips the override.
+      - name: Override e2e-ocp-helm for [skip-e2e] PRs
+        id: override
+        if: >-
+          steps.check-eligibility.outputs.eligible == 'true' &&
+          steps.debounce.outputs.stable == 'true' &&
+          github.event.pull_request.base.ref == 'main' &&
+          github.event.pull_request.user.login == 'rhdh-bot' &&
+          github.event.sender.login == 'rhdh-bot'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha }}
+          CONTEXT: ci/prow/e2e-ocp-helm
+        run: |
+          set -euo pipefail
+
+          # Case-sensitive, like the in-job [skip-e2e] check.
+          if [[ "${PR_TITLE}" != *"[skip-e2e]"* ]]; then
+            echo "Title has no [skip-e2e]; nothing to override."
+            exit 0
+          fi
+
+          # Skip if anyone else's commit is on the branch.
+          OTHERS=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits" \
+            --jq '.[] | select(.author.login != "rhdh-bot" or .committer.login != "rhdh-bot") | .sha')
+          if [[ -n "${OTHERS}" ]]; then
+            echo "::notice::Commits not from rhdh-bot (${OTHERS//$'\n'/ }); not overriding, so lgtm starts e2e-ocp-helm."
+            exit 0
+          fi
+
+          state() {
+            gh api "repos/${GITHUB_REPOSITORY}/commits/${EVENT_SHA}/statuses" \
+              --jq "[.[] | select(.context == \"${CONTEXT}\")][0] | \"\(.state // \"\")|\(.description // \"\")\""
+          }
+
+          # The controller marks e2e pending on push; no status means nothing will run.
+          STATUS="|"
+          for _ in $(seq 1 12); do
+            STATUS=$(state)
+            [[ "${STATUS%%|*}" != "" ]] && break
+            sleep 10
+          done
+          case "${STATUS%%|*}" in
+            "") echo "No ${CONTEXT} status on ${EVENT_SHA}; nothing to override."; exit 0 ;;
+            success) echo "${CONTEXT} already green: ${STATUS#*|}"; exit 0 ;;
+          esac
+
+          GH_TOKEN="${BOT_TOKEN}" gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --body "/override ${CONTEXT}"
+
+          for _ in $(seq 1 18); do
+            sleep 10
+            CURRENT_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)
+            if [[ "${CURRENT_SHA}" != "${EVENT_SHA}" ]]; then
+              echo "::warning::HEAD moved to ${CURRENT_SHA}; the run for the new commit handles it."
+              echo "head_moved=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            STATUS=$(state)
+            if [[ "${STATUS%%|*}" == "success" ]]; then
+              echo "${CONTEXT} on ${EVENT_SHA}: ${STATUS#*|}"
+              exit 0
+            fi
+          done
+          echo "::warning::${CONTEXT} not green 3 minutes after /override; lgtm will start it."
+
       - name: Add required labels and approve PR
-        if: steps.check-eligibility.outputs.eligible == 'true' && steps.debounce.outputs.stable == 'true'
+        if: >-
+          !cancelled() &&
+          steps.check-eligibility.outputs.eligible == 'true' &&
+          steps.debounce.outputs.stable == 'true' &&
+          steps.override.outputs.head_moved != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -121,7 +203,5 @@ jobs:
             --body "**Auto-Approved**
 
           This PR has been automatically approved by the auto-approve workflow.
-
-          /override ci/prow/e2e-ocp-helm
 
           **Labels Added:** \`lgtm\`, \`approved\`"
