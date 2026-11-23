@@ -19,8 +19,6 @@ extraEnv:
     value: "0"
   - name: NODE_ENV
     value: "production"
-  - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
-    value: "true"
 extraEnvFrom:
   - secretRef:
       name: rhdh-secrets

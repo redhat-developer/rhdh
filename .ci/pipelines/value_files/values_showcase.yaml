@@ -61,8 +61,6 @@ extraEnv:
     value: "0"
   - name: NODE_ENV
     value: "production"
-  - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
-    value: "true"
 
 extraAppConfig:
   - configMapRef: app-config-rhdh
