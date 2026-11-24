@@ -449,9 +449,10 @@ jobs:
             fi
 
             # Create and annotate the manifest list for EACH tag so Quay can apply expiry per tag.
-            # The per-arch sources are pushed as OCI (build job), so annotations are supported —
-            # but the typed syntax ("index:key=value") is required: bare "key=value" annotations
-            # and Docker v2 sources are hard errors on newer buildx.
+            # The per-arch sources MUST be OCI (pushed with `podman push --format oci` in the build job):
+            # since buildx v0.39.0, annotating a list built from Docker v2 sources is a hard error
+            # ("annotations are not supported for Docker manifest lists"); older buildx dropped it silently.
+            # The "index:" prefix makes the target explicit: the annotation goes on the manifest list itself.
             echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
               docker buildx imagetools create \
@@ -686,11 +687,10 @@ jobs:
             EOF
 
             else
-              echo "No QUAY_OAUTH_TOKEN available - cannot set tag expiry via Quay API"
+              echo "No QUAY_OAUTH_TOKEN available - skipping Quay API expiry/cleanup"
               echo "Robot accounts cannot delete via API (Quay security limitation)"
-              echo "Skipping expiry annotations: the per-arch images are Docker v2 manifests and"
-              echo "buildx cannot apply OCI annotations to Docker manifest lists (hard error on newer buildx)."
-              echo "Per-arch images will be cleaned up via the quay.expires-after image label."
+              echo "Multi-arch tags already carry the index-level quay.expires-after=${EXPIRES_AFTER} annotation"
+              echo "(set by 'Create manifest list and push'); per-arch images expire via their quay.expires-after label."
             fi
 
             echo "Image lifecycle management completed"
