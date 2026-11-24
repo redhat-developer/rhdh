@@ -45,30 +45,30 @@ import {
   routeResolutionApiRef,
   FrontendFeature,
   RouteRef,
-} from '@backstage/frontend-plugin-api';
-import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import { default as appPluginOriginal } from '@backstage/plugin-app';
-import { createSpecializedApp } from '@backstage/frontend-app-api';
-import { ConfigReader } from '@backstage/config';
-import { act, render, screen } from '@testing-library/react';
+} from "@backstage/frontend-plugin-api";
+import { EntityContentBlueprint } from "@backstage/plugin-catalog-react/alpha";
+import { catalogApiRef } from "@backstage/plugin-catalog-react";
+import catalogPlugin from "@backstage/plugin-catalog/alpha";
+import { default as appPluginOriginal } from "@backstage/plugin-app";
+import { createSpecializedApp } from "@backstage/frontend-app-api";
+import { ConfigReader } from "@backstage/config";
+import { act, render, screen } from "@testing-library/react";
 
 const describeBench = process.env.BENCH ? describe : describe.skip;
 
 const appPlugin = appPluginOriginal.withOverrides({
   extensions: [
     appPluginOriginal
-      .getExtension('sign-in-page:app')
+      .getExtension("sign-in-page:app")
       .override({ disabled: true }),
   ],
 });
 
 const entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: { name: 'x', namespace: 'default' },
-  spec: { type: 'service', lifecycle: 'production', owner: 'guests' },
+  apiVersion: "backstage.io/v1alpha1",
+  kind: "Component",
+  metadata: { name: "x", namespace: "default" },
+  spec: { type: "service", lifecycle: "production", owner: "guests" },
   relations: [],
 };
 
@@ -83,7 +83,7 @@ const catalogApiMock: any = new Proxy(
       pageInfo: {},
     }),
     getEntityFacets: async () => ({ facets: {} }),
-    getEntityAncestors: async () => ({ rootEntityRef: 'x', items: [] }),
+    getEntityAncestors: async () => ({ rootEntityRef: "x", items: [] }),
   },
   {
     get(target: any, prop) {
@@ -93,10 +93,10 @@ const catalogApiMock: any = new Proxy(
 );
 
 const catalogMockModule = createFrontendModule({
-  pluginId: 'catalog',
+  pluginId: "catalog",
   extensions: [
     ApiBlueprint.make({
-      params: defineParams =>
+      params: (defineParams) =>
         defineParams({
           api: catalogApiRef,
           deps: {},
@@ -186,7 +186,7 @@ function makeWiringFeatures(opts: {
           params: {
             path: `/dyn-${i}-c${c}`,
             title: `Content ${i}-${c}`,
-            filter: { kind: 'component' },
+            filter: { kind: "component" },
             loader: async () => <div>content</div>,
           },
         }),
@@ -209,7 +209,7 @@ function makeWiringFeatures(opts: {
           pluginId,
           extensions: [
             PageBlueprint.make({
-              name: 'from-module',
+              name: "from-module",
               params: {
                 path: `/dyn-${i}/mod`,
                 loader: async () => <div>mod</div>,
@@ -234,7 +234,7 @@ function runWiring(
   const config = new ConfigReader({
     app: {
       extensions: opts.configEntries
-        ? extensionIds.map(id => ({ [id]: { config: {} } }))
+        ? extensionIds.map((id) => ({ [id]: { config: {} } }))
         : [],
     },
   });
@@ -251,7 +251,7 @@ function runWiring(
   const resolveStart = window.performance.now();
   for (let i = 0; i < iterations; i++) {
     routeApi.resolve(routeRefs[i % routeRefs.length], {
-      sourcePath: '/catalog/default/component/x',
+      sourcePath: "/catalog/default/component/x",
     })?.();
   }
   const resolveMs = (window.performance.now() - resolveStart) / iterations;
@@ -299,7 +299,7 @@ function makeNavigationFeatures(opts: {
           params: {
             path: `/dyn-${i}`,
             title: `Content ${i}`,
-            filter: { kind: 'component' },
+            filter: { kind: "component" },
             loader: async () => <div>content-body-{i}</div>,
           },
         }),
@@ -324,8 +324,8 @@ type Hop = [name: string, a: Target, b: Target];
 async function navigate(path: string, expectedText: string) {
   const start = window.performance.now();
   await act(async () => {
-    window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.history.pushState({}, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   });
   await screen.findByText(expectedText, {}, { timeout: 120_000 });
   return window.performance.now() - start;
@@ -336,7 +336,7 @@ async function runNavigation(
   opts: { pages: number; contents: number; nav: boolean },
   hops: Hop[],
 ) {
-  window.history.pushState({}, '', '/catalog');
+  window.history.pushState({}, "", "/catalog");
   const app = createSpecializedApp({
     features: [
       appPlugin,
@@ -350,7 +350,7 @@ async function runNavigation(
 
   const renderStart = window.performance.now();
   const { unmount } = render(app.element);
-  await screen.findAllByText('Catalog', {}, { timeout: 120_000 });
+  await screen.findAllByText("Catalog", {}, { timeout: 120_000 });
   const firstRender = window.performance.now() - renderStart;
 
   const parts: string[] = [];
@@ -379,20 +379,20 @@ async function runNavigation(
   log(
     `${label} | nodes=${app.tree.nodes.size} firstRender=${firstRender.toFixed(
       0,
-    )}ms | ${parts.join(' | ')}`,
+    )}ms | ${parts.join(" | ")}`,
   );
   unmount();
 }
 
-describeBench('frontend system scale benchmark', () => {
+describeBench("frontend system scale benchmark", () => {
   jest.setTimeout(3_600_000);
 
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    jest.spyOn(console, "warn").mockImplementation(() => {});
   });
 
-  it('measures app tree creation and route resolution', () => {
+  it("measures app tree creation and route resolution", () => {
     const onePageOrContent = {
       plugins: 200,
       pagesPerPlugin: (i: number) => (i < 100 ? 1 : 0),
@@ -404,58 +404,58 @@ describeBench('frontend system scale benchmark', () => {
       contentsPerPlugin: () => 10,
     };
 
-    runWiring('warmup', {
+    runWiring("warmup", {
       plugins: 1,
       pagesPerPlugin: () => 1,
       contentsPerPlugin: () => 1,
     });
-    runWiring('baseline, 1 plugin', {
+    runWiring("baseline, 1 plugin", {
       plugins: 1,
       pagesPerPlugin: () => 1,
       contentsPerPlugin: () => 1,
     });
-    runWiring('100 pages + 100 contents', onePageOrContent);
-    runWiring('100 pages + 100 contents, config entries', {
+    runWiring("100 pages + 100 contents", onePageOrContent);
+    runWiring("100 pages + 100 contents, config entries", {
       ...onePageOrContent,
       configEntries: true,
     });
-    runWiring('100 pages + 100 contents, 200 modules', {
+    runWiring("100 pages + 100 contents, 200 modules", {
       ...onePageOrContent,
       modules: true,
     });
-    runWiring('200 plugins x (10 pages + 10 contents)', tenOfEach);
-    runWiring('200 plugins x (10 pages + 10 contents), config entries', {
+    runWiring("200 plugins x (10 pages + 10 contents)", tenOfEach);
+    runWiring("200 plugins x (10 pages + 10 contents), config entries", {
       ...tenOfEach,
       configEntries: true,
     });
   });
 
-  describe('route changes', () => {
-    const sizes = (process.env.BENCH_SIZES ?? '2,10,50,100,200,400')
-      .split(',')
+  describe("route changes", () => {
+    const sizes = (process.env.BENCH_SIZES ?? "2,10,50,100,200,400")
+      .split(",")
       .map(Number);
     const series = (
-      process.env.BENCH_SERIES ?? 'pages-nav,pages-nonav,contents,both'
-    ).split(',');
+      process.env.BENCH_SERIES ?? "pages-nav,pages-nonav,contents,both"
+    ).split(",");
 
     const pageHop: Hop = [
-      'page<->page',
-      ['/dyn-0', 'page-body-0'],
-      ['/dyn-1', 'page-body-1'],
+      "page<->page",
+      ["/dyn-0", "page-body-0"],
+      ["/dyn-1", "page-body-1"],
     ];
     const tabHop: Hop = [
-      'tab<->tab',
-      ['/catalog/default/component/x/dyn-0', 'content-body-0'],
-      ['/catalog/default/component/x/dyn-1', 'content-body-1'],
+      "tab<->tab",
+      ["/catalog/default/component/x/dyn-0", "content-body-0"],
+      ["/catalog/default/component/x/dyn-1", "content-body-1"],
     ];
     const hops = [pageHop, tabHop];
 
-    it('warmup', async () => {
-      await runNavigation('warmup', { pages: 2, contents: 2, nav: true }, hops);
+    it("warmup", async () => {
+      await runNavigation("warmup", { pages: 2, contents: 2, nav: true }, hops);
     });
 
     for (const n of sizes) {
-      if (series.includes('pages-nav')) {
+      if (series.includes("pages-nav")) {
         it(`${n} pages with sidebar items`, async () => {
           await runNavigation(
             `pages(nav)=${n} contents=2`,
@@ -464,7 +464,7 @@ describeBench('frontend system scale benchmark', () => {
           );
         });
       }
-      if (series.includes('pages-nonav')) {
+      if (series.includes("pages-nonav")) {
         it(`${n} pages without sidebar items`, async () => {
           await runNavigation(
             `pages(no nav)=${n} contents=2`,
@@ -473,7 +473,7 @@ describeBench('frontend system scale benchmark', () => {
           );
         });
       }
-      if (series.includes('contents')) {
+      if (series.includes("contents")) {
         it(`${n} entity contents`, async () => {
           await runNavigation(
             `pages(no nav)=2 contents=${n}`,
@@ -482,7 +482,7 @@ describeBench('frontend system scale benchmark', () => {
           );
         });
       }
-      if (series.includes('both')) {
+      if (series.includes("both")) {
         it(`${n} pages and ${n} entity contents`, async () => {
           await runNavigation(
             `pages(nav)=${n} contents=${n}`,
