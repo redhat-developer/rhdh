@@ -18,7 +18,14 @@ const DYNAMIC_REMOTES_STATIC_PATH =
  * bare `express.static`, which defaults to `public, max-age=0`. The `send`
  * package only sets Cache-Control when the header is not already present, so
  * registering this middleware before root routes lets that stronger policy
- * stick. `remoteEntry.js` / `mf-manifest.json` are intentionally untouched.
+ * stick.
+ *
+ * The literal `remoteEntry.js` and `mf-manifest.json` are intentionally
+ * untouched: their URLs are content-stable, so they must keep revalidating
+ * (the literal entry remains the fallback path when a plugin is not
+ * registered in the content-hash registry). Content-hashed entry URLs
+ * (`remoteEntry.<hash>.js`) do not reach `express.static` at all — they are
+ * served immutable by `hashedRemoteEntriesMiddleware`.
  *
  * Note: a dynamic plugin that fully replaces `core.rootHttpRouter` (via
  * `ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE`) must re-include this middleware to

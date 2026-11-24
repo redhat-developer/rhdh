@@ -3,9 +3,11 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import type { JsonObject } from '@backstage/types';
 
 import { Router } from 'express';
 
+import { isCoreServiceOverrideEnabled } from '../defaultServiceFactories';
 import { collectPluginPreload } from './dynamicFeaturesPreload/collector';
 import { mountPreloadEndpoint } from './dynamicFeaturesPreload/handler';
 import {
@@ -13,6 +15,10 @@ import {
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
 } from './dynamicFeaturesPreload/paths';
+import {
+  registerRemoteEntry,
+  remoteEntryRegistry,
+} from './dynamicFeaturesPreload/remoteEntryRegistry';
 import { createPreloadStore } from './dynamicFeaturesPreload/store';
 import {
   filterNfsExposedModules,
@@ -77,6 +83,17 @@ function createSharedAssetsRouter(sharedAssets: SharedAssetRegistry) {
  *    modulepreloading. The first plugin carrying a given file name
  *    provides it; files with the same name must be content-identical
  *    (a conflict fails the conflicting plugin — see `sharedAssets.ts`).
+ * 5. Registers each plugin's `dist/remoteEntry.js` bytes in the
+ *    content-hashed remote-entry registry and rewrites the served
+ *    manifest's `metaData.remoteEntry.name` to the hashed file name
+ *    (`remoteEntry.<sha256[0:16]>.js`). The hashed URL is served
+ *    immutable by the global `hashedRemoteEntriesMiddleware`
+ *    (see `middleware/hashedRemoteEntries.ts`), eliminating the
+ *    warm-cache 304 revalidation burst for entries. Skipped entirely
+ *    (literal names everywhere) when `core.rootHttpRouter` is
+ *    overridden by a dynamic plugin, because the middleware is
+ *    registered by RHDH's default root-router factory (see the comment
+ *    in `init`).
  *
  * The app's `index.html` must include a deferred script pointing at
  * DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH.
@@ -96,6 +113,22 @@ export const dynamicFeaturesResolver = createBackendPlugin({
         const store = createPreloadStore();
         const sharedAssets: SharedAssetRegistry = new Map();
 
+        // The content-hashed entry URLs are served by
+        // `hashedRemoteEntriesMiddleware`, which is registered by RHDH's
+        // default rootHttpRouter service factory. When a dynamic plugin
+        // overrides `core.rootHttpRouter` (via
+        // ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE — e.g. adoption-insights),
+        // that factory — and with it the middleware — is not installed,
+        // and the overriding router is not guaranteed to re-include it.
+        // In that case hashed names must not be referenced anywhere: the
+        // rewrite is skipped and plugins keep the literal
+        // `remoteEntry.js` (upstream static serving, max-age=0) — exactly
+        // the pre-hashing behavior. Uses the same env check as
+        // `getDefaultServiceFactories`.
+        const serveHashedEntries = !isCoreServiceOverrideEnabled(
+          'core.rootHttpRouter',
+        );
+
         frontendRemotes.setResolverProvider({
           for(pluginName, pluginPackagePath) {
             registerSharedAssets(
@@ -106,11 +139,45 @@ export const dynamicFeaturesResolver = createBackendPlugin({
               backendBaseUrl,
               logger,
             );
+            if (serveHashedEntries) {
+              registerRemoteEntry(pluginName, pluginPackagePath, logger);
+            }
             const features = readBackstageFeatures(
               pluginName,
               pluginPackagePath,
               logger,
             );
+
+            /**
+             * Serving-time manifest rewrite: point
+             * `metaData.remoteEntry.name` at the content-hashed entry
+             * file served by `hashedRemoteEntriesMiddleware`. The
+             * snapshot generator, preload.js hrefs, and the MF runtime
+             * all derive the entry URL from this field, so the rewrite
+             * propagates everywhere; `path` stays `""` and `type` is
+             * preserved (remoteEntryType derives from it). Unregistered
+             * plugins (unreadable entry, or the root router is
+             * overridden and the hashed URL would not be served) keep
+             * the literal name — the fallback path is unchanged.
+             */
+            const rewriteManifest = (manifest: JsonObject): JsonObject => {
+              const record = serveHashedEntries
+                ? remoteEntryRegistry.get(pluginName)
+                : undefined;
+              if (!record) {
+                return manifest;
+              }
+              const metaData = (manifest.metaData ?? {}) as JsonObject;
+              const remoteEntry = (metaData.remoteEntry ?? {}) as JsonObject;
+              return {
+                ...manifest,
+                metaData: {
+                  ...metaData,
+                  remoteEntry: { ...remoteEntry, name: record.hashedName },
+                },
+              };
+            };
+
             return {
               overrideExposedModules(exposed, manifest) {
                 const filtered = filterNfsExposedModules(
@@ -123,13 +190,17 @@ export const dynamicFeaturesResolver = createBackendPlugin({
                 collectPluginPreload(
                   store,
                   pluginName,
-                  manifest,
+                  rewriteManifest(manifest),
                   filtered,
                   backendBaseUrl,
                   logger,
                 );
                 return filtered;
               },
+              // Served in-memory at the manifest URL by the upstream
+              // router — covers the no-prefill fallback path and
+              // direct debugging.
+              customizeManifest: rewriteManifest,
             };
           },
         });
