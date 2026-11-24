@@ -450,8 +450,8 @@ jobs:
 
             # Create and annotate the manifest list for EACH tag so Quay can apply expiry per tag.
             # The per-arch sources MUST be OCI (pushed with `podman push --format oci` in the build job):
-            # since buildx v0.39.0, annotating a list built from Docker v2 sources is a hard error
-            # ("annotations are not supported for Docker manifest lists"); older buildx dropped it silently.
+            # The merge runner changed from buildx v0.38.2 (Nov 20 success) to v0.39.0 (Nov 22 failure),
+            # which rejects annotations on Docker manifest lists instead of silently dropping them.
             # The "index:" prefix makes the target explicit: the annotation goes on the manifest list itself.
             echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
