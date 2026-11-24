@@ -4120,6 +4120,13 @@ arches:
     name: zlib
     evr: 1.2.11-40.el9
     sourcerpm: zlib-1.2.11-40.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/codeready-builder/os/Packages/p/python3.12-setuptools-wheel-68.2.2-5.el9_6.noarch.rpm
+    repoid: codeready-builder-for-ubi-9-aarch64-rpms
+    size: 686173
+    checksum: sha256:79644a245c66aad4dcf4272710ce229a35e3129962e78e92a49420e22301b8ca
+    name: python3.12-setuptools-wheel
+    evr: 68.2.2-5.el9_6
+    sourcerpm: python3.12-setuptools-68.2.2-5.el9_6.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/a/alsa-lib-1.2.16.1-1.el9.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
@@ -10478,6 +10485,13 @@ arches:
     name: zlib
     evr: 1.2.11-40.el9
     sourcerpm: zlib-1.2.11-40.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/codeready-builder/os/Packages/p/python3.12-setuptools-wheel-68.2.2-5.el9_6.noarch.rpm
+    repoid: codeready-builder-for-ubi-9-x86_64-rpms
+    size: 686173
+    checksum: sha256:79644a245c66aad4dcf4272710ce229a35e3129962e78e92a49420e22301b8ca
+    name: python3.12-setuptools-wheel
+    evr: 68.2.2-5.el9_6
+    sourcerpm: python3.12-setuptools-68.2.2-5.el9_6.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/a/alsa-lib-1.2.16.1-1.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms

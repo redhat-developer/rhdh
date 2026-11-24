@@ -24,12 +24,15 @@ contentOrigin:
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/baseos/os/
     - repoid: ubi-9-for-$basearch-baseos-source-rpms
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/baseos/source/SRPMS
-    # - repoid: codeready-builder-for-ubi-9-$basearch-rpms
-    #   baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/os/
-    #   # gpgcheck: 0
-    # - repoid: codeready-builder-for-ubi-9-$basearch-source-rpms
-    #   baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/source/SRPMS
-    #   # gpgcheck: 0
+    # Python 3.12's setuptools wheel is in CRB rather than AppStream.
+    - repoid: codeready-builder-for-ubi-9-$basearch-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/os/
+      includepkgs:
+        - python3.12-setuptools-wheel
+    - repoid: codeready-builder-for-ubi-9-$basearch-source-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/source/SRPMS
+      includepkgs:
+        - python3.12-setuptools
 
 moduleEnable:
   - nodejs:24
@@ -326,6 +329,7 @@ packages:
   - python3.12-pip-wheel
   - python3.12-requests
   - python3.12-setuptools
+  - python3.12-setuptools-wheel
   - python3.12-urllib3
   - readline
   - redhat-release
