@@ -7,6 +7,13 @@ arches:
   - x86_64
   - aarch64
 allowerasing: true
+# Lock the full dependency closure for both the full skeleton and minimal runner.
+# An image context excludes installed RPMs even when listed below. The skeleton
+# context dropped expat/libmnl/libseccomp needed by the runner (RHDHBUGS-4136);
+# the runner context caused skeleton exact-version conflicts (#5800/#5811).
+# Keep this in the input so automated lockfile regeneration preserves both stages.
+context:
+  bare: true
 contentOrigin:
   repos:
     - repoid: ubi-10-for-$basearch-appstream-rpms
@@ -17,12 +24,17 @@ contentOrigin:
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/baseos/os/
     - repoid: ubi-10-for-$basearch-baseos-source-rpms
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/baseos/source/SRPMS
+    # Python 3.12's setuptools wheel is in CRB rather than AppStream.
     - repoid: codeready-builder-for-ubi-10-$basearch-rpms
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/codeready-builder/os/
       # gpgcheck: 0
+      includepkgs:
+        - python3-setuptools-wheel
     - repoid: codeready-builder-for-ubi-10-$basearch-source-rpms
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/$basearch/codeready-builder/source/SRPMS
       # gpgcheck: 0
+      includepkgs:
+        - python-setuptools
 
 packages:
   - acl
@@ -241,7 +253,13 @@ packages:
   - python3-systemd
   - python3.12
   - python3.12-devel
+  - python3.12-idna
   - python3.12-pip
+  - python3.12-pip-wheel
+  - python3.12-requests
+  - python3.12-setuptools
+  - python3.12-setuptools-wheel
+  - python3.12-urllib3
   - readline
   - redhat-release
   - rootfiles
