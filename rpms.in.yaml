@@ -7,14 +7,19 @@ arches:
   - x86_64
   - aarch64
 allowerasing: true
-# The big "dnf install" runs in the "skeleton" stage, so the rpmdb context
-# must come from that stage's FROM image. Without this filter the default is
-# the LAST stage (ubi9/nodejs-24-minimal), which produced unresolvable
-# exact-EVR locks when the runner and builder images skew (see #5800/#5811).
+# Resolve against an EMPTY rpmdb so the lockfile holds the full dependency
+# closure. The Containerfile installs RPMs on two different bases:
+#   - skeleton: ubi9/nodejs-24 (full)       -> big "dnf install"
+#   - runner:   ubi9/nodejs-24-minimal      -> "microdnf install python3.11 skopeo ..."
+# Any single-image context drops whatever that image already ships:
+#   - runner context (old default) -> unresolvable exact-EVR locks for the
+#     skeleton when the two bases skew (#5800/#5811)
+#   - skeleton context (#5872)     -> drops expat/libmnl/libseccomp, which the
+#     minimal runner needs, so the hermetic runner install failed (RHDHBUGS-4136)
+# NOTE: .github/workflows/update-rpm-lockfile.yaml regenerates the lockfile from
+# this file automatically, so do NOT hand-patch rpms.lock.yaml - fix it here.
 context:
-  containerfile:
-    file: build/containerfiles/Containerfile
-    stageName: skeleton
+  bare: true
 contentOrigin:
   repos:
     - repoid: ubi-9-for-$basearch-appstream-rpms
