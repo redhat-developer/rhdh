@@ -6,7 +6,6 @@ import catalogImportBase from "@backstage/plugin-catalog-import/alpha";
 import catalogUnprocessedEntitiesPlugin from "@backstage/plugin-catalog-unprocessed-entities/alpha";
 import searchPlugin from "@backstage/plugin-search/alpha";
 import userSettingsPlugin from "@backstage/plugin-user-settings/alpha";
-import homePagePlugin from "@backstage/plugin-home/alpha";
 
 import rhdhThemeModule from "@red-hat-developer-hub/backstage-plugin-theme";
 import translationsApiModule from "@red-hat-developer-hub/backstage-plugin-translations/translations-api-module";
@@ -30,7 +29,6 @@ addRuntimeSharedDependencies();
 const app = createApp({
   features: [
     // Upstream Backstage plugins
-    homePagePlugin,
     catalogPlugin,
     catalogCreatedAtModule, // Created At column on catalog index
     catalogImportPlugin, // /catalog-import page; binds scaffolder.registerComponent (Import Git button)
