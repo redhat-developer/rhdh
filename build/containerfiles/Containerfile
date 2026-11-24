@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi10/nodejs-24
-FROM registry.access.redhat.com/ubi10/nodejs-24:10.2-1794296068@sha256:4678d7a58d8cd4aee921fb66e894e525853dd26c6ddab43d51a04ae5698b139a AS skeleton
+FROM registry.access.redhat.com/ubi10/nodejs-24:10.3-1795479553@sha256:228c8675a62feb55f88dc9dee94d5a82e6f0e887ec47bd8f5e524a797a0984d7 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -49,7 +49,7 @@ ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
 # Env vars
-ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-4.18.1.cjs
+ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-4.19.0.cjs
 
 WORKDIR $CONTAINER_SOURCE/
 COPY $EXTERNAL_SOURCE_NESTED/.yarn ./.yarn
@@ -241,7 +241,7 @@ RUN rm -rf \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi10/nodejs-24-minimal
-FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1794201704@sha256:b32886dede141ace3e470c3fc106e10d28265de98b72fe408636123860fc2d33 AS runner
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.3-1795021622@sha256:af0b1aebf45a9c67ecd43f235c404bfbd7990201ef03f0a60ee900e596389673 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.

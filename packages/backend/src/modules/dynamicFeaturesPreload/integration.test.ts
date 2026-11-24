@@ -2,17 +2,25 @@ import {
   CommonJSModuleLoader,
   dynamicPluginsFeatureLoader,
 } from '@backstage/backend-dynamic-feature-service';
-import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  coreServices,
+  createBackendPlugin,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 
+import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 
+import { hashedRemoteEntriesMiddleware } from '../../middleware/hashedRemoteEntries';
 import { dynamicFeaturesResolver } from '../dynamicFeaturesResolver';
 import {
   DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH,
   DYNAMIC_FEATURES_REMOTES_PATH,
   DYNAMIC_FEATURES_SHARED_ASSETS_BASE_PATH,
 } from './paths';
+import { hashedRemoteEntryName } from './remoteEntryHash';
+import { remoteEntryRegistry } from './remoteEntryRegistry';
 
 jest.setTimeout(60_000);
 
@@ -37,6 +45,30 @@ const dynamicPluginsRootDirectory = resolvePath(
   '../__fixtures__/dynamic-plugins-root-for-nfs-filter',
 );
 
+/**
+ * Mounts the hashed remote entries middleware for the test backend.
+ *
+ * The production wiring lives in RHDH's defaultServiceFactories (a global
+ * middleware before applyDefaults()), which startTestBackend does not use;
+ * the test backend's root router only accepts path-prefixed mounts. The
+ * prefix is arbitrary: the middleware matches the full remotes path from
+ * req.path, which Express keeps after stripping the mount prefix.
+ */
+const hashedEntriesTestMount = createBackendPlugin({
+  pluginId: 'hashed-entries-test-mount',
+  register(reg) {
+    reg.registerInit({
+      deps: { rootHttpRouter: coreServices.rootHttpRouter },
+      async init({ rootHttpRouter }) {
+        rootHttpRouter.use(
+          '/hashed-entries-test',
+          hashedRemoteEntriesMiddleware(),
+        );
+      },
+    });
+  },
+});
+
 describe('dynamicFeaturesResolver wiring', () => {
   let port: number;
 
@@ -57,6 +89,7 @@ describe('dynamicFeaturesResolver wiring', () => {
           moduleLoader: logger => testModuleLoader(logger),
         }),
         dynamicFeaturesResolver,
+        hashedEntriesTestMount,
       ],
     });
     port = backend.server.port();
@@ -185,6 +218,179 @@ describe('dynamicFeaturesResolver wiring', () => {
     const res = await fetch(url);
 
     expect(res.status).toBe(404);
+  });
+
+  it('serves the manifest with the content-hashed remoteEntry name', async () => {
+    const entryBytes = readFileSync(
+      resolvePath(
+        dynamicPluginsRootDirectory,
+        'test-mixed-features-dynamic/dist/remoteEntry.js',
+      ),
+    );
+    const expectedName = hashedRemoteEntryName(entryBytes);
+
+    // The manifest URL is served in-memory by the upstream router via
+    // the resolver's customizeManifest hook.
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/mf-manifest.json`,
+    );
+    expect(res.ok).toBe(true);
+    const manifest = await res.json();
+    expect(manifest.metaData.remoteEntry.name).toBe(expectedName);
+    // path must remain "" and type preserved (remoteEntryType derives
+    // from it)
+    expect(manifest.metaData.remoteEntry.path).toBe('');
+    expect(manifest.metaData.remoteEntry.type).toBe('global');
+  });
+
+  it('serves the hashed remote entry immutable with the registered bytes', async () => {
+    const entryBytes = readFileSync(
+      resolvePath(
+        dynamicPluginsRootDirectory,
+        'test-mixed-features-dynamic/dist/remoteEntry.js',
+      ),
+    );
+    const hashedName = hashedRemoteEntryName(entryBytes);
+
+    const res = await fetch(
+      `http://127.0.0.1:${port}/hashed-entries-test${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/${hashedName}`,
+      { headers: { 'Accept-Encoding': 'identity' } },
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=31536000, immutable',
+    );
+    expect(res.headers.get('vary')).toBe('Accept-Encoding');
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(
+      new Uint8Array(entryBytes),
+    );
+  });
+
+  it('404s a stale hash for a known plugin', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}/hashed-entries-test${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/remoteEntry.0000000000000000.js`,
+    );
+    expect(res.status).toBe(404);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('still serves the literal remoteEntry.js with max-age=0 (fallback)', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/remoteEntry.js`,
+    );
+    expect(res.ok).toBe(true);
+    // Upstream express.static default: the literal URL is content-stable
+    // and must revalidate.
+    expect(res.headers.get('cache-control')).toBe('public, max-age=0');
+  });
+
+  it('embeds the hashed entry href in preload.js', async () => {
+    const entryBytes = readFileSync(
+      resolvePath(
+        dynamicPluginsRootDirectory,
+        'test-mixed-features-dynamic/dist/remoteEntry.js',
+      ),
+    );
+    const hashedName = hashedRemoteEntryName(entryBytes);
+
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+    );
+    expect(res.ok).toBe(true);
+    const body = await res.text();
+
+    // The snapshot embedded in preload.js carries the hashed name, so the
+    // emitted entry href (publicPath + remoteEntry) is content-addressed.
+    expect(body).toContain(`"remoteEntry":"${hashedName}"`);
+    // And the remotes list still points at the manifest URL.
+    expect(body).toContain(
+      `${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/mf-manifest.json`,
+    );
+  });
+});
+
+describe('dynamicFeaturesResolver with core.rootHttpRouter overridden', () => {
+  let port: number;
+  const previousEnv = process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE;
+
+  beforeAll(async () => {
+    // When a dynamic plugin overrides core.rootHttpRouter (e.g.
+    // adoption-insights), RHDH's default root-router factory — and with it
+    // hashedRemoteEntriesMiddleware — is not installed. The resolver must
+    // then not reference hashed entry names anywhere.
+    process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE = 'true';
+    remoteEntryRegistry.clear();
+
+    const backend = await startTestBackend({
+      features: [
+        mockServices.rootConfig.factory({
+          data: {
+            dynamicPlugins: {
+              rootDirectory: dynamicPluginsRootDirectory,
+            },
+            backend: {
+              baseUrl: 'http://localhost:0',
+            },
+          },
+        }),
+        dynamicPluginsFeatureLoader({
+          moduleLoader: logger => testModuleLoader(logger),
+        }),
+        dynamicFeaturesResolver,
+        hashedEntriesTestMount,
+      ],
+    });
+    port = backend.server.port();
+  });
+
+  afterAll(() => {
+    if (previousEnv === undefined) {
+      delete process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE;
+    } else {
+      process.env.ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE = previousEnv;
+    }
+  });
+
+  it('keeps the literal remoteEntry.js name in the served manifest', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/mf-manifest.json`,
+    );
+    expect(res.ok).toBe(true);
+    const manifest = await res.json();
+    expect(manifest.metaData.remoteEntry.name).toBe('remoteEntry.js');
+  });
+
+  it('keeps the literal entry name in preload.js', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_PRELOAD_SCRIPT_PATH}`,
+    );
+    expect(res.ok).toBe(true);
+    const body = await res.text();
+    expect(body).toContain(`"remoteEntry":"remoteEntry.js"`);
+    expect(body).not.toMatch(/remoteEntry\.[0-9a-f]{16}\.js/);
+  });
+
+  it('registers no entries in the hashed-entry registry', async () => {
+    const entryBytes = readFileSync(
+      resolvePath(
+        dynamicPluginsRootDirectory,
+        'test-mixed-features-dynamic/dist/remoteEntry.js',
+      ),
+    );
+    const hashedName = hashedRemoteEntryName(entryBytes);
+
+    // Even if a hashed URL were requested, nothing serves it.
+    const res = await fetch(
+      `http://127.0.0.1:${port}/hashed-entries-test${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/${hashedName}`,
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it('still serves the literal remoteEntry.js (upstream static)', async () => {
+    const res = await fetch(
+      `http://127.0.0.1:${port}${DYNAMIC_FEATURES_REMOTES_PATH}/plugin-test-mixed-features-dynamic/remoteEntry.js`,
+    );
+    expect(res.ok).toBe(true);
   });
 });
 

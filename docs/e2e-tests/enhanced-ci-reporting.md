@@ -77,7 +77,6 @@ All status information is written to files in the `SHARED_DIR` directory, which 
 - `SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt` - Deploy failure flags (one per line)
 - `SHARED_DIR/STATUS_TEST_FAILED.txt` - Test failure flags (one per line)
 - `SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt` - Failure counts (one per line)
-- `SHARED_DIR/STATUS_URL_REPORTPORTAL.txt` - ReportPortal URLs
 - `SHARED_DIR/OVERALL_RESULT.txt` - Single value
 
 These files are also copied to `ARTIFACT_DIR/reporting/` for artifact collection.
@@ -126,7 +125,7 @@ The `redhat-developer-rhdh-send-alert` step is defined in the [OpenShift release
 - Formats the collected status information into structured Slack messages
 - Sends notifications to the `#rhdh-e2e-alerts` channel
 - Handles multiple deployments and their individual test results
-- Provides links to job logs, artifacts, and ReportPortal results
+- Provides links to job logs, Playwright reports, and artifacts
 
 The step is configured in job definitions to run after test execution completes, ensuring all status information is captured and reported.
 
@@ -141,7 +140,7 @@ For nightly runs, the system automatically sends notifications to the `#rhdh-e2e
   - **Deployment Label**: e.g., `showcase`, `showcase-rbac`, `showcase-runtime`
   - **Deployment Status**: "deployed" status
   - **Test Results**: "tests passed" or failure count (e.g., "2 tests failed")
-  - **Tools**: Playwright, ReportPortal, and artifacts links
+  - **Tools**: Playwright and artifacts links
 
 ## File Locations
 

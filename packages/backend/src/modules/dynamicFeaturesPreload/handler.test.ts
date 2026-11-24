@@ -43,7 +43,9 @@ function populatedStore(): PreloadStore {
     ],
     publicPath:
       'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/',
-    remoteEntry: 'remoteEntry.js',
+    // Content-hashed entry name, as the resolver's serving-time manifest
+    // rewrite produces for registered plugins.
+    remoteEntry: 'remoteEntry.1111222233334444.js',
     globalName: 'backstage__plugin_test_mixed_features',
   } as PreloadStore['moduleInfo'][string];
 
@@ -79,7 +81,7 @@ function populatedStore(): PreloadStore {
     ],
     publicPath:
       'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/',
-    remoteEntry: 'remoteEntry.js',
+    remoteEntry: 'remoteEntry.5555666677778888.js',
     remoteEntryType: 'module',
     globalName: 'backstage__plugin_test_esm',
   } as PreloadStore['moduleInfo'][string];
@@ -89,6 +91,8 @@ function populatedStore(): PreloadStore {
 
   // A fully-filtered remote: all exposed modules removed by the NFS
   // filter. The loader never loadRemote's it, so no hint may be emitted.
+  // Its snapshot keeps the literal entry name — the fallback shape for
+  // plugins not registered in the content-hash registry.
   store.remotes.push({
     packageName: 'plugin-test-fully-filtered-dynamic',
     remoteInfo: {
@@ -284,7 +288,7 @@ describe('mountPreloadEndpoint', () => {
     expect(moduleInfoMatch).not.toBeNull();
     const moduleInfo = JSON.parse(moduleInfoMatch![1]);
     const snap = moduleInfo.backstage__plugin_test_mixed_features;
-    expect(snap.remoteEntry).toBe('remoteEntry.js');
+    expect(snap.remoteEntry).toBe('remoteEntry.1111222233334444.js');
     expect(
       snap.modules.map((m: { moduleName: string }) => m.moduleName),
     ).toEqual(['alpha']);
@@ -344,6 +348,15 @@ describe('mountPreloadEndpoint', () => {
     const chunkEmit = body.indexOf('l.fetchPriority = "low"');
     expect(entryEmit).toBeGreaterThan(-1);
     expect(chunkEmit).toBeGreaterThan(entryEmit);
+
+    // The shared-module links carry an explicit high priority: emitted
+    // first, and robust where insertion-order scheduling isn't guaranteed
+    // (Firefox/Safari, HTTP/2 stream weights).
+    const sharedLinks = runPreloadBody(body).filter(
+      l => l.rel === 'modulepreload' && l.href.includes('shared-modules'),
+    );
+    expect(sharedLinks).toHaveLength(1);
+    expect(sharedLinks[0].fetchPriority).toBe('high');
   });
 
   it('preloads CSS without crossorigin so the runtime stylesheet matches the cache key', async () => {
@@ -376,20 +389,22 @@ describe('mountPreloadEndpoint', () => {
     // Executing the emitted script: the fully-filtered remote (listed in
     // the fetch shim with empty exposedModules — the loader maps over
     // that empty list and loads nothing) must contribute no link, while
-    // the other remotes' entries are still hinted.
-    const hrefs = runPreloadBody(body).map(l => l.href);
+    // the other remotes' hashed entries are still hinted — the classic
+    // one preloaded as a script, the ESM one modulepreloaded.
+    const links = runPreloadBody(body);
+    const hrefs = links.map(l => l.href);
+    const linkByHref = new Map(links.map(l => [l.href, l]));
     expect(
       hrefs.some(h => h.includes('plugin-test-fully-filtered-dynamic')),
     ).toBe(false);
-    expect(
-      hrefs.includes(
-        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/remoteEntry.js',
-      ),
-    ).toBe(true);
-    expect(
-      hrefs.includes(
-        'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/remoteEntry.js',
-      ),
-    ).toBe(true);
+    const classicEntryHref =
+      'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-mixed-features-dynamic/remoteEntry.1111222233334444.js';
+    expect(hrefs.includes(classicEntryHref)).toBe(true);
+    expect(linkByHref.get(classicEntryHref)!.rel).toBe('preload');
+    expect(linkByHref.get(classicEntryHref)!.as).toBe('script');
+    const esmEntryHref =
+      'http://localhost:7007/.backstage/dynamic-features/remotes/plugin-test-esm-dynamic/remoteEntry.5555666677778888.js';
+    expect(hrefs.includes(esmEntryHref)).toBe(true);
+    expect(linkByHref.get(esmEntryHref)!.rel).toBe('modulepreload');
   });
 });

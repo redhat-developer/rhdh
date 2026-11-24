@@ -36,11 +36,22 @@ fips_deployment() {
 
   namespace::configure "${NAME_SPACE}"
 
-  deploy_redis_cache "${NAME_SPACE}"
+  # Reuse the CI external PostgreSQL (TLS with a CI-generated CA)
+  log::section "Configuring external PostgreSQL with TLS"
+  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
+  configure_external_postgres_db "${NAME_SPACE}" || return 1
+
+  # Deploy Redis with TLS using FIPS custom CA
+  log::section "Configuring Redis with FIPS custom CA and TLS"
+  fips_deploy_redis_with_tls "${NAME_SPACE}" || return 1
 
   cd "${DIR}" || exit
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
+
+  # FIPS-only app-config (Redis TLS cache), loaded after app-config-rhdh via extraAppConfig
+  common::create_configmap_from_file "app-config-rhdh-fips" "${NAME_SPACE}" \
+    "app-config-rhdh-fips.yaml" "${DIR}/resources/config_map/app-config-rhdh-fips.yaml"
 
   # Merge base values with the FIPS environment overrides.
   helm::merge_values "overwrite" \
@@ -105,10 +116,12 @@ run_standard_deployment_tests() {
 
 # Setup Chromium NSS certificate database for Playwright
 # This function configures the Chromium certificate store used by Playwright
-# to trust the custom root CA certificate.
+# to trust the custom root CA certificate, and makes the Node.js process running
+# Playwright trust both the root CA and the external PostgreSQL CA.
 #
 # Required environment variables:
 #   FIPS_ROOT_CA_CERT - Base64-encoded root CA certificate (PEM format)
+#   NAME_SPACE - RHDH namespace (holds the PostgreSQL CA copied by configure_external_postgres_db)
 #
 # Returns:
 #   0 - Success
@@ -151,8 +164,18 @@ fips_setup_chromium_cert_store() {
     return 1
   fi
 
-  # Trust the custom CA in the Node.js process running Playwright TLS tests.
-  export NODE_EXTRA_CA_CERTS="${root_ca_file}"
+  # Trust the custom CA and the external PostgreSQL CA (created by
+  # configure_external_postgres_db) in the Node.js process running Playwright TLS tests.
+  local pg_ca_file="${HOME}/.pki/postgresCA.crt"
+  local node_ca_bundle="${HOME}/.pki/node-ca-bundle.crt"
+  if ! oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE}" \
+    -o go-template='{{index .data "ca.crt" | base64decode}}' > "${pg_ca_file}" \
+    || [[ ! -s "${pg_ca_file}" ]]; then
+    log::error "Failed to read the PostgreSQL CA from postgress-external-db-cluster-cert"
+    return 1
+  fi
+  cat "${root_ca_file}" "${pg_ca_file}" > "${node_ca_bundle}"
+  export NODE_EXTRA_CA_CERTS="${node_ca_bundle}"
 
   # Add root CA certificate to NSS database (WITH sql: prefix for -A)
   log::info "Adding root CA certificate to NSS database..."
@@ -197,8 +220,8 @@ fips_configure_custom_ca_ingress() {
 
   # Verify required environment variables
   if [[ -z "${FIPS_ROOT_CA_CERT:-}" ]] || [[ -z "${FIPS_ROOT_CA_KEY:-}" ]]; then
-    log::warning "FIPS_ROOT_CA_CERT or FIPS_ROOT_CA_KEY not set - skipping custom CA configuration"
-    return 0
+    log::error "FIPS_ROOT_CA_CERT or FIPS_ROOT_CA_KEY not set - required for FIPS job"
+    return 1
   fi
 
   if [[ -z "${K8S_CLUSTER_ROUTER_BASE:-}" ]]; then
@@ -279,9 +302,8 @@ EOF
 
   log::success "✓ TLS secret '${secret_name}' created in namespace '${ingress_namespace}'"
 
-  # Clean up temporary files immediately
-  rm -rf "${tmpdir}"
-  unset FIPS_CERT_TMPDIR
+  # NOTE: tmpdir is preserved (FIPS_CERT_TMPDIR) for Redis cert generation
+  # It is removed by the cleanup EXIT trap (cleanup.sh)
 
   # Patch the default IngressController to use the custom certificate
   log::info "Patching default IngressController to use custom certificate..."
@@ -308,5 +330,123 @@ EOF
   fi
 
   log::success "Custom CA ingress configuration completed successfully"
+  return 0
+}
+
+# Deploy Redis with TLS using FIPS custom CA-signed certificates
+# This function generates Redis TLS certificate signed by the FIPS root CA,
+# creates the required secrets, and deploys a TLS-enabled Redis instance.
+#
+# Prerequisites:
+#   - fips_configure_custom_ca_ingress() must be called first
+#   - FIPS_CERT_TMPDIR must be set with rootCA.crt and rootCA.key
+#
+# Required environment variables:
+#   REDIS_USERNAME - Redis username
+#   REDIS_PASSWORD - Redis password
+#
+# Returns:
+#   0 - Success
+#   1 - Failure (missing vars, cert generation failed, or deployment failed)
+fips_deploy_redis_with_tls() {
+  local namespace=$1
+  local tmpdir="${FIPS_CERT_TMPDIR}"
+
+  log::info "Deploying Redis with FIPS custom CA-signed TLS certificates..."
+
+  # Verify prerequisites
+  if [[ -z "${tmpdir}" || ! -f "${tmpdir}/rootCA.crt" || ! -f "${tmpdir}/rootCA.key" ]]; then
+    log::error "FIPS CA not available - run fips_configure_custom_ca_ingress first"
+    return 1
+  fi
+
+  if [[ -z "${namespace}" ]]; then
+    log::error "Redis namespace not provided"
+    return 1
+  fi
+
+  if [[ -z "${REDIS_USERNAME}" || -z "${REDIS_PASSWORD}" ]]; then
+    log::error "REDIS_USERNAME or REDIS_PASSWORD not set"
+    return 1
+  fi
+
+  # Generate Redis server certificate
+  log::info "Generating Redis TLS certificate..."
+
+  openssl ecparam -name prime256v1 -genkey -noout -out "${tmpdir}/redis.key"
+
+  openssl req -new -key "${tmpdir}/redis.key" \
+    -out "${tmpdir}/redis.csr" \
+    -subj "/O=CI-FIPS-Testing/CN=redis.${namespace}.svc.cluster.local"
+
+  # Create extensions file for Redis certificate
+  cat > "${tmpdir}/redis_ext.cnf" << EOF
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = issuer
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = redis
+DNS.2 = redis.${namespace}.svc
+DNS.3 = redis.${namespace}.svc.cluster.local
+EOF
+
+  openssl x509 -req -in "${tmpdir}/redis.csr" \
+    -CA "${tmpdir}/rootCA.crt" -CAkey "${tmpdir}/rootCA.key" -CAcreateserial \
+    -out "${tmpdir}/redis.crt" -days 30 -sha256 \
+    -extfile "${tmpdir}/redis_ext.cnf" -extensions v3_req
+
+  if [[ ! -f "${tmpdir}/redis.crt" ]]; then
+    log::error "Failed to generate Redis certificate"
+    return 1
+  fi
+
+  log::success "✓ Redis TLS certificate generated"
+
+  # Create Redis TLS secret
+  log::info "Creating Redis TLS secret in namespace '${namespace}'..."
+
+  oc create secret generic redis-certs \
+    -n "${namespace}" \
+    --from-file=ca.crt="${tmpdir}/rootCA.crt" \
+    --from-file=tls.crt="${tmpdir}/redis.crt" \
+    --from-file=tls.key="${tmpdir}/redis.key" \
+    --dry-run=client -o yaml | oc apply -f -
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to create redis-certs secret"
+    return 1
+  fi
+
+  log::success "✓ redis-certs secret created"
+
+  # Create Redis credentials secret
+  log::info "Creating Redis connection secret..."
+
+  # REDIS_USERNAME_ENCODED and REDIS_PASSWORD_ENCODED already set in env_variables.sh
+  envsubst < "${DIR}/resources/redis-cache/redis-secret.yaml" | oc apply --namespace="${namespace}" -f -
+
+  if [[ $? -ne 0 ]]; then
+    log::error "Failed to create Redis secret"
+    return 1
+  fi
+
+  log::success "✓ Redis secret created"
+
+  # Deploy TLS-enabled Redis
+  log::info "Deploying TLS-enabled Redis..."
+
+  if ! oc apply -f "${DIR}/resources/redis-cache/redis-deployment-tls.yaml" \
+    -f "${DIR}/resources/redis-cache/redis-service.yaml" --namespace="${namespace}"; then
+    log::error "Failed to deploy Redis"
+    return 1
+  fi
+
+  log::success "✓ Redis deployment created"
+  log::success "Redis TLS deployment completed successfully"
   return 0
 }

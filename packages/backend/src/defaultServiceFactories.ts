@@ -30,7 +30,9 @@ import { userInfoServiceFactory } from '@backstage/backend-defaults/userInfo';
 import type { ServiceFactory } from '@backstage/backend-plugin-api';
 import { eventsServiceFactory } from '@backstage/plugin-events-node';
 
+import { appHtmlFetchPriorityMiddleware } from './middleware/appHtmlFetchPriority';
 import { dynamicRemotesStaticCacheMiddleware } from './middleware/dynamicRemotesStaticCache';
+import { hashedRemoteEntriesMiddleware } from './middleware/hashedRemoteEntries';
 
 /**
  * Service factories that are added to the backend statically by default.  This
@@ -55,11 +57,18 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   permissionsServiceFactory,
   permissionsRegistryServiceFactory,
   rootHealthServiceFactory,
-  // Custom configure so hashed remotes `/static/` get long-lived Cache-Control.
-  // Re-include dynamicRemotesStaticCacheMiddleware if replacing core.rootHttpRouter.
+  // Custom configure so hashed remotes `/static/` get long-lived Cache-Control,
+  // the served app HTML gets fetchpriority hints on its defer scripts, and
+  // content-hashed remote entries are served immutable from the in-memory
+  // registry.
+  // Re-include dynamicRemotesStaticCacheMiddleware,
+  // appHtmlFetchPriorityMiddleware, and hashedRemoteEntriesMiddleware if
+  // replacing core.rootHttpRouter.
   rootHttpRouterServiceFactory({
     configure({ app, applyDefaults }) {
       app.use(dynamicRemotesStaticCacheMiddleware);
+      app.use(appHtmlFetchPriorityMiddleware);
+      app.use(hashedRemoteEntriesMiddleware());
       applyDefaults();
     },
   }),
@@ -77,16 +86,32 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   metricsServiceFactory,
 ] as const;
 
+/**
+ * Whether the given core service factory is being replaced by a dynamic
+ * plugin, via its `ENABLE_<SERVICE_ID>_OVERRIDE` environment variable.
+ *
+ * This is the single source of truth for the env-name derivation; other
+ * modules (e.g. the dynamic-features resolver) must use it to stay
+ * consistent with the filtering below.
+ */
+export function isCoreServiceOverrideEnabled(serviceId: string): boolean {
+  const envName = `ENABLE_${serviceId
+    .toLocaleUpperCase()
+    .replace('.', '_')}_OVERRIDE`;
+  return (process.env[envName] ?? '').toLocaleLowerCase() === 'true';
+}
+
 export const getDefaultServiceFactories = ({
   logger,
 }: {
   logger: WinstonLogger;
 }) => {
   return DEFAULT_SERVICE_FACTORIES.filter(serviceFactory => {
-    const envName = `ENABLE_${serviceFactory.service.id.toLocaleUpperCase().replace('.', '_')}_OVERRIDE`;
-    if ((process.env[envName] || '').toLocaleLowerCase() !== 'true') {
+    if (!isCoreServiceOverrideEnabled(serviceFactory.service.id)) {
       logger.debug(
-        `Adding service factory "${serviceFactory.service.id}", to override set "${envName}" to "true"`,
+        `Adding service factory "${serviceFactory.service.id}", to override set "ENABLE_${serviceFactory.service.id
+          .toLocaleUpperCase()
+          .replace('.', '_')}_OVERRIDE" to "true"`,
       );
       return true;
     }

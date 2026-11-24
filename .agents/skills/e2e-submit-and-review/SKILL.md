@@ -223,7 +223,7 @@ If no response is received after 1 minute, ask the user for guidance.
 
 The bot's response has two sections:
 
-1. **Required jobs** — triggered automatically when the PR is marked as ready for review (not on draft PRs). These run the basic presubmit checks:
+1. **Required jobs** — `e2e-ocp-helm` starts when the PR gets `lgtm`, not on push. To run it earlier:
   ```
   /test e2e-ocp-helm
   ```

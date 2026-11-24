@@ -86,7 +86,10 @@ function buildPreloadBody(store: PreloadStore): string {
     `    if (!seen[bh]) {`,
     `      seen[bh] = 1;`,
     `      var bl = document.createElement("link");`,
-    `      bl.rel = "modulepreload"; bl.href = bh;`,
+    // Explicit high priority: the link is already emitted first, but
+    // insertion-order scheduling isn't guaranteed everywhere (Firefox/
+    // Safari, HTTP/2 stream weights).
+    `      bl.rel = "modulepreload"; bl.href = bh; bl.fetchPriority = "high";`,
     `      frag.appendChild(bl);`,
     `    }`,
     `  }`,
