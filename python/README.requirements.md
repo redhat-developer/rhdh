@@ -103,7 +103,7 @@ For more on Hermeto and pip, see <https://github.com/hermetoproject/hermeto/blob
 To test in Konflux, repeat the above steps in the midstream (gitlab) repo, using something like:
 
 ```bash
-pip3.11 install --user --no-cache-dir -r requirements.txt -r requirements-build.txt
+pip3.12 install --user --no-cache-dir -r requirements.txt -r requirements-build.txt
 ```
 
 - commit changes to midstream (gitlab) repo, in a specific branch like [add-pip-deps](https://gitlab.cee.redhat.com/rhidp/rhdh/-/commits/add-pip-deps)
