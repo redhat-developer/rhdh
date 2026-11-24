@@ -1,0 +1,45 @@
+diff --git a/dist/alpha/components/EntityLayout/EntityLayout.esm.js b/dist/alpha/components/EntityLayout/EntityLayout.esm.js
+index 22168470c4c60eff896234c725fe2fbb8a4461a7..93c61417ded7c2215366baf463c28adee7b55345 100644
+--- a/dist/alpha/components/EntityLayout/EntityLayout.esm.js
++++ b/dist/alpha/components/EntityLayout/EntityLayout.esm.js
+@@ -1,4 +1,5 @@
+ import { jsxs, jsx } from 'react/jsx-runtime';
++import { useMemo } from 'react';
+ import Alert from '@material-ui/lab/Alert';
+ import { useRouteRefParams } from '@backstage/core-plugin-api';
+ import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
+@@ -23,7 +24,10 @@ function EntityLayout(props) {
+   } = props;
+   const { kind } = useRouteRefParams(entityRouteRef);
+   const { entity, loading, error } = useAsyncEntity();
+-  const visibleRoutes = filterEntityLayoutRoutes(routes, entity);
++  const visibleRoutes = useMemo(
++    () => filterEntityLayoutRoutes(routes, entity),
++    [routes, entity]
++  );
+   const { t } = useTranslationRef(catalogTranslationRef);
+   return /* @__PURE__ */ jsxs(Page, { themeId: entity?.spec?.type?.toString() ?? "home", children: [
+     header ?? /* @__PURE__ */ jsx(
+diff --git a/dist/alpha/components/EntityLayout/EntityLayoutBui.esm.js b/dist/alpha/components/EntityLayout/EntityLayoutBui.esm.js
+index d569ed9e2c632c25f3d451aabbc9eb74d5883c27..8db77387f59024e5a9256c93d48c7cffc66c46e6 100644
+--- a/dist/alpha/components/EntityLayout/EntityLayoutBui.esm.js
++++ b/dist/alpha/components/EntityLayout/EntityLayoutBui.esm.js
+@@ -1,5 +1,5 @@
+ import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
+-import { useCallback } from 'react';
++import { useCallback, useMemo } from 'react';
+ import { Helmet } from 'react-helmet';
+ import { useSearchParams } from 'react-router-dom';
+ import { Container, Alert } from '@backstage/ui';
+@@ -99,7 +99,10 @@ function EntityLayoutBui(props) {
+     HeaderComponent
+   } = props;
+   const { entity } = useAsyncEntity();
+-  const visibleRoutes = filterEntityLayoutRoutes(routes, entity);
++  const visibleRoutes = useMemo(
++    () => filterEntityLayoutRoutes(routes, entity),
++    [routes, entity]
++  );
+   const tabs = useEntityTabs({
+     routes: visibleRoutes,
+     groupDefinitions,

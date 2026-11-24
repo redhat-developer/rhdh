@@ -69,7 +69,7 @@
     "@backstage/plugin-app": "0.5.2",
     "@backstage/plugin-app-react": "0.2.6",
     "@backstage/plugin-auth-react": "0.1.30",
-    "@backstage/plugin-catalog": "2.0.8",
+    "@backstage/plugin-catalog": "patch:@backstage/plugin-catalog@npm%3A2.0.8#~/.yarn/patches/@backstage-plugin-catalog-npm-2.0.8-9ea28fb999.patch",
     "@backstage/plugin-catalog-common": "1.1.10",
     "@backstage/plugin-catalog-graph": "0.6.7",
     "@backstage/plugin-catalog-import": "0.13.17",
