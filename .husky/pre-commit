@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# .ci is a separate Yarn project with its own lockfile, so the root install
+# does not provide its prettier/shellcheck toolchain. Install it on demand.
+if [ ! -d .ci/node_modules ] && git diff --cached --name-only | grep -q '^\.ci/'; then
+  yarn --cwd .ci install
+fi
+
 yarn lint-staged
 
 if [ -x .git/hooks/pre-commit ]; then

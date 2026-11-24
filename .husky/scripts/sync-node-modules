@@ -16,3 +16,8 @@ changed_files="$(git diff-tree -r --name-only --no-commit-id HEAD@{1} HEAD)"
 if [[ $changed_files == *"package.json"* ]]; then
   eval "yarn install"
 fi
+
+# .ci is a separate Yarn project with its own lockfile
+if [[ $changed_files == *".ci/package.json"* || $changed_files == *".ci/yarn.lock"* ]]; then
+  yarn --cwd .ci install
+fi
