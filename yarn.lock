@@ -2401,7 +2401,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-app-api@npm:0.16.7, @backstage/frontend-app-api@npm:^0.16.7":
+"@backstage/frontend-app-api@npm:0.16.7":
   version: 0.16.7
   resolution: "@backstage/frontend-app-api@npm:0.16.7"
   dependencies:
@@ -2424,6 +2424,32 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10c0/061d4e42d0ca5d55e368111bbdf0d1fea9d44d5e55b16c8ad00605d7a8eee363cca68396e98d0ba1aa2760c2d8bf269712922b147a68580ddb2ccd37a4ef12b2
+  languageName: node
+  linkType: hard
+
+"@backstage/frontend-app-api@patch:@backstage/frontend-app-api@npm%3A0.16.7#~/.yarn/patches/@backstage-frontend-app-api-npm-0.16.7-bec820714f.patch":
+  version: 0.16.7
+  resolution: "@backstage/frontend-app-api@patch:@backstage/frontend-app-api@npm%3A0.16.7#~/.yarn/patches/@backstage-frontend-app-api-npm-0.16.7-bec820714f.patch::version=0.16.7&hash=fba9eb"
+  dependencies:
+    "@backstage/config": "npm:^1.3.8"
+    "@backstage/core-app-api": "npm:^1.20.4"
+    "@backstage/core-plugin-api": "npm:^1.12.9"
+    "@backstage/errors": "npm:^1.3.1"
+    "@backstage/filter-predicates": "npm:^0.1.4"
+    "@backstage/frontend-defaults": "npm:^0.5.5"
+    "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/types": "npm:^1.2.2"
+    "@backstage/version-bridge": "npm:^1.0.12"
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.2
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/9b36a5eaf8ea697a44a9cb564ac52b1109cde54423b8bc4bec54090017debede5f73af4fbd5a1588b0f29b34e489ef03a0c7e918fb5d50d76ab183b5d4328497
   languageName: node
   linkType: hard
 
@@ -12108,7 +12134,7 @@ __metadata:
     "@backstage/core-compat-api": "npm:0.5.14"
     "@backstage/core-components": "patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch"
     "@backstage/core-plugin-api": "npm:1.12.9"
-    "@backstage/frontend-app-api": "npm:0.16.7"
+    "@backstage/frontend-app-api": "patch:@backstage/frontend-app-api@npm%3A0.16.7#~/.yarn/patches/@backstage-frontend-app-api-npm-0.16.7-bec820714f.patch"
     "@backstage/frontend-defaults": "npm:0.5.5"
     "@backstage/frontend-dynamic-feature-loader": "npm:0.1.15"
     "@backstage/frontend-plugin-api": "npm:0.18.0"

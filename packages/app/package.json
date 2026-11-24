@@ -60,7 +60,7 @@
     "@backstage/core-compat-api": "0.5.14",
     "@backstage/core-components": "patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch",
     "@backstage/core-plugin-api": "1.12.9",
-    "@backstage/frontend-app-api": "0.16.7",
+    "@backstage/frontend-app-api": "patch:@backstage/frontend-app-api@npm%3A0.16.7#~/.yarn/patches/@backstage-frontend-app-api-npm-0.16.7-bec820714f.patch",
     "@backstage/frontend-defaults": "0.5.5",
     "@backstage/frontend-dynamic-feature-loader": "0.1.15",
     "@backstage/frontend-plugin-api": "0.18.0",

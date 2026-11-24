@@ -1,0 +1,75 @@
+diff --git a/dist/routing/RouteResolver.esm.js b/dist/routing/RouteResolver.esm.js
+index b163dfbf944ffb96df1547f955c973ea54fd5fd6..4ec71c216ed1b89d0c54d90eaf56fd919a4f02a8 100644
+--- a/dist/routing/RouteResolver.esm.js
++++ b/dist/routing/RouteResolver.esm.js
+@@ -5,6 +5,7 @@ import { OpaqueExternalRouteRef } from '../frontend-internal/src/routing/OpaqueE
+ import { OpaqueRouteRef } from '../frontend-internal/src/routing/OpaqueRouteRef.esm.js';
+ import { OpaqueSubRouteRef } from '../frontend-internal/src/routing/OpaqueSubRouteRef.esm.js';
+ 
++const MAX_CACHED_SOURCE_LOCATIONS = 32;
+ function resolveTargetRef(targetRouteRef, routePaths, routeBindings, routeRefsById) {
+   let ref = targetRouteRef;
+   let path = "";
+@@ -38,8 +39,7 @@ function resolveTargetRef(targetRouteRef, routePaths, routeBindings, routeRefsBy
+   }
+   return [ref, path ? joinPaths(resolvedPath, path) : resolvedPath];
+ }
+-function resolveBasePath(targetRef, sourceLocation, routePaths, routeParents, routeObjects) {
+-  const match = matchRoutes(routeObjects, sourceLocation) ?? [];
++function resolveBasePath(targetRef, match, routePaths, routeParents) {
+   const refDiffList = Array();
+   let matchIndex = -1;
+   for (let targetSearchRef = targetRef; targetSearchRef; targetSearchRef = routeParents.get(targetSearchRef)) {
+@@ -78,6 +78,7 @@ class RouteResolver {
+   // base path without a trailing slash
+   routeAliasResolver;
+   routeRefsById;
++  routeMatches = /* @__PURE__ */ new Map();
+   constructor(routePaths, routeParents, routeObjects, routeBindings, appBasePath, routeAliasResolver, routeRefsById) {
+     this.routePaths = routePaths;
+     this.routeParents = routeParents;
+@@ -100,10 +101,9 @@ class RouteResolver {
+     const relativeSourceLocation = this.trimPath(options?.sourcePath ?? "");
+     const basePath = resolveBasePath(
+       targetRef,
+-      relativeSourceLocation,
++      this.matchSourceLocation(relativeSourceLocation),
+       this.routePaths,
+-      this.routeParents,
+-      this.routeObjects
++      this.routeParents
+     );
+     const routeFunc = (...[params]) => {
+       const encodedParams = params && mapValues(params, (value) => {
+@@ -116,6 +116,31 @@ class RouteResolver {
+     };
+     return routeFunc;
+   }
++  // While traversing the app element tree we build up the routeObjects structure
++  // used here. It is the same kind of structure that react-router creates, with the
++  // addition that associated route refs are stored throughout the tree. This lets
++  // us look up all route refs that can be reached from our source location.
++  // Because of the similar route object structure, we can use `matchRoutes` from
++  // react-router to do the lookup of our current location.
++  //
++  // Matching walks the entire route tree, and many callers resolve routes from the
++  // same source location, so the most recently used matches are cached.
++  matchSourceLocation(sourceLocation) {
++    let match = this.routeMatches.get(sourceLocation);
++    if (match) {
++      this.routeMatches.delete(sourceLocation);
++    } else {
++      match = matchRoutes(this.routeObjects, sourceLocation) ?? [];
++    }
++    this.routeMatches.set(sourceLocation, match);
++    if (this.routeMatches.size > MAX_CACHED_SOURCE_LOCATIONS) {
++      const oldestLocation = this.routeMatches.keys().next().value;
++      if (oldestLocation !== void 0) {
++        this.routeMatches.delete(oldestLocation);
++      }
++    }
++    return match;
++  }
+   trimPath(targetPath) {
+     if (!targetPath) {
+       return targetPath;
