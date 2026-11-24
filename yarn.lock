@@ -2265,7 +2265,7 @@ __metadata:
 
 "@backstage/core-components@patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch":
   version: 0.18.13
-  resolution: "@backstage/core-components@patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch::version=0.18.13&hash=3e44ec"
+  resolution: "@backstage/core-components@patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch::version=0.18.13&hash=0342a6"
   dependencies:
     "@backstage/config": "npm:^1.3.8"
     "@backstage/core-plugin-api": "npm:^1.12.9"
@@ -2318,7 +2318,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/458c75122cc84a39f4c77e6b9a50413492b3e7e4f3111d1191072f6ee7503345b65813285ec4950fdd583510cb80d6ad25e38fce6e4bf273bccfbdeb2bde38ce
+  checksum: 10c0/3ea3f3300b65ef6cbc930d311121d13e1db4431087317a2df682550cefbe6cf352c575c9f980fa9d894da8c302ff262607536ddeaaf759871bc23ad80a181879
   languageName: node
   linkType: hard
 

@@ -1,5 +1,5 @@
 diff --git a/dist/layout/Sidebar/Items.esm.js b/dist/layout/Sidebar/Items.esm.js
-index f86d3a80166a098745ec5e5015436a6e4a3f3ec2..d39c6b668727cbaf7d1a4ddb905277455d26884f 100644
+index f86d3a80166a098745ec5e5015436a6e4a3f3ec2..29e0d84603611e29c5283bc5dfedb62a2196926e 100644
 --- a/dist/layout/Sidebar/Items.esm.js
 +++ b/dist/layout/Sidebar/Items.esm.js
 @@ -146,11 +146,20 @@ const makeSidebarStyles = (sidebarConfig) => makeStyles(
@@ -27,6 +27,77 @@ index f86d3a80166a098745ec5e5015436a6e4a3f3ec2..d39c6b668727cbaf7d1a4ddb90527745
    return useStyles();
  }
  const useLocationMatch = (submenu, location) => useElementFilter(
+@@ -235,36 +244,42 @@ const SidebarItemBase = forwardRef((props, ref) => {
+   const { sidebarConfig } = useContext(SidebarConfigContext);
+   const classes = useMemoStyles(sidebarConfig);
+   const { isOpen } = useSidebarOpenState();
+-  const divStyle = !isOpen && hasSubmenu ? { display: "flex", marginLeft: "20px" } : { lineHeight: "0" };
+-  const displayItemIcon = /* @__PURE__ */ jsxs(Box, { style: divStyle, children: [
+-    /* @__PURE__ */ jsx(Box, { component: "span", className: classes.itemIcon, children: /* @__PURE__ */ jsx(Icon, { fontSize: "inherit" }) }),
+-    !isOpen && hasSubmenu ? /* @__PURE__ */ jsx(ArrowRightIcon, { fontSize: "small" }) : /* @__PURE__ */ jsx(Fragment, {})
+-  ] });
+-  const itemIcon = /* @__PURE__ */ jsx(
+-    Badge,
+-    {
+-      color: "secondary",
+-      variant: "dot",
+-      overlap: "circular",
+-      invisible: !hasNotifications,
+-      className: classNames({ [classes.closedItemIcon]: !isOpen }),
+-      children: displayItemIcon
+-    }
+-  );
+-  const openContent = /* @__PURE__ */ jsxs(Fragment, { children: [
+-    /* @__PURE__ */ jsx(Box, { "data-testid": "login-button", className: classes.iconContainer, children: itemIcon }),
+-    text && /* @__PURE__ */ jsx(
+-      Typography,
++  // The item is re-rendered on every location change in order to update its
++  // active state. Memoizing the content avoids re-rendering it as well.
++  const content = useMemo(() => {
++    const divStyle = !isOpen && hasSubmenu ? { display: "flex", marginLeft: "20px" } : { lineHeight: "0" };
++    const displayItemIcon = /* @__PURE__ */ jsxs(Box, { style: divStyle, children: [
++      /* @__PURE__ */ jsx(Box, { component: "span", className: classes.itemIcon, children: /* @__PURE__ */ jsx(Icon, { fontSize: "inherit" }) }),
++      !isOpen && hasSubmenu ? /* @__PURE__ */ jsx(ArrowRightIcon, { fontSize: "small" }) : /* @__PURE__ */ jsx(Fragment, {})
++    ] });
++    const itemIcon = /* @__PURE__ */ jsx(
++      Badge,
+       {
+-        variant: "subtitle2",
+-        component: "span",
+-        className: classes.label,
+-        children: text
++        color: "secondary",
++        variant: "dot",
++        overlap: "circular",
++        invisible: !hasNotifications,
++        className: classNames({ [classes.closedItemIcon]: !isOpen }),
++        children: displayItemIcon
+       }
+-    ),
+-    /* @__PURE__ */ jsx("div", { className: classes.secondaryAction, children })
+-  ] });
+-  const content = isOpen ? openContent : itemIcon;
++    );
++    if (!isOpen) {
++      return itemIcon;
++    }
++    return /* @__PURE__ */ jsxs(Fragment, { children: [
++      /* @__PURE__ */ jsx(Box, { "data-testid": "login-button", className: classes.iconContainer, children: itemIcon }),
++      text && /* @__PURE__ */ jsx(
++        Typography,
++        {
++          variant: "subtitle2",
++          component: "span",
++          className: classes.label,
++          children: text
++        }
++      ),
++      /* @__PURE__ */ jsx("div", { className: classes.secondaryAction, children })
++    ] });
++  }, [Icon, text, hasNotifications, hasSubmenu, isOpen, classes, children]);
+   const childProps = {
+     onClick,
+     className: classNames(
 diff --git a/dist/layout/SignInPage/SignInPage.esm.js b/dist/layout/SignInPage/SignInPage.esm.js
 index 72566503342b423eae290124bcd5a14a8ddec792..3aa247224a1a97965b198ae0ef7c8b7d8e41183d 100644
 --- a/dist/layout/SignInPage/SignInPage.esm.js
