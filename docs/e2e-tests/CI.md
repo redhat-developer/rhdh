@@ -98,7 +98,6 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
   4. **Artifact Collection:**
      - Collects test artifacts (logs, screenshots, recordings).
      - Stores artifacts in the designated `ARTIFACT_DIR` for a retention period of **6 months**.
-     - The reports are also sent to _ReportPortal_
   5. **Reporting:**
      - Reports status back to the PR checks.
      - Generates and uploads HTML reports.
