@@ -1,9 +1,9 @@
 import {
   createExtensionInput,
+  createFrontendModule,
   createRouteRef,
   PageBlueprint,
 } from "@backstage/frontend-plugin-api";
-import scaffolderPlugin from "@backstage/plugin-scaffolder/alpha";
 import { FormFieldBlueprint } from "@backstage/plugin-scaffolder-react/alpha";
 import CreateComponentIcon from "@material-ui/icons/AddCircleOutline";
 
@@ -12,7 +12,11 @@ const SELF_SERVICE_TITLE = "Self-service";
 
 /**
  * Replaces upstream `page:scaffolder`, which hardcodes title "Create".
- * Keeps the same formFields input and /create route as upstream.
+ * Keeps the same formFields input, icon, and /create route as upstream.
+ *
+ * Note: The `@backstage/plugin-scaffolder` plugin itself is decoupled and NOT
+ * included in the core app bundle (loaded dynamically via OCI). This local module
+ * only sets the default RHDH page title to "Self-service".
  */
 const scaffolderPage = PageBlueprint.makeWithOverrides({
   inputs: {
@@ -30,8 +34,7 @@ const scaffolderPage = PageBlueprint.makeWithOverrides({
   },
 });
 
-export const rhdhScaffolderPlugin: typeof scaffolderPlugin =
-  scaffolderPlugin.withOverrides({
-    title: SELF_SERVICE_TITLE,
-    extensions: [scaffolderPage],
-  });
+export const scaffolderSelfServiceModule = createFrontendModule({
+  pluginId: "scaffolder",
+  extensions: [scaffolderPage],
+});
