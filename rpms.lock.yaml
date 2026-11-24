@@ -1880,6 +1880,13 @@ arches:
     name: diffutils
     evr: 3.7-12.el9
     sourcerpm: diffutils-3.7-12.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/e/expat-2.5.0-9.el9_9.8.aarch64.rpm
+    repoid: ubi-9-for-aarch64-baseos-rpms
+    size: 128203
+    checksum: sha256:ff89a9d273790ed3623a3bc45484d819665503023df1157eb1a3e2bb0f7c1897
+    name: expat
+    evr: 2.5.0-9.el9_9.8
+    sourcerpm: expat-2.5.0-9.el9_9.8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/f/file-5.39-19.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 55279
@@ -1950,6 +1957,13 @@ arches:
     name: libbrotli
     evr: 1.0.9-10.el9_8.1
     sourcerpm: brotli-1.0.9-10.el9_8.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libmnl-1.0.4-16.el9_4.aarch64.rpm
+    repoid: ubi-9-for-aarch64-baseos-rpms
+    size: 30479
+    checksum: sha256:b07344f5116a1913e746042748b05f978d284833282d9633e29f3d595ab596e9
+    name: libmnl
+    evr: 1.0.4-16.el9_4
+    sourcerpm: libmnl-1.0.4-16.el9_4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libnetfilter_conntrack-1.0.9-1.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 61151
@@ -1985,6 +1999,13 @@ arches:
     name: libpng
     evr: 2:1.6.37-17.el9
     sourcerpm: libpng-1.6.37-17.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libseccomp-2.5.6-1.el9.aarch64.rpm
+    repoid: ubi-9-for-aarch64-baseos-rpms
+    size: 77353
+    checksum: sha256:310d1da00a304ccac8bdd596196fd2ada841c47de9160dbe49ade4ff2a89d668
+    name: libseccomp
+    evr: 2.5.6-1.el9
+    sourcerpm: libseccomp-2.5.6-1.el9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/libselinux-utils-3.6-4.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 196278
@@ -5093,6 +5114,13 @@ arches:
     name: diffutils
     evr: 3.7-12.el9
     sourcerpm: diffutils-3.7-12.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/e/expat-2.5.0-9.el9_9.8.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 132507
+    checksum: sha256:86b667aa4d1254fe4fbc0dd2febadba3e020f40e5c460d3245c606397eedcbfe
+    name: expat
+    evr: 2.5.0-9.el9_9.8
+    sourcerpm: expat-2.5.0-9.el9_9.8.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/f/file-5.39-19.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 55304
@@ -5170,6 +5198,13 @@ arches:
     name: libbrotli
     evr: 1.0.9-10.el9_8.1
     sourcerpm: brotli-1.0.9-10.el9_8.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libmnl-1.0.4-16.el9_4.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 30949
+    checksum: sha256:badfd4eb5b7cd3622da84168674002ec718ef810ce615a1113d3e19e265b777e
+    name: libmnl
+    evr: 1.0.4-16.el9_4
+    sourcerpm: libmnl-1.0.4-16.el9_4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libnetfilter_conntrack-1.0.9-1.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 62066
@@ -5212,6 +5247,13 @@ arches:
     name: libpng
     evr: 2:1.6.37-17.el9
     sourcerpm: libpng-1.6.37-17.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libseccomp-2.5.6-1.el9.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 76984
+    checksum: sha256:093be0cec7c0c1ef8277cc325bf24279bcab296f0f15cb1e2e3fb53da595b396
+    name: libseccomp
+    evr: 2.5.6-1.el9
+    sourcerpm: libseccomp-2.5.6-1.el9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libselinux-utils-3.6-4.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 197419

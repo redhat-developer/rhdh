@@ -287,7 +287,14 @@ WORKDIR $CONTAINER_SOURCE/
 #   export PIP_NO_INDEX=true
 
 # Runtime Python for techdocs (interpreter + skopeo only; mkdocs lives in the pre-built venv from techdocs stage)
-RUN microdnf install -y python3.11 skopeo 1>/dev/null 2>&1; \
+# Do NOT discard microdnf output/exit code: when the hermetic RPM mirror (rpms.lock.yaml) is missing
+# packages required by the minimal runner base (but preinstalled in the skeleton base, hence dropped
+# from the lockfile — see #5872), the build must FAIL instead of silently shipping an image whose
+# /usr/bin/python alternatives symlinks dangle and whose init container dies with "python: command not found".
+RUN microdnf install -y python3.11 skopeo >/tmp/microdnf-install.log 2>&1; \
+  rc=$?; \
+  grep -v 'librhsm-WARNING' /tmp/microdnf-install.log || true; \
+  if [ "$rc" -ne 0 ]; then echo "ERROR: microdnf install python3.11 skopeo failed (rc=$rc): hermetic RPM mirror likely missing packages needed by the minimal runner base — regenerate rpms.lock.yaml (see rpms.in.yaml context notes)"; exit "$rc"; fi; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
   microdnf clean all
