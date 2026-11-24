@@ -1,3 +1,32 @@
+diff --git a/dist/layout/Sidebar/Items.esm.js b/dist/layout/Sidebar/Items.esm.js
+index f86d3a80166a098745ec5e5015436a6e4a3f3ec2..d39c6b668727cbaf7d1a4ddb905277455d26884f 100644
+--- a/dist/layout/Sidebar/Items.esm.js
++++ b/dist/layout/Sidebar/Items.esm.js
+@@ -146,11 +146,20 @@ const makeSidebarStyles = (sidebarConfig) => makeStyles(
+   }),
+   { name: "BackstageSidebarItem" }
+ );
++// The style hooks are shared between all components that use an equal sidebar
++// config. Creating a separate hook for each component instance would attach a
++// separate style sheet for each of them.
++const sidebarStylesCache = /* @__PURE__ */ new Map();
+ function useMemoStyles(sidebarConfig) {
+-  const useStyles = useMemo(
+-    () => makeSidebarStyles(sidebarConfig),
+-    [sidebarConfig]
+-  );
++  const useStyles = useMemo(() => {
++    const key = JSON.stringify(sidebarConfig);
++    let cached = sidebarStylesCache.get(key);
++    if (!cached) {
++      cached = makeSidebarStyles(sidebarConfig);
++      sidebarStylesCache.set(key, cached);
++    }
++    return cached;
++  }, [sidebarConfig]);
+   return useStyles();
+ }
+ const useLocationMatch = (submenu, location) => useElementFilter(
 diff --git a/dist/layout/SignInPage/SignInPage.esm.js b/dist/layout/SignInPage/SignInPage.esm.js
 index 72566503342b423eae290124bcd5a14a8ddec792..3aa247224a1a97965b198ae0ef7c8b7d8e41183d 100644
 --- a/dist/layout/SignInPage/SignInPage.esm.js
