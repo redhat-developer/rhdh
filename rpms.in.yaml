@@ -7,17 +7,11 @@ arches:
   - x86_64
   - aarch64
 allowerasing: true
-# Resolve against an EMPTY rpmdb so the lockfile holds the full dependency
-# closure. The Containerfile installs RPMs on two different bases:
-#   - skeleton: ubi9/nodejs-24 (full)       -> big "dnf install"
-#   - runner:   ubi9/nodejs-24-minimal      -> "microdnf install python3.11 skopeo ..."
-# Any single-image context drops whatever that image already ships:
-#   - runner context (old default) -> unresolvable exact-EVR locks for the
-#     skeleton when the two bases skew (#5800/#5811)
-#   - skeleton context (#5872)     -> drops expat/libmnl/libseccomp, which the
-#     minimal runner needs, so the hermetic runner install failed (RHDHBUGS-4136)
-# NOTE: .github/workflows/update-rpm-lockfile.yaml regenerates the lockfile from
-# this file automatically, so do NOT hand-patch rpms.lock.yaml - fix it here.
+# Lock the full dependency closure for both the full skeleton and minimal runner.
+# An image context excludes installed RPMs even when listed below. The skeleton
+# context dropped expat/libmnl/libseccomp needed by the runner (RHDHBUGS-4136);
+# the runner context caused skeleton exact-version conflicts (#5800/#5811).
+# Keep this in the input so automated lockfile regeneration preserves both stages.
 context:
   bare: true
 contentOrigin:
@@ -325,16 +319,14 @@ packages:
   - python3-rpm
   - python3-subscription-manager-rhsm
   - python3-systemd
-  - python3.11
-  - python3.11-devel
-  - python3.11-idna
-  - python3.11-pip
-  - python3.11-pip-wheel
-  - python3.11-pysocks
-  - python3.11-requests
-  - python3.11-setuptools
-  - python3.11-setuptools-wheel
-  - python3.11-urllib3
+  - python3.12
+  - python3.12-devel
+  - python3.12-idna
+  - python3.12-pip
+  - python3.12-pip-wheel
+  - python3.12-requests
+  - python3.12-setuptools
+  - python3.12-urllib3
   - readline
   - redhat-release
   - rootfiles
