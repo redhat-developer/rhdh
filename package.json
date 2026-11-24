@@ -14,6 +14,7 @@
     "tsc": "turbo run tsc",
     "clean": "turbo run clean",
     "test": "turbo run test",
+    "test:bench": "yarn workspace app test:bench",
     "lint:check": "turbo run lint:check",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",

@@ -33,6 +33,7 @@
     "lint:fix": "backstage-cli package lint --fix",
     "start": "backstage-cli package start",
     "test": "backstage-cli package test --passWithNoTests --coverage",
+    "test:bench": "BENCH=1 CI=1 backstage-cli package test --no-watch src/*.bench.test.tsx",
     "tsc": "tsc",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write ."
