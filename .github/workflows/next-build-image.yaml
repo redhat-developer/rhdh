@@ -288,15 +288,31 @@ jobs:
           skipArtifactUpload: true
           prefetchedCacheDir: hermeto-cache/rhdh
 
+      # Push the per-arch images as OCI manifests. redhat-actions/push-to-registry pushes
+      # Docker v2 manifests, which cannot carry annotations — the merge step needs OCI
+      # sources to attach the quay.expires-after annotation to the manifest list.
       - name: Push Image to Registry
         id: push-image
-        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
-        with:
-          tags: |
+        env:
+          IMAGE_TAGS: |
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_TOKEN }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$QUAY_TOKEN" | podman login -u "$QUAY_USERNAME" --password-stdin "$REGISTRY"
+          digest=""
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            if [ -z "$digest" ]; then
+              podman push --format oci --digestfile /tmp/pushed-digest "$tag"
+              digest="$(cat /tmp/pushed-digest)"
+            else
+              podman push --format oci "$tag"
+            fi
+          done <<< "$IMAGE_TAGS"
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
       - name: Export digest
         id: export-digest
@@ -432,13 +448,14 @@ jobs:
               meta="$META_NEXT_JSON"
             fi
 
-            # NOTE: no --annotation here — the per-arch images are pushed as Docker v2 manifests and
-            # annotations are OCI-only; newer buildx hard-errors on them for Docker manifest lists
-            # (they were silently dropped by older buildx anyway — published lists carry none).
-            # Tag expiry is handled by the Quay OAuth API lifecycle step below.
+            # Create and annotate the manifest list for EACH tag so Quay can apply expiry per tag.
+            # The per-arch sources are pushed as OCI (build job), so annotations are supported —
+            # but the typed syntax ("index:key=value") is required: bare "key=value" annotations
+            # and Docker v2 sources are hard errors on newer buildx.
             echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
               docker buildx imagetools create \
+                --annotation "index:quay.expires-after=${EXPIRES_AFTER}" \
                 -t "$tag" \
                 $(printf "${REGISTRY}/${REGISTRY_IMAGE}@sha256:%s " *)
             done
