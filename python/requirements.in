@@ -4,6 +4,9 @@
 # TechDocs MkDocs stack — transitive pins come from mkdocs-techdocs-core.
 mkdocs-techdocs-core==1.7.1
 
+# Keep SOCKS proxy support available in the runtime venv.
+PySocks>=1.7.1
+
 # Hermeto (allow_binary=false) prefetches one shared requirements-build.txt.
 # urllib3>=2.5 and platformdirs>=4.5 need setuptools-scm>=8 via hatch-vcs,
 # but python-dateutil's sdist still requires setuptools_scm<8.
