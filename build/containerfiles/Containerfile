@@ -225,7 +225,7 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
 # Prevents duplicating the same dependencies in the final minimal image.
 # hadolint ignore=DL3013,DL3041,SC2086
 COPY $EXTERNAL_SOURCE_NESTED/python/ ./python/
-RUN dnf install -y python3.12 python3.12-pip python3.12-devel 1>/dev/null 2>&1 && \
+RUN dnf install -y python3.12 python3.12-pip python3.12-devel python3.12-setuptools-wheel && \
   python3.12 -m venv /opt/techdocs-venv && \
   /opt/techdocs-venv/bin/pip install --no-cache-dir --upgrade pip setuptools pyyaml && \
   /opt/techdocs-venv/bin/pip install --no-cache-dir -r python/requirements.txt -r python/requirements-build.txt && \
@@ -253,9 +253,16 @@ WORKDIR $CONTAINER_SOURCE/
 #   export PIP_NO_INDEX=true
 
 # Runtime Python for techdocs (interpreter + skopeo only; mkdocs lives in the pre-built venv from techdocs stage)
-RUN microdnf install -y python3.12 skopeo 1>/dev/null 2>&1; \
+# expat (python3.12-libs), libseccomp and libmnl (skopeo deps) are listed explicitly: they are NOT in the
+# nodejs-24-minimal base, but ARE in the full nodejs-24 base, so they are easy to lose from the hermetic
+# mirror (RHDHBUGS-4140). Keep them in rpms.in.yaml too.
+# Never discard microdnf output/exit code: a failed install must fail the build, not ship an image with
+# dangling /usr/bin/python alternatives symlinks. python/skopeo are executed as a final sanity check.
+RUN microdnf install -y python3.12 python3.12-setuptools-wheel skopeo expat libseccomp libmnl && \
   alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
   alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+  python --version && \
+  skopeo --version && \
   microdnf clean all
 
 # Copy openssl binary from build stage (needed for dynamic plugin integrity verification)
@@ -273,6 +280,9 @@ COPY --from=cleanup --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 COPY --from=cleanup --chown=1001:1001 /opt/techdocs-venv /opt/techdocs-venv
 
 ENV PATH="/opt/techdocs-venv/bin:${PATH}"
+
+# Verify the copied venv uses the runner interpreter and retains SOCKS support.
+RUN python --version && python3 --version && mkdocs --version && python -c "import socks"
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
