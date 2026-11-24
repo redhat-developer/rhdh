@@ -7,6 +7,7 @@
   "backstage": {
     "role": "backend"
   },
+  "configSchema": "config.d.ts",
   "scripts": {
     "start": "backstage-cli package start --require ./src/instrumentation.js",
     "start:prometheus": "docker run --mount type=bind,source=./prometheus.yml,destination=/etc/prometheus/prometheus.yml --publish published=9090,target=9090,protocol=tcp prom/prometheus",
@@ -29,6 +30,7 @@
     "@backstage/backend-plugin-api": "1.10.0",
     "@backstage/catalog-client": "1.16.1",
     "@backstage/catalog-model": "1.10.0",
+    "@backstage/cli-common": "0.3.0",
     "@backstage/cli-node": "0.3.4",
     "@backstage/config": "1.3.8",
     "@backstage/plugin-app-backend": "0.5.17",
@@ -78,6 +80,7 @@
     "typescript": "5.9.3"
   },
   "files": [
+    "config.d.ts",
     "dist"
   ]
 }

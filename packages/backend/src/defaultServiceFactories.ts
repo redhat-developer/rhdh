@@ -27,9 +27,11 @@ import { schedulerServiceFactory } from '@backstage/backend-defaults/scheduler';
 import { urlReaderServiceFactory } from '@backstage/backend-defaults/urlReader';
 import { userInfoServiceFactory } from '@backstage/backend-defaults/userInfo';
 import type { ServiceFactory } from '@backstage/backend-plugin-api';
+import { targetPaths } from '@backstage/cli-common';
 import { eventsServiceFactory } from '@backstage/plugin-events-node';
 
 import { appHtmlFetchPriorityMiddleware } from './middleware/appHtmlFetchPriority';
+import { createCompressionDictionaryMiddleware } from './middleware/compressionDictionary';
 import { dynamicRemotesStaticCacheMiddleware } from './middleware/dynamicRemotesStaticCache';
 import { hashedRemoteEntriesMiddleware } from './middleware/hashedRemoteEntries';
 
@@ -57,16 +59,36 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   permissionsRegistryServiceFactory,
   rootHealthServiceFactory,
   // Custom configure so hashed remotes `/static/` get long-lived Cache-Control,
-  // the served app HTML gets fetchpriority hints on its defer scripts, and
+  // the served app HTML gets fetchpriority hints on its defer scripts,
   // content-hashed remote entries are served immutable from the in-memory
-  // registry.
+  // registry, and (opt-in) remote assets get Compression Dictionary Transport.
   // Re-include dynamicRemotesStaticCacheMiddleware,
-  // appHtmlFetchPriorityMiddleware, and hashedRemoteEntriesMiddleware if
-  // replacing core.rootHttpRouter.
+  // appHtmlFetchPriorityMiddleware, hashedRemoteEntriesMiddleware and the
+  // compression dictionary middleware if replacing core.rootHttpRouter.
   rootHttpRouterServiceFactory({
-    configure({ app, applyDefaults }) {
+    configure({ app, applyDefaults, config }) {
       app.use(dynamicRemotesStaticCacheMiddleware);
       app.use(appHtmlFetchPriorityMiddleware);
+      // Before hashedRemoteEntriesMiddleware so dictionary-compressed
+      // responses win and the hashed-entries immutable Brotli serves the
+      // requests that fall through without a dictionary offer.
+      if (
+        config.getOptionalBoolean(
+          'dynamicPlugins.frontend.compressionDictionary.enabled',
+        )
+      ) {
+        const pluginsRootDirectory = config.getOptionalString(
+          'dynamicPlugins.rootDirectory',
+        );
+        if (pluginsRootDirectory) {
+          app.use(
+            createCompressionDictionaryMiddleware({
+              pluginsRootDirectory:
+                targetPaths.resolveRoot(pluginsRootDirectory),
+            }),
+          );
+        }
+      }
       app.use(hashedRemoteEntriesMiddleware());
       applyDefaults();
     },
