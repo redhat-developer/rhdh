@@ -7,8 +7,8 @@
   },
   "scripts": {
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
-    "prettier:check": "npx prettier --check **/*.{sh,md,yaml,yml}",
-    "prettier:fix": "npx prettier --write **/*.{sh,md,yaml,yml}"
+    "prettier:check": "prettier --check \"**/*.{sh,md,yaml,yml}\"",
+    "prettier:fix": "prettier --write \"**/*.{sh,md,yaml,yml}\""
   },
   "devDependencies": {
     "prettier": "3.9.6",
