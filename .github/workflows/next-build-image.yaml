@@ -432,11 +432,13 @@ jobs:
               meta="$META_NEXT_JSON"
             fi
 
-            # Create and annotate the manifest list for EACH tag to ensure Quay applies expiry per tag
+            # NOTE: no --annotation here — the per-arch images are pushed as Docker v2 manifests and
+            # annotations are OCI-only; newer buildx hard-errors on them for Docker manifest lists
+            # (they were silently dropped by older buildx anyway — published lists carry none).
+            # Tag expiry is handled by the Quay OAuth API lifecycle step below.
             echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
               docker buildx imagetools create \
-                --annotation "quay.expires-after=${EXPIRES_AFTER}" \
                 -t "$tag" \
                 $(printf "${REGISTRY}/${REGISTRY_IMAGE}@sha256:%s " *)
             done
@@ -667,26 +669,11 @@ jobs:
             EOF
 
             else
-              echo "No QUAY_OAUTH_TOKEN available - falling back to Docker BuildX annotations"
+              echo "No QUAY_OAUTH_TOKEN available - cannot set tag expiry via Quay API"
               echo "Robot accounts cannot delete via API (Quay security limitation)"
-
-              # Fallback: Use Docker BuildX for expiry annotations only
-              echo "Applying expiry annotations to multi-arch tags via Docker BuildX..."
-              for tag in "${multi_arch_tags[@]}"; do
-                echo "Re-annotating tag: ${tag}"
-
-                if docker buildx imagetools create \
-                  --tag "${REGISTRY}/${REGISTRY_IMAGE}:${tag}" \
-                  --annotation "quay.expires-after=${EXPIRES_AFTER}" \
-                  --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
-                  "${REGISTRY}/${REGISTRY_IMAGE}:${tag}"; then
-                  echo "Expiry annotations applied to: ${tag}"
-                else
-                  echo "::warning::Failed to re-annotate ${tag}"
-                fi
-              done
-
-              echo "Per-arch images will be cleaned up via expiry (no immediate deletion possible with robot accounts)"
+              echo "Skipping expiry annotations: the per-arch images are Docker v2 manifests and"
+              echo "buildx cannot apply OCI annotations to Docker manifest lists (hard error on newer buildx)."
+              echo "Per-arch images will be cleaned up via the quay.expires-after image label."
             fi
 
             echo "Image lifecycle management completed"
