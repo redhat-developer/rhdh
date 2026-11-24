@@ -297,19 +297,18 @@ jobs:
           IMAGE_TAGS: |
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
         run: |
           set -euo pipefail
-          printf '%s' "$QUAY_TOKEN" | podman login -u "$QUAY_USERNAME" --password-stdin "$REGISTRY"
+          # Reuse the credentials configured by the Login to Quay action.
+          auth_file="${DOCKER_CONFIG:-$HOME/.docker}/config.json"
           digest=""
           while IFS= read -r tag; do
             [ -z "$tag" ] && continue
             if [ -z "$digest" ]; then
-              podman push --format oci --digestfile /tmp/pushed-digest "$tag"
+              podman push --authfile "$auth_file" --format oci --digestfile /tmp/pushed-digest "$tag"
               digest="$(cat /tmp/pushed-digest)"
             else
-              podman push --format oci "$tag"
+              podman push --authfile "$auth_file" --format oci "$tag"
             fi
           done <<< "$IMAGE_TAGS"
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
