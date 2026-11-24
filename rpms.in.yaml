@@ -7,14 +7,13 @@ arches:
   - x86_64
   - aarch64
 allowerasing: true
-# The big "dnf install" runs in the "skeleton" stage, so the rpmdb context
-# must come from that stage's FROM image. Without this filter the default is
-# the LAST stage (ubi9/nodejs-24-minimal), which produced unresolvable
-# exact-EVR locks when the runner and builder images skew (see #5800/#5811).
+# Lock the full dependency closure for both the full skeleton and minimal runner.
+# An image context excludes installed RPMs even when listed below. The skeleton
+# context dropped expat/libmnl/libseccomp needed by the runner (RHDHBUGS-4136);
+# the runner context caused skeleton exact-version conflicts (#5800/#5811).
+# Keep this in the input so automated lockfile regeneration preserves both stages.
 context:
-  containerfile:
-    file: build/containerfiles/Containerfile
-    stageName: skeleton
+  bare: true
 contentOrigin:
   repos:
     - repoid: ubi-9-for-$basearch-appstream-rpms
@@ -25,12 +24,15 @@ contentOrigin:
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/baseos/os/
     - repoid: ubi-9-for-$basearch-baseos-source-rpms
       baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/baseos/source/SRPMS
-    # - repoid: codeready-builder-for-ubi-9-$basearch-rpms
-    #   baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/os/
-    #   # gpgcheck: 0
-    # - repoid: codeready-builder-for-ubi-9-$basearch-source-rpms
-    #   baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/source/SRPMS
-    #   # gpgcheck: 0
+    # Python 3.12's setuptools wheel is in CRB rather than AppStream.
+    - repoid: codeready-builder-for-ubi-9-$basearch-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/os/
+      includepkgs:
+        - python3.12-setuptools-wheel
+    - repoid: codeready-builder-for-ubi-9-$basearch-source-rpms
+      baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/source/SRPMS
+      includepkgs:
+        - python3.12-setuptools
 
 moduleEnable:
   - nodejs:24
@@ -320,16 +322,15 @@ packages:
   - python3-rpm
   - python3-subscription-manager-rhsm
   - python3-systemd
-  - python3.11
-  - python3.11-devel
-  - python3.11-idna
-  - python3.11-pip
-  - python3.11-pip-wheel
-  - python3.11-pysocks
-  - python3.11-requests
-  - python3.11-setuptools
-  - python3.11-setuptools-wheel
-  - python3.11-urllib3
+  - python3.12
+  - python3.12-devel
+  - python3.12-idna
+  - python3.12-pip
+  - python3.12-pip-wheel
+  - python3.12-requests
+  - python3.12-setuptools
+  - python3.12-setuptools-wheel
+  - python3.12-urllib3
   - readline
   - redhat-release
   - rootfiles
