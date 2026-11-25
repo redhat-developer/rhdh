@@ -13,6 +13,18 @@
 #shellcheck disable=SC1083
 changed_files="$(git diff-tree -r --name-only --no-commit-id HEAD@{1} HEAD)"
 
+# Fail the hook when an install fails, rather than letting a later install
+# supply a successful exit status.
 if [[ $changed_files == *"package.json"* ]]; then
-  eval "yarn install"
+  eval "yarn install" || exit 1
+fi
+
+# .ci is a separate Yarn project with its own lockfile
+if [[ $changed_files == *".ci/package.json"* || $changed_files == *".ci/yarn.lock"* ]]; then
+  yarn --cwd .ci install || exit 1
+fi
+
+# e2e-tests is a separate Yarn project with its own lockfile
+if [[ $changed_files == *"e2e-tests/package.json"* || $changed_files == *"e2e-tests/yarn.lock"* ]]; then
+  yarn --cwd e2e-tests install || exit 1
 fi
