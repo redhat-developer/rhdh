@@ -8,9 +8,11 @@
 # (default when unset) or pi. For one run, the 'fullsend run --runtime'
 # flag wins, then FULLSEND_RUNTIME, then this file. See docs/runtimes.md.
 version: "1"
-# This installation only dispatches the code agent for upgrade issues.
+# code: Backstage upgrade issues via /fs-code
+# cve-reviewer: CVE bump PRs via /fs-cve-pr-review (forks allowed; main harness)
 roles:
     - coder
+    - review
 allowed_remote_resources:
     - https://raw.githubusercontent.com/fullsend-ai/fullsend/
     - https://raw.githubusercontent.com/fullsend-ai/agents/
@@ -18,6 +20,8 @@ allowed_remote_resources:
 agents:
     - name: code
       source: harness/code.yaml
+    - name: cve-reviewer
+      source: rhdh/harness/cve-review.yaml
 mint_url: https://mint.fullsend.sh
 # Inference project and WIF provider are passed from repository secrets by
 # .github/workflows/fullsend.yaml; GitHub expressions are not expanded here.
