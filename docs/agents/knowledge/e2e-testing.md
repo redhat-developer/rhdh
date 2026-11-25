@@ -305,11 +305,17 @@ The `.ci/package.json` file defines the CI infrastructure package configuration 
 ```bash
 # Code quality and linting
 yarn shellcheck              # Shell script linting with severity warnings
-yarn prettier:check          # Check formatting for shell, markdown, and YAML files
-yarn prettier:fix            # Fix formatting for shell, markdown, and YAML files
+yarn fmt:check               # Check formatting for shell, markdown, and YAML files
+yarn fmt                     # Fix formatting for shell, markdown, and YAML files
 ```
 
-⚠️ **Important**: Before using any of these scripts, you must first run `yarn install` in the `.ci` folder to install the required dependencies (prettier, prettier-plugin-sh, shellcheck).
+⚠️ **Important**: Before using any of these scripts, you must first run `yarn install` in the `.ci` folder to install the required dependencies (oxfmt, @wasm-fmt/shfmt, editorconfig, shellcheck).
+
+**Formatting tooling**: `.ci` does not use Prettier. Markdown and YAML are formatted by
+`oxfmt` (same tool as `e2e-tests`), and shell scripts by `scripts/format-sh.mjs`, which
+wraps `@wasm-fmt/shfmt`. The shell formatter reads its options from the `[.ci/**.sh]`
+section of the root `.editorconfig`, so plain `shfmt` and editor integrations produce the
+same output.
 
 **Purpose**: This package provides essential tooling for maintaining code quality in the CI infrastructure, ensuring consistent formatting and shell script best practices across the pipeline scripts.
 

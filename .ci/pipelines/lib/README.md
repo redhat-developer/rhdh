@@ -115,6 +115,6 @@ namespace::function_name() {
 5. Run linting:
    ```bash
    cd .ci
-   yarn prettier:fix
+   yarn fmt
    yarn shellcheck
    ```

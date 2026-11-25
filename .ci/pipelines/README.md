@@ -176,14 +176,14 @@ yarn install
 Available commands:
 
 - `yarn shellcheck` - Lint shell scripts (must pass with zero warnings)
-- `yarn prettier:check` - Check file formatting
-- `yarn prettier:fix` - Auto-format files
+- `yarn fmt:check` - Check file formatting
+- `yarn fmt` - Auto-format files
 
 Before submitting a PR:
 
 ```bash
 cd .ci
-yarn prettier:fix
+yarn fmt
 yarn shellcheck
 ```
 
