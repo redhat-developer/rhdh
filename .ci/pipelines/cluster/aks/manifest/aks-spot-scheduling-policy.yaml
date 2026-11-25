@@ -1,0 +1,59 @@
+# AKS taints spot node pools with kubernetes.azure.com/scalesetpriority=spot:NoSchedule and
+# refuses to remove that taint, so a pod without the toleration can only use the 2 vCPU system
+# pool, which is too small for OLM and Tekton.
+#
+# Patching individual workloads misses the pods created by installers we do not drive pod by pod
+# (OLM, Tekton, catalog sources, kaniko), so every new pod gets the toleration instead. Clusters
+# without spot nodes are unaffected: tolerating a taint that does not exist changes nothing.
+#
+# MutatingAdmissionPolicy is GA in Kubernetes 1.36, the version the AKS jobs run through
+# MAPT_KUBERNETES_VERSION.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: aks-spot-node-scheduling
+spec:
+  # A CEL error must never block pod creation.
+  failurePolicy: Ignore
+  # Nothing can change a pod's tolerations after creation.
+  reinvocationPolicy: Never
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  mutations:
+    # Results in: spec.tolerations += {key: kubernetes.azure.com/scalesetpriority, operator: Equal,
+    # value: spot, effect: NoSchedule}. Tolerations are an atomic list, so the existing entries are
+    # kept and pods that already tolerate the key are left alone.
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: |
+          has(object.spec.tolerations) && object.spec.tolerations.exists(t,
+            has(t.key) && t.key == "kubernetes.azure.com/scalesetpriority") ?
+            [] :
+            [JSONPatch{
+              op: "add",
+              path: "/spec/tolerations",
+              value: (has(object.spec.tolerations) ? object.spec.tolerations : []) +
+                [{"key": "kubernetes.azure.com/scalesetpriority", "operator": "Equal", "value": "spot", "effect": "NoSchedule"}]
+            }]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: aks-spot-node-scheduling
+spec:
+  policyName: aks-spot-node-scheduling
+  matchResources:
+    # Keep AKS and its add-ons on the system pool where Azure expects them.
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values:
+            - kube-system
+            - kube-public
+            - kube-node-lease
+            - app-routing-system
