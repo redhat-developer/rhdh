@@ -14,6 +14,7 @@
     "tsc": "turbo run tsc",
     "clean": "turbo run clean",
     "test": "turbo run test",
+    "test:bench": "yarn workspace app test:bench",
     "lint:check": "turbo run lint:check",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
@@ -53,7 +54,9 @@
   "resolutions": {
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "@backstage/core-components@npm:^0.18.13": "patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch",
-    "@backstage/core-components@npm:^0.18.14": "patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch"
+    "@backstage/core-components@npm:^0.18.14": "patch:@backstage/core-components@npm%3A0.18.13#~/.yarn/patches/@backstage-core-components-npm-0.18.13-4947d892c0.patch",
+    "@backstage/frontend-app-api@npm:^0.16.7": "patch:@backstage/frontend-app-api@npm%3A0.16.7#~/.yarn/patches/@backstage-frontend-app-api-npm-0.16.7-bec820714f.patch",
+    "@backstage/plugin-catalog@npm:^2.0.8": "patch:@backstage/plugin-catalog@npm%3A2.0.8#~/.yarn/patches/@backstage-plugin-catalog-npm-2.0.8-9ea28fb999.patch"
   },
   "jest": {
     "testTimeout": 20000
