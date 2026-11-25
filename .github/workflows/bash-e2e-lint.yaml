@@ -8,10 +8,11 @@ on:
     paths:
       - '.ci/**'
       - '.shellcheckrc'
+      - '.editorconfig'
 
 jobs:
   lint:
-    name: ShellCheck and Prettier
+    name: ShellCheck and Format
     runs-on: ubuntu-latest
 
     steps:
@@ -33,6 +34,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn shellcheck
 
-      - name: Run Prettier check
+      - name: Run format check
         working-directory: ./.ci
-        run: yarn prettier:check
+        run: yarn fmt:check

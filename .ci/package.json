@@ -7,12 +7,13 @@
   },
   "scripts": {
     "shellcheck": "git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning --color=always",
-    "prettier:check": "npx prettier --check **/*.{sh,md,yaml,yml}",
-    "prettier:fix": "npx prettier --write **/*.{sh,md,yaml,yml}"
+    "fmt": "oxfmt '**/*.{md,yaml,yml}' && node scripts/format-sh.mjs --write",
+    "fmt:check": "oxfmt --check '**/*.{md,yaml,yml}' && node scripts/format-sh.mjs --check"
   },
   "devDependencies": {
-    "prettier": "3.9.6",
-    "prettier-plugin-sh": "0.19.0",
+    "@wasm-fmt/shfmt": "0.2.7",
+    "editorconfig": "4.0.1",
+    "oxfmt": "0.67.0",
     "shellcheck": "4.1.0"
   },
   "packageManager": "yarn@4.19.0"

@@ -10,3 +10,8 @@ insert_final_newline = true
 
 [*.mdx]
 trim_trailing_whitespace = false
+
+[.ci/**.sh]
+binary_next_line = true
+switch_case_indent = true
+space_redirects = true

@@ -4,8 +4,8 @@
     "shellcheck": {
       "cache": false
     },
-    "prettier:check": {},
-    "prettier:fix": {
+    "fmt:check": {},
+    "fmt": {
       "cache": false
     }
   }
