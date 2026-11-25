@@ -228,13 +228,13 @@ arches:
     name: hunspell-filesystem
     evr: 1.7.2-9.el10
     sourcerpm: hunspell-1.7.2-9.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-264.20.1.el10_3.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/k/kernel-headers-6.12.0-264.21.1.el10_3.aarch64.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
-    size: 3553057
-    checksum: sha256:79831e8eb7fb166dd9589b01e81e29440f5f0839945924a708e867eb280b9f71
+    size: 3556549
+    checksum: sha256:4df9e7d771ed3e055a5c29672d451e79c8b39d2c4f7f3a767f05910cb7b52d44
     name: kernel-headers
-    evr: 6.12.0-264.20.1.el10_3
-    sourcerpm: kernel-6.12.0-264.20.1.el10_3.src.rpm
+    evr: 6.12.0-264.21.1.el10_3
+    sourcerpm: kernel-6.12.0-264.21.1.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/aarch64/appstream/os/Packages/l/langpacks-core-en-4.1-3.el10.noarch.rpm
     repoid: ubi-10-for-aarch64-appstream-rpms
     size: 12204
@@ -4003,13 +4003,13 @@ arches:
     name: hunspell-filesystem
     evr: 1.7.2-9.el10
     sourcerpm: hunspell-1.7.2-9.el10.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-264.20.1.el10_3.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/k/kernel-headers-6.12.0-264.21.1.el10_3.x86_64.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
-    size: 3591589
-    checksum: sha256:28bd6ec009c9a684bdbcb5ad93acf8cc224a82d2d50aef3c642e584ccdec42e4
+    size: 3595061
+    checksum: sha256:b789e7f3e47f5b4b42bbddaea27e76af2e12e21af66b2564cffa587a6c55cc07
     name: kernel-headers
-    evr: 6.12.0-264.20.1.el10_3
-    sourcerpm: kernel-6.12.0-264.20.1.el10_3.src.rpm
+    evr: 6.12.0-264.21.1.el10_3
+    sourcerpm: kernel-6.12.0-264.21.1.el10_3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi10/10/x86_64/appstream/os/Packages/l/langpacks-core-en-4.1-3.el10.noarch.rpm
     repoid: ubi-10-for-x86_64-appstream-rpms
     size: 12204
