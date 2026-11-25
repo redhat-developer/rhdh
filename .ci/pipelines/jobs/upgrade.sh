@@ -143,6 +143,8 @@ handle_ocp_helm_upgrade() {
   initiate_upgrade_base_deployments \
     "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${upgrade_artifacts_subdir}" "${previous_release_version}"
 
+  deploy_test_backstage_customization_provider "${NAME_SPACE}"
+
   UPGRADE_PHASE="baseline-readiness"
   postgres::wait_ready "${NAME_SPACE}" "${RELEASE_NAME}"
   if ! testing::check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" "${upgrade_artifacts_subdir}/baseline"; then
