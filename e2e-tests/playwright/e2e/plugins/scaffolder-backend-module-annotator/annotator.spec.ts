@@ -19,7 +19,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
   let catalogImport: CatalogImport;
 
   const template =
-    "https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-annotator/plugins/scaffolder-backend-module-annotator/examples/templates/01-scaffolder-template.yaml";
+    "https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder/plugins/scaffolder-backend-module-annotator/examples/templates/01-scaffolder-template.yaml";
 
   const reactAppDetails = {
     owner: "janus-qe/maintainers",
