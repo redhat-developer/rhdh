@@ -36,22 +36,6 @@ podSecurityContext:
   fsGroup: 3000
 startupProbe:
   failureThreshold: 10 # Override the default to account for longer startup time on Kubernetes.
-# Tolerations and affinity needed to be scheduled on a spot AKS cluster
-tolerations:
-  - key: "kubernetes.azure.com/scalesetpriority"
-    operator: "Equal"
-    value: "spot"
-    effect: "NoSchedule"
-affinity:
-  nodeAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 1
-        preference:
-          matchExpressions:
-            - key: "kubernetes.azure.com/scalesetpriority"
-              operator: In
-              values:
-                - "spot"
 postgresql:
   enabled: true
   postgresqlDataDir: /var/lib/pgsql/data/userdata
@@ -78,22 +62,6 @@ postgresql:
           secretKeyRef:
             key: postgres-password
             name: "{{ .Release.Name }}-postgresql"
-    # Tolerations and affinity needed to be scheduled on a spot AKS cluster. Only `postgresql` require it.
-    tolerations:
-      - key: "kubernetes.azure.com/scalesetpriority"
-        operator: "Equal"
-        value: "spot"
-        effect: "NoSchedule"
-    affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-                - key: "kubernetes.azure.com/scalesetpriority"
-                  operator: In
-                  values:
-                    - "spot"
   volumePermissions:
     enabled: false
 ingress:

@@ -13,8 +13,6 @@ source "$DIR"/lib/common.sh
 source "$DIR"/lib/namespace.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
-# shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
-source "$DIR"/cluster/k8s/k8s-utils.sh
 
 initiate_aks_helm_deployment() {
   common::require_vars "RELEASE_NAME" "TAG_NAME" "IMAGE_REGISTRY" "IMAGE_REPO" "K8S_CLUSTER_ROUTER_BASE" || return 1
@@ -23,7 +21,6 @@ initiate_aks_helm_deployment() {
   namespace::configure "${NAME_SPACE}"
 
   deploy_redis_cache "${NAME_SPACE}"
-  patch_and_restart "$NAME_SPACE" "deployment" "redis" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml" # Patch Redis deployment to run on spot cluster
 
   helm::uninstall "${NAME_SPACE}" "${RELEASE_NAME}"
 

@@ -11,8 +11,8 @@ source "$DIR"/lib/log.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ci/pipelines/cluster/aks/aks-operator-deployment.sh
 source "$DIR"/cluster/aks/aks-operator-deployment.sh
-# shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
-source "$DIR"/cluster/k8s/k8s-utils.sh
+# shellcheck source=.ci/pipelines/cluster/aks/aks-spot-scheduling.sh
+source "$DIR"/cluster/aks/aks-spot-scheduling.sh
 # shellcheck source=.ci/pipelines/lib/testing.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
@@ -25,6 +25,9 @@ handle_aks_operator() {
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
   common::kubectl_login
+
+  # Before OLM and Tekton, so their pods get the spot toleration on creation.
+  aks_spot::enable_scheduling || return 1
 
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   export K8S_CLUSTER_ROUTER_BASE
