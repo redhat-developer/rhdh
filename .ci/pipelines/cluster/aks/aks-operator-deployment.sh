@@ -15,8 +15,6 @@ source "$DIR"/lib/namespace.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ci/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
-# shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
-source "$DIR"/cluster/k8s/k8s-utils.sh
 
 initiate_aks_operator_deployment() {
   local namespace=$1
@@ -39,7 +37,6 @@ initiate_aks_operator_deployment() {
   namespace::setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start_K8s.yaml"
-  patch_and_restart_aks_spot "${namespace}" "$RELEASE_NAME"
 
   apply_aks_operator_ingress "$namespace" "backstage-$RELEASE_NAME"
 }
@@ -65,24 +62,8 @@ initiate_rbac_aks_operator_deployment() {
   namespace::setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
-  patch_and_restart_aks_spot_rbac "${namespace}" "$RELEASE_NAME_RBAC"
 
   apply_aks_operator_ingress "$namespace" "backstage-$RELEASE_NAME_RBAC"
-}
-
-patch_and_restart_aks_spot() {
-  local namespace=$1
-  local release_name=$2
-  patch_and_restart "$namespace" "deployment" "redis" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
-  patch_and_restart "$namespace" "statefulset" "backstage-psql-$release_name" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
-  patch_and_restart "$namespace" "deployment" "backstage-$release_name" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
-}
-
-patch_and_restart_aks_spot_rbac() {
-  local namespace=$1
-  local release_name=$2
-  patch_and_restart "$namespace" "statefulset" "backstage-psql-$release_name" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
-  patch_and_restart "$namespace" "deployment" "backstage-$release_name" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
 }
 
 apply_aks_operator_ingress() {
