@@ -1,4 +1,6 @@
-# Based on fullsend scaffold; only manual /fs-code on an open Backstage upgrade issue.
+# Based on fullsend scaffold; customized for RHDH:
+# - /fs-code on open Backstage upgrade issues (existing)
+# - /fs-cve-pr-review on PRs (CVE dependency-bump assessment; forks allowed)
 # Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/templates/shim-per-repo.yaml
 ---
 # fullsend shim workflow (per-repo installation mode)
@@ -12,6 +14,9 @@
 #
 # Concurrency: per-role cancel-in-progress groups live in reusable-dispatch.yml
 # stage jobs with -agent- suffix. Roles operate independently (#2452).
+#
+# Comment triggers load .fullsend/ from the default branch (main). No
+# pull_request_target / cve-fix label path in this install.
 name: fullsend
 
 on:
@@ -24,11 +29,19 @@ jobs:
   dispatch:
     if: >-
       github.event_name == 'issue_comment'
-      && github.event.issue.pull_request == null
-      && github.event.issue.state == 'open'
-      && contains(github.event.issue.labels.*.name, 'backstage-upgrade-automation')
-      && github.event.comment.body == '/fs-code'
       && github.event.comment.user.type != 'Bot'
+      && (
+        (
+          github.event.issue.pull_request == null
+          && github.event.issue.state == 'open'
+          && contains(github.event.issue.labels.*.name, 'backstage-upgrade-automation')
+          && github.event.comment.body == '/fs-code'
+        )
+        || (
+          github.event.issue.pull_request != null
+          && startsWith(github.event.comment.body, '/fs-cve-pr-review')
+        )
+      )
     permissions:
       actions: write
       id-token: write
@@ -49,3 +62,6 @@ jobs:
       FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_TRACES_HEADERS }}
       OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+      # Repo secrets use FULLSEND_* names; v0.43 dispatch still expects JIRA_*.
+      JIRA_TOKEN: ${{ secrets.FULLSEND_JIRA_TOKEN }}
+      JIRA_USER_EMAIL: ${{ secrets.FULLSEND_JIRA_EMAIL }}
