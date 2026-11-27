@@ -1,6 +1,21 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+staged_files="$(git diff --cached --name-only)"
+
+# .ci and e2e-tests are separate Yarn projects with their own lockfiles, so the
+# root install does not provide the toolchains used by lint-staged below.
+if [ ! -d .ci/node_modules ] &&
+  printf '%s\n' "$staged_files" | grep -qE '^\.ci/.*\.(sh|md|ya?ml)$'; then
+  yarn --cwd .ci install
+fi
+
+# .lintstagedrc.cjs runs `yarn --cwd e2e-tests test:unit` for these paths.
+if [ ! -d e2e-tests/node_modules ] &&
+  printf '%s\n' "$staged_files" | grep -qE '^(e2e-tests/|\.ci/pipelines/|\.lintstagedrc\.cjs$)'; then
+  yarn --cwd e2e-tests install
+fi
+
 yarn lint-staged
 
 if [ -x .git/hooks/pre-commit ]; then
