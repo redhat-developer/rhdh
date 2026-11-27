@@ -11,8 +11,6 @@ source "$DIR"/lib/log.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ci/pipelines/cluster/eks/eks-operator-deployment.sh
 source "$DIR"/cluster/eks/eks-operator-deployment.sh
-# shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
-source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/cluster/eks/aws.sh
 source "$DIR"/cluster/eks/aws.sh
 # shellcheck source=.ci/pipelines/lib/testing.sh

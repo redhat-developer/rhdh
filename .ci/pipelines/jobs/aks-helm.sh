@@ -9,6 +9,8 @@ readonly AKS_HELM_JOBS_SOURCED=1
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ci/pipelines/cluster/aks/aks-spot-scheduling.sh
+source "$DIR"/cluster/aks/aks-spot-scheduling.sh
 # shellcheck source=.ci/pipelines/cluster/aks/aks-helm-deployment.sh
 source "$DIR"/cluster/aks/aks-helm-deployment.sh
 # shellcheck source=.ci/pipelines/lib/testing.sh
@@ -23,6 +25,9 @@ handle_aks_helm() {
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
   common::kubectl_login
+
+  # Before OLM and Tekton, so their pods get the spot toleration on creation.
+  aks_spot::enable_scheduling || return 1
 
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   export K8S_CLUSTER_ROUTER_BASE

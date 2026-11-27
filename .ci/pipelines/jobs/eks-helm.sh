@@ -13,8 +13,6 @@ source "$DIR"/utils.sh
 source "$DIR"/cluster/eks/eks-helm-deployment.sh
 # shellcheck source=.ci/pipelines/cluster/eks/aws.sh
 source "$DIR"/cluster/eks/aws.sh
-# shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
-source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ci/pipelines/lib/testing.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
