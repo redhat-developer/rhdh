@@ -734,9 +734,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/e2e-test-utils@npm:2.2.2":
-  version: 2.2.2
-  resolution: "@red-hat-developer-hub/e2e-test-utils@npm:2.2.2"
+"@red-hat-developer-hub/e2e-test-utils@npm:2.2.9":
+  version: 2.2.9
+  resolution: "@red-hat-developer-hub/e2e-test-utils@npm:2.2.9"
   dependencies:
     "@axe-core/playwright": "npm:4.11.1"
     "@backstage-community/plugin-rbac-common": "npm:1.26.0"
@@ -760,8 +760,8 @@ __metadata:
   peerDependencies:
     "@playwright/test": ^1.57.0
   bin:
-    rhdh-e2e-secrets: ./dist/secrets/cli.js
-  checksum: 10c0/1b91074fcb919b47b08e7764192d5a551079f79fb0162e098f6920dcaa9641aeda34fc70b340620eb8ecc684237da2e2e782e473f60251181f2745ae7f37f936
+    rhdh-e2e-secrets: dist/secrets/cli.js
+  checksum: 10c0/30e80e3edf960a36d2198a19107ee6be81d0de3f68fef3a02ada9a012784b37f63d443872575fe27db938c403127098d69d0f54ad59374f5a6f16bdc96edb432
   languageName: node
   linkType: hard
 
@@ -2075,7 +2075,7 @@ __metadata:
     "@backstage/types": "npm:1.2.2"
     "@kubernetes/client-node": "npm:0.22.3"
     "@playwright/test": "npm:1.62.1"
-    "@red-hat-developer-hub/e2e-test-utils": "npm:2.2.2"
+    "@red-hat-developer-hub/e2e-test-utils": "npm:2.2.9"
     "@support/coverage": "portal:./playwright/support/coverage"
     "@types/node": "npm:24.13.3"
     "@types/pg": "npm:8.23.1"
