@@ -9017,9 +9017,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:1.4.2":
-  version: 1.4.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.4.2"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:1.5.2":
+  version: 1.5.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.5.2"
   dependencies:
     "@backstage/frontend-plugin-api": "npm:^0.18.0"
     "@backstage/plugin-app-react": "npm:^0.2.6"
@@ -9031,7 +9031,7 @@ __metadata:
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/42835eb7a3962deb5c4463a5e9bf6a1f4e796ba70295ff611327866eaba5048b2e10536771059e224adb93524dd43260bfb8207a6ce979dee4e5e963d4f88ff3
+  checksum: 10c0/1797f7a631fb8ae5f8b6230d787c7dcb70a416627f32f641ce66f43a210d1c2c19ccae90946fc6cfcecd9c39ab12e321a7933c3feeee52759b3900a9fa656033
   languageName: node
   linkType: hard
 
@@ -9121,6 +9121,57 @@ __metadata:
   peerDependencies:
     react: ">=18.2.0"
   checksum: 10c0/91bbadb677f45cf8b6687fdf9d273511fddb4e862f1da6c11bc7932acb578bcb26ae5b9e1eb62143a4e916b71797739a36d689866d5b0949f0f0f22c1684cb96
+  languageName: node
+  linkType: hard
+
+"@reteps/dockerfmt-darwin-arm64@npm:0.5.4":
+  version: 0.5.4
+  resolution: "@reteps/dockerfmt-darwin-arm64@npm:0.5.4"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@reteps/dockerfmt-darwin-x64@npm:0.5.4":
+  version: 0.5.4
+  resolution: "@reteps/dockerfmt-darwin-x64@npm:0.5.4"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@reteps/dockerfmt-linux-arm64@npm:0.5.4":
+  version: 0.5.4
+  resolution: "@reteps/dockerfmt-linux-arm64@npm:0.5.4"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@reteps/dockerfmt-linux-x64@npm:0.5.4":
+  version: 0.5.4
+  resolution: "@reteps/dockerfmt-linux-x64@npm:0.5.4"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@reteps/dockerfmt@npm:^0.5.4":
+  version: 0.5.4
+  resolution: "@reteps/dockerfmt@npm:0.5.4"
+  dependencies:
+    "@reteps/dockerfmt-darwin-arm64": "npm:0.5.4"
+    "@reteps/dockerfmt-darwin-x64": "npm:0.5.4"
+    "@reteps/dockerfmt-linux-arm64": "npm:0.5.4"
+    "@reteps/dockerfmt-linux-x64": "npm:0.5.4"
+  dependenciesMeta:
+    "@reteps/dockerfmt-darwin-arm64":
+      optional: true
+    "@reteps/dockerfmt-darwin-x64":
+      optional: true
+    "@reteps/dockerfmt-linux-arm64":
+      optional: true
+    "@reteps/dockerfmt-linux-x64":
+      optional: true
+  bin:
+    dockerfmt: dist/launcher.js
+  checksum: 10c0/b6f3037042d258bd3b84d53f879cffb0286fe245f41da54508870866b9bf2c97bb1a2e15c6f29a610ed70ce43ffb1d6e7281002325cd9b01a08aeb3f391ba12a
   languageName: node
   linkType: hard
 
@@ -12009,7 +12060,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@octokit/rest": "npm:19.0.13"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:1.4.2"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:1.5.2"
     "@red-hat-developer-hub/backstage-plugin-translations": "npm:0.6.0"
     "@testing-library/dom": "npm:9.3.4"
     "@testing-library/jest-dom": "npm:6.9.1"
@@ -24182,6 +24233,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier-plugin-sh@npm:0.20.2":
+  version: 0.20.2
+  resolution: "prettier-plugin-sh@npm:0.20.2"
+  dependencies:
+    "@reteps/dockerfmt": "npm:^0.5.4"
+    sh-syntax: "npm:^0.7.0"
+  peerDependencies:
+    prettier: ^3.6.0
+  checksum: 10c0/3fabfa370c77de6874dfe83e760f9613bc14912260e5319b0c453b41ffdc0c91948f4a2dac98edf1606760fc744cc58b9f9b31198d7fe59219317e86dcc26d63
+  languageName: node
+  linkType: hard
+
 "prettier@npm:3.9.6":
   version: 3.9.6
   resolution: "prettier@npm:3.9.6"
@@ -25867,6 +25930,7 @@ __metadata:
     jest: "npm:30.5.2"
     jsdom: "npm:27.4.0"
     lint-staged: "npm:15.5.2"
+    prettier-plugin-sh: "npm:0.20.2"
     sherif: "npm:1.13.0"
     turbo: "npm:2.10.12"
   languageName: unknown
@@ -26263,6 +26327,13 @@ __metadata:
   version: 1.2.0
   resolution: "setprototypeof@npm:1.2.0"
   checksum: 10c0/68733173026766fa0d9ecaeb07f0483f4c2dc70ca376b3b7c40b7cda909f94b0918f6c5ad5ce27a9160bdfb475efaa9d5e705a11d8eaae18f9835d20976028bc
+  languageName: node
+  linkType: hard
+
+"sh-syntax@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "sh-syntax@npm:0.7.0"
+  checksum: 10c0/04eb1589e59d0d0313d1ca09718e0ae675f4ac74eb915377ff1c44dbdc7814d3917c5d981bff4e26fd0b313c358fd8de38e8838a8bd96f4608284de99c412319
   languageName: node
   linkType: hard
 
