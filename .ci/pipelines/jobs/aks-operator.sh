@@ -8,6 +8,8 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/cluster/aks/aks-operator-deployment.sh
 # shellcheck source=.ci/pipelines/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
+# shellcheck source=.ci/pipelines/cluster/aks/aks-spot-scheduling.sh
+source "$DIR"/cluster/aks/aks-spot-scheduling.sh
 # shellcheck source=.ci/pipelines/lib/testing.sh
 source "$DIR"/lib/testing.sh
 # shellcheck source=.ci/pipelines/playwright-projects.sh
@@ -24,9 +26,16 @@ handle_aks_operator() {
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   export K8S_CLUSTER_ROUTER_BASE
 
+  # Before cluster_setup_k8s_operator, so the Tekton pods get the spot toleration on creation.
+  aks_spot::install_tekton || return 1
+
   cluster_setup_k8s_operator
 
+  aks_spot::tolerate_olm || return 1
+
   prepare_operator "3"
+
+  aks_spot::tolerate_rhdh_operator || return 1
 
   initiate_aks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30

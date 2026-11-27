@@ -4,6 +4,8 @@
 source "$DIR"/lib/log.sh
 # shellcheck source=.ci/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ci/pipelines/cluster/aks/aks-spot-scheduling.sh
+source "$DIR"/cluster/aks/aks-spot-scheduling.sh
 # shellcheck source=.ci/pipelines/cluster/aks/aks-helm-deployment.sh
 source "$DIR"/cluster/aks/aks-helm-deployment.sh
 # shellcheck source=.ci/pipelines/lib/testing.sh
@@ -21,6 +23,9 @@ handle_aks_helm() {
 
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   export K8S_CLUSTER_ROUTER_BASE
+
+  # Before cluster_setup_k8s_helm, so the Tekton pods get the spot toleration on creation.
+  aks_spot::install_tekton || return 1
 
   cluster_setup_k8s_helm
 

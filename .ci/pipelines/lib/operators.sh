@@ -11,6 +11,7 @@ readonly OPERATORS_LIB_SOURCED=1
 
 # Constants
 readonly OPERATOR_NAMESPACE="openshift-operators"
+readonly TEKTON_RELEASE_URL="https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml"
 
 # Create OpenShift Operator subscription
 # Args: name, namespace, channel, package, source_name, source_namespace
@@ -68,7 +69,7 @@ operator::install_tekton() {
 
   if ! kubectl get namespace "${ns}" &> /dev/null; then
     log::info "Tekton Pipelines is not installed. Installing..."
-    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    kubectl apply -f "${TEKTON_RELEASE_URL}"
   else
     log::info "Tekton Pipelines namespace exists; ensuring webhook is ready before continuing."
   fi
