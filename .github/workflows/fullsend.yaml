@@ -62,5 +62,6 @@ jobs:
       FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_TRACES_HEADERS }}
       OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
-      JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
-      JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+      # Repo secrets use FULLSEND_* names; v0.43 dispatch still expects JIRA_*.
+      JIRA_TOKEN: ${{ secrets.FULLSEND_JIRA_TOKEN }}
+      JIRA_USER_EMAIL: ${{ secrets.FULLSEND_JIRA_EMAIL }}
